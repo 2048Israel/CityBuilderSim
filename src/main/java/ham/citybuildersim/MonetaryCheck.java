@@ -727,7 +727,20 @@ public class MonetaryCheck {
 
     /** The playtest's founding (seed 0), to the month before the dial is held. */
     static Game founding(Path root, String label) {
+        return founding(root, label, false);
+    }
+
+    /**
+     * ...on the goods' literals where asked (Game.playOnLiterals()). WN3: section 6 measures how far the dial's level carries into
+     * inflation through the currency, on a founding whose D$ is 27% weaker by month 60 at the founding's own 3% (fx 1.27, inflation
+     * 10.4% a year) - the hot town the transmission was calibrated on (0.7.3 to 0.7.43). Priced at the world's band the same founding
+     * is calm (fx 0.99, inflation 4.2% at 3%), there is no currency inflation for a higher dial to bring down, and between 3% and 10%
+     * the cost of the money (rent follows what a home costs to build and finance: the index's rent 1.19 at 3%, 1.32 at 10%) outweighs
+     * the stronger D$: 4.23%, 6.55%, 5.96%, 5.75%. The premise of the rows is a fixed price level, so they are struck on the literals.
+     */
+    static Game founding(Path root, String label, boolean onLiterals) {
         Game g = new Game(new GameFiles(root.resolve(label), root.resolve("no-legacy")));
+        if (onLiterals) g.playOnLiterals();
         g.run();
         LongPlaytest.build(g, "House", 40);
         LongPlaytest.build(g, "Convenience Store", 3);
@@ -814,7 +827,7 @@ public class MonetaryCheck {
     static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city) {
         System.setOut(quiet);
         try {
-            Game g = founding(root, label);
+            Game g = founding(root, label, true);   // WN3: on the literals, see founding()
             if (print != null) System.arraycopy(fingerprint(g), 0, print, 0, print.length);
             double indexFrom = g.getPriceIndex().getIndex();
             while (g.getMonth() <= MEASURED_MONTHS) {

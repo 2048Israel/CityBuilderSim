@@ -303,7 +303,25 @@ public class FloatLinkCheck {
         List<Snap> before = new ArrayList<>();
         for (Debt d : dm.getDebt()) if (d.getRemainingMonths() > 0 && !d.isForeign()) before.add(new Snap(d));
 
-        MoneyAudit.Result r = press(city, event);
+        // WN3: the businesses' share of a coupon is read where the coupon is struck - right after the settle, before the coupons are
+        // paid (Game.nextMonth(): householdsTakeTheirShare() then processAllDebts()) - not from the month's end. On the world's band the
+        // businesses' paper in the sale month stands 1.2% under its end-of-month holding at the moment they were paid (measured:
+        // couponsToFirms 1.394 against 1.377 reckoned from the end; the month after, the two agree to the bit), i.e. they sell part of
+        // what they bought at the settle to the desk later in that month (the cause is inferred, not traced to the call).
+        Map<Debt, Double> firmsShare = new IdentityHashMap<>();
+        city.settleProbeForTest = after -> {
+            if (!after) return;
+            for (Snap s : before) {
+                double out = s.piece.getOustandingPrincipal();
+                firmsShare.put(s.piece, out > 0 ? s.piece.firmPrincipal() / out : 0.0);
+            }
+        };
+        MoneyAudit.Result r;
+        try {
+            r = press(city, event);
+        } finally {
+            city.settleProbeForTest = null;
+        }
 
         double sumExp = 0, sumCpn = 0, sumUp = 0, sumUpPaid = 0;
         int maturing = 0;
@@ -400,7 +418,7 @@ public class FloatLinkCheck {
                 } else {
                     double owed = p.getOustandingPrincipal();
                     share = owed > 0
-                            ? new double[] { p.householdPrincipal() / owed, p.firmPrincipal() / owed,
+                            ? new double[] { p.householdPrincipal() / owed, firmsShare.getOrDefault(p, p.firmPrincipal() / owed),
                                     s.settled ? s.worldShare : p.worldPrincipal() / owed, p.centralBankPrincipal() / owed }
                             : new double[4];
                 }
@@ -786,8 +804,21 @@ public class FloatLinkCheck {
 
         city = readyCity("floatlink", true, .1);
         DebtManager dm = city.getDebtManager();
-        double ask = askOf(city, .25);
-        double huge = askOf(city, 60);
+        // WN3: the sales are asked at the households' whole spare, not a quarter of it. The fixed fee of an issue is a share of its face
+        // that falls as the face rises, and the near-par assertions read against it (see playedCity()); a quarter of this town's spare is
+        // 7,400 of face, and a 2-year floater's effective rate then stands 8.7 basis points over its coupon where 5 are allowed, and the bank's room alone
+        // (1.98 million) covers any ask this size at fair.
+        double ask = askOf(city, 1);
+        // WN3: "far past the bids" is reckoned from the bidders, not from the households' savings alone: 60 times the households' spare
+        // (1.77 million of face) was one bid in the world band's city, whose bank alone has room for 1.98 million, and the sale sold in full
+        // at no tail. Sixty times everything the bidders could take, at the maturities the harness sells (AuctionCheck 8 reckons its huge
+        // sale the same way).
+        double bids = 0;
+        for (int months : new int[] { 24, 60, 120, 360 }) {
+            Auction.Bidders bd = city.auctionBidders(months);
+            bids = Math.max(bids, bd.householdSpare() + bd.bankRoomFace() + bd.firmsIdle() + bd.worldStock() + bd.monthlyGdp() * 12);
+        }
+        double huge = 60 * bids;
         double step = Auction.COUPON_STEP;
 
         // The tail, caused: a sale far past the bids stops at the cap, short, and the tail is the cap.

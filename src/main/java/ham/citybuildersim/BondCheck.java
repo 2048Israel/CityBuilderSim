@@ -182,12 +182,14 @@ public class BondCheck {
             out.println("\n" + (fails + 1) + " FAILED");
             System.exit(1);
         }
+        theBankHoldsSome(g);
         theBookInPlay(g);
         participants(g, bond);
         seniorityOnTheLender();
         seniorityInPlay(g);
         cantPayInPlay(g);
         buyOnlyWhatItCanPayFor(root);
+        theBankHoldsSome(g);        // ...again: by this section the sections between have played on and the bank holds none of them (measured)
         coupons(g);
         concentration(g);
         eachTypeTrades();
@@ -352,6 +354,11 @@ public class BondCheck {
         out.println("\n--- 7a. a sector short of cash borrows in the month: the shortfall desk asks the book, and the world's purchase crosses the border ---");
         BondMarket bm = g.getBondMarket();
         EconomyManager em = g.getEconomyManager();
+        // WN3: the issuer sits out of building, as 5b's does (BusinessInvestment, SECTORS A FIXTURE HAS ASKED TO SIT OUT). On the world's
+        // band the builders' own works asks to build in the same month and sells a second bond (1,240 beside the shortfall's
+        // 1,743), so "the issuer was handed its face less its costs" read one fixed issue cost off two issues; the bond measured
+        // here is the shortfall's alone.
+        g.getBusinessInvestment().holdSector(ISSUER);
         // Five million short, set between months - before the month's audit
         // opens its pools. Past what it holds abroad and in other sectors'
         // bonds since round 4, which a short sector sells before it borrows
@@ -376,6 +383,28 @@ public class BondCheck {
         close("...which is what the currency read for the month", g.getForeignAccounts().getFinancialIn(), r.financialIn, 1e-9);
         assertTrue("...and the month closes", closes(r));
         return bond;
+    }
+
+    /**
+     * The bank holds some of every bond, caused. WN3: sections 1b and 5b read "every class held some" of the book at the month's top and
+     * of what defaulted, and the bank held a sliver (0.4 to 0.6 of the first four bonds' 111 to 807) only because it picked a few up in
+     * the exchange the month the bonds were sold. On the world's band the city's bank is stretched (its cash is a sixth of the literals',
+     * its mortgage book more than twice them), the exchange fills it nothing, and the primary issue never reaches its yield (the
+     * households take four fifths of it, the companies and the world the rest). So between months, with no month's audit open, as this harness
+     * sets a sector's cash, the bank buys a tenth of what the world holds of each bond, at par, from the world: its cash out, the bond on
+     * its book at what it paid, weighed as Game.refreshBank() weighs it.
+     */
+    static void theBankHoldsSome(Game g) {
+        BondMarket bm = g.getBondMarket();
+        Bank bank = g.getBank();
+        for (CorporateBond b : bm.getBonds()) {
+            if (!(b.world > 0)) continue;
+            double face = .1 * b.world;
+            b.world -= face;
+            b.bank += face;
+            b.bankCost += face;
+            bank.buyBond(face, face * Bank.RISK_BUSINESS * Bank.maturityWeight(b.remainingMonths(g.getMonth())));
+        }
     }
 
     /* ============================ 1b. THE COUPONS ============================ */
