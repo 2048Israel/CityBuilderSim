@@ -1375,6 +1375,7 @@ public class Bank {
         tradingIncome = 0;
         markChange = 0;
         paperGains = 0;
+        discountRestruck = 0;
         paperBoughtFromHouseholds = 0;
         paperSoldToCentralBank = paperBoughtFromCentralBank = 0;
         accountFees = loanFeesPaid = loanFeesOwed = 0;
@@ -2968,6 +2969,34 @@ public class Bank {
         paperGains += gain;
         return gain;
     }
+
+    /**
+     * THE DISCOUNT RE-STRUCK (BK1): the part of the month's gains on the city's
+     * paper that is the pooled discount re-blending at a reopening, not a
+     * trade. A line keeps one pool of unaccreted discount for all its face,
+     * and every holder's share of it is pro rata by face; when the line is
+     * reopened at another price per face while someone other than the bank
+     * holds part of it (the households' share at a settle, the central bank's
+     * add-on), the pool's blended discount per face changes for every holder's
+     * face, and the bank's share of it moves by more or less than the discount
+     * on what the bank itself bought. WHY: until BK1 that moved the bank's
+     * liability (the unearned discount) with no cash and no income behind it,
+     * so equity moved by something no cause named, the movement's residual
+     * opened, and the equity's two parts drifted from the equity for good
+     * ($212.5M in Jerus's San Francisco city, issue #5). It is booked here as
+     * the gain or loss it is, in paperGains, which the statement's articulation
+     * already sees. Not saved: it is inside paperGains, which is; it is the
+     * month's figure for the checks. A non-finite or nil gain books nothing.
+     */
+    public void restrikeDiscount(double gain) {
+        if (!Double.isFinite(gain) || gain == 0) return;
+        discountRestruck += gain;
+        paperGains += gain;
+    }
+
+    /** The month's gain or loss from the pooled discount being re-struck, inside getPaperGains(). */
+    private double discountRestruck;
+    public double getDiscountRestruck() { return discountRestruck; }
 
     /** Gains less losses on paper the treasury bought back, over the city's life. Not saved: a count for the run. */
     private double buybackGains;
@@ -5598,6 +5627,7 @@ public class Bank {
         householdWeighted  *= scale;
         unearnedDiscount   *= scale;
         paperGains         *= scale;
+        discountRestruck   *= scale;
         paperBoughtFromHouseholds *= scale;
         paperSoldToCentralBank *= scale;
         paperBoughtFromCentralBank *= scale;
