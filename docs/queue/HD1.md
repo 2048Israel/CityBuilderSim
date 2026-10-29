@@ -1,10 +1,13 @@
-# HD1 - the hoard: interest abroad as profit, spare cash paid out, Real Estate staffed
+# HD1 - the hoard: interest abroad as profit, Real Estate staffed, bonds in the history
 
 Queued 2026-10-28 from a read-only study of his San Francisco city (the
 autosave, month 2,852, 0.8.62), the histories of slots 1-5 and the decade
 book (`%APPDATA%\CityBuilderSim\decade-book.csv`). Jerus: "interest abroad as
-profit sure", "gotta add workers to real estate", and "Yes, queue it" to the
-three as one batch. Figures are screen dollars.
+profit sure", "gotta add workers to real estate", and "Yes, queue it". Split
+the same day ("Yes, split it"): the spare cash in the companies is
+[EM1](EM1.md)'s, an efficient market in which a buyback finds sellers, so HD1
+pays no special dividend and his 0.7.12 call stands. Figures are screen
+dollars.
 
 ## What the study found
 
@@ -22,8 +25,8 @@ month 600). At m2,852, against GDP of about $8.6T a year:
 - **Businesses' own cash:** $103.9T, 12x GDP. `Equity.PAYOUT` pays 40%; the
   buyback rests at fair x 1.10 (`Exchange.java:892`) and fills $0.58B of
   $4.4T bid a month, because households, who hold about 100% of every company
-  from founding (`HouseholdBalance.grantFounders`), rarely sell. Shares trade
-  at about 1.1x book everywhere: book is 95% cash and dollars abroad.
+  from founding (`HouseholdBalance.grantFounders`), sell only when short of
+  money. EM1 takes this.
 - **Why it goes abroad:** the bank pays savers only out of its margin
   (`Bank.java:3553-3560`), its loan book is gone, so the deposit rate is
   0.0003% and `OutwardInvestment`'s target (spread x 40, capped at 0.9) puts
@@ -37,16 +40,6 @@ month 600). At m2,852, against GDP of about $8.6T a year:
 - **Real Estate employs nobody:** its three buildings (ids 0, 1, 6) have no
   `jobs`, against $57B a month of revenue and $48.4B of operating income.
 
-## His earlier call, overturned
-
-0.7.12 round 4 removed the special dividend on Jerus's words: "When a
-company's buyback finds nobody selling at a fair price, the unspent cash stays
-in the company. It sits in the bank or buys bonds, as real open-market
-buybacks do." (`Exchange.java:852-860`). Late in a run neither happens: the
-bank pays nothing on it and no company issues a bond to buy. The quote was
-found after his yes and put to him with this row; if he keeps the old call,
-part 2 goes to Pending and the rest ships.
-
 ## What HD1 does
 
 1. **The coupon abroad is profit.** A business's coupon on its dollars abroad
@@ -56,20 +49,12 @@ part 2 goes to Pending and the rest ships.
    appreciated the D$ on a rentier's surplus); say what the rate does now,
    with figures. Revaluation stays out of income, an unrealised gain, but the
    business's statement shows it.
-2. **Spare cash goes back to the owners.** When a company's buyback finds no
-   seller, what it holds above its cushion (cash and dollars abroad together,
-   over `Exchange.BUYBACK_CUSHION_MONTHS` of costs and debt service, plus what
-   its building on order still needs) is paid out: a tender at the buyback's
-   limit taken pro rata by every holder, or a special dividend. The batch
-   picks one and says why. Large real companies return most of their earnings
-   through dividends and buybacks together. A dial for the pace, one sentence
-   above it.
-3. **Real Estate has workers.** Posts on its buildings in `buildings.json`
+2. **Real Estate has workers.** Posts on its buildings in `buildings.json`
    (ids unchanged), at a staffing ratio from a cited source (property
    management and upkeep per home). First check that the staffing gate
    (`Sector.java:246`, `:371-373`: 80% of posts fillable) cannot hold back
    homes in a city with nobody in it yet: homes come before workers.
-4. **Bonds in the history.** Business bonds outstanding as a history series
+3. **Bonds in the history.** Business bonds outstanding as a history series
    (`HistorySave`, `DataSave`, the load path; `SaveFileCheck`), so the fade,
    or its end, can be charted.
 
@@ -95,9 +80,8 @@ demand that runs out is WN3's.
 
 ## Scope and checks
 
-`OutwardInvestment`, `SectorBooks`, `Equity`, `Exchange`, `buildings.json`,
-`HistorySave` and `DataSave`. Every trace moves: compare it and run the
-ensemble. A harness section for each of 1-4 whose fixture causes the case: a
-sector with dollars abroad and a coupon; a company over its cushion whose
-buyback finds no seller; a house built in an empty city; a bond in a saved
+`OutwardInvestment`, `SectorBooks`, `buildings.json`, `HistorySave` and
+`DataSave`. Every trace moves: compare it and run the ensemble. A harness
+section for each of 1-3 whose fixture causes the case: a sector with dollars
+abroad and a coupon; a house built in an empty city; a bond in a saved
 history. A version (`{next}`).
