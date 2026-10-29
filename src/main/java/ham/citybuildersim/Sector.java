@@ -3,6 +3,7 @@ package ham.citybuildersim;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -1163,6 +1164,18 @@ public abstract class Sector {
     }
 
     /**
+     * What a unit of an input costs it to bring in when the month's inputs are costed (inputCostAtRate()): the local price where somebody here
+     * offers it, the import price where nobody does (GoodsMarket.landedPrice()) - not the price struck on a month nobody bid (WN3, THE ORDER: a
+     * works that stopped ordering an input would find it cheap, ordering again would make it dear, and the works would run every other month on a
+     * price its own order set). The same figure whenever somebody offers the input or the works bids for it, as it always did.
+     */
+    protected double inputPrice(Good g) {
+        if (markets == null) return 0;
+        GoodsMarket m = markets.get(g);
+        return m == null ? 0 : m.landedPrice();
+    }
+
+    /**
      * Position as of right now - a balance sheet is an instant, an income
      * statement a period. Cash after the strike, stock at today's price.
      */
@@ -2213,8 +2226,9 @@ public abstract class Sector {
        THE MONTH AT THE BOTTOM - HOOKS Markets CALLS
 
        Defaults make a factory: it makes what it can sell, stocks what keeps,
-       exports what the city will not take, and buys its inputs at the
-       operating rate. A sector that is not a factory overrides.
+       exports what the city will not take, and buys its inputs for what it
+       will make, at the operating rate (THE ORDER). A sector that is not a
+       factory overrides.
        =================================================================== */
 
     /**
@@ -2371,10 +2385,10 @@ public abstract class Sector {
             if (!g.traded()) continue;
             // ...what it makes of it itself costs it nothing past its own inputs (0.7.112, CAPTIVE USE).
             if (captive(g)) {
-                total += Math.max(0, getInputAtCapacity(g) * getOperatingRate() - captiveUnits(g)) * priceOf(g);
+                total += Math.max(0, getInputAtCapacity(g) * getOperatingRate() - captiveAtFullRun(g)) * inputPrice(g);
                 continue;
             }
-            total += getInputAtCapacity(g) * getOperatingRate() * priceOf(g);
+            total += getInputAtCapacity(g) * getOperatingRate() * inputPrice(g);
         }
         return total;
     }
@@ -2383,8 +2397,10 @@ public abstract class Sector {
      * What it wants of an input this month.
      *
      * At the operating rate, because a mill at half rate does not buy a full
-     * month of raw material and throw half away. A pantry good is bid for to
-     * bring the shelf to its cover, off what left it last month.
+     * month of raw material and throw half away - and for what the month will
+     * make of it, because one that will make nothing does not buy the
+     * material either (THE ORDER). A pantry good is bid for to bring the shelf
+     * to its cover, off what left it last month.
      */
     public double bid(Good g) {
         /*
@@ -2404,8 +2420,8 @@ public abstract class Sector {
             return Math.max(0, target - getPantry(g));
         }
         // ...and what it makes of it itself it does not ask the market for (0.7.112, CAPTIVE USE).
-        if (captive(g)) return Math.max(0, getInputAtCapacity(g) * getOperatingRate() - captiveUnits(g));
-        return getInputAtCapacity(g) * getOperatingRate();
+        if (captive(g)) return Math.max(0, inputToMake(g) * getOperatingRate() - captiveUnits(g));
+        return inputToMake(g) * getOperatingRate();
     }
 
     /** Units of a pantry good the sector aims to hold: months of recent use. */
@@ -2464,7 +2480,7 @@ public abstract class Sector {
         o.exportBound = 0;
         // ...its own need of it first, the rest to the market (0.7.112, CAPTIVE USE).
         if (captive(g)) {
-            o.captive = Math.max(0, Math.min(o.produced, getInputAtCapacity(g) * getOperatingRate()));
+            o.captive = Math.max(0, Math.min(o.produced, inputToMake(g) * getOperatingRate()));
             o.produced -= o.captive;
         }
     }
@@ -2500,16 +2516,165 @@ public abstract class Sector {
 
     /**
      * The units of a captive good it makes and uses itself this month: its
-     * need at the operating rate, as far as what it makes at the rate covers
-     * it - for a flow good what it lifted, after the ground (produceFlow()
-     * strikes it first in the month); nothing for a good that is not captive.
+     * need at the operating rate, for the works that will run (THE ORDER:
+     * inputToMake()), as far as what it makes at the rate covers it - for a
+     * flow good what it lifted, after the ground (produceFlow() strikes it
+     * first in the month); nothing for a good that is not captive.
      */
     public double captiveUnits(Good g) {
         if (!captive(g)) return 0;
-        double need = getInputAtCapacity(g) * getOperatingRate();
+        double need = inputToMake(g) * getOperatingRate();
         if (!g.stockable()) {
             Output o = outputs.get(g);
             return o == null ? 0 : Math.max(0, Math.min(o.captive, need));
+        }
+        return Math.max(0, Math.min(getCapacity(g) * getOperatingRate(), need));
+    }
+
+    /* ===================================================================
+       THE ORDER (WN3, 2026-10-29; the ensemble's negative GDP in months
+       425-459 of six seeds)
+
+       A works orders its inputs for what its month will make, not for its
+       nameplate: bid() asks inputToMake() - each building's use times its
+       ORDER SHARE - at the rate. WHY: the ensemble's Copper Refining stood an
+       Electrolytic Refinery on imported anode; by 2035 its cathode sold under
+       what a unit costs to make and to ship, so the shed stood at the dump
+       line and produceStock() made nothing - while bid() still ordered the
+       anode at the whole rate, a flow good that cannot be held and was
+       consumed on the spot: 114,000 to 242,000 a month left the city as
+       imports with no output booked against it, and GDP read -30,000 to
+       -155,000 (LongPlaytest's "negative monthly GDP"). A smelter's anode,
+       captive to the refineries' need at the rate, was swallowed the same way.
+
+       A stockable good's order share is what the month will make of it for the
+       home market and the ship (getPlannedOutput() + getExportBoundOutput(),
+       asked at the stock it expects to hold once the shed has sold what the
+       market will take of it) over its nameplate past what its own works use;
+       a building's is the greatest of its stockable goods' (1 when it makes
+       a flow good, which is made at the rate whatever anyone buys, or
+       nothing). planOrders() fixes the shares once, at the top of the market
+       pass: the orders come before the market clears, and the stock moves in
+       it. produceStock() then makes no more than was ordered for, and a
+       forecast that missed high is held (written off past the room, as ever),
+       so no input bought is lost. A month that makes its whole rate has
+       share 1 everywhere and is what it was, to the bit; outside the pass
+       nothing is planned and every share reads 1.
+       =================================================================== */
+
+    /** The share of each stockable good's market-facing nameplate this month's inputs are ordered for (THE ORDER): empty outside the market pass, never saved - it is decided afresh each month. */
+    private final Map<Good, Double> orderShares = new EnumMap<>(Good.class);
+
+    /** Whether the market pass is on and its shares apply (THE ORDER). */
+    private boolean ordering;
+
+    /** The goods whose share is being worked out, so a chain that loops back to one reads 1 for it (THE ORDER). */
+    private final Set<Good> planning = EnumSet.noneOf(Good.class);
+
+    /** Whether planOrders() is at work: only then is a share worked out, so a screen reading the month never touches the shed (THE ORDER). */
+    private boolean deciding;
+
+    /** Whether the sector orders its inputs for what it will make (THE ORDER): yes here; sectors.Refining says no, its crude is the run's (THE RUN, 0.7.105). */
+    protected boolean ordersForWhatItMakes() { return true; }
+
+    /** Decides the month's order shares, before the flow goods are made (Markets.clearMonth(), after the fleets): nothing to decide for a sector that makes no stockable good (THE ORDER). */
+    public void planOrders() {
+        orderShares.clear();
+        ordering = false;
+        if (buildings == null || markets == null || !ordersForWhatItMakes()) return;
+        boolean any = false;
+        for (Good g : makes) any |= g.stockable() && g.traded();
+        if (!any) return;
+        ordering = true;
+        deciding = true;
+        try {
+            for (Good g : makes) orderShare(g);
+        } finally {
+            deciding = false;
+        }
+    }
+
+    /** The market pass is over: nothing is planned, every share reads 1 again (THE ORDER). */
+    public void endOrders() {
+        orderShares.clear();
+        ordering = false;
+    }
+
+    /** What share of a stockable good's market-facing nameplate this month's inputs are ordered for: 1 for a flow good and outside the market pass (THE ORDER). */
+    public double orderShare(Good g) {
+        if (!ordering || !g.stockable() || !g.traded()) return 1;
+        Double known = orderShares.get(g);
+        if (known != null) return known;
+        if (!deciding || !planning.add(g)) return 1;
+        double share;
+        try {
+            share = forecastOrder(g);
+        } finally {
+            planning.remove(g);
+        }
+        orderShares.put(g, share);
+        return share;
+    }
+
+    /**
+     * What the month will make of a stockable good over its nameplate past what the sector keeps for its own works (THE ORDER): the plan for the
+     * home market and the ship's line, asked at the stock it expects to hold after the market - the shed sells what offer() would release at last
+     * month's price, to no more than last month's demand, an upper bound on its sales, so a forecast errs toward ordering. 1 when there is nothing
+     * to make for the market.
+     */
+    private double forecastOrder(Good g) {
+        double market = madeAtRate(g) - (captive(g) ? captiveUnits(g) : 0);
+        GoodsMarket m = markets.get(g);
+        if (!(market > 0) || m == null) return 1;
+        double held = getStock(g);
+        double offered = m.getLocalPrice() >= getMarginalCostPerUnit(g) ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
+        double made = whenHolding(g, held - Math.min(offered, plannedDemand(g)), () -> getPlannedOutput(g) + getExportBoundOutput(g));
+        return made >= 0 ? Math.min(1, made / market) : 1;
+    }
+
+    /** Asks what the sector's own rules say with some units of a good in the shed instead of what is there, and puts the shed back (THE ORDER). */
+    private double whenHolding(Good g, double units, java.util.function.DoubleSupplier ask) {
+        Double had = stock.get(g);
+        stock.put(g, Math.max(0, units));
+        try {
+            return ask.getAsDouble();
+        } finally {
+            if (had == null) stock.remove(g);
+            else stock.put(g, had);
+        }
+    }
+
+    /** The share of its nameplate a building's inputs are ordered for: the greatest of its stockable goods' order shares; 1 for one that makes a flow good, or nothing (THE ORDER). */
+    private double buildingOrder(BuildingsTemplate t) {
+        if (!ordering) return 1;
+        double most = 0;
+        boolean stockable = false;
+        for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+            if (!(e.getValue() > 0)) continue;
+            if (!e.getKey().stockable() || !e.getKey().traded()) return 1;
+            stockable = true;
+            most = Math.max(most, orderShare(e.getKey()));
+        }
+        return stockable ? most : 1;
+    }
+
+    /** Units of an input its buildings use a month at the shares they run at (THE ORDER): getInputAtCapacity(), to the bit, while every share is 1 and outside the market pass. */
+    protected double inputToMake(Good g) {
+        if (!ordering) return getInputAtCapacity(g);
+        return buildings == null ? 0 : buildings.totalBySector(key, t -> t.uses(g) * buildingOrder(t));
+    }
+
+    /**
+     * Units of a captive good its own works would take at their full rate (THE ORDER): captiveUnits() outside the market pass. What a unit costs
+     * to make (inputCostAtRate()) is read from it, so a works that orders nothing does not make its own cost dearer by not taking the anode it
+     * would have run on, and so order nothing for good.
+     */
+    private double captiveAtFullRun(Good g) {
+        if (!ordering || !captive(g)) return captiveUnits(g);
+        double need = getInputAtCapacity(g) * getOperatingRate();
+        if (!g.stockable()) {
+            Output o = outputs.get(g);
+            return o == null ? 0 : Math.max(0, Math.min(o.produced + o.captive, need));
         }
         return Math.max(0, Math.min(getCapacity(g) * getOperatingRate(), need));
     }
@@ -2557,12 +2722,22 @@ public abstract class Sector {
         }
         double planned = getPlannedOutput(g);
         double direct = getExportBoundOutput(g);
+        // ...and no more than its inputs were ordered for (THE ORDER): the home plan and the ship's line as they stand, held to it, and what
+        // the order covered past them (a forecast that missed high) into the shed, written off past its room as below - never lost.
+        double rest = 0;
+        Double share = ordering ? orderShares.get(g) : null;
+        if (share != null) {
+            double ordered = nameplate * share;
+            planned = Math.min(planned, ordered);
+            direct = Math.min(direct, ordered - planned);
+            rest = ordered - planned - direct;
+        }
         o.planned = planned;
         o.exportBound = direct;
-        o.idled = Math.max(0, nameplate - planned - direct);
-        o.produced = planned;
+        o.idled = Math.max(0, nameplate - planned - direct - rest);
+        o.produced = planned + rest;
 
-        double held = getStock(g) + planned;
+        double held = getStock(g) + planned + rest;
         double room = getStockCapacity(g);
         double capped = Math.min(held, room);
         o.writtenOff = Math.max(0, held - capped);
@@ -3094,6 +3269,8 @@ public abstract class Sector {
         pending = new Ledger();
         outputs.clear();
         inputs.clear();
+        orderShares.clear();
+        ordering = false;
         carriedExports.clear();
         carriedImports.clear();
         carriedBoughtLocal.clear();

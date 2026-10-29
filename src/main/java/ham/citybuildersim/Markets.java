@@ -158,6 +158,8 @@ public final class Markets {
         for (Sector s : sectors.all()) s.runFleet(sectors);
         // ...and the works' consumables, bought abroad at the rate the month's inputs are (0.7.112; Sector.buyConsumables()).
         for (Sector s : sectors.all()) s.buyConsumables();
+        // ...and what each works will make, so what it orders is for that and no more (WN3; Sector, THE ORDER): before anything is made or bought.
+        for (Sector s : sectors.all()) s.planOrders();
 
         // 1. the flow goods are made
         for (Sector s : sectors.all()) {
@@ -198,6 +200,8 @@ public final class Markets {
 
         // 5. the month's loose ends
         for (Sector s : sectors.all()) s.endOfMonth(game);
+        // ...and the pass is over: every share reads 1 again (WN3).
+        for (Sector s : sectors.all()) s.endOrders();
     }
 
     /** What a sector's orders this month would come to, each at what a unit costs to bring in (GoodsMarket.landedPrice()): its orders for stock, or its inputs. */
