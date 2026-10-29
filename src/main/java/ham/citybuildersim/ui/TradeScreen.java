@@ -1656,7 +1656,7 @@ final class TradeScreen {
     static final String HOLDINGS_INFO = "The stocks the flows add up to - the rough shape of an international investment "
             + "position. Idle money buys the world's paper when the world pays more than the bank, and comes home when the "
             + "bank pays more or its owner needs it - the businesses' tills and the households' savings by the same rule. "
-            + "The coupon is paid home, as income, a current-account credit; the money itself reaches the currency only when it comes home. The city's "
+            + "The coupon is rolled where it is earned; it reaches the currency only when the money comes home. The city's "
             + "shares in foreign hands are at their price, the last trade; the businesses' bonds at face.";
 
     /* ------------------------------ the statement, under details ------------------------------ */

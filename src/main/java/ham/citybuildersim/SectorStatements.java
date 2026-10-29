@@ -312,8 +312,7 @@ public final class SectorStatements {
        Revenue less the sales tax it remitted (D4: revenue is booked net of
        VAT, Sector.bank()'s own note), less its cost of sales, is GROSS
        PROFIT; less wages, power, water, repairs and property tax (D5) is
-       OPERATING PROFIT; plus the interest its dollars abroad paid home (HD1)
-       and less finance costs is PROFIT BEFORE TAX - which must
+       OPERATING PROFIT; less finance costs is PROFIT BEFORE TAX - which must
        be preTaxIncome to the cent; less business tax is PROFIT FOR THE MONTH,
        netIncome, what the tax, the dividend and the six-months-losing rule are
        struck on. Then the flows that move its equity and reach no statement
@@ -328,13 +327,11 @@ public final class SectorStatements {
             MAINTENANCE = "maintenance", PROPERTY_TAX = "propertyTax", OPERATING = "operating", INTEREST = "interest",
             PRE_TAX = "preTax", TAX = "tax", PROFIT = "profit", OUTSIDE = "outside", RESULT = "result",
             // ...and since 0.7.102 (A16) what its borrowing cost it up front, over each debt's life, beside the interest.
-            BORROWING_COSTS = "borrowingCosts",
-            // ...and since HD1 (2026-10-29) the coupon on its dollars abroad, paid home: finance income, below the operating line and inside the profit. It was an outside line, "foreignInterest", while it rolled.
-            FOREIGN_INCOME = "foreignIncome";
+            BORROWING_COSTS = "borrowingCosts";
 
     /** The outside-the-trading-result lines' ids, in their order (F1; since 0.7.75 the bonds written off and F2's three). */
     public static final String SUBSIDY = "subsidy", ARREARS = "arrears", DEPOSIT_INTEREST = "depositInterest",
-            COUPONS = "coupons", FORGIVEN = "forgiven",
+            COUPONS = "coupons", FOREIGN_INTEREST = "foreignInterest", FORGIVEN = "forgiven",
             WRITTEN_OFF = "writtenOff", BONDS_WRITTEN_OFF = "bondsWrittenOff", STOLEN = "stolen",
             LOAN_FEES = "loanFees", PREMIUMS = "premiums", BOND_COSTS = "bondCosts";
 
@@ -347,11 +344,8 @@ public final class SectorStatements {
      * The flows that move a business's equity and reach no statement (F1),
      * each signed as it moves the equity: the subsidy and the city's
      * arrears, the bank's interest on its till, the coupons it is paid, the
-     * overdraft a restructure forgave, the loans its lenders wrote off, and
-     * the theft. (The interest abroad was one of them while it rolled into
-     * what the business held there; since HD1 it is paid home and inside the
-     * profit, a line of the statement above, so it moves the equity through
-     * the profit and is outside nothing.)
+     * interest abroad rolled into what it holds there, the overdraft a
+     * restructure forgave, the loans its lenders wrote off, and the theft.
      * {label, id} order, now and then.
      *
      * ...AND SINCE 0.7.75, the bonds its holders wrote off in a default
@@ -372,18 +366,18 @@ public final class SectorStatements {
     static double[] outside(SectorBooks.SectorMonth m) {
         boolean deferred = m.borrowingCostsDeferred();
         return new double[] { m.fromTheCity(), m.arrearsPaid(), m.depositInterest(), m.bondCoupons(),
-                m.forgiven(), m.writtenOff(), m.bondsWrittenOff(), -m.stolen(),
+                m.foreignInterest(), m.forgiven(), m.writtenOff(), m.bondsWrittenOff(), -m.stolen(),
                 deferred ? 0 : -m.loanFees(), deferred ? 0 : -m.premiums(), deferred ? 0 : -m.bondCosts() };
     }
 
     /** The outside lines' row ids, in outside()'s order. */
-    static final String[] OUTSIDE_IDS = { SUBSIDY, ARREARS, DEPOSIT_INTEREST, COUPONS, FORGIVEN,
+    static final String[] OUTSIDE_IDS = { SUBSIDY, ARREARS, DEPOSIT_INTEREST, COUPONS, FOREIGN_INTEREST, FORGIVEN,
             WRITTEN_OFF, BONDS_WRITTEN_OFF, STOLEN, LOAN_FEES, PREMIUMS, BOND_COSTS };
 
     /** ...and their labels, in the same order. */
     static final String[] OUTSIDE_LABELS = { "Subsidy from the city", "Arrears the city paid",
             "Interest on its bank balance", "Coupons on the bonds it holds",
-            "Overdraft forgiven at a restructure",
+            "Interest abroad, rolled into its holdings", "Overdraft forgiven at a restructure",
             "Loans its lenders wrote off", "Bonds its holders wrote off", "Stolen from its till",
             "Fees the bank kept out of its loans", "Its mortgages' insurance premiums", "Its bonds' issuing costs" };
 
@@ -410,8 +404,6 @@ public final class SectorStatements {
         b.line(MAINTENANCE, "Repairs", -now.maintenance(), -then.maintenance(), 0);
         b.line(PROPERTY_TAX, "Property tax", -now.propertyTax(), -then.propertyTax(), 0);
         b.subtotal(OPERATING, f.operating);
-        // ...and the coupon on its dollars abroad, paid home (HD1): finance income inside the profit, shown only when either month had some.
-        b.line(FOREIGN_INCOME, "Interest abroad", now.foreignInterest(), then.foreignInterest(), 0);
         b.line(INTEREST, "Finance costs", -now.interest(), -then.interest(), FINANCE_NOTE);
         // ...and what its borrowing cost it up front, over each debt's life (0.7.102, A16): only when either month had some.
         if (now.borrowingCosts() != 0 || then.borrowingCosts() != 0) {
@@ -620,7 +612,7 @@ public final class SectorStatements {
         b.head(RECORD_HEAD, "For the record");
         b.memo(INTEREST_PAID, "Interest paid, inside the profit", now.interest(), then.interest());
         b.memo(TAX_PAID, "Business tax paid, inside the profit", now.tax(), then.tax());
-        b.memo(INTEREST_ABROAD, "Interest abroad, inside the profit", now.foreignInterest(), then.foreignInterest());
+        b.memo(INTEREST_ABROAD, "Interest abroad, rolled in: no cash", now.foreignInterest(), then.foreignInterest());
         b.memo(FREE_CASH, "Free cash flow: operating less premises", freeCashOf(now), freeCashOf(then));
         return b.table("Statement of cash flows");
     }
@@ -694,9 +686,9 @@ public final class SectorStatements {
                 ? then.buildingMaterials() * (now.materialsPrice() - then.materialsPrice()) : Double.NaN;
     }
 
-    /** ...and what it holds abroad, less what it sent there: the rate it is valued at. The interest abroad is paid home and in the profit since HD1, so the dollars held no longer grow by it. */
+    /** ...and what it holds abroad, less what it sent there and the interest rolled in: the rate it is valued at. */
     public static double abroadRevalued(SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
-        return now.foreignAssets() - then.foreignAssets() - now.investedAbroad();
+        return now.foreignAssets() - then.foreignAssets() - now.investedAbroad() - now.foreignInterest();
     }
 
     /** The month's statement of changes in equity, in columns; null when last month's sheet is not on file. */

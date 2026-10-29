@@ -31,9 +31,8 @@ import java.util.Map;
  * Norwegians, the Swiss, the Singaporeans all run one. It reaches the currency
  * through ForeignAccounts, which prices the rate on the overall balance now
  * rather than the trade balance alone, and the money that leaves earns the
- * world's rate abroad and is paid home, as income, into the till (HD1,
- * 2026-10-29; from 2026-09-10 to then it was rolled where it was earned).
- * Jerus's call, from four options: "outward investment".
+ * world's rate abroad and comes back as income. Jerus's call, from four
+ * options: "outward investment".
  *
  * WHAT IT IS NOT. Not a dividend - the sector still owns the money, abroad
  * rather than at the counter, and its balance sheet carries it. Not hot money
@@ -135,7 +134,7 @@ public class OutwardInvestment {
     /** Brought home on demand earlier this month, per sector, in local money. Folded into `moved` at takeMonth(). */
     private final Map<String, Double> recalled = new LinkedHashMap<>();
 
-    /** This month's income from abroad, per sector, in local money: the coupon payCoupons() struck and paid home into the till (HD1). */
+    /** This month's income from abroad, per sector, in local money, rolled where it was earned. */
     private final Map<String, Double> interest = new LinkedHashMap<>();
 
     /**
@@ -166,61 +165,8 @@ public class OutwardInvestment {
 
     /* --------------------------------- the month --------------------------------- */
 
-    /* =======================================================================
-       PAID HOME, AND A LINE OF PROFIT (HD1, 2026-10-29)
-
-       WHAT IT WAS. From 2026-09-10 the coupon on a sector's dollars abroad
-       was rolled where it was earned and added to the dollars held. The first
-       version had paid it into the till, and there a coupon from abroad is a
-       current-account credit: a city holding US$46bn abroad was earning $12M
-       a month of them against $3M of exports - the surplus this class exists
-       to recycle had been replaced by a rentier's, and the D$ appreciated on
-       it exactly as before.
-
-       WHAT WENT WRONG. A rolled coupon is no line of the statement, so no
-       profit tax and no dividend ever saw it. In Jerus's San Francisco city
-       at m2,852 the businesses held $406.8T abroad, 47x GDP, and 57% of it
-       was compounded coupon - the largest income in the city, untaxed and
-       never paid out. Jerus, 2026-10-28: "interest abroad as profit sure".
-
-       WHAT IT IS NOW. payCoupons() strikes it with the sectors' statements,
-       at the top of the month: the sector's income statement carries it as a
-       line of finance income, inside the profit before tax, so the profit tax
-       and the dividend see it, and bank() pays it into the till net of that
-       tax, as the households' coupon already is (HouseholdBalance.investAbroad,
-       "a coupon is income, not a bigger bond"). The dollars held do NOT grow
-       by it; the rate moving them is a revaluation, an unrealised gain on the
-       equity statement and no income (SectorStatements.abroadRevalued()).
-
-       RATE: measured in docs/queue/HD1-notes.md
-       ======================================================================= */
-
     /**
-     * Strikes the month's coupon on every sector's dollars abroad and hands it
-     * to the sector, to be a line of its statement and paid into its till by
-     * Sector.bank(): the dollars held times the world's rate over twelve, at
-     * this month's rate. Called at the top of the month, before
-     * economyManager.strikeSectors(); the dollars do not grow by it.
-     *
-     * @param worldRate what the world pays, annual
-     * @param rate      local currency per dollar, this month
-     * @param economy   whose sectors are told their coupon
-     */
-    public void payCoupons(double worldRate, double rate, EconomyManager economy) {
-        if (economy == null) return;
-        for (String sector : Sectors.KEYS) {
-            double local = rate > 0 ? usd.getOrDefault(sector, 0.0) * Math.max(0, worldRate) / 12 * rate : 0;
-            interest.put(sector, local);
-            lifetimeInterest += local;
-            Sector s = economy.getSectors().byKey(sector);
-            if (s != null) s.setForeignIncome(local);
-        }
-    }
-
-    /**
-     * Moves the month's money, in both directions. It earns nothing: the
-     * month's coupon was paid home when the statements were struck
-     * (payCoupons(), HD1).
+     * Moves the month's money, in both directions, and rolls the month's income.
      *
      * Called BEFORE MoneyAudit strikes the month, so the flows are inside the
      * audited window and the balance of payments reads them in the same
@@ -246,6 +192,25 @@ public class OutwardInvestment {
 
             double held = usd.getOrDefault(sector, 0.0);
             double cash = economy.getSectorCash(sector);
+
+            /* ------------------------ the income, first ------------------------ */
+            /*
+             * REINVESTED WHERE IT IS EARNED, not paid home. The first version
+             * paid it into the till, and the till is where it did its damage:
+             * a coupon from abroad is a current-account credit, and a city
+             * holding US$46bn abroad was earning $12M a month of them against
+             * $3M of exports - the surplus this class exists to recycle had
+             * been replaced by a rentier's, and the currency appreciated on
+             * it exactly as before. Reinvested, the coupon is an income credit
+             * matched by a financial debit, which is what a fund that rolls its
+             * coupons looks like in any balance of payments, and the rate sees
+             * nothing until the owner wants the money home - at which point
+             * the inflow is real and so is the appreciation. Both lines are
+             * declared to MoneyAudit; no cash moves, so they cancel there.
+             */
+            double earnedUsd = held * Math.max(0, worldRate) / 12;
+            held += earnedUsd;
+            interest.put(sector, earnedUsd * rate);
 
             /* ---------------------------- the target ---------------------------- */
             double abroad = held * rate;
@@ -278,6 +243,7 @@ public class OutwardInvestment {
             // month's own move: a recall is a move home like any other.
             moved.put(sector, move - recalled.getOrDefault(sector, 0.0));
             recalled.put(sector, 0.0);
+            lifetimeInterest += earnedUsd * rate;
 
             // ...and the city's paper, by the same rule, once the dollars have moved.
             sellExcessPaper(sector, depositRate, worldRate, rate, borrower, economy);
@@ -345,7 +311,7 @@ public class OutwardInvestment {
     /** This month's move for one sector, local money: positive went abroad. */
     public double getMovedThisMonth(String sector) { return moved.getOrDefault(sector, 0.0); }
 
-    /** This month's income from abroad for one sector, local money - the coupon payCoupons() struck, paid home into its till and inside its profit (HD1). */
+    /** This month's income from abroad for one sector, local money - earned and reinvested there, not in the till. */
     public double getInterestThisMonth(String sector) { return interest.getOrDefault(sector, 0.0); }
 
     /** Everything that went abroad this month, all sectors, local money. For MoneyAudit. */
@@ -362,7 +328,7 @@ public class OutwardInvestment {
         return t;
     }
 
-    /** Everything the world paid the city's businesses this month, local money, paid home into their tills (HD1). For MoneyAudit. */
+    /** Everything the world paid the city's businesses this month, local money, reinvested where it was paid. For MoneyAudit, twice. */
     public double getInterestThisMonth() {
         double t = 0;
         for (double v : interest.values()) t += v;
