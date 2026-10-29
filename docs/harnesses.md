@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**152 harness files, 16,269 labelled assertions.** AllChecks runs 152 of them.
+**152 harness files, 16,282 labelled assertions.** AllChecks runs 152 of them.
 
 ## Which harnesses read which class
 
@@ -9758,7 +9758,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L776 ...and a year on, both have folded the next year alike
   - L781 a history from before 0.7.55 has no folded years: every entry a month
 
-## HoldersCheck.java - 310 labelled assertions
+## HoldersCheck.java - 323 labelled assertions
 
 > Proves who holds the city's own paper (0.7.1): that the households buy it at
 > the settle, are paid on it, sell it back, and are paid when it is bought
@@ -9774,327 +9774,340 @@ _(this harness does not label its checks through a helper - it prints its findin
 > audit's pools - each of which is a dollar from nowhere if it is not
 > ...
 
-- **L175 1. at the settle**
-  - L181 fixture: households with savings past the cushion
-  - L190 fixture: the treasury sold a twenty-year bond between the presses
-  - L203 fixture: its yield is well above the deposit rate
-  - L205 fixture: and the households can pay for their share
-  - L215 the households took what the auction allotted them, their rule at the clearing yield
-  - L217 ...which is HOUSEHOLD_PAPER_APPETITE of the issue for each unit of spread over the deposit rate, never
-  - L219 their savings fell by exactly what they paid
-  - L220 ...for the face the issue's price buys: face times cash over received
-  - L226 the bank paid exactly the rest, after the households, the businesses and the world
-  - L228 ...and holds exactly the rest of the face
-  - L230 the paper's household share is the sum of every cell's paper
-  - L232 ...and the treasury is owed nothing more for it
-  - L233 the audit closed on the settle month
-- **L235 2. the coupon**
-  - L241 the households were paid their share of the coupon
-  - L243 ...into their savings, as investment income
-  - L244 the bank's share is on the month's interest bill, which it takes at the next settle
-  - L246 (fixture: the paper income was cleared and re-paid, not carried)
-  - L247 the two books still agree
-- **L249 3. the waterfall**
-  - L272 short by less than its paper is worth, it sells paper and nothing else
-  - L274 ...for exactly what it was short
-  - L277 short by more, it sells all of its paper first and its shares after
-  - L279 ...the shares covering what the paper could not
-- **L282 4. selling after the curve rose**
-  - L289 the month's ratio - their book at the curve over its face - is under face, the rate
-  - L299 fixture: they sold some
-  - L300 ...a little of it: HOME_SPEED of what the households who decide hold (a prisoner's stays put)
-  - L302 ...for less than face: its face at the month's ratio
-  - L303 ...into their savings
-  - L304 the bank paid it
-  - L305 ...its book rose by the face
-  - L306 ...and it booked the gain against what it carries the paper at
-  - L308 ...a gain
-  - L309 the two books still agree
-- **L312 5. a buyback**
-  - L316 fixture: three holders - the households, the central bank and the bank
-  - L330 fixture: the buyback was at the quoted price
-  - L331 fixture: the quote took the households' and the bank's whole holding, and not the central bank's
-  - L333 the households' share of the price went to their savings
-  - L335 ...and their paper is gone
-  - L336 the bank's share to its cash
-  - L337 ...its gain against what it carried its face at
-  - L340 the central bank's face stays on its book
-  - L341 ...and on the piece, which stays on the books carrying it
-  - L342 ...the piece is still there, at the central bank's face
-  - L344 ...and no price waits for the month to destroy
-  - L345 the treasury's pool carries only the households' share of the price until the month declares it leaving
-  - L348 the next month declares what the households were paid
-  - L350 ...and the central bank destroys nothing
-  - L351 ...so nothing is carried any more
-  - L352 the audit closes on it
-  - L353 ...and M0 moved by exactly the money made, the redemption among it
-  - L355 the central bank kept nothing: its gain against face is in the month's profit
-- **L358 6. the save**
-  - L364 fixture: paper held by all three again
-  - L377 every cell's paper, and everything else in the cell, came back exactly
-  - L386 every piece of paper's holders, what it is owed for and its discount came back
-  - L388 ...the households' paper ratio
-  - L389 ...the central bank's book
-  - L390 ...and the bank's unearned discount, re-derived from the paper
-  - L392 ...and the two books agree in the reloaded city
-  - L394 a month on, both settle the paper still owed for the same way
-  - L396 ...and pay the households the same coupons
-  - L398 ...and both months close
-- **L401 7. an old save**
-  - L415 fixture: the save carries the cells
-  - L417 fixture: at today's width
-  - L450 it loads
-  - L451 the households hold none of the city's paper
-  - L452 ...nor the central bank
-  - L453 ...so the bank holds everything
-  - L455 ...and its book says so
-  - L456 the dial reads nothing
-  - L459 ...and it runs, the audit closing every month
-  - L460 ...with the two books agreeing
-- **L462 8. a dollar bond bought back**
-  - L467 fixture: the treasury sold a twenty-year dollar bond
-  - L469 fixture: ...still owed a month on
-  - L475 fixture: bought back at the quoted price
-  - L476 fixture: ...which cost something
-  - L477 the treasury paid it
-  - L478 ...and owes the world nothing on it
-  - L479 none of the price went to the bank
-  - L480 ...nor to the households
-  - L481 the treasury's pool carries it until the month declares it
-  - L484 the next month declares the whole price leaving the country
-  - L486 ...so nothing is carried any more
-  - L487 the audit closes on it
-- **L510 9. the dial at the whole of the paper buys the households' once the bank's is gone**
-  - L561 fixture: no pay tier in the town is in decline, so nobody leaves while the paper is watched
-  - L577 fixture: one twenty-year bond, the households holding part and the bank the rest
-  - L584 the dial takes 100%, MAX_QE_SHARE
-  - L594 while the bank has term paper to sell, it is all the central bank buys
-  - L595 ...until it has none: the dial past the bank's holding took all of it
-  - L610 fixture: the desk bought none of the households' paper that month
-  - L612 fixture: ...and the step came from the households
-  - L613 the central bank took the rest of its step off the households' face
-  - L615 ...the cells' paper by the same, pro rata
-  - L616 ...onto its own book, at face
-  - L617 it paid them the curve's market value
-  - L618 ...its gain against face in the month's profit
-  - L620 the money it made for them is declared: the audit closes
-  - L622 ...and M0 moved by exactly the money made, the audit's MONEY lines the same
-  - L625 ...and the two books of the households' paper agree
-  - L628 fixture: in the middle - the households still hold some
-  - L639 through a save: the dial at 100%, not held at the old half
-  - L640 ...the book at face
-  - L641 ...what it has paid the households since founding
-  - L643 ...the paper's holders, piece by piece
-  - L649 ...and every cell's paper
-  - L650 ...so it steps at the same pace
-  - L654 a month on, both cities buy the same from the households
-  - L656 ...and hold the same
-  - L659 the dial is reached: it holds all of the term paper
-  - L660 ...the households none of it
-- **L713 10. the businesses are a holder: they buy at the settle, are paid, sell, and the books agree**
-  - L750 fixture: three sectors that owe nothing
-  - L754 fixture: their idle money is what the auction counts of the businesses
-  - L756 fixture: and they hold none of the city's paper yet
-  - L763 fixture: the treasury sold a twenty-year bond between the presses
-  - L768 fixture: the stop is over what the world pays, so the businesses' rule bids
-  - L770 fixture: the auction filled the businesses
-  - L771 ...for the issue's price: their cash over their face is what the issue raised over its face
-  - L773 they hold none of it until the settle
-  - L803 fixture: the sectors' shares of the allotment are their bids over all the bids, and sum to one
-  - L804 fixture: every till could pay its share, so nothing was cut
-  - L805 each sector paid its share of what the auction allotted the businesses, out of its till
-  - L806 ...and holds the face that cash buys, in the same shares
-  - L807 together they paid exactly what the auction allotted them
-  - L808 ...and the month's figure is the same
-  - L809 the paper's businesses' share is the face they were allotted
-  - L810 ...and it is the sectors' paper summed
-  - L811 ...and they sold none of it in the month they bought it: the paper pays more than the world does, and
-  - L813 the bank paid exactly the rest, after the world as well
-  - L815 ...and holds exactly the rest of the face
-  - L817 the audit closed on the settle month: a till paying the bank is a pool paying a pool
-  - L827 fixture: the businesses hold paper that pays a coupon
-  - L829 the businesses were paid their share of the month's coupon
-  - L830 ...and the audit closes: the treasury paid the tills
-  - L832 the two books still agree
-  - L836 each sector's books carry its coupon on the city's paper among the coupons on the bonds it holds
-  - L837 ...and explain every cent of its till: the paper is a bond it holds, bought, paid and sold like the others
-  - L850 a coupon reaches each sector's till in proportion to the paper it holds
-  - L859 principal reaches the tills in the same proportion
-  - L860 ...with each sector's paper down by the same
-  - L861 ...so the paper is down by exactly the principal
-  - L869 fixture: the treasury sold a thirty-year bond
-  - L872 fixture: the businesses were allotted some
-  - L900 fixture: the till is under what its share of the allotment asks
-  - L903 it paid the whole of its till and not a unit more
-  - L904 ...for that share of its face: the cut is the same on the face as on the cash
-  - L914 every other sector paid its share in full
-  - L915 the businesses paid the others' shares and the capped one's till, no more
-  - L917 the paper's businesses' share is the face the sectors took
-  - L918 the bank paid exactly the rest, the shortfall included
-  - L920 ...and holds the rest of the face
-  - L922 the two books still agree
-  - L923 the audit closed on it
-  - L943 with no spread, every sector sold HOME_SPEED of what it held, the pace the dollars come home at
-  - L944 ...to the desk at the month's ratio: the cash it paid
-  - L945 ...and the sectors' record of what they were paid is the same
-  - L946 ...its book rose by the face
-  - L947 ...and it booked the gain against what it carries the paper at, the unearned discount riding on it
-  - L949 the two books still agree
-  - L955 fixture: the borrower owes something
-  - L960 fixture: the borrower holds some
-  - L963 a sector that borrows sells HOME_SPEED of all it holds
-  - L965 ...while the sectors with money and nothing owed keep theirs, the paper paying what it does
-  - L967 the two books still agree
-  - L978 asked for less than its dollars abroad are worth, the dollars come
-  - L979 ...and the paper is not touched
-  - L980 ...into the till
-  - L983 asked for more than its dollars, it gets all of them and the rest from its paper, at the month's ratio
-  - L984 ...the dollars gone
-  - L985 ...and a tenth of the paper sold to the desk
-  - L986 ...the desk paying the paper's market value
-  - L988 asked for more than it has, it sells all its paper and no more
-  - L989 ...and holds none
-  - L990 the two books still agree
-  - L998 fixture: the businesses still hold some of the thirty-year bond
-  - L1006 fixture: the buyback was at the quoted price
-  - L1007 fixture: the quote took the businesses' whole holding
-  - L1015 the businesses' share of the price went into their tills, in proportion to the paper each holds
-  - L1016 ...and their paper is down by the face they held of it, in the same proportion
-  - L1017 the bank's share of the price went to its cash
-  - L1018 the two books still agree
-  - L1020 the audit closes on the month after: the businesses are paid between two pools, nothing is carried
-  - L1029 fixture: the treasury sold a two-year bond
-  - L1031 fixture: the businesses took part of it at the settle
-  - L1042 every month of its life, the sectors' paper was the paper's (a coupon, a sale, a settle among them)
-  - L1043 ...and the sectors' books explained their tills to the cent, the principal's month among them
-  - L1044 fixture: it fell due
-  - L1045 fixture: and the businesses held some of it to the end
-  - L1046 the businesses were paid, as principal, the face they held of it
-  - L1047 ...and the two books agree after it
-  - L1051 fixture: the businesses still hold some of the twenty-year bond
-  - L1062 every sector's paper came back exactly
-  - L1063 ...the ratio and the yield it was struck at
-  - L1065 ...what the businesses have bought and sold since founding
-  - L1071 ...and every piece's businesses' share
-  - L1072 ...and the two books agree in the reloaded city
-  - L1074 a month on, both pay the businesses the same coupon
-  - L1075 ...and hold the same
-  - L1076 ...and both months close
-  - L1084 fixture: the save carries the sectors' paper at the end of the array
-  - L1095 it loads
-  - L1096 the businesses hold none of the city's paper
-  - L1097 ...nor does the paper say they do
-  - L1098 ...so the bank holds what the households, the central bank and the world do not
-  - L1104 ...and it runs, the audit closing every month
-  - L1105 ...with the two books agreeing
-  - L1121 the dial is reached: the central bank holds all of the term paper
-  - L1122 ...the businesses none of it, the last it reached
-  - L1123 ...and the sectors' book says the same
-  - L1124 every month on the way the books agreed
-  - L1125 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the businesses' purchase among it
-- **L1155 11. the world is a holder: it buys from abroad, is paid abroad, leaves with its money, and the books agree**
-  - L1162 it holds the face it was allotted, whatever it paid
-  - L1163 ...and remembers what it paid
-  - L1167 a save carries the book
-  - L1168 ...and what it has paid and been paid
-  - L1172 a save from before the world held any has none (the array ends at the carry trade)
-  - L1174 a reform scales the book
-  - L1176 ...and a new game clears it
-  - L1185 fixture: money came for a seven-point rate
-  - L1190 fixture: the spread is gone, so the money leaves, and nobody has panicked
-  - L1192 the paper that leaves is what departs, over the world's whole position (its stock and the paper at market),
-  - L1194 ...and at a market below face the same departure is a smaller share of a smaller position
-  - L1196 ...which is less than the face, whatever the book
-  - L1205 a month in which no money leaves sends none of the paper home
-  - L1214 fixture: a twenty-point fall on thin reserves is a run
-  - L1215 in a run PANIC_EXIT of the paper leaves, the same share as of the stock
-  - L1218 ...and what is sold comes off the book
-  - L1219 ...and is remembered
-  - L1248 fixture: the world is not in a run, so its rule bids
-  - L1249 fixture: and the two books of its paper agree going in
-  - L1260 fixture: the world holds a tenth of the hot money it had, and has the appetite for the rest
-  - L1268 fixture: the treasury sold a twenty-year bond between the presses
-  - L1274 fixture: the stop is over what the world pays, so its rule bids
-  - L1275 fixture: the auction filled the world
-  - L1276 ...for the issue's price: its cash over its face is what the issue raised over its face
-  - L1278 it holds none of it until the settle
-  - L1285 the world paid exactly what the auction allotted it
-  - L1286 ...and the paper's world share is the face it was allotted
-  - L1287 ...and the world's book, CapitalFlows', is up by the same face
-  - L1288 ...for what it paid, remembered
-  - L1289 ...and the two books agree
-  - L1290 the bank paid exactly the rest
-  - L1292 ...and holds exactly the rest of the face
-  - L1294 the audit's financial inflow line for it is what it paid
-  - L1296 ...inside the financial account the currency reads
-  - L1297 ...which the balance of payments took
-  - L1298 the audit closed on the settle month: the world's money is declared coming in
-  - L1308 fixture: the world holds paper that pays a coupon
-  - L1310 the world was paid its share of the month's coupon
-  - L1311 ...declared to the audit as income paid abroad
-  - L1313 ...so the current account carries it
-  - L1314 ...and the audit closes: the treasury's pool paid a stranger
-  - L1316 the two books still agree
-  - L1321 fixture: the world still holds some of the twenty-year bond
-  - L1330 fixture: the buyback was at the quoted price
-  - L1331 the world's paper is down by the face it held of it
-  - L1332 ...and it sold exactly that face
-  - L1333 ...and the treasury's pool carries its share of the price until the month declares it leaving
-  - L1335 the two books still agree
-  - L1337 the month after, the audit closes: the world's share left the country, declared as a financial outflow
-  - L1339 ...and the financial account carries at least that share
-  - L1349 fixture: the treasury sold a thirty-year bond
-  - L1353 fixture: the treasury sold a two-year bond
-  - L1355 fixture: the world took part of it at the settle
-  - L1356 fixture: and the world took part of the thirty-year bond
-  - L1369 fixture: it fell due
-  - L1370 every month of its life, the world's book was the paper's (a coupon, a sale, a settle among them)
-  - L1371 ...and the audit closed every month of it
-  - L1372 the world was paid, as principal, the face it held of it at the end
-  - L1373 ...declared to the audit as a financial outflow
-  - L1374 ...and the financial account carries it
-  - L1378 fixture: the world still holds paper
-  - L1386 the book came back exactly
-  - L1387 ...and what it paid and was paid for it since founding
-  - L1393 ...and every piece's world share
-  - L1394 ...and the two books agree in the reloaded city
-  - L1396 a month on, both pay the world the same coupon
-  - L1397 ...and hold the same
-  - L1398 ...and both months close
-  - L1408 fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 19 slots long
-  - L1419 it loads
-  - L1420 the world holds none of the city's paper
-  - L1421 ...nor does the paper say it does
-  - L1424 ...and it runs, the audit closing every month
-  - L1425 ...with the two books agreeing
-  - L1435 fixture: the world holds paper going into the month
-  - L1439 fixture: the stock was over its target, so money left, and nobody panicked
-  - L1444 part of the paper left with the money
-  - L1445 ...the departure over the world's whole position, of the face
-  - L1446 ...sold to the bank's desk at a market price, below or at face
-  - L1448 ...which is what the world was paid, remembered
-  - L1449 ...declared to the audit as a financial outflow
-  - L1451 the two books still agree
-  - L1452 the audit closes on it: the desk's cash and the deposits that left are both declared
-  - L1454 the bank's book rose, whatever its room: it buys what the world sells
-  - L1462 fixture: confidence is broken
-  - L1464 the auction's bidders say the world is in a run
-  - L1465 ...so its bid is nothing, at any yield
-  - L1467 fixture: the world still holds paper
-  - L1471 fixture: the treasury sold a ten-year bond in the run
-  - L1472 the auction allotted the world none of it
-  - L1476 the month after, PANIC_EXIT of the paper has gone to the desk
-  - L1478 ...declared as a financial outflow
-  - L1479 ...with the two books agreeing and the audit closed
-  - L1486 every month of the run the books agreed and the audit closed
-  - L1487 ...and the paper has been running home: a third a month leaves it under what it was
-  - L1506 fixture: the treasury sold a twenty-year bond
-  - L1509 fixture: the world took part of it
-  - L1524 the dial is reached: the central bank holds all of the term paper
-  - L1525 ...the world none of it, the last it reached
-  - L1526 ...having paid the world for it, abroad
-  - L1527 every month on the way the two books agreed
-  - L1528 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the world's purchase among it
+- **L183 1. at the settle**
+  - L189 fixture: households with savings past the cushion
+  - L198 fixture: the treasury sold a twenty-year bond between the presses
+  - L211 fixture: its yield is well above the deposit rate
+  - L213 fixture: and the households can pay for their share
+  - L223 the households took what the auction allotted them, their rule at the clearing yield
+  - L225 ...which is HOUSEHOLD_PAPER_APPETITE of the issue for each unit of spread over the deposit rate, never
+  - L227 their savings fell by exactly what they paid
+  - L228 ...for the face the issue's price buys: face times cash over received
+  - L234 the bank paid exactly the rest, after the households, the businesses and the world
+  - L236 ...and holds exactly the rest of the face
+  - L238 the paper's household share is the sum of every cell's paper
+  - L240 ...and the treasury is owed nothing more for it
+  - L241 the audit closed on the settle month
+- **L243 2. the coupon**
+  - L249 the households were paid their share of the coupon
+  - L251 ...into their savings, as investment income
+  - L252 the bank's share is on the month's interest bill, which it takes at the next settle
+  - L254 (fixture: the paper income was cleared and re-paid, not carried)
+  - L255 the two books still agree
+- **L257 3. the waterfall**
+  - L280 short by less than its paper is worth, it sells paper and nothing else
+  - L282 ...for exactly what it was short
+  - L285 short by more, it sells all of its paper first and its shares after
+  - L287 ...the shares covering what the paper could not
+- **L290 4. selling after the curve rose**
+  - L297 the month's ratio - their book at the curve over its face - is under face, the rate
+  - L307 fixture: they sold some
+  - L308 ...a little of it: HOME_SPEED of what the households who decide hold (a prisoner's stays put)
+  - L310 ...for less than face: its face at the month's ratio
+  - L311 ...into their savings
+  - L312 the bank paid it
+  - L313 ...its book rose by the face
+  - L314 ...and it booked the gain against what it carries the paper at
+  - L316 ...a gain
+  - L317 the two books still agree
+- **L320 5. a buyback**
+  - L324 fixture: three holders - the households, the central bank and the bank
+  - L338 fixture: the buyback was at the quoted price
+  - L339 fixture: the quote took the households' and the bank's whole holding, and not the central bank's
+  - L341 the households' share of the price went to their savings
+  - L343 ...and their paper is gone
+  - L344 the bank's share to its cash
+  - L345 ...its gain against what it carried its face at
+  - L348 the central bank's face stays on its book
+  - L349 ...and on the piece, which stays on the books carrying it
+  - L350 ...the piece is still there, at the central bank's face
+  - L352 ...and no price waits for the month to destroy
+  - L353 the treasury's pool carries only the households' share of the price until the month declares it leaving
+  - L356 the next month declares what the households were paid
+  - L358 ...and the central bank destroys nothing
+  - L359 ...so nothing is carried any more
+  - L360 the audit closes on it
+  - L361 ...and M0 moved by exactly the money made, the redemption among it
+  - L363 the central bank kept nothing: its gain against face is in the month's profit
+- **L366 6. the save**
+  - L372 fixture: paper held by all three again
+  - L385 every cell's paper, and everything else in the cell, came back exactly
+  - L394 every piece of paper's holders, what it is owed for and its discount came back
+  - L396 ...the households' paper ratio
+  - L397 ...the central bank's book
+  - L398 ...and the bank's unearned discount, re-derived from the paper
+  - L400 ...and the two books agree in the reloaded city
+  - L402 a month on, both settle the paper still owed for the same way
+  - L404 ...and pay the households the same coupons
+  - L406 ...and both months close
+- **L409 7. an old save**
+  - L423 fixture: the save carries the cells
+  - L425 fixture: at today's width
+  - L458 it loads
+  - L459 the households hold none of the city's paper
+  - L460 ...nor the central bank
+  - L461 ...so the bank holds everything
+  - L463 ...and its book says so
+  - L464 the dial reads nothing
+  - L467 ...and it runs, the audit closing every month
+  - L468 ...with the two books agreeing
+- **L470 8. a dollar bond bought back**
+  - L475 fixture: the treasury sold a twenty-year dollar bond
+  - L477 fixture: ...still owed a month on
+  - L483 fixture: bought back at the quoted price
+  - L484 fixture: ...which cost something
+  - L485 the treasury paid it
+  - L486 ...and owes the world nothing on it
+  - L487 none of the price went to the bank
+  - L488 ...nor to the households
+  - L489 the treasury's pool carries it until the month declares it
+  - L492 the next month declares the whole price leaving the country
+  - L494 ...so nothing is carried any more
+  - L495 the audit closes on it
+- **L519 9. the dial at the whole of the paper buys the households' once the bank's is gone**
+  - L570 fixture: no pay tier in the town is in decline, so nobody leaves while the paper is watched
+  - L586 fixture: one twenty-year bond, the households holding part and the bank the rest
+  - L593 the dial takes 100%, MAX_QE_SHARE
+  - L603 while the bank has term paper to sell, it is all the central bank buys
+  - L604 ...until it has none: the dial past the bank's holding took all of it
+  - L619 fixture: the desk bought none of the households' paper that month
+  - L621 fixture: ...and the step came from the households
+  - L622 the central bank took the rest of its step off the households' face
+  - L624 ...the cells' paper by the same, pro rata
+  - L625 ...onto its own book, at face
+  - L626 it paid them the curve's market value
+  - L627 ...its gain against face in the month's profit
+  - L629 the money it made for them is declared: the audit closes
+  - L631 ...and M0 moved by exactly the money made, the audit's MONEY lines the same
+  - L634 ...and the two books of the households' paper agree
+  - L637 fixture: in the middle - the households still hold some
+  - L648 through a save: the dial at 100%, not held at the old half
+  - L649 ...the book at face
+  - L650 ...what it has paid the households since founding
+  - L652 ...the paper's holders, piece by piece
+  - L658 ...and every cell's paper
+  - L659 ...so it steps at the same pace
+  - L663 a month on, both cities buy the same from the households
+  - L665 ...and hold the same
+  - L668 the dial is reached: it holds all of the term paper
+  - L669 ...the households none of it
+- **L722 10. the businesses are a holder: they buy at the settle, are paid, sell, and the books agree**
+  - L759 fixture: three sectors that owe nothing
+  - L763 fixture: their idle money is what the auction counts of the businesses
+  - L765 fixture: and they hold none of the city's paper yet
+  - L772 fixture: the treasury sold a twenty-year bond between the presses
+  - L777 fixture: the stop is over what the world pays, so the businesses' rule bids
+  - L779 fixture: the auction filled the businesses
+  - L780 ...for the issue's price: their cash over their face is what the issue raised over its face
+  - L782 they hold none of it until the settle
+  - L812 fixture: the sectors' shares of the allotment are their bids over all the bids, and sum to one
+  - L813 fixture: every till could pay its share, so nothing was cut
+  - L814 each sector paid its share of what the auction allotted the businesses, out of its till
+  - L815 ...and holds the face that cash buys, in the same shares
+  - L816 together they paid exactly what the auction allotted them
+  - L817 ...and the month's figure is the same
+  - L818 the paper's businesses' share is the face they were allotted
+  - L819 ...and it is the sectors' paper summed
+  - L820 ...and they sold none of it in the month they bought it: the paper pays more than the world does, and
+  - L822 the bank paid exactly the rest, after the world as well
+  - L824 ...and holds exactly the rest of the face
+  - L826 the audit closed on the settle month: a till paying the bank is a pool paying a pool
+  - L836 fixture: the businesses hold paper that pays a coupon
+  - L838 the businesses were paid their share of the month's coupon
+  - L839 ...and the audit closes: the treasury paid the tills
+  - L841 the two books still agree
+  - L845 each sector's books carry its coupon on the city's paper among the coupons on the bonds it holds
+  - L846 ...and explain every cent of its till: the paper is a bond it holds, bought, paid and sold like the others
+  - L859 a coupon reaches each sector's till in proportion to the paper it holds
+  - L868 principal reaches the tills in the same proportion
+  - L869 ...with each sector's paper down by the same
+  - L870 ...so the paper is down by exactly the principal
+  - L878 fixture: the treasury sold a thirty-year bond
+  - L881 fixture: the businesses were allotted some
+  - L909 fixture: the till is under what its share of the allotment asks
+  - L912 it paid the whole of its till and not a unit more
+  - L913 ...for that share of its face: the cut is the same on the face as on the cash
+  - L923 every other sector paid its share in full
+  - L924 the businesses paid the others' shares and the capped one's till, no more
+  - L926 the paper's businesses' share is the face the sectors took
+  - L927 the bank paid exactly the rest, the shortfall included
+  - L929 ...and holds the rest of the face
+  - L931 the two books still agree
+  - L932 the audit closed on it
+  - L952 with no spread, every sector sold HOME_SPEED of what it held, the pace the dollars come home at
+  - L953 ...to the desk at the month's ratio: the cash it paid
+  - L954 ...and the sectors' record of what they were paid is the same
+  - L955 ...its book rose by the face
+  - L956 ...and it booked the gain against what it carries the paper at, the unearned discount riding on it
+  - L958 the two books still agree
+  - L964 fixture: the borrower owes something
+  - L969 fixture: the borrower holds some
+  - L972 a sector that borrows sells HOME_SPEED of all it holds
+  - L974 ...while the sectors with money and nothing owed keep theirs, the paper paying what it does
+  - L976 the two books still agree
+  - L987 asked for less than its dollars abroad are worth, the dollars come
+  - L988 ...and the paper is not touched
+  - L989 ...into the till
+  - L992 asked for more than its dollars, it gets all of them and the rest from its paper, at the month's ratio
+  - L993 ...the dollars gone
+  - L994 ...and a tenth of the paper sold to the desk
+  - L995 ...the desk paying the paper's market value
+  - L997 asked for more than it has, it sells all its paper and no more
+  - L998 ...and holds none
+  - L999 the two books still agree
+  - L1007 fixture: the businesses still hold some of the thirty-year bond
+  - L1015 fixture: the buyback was at the quoted price
+  - L1016 fixture: the quote took the businesses' whole holding
+  - L1024 the businesses' share of the price went into their tills, in proportion to the paper each holds
+  - L1025 ...and their paper is down by the face they held of it, in the same proportion
+  - L1026 the bank's share of the price went to its cash
+  - L1027 the two books still agree
+  - L1029 the audit closes on the month after: the businesses are paid between two pools, nothing is carried
+  - L1038 fixture: the treasury sold a two-year bond
+  - L1040 fixture: the businesses took part of it at the settle
+  - L1051 every month of its life, the sectors' paper was the paper's (a coupon, a sale, a settle among them)
+  - L1052 ...and the sectors' books explained their tills to the cent, the principal's month among them
+  - L1053 fixture: it fell due
+  - L1054 fixture: and the businesses held some of it to the end
+  - L1055 the businesses were paid, as principal, the face they held of it
+  - L1056 ...and the two books agree after it
+  - L1060 fixture: the businesses still hold some of the twenty-year bond
+  - L1071 every sector's paper came back exactly
+  - L1072 ...the ratio and the yield it was struck at
+  - L1074 ...what the businesses have bought and sold since founding
+  - L1080 ...and every piece's businesses' share
+  - L1081 ...and the two books agree in the reloaded city
+  - L1083 a month on, both pay the businesses the same coupon
+  - L1084 ...and hold the same
+  - L1085 ...and both months close
+  - L1093 fixture: the save carries the sectors' paper at the end of the array
+  - L1104 it loads
+  - L1105 the businesses hold none of the city's paper
+  - L1106 ...nor does the paper say they do
+  - L1107 ...so the bank holds what the households, the central bank and the world do not
+  - L1113 ...and it runs, the audit closing every month
+  - L1114 ...with the two books agreeing
+  - L1130 the dial is reached: the central bank holds all of the term paper
+  - L1131 ...the businesses none of it, the last it reached
+  - L1132 ...and the sectors' book says the same
+  - L1133 every month on the way the books agreed
+  - L1134 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the businesses' purchase among it
+- **L1164 11. the world is a holder: it buys from abroad, is paid abroad, leaves with its money, and the books agree**
+  - L1171 it holds the face it was allotted, whatever it paid
+  - L1172 ...and remembers what it paid
+  - L1176 a save carries the book
+  - L1177 ...and what it has paid and been paid
+  - L1181 a save from before the world held any has none (the array ends at the carry trade)
+  - L1183 a reform scales the book
+  - L1185 ...and a new game clears it
+  - L1194 fixture: money came for a seven-point rate
+  - L1199 fixture: the spread is gone, so the money leaves, and nobody has panicked
+  - L1201 the paper that leaves is what departs, over the world's whole position (its stock and the paper at market),
+  - L1203 ...and at a market below face the same departure is a smaller share of a smaller position
+  - L1205 ...which is less than the face, whatever the book
+  - L1214 a month in which no money leaves sends none of the paper home
+  - L1223 fixture: a twenty-point fall on thin reserves is a run
+  - L1224 in a run PANIC_EXIT of the paper leaves, the same share as of the stock
+  - L1227 ...and what is sold comes off the book
+  - L1228 ...and is remembered
+  - L1257 fixture: the world is not in a run, so its rule bids
+  - L1258 fixture: and the two books of its paper agree going in
+  - L1269 fixture: the world holds a tenth of the hot money it had, and has the appetite for the rest
+  - L1277 fixture: the treasury sold a twenty-year bond between the presses
+  - L1283 fixture: the stop is over what the world pays, so its rule bids
+  - L1284 fixture: the auction filled the world
+  - L1285 ...for the issue's price: its cash over its face is what the issue raised over its face
+  - L1287 it holds none of it until the settle
+  - L1294 the world paid exactly what the auction allotted it
+  - L1295 ...and the paper's world share is the face it was allotted
+  - L1296 ...and the world's book, CapitalFlows', is up by the same face
+  - L1297 ...for what it paid, remembered
+  - L1298 ...and the two books agree
+  - L1299 the bank paid exactly the rest
+  - L1301 ...and holds exactly the rest of the face
+  - L1303 the audit's financial inflow line for it is what it paid
+  - L1305 ...inside the financial account the currency reads
+  - L1306 ...which the balance of payments took
+  - L1307 the audit closed on the settle month: the world's money is declared coming in
+  - L1317 fixture: the world holds paper that pays a coupon
+  - L1319 the world was paid its share of the month's coupon
+  - L1320 ...declared to the audit as income paid abroad
+  - L1322 ...so the current account carries it
+  - L1323 ...and the audit closes: the treasury's pool paid a stranger
+  - L1325 the two books still agree
+  - L1330 fixture: the world still holds some of the twenty-year bond
+  - L1339 fixture: the buyback was at the quoted price
+  - L1340 the world's paper is down by the face it held of it
+  - L1341 ...and it sold exactly that face
+  - L1342 ...and the treasury's pool carries its share of the price until the month declares it leaving
+  - L1344 the two books still agree
+  - L1346 the month after, the audit closes: the world's share left the country, declared as a financial outflow
+  - L1348 ...and the financial account carries at least that share
+  - L1358 fixture: the treasury sold a thirty-year bond
+  - L1362 fixture: the treasury sold a two-year bond
+  - L1364 fixture: the world took part of it at the settle
+  - L1365 fixture: and the world took part of the thirty-year bond
+  - L1378 fixture: it fell due
+  - L1379 every month of its life, the world's book was the paper's (a coupon, a sale, a settle among them)
+  - L1380 ...and the audit closed every month of it
+  - L1381 the world was paid, as principal, the face it held of it at the end
+  - L1382 ...declared to the audit as a financial outflow
+  - L1383 ...and the financial account carries it
+  - L1387 fixture: the world still holds paper
+  - L1395 the book came back exactly
+  - L1396 ...and what it paid and was paid for it since founding
+  - L1402 ...and every piece's world share
+  - L1403 ...and the two books agree in the reloaded city
+  - L1405 a month on, both pay the world the same coupon
+  - L1406 ...and hold the same
+  - L1407 ...and both months close
+  - L1417 fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 19 slots long
+  - L1428 it loads
+  - L1429 the world holds none of the city's paper
+  - L1430 ...nor does the paper say it does
+  - L1433 ...and it runs, the audit closing every month
+  - L1434 ...with the two books agreeing
+  - L1444 fixture: the world holds paper going into the month
+  - L1448 fixture: the stock was over its target, so money left, and nobody panicked
+  - L1453 part of the paper left with the money
+  - L1454 ...the departure over the world's whole position, of the face
+  - L1455 ...sold to the bank's desk at a market price, below or at face
+  - L1457 ...which is what the world was paid, remembered
+  - L1458 ...declared to the audit as a financial outflow
+  - L1460 the two books still agree
+  - L1461 the audit closes on it: the desk's cash and the deposits that left are both declared
+  - L1463 the bank's book rose, whatever its room: it buys what the world sells
+  - L1471 fixture: confidence is broken
+  - L1473 the auction's bidders say the world is in a run
+  - L1474 ...so its bid is nothing, at any yield
+  - L1476 fixture: the world still holds paper
+  - L1480 fixture: the treasury sold a ten-year bond in the run
+  - L1481 the auction allotted the world none of it
+  - L1485 the month after, PANIC_EXIT of the paper has gone to the desk
+  - L1487 ...declared as a financial outflow
+  - L1488 ...with the two books agreeing and the audit closed
+  - L1495 every month of the run the books agreed and the audit closed
+  - L1496 ...and the paper has been running home: a third a month leaves it under what it was
+  - L1515 fixture: the treasury sold a twenty-year bond
+  - L1518 fixture: the world took part of it
+  - L1533 the dial is reached: the central bank holds all of the term paper
+  - L1534 ...the world none of it, the last it reached
+  - L1535 ...having paid the world for it, abroad
+  - L1536 every month on the way the two books agreed
+  - L1537 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the world's purchase among it
+  - L1574 fixture: the treasury sold a twenty-year bond between the presses
+  - L1577 a fresh line's settle re-strikes nothing
+  - L1579 ...its equity's movement leaves nothing unexplained
+  - L1580 ...and its equity's two parts and the preferred still add up to its equity, as they did
+  - L1582 fixture: the households and the bank each hold part of the line
+  - L1595 fixture: the second sale reopened the same line, and the households held part of it going in
+  - L1612 the households took their share of the reopening at the settle
+  - L1614 the month of the reopened settle re-struck the line's discount: far over what the movement's tolerance would pass
+  - L1616 ...inside the statement's line, the gains on the city's paper
+  - L1618 ...so net income carried it: the month's movement leaves nothing unexplained
+  - L1619 ...and its equity's two parts and the preferred add up to its equity, as they did before the month
+  - L1621 the audit closed on the settle month
+  - L1631 three months on, the movement left nothing unexplained and the split still added up, every month
 
 ## HomeRailCheck.java - 45 labelled assertions
 
