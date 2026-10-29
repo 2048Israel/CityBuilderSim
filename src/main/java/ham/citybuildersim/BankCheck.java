@@ -3409,7 +3409,7 @@ public class BankCheck {
                 retainedCauses += ended.kept() - ended.dividends() + ended.founding() + ended.absorbed()
                         - ended.preferredDividends() + bank.getOwnersWipedThisMonth()
                         + bank.getPreferredCancelledThisMonth()
-                        + ended.treasuryBuyback() - ended.allowanceOpened();
+                        + ended.treasuryBuyback() - ended.allowanceOpened() + ended.discountRestruck();
 
                 // The Balance sheet page (0.7.13), read after the month and
                 // whatever was done between the presses: its lines foot, the

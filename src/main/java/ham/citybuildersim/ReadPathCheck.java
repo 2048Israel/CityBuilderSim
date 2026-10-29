@@ -583,6 +583,7 @@ public class ReadPathCheck {
         bk.getInterestFromHouseholds();
         bk.getDiscountAccreted();
         bk.getTreasuryBuybackGain();
+        bk.getDiscountRestruck();
         bk.getAllowanceOpened();
         bk.getBailoutsLifetime();
         bk.isMonthKnown();

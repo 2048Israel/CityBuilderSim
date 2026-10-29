@@ -15127,6 +15127,8 @@ public class Game {
        --------------------------------------------------------------------------- */
     /** A harness's look at the households either side of their share of the settle (HoldersCheck): false before, true after. Null in play. */
     java.util.function.Consumer<Boolean> settleProbeForTest;
+    /** HoldersCheck's twin (BK1): true books no re-strike, as main did, so the harness can hold the two cities' figures side by side. False in play. */
+    boolean restrikeOffForTest;
 
     private double householdsTakeTheirShare() {
         // BK1: the bank's book and its unearned discount before any face moves, for the re-strike below.
@@ -15175,6 +15177,7 @@ public class Game {
      * move every month's figures at the last bit.
      */
     private void restrikeBankDiscount(double unearnedBefore, double faceBefore, double bankPaid) {
+        if (restrikeOffForTest) return;
         double faceMoved = debtManager.bankBook() - faceBefore;
         double unearnedMoved = debtManager.bankUnearnedDiscount() - unearnedBefore;
         double gain = faceMoved - bankPaid - unearnedMoved;

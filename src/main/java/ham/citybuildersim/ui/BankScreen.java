@@ -3848,6 +3848,7 @@ final class BankScreen {
                 {"New shares it issued", mv.issued()},
                 {"Absorbed when it failed", mv.absorbed()},
                 {"Gain on paper the treasury bought back", mv.treasuryBuyback()},
+                {"A reopened line's discount, re-struck", mv.discountRestruck()},
                 {"Set aside when this older save was opened", -mv.allowanceOpened()}};
         for (Object[] c : causes) {
             double a = (Double) c[1];
@@ -4016,6 +4017,7 @@ final class BankScreen {
             moved(column, "New shares it issued", m.issued());
             moved(column, "Absorbed when it failed", m.absorbed());
             moved(column, "Gain on paper the treasury bought back", m.treasuryBuyback());
+            moved(column, "A reopened line's discount, re-struck", m.discountRestruck());
             moved(column, "Set aside when this older save was opened", -m.allowanceOpened());
             double residual = m.residual();
             boolean off = Math.abs(residual) > .005;
