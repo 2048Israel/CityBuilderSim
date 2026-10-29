@@ -1071,7 +1071,11 @@ public class Exchange {
      * alternative by more than BAND (at value less BAND), and buys by the
      * same return, ranked at the ask: expectedReturn() is one yardstick for
      * every share and the deposit rate, the dollars abroad and the city's
-     * paper.
+     * paper. The alternatives include the other shares: a cell sells a
+     * share whose return at the bid is a band under the best of the others
+     * on offer to it now (an ask resting at or under the limit it would
+     * buy at), so it switches from the dearer share to the cheaper; two
+     * shares at the same return, within BAND, switch nothing.
      */
     private void postHouseholds(double depositRate, double worldRate, double paperYield) {
         if (households == null) return;
@@ -1111,7 +1115,28 @@ public class Exchange {
             }
         }
 
-        /* ---- the cells not under it sell a share on its value: a bid over it, or a return under the alternatives (EM1) ---- */
+        // ...the most a cell pays for each, and so what is on offer to it now (the buy loop below reads the same limits).
+        double[] limits = new double[n];
+        for (int c = 0; c < n; c++) limits[c] = inc[c] > 0 ? Math.min(inc[c] / floor, fair[c] * (1 + SPREAD / 2)) : 0;
+        // ...the best return among the shares a cell could buy at their asks, and the second best, once for the step: a share is
+        // compared with the best of the OTHERS, so when it is itself the best, with the second. Nothing on offer reads 0.
+        int offerBest = -1;
+        double offerFirst = 0, offerSecond = 0;
+        for (int d = 0; d < n; d++) {
+            if (!(inc[d] > 0) || register.getShares(d) <= 0) continue;
+            double ask = bestAsk(d);
+            if (!(ask > 0) || ask > limits[d]) continue;
+            double r = expectedReturn(d, ask);
+            if (r > offerFirst) {
+                offerSecond = offerFirst;
+                offerFirst = r;
+                offerBest = d;
+            } else if (r > offerSecond) {
+                offerSecond = r;
+            }
+        }
+
+        /* ---- the cells not under it sell a share on its value: a bid over it, or a return under the alternatives and the other shares (EM1) ---- */
         for (Household cell : households.cellsForMarket()) {
             if (shortOfCushion(cell) > 1e-12) continue;
             String who = CELL + cell.key();
@@ -1119,10 +1144,12 @@ public class Exchange {
                 if (!(cell.shares[c] > 0) || !register.valuedOnRecord(c) || fair[c] <= minFair) continue;
                 double bid = bestBid(c);
                 double quantity = OutwardInvestment.HOME_SPEED * cell.shares[c] * cell.households();
+                // The yardstick a share must beat is the best of the alternatives and of the other shares a cell could buy now.
+                double yardstick = Math.max(alt, c == offerBest ? offerSecond : offerFirst);
                 if (bid > fair[c] * (1 + BAND)) {
                     lifeValueSold += quantity * price(c);
                     post(c, who, OrderBook.Side.SELL, fair[c] * (1 + BAND), quantity);
-                } else if (expectedReturn(c, Double.isNaN(bid) ? price(c) : bid) < alt * (1 - BAND)) {
+                } else if (expectedReturn(c, Double.isNaN(bid) ? price(c) : bid) < yardstick * (1 - BAND)) {
                     lifeValueSold += quantity * price(c);
                     post(c, who, OrderBook.Side.SELL, fair[c] * (1 - BAND), quantity);
                 }
@@ -1130,8 +1157,6 @@ public class Exchange {
         }
 
         /* ---- ...and the cells under it: OUT_SPEED of what is past the cushion, the best return first ---- */
-        double[] limits = new double[n];
-        for (int c = 0; c < n; c++) limits[c] = inc[c] > 0 ? Math.min(inc[c] / floor, fair[c] * (1 + SPREAD / 2)) : 0;
         for (Household cell : households.cellsForMarket()) {
             double budget = spareOf(cell) * OutwardInvestment.OUT_SPEED;
             if (!(budget > 1e-12)) continue;

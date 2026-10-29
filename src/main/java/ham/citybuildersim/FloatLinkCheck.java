@@ -245,8 +245,7 @@ public class FloatLinkCheck {
     static final class Snap {
         final Debt piece;
         final int remaining;
-        final double carrying, eff, face, ratio, index, worldShare;
-        final boolean settled;
+        final double carrying, eff, face, ratio, index;
 
         Snap(Debt d) {
             piece = d;
@@ -256,11 +255,22 @@ public class FloatLinkCheck {
             face = d.getFaceValue();
             ratio = d instanceof InflationLinkedBond l ? l.getRatio() : Double.NaN;
             index = d instanceof FloatingRateNote f ? f.getIndex() : Double.NaN;
-            settled = d.unsettledFace() <= 0 && d.getSettleDue() <= 0;
-            // The world leaves after the coupons are paid, when the hot money does (Game.worldPaperLeavesWithTheMoney()),
-            // so a settled piece's world share at payment is the one the press found.
-            worldShare = d.getOustandingPrincipal() > 0 ? d.worldPrincipal() / d.getOustandingPrincipal() : 0;
         }
+    }
+
+    /**
+     * Who held a piece when its coupon was paid, as shares of it: households, businesses, the world, the central bank. Read by
+     * Game.settleProbeForTest, between the month's settle and its coupon (EM1, 2026-10-29): the world leaves after the coupons, when the
+     * hot money does (Game.worldPaperLeavesWithTheMoney()), and so do the businesses, which raise cash for a buyback by selling the city's
+     * paper to the desk (Game.tradeShares(): Exchange.postCompanies() asks the till, OutwardInvestment.recall() sells the paper), the
+     * paper they bought at that month's settle among it - paid the coupon and gone from the register by the month's end. A holder's
+     * share of the coupon is its share when the coupon was paid, not at the end of the month the harness reads the books at.
+     */
+    static double[] holdersOf(Debt d) {
+        double owed = d.getOustandingPrincipal();
+        return owed > 0
+                ? new double[] { d.householdPrincipal() / owed, d.firmPrincipal() / owed, d.worldPrincipal() / owed, d.centralBankPrincipal() / owed }
+                : new double[4];
     }
 
     /** What a piece cost and paid over its life: the books' identity is read off it at the end. */
@@ -303,7 +313,16 @@ public class FloatLinkCheck {
         List<Snap> before = new ArrayList<>();
         for (Debt d : dm.getDebt()) if (d.getRemainingMonths() > 0 && !d.isForeign()) before.add(new Snap(d));
 
-        MoneyAudit.Result r = press(city, event);
+        Map<Debt, double[]> atCoupon = new IdentityHashMap<>();
+        city.settleProbeForTest = after -> {
+            if (after) for (Debt d : dm.getDebt()) atCoupon.put(d, holdersOf(d));
+        };
+        MoneyAudit.Result r;
+        try {
+            r = press(city, event);
+        } finally {
+            city.settleProbeForTest = null;
+        }
 
         double sumExp = 0, sumCpn = 0, sumUp = 0, sumUpPaid = 0;
         int maturing = 0;
@@ -398,11 +417,7 @@ public class FloatLinkCheck {
                             : new double[] { city.getPrincipalToHouseholds() / s.face, city.getPrincipalToFirms() / s.face,
                                     city.getPrincipalToWorld() / s.face, cbank.getPaperRedeemed() / s.face };
                 } else {
-                    double owed = p.getOustandingPrincipal();
-                    share = owed > 0
-                            ? new double[] { p.householdPrincipal() / owed, p.firmPrincipal() / owed,
-                                    s.settled ? s.worldShare : p.worldPrincipal() / owed, p.centralBankPrincipal() / owed }
-                            : new double[4];
+                    share = atCoupon.getOrDefault(p, new double[4]);
                 }
                 hh += cpn * share[0];
                 fm += cpn * share[1];
@@ -591,6 +606,21 @@ public class FloatLinkCheck {
     /** What the households could take, to size a sale that clears at fair. */
     static double askOf(Game city, double share) {
         return Math.max(100, city.getHouseholdBalance().spareForPaper() * share);
+    }
+
+    /**
+     * The most one sale of section 2 and 3's fixture is, of a year's tax revenue (EM1, 2026-10-29). A sale sized only to what the households
+     * could take (askOf) grew with their savings: at month 72 of the played city they could take 188,000 and now, holding the money the
+     * companies' tills did, 507,000, so seven sales of a quarter of it put the credit spread at 31 basis points where it was 12, and a
+     * floater, its margin fixed at the first sale, stood 0.5 under par before the dial had moved. What section 3 asserts is what the
+     * dial does to a floater, not what the fixture's own debt does to the spread, so the sales are sized to the city's capacity to carry
+     * them as well: the credit spread is linear in debt over a year of tax and of output (DebtManager.spreadFor()).
+     */
+    static final double SALE_OF_REVENUE = 1. / 3;
+
+    /** A sale of this share of what the households could take, and no more than SALE_OF_REVENUE of a year of the city's tax revenue. */
+    static double saleOf(Game city, double share) {
+        return Math.max(100, Math.min(askOf(city, share), SALE_OF_REVENUE * 12 * city.getDebtManager().getMonthlyTaxRevenue()));
     }
 
     /** A bank-held fixture floater, books opened at a sale-like price. */
@@ -786,7 +816,7 @@ public class FloatLinkCheck {
 
         city = readyCity("floatlink", true, .1);
         DebtManager dm = city.getDebtManager();
-        double ask = askOf(city, .25);
+        double ask = saleOf(city, .25);
         double huge = askOf(city, 60);
         double step = Auction.COUPON_STEP;
 
@@ -929,7 +959,7 @@ public class FloatLinkCheck {
         out.println("\n--- 3. the floater's coupon follows the dial: face x (dial + margin) / 12, the rate reset with it, the books holding ---");
 
         DebtManager dm = city.getDebtManager();
-        double ask = askOf(city, .25);
+        double ask = saleOf(city, .25);
         List<Double> facesSold = new ArrayList<>();
         for (Debt d : dm.getDebt()) facesSold.add(d.getFaceValue());
         int piecesSold = dm.getDebt().size();
