@@ -718,6 +718,9 @@ public final class CityRuns {
         reserveKept.clear();
     }
 
+    /** The ground the interchanges' reserves are found over, by its version (Ground.version(): it moves with a purchase), 0 with none bound: a tile's key (CityMap.tileKey(), batch UP5) folds it, as reservesIn() is kept against it. */
+    public long groundVersion() { return reserveGround == null ? 0 : reserveGround.version(); }
+
     /**
      * The interchange sites whose box meets the w x h plots from (x0, y0),
      * each with whether it got its reserve (InterchangeGround): found when

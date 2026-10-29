@@ -111,6 +111,15 @@ public final class MapTiles {
     }
 
     /**
+     * A tile's key (batch UP5; CityMap.tileKey()): equal keys, equal inputs and so equal stamps, worked out from what the inputs are read
+     * from in a few lookups - a view that painted a tile at a key does not read its inputs (input()) again while the key holds. Only for a
+     * tile ready() says is drawn.
+     */
+    public long tileKey(long tx, long ty) {
+        return map.tileKey(tx, ty);
+    }
+
+    /**
      * A stamp of everything a tile is painted from but its ground, which is
      * the world's and never changes: what is owned, its plan's streets and
      * those just beyond its edges (and, since FX5, on the ring of REACH plots
@@ -739,13 +748,13 @@ public final class MapTiles {
      * each pixel's colour before the runs and the edge, repainted only for the
      * districts whose version, built plots, owned plots or picture moved. The
      * RUNS: the highways, railway, yards and sea terminals' dots a pixel at a
-     * time - redone when the runs or the shore's works change.
+     * time - redone when a run crosses the node or a yard's or a quay's dot lands on it (runsKey(), batch UP5; the whole city's before).
      */
     public static final class KeptNode {
         private CityMap map;
         private CityLand land;
         private LandGrid grid;
-        private long x0, y0, plots, landKey, runsKey;
+        private long x0, y0, plots, landKey, runsKey, runsStamp;
         private byte[] ground, relief;
         private boolean runsKept;
         /** The land layer: the city's cover of each pixel and a ring about the node, whether it owns the pixel's sample, whether the pixel is its edge, and each pixel's district (an index into districts, or NO_DISTRICT, or VOID_PIXEL). Null before the first call. */
@@ -841,12 +850,18 @@ public final class MapTiles {
         }
         if (any) repaint(keep, dirty, landMoved);
         if (lastRun.length != n * n) { lastRun = new boolean[n * n]; lastEdge = new boolean[n * n]; }
-        long runsKey = runsKey();
-        if (!keep.runsKept || keep.runsKey != runsKey) {
-            drawRuns(keep);
-            keep.runsKey = runsKey;
-            keep.runsKept = true;
-            keep.runsDrawn++;
+        // The runs layer: while the city's runs and the shore's works stand as they were (runsStamp()) no node's runs key has moved; when
+        // they have, this node's moved only if a run crosses it or a dot lands on it (runsKey(), batch UP5), and only then is it drawn.
+        long runsStamp = runsStamp();
+        if (!keep.runsKept || keep.runsStamp != runsStamp) {
+            long runsKey = runsKey(x0, y0, plots);
+            keep.runsStamp = runsStamp;
+            if (!keep.runsKept || keep.runsKey != runsKey) {
+                drawRuns(keep);
+                keep.runsKey = runsKey;
+                keep.runsKept = true;
+                keep.runsDrawn++;
+            }
         }
         // Composed in the order nodePixels() writes: the district pass, the runs over it, the edge over both.
         System.arraycopy(keep.runMask, 0, lastRun, 0, n * n);
@@ -1044,24 +1059,196 @@ public final class MapTiles {
         return World.mix(World.mix(NO_LAND ^ owned) ^ map.districts().size());
     }
 
-    /** The runs key: whether the city has runs, their version (CityRuns' stamp of everything laid), whether the highways reach a street, and the shore's works - each one's box and whether it has a quay - in order. What nodePixels()'s runs block draws from. */
-    private long runsKey() {
+    /* ----- the runs key of a far node (batch UP5) ----- */
+
+    /** The tags runsKey() folds a highway's stretch, the railway's and a 2 x 2 dot (a yard's, a quay's) in under, so a highway and a railway over the same plots do not hash alike. */
+    private static final long TAG_HIGHWAY = 0x484957L, TAG_RAIL = 0x5241494CL, TAG_DOT = 0x444F54L;
+
+    /** How many scales' runs indexes (RunsIndex) a MapTiles keeps: 4 - the far view's, the minimap's stamp's and preview's, and one spare as the wheel turns; past it they are all made again. */
+    private static final int RUNS_INDEXES_KEPT = 4;
+
+    /**
+     * What the runs draw on each far node of one scale, as sums of hashes (batch UP5): for each aligned node (x0 and y0 multiples of its
+     * span) the sum of runsKey()'s hash of every stretch and dot that lands on it, made in one pass over the runs when the stamp of
+     * everything they are drawn from (runsStamp()) has moved, so that a node's runs key is one lookup and a month that lays no run pays
+     * nothing, and a month that lays one costs a walk of the runs' stretches, each entered at the nodes it crosses.
+     */
+    private static final class RunsIndex {
+        final long stamp;
+        final Map<Long, Long> sums = new java.util.HashMap<>();
+
+        RunsIndex(long stamp) { this.stamp = stamp; }
+
+        void add(long nx, long ny, long hash) { sums.merge(nodeId(nx, ny), hash, Long::sum); }
+
+        long at(long nx, long ny) {
+            Long s = sums.get(nodeId(nx, ny));
+            return s == null ? 0 : s;
+        }
+    }
+
+    /** The scales' runs indexes, by plots a pixel. */
+    private final Map<Long, RunsIndex> runsIndexes = new java.util.HashMap<>();
+
+    /** A node's place in a RunsIndex: its column and row of nodes. */
+    static long nodeId(long nx, long ny) { return (nx << 32) ^ (ny & 0xffffffffL); }
+
+    /**
+     * A stamp of everything runsKey() hashes, for the whole city (batch UP5): the runs' version (CityRuns' stamp of everything laid),
+     * whether the highways reach a street, and the shore's works (its version and how many) - and which runs and shore they are. What
+     * a RunsIndex is made against and a KeptNode's runs layer waits on: while it holds, no node's runs key has moved.
+     */
+    private long runsStamp() {
         CityRuns runs = map.runs();
         if (runs == null) return NO_RUNS;
+        CityShore shore = map.shore();
         long h = World.mix(NO_RUNS ^ runs.version());
         h = World.mix(h ^ (runs.highwaysReach() ? 1L : 0L));
+        h = World.mix(h ^ shore.version() * 0x9E3779B97F4A7C15L ^ shore.works().size());
+        return World.mix(h ^ System.identityHashCode(runs) * 31L ^ System.identityHashCode(shore));
+    }
+
+    /**
+     * The runs key of the node at (x0, y0) of `plots` plots a pixel (batch UP5; the city's before it): a hash of exactly what
+     * nodePixels()'s runs block draws on it - each net's stretches as stroke() clips them (the highways' only while they reach a street),
+     * the yards' and the quay works' 2 x 2 dots that land on it (stretchHash(), dotHash()) - so a run laid elsewhere leaves it as it was
+     * and a run that crosses the node, or a yard that comes to it, moves it. The sum of the parts' hashes, whatever order they are met in:
+     * from the scale's RunsIndex for a node aligned to its span (the far view's and the minimap's are), else by walking the stretches.
+     * NO_RUNS where the city has no runs.
+     */
+    long runsKey(long x0, long y0, long plots) {
+        CityRuns runs = map.runs();
+        if (runs == null) return NO_RUNS;
+        long span = (long) MapFrame.NODE_PX * plots;
+        long sum;
+        if (Math.floorMod(x0, span) == 0 && Math.floorMod(y0, span) == 0) sum = runsIndex(runs, plots).at(Math.floorDiv(x0, span), Math.floorDiv(y0, span));
+        else sum = runsSum(runs, x0, y0, plots);
+        return World.mix(NO_RUNS ^ sum);
+    }
+
+    /** The scale's RunsIndex, made again when the runs' stamp has moved. */
+    private RunsIndex runsIndex(CityRuns runs, long plots) {
+        long stamp = runsStamp();
+        RunsIndex got = runsIndexes.get(plots);
+        if (got != null && got.stamp == stamp) return got;
+        if (runsIndexes.size() >= RUNS_INDEXES_KEPT) runsIndexes.clear();
+        RunsIndex ix = new RunsIndex(stamp);
+        if (runs.highwaysReach()) enterNet(ix, TAG_HIGHWAY, runs.highways(), plots);
+        enterNet(ix, TAG_RAIL, runs.rail(), plots);
+        for (long[] yard : runs.yards()) enterDot(ix, yard[0] + yard[2] / 2.0, yard[1] + yard[3] / 2.0, plots);
         for (CityShore.Work work : map.shore().works()) {
-            h = World.mix(h ^ work.x0() * 0x9E3779B97F4A7C15L ^ work.y0() ^ ((long) work.w() << 40) ^ ((long) work.h() << 48)
-                    ^ (work.quay() > 0 ? 1L << 62 : 0L));
+            if (work.quay() > 0) enterDot(ix, work.x0() + work.w() / 2.0, work.y0() + work.h() / 2.0, plots);
         }
-        return h;
+        runsIndexes.put(plots, ix);
+        return ix;
+    }
+
+    /** The runs key's sum for one node by walking every stretch and dot (a node not aligned to its span): what a RunsIndex holds for an aligned one. */
+    private long runsSum(CityRuns runs, long x0, long y0, long plots) {
+        long sum = 0;
+        if (runs.highwaysReach()) for (long[] s : runs.highways().stretches()) sum += stretchHash(TAG_HIGHWAY, s, x0, y0, plots);
+        for (long[] s : runs.rail().stretches()) sum += stretchHash(TAG_RAIL, s, x0, y0, plots);
+        for (long[] yard : runs.yards()) sum += dotHash(yard[0] + yard[2] / 2.0, yard[1] + yard[3] / 2.0, x0, y0, plots);
+        for (CityShore.Work work : map.shore().works()) {
+            if (work.quay() > 0) sum += dotHash(work.x0() + work.w() / 2.0, work.y0() + work.h() / 2.0, x0, y0, plots);
+        }
+        return sum;
+    }
+
+    /**
+     * What stroke() draws of one stretch {x, y, heading, steps} on the node at (x0, y0), as a hash, 0 for nothing: the stretch's start,
+     * heading and the steps stroke() would walk - its clip of [x0 - 1, x0 + NODE_PX plots] each way, the same arithmetic, the corner of a
+     * 45-degree step included - under `tag`. Drawn pixels are a function of exactly these, so equal hashes draw equal pixels; a stretch
+     * is folded where stroke() walks it even if every plot it marks falls off the node (more than is drawn, never less).
+     */
+    private static long stretchHash(long tag, long[] s, long x0, long y0, long plots) {
+        int n = MapFrame.NODE_PX, h = (int) s[2];
+        long xa = x0 - 1, xb = x0 + n * plots, ya = y0 - 1, yb = y0 + n * plots;
+        long steps = s[3], sx = s[0], sy = s[1];
+        int dx = CityRuns.DX[h], dy = CityRuns.DY[h];
+        long lo = 0, hi = steps;
+        if (dx > 0) { lo = Math.max(lo, xa - sx); hi = Math.min(hi, xb - sx); }
+        else if (dx < 0) { lo = Math.max(lo, sx - xb); hi = Math.min(hi, sx - xa); }
+        else if (sx < xa || sx > xb) return 0;
+        if (dy > 0) { lo = Math.max(lo, ya - sy); hi = Math.min(hi, yb - sy + 1); }
+        else if (dy < 0) { lo = Math.max(lo, sy - yb - 1); hi = Math.min(hi, sy - ya); }
+        else if (sy < ya || sy > yb) return 0;
+        if (lo > hi) return 0;
+        long k = World.mix(tag ^ World.mix(sx * 0x9E3779B97F4A7C15L ^ sy ^ ((long) h << 56)));
+        return World.mix(World.mix(k ^ lo) ^ hi * 0xC2B2AE3D27D4EB4FL);
+    }
+
+    /** What dot() draws of the 2 x 2 dot at (x, y) on the node at (x0, y0), as a hash, 0 for nothing: the pixel it starts at, when any of its four lands on the node. */
+    private static long dotHash(double x, double y, long x0, long y0, long plots) {
+        int n = MapFrame.NODE_PX;
+        long p = Math.floorDiv((long) Math.floor(x - x0), plots), q = Math.floorDiv((long) Math.floor(y - y0), plots);
+        if (p < -1 || q < -1 || p >= n || q >= n) return 0;
+        return World.mix(TAG_DOT ^ World.mix((p << 32) ^ (q & 0xffffffffL)));
+    }
+
+    /** Enters each stretch of a net in the index at every node it may be drawn on. */
+    private static void enterNet(RunsIndex ix, long tag, CityRuns.Net net, long plots) {
+        for (long[] s : net.stretches()) enterStretch(ix, tag, s, plots);
+    }
+
+    /**
+     * Enters one stretch at the nodes it is drawn on: walked a column of nodes at a time - the steps whose plots fall in the column (a
+     * plot round it), the rows those cover (two plots round, for a corner) - so a long stretch costs the nodes it crosses and not the
+     * box it lies in; each candidate is then asked stretchHash() itself, which is the authority.
+     */
+    private static void enterStretch(RunsIndex ix, long tag, long[] s, long plots) {
+        long span = MapFrame.NODE_PX * plots, steps = s[3], sx = s[0], sy = s[1];
+        int h = (int) s[2], dx = CityRuns.DX[h], dy = CityRuns.DY[h];
+        long xEnd = sx + dx * steps;
+        long minX = Math.min(sx, xEnd), maxX = Math.max(sx, xEnd);
+        for (long nx = Math.ceilDiv(minX - span, span); nx <= Math.floorDiv(maxX + 1, span); nx++) {
+            long xa = nx * span - 1, xb = nx * span + span, kLo = 0, kHi = steps;
+            if (dx > 0) { kLo = Math.max(kLo, xa - sx); kHi = Math.min(kHi, xb - sx); }
+            else if (dx < 0) { kLo = Math.max(kLo, sx - xb); kHi = Math.min(kHi, sx - xa); }
+            if (kLo > kHi) continue;
+            long yA = sy + dy * kLo, yB = sy + dy * kHi;
+            long minY = Math.min(yA, yB) - 1, maxY = Math.max(yA, yB) + 1;
+            for (long ny = Math.ceilDiv(minY - span - 2, span); ny <= Math.floorDiv(maxY + 2, span); ny++) {
+                long hash = stretchHash(tag, s, nx * span, ny * span, plots);
+                if (hash != 0) ix.add(nx, ny, hash);
+            }
+        }
+    }
+
+    /** Enters a 2 x 2 dot at (x, y) at the nodes it lands on, asking dotHash() of each. */
+    private static void enterDot(RunsIndex ix, double x, double y, long plots) {
+        long span = MapFrame.NODE_PX * plots, px = (long) Math.floor(x), py = (long) Math.floor(y);
+        for (long ny = Math.ceilDiv(py - span + 1, span); ny <= Math.floorDiv(py + plots, span); ny++) {
+            for (long nx = Math.ceilDiv(px - span + 1, span); nx <= Math.floorDiv(px + plots, span); nx++) {
+                long hash = dotHash(x, y, nx * span, ny * span, plots);
+                if (hash != 0) ix.add(nx, ny, hash);
+            }
+        }
+    }
+
+    /** A harness's (MapCheck 18): the node sums enterStretch() gives one stretch {x, y, heading, steps, home} at a scale, by node id (nodeId()); the nodes it does not enter are not there. */
+    static Map<Long, Long> indexOfStretch(long tag, long[] s, long plots) {
+        RunsIndex ix = new RunsIndex(0);
+        enterStretch(ix, tag, s, plots);
+        return ix.sums;
+    }
+
+    /** A harness's: what stretchHash() gives one stretch on the node at (x0, y0), the authority the index is held to. */
+    static long stretchKey(long tag, long[] s, long x0, long y0, long plots) {
+        return stretchHash(tag, s, x0, y0, plots);
+    }
+
+    /** A harness's: runsKey() worked by walking every stretch and dot, as it is for a node not aligned to its span, whatever the node. */
+    long runsKeyWalked(long x0, long y0, long plots) {
+        CityRuns runs = map.runs();
+        return runs == null ? NO_RUNS : World.mix(NO_RUNS ^ runsSum(runs, x0, y0, plots));
     }
 
     /**
      * A hash of everything nodePixels() draws the node at (x0, y0) from but
      * its ground, which is the world's and fixed for the node (batch UP3; the
      * expanded map's far view keeps this and an image a node, redrawing a node
-     * when its key moved): the land key, the runs key, and each district whose
+     * when its key moved): the land key, the runs key (this node's: runsKey()), and each district whose
      * square overlaps the node's box [x0, x0 + NODE_PX plots) each way - its
      * place, version, built plots, owned plots and, where the node draws
      * pictures, the stamp of its current picture (a fixed mark for none).
@@ -1071,7 +1258,7 @@ public final class MapTiles {
      * box spans when that is no more lookups than the map has districts, else
      * by one pass over map.districts() (a node of 1,024 plots a pixel spans
      * 512 x 512 squares, the 5B copy has 15,000 districts). The cost is the
-     * grid's one box count, the runs' shore works and those lookups - about
+     * grid's one box count, the runs' key (a lookup in the scale's RunsIndex, made when the runs or the shore move) and those lookups - about
      * a thousand at 5B's 64 plots a pixel, against the 16,384 pixels
      * nodePixels() computes - plus pictureIfCurrent() for each built district
      * where the node draws pictures, as nodePixels() asks.
@@ -1101,7 +1288,7 @@ public final class MapTiles {
             }
         }
         long h = World.mix(landKey(x0, y0, plots) ^ 0x4B4559L);
-        h = World.mix(h ^ runsKey());
+        h = World.mix(h ^ runsKey(x0, y0, plots));
         if (sites && plots <= SITES_AT_MOST) {
             // The sites a node tints (MS2): each one's kind, state and mine, summed so their order does not matter.
             long sitesSum = 0;

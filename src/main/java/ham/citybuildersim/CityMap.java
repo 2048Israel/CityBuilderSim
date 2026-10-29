@@ -263,6 +263,9 @@ public final class CityMap {
         /** (CL5) What the map's pieces last credited it with: the pieces' build it was weighed in, its piece then, its built cells and the version they were read at (MapPieces.weigh()). */
         long weighedBuild = Long.MIN_VALUE, weighedAt = Long.MIN_VALUE, weighedCells;
         int weighedPiece = -1;
+        /** (UP5) Its own stamp as last worked out (CityMap.ownStamp()) and the key of the inputs it was worked out from; ownHas false until the first. The map's thread. */
+        long ownKept, ownKeyKept;
+        boolean ownHas;
 
         /**
          * ITS LOG (batch CL3): the changes to its counts, month by month, in the order they came - a record {month, type,
@@ -1020,6 +1023,7 @@ public final class CityMap {
         if (!Arrays.deepEquals(states, lastStates)) {
             siteLists.clear();
             siteListVersion.clear();
+            siteGen++;
             lastStates = states;
             changes++;
         }
@@ -2214,6 +2218,25 @@ public final class CityMap {
        and counted in the map's legend. A district inside the edge is drawn
        from itself and the districts before it alone; an edge district
        waits for them all.
+
+       THE EARLY EXIT (batch UP5). A month that moved one district planned
+       again every district after it in its band, though most came out as
+       they were: the carry on and the edges (margins) of the moved district
+       were what they had been. Now a link keeps, of each plan it read, a
+       hash of its margins - all a plan reads of another - so a plan made
+       again whose margins did not move breaks no reader of it, and the band
+       check (checkBand()) walks past a district planned again whose carry on
+       did not move either. chainTo() hands the districts after the first
+       that broke out with their links (PlanJob.old) when their own stamp is
+       still their link's, and a job takes its link's work in place of
+       planning if the carry in and the margins it reads are the link's. The
+       first time at an epoch they are LAZY - no input is gathered on the
+       screen's thread - and one that cannot take its link makes no plan (and
+       so does every job that waits on it): adopt() keeps nothing and the
+       band is handed out again at that epoch with the inputs gathered, still
+       taking links where they can be taken, a round more than planning every
+       one at most. A district's own stamp is kept against a key of its
+       inputs (ownStamp(), ownKey()).
        ===================================================================== */
 
     /** How many districts' plans are kept, packed for the painter (Drawn): 64, as the deals and road tiles were (spec 2.9) - each tile's street rows once a pattern and four bytes a building (RD1's plan was 140 KB as DistrictPlan holds it); counted in the view's budget (MapTiles.budgetBytes()). */
@@ -2292,6 +2315,62 @@ public final class CityMap {
     public static final class Drawn {
         /** Its link's stamp: its own inputs (ownStamp()) and what was carried to it. */
         long stamp;
+        /** A hash of everything the painter reads of the plan (batch UP5, tileKey()), worked out the first time it is asked: its tiles' street codes, the east column and south row, its buildings' boxes, sidings, avenues and curves. Not its stamp, which a plan drawn again because a neighbour's edge it read moved has kept (readHolds()) with other streets; and not its identity, which a plan drawn again to the same streets has lost. Not `laid` (taken from the packing: tileKey() folds that). */
+        private long digest;
+        private boolean digested;
+
+        long digest() {
+            if (digested) return digest;
+            long h = World.mix(0x44494745L);
+            for (byte[] t : tiles) h = World.mix(h ^ hashOf(t));
+            h = World.mix(h ^ hashOf(east) * 3);
+            h = World.mix(h ^ hashOf(south) * 5);
+            for (int[] b : boxes) h = World.mix(h ^ hashOf(b));
+            h = World.mix(h ^ hashOf(siding) * 7);
+            h = World.mix(h ^ hashOf(avenue) * 11);
+            if (curves != null) {
+                for (DrawnCurve c : curves) {
+                    h = World.mix(h ^ c.kind ^ Double.doubleToLongBits(c.radius) * 13 ^ ((long) c.own << 40));
+                    h = World.mix(h ^ hashOf(c.geom));
+                    h = World.mix(h ^ hashOf(c.plots));
+                }
+            }
+            digest = h;
+            digested = true;
+            return h;
+        }
+
+        /** An array of bytes folded into one number, eight a word; a fixed number for none. */
+        private static long hashOf(byte[] a) {
+            if (a == null) return 0x4E554C4CL;
+            long h = a.length;
+            int i = 0;
+            for (; i + 8 <= a.length; i += 8) {
+                long w = (a[i] & 0xffL) | (a[i + 1] & 0xffL) << 8 | (a[i + 2] & 0xffL) << 16 | (a[i + 3] & 0xffL) << 24
+                        | (a[i + 4] & 0xffL) << 32 | (a[i + 5] & 0xffL) << 40 | (a[i + 6] & 0xffL) << 48 | (a[i + 7] & 0xffL) << 56;
+                h = World.mix(h ^ w);
+            }
+            long w = 0;
+            for (int b = 0; i + b < a.length; b++) w |= (a[i + b] & 0xffL) << (8 * b);
+            return World.mix(h ^ w);
+        }
+
+        /** ...ints, two a word. */
+        private static long hashOf(int[] a) {
+            if (a == null) return 0x4E554C4CL;
+            long h = a.length;
+            int i = 0;
+            for (; i + 2 <= a.length; i += 2) h = World.mix(h ^ ((long) a[i] << 32 | (a[i + 1] & 0xffffffffL)));
+            return i < a.length ? World.mix(h ^ a[i]) : h;
+        }
+
+        /** ...doubles. */
+        private static long hashOf(double[] a) {
+            if (a == null) return 0x4E554C4CL;
+            long h = a.length;
+            for (double d : a) h = World.mix(h ^ Double.doubleToLongBits(d));
+            return h;
+        }
         /** Each tile's street codes (TilePainter's S_ codes), null where it has none, packed by row (pack()): a byte for each of its 32 rows saying which of its patterns that row is, then the patterns, 32 codes each - a tile's streets run along its rows and columns, so a handful of patterns draw it, not a byte a plot. */
         final byte[][] tiles = new byte[TILES][];
         /** The frame's east column and south row: the first column and row of the districts east and south of it, where its edge cells' last arterials run (null where it lays none). */
@@ -2570,12 +2649,14 @@ public final class CityMap {
         return x | (y << 5) | ((w - 1) << 10) | ((h - 1) << 15) | (packed ? PACKED_BIT : 0);
     }
 
-    /** A district's link in the chain (R7): the stamp of its own inputs, what was carried to it and what it carried on ({month, code} pairs in the order they came, since CL3 - the month each came in, so the spill keeps its time; code >= 0 an arrival of that type id, code < 0 a departure, ~k, of the building the k-th pair of the same list brought: the list only grows at its end; null for none); for an edge district, its plan's free ground (a bit a plot of the district), where the city's packed buildings may stand, and its streets (a bit a plot, the same way: where a packed building is beside one, MF1); its frame's edges' street codes (margins), which tell the districts after it which of their seams it leaves unlaid and where their streets join its; and the districts about it before it in the map's order, with the stamps of their links its plan read (readNeighbours()). Kept for every district planned, never dropped. */
+    /** A district's link in the chain (R7): the stamp of its own inputs, what was carried to it and what it carried on ({month, code} pairs in the order they came, since CL3 - the month each came in, so the spill keeps its time; code >= 0 an arrival of that type id, code < 0 a departure, ~k, of the building the k-th pair of the same list brought: the list only grows at its end; null for none); for an edge district, its plan's free ground (a bit a plot of the district), where the city's packed buildings may stand, and its streets (a bit a plot, the same way: where a packed building is beside one, MF1); its frame's edges' street codes (margins), which tell the districts after it which of their seams it leaves unlaid and where their streets join its; and the districts about it before it in the map's order, with a hash of the margins of each of their plans its plan read (read; readNeighbours() reads margins and nothing else of a plan, so a plan made again whose margins did not move breaks no reader of it, batch UP5). Kept for every district planned, never dropped. */
     static final class Link {
         final long own, serial;
         final int[] in, out;
         final long[] free, streets;
         final byte[][] margins;
+        /** Its margins hashed (marginsHashOf()), worked out once: what the plans after it that read it keep of it. */
+        final long marginsHash;
         final District[] earlier;
         final long[] read;
         /** Its plan's road with no street to carry it (DistrictPlan.surplus), in plots: what the legend counts (star RD2-4); by kind [0, gravel, paved, highway]. */
@@ -2585,8 +2666,8 @@ public final class CityMap {
         long picture;
         /** Its plan's stamp, worked out once (batch UP3): `own` and `in` are final and a carry is never written after it is made (a job's carry on is its overflow log's clone), so the stamp cannot move - where stampOf() folds every {month, code} pair of the carry, which lengthens with the months played, and planned() asked it for every tile a frame drew. */
         private final long stamp;
-        Link(long own, int[] in, int[] out, long[] free, long[] streets, byte[][] margins, District[] earlier, long[] read, double surplus, long serial) {
-            this.own = own; this.in = in; this.out = out; this.free = free; this.streets = streets; this.margins = margins;
+        Link(long own, int[] in, int[] out, long[] free, long[] streets, byte[][] margins, long marginsHash, District[] earlier, long[] read, double surplus, long serial) {
+            this.own = own; this.in = in; this.out = out; this.free = free; this.streets = streets; this.margins = margins; this.marginsHash = marginsHash;
             this.earlier = earlier; this.read = read; this.surplus = surplus; this.serial = serial;
             this.stamp = stampOf(own, in);
         }
@@ -2594,11 +2675,22 @@ public final class CityMap {
         long stamp() { return stamp; }
     }
 
-    /** How many of the links kept bear a stamp other than stampOf()'s of their own inputs and carry worked out afresh: none (batch UP3; MapCheck 18's - Link.stamp() is kept, not worked out each time it is asked). */
+    /** How many of the links kept bear a stamp other than stampOf()'s of their own inputs and carry worked out afresh, or a margins' hash other than marginsHashOf()'s of their margins: none (batch UP3, UP5; MapCheck 18's - Link.stamp() and Link.marginsHash are kept, not worked out each time they are asked). */
     int linksAstray() {
         int n = 0;
-        for (Link l : links.values()) if (l.stamp() != stampOf(l.own, l.in)) n++;
+        for (Link l : links.values()) if (l.stamp() != stampOf(l.own, l.in) || l.marginsHash != marginsHashOf(l.margins)) n++;
         return n;
+    }
+
+    /** A plan's margins hashed, all five arrays (Link.marginsHash; batch UP5): everything the plans after it read of it (readNeighbours()), so a link's `read` holds these and a plan made again whose margins did not move leaves its readers' links standing. */
+    static long marginsHashOf(byte[][] m) {
+        if (m == null) return 0;
+        long h = 0xCBF29CE484222325L;
+        for (byte[] a : m) {
+            h = (h ^ a.length) * 0x100000001B3L;
+            for (byte b : a) h = (h ^ b) * 0x100000001B3L;
+        }
+        return World.mix(h);
     }
 
     /** A plan's stamp: its own inputs' and the carry in's, {month, code} pairs (CL3): the list's length and every entry folded, zeros included, in order - so two different lists never stamp alike, a list of none and no list neither. */
@@ -2767,6 +2859,20 @@ public final class CityMap {
         long stamp;
         final Map<District, int[][]> boxes = new HashMap<>();
         final Map<District, byte[][]> laid = new HashMap<>();
+        private final Map<District, Long> digests = new HashMap<>();
+
+        /** A hash of what the packing holds for district d (batch UP5, tileKey()): its packed buildings' boxes and the streets laid to them, by tile. Worked out the first time it is asked. */
+        long digestOf(District d) {
+            Long got = digests.get(d);
+            if (got != null) return got;
+            long h = World.mix(0x5041434BL);
+            int[][] b = boxes.get(d);
+            if (b != null) for (int[] t : b) h = World.mix(h ^ Drawn.hashOf(t));
+            byte[][] l = laid.get(d);
+            if (l != null) for (byte[] t : l) h = World.mix(h ^ Drawn.hashOf(t));
+            digests.put(d, h);
+            return h;
+        }
         int packed, smaller, none;
         int touching, reached, laidTo, field, laidStreets, laidPlots, laidLongest;
     }
@@ -2820,6 +2926,12 @@ public final class CityMap {
     /** Each band's links checked at an epoch (bandEpoch): those of its districts up to bandValidTo (an index in the map's order) hold, and (when all do) the stamp of the packing they make. */
     private long[] bandEpoch = new long[0], bandPackWanted = new long[0];
     private int[] bandValidTo = new int[0];
+
+    /** Each band's epoch (planEpoch()) at which a job that tried to take its district's link as it stood could not (PlanJob, lazy), Long.MIN_VALUE for none: the chain is handed out in full for the band at that epoch (batch UP5). */
+    private long[] bandFull = new long[0];
+
+    /** How the chain's jobs came out since the map was drawn (batch UP5), counted as adopt() keeps them: plans made, links taken as they stood, jobs that could do neither (a lazy job whose carry in or edges had moved: its band was then handed out in full), and plans made that were not needed - made after the first that broke, from the inputs the district's link was made from (what a perfect early exit would have taken). A harness reads them (chainJobs()). */
+    private long jobsPlanned, jobsReused, jobsFailed, jobsWasted;
     private int bandsSized = -1;
 
     /** The bands used, the last last: those past BANDS_KEPT are let go (forgetBand()). */
@@ -2847,8 +2959,107 @@ public final class CityMap {
      * plots tells), the sites and mines about it, the city's highway and
      * railway runs through its frame (0.7.89) and its terminals they draw as
      * yards, and which neighbours are on the map (whose seams it surfaces).
+     *
+     * Kept since batch UP5 (the band check walks up to CHAIN_BAND links each
+     * month, about 110 us a stamp at 5B, most of it the neighbours' site
+     * lists and the runs' frame hash): a district's stamp is worked out again
+     * only when ownKey(), a cheap key of the same inputs, has moved.
      */
     long ownStamp(District d) {
+        sitedNow();
+        long key = ownKey(d);
+        if (d.ownHas && d.ownKeyKept == key) {
+            ownServed++;
+            return d.ownKept;
+        }
+        long h = ownStampFresh(d);
+        d.ownKept = h;
+        d.ownKeyKept = key;
+        d.ownHas = true;
+        ownMade++;
+        return h;
+    }
+
+    /** How many own stamps were asked for since the map was drawn, and of those how many were worked out ({asked, worked out}): a harness's. */
+    long[] ownStampCalls() { return new long[] { ownServed + ownMade, ownMade }; }
+
+    private long ownServed, ownMade;
+
+    /**
+     * How the own stamps kept stand (batch UP5; a harness's): {districts with one kept, those of them whose key is unmoved so that ownStamp()
+     * would hand the kept one out, and of those, how many differ from ownStampFresh() - none, or a key leaves out an input}.
+     */
+    int[] ownStampsKept() {
+        sitedNow();
+        int[] out = new int[3];
+        for (District d : districts) {
+            if (!d.ownHas) continue;
+            out[0]++;
+            if (d.ownKeyKept != ownKey(d)) continue;
+            out[1]++;
+            if (d.ownKept != ownStampFresh(d)) out[2]++;
+        }
+        return out;
+    }
+
+    /**
+     * A key of everything district d's own stamp is worked out from (ownStampFresh(), line by line), itself worked out from the version
+     * counters those inputs move and the few values that have none: equal keys, equal stamps (MapCheck 18 checks it after every month
+     * on x 1, x 80 and 5B). Its inputs and how each is keyed:
+     *  - the district's own counts and sited counts (read, the arrays), its log (logN, logHash, firstBatch) and journal (jN, jHash);
+     *  - the nine districts about it and itself, whether each is on the map and its version (which every write to its counts or its sites'
+     *    runs moves: the site lists are kept against it), and the east, south and south-east neighbours' journal hashes the stamp folds;
+     *  - siteGen, the holdings' states: moved when the site lists are all let go;
+     *  - the land: which land (rebind()), its purchases and the plots it owns (ownership only grows), and the linked landmasses' stamp;
+     *  - the runs' frame hash: the runs' version, and while the highways reach a street, which puts the interchanges' reserves in the
+     *    hash, the ground's version (RunGround); a reserve a mine on its site blocks (reserveBlocked()) lies within CLOVERLEAF_SIDE of the
+     *    frame, so that mine's site is in one of the nine districts above, whose versions the key holds;
+     *  - the district's yards, spur sidings and shore works as dealt (yardsOf(), sidingsOf(), shoreOf(): read, they are arrays kept
+     *    against the runs and the map's changes), and the shore's version for the works over its frame.
+     */
+    private long ownKey(District d) {
+        long h = World.mix(d.key ^ 0x4F574E4BL);
+        h = World.mix(h ^ ownGlobalKey());
+        long cs = 0;
+        for (int c : d.counts) cs = (cs + c) * 0x9E3779B97F4A7C15L;
+        if (d.sited != null) {
+            cs = cs * 31 + 7;
+            for (int s : d.sited) cs = (cs + s) * 0x9E3779B97F4A7C15L;
+        }
+        h = World.mix(h ^ cs);
+        h = World.mix(h ^ d.logHash ^ ((long) d.firstBatch << 40) ^ d.logN ^ ((long) d.jN << 20));
+        h = World.mix(h ^ d.jHash);
+        for (int b = -1; b <= 1; b++) {
+            for (int a = -1; a <= 1; a++) {
+                District o = districtAt(key(d.dx + a, d.dy + b));
+                int at = (b + 1) * 3 + a + 1;
+                if (o == null) {
+                    h = World.mix(h ^ 0xFFL ^ ((long) at << 8));
+                    continue;
+                }
+                h = World.mix(h ^ o.version * 0x9E3779B97F4A7C15L ^ at);
+                if (a == 1 && b == 0) h = World.mix(h ^ o.jHashCol ^ 0x45L);
+                else if (a == 0 && b == 1) h = World.mix(h ^ o.jHashRow ^ 0x53L);
+                else if (a == 1 && b == 1) h = World.mix(h ^ o.jHashCorner ^ 0x43L);
+            }
+        }
+        h = World.mix(h ^ yardsOf(d) ^ ((long) sidingsOf(d) << 24));
+        if (!shore.isEmpty()) for (int t : shoreTypes()) h = World.mix(h ^ ((long) t << 40) ^ shoreOf(d, t));
+        return h;
+    }
+
+    /** The part of ownKey() that is the same for every district: the land, the landmasses, the site lists' generation, the runs and the shore. */
+    private long ownGlobalKey() {
+        long g = World.mix(System.identityHashCode(land) ^ ((long) land.purchases().size() << 32) ^ land.grid().ownedPlots() * 0x9E3779B97F4A7C15L);
+        if (landmasses != null) g = World.mix(g ^ landmasses.stamp() * 0xBF58476D1CE4E5B9L);
+        g = World.mix(g ^ siteGen ^ runs.version() * 0x9E3779B97F4A7C15L ^ ((long) System.identityHashCode(runs) << 32) ^ System.identityHashCode(shore));
+        if (runs.highwaysReach()) g = World.mix(g ^ runGround.version());
+        if (!shore.isEmpty()) g = World.mix(g ^ shore.version());
+        return g;
+    }
+
+    /** ownStamp() worked out afresh, the kept one bypassed: what it is checked against. */
+    long ownStampFresh(District d) {
         sitedNow();
         long h = World.mix(seed ^ d.key * 0x9E3779B97F4A7C15L);
         long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
@@ -2897,6 +3108,8 @@ public final class CityMap {
         Arrays.fill(bandEpoch, Long.MIN_VALUE);
         bandPackWanted = new long[n];
         bandValidTo = new int[n];
+        bandFull = new long[n];
+        Arrays.fill(bandFull, Long.MIN_VALUE);
         bandsSized = districts.size();
     }
 
@@ -2973,14 +3186,14 @@ public final class CityMap {
         return p != null && p.stamp == bandPackWanted[b] ? p.boxes.get(d) : null;
     }
 
-    /** Whether the plans a link read its neighbours' edges from are those standing: each such district's link the one it read (they are before it in the map's order, walked first). */
+    /** Whether the edges of the plans a link read its neighbours' from are those standing: each such district's link bears the margins it read (they are before it in the map's order, walked first). Margins, not the plan: a plan made again whose carry out and margins did not move leaves this true for every reader of it (batch UP5). */
     private boolean readHolds(Link l) {
         if (l.earlier == null) return true;
         for (int k = 0; k < l.earlier.length; k++) {
             District s = l.earlier[k];
             if (s == null) continue;
             Link sl = links.get(s);
-            if (sl == null || l.read == null || sl.stamp() != l.read[k]) return false;
+            if (sl == null || l.read == null || sl.marginsHash != l.read[k]) return false;
         }
         return true;
     }
@@ -3016,9 +3229,23 @@ public final class CityMap {
         public final synchronized boolean done() { return done; }
     }
 
-    /** One district's plan: its inputs gathered on the map's thread, its ground read and its plan drawn by run(), with what the job before it carried on (R7). */
+    /**
+     * One district's plan: its inputs gathered on the map's thread, its ground read and its plan drawn by run(), with what the job before it carried on (R7).
+     *
+     * A job handed out for a district after the first that broke, whose own stamp still is its link's, has that link (`old`, and `oldDrawn`, its
+     * plan) as it stood when the job was made (batch UP5), and run() takes the link's work (plan, carry out, margins, free ground, streets) in
+     * place of planning if what it would be planned from is what the link was planned from: the carry out of the job before it is the link's
+     * carry in, and every plan it reads has the margins it read. Nothing here reads the map: the job holds the Link and Drawn it was made with,
+     * neither written after it was made (Link's fields are final but for `leftover` and `picture`, set in adopt() before the link is kept;
+     * Drawn's but for `laid` and `laidFor`, which only the screen's thread writes), and adopt() keeps its district's link and plan as they were.
+     * It is LAZY (`in` null: no input was gathered on the screen's thread, which is the cost of a job) when handed out the first time at an
+     * epoch; one whose link cannot be taken then makes no plan (`failed`, and so does every job that waits on it), adopt() keeps nothing and
+     * chainTo() hands the band out again at that epoch with the input gathered, each job still taking its link where it can: at most one round
+     * more than planning every one, and only in a month when a carry or an edge moved.
+     */
     public static final class PlanJob extends Job {
         final District d;
+        /** Its input, gathered on the map's thread; null for a lazy job (see above). */
         final DistrictPlan.Input in;
         final long own;
         final PlanJob after;
@@ -3027,11 +3254,20 @@ public final class CityMap {
         /** The districts about it before it in the map's order (earlierOf()), and each one's link or job: whose frames' edges it reads (readNeighbours()). */
         final District[] earlier;
         final Object[] sources;
+        /** Its district's link and plan (null where the plan was let go) as they stood when the job was made, which it takes where it can; null for a job with none to take (the first that broke, a district whose own stamp moved). */
+        final Link old;
+        final Drawn oldDrawn;
         /** What was carried to it and what it carries on: {month, code} pairs in the order they came (CL3; an arrival, or the departure ~k of the k-th pair's, DistrictPlan.Input.carry), null for none. */
         int[] carryIn, carryOut;
         Drawn result;
         long[] free, streets, read;
         byte[][] margins;
+        /** Its margins hashed (marginsHashOf()): what the plans that read it keep of it (Link.read). */
+        long marginsHash;
+        /** Whether it made no plan and took no link (see above): volatile, as chainTo() looks at a job that may still run. Set by run() alone. */
+        volatile boolean failed;
+        /** Whether it took its link's work (the inputs it would be planned from were its link's). */
+        boolean reused;
         double ms;
         /** Its picture's (0.7.128, batch MM1): the boxes the runs and the shore stand on its ground (extrasIn()), the stamp of the picture kept for it when it was handed out (0 for none), its plan's plots' stamp (DistrictPicture.stampOf()), and what run() drew - null when the kept one is of the same plots. */
         final int[] extras;
@@ -3042,41 +3278,94 @@ public final class CityMap {
 
         PlanJob(CityMap map, District d, DistrictPlan.Input in, long own, PlanJob after, int[] given, boolean edge,
                 District[] earlier, Object[] sources, long epoch) {
+            this(map, d, in, own, after, given, edge, earlier, sources, epoch, null, null);
+        }
+
+        /** A job with an input gathered, that takes its district's link (`old`, and its plan `oldDrawn`: both may be null) where it can. The screen's thread. */
+        PlanJob(CityMap map, District d, DistrictPlan.Input in, long own, PlanJob after, int[] given, boolean edge,
+                District[] earlier, Object[] sources, long epoch, Link old, Drawn oldDrawn) {
             super(map, epoch);
             this.d = d; this.in = in; this.own = own; this.after = after; this.given = given; this.edge = edge;
             this.earlier = earlier; this.sources = sources;
+            this.old = old; this.oldDrawn = oldDrawn;
             this.extras = map.extrasIn(d);
             DistrictPicture kept = map.pictures.get(d);
             this.keptPicture = kept == null ? 0 : kept.stamp;
         }
 
-        @Override void work() {
-            long t0 = System.nanoTime();
-            if (after != null) after.run();
-            int[] c = after != null ? after.carryOut : given;
-            readGround(in, map.worldKey);
-            // What the district before it could not place, as {month, code} pairs, arrivals and departures: the plan merges it into its own events by month (CL3; counts added into its own before).
-            in.carry = c;
-            // What it reads of the districts before it about it (readNeighbours()), and the stamps of the plans it read.
-            byte[][][] m = new byte[AROUND.length][][];
-            read = new long[AROUND.length];
+        /** A lazy job (see above): `old` is its district's link, `oldDrawn` its plan or null, `after` the job before it in the chain (never null: the first that broke is planned). The screen's thread. */
+        PlanJob(CityMap map, District d, Link old, Drawn oldDrawn, long own, PlanJob after, boolean edge,
+                District[] earlier, Object[] sources, long epoch) {
+            super(map, epoch);
+            this.d = d; this.in = null; this.own = own; this.after = after; this.given = null; this.edge = edge;
+            this.earlier = earlier; this.sources = sources;
+            this.old = old; this.oldDrawn = oldDrawn;
+            this.extras = null;
+            this.keptPicture = 0;
+        }
+
+        /** Runs the jobs it reads (any thread, in the chain's order) and gives a hash of each one's margins, and their margins into m unless that is null; null when one of them made no plan. */
+        private long[] readSources(byte[][][] m) {
+            long[] hashes = new long[AROUND.length];
             for (int k = 0; k < AROUND.length; k++) {
                 Object src = sources[k];
                 if (src instanceof PlanJob j) {
                     j.run();
-                    m[k] = j.margins;
-                    read[k] = stampOf(j.own, j.carryIn);
+                    if (j.failed) return null;
+                    if (m != null) m[k] = j.margins;
+                    hashes[k] = j.marginsHash;
                 } else if (src instanceof Link l) {
-                    m[k] = l.margins;
-                    read[k] = l.stamp();
+                    if (m != null) m[k] = l.margins;
+                    hashes[k] = l.marginsHash;
                 }
             }
+            return hashes;
+        }
+
+        /** Its link's work taken as the job's own, nothing planned. */
+        private void takeOld() {
+            carryIn = old.in;
+            carryOut = old.out;
+            result = oldDrawn;
+            margins = old.margins;
+            marginsHash = old.marginsHash;
+            free = old.free;
+            streets = old.streets;
+            read = old.read;
+            pictureStamp = old.picture;
+            reused = true;
+        }
+
+        @Override void work() {
+            long t0 = System.nanoTime();
+            if (after != null) {
+                after.run();
+                // It made no plan and took no link, so there is no carry to plan from: neither does this.
+                if (after.failed) { failed = true; return; }
+            }
+            int[] c = after != null ? after.carryOut : given;
+            // What it reads of the districts before it about it (readNeighbours()), and a hash of each plan's margins it read.
+            byte[][][] m = new byte[AROUND.length][][];
+            long[] hashes = readSources(m);
+            if (hashes == null) { failed = true; return; }
+            // The early exit (batch UP5): planned from what its link was planned from - the same own inputs (the job was made for them), the same carry in and the margins it read - it would come out as the link: take that.
+            if (old != null && Arrays.equals(c, old.in) && Arrays.equals(hashes, old.read)) {
+                takeOld();
+                ms = (System.nanoTime() - t0) / 1e6;
+                return;
+            }
+            if (in == null) { failed = true; return; }
+            readGround(in, map.worldKey);
+            // What the district before it could not place, as {month, code} pairs, arrivals and departures: the plan merges it into its own events by month (CL3; counts added into its own before).
+            in.carry = c;
+            read = hashes;
             readNeighbours(d, earlier, m, in);
             DistrictPlan p = DistrictPlan.make(in);
             carryIn = c;
             carryOut = p.overflowLog != null && p.overflowLog.length > 0 ? p.overflowLog.clone() : null;
             result = drawnOf(p, stampOf(own, c));
             margins = marginsOf(p);
+            marginsHash = marginsHashOf(margins);
             if (edge) {
                 free = freeGround(in, p);
                 streets = streetsOf(p);
@@ -3120,7 +3409,12 @@ public final class CityMap {
             // Each edge district's free ground, copied (the packing takes plots of it), and the stamp its links make - as
             // checkBand() walks them, nearest first - with the carry the band's last district let go.
             int[] p;
-            if (last instanceof PlanJob j) { j.run(); p = j.carryOut; }
+            if (last instanceof PlanJob j) {
+                j.run();
+                // A plan job that made no plan (UP5: a lazy one whose link could not stand) leaves nothing to pack from: no result, and adopt() keeps none.
+                if (j.failed) return;
+                p = j.carryOut;
+            }
             else p = last == null ? null : ((Link) last).out;
             int[] carry = countsOf(p, types.length);
             // ...the plots copied only when there is something to pack (MF1: a second mask, the streets, a clone more a district).
@@ -3129,6 +3423,7 @@ public final class CityMap {
             for (int i = 0; i < edges.length; i++) {
                 if (from[i] instanceof PlanJob j) {
                     j.run();
+                    if (j.failed) return;
                     if (carry != null) {
                         free[i] = j.free == null ? null : j.free.clone();
                         streets[i] = j.streets == null ? null : j.streets.clone();
@@ -3187,18 +3482,69 @@ public final class CityMap {
             return j;
         }
         PlanJob prev = null;
+        // THE EARLY EXIT (batch UP5): every district after the first that broke whose own stamp still is its link's is handed out with that link,
+        // which its job takes in place of planning if the carry out of the job before it and the margins it reads are its link's (run() finds out;
+        // most are, a month in one district moving neither). The first time at an epoch it is LAZY, with no input gathered here; one that cannot
+        // fails with all that wait on it, and the band is handed out again at this epoch with the input gathered, each job still taking its link
+        // where it can: at most one round more than planning every one.
+        boolean lazyOk = bandFull[b] != e, redo = false;
         for (int k = bandValidTo[b]; k <= i; k++) {
             District dk = districts.get(k);
             PlanJob p = pending.get(dk);
-            if (p != null && p.epoch == e) { prev = p; continue; }
+            if (p != null && p.epoch == e) {
+                if (!redo && !p.failed) { prev = p; continue; }
+                // ...one handed out at this epoch that made no plan (not yet kept): it and the jobs after it are handed out again, in full.
+                redo = true;
+                lazyOk = false;
+                bandFull[b] = e;
+            }
             int[] given = prev == null && k > start ? links.get(districts.get(k - 1)).out : null;
             District[] near = earlierOf(dk);
-            PlanJob j = new PlanJob(this, dk, planInputHere(dk), ownStamp(dk), prev, given, isEdge(dk), near, sources(near), e);
+            long own = ownStamp(dk);
+            boolean edgeK = isEdge(dk);
+            Link was = links.get(dk);
+            PlanJob j;
+            boolean keeps = prev != null && was != null && was.own == own && (!edgeK || was.free != null) && Arrays.equals(was.earlier, near);
+            if (keeps && lazyOk) j = new PlanJob(this, dk, was, drawn.get(dk), own, prev, edgeK, near, sources(near), e);
+            else if (keeps) j = new PlanJob(this, dk, planInputHere(dk), own, prev, given, edgeK, near, sources(near), e, was, drawn.get(dk));
+            else j = new PlanJob(this, dk, planInputHere(dk), own, prev, given, edgeK, near, sources(near), e);
             pending.put(dk, j);
             out.add(j);
             prev = j;
         }
         return prev;
+    }
+
+    /** How the chain's jobs came out since the map was drawn, as adopt() kept them (batch UP5): {plans made, links taken as they stood, jobs that could do neither, plans made that were not needed}. A harness's. */
+    long[] chainJobs() { return new long[] { jobsPlanned, jobsReused, jobsFailed, jobsWasted }; }
+
+    /** The links kept as a harness compares them month to month (batch UP5): each district's {own, carry in, carry out, read, margins' hash, the link}. The arrays are the links' own and never written. */
+    java.util.Map<District, Object[]> linkSnapshot() {
+        java.util.Map<District, Object[]> out = new HashMap<>();
+        for (Map.Entry<District, Link> e : links.entrySet()) {
+            Link l = e.getValue();
+            out.put(e.getKey(), new Object[] { l.own, l.in, l.out, l.read, l.marginsHash, l });
+        }
+        return out;
+    }
+
+    /** District d's plan as kept, null where it was let go (the plans kept are a harness's to compare, never made here). */
+    Drawn drawnKept(District d) { return drawn.get(d); }
+
+    /** District d's link and plan let go, as a band's forgetting lets go all of its: a harness's, to see the chain plan one district and take the links of those after it (batch UP5, MapCheck 18). */
+    void dropLink(District d) {
+        links.remove(d);
+        drawn.remove(d);
+        bandsStale();
+    }
+
+    /** The map's epoch moved (planEpoch()) with nothing else: a harness's, for a chain handed out at a new epoch, the first time lazy. */
+    void epochMoves() { changes++; }
+
+    /** District d's link's margins hash, carry out and stamp as {stamp, margins' hash, hash of the carry out}, null for no link: a harness's. */
+    long[] linkDigest(District d) {
+        Link l = links.get(d);
+        return l == null ? null : new long[] { l.stamp(), l.marginsHash, l.out == null ? 0 : Arrays.hashCode(l.out) + 1L, l.picture };
     }
 
     /** Each earlier district's plan as a job reads it: its job handed out at this epoch, else its link (it is before the job's district in the map's order, so one or the other holds). */
@@ -3267,9 +3613,27 @@ public final class CityMap {
         if (j == null || j.map != this || !j.done()) return false;
         if (j instanceof PlanJob p) {
             if (pending.get(p.d) == p) pending.remove(p.d);
+            if (p.failed) {
+                // A lazy job that could not take its link as it stood (UP5), or one that waited on it: nothing is kept, the band is checked again, and its chain handed out again at this epoch with the input gathered.
+                jobsFailed++;
+                sizeBands();
+                int fb = band(p.d.index);
+                if (fb < bandFull.length) bandFull[fb] = p.epoch;
+                bandsStale();
+                return true;
+            }
             Link was = links.get(p.d);
+            if (p.reused) {
+                // A job that took its link's work: its district's link, plan, picture and sidings stand as they were. Not if they moved since it was made (a newer job's link, the band let go): then nothing is kept and the walk finds what holds.
+                if (was == p.old) jobsReused++;
+                bandsStale();
+                return true;
+            }
             if (was != null && was.serial > p.serial) return true;
-            Link l = new Link(p.own, p.carryIn, p.carryOut, p.free, p.streets, p.margins, p.earlier, p.read, p.result.surplus, p.serial);
+            jobsPlanned++;
+            // After the first that broke (it has a job before it), from the very inputs its link was made from: the plan came out as it was, and could have been taken (a harness counts them).
+            if (p.after != null && was != null && was.own == p.own && Arrays.equals(was.in, p.carryIn) && Arrays.equals(was.read, p.read)) jobsWasted++;
+            Link l = new Link(p.own, p.carryIn, p.carryOut, p.free, p.streets, p.margins, p.marginsHash, p.earlier, p.read, p.result.surplus, p.serial);
             l.leftover = p.result.leftover.clone();
             l.picture = p.pictureStamp;
             links.put(p.d, l);
@@ -3292,6 +3656,8 @@ public final class CityMap {
         }
         PackJob k = (PackJob) j;
         if (packings.get(k.band) == k) packings.remove(k.band);
+        // A job it waited on made no plan (UP5): no packing, handed out again with the chain in full.
+        if (k.result == null) return true;
         checkBand(k.band);
         // Kept when every link of its band holds and they are the ones it packed into.
         int end = Math.min(districts.size(), (k.band + 1) * CHAIN_BAND);
@@ -3302,8 +3668,8 @@ public final class CityMap {
     /** District d's plan for the painter, made here when it is not current - every district before it in the map's order first where its link does not hold, and for an edge district the city's packing - on this thread: a harness's, a probe's, or the view's once its jobs have run. Null for no district. */
     Drawn drawnOf(District d) {
         if (d == null) return null;
-        // Twice at most: an edge district's packing plans every district, which may let its own plan go from the cache.
-        for (int round = 0; round < 2; round++) {
+        // Three times at most: a chain whose lazy jobs could not take their links is handed out again in full (UP5), and an edge district's packing plans every district, which may let its own plan go from the cache.
+        for (int round = 0; round < 3; round++) {
             for (Job j : planJobs(d)) {
                 j.run();
                 adopt(j);
@@ -3941,7 +4307,7 @@ public final class CityMap {
 
     /** District d's picture, drawn here when it is not current (pictureJobs() run and kept on this thread): a harness's and a probe's. */
     public DistrictPicture picture(District d) {
-        for (int round = 0; round < 2; round++) {
+        for (int round = 0; round < 3; round++) {
             DistrictPicture p = pictureIfCurrent(d);
             if (p != null) return p;
             for (Job j : pictureJobs(d)) {
@@ -7619,8 +7985,12 @@ public final class CityMap {
         AtSea now = a == null ? AtSea.NONE : a;
         if (now.equals(atSea)) return;
         atSea = now;
+        atSeaMoves++;
         changes++;
     }
+
+    /** How many times the oil at sea was handed over changed (atSea()): what a tile's key (tileKey(), batch UP5) holds the sea's plots, rings and pipes against. */
+    private long atSeaMoves;
 
     /** The oil at sea over tile (px0, py0)'s plots, into its inputs: the jackets' and wells' plots, the rings and pipes that may cross it. */
     private void atSeaInto(long px0, long py0, TilePainter.Input in) {
@@ -7993,6 +8363,86 @@ public final class CityMap {
     public boolean tileReady(long tx, long ty) {
         for (District d : tileDistricts(tx, ty)) if (!planned(d)) return false;
         return true;
+    }
+
+    /** tileKey()'s fixed mark for a district whose plan is not kept drawn. */
+    private static final long NO_PLAN = 0x4E4F504C414EL;
+
+    /** The scratch flags tileKey() reads a part-owned tile's ownership into. */
+    private final boolean[] keyFlags = new boolean[TilePainter.PLOTS];
+
+    /**
+     * A key of everything tileInput() reads for tile (tx, ty) (batch UP5): equal keys, equal inputs, so equal MapTiles.stamp()s, and a view
+     * that holds a picture against it asks fillInput() for nothing (ui/MapView.paint(): a tile whose picture's key held is not read again,
+     * only to find its stamp unmoved). Worked out from what each input is read from, never from the inputs filled in, in a few lookups:
+     * - what the city owns of the tile (the grid's cover at level 5; a part-owned tile's plots);
+     * - its plans (the tile's district and those of the tiles about it, tileDistricts(): the streets of its ring, the avenues, the curves, its
+     *   buildings' boxes and sidings come from them): each one's kept plan (Drawn.digest(): what the painter reads of it - not its link's stamp, which a plan drawn again for a neighbour's edge keeps with other streets, and not which plan it is, which one drawn again to the same streets has lost), its
+     *   version, and where it has anything of its band's packing (Pack.digestOf(): an edge district's buildings packed in its ground, the streets laid to them);
+     * - the railway's bends on it (trainBends: made of the runs, the yards' types, the wagons and every plan's sidings, which is why they
+     *   are read, not their inputs);
+     * - the whole map's, tileWorldKey(): the runs (CityRuns.version() - their stretches, hub, ramps, main line, yards, bridges and the
+     *   highways' bends all come of it - and whether the highways reach a street), the ground their reserves are found over, the shore's
+     *   works, the railway's picture, the oil at sea, the site lists' generation (siteGen) and the yards' types. This is the COARSE grain,
+     *   by design: a month that lays a run, a work on the shore or a pipe at sea moves every tile's key, as the stamps were all read then.
+     * Only a tile whose plans are drawn (tileReady()) has a key that means anything: a plan not kept is a fixed mark.
+     */
+    public long tileKey(long tx, long ty) {
+        long[] p = tileKeyParts(tx, ty);
+        long h = World.mix(seed ^ World.mix(tx * 0x9E3779B97F4A7C15L ^ ty));
+        for (long part : p) h = World.mix(h ^ part);
+        return h;
+    }
+
+    /** The four parts tileKey() folds, in order (a harness's: which of them moved when a key did): what the city owns of the tile, its plans', the railway's bends on it, and the whole map's (tileWorldKey()). */
+    long[] tileKeyParts(long tx, long ty) {
+        long owned = cover(land.grid().cover(5, tx, ty));
+        if (owned == SOME) {
+            land.grid().tileFlags(tx, ty, keyFlags);
+            for (int i = 0; i < keyFlags.length; i += 64) {
+                long w = 0;
+                for (int b = 0; b < 64; b++) if (keyFlags[i + b]) w |= 1L << b;
+                owned = World.mix(owned ^ w ^ i);
+            }
+        }
+        // The plans of the districts the nine tiles about it lie in (tileDistricts(), a column and a row of districts at most two each), summed,
+        // so the order they are met in does not matter.
+        long dxA = Math.floorDiv(tx - 1, TILES_A_SIDE), dxB = Math.floorDiv(tx + 1, TILES_A_SIDE);
+        long dyA = Math.floorDiv(ty - 1, TILES_A_SIDE), dyB = Math.floorDiv(ty + 1, TILES_A_SIDE);
+        long plans = 0;
+        for (long dy = dyA; dy <= dyB; dy++) {
+            for (long dx = dxA; dx <= dxB; dx++) {
+                District d = districtAt(key((int) (dx - baseDX), (int) (dy - baseDY)));
+                if (d == null) continue;
+                Drawn dr = drawn.get(d);
+                long e = World.mix(d.key ^ (dr == null ? NO_PLAN : dr.digest()));
+                e = World.mix(e ^ d.version);
+                // ...and its band's packing where it has anything of it (an edge district's buildings packed in its ground, the streets laid to them).
+                Pack pk = packs.get(band(d.index));
+                if (pk != null && (pk.boxes.containsKey(d) || pk.laid.containsKey(d))) e = World.mix(e ^ pk.digestOf(d) ^ 0x45444745L);
+                plans += e;
+            }
+        }
+        // The railway's bends that reach it: kept with the routes, which are made first.
+        trainRoutes();
+        long bendsHere = 0;
+        List<DrawnBend> bends = trainBends.get(bendKey(tx, ty));
+        if (bends != null) for (DrawnBend db : bends) bendsHere = World.mix(bendsHere ^ db.hashCode());
+        return new long[] { owned, plans, bendsHere, tileWorldKey() };
+    }
+
+    /** The part of tileKey() that is the whole map's and not a tile's: see tileKey(). */
+    private long tileWorldKey() {
+        long h = World.mix(0x54494C4557L ^ runs.version());
+        h = World.mix(h ^ (runs.highwaysReach() ? 1L : 0L));
+        h = World.mix(h ^ runs.groundVersion());
+        h = World.mix(h ^ shore.version() * 0x9E3779B97F4A7C15L ^ shore.works().size());
+        h = World.mix(h ^ (railPicture.goodsByRail() ? 1L : 0L) ^ ((long) wagonTracksOf(railPicture.wagonShare()) << 8));
+        h = World.mix(h ^ atSeaMoves);
+        h = World.mix(h ^ siteGen);
+        // A yard's type is the model's sequence of terminal types by their counts (yardTypeOf()).
+        for (int t : terminalTypes()) h = World.mix(h ^ have[t] ^ ((long) t << 40));
+        return h;
     }
 
     /** The jobs that make tile (tx, ty)'s plans current (planJobs()), in order; empty when they are. The screen's thread. */
@@ -8390,6 +8840,9 @@ public final class CityMap {
     };
     private final Map<Long, Long> siteListVersion = new HashMap<>();
 
+    /** How many times the site lists were all let go because the holdings' states moved (reconcile(), forgetPainted()): a list is kept against its district's version and this, so is a stamp worked out from them (ownKey(), batch UP5). */
+    private long siteGen;
+
     /**
      * The sites whose centres lie in district (dx, dy) - every resource's,
      * owned or not - each with its holding's state (its field's holding, the
@@ -8468,6 +8921,7 @@ public final class CityMap {
         bandsStale();
         siteLists.clear();
         siteListVersion.clear();
+        siteGen++;
         pictures.clear();
     }
 
