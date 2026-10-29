@@ -939,8 +939,15 @@ public class EducationCheck {
         // The fixture city runs a deficit on three hospitals and forty-seven
         // schools, so the income tax goes up until the bridge shows a surplus
         // - the condition has to be caused, not stood next to.
+        // WN3: on the world's band (the Random path) the city is a smaller one - 16,400 people at month 150 against 20,700 on the
+        // literals - and the 50% tax's surplus is a first month's: business tax falls with the households' demand, $5.2k at the
+        // first month, $1.8k at the third, and by the third month of this run (after the grants above) a deficit. The condition is
+        // caused by stepping to it, a month at a time and bounded, as the grant section's students are (above).
         dials.setIncomeTaxRate(.5);
-        quietly(() -> menu.simulateMonths(3));
+        for (int m = 0; m < 3; m++) {
+            quietly(() -> menu.simulateMonths(1));
+            if (menu.getTreasurySurplus() > 0) break;
+        }
         double surplusBefore = menu.getTreasurySurplus();
         assertTrue("fixture: last month ran a surplus, on the bridge", surplusBefore > 0);
         dials.setGrant(TaxPolicy.GrantBasis.SURPLUS_SHARE, .10);

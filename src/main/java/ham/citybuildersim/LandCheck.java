@@ -2474,6 +2474,7 @@ public class LandCheck {
                         && poor.getCash() == poorCash && poor.getDebtManager().getAllPrincipal() == poorOwed);
 
         Game founded = dollarCity("landcheck-iron-none");
+        ironPays(founded);
         int none = LongPlaytest.ironNoneListed;
         boolean listed = founded.getLandManager().getMarket().cheapestWith(Resource.IRON) != null;
         quietly(() -> LongPlaytest.ironWhenNeeded(founded));
@@ -2481,9 +2482,20 @@ public class LandCheck {
                 !listed && founded.getLandManager().getIronDeposits() == 0 && LongPlaytest.ironNoneListed == none + 1);
     }
 
+    /**
+     * WN3: iron ore at the goods' literal band (Good.worldImportPrice(), worldExportPrice()), set on its market by hand as CopperRefiningCheck
+     * sets copper's. These fixtures' premise is that an Iron Mine would pay; on the world's band at the founding's January (the Random path
+     * starts from the prices of January 2000) ore's export floor is .035 against the literal .085 and the mine, 20,000 kg a month against
+     * its diesel, loses about 25 a month, so the player's rule would never look at the iron. Nothing here moves a month, so the price holds.
+     */
+    static void ironPays(Game g) {
+        g.getMarkets().get(Good.IRON).setWorldPrices(Good.IRON.worldImportPrice(), Good.IRON.worldExportPrice());
+    }
+
     /** A new city at 1.6 to the dollar grown, by hand, toward the iron field nearest its site (nearestUnowned(); its founding field until 0.7.98) - the offer nearest it each time - until an offer holds iron. */
     static Game ironListed(String label) {
         Game g = dollarCity(label);
+        ironPays(g);
         CityLand land = g.getCityLand();
         LandManager lm = g.getLandManager();
         Deposit field = nearestUnowned(land, Resource.IRON);

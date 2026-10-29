@@ -1344,6 +1344,15 @@ public class RefineryCheck {
                 + " six months, and sold (0.7.105) ---");
         Game g = plannerTown("refinerycheck-run", false);
         Game held = plannerTown("refinerycheck-run-held", true);
+        /*
+         * ...ON THE GOODS' LITERALS (WN3, the world market), as section 14's town. The section's premise is the study's: crude imported by
+         * lorry loses (section 16's margins: by lorry -10.0% at the literals' prices), so the first barrel does not pay and the run goes to
+         * nothing. On the world's band the lorries' freight is shrunk to the band (GoodsMarket.bandFreight()) and on the Random path's
+         * January 2000 the last barrel earns 1.1% over its crude: a fixed world price is what the premise needs. The choice is not saved,
+         * so the twin loaded below plays on the literals too.
+         */
+        g.playOnLiterals();
+        held.playOnLiterals();
         Refining r = g.getSectors().refining(), h = held.getSectors().refining();
         BuildingManager b = g.getBuildingManager();
         BuildingsTemplate refinery = b.getTemplateByName("Oil Refinery"), farm = b.getTemplateByName("Tank Farm"),
@@ -1383,6 +1392,7 @@ public class RefineryCheck {
         quietly(() -> g.saveGame(10, "run"));
         Game twin = new Game(files);
         quietly(() -> twin.loadGameSave(10));
+        twin.playOnLiterals();   // WN3: as g; the choice is not saved
         Refining back = twin.getSectors().refining();
         boolean same = back.runShare() == r.runShare();
         quietly(() -> g.simulateMonths(2));

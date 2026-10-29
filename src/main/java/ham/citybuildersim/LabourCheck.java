@@ -1086,8 +1086,16 @@ public class LabourCheck {
              * site - 3.6 crews' worth - and all 50 of the builders' posts
              * offered. The condition is caused by stepping to it, bounded, as
              * the arrivals are above.
+             *
+             * WN3: on the world's band (Random path) the town's investors order
+             * a Panel Mill by month 16 (53,845 points, some 28 months of the
+             * four depots' whole output) that the literal prices did not pay
+             * for; the work ahead is 65 months of the depots' output at month
+             * 25 and falls about one a month, to the core crew's share only at
+             * month 91. The condition is the same and is stepped to the same
+             * way; the bound is 180 months, not 60, so the Mill is built first.
              */
-            for (int i = 0; i < 60 && town.getSectors().construction().getPostsOffered()
+            for (int i = 0; i < 180 && town.getSectors().construction().getPostsOffered()
                     >= town.getSectors().construction().getPostsStanding(); i++) {
                 town.simulateMonths(1);
             }

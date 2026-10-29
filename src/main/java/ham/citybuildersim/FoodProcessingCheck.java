@@ -358,7 +358,20 @@ public class FoodProcessingCheck {
          * the indexed floor (B8) - so the meat the plant was said to pay fell
          * behind the meat it sold, the dear case earned half the cheap one,
          * and the claim below measured the currency, not the meat.
+         *
+         * WN3: AT THE WORLD'S TWO FIGURES, which are this section's premise
+         * ($7.00 and $5.60 above are the goods' literals). On the world's band
+         * of the Random path - prices of January 2000 - the meat and the
+         * processed meat sit at .73 (the floors) to .83 (the ceilings) of them
+         * while the Works' wages and upkeep do not, so what the plant clears
+         * before them is smaller and a herd earns it 1.9 times what a ship
+         * does where the claim below wants more than 2 (5.6 on the literals):
+         * the goods it buys and sells are handed their literal band, as
+         * CopperRefiningCheck hands copper its.
          */
+        for (java.util.Set<Good> goods : java.util.List.of(meat.goodsUsed().keySet(), meat.goodsMade().keySet())) {
+            for (Good g : goods) markets.get(g).setWorldPrices(g.worldImportPrice(), g.worldExportPrice());
+        }
         GoodsMarket meatMarket = markets.get(Good.MEAT);
         meatMarket.setLocalPrice(meatMarket.ceiling());
         double imported = fp.estimatedMonthlyProfit(meat, game.getBusinessInvestment());
