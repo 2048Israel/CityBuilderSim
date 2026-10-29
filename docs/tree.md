@@ -415,6 +415,12 @@ adds its line here, not in `CLAUDE.md`.
                                    good, year, path and site, a small city a price-taker and a big one not,
                                    the month's step against a re-solve with the city's tonnes in, seeds
                                    repeat to the bit, the save round trip, the stand-in, the timings (WN3)
+        PartnerTrade.java          the city's trade by partner (batch WN3; spec-nations 6 and 8): the
+                                   month's and the year's trade with each nation and by good, split from the
+                                   month's own fills by WorldMarket.allocate() (Game, tallyThePartners()),
+                                   the finished years' tables for the history, an immutable snapshot
+                                   published through a volatile for the screens (it is TradeLanes.Feed),
+                                   and the save's State
         TradeLanes.java            the city's trade as routes on the map, without the toolkit (batch WN3,
                                    slice C; docs/studies/spec-nations.md 8, board 1): the partners over
                                    MIN_LANE as a tree of great-circle lanes from the city, a partner joining

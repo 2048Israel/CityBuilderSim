@@ -3944,11 +3944,14 @@ final class MapView {
     /* ----- the city's trade (WN3) ----- */
 
     /**
-     * The city's trade by partner - THE ONE SEAM the wiring slice fills (WN3): until the game keeps its trade by partner this is no trade, so
-     * nothing is drawn, no chip shows on a generated world and no card has trade rows. It becomes `return ui.game.<the game's TradeLanes.Feed>;`
-     * and nothing else in the screen changes.
+     * The city's trade by partner - THE ONE SEAM the wiring filled (WN3): the game's feed over last month's trade by partner and the year to date
+     * (Game.getTradeFeed(), an immutable snapshot published through a volatile, so this is safe on the screen's thread and costs a frame nothing);
+     * no trade where the game has no world market, so nothing is drawn, no chip shows on a generated world and no card has trade rows.
      */
-    private TradeLanes.Feed tradeFeed() { return TradeLanes.Feed.NONE; }
+    private TradeLanes.Feed tradeFeed() {
+        Game g = ui.game;
+        return g == null ? TradeLanes.Feed.NONE : g.getTradeFeed();
+    }
 
     /** Whether this is a generated world whose feed names the place the city stands in, so its partners can be drawn as arrows. */
     private boolean standsIn() {

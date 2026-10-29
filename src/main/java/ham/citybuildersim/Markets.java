@@ -97,6 +97,33 @@ public final class Markets {
     }
 
     /**
+     * Gives every good the world market models its band for the month (Game, THE WORLD MARKET; WN3): from LAST month's exports and imports of it, in
+     * units, as the city's record of the month has them (PartnerTrade.monthExportUnits(): every fill and draw of the month - the markets' own tally
+     * leaves out the draws made before the clearing, and the fleets' fuel and the builders' materials are all draws) - the floor and ceiling the market
+     * makes of them, thousands of world dollars a game unit. A side the market has no number for (a good it does not model, a side the good lacks, a
+     * year not solved) is handed back as the literal, so no market keeps a price it was once given. With no world market, call clearWorldPrices() and
+     * the band is the good's literals exactly.
+     */
+    public void setWorldBand(WorldMarket world, java.util.function.ToDoubleFunction<Good> exportedLastMonth,
+                             java.util.function.ToDoubleFunction<Good> importedLastMonth) {
+        for (GoodsMarket m : markets.values()) {
+            Good g = m.good();
+            if (!world.trades(g)) {
+                m.setWorldPrices(Double.NaN, Double.NaN);
+                continue;
+            }
+            double[] band = world.band(g, exportedLastMonth.applyAsDouble(g), importedLastMonth.applyAsDouble(g));
+            // {floor, ceiling}: the export price is the floor and the import price the ceiling.
+            m.setWorldPrices(band[1], band[0]);
+        }
+    }
+
+    /** Every market back on the good's literal prices: a city with no world market, or whose market was refused. */
+    public void clearWorldPrices() {
+        for (GoodsMarket m : markets.values()) m.setWorldPrices(Double.NaN, Double.NaN);
+    }
+
+    /**
      * The one rate every market here was told, read off one of them.
      *
      * READ AND NOT KEPT, deliberately: a second copy of a number is a number
@@ -517,6 +544,11 @@ public final class Markets {
         public double price, flow, stock, demand;
         public double[] taken;
         public double imported, exported, localFilled, offered, bid, drawn;
+        /**
+         * The world's band the month was struck at (WN3): its import and export prices, thousands of world dollars a unit. Boxed: null is the
+         * good's literal, so a city with no world market writes neither key, and a save without them reads the literals.
+         */
+        public Double worldImport, worldExport;
     }
 
     public List<State> toState() {
@@ -535,6 +567,9 @@ public final class Markets {
             s.offered = m.getOffered();
             s.bid = m.getBid();
             s.drawn = m.getDrawn();
+            // ...and the band it was struck at (WN3): the tally above is what the next band is made of, and the draws between presses read this one.
+            s.worldImport = Double.isNaN(m.getWorldImportSet()) ? null : m.getWorldImportSet();
+            s.worldExport = Double.isNaN(m.getWorldExportSet()) ? null : m.getWorldExportSet();
             out.add(s);
         }
         return out;
@@ -551,6 +586,8 @@ public final class Markets {
             m.restoreStrike(s.flow, s.stock, s.demand);
             m.restoreTally(s.imported, s.exported, s.localFilled, s.offered, s.bid, s.drawn);
             m.restoreTakenHistory(s.taken);
+            // The band (WN3): put back as it was struck, never recomputed, so a city loaded between two presses draws at the prices the one saved would.
+            m.setWorldPrices(s.worldImport == null ? Double.NaN : s.worldImport, s.worldExport == null ? Double.NaN : s.worldExport);
         }
     }
 
