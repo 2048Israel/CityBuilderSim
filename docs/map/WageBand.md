@@ -1,6 +1,6 @@
 # WageBand.java - 170 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/WageBand.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WageBand.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The four education bands the wage tax is set by.
 > 

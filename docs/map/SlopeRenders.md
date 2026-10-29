@@ -1,6 +1,6 @@
 # SlopeRenders.java - 275 lines · 10 methods · 4 constants · tools
 
-`ham/citybuildersim/tools/SlopeRenders.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/SlopeRenders.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > Renders what ET2 did to the map and the founding card, for review: a city played on the real Earth and drawn by the
 > game's own painters, headless, and the card's words for three spots.

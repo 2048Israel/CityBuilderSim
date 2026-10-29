@@ -1,6 +1,6 @@
 # BridgeMapCheck.java - 1,015 lines · 51 methods · 9 constants · harnesses
 
-`ham/citybuildersim/BridgeMapCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeMapCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > A long bridge that stands is laid by the runs, kept clear by the plans and drawn with its deck (ET6; docs/studies/spec-earth2-terrain.md 6.5 and 6.6).
 > 

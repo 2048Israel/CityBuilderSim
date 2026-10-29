@@ -44,11 +44,11 @@ New or restated, each red without its fix and green with it (the slices took eac
 - `MainLineCheck` 14 (the line held while a yard idles, taken back after) and its siding routes (the runs' plus the plans').
 - `LongPlaytest`'s watch: a box that left a run is counted apart, in the month pairs and among the oldest works.
 
-{CHECKS}
+**The run:** `./batch-check.sh --pick` exit 0: 23 harnesses (MapCheck, PlanCheck, JunctionCheck, CrossingCheck, RailDrawCheck, MainLineCheck, GatewayCheck, LandmassCheck, LongPlaytest, TimingCheck and the rest `tools/pick.sh` named), the maps, Stale (0 firm) and the tree. One timing line soft beside other batches' JVMs, not counted: MapCheck's 10-billion month, 7.0 ms of its 5 (main's own read 6.3 to 8.3 under the same load; alone and hard, slice D measured 4.03 against main's 3.96). The gate's paired rounds judge it.
 
 ## 4. The trace, and the time
 
-- **The trace:** the default playtest (`-Dplaytest.trace`) on main's classes (1d7142b7) and the branch's, each built apart: the eight files byte-identical. The report differs in its run time and the layout watch: 211,189 boxes compared against 217,693 (boxes moved off a run, some on to the next district), 0 moved either way, the new "moved off a run" line 0, the ring at m4,000 10.68 / 6.14 / 12.07 km against 10.93 / 6.13 / 11.75. No ensemble.
+- **The trace:** the default playtest (`-Dplaytest.trace`) on main's classes (1d7142b7) and the branch's, each built apart: the eight files byte-identical. The report differs in its run time and the layout watch: 210,061 boxes compared against 217,693 (boxes moved off a run, some of them on to the next district, and the harbours' works off the district plans), 0 moved either way, the new "moved off a run" line 0, the ring at m4,000 (homes / industry / outer kinds) 10.64 / 6.24 / 11.78 km against 10.93 / 6.13 / 11.75. No ensemble.
 - **The time:** a plan pays one ground pass (about 0.95 ms) for each month a run lands on its boxes: the playtest copy's founding district 29-38 -> 42-52 ms a plan, all districts +0 to 15%, the slowest 83-91 -> 53-65 ms. `PlanCheck <save>` 9's 40 ms a plan, run by hand on that copy, is over on the founding district (FW4 read 40.5 there; FX7's ★3, a `ground()` that works only the rows a record touches, would bring it back). The packing is faster (66.7 -> 13.6 ms); a tile's paint +0 to 6% (0.100 -> 0.107 ms raster at 8 px); the first `trainRoutes()` after a change 16 -> 38 ms; MapCheck's month lines at 5B and 10B as main's beside the same load (4.03 / 2.47 / 1.83 ms against 3.96 / 2.16 / 1.89, run alone and hard). No budget moved.
 
 ## 5. Renders (`MF1/`)

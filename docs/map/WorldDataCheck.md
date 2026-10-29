@@ -1,6 +1,6 @@
 # WorldDataCheck.java - 1,048 lines · 35 methods · 27 constants · harnesses
 
-`ham/citybuildersim/WorldDataCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldDataCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The nations' world file's reader (batch WN0; the project's spec-nations.md
 > 3.3): WorldData's reading of world-1.bin held to tools/world/worldread.py

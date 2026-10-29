@@ -1,6 +1,6 @@
 # Mining.java - 85 lines · 4 methods · 4 constants · sectors
 
-`ham/citybuildersim/sectors/Mining.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Mining.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > Iron mines - Iron Mining since 0.7.120, under the key it was saved by,
 > "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). Its own
@@ -36,7 +36,7 @@
 
 **Uses:** [Good](Good.md) (2), [LandManager](LandManager.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Resource](Resource.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [Deposit](Deposit.md) (1)
 
-**Used by (30):** [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [ConservationCheck](ConservationCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [DenominationCheck](DenominationCheck.md), [ForestryCheck](ForestryCheck.md), [GatewayCheck](GatewayCheck.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [PlanCheck](PlanCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sectors](Sectors.md), [SlopeCheck](SlopeCheck.md), [TradeCostCheck](TradeCostCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [WellCheck](WellCheck.md)
+**Used by (31):** [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [ConservationCheck](ConservationCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [DenominationCheck](DenominationCheck.md), [ForestryCheck](ForestryCheck.md), [GatewayCheck](GatewayCheck.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [PlanCheck](PlanCheck.md), [RailDepotCheck](RailDepotCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sectors](Sectors.md), [SlopeCheck](SlopeCheck.md), [TradeCostCheck](TradeCostCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [WellCheck](WellCheck.md)
 
 ## Constants
 

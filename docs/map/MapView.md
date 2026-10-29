@@ -1,6 +1,6 @@
 # MapView.java - 3,981 lines · 167 methods · 45 constants · interface
 
-`ham/citybuildersim/ui/MapView.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/MapView.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, the far nodes from the world's ground and the district pictures (0.7.128), and expanded on the real Earth a globe (0.7.135) - with the city's block lines, its edge, its offers hatched and numbered by place, and its deposits over it, a scale bar, and what is under the pointer.
 > 
@@ -536,7 +536,7 @@
 | 3848 | 5 | `static List<String[]> legendEntries(int tier, boolean relief)` | ...on an Earth world with earth-2's layers (`relief`, LandMap.reliefDrawn(); ET1 slice D) also the three greys, forest on a slope and, on the plane, the shallow sea. |
 | 3855 | 1 | `static List<String[]> legendEntries()` | ...the plane's, at every scale on a generated world. |
 | 3867 | 3 | `static String trucksWords(int loads)` | ...and its words for N loads a truck: "Trucks: one per load" for one, "Trucks: one per 1,200 loads" for more. |
-| 3875 | 3 | `static String packedWords(int packed)` | The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed without a street. |
+| 3875 | 3 | `static String packedWords(int packed)` | The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed at its edge. |
 | 3880 | 3 | `static String surplusWords(long plots)` | ...and when the city has road its streets have no room for (star RD2-4): how much, in plots. |
 | 3885 | 3 | `static String trackWords(long plots)` | ...and (FR7 slice 3) when the model has track the railway's ways do not use - its main line, its sidings and its branches - how much, in plots; the model's words (LandMap.trackSurplusWords()). |
 | 3900 | 18 | `private VBox legend()` |  |

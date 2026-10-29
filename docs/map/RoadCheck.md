@@ -1,6 +1,6 @@
 # RoadCheck.java - 1,199 lines · 35 methods · 2 constants · harnesses
 
-`ham/citybuildersim/RoadCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RoadCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The roads over their lives, and a gravel road paved (0.7.70, batch N1):
 > BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to

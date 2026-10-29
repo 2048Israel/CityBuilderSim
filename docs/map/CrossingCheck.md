@@ -1,6 +1,6 @@
 # CrossingCheck.java - 520 lines · 27 methods · 2 constants · harnesses
 
-`ham/citybuildersim/CrossingCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CrossingCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > Short crossings of bridgeable water (ET6; spec-earth2-terrain 6.2, D12): the shallow sea is water a road or a railway
 > may bridge, exactly as fresh water is, and a highway or a railway reaches 34 plots (1,020 m) across it.
