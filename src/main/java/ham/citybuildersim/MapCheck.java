@@ -4319,6 +4319,241 @@ public class MapCheck {
         return c;
     }
 
+    /* ----- the shore's cost follows what a month changes (SL1, 2026-10-28) ----- */
+
+    /** General Cargo Terminals standing on the small coast of the shore's cost: 10. */
+    static final int SHORE_FEW = 10;
+
+    /** ...and on the big coast: 300, where a late city stands thousands. */
+    static final int SHORE_MANY = 300;
+
+    /** How many times the cost of a month's terminal may grow from SHORE_FEW standing to SHORE_MANY: twice (it was 21 times, 74 ms and 1,557 ms: every plot the search read asked every work, and every search began again at the nearest tile). */
+    static final double SHORE_GROWTH = 2;
+
+    /** Months of one more terminal before the timing and timed, a terminal each: SHORE_WARM that are not, then the median of SHORE_TIMED kept (a month is about a ms, which a pause moves). */
+    static final int SHORE_WARM = 3, SHORE_TIMED = 15;
+
+    /** Plots asked about each work beyond its box, verge and quay: 2, past the cell the index keeps a work in. */
+    static final int SHORE_MARGIN = 2;
+
+    /** Terminals asked of the coast that fills, one at a time: 20, more than its 12. */
+    static final int SHORE_FILL = 20;
+
+    /** Terminals asked of each lagoon, one at a time: 40. */
+    static final int SHORE_LAGOON = 40;
+
+    /** Whether any work of `shore` blocks world plot (x, y), by the loop over every work that CityShore.blocks() was before SL1: the reference. */
+    static boolean blocksByLoop(CityShore shore, long x, long y) {
+        for (CityShore.Work w : shore.works()) {
+            if (x >= w.x0() - CityShore.CLEAR && y >= w.y0() - CityShore.CLEAR && x < w.x0() + w.w() + CityShore.CLEAR && y < w.y0() + w.h() + CityShore.CLEAR) return true;
+            if (w.quayAt(x, y)) return true;
+        }
+        return false;
+    }
+
+    /** The first work whose box holds world plot (x, y), by the loop over every work: the reference. */
+    static CityShore.Work atByLoop(CityShore shore, long x, long y) {
+        for (CityShore.Work w : shore.works()) if (w.holds(x, y)) return w;
+        return null;
+    }
+
+    /** Whether blocks() and at() answer as the loops do at world plot (x, y); `counts` takes {asked, blocked, differ}. */
+    static void askBoth(CityShore shore, long x, long y, long[] counts) {
+        boolean by = blocksByLoop(shore, x, y);
+        counts[0]++;
+        if (by) counts[1]++;
+        if (shore.blocks(x, y) != by || shore.at(x, y) != atByLoop(shore, x, y)) counts[2]++;
+    }
+
+    /** blocks() and at() against the loops at every plot of each work's box, its verge and its quay and `margin` plots about them: {plots asked, of them blocked, answers that differ}. */
+    static long[] blocksAgainstLoops(CityShore shore, int margin) {
+        long[] counts = new long[3];
+        for (CityShore.Work k : shore.works()) {
+            long x0 = k.x0() - CityShore.CLEAR, y0 = k.y0() - CityShore.CLEAR, x1 = k.x0() + k.w() + CityShore.CLEAR - 1, y1 = k.y0() + k.h() + CityShore.CLEAR - 1;
+            if (k.quay() > 0) {
+                long[] a = k.quayPlot(1), b = k.quayPlot(k.quay());
+                x0 = Math.min(x0, Math.min(a[0], b[0]));
+                y0 = Math.min(y0, Math.min(a[1], b[1]));
+                x1 = Math.max(x1, Math.max(a[0], b[0]));
+                y1 = Math.max(y1, Math.max(a[1], b[1]));
+            }
+            for (long y = y0 - margin; y <= y1 + margin; y++) for (long x = x0 - margin; x <= x1 + margin; x++) askBoth(shore, x, y, counts);
+        }
+        return counts;
+    }
+
+    /**
+     * Terminals of type t laid one at a time, the model's count n from `from` to `to` (counts[t] is set to it): before each month the spot the search from
+     * where the last found room finds and the spot the search from the nearest finds, then the month. {searches, spots that differ, laid at the spot found,
+     * came up short, laid elsewhere, tiles looked at from where the last found room, tiles looked at from the nearest}.
+     */
+    static long[] layOneAtATime(CityMap m, int t, long[] counts, long from, long to) {
+        long[] r = new long[7];
+        List<long[]> mines = m.minedSites();
+        for (long n = from; n <= to; n++) {
+            long l0 = m.shoreLooked();
+            CityShore.Work remembered = m.shoreSpot(t, mines);
+            long l1 = m.shoreLooked();
+            CityShore.Work whole = m.shoreSpotFull(t, mines);
+            long l2 = m.shoreLooked();
+            r[5] += l1 - l0;
+            r[6] += l2 - l1;
+            r[0]++;
+            if (!java.util.Objects.equals(remembered, whole)) r[1]++;
+            counts[t] = n;
+            m.reconcile(counts);
+            List<CityShore.Work> laid = m.shore().works();
+            if (remembered == null) r[3]++;
+            else if (laid.get(laid.size() - 1).equals(remembered)) r[2]++;
+            else r[4]++;
+        }
+        return r;
+    }
+
+    /** The median of the figures after the first `skip`. */
+    static double medianAfter(double[] ms, int skip) {
+        double[] timed = Arrays.copyOfRange(ms, skip, ms.length);
+        Arrays.sort(timed);
+        return timed[timed.length / 2];
+    }
+
+    /**
+     * SL1 (2026-10-28): what the shore costs follows what a month changes and not the terminals standing. The measure that found it:
+     * a canonical draw took 1.2 s with 10 General Cargo Terminals, 14.6 s with 100 and 183 s with 300, and a month that laid one more
+     * 74 ms, 304 ms and 1,557 ms, on the clock's thread - the model's whole month is 15 ms. (a) CityShore.blocks() and at() answer as
+     * the loops over every work did; (b) a search that starts where the last found room finds the spot a search from the nearest
+     * does, for each terminal laid one at a time on a coast that fills, and after some are taken away; (c) a month's terminal costs
+     * no more than SHORE_GROWTH times with SHORE_MANY standing than with SHORE_FEW.
+     */
+    static void shoreFollowsChange(BuildingVisual.Type[] types, long seed, CityMap coast) {
+        out.println("      the shore's cost follows what a month changes, not the terminals standing:");
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        int gct = -1, box = -1;
+        for (BuildingVisual.Type t : types) {
+            if (t == null) continue;
+            if (t.berth() == Ports.Cargo.GENERAL.ordinal()) gct = t.id();
+            if (t.berth() == Ports.Cargo.CONTAINER.ordinal()) box = t.id();
+        }
+        check("fixture: the town has a General Cargo Terminal and a Container Terminal", gct >= 0 && box >= 0);
+
+        // ---- (a) blocks() and at() as the loops
+        long[] few = shoreCounts(types), many = shoreCounts(types);
+        few[gct] = SHORE_FEW;
+        many[gct] = SHORE_MANY;
+        long t0 = System.nanoTime();
+        CityMap small = coastal(seed, sx, sy, types, SHORE_SIDE, few);
+        double drawFew = (System.nanoTime() - t0) / 1e6;
+        t0 = System.nanoTime();
+        CityMap big = coastal(seed, sx, sy, types, SHORE_SIDE, many);
+        double drawMany = (System.nanoTime() - t0) / 1e6;
+        out.printf("      the canonical draw: %d General Cargo Terminals in %.0f ms, %d in %.0f ms (before SL1: 1,200 ms and 183,000 ms)%n",
+                SHORE_FEW, drawFew, SHORE_MANY, drawMany);
+        check("fixture: both coasts hold every General Cargo Terminal asked of them, the cost is of that many standing",
+                small.shore().count(gct) == SHORE_FEW && big.shore().count(gct) == SHORE_MANY);
+        long[] onCoast = blocksAgainstLoops(coast.shore(), SHORE_MARGIN), onBig = blocksAgainstLoops(big.shore(), SHORE_MARGIN);
+        out.printf("      blocks() and at() asked at %,d plots about the section's %d works (%,d block) and at %,d about the big coast's %d (%,d block): %d and %d differ%n",
+                onCoast[0], coast.shore().works().size(), onCoast[1], onBig[0], big.shore().works().size(), onBig[1], onCoast[2], onBig[2]);
+        check("fixture: the plots asked are boxes, verges and quays that block and plots about them that do not",
+                onCoast[1] > 0 && onCoast[0] > onCoast[1] && onBig[1] > 0 && onBig[0] > onBig[1]);
+        check("blocks() and at() answer as the loops over every work did, at every plot of every work's box, verge and quay and two plots about each,"
+                + " on the section's coast and on a coast of 300 terminals", onCoast[2] == 0 && onBig[2] == 0);
+        // The index kept through works laid, taken and wide: a shore of random works, asked after each change (the loops are the answer).
+        CityShore syn = new CityShore();
+        java.util.Random rnd = new java.util.Random(0x51);
+        long[] synCounts = new long[3];
+        boolean kept = true;
+        for (int round = 0; round < 6; round++) {
+            for (int i = 0; i < 25; i++) {
+                int side = rnd.nextInt(4), type = rnd.nextInt(3);
+                syn.add(new CityShore.Work(rnd.nextInt(300) - 40, rnd.nextInt(300) - 40, 1 + rnd.nextInt(16), 1 + rnd.nextInt(15), type, side, rnd.nextBoolean() ? 1 + rnd.nextInt(14) : 0));
+            }
+            if (round == 3) syn.add(new CityShore.Work(-10, 60, 50_000, 3, 2, 1, 0));   // wider than any layout makes: asked of every plot
+            if (round == 4) {
+                syn.removeNewest(2);
+                syn.removeNewest(0);
+            }
+            for (int i = 0; i < 4_000; i++) askBoth(syn, rnd.nextInt(360) - 50, rnd.nextInt(360) - 50, synCounts);
+            kept &= synCounts[2] == 0;
+        }
+        out.printf("      a shore of %d works laid, taken and wide, asked at %,d plots in six rounds: %d differ from the loops%n",
+                syn.works().size(), synCounts[0], synCounts[2]);
+        check("...and as they did through works laid after it was built, works taken, and a work too wide to keep by cell", kept && synCounts[1] > 0 && synCounts[0] > synCounts[1]);
+
+        // ---- (b) a search from where the last found room is the search from the nearest
+        long[] fill = shoreCounts(types);
+        fill[box] = 0;
+        CityMap filling = coastal(seed, sx, sy, types, 2, fill);
+        long[] first = layOneAtATime(filling, box, fill, 1, SHORE_FILL);
+        int placed = filling.shore().count(box);
+        fill[box] = placed - 3;
+        filling.reconcile(fill);
+        check("fixture: three terminals taken from the coast that filled leave it three fewer", filling.shore().count(box) == placed - 3);
+        long[] again = layOneAtATime(filling, box, fill, placed - 2, placed + 2);
+        out.printf("      the coast that fills: %d searches, %d laid at the spot found, %d came up short; %,d tiles looked at from where the last found room,"
+                + " %,d from the nearest; %d differ%n", first[0] + again[0], first[2] + again[2], first[3] + again[3], first[5] + again[5], first[6] + again[6],
+                first[1] + again[1]);
+        check("fixture: the coast fills - terminals are laid, and some come up short", first[2] > 0 && first[3] >= 3 && filling.shoreShort() > 0);
+        check("a search from where the last found room finds the spot the search from the nearest finds, for each terminal laid one at a time"
+                + " until the coast is full and again after three are taken away, and that is where the terminal is laid",
+                first[1] + again[1] == 0 && first[4] + again[4] == 0);
+        check("...and looks at fewer tiles than the search from the nearest does", first[5] + again[5] < first[6] + again[6]);
+
+        // ---- (b2) ...also where a water as wide as the flood's reach is shut to the terminals after the first that fails in it
+        // A lagoon the size of a disk of sea cells about the first spot's quay end: the floods share what they find shut, so what the search is
+        // told of the water depends on the order it asks, and a search that passes tiles over must ask in the same order.
+        long[] none = shoreCounts(types);
+        none[gct] = 0;
+        CityMap dry = coastal(seed, sx, sy, types, 2, none);
+        CityShore.Work firstSpot = dry.shoreSpotFull(gct, dry.minedSites());
+        int[][] lagoons = { { 14, -6, 4 }, { 16, 4, -5 }, { 21, -4, 4 } };
+        long searches = 0, laidIn = 0, touched = 0, lagoonDiffer = 0;
+        for (int[] lg : lagoons) {
+            long[] cnt = shoreCounts(types);
+            cnt[gct] = 0;
+            CityMap lagoon = coastal(seed, sx, sy, types, 2, cnt);
+            long[] end = firstSpot.quayPlot(firstSpot.quay() + 1);
+            final long ci = Math.floorDiv(end[0], SeaRoutes.CELL) + lg[1], cj = Math.floorDiv(end[1], SeaRoutes.CELL) + lg[2];
+            final long r2 = (long) lg[0] * lg[0];
+            lagoon.shoreSeaIs(SeaRoutes.grid((i, j) -> (i - ci) * (i - ci) + (j - cj) * (j - cj) <= r2));
+            long[] run = layOneAtATime(lagoon, gct, cnt, 1, SHORE_LAGOON);
+            int standing = lagoon.shore().count(gct);
+            cnt[gct] = Math.max(0, standing - 2);
+            lagoon.reconcile(cnt);
+            long[] more = layOneAtATime(lagoon, gct, cnt, cnt[gct] + 1, cnt[gct] + 6);
+            searches += run[0] + more[0];
+            laidIn += run[2] + more[2];
+            lagoonDiffer += run[1] + more[1] + run[4] + more[4];
+            touched += lagoon.shoreTouched();
+        }
+        out.printf("      %d lagoons as wide as the reach (SeaRoutes.OPEN_M): %d searches, %d terminals laid, %d spots asked of a water found shut; %d differ%n",
+                lagoons.length, searches, laidIn, touched, lagoonDiffer);
+        check("fixture: the lagoons take terminals, and the floods meet a shut water as wide as the reach", laidIn > 10 && touched > 0);
+        check("...a search from where the last found room finds the spot the search from the nearest finds there too, with some taken and laid again", lagoonDiffer == 0);
+
+        // ---- (c) a month's terminal costs the same with 10 standing as with 300
+        int standingFew = small.shore().count(gct), standingMany = big.shore().count(gct), rounds = SHORE_WARM + SHORE_TIMED;
+        double[] fewMs = new double[rounds], manyMs = new double[rounds];
+        long[] cf = few.clone(), cm = many.clone();
+        for (int r = 0; r < rounds; r++) {
+            cf[gct]++;
+            cm[gct]++;
+            t0 = monthClock();
+            small.reconcile(cf);
+            fewMs[r] = (monthClock() - t0) / 1e6;
+            t0 = monthClock();
+            big.reconcile(cm);
+            manyMs[r] = (monthClock() - t0) / 1e6;
+        }
+        double fewMed = medianAfter(fewMs, SHORE_WARM), manyMed = medianAfter(manyMs, SHORE_WARM);
+        out.printf("      a month that lays one more terminal, the median of %d after %d warm-up, on " + (CPU_TIMED ? "the main thread's CPU" : "the wall clock") + ": %.2f ms with %d standing, %.2f ms with %d%n",
+                SHORE_TIMED, SHORE_WARM, fewMed, standingFew, manyMed, standingMany);
+        check("fixture: each of those months laid the terminal asked on both coasts, none came up short",
+                small.shore().count(gct) == standingFew + rounds && big.shore().count(gct) == standingMany + rounds);
+        check("a month that lays one more terminal takes no more than SHORE_GROWTH times as long with 300 standing as with 10",
+                Timing.within(manyMed, SHORE_GROWTH * fewMed));
+    }
+
     static void atSea(BuildingVisual.Type[] types, long seed) {
         out.println("\n--- 9. at sea and on the shore: the refinery's campus, the terminals at the water, the oil at sea, the routes and the boats ---");
         World w = World.of(seed);
@@ -4480,6 +4715,7 @@ public class MapCheck {
         for (Map.Entry<Integer, Long> e : plotsOf.entrySet()) once &= wantOf.getOrDefault(e.getKey(), 0L) >= e.getValue();
         out.printf("      drawn: %s plots of works (the shore's %s), %d of quay (%d)%n", plotsOf, wantOf, quayPlots, wantQuay);
         check("...each work drawn once on the tiles, on its own box, and every plot of its quay once", once && quayPlots == wantQuay);
+        shoreFollowsChange(types, seed, m);
 
         // ---- THE OIL AT SEA: the game's own platform (WellCheck's sea town).
         oilAtSea();

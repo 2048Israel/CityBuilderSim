@@ -5945,6 +5945,17 @@ public final class CityMap {
        of its plan (shoreOf()), as its yards are. What no shore holds is its
        district's plan's to draw, counted (shoreShort()), and the search
        waits for the ground to change.
+
+       SL1, 2026-10-28: the search grew with the works laid. Every plot it
+       read asked every work on the shore whether it blocked it, and every
+       search began again at the nearest tile and read the filled ones too;
+       300 terminals took a canonical draw 183 s and a month's +1 1.6 s
+       (10: 1.2 s and 74 ms). CityShore now keeps its works by cell (blocks()
+       asks the plot's cell only), the sea's grid is kept between searches,
+       and a search starts where the last one found room (DTrack, shoreSpot():
+       the spot is the search from the nearest's, shoreSpotFull(), by the
+       conditions listed there). A month's +1 takes the same with 10
+       standing as with 300 (MapCheck 9, SHORE_GROWTH).
        ===================================================================== */
 
     /** The city's works on its shore. */
@@ -6198,22 +6209,279 @@ public final class CityMap {
      * find the linked shore alone (the runs' own ground).
      */
     CityShore.Work shoreSpot(int t, List<long[]> mines, int landmass) {
-        boolean island = landmasses != null && landmass != ANY_LANDMASS;
-        World world = World.of(worldKey);
-        int[] tileLm = island ? new int[TilePainter.PLOTS] : null, windowLm = island ? new int[TilePainter.PLOTS] : null;
-        int[] fp = BuildingVisual.footprint(types[t]);
-        int quay = types[t].berth() >= 0 ? CityShore.QUAY_PLOTS[types[t].berth()] : 0;
-        int m = World.TILE, ww = World.TILE + 2 * m, tile = World.TILE;
-        byte[] fixed = new byte[ww * ww];
-        int[] ground = new int[ww * ww];
-        byte[] shoreRelief = new byte[World.TILE * World.TILE];
-        int scanned = 0;
-        Integer[] order = new Integer[TILES];
+        return shoreSpot(t, mines, landmass, true);
+    }
+
+    /** ...searched from the nearest tile every time, nothing kept or read of where the last search found room: the search as it was before SL1, which MapCheck 9 holds shoreSpot() equal to. */
+    CityShore.Work shoreSpotFull(int t, List<long[]> mines) {
+        return shoreSpotFull(t, mines, ANY_LANDMASS);
+    }
+
+    CityShore.Work shoreSpotFull(int t, List<long[]> mines, int landmass) {
+        return shoreSpot(t, mines, landmass, false);
+    }
+
+    /**
+     * WHERE THE LAST SEARCH FOUND ROOM (SL1, 2026-10-28). A search looked at every tile from the nearest, the filled ones too,
+     * and a city that lays its terminals by the hundred paid for every filled tile again with each one more (a month's +1 took
+     * 1.6 s with 300 standing, 74 ms with 10). A work laid only takes room, so a tile that held no spot stays so, and the next
+     * search starts where the last one found room: for each type and landmass and each district, the first tile that may hold a
+     * spot within reach of the ring ("near", which the search takes at once) and the first that may hold any. The spot found is
+     * the one the search from the nearest finds (shoreSpotFull(); MapCheck 9 lays a coast full one terminal at a time and asks
+     * both), because a tile is passed over only while all of this holds, and is looked at again when any of it fails:
+     *  - the ground, the runs, the mined sites and the districts are as they were (shoreStamp()), the shore is the same and no
+     *    work has been taken from it (CityShore.removals()): nothing has happened to the tile but works laid, which block plots;
+     *  - the tile was not unsteady: it held no F_RESERVE plot inside it (an interchange's reserve is found again whenever the map
+     *    changes, and may move off a plot that a work laid beside it has made unfit, which opens the plot), and none of its
+     *    spots was asked of a water as wide as the flood's reach that had been found shut, or shut it (ShutSet.touched): the
+     *    failed floods are shared within a search, so such a water is refused to the terminals after the first that fails in it,
+     *    in the order they are looked at, and a work laid that takes the first away frees the rest. A search never passes such a
+     *    tile over, so it asks the waters in the order the search from the nearest does;
+     *  - the search stays within SEARCH_TILES_MOST tiles, counted as the search from the nearest counts them (the tiles passed
+     *    over are counted from what was kept); else it is made again from the nearest, as the limit says.
+     */
+    private static final class DTrack {
+        /** The tiles before these (positions in the district's order) hold no near spot, no spot at all. */
+        int nearFrom, anyFrom;
+        /** The tiles the search counts (SEARCH_TILES_MOST) before those positions; once the position is TILES, the district's all. */
+        int countedNear, countedAny;
+    }
+
+    /** What the searches for one type on one landmass kept, and what it is kept against. */
+    private static final class ShoreTrack {
+        final CityShore shore;
+        final long removals, stamp;
+        final DTrack[] at;
+        /** Whether a search has been through and left its marks. */
+        boolean used;
+
+        ShoreTrack(CityShore shore, long removals, long stamp, int districts) {
+            this.shore = shore;
+            this.removals = removals;
+            this.stamp = stamp;
+            this.at = new DTrack[districts];
+        }
+    }
+
+    /** The marks of the searches, by type and landmass. */
+    private final Map<Long, ShoreTrack> shoreTracks = new HashMap<>();
+
+    /** How many tiles the searches have looked at, ever (a tile with no salt water or no dry ground too): what the marks save, which MapCheck 9 counts. */
+    private long shoreLooked;
+
+    long shoreLooked() { return shoreLooked; }
+
+    /** How many spots have been asked of a water as wide as the flood's reach that had been found shut, or shut it (ShutSet.touched): what the lagoons MapCheck 9 makes cause. */
+    private long shoreTouched;
+
+    long shoreTouched() { return shoreTouched; }
+
+    /** What the kept marks are valid against besides the shore: the ground, the runs, the mined sites and the districts in their order. */
+    private long shoreStamp(List<long[]> mines) {
+        long h = groundKey() ^ runs.version() * 0x9E3779B97F4A7C15L ^ (landmasses != null ? 0xC13FA9A902A6328FL : 0);
+        for (long[] s : mines) h = World.mix(h ^ s[0] * 31 ^ s[1] * 1_000_003L ^ s[2] * 0x9E3779B97F4A7C15L ^ s[3]);
+        for (District d : districts) h = World.mix(h ^ ((long) d.dx << 32) ^ (d.dy & 0xffffffffL));
+        return World.mix(h ^ districts.size());
+    }
+
+    /** The routes' grid of the sea as the searches read it, kept: the terrain's cells never change, and a grid made for each search read the same cells again (half of a search with 300 terminals standing). */
+    private SeaRoutes.Grid shoreSea;
+
+    private SeaRoutes.Grid shoreSea() {
+        if (shoreSea == null) shoreSea = new SeaRoutes.Grid(World.of(worldKey));
+        return shoreSea;
+    }
+
+    /** A harness's sea for the searches (a mask of the cells, SeaRoutes.grid(): a lagoon as wide as the flood's reach, say), in place of the world's; the marks of the searches are forgotten. */
+    void shoreSeaIs(SeaRoutes.Grid grid) {
+        shoreSea = grid;
+        shoreTracks.clear();
+    }
+
+    /** The flood's reach in cells (SeaRoutes.opensToSea()): a water whose cells all lie within it of one another opens to nothing, whichever of them a flood starts from. */
+    private static final double SHUT_REACH = SeaRoutes.OPEN_M / World.PLOT_M / SeaRoutes.CELL;
+
+    /**
+     * The water found shut (SeaRoutes.opensToSea()), noting when a flood touches a water as wide as the reach (hot): where a flood that
+     * starts in another part of it may open, so that what a terminal's water is told depends on which was asked first.
+     */
+    private static final class ShutSet extends HashSet<Long> {
+        final HashSet<Long> hot = new HashSet<>();
+        /** Whether the flood in hand put a hot water in the set or met one there. */
+        boolean touched;
+
+        @Override public boolean addAll(java.util.Collection<? extends Long> cells) {
+            long i0 = Long.MAX_VALUE, j0 = Long.MAX_VALUE, i1 = Long.MIN_VALUE, j1 = Long.MIN_VALUE;
+            for (Long k : cells) {
+                long i = k >> 32, j = (int) (long) k;
+                i0 = Math.min(i0, i);
+                i1 = Math.max(i1, i);
+                j0 = Math.min(j0, j);
+                j1 = Math.max(j1, j);
+            }
+            if (!cells.isEmpty() && Math.hypot(i1 - i0, j1 - j0) >= SHUT_REACH) {
+                hot.addAll(cells);
+                touched = true;
+            }
+            return super.addAll(cells);
+        }
+
+        @Override public boolean contains(Object k) {
+            boolean in = super.contains(k);
+            if (in && !hot.isEmpty() && hot.contains(k)) touched = true;
+            return in;
+        }
+    }
+
+    /** One search for a type's spot: the scratch its tiles are read into, and what the tile last looked at held. */
+    private final class ShoreScan {
+        final int t, landmass, quay;
+        final boolean island;
+        final World world = World.of(worldKey);
+        final int tile = World.TILE, m = World.TILE, ww = World.TILE + 2 * World.TILE;
+        final int[] fp, tileLm, windowLm;
+        final List<long[]> mines;
+        final byte[] fixed = new byte[ww * ww], shoreRelief = new byte[World.TILE * World.TILE];
+        final int[] ground = new int[ww * ww];
         // A terminal's water must open to the sea (SeaRoutes.opensToSea(), star O13-5): the routes' own grid, and the water found
         // shut, kept for the search.
-        SeaRoutes.Grid sea = quay > 0 ? new SeaRoutes.Grid(World.of(worldKey)) : null;
-        java.util.Set<Long> shut = new java.util.HashSet<>();
-        for (District d : districts) {
+        final SeaRoutes.Grid sea;
+        ShutSet shut = new ShutSet();
+        /** The tile last looked at: its first near spot, its first other spot, the first of either (stopAtAny), and whether an interchange's reserve lies inside it. */
+        CityShore.Work near, far, first;
+        boolean firstIsNear, unsteady;
+
+        ShoreScan(int t, List<long[]> mines, int landmass) {
+            this.t = t;
+            this.mines = mines;
+            this.landmass = landmass;
+            this.island = landmasses != null && landmass != ANY_LANDMASS;
+            this.fp = BuildingVisual.footprint(types[t]);
+            this.quay = types[t].berth() >= 0 ? CityShore.QUAY_PLOTS[types[t].berth()] : 0;
+            this.tileLm = island ? new int[TilePainter.PLOTS] : null;
+            this.windowLm = island ? new int[TilePainter.PLOTS] : null;
+            this.sea = quay > 0 ? shoreSea() : null;
+        }
+
+        /**
+         * Looks at tile (tx, ty): false when it has no salt water or no dry ground (nothing to stand on: no window is read), else
+         * its spots are tried in the order of the plots, the first near one ending the look (near) and the first other one kept
+         * (far); with stopAtAny the first of either ends it (first).
+         */
+        boolean look(long tx, long ty, boolean stopAtAny) {
+            shoreLooked++;
+            near = far = first = null;
+            firstIsNear = unsteady = false;
+            boolean wet = false, dry = false;
+            if (island) world.tileLandmass(tx, ty, tileLm);
+            for (int i = 0; i < World.TILE * World.TILE && !(wet && dry); i++) {
+                int g = island ? runGround.atRaw(tx * tile + i % tile, ty * tile + i / tile, -1) : runGround.at(tx * tile + i % tile, ty * tile + i / tile, -1);
+                if (World.salt(g)) wet = true;
+                else if (CityRuns.dry(g) && (!island || onLandmass(tileLm[i], landmass))) dry = true;
+            }
+            if (!wet || !dry) return false;
+            long wx0 = tx * tile - m, wy0 = ty * tile - m;
+            runs.fill(wx0, wy0, ww, ww, fixed, null, true);
+            for (int y = 1; y < tile && !unsteady; y++) {
+                for (int x = 1; x < tile; x++) {
+                    if (fixed[(y + m) * ww + x + m] == CityRuns.F_RESERVE) {
+                        unsteady = true;
+                        break;
+                    }
+                }
+            }
+            for (int j = 0; j < ww * ww; j++) ground[j] = island ? runGround.atRaw(wx0 + j % ww, wy0 + j / ww, -1) : runGround.at(wx0 + j % ww, wy0 + j / ww, -1);
+            // A terminal or a tank farm is a building (ET2): it stands on flat and foothill only, so steep ground is read as a mine's site is, ground no work takes.
+            for (int ry = 0; ry < 3; ry++) {
+                for (int rx = 0; rx < 3; rx++) {
+                    world.tileRelief(tx - 1 + rx, ty - 1 + ry, shoreRelief);
+                    if (island) world.tileLandmass(tx - 1 + rx, ty - 1 + ry, windowLm);
+                    for (int i = 0; i < tile * tile; i++) {
+                        if (shoreRelief[i] <= World.FOOTHILL && !(island && !onLandmass(windowLm[i], landmass))) continue;
+                        int j = (ry * tile + i / tile) * ww + rx * tile + i % tile;
+                        if (CityRuns.dry(ground[j])) ground[j] = -2;
+                    }
+                }
+            }
+            for (long[] s : mines) {
+                for (long y = Math.max(s[1], wy0); y <= Math.min(s[3], wy0 + ww - 1); y++) {
+                    for (long x = Math.max(s[0], wx0); x <= Math.min(s[2], wx0 + ww - 1); x++) ground[(int) ((y - wy0) * ww + (x - wx0))] = -2;
+                }
+            }
+            for (int iy = 0; iy < tile; iy++) {
+                for (int ix = 0; ix < tile; ix++) {
+                    int j = (iy + m) * ww + ix + m;
+                    if (!CityRuns.dry(ground[j])) continue;
+                    for (int side = 0; side < 4; side++) {
+                        if (!World.salt(ground[j + CityShore.DX[side] + CityShore.DY[side] * ww])) continue;
+                        for (int turn = 0; turn < (fp[0] == fp[1] ? 1 : 2); turn++) {
+                            int w = turn == 0 ? fp[0] : fp[1], h = turn == 0 ? fp[1] : fp[0];
+                            long sx = tx * tile + ix, sy = ty * tile + iy;
+                            long bx0 = side == 1 ? sx - (w - 1) : side == 3 ? sx : sx - w / 2;
+                            long by0 = side == 2 ? sy - (h - 1) : side == 0 ? sy : sy - h / 2;
+                            CityShore.Work c = new CityShore.Work(bx0, by0, w, h, t, side, quay);
+                            if (!shoreFits(c, ground, fixed, wx0, wy0, ww)) continue;
+                            if (sea != null) {
+                                long[] e = c.quayPlot(quay + 1);
+                                shut.touched = false;
+                                boolean opens = SeaRoutes.opensToSea(sea, e[0], e[1], shut);
+                                if (shut.touched) {
+                                    unsteady = true;
+                                    shoreTouched++;
+                                }
+                                if (!opens) continue;
+                            }
+                            boolean ring = nearRing(c);
+                            if (stopAtAny) {
+                                first = c;
+                                firstIsNear = ring;
+                                return true;
+                            }
+                            if (ring) {
+                                near = c;
+                                return true;
+                            }
+                            if (far == null) far = c;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
+     * The districts in the map's order, each one's tiles nearest the site first: the first district with a spot gives its first
+     * near spot, else its first spot. `kept`: from the marks the last search left (DTrack says when a tile is passed over);
+     * else from the nearest, as before SL1.
+     */
+    private CityShore.Work shoreSpot(int t, List<long[]> mines, int landmass, boolean kept) {
+        long ckey = ((long) t << 32) ^ (landmass & 0xffffffffL);
+        ShoreTrack tr = null;
+        if (kept) {
+            long stamp = shoreStamp(mines);
+            tr = shoreTracks.get(ckey);
+            if (tr == null || tr.shore != shore || tr.removals != shore.removals() || tr.stamp != stamp || tr.at.length != districts.size()) {
+                tr = new ShoreTrack(shore, shore.removals(), stamp, districts.size());
+                shoreTracks.put(ckey, tr);
+            }
+        }
+        boolean resumed = tr != null && tr.used;
+        ShoreScan sc = new ShoreScan(t, mines, landmass);
+        int tile = World.TILE, scanned = 0;
+        Integer[] order = new Integer[TILES];
+        CityShore.Work result = null;
+        for (int di = 0; di < districts.size() && result == null; di++) {
+            DTrack s = tr == null ? new DTrack() : tr.at[di];
+            if (s == null) {
+                s = new DTrack();
+                if (tr != null) tr.at[di] = s;
+            }
+            if (s.anyFrom >= TILES) {
+                scanned += s.countedAny;
+                continue;
+            }
+            District d = districts.get(di);
             long tx0 = (baseDX + d.dx) * TILES_A_SIDE, ty0 = (baseDY + d.dy) * TILES_A_SIDE;
             for (int k = 0; k < TILES; k++) order[k] = k;
             final long fx0 = tx0, fy0 = ty0;
@@ -6221,68 +6489,92 @@ public final class CityMap {
                 double cx = ((fx0 + k % TILES_A_SIDE) + 0.5) * tile - siteX, cy = ((fy0 + k / TILES_A_SIDE) + 0.5) * tile - siteY;
                 return cx * cx + cy * cy;
             }).thenComparingInt(k -> k));
-            CityShore.Work far = null;
-            for (int k : order) {
-                long tx = tx0 + k % TILES_A_SIDE, ty = ty0 + k / TILES_A_SIDE;
+            final int base = scanned, nearOld = s.nearFrom, anyOld = s.anyFrom;
+            // Pass 1, from the first tile that may hold a near spot: every spot of a tile is tried until a near one is found, as the search from the nearest does.
+            // v1: the first unsteady tile, a1: the first unsteady tile or tile with a spot; run: the tiles counted so far, v1run and a1run before those.
+            int v1 = TILES, v1run = 0, a1 = TILES, a1run = 0, run = s.countedNear, winner = -1;
+            CityShore.Work firstFar = null;
+            for (int i = nearOld; i < TILES && winner < 0; i++) {
+                long tx = tx0 + order[i] % TILES_A_SIDE, ty = ty0 + order[i] / TILES_A_SIDE;
                 if (cover(land.grid().cover(5, tx, ty)) == NONE) continue;
                 // ET5: a tile no plot of which can lie on another landmass than home's is passed over for an island's terminal, unlooked at (its window of cells holds none of its id).
-                if (island && landmass != landmasses.home() && Arrays.binarySearch(world.idsNear(tx, ty), landmass) < 0) continue;
-                if (++scanned > CityShore.SEARCH_TILES_MOST) return far;
-                boolean wet = false, dry = false;
-                if (island) world.tileLandmass(tx, ty, tileLm);
-                for (int i = 0; i < World.TILE * World.TILE && !(wet && dry); i++) {
-                    int g = island ? runGround.atRaw(tx * tile + i % tile, ty * tile + i / tile, -1) : runGround.at(tx * tile + i % tile, ty * tile + i / tile, -1);
-                    if (World.salt(g)) wet = true;
-                    else if (CityRuns.dry(g) && (!island || onLandmass(tileLm[i], landmass))) dry = true;
+                if (sc.island && landmass != landmasses.home() && Arrays.binarySearch(sc.world.idsNear(tx, ty), landmass) < 0) continue;
+                run++;
+                if (base + run > CityShore.SEARCH_TILES_MOST) {
+                    if (tr != null) shoreTracks.remove(ckey);
+                    return resumed ? shoreSpot(t, mines, landmass, kept) : firstFar;
                 }
-                if (!wet || !dry) continue;
-                long wx0 = tx * tile - m, wy0 = ty * tile - m;
-                runs.fill(wx0, wy0, ww, ww, fixed, null, true);
-                for (int j = 0; j < ww * ww; j++) ground[j] = island ? runGround.atRaw(wx0 + j % ww, wy0 + j / ww, -1) : runGround.at(wx0 + j % ww, wy0 + j / ww, -1);
-                // A terminal or a tank farm is a building (ET2): it stands on flat and foothill only, so steep ground is read as a mine's site is, ground no work takes.
-                for (int ry = 0; ry < 3; ry++) {
-                    for (int rx = 0; rx < 3; rx++) {
-                        World.of(worldKey).tileRelief(tx - 1 + rx, ty - 1 + ry, shoreRelief);
-                        if (island) world.tileLandmass(tx - 1 + rx, ty - 1 + ry, windowLm);
-                        for (int i = 0; i < tile * tile; i++) {
-                            if (shoreRelief[i] <= World.FOOTHILL && !(island && !onLandmass(windowLm[i], landmass))) continue;
-                            int j = (ry * tile + i / tile) * ww + rx * tile + i % tile;
-                            if (CityRuns.dry(ground[j])) ground[j] = -2;
-                        }
-                    }
+                if (!sc.look(tx, ty, false)) continue;
+                if (sc.unsteady && v1 == TILES) {
+                    v1 = i;
+                    v1run = run - 1;
                 }
-                for (long[] s : mines) {
-                    for (long y = Math.max(s[1], wy0); y <= Math.min(s[3], wy0 + ww - 1); y++) {
-                        for (long x = Math.max(s[0], wx0); x <= Math.min(s[2], wx0 + ww - 1); x++) ground[(int) ((y - wy0) * ww + (x - wx0))] = -2;
-                    }
+                if ((sc.unsteady || sc.far != null || sc.near != null) && a1 == TILES) {
+                    a1 = i;
+                    a1run = run - 1;
                 }
-                for (int iy = 0; iy < tile; iy++) {
-                    for (int ix = 0; ix < tile; ix++) {
-                        int j = (iy + m) * ww + ix + m;
-                        if (!CityRuns.dry(ground[j])) continue;
-                        for (int side = 0; side < 4; side++) {
-                            if (!World.salt(ground[j + CityShore.DX[side] + CityShore.DY[side] * ww])) continue;
-                            for (int turn = 0; turn < (fp[0] == fp[1] ? 1 : 2); turn++) {
-                                int w = turn == 0 ? fp[0] : fp[1], h = turn == 0 ? fp[1] : fp[0];
-                                long sx = tx * tile + ix, sy = ty * tile + iy;
-                                long bx0 = side == 1 ? sx - (w - 1) : side == 3 ? sx : sx - w / 2;
-                                long by0 = side == 2 ? sy - (h - 1) : side == 0 ? sy : sy - h / 2;
-                                CityShore.Work c = new CityShore.Work(bx0, by0, w, h, t, side, quay);
-                                if (!shoreFits(c, ground, fixed, wx0, wy0, ww)) continue;
-                                if (sea != null) {
-                                    long[] e = c.quayPlot(quay + 1);
-                                    if (!SeaRoutes.opensToSea(sea, e[0], e[1], shut)) continue;
-                                }
-                                if (nearRing(c)) return c;
-                                if (far == null) far = c;
-                            }
-                        }
+                if (firstFar == null) firstFar = sc.far;
+                if (sc.near != null) {
+                    winner = i;
+                    result = sc.near;
+                    if (v1 == TILES) {
+                        v1 = i;
+                        v1run = run - 1;
                     }
                 }
             }
-            if (far != null) return far;
+            s.nearFrom = v1;
+            s.countedNear = v1 == TILES ? run : v1run;
+            if (winner >= 0) {
+                // The tiles between anyOld and nearOld were not looked at this time: their mark stands.
+                if (anyOld == nearOld) {
+                    s.anyFrom = a1;
+                    s.countedAny = a1run;
+                }
+                break;
+            }
+            // No near spot in the district (none before nearOld, none after): its first spot of any kind is its first in the order, from the first tile that may hold one.
+            // The tiles of this pass come before the ones of pass 1 in the order, and no water found shut by one of them was as wide as the reach (they are not unsteady): they are asked with the waters shut as they were before them, which is none that matters.
+            ShutSet carried = sc.shut;
+            sc.shut = new ShutSet();
+            int a2 = TILES, a2run = 0, run2 = s.countedAny;
+            CityShore.Work farHere = null;
+            for (int i = anyOld; i < nearOld && farHere == null; i++) {
+                long tx = tx0 + order[i] % TILES_A_SIDE, ty = ty0 + order[i] / TILES_A_SIDE;
+                if (cover(land.grid().cover(5, tx, ty)) == NONE) continue;
+                if (sc.island && landmass != landmasses.home() && Arrays.binarySearch(sc.world.idsNear(tx, ty), landmass) < 0) continue;
+                run2++;
+                if (base + run2 > CityShore.SEARCH_TILES_MOST) {
+                    shoreTracks.remove(ckey);
+                    return shoreSpot(t, mines, landmass, kept);
+                }
+                if (!sc.look(tx, ty, true)) continue;
+                if ((sc.unsteady || sc.first != null) && a2 == TILES) {
+                    a2 = i;
+                    a2run = run2 - 1;
+                }
+                if (sc.first != null) {
+                    if (sc.firstIsNear) {
+                        // A near spot before the first tile that may hold one: what was kept is not so; look again from the nearest.
+                        shoreTracks.remove(ckey);
+                        return shoreSpot(t, mines, landmass, kept);
+                    }
+                    farHere = sc.first;
+                }
+            }
+            sc.shut = carried;
+            if (anyOld < nearOld && a2 < TILES) {
+                s.anyFrom = a2;
+                s.countedAny = a2run;
+            } else {
+                s.anyFrom = a1;
+                s.countedAny = a1 == TILES ? run : a1run;
+            }
+            result = farHere != null ? farHere : firstFar;
+            scanned = base + run;
         }
-        return null;
+        if (tr != null) tr.used = true;
+        return result;
     }
 
     /** Whether a work fits where c puts it, on the window's ground and runs from (wx0, wy0), ww a side: its box in one cell's interior on owned dry ground no run, mine or other work takes (and, since ET2, not steep: shoreSpot() reads steep ground as a mine's site), no highway beside it, and its quay all owned salt water. */
