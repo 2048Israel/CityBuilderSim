@@ -138,7 +138,11 @@ person as the baseline.
 `./batch-check.sh` (the full suite, with the Earth file) on 870d1b37: exit 4, its one red
 MapCheck 9's shore-cost fixture (the 300 terminals of SL1's size did not fit the coast), every
 other harness passed. Mended in 43a015cc (the coasts draw them on their ground before SL1);
-`./batch-check.sh MapCheck` exit 0. {suite}
+`./batch-check.sh MapCheck` exit 0. Then the full suite again on 219d9fdd: **exit 0, 150
+harnesses in 778 s**, one timing line SOFT beside the suite's load - MapCheck's "at 10 billion a
+month's change takes no more than 5 ms", 5.3 ms (5 billion 2.2). It passed with MapCheck alone
+on this tree, and its city (Jerus's counts x 19,629) holds no sea terminal, so nothing SL1
+changed is on its path; the gate times it hard against main's.
 No saved field changed (the routes and lanes are found, never saved; the shore's sidecar is as
 it was), so no format bump. `tools/pick.sh` names a threading review: `CityMap.RoutesJob` holds
 a volatile `SeaLanes` set before its volatile `found`; the shore's index is built and read on
