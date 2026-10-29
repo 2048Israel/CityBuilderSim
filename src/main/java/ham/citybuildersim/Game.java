@@ -11908,6 +11908,9 @@ public class Game {
         // reason: an expense on eleven sets of books and revenue on a twelfth.
         chargeFreight();
 
+        // ...and the coupon on the dollars its businesses hold abroad, paid home as a line of their profit, so the profit tax and the dividend see it (HD1, 2026-10-29).
+        outward.payCoupons(DebtManager.WORLD_BASE_RATE, foreign.getRate(), economyManager);
+
         /*
          * THE MONTH'S BUILDING WORK, AS THE STATEMENT WILL CARRY IT. The work
          * is recognised where the sites advance and the crews draw their
