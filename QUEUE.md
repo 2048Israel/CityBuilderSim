@@ -63,6 +63,8 @@ stuff".
 | XR5 | The currency regimes' rest: a peg pays the pressure, not the month's balance; the tied path prices the curve under a peg; the overshoot both ways; a warning when a thin vault pegs (Jerus, 2026-10-23, on XR2's ★4, ★5 and the review's two: "Pay the pressure", "Price on the tied path") | [XR5](docs/queue/XR5.md) |
 | AN2 | AN1's leftovers: the D$ the goods are struck at on Trade › The currency, and the Earth playtest (Rotterdam) with the anchor (Jerus, 2026-10-23: "Queue both, small") | [AN2](docs/queue/AN2.md) |
 | FX9 | Ground bought into an open cell gets the cell's own streets, nothing standing moved, so piecemeal land is built on (Jerus, 2026-10-23, on FX6's ★1: "Extend the streets") | [FX9](docs/queue/FX9.md) |
+| HD1 | The hoard: a business's coupon on its dollars abroad counted in its profit and paid home, Real Estate given workers, business bonds in the history; the spare cash is EM1's; from a study of his San Francisco city, where businesses held 59x GDP at m2,852 (Jerus, 2026-10-28: "interest abroad as profit sure", "gotta add workers to real estate", "Yes, queue it", "Yes, split it") | [HD1](docs/queue/HD1.md) |
+| EM1 | An efficient market: one value for a share (spare cash at face plus the business on its earnings), every holder - households, the fund, the world, the desk - moving toward the best expected return against the other shares, the bank, bonds and dollars abroad, at a pace and past a band; so a cash-box company's buyback finds sellers and its cash reaches the owners with no special dividend (his 0.7.12 call kept); after HD1 (Jerus, 2026-10-28: "perhaps make it an actual efficient market", "Yes, split it") | [EM1](docs/queue/EM1.md) |
 
 ## Pending
 
