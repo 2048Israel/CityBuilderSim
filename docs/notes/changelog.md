@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.73 — HD1, the hoard: business bonds in the history — 2026-10-29, ready, see docs/queue/HD1-notes.md
+Business bonds go into the history: the face of every business bond outstanding, beside the business debt (loans and
+mortgages only), so the bonds' fade in his runs (the last issued at m1,533) can be charted, on the History screen and in
+the year book; SaveFileCheck 13b holds it across a save and a reform. The brief's other two items were built and taken
+back, the orchestrator's call on the session's recommendation, as calls for Jerus. The coupon on the businesses' dollars
+abroad, as profit paid home, halved the hoard abroad by m4,000 (35x GDP to 18x) but turned the rate dial upside down in
+a young city (inflation 7.9/6.3/6.8/8.2% at 3/10/20/40% against main's 10.4/9.7/9.0/8.8%): paid home, it lifts the D$
+at low rates more than the dial restrains (HD1-C; recommended: counted as profit, kept abroad). Real Estate's posts (2
+DIPLOMA a Studio and Low-Rise, by the NAA's rule) stalled the ensemble's seed 4 near 25,000 people (44,157 at the end
+against 249,634; RE1, its cause first). The model is main's and so is the trace: no ensemble.
+
 ### 0.8.72 — BK1, the bank's equity split and its interest margin — 2026-10-29, ready, see docs/queue/BK1-notes.md
 Issue #5, Jerus's San Francisco city. The bank's equity no longer drifts from its two parts: a line of the city's
 paper keeps one pool of discount shared by face, and reopened at another price while households, firms, the world or

@@ -1,4 +1,4 @@
-# HD1 - the hoard: business bonds in the history ({next}, 2026-10-29)
+# HD1 - the hoard: business bonds in the history (0.8.73, 2026-10-29)
 
 The brief: [HD1.md](HD1.md), from a study of his San Francisco city (businesses
 holding 59x GDP in cash and dollars abroad). Jerus, 2026-10-28: "interest
