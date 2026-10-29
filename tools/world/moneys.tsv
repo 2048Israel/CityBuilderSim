@@ -1,0 +1,197 @@
+iso3	name	money	money_history	regime	note
+AFG	Afghanistan	AFN	AFN:2000-01	float	AFA to AFN 2002-10 (1000:1) is a redenomination, BIS back-casts; BIS ends 2021-05
+AGO	Angola	AOA	AOA:2000-01	float	kwanza (1999 AOA), IMF managed/floating
+ALB	Albania	ALL	ALL:2000-01	float	IMF floating
+AND	Andorra	EUR	EUR:2000-01	uses:EUR	uses the euro (bilateral monetary agreement or unilateral); the franc, peseta, lira or mark before 2002 were denominations of the euro from 1999-01, so EUR throughout
+ARE	United Arab Emirates	AED	AED:2000-01	peg:USD	dirham pegged at 3.6725 since 1997
+ARG	Argentina	ARS	ARS:2000-01	float	peso: the 2002 end of the 1:1 convertibility is a rate shift, not a new money; floating band since 2025
+ARM	Armenia	AMD	AMD:2000-01	float	IMF floating
+ATG	Antigua and Barbuda	XCD	XCD:2000-01	peg:USD	Eastern Caribbean dollar (ECCB), currency board pegged at 2.70 to the US dollar
+AUS	Australia	AUD	AUD:2000-01	float	IMF floating
+AUT	Austria	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+AZE	Azerbaijan	AZN	AZN:2000-01	peg:USD	AZM to AZN 2006-01 (5000:1) is a redenomination; held at 1.70 since 2017 (IMF: stabilized)
+BDI	Burundi	BIF	BIF:2000-01	float	IMF crawl-like/managed
+BEL	Belgium	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+BEN	Benin	XOF	XOF:2000-01	peg:EUR	CFA franc BCEAO, peg to the euro at 655.957 since 1999-01
+BFA	Burkina Faso	XOF	XOF:2000-01	peg:EUR	CFA franc BCEAO, peg to the euro at 655.957 since 1999-01
+BGD	Bangladesh	BDT	BDT:2000-01	float	taka; crawl to floating 2025
+BGR	Bulgaria	BGN	BGN:2000-01	peg:EUR	currency board since 1997 (DM, euro 1.95583); euro adoption is 2026-01, after the table, so BGN throughout
+BHR	Bahrain	BHD	BHD:2000-01	peg:USD	dinar pegged at 0.376 since 2001
+BHS	Bahamas	BSD	BSD:2000-01	peg:USD	dollar at par with the US dollar
+BIH	Bosnia and Herzegovina	BAM	BAM:2000-01	peg:EUR	currency board, 1.95583 per euro
+BLR	Belarus	BYN	BYN:2000-01	float	BYR to BYN 2016-07 (10000:1) is a redenomination, BIS back-casts; managed float
+BLZ	Belize	BZD	BZD:2000-01	peg:USD	pegged at 2.00 since 1976
+BOL	Bolivia	BOB	BOB:2000-01	peg:USD	boliviano held at 6.96 from 2011
+BRA	Brazil	BRL	BRL:2000-01	float	real; floating since 1999-01
+BRB	Barbados	BBD	BBD:2000-01	peg:USD	pegged at 2.00 since 1975
+BRN	Brunei	BND	BND:2000-01	peg:SGD	currency board at par with the Singapore dollar since 1967
+BTN	Bhutan	BTN	BTN:2000-01	peg:INR	ngultrum at par with the Indian rupee
+BWA	Botswana	BWP	BWP:2000-01	float	pula; crawling basket (rand and SDR), IMF crawl-like, treated as float
+CAF	Central African Republic	XAF	XAF:2000-01	peg:EUR	CFA franc BEAC, peg to the euro at 655.957 since 1999-01
+CAN	Canada	CAD	CAD:2000-01	float	IMF floating
+CHE	Switzerland	CHF	CHF:2000-01	float	IMF floating
+CHL	Chile	CLP	CLP:2000-01	float	IMF floating
+CHN	China	CNY	CNY:2000-01	float	renminbi: managed float since 2005-07, the peg to the dollar before is treated as one money
+CIV	Côte d'Ivoire	XOF	XOF:2000-01	peg:EUR	CFA franc BCEAO, peg to the euro at 655.957 since 1999-01
+CMR	Cameroon	XAF	XAF:2000-01	peg:EUR	CFA franc BEAC, peg to the euro at 655.957 since 1999-01
+COD	DR Congo	CDF	CDF:2000-01	float	Congolese franc (1998)
+COG	Republic of the Congo	XAF	XAF:2000-01	peg:EUR	CFA franc BEAC, peg to the euro at 655.957 since 1999-01
+COL	Colombia	COP	COP:2000-01	float	IMF floating
+COM	Comoros	KMF	KMF:2000-01	peg:EUR	pegged at 491.968 per euro
+CPV	Cabo Verde	CVE	CVE:2000-01	peg:EUR	pegged at 110.265 per euro since 1999
+CRI	Costa Rica	CRC	CRC:2000-01	float	IMF floating since 2015
+CUB	Cuba	CUP	CUP:2000-01	float	CUC (1:1 with the US dollar to 2020) and CUP unified 2021-01 at 24: one money; no BIS or WDI rate, held at 1 (the parity WDI's dollar GDP rests on), see econ_paths_moneys.py
+CYP	Cyprus	EUR	CYP:2000-01,EUR:2008-01	float	euro 2008-01; CYP 0.585274 per euro
+CZE	Czechia	CZK	CZK:2000-01	float	koruna; floating
+DEU	Germany	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+DJI	Djibouti	DJF	DJF:2000-01	peg:USD	currency board at 177.721 since 1949
+DMA	Dominica	XCD	XCD:2000-01	peg:USD	Eastern Caribbean dollar (ECCB), currency board pegged at 2.70 to the US dollar
+DNK	Denmark	DKK	DKK:2000-01	peg:EUR	ERM II central rate 7.46038, +-2.25%
+DOM	Dominican Republic	DOP	DOP:2000-01	float	managed float
+DZA	Algeria	DZD	DZD:2000-01	float	managed float
+ECU	Ecuador	USD	ECS:2000-01,USD:2000-09	uses:USD	sucre replaced by the US dollar in 2000-09 (law of 2000-03 fixed 25000 sucres a dollar)
+EGY	Egypt	EGP	EGP:2000-01	float	floating since 2024-03
+ERI	Eritrea	ERN	ERN:2000-01	peg:USD	nakfa pegged at 15.00 since 2005
+ESP	Spain	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+EST	Estonia	EUR	EEK:2000-01,EUR:2011-01	float	euro 2011-01; EEK 15.6466 per euro
+ETH	Ethiopia	ETB	ETB:2000-01	float	birr; floating since 2024-07
+FIN	Finland	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+FJI	Fiji	FJD	FJD:2000-01	float	basket peg treated as managed float
+FRA	France	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+FSM	Micronesia	USD	USD:2000-01	uses:USD	US dollar since the Compact of Free Association
+GAB	Gabon	XAF	XAF:2000-01	peg:EUR	CFA franc BEAC, peg to the euro at 655.957 since 1999-01
+GBR	United Kingdom	GBP	GBP:2000-01	float	IMF floating
+GEO	Georgia	GEL	GEL:2000-01	float	IMF floating
+GHA	Ghana	GHS	GHS:2000-01	float	GHC to GHS 2007-07 (10000:1) is a redenomination, BIS back-casts
+GIN	Guinea	GNF	GNF:2000-01	float	BIS ends 2021-05
+GMB	Gambia	GMD	GMD:2000-01	float	dalasi; managed float
+GNB	Guinea-Bissau	XOF	XOF:2000-01	peg:EUR	joined the CFA franc 1997; CFA franc BCEAO, peg to the euro at 655.957 since 1999-01
+GNQ	Equatorial Guinea	XAF	XAF:2000-01	peg:EUR	CFA franc BEAC, peg to the euro at 655.957 since 1999-01
+GRC	Greece	EUR	GRD:2000-01,EUR:2001-01	float	euro 2001-01; GRD 340.750 per euro
+GRD	Grenada	XCD	XCD:2000-01	peg:USD	Eastern Caribbean dollar (ECCB), currency board pegged at 2.70 to the US dollar
+GTM	Guatemala	GTQ	GTQ:2000-01	float	IMF floating-like/managed
+GUY	Guyana	GYD	GYD:2000-01	peg:USD	held near 205-210 for years (IMF: stabilized)
+HKG	Hong Kong	HKD	HKD:2000-01	peg:USD	currency board band 7.75-7.85 since 1983
+HND	Honduras	HNL	HNL:2000-01	float	crawling band treated as float
+HRV	Croatia	EUR	HRK:2000-01,EUR:2023-01	float	euro 2023-01; HRK 7.53450 per euro
+HTI	Haiti	HTG	HTG:2000-01	float	gourde
+HUN	Hungary	HUF	HUF:2000-01	float	IMF floating
+IDN	Indonesia	IDR	IDR:2000-01	float	IMF floating
+IND	India	INR	INR:2000-01	float	IMF floating
+IRL	Ireland	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+IRN	Iran	IRR	IRR:2000-01	float	BIS's official rate ends 2024-05; multiple rates, official 42000 from 2018
+IRQ	Iraq	IQD	IQD:2000-01	peg:USD	new dinar 2003 replaced the Saddam dinar (a redenomination); CBI official 1300-1320 (IMF: stabilized)
+ISL	Iceland	ISK	ISK:2000-01	float	IMF floating
+ISR	Israel	ILS	ILS:2000-01	float	IMF floating
+ITA	Italy	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+JAM	Jamaica	JMD	JMD:2000-01	float	IMF floating
+JOR	Jordan	JOD	JOD:2000-01	peg:USD	dinar pegged at 0.709 since 1995
+JPN	Japan	JPY	JPY:2000-01	float	IMF floating
+KAZ	Kazakhstan	KZT	KZT:2000-01	float	IMF floating since 2015
+KEN	Kenya	KES	KES:2000-01	float	IMF floating
+KGZ	Kyrgyzstan	KGS	KGS:2000-01	float	IMF floating
+KHM	Cambodia	KHR	KHR:2000-01	float	riel held near 4000-4100 in a dollarised economy (IMF: stabilized); treated as float
+KIR	Kiribati	AUD	AUD:2000-01	uses:AUD	Australian dollar
+KNA	Saint Kitts and Nevis	XCD	XCD:2000-01	peg:USD	Eastern Caribbean dollar (ECCB), currency board pegged at 2.70 to the US dollar
+KOR	South Korea	KRW	KRW:2000-01	float	IMF floating
+KWT	Kuwait	KWD	KWD:2000-01	peg:USD	basket peg since 2007-05, USD-weighted and moving a cent or two; treated as a USD peg
+LAO	Laos	LAK	LAK:2000-01	float	kip
+LBN	Lebanon	LBP	LBP:2000-01	peg:USD	1507.5 to 2023-02, de facto 89500 since 2023-03
+LBR	Liberia	LRD	LRD:2000-01	float	Liberian dollar
+LBY	Libya	LYD	LYD:2000-01	float	official rate adjusted by decree, treated as float
+LCA	Saint Lucia	XCD	XCD:2000-01	peg:USD	Eastern Caribbean dollar (ECCB), currency board pegged at 2.70 to the US dollar
+LIE	Liechtenstein	CHF	CHF:2000-01	uses:CHF	Swiss franc by customs and currency treaty (1980)
+LKA	Sri Lanka	LKR	LKR:2000-01	float	IMF floating since 2023
+LSO	Lesotho	LSL	LSL:2000-01	peg:ZAR	loti at par with the rand (Common Monetary Area)
+LTU	Lithuania	EUR	LTL:2000-01,EUR:2015-01	float	euro 2015-01; LTL 3.45280 per euro
+LUX	Luxembourg	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+LVA	Latvia	EUR	LVL:2000-01,EUR:2014-01	float	euro 2014-01; LVL 0.702804 per euro
+MAC	Macau	MOP	MOP:2000-01	peg:HKD	pataca at 1.03 to the Hong Kong dollar
+MAR	Morocco	MAD	MAD:2000-01	float	dirham on a euro-dollar basket within a +-5% band (2018), treated as float
+MCO	Monaco	EUR	EUR:2000-01	uses:EUR	uses the euro (bilateral monetary agreement or unilateral); the franc, peseta, lira or mark before 2002 were denominations of the euro from 1999-01, so EUR throughout
+MDA	Moldova	MDL	MDL:2000-01	float	IMF floating
+MDG	Madagascar	MGA	MGA:2000-01	float	ariary 2005-01 replaced the franc at 5:1, a redenomination; BIS back-casts
+MDV	Maldives	MVR	MVR:2000-01	peg:USD	rufiyaa held near 15.4 (IMF: stabilized)
+MEX	Mexico	MXN	MXN:2000-01	float	IMF floating
+MHL	Marshall Islands	USD	USD:2000-01	uses:USD	US dollar since the Compact of Free Association
+MKD	North Macedonia	MKD	MKD:2000-01	peg:EUR	denar held near 61.5 per euro (IMF: stabilized)
+MLI	Mali	XOF	XOF:2000-01	peg:EUR	CFA franc BCEAO, peg to the euro at 655.957 since 1999-01
+MLT	Malta	EUR	MTL:2000-01,EUR:2008-01	float	euro 2008-01; MTL 0.429300 per euro
+MMR	Myanmar	MMK	MMK:2000-01	float	kyat; BIS ends 2024-03
+MNE	Montenegro	EUR	EUR:2000-01	uses:EUR	uses the euro (bilateral monetary agreement or unilateral); the franc, peseta, lira or mark before 2002 were denominations of the euro from 1999-01, so EUR throughout
+MNG	Mongolia	MNT	MNT:2000-01	float	IMF floating
+MOZ	Mozambique	MZN	MZN:2000-01	float	MZM to MZN 2006-07 (1000:1) is a redenomination, BIS back-casts
+MRT	Mauritania	MRU	MRU:2000-01	float	MRO to MRU 2018-01 (10:1) is a redenomination; BIS keeps MRO units (10x), restated here
+MUS	Mauritius	MUR	MUR:2000-01	float	IMF floating
+MWI	Malawi	MWK	MWK:2000-01	peg:USD	kwacha held at 1751 since 2023-11; BIS ends 2024-09
+MYS	Malaysia	MYR	MYR:2000-01	float	managed float since 2005-07
+NAM	Namibia	NAD	NAD:2000-01	peg:ZAR	dollar at par with the rand
+NER	Niger	XOF	XOF:2000-01	peg:EUR	CFA franc BCEAO, peg to the euro at 655.957 since 1999-01
+NGA	Nigeria	NGN	NGN:2000-01	float	IMF floating since 2023-06
+NIC	Nicaragua	NIO	NIO:2000-01	peg:USD	crawling peg to the dollar (2% a year, then lower)
+NLD	Netherlands	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+NOR	Norway	NOK	NOK:2000-01	float	IMF floating
+NPL	Nepal	NPR	NPR:2000-01	peg:INR	rupee pegged at 1.60 to the Indian rupee since 1993
+NRU	Nauru	AUD	AUD:2000-01	uses:AUD	Australian dollar
+NZL	New Zealand	NZD	NZD:2000-01	float	IMF floating
+OMN	Oman	OMR	OMR:2000-01	peg:USD	rial pegged at 0.3845 since 1986
+PAK	Pakistan	PKR	PKR:2000-01	float	IMF floating
+PAN	Panama	USD	USD:2000-01	uses:USD	balboa at par, only coins; the US dollar is the paper money
+PER	Peru	PEN	PEN:2000-01	float	new sol since 1991
+PHL	Philippines	PHP	PHP:2000-01	float	IMF floating
+PLW	Palau	USD	USD:2000-01	uses:USD	US dollar since the Compact of Free Association
+PNG	Papua New Guinea	PGK	PGK:2000-01	float	kina; crawl-like
+POL	Poland	PLN	PLN:2000-01	float	IMF floating
+PRK	North Korea	KPW	KPW:2000-01	float	won; no BIS or WDI rate, a constant (see econ_paths.py)
+PRT	Portugal	EUR	EUR:2000-01	float	euro member; regime is the euro's own (float)
+PRY	Paraguay	PYG	PYG:2000-01	float	IMF floating
+QAT	Qatar	QAR	QAR:2000-01	peg:USD	riyal pegged at 3.64 since 2001
+ROU	Romania	RON	RON:2000-01	float	ROL to RON 2005-07 (10000:1) is a redenomination, BIS back-casts
+RUS	Russia	RUB	RUB:2000-01	float	IMF floating (managed 2022-24)
+RWA	Rwanda	RWF	RWF:2000-01	float	IMF floating-like
+SAU	Saudi Arabia	SAR	SAR:2000-01	peg:USD	riyal pegged at 3.75 since 1986
+SDN	Sudan	SDG	SDG:2000-01	float	dinar to pound 2007-01 (100:1) is a redenomination; BIS ends 2023-02
+SEN	Senegal	XOF	XOF:2000-01	peg:EUR	CFA franc BCEAO, peg to the euro at 655.957 since 1999-01
+SGP	Singapore	SGD	SGD:2000-01	float	managed float against a trade-weighted basket
+SLB	Solomon Islands	SBD	SBD:2000-01	float	crawl-like basket
+SLE	Sierra Leone	SLE	SLE:2000-01	float	SLL to SLE 2022-07 (1000:1) is a redenomination; BIS's series is already in SLE
+SLV	El Salvador	USD	SVC:2000-01,USD:2001-01	uses:USD	colon replaced by the US dollar 2001-01 (monetary integration law, 8.75 colones a dollar)
+SMR	San Marino	EUR	EUR:2000-01	uses:EUR	uses the euro (bilateral monetary agreement or unilateral); the franc, peseta, lira or mark before 2002 were denominations of the euro from 1999-01, so EUR throughout
+SOM	Somalia	SOS	SOS:2000-01	float	shilling; WDI has 2009-2015 only
+SRB	Serbia	RSD	RSD:2000-01	float	dinar (YUM, CSD, RSD) is one money, BIS back-casts from 1994
+SSD	South Sudan	SSP	SDG:2000-01,SSP:2011-07	float	part of Sudan to 2011-07-09: the Sudanese pound before; BIS's SSP from 2011-07
+STP	São Tomé and Príncipe	STN	STN:2000-01	peg:EUR	STD to STN 2018-01 (1000:1) is a redenomination; BIS keeps STD units (1000x), restated here; pegged at 24.5 per euro since 2010
+SUR	Suriname	SRD	SRD:2000-01	float	SRG to SRD 2004-01 (1000:1) is a redenomination, BIS back-casts; floating since 2021
+SVK	Slovakia	EUR	SKK:2000-01,EUR:2009-01	float	euro 2009-01; SKK 30.1260 per euro
+SVN	Slovenia	EUR	SIT:2000-01,EUR:2007-01	float	euro 2007-01; SIT 239.640 per euro
+SWE	Sweden	SEK	SEK:2000-01	float	IMF floating
+SWZ	Eswatini	SZL	SZL:2000-01	peg:ZAR	lilangeni at par with the rand
+SYC	Seychelles	SCR	SCR:2000-01	float	IMF floating since 2008
+SYR	Syria	SYP	SYP:2000-01	float	pound; official rates, BIS ends 2017-07
+TCD	Chad	XAF	XAF:2000-01	peg:EUR	CFA franc BEAC, peg to the euro at 655.957 since 1999-01
+TGO	Togo	XOF	XOF:2000-01	peg:EUR	CFA franc BCEAO, peg to the euro at 655.957 since 1999-01
+THA	Thailand	THB	THB:2000-01	float	IMF floating
+TJK	Tajikistan	TJS	TJS:2000-01	float	ruble to somoni 2000-10 (1000:1) is a redenomination, BIS back-casts
+TKM	Turkmenistan	TMT	TMT:2000-01	peg:USD	TMM to TMT 2009-01 (5000:1) is a redenomination; held at 3.50 since 2015
+TLS	Timor-Leste	USD	USD:2000-01	uses:USD	US dollar since 2000-01
+TON	Tonga	TOP	TOP:2000-01	float	pa'anga; basket peg treated as managed float
+TTO	Trinidad and Tobago	TTD	TTD:2000-01	peg:USD	held near 6.78 (IMF: stabilized)
+TUN	Tunisia	TND	TND:2000-01	float	IMF floating-like
+TUR	Turkey	TRY	TRY:2000-01	float	TRL to TRY 2005-01 (1000000:1) is a redenomination, BIS back-casts
+TUV	Tuvalu	AUD	AUD:2000-01	uses:AUD	Australian dollar (with Tuvaluan coins at par)
+TWN	Taiwan	TWD	TWD:2000-01	float	New Taiwan dollar; BIS has Chinese Taipei from 1983
+TZA	Tanzania	TZS	TZS:2000-01	float	IMF floating
+UGA	Uganda	UGX	UGX:2000-01	float	IMF floating
+UKR	Ukraine	UAH	UAH:2000-01	float	managed float since 2023
+URY	Uruguay	UYU	UYU:2000-01	float	IMF floating
+USA	United States	USD	USD:2000-01	float	the dollar itself
+UZB	Uzbekistan	UZS	UZS:2000-01	float	som; floating since 2017-09
+VCT	Saint Vincent and the Grenadines	XCD	XCD:2000-01	peg:USD	Eastern Caribbean dollar (ECCB), currency board pegged at 2.70 to the US dollar
+VEN	Venezuela	VES	VES:2000-01	float	VEB to VEF 2008-01 (1000:1), VEF to VES 2018-08 (100000:1), VES to VED 2021-10 (1000000:1) are redenominations; BIS's units change at each, restated here to the 2021 bolivar
+VNM	Vietnam	VND	VND:2000-01	float	dong; managed float
+VUT	Vanuatu	VUV	VUV:2000-01	float	vatu; basket peg treated as managed float
+WSM	Samoa	WST	WST:2000-01	float	tala; basket peg treated as managed float
+YEM	Yemen	YER	YER:2000-01	float	BIS ends 2024-05
+ZAF	South Africa	ZAR	ZAR:2000-01	float	IMF floating
+ZMB	Zambia	ZMW	ZMW:2000-01	float	ZMK to ZMW 2013-01 (1000:1) is a redenomination, BIS back-casts
+ZWE	Zimbabwe	ZWG	ZWN:2000-01,USD:2009-01,ZWL:2019-02,ZWG:2024-04	float	Zimbabwe dollar (BIS units of the 2006 redenomination) to 2008-12; multi-currency, the US dollar, from 2009-01 (BIS has no rate); RTGS dollar ZWL 2019-02; Zimbabwe Gold ZWG 2024-04 (13.56 a dollar, 1 ZWG = 2498.7242 ZWL)

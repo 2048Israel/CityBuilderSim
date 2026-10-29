@@ -1,7 +1,8 @@
 world-1: the nations' world of CityBuilderSim (Civic Ledger)
 
 world-1.bin is derived from the data sets below. Their licences allow this use; their credits follow,
-each in the form its publisher asks for. The game shows the same text on its Credits page.
+each in the form its publisher asks for. Nothing in the game reads the file yet (WN0); the batch that does puts
+this text on the Credits page.
 
 Natural Earth 1:10m Cultural Vectors (5.1.2): Admin 0 - Countries, Admin 0 - Boundary Lines (land), Populated Places (simple), Ports
   Credit:  Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com.
@@ -15,4 +16,51 @@ CERDI-seadistance (1.1)
   Used for: the freight layer: the sea distances between 195 nations' ports, the road distances from a landlocked nation's capital to its port, and the road distances between neighbouring capitals, closed into a table of the cheapest route between any two nations
   Source:  https://zenodo.org/record/240493
 
-(The other sources of world-1.bin are added here by the orchestrator.)
+BACI, international trade database at the product level, HS 2022, version 202601 (CEPII)
+  Credit:  Gaulier, G. and Zignago, S. (2010) BACI: International Trade Database at the Product-Level. The 1994-2007
+           Version. CEPII Working Paper 2010-23. Data: CEPII, BACI HS22 V202601.
+  Licence: Etalab Open Licence 2.0 (https://www.etalab.gouv.fr/licence-ouverte-open-licence/)
+  Used for: the trade layer: the base year's (2024) flows between the nations, by pair and good, through the
+           concordance from HS 2022 to the game's goods (concordance.tsv), and each good's unit value
+  Source:  https://www.cepii.fr/DATA_DOWNLOAD/baci/doc/baci_webpage.html
+
+World Development Indicators (the World Bank), as of 2026-10-08
+  Credit:  The World Bank, World Development Indicators: NY.GDP.MKTP.KD, NY.GDP.MKTP.CD, NY.GDP.MKTP.PP.KD,
+           FP.CPI.TOTL, PA.NUS.FCRF; and its list of economies (the regions)
+  Licence: CC BY 4.0 (https://datacatalog.worldbank.org/public-licenses)
+  Used for: the paths' output (US$ of 2015, current US$, international $ of 2021) and prices, 2000-2025; the
+           annual official rate where the BIS has no month; each nation's region
+  Source:  https://api.worldbank.org/v2/country/all/indicator/<id>?format=json&date=2000:2025
+
+World Population Prospects 2024 (United Nations, DESA, Population Division)
+  Credit:  United Nations, Department of Economic and Social Affairs, Population Division (2024). World Population
+           Prospects 2024, total population by sex, medium variant.
+  Licence: CC BY 3.0 IGO (https://creativecommons.org/licenses/by/3.0/igo/)
+  Used for: the paths' people, 2000-2100 (estimates to 2023, the medium projection after)
+  Source:  https://population.un.org/wpp/
+
+US dollar exchange rates (BIS), monthly averages
+  Credit:  Bank for International Settlements, US dollar exchange rates (WS_XRU), https://data.bis.org/topics/XRU
+  Licence: the BIS's terms of use, which allow reuse with the source named (https://www.bis.org/terms_conditions.htm)
+  Used for: the moneys layer: each money's monthly rate to the US dollar, 2000-01 to 2025-12
+  Source:  https://data.bis.org/static/bulk/WS_XRU_csv_col.zip
+
+Penn World Table 11.0 (Groningen Growth and Development Centre)
+  Credit:  Feenstra, R. C., Inklaar, R. and Timmer, M. P. (2015) The Next Generation of the Penn World Table.
+           American Economic Review 105(10): 3150-3182. Data: PWT 11.0, www.ggdc.net/pwt
+  Licence: CC BY 4.0
+  Used for: Taiwan's output and the years WDI lacks for a few others, marked as the game's estimates
+  Source:  https://www.rug.nl/ggdc/productivity/pwt/ (DataverseNL)
+
+Maddison Project Database 2023 (Groningen Growth and Development Centre)
+  Credit:  Bolt, J. and van Zanden, J. L. (2024) Maddison style estimates of the evolution of the world economy: A
+           new 2023 update. Journal of Economic Surveys. Data: Maddison Project Database, version 2023.
+  Licence: CC BY 4.0
+  Used for: North Korea's output and the years neither WDI nor PWT has for a few others, marked as estimates
+  Source:  https://www.rug.nl/ggdc/historicaldevelopment/maddison/ (DataverseNL)
+
+Commodity Markets, the Pink Sheet (the World Bank), annual prices
+  Credit:  The World Bank, Commodity Price Data (The Pink Sheet), annual nominal prices
+  Licence: CC BY 4.0 (https://datacatalog.worldbank.org/public-licenses)
+  Used for: the prices layer: each good's real price path 2000-2025 (its series, or a proxy's, over the US CPI)
+  Source:  https://www.worldbank.org/en/research/commodity-markets
