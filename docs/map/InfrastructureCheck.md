@@ -1,4 +1,4 @@
-# InfrastructureCheck.java - 1,178 lines · 8 methods · 0 constants · harnesses
+# InfrastructureCheck.java - 1,184 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/InfrastructureCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -15,7 +15,7 @@
 > The last one is the point of the whole feature. A mechanic the player cannot
 > see themselves solve is just a tax.
 
-**Uses:** [InfrastructureManager](InfrastructureManager.md) (75), [TaxPolicy](TaxPolicy.md) (17), [Game](Game.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (13), [Traffic](Traffic.md) (7), [Motoring](Motoring.md) (6), [Markets](Markets.md) (6), [Good](Good.md) (6), [GoodsMarket](GoodsMarket.md) (4), [Retail](Retail.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [Sector](Sector.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [Ports](Ports.md) (1)
+**Uses:** [InfrastructureManager](InfrastructureManager.md) (75), [TaxPolicy](TaxPolicy.md) (17), [Game](Game.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (13), [Traffic](Traffic.md) (7), [Motoring](Motoring.md) (6), [Markets](Markets.md) (6), [Good](Good.md) (6), [GoodsMarket](GoodsMarket.md) (4), [Retail](Retail.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [Sectors](Sectors.md) (2), [Sector](Sector.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [Ports](Ports.md) (1)
 
 ## Sections
 
@@ -27,14 +27,14 @@
 | 144 | · 4. a real city |
 | 196 | · 5. growth jams it |
 | 264 | · 6. building a road fixes it |
-| 406 | · · AND THE CLEANER SIGNAL UNDERNEATH IT, WHICH IS NOT CONSUMPTION. |
-| 465 | · · AND THERE IS NO SECOND OUTCOME ASSERTION HERE, ON PURPOSE. |
-| 503 | · 7. across a save |
-| 594 | · 7b. THREE ROADS, AND ALL THREE USEFUL |
-| 710 | · 8. a new game forgets the traffic |
-| 720 | · 9. EVERY FIGURE THE INFRASTRUCTURE TAB READS |
-| 841 | · 10. THE CURVE, THE WALK AND THE WEDGE, AS THE SCREEN DRAWS THEM (0.7.29) |
-| 1078 | · 11. WHO RIDES, BY WHAT THEY PAY (0.7.49) |
+| 412 | · · AND THE CLEANER SIGNAL UNDERNEATH IT, WHICH IS NOT CONSUMPTION. |
+| 471 | · · AND THERE IS NO SECOND OUTCOME ASSERTION HERE, ON PURPOSE. |
+| 509 | · 7. across a save |
+| 600 | · 7b. THREE ROADS, AND ALL THREE USEFUL |
+| 716 | · 8. a new game forgets the traffic |
+| 726 | · 9. EVERY FIGURE THE INFRASTRUCTURE TAB READS |
+| 847 | · 10. THE CURVE, THE WALK AND THE WEDGE, AS THE SCREEN DRAWS THEM (0.7.29) |
+| 1084 | · 11. WHO RIDES, BY WHAT THEY PAY (0.7.49) |
 
 ## Fields (state)
 
@@ -46,13 +46,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 1159 | **type** `public class InfrastructureCheck` | The road network, from the curve up to a city that actually jams. |
+| 20 | 1165 | **type** `public class InfrastructureCheck` | The road network, from the curve up to a city that actually jams. |
 | 24 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 30 | 3 | `static boolean sane(double value, double low, double high)` | Finite, and inside the range the screen's own label claims for it. |
 | 34 | 9 | `static void close(String label, double actual, double expected)` |  |
 | 53 | 3 | `static boolean steady(ham.citybuildersim.sectors.Retail shops)` | True once the month in progress reads the same as the month last struck. |
 | 58 | 4 | `static int shopsFor(Game g, double coverage)` | How many convenience stores give this much coverage - the fixture's shape, not a count. |
 | 63 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 70 | 1100 | `public static void main(String[] args) throws Exception` |  |
-| 1171 | 7 | `static void cleanUp(Path root)` |  |
+| 70 | 1106 | `public static void main(String[] args) throws Exception` |  |
+| 1177 | 7 | `static void cleanUp(Path root)` |  |
 

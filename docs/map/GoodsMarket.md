@@ -128,7 +128,7 @@
 | 252 | 1 | `public boolean hasWorldPrices()` | Whether a world market has set either price (the state a save carries and a screen can say "the world's band" by). |
 | 255 | 1 | `public double getWorldImportSet()` | The prices as set, NaN for the literal: for the save (Markets.toState()). |
 | 258 | 1 | `public double getWorldExportSet()` | ...and the export side. |
-| 272 | 7 | `private double bandFreight()` | The lorries' freight on one unit in the band, each way, in the world's money: Good.baseFreight(), to the bit, for the literal band; and for a band the world sets, that freight shrunk with the band where the band is na... |
+| 272 | 7 | `public double bandFreight()` | The lorries' freight on one unit in the band, each way, in the world's money: Good.baseFreight(), to the bit, for the literal band; and for a band the world sets, that freight shrunk with the band where the band is na... |
 | 281 | 4 | `public double importPrice()` | What an import costs the city, in the city's money. |
 | 287 | 4 | `public double exportPrice()` | What the world pays the city for one, in the city's money. |
 

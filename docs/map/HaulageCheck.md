@@ -1,4 +1,4 @@
-# HaulageCheck.java - 1,610 lines · 40 methods · 4 constants · harnesses
+# HaulageCheck.java - 1,621 lines · 41 methods · 4 constants · harnesses
 
 `ham/citybuildersim/HaulageCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > It tests the model through its public getters and constants and changes
 > ... (5 more lines in the source)
 
-**Uses:** [Good](Good.md) (147), [Sector](Sector.md) (77), [Game](Game.md) (48), [Haulage](Haulage.md) (42), [Freight](Freight.md) (32), [ProcessingSector](ProcessingSector.md) (24), [JobType](JobType.md) (22), [Sectors](Sectors.md) (18), [GameFiles](GameFiles.md) (16), [Traffic](Traffic.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildingManager](BuildingManager.md) (5), [Mining](Mining.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [SpreadPlanner](SpreadPlanner.md) (4), [Founding](Founding.md) (3), [HeavyIndustry](HeavyIndustry.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [Resource](Resource.md) (1), [Ports](Ports.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1)
+**Uses:** [Good](Good.md) (147), [Sector](Sector.md) (77), [Game](Game.md) (49), [Haulage](Haulage.md) (42), [Freight](Freight.md) (32), [ProcessingSector](ProcessingSector.md) (24), [JobType](JobType.md) (22), [Sectors](Sectors.md) (18), [GameFiles](GameFiles.md) (16), [Traffic](Traffic.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildingManager](BuildingManager.md) (5), [Mining](Mining.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [SpreadPlanner](SpreadPlanner.md) (4), [Founding](Founding.md) (3), [HeavyIndustry](HeavyIndustry.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [Resource](Resource.md) (1), [Ports](Ports.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1)
 
 **Used by (8):** [FreightViewCheck](FreightViewCheck.md), [HomeRailCheck](HomeRailCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [RailDepotCheck](RailDepotCheck.md), [TradeBandCheck](TradeBandCheck.md), [TruckCheck](TruckCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
@@ -115,7 +115,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 83 | 1528 | **type** `public class HaulageCheck` | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the vans carry goods and nothing else. |
+| 83 | 1539 | **type** `public class HaulageCheck` | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the vans carry goods and nothing else. |
 | 87 | 5 | `static void quietly(Runnable r)` |  |
 | 93 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 98 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -199,13 +199,14 @@
 |---:|---:|---|---|
 | 1205 | 109 | `static void weighing()` |  |
 
-### 11. THE DEAL (FR8) (lines 1315-1610)
+### 11. THE DEAL (FR8) (lines 1315-1621)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1324 | 24 | **type** `static final class Town` | A played city whose trucks suffice, every sector with legs dealt a literal 1 and its standing demand noted: the town whose fleet is full, before anything lands. |
-| 1332 | 15 | `Town(String label)` _(in HaulageCheck.Town)_ |  |
-| 1350 | 8 | `static boolean land(Game g, String building, int count)` | `count` more of a building, handed to the city finished and paid for from a fixture's cash (as base() builds its plant); whether it stood. |
-| 1360 | 5 | `static double trucksFor(double tonnes)` | The trucks that carry `tonnes` a month, and not an ulp short of it. |
-| 1366 | 244 | `static void deal()` |  |
+| 1324 | 35 | **type** `static final class Town` | A played city whose trucks suffice, every sector with legs dealt a literal 1 and its standing demand noted: the town whose fleet is full, before anything lands. |
+| 1332 | 1 | `Town(String label)` _(in HaulageCheck.Town)_ |  |
+| 1340 | 18 | `Town(String label, boolean bakery)` _(in HaulageCheck.Town)_ | ...with `bakery` an Industrial Bakery handed to the city before its first month (WN3, the world market): the sector with legs the deal's save section counts a fourth of. |
+| 1361 | 8 | `static boolean land(Game g, String building, int count)` | `count` more of a building, handed to the city finished and paid for from a fixture's cash (as base() builds its plant); whether it stood. |
+| 1371 | 5 | `static double trucksFor(double tonnes)` | The trucks that carry `tonnes` a month, and not an ulp short of it. |
+| 1377 | 244 | `static void deal()` |  |
 

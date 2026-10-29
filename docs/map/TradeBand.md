@@ -1,4 +1,4 @@
-# TradeBand.java - 252 lines · 21 methods · 0 constants · model
+# TradeBand.java - 253 lines · 21 methods · 0 constants · model
 
 `ham/citybuildersim/TradeBand.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -80,7 +80,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 197 | **type** `public final class TradeBand` | The freight band of what the city trades, split into its legs, as the Trade tab draws it (batch FR4; docs/studies/spec-freight-and-infrastructure.md 6, last bullet): the gap between what the world pays for a good and ... |
+| 56 | 198 | **type** `public final class TradeBand` | The freight band of what the city trades, split into its legs, as the Trade tab draws it (batch FR4; docs/studies/spec-freight-and-infrastructure.md 6, last bullet): the gap between what the world pays for a good and ... |
 | 58 | 1 | `private TradeBand()` |  |
 
 ### THE VOCABULARY (lines 60-100)
@@ -115,11 +115,11 @@
 | 171 | 1 | `public double shareOfTrade()` _(in TradeBand.Whole)_ | The gap to the door as a share of the money that crossed (0 when nothing did). |
 | 175 | 1 | **type** `public record Band(Whole whole, List<Row> rows)` | The whole, and the goods' rows: those that crossed first (largest first), then the rest by the widest gap. |
 
-### THE BAND (lines 177-252)
+### THE BAND (lines 177-253)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 182 | 60 | `public static Band of(Game game)` | The band of the city's trade, from its markets, its Freight sector and the books of the month last struck. |
-| 244 | 3 | `private static double fin(double v)` | A finite figure: NaN and infinity read 0, so no screen ever draws or divides by one. |
-| 249 | 3 | `private static double unit(double x)` | A share clamped to 0..1, and 0 for a number that is not one. |
+| 182 | 61 | `public static Band of(Game game)` | The band of the city's trade, from its markets, its Freight sector and the books of the month last struck. |
+| 245 | 3 | `private static double fin(double v)` | A finite figure: NaN and infinity read 0, so no screen ever draws or divides by one. |
+| 250 | 3 | `private static double unit(double x)` | A share clamped to 0..1, and 0 for a number that is not one. |
 

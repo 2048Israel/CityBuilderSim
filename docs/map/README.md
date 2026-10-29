@@ -4,7 +4,7 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 446 files, 484,203 lines, 20,764 methods, 4,699 constants. `GameVersion.VERSION` is "0.8.69", `SAVE_FORMAT` 48.
+**The tree:** 446 files, 484,519 lines, 20,774 methods, 4,699 constants. `GameVersion.VERSION` is "0.8.69", `SAVE_FORMAT` 48.
 
 ## model (210 files)
 
@@ -35,7 +35,7 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BuildingsStacks.java](BuildingsStacks.md) | 478 | 43 | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. | 28 |
 | [BuildingsTemplate.java](BuildingsTemplate.md) | 1,268 | 135 | One kind of building, and what it costs to put up. | 162 |
 | [BusinessDebt.java](BusinessDebt.md) | 93 | 12 | Base class for private-sector borrowing. | 9 |
-| [BusinessDebtManager.java](BusinessDebtManager.md) | 3,626 | 235 | Private-sector credit. | 29 |
+| [BusinessDebtManager.java](BusinessDebtManager.md) | 3,626 | 235 | Private-sector credit. | 30 |
 | [BusinessInvestment.java](BusinessInvestment.md) | 1,289 | 65 | Capacity planning for the private sector. | 69 |
 | [BusinessLoan.java](BusinessLoan.md) | 72 | 7 | A fixed-term business loan: interest-only each month, principal repaid in full at maturity. | 7 |
 | [Buyback.java](Buyback.md) | 357 | 22 | The city's paper bought back in a reverse auction: every holder offers what it holds in slices, each at the price where its own buying rule would s... | 8 |
@@ -88,7 +88,7 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FuelSplit.java](FuelSplit.md) | 229 | 8 | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; ... | 2 |
 | [FundLedger.java](FundLedger.md) | 766 | 92 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 10 |
 | [FundView.java](FundView.md) | 863 | 38 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 5 |
-| [Game.java](Game.md) | 19,446 | 840 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 217 |
+| [Game.java](Game.md) | 19,466 | 842 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 217 |
 | [GameFiles.java](GameFiles.md) | 469 | 40 | Where the game keeps its files, and how it writes them. | 137 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 10 |
 | [GamePrefs.java](GamePrefs.md) | 249 | 27 | How the player likes the window, kept between runs. | 4 |
@@ -176,7 +176,7 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [SectorFlow.java](SectorFlow.md) | 261 | 17 | One business's month as a flow (0.7.30): what went in, what its plant made of it and what held the plant back, and what came out - each good's unit... | 4 |
 | [SectorState.java](SectorState.md) | 274 | 6 | One sector, as a save carries it. | 12 |
 | [SectorStatements.java](SectorStatements.md) | 1,072 | 66 | A business's month as formal statements (0.7.74): the income statement classified down through gross and operating profit, the balance sheet in cur... | 17 |
-| [Sectors.java](Sectors.md) | 469 | 46 | Every sector in the city, in one order, by one name. | 119 |
+| [Sectors.java](Sectors.md) | 469 | 46 | Every sector in the city, in one order, by one name. | 121 |
 | [ServicesManager.java](ServicesManager.md) | 381 | 26 | / | 7 |
 | [ShadowBasket.java](ShadowBasket.md) | 201 | 1 | What a played city WOULD buy, measured against what it spends today. | 0 |
 | [ShipShapes.java](ShipShapes.md) | 165 | 10 | How the map draws a boat: its length and beam by its class, its outline and deck marks as points in plots about where it is and the way it heads, i... | 4 |
@@ -197,7 +197,7 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Timing.java](Timing.md) | 215 | 14 | The one helper every timing assertion in the suite goes through: a figure on a clock against its budget, hard as the harness wrote it, or soft whil... | 17 |
 | [TrackCurves.java](TrackCurves.md) | 346 | 26 | The railway's curves as one geometry, for the drawing and for the trains' routes alike (FX5, 0.8.18): a polyline's corners rounded with arcs of a r... | 9 |
 | [Trade.java](Trade.md) | 40 | 4 | One fill: somebody sold somebody some units of a good at a price. | 31 |
-| [TradeBand.java](TradeBand.md) | 252 | 21 | The freight band of what the city trades, split into its legs, as the Trade tab draws it (batch FR4; docs/studies/spec-freight-and-infrastructure.m... | 2 |
+| [TradeBand.java](TradeBand.md) | 253 | 21 | The freight band of what the city trades, split into its legs, as the Trade tab draws it (batch FR4; docs/studies/spec-freight-and-infrastructure.m... | 2 |
 | [TradeLanes.java](TradeLanes.md) | 840 | 65 | The city's trade as routes on the Earth's map, without the toolkit: one lane from the city toward each partner, the lanes that go the same way shar... | 7 |
 | [Traffic.java](Traffic.md) | 60 | 3 | The three things that move, which used to be one number. | 34 |
 | [TrainSchedule.java](TrainSchedule.md) | 668 | 49 | The month's trains, as a pure function of time: which trains the city's railed tonnes make, when each reaches its yard, and where each one is at an... | 13 |
@@ -244,7 +244,7 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Manufacturing.java](Manufacturing.md) | 366 | 14 | What the city makes out of its own steel, and ships. | 5 |
 | [Materials.java](Materials.md) | 88 | 4 | The materials plant. | 1 |
 | [Mining.java](Mining.md) | 85 | 4 | Iron mines - Iron Mining since 0.7.120, under the key it was saved by, "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). | 30 |
-| [Oil.java](Oil.md) | 1,360 | 89 | Oil wells. | 18 |
+| [Oil.java](Oil.md) | 1,360 | 89 | Oil wells. | 19 |
 | [PortDivision.java](PortDivision.md) | 363 | 27 | Freight's Ports division: the crews that work the city's berths, paid by the shippers who use them and paying the city for the quay (FR3, 2026-10-1... | 11 |
 | [ProcessingSector.java](ProcessingSector.md) | 522 | 42 | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends ... | 17 |
 | [Quarrying.java](Quarrying.md) | 412 | 21 | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's ... | 9 |
@@ -303,10 +303,10 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 |---|---:|---:|---|---:|
 | [AgricultureCheck.java](AgricultureCheck.md) | 413 | 7 | The ground under the loaf. | 0 |
 | [AllChecks.java](AllChecks.md) | 479 | 16 | Runs every harness, one JVM each, and says which failed. | 2 |
-| [AuctionCheck.java](AuctionCheck.md) | 1,654 | 42 | The city's paper sold at auction: one clearing yield, and what it costs. | 0 |
-| [AutoBuildCheck.java](AutoBuildCheck.md) | 1,922 | 44 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
+| [AuctionCheck.java](AuctionCheck.md) | 1,664 | 42 | The city's paper sold at auction: one clearing yield, and what it costs. | 0 |
+| [AutoBuildCheck.java](AutoBuildCheck.md) | 1,934 | 44 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
 | [BankCheck.java](BankCheck.md) | 4,325 | 22 | The commercial bank, and the families it discharges. | 1 |
-| [BondCheck.java](BondCheck.md) | 1,581 | 37 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
+| [BondCheck.java](BondCheck.md) | 1,610 | 38 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
 | [BooksCheck.java](BooksCheck.md) | 299 | 3 | Verifies a sector's income statement and balance sheet, off the template. | 0 |
 | [BrandingCheck.java](BrandingCheck.md) | 168 | 5 | The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it should, and the store's title art is drawn to the star... | 0 |
 | [BridgeCheck.java](BridgeCheck.md) | 970 | 39 | The long bridges checked (ET6, 2026-10-26; docs/queue/ET6-notes.md): the survey of a crossing on grids of its own making and on the Earth, what a s... | 1 |
@@ -321,7 +321,7 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CalendarCheck.java](CalendarCheck.md) | 268 | 5 | The date on the status bar, and the log of what the city has finished. | 0 |
 | [CallCheck.java](CallCheck.md) | 756 | 28 | Callable bonds, the call and "worth calling" (CD4, spec-city-debt.md sections 2.6 and 6.4; D22, D23, D24): a bond of ten years or more may be sold ... | 1 |
 | [CapitalFlowCheck.java](CapitalFlowCheck.md) | 489 | 6 | Hot money: does it come for the right reason, and does it leave for one? | 0 |
-| [CarCheck.java](CarCheck.md) | 1,060 | 8 | The cars: who buys one, what it costs them, and what it does to the road. | 2 |
+| [CarCheck.java](CarCheck.md) | 1,062 | 8 | The cars: who buys one, what it costs them, and what it does to the road. | 2 |
 | [CarryTradeCheck.java](CarryTradeCheck.md) | 303 | 5 | The carry trade: the other side of hot money, and the bank's first borrower. | 0 |
 | [CementConcreteCheck.java](CementConcreteCheck.md) | 354 | 11 | Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-rese... | 0 |
 | [CentralBankCheck.java](CentralBankCheck.md) | 2,073 | 28 | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its tw... | 0 |
@@ -341,7 +341,7 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CrossingCheck.java](CrossingCheck.md) | 520 | 27 | Short crossings of bridgeable water (ET6; spec-earth2-terrain 6.2, D12): the shallow sea is water a road or a railway may bridge, exactly as fresh ... | 0 |
 | [CurrencyCheck.java](CurrencyCheck.md) | 939 | 22 | Proves the currency under a central bank (0.7.2): the rate answers to the real rate, the vault is spent defending it, and the dial and the carry ap... | 4 |
 | [CurrencyRegimeCheck.java](CurrencyRegimeCheck.md) | 1,590 | 45 | Proves the D$'s four regimes - Float, Lean against falls (the default), Band and Peg to the US$ - hold the currency where they say and cost what th... | 0 |
-| [CurveCheck.java](CurveCheck.md) | 736 | 36 | Proves the curve from the dial the market expects (CD1, spec-city-debt.md section 3): the expected dial's path, the zero rates it compounds to, the... | 0 |
+| [CurveCheck.java](CurveCheck.md) | 748 | 37 | Proves the curve from the dial the market expects (CD1, spec-city-debt.md section 3): the expected dial's path, the zero rates it compounds to, the... | 0 |
 | [DeathCareFirstCheck.java](DeathCareFirstCheck.md) | 508 | 17 | Death care first while the dead wait (0.7.129, batch T1-B): the rule that serves the city's own cemeteries and crematoria first out of its share of... | 1 |
 | [DeathRecordCheck.java](DeathRecordCheck.md) | 222 | 5 | The running totals of the dead, by age and for the orphans and the unhoused. | 0 |
 | [DenominationCheck.java](DenominationCheck.md) | 672 | 17 | A currency reform is a change of units, and this is how we know. | 0 |
@@ -354,12 +354,12 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EnsembleCheck.java](EnsembleCheck.md) | 509 | 24 | The inflation ensemble is in the tree and still runs: its driver compiles against this tree, its two halves name the same policies, and the stored ... | 0 |
 | [EquityCheck.java](EquityCheck.md) | 379 | 5 | Verifies the share register: who buys, at what price, what they are paid, and that a month with owners in it still adds up. | 0 |
 | [ExchangeCheck.java](ExchangeCheck.md) | 981 | 22 | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what ... | 1 |
-| [ExchangeRateCheck.java](ExchangeRateCheck.md) | 1,098 | 36 | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third,... | 1 |
+| [ExchangeRateCheck.java](ExchangeRateCheck.md) | 1,105 | 36 | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third,... | 1 |
 | [ExpectationsCheck.java](ExpectationsCheck.md) | 563 | 21 | Proves the anchor (Expectations, 0.7.42): credibility won on target and lost to a miss nobody leans against, expected inflation and its floor, the ... | 0 |
-| [FloatLinkCheck.java](FloatLinkCheck.md) | 1,785 | 58 | The floating-rate note and the inflation-linked bond (CD5, spec-city-debt.md sections 2.4, 2.5, 5.3 and 5.4; D25): a floater pays the month's polic... | 1 |
+| [FloatLinkCheck.java](FloatLinkCheck.md) | 1,816 | 58 | The floating-rate note and the inflation-linked bond (CD5, spec-city-debt.md sections 2.4, 2.5, 5.3 and 5.4; D25): a floater pays the month's polic... | 1 |
 | [FoodProcessingCheck.java](FoodProcessingCheck.md) | 442 | 7 | The third of the shelf that arrives already made. | 0 |
 | [ForeignCheck.java](ForeignCheck.md) | 1,855 | 16 | The balance of payments, and whether the boundary it is drawn on is honest. | 4 |
-| [ForeignDebtCheck.java](ForeignDebtCheck.md) | 1,008 | 12 | Borrowing in somebody else's money. | 3 |
+| [ForeignDebtCheck.java](ForeignDebtCheck.md) | 1,015 | 12 | Borrowing in somebody else's money. | 3 |
 | [ForestryCheck.java](ForestryCheck.md) | 704 | 21 | Forestry, checked (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.11, 4 and 5's I9 row; the study's - materials-chains-research... | 4 |
 | [FoundingYardCheck.java](FoundingYardCheck.md) | 599 | 26 | The founding yard (PT1-M4, 2026-10-12): the works department's free 400 points a month are retired and every city founds with one Builders' Yard st... | 0 |
 | [FreightViewCheck.java](FreightViewCheck.md) | 716 | 26 | FreightView, the model behind the Freight screens, held to the study's board 2 (docs/studies/spec-freight-and-infrastructure.md 6): the city's frei... | 0 |
@@ -370,8 +370,8 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [GlobeCheck.java](GlobeCheck.md) | 3,391 | 108 | The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, G... | 1 |
 | [GridCheck.java](GridCheck.md) | 619 | 22 | The block grid (0.7.65, batch M1): the city's owned ground as a quadtree, every plot's owner exact against a raster, and its offers six a side - ap... | 2 |
 | [GroceryCheck.java](GroceryCheck.md) | 459 | 10 | Groceries at a price, the shelf cleared stickily, and food assistance (0.7.43): the households' demand curve, the clearing price, who is handed the... | 0 |
-| [HaulageCheck.java](HaulageCheck.md) | 1,610 | 40 | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the v... | 8 |
-| [HealthCheck.java](HealthCheck.md) | 1,714 | 6 | Sickness: what it moves, and - much more importantly - what it does not. | 0 |
+| [HaulageCheck.java](HaulageCheck.md) | 1,621 | 41 | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the v... | 8 |
+| [HealthCheck.java](HealthCheck.md) | 1,719 | 6 | Sickness: what it moves, and - much more importantly - what it does not. | 0 |
 | [HistoryCheck.java](HistoryCheck.md) | 851 | 11 | Verifies the graph history: recording, alignment, and the round trip. | 0 |
 | [HoldersCheck.java](HoldersCheck.md) | 1,530 | 20 | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is boug... | 0 |
 | [HomeRailCheck.java](HomeRailCheck.md) | 894 | 27 | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's... | 2 |
@@ -381,46 +381,46 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HydroCheck.java](HydroCheck.md) | 611 | 17 | The Hydro Station and the river it needs (HY1, 2026-10-26; docs/queue/HY1-notes.md): the physics of a drop against its own constants, the sites on ... | 0 |
 | [InboxCheck.java](InboxCheck.md) | 527 | 8 | Verifies the inbox: raising, refreshing, resolving, culling and the round trip. | 0 |
 | [IndustryViewCheck.java](IndustryViewCheck.md) | 1,218 | 32 | The materials pictograms' model, checked (0.7.141, batch I11; docs/studies/spec-materials.md 2.13, 4's IndustryViewCheck line and 5's I11 row): Ind... | 0 |
-| [InfrastructureCheck.java](InfrastructureCheck.md) | 1,178 | 8 | The road network, from the curve up to a city that actually jams. | 0 |
-| [InvestCheck.java](InvestCheck.md) | 1,606 | 8 | Verifies the private investment engine: forecasting, the demand tests, and the brake. | 0 |
+| [InfrastructureCheck.java](InfrastructureCheck.md) | 1,184 | 8 | The road network, from the curve up to a city that actually jams. | 0 |
+| [InvestCheck.java](InvestCheck.md) | 1,614 | 8 | Verifies the private investment engine: forecasting, the demand tests, and the brake. | 0 |
 | [IslandNetCheck.java](IslandNetCheck.md) | 834 | 32 | A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5). | 2 |
 | [JunctionCheck.java](JunctionCheck.md) | 1,768 | 76 | Proves that the junctions and interchanges of spec-freight 4.6 are drawn by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19). | 4 |
 | [KeptCheck.java](KeptCheck.md) | 890 | 15 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 1 |
 | [KnownRedsCheck.java](KnownRedsCheck.md) | 311 | 15 | The harness for AllChecks' known reds (batch FW7): a failed harness is said to be a known red or a NEW one against main's record, line by line, and... | 0 |
-| [LabourCheck.java](LabourCheck.md) | 1,181 | 14 | Verifies the labour market: who can hold a job, and what it costs. | 1 |
+| [LabourCheck.java](LabourCheck.md) | 1,185 | 14 | Verifies the labour market: who can hold a job, and what it costs. | 1 |
 | [LandCheck.java](LandCheck.md) | 3,508 | 54 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 6 |
 | [LandClassCheck.java](LandClassCheck.md) | 1,349 | 51 | A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going price stays the price of flat ... | 3 |
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 739 | 29 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 0 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,275 | 94 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 3 |
 | [LongPlaytest.java](LongPlaytest.md) | 7,773 | 143 | A city played for four thousand months, the way a person plays. | 49 |
 | [MainLineCheck.java](MainLineCheck.md) | 1,542 | 47 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 1 |
-| [ManufacturingCheck.java](ManufacturingCheck.md) | 609 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
-| [MapCheck.java](MapCheck.md) | 11,744 | 303 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 9 |
+| [ManufacturingCheck.java](ManufacturingCheck.md) | 614 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
+| [MapCheck.java](MapCheck.md) | 11,760 | 304 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 9 |
 | [MaterialsCheck.java](MaterialsCheck.md) | 1,537 | 31 | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), a... | 10 |
 | [MiningCheck.java](MiningCheck.md) | 600 | 10 | Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore. | 9 |
-| [MonetaryCheck.java](MonetaryCheck.md) | 917 | 10 | Money: what a basket costs, what the world charges, and what the rate does. | 3 |
+| [MonetaryCheck.java](MonetaryCheck.md) | 930 | 11 | Money: what a basket costs, what the world charges, and what the rate does. | 3 |
 | [MoneyCheck.java](MoneyCheck.md) | 570 | 5 | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. | 0 |
 | [MortgageCheck.java](MortgageCheck.md) | 1,223 | 26 | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. | 1 |
 | [NationsCheck.java](NationsCheck.md) | 649 | 22 | The nations beyond the city and the path they are on (batch WN1; the project's spec-nations.md 7): Nations' year - output, people, prices and the r... | 0 |
 | [NewGameCheck.java](NewGameCheck.md) | 1,298 | 16 | Does "Start New Game" actually start a new game? | 1 |
-| [OilCheck.java](OilCheck.md) | 2,232 | 44 | Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K; the project's spec-land.md 2.7 and section 3's K entry). | 1 |
+| [OilCheck.java](OilCheck.md) | 2,236 | 44 | Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K; the project's spec-land.md 2.7 and section 3's K entry). | 1 |
 | [OilViewCheck.java](OilViewCheck.md) | 706 | 20 | The oil industry screen (0.7.96, batch O12; docs/studies/spec-oil.md 2.13): OilView's figures, words, chart and levers, held to the model's own rea... | 0 |
 | [OrderBookCheck.java](OrderBookCheck.md) | 297 | 16 | The limit-order book (0.7.12), on its own: the rules any instrument trades by, proved on a book that knows nothing about what it trades. | 0 |
 | [OrderSearchCheck.java](OrderSearchCheck.md) | 637 | 20 | The three order searches against the countdowns they replaced (0.7.54). | 1 |
 | [OutsideCheck.java](OutsideCheck.md) | 699 | 5 | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). | 0 |
-| [PassThroughCheck.java](PassThroughCheck.md) | 601 | 19 | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUG... | 0 |
-| [PlanCheck.java](PlanCheck.md) | 4,033 | 135 | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway... | 4 |
+| [PassThroughCheck.java](PassThroughCheck.md) | 609 | 19 | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUG... | 0 |
+| [PlanCheck.java](PlanCheck.md) | 4,042 | 136 | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway... | 4 |
 | [PlaytestFixCheck.java](PlaytestFixCheck.md) | 224 | 9 | Verifies the small fixes of a played city (PT1): words and the log, nothing the month does. | 0 |
 | [PolicyCheck.java](PolicyCheck.md) | 475 | 5 | The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies. | 0 |
-| [PolicyPreviewCheck.java](PolicyPreviewCheck.md) | 711 | 18 | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. | 0 |
+| [PolicyPreviewCheck.java](PolicyPreviewCheck.md) | 734 | 19 | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. | 0 |
 | [PopulationCheck.java](PopulationCheck.md) | 1,426 | 11 | The demographics: do they hold together, and do they move the city the way they were told to? | 0 |
-| [PortCheck.java](PortCheck.md) | 1,177 | 23 | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). | 3 |
+| [PortCheck.java](PortCheck.md) | 1,181 | 23 | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). | 3 |
 | [QuarryingCheck.java](QuarryingCheck.md) | 638 | 13 | Quarrying, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-researc... | 1 |
-| [RailCheck.java](RailCheck.md) | 742 | 8 | The railway: what it charges, who pays it, and what it does to the band. | 1 |
+| [RailCheck.java](RailCheck.md) | 747 | 8 | The railway: what it charges, who pays it, and what it does to the band. | 1 |
 | [RailDepotCheck.java](RailDepotCheck.md) | 519 | 14 | The railway's stations: the Rail Depot, and the rules that put a station first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.m... | 1 |
 | [RailDrawCheck.java](RailDrawCheck.md) | 1,637 | 73 | Proves that the railway is drawn as rail, not as a cased road band (0.8.1, batch FR0; docs/studies/spec-freight-and-infrastructure.md 4.3, D15, D18). | 0 |
 | [ReadPathCheck.java](ReadPathCheck.md) | 2,212 | 17 | Reading the city must not change the city. | 1 |
-| [RefineryCheck.java](RefineryCheck.md) | 1,508 | 35 | The refinery's units and the flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread... | 0 |
+| [RefineryCheck.java](RefineryCheck.md) | 1,517 | 35 | The refinery's units and the flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread... | 0 |
 | [RefineryViewCheck.java](RefineryViewCheck.md) | 632 | 23 | The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads ... | 1 |
 | [ReloadCheck.java](ReloadCheck.md) | 552 | 34 | Plays a city, saves it, loads the save into a second game, runs both a month and compares what each would save: a reloaded city has to play its nex... | 2 |
 | [RestaurantsCheck.java](RestaurantsCheck.md) | 575 | 6 | A meal out is food, and it is the same food. | 0 |
@@ -428,26 +428,26 @@ Generated 2026-10-29 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RoadCheck.java](RoadCheck.md) | 1,199 | 35 | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to the... | 0 |
 | [RobustnessCheck.java](RobustnessCheck.md) | 432 | 5 | What the game does when something is already broken. | 0 |
 | [RunWorksCheck.java](RunWorksCheck.md) | 1,303 | 40 | Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a highway's or a railway line's groun... | 1 |
-| [SaveFileCheck.java](SaveFileCheck.md) | 3,577 | 17 | Verifies where saves go and how they are written. | 10 |
+| [SaveFileCheck.java](SaveFileCheck.md) | 3,581 | 17 | Verifies where saves go and how they are written. | 10 |
 | [SaveSlotCheck.java](SaveSlotCheck.md) | 1,415 | 42 | Verifies the slot system: ten saves plus an autosave, the version stamp, and the labels the menu is drawn from. | 0 |
-| [ScaleCheck.java](ScaleCheck.md) | 1,876 | 55 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 1 |
-| [SectorBooksCheck.java](SectorBooksCheck.md) | 340 | 5 | Plays a city and audits every sector's statements, every month. | 1 |
+| [ScaleCheck.java](ScaleCheck.md) | 1,885 | 55 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 1 |
+| [SectorBooksCheck.java](SectorBooksCheck.md) | 347 | 5 | Plays a city and audits every sector's statements, every month. | 1 |
 | [SectorFlowCheck.java](SectorFlowCheck.md) | 308 | 11 | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held t... | 0 |
-| [SectorStatementCheck.java](SectorStatementCheck.md) | 913 | 22 | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every mon... | 2 |
+| [SectorStatementCheck.java](SectorStatementCheck.md) | 932 | 23 | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every mon... | 2 |
 | [SicknessCheck.java](SicknessCheck.md) | 322 | 5 | The long sick: who stays sick, and who it kills. | 0 |
 | [SkipReportCheck.java](SkipReportCheck.md) | 323 | 5 | Verifies the fast-forward summary. | 0 |
 | [SlopeCheck.java](SlopeCheck.md) | 912 | 32 | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill gro... | 1 |
 | [StaleCheck.java](StaleCheck.md) | 331 | 6 | The prose still describes the code: the firm half of `tools.Stale`, asserted, and `tools.Names` proved on a fixture. | 0 |
 | [SupplierCreditCheck.java](SupplierCreditCheck.md) | 340 | 10 | The grocers' supplier credit (0.7.44): stock bought on the suppliers' credit when the till cannot pay for it, owed for a month, repaid out of the s... | 0 |
 | [TimingCheck.java](TimingCheck.md) | 733 | 30 | The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the su... | 0 |
-| [TradeBandCheck.java](TradeBandCheck.md) | 439 | 18 | TradeBand, the model behind the Trade tab's band in legs, held to the study's last bullet of section 6 (docs/studies/spec-freight-and-infrastructur... | 0 |
-| [TradeCostCheck.java](TradeCostCheck.md) | 616 | 6 | The wedge between what the world charges and what it pays, and what it is made of. | 0 |
+| [TradeBandCheck.java](TradeBandCheck.md) | 440 | 18 | TradeBand, the model behind the Trade tab's band in legs, held to the study's last bullet of section 6 (docs/studies/spec-freight-and-infrastructur... | 0 |
+| [TradeCostCheck.java](TradeCostCheck.md) | 621 | 6 | The wedge between what the world charges and what it pays, and what it is made of. | 0 |
 | [TreasuryCheck.java](TreasuryCheck.md) | 1,603 | 33 | Plays a city and audits what the screens say the treasury did. | 2 |
 | [TruckCheck.java](TruckCheck.md) | 441 | 10 | Proves that Haulage's loads are drawn as trucks on the map's roads, as a pure function of time, and that drawing them changes nothing in the game (... | 1 |
 | [TruckRouteCheck.java](TruckRouteCheck.md) | 1,351 | 50 | Proves the trucks' routes (0.8.8, batch FR5, slice B; docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the map lets a truck driv... | 0 |
 | [VanCheck.java](VanCheck.md) | 476 | 5 | The vans: what a sector needs, what it costs it, and what happens while it waits for them. | 0 |
 | [WaterCheck.java](WaterCheck.md) | 529 | 10 | Sanity harness for water production, demand, throttling and billing - and, since 0.7.59, the fresh water limit and the desalination plant (sections... | 0 |
-| [WellCheck.java](WellCheck.md) | 1,123 | 27 | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spe... | 2 |
+| [WellCheck.java](WellCheck.md) | 1,133 | 27 | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spe... | 2 |
 | [WoodProductsCheck.java](WoodProductsCheck.md) | 640 | 16 | Wood Products, checked (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.2, 2.3, 2.7, 2.8, 2.12, 4 and 5's I10 row; the study's - material... | 0 |
 | [WorldCheck.java](WorldCheck.md) | 782 | 8 | The world a city is founded on: the same seed makes the same world, and the world is the one the design describes - its sea, lakes and forest, its ... | 1 |
 | [WorldDataCheck.java](WorldDataCheck.md) | 1,048 | 35 | The nations' world file's reader (batch WN0; the project's spec-nations.md 3.3): WorldData's reading of world-1.bin held to tools/world/worldread.p... | 6 |

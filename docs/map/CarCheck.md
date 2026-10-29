@@ -1,4 +1,4 @@
-# CarCheck.java - 1,060 lines · 8 methods · 1 constants · harnesses
+# CarCheck.java - 1,062 lines · 8 methods · 1 constants · harnesses
 
 `ham/citybuildersim/CarCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -80,7 +80,7 @@
 | 586 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
 | 799 | · 7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47) |
 | 855 | · 8. THE BUYER WEIGHS THE FARE (0.7.49) |
-| 970 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
+| 972 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
 
 ## Constants
 
@@ -98,18 +98,18 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 997 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
+| 64 | 999 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
 | 68 | 7 | `static void quietly(Runnable r)` |  |
 | 76 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 81 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 87 | 3 | `static boolean same(double a, double b)` | Bitwise. |
 | 91 | 8 | `static InfrastructureManager network()` |  |
 
-### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 100-1060)
+### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 100-1062)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 119 | 4 | `static double marginOf(BuildingsTemplate t, Good vehicle, double price, double fab, double mach)` | What a plant makes of one vehicle over the parts in it (pure): the vehicle at `price`, its fabricated steel at `fab` and its machinery at `mach`, a vehicle's worth of each off its template. |
 | 125 | 19 | `static boolean marginsHeld(BuildingManager bm, Good vehicle, double wasIn, double wasOut, java.util.List<String> lines)` | The section's assertions for one vehicle and its plants, at the ends the world quotes (CarCheck, VanCheck and RailCheck call it). |
-| 145 | 915 | `public static void main(String[] args)` |  |
+| 145 | 917 | `public static void main(String[] args)` |  |
 

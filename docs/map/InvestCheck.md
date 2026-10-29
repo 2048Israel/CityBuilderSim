@@ -1,4 +1,4 @@
-# InvestCheck.java - 1,606 lines · 8 methods · 0 constants · harnesses
+# InvestCheck.java - 1,614 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/InvestCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -53,13 +53,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 1583 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
+| 24 | 1591 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
 | 29 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 37 | 6 | `static void check(String label, double actual, double expected, double tolerance)` | The same, within a stated tolerance - for sums of shares, whose rounding scales with the output. |
 | 44 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 49 | 3 | `static BuildingsTemplate template(Game g, String name)` |  |
 | 54 | 14 | `static Game city(Path root, String name)` | A fresh city, currency and world pinned, land by fiat. |
 | 70 | 4 | `static void month(Game g)` | One month, quietly. |
-| 75 | 1419 | `public static void main(String[] args) throws Exception` |  |
-| 1510 | 96 | `static void wholeCost(Path root)` | ON ITS WHOLE COST (0.7.113, batch I2b; Jerus's decisions A and A13, "test every order on its whole cost, whoever pays"). |
+| 75 | 1427 | `public static void main(String[] args) throws Exception` |  |
+| 1518 | 96 | `static void wholeCost(Path root)` | ON ITS WHOLE COST (0.7.113, batch I2b; Jerus's decisions A and A13, "test every order on its whole cost, whoever pays"). |
 
