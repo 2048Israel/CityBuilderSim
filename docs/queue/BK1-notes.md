@@ -37,13 +37,23 @@ split off by $0.000032k.
 **The fix** (`Game.restrikeBankDiscount()`, `Bank.restrikeDiscount()`). At the two events that grow
 a pool, the settle (`householdsTakeTheirShare()`) and the central bank's add-on
 (`rollCentralBankAtIssue()`), the bank's re-blend is measured from the debt manager's own totals -
-what its paper gained in face, less what it paid, less what its unearned discount rose by - and booked
-as a gain or loss on the city's paper (`Line.PAPER_GAINS`), the line the model already books every
-in-month change in that paper's value through. Equity then moves by net income, the movement and
-the split stay whole. Under a rounding guard (1e-9 of the figures it is made from) nothing is booked,
-so a fresh line moves no figure. The pooled discount stays: every trade between holders already reads
-the one per-face rate and articulates, and per-holder discounts would rewrite some twenty call sites
-for the same money a little earlier or later.
+what its paper gained in face, less what it paid, less what its unearned discount rose by - and
+routed straight to retained earnings as a named cause of the equity's movement
+(`EquityMovement.discountRestruck()`, "A reopened line's discount, re-struck" on the Bank tab),
+saved at the end of the month lines (an older save's month re-struck nothing). It moves no profit,
+tax or dividend: equity moves exactly as on main, and now every cause is named. Under a rounding
+guard (1e-9 of the figures it is made from) nothing is booked, so a fresh line moves nothing. The
+pooled discount stays for now; BK2, queued, gives each holder its own and takes the artifact away.
+
+**Sent back from the gate once** (08:20). The first fix booked the re-blend as a gain on the city's
+paper (`PAPER_GAINS`), through income. The full suite's AutoBuildCheck went red ("it borrowed, on the
+funding page's bond, at least once": 3 passes on main, 0 here). Its cities re-strike up to -$1,641k
+in a month (m61) on about $30,000k of equity, where the bank earns $100-600k a month; main leaves the
+very same amounts unexplained in the very same months (m50 +$5.404108k, m61 -$1,640.95k on both), so
+the measure was right - but through income they cut the bank's tax and dividends, and over 600 months
+the decades city ended with 18,988 people against main's 21,729. An artifact of the pooled discount
+should not move the city: the orchestrator took the retained route (2026-10-29, on BK1's
+recommendation), replacing ★1's income routing.
 
 **A save already out of step** (CLAUDE.md, old saves): it loads as it did. The two counters are
 restored as saved and equity is what the balance sheet says, so the residual stays and the red card
@@ -52,10 +62,13 @@ after the load. No format bump: no save loads differently.
 
 **The harness** (`HoldersCheck` 12). A twenty-year bond sold and settled with the households and
 the bank each holding part, then the policy rate up four points and the same line reopened (its
-discount per face 0.0124 to 0.0229), settled the next month. The fresh settle re-strikes nothing;
-the reopened one re-strikes -$1.311k (rates rose: a loss), inside PAPER_GAINS, the month's movement
-residual 0.000000000 and the split unchanged, then three more months whole and the audit closed. With
-the booking line taken out, four of its assertions fail and the split opens by exactly the $1.311k.
+discount per face 0.0124 to 0.0229), settled the next month - in the city and in a twin built the
+same way that books no re-strike, as main does (`Game.restrikeOffForTest`). The fresh settle
+re-strikes nothing; the reopened one re-strikes -$1.311467k (rates rose) as the movement's own cause,
+outside PAPER_GAINS. Over that month and three more, the city's movement residual and split are
+0.000000000 every month, and its net income, tax, dividends, gains on paper, the treasury's cash and
+the bank's equity are the twin's bit for bit; the twin's split opens by exactly $1.311467k and stays
+open, as San Francisco's did. The audit closes every month (114).
 The central bank's add-on goes through the same helper; no harness drives an add-on into a reopened
 line (`CentralBankCheck` 19 reaches it with fresh pieces only), so it is pending as BK1-C.
 
@@ -84,9 +97,10 @@ its assets earned (5.43%) - and asserts the margin against the model's own lines
 
 ## 4. The calls (each took its recommended way, BP1)
 
-- **★1 The re-blend booked through income, not each holder's own discount.** Taken: a gain or loss on
-  the city's paper, in PAPER_GAINS, taxed like the rest of its profit. The other way: a per-holder
-  discount on every line, exact to the price each paid, at twenty call sites and a moved save.
+- **★1 The re-blend routed to retained, a named cause, not through income** - the orchestrator's call
+  (2026-10-29), on BK1's recommendation, replacing the income routing the gate sent back: it is an
+  artifact of the pooled discount, so it moves no profit, tax or dividend. Each holder's own discount
+  on every line, which removes it, is BK2, queued.
 - **★2 Reserves count as earning assets whatever the policy rate.** Taken: the margin does not jump
   when the rate touches zero; they earn the policy rate, zero included. The other way: only while the
   rate is above zero.
@@ -96,13 +110,17 @@ its assets earned (5.43%) - and asserts the margin against the model's own lines
 
 ## 5. The checks, the trace
 
-- `./batch-check.sh --pick`: exit 0, 34 harnesses (Game.java left to the gate, LongPlaytest in its
-  place), Stale no firm findings. It asks for a money review of `Bank.java` and `ui/BankScreen.java`.
+- **The full suite** (`./batch-check.sh`, both data files named), after the gate's send-back:
+  exit 0, 152 harnesses green in 1,042 s (8 timing figures SOFT, run beside other batches), Stale
+  no firm findings. AutoBuildCheck passes untouched.
 - **The trace**: the default playtest on main (916d4ac7, built apart) and on this branch, traced
-  (`-Dplaytest.trace`): all eight CSVs byte-identical, the log identical but for its run-time lines
-  (74 s, 92 s). The default run's split is off by $0.000032k at most on both, rounding on $480B of
-  equity, under the guard. **No ensemble**: the trace did not move.
-- The slices went to Sonnet 5.5 at xhigh (A: the margin; B: the re-strike), each reviewed here.
+  (`-Dplaytest.trace`), before the send-back and again on the final model: all eight CSVs
+  byte-identical, the log identical but for its run-time lines (74 s; 92 s, 109 s). The default run's
+  split is off by $0.000032k at most on both, rounding on $480B of equity, under the guard. **No
+  ensemble**: the trace did not move.
+- The slices went to Sonnet 5.5 at xhigh (A: the margin; B: the re-strike; C: the re-strike to
+  retained, after the gate), each reviewed here. `--pick` asks for a money review of `Bank.java`
+  and `ui/BankScreen.java`.
 - Not a process batch: no scripts, checks' machinery or rules changed.
 - HD1's files untouched (`OutwardInvestment`, `SectorBooks`, `buildings.json`, `HistorySave`,
   `DataSave`).

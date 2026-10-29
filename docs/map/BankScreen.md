@@ -1,4 +1,4 @@
-# BankScreen.java - 4,431 lines · 169 methods · 24 constants · interface
+# BankScreen.java - 4,433 lines · 169 methods · 24 constants · interface
 
 `ham/citybuildersim/ui/BankScreen.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -120,18 +120,18 @@
 | 3654 | · · its branches |
 | 3691 | CAPITAL & OWNERS |
 | 3797 | · payout, and how its equity moved |
-| 3880 | · rescues, and the city's preferred |
-| 3944 | · the lines, under details |
-| 3951 | · · its capital |
-| 3965 | · · ...and against everything it has lent (0.7.11, round 2) |
-| 3976 | · · what it does with its profit |
-| 3997 | · · how its equity moved |
-| 4035 | · · its owners |
-| 4041 | · · its rescues |
-| 4062 | · · the city's preferred |
-| 4085 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
-| 4147 | THE BANK ASKS FOR PREFERRED (0.7.14) |
-| 4248 | HISTORY |
+| 3881 | · rescues, and the city's preferred |
+| 3945 | · the lines, under details |
+| 3952 | · · its capital |
+| 3966 | · · ...and against everything it has lent (0.7.11, round 2) |
+| 3977 | · · what it does with its profit |
+| 3998 | · · how its equity moved |
+| 4037 | · · its owners |
+| 4043 | · · its rescues |
+| 4064 | · · the city's preferred |
+| 4087 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
+| 4149 | THE BANK ASKS FOR PREFERRED (0.7.14) |
+| 4250 | HISTORY |
 
 ## Constants
 
@@ -159,8 +159,8 @@
 | 3280 | `BankScreen.LEND_AGAINST_INFO` | `"Savings reach the bank wherever its branches are - online - so it lends " + ...` | What it can lend against (Funding 1681), behind the banked bar's (i). |
 | 3734 | `BankScreen.STAKE_INFO` | `"A resolution makes every share the city's, in its fund's rescue book, which ...` | The city's stake's note (Capital 2002). |
 | 3829 | `BankScreen.MOVED_INFO` | `"Equity moves by what it earned, what it was given and what it paid out, and ...` | The equity's note (Capital 1990): Jerus's rule on a plug. |
-| 3883 | `BankScreen.RESCUES_INFO` | `"When a bank loses more than it owns, the city resolves it: the old owners lo...` | The rescues' note (Capital 2027). |
-| 4104 | `BankScreen.RESCUE_INFO` | `"Its owners lose everything: the households' shares and the world's pass to t...` | The rescue's note (Rescue 2119). |
+| 3884 | `BankScreen.RESCUES_INFO` | `"When a bank loses more than it owns, the city resolves it: the old owners lo...` | The rescues' note (Capital 2027). |
+| 4106 | `BankScreen.RESCUE_INFO` | `"Its owners lose everything: the households' shares and the world's pass to t...` | The rescue's note (Rescue 2119). |
 
 ## Fields (state)
 
@@ -181,7 +181,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 87 | 4345 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and what it charges, on an Overview - its state in a sentence, its capital in its band, eight figures and the ladder of its rates drawn in their parts - with its profit... |
+| 87 | 4347 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and what it charges, on an Overview - its state in a sentence, its capital in its band, eight figures and the ladder of its rates drawn in their parts - with its profit... |
 | 92 | 1 | `BankScreen(UserInterface ui)` |  |
 
 ### THE BANK (0.7.33): THE FRAME (lines 94-165)
@@ -499,53 +499,53 @@
 | 3756 | 25 | `Gauge measureGauge(boolean leverage)` | One of the two gauges, worked out without drawing it (pure: the probe reads them): the risk-weighted ratio, or the leverage ratio when `leverage`. |
 | 3783 | 13 | `VBox gaugeCard(Bank bank, boolean leverage)` | A gauge's card: its caption with BINDS on the larger requirement, the ratio, the bar in its band, the key, what it is of, and why the target is where it is. |
 
-### payout, and how its equity moved (lines 3797-3879)
+### payout, and how its equity moved (lines 3797-3880)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 3800 | 7 | `static String payoutInfo()` | The payout rule (Capital 1948). |
 | 3809 | 18 | `VBox payoutCard(Bank bank)` | PAYOUT: its decision; last month's profit after tax with what it paid and bought back on it; what it held over its target and the top; the year's. |
-| 3833 | 29 | `List<Step> equitySteps()` | HOW ITS EQUITY MOVED, worked out without drawing it (pure): each cause as a step, at nothing left off, "Not accounted for" always. |
-| 3863 | 16 | `VBox equityMovedCard(Bank bank)` |  |
+| 3833 | 30 | `List<Step> equitySteps()` | HOW ITS EQUITY MOVED, worked out without drawing it (pure): each cause as a step, at nothing left off, "Not accounted for" always. |
+| 3864 | 16 | `VBox equityMovedCard(Bank bank)` |  |
 
-### rescues, and the city's preferred (lines 3880-3943)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3888 | 18 | `VBox rescuesCard(Bank bank)` |  |
-| 3908 | 6 | `Label bankDecisionChip()` | The bank's first decision this month, in the order they were made - a rescue, the preferred offer - as a chip (the spec's section 5), or null. |
-| 3916 | 5 | `static boolean preferredHasHistory(Bank bank)` | Whether the city's preferred has any history to show. |
-| 3923 | 7 | `static String preferredInfo()` | The preferred's note (Capital 2046). |
-| 3931 | 12 | `VBox preferredCard(Bank bank)` |  |
-
-### the lines, under details (lines 3944-4084)
+### rescues, and the city's preferred (lines 3881-3944)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3947 | 131 | `VBox capitalLines(Bank bank)` | The Capital & owners page's lines as it printed them until 0.7.33, verbatim (the spec's C1-C8), with B2's colours. |
-| 4080 | 4 | `void moved(VBox column, String label, double amount)` | One cause of the equity's movement, printed only when it moved it - plain since 0.7.33 (B2: it was green in and amber out). |
+| 3889 | 18 | `VBox rescuesCard(Bank bank)` |  |
+| 3909 | 6 | `Label bankDecisionChip()` | The bank's first decision this month, in the order they were made - a rescue, the preferred offer - as a chip (the spec's section 5), or null. |
+| 3917 | 5 | `static boolean preferredHasHistory(Bank bank)` | Whether the city's preferred has any history to show. |
+| 3924 | 7 | `static String preferredInfo()` | The preferred's note (Capital 2046). |
+| 3932 | 12 | `VBox preferredCard(Bank bank)` |  |
 
-### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 4085-4146)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4110 | 31 | `VBox bankRescue()` |  |
-| 4143 | 3 | `static VBox rescueFigure(String caption, String value, String tone)` | One of the rescue's four figures: its caption over it. |
-
-### THE BANK ASKS FOR PREFERRED (0.7.14) (lines 4147-4247)
+### the lines, under details (lines 3945-4086)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4161 | 86 | `VBox preferredOffer()` |  |
+| 3948 | 132 | `VBox capitalLines(Bank bank)` | The Capital & owners page's lines as it printed them until 0.7.33, verbatim (the spec's C1-C8), with B2's colours. |
+| 4082 | 4 | `void moved(VBox column, String label, double amount)` | One cause of the equity's movement, printed only when it moved it - plain since 0.7.33 (B2: it was green in and amber out). |
 
-### HISTORY (lines 4248-4431)
+### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 4087-4148)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4278 | 106 | `void historyPage(VBox page)` |  |
-| 4386 | 4 | `TimeChart.Line percentLine(HistorySave h, String key, String name, String colour)` | A line of a History series in per cent, read out as a rate. |
-| 4392 | 4 | `TimeChart.Line moneyLine(HistorySave h, String key, String name, String colour)` | ...in money. |
-| 4398 | 6 | `static TimeChart.Line flatLine(HistorySave h, String key, String name, double level, String colour, String unit)` | A reference line at one level for every month: what its owners want, the 100% line. |
-| 4406 | 9 | `TimeChart chart(HistorySave h, List<TimeChart.Line> lines, String unit, List<YearBook.Band> bands, List<ChartModel.Flag> flags,...` | One of the charts, on the tab's window (it follows `leader` when there is one), without controls. |
-| 4417 | 13 | `VBox smallCard(String title, String info, String unit, TimeChart leader, HistorySave h, List<YearBook.Band> bands, List<TimeCha...` | A small chart's card: its title and (i), the chart following the rates' window, its key, and its statistics as chips. |
+| 4112 | 31 | `VBox bankRescue()` |  |
+| 4145 | 3 | `static VBox rescueFigure(String caption, String value, String tone)` | One of the rescue's four figures: its caption over it. |
+
+### THE BANK ASKS FOR PREFERRED (0.7.14) (lines 4149-4249)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4163 | 86 | `VBox preferredOffer()` |  |
+
+### HISTORY (lines 4250-4433)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4280 | 106 | `void historyPage(VBox page)` |  |
+| 4388 | 4 | `TimeChart.Line percentLine(HistorySave h, String key, String name, String colour)` | A line of a History series in per cent, read out as a rate. |
+| 4394 | 4 | `TimeChart.Line moneyLine(HistorySave h, String key, String name, String colour)` | ...in money. |
+| 4400 | 6 | `static TimeChart.Line flatLine(HistorySave h, String key, String name, double level, String colour, String unit)` | A reference line at one level for every month: what its owners want, the 100% line. |
+| 4408 | 9 | `TimeChart chart(HistorySave h, List<TimeChart.Line> lines, String unit, List<YearBook.Band> bands, List<ChartModel.Flag> flags,...` | One of the charts, on the tab's window (it follows `leader` when there is one), without controls. |
+| 4419 | 13 | `VBox smallCard(String title, String info, String unit, TimeChart leader, HistorySave h, List<YearBook.Band> bands, List<TimeCha...` | A small chart's card: its title and (i), the chart following the rates' window, its key, and its statistics as chips. |
 
