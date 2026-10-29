@@ -1449,7 +1449,7 @@ public final class LandMap {
      * What a painted plot holds, in the hover card's words, or null for bare
      * ground: a building by its type's name (nameOf, by type id; its class
      * when null) - since 0.7.64 every drawn building is one of the model's -
-     * and since 0.7.88 "packed without a street" when the city had no room
+     * and since 0.7.88 "packed at the city's edge" (MF1; "without a street" till then) when the city had no room
      * for it by one (R7); a street by its surface, its width and its role
      * (spec-roads-and-ports.md 5: "Paved street, 15 m · arterial"), a track
      * as one the city has bought no road for, "a bridge" over water and
@@ -1534,8 +1534,8 @@ public final class LandMap {
     /** A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). */
     public static final String HALF_WORDS = "15 m", FULL_WORDS = "30 m";
 
-    /** A building packed without a street, in the hover (R7). */
-    public static final String PACKED_WORDS = " · packed without a street";
+    /** A building packed at the city's edge, in the hover (R7; "packed without a street" until MF1: it stands beside one now, or has one laid to it). */
+    public static final String PACKED_WORDS = " · packed at the city's edge";
 
     /* ----------------------------- buying from the map (0.7.137, batch M6) -----------------------------
      *

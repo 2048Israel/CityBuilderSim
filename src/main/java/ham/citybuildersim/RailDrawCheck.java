@@ -353,6 +353,8 @@ public class RailDrawCheck {
         yardLadders();
         yardAcrossTiles();
         depotWithNoLine();
+        sidingsTurnCorners();
+        sidingStubs();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -1634,4 +1636,274 @@ public class RailDrawCheck {
         check("...drawn in the blocks' views as the yard's class on every plot of every part: " + blockDrawn + " of " + blockPlots + " plots", blockPlots > 0 && blockDrawn == blockPlots);
         check("...and counted on the tile holding its first plot: " + counted + " of " + yards.size(), counted == yards.size());
     }
+    /* ================= 29. (MF1) a siding that turns a corner is drawn as an arc, and the trains ride it ================= */
+
+    /** The Rail Spurs and bulk works added to the sidings fixture: 30 and 300, more than MapCheck 8c's 12 and 90, so that several sidings are laid that a unit train fits on and some turn corners. */
+    static final int SPURS = 30, WORKS = 300;
+
+    /** MapCheck 8c's iron city (his city x 1 where its square holds iron; highways, yards, a freight line, depots) with spurs and bulk works added, and the counts it was last given. */
+    static final class SidingCity {
+        final CityMap map;
+        final long[] counts;
+        SidingCity(CityMap map, long[] counts) { this.map = map; this.counts = counts; }
+    }
+
+    /** The sidings fixture as MapCheck.sidingsDealt() builds it (accessCity(), with the Squares' big copies left out: seconds, not minutes). */
+    static SidingCity sidingCity(int spurs, int bulk) {
+        long seed = Founding.DEFAULT_WORLD_SEED;
+        long[] iron = MapCheck.dryPlace(World.of(seed), MapCheck.x1Side(TYPES));
+        int mine = -1, yard = -1, freight = -1, hw = -1, spur = -1;
+        for (BuildingVisual.Type t : TYPES) {
+            if (t == null) continue;
+            if (t.terminal()) yard = t.id();
+            else if (t.track() && t.plots() > 100) freight = t.id();
+            if (t.id() == ham.citybuildersim.sectors.Mining.IRON_MINE) mine = t.id();
+            if (t.road() == BuildingVisual.HIGHWAY) hw = t.id();
+            if (t.siding()) spur = t.id();
+        }
+        long[] c = new long[TYPES.length], extra = new long[TYPES.length], rail = new long[TYPES.length];
+        for (int t = 0; t < MapCheck.JERUS_COUNTS.length && t < c.length; t++) c[t] = MapCheck.JERUS_COUNTS[t];
+        long wantMines = c[mine];
+        extra[spur] = spurs;
+        extra[JunctionCheck.BIG] = bulk * 2 / 3;
+        extra[JunctionCheck.SMALL] = bulk / 3;
+        for (int t = 0; t < c.length; t++) if (TYPES[t] != null && (TYPES[t].track() || TYPES[t].terminal())) { rail[t] = c[t]; c[t] = 0; }
+        rail[yard] += MapCheck.YARDS_ADDED;
+        rail[freight] += MapCheck.FREIGHT_ADDED;
+        for (int t = 0; t < c.length; t++) {
+            if (TYPES[t] != null && (TYPES[t].track() || TYPES[t].terminal())) rail[t] += extra[t];
+            else c[t] += extra[t];
+        }
+        c[hw] += MapCheck.ACCESS_HIGHWAYS_ADDED;
+        c[MapCheck.depotType(TYPES)] += MapCheck.ACCESS_DEPOTS_ADDED;
+        c[mine] = 0;
+        int capacity = (int) Math.round(MapCheck.JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
+        CityMap m = CityMap.square(seed, iron[0], iron[1], TYPES, MapCheck.x1Side(TYPES), capacity, c);
+        c[mine] = Math.min(wantMines, MapCheck.mineSites(m, mine));
+        m.reconcile(c);
+        for (int t = 0; t < c.length; t++) c[t] += rail[t];
+        m.reconcile(c);
+        return new SidingCity(m, c);
+    }
+
+    /** A tile's input and its picture at px pixels a plot, as the map builds and paints them. */
+    static final class Shot {
+        final TilePainter.Input in = new TilePainter.Input();
+        final int[] img;
+        Shot(MapTiles tiles, long tx, long ty, int px) {
+            long stamp = tiles.input(tx, ty, in);
+            img = raster(in, tiles.painted(tx, ty, in, stamp), px);
+        }
+    }
+
+    /** Every plan siding the map draws, as the world plots of its way: the railway plot it meets, its corners, its shed - in the districts' order. */
+    static List<List<long[]>> drawnSidingWays(CityMap m) {
+        List<List<long[]>> out = new java.util.ArrayList<>();
+        int f = DistrictPlan.FRAME;
+        for (CityMap.District d : m.districts()) {
+            CityMap.Drawn dr = m.drawn(d);
+            if (dr == null || dr.sidingWays == null) continue;
+            long ox = (m.baseDX() + d.dx) * CityMap.DISTRICT, oy = (m.baseDY() + d.dy) * CityMap.DISTRICT;
+            for (int[] way : dr.sidingWays) {
+                List<long[]> pts = new java.util.ArrayList<>();
+                for (int v : way) pts.add(new long[] { ox + v % f, oy + v / f });
+                out.add(pts);
+            }
+        }
+        return out;
+    }
+
+    /** How many plots of plan sidings the tile inputs of every district carry. */
+    static int sidingPlotsOnTiles(CityMap m) {
+        MapTiles tiles = new MapTiles(m);
+        TilePainter.Input in = new TilePainter.Input();
+        int n = 0;
+        for (CityMap.District d : m.districts()) {
+            DistrictPlan.Input pi = m.planInputHere(d);
+            long tx0 = Math.floorDiv(pi.x0, World.TILE), ty0 = Math.floorDiv(pi.y0, World.TILE);
+            for (long ty = ty0; ty < ty0 + CityMap.TILES_A_SIDE; ty++) {
+                for (long tx = tx0; tx < tx0 + CityMap.TILES_A_SIDE; tx++) {
+                    tiles.input(tx, ty, in);
+                    for (byte s : in.siding) if (s != 0) n++;
+                }
+            }
+        }
+        return n;
+    }
+
+    static void sidingsTurnCorners() {
+        System.out.println("--- 29. (MF1) a siding a district's plan lays that turns a street's corner is drawn as an arc, not a square L, and the trains' route rides the same arc ---");
+        SidingCity sc = sidingCity(SPURS, WORKS);
+        CityMap m = sc.map;
+        m.packed();
+        List<List<long[]>> ways = drawnSidingWays(m);
+        int corners = 0;
+        for (List<long[]> w : ways) corners += w.size() - 2;
+        System.out.println("      " + ways.size() + " plan sidings drawn, " + corners + " corners among them");
+        check("fixture: the plans draw sidings and some of them turn corners (the iron city with " + SPURS + " Rail Spurs and " + WORKS
+                + " bulk works added, as MapCheck 8c builds it)", ways.size() > 0 && corners > 0);
+        // The trains' routes: one to every siding, beside the runs' own, each long enough for the unit train that goes to it.
+        List<TrainSchedule.Route> works = new java.util.ArrayList<>();
+        for (TrainSchedule.Route r : m.trainRoutes()) if (r.works()) works.add(r);
+        int runsSidings = m.runs().sidings().size();
+        check("every siding the plans draw has a train's way: a works' route to each, beside the runs' own (" + works.size() + " routes for " + (runsSidings + ways.size()) + " sidings)",
+                works.size() == runsSidings + ways.size());
+        List<TrainSchedule.Route> mine = works.subList(Math.min(runsSidings, works.size()), works.size());
+        boolean holds = !mine.isEmpty();
+        for (TrainSchedule.Route r : mine) holds &= r.holds() + 1e-9 >= TrainSchedule.Kind.HOPPER.length();
+        check("...each holding a whole unit train of hoppers, as it must to be sent one (TrainSchedule.Kind.HOPPER.length())", holds);
+        // No two sidings side by side: each keeps a plot clear of the others', where two drew as one ladder, a rung to each plot (the "thin double lines").
+        java.util.Map<Long, Integer> owner = new java.util.HashMap<>();
+        for (int i = 0; i < ways.size(); i++) {
+            List<long[]> way = ways.get(i);
+            for (int k = 1; k < way.size(); k++) {
+                long ax = way.get(k - 1)[0], ay = way.get(k - 1)[1], cx = way.get(k)[0], cy = way.get(k)[1];
+                int n = (int) (Math.abs(cx - ax) + Math.abs(cy - ay));
+                for (int q = 1; q <= n; q++) owner.put(((ax + Long.signum(cx - ax) * q) << 32) ^ ((ay + Long.signum(cy - ay) * q) & 0xffffffffL), i);
+            }
+        }
+        int beside = 0;
+        for (java.util.Map.Entry<Long, Integer> e : owner.entrySet()) {
+            long x = e.getKey() >> 32, y = (int) (long) e.getKey();
+            for (int d = 0; d < 4; d++) {
+                Integer other = owner.get(((x + (d == 1 ? 1 : d == 3 ? -1 : 0)) << 32) ^ ((y + (d == 2 ? 1 : d == 0 ? -1 : 0)) & 0xffffffffL));
+                if (other != null && !other.equals(e.getValue())) beside++;
+            }
+        }
+        check("no plot of one siding has a plot of another beside it: " + beside + " of " + owner.size() + " plots", owner.size() > 0 && beside == 0);
+        // The tiles: each corner a bend of TrackCurves, its plot replaced by the arc.
+        MapTiles tiles = new MapTiles(m);
+        int px = 8, w = T * px, bent = 0, replaced = 0, arcTrack = 0, cornerGround = 0;
+        java.util.Map<Long, Shot> shots = new java.util.HashMap<>();
+        for (List<long[]> way : ways) {
+            for (int k = 1; k + 1 < way.size(); k++) {
+                long cx = way.get(k)[0], cy = way.get(k)[1], tx = Math.floorDiv(cx, World.TILE), ty = Math.floorDiv(cy, World.TILE);
+                Shot s = shots.computeIfAbsent(MapTiles.key(tx, ty), key -> new Shot(tiles, tx, ty, px));
+                int lx = (int) (cx - tx * World.TILE), ly = (int) (cy - ty * World.TILE);
+                TrackCurves.Bend at = null;
+                for (int b = 0; b < s.in.bends; b++) {
+                    TrackCurves.Bend q = s.in.bendAt(b);
+                    if (Math.abs(q.x() - (lx + 0.5)) < 1e-6 && Math.abs(q.y() - (ly + 0.5)) < 1e-6) at = q;
+                }
+                if (at == null) continue;
+                bent++;
+                if (s.in.curved[ly * T + lx]) replaced++;
+                // The arc's middle may lie in the next tile (a corner on a tile's edge): found in the tile that has it, and on a pixel beside it - a street the arc crosses at level is drawn over its middle, the rails a gauge apart on either side (within three pixels at 8 px).
+                double[] mid = at.at(at.length() / 2);
+                long mx = tx * World.TILE + (long) Math.floor(mid[0]), my = ty * World.TILE + (long) Math.floor(mid[1]), mtx = Math.floorDiv(mx, World.TILE), mty = Math.floorDiv(my, World.TILE);
+                Shot ms = shots.computeIfAbsent(MapTiles.key(mtx, mty), key -> new Shot(tiles, mtx, mty, px));
+                int mX = (int) Math.floor((tx * World.TILE + mid[0] - mtx * World.TILE) * px), mY = (int) Math.floor((ty * World.TILE + mid[1] - mty * World.TILE) * px);
+                boolean onArc = false;
+                for (int dy = -3; dy <= 3; dy++) for (int dx = -3; dx <= 3; dx++) onArc |= mX + dx >= 0 && mY + dy >= 0 && mX + dx < w && mY + dy < w && isTrack(ms.img[(mY + dy) * w + mX + dx]);
+                if (onArc) arcTrack++;
+                if (!isTrack(s.img[(ly * px + px / 2) * w + lx * px + px / 2])) cornerGround++;
+            }
+        }
+        check("every corner of every siding is a bend of TrackCurves in the tile that has it: " + bent + " of " + corners, corners > 0 && bent == corners);
+        check("...its plot is one the arc replaces, drawn as the arc and no square L: " + replaced + " of " + corners, corners > 0 && replaced == corners);
+        check("...the arc's middle is track in the tile's picture at 8 px, and the plot's own middle - the L's corner - is ground: " + arcTrack + " and " + cornerGround + " of " + corners,
+                corners > 0 && arcTrack == corners && cornerGround == corners);
+        // A turnout: where the siding leaves the main line it is a bend off the line, and the line's own plots stay, drawn - no gap in the line, no stub of it.
+        int junctions = 0, tees = 0, lineKept = 0;
+        int[][] dd = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
+        for (List<long[]> way : ways) {
+            long cx = way.get(0)[0], cy = way.get(0)[1], tx = Math.floorDiv(cx, World.TILE), ty = Math.floorDiv(cy, World.TILE);
+            int lx = (int) (cx - tx * World.TILE), ly = (int) (cy - ty * World.TILE);
+            if (lx < 2 || ly < 2 || lx >= T - 2 || ly >= T - 2) continue;
+            Shot s = shots.computeIfAbsent(MapTiles.key(tx, ty), key -> new Shot(tiles, tx, ty, px));
+            boolean bendHere = false;
+            for (int b = 0; b < s.in.bends; b++) bendHere |= Math.abs(s.in.bendAt(b).x() - (lx + 0.5)) < 1e-6 && Math.abs(s.in.bendAt(b).y() - (ly + 0.5)) < 1e-6;
+            if (bendHere) junctions++;
+            boolean tee = false, kept = bendHere && s.in.fixed[ly * T + lx] == TilePainter.RAIL && !s.in.curved[ly * T + lx];
+            for (int d = 0; d < 2; d++) {
+                int ax = lx + dd[d][0], ay = ly + dd[d][1], bx = lx - dd[d][0], by = ly - dd[d][1];
+                if (s.in.fixed[ay * T + ax] != TilePainter.RAIL || s.in.fixed[by * T + bx] != TilePainter.RAIL) continue;
+                tee = true;
+                for (int[] q : new int[][] { { ax, ay }, { bx, by } }) {
+                    kept &= !s.in.curved[q[1] * T + q[0]] && isTrack(s.img[(q[1] * px + px / 2) * w + q[0] * px + px / 2]);
+                }
+            }
+            if (tee) { tees++; if (kept) lineKept++; }
+        }
+        check("each siding leaves the line by a bend at the plot it meets: " + junctions + " of " + ways.size(), junctions == ways.size());
+        check("...and where the line runs on through that plot (a T) its plots and the two beside are not replaced and are track in the picture: " + lineKept + " of " + tees, tees > 0 && lineKept == tees);
+        // The trains ride the same rail: every point of each siding's route, from where it leaves the main line to its shed, lies on drawn track.
+        int sampled = 0, off = 0, onArcs = 0;
+        for (TrainSchedule.Route r : mine) {
+            for (double a = r.length() - r.holds(); a < r.length() - 1; a += 0.1) {
+                int k = 1;
+                while (k < r.along().length - 1 && r.along()[k] < a) k++;
+                double f = (a - r.along()[k - 1]) / Math.max(1e-9, r.along()[k] - r.along()[k - 1]);
+                double x = r.xs()[k - 1] + (r.xs()[k] - r.xs()[k - 1]) * f, y = r.ys()[k - 1] + (r.ys()[k] - r.ys()[k - 1]) * f;
+                long tx = Math.floorDiv((long) Math.floor(x), World.TILE), ty = Math.floorDiv((long) Math.floor(y), World.TILE);
+                int X = (int) Math.floor((x - tx * World.TILE) * px), Y = (int) Math.floor((y - ty * World.TILE) * px);
+                if (X < 4 || Y < 4 || X >= w - 4 || Y >= w - 4) continue;
+                Shot s = shots.computeIfAbsent(MapTiles.key(tx, ty), key -> new Shot(tiles, tx, ty, px));
+                boolean on = false;
+                for (int dy = -3; dy <= 3; dy++) for (int dx = -3; dx <= 3; dx++) on |= isTrack(s.img[(Y + dy) * w + X + dx]);
+                boolean arc = false;
+                for (int b = 0; b < s.in.bends; b++) arc |= Math.hypot(s.in.bendAt(b).x() - (x - tx * World.TILE), s.in.bendAt(b).y() - (y - ty * World.TILE)) < 2;
+                sampled++;
+                if (!on) off++;
+                if (arc) onArcs++;
+            }
+        }
+        check("the trains' route to each siding is on the drawn rail all the way (a rail within three pixels of each point at 8 px): " + off + " of " + sampled + " points off it, " + onArcs + " of them within two plots of a bend",
+                sampled > 100 && off == 0 && onArcs > 0);
+    }
+
+    /* ================= 30. (MF1) a stub is not drawn: a siding no train fits, a siding whose works is gone ================= */
+
+    static void sidingStubs() {
+        System.out.println("--- 30. (MF1) a siding with no traffic is not drawn: one no unit train fits on, one whose works is gone ---");
+        check("fixture: a works' siding must hold the unit train TrainSchedule sends it, and CityMap.sidingLeast() is that train's length in whole plots",
+                CityMap.sidingLeast() + 1e-9 >= TrainSchedule.Kind.HOPPER.length() && CityMap.sidingLeast() - 1 < TrainSchedule.Kind.HOPPER.length());
+        SidingCity sc = sidingCity(SPURS, WORKS);
+        CityMap m = sc.map;
+        m.packed();
+        int live = 0, stubs = 0, plotsLive = 0;
+        boolean allHold = true;
+        int f = DistrictPlan.FRAME;
+        for (CityMap.District d : m.districts()) {
+            CityMap.Drawn dr = m.drawn(d);
+            if (dr == null) continue;
+            stubs += dr.sidingsStub;
+            if (dr.sidingWays == null) continue;
+            for (int[] way : dr.sidingWays) {
+                int plots = 0;
+                for (int k = 1; k < way.length; k++) plots += Math.abs(way[k] % f - way[k - 1] % f) + Math.abs(way[k] / f - way[k - 1] / f);
+                allHold &= plots + 1e-9 >= TrainSchedule.Kind.HOPPER.length();
+                plotsLive += plots;
+                live++;
+            }
+        }
+        System.out.println("      " + live + " sidings drawn (" + plotsLive + " plots), " + stubs + " laid by the plans and left undrawn");
+        check("fixture: the plans lay sidings a unit train does not fit on, and sidings it does: " + stubs + " undrawn, " + live + " drawn", stubs > 0 && live > 0);
+        check("every siding drawn holds a whole unit train; a shorter one is a stub and is not drawn", allHold);
+        int onTiles = sidingPlotsOnTiles(m);
+        check("the tiles carry the plots of the drawn sidings and no others: " + onTiles + " siding plots on them for " + plotsLive, onTiles == plotsLive);
+        // The works gone: no bulk works left in the model, the plans made again - nothing of the sidings is left, no route, no plot, no bend of theirs.
+        int before = 0;
+        for (TrainSchedule.Route r : m.trainRoutes()) if (r.works()) before++;
+        check("with their works standing the sidings have trains' ways: " + before + " works' routes, " + m.runs().sidings().size() + " of them the runs' own", before == m.runs().sidings().size() + live);
+        long[] gone = sc.counts.clone();
+        for (int t = 0; t < gone.length; t++) {
+            BuildingVisual.Type ty = TYPES[t];
+            if (ty != null && ty.bulk() && ty.drawn() && !ty.terminal() && !ty.shore()) gone[t] = 0;
+        }
+        m.reconcile(gone);
+        m.packed();
+        int left = 0, none = 0;
+        for (CityMap.District d : m.districts()) {
+            CityMap.Drawn dr = m.drawn(d);
+            if (dr != null && dr.sidingWays == null && dr.siding == null) none++;
+            if (dr != null && dr.siding != null) left += dr.siding.length;
+        }
+        int after = 0;
+        for (TrainSchedule.Route r : m.trainRoutes()) if (r.works()) after++;
+        check("with the works gone no plan draws a siding: " + none + " of " + m.districts().size() + " districts with none, " + left + " siding plots", none == m.districts().size() && left == 0);
+        check("...no tile carries a plot of one, and no route runs to one (" + after + " works' routes left, the runs' own " + m.runs().sidings().size() + ")",
+                sidingPlotsOnTiles(m) == 0 && after == m.runs().sidings().size());
+    }
+
 }

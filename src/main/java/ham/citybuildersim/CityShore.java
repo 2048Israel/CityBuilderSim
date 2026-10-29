@@ -46,6 +46,21 @@ import java.util.List;
  * takes its newest. A FORMAT 5 sidecar, which has none, has them laid from its
  * counts as it is read.
  *
+ * THE HARBOUR (MF1, 2026-10-28; item 8 of docs/queue/MF1.md; Jerus: "i dont think
+ * real life is like that", the berths "gathered into one or two harbours at the best
+ * shore ... the rest of the coast stays beach"). The rule above gave every terminal
+ * the shore nearest the founding site, so a city of many stood on its whole coast,
+ * each on a pier of its own with a lane of its own. Now the first work on a coast
+ * opens a HARBOUR at the best shore its search weighs (CityMap.openHarbour(): near the
+ * founding site, sheltered, deep), and every later one stands within HARBOUR_REACH
+ * of that first work's shore plot, nearest it first, on the harbour's common quay: a
+ * quay HARBOUR_QUAY_PLOTS out, berths side by side. A second harbour opens only when
+ * the first has no owned shore left in its reach, HARBOUR_APART from the first, and
+ * there are at most HARBOURS_MOST on a coast (a landmass); a work with no place is
+ * counted short, as before. A harbour is derived, never saved: the first work laid
+ * within reach of nothing is a harbour's first (harbours()); works laid before MF1,
+ * on piers of their own, stay where they are.
+ *
  * THE INDEX (SL1, 2026-10-28). blocks() is asked of every plot a search, a lay
  * or a plan reads (CityMap's RunGround.at()): a shoreSpot() reads a 96 x 96
  * window for each tile it looks at, and each plot asked every work on the
@@ -68,7 +83,9 @@ public final class CityShore {
      * the research's quay a berth (4.1) at its middle, in whole plots of 30 m -
      * a tanker berth's 270 to 345 m [P1] 10, a bulk berth's about 300 m 10, a
      * container berth's 350 to 475 m [P6][P7] 14, a general cargo berth's
-     * 180 m [P12] 6.
+     * 180 m [P12] 6. Since MF1 (2026-10-28) a terminal laid by the harbour
+     * rule has HARBOUR_QUAY_PLOTS instead; these are the pier of a work laid
+     * before it, which stays as it was laid.
      */
     public static final int[] QUAY_PLOTS = { 10, 10, 14, 6 };
 
@@ -77,6 +94,66 @@ public final class CityShore {
 
     /** The most tiles one search looks at before it counts the work short: 4,096 - 64 districts' worth, about 0.3 s, so a city of billions with no free shore never pays more. */
     public static final int SEARCH_TILES_MOST = 4096;
+
+    /* ----- the harbour (MF1, 2026-10-28) ----- */
+
+    /** How far from a harbour's first work, in plots, its other works may stand: 100, 3 km each way: the berths of one harbour lie side by side along a few kilometres of one shore, nearest its first work first. */
+    public static final int HARBOUR_REACH = 100;
+
+    /** The most harbours a coast has: 2 (Jerus, MF1 item 8: "one or two harbours"); a coast is a landmass (ET5), so a second landmass has its own. */
+    public static final int HARBOURS_MOST = 2;
+
+    /** How far a second harbour's first work lies from the first's, in plots: three reaches, 300, so that a stretch of beach (a reach wide) lies between the two. */
+    public static final int HARBOUR_APART = 3 * HARBOUR_REACH;
+
+    /** A harbour terminal's quay, in plots: 2, a wall along the water with the berth just past it, the same for every terminal so that the berths lie on one line side by side, not on piers of their own (QUAY_PLOTS' 6 to 14 are the research's berth lengths, which a terminal's box already gives its water side). */
+    public static final int HARBOUR_QUAY_PLOTS = 2;
+
+    /** Deep enough for a harbour, in metres: 14 (a loaded Panamax draws about 12 to 14 m; the berth's own water is dredged, the channel is not). */
+    public static final double HARBOUR_DEPTH_M = 14;
+
+    /** Where that depth is read: the water this many plots out from a candidate's shore plot (10, 300 m: where a pier ran before MF1). */
+    public static final int HARBOUR_DEPTH_AT = 10;
+
+    /** How far round a candidate's shore plot its shelter is read, in plots: 60, 1.8 km: the share of that disc that is salt water (a cape's is above a half, a bay's below). */
+    public static final int HARBOUR_SHELTER_PLOTS = 60;
+
+    /** What a wholly open shore costs against a wholly closed one, in plots of distance from the founding site: 150, 4.5 km: a bay that much farther is as good as a cape. */
+    public static final double HARBOUR_EXPOSED_PLOTS = 150;
+
+    /** What a shore whose water is not HARBOUR_DEPTH_M deep costs, in plots of distance: 150. */
+    public static final double HARBOUR_SHALLOW_PLOTS = 150;
+
+    /** The shores a harbour's first work weighs: 8, each at least a reach from the one before, the nearest first, within three reaches of the nearest's distance. */
+    public static final int HARBOUR_CANDIDATES = 8;
+
+    /** A harbour: its first work's shore plot (x, y) in world plots, the landmass it is on (ANY when the city holds no picture of its landmasses) and how many works stand in its reach. */
+    public record Harbour(long x, long y, int landmass, int works) { }
+
+    /**
+     * The harbours of `works`, in the order opened: each work, in the order laid, belongs to the first harbour on its landmass
+     * whose first work is within `reach` plots of its shore plot, or opens one (a shore laid before the harbour rule, a work on
+     * a pier of its own, may hold more than HARBOURS_MOST: the rule only limits what is laid next). Pure.
+     */
+    static List<Harbour> harbours(List<Work> works, int reach, java.util.function.ToIntFunction<Work> landmassOf) {
+        List<long[]> open = new ArrayList<>();   // {x, y, landmass, works}
+        long reachSq = (long) reach * reach;
+        for (Work w : works) {
+            long[] s = w.shorePlot();
+            int lm = landmassOf.applyAsInt(w);
+            long[] in = null;
+            for (long[] h : open) {
+                if (h[2] != lm) continue;
+                long dx = s[0] - h[0], dy = s[1] - h[1];
+                if (dx * dx + dy * dy <= reachSq) { in = h; break; }
+            }
+            if (in == null) open.add(new long[] { s[0], s[1], lm, 1 });
+            else in[3]++;
+        }
+        List<Harbour> out = new ArrayList<>(open.size());
+        for (long[] h : open) out.add(new Harbour(h[0], h[1], (int) h[2], (int) h[3]));
+        return out;
+    }
 
     /** North, east, south, west: the sea's side of a work, its quay's heading. */
     static final int[] DX = { 0, 1, 0, -1 }, DY = { -1, 0, 1, 0 };

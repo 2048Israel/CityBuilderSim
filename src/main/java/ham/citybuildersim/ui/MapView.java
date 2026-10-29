@@ -4723,9 +4723,9 @@ final class MapView {
     /** The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. */
     static final String TRACK_ENTRY = LandMap.TRACK_ENTRY;
 
-    /** The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed without a street. */
+    /** The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed at its edge. */
     static String packedWords(int packed) {
-        return String.format("%,d building%s packed without a street: the city is short of ground for streets", packed, packed == 1 ? "" : "s");
+        return String.format("%,d building%s packed at the city's edge: the city is short of ground", packed, packed == 1 ? "" : "s");
     }
 
     /** ...and when the city has road its streets have no room for (star RD2-4): how much, in plots. */
