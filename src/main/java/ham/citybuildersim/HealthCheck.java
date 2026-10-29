@@ -1230,7 +1230,12 @@ public class HealthCheck {
                 b.addStack(b.getTemplateByName("Industrial Bakery"), 30, true);
                 b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
                 b.addStack(b.getTemplateByName("Water Treatment Plant"), 2, true);
-                b.addStack(b.getTemplateByName("Paved Road"), 20, true);
+                // SIXTY ROADS, NOT TWENTY (WN3). On the world's band the twins' investors build the materials chains (pig iron,
+                // limestone, coke, pulpwood: ore pays .54 of the literal) and their bulk freight loads the roads twentyfold (41,488
+                // against 2,096 at the end), so twenty roads read 0.35 throughput, the shops ran at 0.31 and the shelves left 30 points
+                // of the city hungry in every twin, the free one too (1.7 on the literals): the year's hunger then read the roads, not
+                // the fee. Three times the roads keep the shelves what the fee's premise needs.
+                b.addStack(b.getTemplateByName("Paved Road"), 60, true);
                 /*
                  * TEN CLINICS, 25,000 PLACES, more than any of the three twins
                  * ever holds (0.7.8, round 3). With six (15,000) the beds ran

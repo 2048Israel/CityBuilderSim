@@ -825,6 +825,10 @@ public class LabourCheck {
 
         GameFiles files = GameFiles.scratch("labour-index");
         Game city = new Game(files);
+        // WN3: the premise is a STEADY inflation, the crawl alone moving the index (twenty years of it) against goods at a fixed world
+        // price. On the world's band the index also takes the real series' moves, re-solved each January (+3.6% and +4.3% in two months
+        // at month 253, -2.8% at month 290): the wage index, a lagged chase, then stood under the window's low for months 315 to 320.
+        city.playOnLiterals();
         quietly(() -> {
             city.run();
             city.getGovernmentInvestor().spend(-2_000_000);

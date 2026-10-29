@@ -462,13 +462,17 @@ public class SaveFileCheck {
         // Ground for them by fiat (0.7.67): a new city owns its drawn dry
         // plots now, 1.7% more than STARTING_SQ_FT, and its ninety months fill
         // all of it - so the depots and the stores are given their own room.
+        // WN3: TWENTY DEPOTS, NOT TWO. On the world's band this city's investors have built the builders' depots by month 91
+        // (Construction Capacity 4,080 a month at its start, 4,880 in the month after), and two depots of 400 points are 800: they
+        // finished inside the one month, leaving nothing mid-build to save. Twenty are 8,000 points, two months of its capacity (forty are more than its cash buys).
+        final int depotsOrdered = 20;
         LandManager room = city.getLandManager();
-        room.setOwnedSqFt(room.getAllocatedSqFt() + 2 * depot.getLandSqFt() + 4 * store.getLandSqFt()
+        room.setOwnedSqFt(room.getAllocatedSqFt() + depotsOrdered * depot.getLandSqFt() + 4 * store.getLandSqFt()
                 + Math.max(0, room.getOwnedSqFt() - room.getAllocatedSqFt()));
 
         // Started now and deliberately NOT finished, so the save is taken with
         // real work in progress.
-        city.buildStack(depot, 2, false);
+        city.buildStack(depot, depotsOrdered, false);
         city.buildStack(store, 4, false);
         city.simulateMonths(1);
 

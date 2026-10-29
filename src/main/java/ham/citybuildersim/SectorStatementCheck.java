@@ -152,12 +152,13 @@ public class SectorStatementCheck {
 
         Game player = playersCity(root);
         Game plain = plainCity(root);
+        Game young = youngCity(root);
         everyMonth();
         savedAndLoaded(root, player);
         anOlderSave(player);
         theFormats(player);
         theSchedule();
-        everyGate(player, plain);
+        everyGate(player, plain, young);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -223,6 +224,24 @@ public class SectorStatementCheck {
             }
         });
         out.printf("    (the plain founding: %d months, %,d people)%n", g.getMonth(), g.getPopulationManager().getPopulation());
+        return g;
+    }
+
+    /**
+     * A plain founding three years old, for section 9's F11: its labour is slack (about four in ten of its workers have no job), so a building
+     * that would lose money still passes its staffing gate and stops first at the land. WN3: the two cities above, on the world's band, are at
+     * full employment by the time they are read (the plain one at 0% unemployed in month 121, with 77 posts in the lowest band against 42 on the
+     * literals), so every building with posts failed its staffing first and none that loses money reached the land gate; a young city is slack.
+     */
+    static Game youngCity(Path root) {
+        Path dir = root.resolve("young");
+        Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
+        quietly(() -> {
+            g.newGame();
+            for (int i = 0; i < 36; i++) g.toggleNextMonth();
+        });
+        out.printf("    (the young founding: %d months, %,d people, %.0f%% of its workers without a job)%n", g.getMonth(),
+                g.getPopulationManager().getPopulation(), 100 * g.getPopulationManager().getUnemploymentRate());
         return g;
     }
 
