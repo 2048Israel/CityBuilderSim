@@ -592,16 +592,43 @@ public class CurrencyRegimeCheck {
         }
 
         // In a city, credibility falls by PEG_BREAK_DENT of its distance to KMIN, against a twin where nothing broke.
-        Game a = doubtTown("xr2-credibility-a", 0);
+        /*
+         * THE BREAK MUST BE ONE OF DOUBT, WHERE CREDIBILITY IS CLIMBING (EM1, 2026-10-29). The twin below is held to the gain
+         * branch of Expectations (a smoothed miss within TOLERANCE, the basket based and read), because the dent is taken out of
+         * that month's climb; and the peg breaks at the market's chance, in a month that depends on the city's path. At 0.8.72
+         * the default seed broke it by doubt in month 51, the year the climb began (month 50). On EM1's path the same seed
+         * breaks it in month 47, three months before the basket gives a rate to read, and the twin's credibility cannot climb in
+         * a month with nothing to be judged on. And the city's vault is drained faster (US$19M at month 46 beside main's US$28M,
+         * on a current account of -1.9M a month), so most breaks past month 53 are the vault's (BreakCause.VAULT), which the
+         * twin's repegged peg meets as well, and not the doubt this section is about.
+         * The fixture is made to cause it: a seed whose break is by doubt and follows a month the city's credibility climbed in
+         * (its step above nothing), the default seed first and then SEED + 1, + 2, ... - on EM1's path SEED + 11, in month 52.
+         */
+        Game a = null;
+        long creditSeed = 0;
         int k = 0;
-        while (k < 40 && !a.getForeignAccounts().brokeThisMonth()) {
-            k++;
-            quietly(() -> a.simulateMonths(1));
+        final int seeds = 40;
+        for (int attempt = 0; attempt < seeds && a == null; attempt++) {
+            long tried = attempt == 0 ? 0 : SEED + attempt;
+            Game candidate = doubtTown("xr2-credibility-a-" + attempt, tried);
+            int months = 0;
+            boolean climbing = false;
+            while (months < 40 && !candidate.getForeignAccounts().brokeThisMonth()) {
+                climbing = candidate.getExpectations().getCredibilityStep() > 0;   // the month before the one about to be played
+                months++;
+                play(candidate, 1);
+            }
+            if (attempt == seeds - 1 || (candidate.getForeignAccounts().brokeThisMonth() && climbing
+                    && candidate.getForeignAccounts().getLastBreakCause() == ForeignAccounts.BreakCause.DOUBT)) {
+                a = candidate;
+                creditSeed = tried;
+                k = months;
+            }
         }
         assertTrue("fixture: the doubt city's peg broke within " + k + " months of the revaluation", a.getForeignAccounts().brokeThisMonth());
         if (a.getForeignAccounts().brokeThisMonth()) {
             double afterA = a.getExpectations().getCredibility();
-            Game b = doubtTown("xr2-credibility-b", 0);
+            Game b = doubtTown("xr2-credibility-b", creditSeed);
             play(b, k - 1);
             double c0 = b.getExpectations().getCredibility();
             // The twin's peg is moved to a rate so weak the shadow sits far under it, so that month nothing breaks by chance.
@@ -1288,12 +1315,22 @@ public class CurrencyRegimeCheck {
     static void savedMidPeg() {
         out.println("\n--- 10. saved and loaded mid-peg ---");
 
+        /*
+         * ...AT THE FIRST MONTH IT HAS ALL FOUR (EM1, 2026-10-29). A purchase is owed only in a month the peg bought dollars at its
+         * edge, and the peg's chance of breaking is the market's: at 0.8.72 the first month after the revaluation had a purchase owed
+         * (month 46, D$423k), and on EM1's path it has none in the seeds tried - the first purchase owed is in month 55, and the
+         * default seed and SEED + 1 and + 2 break before it. The fixture is made to cause it: each candidate is played up to a year
+         * (the twelve months the section plays on after the save) until the month it is pegged, held, in doubt and owes a purchase;
+         * a peg that breaks first is no candidate.
+         */
         Game live = null;
         for (int attempt = 0; attempt < 6 && live == null; attempt++) {
             Game candidate = doubtTown("xr2-save-" + attempt, attempt == 0 ? 0 : SEED + attempt);
-            play(candidate, 1);
             ForeignAccounts fx = candidate.getForeignAccounts();
-            if (fx.getRegime() == PEG && fx.getEdgeOwedLocal() > 0 && fx.getDoubtShare() > 0 && fx.isHeld()) live = candidate;
+            for (int m = 0; m < 12 && live == null && !fx.brokeThisMonth(); m++) {
+                play(candidate, 1);
+                if (fx.getRegime() == PEG && fx.getEdgeOwedLocal() > 0 && fx.getDoubtShare() > 0 && fx.isHeld()) live = candidate;
+            }
         }
         assertTrue("fixture: a pegged city with a purchase owed, a doubt share struck and the rate held away from its shadow", live != null);
         if (live != null) {

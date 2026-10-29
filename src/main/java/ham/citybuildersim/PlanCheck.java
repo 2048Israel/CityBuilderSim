@@ -1107,6 +1107,7 @@ public class PlanCheck {
             for (int k = 0; k < 4; k++) { cellStreets[k] += f.cellStreets[k]; cellGround[k] += f.cellGround[k]; cellCount[k] += f.cellCount[k]; }
             int[][] h = homesByLayout(p);
             for (int k = 0; k < 2; k++) for (int l = 0; l < 3; l++) homes[k][l] += h[k][l];
+            for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellKind[c] == DistrictPlan.HOMES && p.cellLayout[c] <= DistrictPlan.LAYOUT_BRICK) homesSeen.add(where + ", cell " + c);
             mergesUndone += p.mergesUndone;
             av[0] += p.avenuePlots; av[1] += p.avenueUnder; av[2] += p.avenueRail; av[3] += p.avenueBridged;
             av[4] += p.avenueBroken; av[5] += p.avenueWater; av[6] += p.avenueStops; av[7] += p.avenueCells;
@@ -1122,9 +1123,17 @@ public class PlanCheck {
             return n;
         }
 
-        /** All the open homes cells. */
+        /** All the open homes cells, counted once for every plan that has them: a cell that stands in four samples is four. */
         int homesCells() {
             return homes[0][0] + homes[0][1] + homes[0][2] + homes[1][0] + homes[1][1] + homes[1][2];
+        }
+
+        /** The open homes cells seen, by where they are (the district and the cell in it), each once however many samples it stands in (EM1, 2026-10-29). */
+        final java.util.Set<String> homesSeen = new java.util.HashSet<>();
+
+        /** How many different open homes cells the plans held: what HOMES_ENOUGH is a number of. */
+        int distinctHomesCells() {
+            return homesSeen.size();
         }
 
         static double median(List<Double> v) {
@@ -1310,14 +1319,23 @@ public class PlanCheck {
         playedCurves = t.cv.clone();
         check("...the avenues were laid in the played city (" + t.av[0] + " plots in " + t.av[7] + " open cells over the samples), every check holding with them", t.av[0] > 0 && t.allHold());
         // CL2: how often the variety fired in this run. A city of a few homes cells says little, so the assertion waits for enough of them.
-        if (t.homesCells() >= HOMES_ENOUGH) {
-            check("...the layouts fired: of " + t.homesCells() + " homes cells in the samples " + t.varied() + " took dropped crossings or brick", t.varied() > 0);
+        if (t.distinctHomesCells() >= HOMES_ENOUGH) {
+            check("...the layouts fired: of " + t.distinctHomesCells() + " homes cells in the samples " + t.varied() + " took dropped crossings or brick", t.varied() > 0);
         } else {
-            out.printf("      ...only %d homes cells in the samples, fewer than the %d a layout's share needs to show: no assertion that the variety fired%n", t.homesCells(), HOMES_ENOUGH);
+            out.printf("      ...only %d homes cells in the samples (%d seen, a cell once in every sample it stands in), fewer than the %d a layout's share needs to show:"
+                    + " no assertion that the variety fired%n", t.distinctHomesCells(), t.homesCells(), HOMES_ENOUGH);
         }
     }
 
-    /** The homes cells a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all keeping the comb by the hash alone has a chance of 1 in 59,049. */
+    /**
+     * The homes cells a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all
+     * keeping the comb by the hash alone has a chance of 1 in 59,049.
+     *
+     * ...OF DIFFERENT CELLS, SINCE EM1 (2026-10-29). The guard counted the cells of every sample, so a cell that stands in all four of the
+     * city's samples was four. On EM1's path MapCheck 1's city holds three homes cells (district (0, 0), cells 9, 17 and 18, seen ten times
+     * in its four samples) and counted ten, all the comb, a chance of 1 in 27 and not of 1 in 59,049; on main's it counted eight, under the
+     * guard by luck, and nothing was asked of it. Counted once each, the city says too little to be asked, as the guard meant.
+     */
     static final int HOMES_ENOUGH = 10;
 
     /* =====================================================================
