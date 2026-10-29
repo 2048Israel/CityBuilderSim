@@ -291,7 +291,7 @@ public class SaveFileCheck {
                 arden.getPath() != Nations.DEFAULT_PATH && arden.getPathSeed() != Nations.DEFAULT_SEED);
         assertEquals("...and the path of the world beyond it (WN1; spec-nations 7)", readBack.getPath(), OTHER_PATH);
         assertEquals("...and the seed that draws it, not the ground's", readBack.getPathSeed(), 2_026_102_8L);
-        assertEquals("...saved under worldPath, by the enum's name", read.getWorldPath(), "RANDOM");
+        assertEquals("...saved under worldPath, by the enum's name", read.getWorldPath(), OTHER_PATH.name());
         assertEquals("...and under pathSeed", read.getPathSeed(), 2_026_102_8L);
         assertEquals("...with the ground's seed still its own", readBack.getWorldSeed(), 987_654_321L);
 
