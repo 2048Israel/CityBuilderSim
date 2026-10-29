@@ -1843,6 +1843,7 @@ public class ReadPathCheck {
         afterALoad(g, files);
 
         onEarth(files);
+        onTheWorldMarket(root);
 
         cleanUp(root);
 
@@ -2073,6 +2074,133 @@ public class ReadPathCheck {
         }
         assertTrue("reading an Earth city's world fifty times changed nothing (" + before.size() + " fields)", movedCount == 0);
     }
+
+    /**
+     * THE WORLD MARKET AND THE TRADE BY PARTNER (WN3): a city on the twelve-nation fixture world file (written beside the saves and named for the
+     * length of this section), played through a January, read fifty times over through everything the screens read of the market (its bands, its
+     * allocations, its mill and buyer prices, its names and nodes, its saved state) and of the trade by partner (the snapshot, its feed, the year
+     * to date of every nation, the history, the map's lanes' arrays), and through the markets' own prices: the snapshot sweeps and the world's own
+     * fingerprint (the solved year, the prices, the trade by partner's totals, every market's band) are what they were.
+     */
+    static void onTheWorldMarket(Path root) throws Exception {
+        out.println("\n--- the world market and the trade by partner: reading them changes nothing (WN3) ---");
+        byte[] fixture = WorldDataCheck.resource(WorldData.FIXTURE);
+        assertTrue("fixture: the twelve-nation world file is beside the classes", fixture != null);
+        if (fixture == null) return;
+        Path file = root.resolve("world-fixture.bin");
+        Files.write(file, fixture);
+        String named = System.getProperty(WorldData.PROPERTY);
+        try {
+            System.setProperty(WorldData.PROPERTY, file.toString());
+            Game g = new Game(new GameFiles(root.resolve("wm-data"), root.resolve("no-legacy")));
+            System.setOut(quiet);
+            try {
+                g.newGame(Founding.defaults().withWorldSeed(2_026_102_8L));
+                g.setCashForTest(Founding.WEALTHY_CASH);
+                g.buildStack(template(g, "House"), 120, true);
+                g.buildStack(template(g, "Convenience Store"), 2, true);
+                g.buildStack(template(g, "Water Treatment Plant"), 1, true);
+                g.simulateMonths(14);
+            } finally {
+                System.setOut(out);
+            }
+            WorldMarket market = g.getWorldMarket();
+            assertTrue("fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn",
+                    market != null && market.solvedYear() == CityCalendar.yearOf(g.getMonth()) && g.getPartnerTrade() != null
+                            && g.partnerTradeForTest().yearsFinished() == 1 && g.getPartnerTrade().monthTotal() + g.getPartnerTrade().yearCells().size() > 0);
+            if (market == null || g.getPartnerTrade() == null) return;
+            System.setOut(quiet);
+            Map<String, Double> before = NewGameCheck.snapshot(g);
+            bankPrint(g, before);
+            worldPrint(g, before);
+            for (int i = 0; i < 50; i++) readTheWorld(g);
+            Map<String, Double> after = NewGameCheck.snapshot(g);
+            bankPrint(g, after);
+            worldPrint(g, after);
+            System.setOut(out);
+            int movedCount = 0;
+            for (String k : before.keySet()) {
+                if (!sameFigure(before.get(k), after.get(k))) {
+                    movedCount++;
+                    out.printf("   MOVED  %-34s %,.4f -> %,.4f%n", k, before.get(k), after.get(k));
+                }
+            }
+            assertTrue("reading the world market and the trade by partner fifty times changed nothing (" + before.size() + " fields, "
+                    + before.keySet().stream().filter(k -> k.startsWith("world.")).count() + " of them the world's own)", movedCount == 0);
+        } finally {
+            System.setOut(out);
+            if (named == null) System.clearProperty(WorldData.PROPERTY); else System.setProperty(WorldData.PROPERTY, named);
+        }
+    }
+
+    /** Two readings of one figure agree: equal, or both not a number. */
+    static boolean sameFigure(double a, double b) {
+        return Double.compare(a, b) == 0 || Math.abs(a - b) <= 1e-9;
+    }
+
+    /** Everything a screen reads of the market, the trade by partner and the band the markets stand at. */
+    static void readTheWorld(Game g) {
+        WorldMarket m = g.getWorldMarket();
+        m.solvedYear(); m.lastSolveMillis(); m.host(); m.berth(); m.nationCount();
+        m.savedPrices(); m.savedScales();
+        for (int nation = 1; nation <= m.nationCount(); nation++) {
+            m.iso3(nation); m.name(nation); m.nodeLat(nation); m.nodeLon(nation);
+        }
+        for (Good good : Good.values()) {
+            m.trades(good); m.passes(good);
+            m.band(good, 1_000, 2_000); m.band(good, 0, 0); m.allocate(good, 500, 500);
+            for (int nation = 1; nation <= m.nationCount(); nation++) { m.millPrice(good, nation); m.buyerPrice(good, nation); }
+            GoodsMarket gm = g.getMarkets().get(good);
+            gm.importPrice(); gm.exportPrice(); gm.floor(); gm.ceiling(); gm.bandByLorry(); gm.worldMargin(); gm.hasWorldPrices();
+        }
+        PartnerTrade.Snapshot s = g.getPartnerTrade();
+        s.monthTotal(); s.nations(); s.history(); s.yearCells(); s.exportsByNation(); s.importsByNation();
+        for (int nation = 1; nation <= s.nations(); nation++) { s.yearToDate(nation); s.nameOf(nation); }
+        TradeLanes.Feed feed = g.getTradeFeed();
+        feed.month(); feed.exportsByNation(); feed.importsByNation(); feed.standInLat(); feed.standInLon(); feed.yearToDate(1); feed.nameOf(1);
+        g.partnerTradeForTest().toState();
+        g.partnerTradeForTest().history();
+    }
+
+    /** The world's own fingerprint: the solved year, the prices and scales, the trade by partner's totals, every market's band. Not-a-number is -1. */
+    static void worldPrint(Game g, Map<String, Double> into) {
+        WorldMarket m = g.getWorldMarket();
+        into.put("world.solvedYear", (double) m.solvedYear());
+        double[] prices = m.savedPrices(), scales = m.savedScales();
+        double weighted = 0, plain = 0;
+        for (int i = 0; i < prices.length; i++) { weighted += (i + 1) * prices[i]; plain += prices[i]; }
+        into.put("world.pricesSum", plain);
+        into.put("world.pricesWeighted", weighted);
+        double sc = 0;
+        for (int i = 0; i < scales.length; i++) sc += (i + 1) * scales[i];
+        into.put("world.scalesWeighted", sc);
+        PartnerTrade.Snapshot s = g.getPartnerTrade();
+        double ex = 0, im = 0, yex = 0, yim = 0, tn = 0;
+        for (int i = 0; i < s.nations(); i++) {
+            ex += (i + 1) * s.exportsByNation()[i]; im += (i + 1) * s.importsByNation()[i];
+            yex += (i + 1) * s.yearExportValue()[i]; yim += (i + 1) * s.yearImportValue()[i];
+            tn += (i + 1) * (s.exportTonnes()[i] + s.importTonnes()[i] + s.yearExportTonnes()[i] + s.yearImportTonnes()[i]);
+        }
+        into.put("world.trade.month", (double) s.month());
+        into.put("world.trade.exports", ex);
+        into.put("world.trade.imports", im);
+        into.put("world.trade.yearExports", yex);
+        into.put("world.trade.yearImports", yim);
+        into.put("world.trade.tonnes", tn);
+        into.put("world.trade.noPartner", s.noPartnerExports() + 3 * s.noPartnerImports());
+        into.put("world.trade.cells", (double) s.yearCells().size());
+        into.put("world.trade.history", (double) s.history().size());
+        double cellSum = 0;
+        for (PartnerTrade.Cell c : s.yearCells()) cellSum += c.nation() * (c.unitsOut() + 2 * c.unitsIn() + 3 * c.valueOut() + 5 * c.valueIn());
+        into.put("world.trade.cellSum", cellSum);
+        for (Good good : Good.values()) {
+            GoodsMarket gm = g.getMarkets().get(good);
+            into.put("world.band." + good + ".import", finiteOrMinusOne(gm.importPrice()));
+            into.put("world.band." + good + ".export", finiteOrMinusOne(gm.exportPrice()));
+        }
+    }
+
+    private static double finiteOrMinusOne(double v) { return Double.isFinite(v) ? v : -1; }
 
     static void cleanUp(Path root) {
         try (var walk = Files.walk(root)) {

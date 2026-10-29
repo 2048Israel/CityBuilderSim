@@ -204,6 +204,19 @@ public class DataSave implements Cloneable {
      */
     private Bridges.State bridges;
 
+    /**
+     * The world market (WN3, 2026-10-28; WorldMarket, Game's THE WORLD MARKET), when the city has one - a world file was there: the year its January
+     * last solved (worldYear), and the solved state, every modelled good's mill prices over the base year's (worldPrices, good-major, goods x
+     * nations) and supply scale (worldScales), which a load puts back (WorldMarket.restore()) and does not solve again. Absent on a city with no
+     * world file, which plays on the goods' literals. The city's trade by partner (partnerTrade: the month last tallied by nation, and the year to
+     * date by nation and by good) rides beside them, because the lanes a loaded city draws are last month's trade and a flow cannot be reconstructed.
+     * Format 48: an older save has no solved world and traded with none, and its band would be struck from a world it never traded with.
+     */
+    private Integer worldYear;
+    private double[] worldPrices;
+    private double[] worldScales;
+    private PartnerTrade.State partnerTrade;
+
     /*
      * The property tax the city CHARGED this month, rather than a figure
      * derived from its state.
@@ -1123,6 +1136,29 @@ public class DataSave implements Cloneable {
 
     /** Null on a save from before ET6, and for a city with no bridge. */
     public Bridges.State getBridges() { return bridges; }
+
+    /** The world market's solved year and state (WN3), copied: all three or none. Pass a null year for a city with no market. */
+    public void setWorldMarket(Integer year, double[] prices, double[] scales) {
+        boolean has = year != null && prices != null && scales != null;
+        this.worldYear = has ? year : null;
+        this.worldPrices = has ? prices.clone() : null;
+        this.worldScales = has ? scales.clone() : null;
+    }
+
+    /** The year the saved world last solved, or null on a save with no world market (older, or no world file). */
+    public Integer getWorldYear() { return worldYear; }
+
+    /** The saved mill prices, good-major; null with no market. */
+    public double[] getWorldPrices() { return worldPrices; }
+
+    /** The saved supply scales; null with no market. */
+    public double[] getWorldScales() { return worldScales; }
+
+    /** The city's trade by partner (WN3), the producer's fresh state. */
+    public void setPartnerTrade(PartnerTrade.State state) { this.partnerTrade = state; }
+
+    /** Null on a save with no world market. */
+    public PartnerTrade.State getPartnerTrade() { return partnerTrade; }
 
     public void setPortMonth(Ports.State state) { this.portMonth = state; }
     /** Null on a save from before 0.7.86. */

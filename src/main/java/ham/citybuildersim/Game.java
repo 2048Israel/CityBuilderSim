@@ -312,6 +312,10 @@ public class Game {
         oldMetal = new OldMetal();
         // ...and its ports, nothing at sea (0.7.86).
         ports = new Ports();
+        // ...and no world market yet (WN3): the first month, or a load, builds it where a world file is there.
+        worldMarket = null;
+        worldMarketTried = false;
+        partnerTrade = null;
         populationManager = new PopulationManager();
         servicesManager = new ServicesManager(buildingManager);
         // ...a Gravel Road's repairs rise with the traffic on the streets (FR7 2.2): read live off the road network, never kept.
@@ -520,6 +524,8 @@ public class Game {
          * WorldEconomy.setMeanInflation() says why it is a founding choice.
          */
         world.setMeanInflation(founding.getMeanInflation());
+        // ...and the dollar it meets is the path seed's (WN3, 2026-10-28; WorldEconomy.setSeed()): two cities on one seed meet one world.
+        world.setSeed(founding.getPathSeed());
         world.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
         monthRun = false;
@@ -1168,6 +1174,190 @@ public class Game {
 
     /** The nations on this city's path, built the first time getNations() is asked and again when the founding's path or seed differs (not saved: the path and seed are, in the founding). */
     private transient Nations nations;
+
+    /* =====================================================================
+       THE WORLD MARKET (WN3, 2026-10-28; docs/studies/spec-nations.md 4, 6 and D28)
+
+       The goods' band - what the world asks for a unit delivered here and
+       pays for one delivered there - was two literals a good (Good.
+       worldImportPrice(), worldExportPrice()), the same in every city and
+       every year. Where a world file is there it is the nations' market now
+       (WorldMarket): solved each January for the year, and moved by the city's
+       own tonnes through the month, and the city's trade is kept by partner
+       (PartnerTrade). Three places in the month, in this order:
+
+         1. THE JANUARY SOLVE, the first thing the month does after the world's
+            own price level: when the year of the month about to run is not the
+            year the market holds (the founding month, the turn of the year) it
+            solves, before anything is priced.
+         2. THE BAND, struck right after it and before any market clears: for
+            every good the market models, the floor and the ceiling its model
+            makes of last month's exports and imports of it, handed to the
+            good's GoodsMarket. Those are the month's own record (PartnerTrade:
+            every fill and every draw, saved with the city), not the markets'
+            tally, which the clearing wipes of the draws made before it - and
+            the fleets' fuel and the builders' materials are all draws.
+         3. THE TALLY, at the month's end, after its last fill and draw and
+            before the autosave: who took the month's exports and sold its
+            imports, to PartnerTrade, and the year it turned to the history.
+
+       WHERE THERE IS NO WORLD FILE none of it runs and the band is the
+       literals, bit for bit; a file that will not open is said once, and the
+       city plays on the literals. The market is built the first time the month
+       needs it (or the load does), never in a frame. Every month runs through
+       nextMonth(), the one caller of startOfMonthUpdate() and of
+       SimulationEngine.simulateMonth(); the clock, the button and a skip all
+       come through it.
+       ===================================================================== */
+
+    /** The market the city trades in, or null: built where a world file is there, the first time the month (or a load) needs it. Not saved itself: its solved state is (DataSave.worldYear). Read by screens. */
+    private transient volatile WorldMarket worldMarket;
+
+    /** Whether the market has been looked for in this city, so a file that will not open is said once and not every month. */
+    private transient boolean worldMarketTried;
+
+    /** The city's trade by partner, built with the market; null with none. */
+    private transient volatile PartnerTrade partnerTrade;
+
+    /** The world market of this city, or null where there is no world file (the city then plays on the goods' literals) or it has not been built yet: the first month builds it, a load builds it. The model's thread's to call into; a screen reads figures, not the solve. */
+    public WorldMarket getWorldMarket() { return worldMarket; }
+
+    /** The city's trade by partner as of the last month tallied - a whole, immutable snapshot, safe from any thread; null with no market. */
+    public PartnerTrade.Snapshot getPartnerTrade() {
+        PartnerTrade t = partnerTrade;
+        return t == null ? null : t.snapshot();
+    }
+
+    /** The map's feed over the city's trade by partner: last month's and the year to date (the snapshot is the feed); TradeLanes.Feed.NONE with no market. */
+    public TradeLanes.Feed getTradeFeed() {
+        PartnerTrade t = partnerTrade;
+        return t == null ? TradeLanes.Feed.NONE : t.snapshot();
+    }
+
+    /** For a harness: the live record behind the snapshot (its history, its state), or null. */
+    PartnerTrade partnerTradeForTest() { return partnerTrade; }
+
+    /** Whether any sea terminal stands: the berth the market gives the city a sea leg by. */
+    private boolean hasBerth() {
+        for (int count : Ports.berthCounts(buildingManager)) if (count > 0) return true;
+        return false;
+    }
+
+    /**
+     * The market of this city, built the first time it is asked (once a city): over the world file, the nations on this founding's path and seed, the
+     * city at its site - an Earth city at its spot, a generated world's at the coastal stand-in its ground seed draws. Null, and the city on the
+     * literals, where there is no file, and (with one line) where it would not open.
+     */
+    private WorldMarket ensureWorldMarket() {
+        if (worldMarketTried) return worldMarket;
+        worldMarketTried = true;
+        Path file = WorldData.locate();
+        if (file == null) return null;
+        try {
+            Nations beyond = getNations();
+            if (beyond == null) return null;
+            WorldMarket made = new WorldMarket(WorldMarket.Base.load(file), beyond);
+            boolean berth = hasBerth();
+            double lat = founding.getEarthLat(), lon = founding.getEarthLon();
+            double standLat = Double.NaN, standLon = Double.NaN;
+            if (Double.isFinite(lat) && Double.isFinite(lon)) {
+                made.setSite(lat, lon, berth);
+            } else {
+                made.setStandIn(founding.getWorldSeed(), berth);
+                standLat = made.nodeLat(made.host());
+                standLon = made.nodeLon(made.host());
+            }
+            String[] names = new String[made.nationCount()];
+            for (int i = 0; i < names.length; i++) names[i] = made.name(i + 1);
+            PartnerTrade trade = new PartnerTrade(made.nationCount());
+            trade.setPlace(standLat, standLon, names);
+            partnerTrade = trade;
+            worldMarket = made;
+        } catch (IOException | RuntimeException e) {
+            System.out.println("The world market could not be built from " + file + " (" + e + "): the city plays on the goods' literals.");
+            worldMarket = null;
+            partnerTrade = null;
+        }
+        return worldMarket;
+    }
+
+    /**
+     * Steps 1 and 2 of the month (startOfMonthUpdate(), right after the world's price level and the exchange rate): the January solve when the year
+     * has turned, and the band of every good from last month's trade. With no market, nothing.
+     */
+    private void strikeTheWorldMarket() {
+        WorldMarket market = ensureWorldMarket();
+        if (market == null) return;
+        // The sea leg first: a solve reads the city's site as it stands.
+        market.setBerth(hasBerth());
+        int year = Nations.yearOf(month);
+        if (market.solvedYear() != year) {
+            market.solveYear(year);
+            int passes = 0, goods = 0;
+            for (Good g : Good.values()) {
+                if (!market.trades(g)) continue;
+                goods++;
+                passes += market.passes(g);
+            }
+            System.out.printf("The world market solved %d in %.1f ms (%d sweeps over %d goods).%n", year, market.lastSolveMillis(), passes, goods);
+        }
+        PartnerTrade last = partnerTrade;
+        economyManager.getMarkets().setWorldBand(market, last::monthExportUnits, last::monthImportUnits);
+    }
+
+    /**
+     * Step 3: the month's trade with the world split to the nations (PartnerTrade.tally()), from the month's own fills - the clearing's and every
+     * draw, with the world as the other side - at the prices they were struck at, in the city's money; the units are allocated by the market's fills at
+     * the month's volumes. After the month's last draw and before the autosave. Moves no pool.
+     */
+    private void tallyThePartners() {
+        WorldMarket market = worldMarket;
+        PartnerTrade trade = partnerTrade;
+        if (market == null || trade == null) return;
+        Markets markets = getMarkets();
+        for (Good g : Good.values()) {
+            double exportUnits = 0, exportValue = 0, importUnits = 0, importValue = 0;
+            for (Trade fill : markets.get(g).getTrades()) {
+                if (fill.isExport()) {
+                    exportUnits += fill.units();
+                    exportValue += fill.value();
+                } else if (fill.isImport()) {
+                    importUnits += fill.units();
+                    importValue += fill.value();
+                }
+            }
+            if (!(exportUnits > 0) && !(importUnits > 0)) continue;
+            WorldMarket.Allocation who = market.trades(g) ? market.allocate(g, exportUnits, importUnits) : null;
+            double tonnes = g.tonnesPerUnit();
+            trade.tally(month, g, who, exportUnits, exportValue, importUnits, importValue, tonnes > 0 ? 1 / tonnes : 0);
+        }
+        trade.close(month);
+        // A year that finished in this tally goes to the history now, ahead of recordMonth() and the autosave.
+        if (trade.yearsFinished() != historySave.tradeYears()) historySave.setTradeByPartner(trade.history());
+    }
+
+    /**
+     * A load's half of the market (the load path, after the buildings are back): built where a file is there, the berth read, the solved state put
+     * back as saved (WorldMarket.restore() - not solved again), and the trade by partner. A save with no market, or one this world file refuses (another
+     * file's goods or nations), solves the year it is in; the band the save carries is kept to the end of the month. With no market the markets are on
+     * the literals, whatever the save carried.
+     */
+    private void restoreWorldMarket(DataSave loaded) {
+        WorldMarket market = ensureWorldMarket();
+        if (market == null) {
+            getMarkets().clearWorldPrices();
+            return;
+        }
+        market.setBerth(hasBerth());
+        Integer year = loaded.getWorldYear();
+        boolean restored = year != null && market.restore(year, loaded.getWorldPrices(), loaded.getWorldScales());
+        if (!restored) {
+            if (year != null) System.out.println("The saved world market (" + year + ") would not restore on this world file: solving the year again.");
+            market.solveYear(Nations.yearOf(month));
+        } else if (!partnerTrade.restore(loaded.getPartnerTrade())) {
+            System.out.println("The saved trade by partner would not restore on this world file: it starts again.");
+        }
+    }
 
     /** The seed of the world this city stands on (0.7.56): chosen at founding, or derived from an older save. */
     public long getWorldSeed() { return founding.getWorldSeed(); }
@@ -11720,6 +11910,8 @@ public class Game {
         printEndOfTurn();
         // What each business's borrowing cost it up front this month, deferred to be expensed (0.7.102, A16). Moves no pool.
         deferBorrowingCosts();
+        // The month's trade split to the world's nations (WN3; THE WORLD MARKET), after its last draw: before the history and the autosave. Moves no pool.
+        tallyThePartners();
         recordMonth();
         // A month has run since the city was founded or loaded: its flows are this month's (0.7.102).
         monthRun = true;
@@ -11805,6 +11997,8 @@ public class Game {
          */
         world.advanceMonth(month);
         economyManager.strikeExchangeRate(foreign.getRate(), world.getPriceLevel());
+        // ...AND THE WORLD'S BAND BEHIND IT (WN3): the January solve when the year has turned, then every good's floor and ceiling from last month's trade; before any market clears.
+        strikeTheWorldMarket();
 
         /*
          * ...and wages start chasing what the basket now costs.
@@ -14319,6 +14513,16 @@ public class Game {
         dataSave.setOldMetal(oldMetal.state());
         // ...and the ports (0.7.86): the berths' shares in force and the month's sea tonnes.
         dataSave.setPortMonth(ports.toState());
+        // ...and the world market (WN3, format 48): its solved year and state, and the trade by partner of the month last tallied and the year so far.
+        WorldMarket savedMarket = worldMarket;
+        PartnerTrade savedTrade = partnerTrade;
+        if (savedMarket != null && savedTrade != null && savedMarket.solvedYear() >= 0) {
+            dataSave.setWorldMarket(savedMarket.solvedYear(), savedMarket.savedPrices(), savedMarket.savedScales());
+            dataSave.setPartnerTrade(savedTrade.toState());
+        } else {
+            dataSave.setWorldMarket(null, null, null);
+            dataSave.setPartnerTrade(null);
+        }
 
         // Charged during the month rather than derived from state, so nothing
         // can recompute it on load. Without this the freshly loaded city showed
@@ -17721,6 +17925,8 @@ public class Game {
              * D$2.5B and US$1B - see DataSave.getFounding().
              */
             founding = loaded.getFounding(world.getMeanInflation());
+            // ...and the seed the world's draws are made from (WN3), which the founding carries: buildWorld() set the default's.
+            world.setSeed(founding.getPathSeed());
             /*
              * ...AND FOR THE FOURTH TIME, INTO THE ECONOMY. The line above
              * this block restores the rate into the debt market. This one
@@ -18112,6 +18318,8 @@ public class Game {
             oldMetal.restore(loaded.getOldMetal());
             // The ports (0.7.86): a save from before them has none, and loads with nothing at sea.
             ports.restore(loaded.getPortMonth());
+            // The world market (WN3): after the buildings (the berth) and the founding (the site): restored as saved, not solved again.
+            restoreWorldMarket(loaded);
 
             /*
              * Land, after the buildings, because the allocation is derived from
@@ -18924,6 +19132,9 @@ public class Game {
             // series after a reload, so a line missing from restoreFrom() fails
             // out loud rather than quietly losing a decade of a graph.
             historySave.restoreFrom(loaded);
+            // ...and the years of trade by partner behind the city (WN3) go back to the record that tallies the next.
+            PartnerTrade backTo = partnerTrade;
+            if (backTo != null) backTo.restoreHistory(historySave.getTradeByPartner());
 
             
 

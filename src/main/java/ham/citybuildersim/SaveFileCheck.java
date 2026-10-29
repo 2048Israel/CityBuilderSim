@@ -2824,6 +2824,7 @@ public class SaveFileCheck {
 
         onEarth(root);
         everyIdCrossesASave(root);
+        worldMarketCrossesASave(root);
 
         cleanUp(root);
 
@@ -3401,6 +3402,160 @@ public class SaveFileCheck {
             }
         }
         return files;
+    }
+
+    /**
+     * THE WORLD MARKET CROSSES A SAVE (WN3, format 48; Game, THE WORLD MARKET). A city on the twelve-nation fixture (written beside the saves and named
+     * as the world file for the length of this section) plays through a January, is saved and loaded into another Game: its solved year, mill prices
+     * and supply scales, its trade by partner (the month, the year to date, the finished years in the history) and the band each good was struck at
+     * are the ones it wrote, the load restored the market and did not solve it again, and the month after runs the same in both. A save of format 47
+     * is refused at the floor, and a city with no world file writes none of the new keys.
+     */
+    static void worldMarketCrossesASave(Path root) throws IOException {
+        System.out.println("\n--- the world market and the trade by partner cross a save; a format-47 save is refused (WN3) ---");
+        byte[] fixture = WorldDataCheck.resource(WorldData.FIXTURE);
+        assertTrue("fixture: the twelve-nation world file is beside the classes", fixture != null);
+        if (fixture == null) return;
+        Path world = root.resolve("world-fixture.bin");
+        Files.write(world, fixture);
+        String named = System.getProperty(WorldData.PROPERTY);
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        try {
+            System.setProperty(WorldData.PROPERTY, world.toString());
+            GameFiles files = new GameFiles(root.resolve("wm"), root.resolve("no-legacy"));
+            Game city = new Game(files);
+            boolean[] unitsMatch = { true };
+            int[] drawsBeyondTheTally = { 0 };
+            quietly(() -> {
+                city.newGame(Founding.defaults().withWorldSeed(2_026_102_8L));
+                city.setCashForTest(Founding.WEALTHY_CASH);
+                city.buildStack(template(city, "House"), 120, true);
+                city.buildStack(template(city, "Convenience Store"), 2, true);
+                city.buildStack(template(city, "Water Treatment Plant"), 1, true);
+                for (int m = 0; m < 14; m++) {
+                    city.simulateMonths(1);
+                    PartnerTrade seen = city.partnerTradeForTest();
+                    if (seen == null) continue;
+                    for (Good g : Good.values()) {
+                        GoodsMarket gm = city.getMarkets().get(g);
+                        double ex = 0, im = 0;
+                        for (Trade t : gm.getTrades()) {
+                            if (t.isExport()) ex += t.units(); else if (t.isImport()) im += t.units();
+                        }
+                        unitsMatch[0] &= Math.abs(seen.monthExportUnits(g) - ex) <= 1e-9 * Math.max(1, ex) && Math.abs(seen.monthImportUnits(g) - im) <= 1e-9 * Math.max(1, im);
+                        if (seen.monthImportUnits(g) > gm.getImported() + 1e-9 || seen.monthExportUnits(g) > gm.getExported() + 1e-9) drawsBeyondTheTally[0]++;
+                    }
+                }
+            });
+            assertTrue("the month's record of trade by good is the month's fills and draws, every month of the fixture and every good, to the unit", unitsMatch[0]);
+            assertTrue("...and it holds what GoodsMarket's own tally does not: draws made before the clearing, which the clearing wipes from the tally (" + drawsBeyondTheTally[0]
+                    + " month-goods in the fixture) - the band is struck from the record, not the tally", drawsBeyondTheTally[0] > 0);
+            WorldMarket market = city.getWorldMarket();
+            assertTrue("fixture: with the file named, the city built a market and solved the year it is in (" + CityCalendar.yearOf(city.getMonth()) + ")",
+                    market != null && market.solvedYear() == CityCalendar.yearOf(city.getMonth()) && market.solvedYear() > Nations.FIRST_YEAR);
+            PartnerTrade record = city.partnerTradeForTest();
+            PartnerTrade.Snapshot snap = city.getPartnerTrade();
+            assertTrue("fixture: it tallied its trade by partner, and one year turned into the history (" + (record == null ? 0 : record.yearsFinished()) + ")",
+                    record != null && snap != null && snap.month() == city.getMonth() && record.yearsFinished() == 1);
+            if (market == null || record == null || snap == null) return;
+            assertTrue("fixture: the city traded with the world's nations this month or this year (so the round trip has something to carry): " + snap.monthTotal(),
+                    snap.monthTotal() > 0 || !snap.yearCells().isEmpty() || !record.history().get(0).cells().isEmpty());
+
+            assertTrue("saved", quietlyGet(() -> city.saveGame(1, "world")).ok);
+            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(1))).getAsJsonObject();
+            assertTrue("the save writes the market's year, its prices and scales, and the trade by partner",
+                    json.has("worldYear") && json.get("worldYear").getAsInt() == market.solvedYear() && json.has("worldPrices") && json.has("worldScales")
+                            && json.has("partnerTrade") && json.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT);
+            com.google.gson.JsonObject hist = com.google.gson.JsonParser.parseString(Files.readString(files.historyFile(1))).getAsJsonObject();
+            assertTrue("...and the history writes each finished year's table by partner and good (1)",
+                    hist.has("tradeByPartner") && hist.getAsJsonArray("tradeByPartner").size() == 1
+                            && hist.getAsJsonArray("tradeByPartner").get(0).getAsJsonObject().get("year").getAsInt() == Nations.FIRST_YEAR);
+
+            Game loaded = new Game(files);
+            quietly(() -> loaded.loadGameSave(1));
+            WorldMarket back = loaded.getWorldMarket();
+            PartnerTrade backRecord = loaded.partnerTradeForTest();
+            assertTrue("a load builds the market and restores its year", loaded.getLoadFailure() == null && back != null && backRecord != null
+                    && back.solvedYear() == market.solvedYear() && loaded.getMonth() == city.getMonth());
+            if (back == null || backRecord == null) return;
+            assertTrue("...its mill prices and supply scales bit for bit", java.util.Arrays.equals(back.savedPrices(), market.savedPrices())
+                    && java.util.Arrays.equals(back.savedScales(), market.savedScales()) && market.savedPrices().length > 0);
+            int sweeps = 0, solvedSweeps = 0;
+            for (Good g : Good.values()) {
+                sweeps += back.passes(g);
+                solvedSweeps += market.passes(g);
+            }
+            assertTrue("...restored and not solved again: no sweeps in the loaded market (" + sweeps + "), the saving city's solve had " + solvedSweeps,
+                    sweeps == 0 && solvedSweeps > 0);
+            assertEquals("...the trade by partner, the month and the year to date, as it was", gson.toJson(backRecord.toState()), gson.toJson(record.toState()));
+            assertEquals("...the finished years in the history", gson.toJson(backRecord.history()), gson.toJson(record.history()));
+            PartnerTrade.Snapshot backSnap = loaded.getPartnerTrade();
+            assertTrue("...so the map's feed is last month's trade at once: its month, its lanes and its year to date",
+                    backSnap != null && backSnap.month() == snap.month() && java.util.Arrays.equals(backSnap.exportsByNation(), snap.exportsByNation())
+                            && java.util.Arrays.equals(backSnap.importsByNation(), snap.importsByNation()) && backSnap.yearCells().equals(snap.yearCells())
+                            && Double.compare(backSnap.standInLat(), snap.standInLat()) == 0 && Double.compare(backSnap.standInLon(), snap.standInLon()) == 0
+                            && java.util.Objects.equals(backSnap.nameOf(1), snap.nameOf(1)));
+            boolean sameBand = true;
+            int struck = 0;
+            for (Good g : Good.values()) {
+                GoodsMarket a = city.getMarkets().get(g), b = loaded.getMarkets().get(g);
+                sameBand &= Double.compare(a.importPrice(), b.importPrice()) == 0 && Double.compare(a.exportPrice(), b.exportPrice()) == 0
+                        && Double.compare(a.getWorldImportSet(), b.getWorldImportSet()) == 0 && Double.compare(a.getWorldExportSet(), b.getWorldExportSet()) == 0;
+                if (a.hasWorldPrices()) struck++;
+            }
+            assertTrue("...and every good's market stands at the band it was struck at (" + struck + " goods on the world's prices)", sameBand && struck > 0);
+
+            String logLive = printedMonths(city, 1), logLoaded = printedMonths(loaded, 1);
+            assertTrue("a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve",
+                    !logLive.contains("The world market solved") && !logLoaded.contains("The world market solved"));
+            assertTrue("the month after runs the same in both: the cash to the cent and the trade by partner",
+                    Math.abs(city.getCash() - loaded.getCash()) < 1e-6 && java.util.Arrays.equals(city.getPartnerTrade().exportsByNation(), loaded.getPartnerTrade().exportsByNation())
+                            && java.util.Arrays.equals(city.getPartnerTrade().importsByNation(), loaded.getPartnerTrade().importsByNation())
+                            && java.util.Arrays.equals(city.getWorldMarket().savedPrices(), loaded.getWorldMarket().savedPrices()));
+
+            // A save of format 47 (the build before): refused at the floor, nothing of it applied.
+            com.google.gson.JsonObject older = json.deepCopy();
+            older.addProperty("saveFormat", 47);
+            Files.writeString(files.saveFile(2), gson.toJson(older));
+            Files.copy(files.historyFile(1), files.historyFile(2), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            byte[] olderBytes = Files.readAllBytes(files.saveFile(2));
+            Game refused = new Game(files);
+            quietly(() -> refused.loadGameSave(2));
+            assertTrue("a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)",
+                    GameVersion.isNoLongerReadable(47) && !GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT) && files.readHeader(2).isNoLongerReadable()
+                            && refusedAtTheFloor(files, 2, refused, olderBytes));
+
+            // No world file: none of the new keys, and the markets on the goods' literals.
+            System.clearProperty(WorldData.PROPERTY);
+            GameFiles bare = new GameFiles(root.resolve("wm-none"), root.resolve("no-legacy"));
+            Game plain = new Game(bare);
+            quietly(() -> {
+                plain.newGame(Founding.defaults().withWorldSeed(2_026_102_8L));
+                plain.setCashForTest(Founding.WEALTHY_CASH);
+                plain.buildStack(template(plain, "House"), 120, true);
+                plain.simulateMonths(3);
+            });
+            assertTrue("fixture: with no world file the city has no market and no partner record", plain.getWorldMarket() == null && plain.getPartnerTrade() == null
+                    && plain.getTradeFeed() == TradeLanes.Feed.NONE);
+            assertTrue("saved", quietlyGet(() -> plain.saveGame(1, "plain")).ok);
+            String plainText = Files.readString(bare.saveFile(1));
+            assertTrue("...and its save writes none of the new keys, in the markets or beside them",
+                    !plainText.contains("worldYear") && !plainText.contains("worldPrices") && !plainText.contains("worldScales")
+                            && !plainText.contains("partnerTrade") && !plainText.contains("worldImport") && !plainText.contains("worldExport"));
+            boolean literal = true;
+            for (Good g : Good.values()) literal &= !plain.getMarkets().get(g).hasWorldPrices();
+            assertTrue("...every market on the goods' literals", literal);
+        } finally {
+            if (named == null) System.clearProperty(WorldData.PROPERTY); else System.setProperty(WorldData.PROPERTY, named);
+        }
+    }
+
+    /** The narration of some months of a city, as text. */
+    static String printedMonths(Game city, int months) {
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        System.setOut(new java.io.PrintStream(bytes, true, java.nio.charset.StandardCharsets.UTF_8));
+        try { city.simulateMonths(months); } finally { System.setOut(REAL_OUT); }
+        return bytes.toString(java.nio.charset.StandardCharsets.UTF_8);
     }
 
     /** Temp directory only - nothing here ever points at a real save folder. */
