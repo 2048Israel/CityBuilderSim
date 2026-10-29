@@ -77,8 +77,9 @@ import java.util.Map;
  * TWO RENTS, BECAUSE THERE ARE TWO DECISIONS. Jerus: "theyll rent at zero
  * profit, but they wont build more if new rent is zero profit." THE FLOOR -
  * rentBreakEven() - is what the EXISTING stock costs to hold this month, per
- * person of capacity: this month's maintenance, property tax and interest
- * over the capacity they are spread across, and rent never goes below it.
+ * person of capacity: this month's maintenance, property tax, interest and
+ * payroll (HD1) over the capacity they are spread across, and rent never goes
+ * below it.
  * THE HURDLE - EconomyManager.housingBuildHurdle() - is what a NEW building
  * would have to earn, and it gates the crane, not the price.
  *
@@ -88,6 +89,32 @@ import java.util.Map;
  * is priced off the cheapest building THAT SEGMENT can supply, on its own
  * pressure, and the two legs are lifted together only when their blend falls
  * short of the company's carry - see targetFor() and carryLift().
+ *
+ * ======================================================================
+ * ITS STAFF (HD1, 2026-10-29)
+ *
+ * Jerus: "gotta add workers to real estate". The sector let every home in the
+ * city, took $57B a month in rent in his city, and employed nobody. The
+ * National Apartment Association's "Best Practices: Staffing" (naahq.org,
+ * 2020) staffs a property at one full-time office employee and one full-time
+ * maintenance employee per 100 units, a further team member once a property
+ * passes 51 units toward the next hundred (its 2019 survey: about one
+ * employee per 45 units across all on-site staff). So a Studio Apartments
+ * (80 units) and a Low-Rise Apartments (63) each have one office post and one
+ * maintenance post, and a House (one unit, under the 51) has none: a single
+ * house's repairs are already the builders' order (MAINTENANCE_PER_YEAR). Both
+ * posts are DIPLOMA (the BLS Occupational Outlook Handbook's typical entry
+ * education for property managers and for general maintenance workers is a
+ * high school diploma).
+ *
+ * THE LANDLORDS DO NOT ASK IF THEY CAN STAFF IT (ordersOnlyWhatItCanStaff()
+ * is false): homes come before workers. Population is min(housing, jobs x
+ * 2.25), the landlords build for the jobs, and their own posts are filled by
+ * the people the homes bring; a block that waited for spare diploma workers
+ * would wait for the very people it houses. Capacity and rent do not read the
+ * staffing either: the block counts whole in the city's housing and bills off
+ * its weights and prices with its posts empty. The landlords now pay wages, so
+ * rentBreakEven() carries the payroll.
  * ======================================================================
  */
 public final class RealEstate extends Sector {
@@ -310,6 +337,9 @@ public final class RealEstate extends Sector {
      * OWNS, not the city's whole housing capacity, which includes the hundred
      * heads the city houses for free before any landlord exists.
      *
+     * THE PAYROLL IS IN IT SINCE HD1 (ITS STAFF, above): the office and the
+     * maintenance posts of the Studios and the Low-Rises, as filled.
+     *
      * THE INTEREST IS A MORTGAGE'S SINCE 0.7.11 (Jerus: "Keep it"): the
      * landlords' buildings are on insured mortgages at a rate fixed for ten
      * years, so the interest part of this floor moves with the dial only as
@@ -318,7 +348,7 @@ public final class RealEstate extends Sector {
      */
     public double rentBreakEven() {
         if (ownedCapacity <= 0) return 0;
-        double carry = getMaintenanceExpense() + getPropertyTaxExpense() + getInterestExpense();
+        double carry = getMaintenanceExpense() + getPropertyTaxExpense() + getInterestExpense() + getPayroll();
         return carry > 0 ? carry / ownedCapacity : 0;
     }
 
@@ -495,6 +525,14 @@ public final class RealEstate extends Sector {
        PLANNING - off jobs, and off the segment that is short
        =================================================================== */
 
+    /**
+     * False (HD1): the landlords build homes before anyone can staff them. Population is min(housing, jobs x
+     * 2.25), so the people who would fill a block's office and maintenance posts are the ones its homes bring;
+     * plan() never asks staffing(), and the investors' build card must not either (ITS STAFF, above).
+     */
+    @Override
+    public boolean ordersOnlyWhatItCanStaff() { return false; }
+
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
@@ -521,6 +559,8 @@ public final class RealEstate extends Sector {
          * would be reading the landlords' own echo.
          */
         long jobsComing = buildings.getJobsUnderConstruction();
+        // (HD1: the landlords' own posts are in these two - 2 a Studio or Low-Rise, at 2.25 heads each: about 2.8% more
+        // latent demand on a 160-head block, a little that converges, since the block then houses those heads too.)
         double latentDemand = (totalJobs + jobsComing) * 2.25;
         /*
          * ...AND SO DO THE HOMES ON SITE (0.7.17), for the same reason and now

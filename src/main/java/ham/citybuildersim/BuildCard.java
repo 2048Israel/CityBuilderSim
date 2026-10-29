@@ -578,7 +578,9 @@ public final class BuildCard {
             return new Figures(t, kind, group(t), "carries a deck ", deck, " m wide", deck, Double.NaN, Double.NaN, null, price, sticker,
                     price / deck, land / deck, Bar2.LAND, "m of deck", "m of deck", Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
         }
-        double staffable = ownerOf(game, t).staffing(t).share;
+        Sector builder = ownerOf(game, t);
+        // ...a landlord's block is not held to its posts being staffable (Sector.ordersOnlyWhatItCanStaff()): 1, no "could staff" words.
+        double staffable = builder.ordersOnlyWhatItCanStaff() ? builder.staffing(t).share : 1;
         String group = group(t);
         String verb, words, per = null, perTag = null;
         double figure, unit, scale = 1, va = Double.NaN;
@@ -1187,8 +1189,11 @@ public final class BuildCard {
             return new Gate(GateKind.LICENCE, game.licencesNeededFor(t, 1),
                     game.getPopulationManager().spareLicences(licence), licence, null);
         }
-        Sector.Staffing staffing = owner.staffing(t);
-        if (!staffing.passes()) return new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()));
+        // ...a landlord's block is not asked it (HD1; Sector.ordersOnlyWhatItCanStaff()): its posts are filled by the people its homes bring.
+        if (owner.ordersOnlyWhatItCanStaff()) {
+            Sector.Staffing staffing = owner.staffing(t);
+            if (!staffing.passes()) return new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()));
+        }
         double free = game.freeGroundFor(t);
         if (t.getLandSqFt() > free) return landGate(ground, t, free);
         if (estimate <= 0) return lossGate(game, t, estimate);
@@ -1279,8 +1284,9 @@ public final class BuildCard {
         // Its owner's staffing test, for a building with posts.
         double posts = 0;
         for (JobType job : JobType.values()) posts += t.getJobs(job);
+        // ...a landlord's block is not asked it (HD1): Mark.NONE, as a building with no posts has.
         Sector.Staffing staffing = owner.staffing(t);
-        gates.add(!(posts > 0) ? new GateMark(GateKind.STAFFING, Mark.NONE, null)
+        gates.add(!(posts > 0) || !owner.ordersOnlyWhatItCanStaff() ? new GateMark(GateKind.STAFFING, Mark.NONE, null)
                 : staffing.passes() ? new GateMark(GateKind.STAFFING, Mark.PASS, null)
                 : new GateMark(GateKind.STAFFING, Mark.FAIL,
                         new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()))));

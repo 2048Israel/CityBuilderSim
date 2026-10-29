@@ -408,6 +408,8 @@ public class BuildingManager {
         studioApartments.setConstructionMaterials(320);
         studioApartments.setElectricityConsumption(8);
         studioApartments.setWaterConsumption(2);
+        // ITS STAFF (HD1, 2026-10-29): one office post and one maintenance post, both a diploma - RealEstate's javadoc has the rule.
+        studioApartments.setJobs(JobType.DIPLOMA, 2);
         studioApartments.setLandSqFt(25000);
         studioApartments.setRoadLoad(35);
         studioApartments.setId(1);
@@ -435,6 +437,8 @@ public class BuildingManager {
         lowRiseApartments.setConstructionMaterials(377);
         lowRiseApartments.setElectricityConsumption(25);
         lowRiseApartments.setWaterConsumption(6);
+        // ITS STAFF (HD1, 2026-10-29): one office post and one maintenance post, both a diploma - RealEstate's javadoc has the rule.
+        lowRiseApartments.setJobs(JobType.DIPLOMA, 2);
         lowRiseApartments.setLandSqFt(60000);
         lowRiseApartments.setRoadLoad(100);
         lowRiseApartments.setId(6);
