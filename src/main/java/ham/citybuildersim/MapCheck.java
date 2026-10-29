@@ -1531,23 +1531,39 @@ public class MapCheck {
     /**
      * Hands the city, between months, every whole block of its level that lies in the square of CityRuns.CELL plots each way round `at` and that it does not own
      * (a row of them side by side one parcel, bought as 2c's blocks are, dated `month`): the ground the highways' hub and their first arms stand on. The plots handed.
+     *
+     * WN3, 2026-10-29: a block the city owns part of is handed in its halves, down to LandGrid.MIN_LEVEL's. On the world's band the city's month-40 iron purchase
+     * (the mine's fields, level-2 parcels) falls across the square, and the blocks of the city's level that hold one are part owned: handing only the wholly
+     * unowned left plots of the square unowned, and the highways did not start in the district.
      */
     static long handGroundRound(CityLand land, DistrictPlan.Input frame, long[] at, int month) {
         long b = 1L << land.level(), r = CityRuns.CELL;
         long x0 = Math.floorDiv(at[0] - r, b) * b, y0 = Math.floorDiv(at[1] - r, b) * b, x1 = Math.floorDiv(at[0] + r, b) * b + b, y1 = Math.floorDiv(at[1] + r, b) * b + b;
-        long handed = 0;
+        return handBlocks(land, x0, y0, x1, y1, land.level(), month);
+    }
+
+    /**
+     * Hands the city the blocks of `level` in [x0, x1) x [y0, y1) that no holding owns (a row of them side by side one parcel), and each block it owns part of in its
+     * four halves, one level down, until LandGrid.MIN_LEVEL (a block of that level is owned whole or not at all). The plots handed.
+     */
+    static long handBlocks(CityLand land, long x0, long y0, long x1, long y1, int level, int month) {
+        long b = 1L << level, handed = 0;
+        List<long[]> part = new ArrayList<>();
         for (long y = y0; y < y1; y += b) {
             long start = -1;
             for (long x = x0; x <= x1; x += b) {
-                boolean free = x < x1 && land.grid().owned(x, y, x + b, y + b) == 0;
+                long owned = x < x1 ? land.grid().owned(x, y, x + b, y + b) : b * b;
+                boolean free = owned == 0;
+                if (owned > 0 && owned < b * b) part.add(new long[] { x, y });
                 if (free && start < 0) start = x;
                 if (!free && start >= 0) {
-                    land.extend(new LandParcel(-5, 1, 0, land.level(), start, y, x, y + b, null, null, null, 0, 0), month, 0);
+                    land.extend(new LandParcel(-5, 1, 0, level, start, y, x, y + b, null, null, null, 0, 0), month, 0);
                     handed += (x - start) * b;
                     start = -1;
                 }
             }
         }
+        if (level > LandGrid.MIN_LEVEL) for (long[] p : part) handed += handBlocks(land, p[0], p[1], p[0] + b, p[1] + b, level - 1, month);
         return handed;
     }
 
