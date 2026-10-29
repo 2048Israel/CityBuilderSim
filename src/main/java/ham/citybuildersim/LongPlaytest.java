@@ -2234,7 +2234,8 @@ public class LongPlaytest {
                 + "bankFails,policy,cityRate,refusedSkips,noMoney,stake,fundValue,fundCash,preferred,"
                 + "floor,bankFloor,cbPaperShare,cbHeld,m0,cbBoughtHH,"
                 + "cbParAtIssue,cbPaidAtIssue,cbBought,cbSold,bankPaidForPaper,"
-                + "grant,revenue,luxNet,luxRevenue,luxMargin,sectorsPreTax");
+                + "grant,revenue,luxNet,luxRevenue,luxMargin,sectorsPreTax,"
+                + "bizCash,bizAbroad,bizDebt,bizBonds");
         traceBorrow.println("month,type,kind,foreign,face,rate,rateIs,months,for");
         traceHouse.println("month,pop,homes,households,capacity,jobs,latent,pressure,rentF,rentS,reqF,reqS,"
                 + "breakEven,reCash,reAssets,rePrincipal,mortgages,mortgagePrincipal,bulletPrincipal,"
@@ -2287,7 +2288,8 @@ public class LongPlaytest {
         }
         traceMonths.printf(java.util.Locale.ROOT,
                 "%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d,%.6f,%.6f,%d,%d,%.6f,%.3f,%.3f,%.3f,"
-                + "%.6f,%.6f,%.6f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f%n",
+                + "%.6f,%.6f,%.6f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f,"
+                + "%.3f,%.3f,%.3f,%.3f%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(), g.getCash(),
                 g.getEconomyManager().getMonthGdp(), g.getEconomyManager().getTaxIncome(),
                 g.getEconomyManager().getNationalAccounts().getInterestExpense(),
@@ -2317,7 +2319,12 @@ public class LongPlaytest {
                 g.getEconomyManager().getNationalAccounts().getTotalRevenue(),
                 g.getSectors().luxuryRetail().statement().preTaxIncome,
                 g.getSectors().luxuryRetail().statement().revenue,
-                g.getSectors().luxuryRetail().getMargin(), sectorsPreTax(g));
+                g.getSectors().luxuryRetail().getMargin(), sectorsPreTax(g),
+                // ...and (HD1) the businesses' hoard: their tills, their dollars abroad at the
+                // month's rate, and what they owe the bank and their bondholders.
+                sectorsCash(g), g.getOutwardInvestment().totalLocalValue(),
+                g.getEconomyManager().getBusinessDebtManager().getTotalPrincipal(),
+                g.getBondMarket().totalFace());
         traceHouse(g);
         tracePop(g);
         traceBuild(g);
@@ -2446,6 +2453,13 @@ public class LongPlaytest {
             if ("City".equals(r.payer)) value += r.value;
         }
         return value * g.getEconomyManager().buildersSalesRate();
+    }
+
+    /** Every sector's till, summed (HD1): the cash half of the businesses' hoard. */
+    static double sectorsCash(Game g) {
+        double t = 0;
+        for (Sector s : g.getSectors().all()) t += s.getCash();
+        return t;
     }
 
     /** Every sector's month before profit tax, summed - what Luxury's share of the city's profit is read against (0.7.19). */
