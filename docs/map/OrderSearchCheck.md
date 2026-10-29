@@ -1,4 +1,4 @@
-# OrderSearchCheck.java - 637 lines · 20 methods · 9 constants · harnesses
+# OrderSearchCheck.java - 647 lines · 20 methods · 9 constants · harnesses
 
 `ham/citybuildersim/OrderSearchCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -49,12 +49,12 @@
 
 | line | section |
 |---:|---|
-| 160 | · 1. a long run, every order watched |
-| 192 | · 2. the same city, a thousand times over |
-| 350 | 3. the trim's search on its own |
-| 417 | 4. Mortgage.decide() on a grid |
-| 469 | THE WATCH: every order the game decides, asked of the countdown too |
-| 554 | THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 |
+| 170 | · 1. a long run, every order watched |
+| 202 | · 2. the same city, a thousand times over |
+| 360 | 3. the trim's search on its own |
+| 427 | 4. Mortgage.decide() on a grid |
+| 479 | THE WATCH: every order the game decides, asked of the countdown too |
+| 564 | THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 |
 
 ## Constants
 
@@ -63,12 +63,12 @@
 | 57 | `OrderSearchCheck.LONG_MONTHS` | `1200` | Months the playtest's city plays with every order watched... |
 | 60 | `OrderSearchCheck.DEAR_MONTHS` | `120` | ...then this many more with the policy rate held at DEAR_RATE, so the mortgage lender trims and refuses. |
 | 62 | `OrderSearchCheck.DEAR_RATE` | `.15` | ...and the policy rate those months are held at. |
-| 94 | `OrderSearchCheck.COPY_MONTH` | `400` | The copy of that city: the month it is copied at, how many times over, and how many months it plays. |
-| 96 | `OrderSearchCheck.COPY_TIMES` | `1000` | ...how many times over it is copied... |
-| 98 | `OrderSearchCheck.COPY_MONTHS` | `24` | ...and the months the copy plays. |
-| 107 | `OrderSearchCheck.COPY_RATE` | `DEAR_RATE` | The policy rate the copy's months are held at (FR8, 2026-10-28): the long run's dear stretch's, DEAR_RATE. |
-| 123 | `OrderSearchCheck.TWIN_RATE` | `.40` | The policy rate the twin's months are held at (FW9, 2026-10-25). |
-| 260 | `OrderSearchCheck.TWIN_TILLS` | `{.25,.5 }` | The shares of its whole cost the twin's till is put at under its largest order (tillsAsTheLine()). |
+| 104 | `OrderSearchCheck.COPY_MONTH` | `500` | The copy of that city: the month it is copied at, how many times over, and how many months it plays. |
+| 106 | `OrderSearchCheck.COPY_TIMES` | `1000` | ...how many times over it is copied... |
+| 108 | `OrderSearchCheck.COPY_MONTHS` | `24` | ...and the months the copy plays. |
+| 117 | `OrderSearchCheck.COPY_RATE` | `DEAR_RATE` | The policy rate the copy's months are held at (FR8, 2026-10-28): the long run's dear stretch's, DEAR_RATE. |
+| 133 | `OrderSearchCheck.TWIN_RATE` | `.40` | The policy rate the twin's months are held at (FW9, 2026-10-25). |
+| 270 | `OrderSearchCheck.TWIN_TILLS` | `{.25,.5 }` | The shares of its whole cost the twin's till is put at under its largest order (tillsAsTheLine()). |
 
 ## Fields (state)
 
@@ -77,58 +77,58 @@
 | 52 | `static int fails` |  |
 | 53 | `static PrintStream out` |  |
 | 54 | `static PrintStream quiet` |  |
-| 474 | `final Game g` |  |
-| 475 | `int sized, sizedDiffer, largestNeeded, mostWaits` |  |
-| 476 | `int invested, investedDiffer, trimmed, refused, searched, deepest, largestInvested` |  |
-| 477 | `int mostDeskCalls, mostCountDeskCalls, overBound` |  |
-| 478 | `int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused` |  |
-| 479 | `String firstDiffer` |  |
-| 481 | `BusinessInvestment.Decision biggest` | The largest order judged on its interest so far (FR8, tillsAsTheLine()). |
+| 484 | `final Game g` |  |
+| 485 | `int sized, sizedDiffer, largestNeeded, mostWaits` |  |
+| 486 | `int invested, investedDiffer, trimmed, refused, searched, deepest, largestInvested` |  |
+| 487 | `int mostDeskCalls, mostCountDeskCalls, overBound` |  |
+| 488 | `int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused` |  |
+| 489 | `String firstDiffer` |  |
+| 491 | `BusinessInvestment.Decision biggest` | The largest order judged on its interest so far (FR8, tillsAsTheLine()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 588 | **type** `public class OrderSearchCheck` | The three order searches against the countdowns they replaced (0.7.54). |
-| 125 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 130 | 5 | `static void same(String label, long actual, long expected)` |  |
-| 136 | 5 | `static void quietly(Runnable r)` |  |
-| 142 | 15 | `public static void main(String[] args) throws Exception` |  |
-| 158 | 100 | `static void run(Path root) throws Exception` |  |
-| 272 | 14 | `static void tillsAsTheLine(Game twin, Watch w)` | THE TWIN'S DEEP TRIMS, CAUSED (FR8, 2026-10-28). |
-| 292 | 30 | `static void playtestCity(Game g, int months, PrintStream quiet)` | The default playtest's city (LongPlaytest.main's seed 0): its founding by hand, then its rhythm to `months` (playtestRhythm()), all of it told to `quiet`. |
-| 324 | 25 | `static void playtestRhythm(Game g, int months, PrintStream quiet)` | ...and the playtest's rhythm to `months`: a skip of its lengths, the schools, the advisor's moves and two months. |
+| 50 | 598 | **type** `public class OrderSearchCheck` | The three order searches against the countdowns they replaced (0.7.54). |
+| 135 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 140 | 5 | `static void same(String label, long actual, long expected)` |  |
+| 146 | 5 | `static void quietly(Runnable r)` |  |
+| 152 | 15 | `public static void main(String[] args) throws Exception` |  |
+| 168 | 100 | `static void run(Path root) throws Exception` |  |
+| 282 | 14 | `static void tillsAsTheLine(Game twin, Watch w)` | THE TWIN'S DEEP TRIMS, CAUSED (FR8, 2026-10-28). |
+| 302 | 30 | `static void playtestCity(Game g, int months, PrintStream quiet)` | The default playtest's city (LongPlaytest.main's seed 0): its founding by hand, then its rhythm to `months` (playtestRhythm()), all of it told to `quiet`. |
+| 334 | 25 | `static void playtestRhythm(Game g, int months, PrintStream quiet)` | ...and the playtest's rhythm to `months`: a skip of its lengths, the schools, the advisor's moves and two months. |
 
-### 3. the trim's search on its own (lines 350-416)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 352 | 64 | `static void search()` |  |
-
-### 4. Mortgage.decide() on a grid (lines 417-468)
+### 3. the trim's search on its own (lines 360-426)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 419 | 49 | `static void grid()` |  |
+| 362 | 64 | `static void search()` |  |
 
-### THE WATCH: every order the game decides, asked of the countdown too (lines 469-553)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 473 | 80 | **type** `static final class Watch implements BusinessInvestment.OrderWatch` |  |
-| 483 | 1 | `Watch(Game g)` _(in OrderSearchCheck.Watch)_ |  |
-| 486 | 10 | `public void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead)` _(in OrderSearchCheck.Watch)_ |  |
-| 498 | 22 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in OrderSearchCheck.Watch)_ |  |
-| 522 | 11 | `public void mortgaged(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, Mortgage.Decisi...` _(in OrderSearchCheck.Watch)_ |  |
-| 534 | 1 | `void note(String s)` _(in OrderSearchCheck.Watch)_ |  |
-| 536 | 9 | `void report(String what)` _(in OrderSearchCheck.Watch)_ |  |
-| 546 | 6 | `void verdicts(String what)` _(in OrderSearchCheck.Watch)_ |  |
-
-### THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (lines 554-637)
+### 4. Mortgage.decide() on a grid (lines 427-478)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 559 | 12 | `static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, int needed, double siteOutput)` | BusinessInvestment.orderSize()'s count: up from one until the wait passes MAX_ORDER_MONTHS. |
-| 573 | 23 | `static Mortgage.Decision decidedByCount(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate)` | Mortgage.decide()'s count: down from what was asked. |
-| 605 | 32 | `static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit)` | Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows - and since 0.7.113 each slice asked the test on what the game's rule tests (Game.orderGate()): its whole cost, ... |
+| 429 | 49 | `static void grid()` |  |
+
+### THE WATCH: every order the game decides, asked of the countdown too (lines 479-563)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 483 | 80 | **type** `static final class Watch implements BusinessInvestment.OrderWatch` |  |
+| 493 | 1 | `Watch(Game g)` _(in OrderSearchCheck.Watch)_ |  |
+| 496 | 10 | `public void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead)` _(in OrderSearchCheck.Watch)_ |  |
+| 508 | 22 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in OrderSearchCheck.Watch)_ |  |
+| 532 | 11 | `public void mortgaged(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, Mortgage.Decisi...` _(in OrderSearchCheck.Watch)_ |  |
+| 544 | 1 | `void note(String s)` _(in OrderSearchCheck.Watch)_ |  |
+| 546 | 9 | `void report(String what)` _(in OrderSearchCheck.Watch)_ |  |
+| 556 | 6 | `void verdicts(String what)` _(in OrderSearchCheck.Watch)_ |  |
+
+### THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (lines 564-647)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 569 | 12 | `static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, int needed, double siteOutput)` | BusinessInvestment.orderSize()'s count: up from one until the wait passes MAX_ORDER_MONTHS. |
+| 583 | 23 | `static Mortgage.Decision decidedByCount(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate)` | Mortgage.decide()'s count: down from what was asked. |
+| 615 | 32 | `static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit)` | Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows - and since 0.7.113 each slice asked the test on what the game's rule tests (Game.orderGate()): its whole cost, ... |
 
