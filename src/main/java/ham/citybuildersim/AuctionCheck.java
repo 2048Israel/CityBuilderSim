@@ -907,6 +907,15 @@ public class AuctionCheck {
         out.println("--- 8. the quote is the deal, the settle pays the allotment, and a tiny sale is no sale ---");
         DebtManager ledger = city.getDebtManager();
         HouseholdBalance hb = city.getHouseholdBalance();
+        // WN3: the shortfall desk sells no corporate bond while this section plays (the lender's desk is detached, as CreditCheck 1170
+        // builds one with none, and put back at the end). The settle below asserts that the households pay their allotment out of the
+        // savings the auction was struck against, and the month under test is not a quiet one for them on the world's band: the lineup
+        // city's manufacturers sold a bond of 6,041 in it (month 66), the households took 5,385 of it before the settle, and their
+        // savings past the cushion fell from 5,331 to 0.11 against an allotment of 822 - they paid 0.11. (Holding every sector out of
+        // building did not stop it: the bond is a shortfall's, not an order's.) Nothing else is to bid for the households' savings.
+        BusinessDebtManager lender = city.getEconomyManager().getBusinessDebtManager();
+        BusinessDebtManager.BondDesk desk = lender.getBondDesk();
+        lender.setBondMarket(city.getBondMarket(), null);
         play(city);                                    // section 7's last sales settle here, not in the month under test
         double spare = hb.spareForPaper();
         double askFace = Math.max(100, spare * .2);
@@ -1001,6 +1010,7 @@ public class AuctionCheck {
                         && ledger.auctionSales() == salesNow);
         assertTrue("the build screen's and the builder's bond for the same gap reads none to be had",
                 AutoBuilder.bondFor(city, huge) == null);
+        lender.setBondMarket(city.getBondMarket(), desk);   // WN3: the desk back
     }
 
     /* ============== 11. the real run (D33) ============== */
