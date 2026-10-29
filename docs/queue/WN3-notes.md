@@ -133,6 +133,9 @@ population at m2400):
   its 2008 peak. Measured on an experimental build (a property, not committed): ~15 lines in `Markets.setWorldBand`
   and `Game`, a dial, a WorldMarketCheck section, the ensemble again.
 
+The harnesses saw the same trap: LongPlaytest's test player with the AutoBuilder on (AutoBuildCheck's town) sits at
+about 2,000 people from m84 and passes its 240% debt limit by m204 (on the literals: 21,729 people at m600).
+
 **Recommendation: (2b)**, with the margin strand (the freight scale) studied before WN4: it keeps D13's world, keeps
 today's founding balance for a new city, and was the best of the three on every figure here. It is a change beyond
 the study, so it is Jerus's.
@@ -141,18 +144,43 @@ the study, so it is Jerus's.
 
 [SUITE]
 
-## 5. For the next batches
+## 5. Found on the way
+
+1. **Three map faults the market's city exposes** (for MF1, the map lane; LongPlaytest's two layout findings, red
+   with the world file named and not without: the literal city has one depot and one old works and never meets them):
+   (1) the city's one rail yard is dealt to the first district in map order holding a Rail Depot (`CityMap.yardsOf`,
+   L5761), so a depot arriving earlier in the order moves the yard and its old district's depot becomes a drawn box at
+   its dated log place (m3995, district (-2,-3): 10 boxes moved); (2) ground bought inside a built district moves old
+   works (m2078, district (0,0): 112 plots bought, a Rod Mill, a Meat Works and a Bottling Plant each lost a standing
+   box; again m2323); (3) the undated interchange reserve (`FIXED_RESERVE`, 335 plots) laid across standing works
+   (m2782, district (-1,0): 41 of 65 Construction Depots moved). The watcher is not weakened.
+2. **A dormant load-order fault in old-save code**: at a load `inferContracts` runs before the wage rates are struck,
+   so a House's labour is read unindexed (26.600 against 26.673). InvestCheck's older-save cities now play on the
+   literals; the fault is left.
+3. **The calibration's freight scale** (3, ★10): wood pellets at 1.95x their literal in 2000 at New York and fabricated
+   steel at 1.94x while steel is 0.43x; every default-played town raises a Wood Pellet Mill by m90.
+4. `GoodsMarket.bandFreight()` is public now (`TradeBand.of` reads it: the ships' piece of the band's own freight).
+5. **The monetary premise on the world's band** (for Jerus, with WN3-B): MonetaryCheck's held runs at inflation dials of
+   3% to 40% give 10.43 / 9.68 / 8.99 / 8.82% on the literals (the dial holds inflation down, as asserted) and
+   4.23 / 6.55 / 5.96 / 5.75% on the band: the founding is calmer, but rent (weight 0.62 of the basket) rises with the
+   cost of financing, 1.19 to 1.32 from 3% to 10%, outweighing the stronger D$. MonetaryCheck, PassThroughCheck (the
+   twins' D$ gap 34% at m120 on the band) and CurveCheck (a cement works' loan sends the young bank to the window)
+   play on the literals; whether that cost-push is the game Jerus wants is his.
+6. ExchangeRateCheck's playtest treasury ends m360 at cash −18,397 on 201,258 of debt on the band: the young city's trap
+   again (3); its fixture hands the treasury the cash the hand deal needs.
+
+## 6. For the next batches
 
 - WN4: the band is in world (US) dollars a game unit today; the moneys put it in each nation's money.
 - WN6: `PartnerTrade`'s snapshot and the History by partner and good are the Partners page's figures;
   `WorldMarket.millPrice/buyerPrice` the export curve's.
 - `Game.playOnLiterals()`: a harness whose premise is a fixed world price builds its city on the literals.
 
-## 6. One in, one out
+## 7. One in, one out
 
 Not a process batch: no script, check machinery or session rule changed.
 
-## 7. How it was built
+## 8. How it was built
 
 Slices on Sonnet 5.5 at xhigh, each in a worktree of its own where they ran side by side: A the model and its check
 (and three rounds on the step's slope), C the lanes, B the wiring and the save, M1-M3 the harnesses' fixtures. Opus
