@@ -4933,8 +4933,35 @@ public class MapCheck {
     /** The section's city: three districts a side, all of it owned and drawn canonically on its measured ground - the playtest's coast (its bay, its south shore, its lagoon) - about a site one district west of the default world's founding site (atSea()). */
     static final int SHORE_SIDE = 3;
 
-    /** A city owning `side` districts a side about (sx, sy), every plot of them, its map drawn canonically on the ground measured. */
+    /**
+     * A city owning `side` districts a side about (sx, sy), every plot of them, its map drawn canonically on the ground measured, its
+     * shore laid by the harbour rule (MF1), as a city's map is drawn.
+     */
     static CityMap coastal(long seed, long sx, long sy, BuildingVisual.Type[] types, int side, long[] counts) {
+        return coastal(seed, sx, sy, types, side, counts, true);
+    }
+
+    /**
+     * ...with the shore laid as it was before MF1 (the harbour rule off): the coast whose fixture's premise is where a work stands or how many
+     * stand - SL1's cost of the shore (hundreds of works on one coast, which two harbours do not hold), section 9's routes and lanes (the rule's
+     * second harbour on this coast lies in water reached only through a pinch between two land cells, which SeaRoutes' A* sails and MapCheck 9's
+     * "each leg on the sea's cells" refuses), and GatewayCheck's coast (its world line stands on a Bulk Berth's verge: see coastSection()).
+     */
+    static CityMap coastBeforeMF1(long seed, long sx, long sy, BuildingVisual.Type[] types, int side, long[] counts) {
+        return coastal(seed, sx, sy, types, side, counts, false);
+    }
+
+    static CityMap coastal(long seed, long sx, long sy, BuildingVisual.Type[] types, int side, long[] counts, boolean harbour) {
+        int was = CityMap.harbourReachDefault;
+        CityMap.harbourReachDefault = harbour ? CityShore.HARBOUR_REACH : 0;
+        try {
+            return coastalDrawn(seed, sx, sy, types, side, counts);
+        } finally {
+            CityMap.harbourReachDefault = was;
+        }
+    }
+
+    private static CityMap coastalDrawn(long seed, long sx, long sy, BuildingVisual.Type[] types, int side, long[] counts) {
         int h = side / 2;
         long dx = Math.floorDiv(sx, CityMap.DISTRICT), dy = Math.floorDiv(sy, CityMap.DISTRICT);
         double[] centre = new double[CityLand.CENTRE_FIELDS];
@@ -4978,6 +5005,336 @@ public class MapCheck {
         }
         return c;
     }
+
+    /* ----- the coast: one or two harbours, not a shore of piers (MF1, 2026-10-28) ----- */
+
+    /*
+     * Item 8 of docs/queue/MF1.md; Jerus, 2026-10-23: "every quay and sea terminal gets its own pier, so the whole shore is
+     * piers ... i dont think real life is like that"; his call: "the berths gathered into one or two harbours at the best shore,
+     * ships sharing a few lanes that split near the harbour; the rest of the coast stays beach". What this has to prove, on the
+     * playtest's coast with every kind of work ordered over months: (a) the works stand in at most CityShore.HARBOURS_MOST
+     * harbours, each work within the reach of its harbour's first, and the shore beyond is beach, no work on it; (b) none on a pier of
+     * its own: every terminal's quay is the harbour's; (c) nothing laid earlier moves; (d) every berth reaches the sea lane, and no
+     * lane crosses a work; (e) the same orders with the harbour rule off (the shore as it was) spread over the coast, on piers of
+     * their own, which is the fault; (f) a search that starts where the last found room finds the spot the search from the first
+     * tile does, in a harbour.
+     */
+
+    /** Rounds of orders on the harbour's coast, each one more of every terminal and tank farm: 12, more than the harbours hold, so that some come up short. */
+    static final int HARBOUR_ROUNDS = 12;
+
+    /** Terminals asked of the harbour's coast one at a time for the exactness: 60, more than its two harbours take. */
+    static final int HARBOUR_FILL = 60;
+
+    /** The coast's shore works asked for round by round: every shore type's model count one more each round, from none, the rest of the town as the section's. */
+    static CityMap harborOrdered(BuildingVisual.Type[] types, long seed, List<List<CityShore.Work>> laidByRound, boolean rule) {
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        long[] counts = shoreCounts(types);
+        for (BuildingVisual.Type t : types) if (t != null && t.shore()) counts[t.id()] = 0;
+        CityMap m = coastal(seed, sx, sy, types, SHORE_SIDE, counts, rule);
+        for (int round = 1; round <= HARBOUR_ROUNDS; round++) {
+            for (int t : m.shoreTypes()) counts[t]++;
+            m.reconcile(counts);
+            laidByRound.add(new ArrayList<>(m.shore().works()));
+        }
+        return m;
+    }
+
+    /** The harbours of a shore by the rule's reach, whichever rule laid it: CityShore.harbours() on one landmass. */
+    static List<CityShore.Harbour> harboursOf(CityShore shore) {
+        return CityShore.harbours(shore.works(), CityShore.HARBOUR_REACH, k -> 0);
+    }
+
+    static void theHarbour(BuildingVisual.Type[] types, long seed) {
+        out.println("\n--- 9b. the coast: the berths gathered into one or two harbours, the rest of the shore beach (MF1, item 8) ---");
+        World w = World.of(seed);
+        List<List<CityShore.Work>> rounds = new ArrayList<>(), roundsOff = new ArrayList<>();
+        CityMap m = harborOrdered(types, seed, rounds, true);
+        CityMap off = harborOrdered(types, seed, roundsOff, false);
+        CityShore shore = m.shore();
+        List<CityShore.Harbour> harbours = harboursOf(shore), harboursOff = harboursOf(off.shore());
+        int berthed = 0;
+        for (CityShore.Work k : shore.works()) if (k.berthed()) berthed++;
+        int asked = 0;
+        for (int t : m.shoreTypes()) asked += HARBOUR_ROUNDS;
+        out.printf("      %d terminals and tank farms asked over %d rounds: %d laid (%d berthed), %d short, in %d harbour(s) %s; with the rule off %d laid in %d%n",
+                asked, HARBOUR_ROUNDS, shore.works().size(), berthed, m.shoreShort(), harbours.size(), harbours, off.shore().works().size(), harboursOff.size());
+        check("fixture: terminals and tank farms are ordered month by month, five or more are laid, and more were asked than the harbours hold (some are counted short)",
+                berthed >= 5 && shore.works().size() >= 5 && m.shoreShort() > 0 && shore.works().size() + m.shoreShort() == asked);
+        // (a) gathered.
+        int reach = CityShore.HARBOUR_REACH;
+        double apartest = 0;
+        for (CityShore.Work a : shore.works()) {
+            for (CityShore.Work b : shore.works()) {
+                long[] pa = a.shorePlot(), pb = b.shorePlot();
+                if (harbourOf(harbours, a) != harbourOf(harbours, b)) continue;
+                apartest = Math.max(apartest, Math.hypot(pa[0] - pb[0], pa[1] - pb[1]));
+            }
+        }
+        check("THE HARBOUR: the berthed works and the tank farms stand in at most HARBOURS_MOST harbours", harbours.size() >= 1 && harbours.size() <= CityShore.HARBOURS_MOST);
+        check("...the works of a harbour all within the reach of its first, so within two reaches of one another", apartest <= 2.0 * reach && harbours.stream().allMatch(h -> h.works() >= 1));
+        check("...a second harbour opened, a stretch of beach from the first: the first harbour was full, and the second's first work lies at least HARBOUR_APART from it",
+                harbours.size() == 2 && Math.hypot(harbours.get(0).x() - harbours.get(1).x(), harbours.get(0).y() - harbours.get(1).y()) >= CityShore.HARBOUR_APART - 1e-9);
+        // The shore beyond the harbours' reach is beach: every owned dry plot with salt water beside it, farther from every harbour's first work than the reach
+        // and the longest side of a work's box (a box stands inland of its shore plot, which is what the reach measures), holds no work's box or quay.
+        int boxSide = 0;
+        for (CityShore.Work k : shore.works()) boxSide = Math.max(boxSide, Math.max(k.w(), k.h()));
+        long beach = 0, worked = 0, shorePlots = 0;
+        byte[] buf = new byte[TilePainter.PLOTS];
+        long bx0 = Long.MAX_VALUE, by0 = Long.MAX_VALUE, bx1 = Long.MIN_VALUE, by1 = Long.MIN_VALUE;
+        for (CityShore.Work k : shore.works()) {
+            bx0 = Math.min(bx0, k.x0()); by0 = Math.min(by0, k.y0());
+            bx1 = Math.max(bx1, k.x0() + k.w()); by1 = Math.max(by1, k.y0() + k.h());
+        }
+        long side = (long) SHORE_SIDE * CityMap.DISTRICT;
+        long wx0 = w.foundingX() - CityMap.DISTRICT - side / 2, wy0 = w.foundingY() - side / 2;
+        for (long y = wy0; y < wy0 + side; y++) {
+            for (long x = wx0; x < wx0 + side; x++) {
+                if (!m.land().ownsPlot(x, y) || !World.dry(w.terrainAt(x, y)) || w.terrainAt(x, y) == World.FRESH) continue;
+                boolean wet = false;
+                for (int d = 0; d < 4 && !wet; d++) wet = World.salt(w.terrainAt(x + CityShore.DX[d], y + CityShore.DY[d]));
+                if (!wet) continue;
+                shorePlots++;
+                boolean inReach = false;
+                for (CityShore.Harbour h : harbours) inReach |= Math.hypot(x - h.x(), y - h.y()) <= reach + boxSide;
+                if (inReach) continue;
+                beach++;
+                if (shore.at(x, y) != null) worked++;
+                for (CityShore.Work k : shore.works()) if (k.quayAt(x, y)) worked++;
+            }
+        }
+        out.printf("      the owned shore: %,d plots, %,d of them farther than the reach and a box from every harbour's first work (beach), %d with a work on them%n", shorePlots, beach, worked);
+        check("...the rest of the coast stays beach: the owned shore beyond the harbours' reach (and a box) is not nothing, and not one plot of it holds a work or a quay",
+                beach > 0 && beach > shorePlots / 10 && worked == 0);
+        // (b) no pier of its own.
+        boolean common = true;
+        int longest = 0;
+        for (CityShore.Work k : shore.works()) {
+            longest = Math.max(longest, k.quay());
+            common &= k.quay() <= CityShore.HARBOUR_QUAY_PLOTS && (k.berthed() ? k.quay() == CityShore.HARBOUR_QUAY_PLOTS : k.quay() == 0);
+        }
+        check("...no work on a pier of its own: every terminal's quay is the harbour's, HARBOUR_QUAY_PLOTS, the berths side by side on one line", common && longest == CityShore.HARBOUR_QUAY_PLOTS);
+        // (c) nothing laid earlier moves.
+        boolean never = true;
+        for (int r = 1; r < rounds.size(); r++) {
+            List<CityShore.Work> a = rounds.get(r - 1), b = rounds.get(r);
+            never &= b.size() >= a.size() && b.subList(0, a.size()).equals(a);
+        }
+        check("...nothing laid earlier moves: each round's works begin with the works of the round before", never && rounds.get(rounds.size() - 1).size() == shore.works().size());
+        // (d) every berth reaches the sea lane, and no lane crosses a work.
+        List<BoatSchedule.Route> routes = m.seaRoutes();
+        List<BoatSchedule.Berth> berths = shore.berths(types);
+        double want = m.cityRadius() + SeaRoutes.OFFING_M / World.PLOT_M;
+        boolean reaches = routes.size() == berths.size() && !routes.isEmpty(), onWater = true;
+        long crossings = 0, samples = 0;
+        for (int i = 0; reaches && i < routes.size(); i++) {
+            BoatSchedule.Route r = routes.get(i);
+            reaches &= r.berth().equals(berths.get(i)) && r.xs().length >= 2 && Math.hypot(r.xs()[r.offing()] - r.xs()[0], r.ys()[r.offing()] - r.ys()[0])
+                    >= Math.min(want, SeaRoutes.RAY_CELLS * SeaRoutes.CELL) - 2 * SeaRoutes.CELL;
+            for (int j = 0; j + 1 < r.xs().length; j++) {
+                double len = Math.hypot(r.xs()[j + 1] - r.xs()[j], r.ys()[j + 1] - r.ys()[j]);
+                int n = (int) Math.ceil(len / SeaRoutes.CELL * 3) + 1;
+                for (int k = 0; k <= n; k++) {
+                    long x = (long) Math.floor(r.xs()[j] + (r.xs()[j + 1] - r.xs()[j]) * k / n), y = (long) Math.floor(r.ys()[j] + (r.ys()[j + 1] - r.ys()[j]) * k / n);
+                    samples++;
+                    if (shore.at(x, y) != null) crossings++;
+                }
+            }
+        }
+        out.printf("      %d berths, %d routes: %,d points along the lanes asked of the works' boxes, %d inside one%n", berths.size(), routes.size(), samples, crossings);
+        check("...every berth in the harbours has its route to the offing and the abyss, the lane the next berth beside it joins", reaches && berths.size() == berthed);
+        check("...and no lane crosses a work: not one point along any route lies in a work's box", crossings == 0 && samples > 0);
+        // SL1's shared lanes hold with the berths side by side: the berths of a harbour join the lane of the one before.
+        sharedLanesOnTheCoast(w, m, types);
+        // (e) the fault: the same orders, the rule off, a shore of piers.
+        int piers = 0, longPiers = 0;
+        for (CityShore.Work k : off.shore().works()) {
+            if (k.berthed()) piers++;
+            if (k.quay() > CityShore.HARBOUR_QUAY_PLOTS) longPiers++;
+        }
+        check("fixture: with the harbour rule off the same orders are laid on the whole coast, in more than HARBOURS_MOST clusters, each terminal on a pier of its own longer than the harbour's quay",
+                harboursOff.size() > CityShore.HARBOURS_MOST && longPiers == piers && piers >= 5);
+        // (f) the cursor.
+        harbourExactness(types, seed);
+        // (g) the arms' walks to the world, and SL1's timing line on the harbours.
+        harbourKeepsOffTheArms();
+        harbourMonthCost(seed);
+    }
+
+    /** The harbour (of `harbours`) a work stands in: the first whose first work is within the reach of its shore plot, or null. */
+    static CityShore.Harbour harbourOf(List<CityShore.Harbour> harbours, CityShore.Work k) {
+        long[] p = k.shorePlot();
+        for (CityShore.Harbour h : harbours) if (Math.hypot(p[0] - h.x(), p[1] - h.y()) <= CityShore.HARBOUR_REACH) return h;
+        return null;
+    }
+
+    /**
+     * A search that starts where the last found room is the search from the harbour's first tile (shoreSpotFull(): the harbour's tiles from the
+     * nearest its first work, every time), for each General Cargo Terminal laid one at a time until the harbours are full and again after
+     * three are taken away - on a coast of two districts a side, where the first harbour has little room - and it looks at fewer tiles.
+     */
+    static void harbourExactness(BuildingVisual.Type[] types, long seed) {
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        int gct = -1;
+        for (BuildingVisual.Type t : types) if (t != null && t.berth() == Ports.Cargo.GENERAL.ordinal()) gct = t.id();
+        long[] fill = shoreCounts(types);
+        fill[gct] = 0;
+        CityMap filling = coastal(seed, sx, sy, types, 2, fill);
+        long[] first = layOneAtATime(filling, gct, fill, 1, HARBOUR_FILL);
+        int placed = filling.shore().count(gct);
+        fill[gct] = placed - 3;
+        filling.reconcile(fill);
+        boolean taken = filling.shore().count(gct) == placed - 3;
+        long[] again = layOneAtATime(filling, gct, fill, placed - 2, placed + 2);
+        out.printf("      a coast of two districts a side takes General Cargo Terminals one at a time: %d searches, %d laid at the spot found, %d came up short, in %d harbour(s);"
+                + " %,d tiles looked at from where the last found room, %,d from the first tile; %d differ%n", first[0] + again[0], first[2] + again[2], first[3] + again[3],
+                harboursOf(filling.shore()).size(), first[5] + again[5], first[6] + again[6], first[1] + again[1] + first[4] + again[4]);
+        check("fixture: the harbours of the small coast fill - terminals are laid, and some come up short, three taken away leave it three fewer", first[2] > 3 && first[3] >= 3 && taken);
+        check("a search from where the last found room finds the spot the search from the harbour's first tile finds, for each terminal laid one at a time until the harbours are full and again after three are taken away, and that is where it is laid",
+                first[1] + again[1] == 0 && first[4] + again[4] == 0);
+        check("...and looks at fewer tiles than the search from the first tile does", first[5] + again[5] < first[6] + again[6]);
+
+        // ...also where a water as wide as the flood's reach is shut to the terminals after the first that fails in it (SL1's lagoons, drawn about
+        // the harbour's first work: some of its berths lie where the flood opens, some where it is shut, so what a berth is told depends on the order asked).
+        long[] none = shoreCounts(types);
+        none[gct] = 0;
+        CityMap dry = coastal(seed, sx, sy, types, 2, none);
+        CityShore.Work firstSpot = dry.shoreSpotFull(gct, dry.minedSites());
+        int[][] lagoons = { { 14, 4, 0 }, { 16, 3, 3 }, { 18, 2, -2 } };
+        long searches = 0, laidIn = 0, touched = 0, lagoonDiffer = 0;
+        for (int[] lg : lagoons) {
+            long[] cnt = shoreCounts(types);
+            cnt[gct] = 0;
+            CityMap lagoon = coastal(seed, sx, sy, types, 2, cnt);
+            long[] end = firstSpot.quayPlot(firstSpot.quay() + 1);
+            final long ci = Math.floorDiv(end[0], SeaRoutes.CELL) + lg[1], cj = Math.floorDiv(end[1], SeaRoutes.CELL) + lg[2];
+            final long r2 = (long) lg[0] * lg[0];
+            lagoon.shoreSeaIs(SeaRoutes.grid((i, j) -> (i - ci) * (i - ci) + (j - cj) * (j - cj) <= r2));
+            long[] run = layOneAtATime(lagoon, gct, cnt, 1, HARBOUR_FILL);
+            int standing = lagoon.shore().count(gct);
+            cnt[gct] = Math.max(0, standing - 2);
+            lagoon.reconcile(cnt);
+            long[] more = layOneAtATime(lagoon, gct, cnt, cnt[gct] + 1, cnt[gct] + 6);
+            searches += run[0] + more[0];
+            laidIn += run[2] + more[2];
+            lagoonDiffer += run[1] + more[1] + run[4] + more[4];
+            touched += lagoon.shoreTouched();
+        }
+        out.printf("      %d lagoons about the harbour as wide as the reach (SeaRoutes.OPEN_M): %d searches, %d terminals laid, %d spots asked of a water found shut; %d differ%n",
+                lagoons.length, searches, laidIn, touched, lagoonDiffer);
+        check("fixture: the lagoons take terminals in the harbour, and the floods meet a shut water as wide as the reach", laidIn > 3 && touched > 0);
+        check("...a search from where the last found room finds the spot the search from the harbour's first tile finds there too, with some taken and laid again", lagoonDiffer == 0);
+    }
+
+    /** GatewayCheck's coast with its founding site 60 plots west and 12 south (found by trying the site's shifts): the coast whose best shore is the gate arm's end - the rule, its works not kept off the arms' walks, opens its first harbour there. */
+    static final long ARM_WALK_SHIFT_X = -60, ARM_WALK_SHIFT_Y = 12;
+
+    /** How many of a map's spine arm walks (CityMap.worldWalks()) a work's box, verge or quay lies on. */
+    static int worksOnWalks(CityMap m) {
+        int n = 0;
+        for (long[] walk : m.worldWalks()) {
+            for (int s = 1; s <= CityMap.WORLD_GAP; s++) {
+                if (m.shore().blocks(walk[0] + walk[2] * s, walk[1] + walk[3] * s)) { n++; break; }
+            }
+        }
+        return n;
+    }
+
+    /**
+     * MF1, the gate arm (found in review): a harbour is not opened, and no work laid, where it would stand on the walk
+     * the world line reads from a spine arm's end (CityMap.worldWalks(): WORLD_GAP plots along the arm's heading). A work there reads, in
+     * the runs' ground, as a plot the city does not own: on a quay's water it ends the walk as "no edge" (the line killed), on a box's dry plot it
+     * is the city's edge (a line the work makes, which is what GatewayCheck's coast's was). The fixture: the same coast, the same orders, once
+     * with the walks not kept (the fault: the harbour's works stand on one) and once as the rule has it.
+     */
+    static void harbourKeepsOffTheArms() {
+        out.println("      the harbour keeps off the arms' walks to the world:");
+        BuildingVisual.Type[] types = GatewayCheck.gatewayTypes();
+        World w = World.of(Founding.DEFAULT_WORLD_SEED);
+        long sx = w.foundingX() + ARM_WALK_SHIFT_X, sy = w.foundingY() - CityMap.DISTRICT + ARM_WALK_SHIFT_Y;
+        long[] orders = GatewayCheck.coastCounts(types);
+        CityMap.keepWorldWalks = false;
+        CityMap loose;
+        try {
+            loose = coastal(Founding.DEFAULT_WORLD_SEED, sx, sy, types, SHORE_SIDE, orders.clone());
+        } finally {
+            CityMap.keepWorldWalks = true;
+        }
+        CityMap kept = coastal(Founding.DEFAULT_WORLD_SEED, sx, sy, types, SHORE_SIDE, orders.clone());
+        int onLoose = worksOnWalks(loose), onKept = worksOnWalks(kept);
+        out.printf("      %d spine arm walks; with the walks not kept %d works laid, %d on a walk, harbours %s, %d world line(s); kept %d laid, %d on a walk, harbours %s, %d line(s)%n",
+                kept.worldWalks().size(), loose.shore().works().size(), onLoose, loose.harbours(), loose.worldLines().size(), kept.shore().works().size(), onKept, kept.harbours(),
+                kept.worldLines().size());
+        check("fixture: with the walks not kept the harbour rule lays a work on a spine arm's walk (a box, verge or quay on a plot the world line's walk reads)", onLoose > 0 && !loose.worldWalks().isEmpty());
+        check("THE ARMS' WALKS: laid by the rule, the same orders put no work on any spine arm's walk, and as many works are laid: the harbour is opened elsewhere",
+                onKept == 0 && kept.shore().works().size() == loose.shore().works().size() && !kept.shore().works().isEmpty() && !kept.harbours().equals(loose.harbours()));
+        check("...and the coast's world line is what the same coast with no works has: no work makes or ends it", kept.worldLines().equals(
+                coastal(Founding.DEFAULT_WORLD_SEED, sx, sy, types, SHORE_SIDE, noShore(types, orders)).worldLines()));
+    }
+
+    /** The orders with every shore type's count taken out. */
+    static long[] noShore(BuildingVisual.Type[] types, long[] orders) {
+        long[] c = orders.clone();
+        for (BuildingVisual.Type t : types) if (t != null && t.shore()) c[t.id()] = 0;
+        return c;
+    }
+
+    /** General Cargo Terminals standing on the small coast of the harbours' cost: 10 (SHORE_FEW), and on the big: 60, which its two harbours hold (about 96 do). */
+    static final int HARBOUR_MANY = 60;
+
+    /**
+     * SL1's timing line on the harbours (MF1: the game's own path is timed, not only the shore as it was): a month that lays one more
+     * terminal costs no more than SHORE_GROWTH times as long with HARBOUR_MANY standing as with SHORE_FEW, on the ground before SL1 where a
+     * General Cargo Terminal is small enough for the harbours to hold that many (300 are what two harbours do not hold). The canonical draw
+     * of each coast is printed beside SL1's (231 ms with 10, 889 ms with 300 on the shore as it was).
+     */
+    static void harbourMonthCost(long seed) {
+        out.println("      the shore's cost on the harbours follows what a month changes too:");
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        BuildingVisual.Type[] before = GatewayCheck.gatewayTypesBeforeSL1();
+        int gct = -1;
+        for (BuildingVisual.Type t : before) if (t != null && t.berth() == Ports.Cargo.GENERAL.ordinal()) gct = t.id();
+        long[] few = shoreCounts(before), many = shoreCounts(before);
+        few[gct] = SHORE_FEW;
+        many[gct] = HARBOUR_MANY;
+        long t0 = System.nanoTime();
+        CityMap small = coastal(seed, sx, sy, before, SHORE_SIDE, few);
+        double drawFew = (System.nanoTime() - t0) / 1e6;
+        t0 = System.nanoTime();
+        CityMap big = coastal(seed, sx, sy, before, SHORE_SIDE, many);
+        double drawMany = (System.nanoTime() - t0) / 1e6;
+        out.printf("      the canonical draw on the harbours: %d General Cargo Terminals in %.0f ms, %d in %.0f ms%n", SHORE_FEW, drawFew, HARBOUR_MANY, drawMany);
+        long[] onHarbours = blocksAgainstLoops(big.shore(), SHORE_MARGIN);
+        out.printf("      blocks() and at() asked at %,d plots about the harbours' %d works (%,d block): %d differ%n", onHarbours[0], big.shore().works().size(), onHarbours[1], onHarbours[2]);
+        check("blocks() and at() answer as the loops over every work did on the harbours' coast too, at every plot of every work's box, verge and quay and two plots about each",
+                onHarbours[1] > 0 && onHarbours[0] > onHarbours[1] && onHarbours[2] == 0);
+        int standingFew = small.shore().count(gct), standingMany = big.shore().count(gct), rounds = SHORE_WARM + SHORE_TIMED;
+        check("fixture: both coasts hold every General Cargo Terminal asked of them, in harbours, and the big one holds the months' too",
+                standingFew == SHORE_FEW && standingMany == HARBOUR_MANY && HARBOUR_MANY + rounds <= 96 && big.harbours().size() <= CityShore.HARBOURS_MOST);
+        double[] fewMs = new double[rounds], manyMs = new double[rounds];
+        long[] cf = few.clone(), cm = many.clone();
+        for (int r = 0; r < rounds; r++) {
+            cf[gct]++;
+            cm[gct]++;
+            t0 = monthClock();
+            small.reconcile(cf);
+            fewMs[r] = (monthClock() - t0) / 1e6;
+            t0 = monthClock();
+            big.reconcile(cm);
+            manyMs[r] = (monthClock() - t0) / 1e6;
+        }
+        double fewMed = medianAfter(fewMs, SHORE_WARM), manyMed = medianAfter(manyMs, SHORE_WARM);
+        out.printf("      a month that lays one more terminal on the harbours, the median of %d after %d warm-up, on " + (CPU_TIMED ? "the main thread's CPU" : "the wall clock") + ": %.2f ms with %d standing, %.2f ms with %d%n",
+                SHORE_TIMED, SHORE_WARM, fewMed, standingFew, manyMed, standingMany);
+        check("fixture: each of those months laid the terminal asked on both coasts, none came up short",
+                small.shore().count(gct) == standingFew + rounds && big.shore().count(gct) == standingMany + rounds);
+        check("a month that lays one more terminal on the harbours takes no more than SHORE_GROWTH times as long with 60 standing as with 10",
+                Timing.within(manyMed, SHORE_GROWTH * fewMed));
+    }
+
 
     /* ----- the shore's cost follows what a month changes (SL1, 2026-10-28) ----- */
 
@@ -5106,10 +5463,10 @@ public class MapCheck {
         // (7 x 7) it holds 76.
         BuildingVisual.Type[] before = GatewayCheck.gatewayTypesBeforeSL1();
         long t0 = System.nanoTime();
-        CityMap small = coastal(seed, sx, sy, before, SHORE_SIDE, few);
+        CityMap small = coastBeforeMF1(seed, sx, sy, before, SHORE_SIDE, few);
         double drawFew = (System.nanoTime() - t0) / 1e6;
         t0 = System.nanoTime();
-        CityMap big = coastal(seed, sx, sy, before, SHORE_SIDE, many);
+        CityMap big = coastBeforeMF1(seed, sx, sy, before, SHORE_SIDE, many);
         double drawMany = (System.nanoTime() - t0) / 1e6;
         out.printf("      the canonical draw: %d General Cargo Terminals in %.0f ms, %d in %.0f ms (before SL1: 1,200 ms and 183,000 ms)%n",
                 SHORE_FEW, drawFew, SHORE_MANY, drawMany);
@@ -5147,7 +5504,7 @@ public class MapCheck {
         // ---- (b) a search from where the last found room is the search from the nearest
         long[] fill = shoreCounts(types);
         fill[box] = 0;
-        CityMap filling = coastal(seed, sx, sy, types, 2, fill);
+        CityMap filling = coastBeforeMF1(seed, sx, sy, types, 2, fill);
         long[] first = layOneAtATime(filling, box, fill, 1, SHORE_FILL);
         int placed = filling.shore().count(box);
         fill[box] = placed - 3;
@@ -5168,14 +5525,14 @@ public class MapCheck {
         // told of the water depends on the order it asks, and a search that passes tiles over must ask in the same order.
         long[] none = shoreCounts(types);
         none[gct] = 0;
-        CityMap dry = coastal(seed, sx, sy, types, 2, none);
+        CityMap dry = coastBeforeMF1(seed, sx, sy, types, 2, none);
         CityShore.Work firstSpot = dry.shoreSpotFull(gct, dry.minedSites());
         int[][] lagoons = { { 14, -6, 4 }, { 16, 4, -5 }, { 21, -4, 4 } };
         long searches = 0, laidIn = 0, touched = 0, lagoonDiffer = 0;
         for (int[] lg : lagoons) {
             long[] cnt = shoreCounts(types);
             cnt[gct] = 0;
-            CityMap lagoon = coastal(seed, sx, sy, types, 2, cnt);
+            CityMap lagoon = coastBeforeMF1(seed, sx, sy, types, 2, cnt);
             long[] end = firstSpot.quayPlot(firstSpot.quay() + 1);
             final long ci = Math.floorDiv(end[0], SeaRoutes.CELL) + lg[1], cj = Math.floorDiv(end[1], SeaRoutes.CELL) + lg[2];
             final long r2 = (long) lg[0] * lg[0];
@@ -5225,7 +5582,7 @@ public class MapCheck {
         // unit more; the one west of it holds the campus with room to spare, and the 3 x 3 still takes in the coast's terminals.
         long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
         long[] counts = shoreCounts(types);
-        CityMap m = coastal(seed, sx, sy, types, SHORE_SIDE, counts);
+        CityMap m = coastBeforeMF1(seed, sx, sy, types, SHORE_SIDE, counts);
 
         // ---- THE CAMPUS
         int holding = 0, unitKinds = 0;
@@ -5380,6 +5737,7 @@ public class MapCheck {
         out.printf("      drawn: %s plots of works (the shore's %s), %d of quay (%d)%n", plotsOf, wantOf, quayPlots, wantQuay);
         check("...each work drawn once on the tiles, on its own box, and every plot of its quay once", once && quayPlots == wantQuay);
         shoreFollowsChange(types, seed, m);
+        theHarbour(types, seed);
 
         // ---- THE OIL AT SEA: the game's own platform (WellCheck's sea town).
         oilAtSea();
