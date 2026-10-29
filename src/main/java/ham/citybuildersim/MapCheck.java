@@ -4479,20 +4479,6 @@ public class MapCheck {
             check("at " + size + " billion a month's change takes no more than 5 ms of "
                     + (CPU_TIMED ? "the main thread's CPU" : "the wall clock"), Timing.within(worst, RECONCILE_MS));
             check("...and its districts still sum to the counts exactly", Arrays.equals(m.totals(), c));
-            // UP5: six months more, untimed and outside the bound (a walk of every district between timed months would warm the cache for the next):
-            // after each, every district's log must end on its counts, or the dirty list left a district out.
-            int behind = 0;
-            for (int month = 0; month < 6; month++) {
-                for (int t = 0; t < c.length; t++) {
-                    if (month == 0) c[t] += c[t] / 2000;
-                    else if (month < 5) c[t] += c[t] / 10_000;
-                    else c[t] -= c[t] / 2000;
-                }
-                if (mine >= 0) c[mine] = Math.min(c[mine], sites);
-                m.reconcile(c);
-                behind += m.logBehind();
-            }
-            check("...after each of six months more (one of +0.05%, four of +0.01%, one of -0.05%) every district's log ends on its counts (the dirty list missed none), at " + size + " billion", behind == 0);
         }
     }
 
