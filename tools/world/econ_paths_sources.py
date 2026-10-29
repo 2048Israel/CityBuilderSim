@@ -40,6 +40,9 @@ SOURCE_ROWS = [
      'https://www.rug.nl/ggdc/productivity/pwt/', 'CC BY 4.0', DOWNLOADED),
     ('maddison', 'Maddison Project Database 2023',
      'https://www.rug.nl/ggdc/historicaldevelopment/maddison/', 'CC BY 4.0', DOWNLOADED),
+    ('pinksheet', 'World Bank Commodity Markets, the Pink Sheet, annual prices (CMO-Historical-Data-Annual.xlsx, updated '
+                  '2026-09-02): the nominal sheet and the MUV Index',
+     'https://www.worldbank.org/en/research/commodity-markets', 'CC BY 4.0', DOWNLOADED),
     ('moneys', 'tools/world/moneys.tsv, authored by the game (ISO 4217 in 2025-12, euro changeover dates, the IMF '
                'exchange arrangements as of 2025)', '-', 'the game', '-'),
 ]
