@@ -1175,6 +1175,12 @@ public class InvestCheck {
            struck at the next strike, and an order booked with it. */
         System.out.println("\n--- the builders' price: labour at today's wages, the tax passed on, material at the price it is drawn (0.7.19) ---");
         Game priced19 = city(root, "builders-price");
+        // WN3: this town (and its two reloads below) stand on the goods' literals: the rule an older save's contract is read by has a
+        // House's value (structure and land over its dwellings) falling to nothing at 450 founding dollars (NRRP_NONE_FROM), and on the
+        // world's band the town's materials come cheap enough (1.8 a unit) that a House stands at 44.6 against the line's 45.0:
+        // the contract read at the load (builders' wages not yet struck, so labour at the founding ladder, 26.600) and the rule read after
+        // it (26.673) then fall either side of the line - 0.000019 and nothing - where on the literals both are nothing, as they were.
+        priced19.playOnLiterals();
         BuildingManager pb = priced19.getBuildingManager();
         EconomyManager pe = priced19.getEconomyManager();
         BuildingsTemplate house19 = template(priced19, "House");
@@ -1351,6 +1357,7 @@ public class InvestCheck {
         System.setOut(quiet);
         try { priced19.saveGame(3); } finally { System.setOut(out); }
         Game back19 = new Game(files19);
+        back19.playOnLiterals();   // WN3, as priced19 (above)
         System.setOut(quiet);
         try { back19.loadGameSave(3); } finally { System.setOut(out); }
         java.util.Map<String, BuildingManager.ContractRecord> reloaded19 = new java.util.HashMap<>();
@@ -1367,6 +1374,7 @@ public class InvestCheck {
         json19.remove("contractRecords");
         Files.writeString(files19.saveFile(3), new com.google.gson.Gson().toJson(json19));
         Game older19 = new Game(files19);
+        older19.playOnLiterals();   // WN3, as priced19 (above)
         System.setOut(quiet);
         try { older19.loadGameSave(3); } finally { System.setOut(out); }
         BuildingsStacks site19 = older19.getBuildingManager().getStack(template(older19, "House"));

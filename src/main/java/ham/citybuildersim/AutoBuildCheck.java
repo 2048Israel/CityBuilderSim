@@ -316,6 +316,13 @@ public class AutoBuildCheck {
         LongPlaytest.out = quiet;
         LongPlaytest.AUTOBUILD = true;
         Game g = new Game(files, LongPlaytest.founding());
+        // WN3: the decades' town, its twin and its copies play on the goods' literals. On the world's band the test player's town does
+        // not take off (2,098 people at month 600 where the literals' has 21,729; about 2,000 from month 84 on, its debt over the
+        // limit from month 200 and 550% of a year's GDP by 600): 387 passes began over the limit and ordered nothing, 16 orders in
+        // 600 months against 107, and the 36 months after section 4's save placed none, so the fixture no longer causes what this
+        // section reads - an auto-builder with orders to place, borrowing and buying ground. The premise is the builder's rule in
+        // a town that can pay for its services, not the town's own fortunes.
+        g.playOnLiterals();
         AutoBuilder ab = g.getAutoBuilder();
         g.autoBuildProbeForTest = passReader(g);
         try {
@@ -376,6 +383,7 @@ public class AutoBuildCheck {
         int borrowedInTheDecades = borrowingPasses;
         quietly(() -> g.saveGame(11, "autobuildcheck, a pass that borrows"));
         Game copy = new Game(files);
+        copy.playOnLiterals();   // WN3, as g
         quietly(() -> copy.loadGameSave(11));
         copy.getAutoBuilder().setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
         copy.setCashForTest(AutoBuilder.reserve(copy));
@@ -384,6 +392,7 @@ public class AutoBuildCheck {
         copy.autoBuildProbeForTest = null;
         int paybackInTheDecades = paybackOrders;
         Game roomy = new Game(files);
+        roomy.playOnLiterals();   // WN3, as g
         quietly(() -> roomy.loadGameSave(11));
         withRoom(roomy);
         // ...and its limit at the most, as the first copy's (0.7.106): with a quarter of a scrapped plant's material
@@ -690,6 +699,7 @@ public class AutoBuildCheck {
         assertTrue("fixture: the decades' city, auto-build on, saved", saved[0] && g.getAutoBuilder().isOn());
         GameFiles files = new GameFiles(root.resolve("decades").resolve("data"), root.resolve("decades").resolve("no-legacy"));
         Game back = new Game(files);
+        back.playOnLiterals();   // WN3, as g (decades())
         quietly(() -> back.loadGameSave(slot));
         // XR1 (2026-10-21): the decades' city is held at its rate (decades()), and a pin is a fixture's, not the save's:
         // the twin is held at the same rate, or it floats alone and the two are two cities.
@@ -1081,6 +1091,7 @@ public class AutoBuildCheck {
     /** The young city: the test player's founding and rhythm as decades() plays them, automatic building on, played to YOUNG_MONTH (LongPlaytest.AUTOBUILD set by the caller). */
     static Game youngCity(GameFiles files) {
         Game g = new Game(files, LongPlaytest.founding());
+        g.playOnLiterals();   // WN3, as decades(): the test player's town on the world's band is over its debt limit by month 200
         AutoBuilder ab = g.getAutoBuilder();
         quietly(() -> {
             g.run();
@@ -1303,6 +1314,7 @@ public class AutoBuildCheck {
     /** A copy of a city saved to slot 10 in `files`, loaded: its rate held where the city's is (XR1, a fixture's pin that no save carries). */
     static Game loaded(GameFiles files, Game of) {
         Game copy = new Game(files);
+        if (of.isOnLiterals()) copy.playOnLiterals();   // WN3: the copy plays where its city does
         quietly(() -> copy.loadGameSave(10));
         copy.getForeignAccounts().pinRate(of.getForeignAccounts().getRate());
         return copy;
