@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### WN0 — the nations' world file: 196 nations, their borders, trade by pair and good, paths 2000-2100, sea distances, monthly rates — 2026-10-28, ready, no tag (data nothing reads yet), see docs/queue/WN0-notes.md
+`tools/world/`, a pipeline in Python's standard library, bakes `world-1.bin` (8.7 MB, not in git: SHA-256 in `tools/world/world-1.sha256`, the release `world-1` as earth-2's, `get-earth.bat nopause world-1` fetches it). It holds the 193 UN members, Taiwan, Hong Kong and Macau, and 15 areas no nation of them holds. Its ten layers:
+- the owner of every 15" cell, from Natural Earth's borders, and the border lines;
+- each nation's node, label, money and region; people 2000-2100 (WPP 2024), and output, CPI and rate 2000-2025 (WDI; PWT and Maddison fill, marked);
+- 158 moneys' monthly rates 2000-2025 (BIS, ★11);
+- 2024's trade by pair and good (BACI HS22 through a concordance to the 60 traded goods), kept by Jerus's partner rule (93.6-99.9% of the value), with make, use and the preferences the base year's solve reproduces exactly;
+- CERDI's freight closed under the triangle rule, and each good's real price path for WN1.
+`WorldData` reads it; `WorldDataCheck` checks it on a twelve-nation fixture and the full files. The playtest's trace is unchanged.
+
 ### 0.8.66 — FR9, one truck, one whole trip — 2026-10-28, ready, see docs/queue/FR9-notes.md
 A truck on the map is now one whole trip (Jerus, 2026-10-20: the trucks "disappear into the void... but still inside the city"). An import runs in from the world line along the highways, off at a ramp, along the streets (arterials first) and down an access road to its works' gate, then back out empty; an export the other way; a load bought at home (violet) runs from one works' gate to another's. The street leg is one search a drawn district from the highways' ramps over the plans already drawn (`CityMap.tripsDrawn()`): nothing is planned for it, and a district not drawn takes no trip. A trip runs at the trains' pace, 6 to 10 s a way by its length, and the legend's "one per N loads" is unchanged. A district's trips carry its works' truck tonnes, each sector's from `Haulage.movesOf()`, and those of the districts within two that have no trips of their own (a Truck Depot's sector moves no goods). A city whose highways do not yet leave it keeps FR5's access-road trucks. TruckRouteCheck 7-10 are new (148 assertions); MapCheck 9 times the trucks at 10 billion, 0.03 ms a frame against 0.5. Renders are in `docs/queue/FR9/`. The map's alone: the playtest's trace is byte-identical, no ensemble, no save change.
 

@@ -1,5 +1,5 @@
-# gate of Merge batch/FR9: one truck, one whole trip: in on the highway, off at a ramp, along the streets and down the access road to its works' gate, a district's trips by its tonnes (Jerus, 2026-10-20: "Queue it"), 0.8.66
+# gate of Merge batch/WN0: nations: the world file - 196 nations, their borders, trade by pair and good, paths 2000-2100, sea distances; `tools/world/`, `WorldData`, its check (Jerus, 2026-10-20: "do rec"); Historical's real monthly exchange rates 2000-2025 for every money (XR3's table, Jerus 2026-10-21, ★11), 0.8.66
 # date: 2026-10-28
 # earth-2.bin: named
-# suite: 150 harnesses run in 482s: 150 passed, 0 failed
-# timing: 12 harnesses run in 377s: 12 passed, 0 failed
+# suite: 151 harnesses run in 848s: 151 passed, 0 failed
+# timing: 12 harnesses run in 423s: 12 passed, 0 failed
