@@ -18,6 +18,12 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.67 — WN1, the nations on the world's path: Historical or Random — 2026-10-28, ready, see docs/queue/WN1-notes.md
+The founding screen has a new step, THE WORLD BEYOND YOUR CITY: the world's path, Historical or Random, and the path's own seed with its dice. The five inflation chips are now THE DOLLAR'S OWN INFLATION, which is what they always were. `Nations` gives each of the 196 nations its year (output, people, prices, its money's rate) and each good's real price, from the path, the seed and WN0's world file:
+- Historical replays 2000-2025 from the file, then the game's own rule with small seeded shocks.
+- Random draws its own path from 2000: growth that converges on the richest, world, region and own swings, a crisis now and then, inflation by income group, and moneys by parity or their peg.
+The path and seed are saved with the city. Nothing in the economy reads the nations yet (the market is WN3), and the playtest's trace is unchanged.
+
 ### WN0 — the nations' world file: 196 nations, their borders, trade by pair and good, paths 2000-2100, sea distances, monthly rates — 2026-10-28, ready, no tag (data nothing reads yet), see docs/queue/WN0-notes.md
 `tools/world/`, a pipeline in Python's standard library, bakes `world-1.bin` (8.7 MB, not in git: SHA-256 in `tools/world/world-1.sha256`, the release `world-1` as earth-2's, `get-earth.bat nopause world-1` fetches it). It holds the 193 UN members, Taiwan, Hong Kong and Macau, and 15 areas no nation of them holds. Its ten layers:
 - the owner of every 15" cell, from Natural Earth's borders, and the border lines;

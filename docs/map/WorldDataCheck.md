@@ -59,6 +59,8 @@
 
 **Uses:** [WorldData](WorldData.md) (106), [EarthData](EarthData.md) (10), [Freight](Freight.md) (3), [EarthCheck](EarthCheck.md) (3), [Money](Money.md) (1)
 
+**Used by (1):** [NationsCheck](NationsCheck.md)
+
 ## Sections
 
 | line | section |

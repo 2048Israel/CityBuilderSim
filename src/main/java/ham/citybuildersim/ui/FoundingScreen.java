@@ -108,6 +108,19 @@ import static ham.citybuildersim.ui.Pieces.*;
  *     near) in the warning colour, which does not.
  * The seed decides an Earth city's detail below the data, its fields and its
  * streets; it is shown under the card, and the dice beside it rolls it.
+ *
+ * AND THE WORLD BEYOND IT (WN1; spec-nations 7, board 4). A row for the
+ * nations' path: two joined chips, Historical | Random, and the path's own
+ * seed with its dice, rolled when the page opens as the ground's is, or
+ * typed. Historical is the first chip. The path's seed is not the ground's
+ * (Nations; Founding.getPathSeed()), and both are chosen once. Nothing in the
+ * economy reads the path yet; it is saved with the city (DataSave.worldPath,
+ * pathSeed). The five inflation chips, which this page called the world's
+ * inflation, are named what they are, the US dollar's (spec-nations 11,
+ * item 7): a Historical world replays the real prices of goods against each
+ * other and never the dollar's own level, so the choice holds on both paths.
+ * The row makes the page about 80 pixels taller: a generated world's no
+ * longer fits a 768-pixel window whole, and scrolls there.
  */
 public final class FoundingScreen {
 
@@ -130,6 +143,10 @@ public final class FoundingScreen {
     private double mean = WorldEconomy.DEFAULT_MEAN_INFLATION;
     /** The world's seed, as typed or rolled. */
     private String worldSeed = String.valueOf(Founding.DEFAULT_WORLD_SEED);
+    /** The path of the world beyond the city (WN1): Historical or Random. */
+    private Nations.Path path = Nations.DEFAULT_PATH;
+    /** The path's seed, as typed or rolled: not the ground's (WN1). */
+    private String pathSeed = String.valueOf(Nations.DEFAULT_SEED);
 
     /** The real Earth or the generated world (0.7.121): Earth when its data is here. */
     private boolean earth;
@@ -178,6 +195,9 @@ public final class FoundingScreen {
         mean = WorldEconomy.DEFAULT_MEAN_INFLATION;
         // A new world every time the page opens (spec-land, J1a): the dice's first roll.
         worldSeed = String.valueOf(Founding.rollWorldSeed());
+        // ...and the path of the world beyond it (WN1): Historical, and a path seed rolled as the ground's is.
+        path = Nations.DEFAULT_PATH;
+        pathSeed = String.valueOf(Founding.rollWorldSeed());
         // The Earth, when its data is here (0.7.121): looked for off the screen's thread, the page redrawn when it is known.
         spotLat = spotLon = Double.NaN;
         spotPlace = null;
@@ -211,6 +231,9 @@ public final class FoundingScreen {
 
     /** The World's field: room for a seed of nineteen digits and a sign in the figures' face at 14 px (0.7.56). */
     static final double SEED_FIELD = 200;
+
+    /** The path's seed field (WN1): 130 px, room for a rolled seed's nine digits in the figures' face at 14 px, so the row of chips, field and dice fits the Earth's left column (LEFT). */
+    static final double PATH_SEED_FIELD = 130;
 
     /** The panel on Earth (0.7.121): two columns, the city's and the world's, 40 apart - 1,200 px, inside a 1,280 window with the page's margins. */
     static final double EARTH_PANEL = 1200;
@@ -325,22 +348,28 @@ public final class FoundingScreen {
         /* --------------------------- the ground ---------------------------- */
         VBox groundBlock = earth ? earthBlock() : generatedBlock();
 
-        /* --------------------------- the world ----------------------------- */
-        HBox worldRow = new HBox(0);
-        worldRow.setAlignment(Pos.CENTER_LEFT);
+        /* ------------------- the world beyond the city --------------------- */
+        VBox pathBlock = pathBlock();
+
+        /* --------------------------- the dollar ---------------------------- */
+        HBox dollarRow = new HBox(0);
+        dollarRow.setAlignment(Pos.CENTER_LEFT);
         double[] choices = WorldEconomy.FOUNDING_CHOICES;
         for (int i = 0; i < choices.length; i++) {
-            worldRow.getChildren().add(worldChip(choices[i], i == 0, i == choices.length - 1));
+            dollarRow.getChildren().add(dollarChip(choices[i], i == 0, i == choices.length - 1));
         }
-        HBox worldLine = infoLine("A faster world makes your money stronger. It can't be changed later.",
-                String.format("How fast prices rise out there, on average. The world's own price level "
+        HBox dollarLine = infoLine("A faster dollar makes your money stronger. It can't be changed later.",
+                String.format("How fast the US dollar's prices rise a year, on average. The dollar's price level "
                         + "settles about %.2f× founding at this setting, and the city's currency is "
-                        + "worth its own prices against that - so a faster world is a stronger currency "
+                        + "worth its own prices against that - so a faster dollar is a stronger currency "
                         + "here, cheaper imports, and a harder time selling abroad. %s is the default. "
-                        + "Chosen once: a city keeps the world it grew up in.",
+                        + "A Historical world replays what really moved - volumes, people, the prices of goods "
+                        + "against each other, the moneys against the dollar - but never the dollar's own price "
+                        + "level, so this choice holds on both paths. "
+                        + "Chosen once: a city keeps the dollar it grew up with.",
                         WorldEconomy.settledLevelAt(mean), percent(WorldEconomy.DEFAULT_MEAN_INFLATION)),
                 false, Palette.SIZE_SECTION - 1, Palette.TEXT_MUTED, wide);
-        VBox worldBlock = new VBox(8, caption("THE WORLD'S INFLATION"), worldRow, worldLine);
+        VBox dollarBlock = new VBox(8, caption("THE DOLLAR'S OWN INFLATION"), dollarRow, dollarLine);
 
         /* ------------------------------ found it ----------------------------- */
         found = new Button("Found the city");
@@ -371,7 +400,7 @@ public final class FoundingScreen {
         VBox panel;
         if (two) {
             // On Earth (0.7.121): the city's choices on the left, the world's on the right.
-            VBox left = new VBox(22, nameBlock, startBlock, worldBlock);
+            VBox left = new VBox(22, nameBlock, startBlock, pathBlock, dollarBlock);
             left.setPrefWidth(LEFT);
             left.setMinWidth(LEFT);
             left.setMaxWidth(LEFT);
@@ -381,7 +410,7 @@ public final class FoundingScreen {
             HBox columns = new HBox(COLUMN_GAP, left, groundBlock);
             panel = new VBox(22, title, columns, bar, whyNot);
         } else {
-            panel = new VBox(22, title, nameBlock, startBlock, groundBlock, worldBlock, bar, whyNot);
+            panel = new VBox(22, title, nameBlock, startBlock, groundBlock, pathBlock, dollarBlock, bar, whyNot);
         }
         panel.setPrefWidth(panelWidth);
         panel.setMinWidth(panelWidth);
@@ -401,7 +430,11 @@ public final class FoundingScreen {
          * blocks), about 750 since its two chips (0.7.121), so a 768-pixel
          * window still shows it whole. On Earth two columns, the right one the
          * taller - its chips, the search, the globe and the card - about 780,
-         * inside an 868-pixel window.
+         * inside an 868-pixel window. The path's block (WN1: a caption, a
+         * 32-pixel row and a line of words, with the 22 between blocks) adds
+         * about 80 to either: about 830 on a generated world, which a
+         * 768-pixel window now scrolls (unrendered in the cloud), and to the
+         * Earth's left column, which it makes about the right one's height.
          */
         StackPane page = new StackPane(panel);
         page.setStyle("-fx-padding: 16;");
@@ -822,8 +855,8 @@ public final class FoundingScreen {
         return amount.replaceAll("\\.0([kMBT])$", "$1");
     }
 
-    /** One choice of world, as one of a row of five joined segments. */
-    private Button worldChip(double m, boolean first, boolean last) {
+    /** One choice of the dollar's inflation, as one of a row of five joined segments (worldChip until WN1: they are the US dollar's, spec-nations 11, item 7). */
+    private Button dollarChip(double m, boolean first, boolean last) {
         boolean on = Math.abs(mean - m) < 1e-9;
         Button b = new Button(percent(m));
         String radius = first ? "8 0 0 8" : last ? "0 8 8 0" : "0";
@@ -834,6 +867,62 @@ public final class FoundingScreen {
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-padding: 8 16 8 16; -fx-cursor: hand;");
         b.setOnAction(e -> { mean = m; draw(); });
         return b;
+    }
+
+    /* =====================================================================
+       THE WORLD BEYOND THE CITY: HISTORICAL OR RANDOM (WN1; spec-nations 7, board 4)
+
+       Two joined chips, Historical | Random, the path's seed in its field and
+       the dice that roll another, and under them the words of the path chosen
+       behind an (i). A click on a chip redraws the page; a keystroke in the
+       seed only refreshes, so the caret stays. Chosen once, like the ground.
+       ===================================================================== */
+
+    /** The path's three texts: the line under the row, the (i)'s whole words, and the chip's tooltip, which is the whole words' first sentence. */
+    private static String[] pathWords(Nations.Path p) {
+        String line, first, rest;
+        if (p == Nations.Path.RANDOM) {
+            line = "The same January 2000, then a path of its own drawn from the seed.";
+            first = "The same world in January 2000, then a path of its own, drawn from the seed: booms, slumps,"
+                    + " a crisis now and then, at the sizes the real world has had them.";
+            rest = "The same seed gives the same world. Chosen once: it can't be changed later.";
+        } else {
+            line = "The real world from January 2000; the seed draws its future from 2026.";
+            first = "The real world from January 2000: each nation's growth, its people, its money and the prices"
+                    + " of what it makes, year by year to 2025.";
+            rest = "Then the UN's projected people and the game's own rule for output, with small shocks drawn"
+                    + " from the seed. The same seed gives the same world. Chosen once: it can't be changed later.";
+        }
+        String whole = first + " " + rest + " The nations' trade with the city comes with the world market,"
+                + " in a later version; until then the path is kept with the city.";
+        return new String[] { line, whole, first };
+    }
+
+    /** The caption, the row (the two chips, the seed's field and its dice) and the line of words for the path chosen. */
+    private VBox pathBlock() {
+        double wide = earth ? LEFT : PANEL - 2 * PANEL_PAD;
+        Button historical = kindChip("Historical", path == Nations.Path.HISTORICAL, true, true);
+        historical.setOnAction(e -> { if (path != Nations.Path.HISTORICAL) { path = Nations.Path.HISTORICAL; draw(); } });
+        historical.setTooltip(new Tooltip(pathWords(Nations.Path.HISTORICAL)[2]));
+        Button random = kindChip("Random", path == Nations.Path.RANDOM, false, true);
+        random.setOnAction(e -> { if (path != Nations.Path.RANDOM) { path = Nations.Path.RANDOM; draw(); } });
+        random.setTooltip(new Tooltip(pathWords(Nations.Path.RANDOM)[2]));
+        HBox chips = new HBox(0, historical, random);
+        chips.setAlignment(Pos.CENTER_LEFT);
+
+        TextField seedField = new TextField(pathSeed);
+        seedField.setPrefWidth(PATH_SEED_FIELD);
+        seedField.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 14px;");
+        seedField.textProperty().addListener((o, was, now) -> { pathSeed = now; refresh(); });
+        seedField.setTooltip(new Tooltip("The seed of the world's path: the same number draws the same years."
+                + " It is not the ground's seed."));
+        Button dice = diceButton("Roll another path", () -> seedField.setText(String.valueOf(Founding.rollWorldSeed())));
+        HBox row = new HBox(Palette.GAP, chips, seedField, dice);
+        row.setAlignment(Pos.CENTER_LEFT);
+
+        String[] words = pathWords(path);
+        HBox line = infoLine(words[0], words[1], false, Palette.SIZE_SECTION - 1, Palette.TEXT_MUTED, wide);
+        return new VBox(8, caption("THE WORLD BEYOND YOUR CITY"), row, line);
     }
 
     /* =====================================================================
@@ -880,6 +969,11 @@ public final class FoundingScreen {
         return Founding.parseWorldSeed(worldSeed);
     }
 
+    /** The path's seed as typed (WN1), or null when it is not a whole number. */
+    private Long pathSeed() {
+        return Founding.parseWorldSeed(pathSeed);
+    }
+
     /**
      * Why Found is not lit, or null: the model's reason, or the screen's when
      * a field will not parse - and on Earth (0.7.121) no spot yet, the card
@@ -899,6 +993,7 @@ public final class FoundingScreen {
             if (!Double.isFinite(reserveUsd())) return "Type the vault in millions of US dollars: 25 is " + usd(25_000) + ".";
         }
         if (seed() == null) return "Type the world as a whole number, like " + Founding.DEFAULT_WORLD_SEED + ", or roll the dice.";
+        if (pathSeed() == null) return "Type the path's seed as a whole number, like " + Nations.DEFAULT_SEED + ", or roll the dice.";
         String p = generatedChoices().problem();
         if (p != null || !earth) return p;
         if (Double.isNaN(spotLat)) return "Pick a spot on the globe, search for a place, or press Random spot.";
@@ -909,8 +1004,10 @@ public final class FoundingScreen {
     /** The founding as chosen on its seed's generated world: the city's own choices, which problem() asks first. */
     private Founding generatedChoices() {
         Long seed = seed();
+        Long pathSeed = pathSeed();
         Founding f = Founding.custom(cityName, cash(), reserveUsd(), mean)
-                .withWorldSeed(seed != null ? seed : Founding.DEFAULT_WORLD_SEED);
+                .withWorldSeed(seed != null ? seed : Founding.DEFAULT_WORLD_SEED)
+                .withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED);
         return ownCurrency ? f.withCurrency(currency()) : f;
     }
 

@@ -1,5 +1,5 @@
-# gate of Merge batch/WN0: nations: the world file - 196 nations, their borders, trade by pair and good, paths 2000-2100, sea distances; `tools/world/`, `WorldData`, its check (Jerus, 2026-10-20: "do rec"); Historical's real monthly exchange rates 2000-2025 for every money (XR3's table, Jerus 2026-10-21, ★11), 0.8.66
+# gate of Merge batch/WN1: nations: each nation's year from the path (Historical or Random) and the seed, the founding screen's World step, saved; nothing reads them yet, 0.8.67
 # date: 2026-10-28
 # earth-2.bin: named
-# suite: 151 harnesses run in 848s: 151 passed, 0 failed
-# timing: 12 harnesses run in 423s: 12 passed, 0 failed
+# suite: 152 harnesses run in 1286s: 152 passed, 0 failed
+# timing: 12 harnesses run in 417s: 12 passed, 0 failed

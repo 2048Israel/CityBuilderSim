@@ -380,6 +380,21 @@ adds its line here, not in `CLAUDE.md`.
                                    freight triangle rule, the kernel solved from a = b = 1 giving BACI's
                                    flows, a nation for every land cell of the earth file inside a border
                                    tile, the moneys and paths whole
+        Nations.java               the nations beyond the city on the world's path (batch WN1,
+                                   2026-10-28; docs/studies/spec-nations.md 7): each nation's year -
+                                   output, people, prices, its money's rate - and each good's real price,
+                                   a pure function of the path (Historical or Random, Path), the seed and
+                                   the world file. Historical replays the file to 2025, then the game's
+                                   rule with half-size seeded shocks; Random draws its own from 2000: a
+                                   trend that converges on the US, world, region and own shocks, crises
+                                   at Barro's rate, prices by income group, moneys by relative parity or
+                                   their peg. Founding carries the path and seed, DataSave saves them
+                                   (worldPath, pathSeed), ui/FoundingScreen picks them; Game.getNations()
+                                   builds it lazily, and nothing in the month reads it yet
+        NationsCheck.java          Nations held to its dials: one seed one path, Historical equal to the
+                                   file to 2025, Random's swings and crises against their dials over a
+                                   thousand seeded years, goods' swings, pegs held, output never negative,
+                                   the ease past 2100 and a missing figure filled (WN1)
         GlobeFrame.java, GlobePicture.java
                                    the Earth's map as a globe, its model half (0.7.132, batch E8;
                                    docs/studies/spec-globe.md 3): the view - its centre in latitude and

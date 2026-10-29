@@ -2,6 +2,7 @@ package ham.citybuildersim;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * How a city was founded: its name, its money's name, and the treasury and the vault the founders left it.
@@ -56,6 +57,15 @@ import java.util.List;
  * spot the founding card refuses - no ground a building may stand on within
  * 5 km (the sea, an island too small, or slopes too steep: ET2), or ice - is a
  * problem() like a bad name.
+ *
+ * AND THE PATH OF THE WORLD BEYOND THE CITY (WN1; spec-nations 7): Historical
+ * or Random, and the seed that draws it, picked here once and saved as
+ * worldPath and pathSeed (DataSave). The path's seed is not the ground's
+ * worldSeed: the ground is the city's land, the path the nations' years.
+ * Every constructor and factory founds on Nations.DEFAULT_PATH and
+ * Nations.DEFAULT_SEED, so the harnesses and the playtest meet one world, and
+ * a save without them reads the same. Nothing in the economy reads them yet
+ * (the market is WN3).
  *
  * @author Jerus
  */
@@ -266,6 +276,10 @@ public final class Founding {
     private final long worldSeed;
     /** The world it stands on (0.7.115, batch E2): Key.generated(worldSeed), or the real Earth round a spot (onEarth(), since 0.7.121 the founding screen's, and kept by a save). */
     private final World.Key worldKey;
+    /** The path of the world beyond the city (WN1; spec-nations 7): Historical or Random, picked once at founding. */
+    private final Nations.Path path;
+    /** The seed that draws the path (WN1; spec-nations 7.3) - not worldSeed, which is the ground's. */
+    private final long pathSeed;
 
     /**
      * A founding exactly as given. The load path's door, and the one the
@@ -286,11 +300,13 @@ public final class Founding {
         this.meanInflation = meanInflation;
         this.worldSeed = worldSeed;
         this.worldKey = World.Key.generated(worldSeed);
+        this.path = Nations.DEFAULT_PATH;
+        this.pathSeed = Nations.DEFAULT_SEED;
     }
 
     /** A founding as given on the world a key names (0.7.115): its seed the key's. */
     private Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation,
-                     World.Key worldKey) {
+                     World.Key worldKey, Nations.Path path, long pathSeed) {
         this.cityName = cityName;
         this.currency = currency;
         this.cash = cash;
@@ -298,6 +314,8 @@ public final class Founding {
         this.meanInflation = meanInflation;
         this.worldSeed = worldKey.seed();
         this.worldKey = worldKey;
+        this.path = path;
+        this.pathSeed = pathSeed;
     }
 
     /** ...on the default world, DEFAULT_WORLD_SEED. */
@@ -324,17 +342,17 @@ public final class Founding {
 
     /** The same founding with money the player named by hand - Currency.typed(), which is null when the typed pair does not pass, and problem() then says so. */
     public Founding withCurrency(Currency typed) {
-        return new Founding(cityName, typed, cash, reserveUsd, meanInflation, worldKey);
+        return new Founding(cityName, typed, cash, reserveUsd, meanInflation, worldKey, path, pathSeed);
     }
 
     /** The same founding on another world: the founding screen's World field and its dice (0.7.56). */
     public Founding withWorldSeed(long seed) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, seed);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, World.Key.generated(seed), path, pathSeed);
     }
 
     /** The same founding on the world a key names (0.7.115): an Earth world (onEarth()) or a harness's; a generated key is withWorldSeed(). */
     public Founding withWorldKey(World.Key key) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, key);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, key, path, pathSeed);
     }
 
     /** The same founding on the real Earth round a spot (0.7.121, batch E4): its seed this founding's, its data the game's, EarthData.EARTH_2 - the founding screen's Earth. */
@@ -344,7 +362,13 @@ public final class Founding {
 
     /** The same founding with the world's mean inflation it is handed (Game.getFounding()), on the same world. */
     public Founding withMeanInflation(double meanInflation) {
-        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey);
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey, path, pathSeed);
+    }
+
+    /** The same founding on another path of the world beyond the city, drawn from this seed (WN1; spec-nations 7): the founding screen's Historical or Random and its dice. */
+    public Founding withPath(Nations.Path path, long seed) {
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, worldKey,
+                Objects.requireNonNull(path, "path"), seed);
     }
 
     /** What a save from before 0.7.10 was founded with. See the class header. */
@@ -368,6 +392,10 @@ public final class Founding {
     public long getWorldSeed()         { return worldSeed; }
     /** The world it stands on (0.7.115): World.of(getWorldKey()) is its ground - the generated world of getWorldSeed() but on Earth. */
     public World.Key getWorldKey()     { return worldKey; }
+    /** The path of the world beyond the city (WN1; spec-nations 7): Historical or Random. */
+    public Nations.Path getPath()      { return path; }
+    /** The seed that draws the path (WN1; spec-nations 7.3) - not getWorldSeed(), the ground's. */
+    public long getPathSeed()          { return pathSeed; }
     /** Which world it stands on (0.7.121): GENERATED, or EARTH. */
     public World.Kind getWorldKind()   { return worldKey.kind(); }
     /** Whether it stands on the real Earth (0.7.121). */

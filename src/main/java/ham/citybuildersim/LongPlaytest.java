@@ -2017,10 +2017,30 @@ public class LongPlaytest {
     static final Founding.Preset FOUNDING = Founding.Preset.valueOf(
             System.getProperty("playtest.founding", "standard").trim().toUpperCase(java.util.Locale.ROOT));
 
-    /** The city the run founds: Danzik, on the flag's preset, in the default world. */
+    /** The city the run founds: Danzik, on the flag's preset, in the default world, on the flag's path (see THE WORLD BEYOND THE CITY). */
     static Founding founding() {
-        return Founding.named(Founding.DEFAULT_CITY_NAME, FOUNDING, WorldEconomy.DEFAULT_MEAN_INFLATION);
+        return Founding.named(Founding.DEFAULT_CITY_NAME, FOUNDING, WorldEconomy.DEFAULT_MEAN_INFLATION)
+                .withPath(PATH, PATH_SEED);
     }
+
+    /* =====================================================================
+       THE WORLD BEYOND THE CITY (WN1; spec-nations 7.3)
+
+       -Dplaytest.world=historical|random (any case) founds the city on that
+       path of the nations beyond it, and -Dplaytest.pathSeed=<whole number>
+       draws it from that seed; unset they are Nations.DEFAULT_PATH and
+       Nations.DEFAULT_SEED, the founding exactly as it was. Nothing in the
+       economy reads the path yet (WN3), so the run is the same to the byte
+       whichever they say; the run prints nothing of them.
+       ===================================================================== */
+
+    /** The path under -Dplaytest.world, Nations.DEFAULT_PATH when unset. */
+    static final Nations.Path PATH = System.getProperty("playtest.world") == null ? Nations.DEFAULT_PATH
+            : Nations.Path.valueOf(System.getProperty("playtest.world").trim().toUpperCase(java.util.Locale.ROOT));
+
+    /** The path's seed under -Dplaytest.pathSeed, Nations.DEFAULT_SEED when unset. */
+    static final long PATH_SEED = Long.parseLong(
+            System.getProperty("playtest.pathSeed", String.valueOf(Nations.DEFAULT_SEED)).trim());
 
     /* =====================================================================
        ON THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 8)
