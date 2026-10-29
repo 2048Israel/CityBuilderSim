@@ -404,6 +404,11 @@ public class ManufacturingCheck {
         out.println("\n--- what closes it, and it is not the same thing twice ---");
 
         Game city = new Game(files);
+        // WN3 (the world market): the steel brake's premise is the literals' price chain - steel is 35% of what a shop bills at Good's
+        // STEEL .47 and FABRICATED_STEEL 1.545 (Good, 436), so half again on steel takes nine tenths of what a shop clears. On the world's band
+        // for 2000 steel lands at .43 of its literal and fabricated steel at 1.94 times its own (3.00 a tonne), steel is 14% of the bill and
+        // a shop clears $1,312k against $274k: half again takes 14% of it, not nine tenths. The works trade at the literals.
+        city.playOnLiterals();
         quietly(() -> {
             city.run();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings

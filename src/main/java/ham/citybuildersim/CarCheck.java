@@ -949,12 +949,14 @@ public class CarCheck {
         GoodsMarket petrol = priced.getMarkets().get(Good.PETROL);
         double journey = pricedRoads.getFuelPerJourney();
         double grocersTax = priced.getEconomyManager().getTaxPolicy().effectiveSalesRate(priced.getSectors().retail());
+        // ...the world's import price in force (WN3: where the world market has struck the band it is its price, else the good's literal).
+        double worldIn = Double.isNaN(petrol.getWorldImportSet()) ? Good.PETROL.worldImportPrice() : petrol.getWorldImportSet();
         report("a journey's fuel is its litres of petrol at the pump price on the import price, in a town with no refinery:"
                         + " the wholesale ladder, the forecourts' margin and the sales tax on it",
                 priced.getSectors().refining().buildingsStanding() == 0 && journey > 0
                         && Math.abs(journey - Motoring.LITRES_PER_JOURNEY
                                 * ham.citybuildersim.sectors.Retail.pumpPrice(petrol.importPrice(), grocersTax)) <= 1e-12 * journey
-                        && petrol.importPrice() == Good.PETROL.worldImportPrice() * petrol.getExchangeRate(),
+                        && petrol.importPrice() == worldIn * petrol.getExchangeRate(),
                 String.format("$%,.4f a journey: %.1f L at $%,.4f a litre wholesale", journey * 1000, Motoring.LITRES_PER_JOURNEY,
                         petrol.importPrice() * 1000));
         double dial = priced.getEconomyManager().getTaxPolicy().getTransitFare();

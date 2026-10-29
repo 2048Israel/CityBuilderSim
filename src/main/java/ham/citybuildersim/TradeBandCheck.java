@@ -256,8 +256,9 @@ public class TradeBandCheck {
             sums &= near(r.amount(Part.WORLD_LORRY) + r.amount(Part.SEA), m.freightInBand());
             if (seaShare > 0 && x > 0) {
                 shipped++;
-                ships &= near(r.amount(Part.SEA), 2 * good.baseFreight() * rate * seaShare * x);
-                lorries &= near(r.amount(Part.WORLD_LORRY), 2 * good.baseFreight() * rate * (1 - railShare - seaShare));
+                // ...the good's freight in the band (WN3: the lorries' freight shrunk to a world-struck band, Good.baseFreight() on the literals').
+                ships &= near(r.amount(Part.SEA), 2 * m.bandFreight() * rate * seaShare * x);
+                lorries &= near(r.amount(Part.WORLD_LORRY), 2 * m.bandFreight() * rate * (1 - railShare - seaShare));
             } else {
                 landed++;
                 noBerth &= r.amount(Part.SEA) == 0 && same(r.amount(Part.WORLD_LORRY), m.freightInBand());

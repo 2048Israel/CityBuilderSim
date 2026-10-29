@@ -814,8 +814,12 @@ public class PortCheck {
             formula &= m.getFreightFactor() == Ports.factor(r, s, Ports.SEA_FREIGHT_SHARE_GENERAL)
                     && m.getFreightFactor() == 1 - r - s + s * Ports.SEA_FREIGHT_SHARE_GENERAL;
             if (good.importable() && good.exportable() && good.baseFreight() > 0) {
-                narrower &= m.getFreightFactor() < 1 && m.importPrice() < good.worldImportPrice() * m.getExchangeRate()
-                        && m.exportPrice() > good.worldExportPrice() * m.getExchangeRate();
+                // ...the world's delivered prices in force (WN3: where the world market has struck the band they are its two prices, else the
+                // good's literals), which the lorries' band stands on before freight's change.
+                double worldIn = Double.isNaN(m.getWorldImportSet()) ? good.worldImportPrice() : m.getWorldImportSet();
+                double worldOut = Double.isNaN(m.getWorldExportSet()) ? good.worldExportPrice() : m.getWorldExportSet();
+                narrower &= m.getFreightFactor() < 1 && m.importPrice() < worldIn * m.getExchangeRate()
+                        && m.exportPrice() > worldOut * m.getExchangeRate();
             }
         }
         assertTrue("EACH GOOD'S BAND IS ITS FORMULA: Ports.factor() of its rail and sea shares, to the bit", formula);

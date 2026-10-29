@@ -1590,6 +1590,10 @@ public class OilCheck {
     static void noRefinery() {
         out.println("\n--- 7. with no refinery, the households pay today's bill at the world's price level ---");
         Game g = town("oilcheck-norefinery", 600, 0);
+        // WN3 (the world market): this section's premise is a fixed world price - the bill is a journey's litres at petrol's literal ladder price
+        // (Good.PETROL.worldImportPrice()) at the rate and the level, and 63% under 0.7.49's pump price journey, a ratio of the two literals. On
+        // the world's band for 2000 petrol lands at a quarter less (2.52k against 3.70k) and the cut is 75%, so the town trades at the literals.
+        g.playOnLiterals();
         double level = 1.137;
         quietly(() -> {
             // Jerus's level, held, and the currency held at parity with the dollar, so the level is all that moves the price.

@@ -1329,9 +1329,20 @@ public class HaulageCheck {
         final Map<String, Double> standing = new LinkedHashMap<>();
         double standingTotal;
 
-        Town(String label) {
+        Town(String label) { this(label, false); }
+
+        /**
+         * ...with `bakery` an Industrial Bakery handed to the city before its first month (WN3, the world market): the sector with legs the
+         * deal's save section counts a fourth of. At the literals' prices the investors raised a bakery of their own in the sixteen months, which
+         * exported its bread and imported its crops (632 t carried); at the world's band for 2000 bread is dearer to import than to make and
+         * they raised none, so only Retail, Heavy Industry and Restaurants carried anything (3 sectors with legs, 4 wanted).
+         */
+        Town(String label, boolean bakery) {
             files = GameFiles.scratch(label);
-            game = played(files, 16);
+            Game built = base(files);
+            if (bakery) land(built, "Industrial Bakery", 1);
+            quietly(() -> { for (int i = 0; i < 16; i++) built.toggleNextMonth(); });
+            game = built;
             fr = game.getSectors().freight();
             h = fr.haulage();
             quietly(() -> game.setCashForTest(Founding.WEALTHY_CASH));
@@ -1368,7 +1379,7 @@ public class HaulageCheck {
 
         /* ---- a. a giant works lands in a town whose fleet is full ---- */
 
-        Town t = new Town("haulagecheck-deal");
+        Town t = new Town("haulagecheck-deal", true);
         Game g = t.game;
         Freight fr = t.fr;
         Haulage h = t.h;

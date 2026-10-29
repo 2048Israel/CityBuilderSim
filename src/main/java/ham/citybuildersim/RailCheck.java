@@ -296,9 +296,14 @@ public class RailCheck {
              * a tonne, the played city's freight (section 4's note), and are
              * held as the mills are.
              */
+            // WN3 (the world market): on the world's band for 2000 the same eight works and thirty furnaces bill the lorries 9,021k a month
+            // (9,923k at the literals' prices) against the 9,253k the railway is allowed, and its quote pins at the lorry rate (0.9999, 0.943
+            // at the literals): nothing is left to keep, and the city leg's bill (FR6, in the haulage billed but not in the lorry bill) takes
+            // the bill over it. The railway "sized to its city" again, as 0.7.120 found it at steel's price: ten works ship more (0.95).
+            final int worksCount = 10;
             BuildingsTemplate works = b.getTemplateByName("Fabrication Works");
-            game.setCashForTest(game.getCash() + 8 * game.getBusinessInvestment().getCostOf(works, 1));
-            game.buildStack(works, 8, true);
+            game.setCashForTest(game.getCash() + worksCount * game.getBusinessInvestment().getCostOf(works, 1));
+            game.buildStack(works, worksCount, true);
             game.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
             for (int i = 0; i < 36; i++) game.toggleNextMonth();
         });

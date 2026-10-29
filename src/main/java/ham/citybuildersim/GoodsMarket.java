@@ -269,7 +269,7 @@ public final class GoodsMarket {
      * and worldMargin() + freightInBand() is still the band. The railway's own invoice (domesticFreight()) stays on the lorry rate: it is what the
      * railway charges at home, not what the band holds.
      */
-    private double bandFreight() {
+    public double bandFreight() {
         double lorry = good.baseFreight();
         if (!hasWorldPrices() || !good.importable() || !good.exportable()) return lorry;
         double literal = good.worldImportPrice() - good.worldExportPrice(), world = worldImportNow() - worldExportNow();

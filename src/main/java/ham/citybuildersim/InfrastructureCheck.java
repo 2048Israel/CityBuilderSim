@@ -305,6 +305,12 @@ public class InfrastructureCheck {
         // through with roads, 69.7% without).
         withRoads.getForeignAccounts().pinRate(withRoads.getForeignAccounts().getRate());
         without.getForeignAccounts().pinRate(without.getForeignAccounts().getRate());
+        // WN3 (the world market): ...and neither raises a Wood Pellet Mill. At the world's band for 2000 wood pellets fetch about twice their
+        // literal and each twin raised mills of its own in the seventy-two months (780 of road load each, bulk): the road city read 3,979
+        // of its 2,800 used, 53% through, the jammed one 1,892 of 400, and the pair stopped isolating roads - its shops ran at 0.496 against
+        // 0.331 where the literals' pair ran at 0.910 against 0.330, the ratio 1.498 against the 1.5 asked.
+        withRoads.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
+        without.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
 
         double capacityBefore = withRoads.getInfrastructureManager().getCapacity();
 
