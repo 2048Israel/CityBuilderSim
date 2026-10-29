@@ -74,6 +74,16 @@ public class DataSave implements Cloneable {
     private Double earthLon;
     private String earthData;
 
+    /*
+     * ...AND THE PATH OF THE WORLD BEYOND IT (WN1; spec-nations 7.3): which
+     * path the nations take, the enum's name() ("HISTORICAL" or "RANDOM"), and
+     * the seed that draws it - not the ground's worldSeed above. Boxed, so a
+     * save without them reads Nations.DEFAULT_PATH and Nations.DEFAULT_SEED
+     * (getFounding()); nothing in the economy reads them yet, so no format bump.
+     */
+    private String worldPath;
+    private Long pathSeed;
+
     //save variables
     private double cash;
     private int[] buildings;
@@ -608,6 +618,9 @@ public class DataSave implements Cloneable {
         earthLat = earth ? f.getEarthLat() : null;
         earthLon = earth ? f.getEarthLon() : null;
         earthData = earth ? f.getEarthData() : null;
+        // ...and the path of the world beyond the city (WN1).
+        worldPath = f.getPath().name();
+        pathSeed = f.getPathSeed();
     }
 
     /**
@@ -641,6 +654,16 @@ public class DataSave implements Cloneable {
                 && Double.isFinite(earthLon) && earthData != null && !earthData.isBlank()) {
             f = f.withWorldKey(World.Key.earth(f.getWorldSeed(), earthLat, earthLon, earthData));
         }
+        // The path of the world beyond the city (WN1): a missing or unknown one reads as the default, as a missing seed does.
+        Nations.Path path = Nations.DEFAULT_PATH;
+        if (worldPath != null) {
+            try {
+                path = Nations.Path.valueOf(worldPath);
+            } catch (IllegalArgumentException e) {
+                path = Nations.DEFAULT_PATH;
+            }
+        }
+        f = f.withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED);
         return f;
     }
 
@@ -661,6 +684,12 @@ public class DataSave implements Cloneable {
 
     /** The Earth's data the city was drawn from, by identity ("earth-2:<hash>", 0.7.121); null on a generated world. */
     public String getEarthData() { return earthData; }
+
+    /** The path of the world beyond the city as saved (WN1): "HISTORICAL" or "RANDOM", null on a save from before it. */
+    public String getWorldPath() { return worldPath; }
+
+    /** The path's seed as saved (WN1); null on a save from before it. */
+    public Long getPathSeed() { return pathSeed; }
 
     /**
      * Why this save's world cannot be read here, or null (0.7.121): a kind

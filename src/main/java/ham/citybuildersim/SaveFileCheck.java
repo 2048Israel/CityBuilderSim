@@ -255,9 +255,11 @@ public class SaveFileCheck {
         data.setPropertyTaxRate(.015);
         // ...and how the city was founded (0.7.10): a name, money named by
         // hand, and figures no preset has, so nothing can pass by default -
-        // and since 0.7.56 a world that is not the default's.
+        // and since 0.7.56 a world that is not the default's, and since WN1 a path
+        // of the world beyond it that is not the default's either.
         Founding arden = Founding.custom("Arden", 62_500, 12_500, .02)
-                .withCurrency(Currency.typed("Arden crown", "ARC")).withWorldSeed(987_654_321L);
+                .withCurrency(Currency.typed("Arden crown", "ARC")).withWorldSeed(987_654_321L)
+                .withPath(Nations.Path.RANDOM, 2_026_102_8L);
         data.setFounding(arden);
 
         GameFiles.Result wrote = data.saveGame(trip, 1);
@@ -282,6 +284,13 @@ public class SaveFileCheck {
                 readBack.getMeanInflation(), .02);
         assertEquals("...and the world it stands on, its seed (0.7.56)", readBack.getWorldSeed(), 987_654_321L);
         assertEquals("...saved under worldSeed", read.getWorldSeed(), 987_654_321L);
+        assertTrue("fixture: Arden's path and seed are not the defaults, so a default read back could not pass",
+                arden.getPath() != Nations.DEFAULT_PATH && arden.getPathSeed() != Nations.DEFAULT_SEED);
+        assertEquals("...and the path of the world beyond it (WN1; spec-nations 7)", readBack.getPath(), Nations.Path.RANDOM);
+        assertEquals("...and the seed that draws it, not the ground's", readBack.getPathSeed(), 2_026_102_8L);
+        assertEquals("...saved under worldPath, by the enum's name", read.getWorldPath(), "RANDOM");
+        assertEquals("...and under pathSeed", read.getPathSeed(), 2_026_102_8L);
+        assertEquals("...with the ground's seed still its own", readBack.getWorldSeed(), 987_654_321L);
 
         // THE LAND ON THE WORLD (0.7.57): a city's land, its offers and what
         // it took out, written and read back field for field - a land office
@@ -390,6 +399,16 @@ public class SaveFileCheck {
                 + " \"landOwned\": 4000000.0, \"month\": 87}", DataSave.class);
         assertEquals("a save from 0.7.10 to 0.7.55 reads the seed its own fields make",
                 before0756.getFounding(.02).getWorldSeed(), Founding.derivedWorldSeed("Arden", 62_500, 4_000_000, 87));
+        // THE PATH OF THE WORLD BEYOND THE CITY (WN1): a save without its two keys reads the defaults, as a missing key does.
+        assertTrue("a save from before the path reads Nations.DEFAULT_PATH and DEFAULT_SEED, and carries neither key (WN1)",
+                older.getWorldPath() == null && older.getPathSeed() == null
+                        && before0710.getPath() == Nations.DEFAULT_PATH && before0710.getPathSeed() == Nations.DEFAULT_SEED
+                        && before0756.getFounding(.02).getPath() == Nations.DEFAULT_PATH
+                        && before0756.getFounding(.02).getPathSeed() == Nations.DEFAULT_SEED);
+        DataSave oddPath = gson.fromJson("{\"worldPath\": \"SIDEWAYS\"}", DataSave.class);
+        assertTrue("...and a path this build does not know reads the default path, and a missing seed the default seed",
+                oddPath.getFounding(.02).getPath() == Nations.DEFAULT_PATH
+                        && oddPath.getFounding(.02).getPathSeed() == Nations.DEFAULT_SEED);
 
         // The transient path fields that used to live on DataSave were dropped;
         // make sure nothing crept into the file that should not be in it.
@@ -1166,8 +1185,9 @@ public class SaveFileCheck {
            ================================================================= */
         System.out.println("\n--- and a freshly loaded city reads what the live one reads ---");
 
-        Game full = new Game(new GameFiles(root.resolve("everything"),
-                root.resolve("no-legacy")));
+        // Founded on a path that is not the default's (WN1): a default read back on both sides would pass without the save carrying anything.
+        Game full = new Game(new GameFiles(root.resolve("everything"), root.resolve("no-legacy")),
+                Founding.defaults().withPath(Nations.Path.RANDOM, 2_026_102_8L));
         full.run();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
@@ -1478,6 +1498,10 @@ public class SaveFileCheck {
         same("...and the world it was founded into", back.getFounding().getMeanInflation(),
                 full.getFounding().getMeanInflation());
         assertEquals("...and the ground it stands on (0.7.56)", back.getWorldSeed(), full.getWorldSeed());
+        assertTrue("fixture: the whole city was founded on a path and seed that are not the defaults (WN1)",
+                full.getFounding().getPath() != Nations.DEFAULT_PATH && full.getFounding().getPathSeed() != Nations.DEFAULT_SEED);
+        assertEquals("...and the path of the world beyond it (WN1)", back.getFounding().getPath(), full.getFounding().getPath());
+        assertEquals("...and the seed that draws it", back.getFounding().getPathSeed(), full.getFounding().getPathSeed());
         assertTrue("the refinery's crude mix, light, medium and heavy (0.7.79)",
                 java.util.Arrays.equals(back.getSectors().refining().getCrudeMix(), crudeMix));
         boolean idle = true;

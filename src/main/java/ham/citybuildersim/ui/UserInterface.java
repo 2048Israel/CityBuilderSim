@@ -4203,7 +4203,7 @@ public class UserInterface extends Application {
     /*
      * settledLevelAt() and worldChip() lived here until 0.7.10: the first is
      * a model figure and is WorldEconomy.settledLevelAt() now, the second is
-     * the founding screen's (FoundingScreen.worldChip()).
+     * the founding screen's (FoundingScreen.dollarChip() since WN1).
      */
 
     /**
