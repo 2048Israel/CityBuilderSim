@@ -1,4 +1,4 @@
-# Nations.java - 707 lines · 40 methods · 42 constants · model
+# Nations.java - 723 lines · 40 methods · 42 constants · model
 
 `ham/citybuildersim/Nations.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -45,10 +45,10 @@
 | 58 | THE DIALS - each with its source: [R..] is the spec's list, (est.) the game's estimate |
 | 177 | THE RECORDS |
 | 204 | THE NATIONS - copied from the file when this is made |
-| 364 | WHAT A CALLER ASKS |
-| 463 | THE FILE'S FIGURES - gaps filled, the years before the first, the stand-ins |
-| 533 | THE DRAWS |
-| 549 | THE YEAR - people, output, prices, moneys, goods, in that order |
+| 380 | WHAT A CALLER ASKS |
+| 479 | THE FILE'S FIGURES - gaps filled, the years before the first, the stand-ins |
+| 549 | THE DRAWS |
+| 565 | THE YEAR - people, output, prices, moneys, goods, in that order |
 
 ## Enum constants
 
@@ -124,19 +124,20 @@
 | 221 | `private final Series[] price` |  |
 | 222 | `private final int[] priceLast` |  |
 | 223 | `private final double[] swing` |  |
-| 226 | `private final List<Year[]> years` | THE PATH SO FAR, a year at a time: the records, what was drawn, each money's rate and each good's price. |
-| 227 | `private final List<Draws[]> drawn` |  |
-| 228 | `private final List<Map<String, Double>> moneyLevels` |  |
-| 229 | `private final List<double[]> goodPrices` |  |
-| 230 | `private final List<int[]> goodMarks` |  |
-| 231 | `private double[] perHead, priceLevel, inflationState, own, crisisAmount, longRun` |  |
-| 232 | `private int[] crisisLeft` |  |
+| 230 | `private final int[] shockOf` | Whose shock each good's price draws after the file's years, by good number: the first good that follows its Pink Sheet series (WN3). |
+| 233 | `private final List<Year[]> years` | THE PATH SO FAR, a year at a time: the records, what was drawn, each money's rate and each good's price. |
+| 234 | `private final List<Draws[]> drawn` |  |
+| 235 | `private final List<Map<String, Double>> moneyLevels` |  |
+| 236 | `private final List<double[]> goodPrices` |  |
+| 237 | `private final List<int[]> goodMarks` |  |
+| 238 | `private double[] perHead, priceLevel, inflationState, own, crisisAmount, longRun` |  |
+| 239 | `private int[] crisisLeft` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 661 | **type** `public final class Nations` | The nations beyond the city, each on the world's path: its year - output, people, prices and its money's rate to the US dollar - from the path (Historical or Random), the seed and the world file (WN1; spec-nations 7). |
+| 47 | 677 | **type** `public final class Nations` | The nations beyond the city, each on the world's path: its year - output, people, prices and its money's rate to the US dollar - from the path (Historical or Random), the seed and the world file (WN1; spec-nations 7). |
 | 50 | 1 | **type** `public enum Path` | The world's path, picked at founding (D9): the real years from January 2000, or a path drawn from the seed. |
 
 ### THE DIALS - each with its source: [R..] is the spec's list, (est.) the game's estimate (lines 58-176)
@@ -152,66 +153,66 @@
 | 197 | 1 | `boolean is(String series, String iso3, int year)` _(in Nations.Absent)_ |  |
 | 202 | 1 | **type** `record Series(double[] v, int[] mark, int last)` | A series by year index from 2000 with no holes up to last: the file's figures, the gaps and the years before the first filled in. |
 
-### THE NATIONS - copied from the file when this is made (lines 204-363)
+### THE NATIONS - copied from the file when this is made (lines 204-379)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 235 | 3 | `public Nations(WorldData file, Path path, long seed)` | The nations on this path and seed, from the file. |
-| 240 | 3 | `Nations(WorldData file, Path path, long seed, Map<String, String> regimes)` | As above, but regimes (iso3 to float, peg:CODE or uses:CODE) stand in for the file's: a harness's, the fixture having no peg to cause. |
-| 244 | 119 | `Nations(WorldData file, Path path, long seed, Map<String, String> regimes, Absent absent)` |  |
+| 242 | 3 | `public Nations(WorldData file, Path path, long seed)` | The nations on this path and seed, from the file. |
+| 247 | 3 | `Nations(WorldData file, Path path, long seed, Map<String, String> regimes)` | As above, but regimes (iso3 to float, peg:CODE or uses:CODE) stand in for the file's: a harness's, the fixture having no peg to cause. |
+| 251 | 128 | `Nations(WorldData file, Path path, long seed, Map<String, String> regimes, Absent absent)` |  |
 
-### WHAT A CALLER ASKS (lines 364-462)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 369 | 1 | `public Path path()` | The path this world is on. |
-| 372 | 1 | `public long seed()` | The seed that draws it. |
-| 375 | 1 | `public int count()` | How many nations there are (the file's N: 196 in the full file). |
-| 378 | 1 | `public String iso3(int nation)` | A nation's ISO 3166 alpha-3 code; nations are numbered 1..count() as WorldData numbers them. |
-| 381 | 1 | `public String name(int nation)` | A nation's name. |
-| 384 | 4 | `public int index(String iso3)` | The number of the nation with that code, 1..count(); -1 when there is none. |
-| 390 | 4 | `public synchronized Year year(int nation, int year)` | A nation's year, for any year from FIRST_YEAR on: a pure function of the path, the seed and the year. |
-| 396 | 4 | `public synchronized double growth(int nation, int year)` | A nation's growth of output in a year, in logs; NaN in FIRST_YEAR, which has no year before it. |
-| 402 | 1 | `public int goodCount()` | How many traded goods have a price path (the file's prices layer; 0 for a file without it). |
-| 405 | 1 | `public String goodKey(int good)` | The key of good 1..goodCount() (the file's goods layer: the Good constant's name). |
-| 408 | 4 | `public synchronized double goodPrice(int good, int year)` | A good's real price in a year, a ratio to 2025's (so 2025 is 1 on Historical): the file's to 2025 on Historical, the path's own AR(1) around 1 after it and on Random. |
-| 414 | 4 | `public synchronized int goodPriceMark(int good, int year)` | The mark of that price: the file's where it is the file's, else 1. |
-| 420 | 1 | `public static int yearOf(int gameMonth)` | The year of the city's calendar a game month is in (CityCalendar.yearOf), so a caller asks for the city's year. |
-| 423 | 4 | `synchronized Draws draws(int nation, int year)` | What the year drew for a nation, for the harness. |
-| 429 | 1 | `synchronized boolean inCrisis(int nation, int year)` | Whether a nation is in a crisis in a year (the year it starts included). |
-| 432 | 1 | `String region(int nation)` | A nation's region, the World Bank's (the file's; East Asia & Pacific for the one it gives none). |
-| 435 | 1 | `double priceSwing(int good)` | A good's yearly price swing, one standard deviation of its file's log change 2001-2025, never under MIN_PRICE_SWING. |
-| 438 | 3 | `static int incomeGroup(double outputPerHead)` | The income group of a nation by its output a head in US$ of 2015: 0 high, 1 upper middle, 2 lower middle, 3 low. |
-| 442 | 4 | `private int check(int nation)` |  |
-| 447 | 4 | `private int checkGood(int good)` |  |
-| 453 | 5 | `private int reach(int year)` | The year's index, the path worked out to it. |
-| 459 | 3 | `private void ensure(int year)` |  |
-
-### THE FILE'S FIGURES - gaps filled, the years before the first, the stand-ins (lines 463-532)
+### WHAT A CALLER ASKS (lines 380-478)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 468 | 4 | `private static double rawFigure(WorldData file, String series, int number, int year, Absent gone)` | The file's figure for a nation and year, NaN where it has none or the harness says it is absent. |
-| 474 | 9 | `private static Series fromFile(WorldData file, String series, int number, int cap, Absent gone)` | A series of the file for a nation, indexed from 2000 and filled to its last figure at or before cap; null when it has none. |
-| 489 | 29 | `static Series filled(double[] raw, int[] mark, int cap)` | A series from its figures, a NaN being none: the figures up to cap kept with their marks, the years before the first taking the first figure and a gap between two figures filled log-linearly between them, both marked ... |
-| 520 | 3 | `private static Series standIn(double value)` | A series that is one figure, the game's estimate, in 2000: the rule works the rest. |
-| 525 | 7 | `private static double swingOf(Series s)` | One standard deviation of a good's yearly log change over its file's years 2001 on, never under MIN_PRICE_SWING. |
+| 385 | 1 | `public Path path()` | The path this world is on. |
+| 388 | 1 | `public long seed()` | The seed that draws it. |
+| 391 | 1 | `public int count()` | How many nations there are (the file's N: 196 in the full file). |
+| 394 | 1 | `public String iso3(int nation)` | A nation's ISO 3166 alpha-3 code; nations are numbered 1..count() as WorldData numbers them. |
+| 397 | 1 | `public String name(int nation)` | A nation's name. |
+| 400 | 4 | `public int index(String iso3)` | The number of the nation with that code, 1..count(); -1 when there is none. |
+| 406 | 4 | `public synchronized Year year(int nation, int year)` | A nation's year, for any year from FIRST_YEAR on: a pure function of the path, the seed and the year. |
+| 412 | 4 | `public synchronized double growth(int nation, int year)` | A nation's growth of output in a year, in logs; NaN in FIRST_YEAR, which has no year before it. |
+| 418 | 1 | `public int goodCount()` | How many traded goods have a price path (the file's prices layer; 0 for a file without it). |
+| 421 | 1 | `public String goodKey(int good)` | The key of good 1..goodCount() (the file's goods layer: the Good constant's name). |
+| 424 | 4 | `public synchronized double goodPrice(int good, int year)` | A good's real price in a year, a ratio to 2025's (so 2025 is 1 on Historical): the file's to 2025 on Historical, the path's own AR(1) around 1 after it and on Random. |
+| 430 | 4 | `public synchronized int goodPriceMark(int good, int year)` | The mark of that price: the file's where it is the file's, else 1. |
+| 436 | 1 | `public static int yearOf(int gameMonth)` | The year of the city's calendar a game month is in (CityCalendar.yearOf), so a caller asks for the city's year. |
+| 439 | 4 | `synchronized Draws draws(int nation, int year)` | What the year drew for a nation, for the harness. |
+| 445 | 1 | `synchronized boolean inCrisis(int nation, int year)` | Whether a nation is in a crisis in a year (the year it starts included). |
+| 448 | 1 | `String region(int nation)` | A nation's region, the World Bank's (the file's; East Asia & Pacific for the one it gives none). |
+| 451 | 1 | `double priceSwing(int good)` | A good's yearly price swing, one standard deviation of its file's log change 2001-2025, never under MIN_PRICE_SWING. |
+| 454 | 3 | `static int incomeGroup(double outputPerHead)` | The income group of a nation by its output a head in US$ of 2015: 0 high, 1 upper middle, 2 lower middle, 3 low. |
+| 458 | 4 | `private int check(int nation)` |  |
+| 463 | 4 | `private int checkGood(int good)` |  |
+| 469 | 5 | `private int reach(int year)` | The year's index, the path worked out to it. |
+| 475 | 3 | `private void ensure(int year)` |  |
 
-### THE DRAWS (lines 533-548)
+### THE FILE'S FIGURES - gaps filled, the years before the first, the stand-ins (lines 479-548)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 538 | 6 | `static long scramble(long seed, long nation, long year, long what)` | A draw's seed: the path's seed, the nation (a region's, a good's, 0 for the world's), the year and what is drawn, chained through SplitMix64. |
-| 545 | 1 | `private double gauss(int what, long nation, int year)` |  |
-| 547 | 1 | `private double unit(int what, long nation, int year)` |  |
+| 484 | 4 | `private static double rawFigure(WorldData file, String series, int number, int year, Absent gone)` | The file's figure for a nation and year, NaN where it has none or the harness says it is absent. |
+| 490 | 9 | `private static Series fromFile(WorldData file, String series, int number, int cap, Absent gone)` | A series of the file for a nation, indexed from 2000 and filled to its last figure at or before cap; null when it has none. |
+| 505 | 29 | `static Series filled(double[] raw, int[] mark, int cap)` | A series from its figures, a NaN being none: the figures up to cap kept with their marks, the years before the first taking the first figure and a gap between two figures filled log-linearly between them, both marked ... |
+| 536 | 3 | `private static Series standIn(double value)` | A series that is one figure, the game's estimate, in 2000: the rule works the rest. |
+| 541 | 7 | `private static double swingOf(Series s)` | One standard deviation of a good's yearly log change over its file's years 2001 on, never under MIN_PRICE_SWING. |
 
-### THE YEAR - people, output, prices, moneys, goods, in that order (lines 549-707)
+### THE DRAWS (lines 549-564)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 553 | 102 | `private void step(int t)` |  |
-| 657 | 4 | `private String moneyOf(int i, int t)` | The money a nation is in in a year: Historical's is the file's of December to 2025 and its 2025 one after; Random's is its money of 2000, or the one its regime uses from 2001. |
-| 669 | 26 | `private double moneyLevel(String code, int t, int year, double share, Map<String, Double> cur, Set<String> busy, double[] infla...` | A money's rate to the dollar this year, NaN for one no nation uses after the history. |
-| 697 | 5 | `private double levelAt(String code, int t)` | A money's rate in an earlier year of the path; NaN where it had none. |
-| 704 | 3 | `private double held(String code, int t)` | A money's rate last year; NaN where it had none. |
+| 554 | 6 | `static long scramble(long seed, long nation, long year, long what)` | A draw's seed: the path's seed, the nation (a region's, a good's, 0 for the world's), the year and what is drawn, chained through SplitMix64. |
+| 561 | 1 | `private double gauss(int what, long nation, int year)` |  |
+| 563 | 1 | `private double unit(int what, long nation, int year)` |  |
+
+### THE YEAR - people, output, prices, moneys, goods, in that order (lines 565-723)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 569 | 102 | `private void step(int t)` |  |
+| 673 | 4 | `private String moneyOf(int i, int t)` | The money a nation is in in a year: Historical's is the file's of December to 2025 and its 2025 one after; Random's is its money of 2000, or the one its regime uses from 2001. |
+| 685 | 26 | `private double moneyLevel(String code, int t, int year, double share, Map<String, Double> cur, Set<String> busy, double[] infla...` | A money's rate to the dollar this year, NaN for one no nation uses after the history. |
+| 713 | 5 | `private double levelAt(String code, int t)` | A money's rate in an earlier year of the path; NaN where it had none. |
+| 720 | 3 | `private double held(String code, int t)` | A money's rate last year; NaN where it had none. |
 

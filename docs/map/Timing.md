@@ -1,4 +1,4 @@
-# Timing.java - 214 lines · 14 methods · 8 constants · model
+# Timing.java - 215 lines · 14 methods · 8 constants · model
 
 `ham/citybuildersim/Timing.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -49,29 +49,29 @@
 | 63 | `Timing.SOFT` | `"soft"` | The property's value that makes timing soft. |
 | 66 | `Timing.HARD` | `"hard"` | The property's value the gate passes to say hard out loud (any value but SOFT is hard). |
 | 69 | `Timing.HARNESSES` | `List.of("WorldCheck", "MapCheck", "ScaleCheck", "PlanCheck", "EarthCheck", "G...` | The harnesses that hold a timing assertion: what {@code AllChecks --timing} runs, and the ship gate (TimingCheck holds it to the sources). |
-| 74 | `Timing.SOFT_LINE` | `Pattern.compile("\\sSOFT - ")` | A harness's assertion line that went soft, as {@link #verdict} words it: what AllChecks counts in a run's logs. |
-| 86 | `Timing.TSV_PROPERTY` | `"cbs.timing.tsv"` | The system property that names the file every timing assertion appends its figure to, {@code -Dcbs.timing.tsv=target/checks/timing.tsv} (TM3); none, and nothing is written. |
-| 89 | `Timing.misses` | `new ArrayList<>()` | The misses since the last verdict, each "figure unit, budget budget unit": what the next verdict prints. |
-| 95 | `Timing.readings` | `new ArrayList<>()` | The figures judged since the last verdict. |
+| 75 | `Timing.SOFT_LINE` | `Pattern.compile("\\sSOFT - ")` | A harness's assertion line that went soft, as {@link #verdict} words it: what AllChecks counts in a run's logs. |
+| 87 | `Timing.TSV_PROPERTY` | `"cbs.timing.tsv"` | The system property that names the file every timing assertion appends its figure to, {@code -Dcbs.timing.tsv=target/checks/timing.tsv} (TM3); none, and nothing is written. |
+| 90 | `Timing.misses` | `new ArrayList<>()` | The misses since the last verdict, each "figure unit, budget budget unit": what the next verdict prints. |
+| 96 | `Timing.readings` | `new ArrayList<>()` | The figures judged since the last verdict. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 160 | **type** `public final class Timing` | The one helper every timing assertion in the suite goes through: a figure on a clock against its budget, hard as the harness wrote it, or soft while another batch's checks or Jerus's game share the machine. |
+| 55 | 161 | **type** `public final class Timing` | The one helper every timing assertion in the suite goes through: a figure on a clock against its budget, hard as the harness wrote it, or soft while another batch's checks or Jerus's game share the machine. |
 | 57 | 1 | `private Timing()` |  |
-| 92 | 1 | **type** `private record Reading(double figure, double budget, String unit, boolean held)` | One figure judged since the last verdict, kept for the file's row (only while the file is named). |
-| 98 | 3 | `static boolean soft()` | Whether timing is soft this run: the property read, every time, here and nowhere else. |
-| 103 | 3 | `public static boolean within(double figure, double budget)` | A figure in milliseconds within its budget (at most it): {@code figure <= budget}, or soft. |
-| 108 | 3 | `static boolean within(double figure, double budget, String unit)` | A figure within its budget (at most it), in the unit named: {@code figure <= budget}, or soft. |
-| 113 | 3 | `static boolean below(double figure, double budget)` | A figure in milliseconds below its budget (strictly): {@code figure < budget}, or soft. |
-| 123 | 7 | `private static boolean judge(boolean held, double figure, double budget, String unit)` | The timing half of an assertion: true when it held; when it missed, true all the same if timing is soft, the miss kept for the next verdict. |
-| 132 | 6 | `private static String figures(double v)` | A figure as the verdict prints it: a whole number bare (a budget of 80 is "80"), else a tenth from 1 up, whole from 100, and three significant places below 1 ("0.3", "0.000123"), never an exponent. |
-| 146 | 6 | `public static String verdict(boolean ok)` | What an assertion's line ends with: FAIL when it failed, SOFT with each timing miss's figure and budget when it held only because timing is soft, OK otherwise. |
-| 160 | 4 | `public static String verdict(boolean ok, String label)` | {@link #verdict(boolean)}, and when {@link #TSV_PROPERTY} names a file the figures judged since the last verdict written there under this label, the harness's own (the class that called it). |
-| 166 | 4 | `private static String tsv()` | The file the figures go to, or null when none is named. |
-| 172 | 24 | `private static void record(String label)` | Appends the pending figures as rows (TSV_PROPERTY says the columns), under an exclusive lock, so harnesses running at once (AllChecks.PARALLEL, SP1) never interleave their rows. |
-| 198 | 4 | `private static String plain(double v)` | A figure for the file: six significant places, never an exponent; NaN and the infinities as Java words them. |
-| 204 | 4 | `static String forwarded()` | The argument a child JVM is given so it times as this one does: {@code -Dcbs.timing=...}, or null when the property is not set here. |
-| 210 | 4 | `static String forwardedTsv()` | The argument a child JVM is given so it writes its figures to the same file: {@code -Dcbs.timing.tsv=...}, or null when none is named here. |
+| 93 | 1 | **type** `private record Reading(double figure, double budget, String unit, boolean held)` | One figure judged since the last verdict, kept for the file's row (only while the file is named). |
+| 99 | 3 | `static boolean soft()` | Whether timing is soft this run: the property read, every time, here and nowhere else. |
+| 104 | 3 | `public static boolean within(double figure, double budget)` | A figure in milliseconds within its budget (at most it): {@code figure <= budget}, or soft. |
+| 109 | 3 | `static boolean within(double figure, double budget, String unit)` | A figure within its budget (at most it), in the unit named: {@code figure <= budget}, or soft. |
+| 114 | 3 | `static boolean below(double figure, double budget)` | A figure in milliseconds below its budget (strictly): {@code figure < budget}, or soft. |
+| 124 | 7 | `private static boolean judge(boolean held, double figure, double budget, String unit)` | The timing half of an assertion: true when it held; when it missed, true all the same if timing is soft, the miss kept for the next verdict. |
+| 133 | 6 | `private static String figures(double v)` | A figure as the verdict prints it: a whole number bare (a budget of 80 is "80"), else a tenth from 1 up, whole from 100, and three significant places below 1 ("0.3", "0.000123"), never an exponent. |
+| 147 | 6 | `public static String verdict(boolean ok)` | What an assertion's line ends with: FAIL when it failed, SOFT with each timing miss's figure and budget when it held only because timing is soft, OK otherwise. |
+| 161 | 4 | `public static String verdict(boolean ok, String label)` | {@link #verdict(boolean)}, and when {@link #TSV_PROPERTY} names a file the figures judged since the last verdict written there under this label, the harness's own (the class that called it). |
+| 167 | 4 | `private static String tsv()` | The file the figures go to, or null when none is named. |
+| 173 | 24 | `private static void record(String label)` | Appends the pending figures as rows (TSV_PROPERTY says the columns), under an exclusive lock, so harnesses running at once (AllChecks.PARALLEL, SP1) never interleave their rows. |
+| 199 | 4 | `private static String plain(double v)` | A figure for the file: six significant places, never an exponent; NaN and the infinities as Java words them. |
+| 205 | 4 | `static String forwarded()` | The argument a child JVM is given so it times as this one does: {@code -Dcbs.timing=...}, or null when the property is not set here. |
+| 211 | 4 | `static String forwardedTsv()` | The argument a child JVM is given so it writes its figures to the same file: {@code -Dcbs.timing.tsv=...}, or null when none is named here. |
 
