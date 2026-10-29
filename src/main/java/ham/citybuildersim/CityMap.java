@@ -7745,14 +7745,7 @@ public final class CityMap {
             int ox = c == 1 || c == 3 ? -1 : 0, oy = c >= 2 ? -1 : 0;
             if ((ox < 0 && lx != 0) || (oy < 0 && ly != 0)) continue;
             long dk = key(ddx + ox, ddy + oy);
-            Drawn dr;
-            if (seen.containsKey(dk)) dr = seen.get(dk);
-            else if (!plan) dr = null;
-            else {
-                District d = districtAt(dk);
-                dr = d == null ? null : drawnOf(d);
-                seen.put(dk, dr);
-            }
+            Drawn dr = drawnAt(dk, seen, plan);
             if (dr == null) continue;
             byte b;
             if (ox == 0 && oy == 0) b = plan ? dr.codeAt(lx, ly) : dr.codeBase(lx, ly);
@@ -7772,7 +7765,36 @@ public final class CityMap {
     }
 
     /**
-     * The avenues' marks on the tile at world plot (px0, py0) and the REACH plots about it (batch CL4), into in.avenue and in.avenueRing,
+     * The plan drawn for the district keyed `dk`, looked up in `seen` once (a plan already seen is one lookup, a district with none is looked for
+     * once) and, `plan` true, made and kept there when not seen: null for none.
+     */
+    private Drawn drawnAt(long dk, Map<Long, Drawn> seen, boolean plan) {
+        Drawn dr = seen.get(dk);
+        if (dr == null && !seen.containsKey(dk) && plan) {
+            District d = districtAt(dk);
+            dr = d == null ? null : drawnOf(d);
+            seen.put(dk, dr);
+        }
+        return dr;
+    }
+
+    /**
+     * What streetAt() answers for a plot inside its district's frame, off its first column and row (where no other district lays a code) and
+     * with no road bridge to ask about (MF1: the ring of CROSS_REACH about a tile reads 1,152 plots a tile, which went to the map plot by plot;
+     * a run of them in one district is read from its plan alone): the plan's code, a seam's as the track it is drawn as, none for no plan.
+     * MapCheck's crossings section holds it to streetAt() on every plot of the ring.
+     */
+    private static byte interiorCode(Drawn dr, int lx, int ly) {
+        if (dr == null) return 0;
+        byte b = dr.codeAt(lx, ly);
+        int kind = b & TilePainter.S_KIND;
+        if (kind == DistrictPlan.NONE) return 0;
+        if (kind == DistrictPlan.SEAM) return (byte) ((b & ~TilePainter.S_KIND & ~(3 << TilePainter.S_WIDTH_SHIFT)) | DistrictPlan.TRACK);
+        return b;
+    }
+
+    /**
+     * The avenues' marks on the tile at world plot (px0, py0) and the CROSS_REACH plots about it (batch CL4), into in.avenue and in.avenueRing,
      * and their origin when it lies near: each plan of the districts the ring reaches (seen, the plans looked up as streetAt() looks
      * them) lists the plots of its avenues (Drawn.avenue) and a plot is marked from any of them - both districts that share a plot
      * (a frame's east column and south row are the next district's first) lay it alike, so either's mark is the mark. A plan with
@@ -7780,7 +7802,7 @@ public final class CityMap {
      */
     private void fillAvenues(long px0, long py0, TilePainter.Input in, Map<Long, Drawn> seen) {
         in.clearAvenues();
-        int reach = TilePainter.REACH, tile = World.TILE, f = DistrictPlan.FRAME;
+        int reach = TilePainter.CROSS_REACH, tile = World.TILE, f = DistrictPlan.FRAME;
         long dxLo = Math.floorDiv(px0 - reach, DISTRICT), dxHi = Math.floorDiv(px0 + tile + reach - 1, DISTRICT);
         long dyLo = Math.floorDiv(py0 - reach, DISTRICT), dyHi = Math.floorDiv(py0 + tile + reach - 1, DISTRICT);
         for (long dyl = dyLo; dyl <= dyHi; dyl++) {
@@ -7914,9 +7936,12 @@ public final class CityMap {
             in.beyond[2 * World.TILE + m] = streetAt(px0 + m, py0 + World.TILE, seen);
             in.beyond[3 * World.TILE + m] = streetAt(px0 - 1, py0 + m, seen);
         }
-        // ...and the ring about it (FX5): the street on every plot within REACH of the tile, corners too, so a crossing on the tile's corner
+        // ...and the ring about it (FX5): the street on every plot within CROSS_REACH of the tile, corners too, so a crossing on the tile's corner
         // is read whole. The tile's own plots are `street` and the plots just across its edges `beyond`; streetAt() gives the rest.
-        int reach = TilePainter.REACH, tile = World.TILE;
+        int reach = TilePainter.CROSS_REACH, tile = World.TILE;
+        boolean noBridges = !runs.roadBridges();
+        long lastKey = Long.MIN_VALUE;
+        Drawn lastDr = null;
         for (int y = -reach; y < tile + reach; y++) {
             boolean rowIn = y >= 0 && y < tile;
             for (int x = -reach; x < tile + reach; x++) {
@@ -7926,8 +7951,21 @@ public final class CityMap {
                 else if (y == tile && x >= 0 && x < tile) code = in.beyond[2 * tile + x];
                 else if (x == -1 && rowIn) code = in.beyond[3 * tile + y];
                 else if (x == tile && rowIn) code = in.beyond[tile + y];
-                else code = streetAt(px0 + x, py0 + y, seen);
-                in.ring[TilePainter.ringIndex(x, y)] = code;
+                else {
+                    // Most of the ring lies in the interior of one district's frame, where the plan alone answers: its plan is looked up when the district changes.
+                    long wx = px0 + x, wy = py0 + y, dxl = Math.floorDiv(wx, DISTRICT), dyl = Math.floorDiv(wy, DISTRICT);
+                    int lx = (int) (wx - dxl * DISTRICT), ly = (int) (wy - dyl * DISTRICT);
+                    if (lx == 0 || ly == 0 || !noBridges) code = streetAt(wx, wy, seen);
+                    else {
+                        long dk = key((int) (dxl - baseDX), (int) (dyl - baseDY));
+                        if (dk != lastKey) {
+                            lastKey = dk;
+                            lastDr = drawnAt(dk, seen, true);
+                        }
+                        code = interiorCode(lastDr, lx, ly);
+                    }
+                }
+                in.ring[TilePainter.crossIndex(x, y)] = code;
             }
         }
         // The avenues about it (batch CL4): the marks of the four 45-degree avenues the plans lay, on the tile and the ring about it.

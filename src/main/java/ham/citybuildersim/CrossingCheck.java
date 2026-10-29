@@ -212,14 +212,14 @@ public class CrossingCheck {
     static TilePainter.Input tileOf(Planned pl, int tx, int ty) {
         TilePainter.Input in = new TilePainter.Input();
         java.util.Arrays.fill(in.owned, true);
-        int t = TilePainter.TILE, f = DistrictPlan.FRAME, r = TilePainter.REACH;
+        int t = TilePainter.TILE, f = DistrictPlan.FRAME, r = TilePainter.CROSS_REACH;
         for (int y = -r; y < t + r; y++) {
             for (int x = -r; x < t + r; x++) {
                 int fx = tx * t + x, fy = ty * t + y;
                 if (fx < 0 || fy < 0 || fx >= f || fy >= f) continue;
                 int q = fy * f + fx;
                 byte code = CityMap.paintCode(pl.plan.street[q]);
-                in.ring[(y + r) * TilePainter.RING + x + r] = code;
+                in.ring[TilePainter.crossIndex(x, y)] = code;
                 if (pl.plan.avenue != null && pl.plan.avenue[q] != 0) in.setAvenue(x, y, pl.plan.avenue[q] & 0xff);
                 if (x >= 0 && y >= 0 && x < t && y < t) {
                     in.street[y * t + x] = code;

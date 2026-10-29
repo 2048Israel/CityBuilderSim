@@ -195,12 +195,33 @@ public final class TilePainter {
     /** A building's box in Input.boxes with this bit set is the part, on the tile, of a building counted on another (FX5 Y2): a yard whose box spans tiles is counted on the tile holding its first plot, and on the others is only its part, drawn there (Painted.bpart). Above CityMap.PACKED_BIT. */
     public static final int PART_BIT = 1 << 21;
 
-    /** Plots: the side of Input.ring, the tile and REACH plots about it on every side (FX5). */
+    /** Plots: the side of Input.curveRing, the tile and REACH plots about it on every side (FX5). */
     public static final int RING = TILE + 2 * REACH;
 
-    /** Where plot (x, y) is in Input.ring, for x and y from -REACH to TILE + REACH - 1. */
+    /** Where plot (x, y) is in Input.curveRing, for x and y from -REACH to TILE + REACH - 1. */
     public static int ringIndex(int x, int y) {
         return (y + REACH) * RING + x + REACH;
+    }
+
+    /* ----- the crossings' ring (MF1, slice C) ----- */
+
+    /**
+     * How far past the tile the street ring and the avenue ring reach, in plots: 8 (MF1, 2026-10-28). A crossing is read whole
+     * from every tile that draws a part of it, so its rectangle, the plots that prove it a junction and the roads that leave it
+     * must all lie in the ring: a rectangle of seven plots with one column on the tile has its far plots 6 beyond the tile, the
+     * road that leaves it 7 and the run that proves its last plot a junction 8. REACH (4) held a crossing of three plots or so;
+     * a larger one on a tile's corner (on his slot 7's copy the avenues' origin, 7 x 4 plots; in FW4's playtest city one 3 x 5)
+     * was read in a different size by each tile it lies on - two circles half a plot apart (Jerus, shot 11: "a half roundabout").
+     * The building rule's REACH is not this: the plans read that, and it stays.
+     */
+    public static final int CROSS_REACH = 8;
+
+    /** Plots: the side of Input.ring and Input.avenueRing, the tile and CROSS_REACH plots about it on every side. */
+    public static final int CROSS_RING = TILE + 2 * CROSS_REACH;
+
+    /** Where plot (x, y) is in Input.ring and Input.avenueRing, for x and y from -CROSS_REACH to TILE + CROSS_REACH - 1. */
+    public static int crossIndex(int x, int y) {
+        return (y + CROSS_REACH) * CROSS_RING + x + CROSS_REACH;
     }
 
     /** North, east, south, west. */
@@ -229,8 +250,8 @@ public final class TilePainter {
         public final byte[] street = new byte[PLOTS];
         /** ...and the street on each plot just outside the tile, north, east, south and west (TILE each, along the edge): what a street at the edge joins to, as the plans have it. */
         public final byte[] beyond = new byte[4 * TILE];
-        /** ...and the street on every plot within REACH of the tile, corners too (FX5): RING * RING S_ codes row by row from plot (-REACH, -REACH), the tile's own plots among them; what a crossing on a tile's corner is read whole from (ringIndex()). */
-        public final byte[] ring = new byte[RING * RING];
+        /** ...and the street on every plot within CROSS_REACH of the tile, corners too (FX5; CROSS_REACH since MF1, once REACH): CROSS_RING * CROSS_RING S_ codes row by row from plot (-CROSS_REACH, -CROSS_REACH), the tile's own plots among them; what a crossing on a tile's corner is read whole from (crossIndex()). */
+        public final byte[] ring = new byte[CROSS_RING * CROSS_RING];
         /** Each plot of the city's runs (CityRuns.fill(); CityMap's network's until 0.7.88): a highway's (BuildingVisual.HIGHWAY), the railway's track (RAIL) or the track bridging a highway (RAIL_OVER), 0 for none... */
         public final byte[] fixed = new byte[PLOTS];
         /** ...and those just outside the tile, as beyond. */
@@ -243,8 +264,8 @@ public final class TilePainter {
         public final byte[] siding = new byte[PLOTS];
         /** Each plot's avenue mark from the district plans (batch CL4, DistrictPlan.avenue): CityRuns.M_DIAG, its arm's heading at M_DIAG_SHIFT and M_CORNER on a corner of the staircase, 0 for none - the plots of the four 45-degree avenues, which TileRaster draws as one smooth band along each arm's line, not as the staircase's bars. A plot two arms share carries the first arm's mark; the origin's neighbourhood is drawn from avenueOx/avenueOy as well. */
         public final byte[] avenue = new byte[PLOTS];
-        /** ...and the mark on every plot within REACH of the tile, corners too (CL4): RING * RING bytes row by row from plot (-REACH, -REACH), the tile's own plots among them (as ring is for the streets) - what a step across the tile's edge, a crossing on its corner and the band beside the last plot are read from (avenueAt()). Both districts that lay a plot lay it alike, so either's mark is the mark. */
-        public final byte[] avenueRing = new byte[RING * RING];
+        /** ...and the mark on every plot within CROSS_REACH of the tile, corners too (CL4; MF1 widened it with the street ring): CROSS_RING * CROSS_RING bytes row by row from plot (-CROSS_REACH, -CROSS_REACH), the tile's own plots among them (as ring is for the streets) - what a step across the tile's edge, a crossing on its corner and the band beside the last plot are read from (avenueAt()). Both districts that lay a plot lay it alike, so either's mark is the mark. */
+        public final byte[] avenueRing = new byte[CROSS_RING * CROSS_RING];
         /** How many plots of avenueRing hold a mark: 0 when no avenue lies about the tile (the raster's fast path). */
         public int avenueMarks;
         /** The avenues' origin, the lattice node nearest the founding site, in the tile's plots (it may lie off the tile); Integer.MIN_VALUE for none - a harness's input without one draws the avenues from the marks alone. */
@@ -288,10 +309,10 @@ public final class TilePainter {
         public int reserves;
         public int[] reserve = new int[4 * RESERVE_INTS];
 
-        /** The avenue mark on plot (x, y) of the tile or within REACH of it: 0 for none or for a plot farther out. */
+        /** The avenue mark on plot (x, y) of the tile or within CROSS_REACH of it: 0 for none or for a plot farther out. */
         public int avenueAt(int x, int y) {
-            if (avenueMarks == 0 || x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return 0;
-            return avenueRing[ringIndex(x, y)] & 0xff;
+            if (avenueMarks == 0 || x < -CROSS_REACH || y < -CROSS_REACH || x >= TILE + CROSS_REACH || y >= TILE + CROSS_REACH) return 0;
+            return avenueRing[crossIndex(x, y)] & 0xff;
         }
 
         /** Clears the avenues (the marks, their count and the origin); the arrays are reused. */
@@ -304,10 +325,10 @@ public final class TilePainter {
             avenueOx = avenueOy = Integer.MIN_VALUE;
         }
 
-        /** Sets the mark on plot (x, y) within REACH of the tile (a harness's hand-built avenue, or CityMap's fill); the tile's own plots go to avenue too. */
+        /** Sets the mark on plot (x, y) within CROSS_REACH of the tile (a harness's hand-built avenue, or CityMap's fill); the tile's own plots go to avenue too. */
         public void setAvenue(int x, int y, int mark) {
-            if (x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return;
-            int r = ringIndex(x, y);
+            if (x < -CROSS_REACH || y < -CROSS_REACH || x >= TILE + CROSS_REACH || y >= TILE + CROSS_REACH) return;
+            int r = crossIndex(x, y);
             if (avenueRing[r] == 0 && mark != 0) avenueMarks++;
             else if (avenueRing[r] != 0 && mark == 0) avenueMarks--;
             avenueRing[r] = (byte) mark;

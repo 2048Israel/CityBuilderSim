@@ -10300,6 +10300,9 @@ public class MapCheck {
     /** How many samples a step of an avenue's line is sampled at: four, a quarter step apart. */
     static final int AV_SAMPLES = 4;
 
+    /** How many tiles either way of the origin's tile the crossings are read over: 4, nine tiles a side (MF1). */
+    static final int CROSSING_TILES = 4;
+
     /** The farthest an arm is followed from the origin, in steps: 400, past a district and a half. */
     static final int AV_STEPS = 400;
 
@@ -10419,7 +10422,7 @@ public class MapCheck {
     static int[] handAvenue(int ox, int oy, int arms, int len, JunctionCheck.Streets extra, boolean withOrigin) {
         JunctionCheck.Streets f = (x, y) -> handMark(ox, oy, arms, len, x, y) != 0 ? JunctionCheck.ARTERIAL : extra == null ? 0 : extra.at(x, y);
         TilePainter.Input in = JunctionCheck.inputFor(0, 0, f);
-        int r = TilePainter.REACH;
+        int r = TilePainter.CROSS_REACH;
         for (int y = -r; y < World.TILE + r; y++) for (int x = -r; x < World.TILE + r; x++) in.setAvenue(x, y, handMark(ox, oy, arms, len, x, y));
         if (withOrigin) { in.avenueOx = ox; in.avenueOy = oy; }
         return JunctionCheck.raster(in, JunctionCheck.paint(in), 8);
@@ -10601,6 +10604,40 @@ public class MapCheck {
         // beside the origin, which no step flanks with its arm's mark, are crossed by the arms' other diagonal from the origin given.
         check("...and the arms' second diagonal is drawn across the origin's plots from the origin's place (the plots a step of the other arm flanks: (16, 15) and (16, 17), the box on both)",
                 JunctionCheck.hasColour(four, w, 16, 15, px, TileRaster.JUNCTION_BOX) && JunctionCheck.hasColour(four, w, 16, 17, px, TileRaster.JUNCTION_BOX));
+
+        // ---- A CROSSING IS ONE CROSSING (MF1; Jerus, shot 11, "a half roundabout"): the crossings the tiles about the origin read - the plans' own, boulevards
+        // and arterials and the avenues across them, on the corners of tiles - are read alike by every tile whose plots they touch: where two tiles' crossings
+        // overlap they are one rectangle and one verdict, signal or roundabout (before MF1 a tile saw four plots past its edge, a crossing of five or six saw less).
+        {
+            TilePainter.Input rin = new TilePainter.Input();
+            TilePainter.Painted rp = new TilePainter.Painted();
+            java.util.List<int[]> reads = new java.util.ArrayList<>();
+            int rounds = 0, tilesRead = 0, ringPlots = 0, ringOff = 0;
+            long rtx = Math.floorDiv(ox, tile), rty = Math.floorDiv(oy, tile);
+            for (long ty = rty - CROSSING_TILES; ty <= rty + CROSSING_TILES; ty++) {
+                for (long tx = rtx - CROSSING_TILES; tx <= rtx + CROSSING_TILES; tx++) {
+                    m.tileInput(tx, ty, rin);
+                    TilePainter.paint(rin, rp);
+                    tilesRead++;
+                    // The ring of street codes the tile is handed is the map's streetAt() on every plot (the fill reads a run of plots in one district from its plan).
+                    for (int ry = -TilePainter.CROSS_REACH; ry < tile + TilePainter.CROSS_REACH; ry++) {
+                        for (int rx = -TilePainter.CROSS_REACH; rx < tile + TilePainter.CROSS_REACH; rx++) {
+                            ringPlots++;
+                            if (rin.ring[TilePainter.crossIndex(rx, ry)] != m.streetAt(tx * tile + rx, ty * tile + ry)) ringOff++;
+                        }
+                    }
+                    for (int[] c : TileRaster.crossings(rin, rp)) {
+                        if (c[2] < -1 || c[3] < -1 || c[0] > tile || c[1] > tile) continue; // lies off this tile: it draws nothing on it
+                        reads.add(new int[] { (int) (c[0] + tx * tile), (int) (c[1] + ty * tile), (int) (c[2] + tx * tile), (int) (c[3] + ty * tile), c[4], c[5] });
+                        rounds += c[5];
+                    }
+                }
+            }
+            out.printf("      the crossings about the origin: %d tiles read, %d crossings read in all, %d of them roundabouts%n", tilesRead, reads.size(), rounds);
+            check("fixture: the tiles about the origin read crossings, roundabouts among them", reads.size() > 0 && rounds > 0);
+            check("...the ring of street codes each was handed is the map's streetAt() on all " + ringPlots + " of its plots (" + ringOff + " differ)", ringPlots > 0 && ringOff == 0);
+            check("A CROSSING IS ONE CROSSING: wherever two tiles' reads of a crossing overlap they are the same rectangle and the same verdict - no half roundabout", JunctionCheck.unlike(reads) == 0);
+        }
 
         // ---- THE SCREEN: the founding site's, the four arms across it, within SCREEN_MS
         TilePainter.Input sin = new TilePainter.Input();

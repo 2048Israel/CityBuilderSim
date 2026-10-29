@@ -118,6 +118,15 @@ import java.util.Arrays;
  * curve is drawn across the band, and the dead end a curve leaves from and the
  * street it meets keep their bars, the band starting at their middles
  * (curveDrawn(), curveArm(), curveLink(), curveLooks()).
+ *
+ * THE PAINTER'S THREE FAULTS (batch MF1, slice C; Jerus, 2026-10-23, on his city). A ROUNDABOUT WHOLE: a crossing is the plan's, read
+ * alike by every tile that draws it - the ring of street codes and avenue marks is CROSS_REACH (8) plots wide, which holds a
+ * crossing of seven plots with the roads that leave it, where the REACH (4) of FX5 held three or four, and the tile's own plots are
+ * read from the plan's codes as its neighbours' are - so a crossing on a tile's corner is one island and one ring, not two circles
+ * half a plot apart ("a half roundabout"; Crossings). A CLOVERLEAF'S LEAVES: a loop ramp is about 270 degrees of a circle that
+ * touches both highways, open toward the crossing, with a connector round its outside - not a closed ring with two spokes
+ * (loops(); "Draw a cleaner interchange"). A WIDE ROAD ONE ROAD: the mesh between four street plots' bars is surface, so a band
+ * of streets is one carriageway, not a lattice with a + at every plot (bands(); "continous intersection ... shown as 3 roads").
  */
 public final class TileRaster {
 
@@ -1572,12 +1581,12 @@ public final class TileRaster {
     /** ...and along y. */
     private static int armDy(int code) { return code == 0 || code == 1 ? 1 : -1; }
 
-    /** The street code on plot (x, y) of the tile or within REACH of it (Input.street, Input.ring): 0 for none or a plot farther out. */
+    /** The street code on plot (x, y) of the tile or within CROSS_REACH of it (Input.street, Input.ring): 0 for none or a plot farther out. */
     private static int codeAt(TilePainter.Input in, int x, int y) {
-        int tile = TilePainter.TILE, r = TilePainter.REACH;
+        int tile = TilePainter.TILE, r = TilePainter.CROSS_REACH;
         if (x >= 0 && y >= 0 && x < tile && y < tile) return in.street[y * tile + x] & 0xff;
         if (x < -r || y < -r || x >= tile + r || y >= tile + r) return 0;
-        return in.ring[TilePainter.ringIndex(x, y)] & 0xff;
+        return in.ring[TilePainter.crossIndex(x, y)] & 0xff;
     }
 
     /** Whether plot (x, y), in the tile or within REACH of it, is a street (as streetAt() reads it: a track, and a highway's plot a street passes beneath, among them). */
@@ -2360,6 +2369,8 @@ public final class TileRaster {
                 if (v) grain(in, img, w, x0 + o, y0, x0 + o + t, y0 + px, grain);
             }
         }
+        // A road several plots across is one carriageway: the mesh between four street plots' bars is surface, not verge (MF1).
+        bands(in, p, px, img);
         // The curves' bands (CL4, slice D), over the bars of the plots they cross and the ends of the streets they start from.
         if (curves) curves(in, p, px, img);
         // The avenues' outer plots, the origin's other line and the squared ends of the pieces (CL4), then the railway's crossings.
@@ -2549,18 +2560,125 @@ public final class TileRaster {
         }
     }
 
+    /* ----- a wide road is one carriageway (MF1, slice C) ----- */
+
+    /**
+     * The surface of every 2 x 2 block of street plots between the bars through their middles, so a road several plots across is one
+     * carriageway (MF1, 2026-10-28; Jerus, on his city: "continous intersection, like its a 3x14 road roughly, but shown as 3 roads, with
+     * intersection on every node"). Each street plot draws its own bar through its middle, one across and one along wherever a street
+     * lies beside it (ways()); a plot inside a band has street on both axes, so a band of streets drawn narrow (DistrictPlan.HALF, which
+     * the plan gives every street first) came out as a lattice of grey bars with a verge square in every mesh and a + at every plot's
+     * middle. The block of four street plots whose middles bound a mesh is filled, bar edge to bar edge, so the verge shows only
+     * outside the band, and an arm of a band's plot toward a side with no street is cut back to the band's edge, so the band has a
+     * straight side, not the teeth of its cross bars; a street one plot wide, a + of two, a T and a corner have no block of four and are
+     * drawn as before. Only paved or gravel street plots of one kind count: no avenue's or curve's plot (their bands are their own), no
+     * bridge's, no plot a street goes under, no plot a building stands on. A plot of the tile is read as painted, as its bar is, and a
+     * plot beyond its edge from the plan's code, as the crossings read them.
+     */
+    private static void bands(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE, w = tile * px, side = tile + 2;
+        // What each plot of the tile and the ring of one plot about it is to bands(), once (a plot is in four blocks).
+        int[] grid = new int[side * side];
+        boolean any = false;
+        for (int y = -1; y <= tile; y++) {
+            for (int x = -1; x <= tile; x++) any |= (grid[(y + 1) * side + x + 1] = bandAt(in, p, x, y)) != 0;
+        }
+        if (!any) return;
+        int[] at = new int[4];
+        boolean[] member = null;
+        for (int y = -1; y < tile; y++) {
+            for (int x = -1; x < tile; x++) {
+                int k = (y + 1) * side + x + 1;
+                at[0] = grid[k];
+                at[1] = grid[k + 1];
+                at[2] = grid[k + side];
+                at[3] = grid[k + side + 1];
+                if (!sameKind(at)) continue;
+                int[] r = mesh(at, px, x, y);
+                int c0 = ROAD[at[0] & 15];
+                int xa = Math.max(0, r[0]), ya = Math.max(0, r[1]), xb = Math.min(w, r[2]), yb = Math.min(w, r[3]);
+                // Plot by plot, so the colour is the plot's (an unowned plot is dimmed) and the pixels of a plot are filled as one rectangle.
+                for (int py = ya / px; py * px < yb; py++) {
+                    for (int pc = xa / px; pc * px < xb; pc++) {
+                        fillRect(img, w, Math.max(xa, pc * px), Math.max(ya, py * px), Math.min(xb, (pc + 1) * px), Math.min(yb, (py + 1) * px),
+                                in.owned[py * tile + pc] ? c0 : blend(c0, VOID, UNOWNED_DIM));
+                    }
+                }
+                if (member == null) member = new boolean[TilePainter.PLOTS];
+                for (int c = 0; c < 4; c++) {
+                    int bx = x + (c & 1), by = y + (c >> 1);
+                    if (bx >= 0 && by >= 0 && bx < tile && by < tile) member[by * tile + bx] = true;
+                }
+            }
+        }
+        if (member == null) return;
+        // The teeth: a band plot's bar toward a side with no street, past the bar across it, is the verge again.
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (!member[i]) continue;
+            int t = Math.max(1, (int) Math.round(SURFACE[Math.max(1, Math.min(2, (int) p.width[i]))] * px)), o = (px - t) / 2;
+            int x0 = (i % tile) * px, y0 = (i / tile) * px, verge = in.owned[i] ? VERGE : blend(VERGE, VOID, UNOWNED_DIM);
+            if (!streetAt(in, p, i, 0)) fillRect(img, w, x0 + o, y0, x0 + o + t, y0 + o, verge);
+            if (!streetAt(in, p, i, 1)) fillRect(img, w, x0 + o + t, y0 + o, x0 + px, y0 + o + t, verge);
+            if (!streetAt(in, p, i, 2)) fillRect(img, w, x0 + o, y0 + o + t, x0 + o + t, y0 + px, verge);
+            if (!streetAt(in, p, i, 3)) fillRect(img, w, x0, y0 + o, x0 + o, y0 + o + t, verge);
+        }
+    }
+
+    /** Whether the four plots from (x, y), across and down, are street of one kind as bandAt() counts it - which it leaves in `at`, one a plot. */
+    private static boolean block(TilePainter.Input in, TilePainter.Painted p, int x, int y, int[] at) {
+        for (int c = 0; c < 4; c++) at[c] = bandAt(in, p, x + (c & 1), y + (c >> 1));
+        return sameKind(at);
+    }
+
+    /** Whether the four bandAt() values in `at` are all street, and of one kind. */
+    private static boolean sameKind(int[] at) {
+        for (int c = 0; c < 4; c++) if (at[c] == 0 || (at[c] & 15) != (at[0] & 15)) return false;
+        return true;
+    }
+
+    /** The pixels {x0, y0, x1, y1} between the bars of the four street plots from plot (x, y), from their bandAt() values: bar edge to bar edge. */
+    private static int[] mesh(int[] at, int px, int x, int y) {
+        int[] from = new int[4], to = new int[4];
+        for (int c = 0; c < 4; c++) {
+            int t = Math.max(1, (int) Math.round(SURFACE[at[c] >> 4 & 3] * px));
+            from[c] = (px - t) / 2;
+            to[c] = from[c] + t;
+        }
+        return new int[] { x * px + Math.min(from[0], from[2]), y * px + Math.min(from[0], from[1]),
+                (x + 1) * px + Math.max(to[1], to[3]), (y + 1) * px + Math.max(to[2], to[3]) };
+    }
+
+    /** What plot (x, y) of the tile or its ring is to bands(): 0 for no street of its kind, else its kind (GRAVEL or PAVED) and, in bits 4 and 5, its width (1 half, 2 full). */
+    private static int bandAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE, kind, width;
+        if (in.avenueAt(x, y) != 0 || in.curveAt(x, y) != 0) return 0;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) {
+            int i = y * tile + x;
+            if (!isStreet(p, i) || p.beneath[i] || p.bridge[i] || p.use[i] != TilePainter.ROAD) return 0;
+            kind = p.road[i];
+            width = p.width[i];
+        } else {
+            int code = codeAt(in, x, y);
+            if ((code & TilePainter.S_BRIDGE) != 0) return 0;
+            kind = TilePainter.kindOf(code);
+            width = (code >> TilePainter.S_WIDTH_SHIFT) & 3;
+        }
+        if (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED) return 0;
+        return kind | Math.max(1, Math.min(2, width)) << 4;
+    }
+
     /* ----- junctions' helpers ----- */
 
     /**
      * The role of the street at plot (x, y) - ARTERIAL, BOULEVARD, ACCESS or
      * STREET: in the tile, from its painted plots; the plot just across one of
      * its edges, from Input.beyond; and (FX5) any other plot within
-     * TilePainter.REACH of the tile, corners too, from Input.ring, so a
+     * TilePainter.CROSS_REACH of the tile, corners too, from Input.ring, so a
      * crossing on a tile's corner is read whole. 0 for none, a track, a street
      * beneath a highway, or a plot farther out.
      */
     private static byte streetRoleAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
-        int tile = TilePainter.TILE, reach = TilePainter.REACH;
+        int tile = TilePainter.TILE, reach = TilePainter.CROSS_REACH;
         if (x >= 0 && y >= 0 && x < tile && y < tile) {
             int i = y * tile + x;
             return isStreet(p, i) ? p.role[i] : 0;
@@ -2568,9 +2686,21 @@ public final class TileRaster {
         int code;
         if (x >= 0 && x < tile && (y == -1 || y == tile)) code = in.beyond[(y < 0 ? 0 : 2) * tile + x];
         else if (y >= 0 && y < tile && (x == -1 || x == tile)) code = in.beyond[(x < 0 ? 3 : 1) * tile + y];
-        else if (x >= -reach && y >= -reach && x < tile + reach && y < tile + reach) code = in.ring[TilePainter.ringIndex(x, y)];
+        else if (x >= -reach && y >= -reach && x < tile + reach && y < tile + reach) code = in.ring[TilePainter.crossIndex(x, y)];
         else return 0;
         return roleOfCode(code & 0xff);
+    }
+
+    /**
+     * The role of the street at plot (x, y) as a crossing reads it (MF1, 2026-10-28): from the plan's code on every plot, the tile's
+     * own among them, not from the painted plot, which a building or a highway laid over a street has erased. streetRoleAt() reads
+     * the tile's own plots painted and its neighbours' raw, so a crossing at a seam was read by one tile with a plot the other
+     * did not have; a crossing is the plan's, the same from every tile that draws it.
+     */
+    private static byte crossingRoleAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) return roleOfCode(in.street[y * tile + x] & 0xff);
+        return streetRoleAt(in, p, x, y);
     }
 
     /** The role of a street code (the S_ codes) as streetRoleAt() answers it: 0 for none or a street beneath a highway. */
@@ -2588,7 +2718,7 @@ public final class TileRaster {
     /**
      * The crossings of a tile's streets (FX5; Jerus, 2026-10-20, "Mostly
      * signals"), read once for the tile over the plots about it - the tile and
-     * TilePainter.REACH more on every side, which Input.ring gives - so a
+     * TilePainter.CROSS_REACH more on every side, which Input.ring gives - so a
      * crossing on a tile's corner is read whole by each of the four. A junction
      * plot is a plot of a junction role with a run of JUNCTION_RUN or more
      * junction streets through it on each axis (a road two plots wide is one
@@ -2603,8 +2733,8 @@ public final class TileRaster {
      * between them, and every boulevard crossing was a roundabout.
      */
     private static final class Crossings {
-        /** The side of Input.ring and how far it reaches past the tile on every side, in plots: TilePainter.RING and TilePainter.REACH. */
-        static final int N = TilePainter.RING, R = TilePainter.REACH;
+        /** The side of Input.ring and how far it reaches past the tile on every side, in plots: TilePainter.CROSS_RING and TilePainter.CROSS_REACH. */
+        static final int N = TilePainter.CROSS_RING, R = TilePainter.CROSS_REACH;
         /** A tile with no junction street about it: no crossings. */
         static final Crossings NONE = new Crossings();
 
@@ -2637,7 +2767,7 @@ public final class TileRaster {
             boolean any = false;
             for (int y = -R; y < TilePainter.TILE + R; y++) {
                 for (int x = -R; x < TilePainter.TILE + R; x++) {
-                    byte r = streetRoleAt(in, p, x, y);
+                    byte r = crossingRoleAt(in, p, x, y);
                     role[(y + R) * N + x + R] = r;
                     if (avm != null) avm[(y + R) * N + x + R] = (byte) in.avenueAt(x, y);
                     any |= junctionRole(r);
@@ -2846,6 +2976,18 @@ public final class TileRaster {
         }
     }
 
+    /**
+     * The crossings the painter reads for a tile, each {first column, first row, last column, last row, roads that leave it, 1 for a roundabout
+     * and 0 for a signal}, in the tile's plots (a rectangle may lie off the tile): what a harness compares between the tiles that read one
+     * crossing (MF1: every tile that draws part of a crossing reads the same rectangle and the same roads).
+     */
+    static int[][] crossings(TilePainter.Input in, TilePainter.Painted p) {
+        Crossings cr = Crossings.of(in, p);
+        int[][] out = new int[cr.groups][];
+        for (int g = 0; g < cr.groups; g++) out[g] = new int[] { cr.x0[g], cr.y0[g], cr.x1[g], cr.y1[g], cr.roads[g], cr.round[g] ? 1 : 0 };
+        return out;
+    }
+
     /** A street's surface across its plot at px pixels a plot: {its width, its offset from the plot's edge}. */
     private static int[] surfaceAt(TilePainter.Painted p, int i, int px) {
         int t = Math.max(1, (int) Math.round(SURFACE[Math.max(1, Math.min(2, (int) p.width[i]))] * px));
@@ -2868,6 +3010,19 @@ public final class TileRaster {
             boolean v = streetAt(in, p, i, 0) || streetAt(in, p, i, 2);
             if (h) fillRect(img, tile * px, x0, y0 + s[1], x0 + px, y0 + s[1] + s[0], c);
             if (v) fillRect(img, tile * px, x0 + s[1], y0, x0 + s[1] + s[0], y0 + px, c);
+        }
+        // The meshes between the plots of a wide crossing's box (MF1): one dark square, not bars with the road's colour in the holes between them.
+        int[] at = new int[4];
+        for (int y = -1; y < tile; y++) {
+            for (int x = -1; x < tile; x++) {
+                int g = cr.at(x, y);
+                if (g < 0 || cr.round[g] || cr.at(x + 1, y) != g || cr.at(x, y + 1) != g || cr.at(x + 1, y + 1) != g || !block(in, p, x, y, at)) continue;
+                int[] r = mesh(at, px, x, y);
+                for (int Y = Math.max(0, r[1]); Y < Math.min(tile * px, r[3]); Y++) {
+                    for (int X = Math.max(0, r[0]); X < Math.min(tile * px, r[2]); X++)
+                        img[Y * tile * px + X] = in.owned[(Y / px) * tile + X / px] ? JUNCTION_BOX : blend(JUNCTION_BOX, VOID, UNOWNED_DIM);
+                }
+            }
         }
         // The avenues' part of the box (CL4): the band of every avenue plot, outer plot and ray of the origin that lies in a signalled crossing.
         if (avenues) avenueBoxes(in, p, px, img, cr);
@@ -3145,55 +3300,60 @@ public final class TileRaster {
         segment(img, w, x0, y0, px, ax, ay, bx, by, half, c);
     }
 
-    /* ----- 6. interchanges' loops: a cloverleaf's and a trumpet's reserve (batch FR7; spec-freight 4.6, D19) ----- */
-
-    /** A loop's radius, in plots, and how far from the crossing's middle along each axis a cloverleaf's loop is centred (batch FR7): 2.5 and 5.0, so a loop fills its quadrant of the 19-plot reserve. */
-    public static final double LOOP_RADIUS = 2.5, LOOP_AT = 5.0;
-
-    /** A trumpet's loop: its radius and how far out along its stub and across it its centre lies, in plots - 2.0, and 5.5 and 3.0, inside the 11-plot reserve. */
-    public static final double TRUMPET_RADIUS = 2.0, TRUMPET_OUT = 5.5, TRUMPET_ACROSS = 3.0;
-
-    /** A loop's and a slip's road across, as a share of a plot: 0.34, a pixel or two wider than a gravel street's, so it reads as a ramp at 8 px a plot and not as a street. */
-    public static final double LOOP_WIDTH = 0.34;
-
-    /** Where a slip leaves its highway, in plots from the junction's middle: just off the highway's band (0.45) and (along it) 9.0 out for a cloverleaf, 10.0 for a trumpet's stub. */
-    public static final double SLIP_OFF = 0.45, SLIP_OUT = 9.0, TRUMPET_SLIP_OUT = 10.0;
+    /* ----- 6. interchanges' loops: a cloverleaf's and a trumpet's reserve (batch FR7; spec-freight 4.6, D19; leaves since MF1) ----- */
 
     /**
-     * The loops of every reserve that reaches the tile, from JUNCTIONS_FROM px
-     * a plot: a cloverleaf's four loops, each with a slip to either highway; a
-     * trumpet's one loop with a slip to its stub and to the highway it ends
-     * at - all in the highway's colour and casing, only on the reserve's own
-     * open plots (never over a highway, a street, a building or a field's
-     * plot of the tile that is not the reserve's).
+     * A loop's road across, as a share of a plot: 0.34, a pixel or two wider than a gravel street's, so it reads as a ramp at 8 px a plot and
+     * not as a street.
+     */
+    public static final double LOOP_WIDTH = 0.34;
+
+    /** How far off a highway's middle a ramp runs where it meets the highway, in plots: just off the highway's band (0.45). */
+    public static final double SLIP_OFF = 0.45;
+
+    /**
+     * A leaf's radius, in plots (MF1, 2026-10-28; Jerus, shot 5: "Draw a cleaner interchange (a cloverleaf's or a diamond's shape)"): a
+     * cloverleaf's loop ramp is one leaf in its quadrant, about 270 degrees of a circle of this radius that touches both highways' edges
+     * - it leaves one on its right and joins the other tangentially - and is open on the side toward the crossing. Until MF1 a loop was a
+     * closed ring, 2.5 plots about a point 5.0 out along each axis, with a straight spoke to each highway: four separate rings round
+     * four islands.
+     */
+    public static final double LEAF_RADIUS = 2.4;
+
+    /** Where a leaf's middle lies, in plots from the junction's middle along each of its two highways: its radius and the highway's edge, so it touches both. */
+    public static final double LEAF_AT = LEAF_RADIUS + SLIP_OFF;
+
+    /**
+     * The outer connector's radius about the leaf's middle, in plots (MF1): in each quadrant of a cloverleaf a second, wider arc about the leaf,
+     * from one highway's edge round the outside of the leaf to the other's, the right-turn ramp of a real cloverleaf. A trumpet has none: its
+     * 11-plot reserve has no room for it beside the stub.
+     */
+    public static final double CONNECTOR_RADIUS = 5.2;
+
+    /**
+     * The loops of every reserve that reaches the tile, from JUNCTIONS_FROM px a plot: a cloverleaf's four leaves, each with its connector
+     * round the outside; a trumpet's one leaf, in the quadrant between its stub and the highway it ends at - all in the highway's colour
+     * and casing, only on the reserve's own open plots (never over a highway, a street, a building or a field's plot of the tile that is not
+     * the reserve's). Each ramp keeps to its own quadrant, so a pixel is measured against one quadrant's ramps.
      */
     private static void loops(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px, ri = TilePainter.RESERVE_INTS;
         for (int r = 0; r < in.reserves; r++) {
             int o = r * ri, kind = in.reserve[o], stub = in.reserve[o + 1], jx = in.reserve[o + 2], jy = in.reserve[o + 3];
             int bx0 = in.reserve[o + 4], by0 = in.reserve[o + 5], bw = in.reserve[o + 6], bh = in.reserve[o + 7];
-            double[][] circles = new double[kind == InterchangeGround.CLOVERLEAF ? 4 : 1][];
-            double[][] slips = new double[kind == InterchangeGround.CLOVERLEAF ? 8 : 2][];
-            if (kind == InterchangeGround.CLOVERLEAF) {
-                int k = 0;
-                for (int sy = -1; sy <= 1; sy += 2) {
-                    for (int sx = -1; sx <= 1; sx += 2) {
-                        circles[k] = new double[] { sx * LOOP_AT, sy * LOOP_AT, LOOP_RADIUS };
-                        slips[2 * k] = spoke(sx * SLIP_OUT, sy * SLIP_OFF, sx * LOOP_AT, sy * LOOP_AT, LOOP_RADIUS);
-                        slips[2 * k + 1] = spoke(sx * SLIP_OFF, sy * SLIP_OUT, sx * LOOP_AT, sy * LOOP_AT, LOOP_RADIUS);
-                        k++;
-                    }
-                }
+            // Each quadrant is two unit axes, one along each highway out from the junction: {ax, ay, bx, by}.
+            double[][] quads;
+            boolean connectors = kind == InterchangeGround.CLOVERLEAF;
+            if (connectors) {
+                quads = new double[][] { { 1, 0, 0, 1 }, { 0, 1, -1, 0 }, { -1, 0, 0, -1 }, { 0, -1, 1, 0 } };
             } else {
                 // The stub's way out is the axis a; across it, to its right, b.
-                double ax = TilePainter.DX[stub], ay = TilePainter.DY[stub], bx = -ay, by = ax;
-                double cx = TRUMPET_OUT * ax + TRUMPET_ACROSS * bx, cy = TRUMPET_OUT * ay + TRUMPET_ACROSS * by;
-                circles[0] = new double[] { cx, cy, TRUMPET_RADIUS };
-                slips[0] = spoke(TRUMPET_SLIP_OUT * ax + SLIP_OFF * bx, TRUMPET_SLIP_OUT * ay + SLIP_OFF * by, cx, cy, TRUMPET_RADIUS);
-                slips[1] = spoke(SLIP_OFF * ax + (TRUMPET_ACROSS + TRUMPET_RADIUS) * bx, SLIP_OFF * ay + (TRUMPET_ACROSS + TRUMPET_RADIUS) * by, cx, cy, TRUMPET_RADIUS);
+                double ax = TilePainter.DX[stub], ay = TilePainter.DY[stub];
+                quads = new double[][] { { ax, ay, -ay, ax } };
             }
             double half = LOOP_WIDTH / 2;
             int cas = px >= 6 ? 1 : 0;
+            double reach = half + (double) cas / px;
             for (int y = Math.max(0, by0); y < Math.min(tile, by0 + bh); y++) {
                 for (int x = Math.max(0, bx0); x < Math.min(tile, bx0 + bw); x++) {
                     int i = y * tile + x;
@@ -3205,10 +3365,12 @@ public final class TileRaster {
                             // The pixel's middle, in plots from the junction plot's middle.
                             double u = x + (dx + 0.5) / px - (jx + 0.5), v = y + (dy + 0.5) / px - (jy + 0.5);
                             double d = Double.MAX_VALUE;
-                            for (double[] c : circles) d = Math.min(d, Math.abs(Math.hypot(u - c[0], v - c[1]) - c[2]));
-                            for (double[] s : slips) d = Math.min(d, segmentDistance(u, v, s[0], s[1], s[2], s[3]));
+                            for (double[] q : quads) {
+                                double pa = u * q[0] + v * q[1], pb = u * q[2] + v * q[3];
+                                if (pa >= 0 && pb >= 0) d = Math.min(d, rampDistance(pa - LEAF_AT, pb - LEAF_AT, connectors));
+                            }
                             if (d <= half) img[(y * px + dy) * w + x * px + dx] = fill;
-                            else if (cas > 0 && d <= half + (double) cas / px) img[(y * px + dy) * w + x * px + dx] = caseC;
+                            else if (cas > 0 && d <= reach) img[(y * px + dy) * w + x * px + dx] = caseC;
                         }
                     }
                 }
@@ -3216,17 +3378,32 @@ public final class TileRaster {
         }
     }
 
-    /** A slip from (ax, ay) to the ring about (cx, cy) of radius r: the straight line toward the ring's middle, ending on it. */
-    private static double[] spoke(double ax, double ay, double cx, double cy, double r) {
-        double dx = cx - ax, dy = cy - ay, d = Math.hypot(dx, dy);
-        return new double[] { ax, ay, cx - dx / d * r, cy - dy / d * r };
-    }
-
-    /** The distance from (x, y) to the segment from (ax, ay) to (bx, by). */
-    private static double segmentDistance(double x, double y, double ax, double ay, double bx, double by) {
-        double dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
-        double t = l2 == 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2));
-        return Math.hypot(x - (ax + t * dx), y - (ay + t * dy));
+    /**
+     * The distance from a point of a quadrant to the quadrant's ramps, the point given from the leaf's middle along the quadrant's two axes
+     * (qa, qb): to the leaf, the circle of LEAF_RADIUS but for the quarter facing the crossing (both coordinates negative), whose ends touch
+     * the two highways' edges - and, with `connector`, to the arc of CONNECTOR_RADIUS about the same middle between the two highways' edges.
+     */
+    private static double rampDistance(double qa, double qb, boolean connector) {
+        double r = Math.sqrt(qa * qa + qb * qb);
+        double d;
+        if (qa < 0 && qb < 0) {
+            // The quarter the leaf leaves open: the nearer of its two ends, (0, -R) and (-R, 0) from the middle.
+            double e1 = Math.sqrt(qa * qa + (qb + LEAF_RADIUS) * (qb + LEAF_RADIUS)), e2 = Math.sqrt((qa + LEAF_RADIUS) * (qa + LEAF_RADIUS) + qb * qb);
+            d = Math.min(e1, e2);
+        } else {
+            d = Math.abs(r - LEAF_RADIUS);
+        }
+        if (!connector) return d;
+        // The connector's arc runs between the highways' edges, where qb (or qa) is -LEAF_RADIUS: its ends are (s, -R) and (-R, s).
+        double s = Math.sqrt(CONNECTOR_RADIUS * CONNECTOR_RADIUS - LEAF_RADIUS * LEAF_RADIUS);
+        double dc;
+        if (qa >= -LEAF_RADIUS && qb >= -LEAF_RADIUS) {
+            dc = Math.abs(r - CONNECTOR_RADIUS);
+        } else {
+            double e1 = Math.sqrt((qa - s) * (qa - s) + (qb + LEAF_RADIUS) * (qb + LEAF_RADIUS)), e2 = Math.sqrt((qa + LEAF_RADIUS) * (qa + LEAF_RADIUS) + (qb - s) * (qb - s));
+            dc = Math.min(e1, e2);
+        }
+        return Math.min(d, dc);
     }
 
     /** Whether plot (x, y) of the tile is the junction of a reserve that reaches it: where loops replace a stack's corner slips. */
