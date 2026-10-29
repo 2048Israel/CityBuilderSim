@@ -1436,6 +1436,17 @@ public class BankCheck {
              * nothing, so it owes nothing. Section 12 asserts the cause.
              */
             books.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
+            /*
+             * ...AND WOOD PRODUCTS (WN3), for the same premise: the book measured is a bank that stands. On the world's band the
+             * wood sector raises a Panel Mill ($187M of face, borrowed) and a Wood Pellet Mill ($39M) in this town, their sheds sit full
+             * (panels and pellets 50,400 of 63,000 from month 84 to 102, none moving), the sector loses $450k to $850k a month, defaults
+             * in months 104 to 107 and the bank writes off $139M against $35M of equity: equity -$104M, no deposit rate, the rescue's
+             * guard (13) met with a bank under water. The fixture is about the books of a bank that lives, not about a sector's default
+             * (a failed bank has no book, above), so the wood sector builds nothing here, as Materials and Luxury Retail do. (A works
+             * that keeps its inputs coming into a full shed is another batch's fault, Sector.bid() / produceStock(), and this hold stays
+             * right after it: the book is caused, not hoped for.)
+             */
+            books.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
             books.simulateMonths(24);
             books.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000);
             books.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000);
@@ -3306,6 +3317,11 @@ public class BankCheck {
             city.buildStack(template(city, "Coal Power Plant"), 1, true);
             city.buildStack(template(city, "Water Treatment Plant"), 1, true);
             city.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000);
+            // WN3: the wood sector builds nothing here, as in the first city of this harness (see its hold, above). On the world's band
+            // it raises a pellet mill and a panel mill ($92M borrowed by month 13, $111M by 61), defaults in months 66 to 73 (write-offs
+            // $13M, $16M, $11M, $8M a month against a bank of $49M equity) and the bank is under water: the rescue's guard below is
+            // about a bank that stands, and this city's bank must be one when it is read.
+            city.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
             // From the first month: a city opens with its founding branch
             // standing (Game.foundingBank()), so the month it is capitalised
             // and takes the standing book over is the first played.

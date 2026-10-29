@@ -770,9 +770,16 @@ public class BondCheck {
         em.setSectorCash(W, -wShort);
         // ...and a sector the desk will lend to: the least levered of the
         // rest - one owing nothing if there is one - short a hundredth of what it owns.
+        //
+        // ...ONE WHOSE MONTH DOES NOT PAY IT (WN3): the desk lends the till's shortfall at the month's end, and a sector earning in
+        // the month is less short at the end than it was set (the assertion reads "lent at least what it was set short"). On the
+        // world's band the least levered sector here was Industry, with a profit of $232k a month against a short of $464k: it
+        // was lent $266k, the month having paid the rest. So the sector short is the least levered of those that lost money last
+        // month, and its month does not refill the till.
         String z = null;
         for (String s : Sectors.KEYS) {
             if (s.equals(Y) || s.equals(W) || s.equals(ISSUER) || !(credit.getAssets(s) > 0) || credit.isBorrowingBlocked(s)) continue;
+            if (!(g.getSectors().byKey(s).getNetIncome() < 0)) continue;
             if (z == null || credit.getPrincipal(s) / credit.getAssets(s) < credit.getPrincipal(z) / credit.getAssets(z)) z = s;
         }
         final String Z = z;

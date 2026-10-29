@@ -1008,36 +1008,51 @@ public class CreditCheck {
 
         // ...and then held broke and banned for thirty months while the city
         // grows into its housing, so coverage cannot follow demand.
+        // One month held broke and banned (the body of the thirty below, and of the wait after them).
+        Runnable heldBroke = () -> {
+            econ.setSectorCash(sector, 10);
+            ledger.setAssets(sector, -1);
+            /*
+             * THE BAN IS RENEWED BY OWING, NOT BY ASKING (FR2, 2026-10-19).
+             * restructure() writes down what the sector owes and counts the
+             * default that re-arms the ban only if there is something to
+             * write down or an overdraft to forgive; the loan above is
+             * written off whole, and a sector held at D$10k owes nothing, so
+             * the call each month was a no-op unless the shop's own month
+             * happened to leave it short (an interim loan for the unpaid
+             * rest). It did, in month 16 on the tree before FR2's last
+             * commit (trucks bought toward the works on site) moved the
+             * economy a little: a D$6k interim loan, the second default, a
+             * ban of 24 months that carried the fixture to its end. On the
+             * next tree the shop's cash ended every month above nothing
+             * (D$1.3k at the lowest), the first 12-month ban lapsed after
+             * month 11, and "retail is under a borrowing ban" failed.
+             * Standing next to its condition, again. So when the ban has
+             * lapsed the sector owes a lot against nothing, as at the
+             * start, and the restructure fires - the exclusion doubling
+             * to 24 months, as it does for a firm that defaults twice.
+             */
+            if (!ledger.isBorrowingBlocked(sector)) ledger.issueLoan(sector, 5_000_000, banned.getMonth());
+            ledger.restructure(sector);
+            banned.simulateMonths(1);
+            econ.setSectorCash(sector, 10);
+        };
         quietly(() -> {
-            for (int mm = 0; mm < 30; mm++) {
-                econ.setSectorCash(sector, 10);
-                ledger.setAssets(sector, -1);
-                /*
-                 * THE BAN IS RENEWED BY OWING, NOT BY ASKING (FR2, 2026-10-19).
-                 * restructure() writes down what the sector owes and counts the
-                 * default that re-arms the ban only if there is something to
-                 * write down or an overdraft to forgive; the loan above is
-                 * written off whole, and a sector held at D$10k owes nothing, so
-                 * the call each month was a no-op unless the shop's own month
-                 * happened to leave it short (an interim loan for the unpaid
-                 * rest). It did, in month 16 on the tree before FR2's last
-                 * commit (trucks bought toward the works on site) moved the
-                 * economy a little: a D$6k interim loan, the second default, a
-                 * ban of 24 months that carried the fixture to its end. On the
-                 * next tree the shop's cash ended every month above nothing
-                 * (D$1.3k at the lowest), the first 12-month ban lapsed after
-                 * month 11, and "retail is under a borrowing ban" failed.
-                 * Standing next to its condition, again. So when the ban has
-                 * lapsed the sector owes a lot against nothing, as at the
-                 * start, and the restructure fires - the exclusion doubling
-                 * to 24 months, as it does for a firm that defaults twice.
-                 */
-                if (!ledger.isBorrowingBlocked(sector)) ledger.issueLoan(sector, 5_000_000, banned.getMonth());
-                ledger.restructure(sector);
-                banned.simulateMonths(1);
-                econ.setSectorCash(sector, 10);
-            }
+            for (int mm = 0; mm < 30; mm++) heldBroke.run();
         });
+        /*
+         * NO SHOP IN FLIGHT WHEN THE PASSES BEGIN (WN3). The passes below are about a retailer that wants shops and may not
+         * borrow for them; one with a shop on site holds "already building", a third reason (Retail.plan(), the first line),
+         * and neither an offering nor the ban's words can print. On the world's band a shop takes months to open (the starting
+         * city's own took nineteen, where twelve were spent opening it; the offerings the owners buy in the thirty months build
+         * theirs over three to five more), so the thirtieth month met the passes with a shop still on site and all three
+         * passes read "already building" (measured: m44-m46, nothing raised, no refusal). A fixture whose verdict depends on
+         * how long it is run is standing next to its condition, so the held months go on, the ban renewed as before, until
+         * the shops on site have opened: the next month's plan is then the passes' first.
+         */
+        for (int wait = 0; wait < 60 && retailShopsOnSite(banned, sector) > 0; wait++) quietly(heldBroke);
+        assertTrue("fixture: no shop is on site when the passes begin, so retail's plan is not \"already building\"",
+                retailShopsOnSite(banned, sector) == 0);
         ledger.setAssets(sector, -1);
         // ...and once more at the end, so a ban that lapsed in the last month is not the one the assertion meets.
         if (!ledger.isBorrowingBlocked(sector)) ledger.issueLoan(sector, 5_000_000, banned.getMonth());
@@ -1992,6 +2007,11 @@ public class CreditCheck {
         // band cannot quietly turn these assertions into "the cap equals the cap".
         DebtManager shape = new DebtManager();
         return rate > shape.floorRate() + 1e-4 && rate < shape.ceilingRate() - 1e-4;
+    }
+
+    /** The shops on site, as Retail.plan() counts them for its "already building" (a Filling Station is the forecourts' order). */
+    static double retailShopsOnSite(Game game, String sector) {
+        return game.getBuildingManager().underConstructionBySector(sector, t -> t.getCoverage() > 0 ? 1 : 0);
     }
 
     /** Runs a stretch of the game without its per-month console output. */

@@ -143,6 +143,12 @@ public class PolicyPreviewCheck {
             g.run();
             // AN1 (2026-10-22): the D$ is held (see above); the reload twin of section 5 runs no month, so no side of it floats.
             g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
+            // WN3: the cement sector builds nothing here. On the world's band it borrows $53M by month 13 for a Lime Kiln the town's
+            // crews take 45 months to open (its plan reads "already building" the while), pays $343k a month of interest on it with
+            // nothing coming in, defaults in months 48 to 56 ($9.7M of write-offs in month 53 alone) and the bank, at $35M of equity,
+            // makes a loss through month 63: sections 6 and 7 are about the bank's profit tax, and there is none to preview. The
+            // fixture measures the Policy tab's previews, not the credit cycle, so no sector borrows a works the town cannot build.
+            g.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
