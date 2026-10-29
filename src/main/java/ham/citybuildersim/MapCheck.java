@@ -11974,8 +11974,8 @@ public class MapCheck {
     /** The side of the block the played city buys, in plots: 32, a hole in its built-up ground's box (the played city's ground is irregular). */
     static final int PURCHASE_SIDE = 32;
 
-    /** The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting: 58, nine tenths of the 65 this section measured on the PC the old way (today's paths, the median month, the mean of four runs, 63.4 to 67.2: the stamp 2.3, the far screen 29.6, the L0 screen 32.5, the chain 0.2; docs/queue/UP3-notes.md) - the stamp and the far view's unmoved nodes taken off it; the L0 screen's band check, half of what is left, is UP3-C's. */
-    static final double MAP_MONTH_MS = 58;
+    /** The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped (since UP5 keyed, and read where the key moved) and the chain's handing out and adopting: 19 (batch UP5, docs/queue/UP5-notes.md), nine tenths of the 21.3 this section measured on the PC the way the month was (main's classes at MF1, 0.8.70, the median month, the mean of three rounds run in turn with UP5's: 21.4, 21.4, 21.1), as UP3 set 58 from the 65 of the way before it; UP5's own median month is 17.2 (17.0, 16.5, 18.1), a tenth under it. */
+    static final double MAP_MONTH_MS = 19;
 
     /** The kinds of month: the grown one, one built type raised by one, and the first, which only draws. */
     static final int GROW = 0, ONE = 1, SETTLE = 2;
