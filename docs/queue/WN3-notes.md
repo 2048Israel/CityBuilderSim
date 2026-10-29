@@ -142,7 +142,25 @@ the study, so it is Jerus's.
 
 ## 4. The checks
 
-[SUITE]
+- **The full suite** (`./batch-check.sh`, earth-2.bin and world-1.bin named): **exit 4: one NEW red, LongPlaytest's two layout findings** (5 item 1: map faults the market's larger
+  city exposes, still there on main 0.8.70 after MF1: "a building on the map moved" m3989-m3995, "an old works moved"
+  m4000), every other harness green; 3 timing lines soft (SaveSlotCheck, MapCheck, KeptCheck), Stale no firm finding. Before the harnesses were
+  mended it was 36 harnesses and 169 red lines; after the model's fixes (3, ★7-8) 32 and 149. Each was mended to cause
+  its condition on the world's band, no assertion moved (four slices, M1-M4); where the premise is a fixed world price
+  the harness's city plays on the literals (`Game.playOnLiterals()`): RefineryCheck, OilCheck, ManufacturingCheck,
+  ScaleCheck (a big city moves its own prices on purpose), LabourCheck, InvestCheck's older saves, AutoBuildCheck,
+  CurveCheck, MonetaryCheck and PassThroughCheck (5 item 5). Two gates were corrected, not loosened: SectorBooksCheck's
+  imports identity now counts the named imported services (Consumables, the shuttle tankers: imports with no good,
+  MaterialsCheck's own identity), and PlanCheck counts homes cells by place, not by sample (its 1-in-59,049 premise is
+  of distinct cells). FloatLinkCheck reads the businesses' coupons at the settle (they agree to the bit a month on).
+- **With no world file the game is main's**: the default playtest traced from the final classes, its eight CSVs
+  byte-identical to main's (27dc925f, built apart), its log but for the run-time line.
+- **The trace with the file** moves: §3's table (the default city's plateau m540-m1260, then 583,738 against 544,112).
+- **The ensemble** (`docs/ensemble/WN3.md`, 80/80 on 8aba2e2d; the merged harness mends since read no model figure):
+  23 of 26 against 0.8.68. Final population up under every policy (AUTO2 304,036 against 255,250); 16/16 reach 40,000
+  (m1,122 against m1,222); no playtest finding; CC1-S's seeds 4 and 5 end 298,907 and 309,166. A2 FAIL 10 [2 to 12]
+  (0.8.68 FAIL [3 to 31]); S1 FAIL, a 64-month spell (0.8.68 80); **R3 newly FAIL**, 6 HIGH seeds over +1 point (0.8.68
+  2); **seed 0 trapped** (§3). For (2b) the ensemble must be run again on its build.
 
 ## 5. Found on the way
 
@@ -153,7 +171,8 @@ the study, so it is Jerus's.
    its dated log place (m3995, district (-2,-3): 10 boxes moved); (2) ground bought inside a built district moves old
    works (m2078, district (0,0): 112 plots bought, a Rod Mill, a Meat Works and a Bottling Plant each lost a standing
    box; again m2323); (3) the undated interchange reserve (`FIXED_RESERVE`, 335 plots) laid across standing works
-   (m2782, district (-1,0): 41 of 65 Construction Depots moved). The watcher is not weakened.
+   (m2782, district (-1,0): 41 of 65 Construction Depots moved). The watcher is not weakened. They are LongPlaytest's
+   only red, and still there after MF1 (0.8.70): a gate passes them only on Jerus's word, or after a map batch mends them.
 2. **A dormant load-order fault in old-save code**: at a load `inferContracts` runs before the wage rates are struck,
    so a House's labour is read unindexed (26.600 against 26.673). InvestCheck's older-save cities now play on the
    literals; the fault is left.
