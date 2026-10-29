@@ -2136,8 +2136,21 @@ final class SectorScreen {
                 dear ? "Above fair value by more than the companies' buy-back tolerance: buyers paid more than the "
                         + "register reckons it is worth." : cheap ? "Below fair value by more than the tolerance: sellers "
                         + "took less to get out." : null));
-        strip.getChildren().add(miniFigure("FAIR VALUE", tightMoney(toDollars(fairValue), false), "the register's reckoning",
-                Palette.TEXT_HEAD, null));
+        // ...and what it is (EM1): its money past a cushion at face, and its business on what it earns.
+        boolean onRecord = register.valuedOnRecord(company);
+        double spareShare = market.fairSpare(company);
+        strip.getChildren().add(miniFigure("FAIR VALUE", tightMoney(toDollars(fairValue), false), onRecord
+                        ? tightMoney(toDollars(spareShare), false) + " money + " + tightMoney(toDollars(fairValue - spareShare), false) + " business"
+                        : "on its prospects, in its first year",
+                Palette.TEXT_HEAD, onRecord
+                        ? String.format("The money it holds past %.0f months of its costs - its till, its dollars abroad and the bonds it holds - "
+                                + "at face, and its net income over the last year capitalised at %.0f%%: the world's rate plus the premium "
+                                + "the world asks of a share here. Every holder trades on this.", Exchange.BUYBACK_CUSHION_MONTHS,
+                                Equity.requiredReturn(DebtManager.WORLD_BASE_RATE) * 100)
+                        : "Under a year on the record it is held on its prospects: its book, or its dividend capitalised, whichever is more."));
+        strip.getChildren().add(miniFigure("RETURN", String.format("%.1f%%", unsigned0(market.expectedReturn(company, price) * 100, 1)),
+                "a year at the price", Palette.TEXT_HEAD, "What it earns, and what its money earns, over a year, as a share of the "
+                        + "price: what its holders weigh against the bank's deposit rate, the city's paper, the dollars abroad and the other shares."));
         strip.getChildren().add(miniFigure("YIELD", String.format("%.1f%%", unsigned0(market.yieldAt(register, company, price) * 100, 1)),
                 "on the dividend it paid over the year", Palette.TEXT_HEAD, null));
         strip.getChildren().add(miniFigure("MARKET CAP", m(market.marketCap(register, company)), "at the last trade",
