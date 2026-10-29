@@ -27,6 +27,9 @@ public class SaveFileCheck {
 
     static int fails = 0;
 
+    /** The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). */
+    static final Nations.Path OTHER_PATH = Nations.DEFAULT_PATH == Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nations.Path.RANDOM;
+
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-58s %s%n", label, ok ? "OK" : "FAIL");
@@ -259,7 +262,7 @@ public class SaveFileCheck {
         // of the world beyond it that is not the default's either.
         Founding arden = Founding.custom("Arden", 62_500, 12_500, .02)
                 .withCurrency(Currency.typed("Arden crown", "ARC")).withWorldSeed(987_654_321L)
-                .withPath(Nations.Path.RANDOM, 2_026_102_8L);
+                .withPath(OTHER_PATH, 2_026_102_8L);
         data.setFounding(arden);
 
         GameFiles.Result wrote = data.saveGame(trip, 1);
@@ -286,7 +289,7 @@ public class SaveFileCheck {
         assertEquals("...saved under worldSeed", read.getWorldSeed(), 987_654_321L);
         assertTrue("fixture: Arden's path and seed are not the defaults, so a default read back could not pass",
                 arden.getPath() != Nations.DEFAULT_PATH && arden.getPathSeed() != Nations.DEFAULT_SEED);
-        assertEquals("...and the path of the world beyond it (WN1; spec-nations 7)", readBack.getPath(), Nations.Path.RANDOM);
+        assertEquals("...and the path of the world beyond it (WN1; spec-nations 7)", readBack.getPath(), OTHER_PATH);
         assertEquals("...and the seed that draws it, not the ground's", readBack.getPathSeed(), 2_026_102_8L);
         assertEquals("...saved under worldPath, by the enum's name", read.getWorldPath(), "RANDOM");
         assertEquals("...and under pathSeed", read.getPathSeed(), 2_026_102_8L);
@@ -1191,7 +1194,7 @@ public class SaveFileCheck {
 
         // Founded on a path that is not the default's (WN1): a default read back on both sides would pass without the save carrying anything.
         Game full = new Game(new GameFiles(root.resolve("everything"), root.resolve("no-legacy")),
-                Founding.defaults().withPath(Nations.Path.RANDOM, 2_026_102_8L));
+                Founding.defaults().withPath(OTHER_PATH, 2_026_102_8L));
         full.run();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the

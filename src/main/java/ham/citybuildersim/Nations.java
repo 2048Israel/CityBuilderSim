@@ -41,16 +41,21 @@ import java.util.Set;
  * Past 2100 a Historical nation's growth eases to LONG_RUN_GROWTH (the
  * leaderboard's D8; the nations study's D14) and people are held.
  *
- * Nothing in the economy reads this yet (WN1): the map is WN2's and the market
- * WN3's. It copies what it needs from the file and keeps no reference to it.
+ * The map draws it (WN2) and the world market trades on it (WN3). It copies
+ * what it needs from the file and keeps no reference to it.
  */
 public final class Nations {
 
     /** The world's path, picked at founding (D9): the real years from January 2000, or a path drawn from the seed. */
     public enum Path { HISTORICAL, RANDOM }
 
-    /** The path a founding takes when nobody picks one: Historical, the founding screen's first chip (board 4). */
-    public static final Path DEFAULT_PATH = Path.HISTORICAL;
+    /**
+     * The path a founding takes when nobody picks one: Random (WN3; Jerus, 2026-10-29: "(2a) Random by default").
+     * WHY: on the world market a young city on Historical meets the 2000s commodity boom as imported inflation
+     * (the default playtest's prices 4.38x by 2012, its treasury dry in 2008, ~5,000 people for 60 years; WN3-B).
+     * Historical stays the founding screen's first chip, for the player who picks it.
+     */
+    public static final Path DEFAULT_PATH = Path.RANDOM;
 
     /** The path's seed when nobody rolls one: 48,213, the founding board's (spec-nations, board 4), so every harness and the playtest meet one world. */
     public static final long DEFAULT_SEED = 48_213L;
