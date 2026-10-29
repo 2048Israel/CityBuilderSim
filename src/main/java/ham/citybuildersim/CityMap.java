@@ -464,6 +464,13 @@ public final class CityMap {
 
     private final List<District> districts = new ArrayList<>();
     /**
+     * The districts whose log may have moved - exactly those with logDirty set, each once, in the order they were marked (UP5, THE LOG
+     * without a walk of every district): a district joins when it is made or first marked since the last logChanges(), logChanges()
+     * empties it, and logChanges(false) walks this, not districts (29,255 of them at 10 billion, to find the few a month touched).
+     * A district's log is its own, so the order does not show in a record.
+     */
+    private final List<District> logDirtyList = new ArrayList<>();
+    /**
      * The districts by key(dx, dy), stored under spread(key): a Long's hash is its halves xor-ed (dx ^ dy), which only a few hundred values of a city
      * round the origin share, so the HashMap's bins grew into trees and every lookup walked one. Only get, put and remove touch it (districtAt(),
      * indexDistrict(), unindexDistrict()), never iterated, so the spread is one-to-one and invisible.
@@ -668,6 +675,7 @@ public final class CityMap {
         districts.add(d);
         d.index = districts.size() - 1;
         indexDistrict(d);
+        logDirtyList.add(d); // a district made new is dirty (the field's initialiser)
         return d;
     }
 
@@ -892,6 +900,8 @@ public final class CityMap {
         if (landmasses != null && holdsMasked(dx, dy)) return d;
         districts.remove(districts.size() - 1);
         unindexDistrict(d);
+        int k = logDirtyList.lastIndexOf(d); // it joined the log's list when made, a moment ago: not left pointing at a district off the map
+        if (k >= 0) logDirtyList.remove(k);
         return null;
     }
 
@@ -1041,9 +1051,9 @@ public final class CityMap {
         logChanges(false);
     }
 
-    /** ...of every district, dirty or not (all): what a sidecar is written after, so a count moved by hand (a harness's) is a record too and what is written always adds up. */
+    /** ...of every district, dirty or not (all): what a sidecar is written after, so a count moved by hand (a harness's) is a record too and what is written always adds up. Without all, only the districts on the dirty list (UP5). */
     void logChanges(boolean all) {
-        for (District d : districts) {
+        for (District d : all ? districts : logDirtyList) {
             if (!all && !d.logDirty) continue;
             d.logDirty = false;
             int[] was = d.logged;
@@ -1057,6 +1067,26 @@ public final class CityMap {
             if (was != null) System.arraycopy(d.counts, 0, was, 0, d.counts.length);
             else if (any) d.logged = d.counts.clone();
         }
+        logDirtyList.clear(); // every district is clean now, those off the list as well
+    }
+
+    /** Marks a district's counts as possibly moved since they were logged, and puts it on the dirty list the first time (UP5). */
+    private void markLogDirty(District d) {
+        if (d.logDirty) return;
+        d.logDirty = true;
+        logDirtyList.add(d);
+    }
+
+    /** How many districts' last logged counts are not their counts (a null log with all counts 0 is equal): 0 after logChanges() unless the dirty list left a district out (a harness's check, UP5). */
+    int logBehind() {
+        int n = 0;
+        for (District d : districts) {
+            int[] was = d.logged;
+            for (int t = 0; t < d.counts.length; t++) {
+                if (d.counts[t] != (was == null ? 0 : was[t])) { n++; break; }
+            }
+        }
+        return n;
     }
 
     /** Every district's whole log so far one batch, placed in today's order: after a canonical deal, a square city's or a sidecar of FORMAT 8 or older read. */
@@ -1489,7 +1519,7 @@ public final class CityMap {
         d.usedCells += k * BuildingVisual.cells(types[t]);
         if (types[t].road() != BuildingVisual.NOT_A_ROAD) d.usedRoad += k * BuildingVisual.cells(types[t]);
         d.version++;
-        d.logDirty = true;
+        markLogDirty(d);
         changes++;
         if (k > 0) {
             if (i < lo[t]) lo[t] = i;
@@ -1633,7 +1663,7 @@ public final class CityMap {
             d.usedRoad = roadOf(d);
             d.version++;
             // ...every district's counts were dealt here, directly: all are to be logged.
-            d.logDirty = true;
+            markLogDirty(d);
         }
         rangeTypes();
         innerCursor = 0;
@@ -10100,6 +10130,7 @@ public final class CityMap {
                     d.logged = any ? d.counts.clone() : null;
                     d.logDirty = false;
                 }
+                m.logDirtyList.clear(); // every district was just read clean
             }
             // Each district's journal of the runs (FORMAT 11, FX7): a record whose plot or kinds are out of range makes the sidecar unread; an older sidecar's journals are empty.
             if (format >= 11) {
