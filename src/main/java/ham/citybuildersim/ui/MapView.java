@@ -8,10 +8,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -21,6 +23,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -215,6 +218,21 @@ import static ham.citybuildersim.ui.Pieces.*;
  * under the box as it is drawn), and the picked ground is one shape, tinted
  * and edged in the offers' pink, on its free ground only. The card names the
  * picked ground as "Your ground - N blocks" beside the offers.
+ *
+ * THE NATIONS AND THEIR BORDERS (WN2; docs/studies/spec-nations.md 6.1 and 8,
+ * board 1; Jerus: "a toggle on the map ui", "a map button to ... toggle
+ * borders", "dot ... each nation stats on their land", "clicking would show
+ * more stats", "legend should be collapsable"). On an Earth world whose world
+ * file is here, the head's Nations and Borders chips (GamePrefs, kept beside
+ * the saves) draw what NationsMap works out and nothing here recomputes: on
+ * the globe the borders dashed white at the level of detail the view takes and
+ * a dot at each nation's largest place, by its output, its name and figures
+ * written where they fit; on the city's plane (the land office's small map
+ * too) the borders only where one crosses the city's ground and its offers. A
+ * dot's hover says its figures, a click on a dot or on a nation's land opens
+ * its card beside the point, and the legend folds to its head line. The map is
+ * built once on WORKER and nothing is drawn or read of it while a chip is off.
+ * The trade routes are WN3's: its chip comes with its lanes.
  */
 final class MapView {
 
@@ -511,6 +529,8 @@ final class MapView {
         picks.clear();
         bought = null;
         hideBuyCard();
+        hideNationCard();
+        forgetNations();
         reset();
         resetGlobe();
         side = place = litSide = litPlace = overSide = overPlace = -1;
@@ -590,6 +610,7 @@ final class MapView {
         if (expanded) {
             syncHead();
             syncCard();
+            syncNationCard();
         }
         if (tiles != null) more |= paint(deadline);
         if (hoverAt != null) {
@@ -675,6 +696,7 @@ final class MapView {
             dirty = true;
         }
         globeUp(land, market, landKey);
+        nationsUp(land);
         if (tiles != null) {
             long v = MapTiles.version(shownMap, land);
             if (v != version) {
@@ -1002,11 +1024,13 @@ final class MapView {
                 gc.setGlobalAlpha(1);
             }
         }
+        planeBorders(gc, f);
         worldLines(gc, f);
         overlays(gc, f);
         drawRings(gc);
         drawBox(gc);
         placeBuyCard();
+        placeNationCard();
     }
 
     /* =====================================================================
@@ -1979,6 +2003,8 @@ final class MapView {
         chartsAsked.clear();
         chartsWanted = null;
         chartGen++;
+        marksView = null;
+        marks = List.of();
     }
 
     /** What the globe drew from and drew: another map, or another view of the world. */
@@ -2431,6 +2457,7 @@ final class MapView {
         int tier = globe.tier();
         composeGlobe(tier == GlobeFrame.PICTURE ? MODE_PICTURE : MODE_GROUND);
         drawGlobeImage(gc);
+        globeNations(gc);
         Game g = ui.game;
         CityLand land = g.getCityLand();
         LandMarket market = g.getLandManager().getMarket();
@@ -2449,6 +2476,7 @@ final class MapView {
         drawRings(gc);
         drawBox(gc);
         placeBuyCard();
+        placeNationCard();
     }
 
     /** The note while the planet's picture is made, the first time an Earth map is expanded. */
@@ -2725,16 +2753,30 @@ final class MapView {
                 if (os < 0) ground = groundLines(x, y);
             }
         }
+        // The nations (WN2): over a dot, its figures alone and no offer lit; over a nation's or an area's land, whose it is, first.
+        List<String> dotWords = nationHoverWords(sx, sy);
+        String owner = dotWords == null ? ownerWords(sx, sy) : null;
+        if (dotWords != null) {
+            os = op = -1;
+            boxes = false;
+            ground = null;
+        }
         if (os != overSide || op != overPlace) {
             overSide = os;
             overPlace = op;
             dirty = true;
         }
         cursorFor(boxes);
+        if (dotWords != null) {
+            if (!pressed) canvas.setCursor(javafx.scene.Cursor.HAND);
+            showCard(dotWords, sx, sy, globe.width(), globe.height());
+            return;
+        }
         List<String> lines = new ArrayList<>(LandMap.globeHoverWords(globe, land, market, sx, sy, drawnAt(sx, sy), CARD_FIELDS));
         // An offer drawn here - the GROUND tier's - is bought with a click (0.7.137).
         if (os >= 0 && canPick()) lines.add(CLICK_TO_BUY);
         if (ground != null) groundInto(lines, ground);
+        if (owner != null) lines.add(0, owner);
         showCard(lines, sx, sy, globe.width(), globe.height());
     }
 
@@ -3033,6 +3075,8 @@ final class MapView {
      * closes the card, and shift there does nothing.
      */
     private void click(double sx, double sy, boolean shift) {
+        // A nation's dot, or its land where the city's plane is not drawn (WN2): its card, and nothing else.
+        if (!shift && nationClick(sx, sy)) return;
         Game g = ui.game;
         long[] at = plotAt(sx, sy);
         if (at == null) {
@@ -3167,10 +3211,10 @@ final class MapView {
 
     /** Whether a hover card's line is the blue last line telling the player what a click does. */
     private static boolean isHint(String line) {
-        return CLICK_TO_BUY.equals(line) || LandMap.CLICK_TO_PICK.equals(line) || CLICK_TO_DROP.equals(line);
+        return CLICK_TO_BUY.equals(line) || LandMap.CLICK_TO_PICK.equals(line) || CLICK_TO_DROP.equals(line) || NationsMap.CLICK_FOR_CARD.equals(line);
     }
 
-    /** The expanded map's hover card: its lines, the first bold, by the pointer and inside the view - the hint last (CLICK_TO_BUY, CLICK_TO_PICK, CLICK_TO_DROP) in the accent's light blue. */
+    /** The expanded map's hover card: its lines, the first bold, by the pointer and inside the view - the hint last (CLICK_TO_BUY, CLICK_TO_PICK, CLICK_TO_DROP, and a nation's NationsMap.CLICK_FOR_CARD) in the accent's light blue. */
     private void showCard(List<String> lines, double sx, double sy, double vw, double vh) {
         if (lines.isEmpty()) {
             card.setVisible(false);
@@ -3333,6 +3377,8 @@ final class MapView {
         }
         receiptShown = false;
         cardFor = cardKey(ids);
+        // One card at a time (WN2): a nation's goes when the buying card comes.
+        hideNationCard();
         List<double[]> sites = new ArrayList<>();
         CityLand land = ui.game.getCityLand();
         for (LandParcel p : listed(m.ids())) {
@@ -3459,6 +3505,7 @@ final class MapView {
         picks.clear();
         bought = null;
         hideBuyCard();
+        hideNationCard();
         requestDraw();
     }
 
@@ -3597,6 +3644,12 @@ final class MapView {
     boolean cardKey(javafx.scene.input.KeyEvent e) {
         if (!expanded) return false;
         KeyCode k = e.getCode();
+        // A nation's card first (WN2): there is only ever one card, so this and the buying card's rule never both apply.
+        if (k == KeyCode.ESCAPE && nationBox != null && nationBox.isVisible()) {
+            hideNationCard();
+            requestDraw();
+            return true;
+        }
         if (k == KeyCode.ESCAPE && buyBox != null && buyBox.isVisible()) {
             closeCard();
             return true;
@@ -3623,6 +3676,7 @@ final class MapView {
      */
     private void syncHead() {
         if (headMoney == null) return;
+        syncChips();
         Game g = ui.game;
         picks.live(g);
         String said = picks.dropNote();
@@ -3636,6 +3690,573 @@ final class MapView {
         headMoney.setText(ui.landScreen.mapHeadMoney());
         // The office's chips on one line, the chip strip's 6 px apart: a FlowPane would ask for its whole wrap length in the head.
         headPay.getChildren().setAll(new ArrayList<>(ui.landScreen.mapPayChips(this).getChildren()));
+    }
+
+    /* =====================================================================
+       THE NATIONS AND THEIR BORDERS (WN2; docs/studies/spec-nations.md 6.1, 8)
+
+       Jerus: "a toggle on the map ui", "a map button to ... toggle borders",
+       "dot ... each nation stats on their land ... canada would show gdp and
+       ... population", "clicking would show more stats", "legend should be
+       collapsable". The model half is NationsMap (the borders at a view's level
+       of detail, the dots and where the names fit, what is under a point, the
+       card): this is the toolkit's, and it recomputes no figure, colour or
+       placement. THE MAP MUST NOT GET SLOWER (MP1 made it fast): nothing is
+       drawn or read of the nations while a chip is off; the file is read on the
+       FX thread only for a click's or a hover's one ownerAt(); a view at rest
+       draws from NationsMap's caches and the marks kept here. The trade routes
+       are WN3's, and so is their chip.
+       ===================================================================== */
+
+    /** The Nations chip's tooltip (WN2). */
+    static final String NATIONS_TIP = "A dot at each nation's largest port or city, by its output; its name, output and people on its land where they fit."
+            + " Click one for its card.";
+
+    /** ...and the Borders chip's. */
+    static final String BORDERS_TIP = "The nations' borders, dashed white, at the far views; up close only where one crosses the city's ground.";
+
+    /** A dot's label, the name: sans semibold, 11 px (the board's .lbl)... */
+    static final double LABEL_NAME_PX = 11;
+
+    /** ...and the figures under it, mono, 9.5 px (the board's .lbl2). */
+    static final double LABEL_FIGURES_PX = 9.5;
+
+    /** A dot's edge, in pixels: 1.2, in NationsMap.DOT_EDGE_ARGB (the board's). */
+    static final double DOT_EDGE_PX = 1.2;
+
+    /** A label's halo, drawn under its words: 3 px wide in NationsMap.DOT_EDGE_ARGB at 0.75 (the board's .lbl stroke). */
+    static final double HALO_PX = 3, HALO_ALPHA = 0.75;
+
+    /** The widths of label words kept, by string (the names never change and the figures change once a year): the 600 most recently used. */
+    static final int WIDTHS_MOST = 600;
+
+    /** A nation's card is this wide, in pixels: 330 (the board's .card)... */
+    static final double NATION_CARD_W = 330;
+
+    /** ...and its head, its distance line and its rows stand this many pixels apart: 4. */
+    static final double NATION_CARD_GAP = 4;
+
+    /**
+     * The nations' map, built once for the process on WORKER from the world file, which is kept open for the game's life - the map's exact
+     * ownerAt() reads it, so it is never closed. Null until the first Earth map asks (askNationsBuild()); it completes with null where the file
+     * is not here or will not open (one println says so) and the chips are not shown.
+     */
+    private static volatile CompletableFuture<NationsMap> nationsBuild;
+
+    /** The build asked of WORKER the first time it is wanted. */
+    private static synchronized CompletableFuture<NationsMap> askNationsBuild() {
+        if (nationsBuild == null) nationsBuild = CompletableFuture.supplyAsync(MapView::buildNations, WORKER);
+        return nationsBuild;
+    }
+
+    /** The world file opened and the map made of it, on WORKER; null (and a line in the log) where there is no file or it will not open. */
+    private static NationsMap buildNations() {
+        java.nio.file.Path file = WorldData.locate();
+        if (file == null) {
+            System.out.println("The nations are not on the map: the world file is not here.");
+            return null;
+        }
+        WorldData data = null;
+        try {
+            data = WorldData.open(file);
+            return NationsMap.of(data);
+        } catch (java.io.IOException | RuntimeException e) {
+            System.out.println("The nations are not on the map: the world file " + file + " would not open: " + e);
+            if (data != null) {
+                try {
+                    data.close();
+                } catch (java.io.IOException ignored) {
+                    // Nothing more to do with a file that will not close.
+                }
+            }
+            return null;
+        }
+    }
+
+    /** The nations' figures of the game on the screen (Game.getNations(), asked on WORKER: its first build is the path to 2100), and the game they are of; and the game they were asked for. */
+    private Nations nations;
+    private Game nationsOf, nationsAskedOf;
+    /** Whether this view waits for the map's build to come back (it draws again when it does). */
+    private boolean nationsWaiting;
+
+    /** The dots and labels of the last view drawn, and what they were made for: the view (a copy), the year, the figures and the map. The hover and the click read the same list. */
+    private List<NationsMap.Mark> marks = List.of();
+    private GlobeFrame marksView;
+    private int marksYear;
+    private Nations marksFrom;
+    private NationsMap marksOf;
+
+    /** The label fonts, and the width of words in them kept by string (the names never change, the figures once a year). */
+    private javafx.scene.text.Font nameFont, figuresFont;
+    private final javafx.scene.text.Text measure = new javafx.scene.text.Text();
+    private final Map<String, Double> nameWidths = widths(), figuresWidths = widths();
+    private final java.util.function.ToDoubleFunction<String> nameW = s -> widthOf(s, nameFont, nameWidths),
+            figuresW = s -> widthOf(s, figuresFont, figuresWidths);
+
+    /** The plane's projection round the city's spot, kept per world (the borders that cross the city's ground are found on it). */
+    private EarthProj planeProj;
+    private World.Key planeProjKey;
+
+    /** The head's chips and their group, and what they were last styled for. */
+    private Label nationsChip, bordersChip;
+    private HBox nationsGroup;
+    private String chipsFor;
+
+    /** A nation's card in the pane, the nation it is of (0 for none), what it was drawn for, and the point on the screen it stands beside. */
+    private VBox nationBox;
+    private int nationShown;
+    private String nationKey;
+    private double nationX, nationY;
+
+    /** A bounded map of widths by string, the most recently used kept. */
+    private static Map<String, Double> widths() {
+        return new LinkedHashMap<String, Double>(128, 0.75f, true) {
+            @Override protected boolean removeEldestEntry(Map.Entry<String, Double> e) { return size() > WIDTHS_MOST; }
+        };
+    }
+
+    /** The width of words in a font, kept: a Text measured once per string. */
+    private double widthOf(String words, javafx.scene.text.Font font, Map<String, Double> kept) {
+        Double w = kept.get(words);
+        if (w == null) {
+            measure.setFont(font);
+            measure.setText(words);
+            w = measure.getLayoutBounds().getWidth();
+            kept.put(words, w);
+        }
+        return w;
+    }
+
+    /** Another city or another game: the nations of the last one are not this one's. */
+    private void forgetNations() {
+        nations = null;
+        nationsOf = null;
+        nationsAskedOf = null;
+        marksView = null;
+        marks = List.of();
+    }
+
+    /**
+     * Asked every frame (keepUp()): on an Earth world, once a chip is on or the map is over the window - the chips are shown only once the
+     * map is built, so a player who turned both off can turn them on - the nations' map is asked of WORKER (once for the process) and, when
+     * Nations is on, the game's nations (once for the game). Each comes back on the FX thread and draws the view again. Nothing is asked
+     * of a generated world.
+     */
+    private void nationsUp(CityLand land) {
+        if (!NationsMap.drawsOn(land.key()) || ui.prefs == null) return;
+        boolean nationsOn = ui.prefs.isNationsOnMap();
+        if (!nationsOn && !ui.prefs.isBordersOnMap() && !expanded) return;
+        CompletableFuture<NationsMap> build = askNationsBuild();
+        if (!build.isDone() && !nationsWaiting) {
+            nationsWaiting = true;
+            build.whenComplete((m, e) -> Platform.runLater(() -> {
+                nationsWaiting = false;
+                requestDraw();
+            }));
+        }
+        Game g = ui.game;
+        if (nationsOn && nationsAskedOf != g) {
+            nationsAskedOf = g;
+            WORKER.submit(() -> {
+                Nations made = null;
+                try {
+                    made = g.getNations();
+                } catch (RuntimeException e) {
+                    System.out.println("The nations could not be made for the map: " + e);
+                }
+                Nations got = made;
+                Platform.runLater(() -> {
+                    if (ui.game == g) {
+                        nations = got;
+                        nationsOf = g;
+                    }
+                    requestDraw();
+                });
+            });
+        }
+    }
+
+    /** The nations' map when it is built and this city stands on the real Earth; null on a generated world, before the build and where the world file is not here. */
+    private NationsMap nationsMap() {
+        Game g = ui.game;
+        CompletableFuture<NationsMap> build = nationsBuild;
+        if (g == null || build == null || !build.isDone() || build.isCompletedExceptionally() || !NationsMap.drawsOn(g.getCityLand().key())) return null;
+        return build.getNow(null);
+    }
+
+    /** The game's nations when they are in for the game on the screen, else null. */
+    private Nations nationsNow() { return nationsOf == ui.game ? nations : null; }
+
+    /* ----- the chips ----- */
+
+    /** A toggle chip of the head: a dot before its word, lit or not (styleChip()); a click runs `flip`. */
+    private Label layerChip(String words, String tip, Runnable flip) {
+        Label chip = new Label(words);
+        Region dot = new Region();
+        dot.setMinSize(7, 7);
+        dot.setPrefSize(7, 7);
+        dot.setMaxSize(7, 7);
+        chip.setGraphic(dot);
+        chip.setGraphicTextGap(5);
+        chip.setMinWidth(Region.USE_PREF_SIZE);
+        chip.setOnMouseClicked(e -> {
+            flip.run();
+            e.consume();
+        });
+        HistoryScreen.tip(chip, tip);
+        return chip;
+    }
+
+    /** The board's .chip and .chip.lit: lit, the pinned ground, the accent's edge and dot and the full text; not, the panel, the edge, the label's text and the grey dot. */
+    private static void styleChip(Label chip, boolean lit) {
+        chip.setStyle("-fx-padding: 4 10 4 10; -fx-cursor: hand;" + Palette.block(lit ? Palette.PINNED : Palette.PANEL, lit ? Palette.ACCENT : Palette.EDGE)
+                + Palette.words(Palette.SIZE_LABEL, lit ? Palette.TEXT : Palette.TEXT_LABEL));
+        chip.getGraphic().setStyle("-fx-background-color: " + (lit ? Palette.ACCENT : Palette.TEXT_SPENT) + "; -fx-background-radius: 4;");
+    }
+
+    /** The chips shown only on an Earth world whose nations' map is built, and lit as the settings stand (each frame of the head). */
+    private void syncChips() {
+        if (nationsGroup == null) return;
+        boolean built = nationsMap() != null;
+        showIf(nationsGroup, built);
+        if (!built) return;
+        boolean n = ui.prefs.isNationsOnMap(), b = ui.prefs.isBordersOnMap();
+        String key = n + "|" + b;
+        if (key.equals(chipsFor)) return;
+        chipsFor = key;
+        styleChip(nationsChip, n);
+        styleChip(bordersChip, b);
+    }
+
+    private void flipNations() {
+        ui.prefs.setNationsOnMap(!ui.prefs.isNationsOnMap());
+        layersFlipped();
+    }
+
+    private void flipBorders() {
+        ui.prefs.setBordersOnMap(!ui.prefs.isBordersOnMap());
+        layersFlipped();
+    }
+
+    /** A chip flipped: saved at once (the settings are the player's, beside the saves), the card put away if its nations are off, the chips restyled and the view drawn again - which lays the legend out again (legendFor() keys on the nations' entries). */
+    private void layersFlipped() {
+        ui.prefs.save(ui.game.getGameFiles());
+        if (!ui.prefs.isNationsOnMap()) hideNationCard();
+        syncChips();
+        requestDraw();
+    }
+
+    /* ----- the legend ----- */
+
+    /** The legend's nations entries - {colour, words} - on an Earth world with the map built: the border's white while Borders is on, the dot's colour while Nations is on and the view is a globe's. */
+    private List<String[]> nationsEntries() {
+        if (nationsMap() == null) return List.of();
+        List<String[]> out = new ArrayList<>();
+        if (ui.prefs.isBordersOnMap()) out.add(new String[] { css(NationsMap.BORDER_ARGB), NationsMap.BORDER_WORDS });
+        if (ui.prefs.isNationsOnMap() && onGlobe()) out.add(new String[] { css(NationsMap.DOT_ARGB), NationsMap.NATION_WORDS });
+        return out;
+    }
+
+    /* ----- drawing ----- */
+
+    /** Runs of border stroked as ONE path - the runs are many and short, about 6,000 on the planet - 1 px, dashed NationsMap.BORDER_DASH_PX, white at BORDER_ALPHA; the width and dashes put back. */
+    private static void strokeRuns(GraphicsContext gc, NationsMap.Runs r) {
+        if (r.runs() == 0) return;
+        double width = gc.getLineWidth();
+        double[] dashes = gc.getLineDashes();
+        gc.setStroke(colour(NationsMap.BORDER_ARGB, NationsMap.BORDER_ALPHA));
+        gc.setLineWidth(1);
+        gc.setLineDashes(NationsMap.BORDER_DASH_PX);
+        gc.beginPath();
+        for (int k = 0; k < r.runs(); k++) {
+            int from = r.starts[k], to = r.starts[k + 1];
+            if (to - from < 2) continue;
+            gc.moveTo(r.xs[from], r.ys[from]);
+            for (int i = from + 1; i < to; i++) gc.lineTo(r.xs[i], r.ys[i]);
+        }
+        gc.stroke();
+        gc.beginPath();
+        gc.setLineDashes(dashes);
+        gc.setLineWidth(width);
+    }
+
+    /** The globe's nations (after its picture, under the city's own drawing): the borders with Borders on, the dots and labels with Nations on - each only when the map is built, and the dots only once the game's nations are in. */
+    private void globeNations(GraphicsContext gc) {
+        NationsMap nm = nationsMap();
+        if (nm == null) return;
+        if (ui.prefs.isBordersOnMap()) strokeRuns(gc, nm.borders(globe));
+        Nations ns = nationsNow();
+        if (ui.prefs.isNationsOnMap() && ns != null) drawMarks(gc, nationMarks(nm, ns));
+    }
+
+    /**
+     * The dots and labels of the globe's view now (NationsMap.marks()), made again only when the view is not the one they were made for
+     * (GlobeFrame.sameView()), the year moved, the figures or the map are another's, or a font changed; the same list the hover and the click read.
+     */
+    private List<NationsMap.Mark> nationMarks(NationsMap nm, Nations ns) {
+        int year = Nations.yearOf(ui.game.getMonth());
+        javafx.scene.text.Font name = Palette.Fonts.sansStrongFont(LABEL_NAME_PX), figures = Palette.Fonts.monoFont(LABEL_FIGURES_PX);
+        if (!name.equals(nameFont) || !figures.equals(figuresFont)) {
+            nameFont = name;
+            figuresFont = figures;
+            nameWidths.clear();
+            figuresWidths.clear();
+            marksView = null;
+        }
+        if (marksView == null || !marksView.sameView(globe) || marksYear != year || marksFrom != ns || marksOf != nm) {
+            marks = nm.marks(globe, ns, year, nameW, figuresW);
+            marksView = globe.copy(globe.width(), globe.height(), globe.kmPx());
+            marksYear = year;
+            marksFrom = ns;
+            marksOf = nm;
+        }
+        return marks;
+    }
+
+    /** The dots (NationsMap.DOT_ARGB at DOT_ALPHA, edged), then the labels of those that fit: the name as the board's .lbl and the figures as its .lbl2, centred, each on its halo. */
+    private void drawMarks(GraphicsContext gc, List<NationsMap.Mark> list) {
+        if (list.isEmpty()) return;
+        double width = gc.getLineWidth();
+        Color fill = colour(NationsMap.DOT_ARGB, NationsMap.DOT_ALPHA), edge = colour(NationsMap.DOT_EDGE_ARGB);
+        gc.setLineWidth(DOT_EDGE_PX);
+        for (NationsMap.Mark m : list) {
+            gc.setFill(fill);
+            gc.fillOval(m.x() - m.r(), m.y() - m.r(), 2 * m.r(), 2 * m.r());
+            gc.setStroke(edge);
+            gc.strokeOval(m.x() - m.r(), m.y() - m.r(), 2 * m.r(), 2 * m.r());
+        }
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.BASELINE);
+        gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+        gc.setLineWidth(HALO_PX);
+        gc.setStroke(colour(NationsMap.DOT_EDGE_ARGB, HALO_ALPHA));
+        gc.setFont(nameFont);
+        gc.setFill(Color.web(Palette.TEXT));
+        for (NationsMap.Mark m : list) {
+            if (!m.labelled()) continue;
+            gc.strokeText(m.name(), m.lx(), m.ly());
+            gc.fillText(m.name(), m.lx(), m.ly());
+        }
+        gc.setFont(figuresFont);
+        gc.setFill(Color.web(Palette.TEXT_LABEL));
+        for (NationsMap.Mark m : list) {
+            if (!m.labelled()) continue;
+            gc.strokeText(m.figures(), m.lx(), m.ly() + NationsMap.LABEL_LINE_PX);
+            gc.fillText(m.figures(), m.lx(), m.ly() + NationsMap.LABEL_LINE_PX);
+        }
+        gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.MITER);
+        gc.setLineWidth(width);
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+    }
+
+    /**
+     * The borders on the city's plane (the plane's tier on Earth, and the land office's small map), after the tiles and what runs over them
+     * and before the world lines and the overlays: only the lines that cross the box of plots of the city's land and its listed offers
+     * (NationsMap.crossing(), which keeps its answer against the box, so it is found again only when the land or the offers move), cut and
+     * projected by NationsMap.planeBorders(). No dots on the plane: the near view is the city's.
+     */
+    private void planeBorders(GraphicsContext gc, MapFrame f) {
+        if (!ui.prefs.isBordersOnMap()) return;
+        NationsMap nm = nationsMap();
+        if (nm == null) return;
+        CityLand land = ui.game.getCityLand();
+        double[] box = crossingBox(land, ui.game.getLandManager().getMarket());
+        if (box == null) return;
+        World.Key key = land.key();
+        if (planeProj == null || !key.equals(planeProjKey)) {
+            planeProj = new EarthProj(key.lat(), key.lon());
+            planeProjKey = key;
+        }
+        int[] lines = nm.crossing(planeProj, box[0], box[1], box[2], box[3]);
+        if (lines.length > 0) strokeRuns(gc, nm.planeBorders(planeProj, f, lines));
+    }
+
+    /** The box of plots {x0, y0, x1, y1} of the city's land and its listed offers, as the reach is found from them (GlobeFrame.reachKm()); null with neither. */
+    private static double[] crossingBox(CityLand land, LandMarket market) {
+        double x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE;
+        boolean any = false;
+        LandGrid grid = land.grid();
+        if (grid.ownedPlots() > 0) {
+            x0 = grid.minX();
+            y0 = grid.minY();
+            x1 = grid.maxX();
+            y1 = grid.maxY();
+            any = true;
+        }
+        for (LandParcel p : market.getListing()) {
+            x0 = Math.min(x0, p.getX0());
+            y0 = Math.min(y0, p.getY0());
+            x1 = Math.max(x1, p.getX1());
+            y1 = Math.max(y1, p.getY1());
+            any = true;
+        }
+        return any ? new double[] { x0, y0, x1, y1 } : null;
+    }
+
+    /* ----- the pointer ----- */
+
+    /**
+     * What hovering a dot says (NationsMap.hoverWords(), its last line the blue CLICK_FOR_CARD), or null where the pointer is over no dot,
+     * Nations is off, or the city's plane is drawn under it: there the land office's hover and click come first, so a dot over a city founded
+     * at its nation's largest place never hides an offer.
+     */
+    private List<String> nationHoverWords(double sx, double sy) {
+        NationsMap nm = nationsMap();
+        Nations ns = nationsNow();
+        if (nm == null || ns == null || !ui.prefs.isNationsOnMap() || plotAt(sx, sy) != null) return null;
+        NationsMap.Mark dot = nm.dotAt(nationMarks(nm, ns), sx, sy);
+        if (dot == null) return null;
+        return nm.hoverWords(ns, dot.nation(), Nations.yearOf(ui.game.getMonth()), globe.cityLat(), globe.cityLon());
+    }
+
+    /** Whose land is under the pointer, where the city's plane is not drawn: a nation's or an area's name (NationsMap.ownerName() of the exact ownerAt()); null elsewhere or with Nations off. */
+    private String ownerWords(double sx, double sy) {
+        NationsMap nm = nationsMap();
+        if (nm == null || !ui.prefs.isNationsOnMap() || plotAt(sx, sy) != null) return null;
+        double[] ll = globe.latLonAt(sx, sy);
+        return ll == null ? null : nm.ownerName(nm.ownerAt(ll[0], ll[1]));
+    }
+
+    /**
+     * A click on the expanded globe with Nations on, where the city's plane is not drawn under the pointer (plotAt() is null): on a dot or
+     * on a nation's land (NationsMap.nationAt(): the dot, else the exact owner) opens that nation's card. False anywhere else - over the
+     * sea or an area, over the plane's ground, where the land office's click comes first even under a dot - and the click runs as it did,
+     * which closes the card.
+     */
+    private boolean nationClick(double sx, double sy) {
+        if (!onGlobe() || !ui.prefs.isNationsOnMap()) return false;
+        NationsMap nm = nationsMap();
+        Nations ns = nationsNow();
+        if (nm == null || ns == null || plotAt(sx, sy) != null) return false;
+        int nation = nm.nationAt(globe, nationMarks(nm, ns), sx, sy);
+        if (nation == 0) return false;
+        showNationCard(nation, sx, sy);
+        return true;
+    }
+
+    /* ----- the card ----- */
+
+    /** A nation's card opened beside the point clicked: the buying card (and its picks) goes, as there is only ever one. */
+    private void showNationCard(int nation, double sx, double sy) {
+        closeCard();
+        nationShown = nation;
+        nationX = sx;
+        nationY = sy;
+        fillNationCard();
+    }
+
+    /** What the card was drawn for: the nation and the month, which moves the year and the D$ it is struck in. */
+    private String nationCardKey() { return nationShown + "|" + ui.game.getMonth(); }
+
+    /** The card made (again) for the nation shown, from NationsMap.card(): its head - the name, the region as a tag, a "×" - the distance under it, and its rows in a grid of three columns. */
+    private void fillNationCard() {
+        NationsMap nm = nationsMap();
+        Nations ns = nationsNow();
+        if (nationBox == null || nm == null || ns == null || globe == null || nationShown == 0) {
+            hideNationCard();
+            return;
+        }
+        Game g = ui.game;
+        // The D$ a US$ is the foreign accounts' rate (Markets.getExchangeRate() is that times the world's price level).
+        NationsMap.Card c = nm.card(ns, nationShown, Nations.yearOf(g.getMonth()), globe.cityLat(), globe.cityLon(), g.getForeignAccounts().getRate());
+        nationKey = nationCardKey();
+        Label name = new Label(c.name());
+        name.setStyle(Palette.strong(15, Palette.TEXT));
+        name.setMinWidth(Region.USE_PREF_SIZE);
+        HBox head = new HBox(Palette.GAP, name);
+        head.setAlignment(Pos.CENTER_LEFT);
+        if (!c.region().isEmpty()) {
+            Label tag = new Label(c.region());
+            tag.setStyle("-fx-padding: 1 6 1 6;" + Palette.block(Palette.PINNED, Palette.EDGE) + Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            tag.setMinWidth(0);
+            head.getChildren().add(tag);
+        }
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label close = new Label("×");
+        close.setStyle(Palette.words(Palette.SIZE_SECTION, Palette.TEXT_MUTED) + " -fx-cursor: hand;");
+        close.setMinWidth(Region.USE_PREF_SIZE);
+        close.setOnMouseClicked(e -> {
+            hideNationCard();
+            requestDraw();
+            e.consume();
+        });
+        head.getChildren().addAll(spacer, close);
+        Label distance = new Label(c.distance());
+        distance.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        GridPane grid = new GridPane();
+        grid.setHgap(Palette.GAP + 2);
+        grid.setVgap(3);
+        ColumnConstraints labels = new ColumnConstraints(), values = new ColumnConstraints(), ranks = new ColumnConstraints();
+        values.setHgrow(Priority.ALWAYS);
+        values.setMinWidth(0);
+        ranks.setHalignment(HPos.RIGHT);
+        grid.getColumnConstraints().addAll(labels, values, ranks);
+        int row = 0;
+        for (NationsMap.Row r : c.rows()) {
+            Label k = new Label(r.label());
+            k.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            k.setMinWidth(Region.USE_PREF_SIZE);
+            // The value wraps rather than widen the card (a tiny rate reads long).
+            Label v = new Label(r.value());
+            v.setStyle(Palette.figureRegular(Palette.SIZE_LABEL, Palette.TEXT));
+            v.setWrapText(true);
+            v.setMinWidth(0);
+            Label rank = new Label(r.rank());
+            rank.setStyle(Palette.figureRegular(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            rank.setMinWidth(Region.USE_PREF_SIZE);
+            GridPane.setValignment(k, VPos.TOP);
+            GridPane.setValignment(v, VPos.TOP);
+            GridPane.setValignment(rank, VPos.TOP);
+            grid.add(k, 0, row);
+            grid.add(v, 1, row);
+            grid.add(rank, 2, row);
+            row++;
+        }
+        nationBox.setStyle("-fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8; -fx-border-color: " + Palette.EDGE
+                + "; -fx-border-radius: 8; -fx-padding: 11 13 10 13; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 14, 0.2, 0, 3);");
+        nationBox.setMinWidth(NATION_CARD_W);
+        nationBox.setPrefWidth(NATION_CARD_W);
+        nationBox.setMaxWidth(NATION_CARD_W);
+        nationBox.getChildren().setAll(head, distance, grid);
+        nationBox.setVisible(true);
+        nationBox.applyCss();
+        nationBox.autosize();
+        placeNationCard();
+    }
+
+    /** The card beside the point clicked, as the buying card stands beside its offer: CARD_GAP off it, at its right else its left, level with it and CARD_MARGIN at least inside the view. */
+    private void placeNationCard() {
+        if (nationBox == null || !nationBox.isVisible()) return;
+        double vw = canvas.getWidth(), vh = canvas.getHeight();
+        double cw = nationBox.getWidth(), ch = nationBox.getHeight();
+        double left = nationX + CARD_GAP;
+        if (left + cw > vw - CARD_MARGIN) left = nationX - CARD_GAP - cw;
+        double top = nationY - ch / 2;
+        left = Math.max(CARD_MARGIN, Math.min(left, vw - cw - CARD_MARGIN));
+        top = Math.max(CARD_MARGIN, Math.min(top, vh - ch - CARD_MARGIN));
+        nationBox.setTranslateX(Math.rint(left));
+        nationBox.setTranslateY(Math.rint(top));
+    }
+
+    /** The card put away. */
+    private void hideNationCard() {
+        nationShown = 0;
+        nationKey = null;
+        if (nationBox == null) return;
+        nationBox.getChildren().clear();
+        nationBox.setVisible(false);
+    }
+
+    /** A frame's look at the card (tick()): made again when the month moved - the year's figures and the D$ it is struck in - and put away if its nation is not shown any more (Nations off, another game). */
+    private void syncNationCard() {
+        if (nationBox == null || !nationBox.isVisible()) return;
+        if (!ui.prefs.isNationsOnMap() || nationsNow() == null) {
+            hideNationCard();
+            return;
+        }
+        if (!nationCardKey().equals(nationKey)) fillNationCard();
     }
 
     /* =====================================================================
@@ -3703,6 +4324,7 @@ final class MapView {
         if (!backFromFunding) picks.clear();
         if (!backFromFunding) bought = null;
         hideBuyCard();
+        hideNationCard();
         ui.closeChartFullScreen();
         if (card != null) card.setVisible(false);
         canvas.setCursor(javafx.scene.Cursor.DEFAULT);
@@ -3750,7 +4372,17 @@ final class MapView {
         Label fit = stepChip("Fit", this::fitBig, true);
         Label close = stepChip("Back to the land office · Esc", () -> collapse(true), true);
         close.setMinWidth(Region.USE_PREF_SIZE);
-        HBox head = new HBox(Palette.GAP_LOOSE, title, headMoney, headPay, headNote, gap, hint, every, fit, close);
+        nationsChip = layerChip("Nations", NATIONS_TIP, this::flipNations);
+        bordersChip = layerChip("Borders", BORDERS_TIP, this::flipBorders);
+        nationsGroup = new HBox(Palette.GAP_TIGHT, nationsChip, bordersChip);
+        nationsGroup.setAlignment(Pos.CENTER_LEFT);
+        nationsGroup.setMinWidth(Region.USE_PREF_SIZE);
+        // The board's .grp: a hairline either side, 4 px between the chips (top, right, bottom, left).
+        nationsGroup.setStyle("-fx-padding: 0 " + Palette.GAP + " 0 " + Palette.GAP + "; -fx-border-color: transparent " + Palette.EDGE
+                + " transparent " + Palette.EDGE + "; -fx-border-width: 0 1 0 1;");
+        showIf(nationsGroup, false);
+        chipsFor = null;
+        HBox head = new HBox(Palette.GAP_LOOSE, title, headMoney, headPay, headNote, nationsGroup, gap, hint, every, fit, close);
         head.setAlignment(Pos.CENTER_LEFT);
         head.setMinHeight(PANE_HEAD - Palette.GAP);
         card = new VBox(2);
@@ -3767,9 +4399,14 @@ final class MapView {
         buyBox = new VBox();
         buyBox.setManaged(false);
         buyBox.setVisible(false);
-        bigBox = new StackPane(legend, buyBox, card);
+        // A nation's card (WN2): the same, laid out by hand beside the point clicked, under the hover card.
+        nationBox = new VBox(NATION_CARD_GAP);
+        nationBox.setManaged(false);
+        nationBox.setVisible(false);
+        bigBox = new StackPane(legend, buyBox, nationBox, card);
         StackPane.setAlignment(card, Pos.TOP_LEFT);
         StackPane.setAlignment(buyBox, Pos.TOP_LEFT);
+        StackPane.setAlignment(nationBox, Pos.TOP_LEFT);
         bigBox.setStyle("-fx-background-color: " + Palette.STAGE + ";");
         clip(bigBox);
         bigPane = new VBox(Palette.GAP, head, bigBox);
@@ -3896,11 +4533,50 @@ final class MapView {
         shipsLine.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         trucksLine.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         showIf(trucksLine, false);
-        VBox box = new VBox(6, legendGrid, shipsLine, trucksLine, legendNote);
-        box.setStyle("-fx-background-color: #0b1118d9; -fx-background-radius: 6; -fx-padding: 8 10 8 10;");
+        // The legend folds (WN2; Jerus: "legend should be collapsable"): its head line takes the click, and the body - the entries, the
+        // ships' and trucks' lines and the note - stays mouse-transparent as the whole box was, so a drag or a click on the map under
+        // them goes through. The box itself has no background and picks only through its head (setPickOnBounds(false)); the dark ground
+        // is the head's and the body's, so the folded head is a small rounded box of its own.
+        legendBody = new VBox(6, legendGrid, shipsLine, trucksLine, legendNote);
+        legendBody.setMouseTransparent(true);
+        legendChevron.setMinWidth(Region.USE_PREF_SIZE);
+        legendChevron.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        Label legendWord = new Label("Legend");
+        legendWord.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        legendFoldHint.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        legendHead = new HBox(6, legendChevron, legendWord, legendFoldHint);
+        legendHead.setAlignment(Pos.CENTER_LEFT);
+        legendHead.setCursor(javafx.scene.Cursor.HAND);
+        legendHead.setOnMouseClicked(e -> {
+            ui.prefs.setMapLegendFolded(!ui.prefs.isMapLegendFolded());
+            ui.prefs.save(ui.game.getGameFiles());
+            foldLegend();
+            e.consume();
+        });
+        VBox box = new VBox(legendHead, legendBody);
         box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        box.setMouseTransparent(true);
+        box.setPickOnBounds(false);
+        foldLegend();
         return box;
+    }
+
+    /** The legend's head line, its chevron and its "click to fold" (WN2), and its body. */
+    private HBox legendHead;
+    private VBox legendBody;
+    private final Label legendChevron = new Label(), legendFoldHint = new Label(LEGEND_FOLD_WORDS);
+
+    /** The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). */
+    static final String LEGEND_FOLD_WORDS = "· click to fold";
+
+    /** The legend folded or open, as the player left it (GamePrefs.isMapLegendFolded()): the body shown or not, the chevron pointing down or right, and the head's ground rounded all round when it stands alone. */
+    private void foldLegend() {
+        boolean folded = ui.prefs.isMapLegendFolded();
+        legendChevron.setText(folded ? "▸" : "▾");
+        showIf(legendFoldHint, !folded);
+        showIf(legendBody, !folded);
+        legendHead.setStyle("-fx-background-color: #0b1118d9; -fx-background-radius: " + (folded ? "6" : "6 6 0 0") + "; -fx-padding: 7 10 "
+                + (folded ? "8" : "0") + " 10;");
+        legendBody.setStyle("-fx-background-color: #0b1118d9; -fx-background-radius: 0 0 6 6; -fx-padding: 7 10 8 10;");
     }
 
     /** The legend laid out for a tier (0.7.135, spec-globe 3.7): its entries (legendEntries()), and the ships' line on the plane alone. */
@@ -3914,6 +4590,12 @@ final class MapView {
                 zones = new ArrayList<>(zones);
                 zones.addAll(islands);
             }
+        }
+        // ...and (WN2) on an Earth world the nations' entries: the border's white while Borders is on, the dot's colour while Nations is on and a globe is drawn.
+        List<String[]> nationsKey = nationsEntries();
+        if (!nationsKey.isEmpty()) {
+            zones = new ArrayList<>(zones);
+            zones.addAll(nationsKey);
         }
         String zoneKey = String.join("|", zones.stream().map(z -> z[1]).toList());
         boolean relief = shownMap != null && LandMap.reliefDrawn(shownMap.worldKey());

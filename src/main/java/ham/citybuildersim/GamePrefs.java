@@ -172,6 +172,28 @@ public final class GamePrefs {
     public boolean isTrucksOnMap()            { return trucksOnMap; }
     public void setTrucksOnMap(boolean value) { this.trucksOnMap = value; }
 
+    /**
+     * Whether the expanded map on the real Earth writes the nations on it: a dot at each nation's largest place by its output, its name and figures
+     * where they fit, and the card a click opens (WN2; Jerus: "a toggle on the map ui"). ON BY DEFAULT; an older settings.json has no key and reads
+     * on. How the player likes the map drawn, so kept here and never in a save.
+     */
+    private boolean nationsOnMap = true;
+
+    public boolean isNationsOnMap()            { return nationsOnMap; }
+    public void setNationsOnMap(boolean value) { this.nationsOnMap = value; }
+
+    /** Whether the map draws the nations' borders, dashed white - at the far views, and up close where one crosses the city's ground (WN2; Jerus: "a map button to ... toggle borders"). ON BY DEFAULT, kept here for the same reason. */
+    private boolean bordersOnMap = true;
+
+    public boolean isBordersOnMap()            { return bordersOnMap; }
+    public void setBordersOnMap(boolean value) { this.bordersOnMap = value; }
+
+    /** Whether the expanded map's legend is folded to its head line (WN2; Jerus: "legend should be collapsable"). Open by default, and kept here so it stays as the player left it. */
+    private boolean mapLegendFolded = false;
+
+    public boolean isMapLegendFolded()            { return mapLegendFolded; }
+    public void setMapLegendFolded(boolean value) { this.mapLegendFolded = value; }
+
     /* ===================================================================
        THE FILE
        =================================================================== */

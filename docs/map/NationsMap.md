@@ -1,4 +1,4 @@
-# NationsMap.java - 965 lines · 57 methods · 35 constants · model
+# NationsMap.java - 974 lines · 58 methods · 35 constants · model
 
 `ham/citybuildersim/NationsMap.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
@@ -34,7 +34,7 @@
 
 **Uses:** [WorldData](WorldData.md) (13), [Nations](Nations.md) (11), [EarthProj](EarthProj.md) (9), [GlobeFrame](GlobeFrame.md) (8), [World](World.md) (2), [MapFrame](MapFrame.md) (1)
 
-**Used by (2):** [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md)
+**Used by (3):** [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md)
 
 ## Sections
 
@@ -45,9 +45,9 @@
 | 421 | THE BORDERS - cut to the view |
 | 503 | THE BORDERS ON THE CITY'S PLANE - only where one crosses the city's ground |
 | 680 | THE NATIONS' DOTS AND LABELS - on the globe |
-| 789 | THE HOVER AND THE CARD |
-| 859 | THE WORDS |
-| 905 | A YEAR'S FIGURES AND RANKS - computed once for a Nations and a year |
+| 798 | THE HOVER AND THE CARD |
+| 868 | THE WORDS |
+| 914 | A YEAR'S FIGURES AND RANKS - computed once for a Nations and a year |
 
 ## Constants
 
@@ -87,7 +87,7 @@
 | 143 | `NationsMap.R_KM` | `EarthProj.RADIUS_M / 1000` | The sphere's radius, km. |
 | 145 | `NationsMap.THREE` | `new MathContext(3, RoundingMode.HALF_UP)` |  |
 | 146 | `NationsMap.THOUSAND` | `BigDecimal.valueOf(1000), HUNDRED = BigDecimal.valueOf(100)` |  |
-| 812 | `NationsMap.GDP_WORDS` | `"GDP, US$ of 2015"` | The GDP row's label: the file's output is real, US$ of 2015. |
+| 821 | `NationsMap.GDP_WORDS` | `"GDP, US$ of 2015"` | The GDP row's label: the file's output is real, US$ of 2015. |
 
 ## Fields (state)
 
@@ -117,18 +117,18 @@
 | 618 | `private int points, runs` |  |
 | 619 | `private double xmin, ymin, xmax, ymax` |  |
 | 620 | `private boolean open` |  |
-| 911 | `final Nations nations` |  |
-| 912 | `final int year` |  |
-| 913 | `final double[] output, people, head` |  |
-| 914 | `final int[] rankOutput, rankPeople, rankHead` |  |
-| 915 | `final int[] order` | the nations' numbers, largest output first, ties by number |
-| 916 | `final String[] names, figures` | the nations' numbers, largest output first, ties by number |
+| 920 | `final Nations nations` |  |
+| 921 | `final int year` |  |
+| 922 | `final double[] output, people, head` |  |
+| 923 | `final int[] rankOutput, rankPeople, rankHead` |  |
+| 924 | `final int[] order` | the nations' numbers, largest output first, ties by number |
+| 925 | `final String[] names, figures` | the nations' numbers, largest output first, ties by number |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 923 | **type** `public final class NationsMap` | The nations on the map, without the toolkit: the borders simplified and cut to a view, each nation's dot and the name written on its land, what lies under a point, and the card a click opens - everything ui/MapView dr... |
+| 43 | 932 | **type** `public final class NationsMap` | The nations on the map, without the toolkit: the borders simplified and cut to a view, each nation's dot and the name written on its land, what lies under a point, and the card a click opens - everything ui/MapView dr... |
 
 ### THE DIALS (lines 45-147)
 
@@ -185,7 +185,7 @@
 | 664 | 8 | `private void add(double x, double y)` _(in NationsMap.Cut)_ |  |
 | 673 | 5 | `Runs finish(int lines, int considered, int level)` _(in NationsMap.Cut)_ |  |
 
-### THE NATIONS' DOTS AND LABELS - on the globe (lines 680-788)
+### THE NATIONS' DOTS AND LABELS - on the globe (lines 680-797)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -195,38 +195,39 @@
 | 740 | 11 | `private double ownShare(EarthProj.Ortho o, double w, double h, double m, double[] box, int nation, double[] xy, double[] ll)` | The share of a box's LABEL_SAMPLES_X by LABEL_SAMPLES_Y points (the middles of equal cells) that the ortho's inverse puts on the nation's coarse cells. |
 | 752 | 7 | `private static boolean overlaps(double[][] placed, int count, double[] box)` |  |
 | 761 | 4 | `public static double[] labelBox(Mark mark, ToDoubleFunction<String> nameW, ToDoubleFunction<String> figuresW)` | A labelled mark's box on the screen, {x0, y0, x1, y1}: the wider of the two lines across, centred on the label point, LABEL_H_PX tall from LABEL_ASCENT_PX above the name's baseline. |
-| 770 | 18 | `public int nationAt(GlobeFrame v, List<Mark> marks, double sx, double sy)` | The nation under a screen point: the dot whose radius and HIT_SLOP_PX it falls within (the nearest centre wins, then the smaller number), else the exact owner under the point (the ortho's inverse onto ownerAt()) when ... |
+| 770 | 14 | `public Mark dotAt(List<Mark> marks, double sx, double sy)` | The dot under a screen point: the mark whose radius and HIT_SLOP_PX it falls within (the nearest centre wins, then the smaller number); null if none, or if there are no marks. |
+| 789 | 8 | `public int nationAt(GlobeFrame v, List<Mark> marks, double sx, double sy)` | The nation under a screen point: the dot whose radius and HIT_SLOP_PX it falls within (the nearest centre wins, then the smaller number), else the exact owner under the point (the ortho's inverse onto ownerAt()) when ... |
 
-### THE HOVER AND THE CARD (lines 789-858)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 794 | 4 | `private String distanceWords(int nation, double cityLat, double cityLon)` | The distance row's words: km from the city to the nation's node, along the great circle, whole km. |
-| 800 | 4 | `public List<String> hoverWords(Nations nations, int nation, int year, double cityLat, double cityLon)` | What hovering a nation says: its name, "GDP US$2.24T . |
-| 806 | 1 | **type** `public record Row(String label, String value, String rank)` | One line of the card: its label, its value and the rank beside it ("9th of 196"; empty where it has none). |
-| 809 | 1 | **type** `public record Card(String name, String region, String distance, List<Row> rows)` | A nation's card: its name, its World Bank region (empty for none), its distance from the city and the rows. |
-| 819 | 14 | `public Card card(Nations nations, int nation, int year, double cityLat, double cityLon, double dollarsAUsd)` | A nation's card for a year: its output, people and output a head, each with its rank among the nations; this year's growth and prices; its money and rate, and, when dollarsAUsd (the game dollar's price in US$, D$ a US... |
-| 835 | 5 | `private static String percent(double share, boolean signed)` | A share as a percent to one decimal ("-" for NaN), with a sign if asked: "+1.6%". |
-| 842 | 6 | `private static String moneyWords(Nations.Year y, double dollarsAUsd)` | "CAD 1.37 a US$ . |
-| 849 | 3 | `private static String markWords(int mark)` |  |
-| 854 | 4 | `public static String ordinal(int k)` | 1st, 2nd, 3rd, 4th ... |
-
-### THE WORDS (lines 859-904)
+### THE HOVER AND THE CARD (lines 798-867)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 867 | 9 | `public static String usd(double v)` | US$ as words: "US$2.24T" from a trillion (two decimals), "US$580B", "US$58.1B" and "US$5.81B" from a billion (three significant figures, a trailing ".0" dropped), the same in M from a million, and below that "US$" and... |
-| 878 | 9 | `public static String people(double v)` | People as words: "1.43B", "41.5M", "390k", "57k" (three significant figures, a trailing ".0" dropped), below a thousand the whole number. |
-| 889 | 6 | `private static String three(double x)` | A number of [1, 1000) to three significant figures with a trailing ".0" dropped; null if it rounds up to 1000. |
-| 897 | 7 | `static String sig3(double v)` | A positive figure to three significant figures: thousands separated from 1,000 ("54,300"), a trailing zero kept from 1 up ("1.30") and dropped under it ("0.86"). |
+| 803 | 4 | `private String distanceWords(int nation, double cityLat, double cityLon)` | The distance row's words: km from the city to the nation's node, along the great circle, whole km. |
+| 809 | 4 | `public List<String> hoverWords(Nations nations, int nation, int year, double cityLat, double cityLon)` | What hovering a nation says: its name, "GDP US$2.24T . |
+| 815 | 1 | **type** `public record Row(String label, String value, String rank)` | One line of the card: its label, its value and the rank beside it ("9th of 196"; empty where it has none). |
+| 818 | 1 | **type** `public record Card(String name, String region, String distance, List<Row> rows)` | A nation's card: its name, its World Bank region (empty for none), its distance from the city and the rows. |
+| 828 | 14 | `public Card card(Nations nations, int nation, int year, double cityLat, double cityLon, double dollarsAUsd)` | A nation's card for a year: its output, people and output a head, each with its rank among the nations; this year's growth and prices; its money and rate, and, when dollarsAUsd (the game dollar's price in US$, D$ a US... |
+| 844 | 5 | `private static String percent(double share, boolean signed)` | A share as a percent to one decimal ("-" for NaN), with a sign if asked: "+1.6%". |
+| 851 | 6 | `private static String moneyWords(Nations.Year y, double dollarsAUsd)` | "CAD 1.37 a US$ . |
+| 858 | 3 | `private static String markWords(int mark)` |  |
+| 863 | 4 | `public static String ordinal(int k)` | 1st, 2nd, 3rd, 4th ... |
 
-### A YEAR'S FIGURES AND RANKS - computed once for a Nations and a year (lines 905-965)
+### THE WORDS (lines 868-913)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 910 | 50 | **type** `private static final class Table` | The figures of a year for all the nations, and each one's rank: the count of nations strictly larger, plus one (ties share it). |
-| 918 | 29 | `Table(Nations nations, int year)` _(in NationsMap.Table)_ |  |
-| 949 | 1 | `private static double key(double v)` _(in NationsMap.Table)_ | A figure as it ranks: NaN last. |
-| 951 | 8 | `private static int[] ranks(double[] v)` _(in NationsMap.Table)_ |  |
-| 961 | 4 | `private Table table(Nations nations, int year)` |  |
+| 876 | 9 | `public static String usd(double v)` | US$ as words: "US$2.24T" from a trillion (two decimals), "US$580B", "US$58.1B" and "US$5.81B" from a billion (three significant figures, a trailing ".0" dropped), the same in M from a million, and below that "US$" and... |
+| 887 | 9 | `public static String people(double v)` | People as words: "1.43B", "41.5M", "390k", "57k" (three significant figures, a trailing ".0" dropped), below a thousand the whole number. |
+| 898 | 6 | `private static String three(double x)` | A number of [1, 1000) to three significant figures with a trailing ".0" dropped; null if it rounds up to 1000. |
+| 906 | 7 | `static String sig3(double v)` | A positive figure to three significant figures: thousands separated from 1,000 ("54,300"), a trailing zero kept from 1 up ("1.30") and dropped under it ("0.86"). |
+
+### A YEAR'S FIGURES AND RANKS - computed once for a Nations and a year (lines 914-974)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 919 | 50 | **type** `private static final class Table` | The figures of a year for all the nations, and each one's rank: the count of nations strictly larger, plus one (ties share it). |
+| 927 | 29 | `Table(Nations nations, int year)` _(in NationsMap.Table)_ |  |
+| 958 | 1 | `private static double key(double v)` _(in NationsMap.Table)_ | A figure as it ranks: NaN last. |
+| 960 | 8 | `private static int[] ranks(double[] v)` _(in NationsMap.Table)_ |  |
+| 970 | 4 | `private Table table(Nations nations, int year)` |  |
 

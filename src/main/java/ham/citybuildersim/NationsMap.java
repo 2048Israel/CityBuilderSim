@@ -764,22 +764,31 @@ public final class NationsMap {
     }
 
     /**
-     * The nation under a screen point: the dot whose radius and HIT_SLOP_PX it falls within (the nearest centre wins, then the smaller number),
-     * else the exact owner under the point (the ortho's inverse onto ownerAt()) when that is a nation, else 0.
+     * The dot under a screen point: the mark whose radius and HIT_SLOP_PX it falls within (the nearest centre wins, then the smaller number); null
+     * if none, or if there are no marks. The screen asks it alone to tell a dot from the land round it (the hover's words, the click's cursor).
      */
-    public int nationAt(GlobeFrame v, List<Mark> marks, double sx, double sy) {
-        int best = 0;
+    public Mark dotAt(List<Mark> marks, double sx, double sy) {
+        Mark best = null;
         double bestD = Double.MAX_VALUE;
         if (marks != null) {
             for (Mark k : marks) {
                 double dx = sx - k.x(), dy = sy - k.y(), d2 = dx * dx + dy * dy, reach = k.r() + HIT_SLOP_PX;
-                if (d2 <= reach * reach && (d2 < bestD || (d2 == bestD && k.nation() < best))) {
-                    best = k.nation();
+                if (d2 <= reach * reach && (d2 < bestD || (d2 == bestD && k.nation() < best.nation()))) {
+                    best = k;
                     bestD = d2;
                 }
             }
         }
-        if (best != 0) return best;
+        return best;
+    }
+
+    /**
+     * The nation under a screen point: the dot whose radius and HIT_SLOP_PX it falls within (the nearest centre wins, then the smaller number),
+     * else the exact owner under the point (the ortho's inverse onto ownerAt()) when that is a nation, else 0.
+     */
+    public int nationAt(GlobeFrame v, List<Mark> marks, double sx, double sy) {
+        Mark dot = dotAt(marks, sx, sy);
+        if (dot != null) return dot.nation();
         double[] ll = v.latLonAt(sx, sy);
         if (ll == null) return 0;
         int owner = file.ownerAt(ll[0], ll[1]);

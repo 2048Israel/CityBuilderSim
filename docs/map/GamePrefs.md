@@ -1,4 +1,4 @@
-# GamePrefs.java - 216 lines · 19 methods · 3 constants · model
+# GamePrefs.java - 238 lines · 25 methods · 3 constants · model
 
 `ham/citybuildersim/GamePrefs.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
@@ -31,7 +31,7 @@
 
 | line | section |
 |---:|---|
-| 175 | THE FILE |
+| 197 | THE FILE |
 
 ## Constants
 
@@ -53,12 +53,15 @@
 | 145 | `private boolean drawerPinned` | Whether the City overview's drawer stays open across screens (0.7.24). |
 | 156 | `private boolean constructionOpen` | Whether the construction panel is open over the stage or folded to its tab (0.7.24). |
 | 170 | `private boolean trucksOnMap` | Whether Haulage's trucks are drawn on the map's roads at the near view (0.8.8, batch FR5). |
+| 180 | `private boolean nationsOnMap` | Whether the expanded map on the real Earth writes the nations on it: a dot at each nation's largest place by its output, its name and figures where they fit, and the card a click opens (WN2; Jerus: "a toggle on the ma... |
+| 186 | `private boolean bordersOnMap` | Whether the map draws the nations' borders, dashed white - at the far views, and up close where one crosses the city's ground (WN2; Jerus: "a map button to ... |
+| 192 | `private boolean mapLegendFolded` | Whether the expanded map's legend is folded to its head line (WN2; Jerus: "legend should be collapsable"). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 187 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
+| 30 | 209 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
 | 44 | 1 | `public boolean isFullScreen()` |  |
 | 45 | 1 | `public void setFullScreen(boolean value)` |  |
 | 61 | 1 | `public boolean isPanelDashboard()` |  |
@@ -75,12 +78,18 @@
 | 159 | 1 | `public void setConstructionOpen(boolean value)` |  |
 | 172 | 1 | `public boolean isTrucksOnMap()` |  |
 | 173 | 1 | `public void setTrucksOnMap(boolean value)` |  |
+| 182 | 1 | `public boolean isNationsOnMap()` |  |
+| 183 | 1 | `public void setNationsOnMap(boolean value)` |  |
+| 188 | 1 | `public boolean isBordersOnMap()` |  |
+| 189 | 1 | `public void setBordersOnMap(boolean value)` |  |
+| 194 | 1 | `public boolean isMapLegendFolded()` |  |
+| 195 | 1 | `public void setMapLegendFolded(boolean value)` |  |
 
-### THE FILE (lines 175-216)
+### THE FILE (lines 197-238)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 179 | 3 | `private static Path fileIn(GameFiles files)` |  |
-| 184 | 16 | `public static GamePrefs load(GameFiles files)` | Whatever is on disk, or the defaults. |
-| 207 | 9 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
+| 201 | 3 | `private static Path fileIn(GameFiles files)` |  |
+| 206 | 16 | `public static GamePrefs load(GameFiles files)` | Whatever is on disk, or the defaults. |
+| 229 | 9 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
 
