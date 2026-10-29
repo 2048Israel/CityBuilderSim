@@ -1,4 +1,4 @@
-# CopperRefiningCheck.java - 538 lines · 13 methods · 15 constants · harnesses
+# CopperRefiningCheck.java - 693 lines · 17 methods · 15 constants · harnesses
 
 `ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -61,98 +61,110 @@
 >      insulation at the exchange factor and its freight; the sector's older
 >      rows the maker's less their city legs (since FR2, as every maker's), to
 >      the bit.
+> 
+> ... (10 more lines in the source)
 
-**Uses:** [Good](Good.md) (92), [OldMetal](OldMetal.md) (29), [Sectors](Sectors.md) (23), [CopperRefining](CopperRefining.md) (22), [SpreadPlanner](SpreadPlanner.md) (18), [BuildingManager](BuildingManager.md) (15), [Sector](Sector.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (10), [Manufacturing](Manufacturing.md) (7), [CopperMiningCheck](CopperMiningCheck.md) (7), [Game](Game.md) (7), [ProcessingSector](ProcessingSector.md) (6), [JobType](JobType.md) (6), [MaterialsCheck](MaterialsCheck.md) (5), [BusinessInvestment](BusinessInvestment.md) (4), [Trade](Trade.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [MoneyAudit](MoneyAudit.md) (2), [CopperMining](CopperMining.md) (2), [Markets](Markets.md) (1), [PayTier](PayTier.md) (1), [Statement](Statement.md) (1)
+**Uses:** [Good](Good.md) (120), [CopperRefining](CopperRefining.md) (31), [OldMetal](OldMetal.md) (29), [Sectors](Sectors.md) (23), [Sector](Sector.md) (20), [BuildingManager](BuildingManager.md) (18), [SpreadPlanner](SpreadPlanner.md) (18), [Game](Game.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (11), [CopperMiningCheck](CopperMiningCheck.md) (8), [Manufacturing](Manufacturing.md) (7), [ProcessingSector](ProcessingSector.md) (6), [JobType](JobType.md) (6), [MaterialsCheck](MaterialsCheck.md) (6), [BusinessInvestment](BusinessInvestment.md) (4), [Trade](Trade.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [MoneyAudit](MoneyAudit.md) (2), [CopperMining](CopperMining.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Markets](Markets.md) (1), [PayTier](PayTier.md) (1), [Statement](Statement.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 111 | 1. the sector |
-| 164 | 2. the five rows against the study |
-| 279 | 3. the chain by its ratios |
-| 336 | 4. the smelter's acid sold, the leach plant's bought |
-| 369 | 5. old copper |
-| 458 | 6. the planner weighs the old copper |
-| 511 | 7. the wire works' estimate |
+| 123 | 1. the sector |
+| 176 | 2. the five rows against the study |
+| 291 | 3. the chain by its ratios |
+| 348 | 4. the smelter's acid sold, the leach plant's bought |
+| 381 | 5. old copper |
+| 470 | 6. the planner weighs the old copper |
+| 523 | 7. the wire works' estimate |
+| 551 | 8. a works buys inputs only for what it makes |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 78 | `CopperRefiningCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
-| 80 | `CopperRefiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
-| 167 | `CopperRefiningCheck.ROWS` | `{ CopperRefining.SMELTER, CopperRefining.ELECTROLYTIC_REFINERY, CopperRefinin...` | The rows, by their permanent ids, in the study's 4.3 order: Copper Refining's four and Manufacturing's wire works. |
-| 171 | `CopperRefiningCheck.STUDY_COSTS` | `{ 500_000, 180_000, 280_000, 45_000, 110_000 }` | The study's 4.3: each one's cost, D$ thousands all in. |
-| 174 | `CopperRefiningCheck.STUDY_POSTS` | `{ 700, 200, 200, 80, 400 }` | ...its posts. |
-| 177 | `CopperRefiningCheck.STUDY_KW` | `{ 13_400, 6_000, 5_500, 1_100, 2_500 }` | ...its draw, kW. |
-| 180 | `CopperRefiningCheck.STUDY_MADE` | `{ { Good.ANODE, Good.ACID }, { Good.COPPER }, { Good.COPPER }, { Good.COPPER_...` | ...what it makes a month, t. |
-| 182 | `CopperRefiningCheck.STUDY_MAKES` | `{ { 9_750, 29_700 }, { 9_700 }, { 4_000 }, { 8_000 }, { 2_000 } }` | ...and how many tonnes of each, a month. |
-| 185 | `CopperRefiningCheck.STUDY_FEED` | `{ Good.COPPER_CONC, Good.ANODE, Good.COPPER_SCRAP, Good.COPPER, Good.COPPER_R...` | ...and what it takes, t a month. |
-| 187 | `CopperRefiningCheck.STUDY_USES` | `{ 33_000, 9_750, 4_400, 8_016, 2_000 }` | ...and how many tonnes of it, a month. |
-| 190 | `CopperRefiningCheck.STUDY_TABLE` | `{ { - 0.3, 1.2, 2.7, 1.2 }, { - 1.9, 0.8, 3.5, 0.8 }, { 0.0, 2.2, 2.9, 0.7 },...` | The study's 4.4 table, % of the cost a month, cases A to D. |
-| 194 | `CopperRefiningCheck.STUDY_RUNS` | `{ 5_253, 1_460, 1_776, 846, 4_820 }` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table - but the scrap refinery's, from the -0.02% ... |
-| 197 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
-| 200 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
-| 282 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |
+| 89 | `CopperRefiningCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
+| 91 | `CopperRefiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
+| 179 | `CopperRefiningCheck.ROWS` | `{ CopperRefining.SMELTER, CopperRefining.ELECTROLYTIC_REFINERY, CopperRefinin...` | The rows, by their permanent ids, in the study's 4.3 order: Copper Refining's four and Manufacturing's wire works. |
+| 183 | `CopperRefiningCheck.STUDY_COSTS` | `{ 500_000, 180_000, 280_000, 45_000, 110_000 }` | The study's 4.3: each one's cost, D$ thousands all in. |
+| 186 | `CopperRefiningCheck.STUDY_POSTS` | `{ 700, 200, 200, 80, 400 }` | ...its posts. |
+| 189 | `CopperRefiningCheck.STUDY_KW` | `{ 13_400, 6_000, 5_500, 1_100, 2_500 }` | ...its draw, kW. |
+| 192 | `CopperRefiningCheck.STUDY_MADE` | `{ { Good.ANODE, Good.ACID }, { Good.COPPER }, { Good.COPPER }, { Good.COPPER_...` | ...what it makes a month, t. |
+| 194 | `CopperRefiningCheck.STUDY_MAKES` | `{ { 9_750, 29_700 }, { 9_700 }, { 4_000 }, { 8_000 }, { 2_000 } }` | ...and how many tonnes of each, a month. |
+| 197 | `CopperRefiningCheck.STUDY_FEED` | `{ Good.COPPER_CONC, Good.ANODE, Good.COPPER_SCRAP, Good.COPPER, Good.COPPER_R...` | ...and what it takes, t a month. |
+| 199 | `CopperRefiningCheck.STUDY_USES` | `{ 33_000, 9_750, 4_400, 8_016, 2_000 }` | ...and how many tonnes of it, a month. |
+| 202 | `CopperRefiningCheck.STUDY_TABLE` | `{ { - 0.3, 1.2, 2.7, 1.2 }, { - 1.9, 0.8, 3.5, 0.8 }, { 0.0, 2.2, 2.9, 0.7 },...` | The study's 4.4 table, % of the cost a month, cases A to D. |
+| 206 | `CopperRefiningCheck.STUDY_RUNS` | `{ 5_253, 1_460, 1_776, 846, 4_820 }` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table - but the scrap refinery's, from the -0.02% ... |
+| 209 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
+| 212 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
+| 294 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 76 | `static int fails` |  |
+| 87 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 465 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
-| 82 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 87 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 92 | 5 | `static void quietly(Runnable r)` |  |
-| 98 | 12 | `public static void main(String[] args) throws Exception` |  |
+| 85 | 609 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
+| 93 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 98 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 103 | 5 | `static void quietly(Runnable r)` |  |
+| 109 | 13 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. the sector (lines 111-163)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 113 | 50 | `static void sector()` |  |
-
-### 2. the five rows against the study (lines 164-278)
+### 1. the sector (lines 123-175)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 202 | 76 | `static void rows()` |  |
+| 125 | 50 | `static void sector()` |  |
 
-### 3. the chain by its ratios (lines 279-335)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 284 | 51 | `static void chain()` |  |
-
-### 4. the smelter's acid sold, the leach plant's bought (lines 336-368)
+### 2. the five rows against the study (lines 176-290)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 338 | 30 | `static void acid()` |  |
+| 214 | 76 | `static void rows()` |  |
 
-### 5. old copper (lines 369-457)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 371 | 86 | `static void oldCopper()` |  |
-
-### 6. the planner weighs the old copper (lines 458-510)
+### 3. the chain by its ratios (lines 291-347)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 460 | 31 | `static void plannerWeighsOldCopper()` |  |
-| 493 | 10 | `static SpreadPlanner.Values oldValues(SpreadPlanner.Values plain, double spare, double price)` | The planner's values with `spare` t of old copper at `price` in front of the market's scrap (CopperRefining, THE OLD COPPER), built by hand. |
-| 505 | 5 | `static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, ...` | One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. |
+| 296 | 51 | `static void chain()` |  |
 
-### 7. the wire works' estimate (lines 511-538)
+### 4. the smelter's acid sold, the leach plant's bought (lines 348-380)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 513 | 25 | `static void wireWorksEstimate()` |  |
+| 350 | 30 | `static void acid()` |  |
+
+### 5. old copper (lines 381-469)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 383 | 86 | `static void oldCopper()` |  |
+
+### 6. the planner weighs the old copper (lines 470-522)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 472 | 31 | `static void plannerWeighsOldCopper()` |  |
+| 505 | 10 | `static SpreadPlanner.Values oldValues(SpreadPlanner.Values plain, double spare, double price)` | The planner's values with `spare` t of old copper at `price` in front of the market's scrap (CopperRefining, THE OLD COPPER), built by hand. |
+| 517 | 5 | `static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, ...` | One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. |
+
+### 7. the wire works' estimate (lines 523-550)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 525 | 25 | `static void wireWorksEstimate()` |  |
+
+### 8. a works buys inputs only for what it makes (lines 551-693)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 557 | 14 | `static Game copperWorks(String label, int smelters, int refineries, int rodMills, double cathodeExport)` | A copper town on the goods' literals (Game.playOnLiterals(): the premise is a fixed world price) with the works standing and, where the cathode's export price is given, that price set on its market (nothing resets it ... |
+| 573 | 4 | `static void holdAndRun(Game g, CopperRefining cr)` | One month with the cathode shed put back at the dump line first: the condition caused again each month, not waited for. |
+| 579 | 3 | `static boolean near(double a, double b)` | Whether a number is within a relative hair of another (a month's figures are sums of products). |
+| 583 | 110 | `static void idleWorks()` |  |
 

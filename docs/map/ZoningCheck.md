@@ -1,4 +1,4 @@
-# ZoningCheck.java - 595 lines · 17 methods · 3 constants · harnesses
+# ZoningCheck.java - 606 lines · 17 methods · 3 constants · harnesses
 
 `ham/citybuildersim/ZoningCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -52,7 +52,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [Sectors](Sectors.md) (106), [LandManager](LandManager.md) (40), [Zoning](Zoning.md) (23), [Game](Game.md) (18), [Resource](Resource.md) (10), [LongPlaytest](LongPlaytest.md) (8), [Forestry](Forestry.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [BusinessInvestment](BusinessInvestment.md) (6), [GameFiles](GameFiles.md) (4), [ForestryCheck](ForestryCheck.md) (4), [World](World.md) (3), [EconomyManager](EconomyManager.md) (2), [Sector](Sector.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Agriculture](Agriculture.md) (2), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [Formats](Formats.md) (1), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1)
+**Uses:** [Sectors](Sectors.md) (106), [LandManager](LandManager.md) (40), [Zoning](Zoning.md) (23), [Game](Game.md) (18), [Resource](Resource.md) (10), [LongPlaytest](LongPlaytest.md) (8), [Forestry](Forestry.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [BusinessInvestment](BusinessInvestment.md) (6), [GameFiles](GameFiles.md) (4), [ForestryCheck](ForestryCheck.md) (4), [World](World.md) (3), [EconomyManager](EconomyManager.md) (2), [Sector](Sector.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Agriculture](Agriculture.md) (2), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [Formats](Formats.md) (1), [Good](Good.md) (1), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1)
 
 ## Sections
 
@@ -66,8 +66,8 @@
 | 366 | 6. THE FOREST LAW |
 | 396 | 7. CLEARING |
 | 453 | 8. ZONED FIELDS DO NOT YIELD |
-| 510 | 9. SAVED AND RELOADED |
-| 552 | 10. FORESTRY ON THE ZONES AND THE LAW |
+| 521 | 9. SAVED AND RELOADED |
+| 563 | 10. FORESTRY ON THE ZONES AND THE LAW |
 
 ## Constants
 
@@ -89,7 +89,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 537 | **type** `public class ZoningCheck` | Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury, the roll and the world's totals. |
+| 59 | 548 | **type** `public class ZoningCheck` | Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury, the roll and the world's totals. |
 | 65 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 73 | 1 | `static boolean near(double a, double b)` |  |
 | 76 | 1 | `static boolean same(double a, double b)` | ...and two ground or wood figures the same to a part in a billion of the larger: one rounding, not a square foot. |
@@ -140,21 +140,21 @@
 |---:|---:|---|---|
 | 398 | 54 | `static void clearing()` |  |
 
-### 8. ZONED FIELDS DO NOT YIELD (lines 453-509)
+### 8. ZONED FIELDS DO NOT YIELD (lines 453-520)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 455 | 54 | `static void theFields(Game g)` |  |
+| 455 | 65 | `static void theFields(Game g)` |  |
 
-### 9. SAVED AND RELOADED (lines 510-551)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 512 | 39 | `static void savedAndReloaded(Path root, Game g)` |  |
-
-### 10. FORESTRY ON THE ZONES AND THE LAW (lines 552-595)
+### 9. SAVED AND RELOADED (lines 521-562)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 554 | 41 | `static void forestry()` |  |
+| 523 | 39 | `static void savedAndReloaded(Path root, Game g)` |  |
+
+### 10. FORESTRY ON THE ZONES AND THE LAW (lines 563-606)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 565 | 41 | `static void forestry()` |  |
 

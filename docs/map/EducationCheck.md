@@ -1,4 +1,4 @@
-# EducationCheck.java - 1,465 lines · 11 methods · 2 constants · harnesses
+# EducationCheck.java - 1,472 lines · 11 methods · 2 constants · harnesses
 
 `ham/citybuildersim/EducationCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -77,10 +77,10 @@
 | 735 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
 | 780 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
 | 826 | · 13. THE GRANT IS A MENU |
-| 1003 | · 14. THE LOAN'S RATE |
-| 1149 | · 15. THE PRICE OF A PLACE |
-| 1243 | · 16. ALL THREE SURVIVE A SAVE |
-| 1313 | · 17. A PRICE PER SCHOOL (0.7.6) |
+| 1010 | · 14. THE LOAN'S RATE |
+| 1156 | · 15. THE PRICE OF A PLACE |
+| 1250 | · 16. ALL THREE SURVIVE A SAVE |
+| 1320 | · 17. A PRICE PER SCHOOL (0.7.6) |
 
 ## Constants
 
@@ -99,16 +99,16 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1406 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
+| 60 | 1413 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
 | 68 | 4 | `static void quietly(Runnable work)` |  |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
 | 85 | 1 | `static void build(Game g, String name, int n)` |  |
 | 88 | 41 | `static Game city(GameFiles files)` | A funded city with room, so the thing under test is never money or land. |
 | 130 | 7 | `static void schools(Game g)` |  |
-| 138 | 1295 | `public static void main(String[] args) throws Exception` |  |
-| 1438 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
-| 1443 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
-| 1451 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
-| 1458 | 7 | `static void cleanUp(Path root)` |  |
+| 138 | 1302 | `public static void main(String[] args) throws Exception` |  |
+| 1445 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
+| 1450 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
+| 1458 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
+| 1465 | 7 | `static void cleanUp(Path root)` |  |
 

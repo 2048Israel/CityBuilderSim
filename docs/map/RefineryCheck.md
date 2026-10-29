@@ -1,4 +1,4 @@
-# RefineryCheck.java - 1,517 lines · 35 methods · 18 constants · harnesses
+# RefineryCheck.java - 1,527 lines · 35 methods · 18 constants · harnesses
 
 `ham/citybuildersim/RefineryCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -83,8 +83,8 @@
 | 1109 | 15. THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103) |
 | 1181 | 16. THE RUN (0.7.105) |
 | 1340 | 17. THE RUN IN A TOWN (0.7.105) |
-| 1425 | 18. THE PLANNER'S PRICES AT THE MARGIN (0.7.105) |
-| 1477 | 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) |
+| 1435 | 18. THE PLANNER'S PRICES AT THE MARGIN (0.7.105) |
+| 1487 | 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) |
 
 ## Enum constants
 
@@ -127,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 151 | 1367 | **type** `public class RefineryCheck` | The refinery's units and the flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner). |
+| 151 | 1377 | **type** `public class RefineryCheck` | The refinery's units and the flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner). |
 | 159 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 164 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 169 | 5 | `static void quietly(Runnable r)` |  |
@@ -176,22 +176,22 @@
 | 1238 | 1 | `static double ofMiddle(double share, double crudeCost)` | A verdict's barrel - `share`, a share of what its crude cost - as a share of crude's world middle. |
 | 1240 | 99 | `static void theRun(BuildingManager catalogue)` |  |
 
-### 17. THE RUN IN A TOWN (0.7.105) (lines 1340-1424)
+### 17. THE RUN IN A TOWN (0.7.105) (lines 1340-1434)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1342 | 82 | `static void theRunInATown() throws Exception` |  |
+| 1342 | 92 | `static void theRunInATown() throws Exception` |  |
 
-### 18. THE PLANNER'S PRICES AT THE MARGIN (0.7.105) (lines 1425-1476)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1427 | 49 | `static void thePlannerAtTheMargin(BuildingManager catalogue)` |  |
-
-### 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) (lines 1477-1517)
+### 18. THE PLANNER'S PRICES AT THE MARGIN (0.7.105) (lines 1435-1486)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1479 | 31 | `static void oneOrderInFlight() throws Exception` |  |
-| 1512 | 5 | `static String names(java.util.List<BuildingsTemplate> with)` | The buildings a package was weighed with, by name. |
+| 1437 | 49 | `static void thePlannerAtTheMargin(BuildingManager catalogue)` |  |
+
+### 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) (lines 1487-1527)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1489 | 31 | `static void oneOrderInFlight() throws Exception` |  |
+| 1522 | 5 | `static String names(java.util.List<BuildingsTemplate> with)` | The buildings a package was weighed with, by name. |
 
