@@ -4441,11 +4441,15 @@ public class MapCheck {
         long[] few = shoreCounts(types), many = shoreCounts(types);
         few[gct] = SHORE_FEW;
         many[gct] = SHORE_MANY;
+        // The cost is of how many works stand, not how large each is: the two coasts draw the terminals on their ground before SL1
+        // (GatewayCheck.GROUND_BEFORE_SL1, a General Cargo Terminal 3 x 4 plots), on which the section's coast holds 300; on SL1's
+        // (7 x 7) it holds 76.
+        BuildingVisual.Type[] before = GatewayCheck.gatewayTypesBeforeSL1();
         long t0 = System.nanoTime();
-        CityMap small = coastal(seed, sx, sy, types, SHORE_SIDE, few);
+        CityMap small = coastal(seed, sx, sy, before, SHORE_SIDE, few);
         double drawFew = (System.nanoTime() - t0) / 1e6;
         t0 = System.nanoTime();
-        CityMap big = coastal(seed, sx, sy, types, SHORE_SIDE, many);
+        CityMap big = coastal(seed, sx, sy, before, SHORE_SIDE, many);
         double drawMany = (System.nanoTime() - t0) / 1e6;
         out.printf("      the canonical draw: %d General Cargo Terminals in %.0f ms, %d in %.0f ms (before SL1: 1,200 ms and 183,000 ms)%n",
                 SHORE_FEW, drawFew, SHORE_MANY, drawMany);
