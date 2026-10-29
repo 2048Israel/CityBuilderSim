@@ -1,5 +1,5 @@
-# gate of Merge batch/WN1: nations: each nation's year from the path (Historical or Random) and the seed, the founding screen's World step, saved; nothing reads them yet, 0.8.67
+# gate of Merge batch/SL1: fewer ports, and the sea lanes shared: a terminal carries what a real one does, so far fewer are built, and the ships share one lane out that branches only where their ways part; routes found once and cached, with timing checks; measured first in a late city (Jerus, 2026-10-28: "each port has its on lane, and also there are two billion ports ... one port can sustain alot ... its same lane that later diverages if needed"; "move it to the next batch"; "late cities thats probably the thing that slows down stuff the most"), 0.8.68
 # date: 2026-10-28
 # earth-2.bin: named
-# suite: 152 harnesses run in 1286s: 152 passed, 0 failed
-# timing: 12 harnesses run in 417s: 12 passed, 0 failed
+# suite: 152 harnesses run in 982s: 152 passed, 0 failed
+# timing: 12 harnesses run in 477s: 12 passed, 0 failed

@@ -45,6 +45,21 @@ import java.util.List;
  * counts grow, kept in the sidecar (CityMap FORMAT 6); one fewer of a type
  * takes its newest. A FORMAT 5 sidecar, which has none, has them laid from its
  * counts as it is read.
+ *
+ * THE INDEX (SL1, 2026-10-28). blocks() is asked of every plot a search, a lay
+ * or a plan reads (CityMap's RunGround.at()): a shoreSpot() reads a 96 x 96
+ * window for each tile it looks at, and each plot asked every work on the
+ * shore - 300 terminals took a canonical draw 183 s (14.6 s at 100, 1.2 s at
+ * 10), a late city's 2,200 would take hours. So the works are kept by cell too:
+ * a square of 8 plots a side (CELL_SHIFT) holds each work whose box with its
+ * CLEAR verge, or whose quay, touches the cell, in the order laid, and blocks()
+ * and at() ask only the plot's cell. The answers are exactly the loop's over
+ * every work (MapCheck, 9: THE SHORE's reference loop, at every plot about
+ * every work). The index is built when it is first asked, added to by add() and
+ * dropped by a removal (a demolition, a month's few) to be built again when
+ * next asked; its count is checked against the works' each time, which also
+ * catches a list edited by hand. It is a cache of `works`, never saved: the
+ * sidecar is as it was.
  */
 public final class CityShore {
 
@@ -116,6 +131,18 @@ public final class CityShore {
     /** Moves with every work laid or taken: what the plans and the routes are kept against. */
     private long version;
 
+    /** How many works have been taken since this shore was made: a search that remembers where it found room (CityMap.shoreSpot()) starts again from the nearest when it moves, for a work taken may open room anywhere. */
+    private long removals;
+
+    /** Plots on the index's cell, as a shift: 8 - a General Cargo Terminal's box with its verge (5 x 6) touches four cells at most, the largest work's (a container terminal's 16 x 15) a dozen. */
+    static final int CELL_SHIFT = 3;
+
+    /** The most cells one work may be entered in; a work that spans more (a box or a quay no layout makes: a corrupt sidecar's) is kept apart and asked of every plot, as the loop asked it. */
+    static final int CELLS_MOST = 64;
+
+    /** The works by cell (SL1), or null when it is to be built again: a reader takes the index it finds and asks that one, so a rebuild beside it costs it a stale answer, never a failed one. */
+    private Index index;
+
     /** The works, in the order laid. */
     public List<Work> works() { return java.util.Collections.unmodifiableList(works); }
 
@@ -124,6 +151,9 @@ public final class CityShore {
 
     /** A number that moves with every work laid or taken. */
     public long version() { return version; }
+
+    /** How many works have been taken, ever: moves with a removal only. */
+    public long removals() { return removals; }
 
     /** How many works of type t are laid. */
     public int count(int t) {
@@ -136,6 +166,12 @@ public final class CityShore {
     void add(Work w) {
         works.add(w);
         version++;
+        // The index, when there is one and it was current, takes the work in; else it is built again when asked.
+        Index ix = index;
+        if (ix != null && ix.indexed == works.size() - 1) {
+            ix.enter(w);
+            ix.indexed++;
+        }
     }
 
     /** The newest work of type t taken away; false when there is none. */
@@ -144,6 +180,8 @@ public final class CityShore {
             if (works.get(i).type() != t) continue;
             works.remove(i);
             version++;
+            index = null;
+            removals++;
             return true;
         }
         return false;
@@ -159,24 +197,147 @@ public final class CityShore {
             if (works.get(i).type() != t || !which.test(works.get(i))) continue;
             works.remove(i);
             version++;
+            index = null;
+            removals++;
             return true;
         }
         return false;
     }
 
-    /** The work whose box holds world plot (x, y), or null. */
+    /** The work whose box holds world plot (x, y), or null: the first laid, from the plot's cell (SL1; the loop over every work, when some work is wide). */
     public Work at(long x, long y) {
-        for (Work w : works) if (w.holds(x, y)) return w;
+        Index ix = index();
+        if (ix.wide.length > 0) {
+            for (Work w : works) if (w.holds(x, y)) return w;
+            return null;
+        }
+        Cell c = ix.cellAt(x >> CELL_SHIFT, y >> CELL_SHIFT);
+        if (c != null) for (Work w : c.works) if (w.holds(x, y)) return w;
         return null;
     }
 
-    /** Whether world plot (x, y) is a work's box or within CLEAR of one, or a quay's: where the runs may not go and no other work may stand. */
+    /** Whether world plot (x, y) is a work's box or within CLEAR of one, or a quay's: where the runs may not go and no other work may stand. Asks the works of the plot's cell only (SL1); the answer is the loop over every work's. */
     public boolean blocks(long x, long y) {
-        for (Work w : works) {
-            if (x >= w.x0() - CLEAR && y >= w.y0() - CLEAR && x < w.x0() + w.w() + CLEAR && y < w.y0() + w.h() + CLEAR) return true;
-            if (w.quayAt(x, y)) return true;
-        }
+        Index ix = index();
+        Cell c = ix.cellAt(x >> CELL_SHIFT, y >> CELL_SHIFT);
+        if (c != null) for (Work w : c.works) if (blocksAt(w, x, y)) return true;
+        for (Work w : ix.wide) if (blocksAt(w, x, y)) return true;
         return false;
+    }
+
+    /** Whether one work blocks world plot (x, y): its box with its verge, or its quay. */
+    private static boolean blocksAt(Work w, long x, long y) {
+        if (x >= w.x0() - CLEAR && y >= w.y0() - CLEAR && x < w.x0() + w.w() + CLEAR && y < w.y0() + w.h() + CLEAR) return true;
+        return w.quayAt(x, y);
+    }
+
+    /* ----- the index (SL1) ----- */
+
+    /** One cell of the index: its key and the works that touch it, in the order laid (replaced, never edited, so a reader holds a whole list). */
+    private static final class Cell {
+        final long key;
+        Work[] works;
+
+        Cell(long key, Work first) {
+            this.key = key;
+            this.works = new Work[] { first };
+        }
+    }
+
+    /** The cells that hold any work, open addressing by the cell's key (a null slot is empty), and the works too wide for cells. */
+    private static final class Index {
+        Cell[] cells;
+        int count;
+        /** The works' count it was built to. */
+        int indexed;
+        /** The works that span more than CELLS_MOST cells, in the order laid: asked of every plot. */
+        Work[] wide = new Work[0];
+
+        Index(int works) {
+            int cap = 16;
+            while (cap < works * 8) cap <<= 1;
+            cells = new Cell[cap];
+        }
+
+        private static int slot(long key) {
+            return (int) ((key * 0x9E3779B97F4A7C15L) >>> 32);
+        }
+
+        /** The cell with key (cx, cy), or null when no work touches it. */
+        Cell cellAt(long cx, long cy) {
+            Cell[] t = cells;
+            long key = (cy << 32) ^ (cx & 0xffffffffL);
+            int mask = t.length - 1;
+            for (int i = slot(key) & mask; t[i] != null; i = (i + 1) & mask) if (t[i].key == key) return t[i];
+            return null;
+        }
+
+        /** Enters work w in every cell its box with its verge, or its quay, touches (after the works laid before it, so a cell's list is in the order laid). */
+        void enter(Work w) {
+            long cx0 = (w.x0() - CLEAR) >> CELL_SHIFT, cx1 = (w.x0() + w.w() + CLEAR - 1) >> CELL_SHIFT;
+            long cy0 = (w.y0() - CLEAR) >> CELL_SHIFT, cy1 = (w.y0() + w.h() + CLEAR - 1) >> CELL_SHIFT;
+            long qx0 = 1, qx1 = 0, qy0 = 1, qy1 = 0;   // empty: no quay
+            if (w.quay() > 0) {
+                long[] a = w.quayPlot(1), b = w.quayPlot(w.quay());
+                qx0 = Math.min(a[0], b[0]) >> CELL_SHIFT;
+                qx1 = Math.max(a[0], b[0]) >> CELL_SHIFT;
+                qy0 = Math.min(a[1], b[1]) >> CELL_SHIFT;
+                qy1 = Math.max(a[1], b[1]) >> CELL_SHIFT;
+            }
+            long span = (cx1 - cx0 + 1) * (cy1 - cy0 + 1) + Math.max(0, qx1 - qx0 + 1) * Math.max(0, qy1 - qy0 + 1);
+            if (span > CELLS_MOST) {
+                Work[] more = Arrays.copyOf(wide, wide.length + 1);
+                more[wide.length] = w;
+                wide = more;
+                return;
+            }
+            for (long cy = cy0; cy <= cy1; cy++) for (long cx = cx0; cx <= cx1; cx++) put(cx, cy, w);
+            for (long cy = qy0; cy <= qy1; cy++) {
+                for (long cx = qx0; cx <= qx1; cx++) {
+                    if (cx < cx0 || cx > cx1 || cy < cy0 || cy > cy1) put(cx, cy, w);
+                }
+            }
+        }
+
+        /** Appends w to the cell (cx, cy), the cell made if it is the first work in it. */
+        private void put(long cx, long cy, Work w) {
+            long key = (cy << 32) ^ (cx & 0xffffffffL);
+            int mask = cells.length - 1;
+            int i = slot(key) & mask;
+            while (cells[i] != null) {
+                if (cells[i].key == key) {
+                    Work[] o = cells[i].works, n = Arrays.copyOf(o, o.length + 1);
+                    n[o.length] = w;
+                    cells[i].works = n;
+                    return;
+                }
+                i = (i + 1) & mask;
+            }
+            cells[i] = new Cell(key, w);
+            if (++count * 2 > cells.length) {
+                // Twice the slots, filled before they are the table.
+                Cell[] grown = new Cell[cells.length * 2];
+                int m2 = grown.length - 1;
+                for (Cell c : cells) {
+                    if (c == null) continue;
+                    int j = slot(c.key) & m2;
+                    while (grown[j] != null) j = (j + 1) & m2;
+                    grown[j] = c;
+                }
+                cells = grown;
+            }
+        }
+    }
+
+    /** The index as it stands: built to the works as they are when it is not current. */
+    private Index index() {
+        Index ix = index;
+        if (ix != null && ix.indexed == works.size()) return ix;
+        ix = new Index(works.size());
+        for (Work w : works) ix.enter(w);
+        ix.indexed = works.size();
+        index = ix;
+        return ix;
     }
 
     /**

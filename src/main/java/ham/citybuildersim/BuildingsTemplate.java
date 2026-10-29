@@ -339,7 +339,7 @@ public class BuildingsTemplate {
     /* ----- A SEA TERMINAL'S BERTH (0.7.86, batch O9; docs/studies/spec-oil.md 2.9) -----
        A terminal is one berth of one kind of cargo (Ports.Cargo) and handles
        its berth's tonnes a year ("port": {"cargo": "LIQUID", "tonnes":
-       3250000} in buildings.json): what share of that kind's trade goes by
+       30000000} in buildings.json): what share of that kind's trade goes by
        sea is Ports' arithmetic on the berths standing. Every other building
        has no berth. */
     private Ports.Cargo berthCargo;

@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.68 — SL1, fewer ports and the sea lanes shared — 2026-10-28, ready, see docs/queue/SL1-notes.md
+Jerus was right that a late city's sea terminals are its slowest part: measured on main, a month that laid one more terminal cost 1.6 s at 300 standing (the model's month is 15 ms) and the map took 183 s to draw, because every plot the shore read asked every work on it, and every terminal laid found every route again. Now each terminal is a real one of several berths, cited (Tanker 30 Mt a year, Bulk Terminal 50, Container 24.3, General Cargo 2; price, jobs and ground scaled with it), ordered by the kind's whole trade and as many as the tonnes pay back: the default playtest stands 21 terminals at the end where main stood 46 (8 General Cargo where it stood 37), at 599,734 people against 544,112. A terminal's route joins the lane within 10 km by water and goes on along it, so a coast's ships share one lane that branches only where no lane is in reach; routes are found once and kept, each leg is drawn once, and the shore is laid at the cost of the change: at 300 terminals the map draws in 0.6 s and a month's terminal takes 0.6 ms; at 10 billion every route is found in 0.2 s. The ensemble's two reds are the baseline's; growth is within the noise and a little up.
+
 ### 0.8.67 — WN1, the nations on the world's path: Historical or Random — 2026-10-28, ready, see docs/queue/WN1-notes.md
 The founding screen has a new step, THE WORLD BEYOND YOUR CITY: the world's path, Historical or Random, and the path's own seed with its dice. The five inflation chips are now THE DOLLAR'S OWN INFLATION, which is what they always were. `Nations` gives each of the 196 nations its year (output, people, prices, its money's rate) and each good's real price, from the path, the seed and WN0's world file:
 - Historical replays 2000-2025 from the file, then the game's own rule with small seeded shocks.

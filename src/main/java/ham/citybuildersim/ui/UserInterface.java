@@ -461,6 +461,9 @@ public class UserInterface extends Application {
     /** Real seconds a month takes at 1x. */
     public static final double SECONDS_PER_MONTH = 5.0;
 
+    /** The clock's top speed, the ladder's last rung: 50x, a month in a fiftieth of SECONDS_PER_MONTH (SL1, 2026-10-28: what a month's new routes must be found within, MapCheck's ROUTES_MONTH_MS). A constant, so a harness reads it without loading the screen. */
+    public static final double SPEED_TOP = 50;
+
     /**
      * The ladder the speed steps along: a rung a click on the clock's two
      * arrows since 0.7.21, and the stops the speed slider stuck to before.
@@ -471,7 +474,7 @@ public class UserInterface extends Application {
      * landing between two stops is not a speed anybody meant to pick. The
      * header's arrows (0.7.21) keep the stops and have no drag.
      */
-    private static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50};
+    private static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10, 20, SPEED_TOP};
     private static final int NORMAL_SPEED = 3;              // 1x
 
     int speedIndex = NORMAL_SPEED;

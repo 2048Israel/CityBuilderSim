@@ -4293,6 +4293,18 @@ public class MapCheck {
     /** Frames timed for that bound, a round: 200 at times through the month; the least of TIMED_ROUNDS rounds' means after WARM_ROUNDS. */
     static final int BOAT_FRAMES = 200;
 
+    /** A month at normal speed, in ms: ui.UserInterface.SECONDS_PER_MONTH x 1000, 5,000 - what every terminal's route found from scratch at 10 billion must be found within (SL1, 2026-10-28). */
+    static final double ROUTES_ALL_MS = ham.citybuildersim.ui.UserInterface.SECONDS_PER_MONTH * 1000;
+
+    /** A month at the clock's top speed, in ms: SECONDS_PER_MONTH x 1000 over UserInterface.SPEED_TOP, 100 - what a month's new terminals' routes, laid onto those kept, must be found within at 10 billion (SL1). */
+    static final double ROUTES_MONTH_MS = ham.citybuildersim.ui.UserInterface.SECONDS_PER_MONTH * 1000 / ham.citybuildersim.ui.UserInterface.SPEED_TOP;
+
+    /** The share of the 10 billion lanes' terminals a month lays: 1%, 200 of the 20,000 (SL1). */
+    static final double ROUTES_MONTH_SHARE = 0.01;
+
+    /** Rounds of the 10 billion routes' timings, the least kept (a find from scratch is the slow one, so fewer than the frames'): 3 after one warm round. */
+    static final int ROUTES_ROUNDS = 3;
+
     /** The section's town: Jerus's mix at a tenth, one of each of the refinery's units, two of each terminal and one of each tank farm. */
     static long[] shoreCounts(BuildingVisual.Type[] types) {
         long[] c = new long[types.length];
@@ -4305,6 +4317,245 @@ public class MapCheck {
             else if (t.shore()) c[t.id()] = 1;
         }
         return c;
+    }
+
+    /* ----- the shore's cost follows what a month changes (SL1, 2026-10-28) ----- */
+
+    /** General Cargo Terminals standing on the small coast of the shore's cost: 10. */
+    static final int SHORE_FEW = 10;
+
+    /** ...and on the big coast: 300, where a late city stands thousands. */
+    static final int SHORE_MANY = 300;
+
+    /** How many times the cost of a month's terminal may grow from SHORE_FEW standing to SHORE_MANY: twice (it was 21 times, 74 ms and 1,557 ms: every plot the search read asked every work, and every search began again at the nearest tile). */
+    static final double SHORE_GROWTH = 2;
+
+    /** Months of one more terminal before the timing and timed, a terminal each: SHORE_WARM that are not, then the median of SHORE_TIMED kept (a month is about a ms, which a pause moves). */
+    static final int SHORE_WARM = 3, SHORE_TIMED = 15;
+
+    /** Plots asked about each work beyond its box, verge and quay: 2, past the cell the index keeps a work in. */
+    static final int SHORE_MARGIN = 2;
+
+    /** Terminals asked of the coast that fills, one at a time: 20, more than its 12. */
+    static final int SHORE_FILL = 20;
+
+    /** Terminals asked of each lagoon, one at a time: 40. */
+    static final int SHORE_LAGOON = 40;
+
+    /** Whether any work of `shore` blocks world plot (x, y), by the loop over every work that CityShore.blocks() was before SL1: the reference. */
+    static boolean blocksByLoop(CityShore shore, long x, long y) {
+        for (CityShore.Work w : shore.works()) {
+            if (x >= w.x0() - CityShore.CLEAR && y >= w.y0() - CityShore.CLEAR && x < w.x0() + w.w() + CityShore.CLEAR && y < w.y0() + w.h() + CityShore.CLEAR) return true;
+            if (w.quayAt(x, y)) return true;
+        }
+        return false;
+    }
+
+    /** The first work whose box holds world plot (x, y), by the loop over every work: the reference. */
+    static CityShore.Work atByLoop(CityShore shore, long x, long y) {
+        for (CityShore.Work w : shore.works()) if (w.holds(x, y)) return w;
+        return null;
+    }
+
+    /** Whether blocks() and at() answer as the loops do at world plot (x, y); `counts` takes {asked, blocked, differ}. */
+    static void askBoth(CityShore shore, long x, long y, long[] counts) {
+        boolean by = blocksByLoop(shore, x, y);
+        counts[0]++;
+        if (by) counts[1]++;
+        if (shore.blocks(x, y) != by || shore.at(x, y) != atByLoop(shore, x, y)) counts[2]++;
+    }
+
+    /** blocks() and at() against the loops at every plot of each work's box, its verge and its quay and `margin` plots about them: {plots asked, of them blocked, answers that differ}. */
+    static long[] blocksAgainstLoops(CityShore shore, int margin) {
+        long[] counts = new long[3];
+        for (CityShore.Work k : shore.works()) {
+            long x0 = k.x0() - CityShore.CLEAR, y0 = k.y0() - CityShore.CLEAR, x1 = k.x0() + k.w() + CityShore.CLEAR - 1, y1 = k.y0() + k.h() + CityShore.CLEAR - 1;
+            if (k.quay() > 0) {
+                long[] a = k.quayPlot(1), b = k.quayPlot(k.quay());
+                x0 = Math.min(x0, Math.min(a[0], b[0]));
+                y0 = Math.min(y0, Math.min(a[1], b[1]));
+                x1 = Math.max(x1, Math.max(a[0], b[0]));
+                y1 = Math.max(y1, Math.max(a[1], b[1]));
+            }
+            for (long y = y0 - margin; y <= y1 + margin; y++) for (long x = x0 - margin; x <= x1 + margin; x++) askBoth(shore, x, y, counts);
+        }
+        return counts;
+    }
+
+    /**
+     * Terminals of type t laid one at a time, the model's count n from `from` to `to` (counts[t] is set to it): before each month the spot the search from
+     * where the last found room finds and the spot the search from the nearest finds, then the month. {searches, spots that differ, laid at the spot found,
+     * came up short, laid elsewhere, tiles looked at from where the last found room, tiles looked at from the nearest}.
+     */
+    static long[] layOneAtATime(CityMap m, int t, long[] counts, long from, long to) {
+        long[] r = new long[7];
+        List<long[]> mines = m.minedSites();
+        for (long n = from; n <= to; n++) {
+            long l0 = m.shoreLooked();
+            CityShore.Work remembered = m.shoreSpot(t, mines);
+            long l1 = m.shoreLooked();
+            CityShore.Work whole = m.shoreSpotFull(t, mines);
+            long l2 = m.shoreLooked();
+            r[5] += l1 - l0;
+            r[6] += l2 - l1;
+            r[0]++;
+            if (!java.util.Objects.equals(remembered, whole)) r[1]++;
+            counts[t] = n;
+            m.reconcile(counts);
+            List<CityShore.Work> laid = m.shore().works();
+            if (remembered == null) r[3]++;
+            else if (laid.get(laid.size() - 1).equals(remembered)) r[2]++;
+            else r[4]++;
+        }
+        return r;
+    }
+
+    /** The median of the figures after the first `skip`. */
+    static double medianAfter(double[] ms, int skip) {
+        double[] timed = Arrays.copyOfRange(ms, skip, ms.length);
+        Arrays.sort(timed);
+        return timed[timed.length / 2];
+    }
+
+    /**
+     * SL1 (2026-10-28): what the shore costs follows what a month changes and not the terminals standing. The measure that found it:
+     * a canonical draw took 1.2 s with 10 General Cargo Terminals, 14.6 s with 100 and 183 s with 300, and a month that laid one more
+     * 74 ms, 304 ms and 1,557 ms, on the clock's thread - the model's whole month is 15 ms. (a) CityShore.blocks() and at() answer as
+     * the loops over every work did; (b) a search that starts where the last found room finds the spot a search from the nearest
+     * does, for each terminal laid one at a time on a coast that fills, and after some are taken away; (c) a month's terminal costs
+     * no more than SHORE_GROWTH times with SHORE_MANY standing than with SHORE_FEW.
+     */
+    static void shoreFollowsChange(BuildingVisual.Type[] types, long seed, CityMap coast) {
+        out.println("      the shore's cost follows what a month changes, not the terminals standing:");
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        int gct = -1, box = -1;
+        for (BuildingVisual.Type t : types) {
+            if (t == null) continue;
+            if (t.berth() == Ports.Cargo.GENERAL.ordinal()) gct = t.id();
+            if (t.berth() == Ports.Cargo.CONTAINER.ordinal()) box = t.id();
+        }
+        check("fixture: the town has a General Cargo Terminal and a Container Terminal", gct >= 0 && box >= 0);
+
+        // ---- (a) blocks() and at() as the loops
+        long[] few = shoreCounts(types), many = shoreCounts(types);
+        few[gct] = SHORE_FEW;
+        many[gct] = SHORE_MANY;
+        // The cost is of how many works stand, not how large each is: the two coasts draw the terminals on their ground before SL1
+        // (GatewayCheck.GROUND_BEFORE_SL1, a General Cargo Terminal 3 x 4 plots), on which the section's coast holds 300; on SL1's
+        // (7 x 7) it holds 76.
+        BuildingVisual.Type[] before = GatewayCheck.gatewayTypesBeforeSL1();
+        long t0 = System.nanoTime();
+        CityMap small = coastal(seed, sx, sy, before, SHORE_SIDE, few);
+        double drawFew = (System.nanoTime() - t0) / 1e6;
+        t0 = System.nanoTime();
+        CityMap big = coastal(seed, sx, sy, before, SHORE_SIDE, many);
+        double drawMany = (System.nanoTime() - t0) / 1e6;
+        out.printf("      the canonical draw: %d General Cargo Terminals in %.0f ms, %d in %.0f ms (before SL1: 1,200 ms and 183,000 ms)%n",
+                SHORE_FEW, drawFew, SHORE_MANY, drawMany);
+        check("fixture: both coasts hold every General Cargo Terminal asked of them, the cost is of that many standing",
+                small.shore().count(gct) == SHORE_FEW && big.shore().count(gct) == SHORE_MANY);
+        long[] onCoast = blocksAgainstLoops(coast.shore(), SHORE_MARGIN), onBig = blocksAgainstLoops(big.shore(), SHORE_MARGIN);
+        out.printf("      blocks() and at() asked at %,d plots about the section's %d works (%,d block) and at %,d about the big coast's %d (%,d block): %d and %d differ%n",
+                onCoast[0], coast.shore().works().size(), onCoast[1], onBig[0], big.shore().works().size(), onBig[1], onCoast[2], onBig[2]);
+        check("fixture: the plots asked are boxes, verges and quays that block and plots about them that do not",
+                onCoast[1] > 0 && onCoast[0] > onCoast[1] && onBig[1] > 0 && onBig[0] > onBig[1]);
+        check("blocks() and at() answer as the loops over every work did, at every plot of every work's box, verge and quay and two plots about each,"
+                + " on the section's coast and on a coast of 300 terminals", onCoast[2] == 0 && onBig[2] == 0);
+        // The index kept through works laid, taken and wide: a shore of random works, asked after each change (the loops are the answer).
+        CityShore syn = new CityShore();
+        java.util.Random rnd = new java.util.Random(0x51);
+        long[] synCounts = new long[3];
+        boolean kept = true;
+        for (int round = 0; round < 6; round++) {
+            for (int i = 0; i < 25; i++) {
+                int side = rnd.nextInt(4), type = rnd.nextInt(3);
+                syn.add(new CityShore.Work(rnd.nextInt(300) - 40, rnd.nextInt(300) - 40, 1 + rnd.nextInt(16), 1 + rnd.nextInt(15), type, side, rnd.nextBoolean() ? 1 + rnd.nextInt(14) : 0));
+            }
+            if (round == 3) syn.add(new CityShore.Work(-10, 60, 50_000, 3, 2, 1, 0));   // wider than any layout makes: asked of every plot
+            if (round == 4) {
+                syn.removeNewest(2);
+                syn.removeNewest(0);
+            }
+            for (int i = 0; i < 4_000; i++) askBoth(syn, rnd.nextInt(360) - 50, rnd.nextInt(360) - 50, synCounts);
+            kept &= synCounts[2] == 0;
+        }
+        out.printf("      a shore of %d works laid, taken and wide, asked at %,d plots in six rounds: %d differ from the loops%n",
+                syn.works().size(), synCounts[0], synCounts[2]);
+        check("...and as they did through works laid after it was built, works taken, and a work too wide to keep by cell", kept && synCounts[1] > 0 && synCounts[0] > synCounts[1]);
+
+        // ---- (b) a search from where the last found room is the search from the nearest
+        long[] fill = shoreCounts(types);
+        fill[box] = 0;
+        CityMap filling = coastal(seed, sx, sy, types, 2, fill);
+        long[] first = layOneAtATime(filling, box, fill, 1, SHORE_FILL);
+        int placed = filling.shore().count(box);
+        fill[box] = placed - 3;
+        filling.reconcile(fill);
+        check("fixture: three terminals taken from the coast that filled leave it three fewer", filling.shore().count(box) == placed - 3);
+        long[] again = layOneAtATime(filling, box, fill, placed - 2, placed + 2);
+        out.printf("      the coast that fills: %d searches, %d laid at the spot found, %d came up short; %,d tiles looked at from where the last found room,"
+                + " %,d from the nearest; %d differ%n", first[0] + again[0], first[2] + again[2], first[3] + again[3], first[5] + again[5], first[6] + again[6],
+                first[1] + again[1]);
+        check("fixture: the coast fills - terminals are laid, and some come up short", first[2] > 0 && first[3] >= 3 && filling.shoreShort() > 0);
+        check("a search from where the last found room finds the spot the search from the nearest finds, for each terminal laid one at a time"
+                + " until the coast is full and again after three are taken away, and that is where the terminal is laid",
+                first[1] + again[1] == 0 && first[4] + again[4] == 0);
+        check("...and looks at fewer tiles than the search from the nearest does", first[5] + again[5] < first[6] + again[6]);
+
+        // ---- (b2) ...also where a water as wide as the flood's reach is shut to the terminals after the first that fails in it
+        // A lagoon the size of a disk of sea cells about the first spot's quay end: the floods share what they find shut, so what the search is
+        // told of the water depends on the order it asks, and a search that passes tiles over must ask in the same order.
+        long[] none = shoreCounts(types);
+        none[gct] = 0;
+        CityMap dry = coastal(seed, sx, sy, types, 2, none);
+        CityShore.Work firstSpot = dry.shoreSpotFull(gct, dry.minedSites());
+        int[][] lagoons = { { 14, -6, 4 }, { 16, 4, -5 }, { 21, -4, 4 } };
+        long searches = 0, laidIn = 0, touched = 0, lagoonDiffer = 0;
+        for (int[] lg : lagoons) {
+            long[] cnt = shoreCounts(types);
+            cnt[gct] = 0;
+            CityMap lagoon = coastal(seed, sx, sy, types, 2, cnt);
+            long[] end = firstSpot.quayPlot(firstSpot.quay() + 1);
+            final long ci = Math.floorDiv(end[0], SeaRoutes.CELL) + lg[1], cj = Math.floorDiv(end[1], SeaRoutes.CELL) + lg[2];
+            final long r2 = (long) lg[0] * lg[0];
+            lagoon.shoreSeaIs(SeaRoutes.grid((i, j) -> (i - ci) * (i - ci) + (j - cj) * (j - cj) <= r2));
+            long[] run = layOneAtATime(lagoon, gct, cnt, 1, SHORE_LAGOON);
+            int standing = lagoon.shore().count(gct);
+            cnt[gct] = Math.max(0, standing - 2);
+            lagoon.reconcile(cnt);
+            long[] more = layOneAtATime(lagoon, gct, cnt, cnt[gct] + 1, cnt[gct] + 6);
+            searches += run[0] + more[0];
+            laidIn += run[2] + more[2];
+            lagoonDiffer += run[1] + more[1] + run[4] + more[4];
+            touched += lagoon.shoreTouched();
+        }
+        out.printf("      %d lagoons as wide as the reach (SeaRoutes.OPEN_M): %d searches, %d terminals laid, %d spots asked of a water found shut; %d differ%n",
+                lagoons.length, searches, laidIn, touched, lagoonDiffer);
+        check("fixture: the lagoons take terminals, and the floods meet a shut water as wide as the reach", laidIn > 10 && touched > 0);
+        check("...a search from where the last found room finds the spot the search from the nearest finds there too, with some taken and laid again", lagoonDiffer == 0);
+
+        // ---- (c) a month's terminal costs the same with 10 standing as with 300
+        int standingFew = small.shore().count(gct), standingMany = big.shore().count(gct), rounds = SHORE_WARM + SHORE_TIMED;
+        double[] fewMs = new double[rounds], manyMs = new double[rounds];
+        long[] cf = few.clone(), cm = many.clone();
+        for (int r = 0; r < rounds; r++) {
+            cf[gct]++;
+            cm[gct]++;
+            t0 = monthClock();
+            small.reconcile(cf);
+            fewMs[r] = (monthClock() - t0) / 1e6;
+            t0 = monthClock();
+            big.reconcile(cm);
+            manyMs[r] = (monthClock() - t0) / 1e6;
+        }
+        double fewMed = medianAfter(fewMs, SHORE_WARM), manyMed = medianAfter(manyMs, SHORE_WARM);
+        out.printf("      a month that lays one more terminal, the median of %d after %d warm-up, on " + (CPU_TIMED ? "the main thread's CPU" : "the wall clock") + ": %.2f ms with %d standing, %.2f ms with %d%n",
+                SHORE_TIMED, SHORE_WARM, fewMed, standingFew, manyMed, standingMany);
+        check("fixture: each of those months laid the terminal asked on both coasts, none came up short",
+                small.shore().count(gct) == standingFew + rounds && big.shore().count(gct) == standingMany + rounds);
+        check("a month that lays one more terminal takes no more than SHORE_GROWTH times as long with 300 standing as with 10",
+                Timing.within(manyMed, SHORE_GROWTH * fewMed));
     }
 
     static void atSea(BuildingVisual.Type[] types, long seed) {
@@ -4468,6 +4719,7 @@ public class MapCheck {
         for (Map.Entry<Integer, Long> e : plotsOf.entrySet()) once &= wantOf.getOrDefault(e.getKey(), 0L) >= e.getValue();
         out.printf("      drawn: %s plots of works (the shore's %s), %d of quay (%d)%n", plotsOf, wantOf, quayPlots, wantQuay);
         check("...each work drawn once on the tiles, on its own box, and every plot of its quay once", once && quayPlots == wantQuay);
+        shoreFollowsChange(types, seed, m);
 
         // ---- THE OIL AT SEA: the game's own platform (WellCheck's sea town).
         oilAtSea();
@@ -4505,6 +4757,7 @@ public class MapCheck {
         check("...each to its offing, the city's radius plus OFFING_M out from its berth (this coast is open), and on into the abyss: ABYSS_M,"
                 + " or as far as the sea goes", offing && fades);
         check("...a call's last leg turned no more than SPREAD_DEG, where the fan keeps to the sea", spreadOk);
+        sharedLanesOnTheCoast(w, m, types);
 
         // ---- THE BOATS: pure in (call, t), a frame touching only the routes on screen, and at 10B a frame's cost.
         BoatSchedule s = BoatSchedule.of(7, tradeAtSea(PROTO_TONNES / 4, PROTO_TONNES / 4, PROTO_TONNES / 4, PROTO_TONNES / 4), routes);
@@ -4565,6 +4818,315 @@ public class MapCheck {
                 seen[1], best[2], seen[2]);
         check("...at 10 billion a frame's boats take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and the prototype's 8 districts",
                 Timing.within(best[0], BOAT_FRAME_MS) && Timing.within(best[1], BOAT_FRAME_MS) && Timing.within(best[2], BOAT_FRAME_MS));
+        lanesOnAMask();
+        routesFoundOnce(w, m, types, gct, more);
+        routesAt10B(m);
+    }
+
+    /* ----- SL1 (2026-10-28): the terminals share a lane, found once, drawn once ----- */
+
+    /** Whether two routes are the same, point for point (their berth, offing, pivot and spread too). */
+    static boolean sameRoute(BoatSchedule.Route a, BoatSchedule.Route b) {
+        return a.berth().equals(b.berth()) && a.x1() == b.x1() && a.y1() == b.y1() && Arrays.equals(a.xs(), b.xs()) && Arrays.equals(a.ys(), b.ys())
+                && Arrays.equals(a.along(), b.along()) && a.offing() == b.offing() && a.pivot() == b.pivot() && a.spread() == b.spread();
+    }
+
+    /** Whether two lists of routes are the same, route by route. */
+    static boolean sameRoutes(List<BoatSchedule.Route> a, List<BoatSchedule.Route> b) {
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) if (!sameRoute(a.get(i), b.get(i))) return false;
+        return true;
+    }
+
+    /**
+     * Whether route r, joined at its point j (SeaRoutes.Found.joinAt()), goes on from there as the lane of one before
+     * it in `all`: that route ends in the same points, point for point, after the join point; the join point lies on
+     * its leg before them; and the offing is the lane's, and the pivot and the spread, unless the join point is the pivot.
+     */
+    static boolean joinedOnALane(List<BoatSchedule.Route> all, int r, int j) {
+        BoatSchedule.Route rt = all.get(r);
+        int tail = rt.xs().length - j - 1;
+        if (j < 1 || tail < 2) return false;
+        for (int q = 0; q < r; q++) {
+            BoatSchedule.Route lane = all.get(q);
+            int from = lane.xs().length - tail;
+            if (from < 1) continue;
+            if (!Arrays.equals(rt.xs(), j + 1, rt.xs().length, lane.xs(), from, lane.xs().length)
+                    || !Arrays.equals(rt.ys(), j + 1, rt.ys().length, lane.ys(), from, lane.ys().length)) continue;
+            if (!onLeg(lane.xs()[from - 1], lane.ys()[from - 1], lane.xs()[from], lane.ys()[from], rt.xs()[j], rt.ys()[j])) continue;
+            if (rt.offing() - (j + 1) != lane.offing() - from) continue;
+            if (rt.pivot() != j && (rt.pivot() - (j + 1) != lane.pivot() - from || rt.spread() != lane.spread())) continue;
+            return true;
+        }
+        return false;
+    }
+
+    /** Whether (px, py) lies on the segment (ax, ay) to (bx, by), to a millionth of a plot. */
+    static boolean onLeg(double ax, double ay, double bx, double by, double px, double py) {
+        double len = Math.hypot(bx - ax, by - ay);
+        if (!(len > 0)) return Math.hypot(px - ax, py - ay) <= 1e-6;
+        double along = ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / len, off = ((px - ax) * (by - ay) - (py - ay) * (bx - ax)) / len;
+        return Math.abs(off) <= 1e-6 && along >= -1e-6 && along <= len + 1e-6;
+    }
+
+    /** Whether every leg of every route is drawn: some leg of the lanes ends where it does and holds its start. */
+    static boolean everyLegDrawn(List<BoatSchedule.Route> routes, SeaLanes lanes) {
+        for (BoatSchedule.Route r : routes) {
+            for (int i = 0; i + 1 < r.xs().length; i++) {
+                boolean drawn = false;
+                for (int l = 0; l < lanes.legs() && !drawn; l++) {
+                    double[] d = lanes.leg(l);
+                    drawn = d[2] == r.xs()[i + 1] && d[3] == r.ys()[i + 1] && onLeg(d[0], d[1], d[2], d[3], r.xs()[i], r.ys()[i]);
+                }
+                if (!drawn) return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether no point of route k is a point of another route's: a lane of its own. */
+    static boolean sharesNoPoint(List<BoatSchedule.Route> all, int k) {
+        BoatSchedule.Route a = all.get(k);
+        for (int q = 0; q < all.size(); q++) {
+            if (q == k) continue;
+            BoatSchedule.Route b = all.get(q);
+            for (int i = 0; i < a.xs().length; i++) for (int j = 0; j < b.xs().length; j++) if (a.xs()[i] == b.xs()[j] && a.ys()[i] == b.ys()[j]) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Section 9's lanes shared (SL1): on the coast's own terminals, fewer routes are searched than there are routes
+     * and the rest joined to a lane, each going on from its join point as a lane's own points, point for point; and
+     * the lanes drawn are fewer legs than the routes' legs summed, every leg of the routes drawn.
+     */
+    static void sharedLanesOnTheCoast(World w, CityMap m, BuildingVisual.Type[] types) {
+        List<BoatSchedule.Berth> berths = m.shore().berths(types);
+        SeaRoutes.Found found = SeaRoutes.find(w, berths, m.land().siteX(), m.land().siteY(), SeaRoutes.band(m.cityRadius()));
+        List<BoatSchedule.Route> routes = found.routes();
+        SeaLanes lanes = SeaLanes.of(routes);
+        out.printf("      the lanes shared: %d routes, %d searched and %d joined to a lane; the lanes drawn are %d legs of the routes' %d%n",
+                routes.size(), found.searched(), found.joined(), lanes.legs(), lanes.routeLegs());
+        check("fixture: the coast has several terminals and some stand within JOIN_M by water of the lane of another", routes.size() >= 2 && found.joined() > 0);
+        check("SHARED LANES: one route a terminal, fewer searched than routes, the rest joined to a lane",
+                routes.size() == berths.size() && found.searched() < routes.size() && found.searched() + found.joined() == routes.size());
+        boolean tails = true;
+        for (int r = 0; r < routes.size(); r++) if (found.joinAt()[r] >= 0) tails &= joinedOnALane(routes, r, found.joinAt()[r]);
+        check("...each joined route goes on from its join point as a lane's own points, point for point: its offing the lane's, its spread too", tails);
+        check("...the lanes drawn are fewer legs than the routes' legs summed, and every leg of the routes is drawn",
+                lanes.legs() < lanes.routeLegs() && everyLegDrawn(routes, lanes));
+        check("...the map's routes are these, and its lanes drawn the same legs", sameRoutes(m.seaRoutes(), routes) && m.seaLanes().legs() == lanes.legs());
+    }
+
+    /**
+     * Section 9's lanes on a mask of the sea (SL1): a straight coast, a headland wider than JOIN_M, a far shore, one
+     * berth inland. Two terminals a few cells apart share a lane; the terminal across the headland and the one more than
+     * JOIN_M along the shore each have a lane of their own; a berth with no sea has the straight lane, which no one
+     * joins. And found on a prefix and extended to the rest, the routes are those found whole.
+     */
+    static void lanesOnAMask() {
+        final long coast = 20_000, headX = 20_200, headW = SeaRoutes.JOIN_CELLS + 9, headLen = 60;
+        SeaRoutes.Sea sea = (ci, cj) -> cj < coast && !(ci >= headX && ci < headX + headW && cj >= coast - headLen);
+        long[][] at = { { 20_000, coast - 1 }, { 20_006, coast - 1 }, { headX - 4, coast - 1 }, { headX + headW + 4, coast - 1 },
+                { 20_400, coast - 1 }, { 20_440, coast - 1 }, { 20_002, coast + 20 } };
+        List<BoatSchedule.Berth> berths = new ArrayList<>();
+        for (long[] c : at) berths.add(new BoatSchedule.Berth(Ports.Cargo.LIQUID, c[0] * SeaRoutes.CELL + SeaRoutes.CELL / 2, c[1] * SeaRoutes.CELL + SeaRoutes.CELL / 2));
+        long siteX = headX * SeaRoutes.CELL, siteY = (coast + 2_000) * SeaRoutes.CELL;
+        double radius = SeaRoutes.band(2_000);
+        SeaRoutes.Grid grid = SeaRoutes.grid(sea);
+        SeaRoutes.Found found = SeaRoutes.find(grid, berths, siteX, siteY, radius);
+        List<BoatSchedule.Route> routes = found.routes();
+        out.printf("      lanes on a mask of the sea, a coast with a headland %d cells wide: %d berths, %d searched and %d joined%n", headW, berths.size(),
+                found.searched(), found.joined());
+        // The fixture causes each condition: the two terminals within JOIN_CELLS; the headland wider, the terminals across it farther apart;
+        // the far terminal farther than JOIN_CELLS from every cell any route before it covers (looked at three times a cell, as the join does).
+        double apart = Math.hypot(at[1][0] - at[0][0], at[1][1] - at[0][1]), across = Math.hypot(at[3][0] - at[2][0], at[3][1] - at[2][1]);
+        check("fixture: two terminals a few cells apart on a straight shore, a headland wider than JOIN_CELLS between two more, the sea round the berths",
+                apart < SeaRoutes.JOIN_CELLS && headW > SeaRoutes.JOIN_CELLS && across > SeaRoutes.JOIN_CELLS
+                        && berths.stream().limit(6).allMatch(b -> sea.at(Math.floorDiv(b.x(), SeaRoutes.CELL), Math.floorDiv(b.y(), SeaRoutes.CELL))));
+        int[] far = { 3, 5 };
+        boolean farEnough = true;
+        for (int k : far) {
+            double nearest = Double.MAX_VALUE;
+            for (int q = 0; q < k; q++) {
+                BoatSchedule.Route r = routes.get(q);
+                for (int i = 0; i < r.offing(); i++) {
+                    double len = Math.hypot(r.xs()[i + 1] - r.xs()[i], r.ys()[i + 1] - r.ys()[i]);
+                    int n = (int) Math.ceil(len / SeaRoutes.CELL * 3) + 1;
+                    for (int s = 0; s <= n; s++) {
+                        double x = r.xs()[i] + (r.xs()[i + 1] - r.xs()[i]) * s / n, y = r.ys()[i] + (r.ys()[i + 1] - r.ys()[i]) * s / n;
+                        nearest = Math.min(nearest, Math.hypot(Math.floorDiv((long) Math.floor(x), SeaRoutes.CELL) - at[k][0],
+                                Math.floorDiv((long) Math.floor(y), SeaRoutes.CELL) - at[k][1]));
+                    }
+                }
+            }
+            farEnough &= nearest > SeaRoutes.JOIN_CELLS;
+        }
+        check("fixture: the terminal across the headland and the far one stand farther than JOIN_CELLS from every cell a route before them covers", farEnough);
+        check("LANES ON A MASK: two terminals on one shore share one lane: the first is searched, the second joins it and goes on as its points",
+                found.joinAt()[0] < 0 && found.joinAt()[1] >= 0 && joinedOnALane(routes, 1, found.joinAt()[1]));
+        check("...the terminal across a headland wider than JOIN_M, and the one farther than JOIN_M along the shore, each have a lane of their own",
+                found.joinAt()[3] < 0 && sharesNoPoint(routes, 3) && found.joinAt()[5] < 0 && sharesNoPoint(routes, 5)
+                        && found.joinAt()[2] < 0 && found.joinAt()[4] < 0 && found.searched() == 6 && found.joined() == 1);
+        BoatSchedule.Route inland = routes.get(6);
+        check("...a berth with no sea within reach has the straight lane, which no one joins", inland.xs().length == 2 && inland.spread() == 0
+                && found.joinAt()[6] < 0 && sameRoute(inland, BoatSchedule.lane(berths.get(6), siteX, siteY)));
+        boolean prefixes = true;
+        for (int cut = 0; cut <= berths.size(); cut++) {
+            List<BoatSchedule.Route> kept = SeaRoutes.find(grid, berths.subList(0, cut), siteX, siteY, radius).routes();
+            SeaRoutes.Found more = SeaRoutes.extend(grid, kept, berths, siteX, siteY, radius);
+            prefixes &= sameRoutes(more.routes(), routes) && more.searched() + more.joined() == berths.size() - cut;
+            for (int i = 0; i < cut; i++) prefixes &= more.routes().get(i) == kept.get(i);
+        }
+        check("FOUND ONCE: the routes of a prefix of the berths and the rest routed onto them are those of the whole, point for point, the prefix's the same objects", prefixes);
+    }
+
+    /**
+     * Section 9's routes found once, on the coast's map (SL1): a terminal laid is routed alone onto the routes kept (one
+     * new, none searched again, the kept the same objects), a tank farm laid changes no berth and finds nothing, the
+     * newest terminal taken drops its own route only, ground within the radius's band keeps them and a new band finds
+     * them all again.
+     */
+    static void routesFoundOnce(World w, CityMap m, BuildingVisual.Type[] types, int gct, long[] counts) {
+        long sx = m.land().siteX(), sy = m.land().siteY();
+        List<BoatSchedule.Route> kept = m.seaRoutes();
+        int n = kept.size();
+        check("fixture: the coast's routes are found, current and the same list when asked again, with their lanes", n > 0 && m.seaRoutes() == kept && m.seaRoutesIfFound() == kept
+                && m.routesJob() == null && m.seaLanesIfFound() != null && m.seaLanesIfFound() == m.seaLanes());
+        // A terminal laid.
+        long[] next = counts.clone();
+        next[gct]++;
+        m.reconcile(next);
+        boolean stale = m.seaRoutesIfFound() == null && m.seaLanesIfFound() == null;
+        CityMap.RoutesJob job = m.routesJob();
+        check("fixture: a terminal laid is one berth more, and the routes are not current until they are found", job != null && stale
+                && m.shore().berths(types).size() == n + 1);
+        if (job == null) return;
+        job.run();
+        boolean adopted = m.adoptRoutes(job);
+        List<BoatSchedule.Route> now = m.seaRoutes();
+        boolean same = now.size() == n + 1;
+        for (int i = 0; i < n && same; i++) same = now.get(i) == kept.get(i);
+        out.printf("      a terminal laid: %d routes kept, %d searched and %d joined of the one more%n", job.kept(), job.found().searched(), job.found().joined());
+        check("FOUND ONCE: a terminal laid is routed alone onto the routes kept: one route new, none searched again, the kept routes the same objects",
+                adopted && job.kept() == n && job.found().searched() + job.found().joined() == 1 && same);
+        check("...they are those a fresh find makes, point for point, and asked again nothing is found",
+                sameRoutes(now, SeaRoutes.of(w, m.shore().berths(types), sx, sy, SeaRoutes.band(m.cityRadius()))) && m.seaRoutesIfFound() == now && m.routesJob() == null);
+        // A terminal taken: the newest, and its route only.
+        m.reconcile(counts);
+        job = m.routesJob();
+        check("fixture: the terminal taken is one berth fewer", job != null && m.shore().berths(types).size() == n);
+        if (job == null) return;
+        job.run();
+        m.adoptRoutes(job);
+        List<BoatSchedule.Route> fewer = m.seaRoutes();
+        boolean dropped = fewer.size() == n;
+        for (int i = 0; i < n && dropped; i++) dropped = fewer.get(i) == kept.get(i);
+        check("...the newest terminal taken drops its own route only: the rest kept, none searched", dropped && job.kept() == n && job.found().searched() + job.found().joined() == 0);
+        // A tank farm laid: the shore moves and no berth does.
+        int farm = -1;
+        for (BuildingVisual.Type t : types) if (t != null && t.shore() && t.berth() < 0 && farm < 0) farm = t.id();
+        long version = m.shore().version();
+        long[] withFarm = counts.clone();
+        if (farm >= 0) withFarm[farm]++;
+        m.reconcile(withFarm);
+        check("fixture: a tank farm laid moves the shore and no berth", farm >= 0 && m.shore().version() != version && m.shore().berths(types).size() == n);
+        boolean farmKept = m.seaRoutesIfFound() == null && m.routesJob() == null && m.seaRoutesIfFound() == fewer && m.seaLanesIfFound() != null;
+        check("...it finds nothing: the routes stand, the same list, once the berths are seen to be the same", farmKept);
+        // Ground within the band: kept. A new band: all found again.
+        LandGrid land = m.land().grid();
+        double r0 = m.cityRadius(), b0 = SeaRoutes.band(r0);
+        land.fill(land.minX() - 1, land.minY() - 1, land.maxX() + 1, land.maxY() + 1, 9_999);
+        double r1 = m.cityRadius();
+        check("fixture: a plot more ground all round moves the radius and not the band", r1 > r0 && SeaRoutes.band(r1) == b0);
+        check("...the routes stand: the band is the same", m.seaRoutesIfFound() == fewer && m.routesJob() == null);
+        long step = (long) Math.ceil(SeaRoutes.REFIND_M / World.PLOT_M) + 2;
+        land.fill(land.minX() - step, land.minY() - step, land.maxX() + step, land.maxY() + step, 9_998);
+        double r2 = m.cityRadius();
+        job = m.routesJob();
+        boolean newBand = SeaRoutes.band(r2) > b0 && m.seaRoutesIfFound() == null && job != null && job.kept() == 0;
+        check("fixture: ground a band wide all round moves the radius to another band, and the routes are not current", newBand);
+        if (job == null) return;
+        job.run();
+        m.adoptRoutes(job);
+        List<BoatSchedule.Route> again = m.seaRoutes();
+        boolean offing = true, none = true;
+        double want = Math.min(SeaRoutes.band(r2) + SeaRoutes.OFFING_M / World.PLOT_M, (double) SeaRoutes.RAY_CELLS * SeaRoutes.CELL) - 2 * SeaRoutes.CELL;
+        for (BoatSchedule.Route r : again) {
+            offing &= Math.hypot(r.xs()[r.offing()] - r.xs()[0], r.ys()[r.offing()] - r.ys()[0]) >= want;
+            for (BoatSchedule.Route o : fewer) none &= r != o;
+        }
+        check("...a new band finds them all again: none of the old routes kept, each to its offing past the new radius, those a fresh find makes",
+                job.found().searched() + job.found().joined() == n && again.size() == n && none && offing
+                        && sameRoutes(again, SeaRoutes.of(w, m.shore().berths(types), sx, sy, SeaRoutes.band(r2))));
+    }
+
+    /**
+     * Section 9's routes at 10 billion (SL1): PROTO_LANES berths along a mask coast of BoatProto's span, each route found
+     * from scratch within ROUTES_ALL_MS, a month's new terminals routed onto the kept ones within ROUTES_MONTH_MS, and a
+     * frame's lanes (the legs on an L0 screen and an L1 one, and the map's routes asked for) within BOAT_FRAME_MS.
+     */
+    static void routesAt10B(CityMap m) {
+        long span = (long) (Math.sqrt(1e10 / 5000.0) * 33);
+        final long coast = 20_000, centre = 20_000L * SeaRoutes.CELL;
+        SeaRoutes.Sea sea = (ci, cj) -> cj < coast;
+        long siteX = centre, siteY = coast * SeaRoutes.CELL + span / 2;
+        double radius = SeaRoutes.band(span / 2.0);
+        int month = (int) Math.round(PROTO_LANES * ROUTES_MONTH_SHARE);
+        List<BoatSchedule.Berth> berths = new ArrayList<>(PROTO_LANES + month);
+        long h = 12345;
+        for (int i = 0; i < PROTO_LANES + month; i++) {
+            h = World.mix(h);
+            long x = centre - span / 2 + (long) (World.unit(h) * span);
+            berths.add(new BoatSchedule.Berth(i % 2 == 0 ? Ports.Cargo.LIQUID : Ports.Cargo.DRY_BULK, x, coast * SeaRoutes.CELL - SeaRoutes.CELL / 2));
+        }
+        List<BoatSchedule.Berth> first = berths.subList(0, PROTO_LANES);
+        double all = Double.MAX_VALUE, added = Double.MAX_VALUE;
+        SeaRoutes.Found built = null, extended = null;
+        for (int round = 0; round <= ROUTES_ROUNDS; round++) {
+            long t0 = System.nanoTime();
+            built = SeaRoutes.find(SeaRoutes.grid(sea), first, siteX, siteY, radius);
+            double a = (System.nanoTime() - t0) / 1e6;
+            long t1 = System.nanoTime();
+            extended = SeaRoutes.extend(SeaRoutes.grid(sea), built.routes(), berths, siteX, siteY, radius);
+            double b = (System.nanoTime() - t1) / 1e6;
+            if (round > 0) { all = Math.min(all, a); added = Math.min(added, b); }
+        }
+        // The lanes drawn, and a frame of them on an L0 screen and an L1 one about the coast's middle.
+        SeaLanes lanes = SeaLanes.of(built.routes());
+        long[][] views = { { Math.round(SCREEN_W_PX / MapFrame.L0_FROM), Math.round(SCREEN_H_PX / MapFrame.L0_FROM) },
+                { Math.round(SCREEN_W_PX / MapFrame.L1_FROM), Math.round(SCREEN_H_PX / MapFrame.L1_FROM) } };
+        double[] frame = { Double.MAX_VALUE, Double.MAX_VALUE };
+        int[] seen = new int[views.length];
+        long asked = 0, wanted = 0;
+        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+            for (int v = 0; v < views.length; v++) {
+                long ax = centre - views[v][0] / 2, ay = coast * SeaRoutes.CELL - views[v][1] * 3 / 4;
+                long f0 = System.nanoTime();
+                int legs = 0;
+                for (int k = 0; k < BOAT_FRAMES; k++) {
+                    legs += lanes.crossing(ax + k, ay, ax + k + views[v][0], ay + views[v][1]).length / 4;
+                    if (m.seaRoutesIfFound() != null && m.seaLanesIfFound() != null) asked++;
+                }
+                double ms = (System.nanoTime() - f0) / 1e6 / BOAT_FRAMES;
+                if (round >= WARM_ROUNDS) frame[v] = Math.min(frame[v], ms);
+                seen[v] = legs / BOAT_FRAMES;
+                wanted += BOAT_FRAMES;
+            }
+        }
+        boolean sameAsWhole = sameRoutes(extended.routes(), SeaRoutes.find(SeaRoutes.grid(sea), berths, siteX, siteY, radius).routes());
+        out.printf("      at 10B (%,d berths on a coast of %,d plots): %,d routes searched and %,d joined a lane, %,d legs drawn of the routes' %,d%n",
+                PROTO_LANES, span, built.searched(), built.joined(), lanes.legs(), lanes.routeLegs());
+        out.printf("      every route found from scratch %.0f ms (a month at 1x, %.0f); a month's %d terminals onto those kept %.1f ms (a month at the top"
+                + " speed, %.0f); a frame's lanes on an L0 screen %.3f ms (%,d legs), on an L1 one %.3f ms (%,d legs)%n",
+                all, ROUTES_ALL_MS, month, added, ROUTES_MONTH_MS, frame[0], seen[0], frame[1], seen[1]);
+        check("fixture: 20,000 berths along the coast, most of them joined to a lane, the lanes drawn fewer legs than the routes had",
+                built.routes().size() == PROTO_LANES && built.joined() > built.searched() && built.searched() > 0 && lanes.legs() < lanes.routeLegs());
+        check("AT 10B: every route found from scratch takes no more than ROUTES_ALL_MS (a month at normal speed)", Timing.within(all, ROUTES_ALL_MS));
+        check("...a month's new terminals routed onto the kept ones take no more than ROUTES_MONTH_MS (a month at the top speed), and the routes are those found whole",
+                Timing.within(added, ROUTES_MONTH_MS) && sameAsWhole && extended.searched() + extended.joined() == month);
+        check("...a frame's lanes, the legs on an L0 screen and an L1 one and the map's routes asked for, take no more than BOAT_FRAME_MS",
+                Timing.within(frame[0], BOAT_FRAME_MS) && Timing.within(frame[1], BOAT_FRAME_MS) && seen[0] > 0 && seen[1] > 0 && asked == wanted);
     }
 
     /** The design's bound on a frame's trains at 10 billion, in ms: the boats' (spec-freight 4.4, "the same structure is well inside budget"). */

@@ -2060,10 +2060,17 @@ public final class BuildAdvice {
        WHAT THE MEASURE IS. One Kind.PORT measure a kind of cargo
        (portMeasures()): it serves the PORTS terminals of its kind, its
        figure is the kind's uncovered tonnes a month, and its advice is the
-       LARGEST terminal of the kind that pays back (Ports.payingTerminal(),
-       the test player's own choice): the Bulk Terminal when the dry bulk
-       would pay it back, else the Bulk Berth when it would pay that back,
-       one at a time - the berths on site counted against the next. It has no
+       LARGEST terminal of the kind whose break-even the kind's whole sea
+       trade reaches, once the uncovered tonnes pay back some terminal of it
+       at all (Ports.payingTerminal(), the test player's own choice; SL1,
+       2026-10-28, the size by the whole trade - chosen on the uncovered
+       tonnes alone, Bulk Berths kept the dry bulk under the Bulk Terminal's
+       break-even for ever): the Bulk Terminal when the dry bulk trade is
+       past its break-even, else the Bulk Berth, and of it as many as the
+       uncovered tonnes pay back, each counted after the ones before it, and
+       one at least (Ports.orderCount(), payingCount(); it was one at a time,
+       and a fast-growing city lagged by the months it took) - the
+       berths on site counted against the next card. It has no
        NEEDS YOU row and no category ring: a berth is judged on the tonnes
        that cross the boundary now, not on a projection with slack, because
        the dues' break-even is the margin; and only where the city owns coast
@@ -2091,10 +2098,11 @@ public final class BuildAdvice {
     }
 
     /**
-     * The terminal to order for a port measure, or null (FR3): the largest of
-     * the kind's terminals but those in `skip` that pays back at the kind's
-     * uncovered tonnes with `added` standing too and the port dues dial
-     * (Ports.payingTerminal()), and only where the city owns coast for it
+     * The terminal to order for a port measure, or null (FR3): with the kind's
+     * uncovered tonnes (`added` standing too) paying back some terminal of it
+     * but those in `skip` at the port dues dial, the largest of them whose
+     * break-even the kind's whole sea trade reaches (Ports.payingTerminal(),
+     * SL1), and only where the city owns coast for it
      * (Game.hasCoastFor(), since ET5 by the rule alone - Landmasses.RULE: home's shore, else a linked landmass, never an island no port links;
      * linking an island is the player's choice on the card).
      */
@@ -2102,24 +2110,31 @@ public final class BuildAdvice {
                                                  java.util.Set<BuildingsTemplate> skip) {
         double dial = game.getEconomyManager().getTaxPolicy().getPortDues();
         BuildingsTemplate t = Ports.payingTerminal(m.cargo(), game.getBuildingManager().getTemplates(),
-                portUncovered(game, m, added), dial, skip);
+                portUncovered(game, m, added), game.getPorts().carriable(m.cargo()), dial, skip);
         return t != null && game.hasCoastFor(t, 1, Landmasses.RULE) ? t : null;
     }
 
-    /** A port measure's card: one terminal of the kind that pays back, or null for none (portTerminal()); the Suggestion's need is null, the NEEDS YOU having no row for a berth. */
+    /**
+     * A port measure's card: as many of the terminal portTerminal() chose as the uncovered tonnes pay back, each counted after
+     * the ones before it, and one at least (SL1, Ports.orderCount(); it was one), or null for none (portTerminal()); the Suggestion's
+     * need is null, the NEEDS YOU having no row for a berth. Its price, ground and figures are the count's, and the
+     * auto-builder orders its count() (AutoBuilder.step()).
+     */
     static Suggestion portSuggestion(Game game, Measure m, double cashLeft, double landLeft,
                                      java.util.Set<BuildingsTemplate> skip) {
         Map<BuildingsTemplate, Integer> site = onSite(game, m);
         BuildingsTemplate t = portTerminal(game, m, site, skip);
         if (t == null) return null;
-        Game.BuildQuote q = game.quoteBuildOn(t, 1, Landmasses.RULE);
-        Map<BuildingsTemplate, Integer> order = plus(site, t, 1);
+        double dial = game.getEconomyManager().getTaxPolicy().getPortDues();
+        int n = Ports.orderCount(t, portUncovered(game, m, site), dial);
+        Game.BuildQuote q = game.quoteBuildOn(t, n, Landmasses.RULE);
+        Map<BuildingsTemplate, Integer> order = plus(site, t, n);
         double after = figure(game, m, order);
-        double unit = Ports.berthMonth(t), sq = t.getLandSqFt();
+        double unit = Ports.berthMonth(t), sq = t.getLandSqFt() * (double) n;
         boolean credit = q.total > cashLeft;
-        return new Suggestion(null, m, t, 1, q.total, figure(game, m, new LinkedHashMap<>()), figure(game, m, site), after,
+        return new Suggestion(null, m, t, n, q.total, figure(game, m, new LinkedHashMap<>()), figure(game, m, site), after,
                 after, portTerminal(game, m, order, java.util.Collections.emptySet()) == null, credit, units(site),
-                unit, unit > 0 ? q.total / unit : Double.NaN, NOW, q.months, sq, landValue(game, sq, landLeft),
+                unit, unit > 0 ? q.total / (unit * n) : Double.NaN, NOW, q.months, sq, landValue(game, sq, landLeft),
                 Math.max(0, sq - Math.max(0, landLeft)), null, Double.NaN, null,
                 credit ? q.total - Math.max(0, cashLeft) : 0, false);
     }

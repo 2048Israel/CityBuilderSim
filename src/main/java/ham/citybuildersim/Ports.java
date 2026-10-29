@@ -15,12 +15,34 @@ package ham.citybuildersim;
  * cheaper of sea and rail, so a port is what it is in reality: the city's
  * way to narrow the freight wedge on its seaborne trade.
  *
- * THE BERTHS. A terminal is one berth of one kind of cargo (Cargo), handling
- * its tonnes a year (BuildingsTemplate.berthTonnesAYear()); a kind's berths
- * are the terminals of that kind standing, a twelfth of their year a month.
+ * THE BERTHS. A terminal is one of one kind of cargo (Cargo), handling its
+ * tonnes a year (BuildingsTemplate.berthTonnesAYear()); a kind's berths are
+ * the terminals of that kind standing, a twelfth of their year a month.
  * They are SHARED AMONG THE KIND'S GOODS BY THEIR BOUNDARY TONNES, so every
  * good of a kind goes by sea in the same share, min(1, berths / the kind's
  * tonnes) - last month's tonnes, as the railway reads them.
+ *
+ * SL1 (2026-10-28; Jerus: "one port can sustain alot"): a terminal is now ONE
+ * LARGE MODERN REAL TERMINAL OF SEVERAL BERTHS, not one berth, because the
+ * default playtest stood 35 General Cargo Terminals at 544,000 people, all
+ * full, on a 450,000 t break-bulk berth against a trade of about 2.5 t a
+ * person a month. The Tanker Terminal handles 30 Mt a year (Westridge Marine
+ * Terminal, Trans Mountain, 3 Aframax berths, 630,000 bbl a day = 31 Mt,
+ * Kinder Morgan Canada 10-K FY2017; Maasvlakte Olie Terminal, Rotterdam,
+ * ~30 Mt; BTC Ceyhan, 2 VLCC berths, 50 Mt design, ~30 Mt in 2022), the Bulk
+ * Terminal 50 Mt (Abbot Point / NQXT, 2 Capesize berths, 50 Mt nameplate;
+ * NCIG Newcastle 66 Mt on 3 berths; Richards Bay Coal Terminal 91 Mt on 6),
+ * the Container Terminal 2.7M TEU, 24.3 Mt at TONNES_A_TEU (APM Terminals
+ * Maasvlakte II, opened 2015: 86 ha, a 1,000 m deep-sea quay, 8 STS cranes,
+ * 2.7 Mteu) and the General Cargo Terminal 2 Mt (PSA Breakbulk Antwerp,
+ * 1,319 m of quay, 25.9 ha, ~2 Mt a year of steel and metals; BLG
+ * Neustaedter Hafen, Bremen, ~1.4 Mt on 2.1 km). Every cost line moved by the
+ * same ratio, so the price and the port dues a tonne are as they were and
+ * only the step grows; the Bulk Berth (2.5 Mt) stays dry bulk's small
+ * terminal for the young city: the terminal ordered is the largest the kind's
+ * whole sea trade pays back (payingTerminal()), once the uncovered tonnes pay
+ * back some terminal at all. And a fast-growing city is ordered the COUNT its
+ * uncovered tonnes pay back, not one at a time (payingCount(), orderCount()).
  *
  * SEA BEFORE RAIL, OR AFTER. A kind whose sea freight (SEA_FREIGHT_SHARE, of
  * a lorry's) is under the railway's quote takes its share first and the
@@ -237,8 +259,39 @@ public final class Ports {
      * @param dial       the port dues dial, 1 the default (TaxPolicy.getPortDues())
      */
     public static boolean berthPaysBack(double uncovered, double berthMonth, double dial) {
-        if (!(dial > 0) || !(berthMonth > 0)) return false;
-        return uncovered >= WORTH_A_BERTH / dial * berthMonth;
+        return payingCount(uncovered, berthMonth, dial) >= 1;
+    }
+
+    /**
+     * How many of a terminal the uncovered tonnes pay back (SL1, 2026-10-28):
+     * each counted after the ones before it, so the largest n with
+     *
+     *     uncovered - (n - 1) x berthMonth  >=  WORTH_A_BERTH / dial x berthMonth
+     *
+     * - the nth terminal pays back when the tonnes the n - 1 before it leave
+     * uncovered reach berthPaysBack()'s break-even - and 0 when not even the
+     * first does (and with no dues, dial 0, or no berth). It is what the test
+     * player (LongPlaytest.portsWhenNeeded()) and the advice's port card
+     * (BuildAdvice.portSuggestion()) order, in one build, in place of one at a
+     * time, of the terminal payingTerminal() chose (orderCount(): and one at
+     * least): a fast-growing city lags by the looks it takes (main's playtest
+     * ran with 219% of a Bulk Berth's month uncovered). berthPaysBack() is
+     * payingCount() >= 1, so the two can never disagree; the first terminal's
+     * line is the old one to the bit.
+     *
+     * @param uncovered the kind's tonnes a month no berth takes
+     * @param berthMonth the terminal's tonnes a month (berthMonth())
+     * @param dial       the port dues dial, 1 the default (TaxPolicy.getPortDues())
+     */
+    public static int payingCount(double uncovered, double berthMonth, double dial) {
+        if (!(dial > 0) || !(berthMonth > 0)) return 0;
+        double line = WORTH_A_BERTH / dial * berthMonth;
+        if (!(uncovered >= line)) return 0;
+        // The closed form, then the stated inequality itself decides at the edge, so floating point cannot split the two.
+        int n = (int) Math.min(Integer.MAX_VALUE - 1.0, Math.floor((uncovered - line) / berthMonth)) + 1;
+        while (n > 1 && !(uncovered - (n - 1) * berthMonth >= line)) n--;
+        while (n < Integer.MAX_VALUE && uncovered - n * berthMonth >= line) n++;
+        return n;
     }
 
     /**
@@ -254,22 +307,53 @@ public final class Ports {
     }
 
     /**
-     * The terminal of a kind to order (FR3, docs/queue/FR3.md 5.4): among the
-     * catalogue's terminals of the kind but those in `skip`, the LARGEST (by
-     * tonnes a year) that pays back (berthPaysBack()) - the Bulk Terminal when
-     * the dry bulk would pay it back, else the Bulk Berth when it would pay
-     * that back - or null for none. Of two as large the first in the
-     * catalogue's order. The test player and the advice both choose by this.
+     * The terminal of a kind to order (FR3, docs/queue/FR3.md 5.4; SL1,
+     * 2026-10-28, the size by the kind's whole trade): null with no NEED - no
+     * terminal of the kind but those in `skip` that berthPaysBack() on the
+     * `uncovered` tonnes (what no berth takes yet) - and otherwise the LARGEST
+     * terminal of the kind but those in `skip` (by tonnes a year) whose own
+     * break-even the kind's `carriable` tonnes (carriable(): the whole trade
+     * that could go by sea, berths or none) reach, berthPaysBack(carriable,
+     * ...). So a few Bulk Berths' month uncovered in a trade past the Bulk
+     * Terminal's break-even is ONE Bulk Terminal, and the same uncovered in a
+     * trade under it is Bulk Berths. Of two as large the first in the
+     * catalogue's order. The tonnes uncovered are never more than the trade, so
+     * the terminal that has the need always reaches its own break-even and the
+     * answer is never null once there is one. The count to order of it is
+     * orderCount(). The test player (LongPlaytest.terminalFor()) and the advice
+     * (BuildAdvice.portTerminal()) both choose by this.
+     *
+     * WHY (SL1): chosen on the uncovered tonnes alone, a young city's Bulk
+     * Berths kept the uncovered dry bulk under the 50 Mt Bulk Terminal's
+     * break-even for ever, and the playtest stood 33 berths and no terminal.
      */
-    public static BuildingsTemplate payingTerminal(Cargo k, Iterable<BuildingsTemplate> catalogue, double uncovered, double dial,
-                                                   java.util.Set<BuildingsTemplate> skip) {
+    public static BuildingsTemplate payingTerminal(Cargo k, Iterable<BuildingsTemplate> catalogue, double uncovered, double carriable,
+                                                   double dial, java.util.Set<BuildingsTemplate> skip) {
+        boolean need = false;
+        for (BuildingsTemplate t : catalogue) {
+            if (!isPort(t) || t.berthCargo() != k || (skip != null && skip.contains(t))) continue;
+            need |= berthPaysBack(uncovered, berthMonth(t), dial);
+        }
+        if (!need) return null;
+        // The trade is never less than what is left uncovered of it (a caller that says otherwise is held to that).
+        double trade = carriable >= uncovered ? carriable : uncovered;
         BuildingsTemplate best = null;
         for (BuildingsTemplate t : catalogue) {
             if (!isPort(t) || t.berthCargo() != k || (skip != null && skip.contains(t))) continue;
-            if (!berthPaysBack(uncovered, berthMonth(t), dial)) continue;
+            if (!berthPaysBack(trade, berthMonth(t), dial)) continue;
             if (best == null || t.berthTonnesAYear() > best.berthTonnesAYear()) best = t;
         }
         return best;
+    }
+
+    /**
+     * How many of the terminal payingTerminal() chose to order (SL1): the
+     * count the uncovered tonnes pay back (payingCount()), and at least one -
+     * the one big terminal chosen on the kind's whole trade where its own
+     * break-even is not reached on the uncovered tonnes alone.
+     */
+    public static int orderCount(BuildingsTemplate terminal, double uncovered, double dial) {
+        return Math.max(1, payingCount(uncovered, berthMonth(terminal), dial));
     }
 
     /**

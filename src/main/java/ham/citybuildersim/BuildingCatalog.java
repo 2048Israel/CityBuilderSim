@@ -322,7 +322,7 @@ public class BuildingCatalog {
 
     /**
      * A sea terminal's berth (0.7.86, batch O9): "port": {"cargo": "LIQUID",
-     * "tonnes": 3250000} - the kind of cargo it handles (Ports.Cargo) and its
+     * "tonnes": 30000000} - the kind of cargo it handles (Ports.Cargo) and its
      * tonnes a year. Absent, no berth; an unknown kind is reported and the
      * line ignored, as an unknown refinery unit is. An optional "ships":
      * ["HANDYSIZE", "SUPRAMAX"] limits the classes that call at it (FR3
