@@ -1,7 +1,7 @@
 """The nations' moneys, monthly exchange rates and 2000-2100 paths (batch WN0, slice E1, 2026-10-28): reads the BIS, WDI,
 WPP, PWT and Maddison downloads and moneys.tsv and writes WORK/econ/gdp-base.tsv, moneys.bin, paths.bin,
-nations-money.tsv, meta-paths.tsv and fills-paths.txt for bake.py to put into world-1.bin (FORMAT.txt, layers moneys and
-paths).
+nations-money.tsv, meta-paths.tsv, prices.bin and fills-paths.txt for bake.py to put into world-1.bin (FORMAT.txt, layers moneys,
+paths and prices).
 
 WHY: the leaderboard and the trade's weights need every one of the 196 nations to have a GDP, a population, a price
 level and an exchange rate in every year of 2000-2025, and WDI alone has holes for North Korea, Taiwan, Syria, Yemen and
@@ -22,6 +22,7 @@ import common
 import econ_paths_cpi as cpi
 import econ_paths_gdp as gdp
 import econ_paths_moneys as mon
+import econ_paths_prices as prc
 import econ_paths_rates as rat
 import econ_paths_sources as src
 
@@ -44,6 +45,7 @@ DIALS = [
     ('SSD_PEER', gdp.SSD_PEER, "South Sudan grows with this nation (the Sudan it was part of) before PWT's 2008."),
     ('PWT_PPP_NATIONS', '+'.join(gdp.PWT_PPP_NATIONS), "Nations WDI lacks a PPP GDP for and PWT has sensibly: PPP GDP is PWT's rgdpna."),
     ('CPI_SPLICE_SOURCE', ' '.join('%s:%s' % kv for kv in sorted(cpi.SPLICE_SOURCE.items())), "The nations whose price index, where WDI's has a gap, grows with the index of the issuer of the money they use (Somalia and Turkmenistan: a neighbour)."),
+    ('PRICE_RATIO_YEAR', prc.RATIO_YEAR, "Each good's real price path is a ratio to this year's, so it is 1 there."),
     ('BGN_PER_EUR', mon.BGN_PER_EUR, "Bulgaria's lev, a currency board at this many to the euro; BIS has Bulgaria in euros."),
     ('ZWG_PER_USD_AT_LAUNCH', mon.ZWG_PER_USD_AT_LAUNCH, 'Zimbabwe Gold a US dollar at its launch, 2024-04 (Reserve Bank of Zimbabwe).'),
     ('ZWL_PER_ZWG', mon.ZWL_PER_ZWG, 'RTGS dollars to one Zimbabwe Gold at the changeover of 2024-04.'),
@@ -191,6 +193,18 @@ def main(argv=None):
                 assert math.isfinite(v) and v > 0 and pmarks[s][i][y] > 0, (SERIES[s][0], n, common.FIRST_YEAR + y, v)
     size = write_paths_bin(work + '/paths.bin', table, pmarks)
     print('wrote paths.bin: %d bytes' % size)
+
+    # the prices layer: the Pink Sheet over the US CPI, goods.tsv's goods (E2's) and prices.tsv's mapping
+    goods_path = work + '/goods.tsv'
+    if os.path.exists(goods_path):
+        mapping = prc.read_prices_tsv(HERE + '/prices.tsv', goods_path)
+        pink = prc.read_pinksheet(args.sources + '/pinksheet/CMO-Historical-Data-Annual.xlsx')
+        names, pvals, pmk = prc.build_prices(mapping, pink, prices['USA'][0])
+        size = prc.write_prices_bin(work + '/prices.bin', names, pvals, pmk)
+        own = sum(1 for m in mapping if m[2] == 3)
+        print('wrote prices.bin: %d goods (%d own series, %d proxies), %d bytes' % (len(mapping), own, len(mapping) - own, size))
+    else:
+        print('no goods.tsv yet (econ_trade.py): prices.bin not written')
 
     write_nations_money(work + '/nations-money.tsv', info)
     write_meta(work + '/meta-paths.tsv')

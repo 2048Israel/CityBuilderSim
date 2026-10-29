@@ -1,0 +1,61 @@
+key	series	mark	note
+CROPS	Maize	1	a mixed bag of field crops; maize, the most traded feed grain, stands for them
+GRAINS	Wheat, US HRW	3	wheat is the leading traded grain (maize and rice move with it)
+BREAD	Wheat, US HRW	1	bread is flour: it follows wheat
+DAIRY_EGGS	Chicken	1	the Pink Sheet has no dairy or egg series; poultry is the nearest animal-food price
+VEGETABLES	Maize	1	no vegetable series; a field-crop food price stands for it
+FRUIT	Banana, US	3	bananas, the leading traded fruit
+MEAT	Beef	3	beef, the Pink Sheet's meat price
+FISH	Fish meal	1	the shrimp series stops in 2023; fish meal is the nearest complete fish price
+FATS	Palm oil	3	palm oil, the leading traded cooking fat (soy and coconut oil move with it)
+PROCESSED_MEAT	Beef	1	made from meat: follows beef
+READY_MEALS	Wheat, US HRW	1	a food made from grain and meat: follows wheat
+BAKERY	Wheat, US HRW	1	made from flour: follows wheat
+SNACKS	Maize	1	made from maize and potato: follows maize
+DRINKS	Sugar, world	1	soft drinks and juices are mostly sugar: follows world sugar
+IRON	Iron ore, cfr spot	3	the spot iron ore price itself (62% Fe, cfr China)
+STEEL	Iron ore, cfr spot	1	steel follows its ore; the Pink Sheet's steel index is in the monthly file only
+MATERIALS	MUV Index	1	building materials follow the prices of manufactures
+FABRICATED_STEEL	MUV Index	1	a made good: the MUV Index of manufactures
+MACHINERY	MUV Index	1	a made good: the MUV Index of manufactures
+CARS	MUV Index	1	a made good: the MUV Index of manufactures
+VANS	MUV Index	1	a made good: the MUV Index of manufactures
+ROLLING_STOCK	MUV Index	1	a made good: the MUV Index of manufactures
+LUXURIES	MUV Index	1	a made good: the MUV Index of manufactures
+CRUDE	Crude oil, average	3	the Pink Sheet's average of Brent, Dubai and WTI
+LPG	Crude oil, average	1	a refinery product: follows crude
+NAPHTHA	Crude oil, average	1	a refinery product: follows crude
+PETROL	Crude oil, average	1	a refinery product: follows crude
+JET	Crude oil, average	1	a refinery product: follows crude
+DIESEL	Crude oil, average	1	a refinery product: follows crude
+LUBRICANTS	Crude oil, average	1	a refinery product: follows crude
+FUEL_OIL	Crude oil, average	1	a refinery product: follows crude
+BITUMEN	Crude oil, average	1	a refinery product: follows crude
+COKE	Crude oil, average	1	a refinery product: follows crude
+SCRAP	Iron ore, cfr spot	1	scrap steel follows steel and its ore
+PELLETS	Iron ore, cfr spot	1	pellets are a premium on the spot ore (62% fines)
+PIG_IRON	Iron ore, cfr spot	1	made from the ore: follows it
+MET_COKE	Coal, Australian	1	metallurgical coke is made from coal: follows the coal price
+THERMAL_COAL	Coal, Australian	3	the Pink Sheet's Newcastle thermal coal
+COKING_COAL	Coal, Australian	1	no coking coal series; thermal coal moves with it
+LIMESTONE	MUV Index	1	a local building input with no world series: follows manufactures' prices
+LIME	MUV Index	1	a local building input with no world series: follows manufactures' prices
+AGGREGATE	MUV Index	1	a local building input with no world series: follows manufactures' prices
+DIMENSION_STONE	MUV Index	1	a local building input with no world series: follows manufactures' prices
+CEMENT	MUV Index	1	a local building input with no world series: follows manufactures' prices
+COPPER_CONC	Copper	1	concentrate is priced off the copper price
+ANODE	Copper	1	priced off the copper price
+COPPER	Copper	3	the LME grade A cathode price itself
+COPPER_SCRAP	Copper	1	priced off the copper price
+COPPER_ROD	Copper	1	priced off the copper price
+ACID	MUV Index	1	a chemical with no series; follows manufactures' prices
+WIRE_CABLE	MUV Index	1	a made good: the MUV Index of manufactures
+SAWLOGS	Logs, Malaysian	3	the Malaysian log price (Sarawak meranti)
+PULPWOOD	Logs, Malaysian	1	round wood: follows the log price
+LUMBER	Sawnwood, Malaysian	3	the Malaysian sawnwood price
+PANELS	Plywood	3	the plywood price (cents a sheet)
+RESIDUES	Logs, Malaysian	1	wood fibre: follows the log price
+PULP	Logs, Malaysian	1	no pulp series; wood fibre follows the log price
+PAPER	MUV Index	1	a made good: the MUV Index of manufactures
+WOOD_PELLETS	Logs, Malaysian	1	made from wood residues: follows the log price
+TRUCKS	MUV Index	1	a made good: the MUV Index of manufactures
