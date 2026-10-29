@@ -264,8 +264,20 @@ public class ScaleCheck {
      * the two rescans above, and every assertion holds at 807, "it builds" of both copies among them. What the batch added is the
      * landlords' orders in the log (Lender): how many the lender passed, held for the down payment and declined, the city's and
      * the copy's, printed and not asserted.
+     *
+     * ...AT 1124 SINCE EM1 (2026-10-29), BY THE SAME PREMISE. A share has one value and the households sell on it, so the playtest's
+     * town is another one again: 3,000 to 4,000 people from 500 to 1,070 (3,151 at 605, 3,681 at 805) where 0.8.62's had 5,335 at 812,
+     * and it takes off at 1,075 (4,151 at 1,085, 6,442 at 1,125, 8,279 at 1,205). Scanned (ScaleCheck with the month changed, every
+     * assertion read; every month from 500 to 1,000 and from 1,085 to 1,215, every twentieth from 1,020 to 1,080 and from 1,220 to
+     * 2,500): before 1,100 no month holds them all, the fewest misses being three at 843, one of the few calm ones, where the
+     * 1,000-times copy lists Heavy Industry, Materials and Copper Refining (660, 36 and 149 shares per K) that the city has not
+     * founded, and parts from it in people, prices and unemployment. From 1,100 the copy and the city list the same companies and
+     * the rents are calm, and what is left is the tracking bounds, set in a town that wandered less: every assertion holds at
+     * 1,120, 1,121, 1,124, 1,125 and 1,128, and at the months about them one tracking figure alone misses (GDP at 1,122, .26
+     * against .14; prices at 1,119, 4.11e-3 against 4.00e-3) or the copies build no home (1,126, 1,127). 1,124 is the middle of
+     * 1,120 to 1,128: 6,442 people at 1,125. This window is five months of nine, not 31 in a row.
      */
-    static final int FREE_FIXTURE_MONTHS = 807;
+    static final int FREE_FIXTURE_MONTHS = 1124;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
@@ -1640,15 +1652,17 @@ public class ScaleCheck {
         for (String f : new String[] { "postedBuy", "postedSell", "filledBuy", "filledSell", "volume", "turnover", "sellQuantityWaited", "dust" }) scalar(b, f, k);
     }
 
-    /** The exchange: every book, the leavers' shares and the buyback budgets, and the record's money and volumes; the fair values and split factors are per share. */
+    /** The exchange: every book, the leavers' shares and the buyback budgets, the money fair value was struck on (EM1), and the record's money and volumes; the fair values and split factors are per share. */
     static void exchange(JsonObject d, long k) {
         if (!d.has("exchangeState")) return;
         JsonObject e = d.getAsJsonObject("exchangeState");
         for (JsonElement b : e.getAsJsonArray("books")) book(b.getAsJsonObject(), k);
         whole(e, "emigrantShares", k);
         whole(e, "buybackBudget", k);
+        // ...what each company's spare money, its net income and its money's income came to: totals, K times (EM1).
+        for (String field : new String[] { "spare", "earnings", "moneyIncome" }) whole(e, field, k);
         // life: the volume and the values (0 to 4), the leavers (9, 10), the sellers (11 to 18), the rebalance and the excess
-        // (23 to 27) scale; the counts of sells and trades (5 to 8) and the desk-bound counts (19 to 22) stay.
+        // (23 to 27) and what the cells sold on a share's value (28, EM1) scale; the counts of sells and trades (5 to 8) and the desk-bound counts (19 to 22) stay.
         allBut(e, "life", k, 5, 6, 7, 8, 19, 20, 21, 22);
         // last month's posted and filled values (0, 1); the counts stay.
         slots(e, "last", k, 0, 1);

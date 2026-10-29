@@ -393,6 +393,19 @@ public class CallCheck {
        4. THE SALE
        ===================================================================== */
 
+    /**
+     * A sale of this many times what the households could take, and of no more than that many times a third of a year's tax revenue
+     * (EM1, 2026-10-29). Sized by the households alone it grew with their savings: at month 85 of the played city they could take 152,000
+     * and now, holding the money the companies' tills did, 417,000, so the sales of this section put 4.1 million of paper on the books
+     * where they put 1.9, took the credit spread to 5.0% where it was 2.5%, and left the auction's bidders (the bank's room above all)
+     * nothing for a callable 20-year: a sale under the minimum issue, quoted empty. What the section asserts is that the option can be
+     * sold, not how much paper the households' wealth would let a fixture pile up.
+     */
+    static double saleOf(Game city, double spares) {
+        return Math.max(100, Math.min(city.getHouseholdBalance().spareForPaper() * spares,
+                spares * FloatLinkCheck.SALE_OF_REVENUE * 12 * city.getDebtManager().getMonthlyTaxRevenue()));
+    }
+
     static void theSale(Game city) {
         out.println("\n--- 4. the sale: a callable 10-year costs its option in the coupon, callable from year 5; nothing sells it unasked ---");
 
@@ -401,7 +414,7 @@ public class CallCheck {
 
         // Nothing asks for the option: two more years of the city, the rollover and the auto-builder at their work, and a sale or two by the old signatures.
         check("fixture: the city holds no callable piece before it starts", callables(city).isEmpty());
-        double plainAsk = Math.max(100, hb.spareForPaper());
+        double plainAsk = saleOf(city, 1);
         quietly(() -> {
             city.handleLongBondLogic(plainAsk, 10, 100);
             city.handleLongBondLogic(plainAsk, 20, 100, Auction.Cap.FILL);
@@ -417,7 +430,7 @@ public class CallCheck {
         city.setCashForTest(Founding.WEALTHY_CASH);
         check("fixture: the city has a year of prices before it sells, so the curve it sells on already reads an inflation",
                 city.getPriceIndex().hasRate());
-        double ask = Math.max(100, hb.spareForPaper() * 3);
+        double ask = saleOf(city, 3);
         double face = Math.ceil(ask / 100) * 100;
 
         DebtQuote plain = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, false);

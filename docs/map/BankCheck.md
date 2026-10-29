@@ -1,4 +1,4 @@
-# BankCheck.java - 4,416 lines · 23 methods · 0 constants · harnesses
+# BankCheck.java - 4,441 lines · 23 methods · 0 constants · harnesses
 
 `ham/citybuildersim/BankCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      firm by firm; the backstop takes only a sector with nothing left; a
 > ... (11 more lines in the source)
 
-**Uses:** [Bank](Bank.md) (338), [BusinessDebtManager](BusinessDebtManager.md) (114), [HouseholdBalance](HouseholdBalance.md) (46), [Game](Game.md) (43), [Sectors](Sectors.md) (31), [Equity](Equity.md) (24), [MoneyAudit](MoneyAudit.md) (23), [FamilyStructure](FamilyStructure.md) (21), [Exchange](Exchange.md) (19), [ExchangeCheck](ExchangeCheck.md) (17), [PayTier](PayTier.md) (16), [GameFiles](GameFiles.md) (16), [DebtManager](DebtManager.md) (12), [Founding](Founding.md) (10), [OrderBook](OrderBook.md) (10), [DecisionLog](DecisionLog.md) (10), [CentralBank](CentralBank.md) (9), [TempDirs](TempDirs.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [Household](Household.md) (4), [WageBand](WageBand.md) (3), [SectorBooks](SectorBooks.md) (3), [JobType](JobType.md) (3), [Ladder](Ladder.md) (3), [Debt](Debt.md) (3), [ChartModel](ChartModel.md) (3), [HouseholdAccounts](HouseholdAccounts.md) (2), [Good](Good.md) (2), [Sector](Sector.md) (2)... and 12 more
+**Uses:** [Bank](Bank.md) (338), [BusinessDebtManager](BusinessDebtManager.md) (114), [HouseholdBalance](HouseholdBalance.md) (46), [Game](Game.md) (43), [Sectors](Sectors.md) (31), [Equity](Equity.md) (28), [Exchange](Exchange.md) (23), [MoneyAudit](MoneyAudit.md) (23), [FamilyStructure](FamilyStructure.md) (21), [ExchangeCheck](ExchangeCheck.md) (17), [PayTier](PayTier.md) (16), [GameFiles](GameFiles.md) (16), [DebtManager](DebtManager.md) (12), [OrderBook](OrderBook.md) (12), [Founding](Founding.md) (10), [DecisionLog](DecisionLog.md) (10), [CentralBank](CentralBank.md) (9), [TempDirs](TempDirs.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [Household](Household.md) (4), [WageBand](WageBand.md) (3), [SectorBooks](SectorBooks.md) (3), [JobType](JobType.md) (3), [Ladder](Ladder.md) (3), [Debt](Debt.md) (3), [ChartModel](ChartModel.md) (3), [HouseholdAccounts](HouseholdAccounts.md) (2), [Good](Good.md) (2), [Sector](Sector.md) (2)... and 12 more
 
 **Used by (1):** [BondCheck](BondCheck.md)
 
@@ -91,9 +91,9 @@
 | 2787 | 19. THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) |
 | 2994 | 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) |
 | 3147 | 13. WHAT THE BANK TAB READS (0.7.9) |
-| 3632 | 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) |
-| 4002 | 10. the bank pays for the city's paper (2026-09-21) |
-| 4241 | 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) |
+| 3648 | 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) |
+| 4018 | 10. the bank pays for the city's paper (2026-09-21) |
+| 4266 | 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) |
 
 ## Fields (state)
 
@@ -107,7 +107,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 81 | 4336 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
+| 81 | 4361 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
 | 87 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 93 | 5 | `static double[] sheetOf(Bank bank)` | The bank's balance sheet as it stands, every line of it (0.7.13). |
 | 99 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -151,29 +151,29 @@
 |---:|---:|---|---|
 | 3013 | 133 | `static void theDeskIsHeldToTheBanksCapital()` |  |
 
-### 13. WHAT THE BANK TAB READS (0.7.9) (lines 3147-3631)
+### 13. WHAT THE BANK TAB READS (0.7.9) (lines 3147-3647)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3163 | 468 | `static void whatTheBankTabReads() throws Exception` |  |
+| 3163 | 484 | `static void whatTheBankTabReads() throws Exception` |  |
 
-### 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) (lines 3632-4001)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3645 | 8 | `static Bank lentOut(double capital, double book)` | A bank with one branch, this much capital and this much lent - equity is the capital, its cash what it lent past it. |
-| 3655 | 5 | `static java.util.Map<String, double[]> owing(String sector, double principal, double assets)` | The sectors' positions as the bank's provide() reads them: one sector, owing this against these assets. |
-| 3661 | 340 | `static void theBankAsABusinessWithItsCapital()` |  |
-
-### 10. the bank pays for the city's paper (2026-09-21) (lines 4002-4240)
+### 7-11. THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) (lines 3648-4017)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4056 | 184 | `static void theBankPaysForTheCitysPaper() throws Exception` |  |
+| 3661 | 8 | `static Bank lentOut(double capital, double book)` | A bank with one branch, this much capital and this much lent - equity is the capital, its cash what it lent past it. |
+| 3671 | 5 | `static java.util.Map<String, double[]> owing(String sector, double principal, double assets)` | The sectors' positions as the bank's provide() reads them: one sector, owing this against these assets. |
+| 3677 | 340 | `static void theBankAsABusinessWithItsCapital()` |  |
 
-### 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) (lines 4241-4416)
+### 10. the bank pays for the city's paper (2026-09-21) (lines 4018-4265)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4259 | 157 | `static void theTabDrawsEachRateInItsParts() throws Exception` |  |
+| 4072 | 193 | `static void theBankPaysForTheCitysPaper() throws Exception` |  |
+
+### 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) (lines 4266-4441)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4284 | 157 | `static void theTabDrawsEachRateInItsParts() throws Exception` |  |
 

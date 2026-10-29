@@ -719,12 +719,10 @@ public class FundLedgerCheck {
         g.fundBuyShares(c, 1e15);
         double queued = f.getHandOrders().isEmpty() ? 0 : f.getHandOrders().get(0).amount();
         close("fixture: a buy far past the cap is queued at the free cash", queued, g.getFund().getCash(), 1e-6);
-        Game full = copy();
+        int cc = companyAtTheCap(c);
+        out.printf("   at the cap, on %s (section 8's: %s)%n", Equity.COMPANIES[cc], Equity.COMPANIES[c]);
+        Game full = fundAtTheCap(cc);
         TreasuryFund ff = full.getFund();
-        full.setCashForTest(full.getCash() + 1_000);
-        full.fundPayIn(1_000);
-        full.getEquity().moveCity(c, TreasuryFund.OWNERSHIP_LIMIT * full.getEquity().getShares(c));
-        full.fundBuyShares(c, 500);
         play(full);
         boolean said = false;
         for (FundLedger.Activity a : ff.getLedger().getActivity()) {
@@ -733,6 +731,37 @@ public class FundLedgerCheck {
         check("a buy in a company the fund already holds 10% of is not posted, and its row says why", said
                 && ff.getPosted().isEmpty());
         theCapCountsEveryBuy(c);
+    }
+
+    /** A city whose fund holds the cap of company c and has a buy of the hand's for it waiting for the next step. */
+    static Game fundAtTheCap(int c) {
+        Game full = copy();
+        full.setCashForTest(full.getCash() + 1_000);
+        full.fundPayIn(1_000);
+        full.getEquity().moveCity(c, TreasuryFund.OWNERSHIP_LIMIT * full.getEquity().getShares(c));
+        full.fundBuyShares(c, 500);
+        return full;
+    }
+
+    /**
+     * The company a fund at the cap is still at the cap of when the step is over: section 8's, or the first other whose step leaves the
+     * fund's holding alone. Since EM1 (2026-10-29) the rule sells HOME_SPEED of a holding into a bid resting more than BAND over the
+     * share's value, and a company with cash to spend bids for its own shares at value plus BUYBACK_TOLERANCE, so a fund at the cap in
+     * one sold 498 of 9,392 shares into the buyback in the step - before the hand's order was posted - and the room that opened was the
+     * order's. A fixture has to cause what it tests: a fund with no room.
+     */
+    static int companyAtTheCap(int c0) {
+        java.util.List<Integer> order = new java.util.ArrayList<>();
+        order.add(c0);
+        for (int i = 0; i < Equity.COMPANIES.length; i++) if (i != c0 && i != Equity.BANK) order.add(i);
+        for (int c : order) {
+            Game g = fundAtTheCap(c);
+            if (!(g.getEquity().getShares(c) > 0)) continue;
+            play(g);
+            double cap = TreasuryFund.OWNERSHIP_LIMIT * g.getEquity().getShares(c);
+            if (g.getEquity().getCityMarketShares(c) >= cap * (1 - 1e-9)) return c;
+        }
+        return c0;
     }
 
     /** The market caps of every company with shares and a fair value, on a city. */
@@ -920,9 +949,11 @@ public class FundLedgerCheck {
         t.fundPayIn(lump);
         play(t);
         double held = rt.getCityMarketShares(c), rule = xt.bookOf(c).resting(Exchange.FUND, OrderBook.Side.BUY);
-        t.fundBuyShares(c, each / 2);
-        double waiting = ft.getHandOrders().get(0).amount() / xt.fair(c);
         double capT = TreasuryFund.OWNERSHIP_LIMIT * rt.getShares(c);
+        // ...an order of 2% of the company, or half the room the rule's bid leaves when that is less (as the orders below are sized): since
+        // EM1 the rule's bid is 8,312 of this company's 9,370-share cap, and an order of 1,874 left no room under it.
+        t.fundBuyShares(c, Math.min(each / 2, .5 * (capT - held - rule) * xt.fair(c)));
+        double waiting = ft.getHandOrders().get(0).amount() / xt.fair(c);
         check("fixture: the fund holds some of the company, the rule bids for more, an order of the hand's waits, and room is left",
                 held >= 300 - 1e-9 && rule > FundLedger.DUST && waiting > FundLedger.DUST && capT - held - waiting > rule + 1);
         FundView.Quote qt = FundView.quote(t, new FundView.Order(key, true, true, capT * xt.fair(c), 0));

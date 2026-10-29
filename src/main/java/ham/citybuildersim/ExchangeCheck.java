@@ -86,6 +86,8 @@ public class ExchangeCheck {
     static final double W = DebtManager.WORLD_BASE_RATE;
     static final int N = Equity.COMPANIES.length;
     static final double HURDLE = W + Equity.FOREIGN_PREMIUM;
+    /** A deposit rate at which a cell neither buys nor sells a share returning the required return (EM1): the best alternative plus the premium is that return, and it is inside the band either side. */
+    static final double DEPOSIT_AT_HURDLE = HURDLE - Exchange.HOUSEHOLD_PREMIUM;
 
     /** A register with twelve months of this income on one company's record, and no dividend paid. */
     static Equity withRecord(int company, double... monthlyIncome) {
@@ -123,6 +125,13 @@ public class ExchangeCheck {
     }
 
     static double[] months(double v) { double[] r = new double[12]; java.util.Arrays.fill(r, v); return r; }
+
+    /** A year of profit that is fading - the older six months twice the newer six, so a NORMAL regime - adding up to this much (EM1: a company's value is its earnings capitalised, so a fixture says what it earns a year). */
+    static double[] fading(double yearly) {
+        double[] r = new double[12];
+        for (int m = 0; m < 12; m++) r[m] = m < 6 ? yearly / 9 : yearly / 18;
+        return r;
+    }
 
     /** Households: a hundred unskilled couples with this much saved each, struck once so they have a take-home. */
     static HouseholdBalance savers(double savedEach, double takeHome) {
@@ -162,6 +171,24 @@ public class ExchangeCheck {
         @Override public double equity(int c) { return equity[c]; }
         @Override public double monthlyOperatingCost(int c) { return opex[c]; }
         @Override public double monthlyDebtService(int c) { return debt[c]; }
+        /** The money it holds, at face, and what that money earns it a year (EM1): nothing unless a fixture says so; worth() sets the first. */
+        final double[] money = new double[N], moneyIncome = new double[N];
+        @Override public double money(int c) { return money[c]; }
+        @Override public double moneyIncome(int c) { return moneyIncome[c]; }
+
+        /**
+         * Gives the company money enough to be worth `value` on the register's
+         * reckoning (EM1): its record's earnings capitalised at the required
+         * return, and the rest spare money past its cushion. The fixtures priced a
+         * company at its book or its dividends; a share is worth its money at face
+         * and its business on what it earns now, so a fixture says how much of each.
+         * Call it after the company's costs are set.
+         */
+        Firms worth(Equity reg, int c, double value, double worldRate) {
+            double business = Math.max(0, reg.getTrailingIncome(c)) / Equity.requiredReturn(worldRate);
+            money[c] = Math.max(0, value - business) + Exchange.BUYBACK_CUSHION_MONTHS * (opex[c] + debt[c]);
+            return this;
+        }
     }
 
     /** The exchange's step for month m, its flows opened first, as Game runs it. */
@@ -363,7 +390,7 @@ public class ExchangeCheck {
 
         // The next month the company, far over its target, bids for its own
         // shares: the excess at fair value is the cheapest ask, and it sells.
-        Equity regXs = withRecord(RETAIL, new double[] { 100, 100, 100, 100, 100, 100, 50, 50, 50, 50, 50, 50 });
+        Equity regXs = withRecord(RETAIL, fading(100_000 * Equity.requiredReturn(W)));   // earning what makes it worth its $1 a share
         HouseholdBalance xsOwners = savers(12.0, 4.0);
         regXs.listIfUnlisted(RETAIL, 100_000, xsOwners);
         couple(xsOwners).shares[RETAIL] -= 40;
@@ -374,7 +401,7 @@ public class ExchangeCheck {
         buyer.assets[RETAIL] = 100_000; buyer.equity[RETAIL] = 100_000;
         buyer.cash[RETAIL] = 50_000; buyer.opex[RETAIL] = 100;
         double deskCash = xsBank2.getCash(), eqXs = xsBank2.equity();   // the equity the desk posts on
-        step(exXs, regXs, xsOwners, xsBank2, buyer, bookOf(RETAIL, 100_000), W, .05, 1);
+        step(exXs, regXs, xsOwners, xsBank2, buyer, bookOf(RETAIL, 100_000), W, DEPOSIT_AT_HURDLE, 1);
         double spentX = 50_000 - buyer.cash[RETAIL];
         double fairXs = exXs.fair(RETAIL), overXs = 4_000 - Exchange.POSITION_LIMIT * eqXs / fairXs;
         assertTrue("fixture: the company's month of buybacks is less than the desk's excess", spentX > 0 && spentX / fairXs < overXs);
@@ -468,13 +495,15 @@ public class ExchangeCheck {
         /* ================= 4. the world ================= */
         out.println("\n--- 4. the world sells when the yield at the bid is under its hurdle, and bids when the price beats it ---");
 
-        Equity reg4 = withPaid(INDUSTRY, 100, 40);          // $480 a year paid
+        // The company earns what it pays out, $480 a year (EM1: it is valued on its earnings, and income and dividend were not the same number).
+        Equity reg4 = withPaid(INDUSTRY, 40, 40);
         reg4.offer(INDUSTRY, 1_000, 0, null, W);            // 1,000 shares abroad
         close("fixture: the company is wholly foreign-owned", reg4.foreignShare(INDUSTRY), 1.0, 1e-12);
         Exchange ex4 = new Exchange();
         Bank bank4 = bankWith(100_000);
-        double[] book4 = bookOf(INDUSTRY, 20_000);          // $20 a share: the dividend yields 2.4%
-        step(ex4, reg4, new HouseholdBalance(), bank4, new Firms(), book4, W, .10, 1);
+        double[] book4 = bookOf(INDUSTRY, 20_000);
+        Firms firms4 = new Firms().worth(reg4, INDUSTRY, 20_000, W);   // worth $20 a share, money past its earnings: the $480 yields 2.4%
+        step(ex4, reg4, new HouseholdBalance(), bank4, firms4, book4, W, .10, 1);
         double deskBid4 = 20.0 * (1 - Exchange.SPREAD / 2);
         double y4 = .48 / deskBid4;
         assertTrue("fixture: the yield at the desk's bid is under the world's hurdle", y4 < HURDLE * (1 - Exchange.FOREIGN_TOLERANCE));
@@ -488,17 +517,17 @@ public class ExchangeCheck {
         // price past its hurdle - and rests AT the market, where a household
         // short of money finds it.
         HouseholdBalance town4 = savers(12.0, 4.0);         // at its cushion: nothing to rebalance at the step
-        Equity reg4b = withPaid(INDUSTRY, 100, 40);
+        Equity reg4b = withPaid(INDUSTRY, 40, 40);           // earning what it pays, $480 a year
         reg4b.offer(INDUSTRY, 1_000, 0, null, W);
         reg4b.moveForeign(INDUSTRY, -500);                   // half of it held at home
         couple(town4).shares[INDUSTRY] += 5;
-        double[] book4b = bookOf(INDUSTRY, 1_000);           // book $1; the dividend is worth $9.60 a share
+        double[] book4b = bookOf(INDUSTRY, 1_000);           // book $1; the earnings are worth $9.60 a share
         Exchange ex4b = new Exchange();
         double fair4b = .48 / HURDLE;
         double last4b = .8 * fair4b;
         ex4b.bookOf(INDUSTRY).seedLastPrice(last4b);         // it last traded at 80% of what it is worth
         step(ex4b, reg4b, town4, dead, new Firms(), book4b, W, .10, 1);
-        close("fixture: fair value is the dividend capitalised at the hurdle", ex4b.fair(INDUSTRY), fair4b, 1e-9);
+        close("fixture: fair value is the earnings (here the dividend) capitalised at the hurdle", ex4b.fair(INDUSTRY), fair4b, 1e-9);
         double yPrice = .48 / last4b;
         double wantBuy = Exchange.FOREIGN_SPEED * (yPrice / HURDLE - 1) * reg4b.getOutstanding(INDUSTRY);
         close("the world bids for a share of the float in proportion to the excess yield",
@@ -523,23 +552,29 @@ public class ExchangeCheck {
         /* ================= 5. the household cells ================= */
         out.println("\n--- 5. each cell buys the best yield with its own money, and rests the rest at the market ---");
 
-        Equity reg5 = withPaid(INDUSTRY, 100, 40,            // $0.48 a share a year on 1,000
-                RETAIL, 200, 80);                            // $0.096 a share a year on 10,000
+        // Industry earns $1.20 a share a year on 1,000 and pays $0.48 of it...
+        Equity reg5 = withPaid(INDUSTRY, 100, 40,
+                RETAIL, 200, 80);                            // ...Retail $0.24 a share on 10,000 and pays $0.096
         reg5.offer(INDUSTRY, 1_000, 0, null, W);
         reg5.offer(RETAIL, 10_000, 0, null, W);
         reg5.moveForeign(INDUSTRY, -10); reg5.moveDesk(INDUSTRY, 10);         // the desk holds ten of Industry...
         reg5.moveForeign(RETAIL, -10_000); reg5.moveDesk(RETAIL, 10_000);     // ...and all of Retail
         Bank bank5 = bankWith(1_000_000);
         double[] book5 = new double[N];
-        book5[INDUSTRY] = 1_000;                             // worth its dividend: $9.60, yielding the hurdle
-        book5[RETAIL] = 30_000;                              // worth its book, $3: yielding less
+        book5[INDUSTRY] = 1_000;                             // (a company with a year on its record is not valued on its book now)
+        book5[RETAIL] = 30_000;
+        // EM1: a share is its money at face and its earnings capitalised. Industry is worth its earnings, $24 a share, returning the required return;
+        // Retail $6.30 a share, $2.40 of it earnings and the rest money past them: returning less.
+        Firms firms5 = new Firms().worth(reg5, RETAIL, 63_000, W);
         HouseholdBalance buyers = savers(100.0, 4.0);        // $88k past the cushion each
         double wanted = 100 * (100.0 - HouseholdBalance.SHARE_CUSHION_MONTHS * 4.0) * OutwardInvestment.OUT_SPEED;
         Exchange ex5 = new Exchange();
-        step(ex5, reg5, buyers, bank5, new Firms(), book5, W, 0, 1);
+        step(ex5, reg5, buyers, bank5, firms5, book5, W, 0, 1);
         double askInd = ex5.fair(INDUSTRY) * (1 + Exchange.SPREAD / 2), askRet = ex5.fair(RETAIL) * (1 + Exchange.SPREAD / 2);
-        assertTrue("fixture: Industry yields more at the desk's ask than Retail, both over the deposit rate plus the premium",
-                .48 / askInd > .096 / askRet && .096 / askRet > Exchange.HOUSEHOLD_PREMIUM);
+        // ...both over the floor a cell buys on: the best of the deposit, the dollars abroad and the paper, plus the premium, and the band.
+        double floor5 = (W + Exchange.HOUSEHOLD_PREMIUM) * (1 + Exchange.BAND);
+        assertTrue("fixture: Industry returns more at the desk's ask than Retail, both over the best alternative plus the premium and the band",
+                ex5.expectedReturn(INDUSTRY, askInd) > ex5.expectedReturn(RETAIL, askRet) && ex5.expectedReturn(RETAIL, askRet) > floor5);
         close("the cell takes everything asked of the best yield first", ex5.getSoldToHouseholds(INDUSTRY), 10 * askInd, 1e-9);
         close("...then the next best with the rest", ex5.getSoldToHouseholds(RETAIL), wanted - 10 * askInd, 1e-9);
         close("...its month's money, out of its own savings", couple(buyers).savings(), 100.0 - wanted / 100, 1e-9);
@@ -547,30 +582,40 @@ public class ExchangeCheck {
         close("...the register agreeing on each", reg5.getDomesticShares(RETAIL), buyers.sharesHeld(RETAIL), 1e-9);
         close("the desk sold nothing it did not have", reg5.getDealerShares(INDUSTRY), 0, 1e-9);
 
+        /*
+         * EM1: a cell's reservation is the lesser of the price that returns the
+         * floor and fair value plus half the spread - the desk's ask. A cell that
+         * has just taken the ask would then rest at its reservation as well as at
+         * the market, the claim empty; so nothing is asked here, the desk holds
+         * none, and the company last traded under value. The cell rests at that
+         * trade, under its reservation.
+         */
         Equity reg5b = withPaid(INDUSTRY, 100, 40, RETAIL, 200, 80);
         reg5b.offer(INDUSTRY, 1_000, 0, null, W);
         reg5b.offer(RETAIL, 10_000, 0, null, W);             // Retail all abroad: nothing asked
-        reg5b.moveForeign(INDUSTRY, -10); reg5b.moveDesk(INDUSTRY, 10);
         HouseholdBalance keen = savers(100.0, 4.0);
         Exchange ex5b = new Exchange();
-        step(ex5b, reg5b, keen, bank5, new Firms(), book5, W, 0, 1);
+        double last5b = .9 * ex5.fair(INDUSTRY);
+        ex5b.bookOf(INDUSTRY).seedLastPrice(last5b);         // it last traded at 90% of what it is worth
+        step(ex5b, reg5b, keen, dead, new Firms(), book5, W, 0, 1);   // Retail with no money past its earnings: it returns the required return, and the world, which holds it all, asks nothing
         String keenName = Exchange.CELL + couple(keen).key();
-        double left5 = wanted - 10 * askInd;
-        close("with nothing else asked, what is left rests as a bid on the best yield",
-                ex5b.bookOf(INDUSTRY).resting(keenName, OrderBook.Side.BUY), left5 / askInd, 1e-9);
-        close("...AT THE MARKET, its last trade - not at the price that yields the floor",
-                ex5b.bestBid(INDUSTRY), askInd, 1e-12);
-        assertTrue("...which is five times higher", .48 / Exchange.HOUSEHOLD_PREMIUM > 4 * askInd);
+        close("with nothing asked, what the cell has rests as a bid on the best return",
+                ex5b.bookOf(INDUSTRY).resting(keenName, OrderBook.Side.BUY), wanted / last5b, 1e-9);
+        close("...AT THE MARKET, its last trade - not at the price that returns the floor",
+                ex5b.bestBid(INDUSTRY), last5b, 1e-12);
+        double reservation5 = Math.min(1.2 / floor5, ex5b.fair(INDUSTRY) * (1 + Exchange.SPREAD / 2));
+        assertTrue("...which is higher: the reservation is the lesser of the price that returns the floor and the desk's ask",
+                reservation5 > 1.05 * last5b);
 
         HouseholdBalance cautious = savers(100.0, 4.0);
         Exchange ex5c = new Exchange();
-        step(ex5c, reg5, cautious, bank5, new Firms(), book5, W, .10, 1);   // the bank pays 10%
+        step(ex5c, reg5, cautious, bank5, firms5, book5, W, .10, 1);   // the bank pays 10%
         close("with the deposit rate above every yield, nobody buys", ex5c.getSoldToHouseholds(), 0, 1e-12);
         close("...and nobody's savings moved", couple(cautious).savings(), 100.0, 1e-12);
 
         /*
          * AND WHEN THE MODEL PRICES TWO OF THEM THE SAME. A company valued on
-         * its dividends yields exactly the discount rate at fair value, so two
+         * its earnings alone returns exactly the required return at fair value, so two
          * such companies tie to the last bit; before TIED_YIELD the sort
          * decided between them on which copy had lost it (DenominationCheck,
          * month 129 on the dealer). A tie goes to the deepest name, and a ulp
@@ -585,18 +630,18 @@ public class ExchangeCheck {
         Exchange exT = new Exchange();
         HouseholdBalance keenT = savers(100.0, 4.0);
         step(exT, regT, keenT, dead, new Firms(), bookT, W, 0, 1);
-        close("fixture: both are priced to the discount rate", regT.dividendPerShareAnnual(INDUSTRY) / exT.fair(INDUSTRY), HURDLE, 1e-12);
-        close("fixture: ...on different share counts", regT.dividendPerShareAnnual(MATERIALS) / exT.fair(MATERIALS), HURDLE, 1e-12);
+        close("fixture: both are priced to the required return", exT.expectedReturn(INDUSTRY, exT.fair(INDUSTRY)), HURDLE, 1e-12);
+        close("fixture: ...on different share counts", exT.expectedReturn(MATERIALS, exT.fair(MATERIALS)), HURDLE, 1e-12);
         String tName = Exchange.CELL + couple(keenT).key();
         assertTrue("tied names: the bid rests on the deepest", exT.bookOf(INDUSTRY).resting(tName, OrderBook.Side.BUY) > 0
                 && exT.bookOf(MATERIALS).resting(tName, OrderBook.Side.BUY) == 0);
-        Equity regU = withPaid(INDUSTRY, 300, Math.nextUp(120.0), MATERIALS, 100, 40);
+        Equity regU = withPaid(INDUSTRY, Math.nextUp(300.0), 120, MATERIALS, 100, 40);
         regU.offer(INDUSTRY, 3_000, 0, null, W);
         regU.offer(MATERIALS, 1_000, 0, null, W);
         Exchange exU = new Exchange();
         HouseholdBalance keenU = savers(100.0, 4.0);
         step(exU, regU, keenU, dead, new Firms(), bookT, W, 0, 1);
-        close("a dividend moved by one ulp does not move where the money goes",
+        close("earnings moved by one ulp do not move where the money goes",
                 exU.bookOf(INDUSTRY).resting(tName, OrderBook.Side.BUY), exT.bookOf(INDUSTRY).resting(tName, OrderBook.Side.BUY), 1e-9);
 
         /* ================= 6. cell to cell ================= */
@@ -614,11 +659,12 @@ public class ExchangeCheck {
         Household rich = two.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
         poor.savings = 12;                                   // at its cushion: nothing to rebalance at the step
         rich.savings = 100;
-        Equity reg6 = withPaid(RETAIL, 100, 25);             // $300 a year on 10,000 shares: 3%
+        // It earns what it pays out, $480 a year on 10,000 shares (4.8%), and is worth $1 a share: the rest of that is money past its cushion (EM1).
+        Equity reg6 = withPaid(RETAIL, 40, 40);
         reg6.listIfUnlisted(RETAIL, 10_000, two);            // the founders: fifty shares a household
         Exchange ex6 = new Exchange();
         double[] book6 = bookOf(RETAIL, 10_000);
-        step(ex6, reg6, two, dead, new Firms(), book6, W, 0, 1);
+        step(ex6, reg6, two, dead, new Firms().worth(reg6, RETAIL, 10_000, W), book6, W, 0, 1);
         String richName = Exchange.CELL + rich.key(), poorName = Exchange.CELL + poor.key();
         double richBid = ex6.bookOf(RETAIL).resting(richName, OrderBook.Side.BUY);
         assertTrue("fixture: the rich cell's bid rests on the book; the short cell has nothing to bid with",
@@ -652,7 +698,7 @@ public class ExchangeCheck {
         two2.advanceMonth((s, t) -> mix6[s.ordinal()][t.ordinal()], pay6, 0, none, none, .25, .05, 1);
         Household under = two2.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household over = two2.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
-        Equity reg6b = withPaid(RETAIL, 100, 25);
+        Equity reg6b = withPaid(RETAIL, 40, 40);             // as above: $480 a year, worth $1 a share
         reg6b.listIfUnlisted(RETAIL, 10_000, two2);          // fifty shares a household in both
         under.savings = 0;                                   // $12k under its cushion: its target is $12k of shares less
         over.savings = 100;                                  // $88k past it: its target is $88k of shares more
@@ -660,7 +706,7 @@ public class ExchangeCheck {
         double shortfall = 100 * (HouseholdBalance.SHARE_CUSHION_MONTHS * 4.0 - 0), excessOver = 100 * (100 - HouseholdBalance.SHARE_CUSHION_MONTHS * 4.0);
         assertTrue("fixture: the cell under its cushion holds more than its shortfall in shares", 100 * underShares * 1.0 > shortfall);
         Exchange ex6b = new Exchange();
-        step(ex6b, reg6b, two2, dead, new Firms(), book6, W, 0, 1);
+        step(ex6b, reg6b, two2, dead, new Firms().worth(reg6b, RETAIL, 10_000, W), book6, W, 0, 1);
         double sold6b = (underShares - under.shares(RETAIL)) * 100;
         out.printf("   the cell under its cushion sold %,.1f shares; the cell past it bought %,.1f and bids for %,.1f more%n",
                 sold6b, (over.shares(RETAIL) - overShares) * 100, ex6b.bookOf(RETAIL).resting(Exchange.CELL + over.key(), OrderBook.Side.BUY));
@@ -679,8 +725,8 @@ public class ExchangeCheck {
         /* ================= 7. the buyback, and the money that stays ================= */
         out.println("\n--- 7. a company over its target buys back what is asked at its limit, and the rest of its money stays in the till ---");
 
-        double[] normal = new double[12];
-        for (int m = 0; m < 12; m++) normal[m] = m < 6 ? 100 : 50;   // profitable but fading: NORMAL
+        // Profitable but fading: NORMAL. It earns what makes it worth its $1 a share and no more (EM1: a share is its money at face and its earnings capitalised).
+        double[] normal = fading(10_000 * Equity.requiredReturn(W));
         Equity reg7 = withRecord(RETAIL, normal);
         assertTrue("fixture: the company is in a normal year", reg7.getRegime(RETAIL) == Equity.Regime.NORMAL);
         HouseholdBalance owners = savers(20.0, 4.0);
@@ -694,7 +740,7 @@ public class ExchangeCheck {
         firms7.cash[RETAIL] = 5_000; firms7.opex[RETAIL] = 100;           // $600 of cushion
         double[] book7 = bookOf(RETAIL, 10_000);
         double cash7 = bank7.getCash();
-        step(ex7, reg7, owners, bank7, firms7, book7, W, .05, 1);           // savers paid 5%: no household buys
+        step(ex7, reg7, owners, bank7, firms7, book7, W, DEPOSIT_AT_HURDLE, 1);   // no household buys or sells a share returning the required return
         double ask7 = 1.0 * (1 + Exchange.SPREAD / 2);
         double pace7 = Exchange.BUYBACK_PACE / 12 * 9_000 * 1.0;           // on what was outstanding when it bid
         close("it retires a month of the pace, in shares, at the desk's ask",
@@ -717,7 +763,7 @@ public class ExchangeCheck {
         assertTrue("fixture: six months of its costs with the payments are more than its till, without them far less",
                 Exchange.BUYBACK_CUSHION_MONTHS * (100 + 750) > 5_000
                         && 5_000 - Exchange.BUYBACK_CUSHION_MONTHS * 100 >= pace7);
-        step(ex7d, reg7d, owners7d, bankWith(1_000_000), firms7d, book7, W, .05, 1);
+        step(ex7d, reg7d, owners7d, bankWith(1_000_000), firms7d, book7, W, DEPOSIT_AT_HURDLE, 1);
         close("a company whose loan payments take its cushion past its till buys nothing back",
                 reg7d.getBoughtBackThisMonth(RETAIL), 0, 1e-12);
         close("...bids for nothing either", ex7d.bookOf(RETAIL).resting(Equity.COMPANIES[RETAIL], OrderBook.Side.BUY), 0, 0);
@@ -728,18 +774,18 @@ public class ExchangeCheck {
         // dividend here; since round 4 (Jerus: "Keep it in the company") it
         // stays in the till, and the company's bid rests at its limit.
         Equity reg7s = withRecord(RETAIL, normal);
-        addPaidOnly(reg7s, RETAIL, 1);                      // a small dividend paid, so the world holds a view
-        HouseholdBalance owners7s = savers(20.0, 4.0);
+        // EM1: the holders here are under their cushion, so they sell at the market and nothing else. The world held 1,000 of them once and asked the
+        // market, but it sells HOME_SPEED of its holding into a bid over value plus BAND (postWorldPrice()) and a cell over its cushion does the same;
+        // either would meet the company's bid at its limit.
+        HouseholdBalance owners7s = savers(10.0, 4.0);   // $2 under its $12 cushion: it offers HOME_SPEED of the shortfall, at the market
         reg7s.listIfUnlisted(RETAIL, 10_000, owners7s);
-        couple(owners7s).shares[RETAIL] -= 10;
-        reg7s.moveForeign(RETAIL, 1_000);                    // the world holds 1,000
         Exchange ex7s = new Exchange();
         ex7s.bookOf(RETAIL).seedLastPrice(1.5);
         Firms firms7s = new Firms();
         firms7s.assets[RETAIL] = 10_000; firms7s.equity[RETAIL] = 10_000;
         firms7s.cash[RETAIL] = 5_000; firms7s.opex[RETAIL] = 100;
         double shares7s = reg7s.getShares(RETAIL);
-        step(ex7s, reg7s, owners7s, dead, firms7s, book7, W, .05, 1);
+        step(ex7s, reg7s, owners7s, dead, firms7s, book7, W, DEPOSIT_AT_HURDLE, 1);
         assertTrue("fixture: the only ask rests past fair value plus the tolerance",
                 ex7s.bestAsk(RETAIL) > ex7s.fair(RETAIL) * (1 + Exchange.BUYBACK_TOLERANCE));
         double pace7s = Exchange.BUYBACK_PACE / 12 * reg7s.getOutstanding(RETAIL) * ex7s.fair(RETAIL);
@@ -752,20 +798,26 @@ public class ExchangeCheck {
         close("...no holder is paid a dividend for it", reg7s.getDividendHomeThisMonth(RETAIL) + reg7s.getDividendAbroadThisMonth(RETAIL), 0, 0);
         close("...not one share retired", reg7s.getShares(RETAIL), shares7s, 1e-12);
 
-        // ...AND WHEN NOBODY OFFERS THE SHARES AT ALL: every share at home with
-        // owners content, no desk, nothing abroad. Round 3 paid the money out
-        // as a special dividend here; since round 4 it stays in the till, the
-        // bid rests at its limit, and a seller who comes later in the month
-        // is met there.
+        // ...AND WHEN NOBODY OFFERS THE SHARES AT ALL: the owners hold none of
+        // them through the step, no desk, nothing abroad. Round 3 paid the money
+        // out as a special dividend here; since round 4 it stays in the till, the
+        // bid rests at its limit, and a seller who comes later in the month is met
+        // there. (EM1: it was every share at home with owners content, but an
+        // owner past its cushion now sells into a bid over value plus BAND, and
+        // the register has no holder that stays; so the cell's shares are put
+        // aside for the step and handed back to it, short of money, after it.)
         Equity reg7n = withRecord(RETAIL, normal);
         HouseholdBalance owners7n = savers(20.0, 4.0);
         reg7n.listIfUnlisted(RETAIL, 10_000, owners7n);
+        Household short7n = couple(owners7n);
+        double held7n = short7n.shares(RETAIL);
+        short7n.shares[RETAIL] = 0;
         Exchange ex7n = new Exchange();
         Firms firms7n = new Firms();
         firms7n.assets[RETAIL] = 10_000; firms7n.equity[RETAIL] = 10_000;
         firms7n.cash[RETAIL] = 5_000; firms7n.opex[RETAIL] = 100;
         double shares7n = reg7n.getShares(RETAIL);
-        step(ex7n, reg7n, owners7n, dead, firms7n, book7, W, .05, 1);
+        step(ex7n, reg7n, owners7n, dead, firms7n, book7, W, DEPOSIT_AT_HURDLE, 1);
         double pace7n = Exchange.BUYBACK_PACE / 12 * reg7n.getOutstanding(RETAIL) * ex7n.fair(RETAIL);
         assertTrue("fixture: nobody offers the company's shares at all", Double.isNaN(ex7n.bestAsk(RETAIL)));
         double limit7n = ex7n.fair(RETAIL) * (1 + Exchange.BUYBACK_TOLERANCE);
@@ -774,8 +826,7 @@ public class ExchangeCheck {
         close("...for what the month's money buys there",
                 ex7n.bookOf(RETAIL).resting(Equity.COMPANIES[RETAIL], OrderBook.Side.BUY), pace7n / limit7n, 1e-9);
         close("...not one share retired yet", reg7n.getShares(RETAIL), shares7n, 1e-12);
-        Household short7n = couple(owners7n);
-        double held7n = short7n.shares(RETAIL);
+        short7n.shares[RETAIL] = held7n;                     // ...the shares come back to the cell, and it is short of money
         double raised7n = ex7n.sellForHousehold(reg7n, dead, owners7n, short7n, 20) * 100;
         assertTrue("fixture: a household short of money sells in the waterfall and the bid meets it", raised7n > 0);
         close("a household short of money sells into the resting bid, at the bid's price",
@@ -792,7 +843,7 @@ public class ExchangeCheck {
         Exchange ex7l = new Exchange();
         Firms firms7l = new Firms();
         firms7l.assets[RETAIL] = 10_000; firms7l.equity[RETAIL] = 10_000; firms7l.cash[RETAIL] = 5_000;
-        step(ex7l, loser, owners7l, bankWith(1_000_000), firms7l, book7, W, .05, 1);
+        step(ex7l, loser, owners7l, bankWith(1_000_000), firms7l, book7, W, DEPOSIT_AT_HURDLE, 1);
         close("a company in a bad year buys nothing back", loser.getBoughtBackThisMonth(RETAIL), 0, 1e-12);
         close("...and bids for nothing", ex7l.bookOf(RETAIL).resting(Equity.COMPANIES[RETAIL], OrderBook.Side.BUY), 0, 0);
         Equity atTarget = withRecord(RETAIL, normal);
@@ -802,7 +853,7 @@ public class ExchangeCheck {
         firms7t.assets[RETAIL] = 10_000; firms7t.cash[RETAIL] = 5_000;
         firms7t.equity[RETAIL] = atTarget.getTargetEquityShare(RETAIL) * 10_000;   // at target
         Exchange ex7t = new Exchange();
-        step(ex7t, atTarget, owners7t, bankWith(1_000_000), firms7t, book7, W, .05, 1);
+        step(ex7t, atTarget, owners7t, bankWith(1_000_000), firms7t, book7, W, DEPOSIT_AT_HURDLE, 1);
         close("a company at its target buys nothing back", atTarget.getBoughtBackThisMonth(RETAIL), 0, 1e-12);
 
         /* ================= 8. the split ================= */
@@ -887,8 +938,8 @@ public class ExchangeCheck {
         int monthsTraded = 0, lastTradeMisread = 0, tradedBooks = 0;
         double bought = 0, soldBack = 0, boughtBack = 0, between = 0, emigrants = 0;
         double worstMarkGap = 0;
-        int excessMonths = 0;
-        double worstExcessResidual = 0, excessSoldBefore = 0;
+        int excessMonths = 0, deskToCompanyMonths = 0;
+        double worstExcessResidual = 0, excessSoldBefore = 0, worstDeskSaleResidual = 0;
         try {
             city.run();
             for (int m = 0; m < 240; m++) {
@@ -901,6 +952,11 @@ public class ExchangeCheck {
                     worstExcessResidual = Math.max(worstExcessResidual, Math.abs(city.getLastMoneyAudit().residual));
                 }
                 excessSoldBefore = x.getLifeExcessSold();
+                // ...and, since EM1, the months the desk sold to a company's buyback at all: the same money, the desk's shares to the company's till.
+                if (x.getBuybackToDesk() > 1e-12) {
+                    deskToCompanyMonths++;
+                    worstDeskSaleResidual = Math.max(worstDeskSaleResidual, Math.abs(city.getLastMoneyAudit().residual));
+                }
                 if (x.getVolume() > 0) monthsTraded++;
                 bought += x.getSoldToHouseholds();
                 soldBack += x.getBoughtFromHouseholds() + x.getBoughtFromAbroad();
@@ -930,8 +986,17 @@ public class ExchangeCheck {
         assertTrue("...and every month of it is conserved", worstResidual < 1e-9);
         out.printf("   the desk's excess over its caps sold in %d month(s), $%,.0fk offered and $%,.0fk sold over the 20 years%n",
                 excessMonths, x.getLifeExcessOffered(), x.getLifeExcessSold());
-        assertTrue("fixture: the desk's excess over its caps sold in some month", excessMonths > 0);
-        assertTrue("...and the audit closed through every month it did", worstExcessResidual < .01);
+        /*
+         * EM1: the excess is asked at fair value, and a company's buyback takes the cheapest ask first, and in
+         * the default city no company with a buyback was one the desk was over its cap in
+         * was one the desk was over its cap in (197 company-months with an excess, none with a buyback bid),
+         * so none of the excess sold in twenty years (50 of 240 months before). What the claim is for is
+         * the money the desk's sale to a buyback moves, desk to the company's till, which the desk's ask
+         * does as well: the audit through every month it sold to one.
+         */
+        out.printf("   the desk sold shares to a company's buyback in %d month(s)%n", deskToCompanyMonths);
+        assertTrue("fixture: the desk sold shares to a company's buyback in some month", deskToCompanyMonths > 0);
+        assertTrue("...and the audit closed through every month it did", worstDeskSaleResidual < .01 && worstExcessResidual < .01);
         assertTrue("...with the bank carrying the desk at the exchange's mark all along", worstMarkGap < 1e-9);
         assertTrue("...and every price read, on a book that has traded, is its last trade (" + tradedBooks + " company-months)",
                 tradedBooks > 0 && lastTradeMisread == 0);
@@ -969,13 +1034,5 @@ public class ExchangeCheck {
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
-    }
-
-    /** Twelve months of this ordinary dividend paid, no income recorded: a register whose regime its income sets elsewhere. */
-    static void addPaidOnly(Equity e, int company, double monthlyPaid) {
-        for (int m = 0; m < Equity.RECORD_MONTHS; m++) {
-            e.noteDividendPaid(company, monthlyPaid);
-            e.closeDividendMonth();
-        }
     }
 }

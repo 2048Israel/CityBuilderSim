@@ -90,8 +90,18 @@ public class OrderSearchCheck {
      * hold on any path: the copy 167 judged, 115 refused, 40 past the
      * counted slices; the twin 130 judged, 2 trimmed (the plant built to 24
      * and to 49 of its 98), the deepest by 74.
+     *
+     * ...AT 500 SINCE EM1 (2026-10-29). A share has one value and the playtest's town is another: 3,206 people at month 300
+     * and 3,512 at 400 (4,917 at 500, 5,099 at 600), growing slowly where it sized orders by the hundred, and at 300 and 400
+     * it sizes no order at all in the copy's 24 months - the copy judges 71 orders on their interest and the largest is one
+     * building (the mines, the depots and the like, ordered a building at a time), where the demand-led sectors order
+     * nothing; the largest order the twin can be handed is one Truck Depot, which no till is the line of. Scanned (the same
+     * copy, COPY_RATE and TWIN_RATE, the conditions read as below): 300 and 400 hold neither; 500, 600, 700 and 800 hold
+     * both. At 500 the copy sizes 70 orders (the largest needs 16,963) and judges 160 (the largest 138; 112 refused, 24
+     * trimmed past the counted slices); the twin judges 119, trims 4, two past the counted slices, the deepest by 103
+     * (a Construction Materials Plant of 137 built to 34 on a quarter of its cost and to 68 on a half).
      */
-    static final int COPY_MONTH = 400;
+    static final int COPY_MONTH = 500;
     /** ...how many times over it is copied... */
     static final long COPY_TIMES = 1000;
     /** ...and the months the copy plays. */

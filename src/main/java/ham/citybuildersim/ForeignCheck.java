@@ -1598,6 +1598,16 @@ public class ForeignCheck {
            ================================================================= */
         g.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
         g.getBusinessInvestment().holdSector(Sectors.RESTAURANTS);
+        /*
+         * ...AND THE WOOD PRODUCTS (EM1, 2026-10-29), the same hinge again, found where the premise was read to a hair. The
+         * weaker city founds a sawmill and the parity city does not, and what it imports for it - sawlogs and pulpwood from
+         * the world - is no part of the programme: $62,103k of the weaker city's $1,136,768k, none of the parity city's. It
+         * was there on main (HD1's tip) too: $61,382k, and the premise read 1.0490 against a band of .05. EM1 moved the
+         * weaker city's shops and mills a hair (its retail imports $47,561k against $44,208k, its exports $1,588,277k
+         * against $1,581,330k; the parity city's every figure is main's to the dollar) and the sawmill's import took the
+         * premise to 1.0533. Held, the weaker city imports the programme and nothing that grows with its own size.
+         */
+        g.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
         g.buildStack(template(g, "House"), 500, false);
         g.buildStack(template(g, "Convenience Store"), 8, false);
         g.buildStack(template(g, "Small Grocery Store"), 3, false);
