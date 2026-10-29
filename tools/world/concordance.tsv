@@ -1,0 +1,297 @@
+# The concordance of world-1.bin (WN0, E2): which HS 2022 subheadings are which of the game's goods, for BACI's trade.
+# WHY: BACI counts HS6 subheadings; the game has sixty traded goods. The longest hs prefix (2, 4 or 6 digits) that matches a subheading wins; good - means that prefix maps to nothing,
+# so a chapter can be taken whole and a heading carved out of it. share splits a subheading's tonnes among goods and vshare its value (default share; - for that): the shares for one prefix sum to 1 each.
+# Most of HS maps to nothing (chemicals, textiles, electronics, gold, gas); only what is a good in the game's sense is here.
+hs	good	share	vshare	note
+0901	CROPS	1	-	coffee, green or roasted: the Food Processing Plant's crop
+0902	CROPS	1	-	tea
+12	CROPS	1	-	oilseeds, oleaginous fruit, seeds, plants for industry, sugar beet and cane, forage
+1701	CROPS	1	-	cane or beet sugar: an agricultural commodity before the factory
+1801	CROPS	1	-	cocoa beans
+23	CROPS	1	-	residues and animal feed: the feed behind the meat
+10	GRAINS	1	-	cereals: wheat, rye, barley, oats, maize, rice, sorghum, millet
+1101	GRAINS	1	-	wheat or meslin flour
+1102	GRAINS	1	-	other cereal flours
+1103	GRAINS	1	-	groats, meal and pellets of cereals
+1104	GRAINS	1	-	worked cereal grains: rolled, flaked, pearled
+190211	BREAD	1	-	uncooked pasta with eggs: a milled staple
+190219	BREAD	1	-	uncooked pasta
+190240	BREAD	1	-	couscous
+190510	BREAD	1	-	crispbread
+190540	BREAD	1	-	rusks and toasted bread
+190590	BREAD	0.5	0.33	bread, pastry, cakes and biscuits not named above: half the tonnes bread, est.; bread is the cheaper kilo, so a third of the value
+190590	BAKERY	0.5	0.67	the other half of the tonnes, two thirds of the value, est.
+190520	BAKERY	1	-	gingerbread
+190531	BAKERY	1	-	sweet biscuits
+190532	BAKERY	1	-	waffles and wafers
+190120	BAKERY	1	-	mixes and doughs for bakers' wares
+0401	DAIRY_EGGS	1	-	milk and cream, not concentrated
+0402	DAIRY_EGGS	1	-	milk and cream, concentrated or sweetened
+0403	DAIRY_EGGS	1	-	yogurt, buttermilk, fermented milks
+0404	DAIRY_EGGS	1	-	whey and milk products
+0405	DAIRY_EGGS	1	-	butter and dairy spreads
+0406	DAIRY_EGGS	1	-	cheese and curd
+0407	DAIRY_EGGS	1	-	birds' eggs in shell
+0408	DAIRY_EGGS	1	-	birds' eggs not in shell, egg yolks
+07	VEGETABLES	1	-	vegetables, roots, tubers and pulses
+2001	VEGETABLES	1	-	vegetables pickled in vinegar
+2002	VEGETABLES	1	-	tomatoes prepared or preserved
+2003	VEGETABLES	1	-	mushrooms and truffles prepared
+2004	VEGETABLES	1	-	frozen vegetables, chips among them
+2005	VEGETABLES	1	-	other prepared vegetables
+200520	SNACKS	1	-	prepared potatoes: crisps
+08	FRUIT	1	-	fruit and nuts, fresh or dried
+2006	FRUIT	1	-	fruit preserved by sugar
+2007	FRUIT	1	-	jams, fruit jellies, purees
+2008	FRUIT	1	-	fruit otherwise prepared
+200811	SNACKS	1	-	groundnuts prepared: roasted nuts
+200819	SNACKS	1	-	other nuts and seeds prepared
+0201	MEAT	1	-	bovine meat, fresh or chilled
+0202	MEAT	1	-	bovine meat, frozen
+0203	MEAT	1	-	pork
+0204	MEAT	1	-	sheep and goat meat
+0205	MEAT	1	-	horse meat
+0206	MEAT	1	-	edible offal
+0207	MEAT	1	-	poultry
+0208	MEAT	1	-	other meat
+03	FISH	1	-	fish, crustaceans, molluscs and other aquatic invertebrates
+1604	FISH	1	-	prepared or preserved fish, caviar
+1605	FISH	1	-	prepared crustaceans and molluscs
+0209	FATS	1	-	pig and poultry fat
+1501	FATS	1	-	pig and poultry fat, rendered
+1502	FATS	1	-	tallow
+1503	FATS	1	-	lard stearin, lard oil
+1504	FATS	1	-	fish fats and oils
+1505	FATS	1	-	wool grease
+1506	FATS	1	-	other animal fats
+1507	FATS	1	-	soya oil
+1508	FATS	1	-	groundnut oil
+1509	FATS	1	-	olive oil
+1510	FATS	1	-	other olive oils
+1511	FATS	1	-	palm oil
+1512	FATS	1	-	sunflower and cotton seed oil
+1513	FATS	1	-	coconut and palm kernel oil
+1514	FATS	1	-	rape and mustard oil
+1515	FATS	1	-	other fixed vegetable oils
+1516	FATS	1	-	hydrogenated fats
+1517	FATS	1	-	margarine
+0210	PROCESSED_MEAT	1	-	meat salted, dried or smoked
+1601	PROCESSED_MEAT	1	-	sausages
+1602	PROCESSED_MEAT	1	-	prepared or preserved meat
+190110	READY_MEALS	1	-	infant food, retail
+190220	READY_MEALS	1	-	stuffed pasta
+190230	READY_MEALS	1	-	cooked pasta
+2103	READY_MEALS	1	-	sauces, ketchup, mustard
+2104	READY_MEALS	1	-	soups and broths
+1704	SNACKS	1	-	sugar confectionery
+1806	SNACKS	1	-	chocolate and cocoa foods
+1904	SNACKS	1	-	breakfast cereals and swelled or roasted cereals
+2105	SNACKS	1	-	ice cream
+2009	DRINKS	1	-	fruit and vegetable juices
+2201	DRINKS	1	-	waters
+2202	DRINKS	1	-	soft drinks
+2203	DRINKS	1	-	beer
+2204	DRINKS	1	-	wine
+2205	DRINKS	1	-	vermouth
+2206	DRINKS	1	-	cider, mead, sake
+2208	DRINKS	1	-	spirits and liqueurs
+260111	IRON	1	-	iron ore, non-agglomerated: fines, lump, concentrate
+260112	PELLETS	1	-	iron ore, agglomerated: pellets and sinter
+7201	PIG_IRON	1	-	pig iron and spiegeleisen
+7203	PIG_IRON	1	-	direct-reduced iron: the pig iron substitute
+7204	SCRAP	1	-	ferrous waste and scrap
+7206	STEEL	1	-	ingots
+7207	STEEL	1	-	semis: billets, blooms, slabs
+7208	STEEL	1	-	hot-rolled flat, 600 mm or more
+7209	STEEL	1	-	cold-rolled flat
+7210	STEEL	1	-	coated flat
+7211	STEEL	1	-	flat under 600 mm
+7212	STEEL	1	-	flat under 600 mm, coated
+7213	STEEL	1	-	wire rod
+7214	STEEL	1	-	other bars and rods
+7215	STEEL	1	-	other bars
+7216	STEEL	1	-	angles, shapes, sections
+7217	STEEL	1	-	wire
+7218	STEEL	1	-	stainless ingots and semis
+7219	STEEL	1	-	stainless flat, wide
+7220	STEEL	1	-	stainless flat, narrow
+7221	STEEL	1	-	stainless wire rod
+7222	STEEL	1	-	stainless bars
+7223	STEEL	1	-	stainless wire
+7224	STEEL	1	-	alloy ingots and semis
+7225	STEEL	1	-	alloy flat, wide
+7226	STEEL	1	-	alloy flat, narrow
+7227	STEEL	1	-	alloy wire rod
+7228	STEEL	1	-	alloy bars
+7229	STEEL	1	-	alloy wire
+2520	MATERIALS	1	-	gypsum, anhydrite, plasters
+6806	MATERIALS	1	-	mineral wools: insulation
+6807	MATERIALS	1	-	asphalt articles: roofing
+6808	MATERIALS	1	-	fibre-cement panels and boards
+6809	MATERIALS	1	-	plaster boards
+6810	MATERIALS	1	-	cement and concrete blocks, bricks and pipes
+6811	MATERIALS	1	-	fibre-cement articles
+6904	MATERIALS	1	-	ceramic building bricks
+6905	MATERIALS	1	-	roofing tiles
+6907	MATERIALS	1	-	ceramic floor and wall tiles
+7005	MATERIALS	1	-	float glass
+7016	MATERIALS	1	-	paving and building glass
+7301	FABRICATED_STEEL	1	-	sheet piling
+7302	FABRICATED_STEEL	1	-	railway track material: rails
+7303	FABRICATED_STEEL	1	-	cast tubes and pipes
+7304	FABRICATED_STEEL	1	-	seamless tubes and pipes
+7305	FABRICATED_STEEL	1	-	large welded tubes
+7306	FABRICATED_STEEL	1	-	other welded tubes
+7307	FABRICATED_STEEL	1	-	tube fittings
+7308	FABRICATED_STEEL	1	-	structures and parts: bridges, towers, frames
+7309	FABRICATED_STEEL	1	-	reservoirs, tanks, vats
+7310	FABRICATED_STEEL	1	-	tanks, casks, drums, cans
+7311	FABRICATED_STEEL	1	-	containers for compressed gas
+7312	FABRICATED_STEEL	1	-	stranded wire, ropes, cables
+7313	FABRICATED_STEEL	1	-	barbed wire
+7314	FABRICATED_STEEL	1	-	cloth, grill, netting, fencing
+7315	FABRICATED_STEEL	1	-	chain
+7316	FABRICATED_STEEL	1	-	anchors
+7317	FABRICATED_STEEL	1	-	nails, tacks
+7318	FABRICATED_STEEL	1	-	screws, bolts, nuts, washers
+7325	FABRICATED_STEEL	1	-	other cast articles
+7326	FABRICATED_STEEL	1	-	other articles of iron and steel
+84	MACHINERY	1	-	nuclear reactors, boilers, machinery and mechanical appliances
+8470	-	1	-	calculating machines: electronics
+8471	-	1	-	computers: electronics
+8472	-	1	-	other office machines
+8473	-	1	-	parts of office machines and computers
+8501	MACHINERY	1	-	electric motors and generators
+8502	MACHINERY	1	-	generating sets
+8503	MACHINERY	1	-	parts of motors and generators
+8504	MACHINERY	1	-	transformers
+8514	MACHINERY	1	-	industrial furnaces, electric
+8515	MACHINERY	1	-	welding machines
+8535	MACHINERY	1	-	switchgear over 1000 V
+8536	MACHINERY	1	-	switchgear to 1000 V
+8537	MACHINERY	1	-	control boards
+8538	MACHINERY	1	-	parts for switchgear
+8703	CARS	1	-	passenger motor vehicles
+870421	VANS	1	-	diesel goods vehicles to 5 t gross
+870422	VANS	1	-	diesel goods vehicles 5 to 20 t gross
+870431	VANS	1	-	petrol goods vehicles to 5 t gross
+870432	VANS	1	-	petrol goods vehicles over 5 t gross
+870441	VANS	1	-	diesel hybrid goods vehicles to 5 t gross
+870442	VANS	1	-	diesel hybrid goods vehicles 5 to 20 t gross
+870451	VANS	1	-	petrol hybrid goods vehicles to 5 t gross
+870452	VANS	1	-	petrol hybrid goods vehicles over 5 t gross
+870460	VANS	1	-	electric goods vehicles
+870490	VANS	1	-	other goods vehicles
+870121	TRUCKS	1	-	road tractors for semi-trailers, diesel
+870122	TRUCKS	1	-	road tractors for semi-trailers, diesel hybrid
+870123	TRUCKS	1	-	road tractors for semi-trailers, petrol hybrid
+870124	TRUCKS	1	-	road tractors for semi-trailers, electric
+870129	TRUCKS	1	-	road tractors for semi-trailers, other
+870410	TRUCKS	1	-	off-highway dumpers
+870423	TRUCKS	1	-	diesel goods vehicles over 20 t gross
+870443	TRUCKS	1	-	diesel hybrid goods vehicles over 20 t gross
+8601	ROLLING_STOCK	1	-	electric locomotives
+8602	ROLLING_STOCK	1	-	other locomotives
+8603	ROLLING_STOCK	1	-	self-propelled coaches and railcars
+8605	ROLLING_STOCK	1	-	passenger coaches
+8606	ROLLING_STOCK	1	-	goods wagons
+8607	ROLLING_STOCK	1	-	parts of locomotives and rolling stock
+7101	LUXURIES	1	-	pearls
+7102	LUXURIES	1	-	diamonds
+7103	LUXURIES	1	-	precious and semi-precious stones
+7113	LUXURIES	1	-	jewellery
+7114	LUXURIES	1	-	goldsmiths' and silversmiths' wares
+7116	LUXURIES	1	-	articles of pearls and stones
+9101	LUXURIES	1	-	wrist-watches, precious metal case
+9102	LUXURIES	1	-	wrist-watches, other
+4202	LUXURIES	1	-	handbags, trunks, suitcases
+3303	LUXURIES	1	-	perfumes and toilet waters
+270900	CRUDE	1	-	crude petroleum oils
+271112	LPG	1	-	propane, liquefied
+271113	LPG	1	-	butanes, liquefied
+271119	LPG	1	-	other liquefied gases
+271000	PETROL	0.19	0.206	refined oils, BACI's one code for HS 2710: tonnes shares from JODI's traded volumes (gasoline 3.3, naphtha 1.9, jet 1.5, gasoil 4.5, fuel oil 3.5, lubes 0.5 Mb/d) at their barrel weights; value shares at est. prices per tonne 750, 600, 850, 800, 450, 1100
+271000	NAPHTHA	0.12	0.104	refined oils: naphtha (light oils with petrol: the tonnes shares sum to 1)
+271000	JET	0.09	0.111	refined oils: kerosene and jet fuel
+271000	DIESEL	0.30	0.347	refined oils: gas oil and diesel
+271000	FUEL_OIL	0.26	0.169	refined oils: fuel oil and heavy distillates, the cheap tonne
+271000	LUBRICANTS	0.04	0.063	refined oils: base oils and lubricants, the dear tonne
+271320	BITUMEN	1	-	petroleum bitumen
+271490	BITUMEN	1	-	natural bitumen and asphalt
+2715	BITUMEN	1	-	cut-back bitumen and bituminous mixtures
+271311	COKE	1	-	petroleum coke, not calcined
+271312	COKE	1	-	petroleum coke, calcined
+270400	MET_COKE	1	-	coke and semi-coke of coal
+270111	THERMAL_COAL	1	-	anthracite
+270112	THERMAL_COAL	0.6	0.42	bituminous coal, BACI's one code for coking and steam: 0.4 of the tonnes coking (seaborne coking about 300 Mt of about 750 Mt bituminous), est.; coking coal costs twice a steam tonne, so 0.58 of the value
+270112	COKING_COAL	0.4	0.58	the coking part of bituminous coal
+270119	THERMAL_COAL	1	-	other coal: sub-bituminous
+270120	THERMAL_COAL	1	-	coal briquettes
+270210	THERMAL_COAL	1	-	lignite
+270220	THERMAL_COAL	1	-	agglomerated lignite
+2521	LIMESTONE	1	-	limestone flux and calcareous stone
+2522	LIME	1	-	quicklime, slaked lime, hydraulic lime
+2517	AGGREGATE	1	-	pebbles, gravel, crushed stone, macadam
+2505	AGGREGATE	1	-	natural sands
+2514	DIMENSION_STONE	1	-	slate
+2515	DIMENSION_STONE	1	-	marble and travertine
+2516	DIMENSION_STONE	1	-	granite, porphyry, basalt, sandstone
+6801	DIMENSION_STONE	1	-	setts, curbstones, flagstones
+6802	DIMENSION_STONE	1	-	worked monumental and building stone
+6803	DIMENSION_STONE	1	-	worked slate
+2523	CEMENT	1	-	cement clinkers and cements
+260300	COPPER_CONC	1	-	copper ores and concentrates
+740100	ANODE	1	-	copper mattes, cement copper
+740200	ANODE	1	-	unrefined copper, anodes
+740311	COPPER	1	-	refined copper cathodes
+740312	COPPER	1	-	refined copper wire-bars
+740313	COPPER	1	-	refined copper billets
+740319	COPPER	1	-	other refined copper
+740400	COPPER_SCRAP	1	-	copper waste and scrap
+740710	COPPER_ROD	1	-	bars, rods and profiles of refined copper
+740811	COPPER_ROD	1	-	wire of refined copper over 6 mm: wire rod
+740819	WIRE_CABLE	1	-	wire of refined copper to 6 mm
+740821	WIRE_CABLE	1	-	brass wire
+740822	WIRE_CABLE	1	-	cupro-nickel wire
+740829	WIRE_CABLE	1	-	other copper alloy wire
+741300	WIRE_CABLE	1	-	stranded copper wire and cables
+854411	WIRE_CABLE	1	-	winding wire of copper
+854419	WIRE_CABLE	1	-	winding wire, other
+854420	WIRE_CABLE	1	-	coaxial cable
+854430	WIRE_CABLE	1	-	vehicle wiring sets
+854442	WIRE_CABLE	1	-	conductors to 1000 V, with connectors
+854449	WIRE_CABLE	1	-	conductors to 1000 V, without connectors
+854460	WIRE_CABLE	1	-	conductors over 1000 V
+280700	ACID	1	-	sulphuric acid and oleum
+4403	SAWLOGS	0.6	0.72	wood in the rough: 0.6 of the tonnes sawlogs and veneer logs, 0.4 pulpwood (industrial roundwood, FAO, est.); a log is dearer, so 0.72 of the value
+4403	PULPWOOD	0.4	0.28	wood in the rough: the pulpwood part
+440121	RESIDUES	1	-	wood chips, coniferous
+440122	RESIDUES	1	-	wood chips, non-coniferous
+440141	RESIDUES	1	-	sawdust
+440149	RESIDUES	1	-	wood waste and scrap
+440131	WOOD_PELLETS	1	-	wood pellets
+440132	WOOD_PELLETS	1	-	wood briquettes
+440139	WOOD_PELLETS	1	-	agglomerated wood fuel, other
+4406	LUMBER	1	-	railway sleepers
+4407	LUMBER	1	-	sawn wood
+4409	LUMBER	1	-	continuously shaped wood: flooring
+4408	PANELS	1	-	veneer sheets
+4410	PANELS	1	-	particle board and OSB
+4411	PANELS	1	-	fibreboard
+4412	PANELS	1	-	plywood
+4701	PULP	1	-	mechanical wood pulp
+4702	PULP	1	-	dissolving pulp
+4703	PULP	1	-	sulphate pulp
+4704	PULP	1	-	sulphite pulp
+4705	PULP	1	-	semi-chemical pulp
+4801	PAPER	1	-	newsprint
+4802	PAPER	1	-	uncoated printing and writing paper
+4803	PAPER	1	-	tissue stock
+4804	PAPER	1	-	kraft paper and paperboard
+4805	PAPER	1	-	other uncoated paper and paperboard
+4806	PAPER	1	-	parchment, greaseproof
+4807	PAPER	1	-	composite paper
+4808	PAPER	1	-	corrugated paper
+4809	PAPER	1	-	carbon and self-copy paper
+4810	PAPER	1	-	coated paper and paperboard
+4811	PAPER	1	-	impregnated and coated paper

@@ -1,0 +1,64 @@
+# The traded goods of world-1.bin (WN0, E2): the game's goods priced Pricing.BAND less the three services, in Good.java's order.
+# WHY: the nations' trade is solved good by good; each good needs its class (and so its elasticity, D18), its units in a tonne and the share of its use that crosses a border.
+# units_per_tonne is Good.tonnesPerUnit() inverted (litres, cubic metres and the vehicles by the game's own weights), mark 1; traded_share is est., its basis in the note.
+number	key	name	unit	class	elasticity	units_per_tonne	traded_share	note
+1	CROPS	Crops	tonne	bulk	8	1	0.25	Farm-gate raw crops processed further: oilseeds, raw sugar, coffee, tea, cocoa beans and animal feed (the grain and the fresh produce are the foods below); about a quarter of use is traded (FAO: soybeans 0.4, sugar 0.3, coffee and cocoa 0.7), est.
+2	GRAINS	Grains	kg	bulk	8	1000	0.20	Cereals and their milled flours; FAO: wheat 0.25, maize 0.15, rice 0.10 of output cross a border; the brief's 0.2.
+3	BREAD	Bread	kg	processed	5	1000	0.03	The staple with the milling and baking done: pasta, couscous, crispbread, rusks and plain bread; baked goods travel little (est.).
+4	DAIRY_EGGS	Dairy and eggs	kg	processed	5	1000	0.07	Milk, cream, butter, cheese and eggs; FAO: about 7 percent of milk and 3 of eggs are traded (est.).
+5	VEGETABLES	Vegetables	kg	processed	5	1000	0.10	Fresh and preserved vegetables, roots and pulses; FAO: about a tenth of output crosses a border (est.). Processed class: varieties and origins differ.
+6	FRUIT	Fruit	kg	processed	5	1000	0.14	Fruit and nuts, fresh, dried and preserved; bananas 0.2, apples 0.09, nuts 0.3 (est.).
+7	MEAT	Meat	kg	processed	5	1000	0.11	Fresh, chilled and frozen meat and offal; beef 0.15, pork 0.10, poultry 0.12 (FAO, est.).
+8	FISH	Fish	kg	processed	5	1000	0.38	Fish, crustaceans and molluscs, fresh to canned; FAO SOFIA: about 38 percent of fishery output is traded.
+9	FATS	Cooking fats	kg	processed	5	1000	0.30	Vegetable oils, animal fats and margarine; palm oil 0.6, soya oil 0.25 traded (FAO, est.).
+10	PROCESSED_MEAT	Processed meats	kg	processed	5	1000	0.08	Cured, smoked, sausages and canned meat; est.
+11	READY_MEALS	Ready meals	kg	processed	5	1000	0.05	Sauces, soups, infant food, stuffed and cooked pasta; est.
+12	BAKERY	Bakery goods	kg	processed	5	1000	0.05	Biscuits, pastry, cakes, wafers and doughs; est.
+13	SNACKS	Snacks	kg	processed	5	1000	0.12	Confectionery, chocolate, cereal foods, crisps, roasted nuts and ice cream; est.
+14	DRINKS	Drinks	kg	processed	5	1000	0.08	Waters, soft drinks, juices, beer, wine and spirits; by value wine and spirits 0.4, beer 0.05, soft drinks 0.02 (est.).
+15	IRON	Iron ore	tonne	bulk	8	1	0.50	Non-agglomerated iron ore; the brief's 0.5 (about 1.6 Gt of 2.5 Gt mined is shipped).
+16	STEEL	Steel	tonne	processed	5	1	0.25	Semis, flat and long products, stainless and alloy steel; worldsteel: about a quarter of crude steel equivalent is traded (est.).
+17	MATERIALS	Building materials	unit	processed	5	0.2	0.05	Bricks, tiles, concrete blocks, plaster, insulation and float glass. The game's unit weighs 5 t (Good.tonnesPerUnit()). Heavy and cheap, so little crosses a border (est.).
+18	FABRICATED_STEEL	Fabricated steel	tonne	made	3.8	1	0.12	Sheet piling, rails, tubes and pipes, structures, tanks, wire products and fasteners (HS 7301-7318, 7325-7326); est.
+19	MACHINERY	Machinery	tonne	made	3.8	1	0.35	HS 84 less office machines and computers, plus motors, generators, transformers and switchgear; manufactures trade about a third of output (est.).
+20	CARS	Cars	car	made	3.8	0.6666666666666666	0.45	HS 8703; the brief's 0.45. The game's car weighs 1.5 t (Good.tonnesPerUnit()).
+21	VANS	Vans and trucks	van	made	3.8	0.3333333333333333	0.35	Goods vehicles up to 20 t gross, and electric ones (HS 8704 less the heavy ones); the game's van weighs 3 t; est.
+22	ROLLING_STOCK	Rolling stock	wagon set	made	3.8	0.0033333333333333335	0.25	Locomotives, coaches, wagons and their parts (HS 8601-8603, 8605-8607); regional markets, est. The game's set weighs 300 t.
+23	LUXURIES	Luxury goods	piece	made	3.8	50	0.55	Jewellery, gems, watches, handbags and perfume; Swiss watches 0.95 exported, jewellery 0.5 (est.). The game's piece weighs 20 kg (Good.tonnesPerUnit()).
+24	CRUDE	Crude oil	tonne	bulk	8	1	0.55	HS 2709; the brief's 0.55 (about 45 of 100 Mb/d is traded).
+25	LPG	Petroleum gas	litre	processed	5	1850	0.35	Propane and butane (HS 271112, 271113, 271119); about 130 Mt of 350 Mt traded (est.). Natural gas and LNG have no good in the game.
+26	NAPHTHA	Naphtha	litre	processed	5	1351	0.45	A share of HS 2710, which BACI holds as one code; about 40 percent of the world's naphtha is traded (JODI, est.).
+27	PETROL	Petrol	litre	processed	5	1320	0.12	A share of HS 2710; gasoline trade about 3 Mb/d of 26 (JODI, est.).
+28	JET	Jet fuel	litre	processed	5	1260	0.18	A share of HS 2710; kerosene trade about 1.5 Mb/d of 7.5 (JODI, est.).
+29	DIESEL	Diesel	litre	processed	5	1180	0.18	A share of HS 2710; gasoil trade about 5 Mb/d of 28 (JODI, est.).
+30	LUBRICANTS	Lubricants	litre	processed	5	1127	0.30	A share of HS 2710; base oils and finished lubricants (est.).
+31	FUEL_OIL	Fuel oil	litre	processed	5	1010	0.35	A share of HS 2710; fuel oil and heavy feedstocks, about 3.5 of 10 Mb/d (JODI, est.).
+32	BITUMEN	Bitumen	tonne	processed	5	1	0.20	Petroleum bitumen, natural asphalt and cut-back mixtures; about 30 Mt of 110 Mt traded (est.).
+33	COKE	Petroleum coke	tonne	processed	5	1	0.40	Green and calcined petroleum coke; about 60 of 140 Mt traded (est.).
+34	SCRAP	Scrap	tonne	bulk	8	1	0.15	Ferrous waste and scrap; about 100 Mt of 650 Mt melted crosses a border (BIR, est.).
+35	PELLETS	Iron ore pellets	tonne	bulk	8	1	0.45	Agglomerated iron ore; about half of pellets are shipped (est.).
+36	PIG_IRON	Pig iron	tonne	processed	5	1	0.06	Pig iron and direct-reduced iron; about 25 Mt of 1,300 Mt of hot metal and DRI (est.).
+37	MET_COKE	Coke	tonne	processed	5	1	0.05	Coal coke; about 25 Mt of 650 Mt traded (est.).
+38	THERMAL_COAL	Thermal coal	tonne	bulk	8	1	0.17	Anthracite, non-bituminous coal, lignite and briquettes, with part of bituminous; about 1.0 Gt of 6.5 Gt traded (IEA, est.). The brief said coal about 0.2.
+39	COKING_COAL	Coking coal	tonne	bulk	8	1	0.30	A part of HS 270112; about 300 Mt of 1,000 Mt traded (IEA, est.).
+40	LIMESTONE	Limestone	tonne	bulk	8	1	0.01	HS 2521 flux; the brief's 0.01.
+41	LIME	Lime	tonne	processed	5	1	0.02	Quicklime, slaked and hydraulic lime; est.
+42	AGGREGATE	Aggregate	tonne	bulk	8	1	0.01	Gravel, crushed stone and natural sand; the brief's 0.01.
+43	DIMENSION_STONE	Dimension stone	tonne	bulk	8	1	0.10	Marble, granite and slate, rough and cut (HS 2514-2516, 6801-6803); est.
+44	CEMENT	Cement	tonne	processed	5	1	0.03	Clinker and cement; the brief's 0.03.
+45	COPPER_CONC	Copper concentrate	tonne	bulk	8	1	0.55	Copper ores and concentrates; about half of mined copper is shipped as concentrate (USGS, est.).
+46	ANODE	Copper anode	tonne	processed	5	1	0.10	Mattes, blister and anodes; est.
+47	COPPER	Copper cathode	tonne	processed	5	1	0.35	Refined copper cathodes, wire-bars and billets; about 9 Mt of 26 Mt (USGS, est.).
+48	COPPER_SCRAP	Copper scrap	tonne	bulk	8	1	0.30	Copper waste and scrap; est.
+49	COPPER_ROD	Copper rod	tonne	processed	5	1	0.08	Wire rod over 6 mm and bars and rods of refined copper; est.
+50	ACID	Sulphuric acid	tonne	processed	5	1	0.10	HS 280700; about 28 Mt of 270 Mt traded (est.).
+51	WIRE_CABLE	Wire and cable	tonne	made	3.8	1	0.25	Copper wire under 6 mm, stranded cable and insulated conductors less optical fibre; est.
+52	SAWLOGS	Sawlogs	cubic metre	bulk	8	1.1111111111111112	0.10	A part of HS 4403 industrial roundwood; about 7 percent of roundwood is traded, sawlogs more (FAO, est.). The game's cubic metre weighs 0.9 t.
+53	PULPWOOD	Pulpwood	cubic metre	bulk	8	1.1111111111111112	0.06	The other part of HS 4403; est. The game's cubic metre weighs 0.9 t.
+54	LUMBER	Lumber	cubic metre	processed	5	2	0.30	Sawn wood, sleepers and continuously shaped wood; FAO: about 150 of 490 Mm3 of sawnwood is traded. The game's cubic metre weighs 0.5 t.
+55	PANELS	Panels	cubic metre	processed	5	1.6129032258064515	0.32	Veneers, particle board, fibreboard and plywood; FAO about 0.3. The game's cubic metre weighs 0.62 t.
+56	RESIDUES	Residues	cubic metre	bulk	8	1.1111111111111112	0.10	Wood chips, sawdust and waste; est. The game's cubic metre weighs 0.9 t.
+57	PULP	Pulp	tonne	processed	5	1	0.25	Mechanical, chemical and semi-chemical wood pulp; about a quarter of all pulp is traded (FAO, est.).
+58	PAPER	Paper	tonne	processed	5	1	0.25	Paper and paperboard in rolls and sheets (HS 4801-4811); FAO about 0.25.
+59	WOOD_PELLETS	Wood pellets	tonne	processed	5	1	0.40	Pellets, briquettes and agglomerated wood fuel; about 17 of 40 Mt traded (est.).
+60	TRUCKS	Trucks	truck	made	3.8	0.06666666666666667	0.30	Road tractors, off-highway dumpers and goods vehicles over 20 t gross; the game's truck weighs 15 t; est.
