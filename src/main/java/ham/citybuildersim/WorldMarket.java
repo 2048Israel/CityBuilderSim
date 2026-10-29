@@ -25,7 +25,7 @@ import java.util.Random;
  * floods a market found the market where it had left it. Now the nations make
  * and use each good in the amounts BACI says (WorldData), grow on the world's
  * path (Nations), and trade as the file's kernel says they do; the city is one
- * more trader that sells to the best-netting buyers first and buys from the
+ * more trader that sells where its binding suppliers' best buyers net most and buys from the
  * cheapest landed sellers first, and its tonnes move the prices it gets. The
  * game's literals stay the prices (D12): each good has a price scale and a
  * freight scale (sigma, phi) set so that a Halifax city in 2025 on the
@@ -107,6 +107,9 @@ public final class WorldMarket {
 
     /** The solve forgets what the acceleration remembers when a pass's worst error is this many times the pass before's (the model has stopped being linear there). */
     static final double ACCEL_BACK = 10;
+
+    /** The least share of a buyer's composite a binding supplier is taken to have, so that a supplier that sells the buyer next to nothing does not make its sink's slope infinite (est.). */
+    static final double SHARE_FLOOR = 1e-3;
 
     /** The most a maker's log price moves in one pass, whatever its imbalance (a factor of e: the first passes of a cold solve start far away). */
     static final double MAX_STEP = 1;
@@ -962,18 +965,102 @@ public final class WorldMarket {
         protected boolean removeEldestEntry(Map.Entry<SolveKey, Solved> eldest) { return size() > SOLVES_KEPT; }
     };
 
-    /** The city's freight sides of one good at its site, sorted: the buyers by netback, the makers by landed cost, with the cumulative sums the fills are read off. */
+    /**
+     * A water-filling with caps: sinks sorted by netback, best first, each with a slope (tonnes a year per US$ a tonne its netback may fall) and a cap
+     * (the most tonnes a year it takes). At a level lam sink k takes min(cap, slope (net - lam)+), and the level for x tonnes is the lam at which the
+     * sinks together take x. The total is piecewise linear in lam, bending where a sink joins (lam = its netback) and where it fills (lam = its netback
+     * less cap over slope), so those events are sorted once and the level for any x is a binary search and a division. Past every cap the level is
+     * -infinity. The purchase side uses it with the landed costs negated.
+     */
+    static final class Levels {
+        final int len;
+        final double[] net, slope, cap;
+        private final int[] joinEvent;
+        private final double[] evLam, evT, evSm, evSmn, evSc;
+
+        Levels(double[] net, double[] slope, double[] cap, int len) {
+            this.len = len;
+            this.net = net;
+            this.slope = slope;
+            this.cap = cap;
+            joinEvent = new int[len];
+            int events = 2 * len;
+            evLam = new double[events];
+            evT = new double[events];
+            evSm = new double[events];
+            evSmn = new double[events];
+            evSc = new double[events];
+            double[] key = new double[events];
+            int[] order = new int[events];
+            for (int k = 0; k < len; k++) {
+                key[k] = net[k];
+                key[len + k] = net[k] - cap[k] / slope[k];
+            }
+            for (int e = 0; e < events; e++) order[e] = e;
+            sortBy(order, events, key, true);
+            double sm = 0, smn = 0, sc = 0, total = 0;
+            for (int e = 0; e < events; e++) {
+                int id = order[e], k = id < len ? id : id - len;
+                total = Math.max(total, smn - sm * key[id] + sc);
+                if (id < len) {
+                    sm += slope[k];
+                    smn += slope[k] * net[k];
+                    joinEvent[k] = e;
+                } else {
+                    sm -= slope[k];
+                    smn -= slope[k] * net[k];
+                    sc += cap[k];
+                }
+                evLam[e] = key[id];
+                evT[e] = total;
+                evSm[e] = sm;
+                evSmn[e] = smn;
+                evSc[e] = sc;
+            }
+        }
+
+        /** The most the sinks take together, tonnes a year. */
+        double capacity() { return len == 0 ? 0 : evT[evT.length - 1]; }
+
+        /** The level at which the sinks take x tonnes a year: the best netback for 0, -infinity past the caps. */
+        double level(double x) {
+            if (len == 0) return Double.NaN;
+            if (!(x > 0)) return evLam[0];
+            int lo = 0, hi = evT.length - 1;
+            if (x > evT[hi]) return Double.NEGATIVE_INFINITY;
+            while (lo < hi) {
+                int mid = (lo + hi) >>> 1;
+                if (evT[mid] >= x) hi = mid; else lo = mid + 1;
+            }
+            double sm = evSm[lo - 1];
+            double lam = sm > 0 ? (evSmn[lo - 1] + evSc[lo - 1] - x) / sm : evLam[lo];
+            return Math.min(evLam[lo - 1], Math.max(evLam[lo], lam));
+        }
+
+        /** What sink k takes at a level, tonnes a year. */
+        double take(int k, double lam) {
+            double v = slope[k] * (net[k] - lam);
+            return v <= 0 ? 0 : Math.min(cap[k], v);
+        }
+
+        /** The tonnes a year at which sink k joins the fill. */
+        double joinAt(int k) { return evT[joinEvent[k]]; }
+    }
+
+    /**
+     * The city's freight sides of one good at its site. The sale side is the binding suppliers as sinks (sNation the supplier, sBuyer its best buyer,
+     * whose netback and use are the sink's netback and cap); the purchase side is the makers by landed cost (bNation).
+     */
     private static final class Fill {
         double[] buyerPrice;
         double slope;
         int ns, nb;
-        int[] sNation, bNation;
-        double[] sKappa, sNet, sCumK, sCumKN, sJoin;
-        double[] bMu, bLanded, bCumMu, bCumMuL, bJoin;
+        int[] sNation, sBuyer, bNation;
+        Levels sell, buy;
     }
 
-    /** The result of a re-solve (see resolve): the month's step and the nations' answer with the city's tonnes delivered, in US$ a tonne. */
-    record Resolved(double step, double realised, int served, int passes) { }
+    /** The result of a re-solve (see resolve): the month's step and the nations' answer with the city's tonnes delivered, and the price they were sold at (the served buyers' landed price before the sale, tonne-weighted), in US$ a tonne. */
+    record Resolved(double step, double realised, double price, int served, int passes) { }
 
     /** Who took this month's exports and who sold this month's imports, by nation (index nation - 1), in game units. */
     public record Allocation(double[] exportUnitsTo, double[] importUnitsFrom) { }
@@ -987,7 +1074,7 @@ public final class WorldMarket {
     private int[] passes;
     private int year = -1;
     private long solveNanos;
-    private double[][] price, demand, supply;
+    private double[][] price, demand, supply, elastic, aSolved, phiSolved;
     private Fill[] fills;
     private boolean fillsFresh;
 
@@ -1012,6 +1099,9 @@ public final class WorldMarket {
         this.price = new double[goodCount][n];
         this.demand = new double[goodCount][n];
         this.supply = new double[goodCount][n];
+        this.elastic = new double[goodCount][n];
+        this.aSolved = new double[goodCount][n];
+        this.phiSolved = new double[goodCount][n];
         this.fills = new Fill[goodCount];
         this.legs = base.reference;
     }
@@ -1136,6 +1226,28 @@ public final class WorldMarket {
                 phi[j] = s;
                 demand[gi][j] = t.d0[j] * gHat[j] * exp(DEMAND_ELASTICITY / t.eps * log(s));
             }
+            // each supplier's demand-side elasticity, the sum over its markets of the weight of the market in its sales times the elasticity of a CES
+            // seller's quantity there, eps + 1 - (eps + 1 - ED) s, s its share of the market's index: the local derivative of its sales
+            double kap = (t.eps + 1 - DEMAND_ELASTICITY) / t.eps;
+            double[] spending = new double[n];
+            for (int j : t.users) spending[j] = gHat[j] * exp(-kap * log(phi[j]));
+            for (int k : t.makers) {
+                double num = 0, den = 0;
+                if (t.ownX[k] > 0 && phi[k] > 0) {
+                    double val = t.ownX[k] * a[k] * spending[k], share = t.ownPi[k] * a[k] / phi[k];
+                    num += val * (t.eps + 1 - (t.eps + 1 - DEMAND_ELASTICITY) * share);
+                    den += val;
+                }
+                for (int q = t.sStart[k]; q < t.sStart[k + 1]; q++) {
+                    int j = t.sBuyer[q];
+                    double val = t.sX[q] * a[k] * spending[j], share = t.sPi[q] * a[k] / phi[j];
+                    num += val * (t.eps + 1 - (t.eps + 1 - DEMAND_ELASTICITY) * share);
+                    den += val;
+                }
+                elastic[gi][k] = den > 0 ? num / den : t.eps + 1;
+            }
+            System.arraycopy(a, 0, aSolved[gi], 0, n);
+            System.arraycopy(phi, 0, phiSolved[gi], 0, n);
             for (int i : t.makers) {
                 double ph = phat[gi * n + i];
                 price[gi][i] = t.v * ph;
@@ -1150,6 +1262,23 @@ public final class WorldMarket {
         fillsFresh = true;
     }
 
+    /** The share a supplier k has of buyer j's composite in the solved state (its flow over the buyer's spending on the nations), 0 where the file keeps no pair. */
+    private double pairShare(int gi, Traded t, int k, int j) {
+        double pi = 0;
+        if (k == j) {
+            pi = t.ownPi[j];
+        } else {
+            for (int q = t.bStart[j]; q < t.bStart[j + 1]; q++) {
+                if (t.bMaker[q] == k) {
+                    pi = t.bPi[q];
+                    break;
+                }
+            }
+        }
+        double phi = phiSolved[gi][j];
+        return phi > 0 ? pi * aSolved[gi][k] / phi : 0;
+    }
+
     /** One good's sorted sides at the site, for mill prices p, demand d and supply s (tonnes a year). */
     private Fill fill(int gi, double[] p, double[] d, double[] s) {
         Traded t = base.traded[gi];
@@ -1158,49 +1287,58 @@ public final class WorldMarket {
         double[] fc = legs.fc(), fp = legs.fp();
         double[] b = new double[n];
         Arrays.fill(b, Double.POSITIVE_INFINITY);
+        int[] binder = new int[n];
         for (int k : t.makers) {
             double pk = p[k];
             int row = k * n;
             for (int j : t.users) {
                 double c = pk + phi * fp[row + j];
-                if (c < b[j]) b[j] = c;
+                if (c < b[j]) {
+                    b[j] = c;
+                    binder[j] = k;
+                }
             }
         }
         f.buyerPrice = b;
         int[] order = new int[n];
-        double[] net = new double[n];
-        int ns = 0;
+        double[] bestNet = new double[n];
+        int[] bestBuyer = new int[n];
+        Arrays.fill(bestBuyer, -1);
         double slope = 0;
         for (int j : t.users) {
             if (!(d[j] > 0) || !(b[j] < Double.POSITIVE_INFINITY)) continue;
             double nj = b[j] - phi * fc[j];
             if (!Double.isFinite(nj)) continue;
-            net[j] = nj;
-            order[ns++] = j;
             slope += DEMAND_ELASTICITY * d[j] / b[j];
+            int k = binder[j];
+            if (bestBuyer[k] < 0 || nj > bestNet[k]) {
+                bestBuyer[k] = j;
+                bestNet[k] = nj;
+            }
         }
-        sortBy(order, ns, net, true);
+        // THE SINKS OF A SALE are the binding suppliers (in this file every maker's base price is one unit value, so one supplier sets each buyer's
+        // price): the city's tonnes displace its sales and its mills resell across their whole market, so what falls is its mill price. A supplier's
+        // buyers fall in step with its best and never catch up: its sink takes the tonnes at its best buyer's netback, and no more than that buyer uses.
+        // The slope is the supplier's own, mu_k = (its sales' demand-side elasticity + ES) S_k / p_k, the same the purchase fill uses for buying from it,
+        // so selling into k's market and buying from k move k's price at one slope. A tonne sold into j comes out of j's whole composite, each supplier
+        // losing its share pi_kj of it, so k loses only pi_kj of each tonne and its price falls by q pi_kj / mu_k: the sink's effective slope is
+        // mu_k / pi_kj (the share from the solved state, floored at SHARE_FLOOR).
+        int ns = 0;
+        for (int k : t.makers) if (bestBuyer[k] >= 0 && p[k] > 0 && s[k] > 0) order[ns++] = k;
+        sortBy(order, ns, bestNet, true);
         f.ns = ns;
         f.sNation = Arrays.copyOf(order, ns);
-        f.sKappa = new double[ns];
-        f.sNet = new double[ns];
-        f.sCumK = new double[ns];
-        f.sCumKN = new double[ns];
-        f.sJoin = new double[ns];
-        double ck = 0, ckn = 0;
+        f.sBuyer = new int[ns];
+        double[] net = new double[ns], mu = new double[ns], cap = new double[ns];
         for (int m = 0; m < ns; m++) {
-            int j = f.sNation[m];
-            f.sKappa[m] = (t.eps + DEMAND_ELASTICITY) * d[j] / b[j];
-            f.sNet[m] = net[j];
-            ck += f.sKappa[m];
-            ckn += f.sKappa[m] * net[j];
-            f.sCumK[m] = ck;
-            f.sCumKN[m] = ckn;
+            int k = f.sNation[m], j = bestBuyer[k];
+            f.sBuyer[m] = j;
+            net[m] = bestNet[k];
+            mu[m] = (elastic[gi][k] + SUPPLY_ELASTICITY) * s[k] / p[k] / Math.max(SHARE_FLOOR, pairShare(gi, t, k, j));
+            cap[m] = d[j];
         }
-        for (int m = 0; m < ns; m++) {
-            f.sJoin[m] = m + 1 < ns ? f.sCumKN[m] - f.sCumK[m] * f.sNet[m + 1] : Double.POSITIVE_INFINITY;
-            if (m > 0 && f.sJoin[m] < f.sJoin[m - 1]) f.sJoin[m] = f.sJoin[m - 1];
-        }
+        f.sell = new Levels(net, mu, cap, ns);
+        // THE PURCHASE SIDE: the makers by landed cost, each at the same slope and no more than it makes; the levels run on the cost negated
         int nb = 0;
         double[] landed = new double[n];
         for (int i : t.makers) {
@@ -1214,66 +1352,42 @@ public final class WorldMarket {
         sortBy(order, nb, landed, false);
         f.nb = nb;
         f.bNation = Arrays.copyOf(order, nb);
-        f.bMu = new double[nb];
-        f.bLanded = new double[nb];
-        f.bCumMu = new double[nb];
-        f.bCumMuL = new double[nb];
-        f.bJoin = new double[nb];
-        double cm = 0, cml = 0;
+        double[] negLanded = new double[nb], muBuy = new double[nb], capBuy = new double[nb];
         for (int m = 0; m < nb; m++) {
             int i = f.bNation[m];
-            f.bMu[m] = (t.eps + SUPPLY_ELASTICITY) * s[i] / p[i];
-            f.bLanded[m] = landed[i];
-            cm += f.bMu[m];
-            cml += f.bMu[m] * landed[i];
-            f.bCumMu[m] = cm;
-            f.bCumMuL[m] = cml;
+            negLanded[m] = -landed[i];
+            muBuy[m] = (elastic[gi][i] + SUPPLY_ELASTICITY) * s[i] / p[i];
+            capBuy[m] = s[i];
         }
-        for (int m = 0; m < nb; m++) {
-            f.bJoin[m] = m + 1 < nb ? f.bLanded[m + 1] * f.bCumMu[m] - f.bCumMuL[m] : Double.POSITIVE_INFINITY;
-            if (m > 0 && f.bJoin[m] < f.bJoin[m - 1]) f.bJoin[m] = f.bJoin[m - 1];
-        }
+        f.buy = new Levels(negLanded, muBuy, capBuy, nb);
         f.slope = slope;
         return f;
     }
 
     /* ----- the city's month: the fills and the band ----- */
 
-    /** The smallest m in 0..len-1 with x <= a[m] (the last entry is +infinity). */
-    private static int lowerBound(double[] a, int len, double x) {
-        int lo = 0, hi = len - 1;
-        while (lo < hi) {
-            int mid = (lo + hi) >>> 1;
-            if (x <= a[mid]) hi = mid; else lo = mid + 1;
-        }
-        return lo;
-    }
-
-    /** What the best-netting buyers leave the city for x tonnes a year, US$ a tonne: the fill from the top, each tonne lowering its buyer's price by that buyer's slope. */
-    private static double fillSell(Fill f, double x) {
-        int m = lowerBound(f.sJoin, f.ns, x);
-        return (f.sCumKN[m] - x) / f.sCumK[m];
-    }
-
-    /** What the cheapest landed sellers charge the city for m tonnes a year: the fill from the bottom. */
-    private static double fillBuy(Fill f, double m) {
-        int k = lowerBound(f.bJoin, f.nb, m);
-        return (m + f.bCumMuL[k]) / f.bCumMu[k];
-    }
-
     /**
      * A good's floor and ceiling in US$ a tonne for x tonnes a year sold and m bought: the fills, less the world's answer within the year (x - m over
-     * the world's slope). {floor, ceiling}, with the floor never above the ceiling; NaN on a side with no buyers or no sellers.
+     * the world's slope). {floor, ceiling}, with the floor never above the ceiling; NaN on a side with no buyers or no sellers. Past every sink's cap the
+     * floor is 0 (the clamp), and past every seller's output the ceiling is +infinity (the world cannot sell the city that much).
      */
     double[] model(int gi, double x, double m) {
         if (year < 0) return new double[] { Double.NaN, Double.NaN };
         refill();
         Fill f = fills[gi];
         double shift = f.slope > 0 ? (x - m) / f.slope : 0;
-        double floor = f.ns > 0 ? Math.max(0, fillSell(f, x) - shift) : Double.NaN;
-        double ceiling = f.nb > 0 ? Math.max(Double.isNaN(floor) ? 0 : floor, fillBuy(f, m) - shift) : Double.NaN;
+        double floor = f.ns > 0 ? Math.max(0, f.sell.level(x) - shift) : Double.NaN;
+        double landed = f.nb > 0 ? -f.buy.level(m) : Double.NaN;
+        if (f.nb > 0 && !Double.isFinite(landed)) landed = SCARCITY_MULTIPLE * -f.buy.level(0);   // past every seller's capacity: a bound, not infinity
+        double ceiling = f.nb > 0 ? Math.max(Double.isNaN(floor) ? 0 : floor, landed - shift) : Double.NaN;
         return new double[] { floor, ceiling };
     }
+
+    /**
+     * Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill
+     * has no level (infinity), and a market's strike needs a finite ceiling. A bound for a city the world cannot supply, never reached by one it can.
+     */
+    static final double SCARCITY_MULTIPLE = 4;
 
     /**
      * The band for a good in the game's money, thousands of world dollars a game unit: {floor, ceiling}, from last month's exports and imports in
@@ -1289,9 +1403,10 @@ public final class WorldMarket {
     }
 
     /**
-     * Who took this month's exports and who sold this month's imports, from the same fills at those volumes: the tonnes a buyer takes are its slope
-     * times what its netback leaves over the fill's, a seller's likewise, scaled so they add to the volumes exactly. Zeros where a volume is 0 or the
-     * good has no buyers or no sellers.
+     * Who took this month's exports and who sold this month's imports, from the same fills at those volumes: the tonnes a binding supplier's sink takes
+     * are its slope times what its best buyer's netback leaves over the fill's, no more than that buyer uses, and they go to that buyer (its other
+     * buyers fall in step and never catch up); a seller of the imports likewise by its own slope and landed cost, no more than it makes; each scaled so
+     * they add to the volume exactly (past every cap, the caps scaled up). Zeros where a volume is 0 or the good has no buyers or no sellers.
      */
     public Allocation allocate(Good g, double exportUnits, double importUnits) {
         double[] to = new double[n], from = new double[n];
@@ -1302,20 +1417,18 @@ public final class WorldMarket {
         Fill f = fills[gi];
         double x = 12 * Math.max(0, exportUnits) / t.unitsPerTonne, m = 12 * Math.max(0, importUnits) / t.unitsPerTonne;
         if (x > 0 && f.ns > 0 && g.exportable()) {
-            double lam = fillSell(f, x), sum = 0;
-            int last = lowerBound(f.sJoin, f.ns, x);
-            for (int k = 0; k <= last; k++) {
-                double q = Math.max(0, f.sKappa[k] * (f.sNet[k] - lam));
-                to[f.sNation[k]] = q;
+            double lam = f.sell.level(x), sum = 0;
+            for (int k = 0; k < f.ns && f.sell.net[k] > lam; k++) {
+                double q = f.sell.take(k, lam);
+                to[f.sBuyer[k]] = q;
                 sum += q;
             }
             scale(to, sum, exportUnits);
         }
         if (m > 0 && f.nb > 0 && g.importable()) {
-            double lam = fillBuy(f, m), sum = 0;
-            int last = lowerBound(f.bJoin, f.nb, m);
-            for (int k = 0; k <= last; k++) {
-                double q = Math.max(0, f.bMu[k] * (lam - f.bLanded[k]));
+            double lam = f.buy.level(m), sum = 0;
+            for (int k = 0; k < f.nb && f.buy.net[k] > lam; k++) {
+                double q = f.buy.take(k, lam);
                 from[f.bNation[k]] = q;
                 sum += q;
             }
@@ -1425,37 +1538,45 @@ public final class WorldMarket {
     double[] extremes(int gi) {
         refill();
         Fill f = fills[gi];
-        return new double[] { f.ns > 0 ? f.sNet[0] : Double.NaN, f.nb > 0 ? f.bLanded[0] : Double.NaN, f.slope };
+        return new double[] { f.ns > 0 ? f.sell.net[0] : Double.NaN, f.nb > 0 ? -f.buy.net[0] : Double.NaN, f.slope };
     }
 
-    /** The buyers the fill at x tonnes a year serves, in the order they join: rows of {nation (1-based), tonnes a year, netback before the sale, netback at the end of the fill}. */
+    /** The sinks the fill at x tonnes a year serves, in the order they join: rows of {the best buyer's nation (1-based), tonnes a year, its netback before the sale, the level at the end of the fill (-infinity past every cap), the binding supplier's nation}. */
     double[][] sellers(int gi, double x) {
         refill();
         Fill f = fills[gi];
         if (f.ns == 0) return new double[0][];
-        double lam = fillSell(f, x);
-        int last = lowerBound(f.sJoin, f.ns, x);
+        double lam = f.sell.level(x);
+        int last = 0;
+        while (last + 1 < f.ns && f.sell.net[last + 1] > lam) last++;
         double[][] rows = new double[last + 1][];
-        for (int k = 0; k <= last; k++) rows[k] = new double[] { f.sNation[k] + 1, f.sKappa[k] * (f.sNet[k] - lam), f.sNet[k], lam };
+        for (int k = 0; k <= last; k++) rows[k] = new double[] { f.sBuyer[k] + 1, f.sell.take(k, lam), f.sell.net[k], lam, f.sNation[k] + 1 };
         return rows;
     }
 
-    /** A good's buyers at the site by netback, best first: {nation (1-based), slope (tonnes a year per US$ a tonne), netback US$ a tonne}. */
+    /** A good's sinks at the site by netback, best first: {the best buyer's nation (1-based), slope (tonnes a year per US$ a tonne), its netback US$ a tonne, the binding supplier's nation, cap tonnes a year}. */
     double[][] sellSide(int gi) {
         refill();
         Fill f = fills[gi];
         double[][] rows = new double[f.ns][];
-        for (int k = 0; k < f.ns; k++) rows[k] = new double[] { f.sNation[k] + 1, f.sKappa[k], f.sNet[k] };
+        for (int k = 0; k < f.ns; k++) rows[k] = new double[] { f.sBuyer[k] + 1, f.sell.slope[k], f.sell.net[k], f.sNation[k] + 1, f.sell.cap[k] };
         return rows;
     }
 
-    /** A good's makers at the site by landed cost, cheapest first: {nation (1-based), slope, landed cost US$ a tonne}. */
+    /** A good's makers at the site by landed cost, cheapest first: {nation (1-based), slope, landed cost US$ a tonne, cap tonnes a year}. */
     double[][] buySide(int gi) {
         refill();
         Fill f = fills[gi];
         double[][] rows = new double[f.nb][];
-        for (int k = 0; k < f.nb; k++) rows[k] = new double[] { f.bNation[k] + 1, f.bMu[k], f.bLanded[k] };
+        for (int k = 0; k < f.nb; k++) rows[k] = new double[] { f.bNation[k] + 1, f.buy.slope[k], -f.buy.net[k], f.buy.cap[k] };
         return rows;
+    }
+
+    /** What all a good's sinks take together at the site, and all its sellers sell: {tonnes a year, tonnes a year}. */
+    double[] capacities(int gi) {
+        refill();
+        Fill f = fills[gi];
+        return new double[] { f.sell.capacity(), f.buy.capacity() };
     }
 
     /** Forgets the solved years every market shares, so the next solve is a fresh one (a harness proves a solve repeats itself, not that the cache does). */
@@ -1465,17 +1586,25 @@ public final class WorldMarket {
         }
     }
 
-    /** The tonnes a year of sales at which the fill reaches the buyer of a nation (1-based), or NaN if it is never a buyer. */
+    /** The landed price at the buyers the fill at x tonnes a year serves, before the sale, weighted by the tonnes; the best buyer's where it sells nothing. US$ a tonne. */
+    double servedPrice(int gi, double x) {
+        refill();
+        Fill f = fills[gi];
+        if (f.ns == 0) return Double.NaN;
+        double lam = f.sell.level(x), num = 0, den = 0;
+        for (int k = 0; k < f.ns && (k == 0 || f.sell.net[k] > lam); k++) {
+            double q = f.sell.take(k, lam);
+            num += q * f.buyerPrice[f.sBuyer[k]];
+            den += q;
+        }
+        return den > 0 ? num / den : f.buyerPrice[f.sBuyer[0]];
+    }
+
+    /** The tonnes a year of sales at which the fill reaches a nation's buyers (1-based; it reaches them through the best buyer of their binding supplier), or NaN if it never does. */
     double joinsAt(int gi, int nation) {
         refill();
         Fill f = fills[gi];
-        double cum = 0;
-        for (int k = 0; k < f.ns; k++) {
-            if (f.sNation[k] == nation - 1) {
-                for (int m = 0; m < k; m++) cum += f.sKappa[m] * (f.sNet[m] - f.sNet[k]);
-                return cum;
-            }
-        }
+        for (int k = 0; k < f.ns; k++) if (f.sBuyer[k] == nation - 1) return f.sell.joinAt(k);
         return Double.NaN;
     }
 
@@ -1483,23 +1612,26 @@ public final class WorldMarket {
      * The check's re-solve of the month's step: the fill at x tonnes a year sold, then the nations' solve again with the tonnes the fill delivers
      * taken out of their buyers' demand (their spending on the nations' goods P-hat (gHat P-hat^-ED - q / D0), floored above 0), the supply scale
      * held and the level free (the world's answer), and the city's realised netback, the buyers' new landed prices less the city's freight to them,
-     * weighted by the tonnes. step is the model's floor for x: the fill less x over the world's slope.
+     * weighted by the tonnes. step is the model's floor for x, the band's (the fill less x over the world's slope, clamped at 0).
      */
     Resolved resolve(int gi, double x) {
         refill();
         Traded t = base.traded[gi];
         Fill f = fills[gi];
         double phi = Double.isNaN(t.phi) ? PHI_FALLBACK : t.phi;
-        double lam = fillSell(f, x);
-        double step = lam - x / f.slope;
+        double lam = f.sell.level(x);
+        double step = Math.max(0, lam - x / f.slope);
         double[] carve = new double[n], q = new double[n];
-        int last = lowerBound(f.sJoin, f.ns, x);
-        double served = 0;
-        for (int k = 0; k <= last; k++) {
-            int j = f.sNation[k];
-            q[j] = Math.max(0, f.sKappa[k] * (f.sNet[k] - lam));
+        double served = 0, priceNum = 0, priceDen = 0;
+        for (int k = 0; k < f.ns && (k == 0 || f.sell.net[k] > lam); k++) {
+            int j = f.sBuyer[k];
+            q[j] = f.sell.take(k, lam);
             carve[j] = q[j] / t.d0[j];
-            if (q[j] > 0) served++;
+            if (q[j] > 0) {
+                served++;
+                priceNum += q[j] * f.buyerPrice[j];
+                priceDen += q[j];
+            }
         }
         double[] start = new double[n];
         System.arraycopy(phat, gi * n, start, 0, n);
@@ -1523,7 +1655,7 @@ public final class WorldMarket {
             num += q[j] * (b[j] - phi * fc[j]);
             den += q[j];
         }
-        return new Resolved(step, den > 0 ? num / den : Double.NaN, (int) served, sweeps);
+        return new Resolved(step, den > 0 ? num / den : Double.NaN, priceDen > 0 ? priceNum / priceDen : f.buyerPrice[f.sBuyer[0]], (int) served, sweeps);
     }
 
     /* =====================================================================

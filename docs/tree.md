@@ -401,8 +401,11 @@ adds its line here, not in `CLAUDE.md`.
                                    algebra), solved every January from the nations' growth and the good's
                                    real price path (Anderson-accelerated, warm), and the city's band in it
                                    - the import ceiling it pays, the export floor it nets - from its site's
-                                   freight to the nations, the fill from the best-netting buyers and the
-                                   cheapest landed sellers, and the world's answer to its tonnes. Base is
+                                   freight to the nations, the sale fill over the binding suppliers (each at
+                                   its best buyer's netback, its sales' own slope over its displacement
+                                   share, capped at what that buyer uses) and the purchase fill from the
+                                   cheapest landed sellers (capped at what they make), and the world's
+                                   answer to its tonnes. Base is
                                    the file's, once a process (pairs, freight, the calibration that keeps
                                    the literals the prices at Halifax in 2025); WorldMarket is one city's.
                                    Nothing in the month reads it yet

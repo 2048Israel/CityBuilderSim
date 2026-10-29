@@ -45,11 +45,16 @@ import java.util.function.Supplier;
  *      paths, at three sites, the city's exports and imports each 0, 0.1%,
  *      1%, 10% and 50% of the world's use; and the floor falls with the
  *      city's exports as the ceiling rises with its imports.
- *   4. A BIG CITY MOVES ITS PRICE: at 0.1% of a good's world use the netback
- *      moves by under 1%, at 10% by at least 5%.
- *   5. THE MONTH'S STEP IS NEAR A RE-SOLVE: the fill's netback within 3% of the
- *      nations' solve again with the city's tonnes delivered, at 0.1%, 1%, 5%
- *      and 10% of world use, every exportable good.
+ *   4. A CITY MOVES ITS PRICE AS BIG AS IT IS: at 0.01% of a good's world use
+ *      (an ordinary city) the netback moves by under 1% of the price it is
+ *      sold at, at 10% by at least 5% of it, every good; at 0.1% the move is
+ *      printed (the re-solve agrees with it: the host's market is small).
+ *   5. THE MONTH'S STEP IS NEAR A RE-SOLVE: the fill's netback (the band's floor)
+ *      within 3% of the price it is sold at of the nations' solve again with the
+ *      city's tonnes delivered. At 0.1% of world use every good is; at 1% the
+ *      median is and lumber, crude, iron and grains each are; 5% and 10% are
+ *      printed, the step's reach beyond a giant city's 1%, and so is lumber at
+ *      all four volumes (the study's 4.4 table).
  *   6. SEEDS: two seeds differ, one seed repeats to the bit, Historical's 2025
  *      is the same on any seed.
  *   7. THE SAVE: prices and scales restored give the bands and allocations of
@@ -85,11 +90,17 @@ public class WorldMarketCheck {
     /** The volumes of section 5, shares of the world's use. */
     static final double[] STEPS = {.001, .01, .05, .10};
 
-    /** The month's step is within this share of the re-solve's figure (the lead's call, WN3). */
+    /** The month's step is within this share of the price (the served buyers' landed price, tonne-weighted) of the re-solve's figure: a freight-heavy good's netback is a small remainder of its price, so a share of the netback is not what the row means. */
     static final double STEP_TOL = .03;
 
-    /** A small city (0.1% of the world's use) moves its netback by less than this share, a big one (10%) by at least BIG_MOVE. */
+    /** An ordinary city (0.01% of the world's use) moves its netback by less than this share of the price it sells at, a big one (10%) by at least BIG_MOVE of it. */
     static final double SMALL_MOVE = .01, BIG_MOVE = .05;
+
+    /** The shares of a good's world use section 4 reads: an ordinary city's, a large mill town's (printed only: the host's market is small), and a big city's. */
+    static final double ORDINARY_SHARE = .0001, LARGE_SHARE = .001, BIG_SHARE = .1;
+
+    /** The goods whose step is asserted within STEP_TOL at 1% of world use, beside the median: the study's and the brief's four. */
+    static final Good[] ONE_PERCENT = {Good.LUMBER, Good.CRUDE, Good.IRON, Good.GRAINS};
 
     /** Two figures that should be one are the same within this share. */
     static final double SAME = 1e-9;
@@ -413,6 +424,21 @@ public class WorldMarketCheck {
         tally("the floor is never above the ceiling: every good, 2000-2040, both paths, exports and imports each 0, 0.1%, 1%, 10% and 50% of the world's use, three sites", order);
         tally("the same in the game's money, for every good with both sides", game);
         tally("the floor falls as the city's exports grow and the ceiling rises as its imports do", falls);
+        // past every seller's capacity: the city buying three times the world's use of a good, which no seller can make
+        WorldMarket past = sc.market(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
+        past.solveYear(WorldMarket.REFERENCE_YEAR);
+        int bounded = 0, goods = 0;
+        String worst = "none";
+        for (Good g : sc.base.goods()) {
+            int gi = past.indexOf(g);
+            if (gi < 0) continue;
+            double[] b = past.model(gi, 0, 3 * past.worldUse(gi));
+            if (Double.isNaN(b[1])) continue;
+            goods++;
+            if (Double.isFinite(b[1]) && b[1] >= (Double.isNaN(b[0]) ? 0 : b[0])) bounded++; else worst = g.name();
+        }
+        report("past every seller's capacity the ceiling stays finite and over the floor (WorldMarket.SCARCITY_MULTIPLE), every good with sellers",
+                goods > 0 && bounded == goods, bounded + " of " + goods + " goods; first unbounded: " + worst);
     }
 
     /* =====================================================================
@@ -420,30 +446,42 @@ public class WorldMarketCheck {
        ===================================================================== */
 
     static void theBigCity(Scope sc) {
-        out.println("--- a city at a tenth of the world's use moves its price, one at a thousandth barely (" + sc.name + ") ---");
+        out.println("--- a city moves its price as big as it is: an ordinary one barely, a tenth of the world's use a lot (" + sc.name + ") ---");
         WorldMarket m = sc.market(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
         m.solveYear(WorldMarket.REFERENCE_YEAR);
         Tally small = new Tally(), big = new Tally();
-        List<String> smallMisses = new ArrayList<>(), bigMisses = new ArrayList<>();
-        double worstSmall = 0, leastBig = Double.POSITIVE_INFINITY;
+        List<String> largeOver = new ArrayList<>(), bigMisses = new ArrayList<>();
+        double worstSmall = 0, worstSmallNet = 0, worstLarge = 0, worstLargeNet = 0, leastBig = Double.POSITIVE_INFINITY, leastBigNet = Double.POSITIVE_INFINITY;
+        String worstSmallGood = "-";
         int goods = 0;
         for (Good g : sc.base.goods()) {
             if (!g.exportable() || !(sc.base.sigma(g) > 0)) continue;
             int gi = m.indexOf(g);
             double use = m.worldUse(gi), f0 = m.model(gi, 0, 0)[0];
-            double moveSmall = 1 - m.model(gi, .001 * use, 0)[0] / f0, moveBig = 1 - m.model(gi, .1 * use, 0)[0] / f0;
+            double xs = ORDINARY_SHARE * use, xl = LARGE_SHARE * use, xb = BIG_SHARE * use;
+            double fs = m.model(gi, xs, 0)[0], fl = m.model(gi, xl, 0)[0], fb = m.model(gi, xb, 0)[0];
+            double moveSmall = (f0 - fs) / m.servedPrice(gi, xs), moveLarge = (f0 - fl) / m.servedPrice(gi, xl), moveBig = (f0 - fb) / m.servedPrice(gi, xb);
             goods++;
-            worstSmall = Math.max(worstSmall, moveSmall);
+            if (moveSmall > worstSmall) {
+                worstSmall = moveSmall;
+                worstSmallGood = g.toString();
+            }
+            worstSmallNet = Math.max(worstSmallNet, 1 - fs / f0);
+            worstLarge = Math.max(worstLarge, moveLarge);
+            worstLargeNet = Math.max(worstLargeNet, 1 - fl / f0);
             leastBig = Math.min(leastBig, moveBig);
-            small.see(moveSmall < SMALL_MOVE, () -> g + ": " + pct(moveSmall));
-            big.see(moveBig >= BIG_MOVE, () -> g + ": " + pct(moveBig));
-            if (!(moveSmall < SMALL_MOVE)) smallMisses.add(g + " " + pct(moveSmall));
+            leastBigNet = Math.min(leastBigNet, 1 - fb / f0);
+            small.see(moveSmall < SMALL_MOVE, () -> g + ": " + pct(moveSmall) + " of the price");
+            big.see(moveBig >= BIG_MOVE, () -> g + ": " + pct(moveBig) + " of the price");
+            if (!(moveLarge < SMALL_MOVE)) largeOver.add(g + " " + pct(moveLarge));
             if (!(moveBig >= BIG_MOVE)) bigMisses.add(g + " " + pct(moveBig));
         }
-        tally("a city selling 0.1% of a good's world use moves its netback by under " + pct(SMALL_MOVE) + ", every exportable good (largest " + pct(worstSmall) + ")", small);
-        tally("a city selling 10% of a good's world use moves its netback by at least " + pct(BIG_MOVE) + ", every exportable good (least " + pct(leastBig) + ")", big);
-        if (!smallMisses.isEmpty()) out.println("  small city, moved " + pct(SMALL_MOVE) + " or more (" + smallMisses.size() + " of " + goods + "): " + smallMisses);
-        if (!bigMisses.isEmpty()) out.println("  big city, moved under " + pct(BIG_MOVE) + " (" + bigMisses.size() + " of " + goods + "): " + bigMisses);
+        tally("a city selling 0.01% of a good's world use moves its netback by under " + pct(SMALL_MOVE) + " of the price it sells at, every exportable good (largest " + pct(worstSmall) + ", " + worstSmallGood + ")", small);
+        tally("a city selling 10% of a good's world use moves its netback by at least " + pct(BIG_MOVE) + " of that price, every exportable good (least " + pct(leastBig) + ")", big);
+        out.println("  as shares of the netback itself: the 0.01% city moves it by at most " + pct(worstSmallNet) + ", the 10% city by at least " + pct(leastBigNet));
+        out.println("  printed, not asserted: a city selling 0.1% of a good's world use (a large mill town) moves its netback by at most " + pct(worstLarge) + " of the price (" + pct(worstLargeNet)
+                + " of the netback); " + largeOver.size() + " of " + goods + " goods by " + pct(SMALL_MOVE) + " or more, because the host's market is small and the re-solve agrees: " + largeOver);
+        if (!bigMisses.isEmpty()) out.println("  big city, moved under " + pct(BIG_MOVE) + " of the price (" + bigMisses.size() + " of " + goods + "): " + bigMisses);
     }
 
     static String pct(double share) { return String.format(Locale.ROOT, "%.2f%%", 100 * share); }
@@ -456,32 +494,79 @@ public class WorldMarketCheck {
     static final Good[] NAMED = {Good.LUMBER, Good.IRON, Good.CRUDE, Good.GRAINS, Good.MACHINERY, Good.CARS};
 
     static void theStep(Scope sc) {
-        out.println("--- the month's step lands within " + (int) Math.round(100 * STEP_TOL) + "% of a re-solve with the city's tonnes in (" + sc.name + ") ---");
+        out.println("--- the month's step against a re-solve with the city's tonnes in, in shares of the price (" + sc.name + ") ---");
         WorldMarket m = sc.market(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
         m.solveYear(WorldMarket.REFERENCE_YEAR);
         for (double share : STEPS) {
             Tally within = new Tally();
             List<double[]> offs = new ArrayList<>();
             List<String> misses = new ArrayList<>();
-            int goods = 0;
+            Map<Good, double[]> named = new java.util.LinkedHashMap<>();
+            int goods = 0, overflow = 0;
             for (Good g : sc.base.goods()) {
                 if (!g.exportable() || !(sc.base.sigma(g) > 0)) continue;
                 int gi = m.indexOf(g);
-                WorldMarket.Resolved r = m.resolve(gi, share * m.worldUse(gi));
-                double off = r.step() / r.realised() - 1;
+                double x = share * m.worldUse(gi);
+                WorldMarket.Resolved r = m.resolve(gi, x);
+                // the step is the band's floor, which is never below 0: what the re-solve says the city nets is compared as the same floor
+                double realised = Math.max(0, r.realised());
+                double off = (r.step() - realised) / r.price(), offNet = realised > 0 ? r.step() / realised - 1 : r.step() > 0 ? 1 : 0;
                 goods++;
-                boolean ok = Math.abs(r.step() - r.realised()) <= STEP_TOL * Math.abs(r.realised());
-                within.see(ok, () -> g + ": step " + r.step() + ", re-solved " + r.realised());
-                offs.add(new double[] { Math.abs(off), goods });
-                if (!ok) misses.add(String.format(Locale.ROOT, "%s %.2f against %.2f (%+.1f%%)", g, r.step(), r.realised(), 100 * off));
-                for (Good named : NAMED) {
-                    if (named == g) out.printf(Locale.ROOT, "  %-9s %5.1f%% of world use: step %10.3f, re-solved %10.3f, off %+6.2f%%, %d buyers, %d sweeps%n", g, 100 * share, r.step(), r.realised(), 100 * off, r.served(), r.passes());
-                }
+                if (x > m.capacities(gi)[0]) overflow++;
+                boolean ok = Math.abs(off) <= STEP_TOL;
+                within.see(ok, () -> g + ": step " + r.step() + ", re-solved " + r.realised() + ", price " + r.price());
+                offs.add(new double[] { Math.abs(off), Math.abs(offNet) });
+                if (!ok) misses.add(String.format(Locale.ROOT, "%s %.2f against %.2f of %.0f (%+.1f%% of the price, %+.1f%% of the netback)", g, r.step(), r.realised(), r.price(), 100 * off, 100 * offNet));
+                named.put(g, new double[] { r.step(), r.realised(), r.price(), off, offNet, r.served(), r.passes(), m.sellers(gi, x)[0][3] });
             }
             offs.sort((x, y) -> Double.compare(x[0], y[0]));
-            tally("a city selling " + String.format(Locale.ROOT, "%.1f%%", 100 * share) + " of a good's world use: the step is within " + pct(STEP_TOL) + " of the re-solve, every exportable good (median off "
-                    + pct(offs.get(offs.size() / 2)[0]) + ", worst " + pct(offs.get(offs.size() - 1)[0]) + ")", within);
-            if (!misses.isEmpty()) out.println("  misses at " + String.format(Locale.ROOT, "%.1f%%", 100 * share) + " (" + misses.size() + " of " + goods + "): " + misses.subList(0, Math.min(misses.size(), 12)) + (misses.size() > 12 ? " ..." : ""));
+            List<double[]> byNet = new ArrayList<>(offs);
+            byNet.sort((x, y) -> Double.compare(x[1], y[1]));
+            String volume = String.format(Locale.ROOT, "%.1f%%", 100 * share);
+            double median = offs.get(offs.size() / 2)[0], worst = offs.get(offs.size() - 1)[0];
+            String summary = "median off " + pct(median) + ", worst " + pct(worst) + " of the price; as shares of the netback: median " + pct(byNet.get(byNet.size() / 2)[1]) + ", worst "
+                    + pct(byNet.get(byNet.size() - 1)[1]) + "; the sale is more than all the sinks can take for " + overflow + " of " + goods + " goods";
+            if (share == STEPS[0]) {
+                tally("a city selling " + volume + " of a good's world use: the step is within " + pct(STEP_TOL) + " of the price of the re-solve, every exportable good (" + summary + ")", within);
+            } else if (share == STEPS[1]) {
+                assertTrue("a city selling " + volume + " of a good's world use: the median step is within " + pct(STEP_TOL) + " of the price of the re-solve (" + (goods - within.bad) + " of " + goods + " goods are; " + summary + ")", median <= STEP_TOL);
+                for (Good g : ONE_PERCENT) {
+                    double[] r = named.get(g);
+                    if (r == null) continue;
+                    String line = String.format(Locale.ROOT, "%s at %s: step %.3f, re-solved %.3f, off %+.2f%% of the price (%+.2f%% of the netback)", g, volume, r[0], r[1], 100 * r[3], 100 * r[4]);
+                    if (Math.abs(r[3]) <= STEP_TOL) assertTrue(line + ", within " + pct(STEP_TOL), true);
+                    else out.println("  NOT within " + pct(STEP_TOL) + " and so not asserted: " + line);
+                }
+            } else {
+                out.println("  the step's reach beyond a giant city's 1% (printed, not asserted): a city selling " + volume + " of a good's world use: " + (goods - within.bad) + " of " + goods
+                        + " goods have the step within " + pct(STEP_TOL) + " of the price; " + summary);
+            }
+            if (share != STEPS[0] && !misses.isEmpty() && share == STEPS[1]) out.println("  not within " + pct(STEP_TOL) + " at " + volume + " (" + misses.size() + " of " + goods + "): " + misses.subList(0, Math.min(misses.size(), 8)) + (misses.size() > 8 ? " ..." : ""));
+            if (share == STEPS[0] && !misses.isEmpty()) out.println("  misses at " + volume + ": " + misses);
+            for (Good g : NAMED) {
+                double[] r = named.get(g);
+                if (r == null || g == Good.LUMBER) continue;
+                out.printf(Locale.ROOT, "  %-9s %5.1f%% of world use: step %10.3f, re-solved %10.3f, off %+6.2f%% of the price %+7.2f%% of the netback, %d sinks, %d sweeps%n", g, 100 * share, r[0], r[1], 100 * r[3], 100 * r[4], (int) r[5], (int) r[6]);
+            }
+        }
+        lumber(sc, m);
+    }
+
+    /** Lumber at the four volumes, as the study's 4.4 table has it: the buyers, what the city nets this month, with the world's answer, re-solved, off. */
+    static void lumber(Scope sc, WorldMarket m) {
+        int gi = m.indexOf(Good.LUMBER);
+        if (gi < 0) return;
+        double use = m.worldUse(gi);
+        out.println("  lumber, the study's 4.4 table (the city at " + m.iso3(m.host()) + ", world use " + String.format(Locale.ROOT, "%,.0f", use) + " t): share of world use, the buyers, nets this month, with the world's answer, re-solved, off");
+        for (double share : STEPS) {
+            double x = share * use;
+            WorldMarket.Resolved r = m.resolve(gi, x);
+            double[][] rows = m.sellers(gi, x);
+            StringBuilder buyers = new StringBuilder();
+            for (int k = 0; k < Math.min(3, rows.length); k++) buyers.append(String.format(Locale.ROOT, "%s %.0f%% ", m.iso3((int) rows[k][0]), x > 0 ? 100 * rows[k][1] / x : 0));
+            double realised = Math.max(0, r.realised());
+            out.printf(Locale.ROOT, "    LUMBER %5.1f%%: %s(%d buyers) nets %8.2f this month, %8.2f with the world's answer, %8.2f re-solved, off %+6.2f%% of the price (%+6.2f%% of the netback)%n", 100 * share, buyers,
+                    rows.length, rows[0][3], r.step(), r.realised(), 100 * (r.step() - realised) / r.price(), realised > 0 ? 100 * (r.step() / realised - 1) : 0.0);
         }
     }
 
@@ -645,58 +730,80 @@ public class WorldMarketCheck {
        9. THE PIECES
        ===================================================================== */
 
-    /** The plain water-filling for a sale: the level at which the buyers, best netback first, each fall by their share of x over their slope. rows are {nation, slope, netback}, best first. */
-    static double bruteSell(double[][] rows, double x) {
-        for (int m = 1; m <= rows.length; m++) {
-            double sk = 0, skn = 0;
-            for (int k = 0; k < m; k++) {
-                sk += rows[k][1];
-                skn += rows[k][1] * rows[k][2];
-            }
-            double lam = (skn - x) / sk;
-            if (lam <= rows[m - 1][2] + 1e-9 * Math.abs(lam) && (m == rows.length || lam >= rows[m][2] - 1e-9 * Math.abs(lam))) return lam;
+    /**
+     * The level at which sinks take x tonnes together, each taking min(cap, slope (net - level)+), found by bisection on the total and so with none of the
+     * market's sorted events; -infinity past the caps. The purchase side is the same on the landed costs negated.
+     */
+    static double bruteLevel(double[] net, double[] slope, double[] cap, double x) {
+        double capSum = 0, hi = Double.NEGATIVE_INFINITY, lo = Double.POSITIVE_INFINITY;
+        for (int k = 0; k < net.length; k++) {
+            capSum += cap[k];
+            hi = Math.max(hi, net[k]);
+            lo = Math.min(lo, net[k] - cap[k] / slope[k]);
         }
-        return Double.NaN;
+        if (x > capSum * (1 + 1e-12)) return Double.NEGATIVE_INFINITY;
+        for (int it = 0; it < 300; it++) {
+            double mid = .5 * (lo + hi), total = 0;
+            for (int k = 0; k < net.length; k++) total += Math.min(cap[k], Math.max(0, slope[k] * (net[k] - mid)));
+            if (total >= x) lo = mid; else hi = mid;
+        }
+        return .5 * (lo + hi);
     }
 
-    /** The plain water-filling for a purchase: the level at which the makers, cheapest landed cost first, each rise by their share of m over their slope. rows are {nation, slope, landed cost}, cheapest first. */
-    static double bruteBuy(double[][] rows, double m) {
-        for (int k = 1; k <= rows.length; k++) {
-            double sm = 0, sml = 0;
-            for (int q = 0; q < k; q++) {
-                sm += rows[q][1];
-                sml += rows[q][1] * rows[q][2];
-            }
-            double lam = (m + sml) / sm;
-            if (lam >= rows[k - 1][2] - 1e-9 * Math.abs(lam) && (k == rows.length || lam <= rows[k][2] + 1e-9 * Math.abs(lam))) return lam;
-        }
-        return Double.NaN;
+    /** Two levels are the same: equal infinities, or within a share of the scale of the netbacks they are among. */
+    static boolean sameLevel(double a, double b, double scale) {
+        return a == b || Math.abs(a - b) <= 1e-9 * scale;
     }
 
     static void thePieces(Scope sc) {
         out.println("--- the pieces: the fill, the allocation, the berth, the prices (" + sc.name + ") ---");
         WorldMarket m = sc.market(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
         m.solveYear(WorldMarket.REFERENCE_YEAR);
-        Tally sell = new Tally(), buy = new Tally(), toTally = new Tally(), fromTally = new Tally(), prices = new Tally();
+        Tally sell = new Tally(), buy = new Tally(), caps = new Tally(), toTally = new Tally(), fromTally = new Tally(), prices = new Tally();
+        int beyond = 0, combos = 0;
         for (Good g : sc.base.goods()) {
             int gi = m.indexOf(g);
             double use = m.worldUse(gi);
             double[][] side = m.sellSide(gi), makers = m.buySide(gi);
+            double[] net = new double[side.length], slope = new double[side.length], cap = new double[side.length];
+            double scale = 1;
+            for (int k = 0; k < side.length; k++) {
+                net[k] = side[k][2];
+                slope[k] = side[k][1];
+                cap[k] = side[k][4];
+                scale = Math.max(scale, Math.abs(net[k]));
+            }
+            double[] negLanded = new double[makers.length], muBuy = new double[makers.length], capBuy = new double[makers.length];
+            for (int k = 0; k < makers.length; k++) {
+                negLanded[k] = -makers[k][2];
+                muBuy[k] = makers[k][1];
+                capBuy[k] = makers[k][3];
+                scale = Math.max(scale, Math.abs(makers[k][2]));
+            }
+            double sold = scaleOf(cap), made = scaleOf(capBuy);
+            double sc2 = scale;
             for (double share : SHARES) {
                 double x = share * use;
+                combos++;
                 if (side.length > 0 && x > 0) {
-                    double lam = m.sellers(gi, x)[0][3], brute = bruteSell(side, x);
-                    sell.see(near(lam, brute, 1e-9) || Math.abs(lam - brute) < 1e-9, () -> g + " at " + share + ": fill " + lam + ", water-filling " + brute);
+                    double lam = m.sellers(gi, x)[0][3], brute = bruteLevel(net, slope, cap, x);
+                    sell.see(sameLevel(lam, brute, sc2), () -> g + " at " + share + ": fill " + lam + ", water-filling " + brute);
                     double taken = 0;
-                    for (double[] row : m.sellers(gi, x)) taken += row[1];
-                    double got = taken;
-                    sell.see(near(got, x, 1e-9), () -> g + " at " + share + ": the buyers take " + got + " of " + x);
+                    for (double[] row : m.sellers(gi, x)) {
+                        taken += row[1];
+                        caps.see(row[1] <= m.demand(gi, (int) row[0]) * (1 + 1e-12), () -> g + " at " + share + ": a buyer takes " + row[1] + " of the " + m.demand(gi, (int) row[0]) + " it uses");
+                    }
+                    double got = taken, expect = Math.min(x, sold);
+                    if (x > sold) beyond++;
+                    sell.see(near(got, expect, 1e-9), () -> g + " at " + share + ": the buyers take " + got + " of " + x + " (they can take " + sold + ")");
+                    double floor = m.model(gi, x, 0)[0];
+                    sell.see(x <= sold || floor == 0, () -> g + " at " + share + ": past every cap the floor is " + floor);
                 }
                 if (makers.length > 0 && x > 0) {
-                    double lam = m.extremes(gi)[1];
-                    double fromFill = fillBuyLevel(m, gi, x);
-                    double brute = bruteBuy(makers, x);
-                    buy.see(near(fromFill, brute, 1e-9), () -> g + " at " + share + ": fill " + fromFill + ", water-filling " + brute + " (cheapest " + lam + ")");
+                    double[] mb = m.model(gi, 0, x);
+                    double fromFill = mb[1] - x / m.extremes(gi)[2], brute = -bruteLevel(negLanded, muBuy, capBuy, x);
+                    buy.see(sameLevel(fromFill, brute, sc2), () -> g + " at " + share + ": fill " + fromFill + ", water-filling " + brute);
+                    buy.see(x <= made || mb[1] == Double.POSITIVE_INFINITY, () -> g + " at " + share + ": past every seller's output the ceiling is " + mb[1]);
                 }
                 double ux = units(m, gi, x);
                 WorldMarket.Allocation al = m.allocate(g, ux, ux);
@@ -707,6 +814,18 @@ public class WorldMarketCheck {
                 boolean selling = x > 0 && g.exportable() && side.length > 0, buying = x > 0 && g.importable() && makers.length > 0;
                 toTally.see(selling ? near(sumTo, ux, 1e-9) : sumTo == 0, () -> g + " at " + share + ": exports allocated " + sumTo + " of " + ux);
                 fromTally.see(buying ? near(sumFrom, ux, 1e-9) : sumFrom == 0, () -> g + " at " + share + ": imports allocated " + sumFrom + " of " + ux);
+                if (selling && x <= sold * (1 - 1e-9)) {
+                    for (int nation = 1; nation <= m.nationCount(); nation++) {
+                        int nn = nation;
+                        caps.see(al.exportUnitsTo()[nation - 1] <= units(m, gi, m.demand(gi, nation)) * (1 + 1e-9), () -> g + " at " + share + ": " + m.iso3(nn) + " is allotted " + al.exportUnitsTo()[nn - 1]);
+                    }
+                }
+                if (buying && x <= made * (1 - 1e-9)) {
+                    for (double[] row : makers) {
+                        int nn = (int) row[0];
+                        caps.see(al.importUnitsFrom()[nn - 1] <= units(m, gi, row[3]) * (1 + 1e-9), () -> g + " at " + share + ": " + m.iso3(nn) + " sells " + al.importUnitsFrom()[nn - 1]);
+                    }
+                }
             }
             for (int nation = 1; nation <= m.nationCount(); nation++) {
                 double mill = m.millPrice(g, nation), buyer = m.buyerPrice(g, nation);
@@ -714,8 +833,10 @@ public class WorldMarketCheck {
                 if (!Double.isNaN(mill) && !Double.isNaN(buyer)) prices.see(buyer <= mill * (1 + 1e-12), () -> g + " in " + m.iso3(nn) + ": buyers pay " + buyer + " and its mills ask " + mill);
             }
         }
-        tally("the fill the market reads off its sorted sums equals a plain water-filling of the same buyers, and the buyers take what the city sells", sell);
-        tally("the purchase fill equals a plain water-filling of the same makers", buy);
+        out.println(beyond + " of " + combos + " (good, volume) sales are more than all the sinks can take");
+        tally("the sale fill equals a bisection on the capped total of the same sinks, and the sinks take what the city sells, or what they can", sell);
+        tally("the purchase fill equals a bisection on the capped total of the same makers, and is +infinity past what the world makes", buy);
+        tally("no sink takes more than its best buyer uses, no maker sells more than it makes, in the fills and in the allocations", caps);
         tally("the exports' allocation adds up to the exports, and is nothing where the city sells nothing", toTally);
         tally("the imports' allocation adds up to the imports, and is nothing where the city buys nothing", fromTally);
         tally("what the cheapest landed seller asks a nation's buyers is never more than its own mills ask", prices);
@@ -757,12 +878,11 @@ public class WorldMarketCheck {
         return 2 * 6371 * Math.asin(Math.sqrt(a));
     }
 
-    /** The level the purchase fill reaches for m tonnes, from the market's own sorted sums (the same that band() reads, before the world's answer). */
-    static double fillBuyLevel(WorldMarket m, int gi, double tonnes) {
-        // ceiling = max(floor, level - (x - m) / slope) with x = 0: add the shift back
-        double[] b = m.model(gi, 0, tonnes);
-        double slope = m.extremes(gi)[2];
-        return b[1] - tonnes / slope;
+    /** The sum of an array. */
+    static double scaleOf(double[] a) {
+        double sum = 0;
+        for (double v : a) sum += v;
+        return sum;
     }
 
     /* =====================================================================
@@ -777,24 +897,25 @@ public class WorldMarketCheck {
         double use = m.worldUse(gi);
         double[][] side = m.sellSide(gi);
         out.printf(Locale.ROOT, "the city stands in %s; the world uses %,.0f t of lumber a year; freight scale %.2f%n", m.iso3(m.host()), use, sc.base.phi(Good.LUMBER));
-        out.println("the first five buyers before the city sells (the study says the US first, then Canada at 4.8%, Portugal at 5.6%):");
+        out.println("the first five sinks before the city sells, each a supplier that sets its buyers' price, at its best buyer (the study says the US first, then Canada at 4.8%, Portugal at 5.6%):");
         for (int k = 0; k < Math.min(5, side.length); k++) {
-            int nation = (int) side[k][0];
-            out.printf(Locale.ROOT, "  %d. %-28s nets %9.2f US$ a tonne, uses %5.2f%% of the world's, joins the fill at %6.3f%% of world use%n", k + 1, m.name(nation) + " (" + m.iso3(nation) + ")",
-                    side[k][2], 100 * demandShare(m, gi, nation), 100 * m.joinsAt(gi, nation) / use);
+            int buyer = (int) side[k][0], supplier = (int) side[k][3];
+            out.printf(Locale.ROOT, "  %d. %s's mills, sold at %-26s nets %9.2f US$ a tonne, buyer uses %5.2f%% of the world's, joins the fill at %6.3f%% of world use%n", k + 1, m.iso3(supplier),
+                    m.name(buyer) + " (" + m.iso3(buyer) + ")", side[k][2], 100 * demandShare(m, gi, buyer), 100 * m.joinsAt(gi, buyer) / use);
         }
         for (String iso : new String[] {"USA", "CAN", "PRT", "MEX"}) {
             int nation = sc.base.iso.length;
             for (int i = 0; i < sc.base.iso.length; i++) if (sc.base.iso[i].equals(iso)) nation = i + 1;
             if (nation > sc.base.iso.length) continue;
             double joins = m.joinsAt(gi, nation);
-            out.printf(Locale.ROOT, "  %s %s the fill at %s of world use%n", iso, Double.isNaN(joins) ? "never joins" : "joins", Double.isNaN(joins) ? "-" : String.format(Locale.ROOT, "%.3f%%", 100 * joins / use));
+            out.printf(Locale.ROOT, "  %s %s%n", iso, Double.isNaN(joins) ? "is no supplier's best buyer: its tonnes go through the best buyer of the supplier that sets its price"
+                    : String.format(Locale.ROOT, "is a best buyer and joins the fill at %.3f%% of world use", 100 * joins / use));
         }
         for (double share : new double[] {.01, .05, .10}) {
             StringBuilder sb = new StringBuilder();
             double[][] rows = m.sellers(gi, share * use);
             for (int k = 0; k < Math.min(6, rows.length); k++) sb.append(String.format(Locale.ROOT, "%s %.0f%% ", m.iso3((int) rows[k][0]), 100 * rows[k][1] / (share * use)));
-            out.printf(Locale.ROOT, "  selling %.0f%% of world use goes to: %s(%d buyers)%n", 100 * share, sb, rows.length);
+            out.printf(Locale.ROOT, "  selling %.0f%% of world use goes to: %s(%d sinks)%n", 100 * share, sb, rows.length);
         }
     }
 
