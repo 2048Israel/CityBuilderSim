@@ -91,7 +91,7 @@ import java.util.Arrays;
  * its surface. A highway is drawn over a street that passes beneath it, dark
  * with its dashed centre line. Ground under a building is drawn cleared
  * (forest as grass; spec 2.6, the zoning study's Z7), and a building packed
- * at the city's edge without a street (R7) a shade darker.
+ * at the city's edge (R7) a shade darker.
  *
  * THE AVENUES (batch CL4; Jerus, 2026-10-20: "having some slanted roads and
  * curves"). The four 45-degree avenues the district plans lay out from the
@@ -388,7 +388,7 @@ public final class TileRaster {
     /** A street's surface across its plot, by its width (Painted.width: 0, half, full): none, half the plot (15 m), the whole plot (30 m) - the right of way is 30 m (spec 2.1; the prototype's W_MIN and W_FULL). */
     public static final double[] SURFACE = { 0, DistrictPlan.HALF, DistrictPlan.FULL };
 
-    /** A building packed at the city's edge without a street (R7) is drawn this much of the way to the map's background: 35% (star RD2-2) - a shade darker, so it reads as standing apart from the streets, at its own size and place. */
+    /** A building packed at the city's edge (R7) is drawn this much of the way to the map's background: 35% (star RD2-2) - a shade darker, so it reads as standing apart from the streets, at its own size and place. */
     public static final double PACKED_DIM = 0.35;
 
     /* =====================================================================
@@ -402,7 +402,7 @@ public final class TileRaster {
      * lines, joined across the tile's edge where the plans have them go on
      * (ways()). A one-plot building is drawn the mockup's size, hugging the
      * street it faces; a larger one inset a pixel from 3 px a plot; all
-     * edged from 6; one packed without a street a shade darker; and from
+     * edged from 6; one packed at the city's edge a shade darker; and from
      * LINES_FROM a Rail Terminal as its yard (drawYard(), 0.8.1; whole across
      * the tiles it spans since FX5, drawWholeYard()).
      */

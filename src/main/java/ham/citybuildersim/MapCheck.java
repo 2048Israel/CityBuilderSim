@@ -68,7 +68,15 @@ import java.util.Map;
  *      of its plots; and (2e, MF1) a yard whose building left stays laid, idle,
  *      for CityRuns.YARD_IDLE_MONTHS - the depot ordered again takes the same
  *      yard back, nothing taken up and laid anew, the net held, no record in
- *      the journal - and is taken up when its time is up;
+ *      the journal - and is taken up when its time is up; and
+ *      (2f, MF1) what a city out of ground has no room for is
+ *      packed beside a street of the edge districts - within REACH of one on the
+ *      painted raster, on a tile that has one, together and not one to a tile,
+ *      a street laid only where none is near (LAID_MOST plots at the most, a T
+ *      and never a +) - and stays where it stood while the buildings that come
+ *      after it are added after; and (2g, MF1) a district bought into the map's
+ *      order ahead of others keeps what is carried in place: the districts
+ *      after it keep every box and the carry they read its pairs;
  *   3. the painter draws the plan (0.7.88; the mockup's rules on the deal's
  *      tiles before): on the dense screen every plot a district's plan
  *      surfaces is painted as that street - kind and width - its seams once;
@@ -475,6 +483,8 @@ public class MapCheck {
         nothingMoves(city);
         districtsHoldAndSpill(city);
         districtBuysLandInside(city);
+        outerRim();
+        districtJoinsTheChain();
         runsLaidAcross(city);
         idleYards(city);
         idleYardsOnRuns();
@@ -1322,6 +1332,373 @@ public class MapCheck {
         boolean free = land.grid().owned(b.x0(), b.y0(), b.x1(), b.y1()) == 0;
         boolean dry = b.dry() == dryPlots(frame, b.x0(), b.y0(), b.x1(), b.y1()) && 2L * b.dry() >= (b.x1() - b.x0()) * (b.y1() - b.y0());
         return whole && inside && free && dry;
+    }
+
+
+    /* =====================================================================
+       2f. THE OUTER RIM: WHAT A CITY HAS NO ROOM FOR STANDS BESIDE A STREET (batch MF1)
+       ===================================================================== */
+
+    /*
+     * Jerus (2026-10-23), of the far, empty land of his city dotted with small buildings on an even grid: "i understand mines and wells, but these
+     * werent either". They were what the legend counts as packed without a street: R7 put each of the buildings a city has no room for on the next
+     * tile's first free corner, the tiles in turn from the farthest, so a lattice of them, one to a tile, over ground with no street for kilometres.
+     * His call: "an overflow building stands at the built edge beside the streets it belongs to, with a street laid to it; no lone grid in the
+     * fields." The fixture causes the condition: a city of four districts out of ground (works and flats added a month at a time until the last
+     * district's plan has some left over), every district its edge, the buildings it cannot hold packed in the ground its plans leave. On the painted
+     * raster every packed building is within REACH of a street and on a tile that has one - where R7's stood far from any - and a street is laid only
+     * where none is near: by hand, on ground made for it, one a short straight way from a box to the first street it meets (a T, never a +),
+     * none longer than LAID_MOST. The packing stays where it stood from one month to the next while the buildings that come are added after it.
+     */
+
+    /** The works and the flats the out-of-ground city is given a month, and where its founding site stands in its district (plots from its north-west corner): a district's order from the site is then 92, 272, 348 and 432 plots, so a district bought east of it sorts before the rest (2g). */
+    static final int RIM_WORKS = 12, RIM_FLATS = 72;
+    static final int[] RIM_SITE_AT = { 220, 128 };
+
+    /** The packed buildings 2e wants before it looks, and how many months it adds between looks. */
+    static final int RIM_PACKED = 60, RIM_LOOK_EVERY = 4;
+
+    /** The id of the building template of that name, from the catalog. */
+    static int idNamed(String name) {
+        for (BuildingsTemplate t : new BuildingCatalog().load()) if (t.getName().equals(name)) return t.getId();
+        throw new IllegalStateException("no building named " + name);
+    }
+
+    /** The out-of-ground city of 2e and 2f: two districts a side on the default world's dry place, the founding site at RIM_SITE_AT in the last of them, drawn canonically and given works and flats month by month. */
+    static final class Rim {
+        final BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
+        final long seed = Founding.DEFAULT_WORLD_SEED;
+        final long siteX, siteY;
+        final CityMap map;
+        final long[] model;
+        final int works = idNamed("Fabrication Works"), flats = idNamed("Low-Rise Apartments");
+        /** The month the next one is run in. */
+        int month = 10;
+        boolean reconciled = true;
+
+        Rim() {
+            long[] place = dryPlace(World.of(seed));
+            long bx = Math.floorDiv(place[0], CityMap.DISTRICT), by = Math.floorDiv(place[1], CityMap.DISTRICT);
+            siteX = bx * CityMap.DISTRICT + RIM_SITE_AT[0];
+            siteY = by * CityMap.DISTRICT + RIM_SITE_AT[1];
+            double[] centre = new double[CityLand.CENTRE_FIELDS];
+            centre[CityLand.CENTRE_FIELDS - 5] = -1;
+            centre[CityLand.CENTRE_FIELDS - 4] = -1;
+            centre[CityLand.CENTRE_FIELDS - 2] = siteX;
+            centre[CityLand.CENTRE_FIELDS - 1] = siteY;
+            long d = CityMap.DISTRICT;
+            CityLand land = CityLand.restore(World.Key.generated(seed), centre, new double[][] { { (bx - 1) * d, (by - 1) * d, (bx + 1) * d, (by + 1) * d } }, null, null, null);
+            map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+            model = new long[types.length];
+        }
+
+        /** One month: RIM_WORKS more works and RIM_FLATS more flats, the map reconciled to them. */
+        void run() {
+            model[works] += RIM_WORKS;
+            model[flats] += RIM_FLATS;
+            reconciled &= map.reconcile(model, month++);
+        }
+
+        /** ...and one month of the flats alone. */
+        void runFlats() {
+            model[flats] += RIM_FLATS;
+            reconciled &= map.reconcile(model, month++);
+        }
+    }
+
+    /** Every packed box on a map, by district and tile: the box as Drawn.boxes has it, with its type. */
+    static java.util.Set<String> packedBoxes(CityMap m) {
+        java.util.Set<String> set = new java.util.HashSet<>();
+        TilePainter.Input in = new TilePainter.Input();
+        long[] box = tilesOf(m);
+        for (long ty = box[1]; ty < box[1] + box[3]; ty++) {
+            for (long tx = box[0]; tx < box[0] + box[2]; tx++) {
+                if (m.districtOfTile(tx, ty) == null) continue;
+                m.tileInput(tx, ty, in);
+                for (int b = 0; b < in.buildings; b++) if ((in.boxes[2 * b] & CityMap.PACKED_BIT) != 0) set.add(tx + "," + ty + ":" + in.boxes[2 * b] + ":" + in.boxes[2 * b + 1]);
+            }
+        }
+        return set;
+    }
+
+    static void outerRim() {
+        out.println("\n--- 2f. the outer rim: what a city has no room for stands beside a street, one laid to it where none is near, and stays (MF1) ---");
+        Rim r = new Rim();
+        int packed = 0, guard = 400, months = 0;
+        while (packed < RIM_PACKED && guard-- > 0) {
+            for (int k = 0; k < RIM_LOOK_EVERY; k++) {
+                r.run();
+                months++;
+            }
+            packed = r.map.packedCounts()[0];
+        }
+        CityMap m = r.map;
+        int[] pk = m.packedCounts(), ways = m.packedWays();
+        boolean allEdge = true;
+        for (CityMap.District d : m.districts()) allEdge &= m.isEdge(d);
+        Raster ra = Raster.of(m);
+        int[] dist = ra.reach(TilePainter.REACH);
+        int boxes = 0, far = 0, bare = 0, tilesHeld = 0;
+        java.util.Set<Long> tiles = new java.util.HashSet<>();
+        for (int[] b : ra.boxes) {
+            if (b[6] != 1) continue;
+            boxes++;
+            if (Raster.boxReach(dist, ra.w, b) > TilePainter.REACH) far++;
+            long tile = (long) (b[1] / World.TILE) * (ra.w / World.TILE) + b[0] / World.TILE;
+            if (tiles.add(tile)) {
+                boolean street = false;
+                for (int y = (b[1] / World.TILE) * World.TILE; y < (b[1] / World.TILE + 1) * World.TILE && !street; y++) {
+                    for (int x = (b[0] / World.TILE) * World.TILE; x < (b[0] / World.TILE + 1) * World.TILE && !street; x++) street = ra.isStreet(y * ra.w + x);
+                }
+                if (!street) bare++;
+            }
+        }
+        tilesHeld = tiles.size();
+        out.printf("      %d districts, all at the edge, given %d works and %d flats a month for %d months: %,d buildings packed (%,d drawn smaller, %,d with no ground) on %d tiles;"
+                        + " %d against a street, %d within %d plots of one, %d at the end of a street laid to them (%d streets, %d plots), %d in the field%n",
+                m.districts().size(), RIM_WORKS, RIM_FLATS, months, pk[0], pk[1], pk[2], tilesHeld, ways[0], ways[1], TilePainter.REACH, ways[2], ways[4], ways[5], ways[3]);
+        out.printf("      ...painted: %,d packed boxes, %d farther than %d plots from every street, %d tiles holding them with no street on them%n", boxes, far, TilePainter.REACH, bare);
+        check("fixture: a city out of ground - every district at its edge, a month's reconcile that took, and buildings its plans could not hold packed",
+                r.reconciled && allEdge && pk[0] >= RIM_PACKED && boxes == pk[0] - pk[2]);
+        check("every building packed at the edge stands within REACH (" + TilePainter.REACH + ") plots of a street, on the painted raster: none in the fields, far from every street", far == 0 && boxes > 0);
+        check("...and on a tile that has a street on it (" + tilesHeld + " tiles)", bare == 0 && tilesHeld > 0);
+        check("...together, not a lattice of them one to a tile: the buildings stand on a third of the tiles they number at the most (" + tilesHeld + " tiles for " + boxes + " boxes)", tilesHeld * 3 <= boxes);
+        check("...each counted by how it stands - against a street, within reach of one, at the end of a street laid to it - and none in the field, where every district has streets",
+                ways[0] + ways[1] + ways[2] + ways[3] == pk[0] - pk[2] && ways[3] == 0);
+        check("...the streets laid are none longer than LAID_MOST (" + CityMap.LAID_MOST + ") plots", ways[6] <= CityMap.LAID_MOST && ways[4] * CityMap.LAID_MOST >= ways[5] && (ways[4] == 0) == (ways[5] == 0));
+        check("the hover says what they are, a building packed at the city's edge: no longer \"without a street\"", !LandMap.PACKED_WORDS.contains("without a street") && LandMap.PACKED_WORDS.contains("packed at the city's edge"));
+        // From month to month: the buildings are packed largest first (BuildingVisual.rankedTypes()), so one added displaces only those ranked after it.
+        java.util.Set<String> before = packedBoxes(m);
+        r.runFlats();
+        java.util.Set<String> after = packedBoxes(m);
+        int moved = 0;
+        for (String b : before) if (!after.contains(b)) moved++;
+        out.printf("      ...a month of flats more, %,d packed (%,d before): %,d of the %,d boxes that stood moved%n", after.size(), before.size(), moved, before.size());
+        check("the packing stays where it stood from month to month: a month of the smallest buildings, flats, adds after what stands and moves none (" + before.size() + " boxes, " + moved + " moved)",
+                before.size() > 0 && moved == 0 && after.size() > before.size());
+        java.util.Set<String> then = packedBoxes(m);
+        for (int k = 0; k < 3; k++) r.run();
+        java.util.Set<String> later = packedBoxes(m);
+        int[] rank = new int[r.types.length];
+        int[] ranked = BuildingVisual.rankedTypes(r.types);
+        for (int i = 0; i < ranked.length; i++) rank[ranked[i]] = i;
+        int shifted = 0, dearer = 0;
+        for (String b : then) {
+            if (later.contains(b)) continue;
+            shifted++;
+            if (rank[Integer.parseInt(b.substring(b.lastIndexOf(':') + 1))] <= rank[r.works]) dearer++;
+        }
+        out.printf("      ...three months of works and flats more, %,d packed (%,d before): %,d of the boxes that stood moved, %d of them not flats%n", later.size(), then.size(), shifted, dearer);
+        check("...works and flats added together displace only the flats, which come after the works in the order they are packed in: none of the works moved (" + shifted + " boxes, " + dearer + " of works)",
+                then.size() > 0 && dearer == 0 && later.size() > then.size());
+        laidByHand(r.types);
+    }
+
+    /** A plot of a district's mask (a bit a plot, DISTRICT / 64 words a row). */
+    static void plotOn(long[] m, int x, int y) {
+        m[y * (CityMap.DISTRICT / 64) + (x >>> 6)] |= 1L << (x & 63);
+    }
+
+    static boolean plotIs(long[] m, int x, int y) {
+        return (m[y * (CityMap.DISTRICT / 64) + (x >>> 6)] & (1L << (x & 63))) != 0;
+    }
+
+    /** One hand-made edge district packed with one building of type t: its free ground and its streets as given, its tiles in order. */
+    static CityMap.Pack handPack(BuildingVisual.Type[] types, int t, long[] free, long[] street, CityMap.District e) {
+        long[] order = new long[CityMap.TILES];
+        for (int k = 0; k < CityMap.TILES; k++) order[k] = k;
+        int[] carry = new int[types.length];
+        carry[t] = 1;
+        return CityMap.packAtEdge(carry, types, new CityMap.District[] { e }, new long[][] { free }, new long[][] { street }, order);
+    }
+
+    /** The one box a hand-made packing put on tile 25 of the district, or none. */
+    static int[] onlyBox(CityMap.Pack p, CityMap.District e) {
+        int[][] per = p.boxes.get(e);
+        return per == null || per[3 * CityMap.TILES_A_SIDE + 1] == null ? new int[0] : per[3 * CityMap.TILES_A_SIDE + 1];
+    }
+
+    /**
+     * ...the street laid to a building no street is near, on ground made for it: a street down x = 40, the one free ground a corridor a plot wide along y = 100
+     * from it (x 41 to 46) and a block of three rows beyond (x 47 to 60, y 99 to 101), holding one 3 x 3 building. It stands at the block's corner and a street
+     * is laid straight to the street, six plots, the box's side first; with the street at x = 36 the corridor is ten plots, longer than LAID_MOST, so none is laid and the
+     * building is drawn smaller, one plot, against the street where the corridor meets it; with a plot of street beyond the street at its end (a + the street would make)
+     * the same; with no street at all it stands in the field, whole, on the first tile that holds it; and the grown masks reach as far as they say.
+     */
+    static void laidByHand(BuildingVisual.Type[] types) {
+        int t3 = -1;
+        for (int t = 0; t < types.length && t3 < 0; t++) {
+            if (types[t] != null && types[t].drawn() && types[t].site() == null && Arrays.equals(BuildingVisual.footprint(types[t]), new int[] { 3, 3 })) t3 = t;
+        }
+        CityMap.District e = new CityMap.District(0, 0, types.length, 0);
+        int words = CityMap.DISTRICT / 64, rows = CityMap.DISTRICT;
+        // The block's tile: x 32 to 63, y 96 to 127, the third row of tiles and the second column: tile 25.
+        int tile = 3 * CityMap.TILES_A_SIDE + 1;
+        CityMap.Pack[] got = new CityMap.Pack[4];
+        for (int c = 0; c < 4; c++) {
+            long[] free = new long[rows * words], street = new long[rows * words];
+            int at = c == 1 ? 36 : 40;
+            if (c != 3) for (int y = 0; y < rows; y++) plotOn(street, at, y);
+            if (c == 2) plotOn(street, at - 1, 100);
+            for (int x = at + 1; x <= 46; x++) plotOn(free, x, 100);
+            for (int y = 99; y <= 101; y++) for (int x = 47; x <= 60; x++) plotOn(free, x, y);
+            got[c] = handPack(types, t3, free, street, e);
+        }
+        CityMap.Pack a = got[0], b = got[1], c = got[2], f = got[3];
+        byte[][] laid = a.laid.get(e);
+        int laidPlots = 0;
+        boolean along = laid != null && laid[tile] != null;
+        for (int x = 41; x <= 46 && along; x++) along &= laid[tile][(100 - 96) * World.TILE + x - 32] == CityMap.LAID_CODE;
+        if (laid != null) for (byte[] tl : laid) if (tl != null) for (byte v : tl) if (v != 0) laidPlots++;
+        int[] box = a.boxes.get(e) == null || a.boxes.get(e)[tile] == null ? new int[0] : a.boxes.get(e)[tile];
+        boolean corner = box.length == 1 && (box[0] & 31) == 47 - 32 && ((box[0] >> 5) & 31) == 99 - 96 && (box[0] & CityMap.PACKED_BIT) != 0;
+        check("a building no street is near has a street laid to it: straight from its side to the street, six plots, a T on the street, the box at the block's corner",
+                a.laidTo == 1 && a.laidStreets == 1 && a.laidPlots == 6 && laidPlots == 6 && along && corner && a.field == 0 && a.none == 0);
+        int[] bb = onlyBox(b, e), cb = onlyBox(c, e), fb = onlyBox(f, e);
+        check("...one that would be longer than LAID_MOST (" + CityMap.LAID_MOST + ") plots is laid none: the building is drawn smaller, a plot, against the street where the corridor meets it",
+                b.laidStreets == 0 && b.laidTo == 0 && b.smaller == 1 && b.touching == 1 && b.none == 0 && b.laid.isEmpty() && bb.length == 1 && (bb[0] & 0xfffff & ~CityMap.PACKED_BIT) == (5 | (4 << 5)));
+        check("...and none is laid to a street that is a crossing of three ways already: it would make a +, so the same",
+                c.laidStreets == 0 && c.smaller == 1 && c.touching == 1 && c.none == 0 && c.laid.isEmpty() && cb.length == 1 && (cb[0] & 0xfffff & ~CityMap.PACKED_BIT) == (9 | (4 << 5)));
+        check("...and with no street in the district at all it stands in the field, whole, on the first tile that holds it: counted as that, none laid",
+                f.field == 1 && f.touching == 0 && f.reached == 0 && f.laidStreets == 0 && f.smaller == 0 && f.none == 0 && fb.length == 1 && (fb[0] & 31) == 47 - 32 && ((fb[0] >> 5) & 31) == 99 - 96);
+        // The grown masks: a plot a word's edge crosses, REACH plots out every way across corners.
+        long[] one = new long[rows * words];
+        plotOn(one, 63, 10);
+        long[] grown = CityMap.dilate(one, TilePainter.REACH);
+        int n = 0;
+        for (long w : grown) n += Long.bitCount(w);
+        boolean whole = true;
+        for (int y = 10 - TilePainter.REACH; y <= 10 + TilePainter.REACH; y++) for (int x = 63 - TilePainter.REACH; x <= 63 + TilePainter.REACH; x++) whole &= plotIs(grown, x, y);
+        check("a plot's reach crosses a word's edge: REACH plots out every way, across corners, the whole square and nothing more (" + n + " plots)",
+                whole && n == (2 * TilePainter.REACH + 1) * (2 * TilePainter.REACH + 1) && !plotIs(grown, 63 - TilePainter.REACH - 1, 10));
+    }
+
+    /* =====================================================================
+       2g. A DISTRICT BOUGHT INTO THE MAP'S ORDER AHEAD OF OTHERS KEEPS WHAT IS CARRIED IN PLACE (batch MF1; CL3's re-chaining)
+       ===================================================================== */
+
+    /*
+     * CL3 left it open (its notes, 2 and 7): a district bought into the map's order ahead of others hands the spill's chain on afresh, and what was carried
+     * into the districts after it moves that month - the playtest's last two months, 4,355 boxes. Jerus (2026-10-23, "Into MF1"): keep what is carried in
+     * place when a district is bought. FX6 (0.8.16) had settled it without knowing: it dated the ground, so a district whose ground was all bought in
+     * month M has no open cell for the buildings the chain carried to it dated up to M, and passes them on as they came; the districts after it read the
+     * same carry as the month before, and nothing in them moves. This is the fixture that holds it: a chain of four districts spilling (works and flats
+     * a month until the fourth holds some), a block bought east of the founding site that makes a fifth, which sorts into the map's order ahead of three of the four,
+     * and one month on. Every box of the districts after it stands where it stood and the carry they read keeps the pairs it had, a prefix. Without the dates
+     * (the ground read as it stands, as before FX6) the same month moves a thousand boxes in each.
+     */
+
+    /** The block of 64 x 64 plots, whole blocks of the land's level at least, over ground at least nine tenths dry, nearest the middle of the district at (x0, y0) of the world: {x0, y0, x1, y1}, or null. */
+    static long[] dryBlockIn(World w, CityLand land, long x0, long y0) {
+        long b = 1L << land.level(), side = (BOUGHT_PLOTS + b - 1) / b * b;
+        byte[] buf = new byte[World.TILE * World.TILE];
+        long[] best = null;
+        double nearest = Double.MAX_VALUE;
+        for (long by = Math.floorDiv(y0 + b - 1, b) * b; by + side <= y0 + CityMap.DISTRICT - World.TILE; by += b) {
+            for (long bx = Math.floorDiv(x0 + b - 1, b) * b; bx + side <= x0 + CityMap.DISTRICT - World.TILE; bx += b) {
+                if (land.grid().owned(bx, by, bx + side, by + side) != 0) continue;
+                int dry = 0;
+                for (long ty = by; ty < by + side; ty += World.TILE) {
+                    for (long tx = bx; tx < bx + side; tx += World.TILE) {
+                        w.tileTerrain(Math.floorDiv(tx, World.TILE), Math.floorDiv(ty, World.TILE), buf);
+                        for (byte c : buf) if (!World.salt(c) && c != World.FRESH) dry++;
+                    }
+                }
+                if (dry * 10L < 9L * side * side) continue;
+                double d = Math.hypot(bx + side / 2.0 - (x0 + CityMap.DISTRICT / 2.0), by + side / 2.0 - (y0 + CityMap.DISTRICT / 2.0));
+                if (d < nearest) { nearest = d; best = new long[] { bx, by, bx + side, by + side }; }
+            }
+        }
+        return best;
+    }
+
+    /** Each district's placed boxes (a box in the district, the type with it, the packed left out) and what was carried to it, by its place in the map: what a month's change is held against. */
+    record ChainSnap(java.util.Map<String, java.util.Set<Long>> boxes, java.util.Map<String, int[]> carry) { }
+
+    static ChainSnap chainSnap(CityMap m) {
+        for (CityMap.District d : m.districts()) {
+            if (m.planned(d)) continue;
+            for (CityMap.Job j : m.planJobs(d)) { j.run(); m.adopt(j); }
+        }
+        m.packed();
+        java.util.Map<String, java.util.Set<Long>> boxes = new java.util.HashMap<>();
+        java.util.Map<String, int[]> carry = new java.util.HashMap<>();
+        for (CityMap.District d : m.districts()) {
+            CityMap.Drawn dr = m.drawnOf(d);
+            java.util.Set<Long> set = new java.util.HashSet<>();
+            for (int k = 0; k < CityMap.TILES; k++) {
+                if (dr.boxes[k] == null) continue;
+                long tx = (long) (k % CityMap.TILES_A_SIDE) * World.TILE, ty = (long) (k / CityMap.TILES_A_SIDE) * World.TILE;
+                for (int b : dr.boxes[k]) if ((b & CityMap.PACKED_BIT) == 0) set.add(((long) (b >>> CityMap.BOX_TYPE_SHIFT) << 40) | ((tx + (b & 31)) << 20) | (ty + ((b >> 5) & 31)));
+            }
+            boxes.put(d.dx + "," + d.dy, set);
+            carry.put(d.dx + "," + d.dy, m.carriedLog(d));
+        }
+        return new ChainSnap(boxes, carry);
+    }
+
+    /** Whether the pairs of `after` begin with all the pairs `before` had, in order (an append moves nothing; a pair taken out of the middle is a different history). */
+    static boolean keepsPrefix(int[] before, int[] after) {
+        int nb = before == null ? 0 : before.length, na = after == null ? 0 : after.length;
+        if (na < nb) return false;
+        for (int i = 0; i < nb; i++) if (before[i] != after[i]) return false;
+        return true;
+    }
+
+    static void districtJoinsTheChain() {
+        out.println("\n--- 2g. a district bought into the map's order ahead of others keeps what is carried in place (MF1; CL3's re-chaining, settled by FX6's dated ground) ---");
+        Rim r = new Rim();
+        CityMap m = r.map;
+        World w = World.of(r.seed);
+        int guard = 400;
+        while (m.districts().get(3).count(r.flats) == 0 && guard-- > 0) r.run();
+        List<CityMap.District> chain = new ArrayList<>(m.districts());
+        String[] keys = new String[chain.size()];
+        for (int i = 0; i < keys.length; i++) keys[i] = chain.get(i).dx + "," + chain.get(i).dy;
+        ChainSnap before = chainSnap(m);
+        int carried = 0;
+        for (int[] c : before.carry().values()) carried += c == null ? 0 : c.length / 2;
+        // The nearest dry block in a district the map has none of, to the founding site.
+        long[] block = null;
+        long bdx = 0, bdy = 0;
+        double near = Double.MAX_VALUE;
+        for (int dy = -3; dy <= 3; dy++) {
+            for (int dx = -3; dx <= 3; dx++) {
+                if (m.district(dx, dy) != null) continue;
+                long[] c = dryBlockIn(w, m.land(), (m.baseDX() + dx) * CityMap.DISTRICT, (m.baseDY() + dy) * CityMap.DISTRICT);
+                double o = Math.hypot((m.baseDX() + dx) * CityMap.DISTRICT + CityMap.DISTRICT / 2.0 - r.siteX, (m.baseDY() + dy) * CityMap.DISTRICT + CityMap.DISTRICT / 2.0 - r.siteY);
+                if (c != null && o < near) { near = o; block = c; bdx = dx; bdy = dy; }
+            }
+        }
+        int boughtMonth = r.month - 1;
+        if (block != null) m.land().extend(new LandParcel(-5, 1, 0, m.land().level(), block[0], block[1], block[2], block[3], null, null, null, 0, 0), boughtMonth, 0);
+        r.run();
+        CityMap.District joined = block == null ? null : m.district((int) bdx, (int) bdy);
+        ChainSnap after = chainSnap(m);
+        int ahead = 0, stand = 0, total = 0, prefixes = 0;
+        for (int i = 0; i < keys.length; i++) {
+            if (joined == null || m.district(chain.get(i).dx, chain.get(i).dy).index <= joined.index) continue;
+            ahead++;
+            java.util.Set<Long> was = before.boxes().get(keys[i]), now = after.boxes().get(keys[i]);
+            int moved = 0;
+            for (long b : was) if (!now.contains(b)) moved++;
+            total += was.size();
+            stand += was.size() - moved;
+            if (keepsPrefix(before.carry().get(keys[i]), after.carry().get(keys[i]))) prefixes++;
+            out.printf("      (%s), now at %d in the map's order: %,d boxes, %d moved; carried to it %,d pairs, %,d after%n", keys[i], m.district(chain.get(i).dx, chain.get(i).dy).index, was.size(), moved,
+                    (before.carry().get(keys[i]) == null ? 0 : before.carry().get(keys[i]).length) / 2, (after.carry().get(keys[i]) == null ? 0 : after.carry().get(keys[i]).length) / 2);
+        }
+        int[] joinedCarry = joined == null ? null : after.carry().get(joined.dx + "," + joined.dy);
+        out.printf("      a chain of %d districts spilling %,d pairs; a block of %d plots bought in district (%d,%d), %.0f plots from the site, dated month %d, makes a district %s in the map's order, ahead of %d of them%n",
+                chain.size(), carried, block == null ? 0 : (block[2] - block[0]), bdx, bdy, near, boughtMonth, joined == null ? "-" : "at " + joined.index, ahead);
+        boolean teeth = ahead >= 2 && carried > 200;
+        check("fixture: a chain of " + chain.size() + " districts spills (each hands pairs on: " + carried + " in all) and a block bought in a district the map has none of, dated the month before the one run, makes a district that sorts ahead of at least two others",
+                r.reconciled && joined != null && teeth && joined.logSize() > 0);
+        check("a district bought into the chain ahead of others keeps what is carried in place: the districts after it keep every box where it stood that month (" + stand + " of " + total + " in the " + ahead + " districts after it)",
+                total > 0 && stand == total);
+        check("...and the carry each of them reads keeps the pairs it had, as they were, a prefix: nothing handed on afresh (" + prefixes + " of " + ahead + ")", prefixes == ahead);
+        check("...the district joined, second in the map's order, is carried what the district before it carried on - the pairs the district after it read before - and passes them on as they came",
+                joined != null && joined.index == 1 && java.util.Arrays.equals(before.carry().get(keys[1]), joinedCarry));
     }
 
     /* =====================================================================

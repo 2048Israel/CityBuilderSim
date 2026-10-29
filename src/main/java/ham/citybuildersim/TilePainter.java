@@ -45,7 +45,7 @@ import java.util.Arrays;
  *             land, the Rail Terminals the runs set on their track as yards
  *             (since 0.7.89), the terminals and tank farms the city's shore
  *             holds (since 0.7.97, CityShore), and those the city had no
- *             room for, packed at its edge without a street (R7);
+ *             room for, packed at its edge (R7; since MF1 beside a street);
  *   AT SEA    (since 0.7.97) a terminal's quay, a platform's jacket, its
  *             wells and its 500 m ring, a crude pipeline (AT SEA below).
  *
@@ -258,7 +258,7 @@ public final class TilePainter {
         /** The types, by id (BuildingVisual.table()). */
         public BuildingVisual.Type[] types = new BuildingVisual.Type[0];
 
-        /** The plan's buildings on it (0.7.88): how many, and each one's box as CityMap.box() packs it (x, y, w - 1, h - 1 at five bits each, PACKED_BIT when packed without a street, PART_BIT when it is the part of a building counted on another tile: a yard across a seam, FX5 Y2) and its type id, two ints a building. */
+        /** The plan's buildings on it (0.7.88): how many, and each one's box as CityMap.box() packs it (x, y, w - 1, h - 1 at five bits each, PACKED_BIT when packed at the city's edge, PART_BIT when it is the part of a building counted on another tile: a yard across a seam, FX5 Y2) and its type id, two ints a building. */
         public int buildings;
         public int[] boxes = new int[128];
         /** ...its buildings by type id (a mine or well standing on a site is the site's, not counted): what a hover and a harness read. */
@@ -630,7 +630,7 @@ public final class TilePainter {
         public int[] bx = new int[256], by = new int[256], bw = new int[256], bh = new int[256], btype = new int[256];
         /** The site a mine or well stands on, or -1. */
         public int[] bsite = new int[256];
-        /** Whether it was packed without a street, the city having no room for it in any district's plan (R7). */
+        /** Whether it was packed at the city's edge, the city having no room for it in any district's plan (R7). */
         public boolean[] bpacked = new boolean[256];
         /** Whether it is the part of a building counted on another tile (PART_BIT, FX5 Y2): a yard's, on a tile its first plot is not on. */
         public boolean[] bpart = new boolean[256];
