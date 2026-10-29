@@ -234,6 +234,14 @@ public final class BuildingVisual {
     /** Square feet in a plot: 30 m squared in square feet, 9,687.5 - what a template's land is turned into plots by. */
     public static final double SQ_FT_PER_PLOT = World.KM2_PER_PLOT * LandManager.SQ_FT_PER_KM2;
 
+    /**
+     * The most plots a sea terminal's box is drawn on (SL1, 2026-10-28): 2,368,060 sq ft over a plot's square feet, about 244 - the Bulk Terminal's
+     * ground before SL1 made each terminal a large modern real one of several berths (the Container Terminal 7.75M sq ft, 800 plots, a box 28 a
+     * side), and the largest box the shore laid with its verge and its quay (MapCheck 9's coast of two terminals of each kind). The model still
+     * counts the terminal's whole ground; the map draws the box it can lay on a shore tile.
+     */
+    public static final double BERTH_PLOTS_MOST = 2_368_060 / SQ_FT_PER_PLOT;
+
     /* =====================================================================
        ONE TYPE
        ===================================================================== */
@@ -457,10 +465,14 @@ public final class BuildingVisual {
      * ground (a House 1 x 1, Studio Apartments 2 x 1 for 2.6 plots, Low-Rise
      * Apartments 2 x 3 for 6.2, an Iron Mine 6 x 7 for 41.3, a Livestock Farm
      * 23 x 23 for 540). The same for every building of the type; the painter
-     * turns it to face its road.
+     * turns it to face its road. A sea terminal (berth() >= 0) is drawn on no
+     * more than BERTH_PLOTS_MOST plots (SL1): its box is laid on the shore
+     * with a verge and a quay, and the ground the model counts it on is
+     * bigger than a shore tile holds.
      */
     public static int[] footprint(Type t) {
         double p = Math.max(0, t.plots());
+        if (t.berth() >= 0) p = Math.min(p, BERTH_PLOTS_MOST);
         int across = (int) Math.max(1, Math.min(DistrictPlan.INTERIOR, Math.round(Math.sqrt(p))));
         int down = (int) Math.max(1, Math.min(DistrictPlan.INTERIOR, Math.round(p / across)));
         return new int[] { across, down };

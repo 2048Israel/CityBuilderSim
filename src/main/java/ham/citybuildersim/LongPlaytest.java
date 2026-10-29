@@ -3655,10 +3655,11 @@ public class LongPlaytest {
        could go by sea last month (Ports.carriable(): crude left out while
        the refiners' tanks have no room for a tanker's cargo) are more than
        the berths of that kind standing and on site by WORTH_A_BERTH of a
-       berth's month, it orders one terminal of that kind through build(), as
-       every city order is placed (ground bought, the bond when the cash is
-       short). One a kind each time it is advised - up to movesPerLook() times
-       a look - the berths on site counted against the next. A rule, as the
+       berth's month, it orders the terminals of that kind the tonnes pay back
+       through build(), as every city order is placed (ground bought, the bond
+       when the cash is short): the COUNT, in one order, a kind at each look
+       (SL1, 2026-10-28; it was one a kind a look, and a fast-growing city lagged),
+       the berths on site counted against the next look. A rule, as the
        iron is, not a scored move:
        what a terminal is worth is the band it narrows, which no move here
        prices.
@@ -3668,8 +3669,20 @@ public class LongPlaytest {
        - the same WORTH_A_BERTH of a berth's month at the default dial, the
        threshold over the dial otherwise - and of a kind's terminals the
        LARGEST that pays back is the one ordered (the Bulk Terminal, else the
-       Bulk Berth). The advice and the auto-builder choose by the same rule
+       Bulk Berth; since SL1 the largest the kind's whole trade pays back, see
+       below). The advice and the auto-builder choose by the same rule
        (BuildAdvice, Kind.PORT).
+
+       SL1 (2026-10-28): a terminal is a large modern real terminal now (the
+       General Cargo Terminal 2 Mt a year, not 450,000 t), and of the chosen
+       terminal the count Ports.orderCount() gives is ordered - the
+       Ports.payingCount() the uncovered tonnes pay back, each counted after
+       the ones before it, so a city that has outgrown its berths by several
+       is not held to one a look; and one at least. The terminal is chosen on
+       the kind's whole trade, not the uncovered tonnes (Ports.payingTerminal():
+       the largest whose break-even the carriable tonnes reach, once there is
+       a need), or a young city's Bulk Berths kept the uncovered dry bulk
+       under the Bulk Terminal's break-even for ever (33 Berths, no Terminal).
        ===================================================================== */
 
     /** Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. */
@@ -3691,14 +3704,17 @@ public class LongPlaytest {
         // The port dues dial (FR3): a berth pays back at WORTH_A_BERTH / dial of its month (Ports.berthPaysBack()).
         double dial = g.getEconomyManager().getTaxPolicy().getPortDues();
         for (Ports.Cargo k : Ports.Cargo.values()) {
-            BuildingsTemplate t = terminalFor(g, k, ports.uncovered(k, standing, onSite), dial);
+            double uncovered = ports.uncovered(k, standing, onSite);
+            BuildingsTemplate t = terminalFor(g, k, uncovered, ports.carriable(k), dial);
             if (t == null) continue;
-            if (!g.hasCoastFor(t, 1)) {
+            // ...as many of it as the uncovered tonnes pay back, each counted after the ones before it, and one at least (SL1: Ports.orderCount()), in one order.
+            int n = Ports.orderCount(t, uncovered, dial);
+            if (!g.hasCoastFor(t, n)) {
                 portsNoCoast++;
                 return;
             }
-            if (build(g, t.getName(), 1)) {
-                terminalsOrdered.merge(t.getName(), 1, Integer::sum);
+            if (build(g, t.getName(), n)) {
+                terminalsOrdered.merge(t.getName(), n, Integer::sum);
                 if (firstTerminalMonth == 0) firstTerminalMonth = g.getMonth();
             }
         }
@@ -3713,16 +3729,19 @@ public class LongPlaytest {
 
     /**
      * The catalogue's terminal to order for a kind of cargo, or null (FR3,
-     * docs/queue/FR3.md 5.1): the LARGEST of the kind's terminals that pays
-     * back (Ports.berthPaysBack()) at `uncovered` tonnes a month and the port
-     * dues dial - the Bulk Terminal when the dry bulk would pay it back, else
-     * the Bulk Berth when it would pay that back. It returned the first
+     * docs/queue/FR3.md 5.1; SL1, the size by the kind's whole trade): null
+     * with no need - no terminal of the kind that pays back
+     * (Ports.berthPaysBack()) at `uncovered` tonnes a month and the port dues
+     * dial - and otherwise the LARGEST of the kind's terminals whose own
+     * break-even the kind's `carriable` tonnes, its whole sea trade, reach
+     * (Ports.payingTerminal()): the Bulk Terminal where the dry bulk trade is
+     * past its break-even, else the Bulk Berth. It returned the first
      * template of the kind, the only terminal each kind had until the Bulk
      * Berth; for the tanker, container and general kinds (one each) at the
      * default dial it orders what it ordered, the same .60 of the berth's month.
      */
-    static BuildingsTemplate terminalFor(Game g, Ports.Cargo k, double uncovered, double dial) {
-        return Ports.payingTerminal(k, g.getBuildingManager().getTemplates(), uncovered, dial, null);
+    static BuildingsTemplate terminalFor(Game g, Ports.Cargo k, double uncovered, double carriable, double dial) {
+        return Ports.payingTerminal(k, g.getBuildingManager().getTemplates(), uncovered, carriable, dial, null);
     }
 
     /** The month's boats and sea tonnes, counted (the calls without their quays: the map places them, since 0.7.97 on its sea routes). */

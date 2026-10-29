@@ -82,10 +82,14 @@ import java.util.Set;
  *     it from 0.7.101; it waited for half its worth until then). And, last
  *     (FR3, 2026-10-19; docs/queue/FR3.md 5.4), the berths of each kind of
  *     cargo (BuildAdvice.portMeasures()): the one measure that is not a
- *     service of the city's five categories. A berth is ordered one at a
- *     time, the terminal of its kind that pays back on the port dues
+ *     service of the city's five categories. A berth is ordered as many at a
+ *     time as the tonnes pay back (SL1, 2026-10-28; it was one), of the
+ *     terminal of its kind that pays back on the port dues
  *     (Ports.berthPaysBack(): the uncovered tonnes reach the dues'
- *     break-even share of its month), and it is held by the debt limit, the
+ *     break-even share of its month, so there is a need; the terminal is the
+ *     largest the kind's whole trade pays back, Ports.payingTerminal();
+ *     Ports.orderCount(): how many, each counted after the ones before it,
+ *     and one at least - the card's count), and it is held by the debt limit, the
  *     money, the ground and the coast alone - its crews are Freight's, not
  *     the treasury's, so no payback of its own weighs it (orderable()).
  *   - THE ORDER: the advice's own card for the measure at the player's

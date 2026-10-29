@@ -183,6 +183,23 @@ public class GatewayCheck {
         return BuildingVisual.table(new BuildingCatalog().load());
     }
 
+    /**
+     * The four sea terminals' ground in square feet, ids 94-97, as it was before SL1 (2026-10-28, main at 0.8.66): a Tanker Terminal, a Bulk
+     * Terminal, a Container Terminal and a General Cargo Terminal. Section 21 (the coast across a save) is the one fixture whose geometry
+     * does not survive SL1's terminals even with their boxes capped (BuildingVisual.BERTH_PLOTS_MOST, a Tanker Terminal's 44 plots now 244):
+     * what it is about is the railway's main line running on past a gate arm that waits at the sea, round the shore's two terminals of each
+     * kind, and a FORMAT 12 reload taking it back shorter. With the boxes capped and the terminals' real ground the railway at the month
+     * saved is the same length either way (297 plots), so nothing is taken back and the fixture does not cause its condition.
+     */
+    static final double[] GROUND_BEFORE_SL1 = { 430_556, 2_368_060, 2_152_782, 107_639 };
+
+    /** ...with the four terminals on GROUND_BEFORE_SL1's ground: section 21's. */
+    static BuildingVisual.Type[] gatewayTypesBeforeSL1() {
+        List<BuildingsTemplate> catalogue = new BuildingCatalog().load();
+        for (BuildingsTemplate t : catalogue) if (t.getId() >= 94 && t.getId() <= 97) t.setLandSqFt(GROUND_BEFORE_SL1[t.getId() - 94]);
+        return BuildingVisual.table(catalogue);
+    }
+
     /** The highway type's id. */
     static int highwayType(BuildingVisual.Type[] types) {
         for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].road() == BuildingVisual.HIGHWAY) return t;
@@ -1104,7 +1121,7 @@ public class GatewayCheck {
      */
     static void coastAcrossASave() {
         System.out.println("\n--- the coast across a save: the map after a load is the map before it ---");
-        BuildingVisual.Type[] types = gatewayTypes();
+        BuildingVisual.Type[] types = gatewayTypesBeforeSL1();
         World w = World.of(Founding.DEFAULT_WORLD_SEED);
         long[] last = coastCounts(types), now = new long[last.length];
         CityMap m = MapCheck.coastal(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, now);
