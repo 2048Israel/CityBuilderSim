@@ -1,4 +1,4 @@
-# MainLineCheck.java - 1,542 lines · 47 methods · 1 constants · harnesses
+# MainLineCheck.java - 1,563 lines · 47 methods · 1 constants · harnesses
 
 `ham/citybuildersim/MainLineCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 > 
 > ... (45 more lines in the source)
 
-**Uses:** [CityRuns](CityRuns.md) (221), [TrainSchedule](TrainSchedule.md) (30), [TilePainter](TilePainter.md) (19), [CityMap](CityMap.md) (19), [DistrictPlan](DistrictPlan.md) (18), [BuildingVisual](BuildingVisual.md) (10), [JunctionCheck](JunctionCheck.md) (8), [World](World.md) (6), [MapCheck](MapCheck.md) (6), [Ports](Ports.md) (5), [TileRaster](TileRaster.md) (4), [BuildingCatalog](BuildingCatalog.md) (2), [MapTiles](MapTiles.md) (2), [LandMap](LandMap.md) (1)
+**Uses:** [CityRuns](CityRuns.md) (222), [TrainSchedule](TrainSchedule.md) (30), [CityMap](CityMap.md) (23), [TilePainter](TilePainter.md) (19), [DistrictPlan](DistrictPlan.md) (19), [BuildingVisual](BuildingVisual.md) (10), [JunctionCheck](JunctionCheck.md) (8), [World](World.md) (6), [MapCheck](MapCheck.md) (6), [Ports](Ports.md) (5), [TileRaster](TileRaster.md) (4), [BuildingCatalog](BuildingCatalog.md) (2), [MapTiles](MapTiles.md) (2), [LandMap](LandMap.md) (1)
 
-**Used by (1):** [JunctionCheck](JunctionCheck.md)
+**Used by (2):** [JunctionCheck](JunctionCheck.md), [MapCheck](MapCheck.md)
 
 ## Sections
 
@@ -104,7 +104,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 116 | 1427 | **type** `public class MainLineCheck` | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the city has a Freight Line. |
+| 116 | 1448 | **type** `public class MainLineCheck` | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the city has a Freight Line. |
 | 120 | 4 | `static void check(String label, boolean ok)` |  |
 | 126 | 15 | **type** `static class BoxGround implements CityRuns.Ground` | A square of owned dry ground the runs may lay on, -1 outside: the GatewayCheck fixture's shape. |
 | 129 | 3 | `BoxGround(long x0, long y0, long x1, long y1)` _(in MainLineCheck.BoxGround)_ |  |
@@ -143,7 +143,7 @@
 | 700 | 3 | `static double[] pointOf(TrainSchedule.Route r, int k)` | Route r's point k as {x, y}. |
 | 717 | 112 | `static void stackedOnACorridor(long siteX, long siteY)` | Section 12. |
 
-### 13. the railway's ways (FR7 slice 3) (lines 830-1542)
+### 13. the railway's ways (FR7 slice 3) (lines 830-1563)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -156,17 +156,17 @@
 | 870 | 10 | `static int plotsNearHighways(CityRuns runs, CityRuns.Arm a)` | The plots of every arm of net n with steps laid (the arms' plots, not the hub's) that a highway's plot is next to or on: those within one plot of a highway. |
 | 890 | 237 | `static void railWays(long siteX, long siteY, CityMap real, MapCheck.Squares sq)` | Section 13. |
 | 1129 | 80 | `static void trainsToTheSidings(long siteX, long siteY, CityRuns runs, CityMap real, MapCheck.Squares sq)` | The trains: a route to every siding, a bulk unit train's alone, on the fixture's net and on a real map. |
-| 1211 | 22 | `static void sidingRoutes(CityMap map, String what, boolean maybeNone)` | Section 13's trains on a map: one bulk route to every siding the trains' way reaches, each ending on its siding's last plot; every other route a yard's. |
-| 1235 | 4 | `static int[] depotYard()` | The Rail Depot's yard size, {across, down}: BuildingVisual.footprint() of the catalogue's depot, the size CityMap.layRuns() gives the runs. |
-| 1241 | 8 | `static int armInside(CityRuns.Arm gate, long[] yard)` | How many plots of the net's arm `gate` (its start and every step) lie inside the yard's box {x, y, w, h}. |
-| 1251 | 46 | `static void stationAlone(long siteX, long siteY)` | Section 14: a station alone lays its main line (batch FX5). |
-| 1299 | 4 | `static int[] terminalYard()` | The Rail Terminal's yard size, {across, down}: BuildingVisual.footprint() of the catalogue's terminal that is no depot. |
-| 1305 | 6 | `static CityRuns yardsRun(BoxGround g, List<int[]> sizes, long track)` | A yard laid on the long fixture's ground: the gateway east, the founding site JunctionCheck.SITE, no mines, `track` plots of track, the sizes asked in order. |
-| 1313 | 4 | `static boolean layYards(CityRuns r, BoxGround g, List<int[]> sizes, long track)` | ...laid (again) to the sizes and track given. |
-| 1319 | 4 | `static JunctionCheck.PatchGround longGround()` | The ground of the long fixture: owned grass round the founding site, as JunctionCheck lays its cities (the frame at the world's origin lies inside it). |
-| 1325 | 14 | `static int[] lineOf(CityRuns runs, long[] y)` | A yard's line: {along, across, 1 for a row}, the RAIL_AT line of its cell through its box being track the box's whole length; null where it is not. |
-| 1341 | 5 | `static boolean coversRing(long[] y, int[] line)` | Whether the yard's line holds a ring plot (a multiple of CELL along it): the box runs on across the street between two cells. |
-| 1348 | 9 | `static int streetsOnYards(DistrictPlan p, List<long[]> yards)` | How many plots of the yards' boxes (in the frame at the world's origin) the plan lays a street on. |
-| 1359 | 168 | `static void longYards(CityMap real)` | Section 15: a yard is as long as a unit train along its line (batch FX5 Y1). |
-| 1528 | 14 | `static boolean marksCarry(CityMap m, int bits)` |  |
+| 1211 | 37 | `static void sidingRoutes(CityMap map, String what, boolean maybeNone)` | Section 13's trains on a map: one bulk route to every siding the trains' way reaches, each ending on its siding's last plot; every other route a yard's. |
+| 1250 | 4 | `static int[] depotYard()` | The Rail Depot's yard size, {across, down}: BuildingVisual.footprint() of the catalogue's depot, the size CityMap.layRuns() gives the runs. |
+| 1256 | 8 | `static int armInside(CityRuns.Arm gate, long[] yard)` | How many plots of the net's arm `gate` (its start and every step) lie inside the yard's box {x, y, w, h}. |
+| 1266 | 52 | `static void stationAlone(long siteX, long siteY)` | Section 14: a station alone lays its main line (batch FX5). |
+| 1320 | 4 | `static int[] terminalYard()` | The Rail Terminal's yard size, {across, down}: BuildingVisual.footprint() of the catalogue's terminal that is no depot. |
+| 1326 | 6 | `static CityRuns yardsRun(BoxGround g, List<int[]> sizes, long track)` | A yard laid on the long fixture's ground: the gateway east, the founding site JunctionCheck.SITE, no mines, `track` plots of track, the sizes asked in order. |
+| 1334 | 4 | `static boolean layYards(CityRuns r, BoxGround g, List<int[]> sizes, long track)` | ...laid (again) to the sizes and track given. |
+| 1340 | 4 | `static JunctionCheck.PatchGround longGround()` | The ground of the long fixture: owned grass round the founding site, as JunctionCheck lays its cities (the frame at the world's origin lies inside it). |
+| 1346 | 14 | `static int[] lineOf(CityRuns runs, long[] y)` | A yard's line: {along, across, 1 for a row}, the RAIL_AT line of its cell through its box being track the box's whole length; null where it is not. |
+| 1362 | 5 | `static boolean coversRing(long[] y, int[] line)` | Whether the yard's line holds a ring plot (a multiple of CELL along it): the box runs on across the street between two cells. |
+| 1369 | 9 | `static int streetsOnYards(DistrictPlan p, List<long[]> yards)` | How many plots of the yards' boxes (in the frame at the world's origin) the plan lays a street on. |
+| 1380 | 168 | `static void longYards(CityMap real)` | Section 15: a yard is as long as a unit train along its line (batch FX5 Y1). |
+| 1549 | 14 | `static boolean marksCarry(CityMap m, int bits)` |  |
 

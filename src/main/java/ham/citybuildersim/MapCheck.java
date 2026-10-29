@@ -61,11 +61,24 @@ import java.util.Map;
  *      leaves, and when the first's log gains a later month's arrivals that
  *      overflow too, the second's carry keeps its earlier pairs as they were
  *      and every box the second had placed stands where it stood; and (2d,
- *      FX7) a run laid across a district's buildings - a Rail Depot's yard and
- *      main line at the hub, the yard gone and laid again, Elevated Highways
- *      drawn across them - moves none of them, every box of the plan before
- *      standing in the plan after, and the arrivals after a run stand on none
- *      of its plots;
+ *      FX7, MF1) a run laid across a district's buildings - a Rail Depot's yard
+ *      and main line at the hub, the yard gone and laid again, Elevated Highways
+ *      drawn across them - moves off it the boxes under it, or beside a highway
+ *      (its verge), and only those: every other box of the plan before stands in
+ *      the plan after, none stands on a run or a highway's verge after the
+ *      month, and the arrivals after a run stand on none of its plots;
+ *      and (2e, MF1) a yard whose building left stays laid, idle,
+ *      for CityRuns.YARD_IDLE_MONTHS - the depot ordered again takes the same
+ *      yard back, nothing taken up and laid anew, the net held, no record in
+ *      the journal - and is taken up when its time is up; and
+ *      (2f, MF1) what a city out of ground has no room for is
+ *      packed beside a street of the edge districts - within REACH of one on the
+ *      painted raster, on a tile that has one, together and not one to a tile,
+ *      a street laid only where none is near (LAID_MOST plots at the most, a T
+ *      and never a +) - and stays where it stood while the buildings that come
+ *      after it are added after; and (2g, MF1) a district bought into the map's
+ *      order ahead of others keeps what is carried in place: the districts
+ *      after it keep every box and the carry they read its pairs;
  *   3. the painter draws the plan (0.7.88; the mockup's rules on the deal's
  *      tiles before): on the dense screen every plot a district's plan
  *      surfaces is painted as that street - kind and width - its seams once;
@@ -477,7 +490,11 @@ public class MapCheck {
         nothingMoves(city);
         districtsHoldAndSpill(city);
         districtBuysLandInside(city);
+        outerRim();
+        districtJoinsTheChain();
         runsLaidAcross(city);
+        idleYards(city);
+        idleYardsOnRuns();
         Squares sq = new Squares();
         painterRules(sq.maps[DENSE]);
         drawnAsItIs(sq.maps[DENSE]);
@@ -488,6 +505,7 @@ public class MapCheck {
         viewHalf(city, sq, root);
         atSea(sq.types, sq.seed);
         trains(sq, city);
+        idleYardsTrains(sq);
         onEarth(sq.types);
         pictures(city, sq);
         pictureRelief(sq.types);
@@ -1324,6 +1342,373 @@ public class MapCheck {
         return whole && inside && free && dry;
     }
 
+
+    /* =====================================================================
+       2f. THE OUTER RIM: WHAT A CITY HAS NO ROOM FOR STANDS BESIDE A STREET (batch MF1)
+       ===================================================================== */
+
+    /*
+     * Jerus (2026-10-23), of the far, empty land of his city dotted with small buildings on an even grid: "i understand mines and wells, but these
+     * werent either". They were what the legend counts as packed without a street: R7 put each of the buildings a city has no room for on the next
+     * tile's first free corner, the tiles in turn from the farthest, so a lattice of them, one to a tile, over ground with no street for kilometres.
+     * His call: "an overflow building stands at the built edge beside the streets it belongs to, with a street laid to it; no lone grid in the
+     * fields." The fixture causes the condition: a city of four districts out of ground (works and flats added a month at a time until the last
+     * district's plan has some left over), every district its edge, the buildings it cannot hold packed in the ground its plans leave. On the painted
+     * raster every packed building is within REACH of a street and on a tile that has one - where R7's stood far from any - and a street is laid only
+     * where none is near: by hand, on ground made for it, one a short straight way from a box to the first street it meets (a T, never a +),
+     * none longer than LAID_MOST. The packing stays where it stood from one month to the next while the buildings that come are added after it.
+     */
+
+    /** The works and the flats the out-of-ground city is given a month, and where its founding site stands in its district (plots from its north-west corner): a district's order from the site is then 92, 272, 348 and 432 plots, so a district bought east of it sorts before the rest (2g). */
+    static final int RIM_WORKS = 12, RIM_FLATS = 72;
+    static final int[] RIM_SITE_AT = { 220, 128 };
+
+    /** The packed buildings 2e wants before it looks, and how many months it adds between looks. */
+    static final int RIM_PACKED = 60, RIM_LOOK_EVERY = 4;
+
+    /** The id of the building template of that name, from the catalog. */
+    static int idNamed(String name) {
+        for (BuildingsTemplate t : new BuildingCatalog().load()) if (t.getName().equals(name)) return t.getId();
+        throw new IllegalStateException("no building named " + name);
+    }
+
+    /** The out-of-ground city of 2e and 2f: two districts a side on the default world's dry place, the founding site at RIM_SITE_AT in the last of them, drawn canonically and given works and flats month by month. */
+    static final class Rim {
+        final BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
+        final long seed = Founding.DEFAULT_WORLD_SEED;
+        final long siteX, siteY;
+        final CityMap map;
+        final long[] model;
+        final int works = idNamed("Fabrication Works"), flats = idNamed("Low-Rise Apartments");
+        /** The month the next one is run in. */
+        int month = 10;
+        boolean reconciled = true;
+
+        Rim() {
+            long[] place = dryPlace(World.of(seed));
+            long bx = Math.floorDiv(place[0], CityMap.DISTRICT), by = Math.floorDiv(place[1], CityMap.DISTRICT);
+            siteX = bx * CityMap.DISTRICT + RIM_SITE_AT[0];
+            siteY = by * CityMap.DISTRICT + RIM_SITE_AT[1];
+            double[] centre = new double[CityLand.CENTRE_FIELDS];
+            centre[CityLand.CENTRE_FIELDS - 5] = -1;
+            centre[CityLand.CENTRE_FIELDS - 4] = -1;
+            centre[CityLand.CENTRE_FIELDS - 2] = siteX;
+            centre[CityLand.CENTRE_FIELDS - 1] = siteY;
+            long d = CityMap.DISTRICT;
+            CityLand land = CityLand.restore(World.Key.generated(seed), centre, new double[][] { { (bx - 1) * d, (by - 1) * d, (bx + 1) * d, (by + 1) * d } }, null, null, null);
+            map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+            model = new long[types.length];
+        }
+
+        /** One month: RIM_WORKS more works and RIM_FLATS more flats, the map reconciled to them. */
+        void run() {
+            model[works] += RIM_WORKS;
+            model[flats] += RIM_FLATS;
+            reconciled &= map.reconcile(model, month++);
+        }
+
+        /** ...and one month of the flats alone. */
+        void runFlats() {
+            model[flats] += RIM_FLATS;
+            reconciled &= map.reconcile(model, month++);
+        }
+    }
+
+    /** Every packed box on a map, by district and tile: the box as Drawn.boxes has it, with its type. */
+    static java.util.Set<String> packedBoxes(CityMap m) {
+        java.util.Set<String> set = new java.util.HashSet<>();
+        TilePainter.Input in = new TilePainter.Input();
+        long[] box = tilesOf(m);
+        for (long ty = box[1]; ty < box[1] + box[3]; ty++) {
+            for (long tx = box[0]; tx < box[0] + box[2]; tx++) {
+                if (m.districtOfTile(tx, ty) == null) continue;
+                m.tileInput(tx, ty, in);
+                for (int b = 0; b < in.buildings; b++) if ((in.boxes[2 * b] & CityMap.PACKED_BIT) != 0) set.add(tx + "," + ty + ":" + in.boxes[2 * b] + ":" + in.boxes[2 * b + 1]);
+            }
+        }
+        return set;
+    }
+
+    static void outerRim() {
+        out.println("\n--- 2f. the outer rim: what a city has no room for stands beside a street, one laid to it where none is near, and stays (MF1) ---");
+        Rim r = new Rim();
+        int packed = 0, guard = 400, months = 0;
+        while (packed < RIM_PACKED && guard-- > 0) {
+            for (int k = 0; k < RIM_LOOK_EVERY; k++) {
+                r.run();
+                months++;
+            }
+            packed = r.map.packedCounts()[0];
+        }
+        CityMap m = r.map;
+        int[] pk = m.packedCounts(), ways = m.packedWays();
+        boolean allEdge = true;
+        for (CityMap.District d : m.districts()) allEdge &= m.isEdge(d);
+        Raster ra = Raster.of(m);
+        int[] dist = ra.reach(TilePainter.REACH);
+        int boxes = 0, far = 0, bare = 0, tilesHeld = 0;
+        java.util.Set<Long> tiles = new java.util.HashSet<>();
+        for (int[] b : ra.boxes) {
+            if (b[6] != 1) continue;
+            boxes++;
+            if (Raster.boxReach(dist, ra.w, b) > TilePainter.REACH) far++;
+            long tile = (long) (b[1] / World.TILE) * (ra.w / World.TILE) + b[0] / World.TILE;
+            if (tiles.add(tile)) {
+                boolean street = false;
+                for (int y = (b[1] / World.TILE) * World.TILE; y < (b[1] / World.TILE + 1) * World.TILE && !street; y++) {
+                    for (int x = (b[0] / World.TILE) * World.TILE; x < (b[0] / World.TILE + 1) * World.TILE && !street; x++) street = ra.isStreet(y * ra.w + x);
+                }
+                if (!street) bare++;
+            }
+        }
+        tilesHeld = tiles.size();
+        out.printf("      %d districts, all at the edge, given %d works and %d flats a month for %d months: %,d buildings packed (%,d drawn smaller, %,d with no ground) on %d tiles;"
+                        + " %d against a street, %d within %d plots of one, %d at the end of a street laid to them (%d streets, %d plots), %d in the field%n",
+                m.districts().size(), RIM_WORKS, RIM_FLATS, months, pk[0], pk[1], pk[2], tilesHeld, ways[0], ways[1], TilePainter.REACH, ways[2], ways[4], ways[5], ways[3]);
+        out.printf("      ...painted: %,d packed boxes, %d farther than %d plots from every street, %d tiles holding them with no street on them%n", boxes, far, TilePainter.REACH, bare);
+        check("fixture: a city out of ground - every district at its edge, a month's reconcile that took, and buildings its plans could not hold packed",
+                r.reconciled && allEdge && pk[0] >= RIM_PACKED && boxes == pk[0] - pk[2]);
+        check("every building packed at the edge stands within REACH (" + TilePainter.REACH + ") plots of a street, on the painted raster: none in the fields, far from every street", far == 0 && boxes > 0);
+        check("...and on a tile that has a street on it (" + tilesHeld + " tiles)", bare == 0 && tilesHeld > 0);
+        check("...together, not a lattice of them one to a tile: the buildings stand on a third of the tiles they number at the most (" + tilesHeld + " tiles for " + boxes + " boxes)", tilesHeld * 3 <= boxes);
+        check("...each counted by how it stands - against a street, within reach of one, at the end of a street laid to it - and none in the field, where every district has streets",
+                ways[0] + ways[1] + ways[2] + ways[3] == pk[0] - pk[2] && ways[3] == 0);
+        check("...the streets laid are none longer than LAID_MOST (" + CityMap.LAID_MOST + ") plots", ways[6] <= CityMap.LAID_MOST && ways[4] * CityMap.LAID_MOST >= ways[5] && (ways[4] == 0) == (ways[5] == 0));
+        check("the hover says what they are, a building packed at the city's edge: no longer \"without a street\"", !LandMap.PACKED_WORDS.contains("without a street") && LandMap.PACKED_WORDS.contains("packed at the city's edge"));
+        // From month to month: the buildings are packed largest first (BuildingVisual.rankedTypes()), so one added displaces only those ranked after it.
+        java.util.Set<String> before = packedBoxes(m);
+        r.runFlats();
+        java.util.Set<String> after = packedBoxes(m);
+        int moved = 0;
+        for (String b : before) if (!after.contains(b)) moved++;
+        out.printf("      ...a month of flats more, %,d packed (%,d before): %,d of the %,d boxes that stood moved%n", after.size(), before.size(), moved, before.size());
+        check("the packing stays where it stood from month to month: a month of the smallest buildings, flats, adds after what stands and moves none (" + before.size() + " boxes, " + moved + " moved)",
+                before.size() > 0 && moved == 0 && after.size() > before.size());
+        java.util.Set<String> then = packedBoxes(m);
+        for (int k = 0; k < 3; k++) r.run();
+        java.util.Set<String> later = packedBoxes(m);
+        int[] rank = new int[r.types.length];
+        int[] ranked = BuildingVisual.rankedTypes(r.types);
+        for (int i = 0; i < ranked.length; i++) rank[ranked[i]] = i;
+        int shifted = 0, dearer = 0;
+        for (String b : then) {
+            if (later.contains(b)) continue;
+            shifted++;
+            if (rank[Integer.parseInt(b.substring(b.lastIndexOf(':') + 1))] <= rank[r.works]) dearer++;
+        }
+        out.printf("      ...three months of works and flats more, %,d packed (%,d before): %,d of the boxes that stood moved, %d of them not flats%n", later.size(), then.size(), shifted, dearer);
+        check("...works and flats added together displace only the flats, which come after the works in the order they are packed in: none of the works moved (" + shifted + " boxes, " + dearer + " of works)",
+                then.size() > 0 && dearer == 0 && later.size() > then.size());
+        laidByHand(r.types);
+    }
+
+    /** A plot of a district's mask (a bit a plot, DISTRICT / 64 words a row). */
+    static void plotOn(long[] m, int x, int y) {
+        m[y * (CityMap.DISTRICT / 64) + (x >>> 6)] |= 1L << (x & 63);
+    }
+
+    static boolean plotIs(long[] m, int x, int y) {
+        return (m[y * (CityMap.DISTRICT / 64) + (x >>> 6)] & (1L << (x & 63))) != 0;
+    }
+
+    /** One hand-made edge district packed with one building of type t: its free ground and its streets as given, its tiles in order. */
+    static CityMap.Pack handPack(BuildingVisual.Type[] types, int t, long[] free, long[] street, CityMap.District e) {
+        long[] order = new long[CityMap.TILES];
+        for (int k = 0; k < CityMap.TILES; k++) order[k] = k;
+        int[] carry = new int[types.length];
+        carry[t] = 1;
+        return CityMap.packAtEdge(carry, types, new CityMap.District[] { e }, new long[][] { free }, new long[][] { street }, order);
+    }
+
+    /** The one box a hand-made packing put on tile 25 of the district, or none. */
+    static int[] onlyBox(CityMap.Pack p, CityMap.District e) {
+        int[][] per = p.boxes.get(e);
+        return per == null || per[3 * CityMap.TILES_A_SIDE + 1] == null ? new int[0] : per[3 * CityMap.TILES_A_SIDE + 1];
+    }
+
+    /**
+     * ...the street laid to a building no street is near, on ground made for it: a street down x = 40, the one free ground a corridor a plot wide along y = 100
+     * from it (x 41 to 46) and a block of three rows beyond (x 47 to 60, y 99 to 101), holding one 3 x 3 building. It stands at the block's corner and a street
+     * is laid straight to the street, six plots, the box's side first; with the street at x = 36 the corridor is ten plots, longer than LAID_MOST, so none is laid and the
+     * building is drawn smaller, one plot, against the street where the corridor meets it; with a plot of street beyond the street at its end (a + the street would make)
+     * the same; with no street at all it stands in the field, whole, on the first tile that holds it; and the grown masks reach as far as they say.
+     */
+    static void laidByHand(BuildingVisual.Type[] types) {
+        int t3 = -1;
+        for (int t = 0; t < types.length && t3 < 0; t++) {
+            if (types[t] != null && types[t].drawn() && types[t].site() == null && Arrays.equals(BuildingVisual.footprint(types[t]), new int[] { 3, 3 })) t3 = t;
+        }
+        CityMap.District e = new CityMap.District(0, 0, types.length, 0);
+        int words = CityMap.DISTRICT / 64, rows = CityMap.DISTRICT;
+        // The block's tile: x 32 to 63, y 96 to 127, the third row of tiles and the second column: tile 25.
+        int tile = 3 * CityMap.TILES_A_SIDE + 1;
+        CityMap.Pack[] got = new CityMap.Pack[4];
+        for (int c = 0; c < 4; c++) {
+            long[] free = new long[rows * words], street = new long[rows * words];
+            int at = c == 1 ? 36 : 40;
+            if (c != 3) for (int y = 0; y < rows; y++) plotOn(street, at, y);
+            if (c == 2) plotOn(street, at - 1, 100);
+            for (int x = at + 1; x <= 46; x++) plotOn(free, x, 100);
+            for (int y = 99; y <= 101; y++) for (int x = 47; x <= 60; x++) plotOn(free, x, y);
+            got[c] = handPack(types, t3, free, street, e);
+        }
+        CityMap.Pack a = got[0], b = got[1], c = got[2], f = got[3];
+        byte[][] laid = a.laid.get(e);
+        int laidPlots = 0;
+        boolean along = laid != null && laid[tile] != null;
+        for (int x = 41; x <= 46 && along; x++) along &= laid[tile][(100 - 96) * World.TILE + x - 32] == CityMap.LAID_CODE;
+        if (laid != null) for (byte[] tl : laid) if (tl != null) for (byte v : tl) if (v != 0) laidPlots++;
+        int[] box = a.boxes.get(e) == null || a.boxes.get(e)[tile] == null ? new int[0] : a.boxes.get(e)[tile];
+        boolean corner = box.length == 1 && (box[0] & 31) == 47 - 32 && ((box[0] >> 5) & 31) == 99 - 96 && (box[0] & CityMap.PACKED_BIT) != 0;
+        check("a building no street is near has a street laid to it: straight from its side to the street, six plots, a T on the street, the box at the block's corner",
+                a.laidTo == 1 && a.laidStreets == 1 && a.laidPlots == 6 && laidPlots == 6 && along && corner && a.field == 0 && a.none == 0);
+        int[] bb = onlyBox(b, e), cb = onlyBox(c, e), fb = onlyBox(f, e);
+        check("...one that would be longer than LAID_MOST (" + CityMap.LAID_MOST + ") plots is laid none: the building is drawn smaller, a plot, against the street where the corridor meets it",
+                b.laidStreets == 0 && b.laidTo == 0 && b.smaller == 1 && b.touching == 1 && b.none == 0 && b.laid.isEmpty() && bb.length == 1 && (bb[0] & 0xfffff & ~CityMap.PACKED_BIT) == (5 | (4 << 5)));
+        check("...and none is laid to a street that is a crossing of three ways already: it would make a +, so the same",
+                c.laidStreets == 0 && c.smaller == 1 && c.touching == 1 && c.none == 0 && c.laid.isEmpty() && cb.length == 1 && (cb[0] & 0xfffff & ~CityMap.PACKED_BIT) == (9 | (4 << 5)));
+        check("...and with no street in the district at all it stands in the field, whole, on the first tile that holds it: counted as that, none laid",
+                f.field == 1 && f.touching == 0 && f.reached == 0 && f.laidStreets == 0 && f.smaller == 0 && f.none == 0 && fb.length == 1 && (fb[0] & 31) == 47 - 32 && ((fb[0] >> 5) & 31) == 99 - 96);
+        // The grown masks: a plot a word's edge crosses, REACH plots out every way across corners.
+        long[] one = new long[rows * words];
+        plotOn(one, 63, 10);
+        long[] grown = CityMap.dilate(one, TilePainter.REACH);
+        int n = 0;
+        for (long w : grown) n += Long.bitCount(w);
+        boolean whole = true;
+        for (int y = 10 - TilePainter.REACH; y <= 10 + TilePainter.REACH; y++) for (int x = 63 - TilePainter.REACH; x <= 63 + TilePainter.REACH; x++) whole &= plotIs(grown, x, y);
+        check("a plot's reach crosses a word's edge: REACH plots out every way, across corners, the whole square and nothing more (" + n + " plots)",
+                whole && n == (2 * TilePainter.REACH + 1) * (2 * TilePainter.REACH + 1) && !plotIs(grown, 63 - TilePainter.REACH - 1, 10));
+    }
+
+    /* =====================================================================
+       2g. A DISTRICT BOUGHT INTO THE MAP'S ORDER AHEAD OF OTHERS KEEPS WHAT IS CARRIED IN PLACE (batch MF1; CL3's re-chaining)
+       ===================================================================== */
+
+    /*
+     * CL3 left it open (its notes, 2 and 7): a district bought into the map's order ahead of others hands the spill's chain on afresh, and what was carried
+     * into the districts after it moves that month - the playtest's last two months, 4,355 boxes. Jerus (2026-10-23, "Into MF1"): keep what is carried in
+     * place when a district is bought. FX6 (0.8.16) had settled it without knowing: it dated the ground, so a district whose ground was all bought in
+     * month M has no open cell for the buildings the chain carried to it dated up to M, and passes them on as they came; the districts after it read the
+     * same carry as the month before, and nothing in them moves. This is the fixture that holds it: a chain of four districts spilling (works and flats
+     * a month until the fourth holds some), a block bought east of the founding site that makes a fifth, which sorts into the map's order ahead of three of the four,
+     * and one month on. Every box of the districts after it stands where it stood and the carry they read keeps the pairs it had, a prefix. Without the dates
+     * (the ground read as it stands, as before FX6) the same month moves a thousand boxes in each.
+     */
+
+    /** The block of 64 x 64 plots, whole blocks of the land's level at least, over ground at least nine tenths dry, nearest the middle of the district at (x0, y0) of the world: {x0, y0, x1, y1}, or null. */
+    static long[] dryBlockIn(World w, CityLand land, long x0, long y0) {
+        long b = 1L << land.level(), side = (BOUGHT_PLOTS + b - 1) / b * b;
+        byte[] buf = new byte[World.TILE * World.TILE];
+        long[] best = null;
+        double nearest = Double.MAX_VALUE;
+        for (long by = Math.floorDiv(y0 + b - 1, b) * b; by + side <= y0 + CityMap.DISTRICT - World.TILE; by += b) {
+            for (long bx = Math.floorDiv(x0 + b - 1, b) * b; bx + side <= x0 + CityMap.DISTRICT - World.TILE; bx += b) {
+                if (land.grid().owned(bx, by, bx + side, by + side) != 0) continue;
+                int dry = 0;
+                for (long ty = by; ty < by + side; ty += World.TILE) {
+                    for (long tx = bx; tx < bx + side; tx += World.TILE) {
+                        w.tileTerrain(Math.floorDiv(tx, World.TILE), Math.floorDiv(ty, World.TILE), buf);
+                        for (byte c : buf) if (!World.salt(c) && c != World.FRESH) dry++;
+                    }
+                }
+                if (dry * 10L < 9L * side * side) continue;
+                double d = Math.hypot(bx + side / 2.0 - (x0 + CityMap.DISTRICT / 2.0), by + side / 2.0 - (y0 + CityMap.DISTRICT / 2.0));
+                if (d < nearest) { nearest = d; best = new long[] { bx, by, bx + side, by + side }; }
+            }
+        }
+        return best;
+    }
+
+    /** Each district's placed boxes (a box in the district, the type with it, the packed left out) and what was carried to it, by its place in the map: what a month's change is held against. */
+    record ChainSnap(java.util.Map<String, java.util.Set<Long>> boxes, java.util.Map<String, int[]> carry) { }
+
+    static ChainSnap chainSnap(CityMap m) {
+        for (CityMap.District d : m.districts()) {
+            if (m.planned(d)) continue;
+            for (CityMap.Job j : m.planJobs(d)) { j.run(); m.adopt(j); }
+        }
+        m.packed();
+        java.util.Map<String, java.util.Set<Long>> boxes = new java.util.HashMap<>();
+        java.util.Map<String, int[]> carry = new java.util.HashMap<>();
+        for (CityMap.District d : m.districts()) {
+            CityMap.Drawn dr = m.drawnOf(d);
+            java.util.Set<Long> set = new java.util.HashSet<>();
+            for (int k = 0; k < CityMap.TILES; k++) {
+                if (dr.boxes[k] == null) continue;
+                long tx = (long) (k % CityMap.TILES_A_SIDE) * World.TILE, ty = (long) (k / CityMap.TILES_A_SIDE) * World.TILE;
+                for (int b : dr.boxes[k]) if ((b & CityMap.PACKED_BIT) == 0) set.add(((long) (b >>> CityMap.BOX_TYPE_SHIFT) << 40) | ((tx + (b & 31)) << 20) | (ty + ((b >> 5) & 31)));
+            }
+            boxes.put(d.dx + "," + d.dy, set);
+            carry.put(d.dx + "," + d.dy, m.carriedLog(d));
+        }
+        return new ChainSnap(boxes, carry);
+    }
+
+    /** Whether the pairs of `after` begin with all the pairs `before` had, in order (an append moves nothing; a pair taken out of the middle is a different history). */
+    static boolean keepsPrefix(int[] before, int[] after) {
+        int nb = before == null ? 0 : before.length, na = after == null ? 0 : after.length;
+        if (na < nb) return false;
+        for (int i = 0; i < nb; i++) if (before[i] != after[i]) return false;
+        return true;
+    }
+
+    static void districtJoinsTheChain() {
+        out.println("\n--- 2g. a district bought into the map's order ahead of others keeps what is carried in place (MF1; CL3's re-chaining, settled by FX6's dated ground) ---");
+        Rim r = new Rim();
+        CityMap m = r.map;
+        World w = World.of(r.seed);
+        int guard = 400;
+        while (m.districts().get(3).count(r.flats) == 0 && guard-- > 0) r.run();
+        List<CityMap.District> chain = new ArrayList<>(m.districts());
+        String[] keys = new String[chain.size()];
+        for (int i = 0; i < keys.length; i++) keys[i] = chain.get(i).dx + "," + chain.get(i).dy;
+        ChainSnap before = chainSnap(m);
+        int carried = 0;
+        for (int[] c : before.carry().values()) carried += c == null ? 0 : c.length / 2;
+        // The nearest dry block in a district the map has none of, to the founding site.
+        long[] block = null;
+        long bdx = 0, bdy = 0;
+        double near = Double.MAX_VALUE;
+        for (int dy = -3; dy <= 3; dy++) {
+            for (int dx = -3; dx <= 3; dx++) {
+                if (m.district(dx, dy) != null) continue;
+                long[] c = dryBlockIn(w, m.land(), (m.baseDX() + dx) * CityMap.DISTRICT, (m.baseDY() + dy) * CityMap.DISTRICT);
+                double o = Math.hypot((m.baseDX() + dx) * CityMap.DISTRICT + CityMap.DISTRICT / 2.0 - r.siteX, (m.baseDY() + dy) * CityMap.DISTRICT + CityMap.DISTRICT / 2.0 - r.siteY);
+                if (c != null && o < near) { near = o; block = c; bdx = dx; bdy = dy; }
+            }
+        }
+        int boughtMonth = r.month - 1;
+        if (block != null) m.land().extend(new LandParcel(-5, 1, 0, m.land().level(), block[0], block[1], block[2], block[3], null, null, null, 0, 0), boughtMonth, 0);
+        r.run();
+        CityMap.District joined = block == null ? null : m.district((int) bdx, (int) bdy);
+        ChainSnap after = chainSnap(m);
+        int ahead = 0, stand = 0, total = 0, prefixes = 0;
+        for (int i = 0; i < keys.length; i++) {
+            if (joined == null || m.district(chain.get(i).dx, chain.get(i).dy).index <= joined.index) continue;
+            ahead++;
+            java.util.Set<Long> was = before.boxes().get(keys[i]), now = after.boxes().get(keys[i]);
+            int moved = 0;
+            for (long b : was) if (!now.contains(b)) moved++;
+            total += was.size();
+            stand += was.size() - moved;
+            if (keepsPrefix(before.carry().get(keys[i]), after.carry().get(keys[i]))) prefixes++;
+            out.printf("      (%s), now at %d in the map's order: %,d boxes, %d moved; carried to it %,d pairs, %,d after%n", keys[i], m.district(chain.get(i).dx, chain.get(i).dy).index, was.size(), moved,
+                    (before.carry().get(keys[i]) == null ? 0 : before.carry().get(keys[i]).length) / 2, (after.carry().get(keys[i]) == null ? 0 : after.carry().get(keys[i]).length) / 2);
+        }
+        int[] joinedCarry = joined == null ? null : after.carry().get(joined.dx + "," + joined.dy);
+        out.printf("      a chain of %d districts spilling %,d pairs; a block of %d plots bought in district (%d,%d), %.0f plots from the site, dated month %d, makes a district %s in the map's order, ahead of %d of them%n",
+                chain.size(), carried, block == null ? 0 : (block[2] - block[0]), bdx, bdy, near, boughtMonth, joined == null ? "-" : "at " + joined.index, ahead);
+        boolean teeth = ahead >= 2 && carried > 200;
+        check("fixture: a chain of " + chain.size() + " districts spills (each hands pairs on: " + carried + " in all) and a block bought in a district the map has none of, dated the month before the one run, makes a district that sorts ahead of at least two others",
+                r.reconciled && joined != null && teeth && joined.logSize() > 0);
+        check("a district bought into the chain ahead of others keeps what is carried in place: the districts after it keep every box where it stood that month (" + stand + " of " + total + " in the " + ahead + " districts after it)",
+                total > 0 && stand == total);
+        check("...and the carry each of them reads keeps the pairs it had, as they were, a prefix: nothing handed on afresh (" + prefixes + " of " + ahead + ")", prefixes == ahead);
+        check("...the district joined, second in the map's order, is carried what the district before it carried on - the pairs the district after it read before - and passes them on as they came",
+                joined != null && joined.index == 1 && java.util.Arrays.equals(before.carry().get(keys[1]), joinedCarry));
+    }
+
     /* =====================================================================
        2d. A RUN LAID ACROSS A DISTRICT'S BUILDINGS MOVES NONE OF THEM (batch FX7)
        ===================================================================== */
@@ -1423,6 +1808,22 @@ public class MapCheck {
         int arrivalsOnRuns(Snap later) {
             int n = 0;
             for (PlanBox b : later.boxes) if (!boxes.contains(b) && anyPlot(b, 0, p -> later.fixed[p] != 0 || later.runs[p] != 0)) n++;
+            return n;
+        }
+
+        /** How many of this plan's boxes stand on a plot its input fixes (a highway, the railway, a yard, a reserve) or beside a highway plot of it, the highway's verge (H5): the buildings a run lies across (MF1). */
+        int onRuns() {
+            int n = 0;
+            for (PlanBox b : boxes) if (anyPlot(b, 0, p -> fixed[p] != 0) || anyPlot(b, 1, p -> fixed[p] == DistrictPlan.FIXED_HIGHWAY)) n++;
+            return n;
+        }
+
+        /** How many of this plan's boxes `later`'s runs lie across or beside (MF1): a plot of the box is a plot the runs hold in `later` and did not hold here, or lies within a plot of a highway they hold there and did not here. */
+        int lying(Snap later) {
+            int n = 0;
+            for (PlanBox b : boxes) {
+                if (anyPlot(b, 0, p -> later.runs[p] != 0 && runs[p] == 0) || anyPlot(b, 1, p -> later.runs[p] == DistrictPlan.FIXED_HIGHWAY && runs[p] != DistrictPlan.FIXED_HIGHWAY)) n++;
+            }
             return n;
         }
 
@@ -1552,7 +1953,8 @@ public class MapCheck {
     }
 
     /**
-     * Whether a run laid across a district's buildings moves none of them (batch FX7): on the played city's ground the district holding the founding
+     * Whether a run laid across a district's buildings moves off it the buildings it lies across or beside and no others (batch FX7: moved none; MF1, 2026-10-28:
+     * "Buildings move off", the boxes under a new run, or beside a highway in its verge, are built again in the district or go on to the next): on the played city's ground the district holding the founding
      * site is given houses and BUILDINGS_A_MONTH buildings of the mix a month until half its room is used; a Rail Depot is added and a month run (the runs' yard and main
      * line), four months of arrivals, the depot taken away, four months, the depot again, four months, then Elevated Highways a month until they lie in the
      * district. The district's plan is not kept: it is drawn from the map at each moment.
@@ -1565,7 +1967,7 @@ public class MapCheck {
      * is the highways' alone), and then lays the highways as before.
      */
     static void runsLaidAcross(Game g) {
-        out.println("\n--- 2d. a run laid across a district's buildings moves none of them (FX7) ---");
+        out.println("\n--- 2d. a run laid across a district's buildings moves off it the buildings it lies across or beside, and no others (FX7, MF1) ---");
         BuildingVisual.Type[] types = g.getMapTypes();
         int house = idOf(g, "House"), depot = idOf(g, "Rail Depot"), highway = idOf(g, "Elevated Highway");
         int[] mix = new int[MIX.length];
@@ -1594,6 +1996,9 @@ public class MapCheck {
         while (d.usedCells() < d.room() * USED_SHARE && guard-- > 0) in.month();
         int month1 = h.last();
         Snap s1 = new Snap(m, d);
+        // The layout watch's snapshot of every district as the map draws it (LongPlaytest, THE LAYOUT, WATCHED), before the yard and after it (MF1).
+        java.util.Map<Long, LongPlaytest.LayoutSnap> watch1 = LongPlaytest.layoutSnapshot(m);
+        LongPlaytest.layoutKeepOldWorks(m, month1, watch1);
         int placed1 = d.count(house);
         boolean allKinds1 = d.count(house) > 0;
         for (int t : mix) {
@@ -1606,6 +2011,10 @@ public class MapCheck {
         model[depot] = 1;
         Snap s2 = quietMonth(h, d);
         int yardMonth = h.last();
+        java.util.Map<Long, LongPlaytest.LayoutSnap> watch2 = LongPlaytest.layoutSnapshot(m);
+        long watchMoved0 = LongPlaytest.layoutMoved + LongPlaytest.layoutMovedInSpill, watchOff0 = LongPlaytest.layoutMovedOffRun;
+        LongPlaytest.layoutCompare(g, m, yardMonth, watch1, watch2);
+        long watchMoved = LongPlaytest.layoutMoved + LongPlaytest.layoutMovedInSpill - watchMoved0, watchOff = LongPlaytest.layoutMovedOffRun - watchOff0;
         int under12 = s1.under(s2, 0), moved12 = movedOf(s1.boxes, s2.boxes), yardPlots = s2.plots(DistrictPlan.FIXED_YARD), railPlots = s2.plots(DistrictPlan.FIXED_RAIL);
         int control12 = s1.movedWithTheseRuns(m, d);
         List<long[]> yards = new ArrayList<>(m.runs().yards());
@@ -1618,6 +2027,9 @@ public class MapCheck {
 
         // ----- the yard goes: no Rail Depot, and the month that follows -----
         model[depot] = 0;
+        // (MF1) The yard of a depot that left stands idle (2e); it goes when its time is up, so the months run on to that: the fixture is a yard that goes.
+        quietMonth(h, d);
+        h.month += CityRuns.YARD_IDLE_MONTHS;
         Snap s3 = quietMonth(h, d);
         int goneMonth = h.last();
         int moved3 = movedOf(s2b.boxes, s3.boxes), yardLeft = s3.plots(DistrictPlan.FIXED_YARD), freed = s2b.plots(DistrictPlan.FIXED_YARD) - yardLeft;
@@ -1645,7 +2057,7 @@ public class MapCheck {
 
         // ----- the highways: Elevated Highways a month until some lie in the district, the plan of that month against the month before -----
         Snap before = sGround, hwBefore = null, s5 = null;
-        int hwMonth = -1, hwNew = 0, hwNear = 0, hwMoved = 0, hwControl = 0, hwUnder = 0, hwOnRuns = s4b.arrivalsOnRuns(sGround), hwMonths = 0;
+        int hwMonth = -1, hwNew = 0, hwNear = 0, hwHit = 0, hwMoved = 0, hwControl = 0, hwUnder = 0, hwOnRuns = s4b.arrivalsOnRuns(sGround), hwMonths = 0;
         boolean reached = false;
         for (int i = 0; i < HIGHWAY_MONTHS && s5 == null; i++) {
             model[highway] += HIGHWAY_STEP;
@@ -1659,6 +2071,7 @@ public class MapCheck {
                 hwMonth = h.last();
                 hwUnder = before.under(after, 0);
                 hwNear = before.under(after, HIGHWAY_CLEAR);
+                hwHit = before.lying(after);
                 hwMoved = movedOf(before.boxes, after.boxes);
                 hwControl = before.movedWithTheseRuns(m, d);
                 reached = m.runs().highwaysReach();
@@ -1672,6 +2085,11 @@ public class MapCheck {
             s6 = new Snap(m, d);
         }
         long[] highwayHub = m.runs().highways().hub();
+        // The oldest works kept at S1, found again at the end: those a run laid since lies across or beside moved off it (MF1) and are no finding.
+        long oldOff0 = LongPlaytest.layoutOldMovedOff;
+        LongPlaytest.layoutFinish(g, m, h.last(), LongPlaytest.layoutSnapshot(m));
+        long oldOff = LongPlaytest.layoutOldMovedOff - oldOff0, oldKept = LongPlaytest.layoutOldN;
+        boolean oldFlagged = LongPlaytest.findings.containsKey("an old works moved");
 
         // ----- the arrivals after each run stand on none of its plots; every log adds up; the sidecar -----
         int onRuns = s1.arrivalsOnRuns(s2) + s2.arrivalsOnRuns(s2b) + s2b.arrivalsOnRuns(s3) + s3.arrivalsOnRuns(s3b) + s3b.arrivalsOnRuns(s4) + s4.arrivalsOnRuns(s4b) + hwOnRuns
@@ -1689,7 +2107,8 @@ public class MapCheck {
         List<Snap> stages = new ArrayList<>(List.of(s1, s2, s2b, s3, s3b, s4, s4b, sGround));
         if (s5 != null) stages.add(s5);
         stages.add(s6);
-        int plotsDiffer = 0, stagesDiffer = 0;
+        int plotsDiffer = 0, stagesDiffer = 0, standingOnRuns = 0;
+        for (Snap sn : stages) standingOnRuns += sn.onRuns();
         StringBuilder counts = new StringBuilder();
         for (Snap sn : stages) {
             int diff = journalDiffers(lastIn, sn);
@@ -1726,21 +2145,26 @@ public class MapCheck {
         check("fixture: the Rail Depot's month lays a yard in the district (" + yardPlots + " plots) and a main line (" + railPlots + " plots of rail), and the model has one depot",
                 yardPlots > 0 && railPlots > 0 && !yards.isEmpty() && model[depot] == 1);
         check("fixture: the yard's month lays plots under buildings that stand: " + under12 + " of S1's " + s1.boxes.size() + " boxes have a plot the runs hold now and did not before", under12 > 0);
-        check("a yard laid across a district's buildings moves none of them: every box of the plan before stands in the plan after (" + s1.boxes.size() + " of them, " + moved12 + " moved)",
-                moved12 == 0 && s1.boxes.size() > 0);
+        check("a yard laid across a district's buildings moves off it the boxes under it and no others: " + under12 + " of the plan before's " + s1.boxes.size() + " boxes lie under the yard and the railway, and"
+                + " " + moved12 + " are not in the plan after (each of the rest stands where it stood)", moved12 == under12 && s1.boxes.size() > 0);
         check("...and the arrivals after it go on with the yard's ground left as it is: every box stands four months on (" + s2.boxes.size() + " of them, " + moved2b + " moved)", moved2b == 0);
+        check("...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: " + watchOff + " boxes left a district in the yard's month because a run laid in it lies across them, "
+                + watchMoved + " are counted as moved", watchOff > 0 && watchMoved == 0);
+        check("...and so does its oldest works check: of the " + oldKept + " industry boxes kept at month " + month1 + ", " + oldOff + " are not where they stood because a run laid since lies across them or beside a highway, and "
+                + (oldFlagged ? "an old works moved is flagged" : "none is flagged"), !oldFlagged);
         check("fixture: the depot taken away, the yard is gone from the district's frame (" + freed + " plots freed)", yardGone && yardLeft == 0 && freed > 0);
         check("a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (" + s2b.boxes.size() + " of them, " + moved3 + " moved)", moved3 == 0 && s2b.boxes.size() > 0);
         check("fixture: the depot again, a yard is laid in the frame (" + yardBack + " plots, " + sameSpot + " on the first yard's ground) and lies under " + under34 + " boxes of the plan before",
                 yardBack > 0 && under34 > 0);
-        check("a yard laid again across the buildings that stand moves none of them: every box of the plan before stands in the plan after (" + s3b.boxes.size() + " of them, " + moved4 + " moved)",
-                moved4 == 0 && s3b.boxes.size() > 0);
+        check("a yard laid again across the buildings that stand moves off it the boxes under it and no others: " + under34 + " of the plan before's " + s3b.boxes.size() + " boxes lie under the yard and the railway,"
+                + " " + moved4 + " are not in the plan after", moved4 == under34 && s3b.boxes.size() > 0);
         check("fixture: the ground round the dry crossing of the highways' lattice nearest the founding site is the city's (" + handed + " plots handed it between months, a square of " + (2 * CityRuns.CELL + 1)
                 + " plots a side), so the highways start in the district", groundOwn && crossing != null);
-        check("fixture: Elevated Highways are laid in the district and reach a street (" + hwNew + " plots, month " + hwMonth + "), among buildings that stand: " + hwNear + " of the " + hwBoxes
-                + " boxes within " + HIGHWAY_CLEAR + " plot of them", hwNew > 0 && reached && hwNear > 0);
-        check("highways laid in a district's buildings move none of them: every box of the plan before the month stands in the plan after (" + hwBoxes + " of them, " + hwMoved + " moved)",
-                hwMoved == 0 && hwBoxes > 0);
+        check("fixture: Elevated Highways are laid in the district and reach a street (" + hwNew + " plots, month " + hwMonth + "), among buildings that stand: " + hwHit + " of the " + hwBoxes
+                + " boxes on them or within " + HIGHWAY_CLEAR + " plot of them (" + hwUnder + " under)", hwNew > 0 && reached && hwHit > 0);
+        check("highways laid in a district's buildings move off them the boxes on them and in their verge and no others: " + hwHit + " of the plan before the month's " + hwBoxes + " boxes lie on them or beside them,"
+                + " " + hwMoved + " are not in the plan after (each of the rest stands where it stood)", hwMoved == hwHit && hwBoxes > 0);
+        check("no box stands on a run or beside a highway in the plan of any month after the runs came (" + stages.size() + " plans: " + standingOnRuns + " boxes)", standingOnRuns == 0);
         check("the arrivals after a run stand on none of its plots: " + onRuns + " of the boxes the later plans hold that the earlier did not lie on a plot fixed in the input or among the runs", onRuns == 0);
         check("...every district's log still sums to its counts after the runs came and went", adds);
         check("the journal dates the runs: the frame's fixed ground worked back from today's to each stage's month is what the plan's input held that month ("
@@ -1750,6 +2174,242 @@ public class MapCheck {
         check("the sidecar read back carries the same journal: the district's records and its plan's input frame's records are the written map's (" + frameRecords + " of them)", journalRead);
         check("the sidecar written after them and read back plans the district box for box as the map it was written from (" + s6.boxes.size() + " boxes, " + readDiffer + " differ)",
                 back != null && same != null && readDiffer == 0 && s6.boxes.size() > 0);
+    }
+
+    /* =====================================================================
+       2e. A YARD WHOSE BUILDING LEFT STAYS LAID, IDLE (batch MF1, item 6; FX7's star 4)
+       ===================================================================== */
+
+    /*
+     * On the default playtest the founding district's Rail Depot yard was taken up and laid again on one and the same box sixteen times in 3,140 months
+     * (month 861 to 4,000), each time with the railway's net (a hub of one plot) reset and started anew, and in the district's plan the ground it left free
+     * and took back. The cause is the model's: its Freight sector sells its only Rail Depot once its spurs are gone and buys another 3 to 93 months later
+     * (docs/queue/MF1/MF1YardProbe, a scratch tool), and the map followed the count. The model is not the map's, so the map lets a yard its building left stand idle
+     * (CityRuns.YARD_IDLE_MONTHS; Jerus: MF1 "stops the relays on the map"): it stays laid where it is, with its ground, its branch and the main line it
+     * stands on, but gets no trains, no wagons and is no freight station; the depot asked for again is the yard again, and a yard idle that long is taken up.
+     * 2e is that on the played city's ground (a copy, nothing built): a Rail Depot, the model's count falling to 0 and coming back after IDLE_GAP months,
+     * then staying away YARD_IDLE_MONTHS, and the sidecar with a yard idle; then (idleYardsOnRuns) several yards on open ground, the newest idling first and
+     * taken up first; and (idleYardsTrains) on the yard city, where trains run, no train to an idle yard.
+     */
+
+    /** Months a depot is away in 2e's short gap: fewer than CityRuns.YARD_IDLE_MONTHS (the playtest's gaps were 3 to 93). */
+    static final int IDLE_GAP = 3;
+
+    /** The records of the runs' journal over all the map's districts (THE RUNS DATED): one for each plot whose kind of fixed ground a month changed. */
+    static int journalRecords(CityMap m) {
+        int n = 0;
+        for (CityMap.District d : m.districts()) n += d.journalSize();
+        return n;
+    }
+
+    /** How many routes a train runs to yard i of the map (not to a works' siding). */
+    static int routesToYard(CityMap m, int i) {
+        int n = 0;
+        for (TrainSchedule.Route rt : m.trainRoutes()) if (!rt.works() && rt.yard() == i) n++;
+        return n;
+    }
+
+    /** The wagon pixels the tiles a yard's box reaches paint at 8 px a plot (TileRaster.WAGON): 0 where no wagons stand. */
+    static int wagonPixels(CityMap m, long[] yard) {
+        int px = 8, w = TilePainter.TILE * px, n = 0;
+        TilePainter.Input in = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted();
+        int[] img = new int[w * w];
+        for (long ty = Math.floorDiv(yard[1], World.TILE); ty <= Math.floorDiv(yard[1] + yard[3] - 1, World.TILE); ty++) {
+            for (long tx = Math.floorDiv(yard[0], World.TILE); tx <= Math.floorDiv(yard[0] + yard[2] - 1, World.TILE); tx++) {
+                m.tileInput(tx, ty, in);
+                TilePainter.paint(in, p);
+                Arrays.fill(img, 0);
+                TileRaster.raster(in, p, px, img);
+                for (int c : img) if (c == TileRaster.WAGON) n++;
+            }
+        }
+        return n;
+    }
+
+    /** Whether the tiles a yard's box reaches hand the painter a yard at all, and whether any is handed as idle (TilePainter.Input.YARD_IDLE): {handed, idle}. */
+    static boolean[] idleOnTiles(CityMap m, long[] yard) {
+        boolean seen = false, idle = false;
+        TilePainter.Input in = new TilePainter.Input();
+        for (long ty = Math.floorDiv(yard[1], World.TILE); ty <= Math.floorDiv(yard[1] + yard[3] - 1, World.TILE); ty++) {
+            for (long tx = Math.floorDiv(yard[0], World.TILE); tx <= Math.floorDiv(yard[0] + yard[2] - 1, World.TILE); tx++) {
+                m.tileInput(tx, ty, in);
+                for (int e = 0; e < in.yards; e++) {
+                    seen = true;
+                    idle |= (in.yard[e * TilePainter.Input.YARD_INTS + 9] & TilePainter.Input.YARD_IDLE) != 0;
+                }
+            }
+        }
+        return new boolean[] { seen, idle };
+    }
+
+    static void idleYards(Game g) {
+        out.println("\n--- 2e. a yard whose building left stays laid, idle, and the depot ordered again takes it back (MF1) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), depot = idOf(g, "Rail Depot");
+        CityLand land = g.getCityLand().copy();
+        long[] model = new long[types.length];
+        CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
+        Months h = new Months(m, model, house, g.getMonth() + 1);
+        CityRuns runs = m.runs();
+        m.railPicture(new CityMap.RailPicture(false, 1));   // the whole fleet: wagons stand on the yard's sidings while it works
+
+        // ----- a Rail Depot: the yard laid for it, wagons on it -----
+        model[depot] = 1;
+        h.run(0);
+        long[] yard = runs.yards().isEmpty() ? null : runs.yards().get(0);
+        long[] box = yard == null ? null : yard.clone();
+        boolean laid = runs.yards().size() == 1 && runs.yardsActive() == 1 && runs.rail().started;
+        check("fixture: a Rail Depot lays one yard and a railway for it, the model's yard, and the gap (" + IDLE_GAP + " months) is shorter than the yard's idle time ("
+                + CityRuns.YARD_IDLE_MONTHS + ")", laid && IDLE_GAP < CityRuns.YARD_IDLE_MONTHS && m.yardTypeOf(0) == depot);
+        if (!laid) return;
+        long netPlots = runs.rail().plots();
+        int records = journalRecords(m);
+        int wagons0 = wagonPixels(m, box);
+        boolean[] tile0 = idleOnTiles(m, box);
+        check("fixture: while the depot works wagons stand on its yard (" + wagons0 + " pixels) and the tiles hand the painter it as a yard in use", wagons0 > 0 && tile0[0] && !tile0[1]);
+
+        // ----- the depot sold: the yard stays -----
+        model[depot] = 0;
+        long changes = m.changes();
+        h.run(0);
+        int goneMonth = h.last();
+        for (int i = 1; i < IDLE_GAP; i++) h.run(0);
+        check("the depot sold, its yard stays laid where it was: the same box, not taken up (" + runs.yards().size() + " yard, " + IDLE_GAP + " months on)",
+                runs.yards().size() == 1 && runs.yards().get(0) == yard && Arrays.equals(yard, box));
+        if (runs.yards().isEmpty()) return;
+        check("...idle from the month it left (" + goneMonth + "): the model asks for no yard (" + runs.yardsActive() + " active)",
+                runs.yardsActive() == 0 && runs.yardIdleSince(0) == goneMonth);
+        check("...the railway's net held with it, not reset (" + runs.rail().plots() + " plots, " + netPlots + " before), and the map's changes moved, so the tiles are drawn again",
+                runs.rail().started && runs.rail().plots() == netPlots && m.changes() != changes);
+        check("...nothing of it is dated in the journal of the runs: no plot changed its kind (" + journalRecords(m) + " records, " + records + " before)", journalRecords(m) == records);
+        boolean[] tile1 = idleOnTiles(m, box);
+        int wagons1 = wagonPixels(m, box);
+        check("...and it is painted as a yard with no wagons (" + wagons1 + " pixels, " + wagons0 + " before): the tiles hand it as idle, and still as the depot's yard, not a Rail Terminal's",
+                tile1[0] && tile1[1] && wagons1 == 0 && m.yardTypeOf(0) == depot);
+
+        // ----- the depot again: the same yard -----
+        model[depot] = 1;
+        h.run(0);
+        check("the depot ordered again, the yard is the yard again: the same box object, not taken up and laid anew (" + runs.yards().size() + " yard)",
+                runs.yards().size() == 1 && runs.yards().get(0) == yard && runs.yardsActive() == 1);
+        check("...with nothing dated in the journal (" + journalRecords(m) + " records, " + records + " before), the net as it was, and the wagons back (" + wagonPixels(m, box) + " pixels)",
+                journalRecords(m) == records && runs.rail().plots() == netPlots && wagonPixels(m, box) == wagons0);
+
+        // ----- the sidecar with a yard idle -----
+        model[depot] = 0;
+        h.run(0);
+        int idleMonth = h.last();
+        byte[] side = m.writeSidecar(idleMonth, CityMap.FORMAT);
+        CityMap back = CityMap.readSidecar(side, land, r -> land.amountsInOrder(r), types, idleMonth, CityMap.stampIn(side));
+        check("the sidecar written with a yard idle and read back is the same runs, the yard idle from month " + idleMonth,
+                back != null && back.runs().same(runs) && back.runs().yardsActive() == 0 && back.runs().yardIdleSince(0) == idleMonth);
+        byte[] old = m.writeSidecar(idleMonth, 13);
+        CityMap older = CityMap.readSidecar(old, land, r -> land.amountsInOrder(r), types, idleMonth, CityMap.stampIn(old));
+        check("a sidecar of FORMAT 13 has no idle yard: it reads the yard as the model's (" + (older == null ? -1 : older.runs().yardsActive()) + " active)",
+                older != null && older.runs().yards().size() == 1 && older.runs().yardsActive() == 1);
+        if (older != null) {
+            long[] atRead = older.runs().yards().get(0);
+            Months o = new Months(older, model.clone(), house, idleMonth + 1);
+            o.run(0);
+            check("...and the first month after it, the model asking for none, the yard idles from that month: not taken up (idle from " + older.runs().yardIdleSince(0) + ")",
+                    older.runs().yards().size() == 1 && older.runs().yards().get(0) == atRead && older.runs().yardsActive() == 0 && older.runs().yardIdleSince(0) == o.last());
+        }
+
+        // ----- gone for good: taken up when its idle time is up -----
+        h.month = idleMonth + CityRuns.YARD_IDLE_MONTHS - 1;
+        h.run(0);
+        boolean standsStill = runs.yards().size() == 1 && runs.yards().get(0) == yard;
+        int lastMonth = h.last();
+        h.run(0);
+        check("a depot gone for good: the yard is there the month before its idle time is up (month " + lastMonth + " of " + (idleMonth + CityRuns.YARD_IDLE_MONTHS) + ")", standsStill);
+        check("...and taken up in the month it is up, " + CityRuns.YARD_IDLE_MONTHS + " months after it left, and the net with it (" + runs.yards().size() + " yards, the railway "
+                + (runs.rail().started ? "started" : "taken back") + ")", runs.yards().isEmpty() && !runs.rail().started && runs.rail().plots() == 0);
+        check("...which is dated: the plots it leaves are records in the journal (" + journalRecords(m) + " records, " + records + " before)", journalRecords(m) > records);
+        model[depot] = 1;
+        h.run(0);
+        check("...and a depot after that has a yard laid anew, on the same box as the first (the runs' own order) but not the same yard",
+                runs.yards().size() == 1 && runs.yards().get(0) != yard && Arrays.equals(runs.yards().get(0), box) && runs.yardsActive() == 1);
+    }
+
+    /** 2e's runs-level half: several yards on open ground (MainLineCheck's), one month at a time. */
+    static void idleYardsOnRuns() {
+        int[] term = MainLineCheck.terminalYard(), depot = MainLineCheck.depotYard();
+        JunctionCheck.PatchGround ground = MainLineCheck.longGround();
+        List<int[]> none = new ArrayList<>(), one = new ArrayList<>(List.of(depot)), two = new ArrayList<>(List.of(depot, depot));
+        CityRuns r = new CityRuns();
+        r.setGateway(0);
+        r.setMonth(100);
+        MainLineCheck.layYards(r, ground, two, 0);
+        List<long[]> boxes = new ArrayList<>(r.yards());
+        check("fixture: two depots lay two yards on open ground, both the model's, one of them the freight station", boxes.size() == 2 && r.yardsActive() == 2 && r.freightStation() != null);
+        if (boxes.size() != 2) return;
+        // one sold, the newest yard idles
+        r.setMonth(110);
+        MainLineCheck.layYards(r, ground, one, 0);
+        check("two depots, one sold: the newest yard idles (" + r.yardsActive() + " of " + r.yards().size() + " active, idle from month " + r.yardIdleSince(1) + "), neither yard moves",
+                r.yards().size() == 2 && r.yards().get(0) == boxes.get(0) && r.yards().get(1) == boxes.get(1) && r.yardsActive() == 1 && r.yardIdleSince(0) == -1 && r.yardIdleSince(1) == 110);
+        check("...and the freight station is the yard the model asks for, never the idle one", r.freightStation() != null && Arrays.equals(r.freightStation(), boxes.get(0)));
+        // both back
+        r.setMonth(120);
+        MainLineCheck.layYards(r, ground, two, 0);
+        check("two depots again: both yards the model's, the same boxes, nothing laid or taken (" + r.yardsActive() + " active)",
+                r.yards().size() == 2 && r.yards().get(0) == boxes.get(0) && r.yards().get(1) == boxes.get(1) && r.yardsActive() == 2);
+        // the newest idles first, the other later; each is taken up when its own time is up, the newest first
+        r.setMonth(125);
+        MainLineCheck.layYards(r, ground, one, 0);
+        r.setMonth(130);
+        MainLineCheck.layYards(r, ground, none, 0);
+        check("...then one sold at month 125 and the other at 130: both idle, each from its own month", r.yardsActive() == 0 && r.yardIdleSince(1) == 125 && r.yardIdleSince(0) == 130);
+        r.setMonth(125 + CityRuns.YARD_IDLE_MONTHS - 1);
+        MainLineCheck.layYards(r, ground, none, 0);
+        boolean both = r.yards().size() == 2;
+        r.setMonth(125 + CityRuns.YARD_IDLE_MONTHS);
+        MainLineCheck.layYards(r, ground, none, 0);
+        boolean newestGone = r.yards().size() == 1 && r.yards().get(0) == boxes.get(0) && r.yardsActive() == 0;
+        r.setMonth(130 + CityRuns.YARD_IDLE_MONTHS - 1);
+        MainLineCheck.layYards(r, ground, none, 0);
+        boolean oldestStands = r.yards().size() == 1;
+        r.setMonth(130 + CityRuns.YARD_IDLE_MONTHS);
+        MainLineCheck.layYards(r, ground, none, 0);
+        check("...the newest taken up first when its time is up (month " + (125 + CityRuns.YARD_IDLE_MONTHS) + "), the other still standing the month before its own (" + (130 + CityRuns.YARD_IDLE_MONTHS) + ")",
+                both && newestGone && oldestStands);
+        check("...and the last gone in its month, the railway with it (" + r.yards().size() + " yards, started: " + r.rail().started + ")", r.yards().isEmpty() && !r.rail().started);
+        // a yard asked at another footprint is still taken up at once, as before (the Terminal-before-Depot shift is left as it was)
+        CityRuns s = new CityRuns();
+        s.setGateway(0);
+        s.setMonth(200);
+        MainLineCheck.layYards(s, ground, one, 0);
+        long[] first = s.yards().get(0);
+        s.setMonth(201);
+        MainLineCheck.layYards(s, ground, new ArrayList<>(List.of(term)), 0);
+        check("a yard asked for at another footprint is not idle but taken up at once and laid anew, as before (" + s.yards().size() + " yard, asked " + Arrays.toString(s.yardAsked(0)) + ")",
+                s.yards().size() == 1 && s.yards().get(0) != first && Arrays.equals(s.yardAsked(0), term) && s.yardsActive() == 1);
+    }
+
+    /** 2e's last part, on the yard city (its gateway, its railway's world line, two depots' yards): no train runs to an idle yard. */
+    static void idleYardsTrains(Squares sq) {
+        out.println("      an idle yard gets no trains (MF1):");
+        CityMap m = yardCity(sq);
+        CityRuns runs = m.runs();
+        int depot = -1;
+        for (BuildingVisual.Type t : sq.types) if (t != null && BuildingVisual.depot(t)) depot = t.id();
+        long[] model = m.totals().clone();
+        check("fixture: the yard city has two depots' yards, both the model's, with trains running to each (" + routesToYard(m, 0) + " and " + routesToYard(m, 1) + " routes)",
+                depot >= 0 && model[depot] == YARDS_ADDED && runs.yards().size() == YARDS_ADDED && runs.yardsActive() == YARDS_ADDED && routesToYard(m, 0) > 0 && routesToYard(m, 1) > 0);
+        if (depot < 0 || runs.yards().size() != YARDS_ADDED) return;
+        List<long[]> boxes = new ArrayList<>(runs.yards());
+        model[depot]--;
+        m.reconcile(model);
+        check("one depot sold: its yard (the newest) stays, idle, and no train runs to it (" + routesToYard(m, 1) + " routes), the other yard keeps its trains (" + routesToYard(m, 0) + ")",
+                runs.yards().size() == YARDS_ADDED && runs.yards().get(0) == boxes.get(0) && runs.yards().get(1) == boxes.get(1) && runs.yardsActive() == 1
+                        && routesToYard(m, 1) == 0 && routesToYard(m, 0) > 0);
+        check("...the idle yard is still drawn as the depot's yard (" + m.yardTypeOf(1) + " of " + depot + ") and is no freight station", m.yardTypeOf(1) == depot
+                && (runs.freightStation() == null || !Arrays.equals(runs.freightStation(), boxes.get(1))));
+        model[depot]++;
+        m.reconcile(model);
+        check("the depot ordered again, the trains run to it again (" + routesToYard(m, 1) + " routes), the same yard (" + runs.yardsActive() + " active)",
+                runs.yards().get(1) == boxes.get(1) && runs.yardsActive() == YARDS_ADDED && routesToYard(m, 1) > 0);
     }
 
     /** The smallest and the largest footprint, in cells, of the types listed. */
@@ -4279,8 +4939,35 @@ public class MapCheck {
     /** The section's city: three districts a side, all of it owned and drawn canonically on its measured ground - the playtest's coast (its bay, its south shore, its lagoon) - about a site one district west of the default world's founding site (atSea()). */
     static final int SHORE_SIDE = 3;
 
-    /** A city owning `side` districts a side about (sx, sy), every plot of them, its map drawn canonically on the ground measured. */
+    /**
+     * A city owning `side` districts a side about (sx, sy), every plot of them, its map drawn canonically on the ground measured, its
+     * shore laid by the harbour rule (MF1), as a city's map is drawn.
+     */
     static CityMap coastal(long seed, long sx, long sy, BuildingVisual.Type[] types, int side, long[] counts) {
+        return coastal(seed, sx, sy, types, side, counts, true);
+    }
+
+    /**
+     * ...with the shore laid as it was before MF1 (the harbour rule off): the coast whose fixture's premise is where a work stands or how many
+     * stand - SL1's cost of the shore (hundreds of works on one coast, which two harbours do not hold), section 9's routes and lanes (the rule's
+     * second harbour on this coast lies in water reached only through a pinch between two land cells, which SeaRoutes' A* sails and MapCheck 9's
+     * "each leg on the sea's cells" refuses), and GatewayCheck's coast (its world line stands on a Bulk Berth's verge: see coastSection()).
+     */
+    static CityMap coastBeforeMF1(long seed, long sx, long sy, BuildingVisual.Type[] types, int side, long[] counts) {
+        return coastal(seed, sx, sy, types, side, counts, false);
+    }
+
+    static CityMap coastal(long seed, long sx, long sy, BuildingVisual.Type[] types, int side, long[] counts, boolean harbour) {
+        int was = CityMap.harbourReachDefault;
+        CityMap.harbourReachDefault = harbour ? CityShore.HARBOUR_REACH : 0;
+        try {
+            return coastalDrawn(seed, sx, sy, types, side, counts);
+        } finally {
+            CityMap.harbourReachDefault = was;
+        }
+    }
+
+    private static CityMap coastalDrawn(long seed, long sx, long sy, BuildingVisual.Type[] types, int side, long[] counts) {
         int h = side / 2;
         long dx = Math.floorDiv(sx, CityMap.DISTRICT), dy = Math.floorDiv(sy, CityMap.DISTRICT);
         double[] centre = new double[CityLand.CENTRE_FIELDS];
@@ -4324,6 +5011,336 @@ public class MapCheck {
         }
         return c;
     }
+
+    /* ----- the coast: one or two harbours, not a shore of piers (MF1, 2026-10-28) ----- */
+
+    /*
+     * Item 8 of docs/queue/MF1.md; Jerus, 2026-10-23: "every quay and sea terminal gets its own pier, so the whole shore is
+     * piers ... i dont think real life is like that"; his call: "the berths gathered into one or two harbours at the best shore,
+     * ships sharing a few lanes that split near the harbour; the rest of the coast stays beach". What this has to prove, on the
+     * playtest's coast with every kind of work ordered over months: (a) the works stand in at most CityShore.HARBOURS_MOST
+     * harbours, each work within the reach of its harbour's first, and the shore beyond is beach, no work on it; (b) none on a pier of
+     * its own: every terminal's quay is the harbour's; (c) nothing laid earlier moves; (d) every berth reaches the sea lane, and no
+     * lane crosses a work; (e) the same orders with the harbour rule off (the shore as it was) spread over the coast, on piers of
+     * their own, which is the fault; (f) a search that starts where the last found room finds the spot the search from the first
+     * tile does, in a harbour.
+     */
+
+    /** Rounds of orders on the harbour's coast, each one more of every terminal and tank farm: 12, more than the harbours hold, so that some come up short. */
+    static final int HARBOUR_ROUNDS = 12;
+
+    /** Terminals asked of the harbour's coast one at a time for the exactness: 60, more than its two harbours take. */
+    static final int HARBOUR_FILL = 60;
+
+    /** The coast's shore works asked for round by round: every shore type's model count one more each round, from none, the rest of the town as the section's. */
+    static CityMap harborOrdered(BuildingVisual.Type[] types, long seed, List<List<CityShore.Work>> laidByRound, boolean rule) {
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        long[] counts = shoreCounts(types);
+        for (BuildingVisual.Type t : types) if (t != null && t.shore()) counts[t.id()] = 0;
+        CityMap m = coastal(seed, sx, sy, types, SHORE_SIDE, counts, rule);
+        for (int round = 1; round <= HARBOUR_ROUNDS; round++) {
+            for (int t : m.shoreTypes()) counts[t]++;
+            m.reconcile(counts);
+            laidByRound.add(new ArrayList<>(m.shore().works()));
+        }
+        return m;
+    }
+
+    /** The harbours of a shore by the rule's reach, whichever rule laid it: CityShore.harbours() on one landmass. */
+    static List<CityShore.Harbour> harboursOf(CityShore shore) {
+        return CityShore.harbours(shore.works(), CityShore.HARBOUR_REACH, k -> 0);
+    }
+
+    static void theHarbour(BuildingVisual.Type[] types, long seed) {
+        out.println("\n--- 9b. the coast: the berths gathered into one or two harbours, the rest of the shore beach (MF1, item 8) ---");
+        World w = World.of(seed);
+        List<List<CityShore.Work>> rounds = new ArrayList<>(), roundsOff = new ArrayList<>();
+        CityMap m = harborOrdered(types, seed, rounds, true);
+        CityMap off = harborOrdered(types, seed, roundsOff, false);
+        CityShore shore = m.shore();
+        List<CityShore.Harbour> harbours = harboursOf(shore), harboursOff = harboursOf(off.shore());
+        int berthed = 0;
+        for (CityShore.Work k : shore.works()) if (k.berthed()) berthed++;
+        int asked = 0;
+        for (int t : m.shoreTypes()) asked += HARBOUR_ROUNDS;
+        out.printf("      %d terminals and tank farms asked over %d rounds: %d laid (%d berthed), %d short, in %d harbour(s) %s; with the rule off %d laid in %d%n",
+                asked, HARBOUR_ROUNDS, shore.works().size(), berthed, m.shoreShort(), harbours.size(), harbours, off.shore().works().size(), harboursOff.size());
+        check("fixture: terminals and tank farms are ordered month by month, five or more are laid, and more were asked than the harbours hold (some are counted short)",
+                berthed >= 5 && shore.works().size() >= 5 && m.shoreShort() > 0 && shore.works().size() + m.shoreShort() == asked);
+        // (a) gathered.
+        int reach = CityShore.HARBOUR_REACH;
+        double apartest = 0;
+        for (CityShore.Work a : shore.works()) {
+            for (CityShore.Work b : shore.works()) {
+                long[] pa = a.shorePlot(), pb = b.shorePlot();
+                if (harbourOf(harbours, a) != harbourOf(harbours, b)) continue;
+                apartest = Math.max(apartest, Math.hypot(pa[0] - pb[0], pa[1] - pb[1]));
+            }
+        }
+        check("THE HARBOUR: the berthed works and the tank farms stand in at most HARBOURS_MOST harbours", harbours.size() >= 1 && harbours.size() <= CityShore.HARBOURS_MOST);
+        check("...the works of a harbour all within the reach of its first, so within two reaches of one another", apartest <= 2.0 * reach && harbours.stream().allMatch(h -> h.works() >= 1));
+        check("...a second harbour opened, a stretch of beach from the first: the first harbour was full, and the second's first work lies at least HARBOUR_APART from it",
+                harbours.size() == 2 && Math.hypot(harbours.get(0).x() - harbours.get(1).x(), harbours.get(0).y() - harbours.get(1).y()) >= CityShore.HARBOUR_APART - 1e-9);
+        // The shore beyond the harbours' reach is beach: every owned dry plot with salt water beside it, farther from every harbour's first work than the reach
+        // and the longest side of a work's box (a box stands inland of its shore plot, which is what the reach measures), holds no work's box or quay.
+        int boxSide = 0;
+        for (CityShore.Work k : shore.works()) boxSide = Math.max(boxSide, Math.max(k.w(), k.h()));
+        long beach = 0, worked = 0, shorePlots = 0;
+        byte[] buf = new byte[TilePainter.PLOTS];
+        long bx0 = Long.MAX_VALUE, by0 = Long.MAX_VALUE, bx1 = Long.MIN_VALUE, by1 = Long.MIN_VALUE;
+        for (CityShore.Work k : shore.works()) {
+            bx0 = Math.min(bx0, k.x0()); by0 = Math.min(by0, k.y0());
+            bx1 = Math.max(bx1, k.x0() + k.w()); by1 = Math.max(by1, k.y0() + k.h());
+        }
+        long side = (long) SHORE_SIDE * CityMap.DISTRICT;
+        long wx0 = w.foundingX() - CityMap.DISTRICT - side / 2, wy0 = w.foundingY() - side / 2;
+        for (long y = wy0; y < wy0 + side; y++) {
+            for (long x = wx0; x < wx0 + side; x++) {
+                if (!m.land().ownsPlot(x, y) || !World.dry(w.terrainAt(x, y)) || w.terrainAt(x, y) == World.FRESH) continue;
+                boolean wet = false;
+                for (int d = 0; d < 4 && !wet; d++) wet = World.salt(w.terrainAt(x + CityShore.DX[d], y + CityShore.DY[d]));
+                if (!wet) continue;
+                shorePlots++;
+                boolean inReach = false;
+                for (CityShore.Harbour h : harbours) inReach |= Math.hypot(x - h.x(), y - h.y()) <= reach + boxSide;
+                if (inReach) continue;
+                beach++;
+                if (shore.at(x, y) != null) worked++;
+                for (CityShore.Work k : shore.works()) if (k.quayAt(x, y)) worked++;
+            }
+        }
+        out.printf("      the owned shore: %,d plots, %,d of them farther than the reach and a box from every harbour's first work (beach), %d with a work on them%n", shorePlots, beach, worked);
+        check("...the rest of the coast stays beach: the owned shore beyond the harbours' reach (and a box) is not nothing, and not one plot of it holds a work or a quay",
+                beach > 0 && beach > shorePlots / 10 && worked == 0);
+        // (b) no pier of its own.
+        boolean common = true;
+        int longest = 0;
+        for (CityShore.Work k : shore.works()) {
+            longest = Math.max(longest, k.quay());
+            common &= k.quay() <= CityShore.HARBOUR_QUAY_PLOTS && (k.berthed() ? k.quay() == CityShore.HARBOUR_QUAY_PLOTS : k.quay() == 0);
+        }
+        check("...no work on a pier of its own: every terminal's quay is the harbour's, HARBOUR_QUAY_PLOTS, the berths side by side on one line", common && longest == CityShore.HARBOUR_QUAY_PLOTS);
+        // (c) nothing laid earlier moves.
+        boolean never = true;
+        for (int r = 1; r < rounds.size(); r++) {
+            List<CityShore.Work> a = rounds.get(r - 1), b = rounds.get(r);
+            never &= b.size() >= a.size() && b.subList(0, a.size()).equals(a);
+        }
+        check("...nothing laid earlier moves: each round's works begin with the works of the round before", never && rounds.get(rounds.size() - 1).size() == shore.works().size());
+        // (d) every berth reaches the sea lane, and no lane crosses a work.
+        List<BoatSchedule.Route> routes = m.seaRoutes();
+        List<BoatSchedule.Berth> berths = shore.berths(types);
+        double want = m.cityRadius() + SeaRoutes.OFFING_M / World.PLOT_M;
+        boolean reaches = routes.size() == berths.size() && !routes.isEmpty(), onWater = true;
+        long crossings = 0, samples = 0;
+        for (int i = 0; reaches && i < routes.size(); i++) {
+            BoatSchedule.Route r = routes.get(i);
+            reaches &= r.berth().equals(berths.get(i)) && r.xs().length >= 2 && Math.hypot(r.xs()[r.offing()] - r.xs()[0], r.ys()[r.offing()] - r.ys()[0])
+                    >= Math.min(want, SeaRoutes.RAY_CELLS * SeaRoutes.CELL) - 2 * SeaRoutes.CELL;
+            for (int j = 0; j + 1 < r.xs().length; j++) {
+                double len = Math.hypot(r.xs()[j + 1] - r.xs()[j], r.ys()[j + 1] - r.ys()[j]);
+                int n = (int) Math.ceil(len / SeaRoutes.CELL * 3) + 1;
+                for (int k = 0; k <= n; k++) {
+                    long x = (long) Math.floor(r.xs()[j] + (r.xs()[j + 1] - r.xs()[j]) * k / n), y = (long) Math.floor(r.ys()[j] + (r.ys()[j + 1] - r.ys()[j]) * k / n);
+                    samples++;
+                    if (shore.at(x, y) != null) crossings++;
+                }
+            }
+        }
+        out.printf("      %d berths, %d routes: %,d points along the lanes asked of the works' boxes, %d inside one%n", berths.size(), routes.size(), samples, crossings);
+        check("...every berth in the harbours has its route to the offing and the abyss, the lane the next berth beside it joins", reaches && berths.size() == berthed);
+        check("...and no lane crosses a work: not one point along any route lies in a work's box", crossings == 0 && samples > 0);
+        // SL1's shared lanes hold with the berths side by side: the berths of a harbour join the lane of the one before.
+        sharedLanesOnTheCoast(w, m, types);
+        // (e) the fault: the same orders, the rule off, a shore of piers.
+        int piers = 0, longPiers = 0;
+        for (CityShore.Work k : off.shore().works()) {
+            if (k.berthed()) piers++;
+            if (k.quay() > CityShore.HARBOUR_QUAY_PLOTS) longPiers++;
+        }
+        check("fixture: with the harbour rule off the same orders are laid on the whole coast, in more than HARBOURS_MOST clusters, each terminal on a pier of its own longer than the harbour's quay",
+                harboursOff.size() > CityShore.HARBOURS_MOST && longPiers == piers && piers >= 5);
+        // (f) the cursor.
+        harbourExactness(types, seed);
+        // (g) the arms' walks to the world, and SL1's timing line on the harbours.
+        harbourKeepsOffTheArms();
+        harbourMonthCost(seed);
+    }
+
+    /** The harbour (of `harbours`) a work stands in: the first whose first work is within the reach of its shore plot, or null. */
+    static CityShore.Harbour harbourOf(List<CityShore.Harbour> harbours, CityShore.Work k) {
+        long[] p = k.shorePlot();
+        for (CityShore.Harbour h : harbours) if (Math.hypot(p[0] - h.x(), p[1] - h.y()) <= CityShore.HARBOUR_REACH) return h;
+        return null;
+    }
+
+    /**
+     * A search that starts where the last found room is the search from the harbour's first tile (shoreSpotFull(): the harbour's tiles from the
+     * nearest its first work, every time), for each General Cargo Terminal laid one at a time until the harbours are full and again after
+     * three are taken away - on a coast of two districts a side, where the first harbour has little room - and it looks at fewer tiles.
+     */
+    static void harbourExactness(BuildingVisual.Type[] types, long seed) {
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        int gct = -1;
+        for (BuildingVisual.Type t : types) if (t != null && t.berth() == Ports.Cargo.GENERAL.ordinal()) gct = t.id();
+        long[] fill = shoreCounts(types);
+        fill[gct] = 0;
+        CityMap filling = coastal(seed, sx, sy, types, 2, fill);
+        long[] first = layOneAtATime(filling, gct, fill, 1, HARBOUR_FILL);
+        int placed = filling.shore().count(gct);
+        fill[gct] = placed - 3;
+        filling.reconcile(fill);
+        boolean taken = filling.shore().count(gct) == placed - 3;
+        long[] again = layOneAtATime(filling, gct, fill, placed - 2, placed + 2);
+        out.printf("      a coast of two districts a side takes General Cargo Terminals one at a time: %d searches, %d laid at the spot found, %d came up short, in %d harbour(s);"
+                + " %,d tiles looked at from where the last found room, %,d from the first tile; %d differ%n", first[0] + again[0], first[2] + again[2], first[3] + again[3],
+                harboursOf(filling.shore()).size(), first[5] + again[5], first[6] + again[6], first[1] + again[1] + first[4] + again[4]);
+        check("fixture: the harbours of the small coast fill - terminals are laid, and some come up short, three taken away leave it three fewer", first[2] > 3 && first[3] >= 3 && taken);
+        check("a search from where the last found room finds the spot the search from the harbour's first tile finds, for each terminal laid one at a time until the harbours are full and again after three are taken away, and that is where it is laid",
+                first[1] + again[1] == 0 && first[4] + again[4] == 0);
+        check("...and looks at fewer tiles than the search from the first tile does", first[5] + again[5] < first[6] + again[6]);
+
+        // ...also where a water as wide as the flood's reach is shut to the terminals after the first that fails in it (SL1's lagoons, drawn about
+        // the harbour's first work: some of its berths lie where the flood opens, some where it is shut, so what a berth is told depends on the order asked).
+        long[] none = shoreCounts(types);
+        none[gct] = 0;
+        CityMap dry = coastal(seed, sx, sy, types, 2, none);
+        CityShore.Work firstSpot = dry.shoreSpotFull(gct, dry.minedSites());
+        int[][] lagoons = { { 14, 4, 0 }, { 16, 3, 3 }, { 18, 2, -2 } };
+        long searches = 0, laidIn = 0, touched = 0, lagoonDiffer = 0;
+        for (int[] lg : lagoons) {
+            long[] cnt = shoreCounts(types);
+            cnt[gct] = 0;
+            CityMap lagoon = coastal(seed, sx, sy, types, 2, cnt);
+            long[] end = firstSpot.quayPlot(firstSpot.quay() + 1);
+            final long ci = Math.floorDiv(end[0], SeaRoutes.CELL) + lg[1], cj = Math.floorDiv(end[1], SeaRoutes.CELL) + lg[2];
+            final long r2 = (long) lg[0] * lg[0];
+            lagoon.shoreSeaIs(SeaRoutes.grid((i, j) -> (i - ci) * (i - ci) + (j - cj) * (j - cj) <= r2));
+            long[] run = layOneAtATime(lagoon, gct, cnt, 1, HARBOUR_FILL);
+            int standing = lagoon.shore().count(gct);
+            cnt[gct] = Math.max(0, standing - 2);
+            lagoon.reconcile(cnt);
+            long[] more = layOneAtATime(lagoon, gct, cnt, cnt[gct] + 1, cnt[gct] + 6);
+            searches += run[0] + more[0];
+            laidIn += run[2] + more[2];
+            lagoonDiffer += run[1] + more[1] + run[4] + more[4];
+            touched += lagoon.shoreTouched();
+        }
+        out.printf("      %d lagoons about the harbour as wide as the reach (SeaRoutes.OPEN_M): %d searches, %d terminals laid, %d spots asked of a water found shut; %d differ%n",
+                lagoons.length, searches, laidIn, touched, lagoonDiffer);
+        check("fixture: the lagoons take terminals in the harbour, and the floods meet a shut water as wide as the reach", laidIn > 3 && touched > 0);
+        check("...a search from where the last found room finds the spot the search from the harbour's first tile finds there too, with some taken and laid again", lagoonDiffer == 0);
+    }
+
+    /** GatewayCheck's coast with its founding site 60 plots west and 12 south (found by trying the site's shifts): the coast whose best shore is the gate arm's end - the rule, its works not kept off the arms' walks, opens its first harbour there. */
+    static final long ARM_WALK_SHIFT_X = -60, ARM_WALK_SHIFT_Y = 12;
+
+    /** How many of a map's spine arm walks (CityMap.worldWalks()) a work's box, verge or quay lies on. */
+    static int worksOnWalks(CityMap m) {
+        int n = 0;
+        for (long[] walk : m.worldWalks()) {
+            for (int s = 1; s <= CityMap.WORLD_GAP; s++) {
+                if (m.shore().blocks(walk[0] + walk[2] * s, walk[1] + walk[3] * s)) { n++; break; }
+            }
+        }
+        return n;
+    }
+
+    /**
+     * MF1, the gate arm (found in review): a harbour is not opened, and no work laid, where it would stand on the walk
+     * the world line reads from a spine arm's end (CityMap.worldWalks(): WORLD_GAP plots along the arm's heading). A work there reads, in
+     * the runs' ground, as a plot the city does not own: on a quay's water it ends the walk as "no edge" (the line killed), on a box's dry plot it
+     * is the city's edge (a line the work makes, which is what GatewayCheck's coast's was). The fixture: the same coast, the same orders, once
+     * with the walks not kept (the fault: the harbour's works stand on one) and once as the rule has it.
+     */
+    static void harbourKeepsOffTheArms() {
+        out.println("      the harbour keeps off the arms' walks to the world:");
+        BuildingVisual.Type[] types = GatewayCheck.gatewayTypes();
+        World w = World.of(Founding.DEFAULT_WORLD_SEED);
+        long sx = w.foundingX() + ARM_WALK_SHIFT_X, sy = w.foundingY() - CityMap.DISTRICT + ARM_WALK_SHIFT_Y;
+        long[] orders = GatewayCheck.coastCounts(types);
+        CityMap.keepWorldWalks = false;
+        CityMap loose;
+        try {
+            loose = coastal(Founding.DEFAULT_WORLD_SEED, sx, sy, types, SHORE_SIDE, orders.clone());
+        } finally {
+            CityMap.keepWorldWalks = true;
+        }
+        CityMap kept = coastal(Founding.DEFAULT_WORLD_SEED, sx, sy, types, SHORE_SIDE, orders.clone());
+        int onLoose = worksOnWalks(loose), onKept = worksOnWalks(kept);
+        out.printf("      %d spine arm walks; with the walks not kept %d works laid, %d on a walk, harbours %s, %d world line(s); kept %d laid, %d on a walk, harbours %s, %d line(s)%n",
+                kept.worldWalks().size(), loose.shore().works().size(), onLoose, loose.harbours(), loose.worldLines().size(), kept.shore().works().size(), onKept, kept.harbours(),
+                kept.worldLines().size());
+        check("fixture: with the walks not kept the harbour rule lays a work on a spine arm's walk (a box, verge or quay on a plot the world line's walk reads)", onLoose > 0 && !loose.worldWalks().isEmpty());
+        check("THE ARMS' WALKS: laid by the rule, the same orders put no work on any spine arm's walk, and as many works are laid: the harbour is opened elsewhere",
+                onKept == 0 && kept.shore().works().size() == loose.shore().works().size() && !kept.shore().works().isEmpty() && !kept.harbours().equals(loose.harbours()));
+        check("...and the coast's world line is what the same coast with no works has: no work makes or ends it", kept.worldLines().equals(
+                coastal(Founding.DEFAULT_WORLD_SEED, sx, sy, types, SHORE_SIDE, noShore(types, orders)).worldLines()));
+    }
+
+    /** The orders with every shore type's count taken out. */
+    static long[] noShore(BuildingVisual.Type[] types, long[] orders) {
+        long[] c = orders.clone();
+        for (BuildingVisual.Type t : types) if (t != null && t.shore()) c[t.id()] = 0;
+        return c;
+    }
+
+    /** General Cargo Terminals standing on the small coast of the harbours' cost: 10 (SHORE_FEW), and on the big: 60, which its two harbours hold (about 96 do). */
+    static final int HARBOUR_MANY = 60;
+
+    /**
+     * SL1's timing line on the harbours (MF1: the game's own path is timed, not only the shore as it was): a month that lays one more
+     * terminal costs no more than SHORE_GROWTH times as long with HARBOUR_MANY standing as with SHORE_FEW, on the ground before SL1 where a
+     * General Cargo Terminal is small enough for the harbours to hold that many (300 are what two harbours do not hold). The canonical draw
+     * of each coast is printed beside SL1's (231 ms with 10, 889 ms with 300 on the shore as it was).
+     */
+    static void harbourMonthCost(long seed) {
+        out.println("      the shore's cost on the harbours follows what a month changes too:");
+        World w = World.of(seed);
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        BuildingVisual.Type[] before = GatewayCheck.gatewayTypesBeforeSL1();
+        int gct = -1;
+        for (BuildingVisual.Type t : before) if (t != null && t.berth() == Ports.Cargo.GENERAL.ordinal()) gct = t.id();
+        long[] few = shoreCounts(before), many = shoreCounts(before);
+        few[gct] = SHORE_FEW;
+        many[gct] = HARBOUR_MANY;
+        long t0 = System.nanoTime();
+        CityMap small = coastal(seed, sx, sy, before, SHORE_SIDE, few);
+        double drawFew = (System.nanoTime() - t0) / 1e6;
+        t0 = System.nanoTime();
+        CityMap big = coastal(seed, sx, sy, before, SHORE_SIDE, many);
+        double drawMany = (System.nanoTime() - t0) / 1e6;
+        out.printf("      the canonical draw on the harbours: %d General Cargo Terminals in %.0f ms, %d in %.0f ms%n", SHORE_FEW, drawFew, HARBOUR_MANY, drawMany);
+        long[] onHarbours = blocksAgainstLoops(big.shore(), SHORE_MARGIN);
+        out.printf("      blocks() and at() asked at %,d plots about the harbours' %d works (%,d block): %d differ%n", onHarbours[0], big.shore().works().size(), onHarbours[1], onHarbours[2]);
+        check("blocks() and at() answer as the loops over every work did on the harbours' coast too, at every plot of every work's box, verge and quay and two plots about each",
+                onHarbours[1] > 0 && onHarbours[0] > onHarbours[1] && onHarbours[2] == 0);
+        int standingFew = small.shore().count(gct), standingMany = big.shore().count(gct), rounds = SHORE_WARM + SHORE_TIMED;
+        check("fixture: both coasts hold every General Cargo Terminal asked of them, in harbours, and the big one holds the months' too",
+                standingFew == SHORE_FEW && standingMany == HARBOUR_MANY && HARBOUR_MANY + rounds <= 96 && big.harbours().size() <= CityShore.HARBOURS_MOST);
+        double[] fewMs = new double[rounds], manyMs = new double[rounds];
+        long[] cf = few.clone(), cm = many.clone();
+        for (int r = 0; r < rounds; r++) {
+            cf[gct]++;
+            cm[gct]++;
+            t0 = monthClock();
+            small.reconcile(cf);
+            fewMs[r] = (monthClock() - t0) / 1e6;
+            t0 = monthClock();
+            big.reconcile(cm);
+            manyMs[r] = (monthClock() - t0) / 1e6;
+        }
+        double fewMed = medianAfter(fewMs, SHORE_WARM), manyMed = medianAfter(manyMs, SHORE_WARM);
+        out.printf("      a month that lays one more terminal on the harbours, the median of %d after %d warm-up, on " + (CPU_TIMED ? "the main thread's CPU" : "the wall clock") + ": %.2f ms with %d standing, %.2f ms with %d%n",
+                SHORE_TIMED, SHORE_WARM, fewMed, standingFew, manyMed, standingMany);
+        check("fixture: each of those months laid the terminal asked on both coasts, none came up short",
+                small.shore().count(gct) == standingFew + rounds && big.shore().count(gct) == standingMany + rounds);
+        check("a month that lays one more terminal on the harbours takes no more than SHORE_GROWTH times as long with 60 standing as with 10",
+                Timing.within(manyMed, SHORE_GROWTH * fewMed));
+    }
+
 
     /* ----- the shore's cost follows what a month changes (SL1, 2026-10-28) ----- */
 
@@ -4452,10 +5469,10 @@ public class MapCheck {
         // (7 x 7) it holds 76.
         BuildingVisual.Type[] before = GatewayCheck.gatewayTypesBeforeSL1();
         long t0 = System.nanoTime();
-        CityMap small = coastal(seed, sx, sy, before, SHORE_SIDE, few);
+        CityMap small = coastBeforeMF1(seed, sx, sy, before, SHORE_SIDE, few);
         double drawFew = (System.nanoTime() - t0) / 1e6;
         t0 = System.nanoTime();
-        CityMap big = coastal(seed, sx, sy, before, SHORE_SIDE, many);
+        CityMap big = coastBeforeMF1(seed, sx, sy, before, SHORE_SIDE, many);
         double drawMany = (System.nanoTime() - t0) / 1e6;
         out.printf("      the canonical draw: %d General Cargo Terminals in %.0f ms, %d in %.0f ms (before SL1: 1,200 ms and 183,000 ms)%n",
                 SHORE_FEW, drawFew, SHORE_MANY, drawMany);
@@ -4493,7 +5510,7 @@ public class MapCheck {
         // ---- (b) a search from where the last found room is the search from the nearest
         long[] fill = shoreCounts(types);
         fill[box] = 0;
-        CityMap filling = coastal(seed, sx, sy, types, 2, fill);
+        CityMap filling = coastBeforeMF1(seed, sx, sy, types, 2, fill);
         long[] first = layOneAtATime(filling, box, fill, 1, SHORE_FILL);
         int placed = filling.shore().count(box);
         fill[box] = placed - 3;
@@ -4514,14 +5531,14 @@ public class MapCheck {
         // told of the water depends on the order it asks, and a search that passes tiles over must ask in the same order.
         long[] none = shoreCounts(types);
         none[gct] = 0;
-        CityMap dry = coastal(seed, sx, sy, types, 2, none);
+        CityMap dry = coastBeforeMF1(seed, sx, sy, types, 2, none);
         CityShore.Work firstSpot = dry.shoreSpotFull(gct, dry.minedSites());
         int[][] lagoons = { { 14, -6, 4 }, { 16, 4, -5 }, { 21, -4, 4 } };
         long searches = 0, laidIn = 0, touched = 0, lagoonDiffer = 0;
         for (int[] lg : lagoons) {
             long[] cnt = shoreCounts(types);
             cnt[gct] = 0;
-            CityMap lagoon = coastal(seed, sx, sy, types, 2, cnt);
+            CityMap lagoon = coastBeforeMF1(seed, sx, sy, types, 2, cnt);
             long[] end = firstSpot.quayPlot(firstSpot.quay() + 1);
             final long ci = Math.floorDiv(end[0], SeaRoutes.CELL) + lg[1], cj = Math.floorDiv(end[1], SeaRoutes.CELL) + lg[2];
             final long r2 = (long) lg[0] * lg[0];
@@ -4571,7 +5588,7 @@ public class MapCheck {
         // unit more; the one west of it holds the campus with room to spare, and the 3 x 3 still takes in the coast's terminals.
         long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
         long[] counts = shoreCounts(types);
-        CityMap m = coastal(seed, sx, sy, types, SHORE_SIDE, counts);
+        CityMap m = coastBeforeMF1(seed, sx, sy, types, SHORE_SIDE, counts);
 
         // ---- THE CAMPUS
         int holding = 0, unitKinds = 0;
@@ -4726,6 +5743,7 @@ public class MapCheck {
         out.printf("      drawn: %s plots of works (the shore's %s), %d of quay (%d)%n", plotsOf, wantOf, quayPlots, wantQuay);
         check("...each work drawn once on the tiles, on its own box, and every plot of its quay once", once && quayPlots == wantQuay);
         shoreFollowsChange(types, seed, m);
+        theHarbour(types, seed);
 
         // ---- THE OIL AT SEA: the game's own platform (WellCheck's sea town).
         oilAtSea();
@@ -9684,6 +10702,9 @@ public class MapCheck {
     /** How many samples a step of an avenue's line is sampled at: four, a quarter step apart. */
     static final int AV_SAMPLES = 4;
 
+    /** How many tiles either way of the origin's tile the crossings are read over: 4, nine tiles a side (MF1). */
+    static final int CROSSING_TILES = 4;
+
     /** The farthest an arm is followed from the origin, in steps: 400, past a district and a half. */
     static final int AV_STEPS = 400;
 
@@ -9803,7 +10824,7 @@ public class MapCheck {
     static int[] handAvenue(int ox, int oy, int arms, int len, JunctionCheck.Streets extra, boolean withOrigin) {
         JunctionCheck.Streets f = (x, y) -> handMark(ox, oy, arms, len, x, y) != 0 ? JunctionCheck.ARTERIAL : extra == null ? 0 : extra.at(x, y);
         TilePainter.Input in = JunctionCheck.inputFor(0, 0, f);
-        int r = TilePainter.REACH;
+        int r = TilePainter.CROSS_REACH;
         for (int y = -r; y < World.TILE + r; y++) for (int x = -r; x < World.TILE + r; x++) in.setAvenue(x, y, handMark(ox, oy, arms, len, x, y));
         if (withOrigin) { in.avenueOx = ox; in.avenueOy = oy; }
         return JunctionCheck.raster(in, JunctionCheck.paint(in), 8);
@@ -9985,6 +11006,40 @@ public class MapCheck {
         // beside the origin, which no step flanks with its arm's mark, are crossed by the arms' other diagonal from the origin given.
         check("...and the arms' second diagonal is drawn across the origin's plots from the origin's place (the plots a step of the other arm flanks: (16, 15) and (16, 17), the box on both)",
                 JunctionCheck.hasColour(four, w, 16, 15, px, TileRaster.JUNCTION_BOX) && JunctionCheck.hasColour(four, w, 16, 17, px, TileRaster.JUNCTION_BOX));
+
+        // ---- A CROSSING IS ONE CROSSING (MF1; Jerus, shot 11, "a half roundabout"): the crossings the tiles about the origin read - the plans' own, boulevards
+        // and arterials and the avenues across them, on the corners of tiles - are read alike by every tile whose plots they touch: where two tiles' crossings
+        // overlap they are one rectangle and one verdict, signal or roundabout (before MF1 a tile saw four plots past its edge, a crossing of five or six saw less).
+        {
+            TilePainter.Input rin = new TilePainter.Input();
+            TilePainter.Painted rp = new TilePainter.Painted();
+            java.util.List<int[]> reads = new java.util.ArrayList<>();
+            int rounds = 0, tilesRead = 0, ringPlots = 0, ringOff = 0;
+            long rtx = Math.floorDiv(ox, tile), rty = Math.floorDiv(oy, tile);
+            for (long ty = rty - CROSSING_TILES; ty <= rty + CROSSING_TILES; ty++) {
+                for (long tx = rtx - CROSSING_TILES; tx <= rtx + CROSSING_TILES; tx++) {
+                    m.tileInput(tx, ty, rin);
+                    TilePainter.paint(rin, rp);
+                    tilesRead++;
+                    // The ring of street codes the tile is handed is the map's streetAt() on every plot (the fill reads a run of plots in one district from its plan).
+                    for (int ry = -TilePainter.CROSS_REACH; ry < tile + TilePainter.CROSS_REACH; ry++) {
+                        for (int rx = -TilePainter.CROSS_REACH; rx < tile + TilePainter.CROSS_REACH; rx++) {
+                            ringPlots++;
+                            if (rin.ring[TilePainter.crossIndex(rx, ry)] != m.streetAt(tx * tile + rx, ty * tile + ry)) ringOff++;
+                        }
+                    }
+                    for (int[] c : TileRaster.crossings(rin, rp)) {
+                        if (c[2] < -1 || c[3] < -1 || c[0] > tile || c[1] > tile) continue; // lies off this tile: it draws nothing on it
+                        reads.add(new int[] { (int) (c[0] + tx * tile), (int) (c[1] + ty * tile), (int) (c[2] + tx * tile), (int) (c[3] + ty * tile), c[4], c[5] });
+                        rounds += c[5];
+                    }
+                }
+            }
+            out.printf("      the crossings about the origin: %d tiles read, %d crossings read in all, %d of them roundabouts%n", tilesRead, reads.size(), rounds);
+            check("fixture: the tiles about the origin read crossings, roundabouts among them", reads.size() > 0 && rounds > 0);
+            check("...the ring of street codes each was handed is the map's streetAt() on all " + ringPlots + " of its plots (" + ringOff + " differ)", ringPlots > 0 && ringOff == 0);
+            check("A CROSSING IS ONE CROSSING: wherever two tiles' reads of a crossing overlap they are the same rectangle and the same verdict - no half roundabout", JunctionCheck.unlike(reads) == 0);
+        }
 
         // ---- THE SCREEN: the founding site's, the four arms across it, within SCREEN_MS
         TilePainter.Input sin = new TilePainter.Input();

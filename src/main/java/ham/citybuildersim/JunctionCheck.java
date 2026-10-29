@@ -119,6 +119,15 @@ import java.util.Arrays;
  *      no bend in the tile, keeps them (0, 0, 10 of 10); and an arm ending on its
  *      diagonal ends squared across its heading at the last step's far edge: no
  *      highway pixel past it, road at both edges just short of it.
+ *  19. (batch MF1, slice C; red until the fix; Jerus, shot 11: "a half roundabout") A CROSSING IS READ ALIKE FROM EVERY TILE THAT DRAWS IT: a
+ *      boulevard crossing six plots a side on a tile's corner with a slanted road off its corner is read by each of the four tiles as one
+ *      rectangle with five roads, a roundabout, and they draw one round island and no box; a seven by four likewise;
+ *  20. (batch MF1, slice C; red until the fix; Jerus, shot 5: "Draw a cleaner interchange") A CLOVERLEAF'S LOOPS ARE LEAVES: in every
+ *      quadrant two curves, each joining both highways, none closed round ground, the four alike under the mirrors and the quarter turn, a ramp
+ *      narrower than the highway; a trumpet's one leaf joins its stub and the highway it ends at;
+ *  21. (batch MF1, slice C; red until the fix; Jerus: "continous intersection, like its a 3x14 road roughly, but shown as 3 roads") A WIDE ROAD IS
+ *      ONE ROAD: a band of street plots 3 across and 14 long, joined by a cross street, is one colour between its straight sides, with a box
+ *      and zebras only where the cross street meets it; the same across a tile's corner; a + of one-plot streets keeps its verge corners.
  *
  * The ground and the access roads are held on the map's own cities by MapCheck
  * section 8 (its 8b), and the spurs dealt to the plans' sidings by its 8c.
@@ -242,6 +251,9 @@ public class JunctionCheck {
         sidings();
         oneJunctionACrossing();
         diagonalJoints();
+        crossingReadAlike();
+        leavesDrawn();
+        wideRoad();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -1319,23 +1331,29 @@ public class JunctionCheck {
         check("the kept copy the view rasters a kept tile from holds the reserve and draws the same pixels, the loops among them",
                 kept.reserves == in.reserves && java.util.Arrays.equals(raster(kept, paint(kept), px), img));
 
-        boolean four = true;
+        boolean four = true, open = true, linked = true;
+        double lc = TileRaster.LEAF_AT, lr = TileRaster.LEAF_RADIUS, cr = TileRaster.CONNECTOR_RADIUS, k45 = Math.sqrt(0.5);
         for (int sy = -1; sy <= 1; sy += 2) {
             for (int sx = -1; sx <= 1; sx += 2) {
-                // The ring's farthest point from the crossing along each axis, and its nearest: on the road.
-                double cx = sx * TileRaster.LOOP_AT, cy = sy * TileRaster.LOOP_AT, r = TileRaster.LOOP_RADIUS;
-                four &= atOffset(img, w, jx, jy, cx + sx * r, cy, px) == road && atOffset(img, w, jx, jy, cx, cy + sy * r, px) == road
-                        && atOffset(img, w, jx, jy, cx - sx * r, cy, px) == road;
-                // ...and its middle is the ground between, not the road.
+                // The leaf's farthest points from the crossing along each axis: on the road.
+                double cx = sx * lc, cy = sy * lc;
+                four &= atOffset(img, w, jx, jy, cx + sx * lr, cy, px) == road && atOffset(img, w, jx, jy, cx, cy + sy * lr, px) == road;
+                // ...its middle is the ground between, not the road...
                 four &= atOffset(img, w, jx, jy, cx, cy, px) != road;
+                // ...the quarter of its circle that faces the crossing is open: a leaf, not a ring...
+                open &= atOffset(img, w, jx, jy, cx - sx * lr * k45, cy - sy * lr * k45, px) != road;
+                // ...and the connector's arc about it, outside, is road.
+                linked &= atOffset(img, w, jx, jy, cx + sx * cr * k45, cy + sy * cr * k45, px) == road;
             }
         }
-        check("each of the four quadrants has a loop: highway-coloured pixels on its ring, none at its middle", four);
-        check("...and the same tile without the reserve has none of them", atOffset(bareImg, w, jx, jy, 5 + TileRaster.LOOP_RADIUS, 5, px) != road);
-        // A slip joins each loop to a highway: pixels between the highway's edge and the ring.
-        double sx0 = TileRaster.SLIP_OUT - 1.0;
-        check("a slip leaves the east highway toward the south-east loop: highway-coloured pixels on the open plot between them",
-                hasColour(img, w, (int) Math.floor(jx + 0.5 + sx0), jy + 1, px, road));
+        check("each of the four quadrants has a leaf: highway-coloured pixels on its far side, none at its middle", four);
+        check("...the quarter of each leaf's circle that faces the crossing is open ground: a leaf, not a closed ring", open);
+        check("...and the connector's arc round the outside of each leaf is road", linked);
+        check("...and the same tile without the reserve has none of them", atOffset(bareImg, w, jx, jy, lc + lr, lc, px) != road);
+        // The connector meets each highway's edge: pixels on the open plot where its arc reaches the east highway's south side.
+        double sx0 = lc + Math.sqrt(cr * cr - lr * lr);
+        check("a connector leaves the east highway toward the south-east: highway-coloured pixels on the open plot where it meets the highway's edge",
+                hasColour(img, w, jx + (int) Math.floor(0.5 + sx0), jy + 1, px, road));
         // Outside the box nothing is drawn.
         boolean outside = true;
         for (int y = 0; y < T; y++) {
@@ -1355,10 +1373,11 @@ public class JunctionCheck {
         highwayRow(built, jy);
         highwayColumn(built, jx);
         built.addReserve(InterchangeGround.CLOVERLEAF, -1, jx, jy, jx - side / 2, jy - side / 2, side, side);
-        int bx = jx + (int) Math.floor(TileRaster.LOOP_AT + TileRaster.LOOP_RADIUS), by = jy + (int) Math.floor(TileRaster.LOOP_AT);
+        int bx = jx + (int) Math.floor(0.5 + TileRaster.LEAF_AT + TileRaster.LEAF_RADIUS), by = jy + (int) Math.floor(0.5 + TileRaster.LEAF_AT);
         building(built, bx, by);
         int[] builtImg = raster(built, paint(built), px);
-        check("a building on a plot of the ring: no loop pixel on its plot", !hasColour(builtImg, w, bx, by, px, road));
+        check("a building on a plot of a leaf: no loop pixel on its plot, where the same plot without it has some",
+                hasColour(img, w, bx, by, px, road) && !hasColour(builtImg, w, bx, by, px, road));
         // Below JUNCTIONS_FROM nothing of it is drawn.
         int[] img4 = raster(in, p, 4);
         int[] bare4 = raster(bare, paint(bare), 4);
@@ -1371,10 +1390,10 @@ public class JunctionCheck {
         int tr = InterchangeGround.TRUMPET_SIDE;
         t.addReserve(InterchangeGround.TRUMPET, 0, jx, jy, jx - tr / 2, jy - tr, tr, tr);
         int[] tImg = raster(t, paint(t), px);
-        double ac = TileRaster.TRUMPET_OUT, bc = TileRaster.TRUMPET_ACROSS, rr = TileRaster.TRUMPET_RADIUS;
+        double ac = TileRaster.LEAF_AT, bc = TileRaster.LEAF_AT, rr = TileRaster.LEAF_RADIUS;
         // The stub runs north, so a is -v, and b (to its right) is +u.
-        check("a trumpet has its loop on the stub's side: highway-coloured pixels on the ring, none at its middle",
-                atOffset(tImg, w, jx, jy, bc + rr, -ac, px) == road && atOffset(tImg, w, jx, jy, bc - rr, -ac, px) == road && atOffset(tImg, w, jx, jy, bc, -ac, px) != road);
+        check("a trumpet has its leaf on the stub's side: highway-coloured pixels on its far sides, none at its middle",
+                atOffset(tImg, w, jx, jy, bc + rr, -ac, px) == road && atOffset(tImg, w, jx, jy, bc, -(ac + rr), px) == road && atOffset(tImg, w, jx, jy, bc, -ac, px) != road);
         check("...and none on the other side of the stub", atOffset(tImg, w, jx, jy, -(bc + rr), -ac, px) != road);
     }
 
@@ -1383,14 +1402,14 @@ public class JunctionCheck {
     /** The street code at world plot (x, y), as a map's plans give it: 0 for none. */
     interface Streets { int at(int x, int y); }
 
-    /** Tile (tx, ty) as the map fills its input from the streets `f`: its own plots, the street just beyond each edge, and the ring of REACH plots about it. */
+    /** Tile (tx, ty) as the map fills its input from the streets `f`: its own plots, the street just beyond each edge, and the ring of CROSS_REACH plots about it. */
     static TilePainter.Input inputFor(int tx, int ty, Streets f) {
         TilePainter.Input in = owned();
-        int ox = tx * T, oy = ty * T, r = TilePainter.REACH;
+        int ox = tx * T, oy = ty * T, r = TilePainter.CROSS_REACH;
         for (int y = -r; y < T + r; y++) {
             for (int x = -r; x < T + r; x++) {
                 byte code = (byte) f.at(ox + x, oy + y);
-                in.ring[TilePainter.ringIndex(x, y)] = code;
+                in.ring[TilePainter.crossIndex(x, y)] = code;
                 boolean inside = x >= 0 && y >= 0 && x < T && y < T;
                 if (inside) in.street[y * T + x] = code;
                 else if (x >= 0 && x < T && y == -1) in.beyond[x] = code;
@@ -1763,6 +1782,383 @@ public class JunctionCheck {
         }
         check("18d. ...and it is squared: road at both of its edges, a pixel inside each and short of the end, across the open plots beside the last step", squared);
         if (!squared) System.out.println("  no road at pixel" + missing);
+    }
+
+    /* ================= 19. a crossing is read alike from every tile that draws it (MF1) ================= */
+
+    /** Tile (tx, ty) of the streets `f` with the avenue plots `marks` laid and the avenues' origin at world plot (ox, oy), as the map fills its input. */
+    static TilePainter.Input inputWithAvenue(int tx, int ty, Streets f, Streets marks, int ox, int oy) {
+        TilePainter.Input in = inputFor(tx, ty, f);
+        int r = TilePainter.CROSS_REACH;
+        for (int y = -r; y < T + r; y++) for (int x = -r; x < T + r; x++) in.setAvenue(x, y, marks.at(tx * T + x, ty * T + y));
+        in.avenueOx = ox - tx * T;
+        in.avenueOy = oy - ty * T;
+        return in;
+    }
+
+    /** The crossings tile (tx, ty) reads from `in` that touch its plots, in world plots: {first column, first row, last column, last row, roads, 1 for a roundabout}. */
+    static java.util.List<int[]> readBy(TilePainter.Input in, int tx, int ty) {
+        java.util.List<int[]> out = new java.util.ArrayList<>();
+        for (int[] c : TileRaster.crossings(in, paint(in))) {
+            // A crossing whose rectangle, and a plot's width beyond it for its island, lies off the tile draws nothing on it.
+            if (c[2] < -1 || c[3] < -1 || c[0] > T || c[1] > T) continue;
+            out.add(new int[] { c[0] + tx * T, c[1] + ty * T, c[2] + tx * T, c[3] + ty * T, c[4], c[5] });
+        }
+        return out;
+    }
+
+    /** How many pairs of reads of crossings that overlap - read by different tiles - are not the same rectangle and verdict (roads leaving it apart: a verdict is what is drawn). */
+    static int unlike(java.util.List<int[]> reads) {
+        int n = 0;
+        for (int i = 0; i < reads.size(); i++) {
+            for (int j = i + 1; j < reads.size(); j++) {
+                int[] a = reads.get(i), b = reads.get(j);
+                if (a[0] > b[2] || b[0] > a[2] || a[1] > b[3] || b[1] > a[3]) continue;
+                if (a[0] != b[0] || a[1] != b[1] || a[2] != b[2] || a[3] != b[3] || a[5] != b[5]) n++;
+            }
+        }
+        return n;
+    }
+
+    /** Whether, over the whole image (w pixels across), every pixel between `inner` and `outer` plots of (cx, cy), in plots from the image's corner, is the paved colour: a roundabout's lane drawn whole. */
+    static boolean laneIsPaved(int[] img, int w, int px, double cx, double cy, double inner, double outer) {
+        int paved = TileRaster.ROAD[BuildingVisual.PAVED];
+        for (int y = 0; y < w; y++)
+            for (int x = 0; x < w; x++) {
+                double d = Math.hypot((x + 0.5) / px - cx, (y + 0.5) / px - cy);
+                if (d > inner && d <= outer && img[y * w + x] != paved) return false;
+            }
+        return true;
+    }
+
+    /** The four tiles (0, 0), (1, 0), (0, 1), (1, 1) of the streets `f` and avenue plots `marks` (origin ox, oy), each rastered alone and laid side by side. */
+    static int[] fourTilesWithAvenue(Streets f, Streets marks, int ox, int oy, int px) {
+        int tw = T * px, w = 2 * tw;
+        int[] out = new int[w * w];
+        for (int ty = 0; ty < 2; ty++) {
+            for (int tx = 0; tx < 2; tx++) {
+                TilePainter.Input in = inputWithAvenue(tx, ty, f, marks, ox, oy);
+                int[] img = raster(in, paint(in), px);
+                for (int y = 0; y < tw; y++) System.arraycopy(img, y * tw, out, (ty * tw + y) * w + tx * tw, tw);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * (MF1, 2026-10-28; Jerus, shot 11: "a half roundabout" - the tree circle where the diagonal avenue meets a street cut flat down one
+     * side) A crossing is the plan's, so every tile that draws a part of it reads one rectangle, one count of the roads that leave it and
+     * one verdict, signal or roundabout. Until MF1 a tile read only REACH (4) plots past its edge, and a crossing on a tile's corner of
+     * more than three plots a side was read in a different size by each of its tiles - on his slot 7's copy the avenues' origin, 7 x 4
+     * plots, was 5 x 4 and a stray 2 x 1 to one tile and 7 x 4 to the next; in FW4's playtest city a crossing 3 x 5 was 3 x 4 to the
+     * tiles on one side of a seam and 3 x 5 to the other: two circles half a plot apart where the tiles met, as in his shot. The
+     * fixtures lie on the corner of four tiles, so each tile reads a quarter of the crossing inside its own plots and the rest through
+     * its ring: a diagonal avenue's arm across two boulevards two plots wide (his shot's geometry; one tile read it a roundabout of
+     * 5 x 5 and two a signal of 4 x 4), and a boulevard three plots wide across one a plot tall with a slanted street off its corner
+     * (five roads, of which one tile saw four).
+     */
+    static void crossingReadAlike() {
+        System.out.println("--- 19. (MF1) a crossing on the corner of four tiles is read alike by each: one rectangle, one verdict, one round island ---");
+        int px = 8, w2 = 2 * T * px;
+
+        // (a) The avenue's arm (arm 0 from (T - 11, T - 8), the arterial plots of its staircase) across a boulevard two plots wide, columns T - 4 and T - 3,
+        // and another two plots tall, rows T - 1 and T: a crossing of 5 x 5 plots, six roads (the four sides, the avenue's two directions).
+        int off = -3, ox = T - 8 + off, oy = T - 8;
+        Streets marks = (x, y) -> MapCheck.handMark(ox, oy, 1, 40, x, y);
+        Streets a = (x, y) -> marks.at(x, y) != 0 ? ARTERIAL : (x >= T - 1 + off && x <= T + off) || (y >= T - 1 && y <= T) ? BOULEVARD : 0;
+        java.util.List<int[]> reads = new java.util.ArrayList<>();
+        for (int ty = 0; ty < 2; ty++) for (int tx = 0; tx < 2; tx++) reads.addAll(readBy(inputWithAvenue(tx, ty, a, marks, ox, oy), tx, ty));
+        int[] whole = { T - 5, T - 3, T - 1, T + 1 };
+        boolean every = !reads.isEmpty();
+        int wholeReads = 0;
+        for (int[] c : reads) {
+            if (c[0] > whole[2] || whole[0] > c[2] || c[1] > whole[3] || whole[1] > c[3]) continue;
+            wholeReads++;
+            every &= c[0] == whole[0] && c[1] == whole[1] && c[2] == whole[2] && c[3] == whole[3] && c[4] >= TileRaster.ROUNDABOUT_ROADS && c[5] == 1;
+        }
+        check("19a. the diagonal avenue across two boulevards on a tile's corner: no two tiles read the crossing differently", unlike(reads) == 0);
+        check("19a. ...each tile that draws part of it reads the whole 5 x 5 rectangle and a roundabout of " + TileRaster.ROUNDABOUT_ROADS + " or more roads (" + wholeReads + " tiles)",
+                every && wholeReads == 4);
+        int[] fa = fourTilesWithAvenue(a, marks, ox, oy, px);
+        check("19a. ...the four tiles draw one round island about its middle, ISLAND exactly within ROUNDABOUT_ISLAND + 2 plots of it, and no signal box",
+                islandIsRound(fa, w2, px, T - 2.5, T - 0.5, TileRaster.ROUNDABOUT_ISLAND + (5 - 1) / 2.0) && noneOf(fa, TileRaster.JUNCTION_BOX));
+        check("19a. ...and its lane, out to ROUNDABOUT_RADIUS + 2 plots, is paved all round across the seams",
+                laneIsPaved(fa, w2, px, T - 2.5, T - 0.5, TileRaster.ROUNDABOUT_ISLAND + (5 - 1) / 2.0, TileRaster.ROUNDABOUT_RADIUS + (5 - 1) / 2.0));
+
+        // (b) A boulevard three plots wide (columns T to T + 2) across one a plot tall (row T - 1), a slanted street off the south-east corner: a 3 x 1
+        // crossing of five roads, which one tile saw four of.
+        Streets slant = (x, y) -> (x - (T + 3) == y - T && x >= T + 3 && x <= T + 5) ? STREET : (x >= T && x <= T + 2) || y == T - 1 ? BOULEVARD : 0;
+        reads.clear();
+        for (int ty = 0; ty < 2; ty++) for (int tx = 0; tx < 2; tx++) reads.addAll(readBy(inputFor(tx, ty, slant), tx, ty));
+        boolean five = !reads.isEmpty();
+        for (int[] c : reads) if (c[0] <= T + 2 && T <= c[2] && c[1] <= T - 1 && T - 1 <= c[3]) five &= c[0] == T && c[2] == T + 2 && c[1] == T - 1 && c[3] == T - 1 && c[4] == 5 && c[5] == 1;
+        check("19b. a 3 x 1 crossing on a tile's corner with a slanted street off it: every tile reads it as a roundabout of five roads", unlike(reads) == 0 && five);
+        int[] fs = fourTiles(slant, px);
+        check("19b. ...and the four tiles draw its one round island, ISLAND exactly within ROUNDABOUT_ISLAND + 1 plot of its middle, and no box",
+                islandIsRound(fs, w2, px, T + 1.5, T - 0.5, TileRaster.ROUNDABOUT_ISLAND + (3 - 1) / 2.0) && noneOf(fs, TileRaster.JUNCTION_BOX));
+        check("19b. ...and its lane, out to ROUNDABOUT_RADIUS + 1 plot, is paved all round across the seams",
+                laneIsPaved(fs, w2, px, T + 1.5, T - 0.5, TileRaster.ROUNDABOUT_ISLAND + (3 - 1) / 2.0, TileRaster.ROUNDABOUT_RADIUS + (3 - 1) / 2.0));
+        // (c) A highway laid over one plot of the crossing's rectangle (a run laid across a standing street, as FX7's cities have): the tile it
+        // lies on painted the plot as no street, its neighbours read the plan's code - so one read a 2 x 1 crossing where the others read 3 x 1.
+        Streets under = (x, y) -> (x >= T - 3 && x <= T - 1) || y == T - 1 ? BOULEVARD : 0;
+        reads.clear();
+        for (int ty = 0; ty < 2; ty++) {
+            for (int tx = 0; tx < 2; tx++) {
+                TilePainter.Input in = inputFor(tx, ty, under);
+                if (tx == 0 && ty == 0) in.fixed[(T - 1) * T + T - 3] = BuildingVisual.HIGHWAY;
+                reads.addAll(readBy(in, tx, ty));
+            }
+        }
+        boolean planned = !reads.isEmpty();
+        for (int[] c : reads) planned &= c[0] == T - 3 && c[2] == T - 1 && c[1] == T - 1 && c[3] == T - 1;
+        check("19c. a highway laid over one plot of a crossing on a tile's corner: every tile reads the plan's 3 x 1, the tile with the highway on it too", unlike(reads) == 0 && planned);
+
+        // A crossing wholly inside one tile reads as it did.
+        java.util.List<int[]> inside = readBy(inputFor(0, 0, cross(15, 17, 15, 17, BOULEVARD)), 0, 0);
+        check("19d. a 3 x 3 crossing of boulevards wholly inside one tile is one signal of four roads", inside.size() == 1 && inside.get(0)[4] == 4 && inside.get(0)[5] == 0);
+    }
+
+    /* ================= 20. a cloverleaf's loops are leaves (MF1) ================= */
+
+    /** The 4-connected components of `mask` (w pixels across): each pixel's number, from 1, 0 for none; the count. */
+    static int components(boolean[] mask, int w, int[] label) {
+        int n = 0;
+        int[] stack = new int[mask.length];
+        for (int s = 0; s < mask.length; s++) {
+            if (!mask[s] || label[s] != 0) continue;
+            n++;
+            int top = 0;
+            stack[top++] = s;
+            label[s] = n;
+            while (top > 0) {
+                int i = stack[--top], x = i % w, y = i / w;
+                for (int d = 0; d < 4; d++) {
+                    int nx = x + TilePainter.DX[d], ny = y + TilePainter.DY[d];
+                    if (nx < 0 || ny < 0 || nx >= w || ny >= mask.length / w) continue;
+                    int k = ny * w + nx;
+                    if (mask[k] && label[k] == 0) {
+                        label[k] = n;
+                        stack[top++] = k;
+                    }
+                }
+            }
+        }
+        return n;
+    }
+
+    /** How many pixels outside `mask` the 4-connected ground reaches from pixel (0, 0), and how many there are in all: unequal where a curve of the mask closes round some ground. */
+    static int[] groundReached(boolean[] mask, int w) {
+        int h = mask.length / w, total = 0, reached = 0;
+        for (boolean m : mask) if (!m) total++;
+        boolean[] seen = new boolean[mask.length];
+        int[] stack = new int[mask.length];
+        int top = 0;
+        if (!mask[0]) { stack[top++] = 0; seen[0] = true; }
+        while (top > 0) {
+            int i = stack[--top], x = i % w, y = i / w;
+            reached++;
+            for (int d = 0; d < 4; d++) {
+                int nx = x + TilePainter.DX[d], ny = y + TilePainter.DY[d];
+                if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+                int k = ny * w + nx;
+                if (!mask[k] && !seen[k]) {
+                    seen[k] = true;
+                    stack[top++] = k;
+                }
+            }
+        }
+        return new int[] { reached, total };
+    }
+
+    /**
+     * (MF1, 2026-10-28; Jerus, shot 5: "Draw a cleaner interchange (a cloverleaf's or a diamond's shape)") A cloverleaf drew four separate
+     * ring loops, each round an island of ground, each with two straight spokes to the highways. It draws one leaf in each quadrant - a loop
+     * ramp of about 270 degrees that touches both highways and is open toward the crossing - and an outer connector round it; a trumpet
+     * one leaf. What is asserted is the shape, from the pixels the reserve adds to the tile: in every quadrant two curves, each joining both
+     * highways; no curve closes round ground; the four quadrants alike under the mirrors and the quarter turn; a ramp narrower than the
+     * highway.
+     */
+    static void leavesDrawn() {
+        System.out.println("--- 20. (MF1) a cloverleaf's loops are leaves, not four closed rings with spokes: two curves a quadrant, each joining both highways, none closed ---");
+        int px = 8, jx = 16, jy = 16, w = T * px, side = InterchangeGround.CLOVERLEAF_SIDE;
+        TilePainter.Input in = owned();
+        highwayRow(in, jy);
+        highwayColumn(in, jx);
+        in.addReserve(InterchangeGround.CLOVERLEAF, -1, jx, jy, jx - side / 2, jy - side / 2, side, side);
+        int[] img = raster(in, paint(in), px);
+        TilePainter.Input bare = owned();
+        highwayRow(bare, jy);
+        highwayColumn(bare, jx);
+        int[] bareImg = raster(bare, paint(bare), px);
+        boolean[] ramp = new boolean[w * w];
+        int road = TileRaster.ROAD[BuildingVisual.HIGHWAY];
+        // The pixels the reserve adds: in the ramps' colours and not the tile's without it (the stack's corner slips it takes away are not ramps).
+        for (int i = 0; i < ramp.length; i++) ramp[i] = img[i] != bareImg[i] && (img[i] == road || img[i] == TileRaster.HIGHWAY_CASE);
+        int[] label = new int[w * w];
+        int n = components(ramp, w, label);
+        // Each curve's quadrant (it keeps to one), and whether it has a pixel beside the horizontal highway's row and beside the vertical one's column.
+        int cx = jx * px + px / 2, cy = jy * px + px / 2;
+        int[][] quad = new int[n + 1][2];
+        boolean[] beside = new boolean[n + 1], besideV = new boolean[n + 1], oneQuadrant = new boolean[n + 1];
+        java.util.Arrays.fill(oneQuadrant, true);
+        boolean[] first = new boolean[n + 1];
+        for (int i = 0; i < ramp.length; i++) {
+            int l = label[i];
+            if (l == 0) continue;
+            int x = i % w, y = i / w, qx = x < cx ? -1 : 1, qy = y < cy ? -1 : 1;
+            if (!first[l]) { first[l] = true; quad[l] = new int[] { qx, qy }; }
+            else if (quad[l][0] != qx || quad[l][1] != qy) oneQuadrant[l] = false;
+            // Just off the highway's row (the plot row above or below it) or its column: the pixel row or column next to it.
+            if (y == jy * px - 1 || y == (jy + 1) * px) beside[l] = true;
+            if (x == jx * px - 1 || x == (jx + 1) * px) besideV[l] = true;
+        }
+        int[] perQuadrant = new int[4];
+        boolean keepsToQuadrant = true, joinsBoth = true;
+        for (int l = 1; l <= n; l++) {
+            keepsToQuadrant &= oneQuadrant[l];
+            joinsBoth &= beside[l] && besideV[l];
+            perQuadrant[(quad[l][0] < 0 ? 0 : 1) + (quad[l][1] < 0 ? 0 : 2)]++;
+        }
+        check("20a. the reserve adds curves to the tile, each in one quadrant", n > 0 && keepsToQuadrant);
+        check("20a. ...two in every quadrant, the leaf and the connector round it (a ring with its spokes is one)",
+                perQuadrant[0] == 2 && perQuadrant[1] == 2 && perQuadrant[2] == 2 && perQuadrant[3] == 2);
+        check("20b. ...each of them joins both highways: pixels beside the east-west highway's row and beside the north-south one's column", joinsBoth);
+        int[] ground = groundReached(ramp, w);
+        check("20c. no curve closes round ground: every pixel the ramps leave is reached from the tile's corner without crossing one (a closed ring has its island)",
+                ground[0] == ground[1]);
+        boolean mirrorX = true, mirrorY = true, turn = true;
+        int lo = (jx - side / 2) * px, hi = (jx + side / 2 + 1) * px; // The reserve's box: the plots round the junction, nine either way.
+        for (int y = lo; y < hi; y++) {
+            for (int x = lo; x < hi; x++) {
+                boolean r = ramp[y * w + x];
+                mirrorX &= r == ramp[y * w + (2 * cx - 1 - x)];
+                mirrorY &= r == ramp[(2 * cy - 1 - y) * w + x];
+                turn &= r == ramp[x * w + y];
+            }
+        }
+        check("20d. the four quadrants are alike: the ramps' pixels are the same mirrored across the north-south highway, across the east-west one, and about the crossing's diagonal",
+                mirrorX && mirrorY && turn);
+        // A ramp is narrower than a highway: across the leaf at its far point along the east-west axis, one road, not the highway's band.
+        double lc = TileRaster.LEAF_AT, lr = TileRaster.LEAF_RADIUS;
+        int row = (int) Math.floor((jy + 0.5 + lc) * px), x0 = (int) Math.floor((jx + 0.5 + lc + lr - 1.0) * px), thick = 0;
+        for (int x = x0; x < x0 + 2 * px; x++) if (ramp[row * w + x]) thick++;
+        check("20e. a ramp across is narrower than the highway's band (" + thick + " px against " + TileRaster.crossSection(BuildingVisual.HIGHWAY, px)[0] + ")",
+                thick > 0 && thick < TileRaster.crossSection(BuildingVisual.HIGHWAY, px)[0]);
+
+        // A trumpet: one leaf, joining the stub and the highway it ends at, closed round nothing.
+        TilePainter.Input t = owned();
+        highwayRow(t, jy);
+        for (int y = 0; y < jy; y++) t.fixed[y * T + jx] = BuildingVisual.HIGHWAY;
+        int tr = InterchangeGround.TRUMPET_SIDE;
+        t.addReserve(InterchangeGround.TRUMPET, 0, jx, jy, jx - tr / 2, jy - tr, tr, tr);
+        int[] tImg = raster(t, paint(t), px);
+        TilePainter.Input tBare = owned();
+        highwayRow(tBare, jy);
+        for (int y = 0; y < jy; y++) tBare.fixed[y * T + jx] = BuildingVisual.HIGHWAY;
+        int[] tBareImg = raster(tBare, paint(tBare), px);
+        boolean[] tRamp = new boolean[w * w];
+        for (int i = 0; i < tRamp.length; i++) tRamp[i] = tImg[i] != tBareImg[i] && (tImg[i] == road || tImg[i] == TileRaster.HIGHWAY_CASE);
+        int[] tLabel = new int[w * w];
+        int tn = components(tRamp, w, tLabel);
+        boolean stub = false, through = false;
+        for (int i = 0; i < tRamp.length; i++) {
+            if (!tRamp[i]) continue;
+            int x = i % w, y = i / w;
+            if (x == (jx + 1) * px) stub = true;
+            if (y == jy * px - 1) through = true;
+        }
+        int[] tGround = groundReached(tRamp, w);
+        check("20f. a trumpet has one curve, a leaf: it joins the stub and the highway it ends at, and closes round no ground",
+                tn == 1 && stub && through && tGround[0] == tGround[1]);
+    }
+
+    /* ================= 21. a wide road is one road (MF1) ================= */
+
+    /** A band of street plots `code`: the columns x0 to x1 across and the rows y0 to y1 down. */
+    static void band(TilePainter.Input in, int x0, int x1, int y0, int y1, int code) {
+        for (int y = y0; y <= y1; y++) for (int x = x0; x <= x1; x++) in.street[y * T + x] = (byte) code;
+    }
+
+    /**
+     * (MF1, 2026-10-28; Jerus, on his city: "continous intersection, like its a 3x14 road roughly, but shown as 3 roads, with intersection on
+     * every node") A street several plots across drew every plot's own bar through its middle: a band drawn narrow (the plan gives every street
+     * DistrictPlan.HALF first) was a lattice of grey bars with a verge square in every mesh, a + at every plot, teeth of its cross bars along its
+     * sides. A band of street plots 3 across and 14 long, joined by a cross street, is one carriageway: its interior is one colour between its
+     * edges, its sides are straight, and a junction is drawn where the cross street meets it and nowhere along it. A street one plot wide is
+     * as it was.
+     */
+    static void wideRoad() {
+        System.out.println("--- 21. (MF1) a band of street plots 3 across and 14 long is one carriageway: one colour inside, straight sides, a junction only at the cross street ---");
+        int px = 8, w = T * px, paved = TileRaster.ROAD[BuildingVisual.PAVED];
+        int half = Math.max(1, (int) Math.round(TileRaster.SURFACE[1] * px)), oh = (px - half) / 2;
+        // Columns 10 to 12, rows 4 to 17, a cross street along row 10 on either side of it.
+        TilePainter.Input in = owned();
+        band(in, 10, 12, 4, 17, BOULEVARD);
+        for (int x = 0; x < T; x++) if (x < 10 || x > 12) in.street[10 * T + x] = (byte) BOULEVARD;
+        TilePainter.Painted p = paint(in);
+        int[] img = raster(in, p, px);
+        // The band's edges: the outer bars' outer edges, across.
+        int left = 10 * px + oh, right = 12 * px + oh + half;
+        boolean oneColour = true, straight = true;
+        int verge = 0, rows = 0;
+        for (int y = 5; y <= 16; y++) {
+            if (y >= 8 && y <= 12) continue; // The cross street's own arms and zebras.
+            for (int dy = 0; dy < px; dy++) {
+                rows++;
+                for (int X = left; X < right; X++) {
+                    int c = img[(y * px + dy) * w + X];
+                    oneColour &= c == paved;
+                    if (c == TileRaster.VERGE) verge++;
+                }
+                // The band's sides are straight: the pixel just outside each edge is not road, the one just inside it is.
+                straight &= img[(y * px + dy) * w + left - 1] != paved && img[(y * px + dy) * w + right] != paved;
+                straight &= img[(y * px + dy) * w + left] == paved && img[(y * px + dy) * w + right - 1] == paved;
+            }
+        }
+        check("21a. a band of three half-width plots, 14 long: every pixel between its edges is the paved colour along its length (" + verge + " verge pixels in it)", oneColour && verge == 0);
+        check("21a. ...and its two sides are straight: no tooth of a cross bar, no notch, along the same rows", straight);
+        // A junction only where the cross street meets it.
+        boolean marksOnlyThere = true;
+        for (int y = 0; y < T; y++) {
+            for (int x = 10; x <= 12; x++) {
+                boolean at = y >= 9 && y <= 11;
+                if (!at && (hasColour(img, w, x, y, px, TileRaster.JUNCTION_BOX) || hasColour(img, w, x, y, px, TileRaster.ZEBRA))) marksOnlyThere = false;
+            }
+        }
+        check("21b. no junction box and no zebra on the band's plots but those where the cross street meets it (rows 9 to 11, the box and its two arms)", marksOnlyThere);
+        check("21b. ...and the cross street does meet it: a box at the middle of the band on its row, zebras on its arms",
+                hasColour(img, w, 11, 10, px, TileRaster.JUNCTION_BOX) && hasColour(img, w, 11, 9, px, TileRaster.ZEBRA) && hasColour(img, w, 11, 11, px, TileRaster.ZEBRA));
+
+        // The band as his city has it: two columns half-width, the third (an arterial's) full.
+        TilePainter.Input mixed = owned();
+        int full = streetCode(DistrictPlan.PAVED, 2, TilePainter.S_BOULEVARD);
+        band(mixed, 10, 11, 4, 17, BOULEVARD);
+        band(mixed, 12, 12, 4, 17, full);
+        int[] mImg = raster(mixed, paint(mixed), px);
+        int mRight = 12 * px + (px - Math.max(1, (int) Math.round(TileRaster.SURFACE[2] * px))) / 2 + Math.max(1, (int) Math.round(TileRaster.SURFACE[2] * px));
+        boolean mixedOne = true;
+        for (int y = 5; y <= 16; y++)
+            for (int dy = 0; dy < px; dy++)
+                for (int X = left; X < mRight; X++) mixedOne &= mImg[(y * px + dy) * w + X] == paved;
+        check("21c. two half-width columns beside a full-width one: still one carriageway, every pixel between the outer edges paved", mixedOne);
+
+        // A street one plot wide, and a + of two, keep the verge in their corners: nothing is filled.
+        TilePainter.Input plus = owned();
+        streetColumn(plus, 20, STREET);
+        streetRow(plus, 20, STREET);
+        int[] pImg = raster(plus, paint(plus), px);
+        check("21d. a + of two one-plot streets keeps its four corners of verge: nothing is filled between single bars",
+                pixel(pImg, w, 20, 20, 0, 0, px) == TileRaster.VERGE && pixel(pImg, w, 20, 20, px - 1, 0, px) == TileRaster.VERGE
+                        && pixel(pImg, w, 20, 20, 0, px - 1, px) == TileRaster.VERGE && pixel(pImg, w, 20, 20, px - 1, px - 1, px) == TileRaster.VERGE);
+
+        // Across a tile's corner: the four tiles draw the band they would whole.
+        Streets across = (x, y) -> x >= T - 1 && x <= T + 1 && y >= T - 7 && y < T + 7 ? BOULEVARD : 0;
+        int[] fourT = fourTiles(across, px);
+        boolean wholeOne = true;
+        for (int y = T - 6; y < T + 6; y++)
+            for (int dy = 0; dy < px; dy++)
+                for (int X = (T - 1) * px + oh; X < (T + 1) * px + oh + half; X++) wholeOne &= fourT[(y * px + dy) * (2 * w) + X] == paved;
+        check("21e. a band across the corner of four tiles is one carriageway too: every pixel between its edges paved, across the seam", wholeOne);
     }
 
 }

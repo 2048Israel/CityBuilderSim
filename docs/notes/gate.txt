@@ -1,8 +1,9 @@
-# gate of Merge batch/WN2: nations on the map: borders, dots and labels with output and people, the nation's card, the Nations / Trade routes / Borders chips, (the head's POPULATION and GDP tiles went to MS1, with the rest of the header), the legend that folds, 0.8.69
+# gate of Merge batch/MF1: the map's faults in his "For Claude" city (and CL3's re-chaining): highways over buildings and works on the rail yard (FX7's ★1: the buildings move off), the yard relaid eleven times (FX7 ★4), a half roundabout, the four-ring interchange, wide paved roads drawn as three, square rail and dead ends, the outer rim's grid of overflow buildings, the coast all piers with hundreds of lanes (Jerus, 2026-10-23: "One batch for all", "At the end"), 0.8.70
 # date: 2026-10-29
 # earth-2.bin: named
-# suite: 152 harnesses run in 1901s: 152 passed, 0 failed
-# timing: 12 harnesses run in 590s: 11 passed, 1 failed; its red lines were judged side by side with main's, below
+# suite: 152 harnesses run in 1048s: 152 passed, 0 failed
+# timing: 12 harnesses run in 561s: 11 passed, 1 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 6.6 ms, batch 4.8 ms (-27.3%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 6.03 ms, batch 5.59 ms (-7.4%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | ...and no more than section 5's at either size: the view adds nothing a tile   FAIL   [main 22.1 ms, batch 20.2 ms (-8.8%), budget 26.4194 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 2 FAILED   [the harness's own count of the timing reds above]

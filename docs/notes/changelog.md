@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.70 — MF1, the map's faults in his For Claude city — 2026-10-29, ready, see docs/queue/MF1-notes.md
+Jerus's eight map faults from 13 shots of his city (the save no longer loads; reproduced on copies of slots 7 and 8 and
+the playtest's city). Buildings under or beside a highway, track or yard laid after them move off it and are rebuilt
+nearby, the same buildings, nothing else moving (PlanCheck's save section 9: 7 of 14 districts red, now 14 of 14). Every
+tile reads a crossing alike, so a roundabout is one disc; a cloverleaf is four leaves, not four rings; a street several
+plots wide is one road. The plans' sidings curve and run trains, keep apart, and a T no longer breaks the line; one no
+unit train fits is not drawn. The yard relaid 16 times was the model selling its only depot and buying it back (FD1,
+queued): the map keeps such a yard idle 120 months. The overflow stands by the streets, not one to a tile on the far rim.
+A coast's berths gather in one or two harbours on short common quays, the rest beach (slot 8: 106 piers, now two
+harbours). The map's alone: the trace is main's, no ensemble; the map's sidecar FORMAT 14.
+
 ### 0.8.69 — WN2, the nations on the map: borders, dots, labels and the card — 2026-10-28, ready, see docs/queue/WN2-notes.md
 On a city on the real Earth, the expanded map's head has two new chips, **Nations** and **Borders**, both on until the player turns them off, and the map remembers them. The nations' borders are drawn dashed white at the far views. Up close, a border is drawn only where one crosses the city's land or its offers. Each nation has a dot at its largest port or city, sized by its output, with its name, output and people written on its land wherever they fit. Hovering a dot shows its figures; clicking a dot or a nation's land opens its card: GDP, people and GDP a head, each ranked of 196, this year's growth and prices, and its money's rate. The legend now folds at its head. `NationsMap` keeps the borders at five levels of detail and culls them to the view, and the map stays as fast: GlobeCheck times a view's borders at under 1 ms. Trade routes, with their chip, come with WN3's trade by partner. Nothing in the month reads the nations, and the playtest's trace is unchanged.
 

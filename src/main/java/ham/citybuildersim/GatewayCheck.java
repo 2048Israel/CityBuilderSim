@@ -741,7 +741,7 @@ public class GatewayCheck {
         BuildingVisual.Type[] types = gatewayTypes();
         World w = World.of(Founding.DEFAULT_WORLD_SEED);
         long[] counts = coastCounts(types);
-        CityMap m = MapCheck.coastal(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, counts);
+        CityMap m = MapCheck.coastBeforeMF1(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, counts);
         CityRuns runs = m.runs();
         int gate = CityRuns.gateArm(runs.rail(), m.gateway());
         check("fixture: the coast city has a gateway and a railway whose gate arm is laid",
@@ -753,6 +753,23 @@ public class GatewayCheck {
             check("fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water", walk[0] >= 1);
         }
         worldLinesOnLand("the coast", m);
+        // MF1 (2026-10-28): what this coast's world line stands on. It is the shore's, not the railway's: the one arm of the spine that is not at
+        // the water (arm 3, still growing) walks 7 owned dry plots and then owned water, "no edge"; a Bulk Berth laid on that walk reads as a plot
+        // the city does not own (the runs' ground reads a work's box, verge and quay as nothing: RunGround), dry, and so is the edge. The coast
+        // with no works has no line, and neither has the coast laid by the harbour rule, which keeps the works off every spine arm's walk
+        // (CityMap.worldWalks()); so this fixture stays on the shore as laid before MF1 (MapCheck.coastBeforeMF1()).
+        long[] bare = coastCounts(types);
+        for (BuildingVisual.Type t : types) if (t != null && t.shore()) bare[t.id()] = 0;
+        CityMap noWorks = MapCheck.coastBeforeMF1(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, bare);
+        CityMap harbours = MapCheck.coastal(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, coastCounts(types));
+        boolean onAWork = !m.worldLines().isEmpty();
+        for (CityMap.WorldLine l : m.worldLines()) onAWork &= m.shore().blocks((long) Math.floor(l.x()), (long) Math.floor(l.y()));
+        System.out.printf("  the coast's line: %d; the same coast with no works: %d; laid by the harbour rule (%d works): %d%n", m.worldLines().size(),
+                noWorks.worldLines().size(), harbours.shore().works().size(), harbours.worldLines().size());
+        check("the coast's world line stands on a work of the shore (the plot the walk calls the city's edge is one a work blocks), and the same coast with no works has none",
+                onAWork && noWorks.worldLines().isEmpty() && noWorks.shore().works().isEmpty());
+        check("...the coast laid by the harbour rule has works and no line (none stands on an arm's walk, so none is made the city's edge), as the coast with no works",
+                !harbours.shore().works().isEmpty() && harbours.worldLines().isEmpty());
         CityMap.WorldLine rail = null;
         for (CityMap.WorldLine l : m.worldLines()) if (l.net() == CityRuns.RAILWAY) rail = l;
         check("the coast: the railway has a line, so the checks above are not vacuous", rail != null);
@@ -771,7 +788,7 @@ public class GatewayCheck {
         BuildingVisual.Type[] types = gatewayTypes();
         World w = World.of(Founding.DEFAULT_WORLD_SEED);
         long[] last = coastCounts(types), now = new long[last.length];
-        CityMap m = MapCheck.coastal(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, now);
+        CityMap m = MapCheck.coastBeforeMF1(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, now);
         int bad = 0, lineMonths = 0, routeMonths = 0, offGate = 0, firstLine = -1, firstRoutes = -1;
         for (int month = 1; month <= MapCheck.MONTHS; month++) {
             for (int t = 0; t < last.length; t++) now[t] = last[t] * month / MapCheck.MONTHS;
@@ -1100,7 +1117,9 @@ public class GatewayCheck {
 
     /** A map read back from a sidecar, on the live map's ground, as section 12 reads one. */
     static CityMap readBack(CityMap m, byte[] sidecar, int month) {
-        return CityMap.readSidecar(sidecar, m.land(), res -> m.land().amountsInOrder(res), m.types(), month, CityMap.stampIn(sidecar));
+        CityMap read = CityMap.readSidecar(sidecar, m.land(), res -> m.land().amountsInOrder(res), m.types(), month, CityMap.stampIn(sidecar));
+        if (read != null) read.harbourReachLike(m);   // MF1: laid by the rule the live map's shore was
+        return read;
     }
 
     /** Whether every arm of both nets in two runs was last stopped by the same thing (CityRuns.Arm.stoppedBy). */
@@ -1124,7 +1143,7 @@ public class GatewayCheck {
         BuildingVisual.Type[] types = gatewayTypesBeforeSL1();
         World w = World.of(Founding.DEFAULT_WORLD_SEED);
         long[] last = coastCounts(types), now = new long[last.length];
-        CityMap m = MapCheck.coastal(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, now);
+        CityMap m = MapCheck.coastBeforeMF1(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, now);
         for (int month = 1; month <= COAST_SAVED_AT; month++) {
             for (int t = 0; t < last.length; t++) now[t] = last[t] * month / MapCheck.MONTHS;
             m.reconcile(now, month);

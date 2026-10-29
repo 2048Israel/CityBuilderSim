@@ -4051,7 +4051,10 @@ public class LongPlaytest {
      *    (carriedLog(d), pair by pair, since PT1-M4; carried(d)[0] counts it by type
      *    and missed a log rewritten in its middle that nets to the same counts) is
      *    the spill's, which a departure in the district before can move: counted
-     *    apart. Any other move is flagged "a building on the map moved".
+     *    apart. A box that left because a run laid in that month lies across it, or
+     *    beside a highway laid in it (its verge), moved off the run (MF1, batch
+     *    BUILDINGS MOVE OFF A RUN; Jerus, 2026-10-23: "Buildings move off"): counted
+     *    apart too, and no move. Any other move is flagged "a building on the map moved".
      *  - THE RING. At the last window's last month, each use's mean distance from the
      *    founding site in km, flagged when industry's is farther than the homes'
      *    (Jerus, 2026-10-20: "residential in middle then industrial in the outer
@@ -4060,7 +4063,8 @@ public class LongPlaytest {
      *    has any (the playtest's city has none at m1001), and how many stand where
      *    they stood at the last window's last month; flagged "an old works moved"
      *    where a district holds no fewer of a type than it did and fewer of its old
-     *    boxes stand.
+     *    boxes stand - not counting the old works a run laid since lies across or
+     *    beside, which moved off it (MF1: counted apart).
      *
      * WHY: CL3 promises that a building stays where it was put and that the uses no
      * longer ring, and a promise of that kind is the finding only when it is counted
@@ -4089,9 +4093,10 @@ public class LongPlaytest {
         return kept.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    /** One district in one month: its boxes {type << 40 | x << 20 | y} sorted, its count of boxes by type, what was carried in to it by type (null for none) and as the {month, code} pairs it came in (carryLog, null for none), and the model's own count by type (a finding's detail, not the test). */
+    /** One district in one month: its boxes {type << 40 | x << 20 | y} sorted and each one's size (dims: w - 1 << 5 | h - 1, MF1), its count of boxes by type, what was carried in to it by type (null for none) and as the {month, code} pairs it came in (carryLog, null for none), and the model's own count by type (a finding's detail, not the test). */
     static final class LayoutSnap {
         long[] boxes;
+        int[] dims;
         int[] byType;
         int[] carryIn;
         int[] carryLog;
@@ -4104,12 +4109,16 @@ public class LongPlaytest {
     /** Over the run: months planned, month pairs compared, boxes compared, boxes that moved outside the spill's districts and inside them, and the nanoseconds the windows took. */
     static int layoutMonths, layoutPairs;
     static long layoutBoxes, layoutMoved, layoutMovedInSpill, layoutNanos;
+    /** ...and the boxes that left a district in a month pair because a run laid in that month lies across them or beside them (MF1): moved off it, counted apart and not flagged. */
+    static long layoutMovedOffRun;
     /** The spill's moves by the month they were found in (the month pair ending there): how many pairs had any, and when. */
     static final java.util.TreeMap<Integer, Long> layoutSpillByMonth = new java.util.TreeMap<>();
     /** The first window's first month: its month, each district's industry boxes (sorted keys) and its count of boxes by type. */
     static int layoutOldMonth;
     /** ...each district's industry boxes, by its key... */
     static final Map<Long, long[]> layoutOldBoxes = new java.util.HashMap<>();
+    /** ...and each of those boxes' size (LayoutSnap.dims), in the same order. */
+    static final Map<Long, int[]> layoutOldDims = new java.util.HashMap<>();
     /** ...and each district's count of boxes by type. */
     static final Map<Long, int[]> layoutOldCounts = new java.util.HashMap<>();
     /** ...and each district's model count of every type (District.count()) then and the lowest it has been in any month since: a finding's detail (an old works that left in a dip of its type's count did not move), not the test. */
@@ -4119,6 +4128,8 @@ public class LongPlaytest {
     static int layoutRingMonth;
     /** The old works at the last window's last month: how many there were, how many stand where they stood, and the same for the types whose count held. */
     static long layoutOldN, layoutOldStand, layoutOldHeldN, layoutOldHeldStand;
+    /** ...and how many of them are not where they stood because a run laid after the oldest works were kept lies across them or beside them: moved off it (MF1), counted apart and not flagged. */
+    static long layoutOldMovedOff;
     /** The districts a spill reached when the oldest works were kept (a carry in), and the old works in a district a spill reached then or at the end, counted apart: a district joining the map's order ahead of them hands the chain's carry on afresh, and what was carried in comes before them by month. */
     static final java.util.Set<Long> layoutOldSpill = new java.util.HashSet<>();
     static long layoutOldSpillN, layoutOldSpillStand;
@@ -4200,12 +4211,17 @@ public class LongPlaytest {
                 for (int b : bx) {
                     if ((b & CityMap.PACKED_BIT) != 0) continue;
                     int type = b >>> CityMap.BOX_TYPE_SHIFT;
-                    keys[n++] = ((long) type << 40) | ((tx + (b & 31)) << 20) | (ty + ((b >> 5) & 31));
+                    keys[n++] = ((((long) type << 40) | ((tx + (b & 31)) << 20) | (ty + ((b >> 5) & 31))) << 10) | (((b >> 10) & 31) << 5) | ((b >> 15) & 31);
                     if (type < nt) s.byType[type]++;
                 }
             }
             java.util.Arrays.sort(keys, 0, n);
-            s.boxes = java.util.Arrays.copyOf(keys, n);
+            s.boxes = new long[n];
+            s.dims = new int[n];
+            for (int i = 0; i < n; i++) {
+                s.boxes[i] = keys[i] >> 10;
+                s.dims[i] = (int) (keys[i] & 1023);
+            }
             s.carryIn = m.carried(d)[0];
             s.carryLog = m.carriedLog(d);
             s.counted = new int[nt];
@@ -4237,19 +4253,23 @@ public class LongPlaytest {
         return name == null ? "type " + type : name;
     }
 
-    /** Two months' snapshots compared district by district (the districts in both): the moves, as the section above counts them. */
+    /** Two months' snapshots compared district by district (the districts in both): the moves, as the section above counts them. A box that left because a run laid in the month lies across it or beside it (a highway's verge) moved off it (MF1): counted apart, not a move. */
     static void layoutCompare(Game g, CityMap m, int month, Map<Long, LayoutSnap> before, Map<Long, LayoutSnap> now) {
         layoutPairs++;
         for (Map.Entry<Long, LayoutSnap> e : now.entrySet()) {
             LayoutSnap a = before.get(e.getKey()), b = e.getValue();
             if (a == null) continue;
+            long key = e.getKey();
             layoutBoxes += a.boxes.length;
             // The boxes of each type in the month before that are not in this one: both lists are sorted, so one walk.
             int[] gone = new int[Math.max(a.byType.length, b.byType.length)];
-            int i = 0, j = 0;
+            int[] goneAt = new int[8];
+            int ng = 0, i = 0, j = 0;
             while (i < a.boxes.length) {
                 if (j >= b.boxes.length || a.boxes[i] < b.boxes[j]) {
                     gone[(int) (a.boxes[i] >>> 40)]++;
+                    if (ng == goneAt.length) goneAt = java.util.Arrays.copyOf(goneAt, 2 * ng);
+                    goneAt[ng++] = i;
                     i++;
                 } else if (a.boxes[i] == b.boxes[j]) {
                     i++;
@@ -4258,12 +4278,26 @@ public class LongPlaytest {
                     j++;
                 }
             }
+            // ...those among them a run laid this month lies across or beside moved off it, by type.
+            int[] off = null;
+            if (ng > 0) {
+                boolean[] marks = layoutRunMarks(m, m.district((int) (key >> 32), (int) key), month, month);
+                if (marks != null) {
+                    for (int q = 0; q < ng; q++) {
+                        if (!layoutBoxHit(marks, a.boxes[goneAt[q]], a.dims[goneAt[q]])) continue;
+                        if (off == null) off = new int[gone.length];
+                        off[(int) (a.boxes[goneAt[q]] >>> 40)]++;
+                    }
+                }
+            }
             int moved = 0;
             StringBuilder which = new StringBuilder();
             for (int t = 0; t < gone.length; t++) {
                 if (gone[t] == 0) continue;
                 int fell = Math.max(0, (t < a.byType.length ? a.byType[t] : 0) - (t < b.byType.length ? b.byType[t] : 0));
-                int mv = Math.max(0, gone[t] - fell);
+                int offRun = off == null ? 0 : off[t];
+                layoutMovedOffRun += offRun;
+                int mv = Math.max(0, gone[t] - fell - offRun);
                 if (mv == 0) continue;
                 moved += mv;
                 if (which.length() < 200) which.append(which.length() > 0 ? ", " : "").append(mv).append(" x ").append(layoutName(g, t))
@@ -4273,7 +4307,6 @@ public class LongPlaytest {
             if (moved == 0) continue;
             if (layoutSameCarry(a.carryLog, b.carryLog)) {
                 layoutMoved += moved;
-                long key = e.getKey();
                 flag(month, "a building on the map moved", String.format("district (%d,%d), m%d to m%d: %d of its %d boxes moved: %s",
                         (int) (key >> 32), (int) key, month - 1, month, moved, a.boxes.length, which), moved);
             } else {
@@ -4281,6 +4314,33 @@ public class LongPlaytest {
                 layoutSpillByMonth.merge(month, (long) moved, Long::sum);
             }
         }
+    }
+
+    /**
+     * The plots the runs laid in the months low to high put a run on or, for a highway, beside it (the plots a building moves off,
+     * MF1: DistrictPlan's BUILDINGS MOVE OFF A RUN), a flag a plot of district d's frame; null for none. Read from the records of
+     * the district's plan input as the map holds it now (frame coordinates are the boxes' keys').
+     */
+    static boolean[] layoutRunMarks(CityMap m, CityMap.District d, int low, int high) {
+        DistrictPlan.Input in = m.planInputHere(d);
+        if (in.fixedLog == null || in.fixedLogMonth == null) return null;
+        int f = DistrictPlan.FRAME;
+        boolean[] marks = null;
+        for (int q = 0, n = Math.min(in.fixedLog.length, in.fixedLogMonth.length); q < n; q++) {
+            int month = in.fixedLogMonth[q], p = in.fixedLog[q] >>> 8, after = in.fixedLog[q] & 15;
+            if (month < low || month > high || after == 0) continue;
+            if (marks == null) marks = new boolean[f * f];
+            int ring = after == DistrictPlan.FIXED_HIGHWAY ? 1 : 0, x = p % f, y = p / f;
+            for (int yy = Math.max(0, y - ring); yy <= Math.min(f - 1, y + ring); yy++) for (int xx = Math.max(0, x - ring); xx <= Math.min(f - 1, x + ring); xx++) marks[yy * f + xx] = true;
+        }
+        return marks;
+    }
+
+    /** Whether the box {key, dims} of a LayoutSnap has a plot among the marks (layoutRunMarks()). */
+    static boolean layoutBoxHit(boolean[] marks, long key, int dims) {
+        int f = DistrictPlan.FRAME, x = (int) (key >> 20 & 0xFFFFF), y = (int) (key & 0xFFFFF), w = (dims >> 5) + 1, h = (dims & 31) + 1;
+        for (int yy = y; yy < Math.min(f, y + h); yy++) for (int xx = x; xx < Math.min(f, x + w); xx++) if (marks[yy * f + xx]) return true;
+        return false;
     }
 
     /** The mean distance from the founding site of the boxes of each use (CL3Probe's measure: a box's middle from the founding site, in the district's frame, in km). */
@@ -4336,20 +4396,28 @@ public class LongPlaytest {
     static void layoutKeepOldWorks(CityMap m, int month, Map<Long, LayoutSnap> now) {
         BuildingVisual.Type[] types = m.types();
         Map<Long, long[]> boxes = new java.util.HashMap<>();
+        Map<Long, int[]> dims = new java.util.HashMap<>();
         long total = 0;
         for (Map.Entry<Long, LayoutSnap> e : now.entrySet()) {
             long[] mine = new long[e.getValue().boxes.length];
+            int[] size = new int[mine.length];
             int n = 0;
-            for (long k : e.getValue().boxes) {
+            for (int i = 0; i < e.getValue().boxes.length; i++) {
+                long k = e.getValue().boxes[i];
                 int type = (int) (k >>> 40);
-                if (type < types.length && types[type] != null && layoutBand(types[type]) == 1) mine[n++] = k;
+                if (type < types.length && types[type] != null && layoutBand(types[type]) == 1) {
+                    mine[n] = k;
+                    size[n++] = e.getValue().dims[i];
+                }
             }
             boxes.put(e.getKey(), java.util.Arrays.copyOf(mine, n));
+            dims.put(e.getKey(), java.util.Arrays.copyOf(size, n));
             total += n;
         }
         if (total == 0) return;
         layoutOldMonth = month;
         layoutOldBoxes.putAll(boxes);
+        layoutOldDims.putAll(dims);
         for (Map.Entry<Long, LayoutSnap> e : now.entrySet()) if (layoutCarries(e.getValue().carryIn)) layoutOldSpill.add(e.getKey());
         for (Map.Entry<Long, LayoutSnap> e : now.entrySet()) layoutOldCounts.put(e.getKey(), e.getValue().byType);
         for (CityMap.District d : m.districts()) {
@@ -4383,16 +4451,22 @@ public class LongPlaytest {
             long[] old = e.getValue();
             int[] then = layoutOldCounts.get(e.getKey());
             int nt = then.length;
-            int[] had = new int[nt], stand = new int[nt];
-            for (long k : old) {
+            int[] had = new int[nt], stand = new int[nt], displaced = new int[nt];
+            // The old boxes a run laid since they were kept lies across or beside moved off it (MF1): not where they stood, and no finding.
+            boolean[] marks = layoutRunMarks(m, m.district((int) (e.getKey() >> 32), (int) (long) e.getKey()), layoutOldMonth + 1, Integer.MAX_VALUE);
+            int[] size = layoutOldDims.get(e.getKey());
+            for (int i = 0; i < old.length; i++) {
+                long k = old[i];
                 int type = (int) (k >>> 40);
                 had[type]++;
                 if (s != null && java.util.Arrays.binarySearch(s.boxes, k) >= 0) stand[type]++;
+                else if (marks != null && layoutBoxHit(marks, k, size[i])) displaced[type]++;
             }
             for (int t = 0; t < nt; t++) {
                 if (had[t] == 0) continue;
                 layoutOldN += had[t];
                 layoutOldStand += stand[t];
+                layoutOldMovedOff += displaced[t];
                 boolean held = s != null && t < s.byType.length && s.byType[t] >= then[t];
                 if (!held) continue;
                 layoutOldHeldN += had[t];
@@ -4409,11 +4483,11 @@ public class LongPlaytest {
                     layoutOldSpillStand += Math.min(stand[t], kept);
                     continue;
                 }
-                if (stand[t] < kept) {
+                if (stand[t] + displaced[t] < kept) {
                     flag(month, "an old works moved", String.format("district (%d,%d), %s: %d of the %d standing at m%d are not where they stood at m%d,"
-                            + " and the district holds %d of the type now against %d then (the model's count of it %d then, as low as %d in between)",
+                            + " and the district holds %d of the type now against %d then (the model's count of it %d then, as low as %d in between; %d of them moved off a run)",
                             (int) (key >> 32), (int) key, layoutName(g, t), had[t] - stand[t], had[t], layoutOldMonth, month, s.byType[t], then[t],
-                            model == null ? -1 : model[0][t], model == null ? -1 : model[1][t]), had[t] - stand[t]);
+                            model == null ? -1 : model[0][t], model == null ? -1 : model[1][t], displaced[t]), had[t] - stand[t]);
                 }
             }
         }
@@ -4435,6 +4509,8 @@ public class LongPlaytest {
                 LAYOUT_STARTS.length, LAYOUT_WINDOW, starts, layoutMonths, layoutPairs, layoutBoxes, layoutMoved,
                 layoutBoxes > 0 ? layoutMoved * 100.0 / layoutBoxes : 0, perMonth, layoutMovedInSpill, perMonthSpill,
                 layoutNanos / 1e9, runSeconds));
+        out.add(String.format("  ...moved off a run (MF1, counted apart and not a finding): %,d box(es) left a district in a month pair because a run laid in that month lies across them or beside a highway laid in it;"
+                + " %,d of the oldest works are not where they stood for a run laid after they were kept", layoutMovedOffRun, layoutOldMovedOff));
         if (!layoutSpillByMonth.isEmpty()) {
             StringBuilder when = new StringBuilder();
             int shown = 0;
