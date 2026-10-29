@@ -1151,6 +1151,24 @@ public class Game {
         return founding.withMeanInflation(world.getMeanInflation());
     }
 
+    /** The nations beyond the city on this founding's path and seed, from the game's world file; null where the file is not here. Nothing in the month reads it yet (WN1): WN2's map and WN3's market will. */
+    public synchronized Nations getNations() {
+        if (nations == null || nations.path() != founding.getPath() || nations.seed() != founding.getPathSeed()) {
+            nations = null;
+            Path file = WorldData.locate();
+            if (file == null) return null;
+            try (WorldData data = WorldData.open(file)) {
+                nations = new Nations(data, founding.getPath(), founding.getPathSeed());
+            } catch (IOException | IllegalArgumentException e) {
+                System.out.println("The world file " + file + " would not open: " + e.getMessage());
+            }
+        }
+        return nations;
+    }
+
+    /** The nations on this city's path, built the first time getNations() is asked and again when the founding's path or seed differs (not saved: the path and seed are, in the founding). */
+    private transient Nations nations;
+
     /** The seed of the world this city stands on (0.7.56): chosen at founding, or derived from an older save. */
     public long getWorldSeed() { return founding.getWorldSeed(); }
 
