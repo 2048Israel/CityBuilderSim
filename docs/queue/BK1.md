@@ -41,7 +41,8 @@ Bank > Overview:
 3. **Look, and report only:**
    - the money that piles up over 237 years while 22% are out of work
      (treasury $38.5T, deposits $118.8T, GDP $8.4T a year): intended or not,
-     with figures;
+     with figures (done 2026-10-28: [HD1](HD1.md) has the figures and
+     the causes, so BK1 only links it);
    - the land office map's island label, hard to read over busy ground.
    Each goes under `## pending` with a recommendation; neither is fixed here.
 
