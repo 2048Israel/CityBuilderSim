@@ -1,6 +1,6 @@
 # BuildingsStacks.java - 478 lines · 43 methods · 0 constants · model
 
-`ham/citybuildersim/BuildingsStacks.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingsStacks.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > One building type in the city: how many stand, how many are on site, and
 > the progress, material and contract its sites carry.

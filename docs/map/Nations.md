@@ -1,6 +1,6 @@
 # Nations.java - 707 lines · 40 methods · 42 constants · model
 
-`ham/citybuildersim/Nations.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Nations.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The nations beyond the city, each on the world's path: its year - output,
 > people, prices and its money's rate to the US dollar - from the path
@@ -36,7 +36,7 @@
 
 **Uses:** [WorldData](WorldData.md) (14), [World](World.md) (4), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (7):** [DataSave](DataSave.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [NationsCheck](NationsCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (10):** [DataSave](DataSave.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

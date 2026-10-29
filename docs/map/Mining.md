@@ -1,6 +1,6 @@
 # Mining.java - 85 lines · 4 methods · 4 constants · sectors
 
-`ham/citybuildersim/sectors/Mining.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Mining.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > Iron mines - Iron Mining since 0.7.120, under the key it was saved by,
 > "Mining" (Jerus's Q2, 2026-10-08: rename, keeping the saved keys). Its own

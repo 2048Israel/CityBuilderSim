@@ -1,6 +1,6 @@
 # DecisionLog.java - 213 lines · 24 methods · 10 constants · model
 
-`ham/citybuildersim/DecisionLog.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DecisionLog.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > What the player decided, and when: every change of a policy and every
 > spend at scale, one short line each, at the month it was made (0.7.23).

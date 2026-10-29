@@ -1,6 +1,6 @@
 # ChartFitCheck.java - 156 lines · 4 methods · 2 constants · harnesses
 
-`ham/citybuildersim/ChartFitCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChartFitCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The full-screen chart's foot is on the screen (FW10): with the legend wrapped to two rows or three,
 > the chart still ends inside the window and the plot takes the room that is left.

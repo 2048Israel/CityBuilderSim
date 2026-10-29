@@ -1,6 +1,6 @@
 # BridgeCheck.java - 970 lines · 39 methods · 8 constants · harnesses
 
-`ham/citybuildersim/BridgeCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The long bridges checked (ET6, 2026-10-26; docs/queue/ET6-notes.md): the survey of a crossing on grids of its own making and
 > on the Earth, what a span costs, the order in a played city on two landmasses, the bridge that links, the bridge nobody

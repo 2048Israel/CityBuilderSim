@@ -1,6 +1,6 @@
 # Timing.java - 214 lines · 14 methods · 8 constants · model
 
-`ham/citybuildersim/Timing.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Timing.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The one helper every timing assertion in the suite goes through: a figure
 > on a clock against its budget, hard as the harness wrote it, or soft while

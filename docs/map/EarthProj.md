@@ -1,6 +1,6 @@
 # EarthProj.java - 446 lines · 34 methods · 3 constants · model
 
-`ham/citybuildersim/EarthProj.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthProj.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The real Earth flattened round a city's spot: Lambert's azimuthal
 > equal-area projection on a sphere, forward and inverse, the world's plots
@@ -58,7 +58,7 @@
 
 **Uses:** [World](World.md) (12)
 
-**Used by (17):** [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [GlobePicture](GlobePicture.md), [HydroSites](HydroSites.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md)
+**Used by (18):** [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [GlobePicture](GlobePicture.md), [HydroSites](HydroSites.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [NationsMap](NationsMap.md)
 
 ## Sections
 

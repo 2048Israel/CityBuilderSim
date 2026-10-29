@@ -362,6 +362,11 @@ import java.util.Map;
  *      layer is drawn again in the months the runs moved and in no other, its land layer by a land purchase and by no other month; every link's
  *      kept stamp is the one worked out afresh after each of 24 months (x 1, x 80); and a month's FX-side map work at 5B - the stamp, the far
  *      view's screen, an L0 screen re-stamped and the chain's handing out and adopting - is within MAP_MONTH_MS, the median month.
+ *  19. (batch WN2) THE BORDERS ON THE NEAR VIEW: on the world fixture, a box of the city's ground 8 km a side round Baarle-Nassau is crossed
+ *      (NationsMap.crossing()) by the Belgium-Netherlands line and by every line that has a segment meeting it, each sampled a thousand times,
+ *      and the same box round Rotterdam by none; the answer is kept for the same box and spot; planeBorders() of the Baarle lines on a 1,389 x 868
+ *      frame fitted on the box, and on a frame at the closest scale on one of the line's own vertices, keeps every vertex within DRAW_MARGIN_PX of
+ *      the canvas, at the level a pixel of PLOT_M / 1000 / scale km takes; drawsOn() is true for an Earth world and false for a generated one.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -498,6 +503,7 @@ public class MapCheck {
         avenuesDrawn(sq);
         curvesDrawn(sq);
         redrawsOnlyWhatMoved(city, sq);
+        nationsNearView();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -11646,5 +11652,93 @@ public class MapCheck {
         int[] dimmed = GlobePicture.colours(true);
         for (int k = 0; k < colours.length; k++) table &= dimmed[k] == TileRaster.blend(colours[k], TileRaster.VOID, TileRaster.UNOWNED_DIM);
         check("the globe's colour table is a colour for every code - a class and its relief - the map's own, and the world off the city's land dimmed as the far nodes dim it", table);
+    }
+
+    /* =====================================================================
+       19. THE BORDERS ON THE NEAR VIEW (batch WN2, slice A; docs/studies/spec-nations.md 6.1)
+       ===================================================================== */
+
+    /** The side of the box of the city's ground the borders are crossed against, km: 8 - a few kilometres, and wide enough for the fixture's Belgium-Netherlands line, which Natural Earth runs 2.7 km from Baarle-Nassau (a box 4 km a side misses it). */
+    static final double NEAR_BOX_KM = 8;
+
+    /** A box of the plane's plots, {x0, y0, x1, y1}, NEAR_BOX_KM a side round the plane's spot (the world's middle plot). */
+    static double[] nearBox() {
+        double half = NEAR_BOX_KM * 1000 / World.PLOT_M / 2, c = World.SIDE / 2.0;
+        return new double[] { c - half, c - half, c + half, c + half };
+    }
+
+    /** Whether a line has a segment meeting a box of the plane's plots, found the slow way: each segment sampled at a thousand points. */
+    static boolean sampledMeets(WorldData.Border b, EarthProj plane, double[] box) {
+        double[] a = new double[2], z = new double[2];
+        for (int k = 0; k + 1 < b.lat().length; k++) {
+            if (!plane.plotOf(b.latDeg(k), b.lonDeg(k), a) || !plane.plotOf(b.latDeg(k + 1), b.lonDeg(k + 1), z)) continue;
+            for (int s = 0; s <= 1000; s++) {
+                double x = a[0] + (z[0] - a[0]) * s / 1000, y = a[1] + (z[1] - a[1]) * s / 1000;
+                if (x >= box[0] && x <= box[2] && y >= box[1] && y <= box[3]) return true;
+            }
+        }
+        return false;
+    }
+
+    static void nationsNearView() throws Exception {
+        out.println("\n--- 19. the borders on the city's plane: only where a border crosses the city's ground (WN2) ---");
+        byte[] bytes = WorldDataCheck.resource(WorldData.FIXTURE);
+        check("WorldDataCheck's fixture is beside the classes (" + WorldData.FIXTURE + ")", bytes != null);
+        if (bytes == null) return;
+        try (WorldData fixture = WorldData.of(bytes)) {
+            NationsMap map = NationsMap.of(fixture);
+            double[] box = nearBox();
+            EarthProj baarle = new EarthProj(51.44, 4.93), rotterdam = new EarthProj(51.92, 4.48);
+            int[] at = map.crossing(baarle, box[0], box[1], box[2], box[3]);
+            int[] none = map.crossing(rotterdam, box[0], box[1], box[2], box[3]);
+            boolean meets = at.length > 0, complete = true;
+            for (int i = 0; i < map.lineCount(); i++) {
+                final int line = i;
+                boolean listed = Arrays.stream(at).anyMatch(k -> k == line);
+                boolean sampled = sampledMeets(fixture.lines().get(i), baarle, box);
+                if (listed && !sampled) meets = false;
+                if (sampled && !listed) complete = false;
+            }
+            boolean border = Arrays.stream(at).anyMatch(k -> {
+                WorldData.Border b = fixture.lines().get(k);
+                return b.left() == fixture.numberOf("BEL") && b.right() == fixture.numberOf("NLD") || b.left() == fixture.numberOf("NLD") && b.right() == fixture.numberOf("BEL");
+            });
+            out.printf("      a box %.0f km a side round Baarle-Nassau is crossed by lines %s; round Rotterdam by %s%n", NEAR_BOX_KM, Arrays.toString(at), Arrays.toString(none));
+            check("a box of the city's ground round Baarle-Nassau is crossed by the Belgium-Netherlands line, and each line crossing() gives has a segment meeting the box", at.length > 0 && border && meets);
+            check("crossing() misses no line that has a segment meeting the box (each segment sampled a thousand times)", complete);
+            check("the same box round Rotterdam is crossed by no line", none.length == 0);
+            check("crossing() keeps its answer for the same box and spot, and gives a new one for another spot",
+                    map.crossing(rotterdam, box[0], box[1], box[2], box[3]) == none && map.crossing(baarle, box[0], box[1], box[2], box[3]) != none);
+
+            MapFrame frame = new MapFrame(SCREEN_W_PX, SCREEN_H_PX);
+            frame.fit(box[0], box[1], box[2], box[3]);
+            NationsMap.Runs runs = map.planeBorders(baarle, frame, at);
+            int off = 0, inside = 0;
+            for (int k = 0; k < runs.vertices(); k++) {
+                double x = runs.xs[k], y = runs.ys[k], eps = 1e-6;
+                if (x < -NationsMap.DRAW_MARGIN_PX - eps || x > frame.width() + NationsMap.DRAW_MARGIN_PX + eps
+                        || y < -NationsMap.DRAW_MARGIN_PX - eps || y > frame.height() + NationsMap.DRAW_MARGIN_PX + eps) off++;
+                if (x >= 0 && x <= frame.width() && y >= 0 && y <= frame.height()) inside++;
+            }
+            check("planeBorders() of the Baarle lines on a " + SCREEN_W_PX + " x " + SCREEN_H_PX + " frame fitted on the box keeps every vertex within DRAW_MARGIN_PX of the canvas, some of them on it ("
+                    + runs.vertices() + " vertices in " + runs.runs() + " runs, " + inside + " on the canvas)", runs.vertices() >= 2 && off == 0 && inside > 0 && runs.runs() >= at.length);
+            // the closest view, on one of the line's own vertices: the line runs on far past the canvas and is cut to its margin
+            WorldData.Border first = fixture.lines().get(at[0]);
+            double[] vertex = new double[2];
+            baarle.plotOf(first.latDeg(first.lat().length / 2), first.lonDeg(first.lat().length / 2), vertex);
+            MapFrame close = new MapFrame(SCREEN_W_PX, SCREEN_H_PX);
+            close.set(vertex[0], vertex[1], MapFrame.MOST_PX_A_PLOT);
+            NationsMap.Runs cut = map.planeBorders(baarle, close, new int[] { at[0] });
+            int offClose = 0;
+            for (int k = 0; k < cut.vertices(); k++) {
+                double x = cut.xs[k], y = cut.ys[k], eps = 1e-6;
+                if (x < -NationsMap.DRAW_MARGIN_PX - eps || x > close.width() + NationsMap.DRAW_MARGIN_PX + eps || y < -NationsMap.DRAW_MARGIN_PX - eps || y > close.height() + NationsMap.DRAW_MARGIN_PX + eps) offClose++;
+            }
+            check("at the closest view, on one of the line's vertices, the line that runs far off the canvas is cut to its margin (" + cut.vertices() + " of its " + first.lat().length
+                    + " vertices kept, in " + cut.runs() + " runs)", offClose == 0 && cut.vertices() >= 2 && cut.vertices() < first.lat().length);
+            check("the plane's level of detail is the coarsest whose tolerance is no more than LOD_PX of a pixel at PLOT_M / 1000 / scale km (level " + runs.level + " here)",
+                    runs.level == NationsMap.levelFor(World.PLOT_M / 1000 / frame.scale()) && runs.level == 0);
+        }
+        check("borders and nations are drawn on an Earth world and on none a generated one makes", NationsMap.drawsOn(World.Key.earth(1L, 51.44, 4.93, "earth-2:test")) && !NationsMap.drawsOn(World.Key.generated(1L)) && !NationsMap.drawsOn(null));
     }
 }

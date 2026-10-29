@@ -4,11 +4,17 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Consumer;
+import java.util.function.ToDoubleFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
 /**
@@ -134,6 +140,36 @@ import java.util.zip.CRC32;
  *      their snow white. The frame's colours are the only thing the
  *      picture's relief changes in the prints above: the CRC32s of the far
  *      nodes (FIXTURE_PRINTS, FULL_PRINTS) hold the cover, which it never touches.
+ *   9. THE BORDERS (WN2, slice A; spec-nations 6.1): NationsMap keeps every
+ *      line at five levels of detail, NationsMap.LOD_KM - each level keeps the
+ *      line's two endpoints, never more vertices than the level before, every
+ *      vertex it drops within the level's tolerance of the level's polyline
+ *      (a chord's miss on the sphere), on the fixture and the full file; a view
+ *      takes the coarsest level whose tolerance is no more than LOD_PX of a
+ *      pixel and the lines whose cap meets it: over Europe fewer than a quarter
+ *      of the lines, the whole planet no more than VERTICES_MOST vertices where
+ *      the file's own level would draw over twice as many, the city's ground at
+ *      the GROUND tier; every vertex drawn within DRAW_MARGIN_PX of the canvas
+ *      and on the visible side, at the pixels GlobeFrame.at() gives it; the same
+ *      view twice the same Runs; the borders of each view within BORDERS_MS of
+ *      the main thread's CPU and the map built in BUILD_MS.
+ *  10. THE NATIONS' DOTS AND LABELS: a dot for each nation whose node is in the
+ *      view, its radius from the output between DOT_MIN_PX and DOT_MAX_PX and
+ *      never smaller for more; no two labels overlap, every box inside the
+ *      canvas with LABEL_OWN_SHARE of its points on the nation's own coarse
+ *      cells (counted again from the grid's reader) and its nation's coarse
+ *      area at least LABEL_AREA_TIMES boxes; Canada and the United States
+ *      written over the North Atlantic, Luxembourg and Belgium only dots;
+ *      a view's marks within MARKS_MS.
+ *  11. THE HIT TEST: the dot under a point, else the exact owner: a dot's
+ *      centre gives its nation; the fixture's cells the expect file states
+ *      give their owner through ownerAt and, at a view centred on them,
+ *      through nationAt; the open Atlantic gives no one, Canada's interior
+ *      Canada.
+ *  12. THE CARD: GDP, People, GDP a head, This year and Its money, each figure
+ *      written by usd() and people() with its mark, the ranks rankings in
+ *      ordinal words, the money row for the US dollar and another money, the
+ *      hover's words; on the fixture and the full file.
  *
  * The fixture (EarthCheck's) causes the camera's conditions: its windows
  * hold coasts, rivers and small lakes and Fiji's the date line; its bands
@@ -236,6 +272,7 @@ public class GlobeCheck {
         GlobePicture pic = picture(data, full);
         reliefInPicture(data, id, full, pic);
         frame(pic);
+        nations();
         out.println();
         if (fails == 0) out.println("All checks passed.");
         else out.println(fails + " check(s) failed.");
@@ -2386,5 +2423,492 @@ public class GlobeCheck {
                 100 * hdata[0], 100 * hdata[1], 100 * hdata[2], 100 * hdata[3], snow, snowSloped);
         check("on the full file the Himalaya and Tibet's relief shares are the data's within RELIEF_SIGMAS spreads, with grey in all three classes, and its snow all white", sharesMatch(him, hdata)
                 && him[World.FOOTHILL] > 0 && him[World.STEEP] > 0 && him[World.VERY_STEEP] > 0 && snow > 0 && snowSloped == 0);
+    }
+
+    /* =====================================================================
+       9 TO 12. THE NATIONS ON THE MAP (WN2, slice A; docs/studies/spec-nations.md 6.1 and 8, board 1)
+       ===================================================================== */
+
+    /** The most vertices the whole planet's borders may draw: 45,000 - measured 14,814 on the 1,389 x 868 view facing Halifax at the 4 km level, 2026-10-28, against 56,914 at the file's own; three times the measure, rounded up. */
+    static final int VERTICES_MOST = 45_000;
+
+    /** The widths the harness gives the labels, pixels a character: the board's 11 px sans name (6.5) and its 9.5 px mono figures (5.7) - the screen measures its own fonts. */
+    static final double NAME_PX = 6.5, FIGURES_PX = 5.7;
+    static final ToDoubleFunction<String> NAME_W = s -> s.length() * NAME_PX, FIGURES_W = s -> s.length() * FIGURES_PX;
+
+    /** The year the nations' figures are read for: 2020, a published one (the marks are read at 2000, 2025 and 2030 too). */
+    static final int YEAR = 2020;
+
+    /** The game dollar's price in US$ the cards are given: D$1.16 a US$ (a figure to carry through, not a dial). */
+    static final double D_PER_USD = 1.16;
+
+    /** The views of 9 and 10, {lat, lon, km a pixel} (0: the whole planet facing the city), and their names: the planet, the North Atlantic, Europe and the GROUND tier at the city. */
+    static final double[][] VIEWS = { { 0, 0, 0 }, { 50, -30, 10 }, { 50, 10, 3 }, { CITIES[0][0], CITIES[0][1], 1 } };
+    static final String[] VIEW_NAMES = { "the whole planet", "the North Atlantic at 10 km a pixel", "Europe at 3 km a pixel", "the city's ground at 1 km a pixel" };
+
+    /** A 1,389 x 868 view (MapCheck's screen) of a Halifax city looking at (lat, lon) from kmPx km a pixel; 0 for the whole planet facing the city. */
+    static GlobeFrame viewOf(double lat, double lon, double kmPx) {
+        GlobeFrame f = new GlobeFrame(MapCheck.SCREEN_W_PX, MapCheck.SCREEN_H_PX, CITIES[0][0], CITIES[0][1]);
+        if (kmPx > 0) f.set(lat, lon, kmPx);
+        return f;
+    }
+
+    /** The least of FRAME_ROUNDS rounds, after as many to warm, of what `work` takes of the main thread's CPU, ms - each round on a view moved a little, so the one-entry cache never answers. */
+    static double timed(GlobeFrame f, Consumer<GlobeFrame> work) {
+        double lat = f.centreLat(), lon = f.centreLon(), km = f.kmPx(), least = Double.MAX_VALUE;
+        for (int k = 1; k <= 2 * FRAME_ROUNDS; k++) {
+            f.set(lat + k * 1e-3, lon + k * 1.3e-3, km);
+            long c0 = MapCheck.monthClock();
+            work.accept(f);
+            long c1 = MapCheck.monthClock();
+            if (k > FRAME_ROUNDS) least = Math.min(least, (c1 - c0) / 1e6);
+        }
+        f.set(lat, lon, km);
+        return least;
+    }
+
+    static String clock() { return MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock"; }
+
+    static void nations() throws Exception {
+        out.println("\n--- 9 to 12. the nations on the map: the fixture ---");
+        byte[] bytes = WorldDataCheck.resource(WorldData.FIXTURE), expect = WorldDataCheck.resource(WorldDataCheck.EXPECT);
+        check("WorldDataCheck's fixture and its expected figures are beside the classes (" + WorldData.FIXTURE + ")", bytes != null && expect != null);
+        if (bytes == null || expect == null) return;
+        try (WorldData fixture = WorldData.of(bytes)) {
+            NationsMap map = NationsMap.of(fixture);
+            Nations nations = new Nations(fixture, Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
+            check("the map holds the fixture's " + fixture.nationCount() + " nations and " + fixture.lines().size() + " lines",
+                    map.count() == fixture.nationCount() && map.count() == nations.count() && map.lineCount() == fixture.lines().size());
+            bordersLevels("the fixture", map, fixture);
+            agreeWithAt("the fixture, Benelux at 1 km a pixel", map, fixture, viewOf(51.44, 4.93, 1), 1);
+            fixtureHits(map, nations, expect);
+            cards("the fixture", map, nations, 2030);
+        }
+        Path fullPath = WorldData.locate();
+        String named = System.getProperty(WorldData.PROPERTY);
+        out.println("\n--- 9 to 12. the nations on the map: the full file, when it is named ---");
+        if (named != null && !named.isBlank() && !Files.isRegularFile(fullPath)) {
+            check("the file -D" + WorldData.PROPERTY + " names is there (" + named + ")", false);
+            return;
+        }
+        if (fullPath == null) {
+            out.println("world-1.bin not named (-D" + WorldData.PROPERTY + "=<path>) nor at " + WorldData.DATA_FILE + ": the full file's sections did not run");
+            return;
+        }
+        try (WorldData full = WorldData.open(fullPath)) {
+            long w0 = System.nanoTime();
+            NationsMap map = NationsMap.of(full);
+            double buildMs = (System.nanoTime() - w0) / 1e6;
+            Nations nations = new Nations(full, Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
+            check("the map holds the full file's " + WorldDataCheck.FULL_NATIONS + " nations and " + full.lines().size() + " lines",
+                    map.count() == WorldDataCheck.FULL_NATIONS && map.count() == nations.count() && map.lineCount() == full.lines().size());
+            out.printf("      the map built from %s in %.0f ms of the wall clock (on the worker thread, once)%n", fullPath.toAbsolutePath(), buildMs);
+            check("the map is built from the file in no more than BUILD_MS (" + NationsMap.BUILD_MS + ") of the wall clock (" + Math.round(buildMs) + " ms)", Timing.within(buildMs, NationsMap.BUILD_MS));
+            bordersLevels("the full file", map, full);
+            agreeWithAt("the full file, Europe at 3 km a pixel", map, full, viewOf(VIEWS[2][0], VIEWS[2][1], VIEWS[2][2]), 100);
+            bordersCulled(map);
+            dotsAndLabels(map, full, nations);
+            fullHits(map, nations);
+            cards("the full file", map, nations, 2025);
+        }
+    }
+
+    /* ----- 9. the levels ----- */
+
+    /** A vertex as a vector in km from the planet's centre, the harness's own (Math, not StrictMath). */
+    static double[] vec(double lat, double lon) {
+        double p = Math.toRadians(lat), q = Math.toRadians(lon), km = R / 1000;
+        return new double[] { km * Math.cos(p) * Math.cos(q), km * Math.cos(p) * Math.sin(q), km * Math.sin(p) };
+    }
+
+    /** The km from a point to a segment of the sphere's chord, the harness's own way: the perpendicular's length if its foot falls on the segment, else the distance to the nearer end. */
+    static double chordKm(double[] p, double[] a, double[] b) {
+        double[] ab = { b[0] - a[0], b[1] - a[1], b[2] - a[2] }, ap = { p[0] - a[0], p[1] - a[1], p[2] - a[2] };
+        double len2 = ab[0] * ab[0] + ab[1] * ab[1] + ab[2] * ab[2], t = len2 == 0 ? 0 : (ap[0] * ab[0] + ap[1] * ab[1] + ap[2] * ab[2]) / len2;
+        if (t <= 0) return Math.sqrt(ap[0] * ap[0] + ap[1] * ap[1] + ap[2] * ap[2]);
+        double[] bp = { p[0] - b[0], p[1] - b[1], p[2] - b[2] };
+        if (t >= 1) return Math.sqrt(bp[0] * bp[0] + bp[1] * bp[1] + bp[2] * bp[2]);
+        double cx = ap[1] * ab[2] - ap[2] * ab[1], cy = ap[2] * ab[0] - ap[0] * ab[2], cz = ap[0] * ab[1] - ap[1] * ab[0];
+        return Math.sqrt((cx * cx + cy * cy + cz * cz) / len2);
+    }
+
+    static void bordersLevels(String scope, NationsMap map, WorldData file) {
+        out.println("--- 9. the borders' levels of detail: " + scope + " ---");
+        int levels = NationsMap.LOD_KM.length, lines = file.lines().size();
+        long[] total = new long[levels];
+        int ends = 0, more = 0, notFile = 0, over = 0;
+        double worst = 0;
+        for (int i = 0; i < lines; i++) {
+            WorldData.Border b = file.lines().get(i);
+            int len = b.lat().length;
+            for (int k = 0; k < len; k++) if (map.lat(i, 0, k) != b.latDeg(k) || map.lon(i, 0, k) != b.lonDeg(k)) notFile++;
+            double[][] whole = new double[len][];
+            for (int k = 0; k < len; k++) whole[k] = vec(b.latDeg(k), b.lonDeg(k));
+            for (int l = 0; l < levels; l++) {
+                int kept = map.vertices(i, l);
+                total[l] += kept;
+                if (l > 0 && kept > map.vertices(i, l - 1)) more++;
+                if (kept < 2 || map.lat(i, l, 0) != b.latDeg(0) || map.lon(i, l, 0) != b.lonDeg(0)
+                        || map.lat(i, l, kept - 1) != b.latDeg(len - 1) || map.lon(i, l, kept - 1) != b.lonDeg(len - 1)) {
+                    ends++;
+                    continue;
+                }
+                if (l == 0) continue;
+                double[][] poly = new double[kept][];
+                for (int k = 0; k < kept; k++) poly[k] = vec(map.lat(i, l, k), map.lon(i, l, k));
+                for (int k = 0; k < len; k++) {
+                    double least = Double.MAX_VALUE;
+                    for (int s = 0; s + 1 < kept; s++) least = Math.min(least, chordKm(whole[k], poly[s], poly[s + 1]));
+                    worst = Math.max(worst, least / NationsMap.LOD_KM[l]);
+                    if (least > NationsMap.LOD_KM[l] * (1 + 1e-6) + 1e-6) over++;
+                }
+            }
+        }
+        out.printf("      %,d lines, vertices by level (%s km): %s; the farthest a dropped vertex stands, as a share of its level's tolerance: %.3f%n",
+                lines, Arrays.toString(NationsMap.LOD_KM), Arrays.toString(total), worst);
+        check(scope + ": every level of every line keeps the line's two endpoints", ends == 0);
+        check(scope + ": level 0 is the file's own " + total[0] + " vertices, and no level has more vertices than the level before", notFile == 0 && more == 0);
+        boolean falls = true;
+        for (int l = 1; l < levels; l++) falls &= total[l] <= total[l - 1];
+        check(scope + ": the totals do not rise from level to level (" + Arrays.toString(total) + ")", falls);
+        check(scope + ": every vertex of every line lies within each level's tolerance of that level's polyline (LOD_KM, measured as a chord's miss on the sphere)", over == 0);
+    }
+
+    /** Whether the lines wholly inside a view's canvas come out of bordersAt(level 0) at the pixels GlobeFrame.at() gives each vertex; at least `least` such lines. */
+    static void agreeWithAt(String where, NationsMap map, WorldData file, GlobeFrame f, int least) {
+        NationsMap.Runs r = map.bordersAt(f, 0);
+        int inside = 0, matched = 0;
+        for (WorldData.Border b : file.lines()) {
+            int len = b.lat().length;
+            double[][] px = new double[len][];
+            boolean all = true;
+            for (int k = 0; k < len && all; k++) {
+                px[k] = f.at(b.latDeg(k), b.lonDeg(k));
+                all = px[k] != null && px[k][0] >= 0 && px[k][0] <= f.width() && px[k][1] >= 0 && px[k][1] <= f.height();
+            }
+            if (!all) continue;
+            inside++;
+            boolean found = false;
+            for (int run = 0; run < r.runs() && !found; run++) {
+                int s = r.starts[run];
+                if (r.starts[run + 1] - s != len) continue;
+                found = true;
+                for (int k = 0; k < len && found; k++) found = Math.abs(r.xs[s + k] - px[k][0]) < 1e-6 && Math.abs(r.ys[s + k] - px[k][1]) < 1e-6;
+            }
+            if (found) matched++;
+        }
+        out.printf("      %s: %d lines lie wholly in the canvas, %d of them drawn at the pixels GlobeFrame.at() gives%n", where, inside, matched);
+        check(where + ": the lines wholly inside the canvas are drawn at the pixels GlobeFrame.at() gives their vertices (at least " + least + " of them)", inside >= least && matched == inside);
+    }
+
+    /* ----- 9. culled to the view, at its level, timed ----- */
+
+    static void bordersCulled(NationsMap map) {
+        out.println("--- 9. the borders culled to the view, at its level, and timed (1,389 x 868, a Halifax city) ---");
+        GlobeFrame[] frames = new GlobeFrame[VIEWS.length];
+        NationsMap.Runs[] runs = new NationsMap.Runs[VIEWS.length];
+        for (int v = 0; v < VIEWS.length; v++) {
+            GlobeFrame f = viewOf(VIEWS[v][0], VIEWS[v][1], VIEWS[v][2]);
+            frames[v] = f;
+            NationsMap.Runs r = map.borders(f), own = map.bordersAt(f, 0);
+            runs[v] = r;
+            int expected = 0;
+            for (int l = NationsMap.LOD_KM.length - 1; l > 0 && expected == 0; l--) if (NationsMap.LOD_KM[l] <= NationsMap.LOD_PX * f.kmPx()) expected = l;
+            double m = f.kmPx() * 1000;
+            int off = 0, hidden = 0;
+            double[] ll = new double[2];
+            for (int k = 0; k < r.vertices(); k++) {
+                double x = r.xs[k], y = r.ys[k], eps = 1e-6;
+                if (x < -NationsMap.DRAW_MARGIN_PX - eps || x > f.width() + NationsMap.DRAW_MARGIN_PX + eps
+                        || y < -NationsMap.DRAW_MARGIN_PX - eps || y > f.height() + NationsMap.DRAW_MARGIN_PX + eps) off++;
+                // on the visible side: the ortho's inverse puts the pixel on the near hemisphere (a hair in, for a vertex on the limb itself)
+                if (!f.ortho().inverse((x - f.width() / 2) * m * (1 - 1e-9), (f.height() / 2 - y) * m * (1 - 1e-9), ll)) hidden++;
+            }
+            out.printf("      %s (%s tier, %.2f km a pixel): %,d of %,d lines considered, level %d (%s km), %,d vertices in %,d runs; the file's own level would draw %,d vertices from %,d lines%n",
+                    VIEW_NAMES[v], f.tier() == GlobeFrame.PICTURE ? "PICTURE" : f.tier() == GlobeFrame.GROUND ? "GROUND" : "PLANE", f.kmPx(), r.considered, r.lines,
+                    r.level, NationsMap.LOD_KM[r.level], r.vertices(), r.runs(), own.vertices(), own.considered);
+            check(VIEW_NAMES[v] + ": the level is the coarsest whose tolerance is no more than LOD_PX of a pixel, and every vertex drawn is within DRAW_MARGIN_PX of the canvas and on the visible side",
+                    r.level == expected && off == 0 && hidden == 0 && r.starts[r.runs()] == r.vertices() && f.tier() != GlobeFrame.PLANE);
+            GlobeFrame moved = f.copy(f.width(), f.height(), f.kmPx());
+            moved.set(f.centreLat() + 0.01, f.centreLon() + 0.01, f.kmPx());
+            check(VIEW_NAMES[v] + ": the same view twice gives back the same Runs (the cache), and a view moved a little does not",
+                    map.borders(f) == r && map.borders(viewOf(VIEWS[v][0], VIEWS[v][1], VIEWS[v][2])) == r && map.borders(moved) != r);
+            map.borders(f);
+        }
+        check("the city's ground at 1 km a pixel is the GROUND tier, not the plane", frames[3].tier() == GlobeFrame.GROUND);
+        check("over Europe fewer than a quarter of the lines are considered (" + runs[2].considered + " of " + runs[2].lines + ")", runs[2].considered * 4 < runs[2].lines);
+        NationsMap.Runs own = map.bordersAt(frames[0], 0);
+        check("the whole planet draws no more than VERTICES_MOST (" + VERTICES_MOST + ") vertices, " + runs[0].vertices() + ", where the file's own level would draw " + own.vertices() + ", over twice as many",
+                runs[0].vertices() <= VERTICES_MOST && own.vertices() > 2 * runs[0].vertices());
+        for (int v = 0; v < VIEWS.length; v++) {
+            double ms = timed(frames[v], f -> map.borders(f));
+            out.printf("      %s: the borders in %.3f ms of %s%n", VIEW_NAMES[v], ms, clock());
+            check(VIEW_NAMES[v] + ": the borders (cull, level, project, cut) in no more than BORDERS_MS (" + NationsMap.BORDERS_MS + ") of " + clock(), Timing.within(ms, NationsMap.BORDERS_MS));
+        }
+    }
+
+    /* ----- 10. the dots and labels ----- */
+
+    static void dotsAndLabels(NationsMap map, WorldData file, Nations nations) {
+        out.println("--- 10. the nations' dots and labels: the full file ---");
+        for (int v = 0; v < 2; v++) {
+            GlobeFrame f = viewOf(VIEWS[v][0], VIEWS[v][1], VIEWS[v][2]);
+            List<NationsMap.Mark> marks = map.marks(f, nations, YEAR, NAME_W, FIGURES_W);
+            long labelled = marks.stream().filter(NationsMap.Mark::labelled).count();
+            StringBuilder written = new StringBuilder();
+            for (NationsMap.Mark k : marks) if (k.labelled()) written.append(map.iso3(k.nation())).append(' ');
+            out.printf("      %s: %d dots, %d labelled (%s)%n", VIEW_NAMES[v], marks.size(), labelled, written.toString().trim());
+            // the dots are the nations whose node is on the visible side and within the canvas and its radius, where GlobeFrame.at() puts them
+            int expected = 0, misplaced = 0;
+            for (int nation = 1; nation <= map.count(); nation++) {
+                double[] at = f.at(map.nodeLat(nation), map.nodeLon(nation));
+                double r = NationsMap.radius(nations.year(nation, YEAR).output());
+                if (at != null && at[0] >= -r && at[0] <= f.width() + r && at[1] >= -r && at[1] <= f.height() + r) expected++;
+            }
+            for (NationsMap.Mark k : marks) {
+                double[] at = f.at(map.nodeLat(k.nation()), map.nodeLon(k.nation()));
+                if (at == null || Math.abs(at[0] - k.x()) > 1e-6 || Math.abs(at[1] - k.y()) > 1e-6) misplaced++;
+            }
+            check(VIEW_NAMES[v] + ": a dot for each nation whose node is on the visible side and within the canvas, where GlobeFrame.at() puts it (" + marks.size() + ")", expected == marks.size() && misplaced == 0);
+            List<NationsMap.Mark> byOutput = new ArrayList<>(marks);
+            byOutput.sort((a, b) -> Double.compare(nations.year(b.nation(), YEAR).output(), nations.year(a.nation(), YEAR).output()));
+            boolean radii = true, grows = true;
+            for (int k = 0; k < byOutput.size(); k++) {
+                NationsMap.Mark a = byOutput.get(k);
+                double output = nations.year(a.nation(), YEAR).output();
+                radii &= a.r() >= NationsMap.DOT_MIN_PX && a.r() <= NationsMap.DOT_MAX_PX
+                        && a.r() == Math.min(NationsMap.DOT_MAX_PX, Math.max(NationsMap.DOT_MIN_PX, NationsMap.DOT_BASE_PX + NationsMap.DOT_PER_ROOT_PX * Math.sqrt(output / 1e12)));
+                if (k > 0) grows &= byOutput.get(k - 1).r() >= a.r();
+            }
+            check(VIEW_NAMES[v] + ": every dot's radius is DOT_BASE_PX plus DOT_PER_ROOT_PX a root of a trillion of output, between DOT_MIN_PX and DOT_MAX_PX, and never smaller for a larger output",
+                    radii && grows && marks.size() > 50);
+            int overlap = 0, outside = 0, thin = 0, areaSmall = 0, offLand = 0;
+            double mm = f.kmPx() * 1000;
+            double[] ll = new double[2];
+            for (int a = 0; a < marks.size(); a++) {
+                NationsMap.Mark ma = marks.get(a);
+                if (!ma.labelled()) continue;
+                double[] box = NationsMap.labelBox(ma, NAME_W, FIGURES_W);
+                if (box[0] < 0 || box[2] > f.width() || box[1] < 0 || box[3] > f.height()) outside++;
+                for (int b = a + 1; b < marks.size(); b++) {
+                    if (!marks.get(b).labelled()) continue;
+                    double[] other = NationsMap.labelBox(marks.get(b), NAME_W, FIGURES_W);
+                    if (box[0] < other[2] && other[0] < box[2] && box[1] < other[3] && other[1] < box[3]) overlap++;
+                }
+                int own = 0;
+                for (int j = 0; j < NationsMap.LABEL_SAMPLES_Y; j++) {
+                    for (int i = 0; i < NationsMap.LABEL_SAMPLES_X; i++) {
+                        double sx = box[0] + (i + 0.5) / NationsMap.LABEL_SAMPLES_X * (box[2] - box[0]), sy = box[1] + (j + 0.5) / NationsMap.LABEL_SAMPLES_Y * (box[3] - box[1]);
+                        if (f.ortho().inverse((sx - f.width() / 2) * mm, (f.height() / 2 - sy) * mm, ll) && map.coarseOwner(ll[0], ll[1]) == ma.nation()) own++;
+                    }
+                }
+                if (own < NationsMap.LABEL_OWN_SHARE * NationsMap.LABEL_SAMPLES_X * NationsMap.LABEL_SAMPLES_Y - 1e-9) thin++;
+                if (map.areaKm2(ma.nation()) / (f.kmPx() * f.kmPx()) < NationsMap.LABEL_AREA_TIMES * (box[2] - box[0]) * NationsMap.LABEL_H_PX) areaSmall++;
+                if (file.ownerAt(map.labelLat(ma.nation()), map.labelLon(ma.nation())) != ma.nation()) offLand++;
+            }
+            out.printf("      %s: %d labels overlap, %d outside the canvas, %d under LABEL_OWN_SHARE of their nation's coarse cells, %d under LABEL_AREA_TIMES boxes of ground; %d label points are not on their nation's exact land%n",
+                    VIEW_NAMES[v], overlap, outside, thin, areaSmall, offLand);
+            check(VIEW_NAMES[v] + ": no two labels' boxes overlap, every box is inside the canvas with at least LABEL_OWN_SHARE of its points on its nation's coarse cells, and its nation's coarse area is at least LABEL_AREA_TIMES boxes",
+                    overlap == 0 && outside == 0 && thin == 0 && areaSmall == 0 && labelled > 0);
+            if (v == 1) {
+                int canada = map.numberOf("CAN"), usa = map.numberOf("USA"), lux = map.numberOf("LUX"), bel = map.numberOf("BEL");
+                check("Canada and the United States are labelled over the North Atlantic", marks.stream().anyMatch(k -> k.nation() == canada && k.labelled())
+                        && marks.stream().anyMatch(k -> k.nation() == usa && k.labelled()));
+                boolean kept = true;
+                for (int small : new int[] { lux, bel }) {
+                    NationsMap.Mark mark = marks.stream().filter(k -> k.nation() == small).findFirst().orElse(null);
+                    double boxes = NationsMap.LABEL_AREA_TIMES * Math.max(NAME_W.applyAsDouble(map.ownerName(small)), FIGURES_W.applyAsDouble(mark == null ? "" : mark.figures())) * NationsMap.LABEL_H_PX;
+                    double pixels = map.areaKm2(small) / (f.kmPx() * f.kmPx());
+                    out.printf("      %s: %,.0f km2 of coarse ground, %.1f pixels of it against %.0f for LABEL_AREA_TIMES boxes%n", map.ownerName(small), map.areaKm2(small), pixels, boxes);
+                    kept &= mark != null && !mark.labelled() && pixels < boxes;
+                }
+                check("Luxembourg and Belgium, whose coarse area is under LABEL_AREA_TIMES boxes at this view, keep only their dots", kept);
+            }
+            double ms = timed(f, g -> map.marks(g, nations, YEAR, NAME_W, FIGURES_W));
+            out.printf("      %s: the dots and labels in %.3f ms of %s%n", VIEW_NAMES[v], ms, clock());
+            check(VIEW_NAMES[v] + ": the dots and labels in no more than MARKS_MS (" + NationsMap.MARKS_MS + ") of " + clock(), Timing.within(ms, NationsMap.MARKS_MS));
+        }
+    }
+
+    /* ----- 11. the hit test ----- */
+
+    /** The fixture's cells the expect file states, {lat, lon, owner} at each cell's centre, in the file's order. */
+    static List<double[]> expectedCells(byte[] expect) {
+        List<double[]> cells = new ArrayList<>();
+        for (String line : new String(expect, StandardCharsets.UTF_8).split("\n")) {
+            String[] f = line.split("\t", -1);
+            if (f.length != 6 || !f[0].equals("fixture") || !f[1].equals("cell")) continue;
+            int tile = Integer.parseInt(f[2]), row = Integer.parseInt(f[3]), col = Integer.parseInt(f[4]);
+            cells.add(new double[] { tile / 360 - 90 + 1 - (row + 0.5) / WorldData.OWNER_CELLS, tile % 360 - 180 + (col + 0.5) / WorldData.OWNER_CELLS, Integer.parseInt(f[5]) });
+        }
+        return cells;
+    }
+
+    static void fixtureHits(NationsMap map, Nations nations, byte[] expect) {
+        out.println("--- 11. the hit test: the fixture ---");
+        List<double[]> cells = expectedCells(expect);
+        int exact = 0, land = 0, hit = 0, tried = 0, seaWrong = 0;
+        for (double[] c : cells) {
+            if (map.ownerAt(c[0], c[1]) == (int) c[2]) exact++;
+            GlobeFrame f = viewOf(c[0], c[1], 1);
+            List<NationsMap.Mark> marks = map.marks(f, nations, YEAR, NAME_W, FIGURES_W);
+            boolean clear = marks.stream().noneMatch(k -> Math.hypot(k.x() - f.width() / 2, k.y() - f.height() / 2) <= k.r() + NationsMap.HIT_SLOP_PX);
+            int found = map.nationAt(f, marks, f.width() / 2, f.height() / 2);
+            if (c[2] == 0) {
+                if (found != 0) seaWrong++;
+            } else {
+                land++;
+                if (tried < 8) {
+                    tried++;
+                    if (clear && found == (int) c[2]) hit++;
+                }
+            }
+        }
+        out.printf("      %d cells the expect file states: %d give their owner through ownerAt; of %d land cells, %d of the first %d give it through nationAt on a view centred on them (no dot near); %d sea cells give someone%n",
+                cells.size(), exact, land, hit, tried, seaWrong);
+        check("the fixture's cells (" + cells.size() + ") give the owner the expect file states through ownerAt", !cells.isEmpty() && exact == cells.size());
+        check("a view centred on a Belgian, a German or a Dutch cell with no dot near gives that cell's nation through nationAt (" + tried + " cells)", tried == 8 && hit == tried);
+        check("a view centred on a sea cell gives no one through nationAt; ownerName says Belgium for 2 and no one for 0", seaWrong == 0 && "Belgium".equals(map.ownerName(2)) && map.ownerName(0) == null);
+        GlobeFrame f = viewOf(50, 5, 5);
+        List<NationsMap.Mark> marks = map.marks(f, nations, YEAR, NAME_W, FIGURES_W);
+        boolean centres = !marks.isEmpty();
+        for (NationsMap.Mark k : marks) centres &= map.nationAt(f, marks, k.x(), k.y()) == k.nation();
+        check("a point at a dot's centre gives its nation (" + marks.size() + " dots)", centres);
+        boolean reach = true;
+        for (NationsMap.Mark k : marks) {
+            // a point near the edge of the reach of the dot k: the nearest centre of the dots whose reach holds it wins, then the smaller number
+            double px = k.x() + (k.r() + NationsMap.HIT_SLOP_PX) * 0.9, py = k.y();
+            int expected = 0;
+            double best = Double.MAX_VALUE;
+            for (NationsMap.Mark o : marks) {
+                double d2 = (px - o.x()) * (px - o.x()) + (py - o.y()) * (py - o.y()), r = o.r() + NationsMap.HIT_SLOP_PX;
+                if (d2 <= r * r && (d2 < best || d2 == best && o.nation() < expected)) {
+                    best = d2;
+                    expected = o.nation();
+                }
+            }
+            reach &= expected != 0 && map.nationAt(f, marks, px, py) == expected;
+        }
+        check("a point within a dot's radius and HIT_SLOP_PX of its centre gives the nearest centre's nation of the dots that reach it (" + marks.size() + " dots)", reach);
+    }
+
+    static void fullHits(NationsMap map, Nations nations) {
+        out.println("--- 11. the hit test: the full file ---");
+        GlobeFrame atlantic = viewOf(40, -40, 10), canada = viewOf(60, -100, 10);
+        List<NationsMap.Mark> marks = map.marks(atlantic, nations, YEAR, NAME_W, FIGURES_W);
+        int middle = 0;
+        for (NationsMap.Mark k : marks) if (map.nationAt(atlantic, marks, k.x(), k.y()) == k.nation()) middle++;
+        int sea = map.nationAt(atlantic, marks, atlantic.width() / 2, atlantic.height() / 2);
+        int land = map.nationAt(canada, map.marks(canada, nations, YEAR, NAME_W, FIGURES_W), canada.width() / 2, canada.height() / 2);
+        out.printf("      %d of %d dots give their own nation at their centre; (40 N, 40 W) gives %d, (60 N, 100 W) gives %d (%s)%n", middle, marks.size(), sea, land, map.ownerName(land));
+        check("the point at each dot's centre gives its nation (" + marks.size() + " dots over the North Atlantic)", !marks.isEmpty() && middle == marks.size());
+        check("the open Atlantic (40 N, 40 W) gives no one and Canada's interior (60 N, 100 W) gives Canada", sea == 0 && land == map.numberOf("CAN") && "Canada".equals(map.ownerName(land)));
+        check("ownerAt is the owner layer's, and ownerName names an area as well as a nation (Kosovo)",
+                map.ownerAt(60, -100) == map.numberOf("CAN") && map.ownerAt(40, -40) == 0 && "Kosovo".equals(map.ownerName(map.ownerAt(42.6, 20.9))));
+    }
+
+    /* ----- 12. the card ----- */
+
+    static String markWords(int mark) { return mark == WorldData.MARK_PROJECTED ? " ◐" : mark == WorldData.MARK_ESTIMATE ? " ○" : ""; }
+
+    static final Pattern RANK = Pattern.compile("(\\d+)(st|nd|rd|th) of (\\d+)");
+
+    /** Whether a card's "This year" row is right for a nation and year: a dash in the first year, else the growth with its sign and the prices, each to a decimal and within the rounding of the figure. */
+    static boolean yearRowOk(String row, Nations nations, int nation, int year) {
+        if (year == Nations.FIRST_YEAR) return row.equals("-");
+        if (!row.matches("[+-]\\d+\\.\\d% real · -?\\d+\\.\\d% prices")) return false;
+        double growth = Double.parseDouble(row.substring(0, row.indexOf('%'))), prices = Double.parseDouble(row.substring(row.indexOf('·') + 2, row.lastIndexOf('%')));
+        return Math.abs(growth - 100 * Math.expm1(nations.growth(nation, year))) <= 0.051 && Math.abs(prices - 100 * nations.year(nation, year).inflation()) <= 0.051;
+    }
+
+    /** Whether a card's "Its money" row is right: the US dollar in its words, else the money, its rate a US$ and what one of it is worth in game dollars, the two figures' product the game dollar's price within their roundings. */
+    static boolean moneyRowOk(String row, Nations.Year y) {
+        if (Nations.DOLLAR.equals(y.money())) return row.equals("the US dollar · US$1 = D$1.16");
+        if (!row.startsWith(y.money() + " ") || !row.contains(" a US$ · " + y.money() + " 1 = D$")) return false;
+        double rate = Double.parseDouble(row.substring(y.money().length() + 1, row.indexOf(" a US$")).replace(",", "")), worth = Double.parseDouble(row.substring(row.lastIndexOf("D$") + 2).replace(",", ""));
+        return Math.abs(worth * rate / D_PER_USD - 1) <= 0.012;
+    }
+
+    static void cards(String scope, NationsMap map, Nations nations, int lastYear) {
+        out.println("--- 12. the card: " + scope + " ---");
+        int count = nations.count();
+        int badShape = 0, badValue = 0, badRank = 0, badRanking = 0, badYear = 0, badMoney = 0, badMarks = 0, firsts = 0, cardsRead = 0, estimates = 0, projections = 0;
+        for (int year : new int[] { Nations.FIRST_YEAR, YEAR, lastYear }) {
+            double[][] by = new double[3][count + 1];
+            for (int i = 1; i <= count; i++) {
+                Nations.Year y = nations.year(i, year);
+                by[0][i] = y.output();
+                by[1][i] = y.people();
+                by[2][i] = y.outputPerHead();
+            }
+            for (int i = 1; i <= count; i++) {
+                Nations.Year y = nations.year(i, year);
+                NationsMap.Card c = map.card(nations, i, year, CITIES[0][0], CITIES[0][1], D_PER_USD);
+                List<NationsMap.Row> rows = c.rows();
+                cardsRead++;
+                if (rows.size() != 5 || !c.name().equals(nations.name(i)) || !rows.get(0).label().equals(NationsMap.GDP_WORDS) || !rows.get(1).label().equals("People")
+                        || !rows.get(2).label().equals("GDP a head") || !rows.get(3).label().equals("This year") || !rows.get(4).label().equals("Its money")
+                        || !c.distance().endsWith(" km from the city")) {
+                    badShape++;
+                    continue;
+                }
+                if (!rows.get(0).value().equals(NationsMap.usd(y.output()) + markWords(y.outputMark())) || !rows.get(1).value().equals(NationsMap.people(y.people()) + markWords(y.peopleMark()))
+                        || !rows.get(2).value().startsWith("US$") || !rows.get(2).value().endsWith(markWords(Math.min(y.outputMark(), y.peopleMark())))) badValue++;
+                if (rows.get(0).value().endsWith(markWords(WorldData.MARK_ESTIMATE))) estimates++;
+                if (rows.get(1).value().endsWith(markWords(WorldData.MARK_PROJECTED))) projections++;
+                if (year > Nations.HISTORY_LAST_YEAR - 1 && !rows.get(1).value().endsWith(markWords(WorldData.MARK_PROJECTED))) badMarks++;
+                if (year == 2030 && (!rows.get(0).value().endsWith(markWords(WorldData.MARK_ESTIMATE)) || !rows.get(2).value().endsWith(markWords(WorldData.MARK_ESTIMATE)))) badMarks++;
+                for (int r = 0; r < 3; r++) {
+                    Matcher m = RANK.matcher(rows.get(r).rank());
+                    if (!m.matches() || Integer.parseInt(m.group(3)) != count || !rows.get(r).rank().startsWith(NationsMap.ordinal(Integer.parseInt(m.group(1))) + " of ")) {
+                        badRank++;
+                        continue;
+                    }
+                    int above = 0, rank = Integer.parseInt(m.group(1));
+                    for (int j = 1; j <= count; j++) if (by[r][j] > by[r][i]) above++;
+                    if (rank != above + 1 || rank < 1 || rank > count) badRanking++;
+                    if (r == 0 && rank == 1) firsts++;
+                }
+                if (!yearRowOk(rows.get(3).value(), nations, i, year)) badYear++;
+                if (!moneyRowOk(rows.get(4).value(), y)) badMoney++;
+            }
+        }
+        out.printf("      %d cards at three years: %d shapes wrong, %d values, %d rank words, %d rankings, %d \"this year\" rows, %d money rows, %d marks; %d GDP rows carry the estimate's mark, %d People rows the projection's%n",
+                cardsRead, badShape, badValue, badRank, badRanking, badYear, badMoney, badMarks, estimates, projections);
+        check(scope + ": a card is five rows, GDP (US$ of 2015), People, GDP a head, This year and Its money, under the nation's name and its distance from the city", badShape == 0);
+        check(scope + ": the GDP row is usd() of the nation's output and the People row people() of its people, each with its mark (a projection ◐, an estimate ○), the head's the lower of the two; some figure of each kind is marked", badValue == 0 && badMarks == 0 && estimates > 0 && projections > 0);
+        check(scope + ": the ranks are rankings - \"Nth of " + count + "\" in ordinal words, between 1 and " + count + ", the count of nations strictly larger one less, the largest 1st", badRank == 0 && badRanking == 0 && firsts == 3);
+        check(scope + ": \"This year\" is the growth with its sign and the prices, each to a decimal, and a dash in the first year", badYear == 0);
+        check(scope + ": \"Its money\" is the money, its rate a US$ and the game dollar's worth of one of it, the US dollar's in its own words", badMoney == 0);
+        int usaN = map.numberOf("USA"), canN = map.numberOf("CAN");
+        String usaMoney = map.card(nations, usaN, YEAR, CITIES[0][0], CITIES[0][1], Double.NaN).rows().get(4).value(), canMoney = map.card(nations, canN, YEAR, CITIES[0][0], CITIES[0][1], 0).rows().get(4).value();
+        check(scope + ": with no price for the game dollar the money row says the money and its rate only (" + usaMoney + "; " + canMoney + ")", usaMoney.equals("the US dollar") && canMoney.matches("CAD [\\d.]+ a US\\$"));
+        if (!scope.equals("the fixture")) return;
+        List<String> ordinals = new ArrayList<>();
+        for (int k : new int[] { 1, 2, 3, 4, 11, 12, 13, 21, 22, 101, 111, 112 }) ordinals.add(NationsMap.ordinal(k));
+        check("the ordinal words are 1st 2nd 3rd 4th 11th 12th 13th 21st 22nd 101st 111th 112th (" + String.join(" ", ordinals) + ")",
+                ordinals.equals(List.of("1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "101st", "111th", "112th")));
+        boolean usd = NationsMap.usd(2.24e12).equals("US$2.24T") && NationsMap.usd(1e12).equals("US$1.00T") && NationsMap.usd(999.6e9).equals("US$1.00T") && NationsMap.usd(999.4e9).equals("US$999B")
+                && NationsMap.usd(580e9).equals("US$580B") && NationsMap.usd(58.1e9).equals("US$58.1B") && NationsMap.usd(5.81e9).equals("US$5.81B") && NationsMap.usd(1e9).equals("US$1.00B")
+                && NationsMap.usd(57.04e9).equals("US$57B") && NationsMap.usd(999.6e6).equals("US$1.00B") && NationsMap.usd(580e6).equals("US$580M") && NationsMap.usd(58.1e6).equals("US$58.1M")
+                && NationsMap.usd(5.81e6).equals("US$5.81M") && NationsMap.usd(1e6).equals("US$1.00M") && NationsMap.usd(999_999.4).equals("US$999,999") && NationsMap.usd(999_999.6).equals("US$1.00M")
+                && NationsMap.usd(54_321).equals("US$54,321") && NationsMap.usd(999).equals("US$999") && NationsMap.usd(0).equals("US$0") && NationsMap.usd(Double.NaN).equals("-");
+        check("usd() writes US$2.24T, US$580B, US$58.1B, US$5.81B, the same in M, a whole number with thousands separated below, and steps up where a rounding reaches the next unit", usd);
+        boolean people = NationsMap.people(1.43e9).equals("1.43B") && NationsMap.people(999.6e6).equals("1.00B") && NationsMap.people(41.5e6).equals("41.5M") && NationsMap.people(1e6).equals("1.00M")
+                && NationsMap.people(999.6e3).equals("1.00M") && NationsMap.people(390_000).equals("390k") && NationsMap.people(57_000).equals("57k") && NationsMap.people(57_049).equals("57k")
+                && NationsMap.people(5_810).equals("5.81k") && NationsMap.people(1_000).equals("1.00k") && NationsMap.people(999.6).equals("1.00k") && NationsMap.people(999).equals("999")
+                && NationsMap.people(0).equals("0") && NationsMap.people(Double.NaN).equals("-");
+        check("people() writes 1.43B, 41.5M, 390k, 57k (not 57.0k), 5.81k, the whole number below a thousand, and steps up where a rounding reaches the next unit", people);
+        check("sig3() keeps three significant figures: 54,300 for 54,321, 1.37, 0.857, 0.86 (not 0.860), 15,800 for 15,812, 150 and 1.30", NationsMap.sig3(54_321).equals("54,300") && NationsMap.sig3(1.3712).equals("1.37")
+                && NationsMap.sig3(0.8571).equals("0.857") && NationsMap.sig3(0.86).equals("0.86") && NationsMap.sig3(15_812).equals("15,800") && NationsMap.sig3(150.2).equals("150")
+                && NationsMap.sig3(1.3).equals("1.30") && NationsMap.sig3(Double.NaN).equals("-"));
+        int bel = map.numberOf("BEL");
+        NationsMap.Card card = map.card(nations, bel, YEAR, 51.44, 4.93, D_PER_USD);
+        List<String> hover = map.hoverWords(nations, bel, YEAR, 51.44, 4.93);
+        long km = Math.round(EarthProj.distanceM(51.44, 4.93, map.nodeLat(bel), map.nodeLon(bel)) / 1000);
+        check("a hover says the name, \"GDP ... people\", the km from the city and CLICK_FOR_CARD last (" + hover + ")", hover.size() == 4 && hover.get(0).equals("Belgium")
+                && hover.get(1).equals("GDP " + NationsMap.usd(nations.year(bel, YEAR).output()) + " · " + NationsMap.people(nations.year(bel, YEAR).people()) + " people")
+                && hover.get(2).equals(String.format(Locale.US, "%,d km from the city", km)) && hover.get(3).equals(NationsMap.CLICK_FOR_CARD) && card.distance().equals(hover.get(2))
+                && card.region().equals("Europe & Central Asia"));
     }
 }
