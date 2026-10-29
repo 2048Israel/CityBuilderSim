@@ -3260,10 +3260,33 @@ public class Bank {
                 + depositInterestToForeign;
     }
 
-    /** What it charges borrowers, less what it pays savers. A bank's whole business. */
+    /**
+     * Everything that earns it interest, as it stands: its loans, the bonds
+     * and the city's paper it holds, the carry and the families' credit
+     * lines (getBook()), and its reserves at the central bank, which earn the
+     * policy rate (cashReserves()). The desk's shares earn it no interest and
+     * the allowance is not netted - interest is earned on the gross book.
+     * These are the sheet's lines RESERVES, BUSINESS_LOANS, INTERIM,
+     * MORTGAGES, FAMILIES, CARRY, CITY_PAPER and BONDS. Reserves count
+     * whatever the policy rate, so the margin read against it does not jump
+     * when the rate touches zero.
+     *
+     * WHY: the interest margin was read against the loan book alone
+     * (getBook()), while net interest also holds what the reserves earn
+     * (placementIncome), and in a city whose reserves were 700 times its
+     * loans it read 9,972.71% (GitHub issue #5, BK1).
+     */
+    public double earningAssets() { return getBook() + cashReserves(); }
+
+    /**
+     * What it charges borrowers and earns on its reserves, less what it pays
+     * savers and the window, at a yearly rate on the assets that earn it
+     * interest (earningAssets()): a bank's whole business, as this month
+     * stands. Nothing with nothing earning.
+     */
     public double netInterestMargin() {
-        double weighted = getBook();
-        return weighted > 0 ? (interestEarned - depositInterest() - fundingCost) / weighted * 12 : 0;
+        double earning = earningAssets();
+        return earning > 0 ? netInterestIncome() * 12 / earning : 0;
     }
 
     /*
@@ -5961,13 +5984,40 @@ public class Bank {
     }
 
     /**
-     * Net interest income over the year, at a yearly rate, on the book it held
-     * on average: its net interest margin, steadier than a month's
-     * (netInterestMargin()). Nothing with nothing lent.
+     * Net interest income over the year, at a yearly rate, on the assets that
+     * earned it interest on average (averageEarningAssetsOverYear()): its net
+     * interest margin, steadier than a month's (netInterestMargin()). Nothing
+     * with nothing earning.
      */
     public double netInterestMarginOverYear() {
-        double book = averageOverYear(Line.BOOK);
-        return book > 0 ? averageOverYear(Line.NET_INTEREST) * 12 / book : 0;
+        double earning = averageEarningAssetsOverYear();
+        return earning > 0 ? averageOverYear(Line.NET_INTEREST) * 12 / earning : 0;
+    }
+
+    /**
+     * Its earning assets (earningAssets()) averaged over the months the
+     * year's flows cover (monthsInYear()): this month's, and those of the
+     * sheets filed at the close of the months before it, read from the year
+     * of balance sheets it keeps rather than from a line of the statement.
+     * An older save carries the year of sheets since 0.7.13, so the average
+     * is right from the first month after a load; a new statement line would
+     * have carried zeros for the months filed before it.
+     */
+    public double averageEarningAssetsOverYear() {
+        int filed = Math.min(monthsInYear() - 1, sheetsFiled);
+        double sum = earningAssets();
+        for (int k = 1; k <= filed; k++) {
+            sum += earningLines(sheetRing[(sheetsFiled - k) % sheetRing.length]);
+        }
+        return sum / (1 + filed);
+    }
+
+    /** The eight lines of one filed sheet that earn interest, added: what earningAssets() was when it was filed. */
+    private static double earningLines(double[] filedSheet) {
+        return filedSheet[Sheet.RESERVES.ordinal()] + filedSheet[Sheet.BUSINESS_LOANS.ordinal()]
+                + filedSheet[Sheet.INTERIM.ordinal()] + filedSheet[Sheet.MORTGAGES.ordinal()]
+                + filedSheet[Sheet.FAMILIES.ordinal()] + filedSheet[Sheet.CARRY.ordinal()]
+                + filedSheet[Sheet.CITY_PAPER.ordinal()] + filedSheet[Sheet.BONDS.ordinal()];
     }
 
     /**
