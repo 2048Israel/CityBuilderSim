@@ -1020,6 +1020,9 @@ public final class WorldData implements AutoCloseable {
        PRICES - each good's real price path (WN1, spec 7.1)
        ===================================================================== */
 
+    /** Whether the file has the prices layer: a file baked before WN1's has none, and is read all the same (WorldDataCheck's first section says it is not FORMAT.txt's ten layers). */
+    public boolean hasPrices() { return priceSeries != null; }
+
     private void readPrices() throws IOException, DataFormatException {
         ByteBuffer b = binary(PRICES);
         int g = b.getInt();
@@ -1045,7 +1048,10 @@ public final class WorldData implements AutoCloseable {
     public int priceYears() { return priceYears; }
 
     /** The Pink Sheet series a good's price follows (its column title; a proxy's too), the good numbered 1..G. */
-    public String priceSeries(int good) { return priceSeries.get(good - 1); }
+    public String priceSeries(int good) {
+        priceIndex(priceFirstYear);
+        return priceSeries.get(good - 1);
+    }
 
     /** A good's price in a year, the series' nominal annual price over the US CPI as a ratio to 2025's (so 2025 is 1); NaN where there is none. */
     public double price(int good, int year) { return priceValues[good - 1][priceIndex(year)]; }
@@ -1054,6 +1060,7 @@ public final class WorldData implements AutoCloseable {
     public int priceMark(int good, int year) { return priceMarks[good - 1][priceIndex(year)]; }
 
     private int priceIndex(int year) {
+        if (!hasPrices()) throw new IllegalStateException("world data has no prices layer");
         if (year < priceFirstYear || year >= priceFirstYear + priceYears) throw new IllegalArgumentException("world data has no prices for year " + year);
         return year - priceFirstYear;
     }

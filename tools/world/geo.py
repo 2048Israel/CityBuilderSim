@@ -31,6 +31,9 @@ import xlsx
 # ----- the dials: each goes to meta as a dial row (see DIALS at the foot of this block) -----
 # A populated place is a port city when a Natural Earth port lies within this many km of it.
 PORT_KM = 25.0
+# Nodes named by hand where Natural Earth's POP_MAX ranks the wrong place first: South Sudan's capital and largest
+# city is Juba (about 525,000 people, the 2023 estimates), but POP_MAX gives Yei 185,000 against Juba's 111,975.
+NODE_OVERRIDES = {'SSD': 'Juba'}
 # The Earth's mean radius, km: the great circle between two points.
 EARTH_RADIUS_KM = 6371.0
 # The Natural Earth feature types that are territories (their land goes to the sovereign when it is one of the
@@ -230,7 +233,10 @@ def stage_nations(src, work):
         landlocked = c in common.LANDLOCKED
         cand = inside[c]
         node, how = None, None
-        if cand and not landlocked:
+        if c in NODE_OVERRIDES:
+            node = next(pl for pl in cand if pl[1] == NODE_OVERRIDES[c])
+            how = 'largest'
+        if node is None and cand and not landlocked:
             for pl in cand:
                 if near_port(pl[2], pl[3]):
                     node, how = pl, 'port'

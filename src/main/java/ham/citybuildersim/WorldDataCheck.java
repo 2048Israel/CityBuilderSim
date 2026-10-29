@@ -90,8 +90,15 @@ public class WorldDataCheck {
     /** The solve's margins meet when no make or use is off by more than this share of it (FORMAT.txt, THE KERNEL: 1e-12). */
     static final double MARGIN_TOL = 1e-12;
 
-    /** The solve gives the file's flow within this share of it (FORMAT.txt: 1e-9). */
+    /** The solve gives the file's flow within this share of it (FORMAT.txt: 1e-9), plus MARGIN_ULPS of its margin over the flow (see there). */
     static final double FLOW_TOL = 1e-9;
+
+    /**
+     * The room a flow is given beyond FLOW_TOL, as this share of the smaller of its row's make and its column's use, over the flow: 4 ulps of the margin. A flow
+     * under about 1e-6 of its margin is the difference of two margins that double precision holds to 1e-16 of the larger, so it comes back to a few ulps of the
+     * margin, not to FLOW_TOL of itself (tools/world/econ_trade.py solve_exact proves the file with the same rule).
+     */
+    static final double MARGIN_ULPS = 1e-15;
 
     /** A pair's cost is elasticity x ln(1 + freight / unit value) within this share of it. */
     static final double COST_TOL = 1e-9;
@@ -99,8 +106,20 @@ public class WorldDataCheck {
     /** BACI's own sum for a pair is the file's flow within this share of it (the file's flow is BACI's, as the CSV is summed in a second pass). */
     static final double BACI_TOL = 1e-6;
 
-    /** The most sweeps (a row update and a column update) the solve may take for one good before it is called not to converge. */
+    /** The most passes (every nation's a and b solved together, the others held) the solve may take for one good before it is called not to converge. */
     static final int SWEEP_CAP = 100_000;
+
+    /** The solve may stop when no a or b moved by more than this share in a pass, and every margin is within MARGIN_TOL / TARGET_DIVISOR (econ_trade.py's rule). */
+    static final double CHANGE_TOL = 1e-9;
+
+    /** A margin must be within MARGIN_TOL over this before the solve may stop: the margin floor of double precision is far below MARGIN_TOL. */
+    static final double TARGET_DIVISOR = 100;
+
+    /** The solve stops at once when no a or b moved by more than this share in a pass: they have stopped moving, at the floor of double precision. */
+    static final double CHANGE_FLOOR = 1e-15;
+
+    /** ...or when this many passes after it may stop have moved them no less than the least so far: a nation whose own pair is nearly all of its make and use keeps a rounding wobble. */
+    static final int STALE_PASSES = 8;
 
     /** The nations of the fixture, in iso3 order (FORMAT.txt, THE FIXTURE). */
     static final List<String> TWELVE = List.of("AUS", "BEL", "CAN", "CHE", "CHN", "COL", "DEU", "FRA", "GBR", "JPN", "NLD", "USA");
@@ -388,9 +407,10 @@ public class WorldDataCheck {
             assertTrue(s.label("its meta holds the dials the freight cost reads, each above 0" + (missing.isEmpty() ? "" : " (missing or bad: " + missing + ")")), missing.isEmpty());
             Tally sources = new Tally();
             for (WorldData.Citation c : d.sources()) {
-                sources.see(!c.id().isEmpty() && !c.name().isEmpty() && c.url().startsWith("http") && !c.licence().isEmpty() && DAY.matcher(c.downloaded()).matches(), c.id());
+                boolean downloaded = c.url().startsWith("http") && DAY.matcher(c.downloaded()).matches(), authored = c.url().equals("-") && c.downloaded().equals("-");
+                sources.see(!c.id().isEmpty() && !c.name().isEmpty() && !c.licence().isEmpty() && (downloaded || authored), c.id());
             }
-            tally(s.label("its meta names every source with an id, a name, an address, a licence and the day it was downloaded"), sources);
+            tally(s.label("its meta names every source with an id, a name, a licence, and an address and the day it was downloaded - or neither, for a table the game authored"), sources);
         }
 
         String[] of = one(fixture, "of");
@@ -422,11 +442,15 @@ public class WorldDataCheck {
                 int year = Integer.parseInt(f[2]);
                 return firstOf(differs("value", WorldData.number(f[3]), d.pathValue(f[0], n, year)), differs("mark", f[4], String.valueOf(d.pathMark(f[0], n, year))));
             });
-            each(s, "every price line: the price and its mark are what WorldData reads", "price", f -> {
-                int good = d.goodNumber(f[0]);
-                int year = Integer.parseInt(f[1]);
-                return firstOf(differs("value", WorldData.number(f[2]), d.price(good, year)), differs("mark", f[3], String.valueOf(d.priceMark(good, year))));
-            });
+            if (!d.hasPrices()) {
+                out.println("  " + s.label("no prices layer: the price lines were not read (section 1 fails on the layer list)"));
+            } else {
+                each(s, "every price line: the price and its mark are what WorldData reads", "price", f -> {
+                    int good = d.goodNumber(f[0]);
+                    int year = Integer.parseInt(f[1]);
+                    return firstOf(differs("value", WorldData.number(f[2]), d.price(good, year)), differs("mark", f[3], String.valueOf(d.priceMark(good, year))));
+                });
+            }
             each(s, "every rate line: the rate and its mark are what WorldData reads", "rate", f -> {
                 int money = d.moneyNumber(f[0]);
                 int m = month(f[1]);
@@ -691,7 +715,7 @@ public class WorldDataCheck {
        6. THE BASE YEAR REPRODUCES BACI'S FLOWS ON THE KEPT PAIRS
        ===================================================================== */
 
-    /** One good's kernel solved from a = b = 1: the sweeps it took, the worst margin, and the flows. */
+    /** One good's kernel solved from a = b = 1: the passes it took, the worst margin, and the flows. */
     static final class Solved {
         int sweeps;
         double margin;
@@ -699,35 +723,124 @@ public class WorldDataCheck {
     }
 
     /**
-     * FORMAT.txt's THE KERNEL: x_ij = a_i b_j exp(pref_ij - cost_ij) with the rows summing to make and the columns to use, solved from a = b = 1 by
-     * Sinkhorn sweeps (a row update, then a column update) until every margin meets MARGIN_TOL of itself, or SWEEP_CAP.
+     * FORMAT.txt's THE KERNEL: x_ij = a_i b_j exp(pref_ij - cost_ij) with the rows summing to make and the columns to use, solved from a = b = 1. Plain
+     * Sinkhorn cannot reach MARGIN_TOL: a nation that trades a ten-thousandth of its use (San Marino) has a and b chasing each other through its own pair, the
+     * error shrinking by that share a sweep. So each pass solves every nation's a_i and b_i together and exactly, the others held (nodeSolve: its own flow
+     * z = K_ii a_i b_i is the root in [0, min(make, use)] of K_ii (make - z)(use - z) = z R_i C_i, R_i the off-diagonal row sum of K b, C_i the off-diagonal
+     * column sum of a K), in nation order; the solution is unique, so it is the one the sweeps approach. As econ_trade.py solve_exact does it, pass for pass.
      */
     static Solved solve(WorldData.Flows f, int n) {
         int k = f.pairs();
-        double[] e = new double[k];
-        for (int p = 0; p < k; p++) e[p] = Math.exp(f.pref[p] - f.cost[p]);
-        double[] a = new double[n], b = new double[n], row = new double[n], col = new double[n];
+        double[] kernel = new double[k];
+        for (int p = 0; p < k; p++) kernel[p] = Math.exp(f.pref[p] - f.cost[p]);
+        double[] kd = new double[n + 1];
+        int[] rowCount = new int[n + 2], colCount = new int[n + 2];
+        boolean[] present = new boolean[n + 1];
+        for (int p = 0; p < k; p++) {
+            present[f.seller[p]] = present[f.buyer[p]] = true;
+            if (f.seller[p] == f.buyer[p]) {
+                kd[f.seller[p]] = kernel[p];
+            } else {
+                rowCount[f.seller[p] + 1]++;
+                colCount[f.buyer[p] + 1]++;
+            }
+        }
+        for (int i = 1; i <= n + 1; i++) {
+            rowCount[i] += rowCount[i - 1];
+            colCount[i] += colCount[i - 1];
+        }
+        int[] rowAt = new int[rowCount[n + 1]], colAt = new int[colCount[n + 1]];
+        int[] rowFill = Arrays.copyOf(rowCount, n + 1), colFill = Arrays.copyOf(colCount, n + 1);
+        for (int p = 0; p < k; p++) {
+            if (f.seller[p] == f.buyer[p]) continue;
+            rowAt[rowFill[f.seller[p]]++] = p;
+            colAt[colFill[f.buyer[p]]++] = p;
+        }
+        double[] a = new double[n + 1], b = new double[n + 1];
         Arrays.fill(a, 1);
         Arrays.fill(b, 1);
+        double target = MARGIN_TOL / TARGET_DIVISOR, best = 1;
+        int stale = 0;
         Solved r = new Solved();
-        while (true) {
-            Arrays.fill(row, 0);
-            for (int p = 0; p < k; p++) row[f.seller[p] - 1] += b[f.buyer[p] - 1] * e[p];
-            r.margin = 0;
-            for (int i = 0; i < n; i++) r.margin = Math.max(r.margin, margin(a[i] * row[i], f.make[i]));
-            if (r.margin <= MARGIN_TOL || r.sweeps >= SWEEP_CAP) break;
-            for (int i = 0; i < n; i++) if (row[i] > 0) a[i] = f.make[i] / row[i];
-            Arrays.fill(col, 0);
-            for (int p = 0; p < k; p++) col[f.buyer[p] - 1] += a[f.seller[p] - 1] * e[p];
-            for (int j = 0; j < n; j++) if (col[j] > 0) b[j] = f.use[j] / col[j];
+        while (r.sweeps < SWEEP_CAP) {
             r.sweeps++;
+            double change = 0;
+            for (int i = 1; i <= n; i++) {
+                if (!present[i]) continue;
+                double rowSum = 0, colSum = 0;
+                for (int q = rowCount[i]; q < rowCount[i + 1]; q++) rowSum += kernel[rowAt[q]] * b[f.buyer[rowAt[q]]];
+                for (int q = colCount[i]; q < colCount[i + 1]; q++) colSum += kernel[colAt[q]] * a[f.seller[colAt[q]]];
+                double[] pq = nodeSolve(kd[i], rowSum, colSum, f.make[i - 1], f.use[i - 1], a[i]);
+                change = Math.max(change, Math.max(Math.abs(pq[0] / a[i] - 1), Math.abs(pq[1] / b[i] - 1)));
+                a[i] = pq[0];
+                b[i] = pq[1];
+            }
+            if (change < CHANGE_TOL && residual(f, n, present, kd, kernel, rowCount, rowAt, colCount, colAt, a, b) <= target) {
+                if (change < best) {
+                    best = change;
+                    stale = 0;
+                } else {
+                    stale++;
+                }
+                if (change < CHANGE_FLOOR || stale >= STALE_PASSES) break;
+            }
         }
-        Arrays.fill(col, 0);
-        for (int p = 0; p < k; p++) col[f.buyer[p] - 1] += a[f.seller[p] - 1] * e[p];
-        for (int j = 0; j < n; j++) r.margin = Math.max(r.margin, margin(b[j] * col[j], f.use[j]));
         r.x = new double[k];
-        for (int p = 0; p < k; p++) r.x[p] = a[f.seller[p] - 1] * b[f.buyer[p] - 1] * e[p];
+        double[] rowTotal = new double[n + 1], rowKeep = new double[n + 1], colTotal = new double[n + 1], colKeep = new double[n + 1];
+        for (int p = 0; p < k; p++) {
+            r.x[p] = a[f.seller[p]] * b[f.buyer[p]] * kernel[p];
+            add(rowTotal, rowKeep, f.seller[p], r.x[p]);
+            add(colTotal, colKeep, f.buyer[p], r.x[p]);
+        }
+        for (int i = 1; i <= n; i++) {
+            if (!present[i]) continue;
+            r.margin = Math.max(r.margin, Math.max(margin(rowTotal[i] + rowKeep[i], f.make[i - 1]), margin(colTotal[i] + colKeep[i], f.use[i - 1])));
+        }
         return r;
+    }
+
+    /** The largest share by which a nation's row or column, at the current a and b, is off its make or use. */
+    static double residual(WorldData.Flows f, int n, boolean[] present, double[] kd, double[] kernel, int[] rowCount, int[] rowAt, int[] colCount, int[] colAt, double[] a, double[] b) {
+        double worst = 0;
+        for (int i = 1; i <= n; i++) {
+            if (!present[i]) continue;
+            double rowSum = 0, colSum = 0;
+            for (int q = rowCount[i]; q < rowCount[i + 1]; q++) rowSum += kernel[rowAt[q]] * b[f.buyer[rowAt[q]]];
+            for (int q = colCount[i]; q < colCount[i + 1]; q++) colSum += kernel[colAt[q]] * a[f.seller[colAt[q]]];
+            if (f.make[i - 1] > 0) worst = Math.max(worst, Math.abs(a[i] * (kd[i] * b[i] + rowSum) - f.make[i - 1]) / f.make[i - 1]);
+            if (f.use[i - 1] > 0) worst = Math.max(worst, Math.abs(b[i] * (kd[i] * a[i] + colSum) - f.use[i - 1]) / f.use[i - 1]);
+        }
+        return worst;
+    }
+
+    /**
+     * The pair (a_i, b_i) that meets nation i's row and column exactly, the others held: a (kd b + R) = make and b (kd a + C) = use, R and C the
+     * off-diagonal sums of K b and K a, kd the own pair's K (0 where it has none); the cases econ_trade.py node_solve has, in its order.
+     */
+    static double[] nodeSolve(double kd, double rowSum, double colSum, double make, double use, double aOld) {
+        if (kd > 0 && rowSum > 0 && colSum > 0) {
+            double alpha = kd * rowSum / colSum, beta = rowSum - kd * (make - use) / colSum;
+            double disc = Math.sqrt(beta * beta + 4 * alpha * make);
+            double p = beta >= 0 ? 2 * make / (beta + disc) : (disc - beta) / (2 * alpha);
+            return new double[] { p, use / (kd * p + colSum) };
+        }
+        if (kd > 0 && rowSum > 0) {            // nobody else sells to it: b (kd a) = use and a R = make - use
+            double p = (make - use) / rowSum;
+            return new double[] { p, use / (kd * p) };
+        }
+        if (kd > 0 && colSum > 0) {            // it sells to nobody else: a (kd b) = make and b C = use - make
+            double q = (use - make) / colSum;
+            return new double[] { make / (kd * q), q };
+        }
+        if (kd > 0) return new double[] { aOld, make / (kd * aOld) };         // its own pair alone: only the product is fixed
+        return new double[] { rowSum > 0 ? make / rowSum : aOld, colSum > 0 ? use / colSum : 1.0 };
+    }
+
+    /** Adds x to total[i] keeping the rounding it loses in keep[i] (Neumaier's sum), so a row of 196 flows adds up to the last ulp of the larger. */
+    static void add(double[] total, double[] keep, int i, double x) {
+        double t = total[i] + x;
+        keep[i] += Math.abs(total[i]) >= Math.abs(x) ? (total[i] - t) + x : (x - t) + total[i];
+        total[i] = t;
     }
 
     /** How far a margin is from the make or use it is meant to be, as a share of that. */
@@ -751,7 +864,7 @@ public class WorldDataCheck {
                 continue;
             }
             Tally converged = new Tally(), flows = new Tally(), costs = new Tally();
-            long sweeps = 0, pairs = 0;
+            long sweeps = 0, pairs = 0, limited = 0;
             int most = 0;
             String mostGood = "-";
             double worstFlow = 0, worstMargin = 0;
@@ -766,21 +879,23 @@ public class WorldDataCheck {
                     mostGood = good.key();
                 }
                 worstMargin = Math.max(worstMargin, r.margin);
-                converged.see(r.margin <= MARGIN_TOL, good.key() + " after " + r.sweeps + " sweeps its largest margin is " + r.margin);
+                converged.see(r.margin <= MARGIN_TOL, good.key() + " after " + r.sweeps + " passes its largest margin is " + r.margin);
                 for (int p = 0; p < f.pairs(); p++) {
                     double err = rel(r.x[p], f.flow[p]);
-                    worstFlow = Math.max(worstFlow, err);
-                    flows.see(err <= FLOW_TOL, good.key() + " " + f.seller[p] + " to " + f.buyer[p] + " solved " + r.x[p] + ", file " + f.flow[p]);
+                    double allow = FLOW_TOL + MARGIN_ULPS * Math.min(f.make[f.seller[p] - 1], f.use[f.buyer[p] - 1]) / f.flow[p];
+                    if (allow > 2 * FLOW_TOL) limited++;
+                    else worstFlow = Math.max(worstFlow, err);
+                    flows.see(err <= allow, good.key() + " " + f.seller[p] + " to " + f.buyer[p] + " solved " + r.x[p] + ", file " + f.flow[p] + ", off by " + err + " of an allowed " + allow);
                     double freight = f.seller[p] == f.buyer[p] ? 0
                             : seaUsd * d.freight().sea(f.seller[p], f.buyer[p]) + landUsd * d.freight().land(f.seller[p], f.buyer[p]) + handling;
                     double cost = good.elasticity() * Math.log(1 + freight / good.unitValue());
                     costs.see(rel(cost, f.cost[p]) <= COST_TOL, good.key() + " " + f.seller[p] + " to " + f.buyer[p] + " cost " + f.cost[p] + ", elasticity x ln(1 + freight / unit value) " + cost);
                 }
             }
-            out.printf("  [%s] the solve took %d sweeps in all over %d goods and %d pairs, at most %d (%s); largest margin %.2e, largest flow error %.2e, %.1f s%n",
-                    s.name, sweeps, d.goodCount(), pairs, most, mostGood, worstMargin, worstFlow, (System.nanoTime() - t0) / 1e9);
-            tally(s.label("every good's solve from a = b = 1 meets every margin to " + sci(MARGIN_TOL) + " within " + SWEEP_CAP + " sweeps"), converged);
-            tally(s.label("it gives every pair's flow within " + sci(FLOW_TOL) + " relative"), flows);
+            out.printf("  [%s] the solve took %d passes in all over %d goods and %d pairs, at most %d (%s); largest margin %.2e, largest flow error %.2e (%d flows under 1e-6 of their margin are held to its ulps), %.1f s%n",
+                    s.name, sweeps, d.goodCount(), pairs, most, mostGood, worstMargin, worstFlow, limited, (System.nanoTime() - t0) / 1e9);
+            tally(s.label("every good's solve from a = b = 1 meets every margin to " + sci(MARGIN_TOL) + " within " + SWEEP_CAP + " passes"), converged);
+            tally(s.label("it gives every pair's flow within " + sci(FLOW_TOL) + " relative, and a few ulps of the margin for a tiny flow"), flows);
             tally(s.label("every pair's cost is elasticity x ln(1 + freight a tonne / unit value) from the freight table and the dials"), costs);
 
             if (s.name.equals("fixture")) {
@@ -829,6 +944,7 @@ public class WorldDataCheck {
                     continue;
                 }
                 WorldData d = s.data;
+                long t0 = System.nanoTime();
                 Tally owned = new Tally();
                 long tiles = 0, land = 0;
                 for (int tile = 0; tile < WorldData.TILES; tile++) {
@@ -847,7 +963,7 @@ public class WorldDataCheck {
                         }
                     }
                 }
-                out.println("  [" + s.name + "] " + tiles + " border tiles with a blob, " + land + " land cells, read against " + against);
+                out.println("  [" + s.name + "] " + tiles + " border tiles with a blob, " + land + " land cells, read against " + against + String.format(" in %.1f s", (System.nanoTime() - t0) / 1e9));
                 tally(s.label("every cell the earth file calls land, in every border tile, has an owner among the " + d.nations().size() + " nations and areas"), owned);
             }
         }
@@ -906,19 +1022,23 @@ public class WorldDataCheck {
                     rateMarks.see(mark >= 0 && mark <= WorldData.MARK_PUBLISHED && (mark == WorldData.MARK_NONE ? Double.isNaN(v) : Double.isFinite(v) && v > 0), money.code() + " " + WorldData.monthLabel(m) + " rate " + v + " mark " + mark);
                 }
             }
-            Tally prices = new Tally();
-            assertTrue(s.label("the price paths are of the " + d.goodCount() + " goods, " + d.priceYears() + " years from " + d.priceFirstYear()),
-                    d.priceFirstYear() == WorldData.FIRST_YEAR && d.priceYears() == FIGURES_LAST - WorldData.FIRST_YEAR + 1);
-            for (WorldData.TradedGood good : d.goods()) {
-                for (int year = d.priceFirstYear(); year < d.priceFirstYear() + d.priceYears(); year++) {
-                    double v = d.price(good.number(), year);
-                    int mark = d.priceMark(good.number(), year);
-                    boolean ok = mark >= 0 && mark <= WorldData.MARK_PUBLISHED && (mark == WorldData.MARK_NONE ? Double.isNaN(v) : Double.isFinite(v) && v > 0);
-                    if (year == FIGURES_LAST) ok &= v == 1;
-                    prices.see(ok, good.key() + " " + year + " price " + v + " mark " + mark);
+            if (!d.hasPrices()) {
+                out.println("  " + s.label("no prices layer: the price paths were not checked (section 1 fails on the layer list)"));
+            } else {
+                Tally prices = new Tally();
+                assertTrue(s.label("the price paths are of the " + d.goodCount() + " goods, " + d.priceYears() + " years from " + d.priceFirstYear()),
+                        d.priceFirstYear() == WorldData.FIRST_YEAR && d.priceYears() == FIGURES_LAST - WorldData.FIRST_YEAR + 1);
+                for (WorldData.TradedGood good : d.goods()) {
+                    for (int year = d.priceFirstYear(); year < d.priceFirstYear() + d.priceYears(); year++) {
+                        double v = d.price(good.number(), year);
+                        int mark = d.priceMark(good.number(), year);
+                        boolean ok = mark >= 0 && mark <= WorldData.MARK_PUBLISHED && (mark == WorldData.MARK_NONE ? Double.isNaN(v) : Double.isFinite(v) && v > 0);
+                        if (year == FIGURES_LAST) ok &= v == 1;
+                        prices.see(ok, good.key() + " " + year + " price " + v + " mark " + mark);
+                    }
                 }
+                tally(s.label("every good's price is above 0 where it has a mark, NaN where its mark is 0, and 1 in 2025"), prices);
             }
-            tally(s.label("every good's price is above 0 where it has a mark, NaN where its mark is 0, and 1 in 2025"), prices);
             tally(s.label("every nation's people are finite and above 0 in every year 2000 to 2100"), people);
             tally(s.label("every nation's output (gdp_2015usd, gdp_usd, gdp_ppp) and rate are finite and above 0 in every year 2000 to 2025"), figures);
             tally(s.label("every path figure's mark is 0 to 3, and the figure is NaN exactly where the mark is 0"), marks);
