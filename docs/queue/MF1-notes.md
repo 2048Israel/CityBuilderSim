@@ -44,7 +44,7 @@ New or restated, each red without its fix and green with it (the slices took eac
 - `MainLineCheck` 14 (the line held while a yard idles, taken back after) and its siding routes (the runs' plus the plans').
 - `LongPlaytest`'s watch: a box that left a run is counted apart, in the month pairs and among the oldest works.
 
-**The run:** `./batch-check.sh --pick` exit 0: 23 harnesses (MapCheck, PlanCheck, JunctionCheck, CrossingCheck, RailDrawCheck, MainLineCheck, GatewayCheck, LandmassCheck, LongPlaytest, TimingCheck and the rest `tools/pick.sh` named), the maps, Stale (0 firm) and the tree. One timing line soft beside other batches' JVMs, not counted: MapCheck's 10-billion month, 7.0 ms of its 5 (main's own read 6.3 to 8.3 under the same load; alone and hard, slice D measured 4.03 against main's 3.96). The gate's paired rounds judge it.
+**The run:** `./batch-check.sh --pick` exit 0 on the final tree, main (WN2, 27dc925f) merged in: 23 harnesses (MapCheck, PlanCheck, JunctionCheck, CrossingCheck, RailDrawCheck, MainLineCheck, GatewayCheck, LandmassCheck, LongPlaytest, TimingCheck and the rest `tools/pick.sh` named), the maps, Stale (0 firm) and the tree. Five timing lines read soft beside the night's other batches (the commit charge held 9 harness starts), not counted: MapCheck's 10-billion month 6.7 ms of 5 (main's own 6.3 to 8.3 under load the same night), its sidecar 534 of 500 ms, Rotterdam's far node 90.3 of 80 ms, the FX side's 5B month, and EarthTerrainCheck's cells pass 1,330 of 1,000 ms (no MF1 code on its path). Alone and hard, slice D read MapCheck's month lines 4.03 / 2.47 / 1.83 ms against main's 3.96 / 2.16 / 1.89. The gate's paired rounds judge them.
 
 ## 4. The trace, and the time
 
