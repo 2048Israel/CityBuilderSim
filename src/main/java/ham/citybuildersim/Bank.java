@@ -1375,6 +1375,7 @@ public class Bank {
         tradingIncome = 0;
         markChange = 0;
         paperGains = 0;
+        discountRestruck = 0;
         paperBoughtFromHouseholds = 0;
         paperSoldToCentralBank = paperBoughtFromCentralBank = 0;
         accountFees = loanFeesPaid = loanFeesOwed = 0;
@@ -2969,6 +2970,38 @@ public class Bank {
         return gain;
     }
 
+    /**
+     * THE DISCOUNT RE-STRUCK (BK1): the part of the month's gains on the city's
+     * paper that is the pooled discount re-blending at a reopening, not a
+     * trade. A line keeps one pool of unaccreted discount for all its face,
+     * and every holder's share of it is pro rata by face; when the line is
+     * reopened at another price per face while someone other than the bank
+     * holds part of it (the households' share at a settle, the central bank's
+     * add-on), the pool's blended discount per face changes for every holder's
+     * face, and the bank's share of it moves by more or less than the discount
+     * on what the bank itself bought. WHY: until BK1 that moved the bank's
+     * liability (the unearned discount) with no cash and no income behind it,
+     * so equity moved by something no cause named, the movement's residual
+     * opened, and the equity's two parts drifted from the equity for good
+     * ($212.5M in Jerus's San Francisco city, issue #5). It is a named cause of
+     * the equity's movement, routed to retained earnings (retainedThisMonth(),
+     * equityMovement()) and NOT to income: booked as a gain in paperGains it
+     * moved the bank's profit, so its tax and its dividend, and over 600 months
+     * AutoBuildCheck's city diverged (the gate, 2026-10-29). It is an artifact
+     * of the pooled discount, not an economic gain, so it moves neither profit
+     * nor tax nor dividends; BK2 is to remove the artifact with a per-holder
+     * discount. Saved with the month's lines. A non-finite or nil gain books
+     * nothing.
+     */
+    public void restrikeDiscount(double gain) {
+        if (!Double.isFinite(gain) || gain == 0) return;
+        discountRestruck += gain;
+    }
+
+    /** The month's gain or loss from the pooled discount being re-struck: a cause of the equity's movement, routed to retained earnings and outside getPaperGains(). Saved with the month's lines. */
+    private double discountRestruck;
+    public double getDiscountRestruck() { return discountRestruck; }
+
     /** Gains less losses on paper the treasury bought back, over the city's life. Not saved: a count for the run. */
     private double buybackGains;
     public double getBuybackGains() { return buybackGains; }
@@ -3260,10 +3293,33 @@ public class Bank {
                 + depositInterestToForeign;
     }
 
-    /** What it charges borrowers, less what it pays savers. A bank's whole business. */
+    /**
+     * Everything that earns it interest, as it stands: its loans, the bonds
+     * and the city's paper it holds, the carry and the families' credit
+     * lines (getBook()), and its reserves at the central bank, which earn the
+     * policy rate (cashReserves()). The desk's shares earn it no interest and
+     * the allowance is not netted - interest is earned on the gross book.
+     * These are the sheet's lines RESERVES, BUSINESS_LOANS, INTERIM,
+     * MORTGAGES, FAMILIES, CARRY, CITY_PAPER and BONDS. Reserves count
+     * whatever the policy rate, so the margin read against it does not jump
+     * when the rate touches zero.
+     *
+     * WHY: the interest margin was read against the loan book alone
+     * (getBook()), while net interest also holds what the reserves earn
+     * (placementIncome), and in a city whose reserves were 700 times its
+     * loans it read 9,972.71% (GitHub issue #5, BK1).
+     */
+    public double earningAssets() { return getBook() + cashReserves(); }
+
+    /**
+     * What it charges borrowers and earns on its reserves, less what it pays
+     * savers and the window, at a yearly rate on the assets that earn it
+     * interest (earningAssets()): a bank's whole business, as this month
+     * stands. Nothing with nothing earning.
+     */
     public double netInterestMargin() {
-        double weighted = getBook();
-        return weighted > 0 ? (interestEarned - depositInterest() - fundingCost) / weighted * 12 : 0;
+        double earning = earningAssets();
+        return earning > 0 ? netInterestIncome() * 12 / earning : 0;
     }
 
     /*
@@ -5054,7 +5110,9 @@ public class Bank {
                 preferredAccruedThisMonth, warrantsBoughtBackThisMonth, ownersWiped, preferredCancelled,
                 repaymentRaisedThisMonth,
                 // 0.7.19's: the branches' operating cost inside upkeep, and the customers.
-                operatingCost, customers };
+                operatingCost, customers,
+                // BK1's: the bank's share of a reopened line's discount, re-struck.
+                discountRestruck };
     }
 
     /** ...and back. Nothing on an older save, whose Profit page reads zero for a month as it always did. */
@@ -5092,7 +5150,9 @@ public class Bank {
         // ...and 0.7.19's; an older save's upkeep was its repairs alone, and
         // its customers are counted again with the next month's fees.
         operatingCost = v.length > i ? v[i++] : 0;
-        customers = v.length > i ? v[i] : 0;
+        customers = v.length > i ? v[i++] : 0;
+        // ...and BK1's; an older save's month re-struck nothing.
+        discountRestruck = v.length > i ? v[i] : 0;
     }
 
     /* ------------------------------- reading ------------------------------- */
@@ -5575,6 +5635,7 @@ public class Bank {
         householdWeighted  *= scale;
         unearnedDiscount   *= scale;
         paperGains         *= scale;
+        discountRestruck   *= scale;
         paperBoughtFromHouseholds *= scale;
         paperSoldToCentralBank *= scale;
         paperBoughtFromCentralBank *= scale;
@@ -5961,13 +6022,40 @@ public class Bank {
     }
 
     /**
-     * Net interest income over the year, at a yearly rate, on the book it held
-     * on average: its net interest margin, steadier than a month's
-     * (netInterestMargin()). Nothing with nothing lent.
+     * Net interest income over the year, at a yearly rate, on the assets that
+     * earned it interest on average (averageEarningAssetsOverYear()): its net
+     * interest margin, steadier than a month's (netInterestMargin()). Nothing
+     * with nothing earning.
      */
     public double netInterestMarginOverYear() {
-        double book = averageOverYear(Line.BOOK);
-        return book > 0 ? averageOverYear(Line.NET_INTEREST) * 12 / book : 0;
+        double earning = averageEarningAssetsOverYear();
+        return earning > 0 ? averageOverYear(Line.NET_INTEREST) * 12 / earning : 0;
+    }
+
+    /**
+     * Its earning assets (earningAssets()) averaged over the months the
+     * year's flows cover (monthsInYear()): this month's, and those of the
+     * sheets filed at the close of the months before it, read from the year
+     * of balance sheets it keeps rather than from a line of the statement.
+     * An older save carries the year of sheets since 0.7.13, so the average
+     * is right from the first month after a load; a new statement line would
+     * have carried zeros for the months filed before it.
+     */
+    public double averageEarningAssetsOverYear() {
+        int filed = Math.min(monthsInYear() - 1, sheetsFiled);
+        double sum = earningAssets();
+        for (int k = 1; k <= filed; k++) {
+            sum += earningLines(sheetRing[(sheetsFiled - k) % sheetRing.length]);
+        }
+        return sum / (1 + filed);
+    }
+
+    /** The eight lines of one filed sheet that earn interest, added: what earningAssets() was when it was filed. */
+    private static double earningLines(double[] filedSheet) {
+        return filedSheet[Sheet.RESERVES.ordinal()] + filedSheet[Sheet.BUSINESS_LOANS.ordinal()]
+                + filedSheet[Sheet.INTERIM.ordinal()] + filedSheet[Sheet.MORTGAGES.ordinal()]
+                + filedSheet[Sheet.FAMILIES.ordinal()] + filedSheet[Sheet.CARRY.ordinal()]
+                + filedSheet[Sheet.CITY_PAPER.ordinal()] + filedSheet[Sheet.BONDS.ordinal()];
     }
 
     /**
@@ -6404,7 +6492,9 @@ public class Bank {
      * the city's first branch took the standing book over; its owners paid;
      * its own shares bought back and issued; the shortfall absorbed when it
      * failed; the gain on paper the treasury bought back between two
-     * presses; and the allowance an older save was given on load.
+     * presses; the bank's share of a reopened line's discount, re-struck
+     * (BK1, routed to retained and not income); and the allowance an older
+     * save was given on load.
      * residual() is what none of them explains, and must be nothing.
      *
      * THE SCREEN WORKED THIS OUT UNTIL 0.7.9, without the founding
@@ -6416,19 +6506,20 @@ public class Bank {
                                  double founding, double dividends, double boughtBack, double issued,
                                  double absorbed, double treasuryBuyback, double allowanceOpened,
                                  double preferredIn, double preferredOut, double preferredDividends,
-                                 double warrantsBoughtBack, double closing) {
+                                 double warrantsBoughtBack, double discountRestruck, double closing) {
         /** What none of the causes explains. */
         public double residual() {
             return closing - opening - kept - fromShareholders - fromCity - founding
                     + dividends + boughtBack - issued - absorbed - treasuryBuyback + allowanceOpened
-                    - preferredIn + preferredOut + preferredDividends + warrantsBoughtBack;
+                    - preferredIn + preferredOut + preferredDividends + warrantsBoughtBack
+                    - discountRestruck;
         }
 
         /** The size of the figures residual() is made of, each as a magnitude: what MoneyAudit.tolerance() reads it against (0.7.54). */
         public double scale() {
             double[] terms = { closing, opening, kept, fromShareholders, fromCity, founding, dividends, boughtBack,
                     issued, absorbed, treasuryBuyback, allowanceOpened, preferredIn, preferredOut,
-                    preferredDividends, warrantsBoughtBack };
+                    preferredDividends, warrantsBoughtBack, discountRestruck };
             double size = 0;
             for (double t : terms) size += Math.abs(t);
             return size;
@@ -6445,7 +6536,8 @@ public class Bank {
         return new EquityMovement(openingEquity, getNetIncome(), capitalInjected + capitalFromHome,
                 bailoutReceived, foundingSettlement, dividendsPaid, sharesBoughtBack, sharesIssued,
                 resolutionLossThisMonth, treasuryBuybackGain, allowanceOpened,
-                preferredIn, preferredOut, preferredDividendsThisMonth, warrantsBoughtBackThisMonth, equity());
+                preferredIn, preferredOut, preferredDividendsThisMonth, warrantsBoughtBackThisMonth,
+                discountRestruck, equity());
     }
 
     /* ------------------------- its equity, in two parts ------------------------- */
@@ -6475,7 +6567,8 @@ public class Bank {
      * back to nothing against the losses that took it there - the owners kept
      * their shares then, so what they paid in stayed paid in and the losses
      * stayed retained; the gain or loss on paper the treasury
-     * bought back from it between two presses; and the allowance an older
+     * bought back from it between two presses; the bank's share of a reopened
+     * line's discount, re-struck (BK1); and the allowance an older
      * save was given on load.
      *
      * Those are equityMovement()'s causes, every one, each routed to one of
@@ -6515,12 +6608,15 @@ public class Bank {
      * allowance - and since 0.7.14 the old owners' paid-in written off
      * against the losses, the preferred the hole took, less the preferred's
      * dividend. The preferred itself is its own line (preferredOutstanding()),
-     * so buying or redeeming it moves neither of these.
+     * so buying or redeeming it moves neither of these. And since BK1 the
+     * bank's share of a reopened line's discount, re-struck (discountRestruck):
+     * a cause of the movement that is not income.
      */
     public double retainedThisMonth() {
         return getNetIncome() - dividendsPaid + foundingSettlement + resolutionLossThisMonth
                 + treasuryBuybackGain - allowanceOpened
-                + ownersWiped + preferredCancelled - preferredDividendsThisMonth;
+                + ownersWiped + preferredCancelled - preferredDividendsThisMonth
+                + discountRestruck;
     }
 
     /** Its paid-in capital as it stands. Nothing when !knowsEquitySplit(). */

@@ -1,4 +1,4 @@
-# ReadPathCheck.java - 2,084 lines · 12 methods · 0 constants · harnesses
+# ReadPathCheck.java - 2,087 lines · 12 methods · 0 constants · harnesses
 
 `ham/citybuildersim/ReadPathCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -44,13 +44,13 @@
 
 | line | section |
 |---:|---|
-| 1514 | · a city with money moving in every sector |
-| 1617 | · the FIRST read, which is the hard one |
-| 1694 | · read it, and read it again |
-| 1723 | · and the specific one item 7 was about |
-| 1791 | · the tax the city takes is the tax it shows |
-| 1808 | · a rate change reaches the treasury at once |
-| 1841 | · the build advice's reads, after a load (0.7.51) |
+| 1517 | · a city with money moving in every sector |
+| 1620 | · the FIRST read, which is the hard one |
+| 1697 | · read it, and read it again |
+| 1726 | · and the specific one item 7 was about |
+| 1794 | · the tax the city takes is the tax it shows |
+| 1811 | · a rate change reaches the treasury at once |
+| 1844 | · the build advice's reads, after a load (0.7.51) |
 
 ## Fields (state)
 
@@ -64,17 +64,17 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 2037 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
+| 48 | 2040 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
 | 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 71 | 181 | `static void bankPrint(Game g, Map<String, Double> into)` | The bank's own fields beside NewGameCheck's (0.7.7): its price is now struck from records it keeps, and a read that struck it again would move the price and nothing in the shared snapshot. |
 | 254 | 5 | `static int restingOrders(BondMarket bm)` | What rests on every bond's book. |
-| 268 | 1237 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
-| 1506 | 346 | `public static void main(String[] args) throws Exception` |  |
-| 1854 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
-| 1892 | 3 | `static long shallowOffers(LandMarket market)` | How many of a land office's offers standing hold shallow sea (ET1). |
-| 1897 | 3 | `static double[] handRelief(double dry)` | A ground by relief given by hand (ET1): of `dry` km2 of dry ground, half flat, three tenths foothill, 15% steep and 5% very steep, and 0.004 km2 of shallow sea (a fiat figure: the fixture's world has no sea) - RELIEF_... |
-| 1909 | 94 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
-| 2012 | 64 | `static void onEarth(GameFiles files) throws Exception` | A CITY ON THE REAL EARTH (0.7.121, batch E4): reading its world - the founding card of its own spot, the hover's place and province, the sea's depth (the coast's distance, kept by plot), the founding's problem and rec... |
-| 2077 | 7 | `static void cleanUp(Path root)` |  |
+| 268 | 1240 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
+| 1509 | 346 | `public static void main(String[] args) throws Exception` |  |
+| 1857 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
+| 1895 | 3 | `static long shallowOffers(LandMarket market)` | How many of a land office's offers standing hold shallow sea (ET1). |
+| 1900 | 3 | `static double[] handRelief(double dry)` | A ground by relief given by hand (ET1): of `dry` km2 of dry ground, half flat, three tenths foothill, 15% steep and 5% very steep, and 0.004 km2 of shallow sea (a fiat figure: the fixture's world has no sea) - RELIEF_... |
+| 1912 | 94 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
+| 2015 | 64 | `static void onEarth(GameFiles files) throws Exception` | A CITY ON THE REAL EARTH (0.7.121, batch E4): reading its world - the founding card of its own spot, the hover's place and province, the sea's depth (the coast's distance, kept by plot), the founding's problem and rec... |
+| 2080 | 7 | `static void cleanUp(Path root)` |  |
 

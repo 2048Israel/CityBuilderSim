@@ -47,7 +47,11 @@ import java.nio.file.Path;
  *      (section 13b) every rate the ladder draws in its parts is those parts
  *      - a sector's quote to the bit, an insured mortgage to 1e-12 - a city
  *      just loaded quotes its record and its concentration, and the branch
- *      verdict is the investors' planner's, which is a read.
+ *      verdict is the investors' planner's, which is a read. And the interest
+ *      margin, month and year, is read against what earns the bank interest -
+ *      its loans, the paper and bonds it holds, and its reserves - and not its
+ *      loan book alone, which made it 9,972% in a city whose reserves were 700
+ *      times its loans (BK1, GitHub issue #5).
  *   7. Does the desk keep to the bank's capital (0.7.8, section 17)? It buys
  *      the bank's own shares back only with what the bank holds over its
  *      target, and other companies' only while the bank would still hold its
@@ -99,6 +103,23 @@ public class BankCheck {
             out.printf("%-58s FAIL  %,.4f != %,.4f%n", label, actual, expected);
         } else {
             out.printf("%-58s OK%n", label);
+        }
+    }
+
+    /**
+     * Plays a city this many months, one at a time and quietly, and adds to
+     * the list the bank's earning assets as each month closed - the figure
+     * the sheet ring files at the next startMonth() (BK1).
+     */
+    static void playRecordingEarningAssets(Game city, int months, java.util.List<Double> closed) {
+        System.setOut(quiet);
+        try {
+            for (int m = 0; m < months; m++) {
+                city.simulateMonths(1);
+                closed.add(city.getBank().earningAssets());
+            }
+        } finally {
+            System.setOut(out);
         }
     }
 
@@ -3388,7 +3409,7 @@ public class BankCheck {
                 retainedCauses += ended.kept() - ended.dividends() + ended.founding() + ended.absorbed()
                         - ended.preferredDividends() + bank.getOwnersWipedThisMonth()
                         + bank.getPreferredCancelledThisMonth()
-                        + ended.treasuryBuyback() - ended.allowanceOpened();
+                        + ended.treasuryBuyback() - ended.allowanceOpened() + ended.discountRestruck();
 
                 // The Balance sheet page (0.7.13), read after the month and
                 // whatever was done between the presses: its lines foot, the
@@ -3515,6 +3536,76 @@ public class BankCheck {
             System.setOut(out);
         }
         assertTrue("...and a month played does not invent them", !sheetOld.getBank().knowsEquitySplit());
+
+        /*
+         * THE MARGIN WAS READ AGAINST THE LOAN BOOK ALONE (GitHub issue #5, BK1):
+         * Jerus's San Francisco city read an interest margin of 9,972.71%,
+         * because net interest holds what the bank earns on its reserves at the
+         * central bank (Line.FROM_RESERVES) and the divisor was getBook() - the
+         * loans, the paper and the bonds - while the reserves were 700 times
+         * the book. It is read against the bank's earning assets now. The
+         * fixture is the played city above, which ends borrowing and holding no
+         * reserves, given capital far over its book through the model's own path
+         * (injectCapital), so the case is caused and not found: six months
+         * before it, two to let it sit in the reserves, then the rest of a
+         * year, so that the year's window holds months with no reserves and
+         * months with a great many.
+         */
+        out.println("\n--- (13) the interest margin is on what earns it interest: its loans, its paper and bonds, and its reserves ---");
+        {
+            java.util.List<Double> eaClosed = new java.util.ArrayList<>();
+            assertTrue("fixture: the played bank has lent", bank.getBook() > 0);
+            playRecordingEarningAssets(city, 6, eaClosed);
+            // The capital comes between two presses, so the month that closed is filed
+            // at the next startMonth() with it in: its figure is read after it.
+            bank.injectCapital(0, 200 * Math.max(bank.getBook(), 1));
+            eaClosed.set(eaClosed.size() - 1, bank.earningAssets());
+            playRecordingEarningAssets(city, 2, eaClosed);
+
+            // The issue's case: reserves that dwarf the book.
+            double eaReserves = bank.sheet(Bank.Sheet.RESERVES), eaBook = bank.getBook();
+            assertTrue("fixture: its reserves are at least a hundred times its book, and it still lends",
+                    eaBook > 0 && eaReserves >= 100 * eaBook);
+            Bank.Sheet[] earningLines = { Bank.Sheet.RESERVES, Bank.Sheet.BUSINESS_LOANS, Bank.Sheet.INTERIM,
+                    Bank.Sheet.MORTGAGES, Bank.Sheet.FAMILIES, Bank.Sheet.CARRY, Bank.Sheet.CITY_PAPER,
+                    Bank.Sheet.BONDS };
+            double eaLines = 0;
+            for (Bank.Sheet line : earningLines) eaLines += bank.sheet(line);
+            close("its earning assets are the eight sheet lines that earn it interest: its reserves, loans, interim financing,"
+                    + " mortgages, families, carry, paper and bonds", bank.earningAssets(), eaLines,
+                    1e-9 * Math.max(1, Math.abs(eaLines)));
+            double eaFromTotal = bank.sheet(Bank.Sheet.ASSETS) - bank.sheet(Bank.Sheet.DESK) - bank.sheet(Bank.Sheet.ALLOWANCE);
+            close("...which are its assets less the desk's shares, which earn no interest, and the allowance, which is negative",
+                    bank.earningAssets(), eaFromTotal, 1e-9 * Math.max(1, Math.abs(eaFromTotal)));
+            double eaMonthly = bank.thisMonth(Bank.Line.NET_INTEREST) * 12 / bank.earningAssets();
+            close("the month's margin is its net interest, a year of it, over its earning assets",
+                    bank.netInterestMargin(), eaMonthly, 1e-9 * Math.max(1, Math.abs(eaMonthly)));
+            double eaReserveRate = bank.thisMonth(Bank.Line.FROM_RESERVES) * 12 / eaReserves;
+            double eaBookRate = (bank.thisMonth(Bank.Line.INTEREST) - bank.thisMonth(Bank.Line.FROM_RESERVES)) * 12 / eaBook;
+            double eaBound = Math.max(eaReserveRate, eaBookRate);
+            double eaMargin = bank.netInterestMargin(), eaOld = bank.thisMonth(Bank.Line.NET_INTEREST) * 12 / eaBook;
+            out.printf("   reserves %,.0fx the book; the margin %.2f%%, the best rate an asset earned %.2f%%, the old reading %.2f%%%n",
+                    eaReserves / eaBook, eaMargin * 100, eaBound * 100, eaOld * 100);
+            assertTrue("a margin on what earns it interest cannot pass the best rate any of it earned that month", eaMargin <= eaBound);
+            assertTrue("...where the old reading, over the book alone, passed it - the absurd figure the issue saw", eaOld > eaBound);
+
+            // The year: six more months, so the statements are a year deep and the
+            // window of twelve has some of the months before the capital in it.
+            playRecordingEarningAssets(city, 6, eaClosed);
+            int eaMonths = bank.monthsInYear();
+            double eaMean = 0, eaPrior = 0;
+            for (int k = eaClosed.size() - eaMonths; k < eaClosed.size(); k++) eaMean += eaClosed.get(k);
+            eaMean /= eaMonths;
+            for (int k = eaClosed.size() - eaMonths; k < 5; k++) eaPrior = Math.max(eaPrior, eaClosed.get(k));
+            assertTrue("fixture: a whole year is on file, more months were played than that, and its window holds months before the capital",
+                    eaMonths == Bank.YEAR_MONTHS && eaClosed.size() >= Bank.YEAR_MONTHS + 2 && eaPrior > 0
+                            && eaPrior * 10 < eaMean);
+            close("the earning assets averaged over the year are the mean of those read at the close of each of its months",
+                    bank.averageEarningAssetsOverYear(), eaMean, 1e-9 * Math.max(1, Math.abs(eaMean)));
+            double eaYear = bank.averageOverYear(Bank.Line.NET_INTEREST) * 12 / eaMean;
+            close("...and the year's margin is its average net interest, a year of it, over them",
+                    bank.netInterestMarginOverYear(), eaYear, 1e-9 * Math.max(1, Math.abs(eaYear)));
+        }
 
         /*
          * THE GUARD CHANGED WITH JERUS'S RULE (0.7.14): a resolution is a
