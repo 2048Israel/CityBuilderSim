@@ -375,6 +375,17 @@ import java.util.Map;
  *      layer is drawn again in the months the runs moved and in no other, its land layer by a land purchase and by no other month; every link's
  *      kept stamp is the one worked out afresh after each of 24 months (x 1, x 80); and a month's FX-side map work at 5B - the stamp, the far
  *      view's screen, an L0 screen re-stamped and the chain's handing out and adopting - is within MAP_MONTH_MS, the median month.
+ *      (batch UP5, slice B) The screens' keys: a far node's runs key (MapTiles.runsKey()) is its own - at 5B, in the months that laid a run, the
+ *      far nodes whose key moved are those over a district whose version moved (and its 3 x 3) and those a run laid or taken crosses, fewer than
+ *      every node in view, and a node held through one holds the pixels a fresh draw gives; a tile's key (MapTiles.tileKey()) moves with
+ *      everything CityMap.fillInput() reads for it - a tile whose key did not move holds, every month on x 1, x 80 and 5B, the stamp a fresh
+ *      input() gives it - and the L0 screen is read again (input()) only for the tiles whose key moved.
+ *      (batch UP5, slice A) The chain's early exit: at x 80 a month that places in one district early in the band's order leaves, once the
+ *      chain has settled, only the far nodes over it and its neighbours changed and every built district's picture current, the chain having
+ *      made the plans of the district and of those whose carry in or edges (margins) moved and taken the links of the rest (none made that
+ *      was not needed); the links and plans kept after the months equal the chain planned whole from nothing (x 1, x 80), and the carry
+ *      moved in months of x 80; and an own stamp (ownStamp()) kept against its key equals one worked out afresh, for every district whose
+ *      key held, after every month on x 1, x 80, 5B and the played city.
  *  19. (batch WN2) THE BORDERS ON THE NEAR VIEW: on the world fixture, a box of the city's ground 8 km a side round Baarle-Nassau is crossed
  *      (NationsMap.crossing()) by the Belgium-Netherlands line and by every line that has a segment meeting it, each sampled a thousand times,
  *      and the same box round Rotterdam by none; the answer is kept for the same box and spot; planeBorders() of the Baarle lines on a 1,389 x 868
@@ -493,6 +504,7 @@ public class MapCheck {
         outerRim();
         districtJoinsTheChain();
         runsLaidAcross(city);
+        reservesDated(city);
         idleYards(city);
         idleYardsOnRuns();
         Squares sq = new Squares();
@@ -1934,13 +1946,18 @@ public class MapCheck {
      * (a row of them side by side one parcel, bought as 2c's blocks are, dated `month`): the ground the highways' hub and their first arms stand on. The plots handed.
      */
     static long handGroundRound(CityLand land, DistrictPlan.Input frame, long[] at, int month) {
+        return handGroundRound(land, frame, at, month, null);
+    }
+
+    /** ...leaving out the block that holds plot `skip` ({x, y}; none for null): ground to be bought in a month of its own (2h). */
+    static long handGroundRound(CityLand land, DistrictPlan.Input frame, long[] at, int month, long[] skip) {
         long b = 1L << land.level(), r = CityRuns.CELL;
         long x0 = Math.floorDiv(at[0] - r, b) * b, y0 = Math.floorDiv(at[1] - r, b) * b, x1 = Math.floorDiv(at[0] + r, b) * b + b, y1 = Math.floorDiv(at[1] + r, b) * b + b;
         long handed = 0;
         for (long y = y0; y < y1; y += b) {
             long start = -1;
             for (long x = x0; x <= x1; x += b) {
-                boolean free = x < x1 && land.grid().owned(x, y, x + b, y + b) == 0;
+                boolean free = x < x1 && land.grid().owned(x, y, x + b, y + b) == 0 && !(skip != null && skip[0] >= x && skip[0] < x + b && skip[1] >= y && skip[1] < y + b);
                 if (free && start < 0) start = x;
                 if (!free && start >= 0) {
                     land.extend(new LandParcel(-5, 1, 0, land.level(), start, y, x, y + b, null, null, null, 0, 0), month, 0);
@@ -2174,6 +2191,229 @@ public class MapCheck {
         check("the sidecar read back carries the same journal: the district's records and its plan's input frame's records are the written map's (" + frameRecords + " of them)", journalRead);
         check("the sidecar written after them and read back plans the district box for box as the map it was written from (" + s6.boxes.size() + " boxes, " + readDiffer + " differ)",
                 back != null && same != null && readDiffer == 0 && s6.boxes.size() > 0);
+    }
+
+    /* =====================================================================
+       2h. AN INTERCHANGE'S RESERVE DATED (batch UP5, FX7's star 2)
+       ===================================================================== */
+
+    /*
+     * An interchange's reserve (the cloverleaf's 19 x 19 plots, DistrictPlan.FIXED_RESERVE) is derived from the runs, the ground and the works about it, and
+     * FX7 left it undated: the frame's records read as if it were laid wherever the runs leave a plot at 0, so a reserve that appeared in a district already
+     * built (the highways first reaching a street, the city buying the last of the ground the box needs, a mine on the box closing) dealt that district's plan
+     * again from its first batch and moved the boxes it had placed. UP5 dates it (CityMap's THE RESERVES DATED): the map keeps the reserves laid as each
+     * month ends and finds the month's changes to them directly, in the regions the month could have moved one in, and journals the reserve's plots (0 to
+     * FIXED_RESERVE) like the runs'. 2h is that on the real map and land, as 2d is for the runs: the founding district given houses and a few buildings of
+     * several sizes a month until it uses half its room, the ground round the highways' crossing handed to the city, the Elevated Highways laid until the
+     * crossing is a site - twice: once with all the ground handed, so the reserve appears in the month the highways reach a street (the witness is told), once with
+     * one block of the reserve's box left out, so the crossing is a stack until the block is bought in a month the runs do not change at all (the witness is told
+     * of nothing, the map finds the reserve from the purchase). Each time the plan drawn before the month against the plan drawn after it, every box of the one
+     * against the other, and the district's journal; the plan the map made before UP5 (the reserve's plots without a record) for the fault.
+     */
+
+    /**
+     * The block of the plots the crossing's reserve box would hold that the crossing is not in: a plot {x, y} in it, a block of its own to be handed the city last;
+     * null where the box lies in the crossing's block.
+     */
+    static long[] reserveHole(CityLand land, long[] crossing) {
+        long b = 1L << land.level(), side = InterchangeGround.CLOVERLEAF_SIDE / 2;
+        for (int k = 0; k < 4; k++) {
+            long x = crossing[0] + (k % 2 == 0 ? side : -side), y = crossing[1] + (k / 2 == 0 ? side : -side);
+            if (Math.floorDiv(x, b) != Math.floorDiv(crossing[0], b) || Math.floorDiv(y, b) != Math.floorDiv(crossing[1], b)) return new long[] { x, y, land.level() };
+        }
+        return null;
+    }
+
+    /** Hands the city the one block that holds plot `at` ({x, y, the block level it was found at}: the level moves as the city's ground grows, the block is the one handGroundRound() left out), between months, as 2c's blocks are, dated `month`: the plots handed. */
+    static long handBlock(CityLand land, long[] at, int month) {
+        long b = 1L << at[2], x = Math.floorDiv(at[0], b) * b, y = Math.floorDiv(at[1], b) * b;
+        if (land.grid().owned(x, y, x + b, y + b) != 0) return 0;
+        land.extend(new LandParcel(-5, 1, 0, (int) at[2], x, y, x + b, y + b, null, null, null, 0, 0), month, 0);
+        return b * b;
+    }
+
+    /** How many of a district's journal records at `month` take a plot from nothing to an interchange's reserve (`toReserve`), or the other way. */
+    static int reserveRecords(CityMap.District d, int month, boolean toReserve) {
+        int n = 0;
+        for (int k = 0; k < d.jN; k++) {
+            if (d.jMonth[k] != month) continue;
+            int before = (d.jRec[k] >> 4) & 15, after = d.jRec[k] & 15;
+            if (toReserve ? before == 0 && after == DistrictPlan.FIXED_RESERVE : before == DistrictPlan.FIXED_RESERVE && after == 0) n++;
+        }
+        return n;
+    }
+
+    /** The plan of d's input with every record of a plot that lies in an interchange's reserve left out: the journal as it was before UP5, which did not know the reserves. */
+    static DistrictPlan undatedReserve(CityMap m, CityMap.District d) {
+        DistrictPlan.Input in = m.planInput(d);
+        if (in.fixedLog == null) return DistrictPlan.make(in);
+        int n = 0;
+        int[] month = new int[in.fixedLog.length], rec = new int[in.fixedLog.length];
+        for (int i = 0; i < in.fixedLog.length; i++) {
+            if (in.fixed[in.fixedLog[i] >>> 8] == DistrictPlan.FIXED_RESERVE) continue;
+            month[n] = in.fixedLogMonth[i];
+            rec[n++] = in.fixedLog[i];
+        }
+        in.fixedLogMonth = n == 0 ? null : Arrays.copyOf(month, n);
+        in.fixedLog = n == 0 ? null : Arrays.copyOf(rec, n);
+        return DistrictPlan.make(in);
+    }
+
+    static void reservesDated(Game g) {
+        out.println("\n--- 2h. an interchange's reserve is dated: one that appears in a district already built is laid in its plan that month and moves off it the buildings it lies across, and no others (UP5) ---");
+        reserveScenario(g, false);
+        reserveScenario(g, true);
+        guardLocal(g.getCityMap());
+    }
+
+    /**
+     * The guard an interchange's reserve asks (reserveBlocked(): a mine on its site or a work on the shore in the box) reads the districts the box lies in and a margin about it, not the list of every mined site: for boxes of a reserve's size at several offsets from each mined site of the played city (and from each shore work), the two answers are one.
+     */
+    static void guardLocal(CityMap m) {
+        List<long[]> mined = m.minedSites();
+        int asked = 0, differ = 0, blocked = 0;
+        int side = InterchangeGround.CLOVERLEAF_SIDE;
+        int[] offsets = { -3 * DistrictPlan.CELL, -DistrictPlan.CELL, -side - 8, -side, -side / 2, 0, side / 2, side, side + 8, DistrictPlan.CELL, 3 * DistrictPlan.CELL };
+        for (long[] s : mined) {
+            for (int oy : offsets) {
+                for (int ox : offsets) {
+                    long x0 = s[0] + ox, y0 = s[1] + oy, x1 = x0 + side - 1, y1 = y0 + side - 1;
+                    boolean list = false;
+                    for (long[] t : mined) list |= t[0] <= x1 && t[1] <= y1 && t[2] >= x0 && t[3] >= y0;
+                    for (CityShore.Work w : m.shore().works()) list |= w.x0() <= x1 && w.y0() <= y1 && w.x0() + w.w() > x0 && w.y0() + w.h() > y0;
+                    boolean local = m.reserveBlocked(x0, y0, x1, y1);
+                    asked++;
+                    if (list) blocked++;
+                    if (list != local) differ++;
+                }
+            }
+        }
+        out.printf("      the guard of the reserves: %,d boxes of a reserve's size about %d mined sites, %,d blocked by a mine or a work, %d answered otherwise by the districts' sites than by the list of all%n", asked, mined.size(), blocked, differ);
+        check("the guard an interchange's reserve asks reads the districts about its box and agrees with the list of every mined site and shore work (" + asked + " boxes about " + mined.size() + " mines, " + blocked + " blocked, " + differ + " differ)", differ == 0);
+        check("...and the played city has mines to ask about", asked > 0 && blocked > 0);
+    }
+
+    /** 2h's one scenario: with one block of the reserve's box left out of the ground handed (`blockLeft`), bought later, or with all of it handed. */
+    static void reserveScenario(Game g, boolean blockLeft) {
+        String name = blockLeft ? "a block of the box bought in a month the runs do not change" : "the highways reaching a street";
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), highway = idOf(g, "Elevated Highway");
+        int[] mix = new int[MIX.length];
+        for (int i = 0; i < mix.length; i++) mix[i] = idOf(g, MIX[i]);
+        CityLand land = g.getCityLand().copy();
+        long[] model = new long[types.length];
+        CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
+        Months h = new Months(m, model, house, g.getMonth() + 1);
+        CityMap.District d = null;
+        DistrictPlan.Input frame = null;
+        for (CityMap.District e : m.districts()) {
+            DistrictPlan.Input in = m.planInput(e);
+            if (land.siteX() >= in.x0 && land.siteX() < in.x0 + DistrictPlan.SIDE && land.siteY() >= in.y0 && land.siteY() < in.y0 + DistrictPlan.SIDE) {
+                d = e;
+                frame = in;
+            }
+        }
+        int each = BuildingVisual.cells(types[house]), step = Math.max(2, (int) (d.room() / each / 24));
+        Arrivals in = new Arrivals(h, mix, step);
+        int guard = 400;
+        while (d.usedCells() < d.room() * USED_SHARE && guard-- > 0) in.month();
+        // ----- the ground round the crossing handed (a block of the reserve's box left out), the highways until the crossing is a site -----
+        long[] crossing = highwayCrossing(land, frame);
+        long[] hole = crossing == null ? null : reserveHole(land, crossing);
+        long handed = crossing == null ? 0 : handGroundRound(land, frame, crossing, h.last(), blockLeft ? hole : null);
+        int handedAt = h.last();
+        Snap before = quietMonth(h, d), after = null;
+        InterchangeGround.Site site = null;
+        int months = 0;
+        boolean stack = false;
+        for (int i = 0; i < HIGHWAY_MONTHS && crossing != null; i++) {
+            model[highway] += HIGHWAY_STEP;
+            Snap now = quietMonth(h, d);
+            months++;
+            long[] hub = m.runs().highways().hub();
+            site = null;
+            if (hub != null) for (InterchangeGround.Site s : m.runs().reserves()) if (s.x() == hub[0] && s.y() == hub[1] && s.kind() == InterchangeGround.CLOVERLEAF) site = s;
+            if (blockLeft) {
+                // the crossing is a stack: a site with no reserve, the block of its box not the city's
+                if (site != null && !site.got()) {
+                    stack = true;
+                    before = now;
+                    break;
+                }
+            } else if (site != null && site.got()) {
+                after = now;
+                break;
+            }
+            before = now;
+        }
+        long boughtPlots = 0;
+        if (blockLeft && stack) {
+            boughtPlots = handBlock(land, hole, h.last());
+            after = quietMonth(h, d);
+            site = null;
+            long[] hub = m.runs().highways().hub();
+            for (InterchangeGround.Site s : m.runs().reserves()) if (hub != null && s.x() == hub[0] && s.y() == hub[1] && s.kind() == InterchangeGround.CLOVERLEAF) site = s;
+        }
+        int reserveMonth = after == null ? -1 : after.month;
+        int reservePlots = after == null ? 0 : after.plots(DistrictPlan.FIXED_RESERVE), before0 = before.plots(DistrictPlan.FIXED_RESERVE);
+        int datedIn = after == null ? 0 : reserveRecords(d, reserveMonth, true);
+        int lying = after == null ? 0 : before.lying(after), moved = after == null ? -1 : movedOf(before.boxes, after.boxes);
+        int control = after == null ? -1 : movedOf(before.boxes, boxesOf(undatedReserve(m, d)));
+        int boxesBefore = before.boxes.size();
+        int others = 0;
+        for (int k = 0; after != null && k < d.jN; k++) if (d.jMonth[k] == reserveMonth && !(((d.jRec[k] >> 4) & 15) == 0 && (d.jRec[k] & 15) == DistrictPlan.FIXED_RESERVE)) others++;
+        // ----- four months on: the arrivals stand on none of the reserve and nothing else moves -----
+        in.months(MONTHS_BETWEEN);
+        Snap later = new Snap(m, d);
+        int movedLater = after == null ? -1 : movedOf(after.boxes, later.boxes), onReserve = 0;
+        for (PlanBox b : later.boxes) if (anyPlot(b, 0, p -> later.fixed[p] == DistrictPlan.FIXED_RESERVE)) onReserve++;
+        DistrictPlan.Input lastIn = m.planInput(d);
+        int differ = after == null ? -1 : exactJournalDiffers(lastIn, before) + exactJournalDiffers(lastIn, after);
+        // ----- the sidecar: the journal with the reserve in it written and read back -----
+        byte[] side = m.writeSidecar(h.last(), CityMap.FORMAT);
+        CityMap back = CityMap.readSidecar(side, land, r -> land.amountsInOrder(r), types, h.last(), CityMap.stampIn(side));
+        CityMap.District same = null;
+        if (back != null) for (CityMap.District e : back.districts()) if (e.dx == d.dx && e.dy == d.dy) same = e;
+        DistrictPlan.Input writtenIn = m.planInputHere(d), readIn = same == null ? null : back.planInputHere(same);
+        boolean journalRead = readIn != null && writtenIn.fixedLog != null && Arrays.equals(readIn.fixedLogMonth, writtenIn.fixedLogMonth) && Arrays.equals(readIn.fixedLog, writtenIn.fixedLog)
+                && same.journalSize() == d.journalSize();
+        // ...and a reserve found in the map read back is one it knows: nothing is dated again by the month after it
+        boolean quiet = true;
+        if (back != null) {
+            int beforeRead = same.journalSize();
+            long[] model2 = model.clone();
+            Months h2 = new Months(back, model2, house, h.month);
+            h2.run(0);
+            h2.run(0);
+            quiet = same.journalSize() == beforeRead;
+        }
+        out.printf("      %s: the crossing at %s, the ground round it (%,d plots) handed in month %d; the highways %d months; %,d boxes stand in month %d; the reserve of %,d plots is laid in month %d,"
+                + " %,d boxes lie across it or beside the highways, %,d moved off (%,d with the reserve undated); %d plots dated in the journal; %,d boxes four months on stand on it, %d moved since;"
+                + " %d plots differ when the journal is worked back, %d plots' records left out%n", name, crossing == null ? "none" : (crossing[0] - frame.x0) + "," + (crossing[1] - frame.y0), handed, handedAt, months,
+                boxesBefore, before.month, reservePlots, reserveMonth, lying, moved, control, datedIn, onReserve, movedLater, differ, m.journalDropped());
+        check(name + ": the fixture - the crossing is a cloverleaf site and its reserve is laid in a month (" + reserveMonth + "), none the month before (" + before0 + " plots), the highways among buildings that stand ("
+                + lying + " of " + boxesBefore + " boxes lie across the reserve or beside the highways)", crossing != null && (!blockLeft || (hole != null && stack)) && site != null && site.got() && reservePlots > 0 && before0 == 0 && lying > 0);
+        if (blockLeft) check(name + ": the fixture - the month the block is bought the runs change not at all: the highways and the railway of the month before are the month's, the witness told of nothing", boughtPlots > 0 && after != null && before.plots(DistrictPlan.FIXED_HIGHWAY) == after.plots(DistrictPlan.FIXED_HIGHWAY) && others == 0);
+        check(name + ": the reserve is journalled in the month it appears - every one of its " + reservePlots + " plots has a record from nothing to the reserve in month " + reserveMonth + " (" + datedIn + ")", datedIn == reservePlots && datedIn > 0);
+        check(name + ": a reserve that appears in a district already built moves off it the boxes it lies across or beside the highways laid with it and no others: " + lying + " of the plan before's " + boxesBefore
+                + " boxes lie across, " + moved + " are not in the plan after", moved == lying && lying > 0);
+        check("...where the reserve is undated (the journal as it was before UP5: the plots without a record) the plan moves more (" + control + " against " + lying + "), the fault this section stands against", control > lying);
+        check("...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (" + onReserve + "), and none of those boxes has moved (" + movedLater + ")", onReserve == 0 && movedLater == 0);
+        check("...the journal worked back from today's reserve is the fixed ground the plan's input held in the months before and in the month it came (" + differ + " plots differ), and no plot's records were left out (" + m.journalDropped() + ")",
+                differ == 0 && m.journalDropped() == 0);
+        check("the sidecar written after it and read back carries the journal with the reserve in it: the written map's records, the same plan (FORMAT " + CityMap.FORMAT + ")", back != null && journalRead);
+        check("...and the map read back finds the reserves it was written with as its own: two months more date nothing (" + (back == null ? -1 : back.districts().size()) + " districts)", back != null && quiet);
+    }
+
+    /** How many plots of `later`'s fixed ground worked back through its records dated after the snapshot's month differ from the fixed ground the snapshot's input held: journalDiffers() with the reserves counted, as the journal now dates them. */
+    static int exactJournalDiffers(DistrictPlan.Input later, Snap s) {
+        byte[] back = later.fixed.clone();
+        if (later.fixedLog != null) {
+            for (int i = later.fixedLog.length - 1; i >= 0 && later.fixedLogMonth[i] > s.month; i--) back[later.fixedLog[i] >>> 8] = (byte) ((later.fixedLog[i] >> 4) & 15);
+        }
+        int n = 0;
+        for (int p = 0; p < back.length; p++) if (back[p] != s.fixed[p]) n++;
+        return n;
     }
 
     /* =====================================================================
@@ -11725,8 +11965,8 @@ public class MapCheck {
     /** The runs' types (a highway's, a track's) are grown only in every 4th month, so most months lay no run, as in play. */
     static final int RUNS_EVERY = 4;
 
-    /** The times a month's screens are drawn: the month's, then again after each round of the chain's jobs (handed out, run, adopted) until none is left, at most 4. */
-    static final int CHAIN_ROUNDS = 4;
+    /** The times a month's screens are drawn: the month's, then again after each round of the chain's jobs (handed out, run, adopted) until none is left, at most 5 (4 until batch UP5: a lazy job that cannot take its link as it stood costs the chain one round, CityMap.PlanJob). */
+    static final int CHAIN_ROUNDS = 5;
 
     /** The months the played city is grown before its land purchase and after it: 3 and 3. */
     static final int PLAYED_BEFORE = 3, PLAYED_AFTER = 3;
@@ -11734,8 +11974,8 @@ public class MapCheck {
     /** The side of the block the played city buys, in plots: 32, a hole in its built-up ground's box (the played city's ground is irregular). */
     static final int PURCHASE_SIDE = 32;
 
-    /** The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting: 58, nine tenths of the 65 this section measured on the PC the old way (today's paths, the median month, the mean of four runs, 63.4 to 67.2: the stamp 2.3, the far screen 29.6, the L0 screen 32.5, the chain 0.2; docs/queue/UP3-notes.md) - the stamp and the far view's unmoved nodes taken off it; the L0 screen's band check, half of what is left, is UP3-C's. */
-    static final double MAP_MONTH_MS = 58;
+    /** The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped (since UP5 keyed, and read where the key moved) and the chain's handing out and adopting: 19 (batch UP5, docs/queue/UP5-notes.md), nine tenths of the 21.3 this section measured on the PC the way the month was (main's classes at MF1, 0.8.70, the median month, the mean of three rounds run in turn with UP5's: 21.4, 21.4, 21.1), as UP3 set 58 from the 65 of the way before it; UP5's own median month is 17.2 (17.0, 16.5, 18.1), a tenth under it. */
+    static final double MAP_MONTH_MS = 19;
 
     /** The kinds of month: the grown one, one built type raised by one, and the first, which only draws. */
     static final int GROW = 0, ONE = 1, SETTLE = 2;
@@ -11805,10 +12045,29 @@ public class MapCheck {
         /** The stamp's kept nodes in the month: land layers drawn, runs layers drawn, districts repainted (all 0 when the view changed and they were made anew), and the districts they list. */
         long lands, runsDrawn, repainted, onStamp;
         double stampNow, stampToday, farNow, farToday, l0, chain, keys, lazy;
+        /** (batch UP5) The L0 screen's pass: ms the key pass (ready() and tileKey() of every tile in view) and the input pass (input() of the tiles whose key moved) took; the ready tiles in view, those whose key held and those whose key moved (those among them whose stamp had not), and the held ones a fresh input() was asked of (untimed) with the stamp not the one kept. */
+        double l0Keys, l0Inputs;
+        int l0Tiles, l0Held, l0Moved, l0KeyOnly, l0Checked, l0Wrong;
+        /** ...and, of the keys that moved (a tile read before), how many moved in each of the four parts CityMap.tileKeyParts() folds: what the city owns of the tile, its plans, the railway's bends on it, the whole map's. */
+        final int[] l0PartMoved = new int[6];
+        /** (batch UP5) The districts whose version moved this month, and the boxes {x0, y0, x1, y1, pad} in plots a stretch or a dot the runs draw on a far node was put in or taken from (pad 1 for a dot, which is two pixels across). */
+        final java.util.List<CityMap.District> movedList = new ArrayList<>();
+        final java.util.List<long[]> runBoxes = new ArrayList<>();
         /** Per far screen: its nodes drawn this month (the month's round and the rounds after), and the partial ones before it. */
         int[] recoloured, partialBefore;
         /** Per far screen: the nodes drawn in the month's own round because the key they were drawn from had moved. */
         final java.util.List<java.util.List<Integer>> keyMoved = new ArrayList<>();
+        /** (batch UP5, slice A) Per far screen: the nodes whose key at the end of the month's rounds is not the one they were drawn from before the month (what the month changed, once the chain has settled). */
+        final java.util.List<java.util.List<Integer>> keyMovedFinal = new ArrayList<>();
+        /** (batch UP5, slice A) The chain of the month: plan jobs handed out and the ms the worker spent on them (plans and pictures, run in turn); as adopt() kept them, the plans made, the links taken as they stood, the jobs that could do neither and the plans made that were not needed (CityMap.chainJobs()). */
+        int handed;
+        long madePlans, reusedLinks, failedJobs, wastedPlans;
+        double workerMs;
+        /** (batch UP5, slice A) Links kept from before the month: re-made, and of those how many carried a different carry out; the built districts left with no current picture after the rounds. */
+        int remade, carryMoved, staleAfter;
+        /** (batch UP5, slice A) Own stamps {asked, worked out} this month and, after the rounds, {kept, those whose key held, those of them that differ from a stamp worked out afresh} (CityMap.ownStampsKept()). */
+        long[] ownCalls = new long[2];
+        int[] ownKept = new int[3];
 
         double nowSum() { return stampNow + farNow + l0 + chain; }
         double todaySum() { return stampToday + farToday + l0 + chain; }
@@ -11841,6 +12100,11 @@ public class MapCheck {
         double tookS;
         /** Run before the next month's reconcile (a land purchase). */
         Runnable beforeReconcile;
+        /** (batch UP5) The L0 screen's tiles as the view keeps them: by MapTiles.key(), the key and stamp each was last read at; the totals of tiles held, moved, read afresh and found wrong, over the months. */
+        final java.util.Map<Long, long[]> l0Kept = new HashMap<>();
+        final java.util.Map<Long, long[]> l0Parts = new HashMap<>();
+        final int[] l0PartMoved = new int[6];
+        int l0Held, l0Moved, l0KeyOnly, l0Checked, l0Wrong;
 
         Redraw(String name, CityMap m, long[] counts, int divisor, boolean withFar, boolean wide, boolean withL0, boolean checkLinks) {
             this.name = name;
@@ -11900,20 +12164,26 @@ public class MapCheck {
             java.util.Map<CityMap.District, Long> before = new HashMap<>();
             for (CityMap.District d : m.districts()) before.put(d, d.version);
             long runsBefore = m.runs().version();
+            java.util.Map<String, long[]> drawnBefore = runsDrawn(m);
             if (beforeReconcile != null) {
                 beforeReconcile.run();
                 beforeReconcile = null;
             }
             r.reconciled = m.reconcile(c);
             allReconciled &= r.reconciled;
+            // (batch UP5, slice A) The links and the chain's counters as the month began, for what the chain did to them.
+            java.util.Map<CityMap.District, Object[]> linksBefore = checkLinks ? m.linkSnapshot() : null;
+            long[] jobs0 = m.chainJobs(), own0 = m.ownStampCalls();
             for (CityMap.District d : m.districts()) {
                 Long v0 = before.get(d);
                 if (v0 == null || v0 != d.version) {
                     r.moved++;
                     r.onlyMoved = d;
+                    r.movedList.add(d);
                 }
             }
             r.runsMoved = m.runs().version() != runsBefore;
+            runBoxesInto(drawnBefore, runsDrawn(m), r.runBoxes);
             // Where the pictures stand right after a month that raised one type (a city of a few districts, as a far view asks for them): how many are no longer current.
             if (kind == ONE && m.districts().size() <= CityMap.PICTURES_KEPT) {
                 r.built = 0;
@@ -11934,6 +12204,8 @@ public class MapCheck {
                 Arrays.fill(fs.held, false);
                 for (int i = 0; i < fs.count; i++) if (fs.partial[i]) r.partialBefore[s]++;
             }
+            long[][] keys0 = new long[fars.size()][];
+            for (int s = 0; s < fars.size(); s++) keys0[s] = fars.get(s).key.clone();
             MapTiles.KeptNode[] k0 = stampK;
             long lands0 = sum(k0, 0), runs0 = sum(k0, 1), rep0 = sum(k0, 2);
             long stampNowNs = 0, stampTodayNs = 0, farNowNs = 0, farTodayNs = 0, chainNs = 0;
@@ -11966,16 +12238,43 @@ public class MapCheck {
                     r.settled = true;
                     break;
                 }
-                for (CityMap.Job j : jobs) j.run();
+                for (CityMap.Job j : jobs) {
+                    j.run();
+                    if (j instanceof CityMap.PlanJob pj) {
+                        r.handed++;
+                        r.workerMs += pj.ms() + pj.pictureMs();
+                    }
+                }
                 long b0 = monthClock();
                 for (CityMap.Job j : jobs) m.adopt(j);
                 chainNs += monthClock() - b0;
             }
-            long s0 = monthClock();
-            if (withL0) {
-                for (long ty = l0.tileY0(); ty <= l0.tileY1(); ty++) for (long tx = l0.tileX0(); tx <= l0.tileX1(); tx++) if (tk.ready(tx, ty)) tk.input(tx, ty, in);
+            if (withL0) l0Pass(r);
+            // (batch UP5, slice A) What the chain did, as adopt() kept it: its jobs, the links it made again (and of those how many carry another carry on), the far nodes the month changed once it settled, the pictures left behind, the own stamps.
+            long[] jobs1 = m.chainJobs(), own1 = m.ownStampCalls();
+            r.madePlans = jobs1[0] - jobs0[0];
+            r.reusedLinks = jobs1[1] - jobs0[1];
+            r.failedJobs = jobs1[2] - jobs0[2];
+            r.wastedPlans = jobs1[3] - jobs0[3];
+            r.ownCalls = new long[] { own1[0] - own0[0], own1[1] - own0[1] };
+            r.ownKept = m.ownStampsKept();
+            if (linksBefore != null) {
+                for (java.util.Map.Entry<CityMap.District, Object[]> e : m.linkSnapshot().entrySet()) {
+                    Object[] was = linksBefore.get(e.getKey()), now = e.getValue();
+                    if (was == null || was[5] == now[5]) continue;
+                    r.remade++;
+                    if (!Arrays.equals((int[]) was[2], (int[]) now[2])) r.carryMoved++;
+                }
             }
-            r.l0 = (monthClock() - s0) / 1e6;
+            for (int s = 0; s < fars.size(); s++) {
+                FarScreen fs = fars.get(s);
+                java.util.List<Integer> settledMoved = new ArrayList<>();
+                for (int i = 0; i < fs.count; i++) if (fs.drawn[i] && keys0[s][i] != fs.key[i]) settledMoved.add(i);
+                r.keyMovedFinal.add(settledMoved);
+            }
+            if (m.districts().size() <= CityMap.PICTURES_KEPT) {
+                for (CityMap.District d : m.districts()) if (d.usedCells() > 0 && m.pictureIfCurrent(d) == null) r.staleAfter++;
+            }
             r.stampNow = stampNowNs / 1e6;
             r.stampToday = stampTodayNs / 1e6;
             r.farNow = farNowNs / 1e6;
@@ -11996,6 +12295,94 @@ public class MapCheck {
             all.add(r);
             tookS += (System.nanoTime() - began) / 1e9;
             return r;
+        }
+
+        /** The ready tiles of the L0 screen with their column, row and key (l0Pass()): the arrays are kept between months, the screen being one. */
+        private long[] l0Tx, l0Ty, l0Key;
+
+        /** What the plans part of tile (tx, ty)'s key folds, apart: the sum of its districts' versions and of which plan each keeps (the Drawn object: a plan drawn again to the same streets is another; a harness's, to say which moved). */
+        long[] planFolds(long tx, long ty) {
+            long versions = 0, serials = 0;
+            java.util.Set<CityMap.District> seen = new java.util.HashSet<>();
+            for (int b = -1; b <= 1; b++) {
+                for (int a = -1; a <= 1; a++) {
+                    CityMap.District d = m.districtOfTile(tx + a, ty + b);
+                    if (d == null || !seen.add(d)) continue;
+                    CityMap.Drawn dr = m.drawnOf(d);
+                    versions += World.mix(d.key ^ d.version);
+                    serials += World.mix(d.key ^ (dr == null ? 0 : System.identityHashCode(dr)));
+                }
+            }
+            return new long[] { versions, serials };
+        }
+
+        /**
+         * The L0 screen drawn as ui/MapView.paint() draws it after a month (batch UP5): the key of every tile in view whose plans are drawn
+         * (ready(), MapTiles.tileKey()), then input() - the read of the tile's inputs and its stamp - only of the tiles whose key moved since
+         * the tile was last read (l0Kept: the picture's key and stamp). The two passes are timed apart (r.l0Keys, r.l0Inputs) and r.l0 is
+         * their sum. Then, untimed, a fresh input() of every tile whose key held, which must give the stamp kept: a key that held through a
+         * change of anything the tile is drawn from would show here (r.l0Wrong).
+         */
+        void l0Pass(RedrawMonth r) {
+            int cap = (int) ((l0.tileX1() - l0.tileX0() + 1) * (l0.tileY1() - l0.tileY0() + 1));
+            if (l0Tx == null || l0Tx.length < cap) {
+                l0Tx = new long[cap];
+                l0Ty = new long[cap];
+                l0Key = new long[cap];
+            }
+            int n = 0;
+            long k0 = monthClock();
+            for (long ty = l0.tileY0(); ty <= l0.tileY1(); ty++) {
+                for (long tx = l0.tileX0(); tx <= l0.tileX1(); tx++) {
+                    if (!tk.ready(tx, ty)) continue;
+                    l0Tx[n] = tx;
+                    l0Ty[n] = ty;
+                    l0Key[n++] = tk.tileKey(tx, ty);
+                }
+            }
+            long k1 = monthClock();
+            boolean[] held = new boolean[n];
+            for (int i = 0; i < n; i++) {
+                long[] kept = l0Kept.get(MapTiles.key(l0Tx[i], l0Ty[i]));
+                if (kept != null && kept[0] == l0Key[i]) {
+                    held[i] = true;
+                    continue;
+                }
+                long stamp = tk.input(l0Tx[i], l0Ty[i], in);
+                if (kept != null && kept[1] == stamp) r.l0KeyOnly++;
+                r.l0Moved++;
+                l0Kept.put(MapTiles.key(l0Tx[i], l0Ty[i]), new long[] { l0Key[i], stamp, kept == null ? 0 : 1 });
+            }
+            long k2 = monthClock();
+            r.l0Keys = (k1 - k0) / 1e6;
+            r.l0Inputs = (k2 - k1) / 1e6;
+            r.l0 = r.l0Keys + r.l0Inputs;
+            r.l0Tiles = n;
+            for (int i = 0; i < n; i++) {
+                long id = MapTiles.key(l0Tx[i], l0Ty[i]);
+                long[] parts = Arrays.copyOf(m.tileKeyParts(l0Tx[i], l0Ty[i]), 6);
+                long[] folds = planFolds(l0Tx[i], l0Ty[i]);
+                parts[4] = folds[0];
+                parts[5] = folds[1];
+                long[] was = l0Parts.put(id, parts);
+                if (held[i]) {
+                    r.l0Held++;
+                    long fresh = tk.input(l0Tx[i], l0Ty[i], in);
+                    r.l0Checked++;
+                    if (fresh != l0Kept.get(id)[1]) {
+                        r.l0Wrong++;
+                        out.printf("      FAIL %s month %d: tile (%d, %d) kept at key %x holds the stamp %x, a fresh input() gives %x%n", name, r.number, l0Tx[i], l0Ty[i], l0Key[i], l0Kept.get(id)[1], fresh);
+                    }
+                } else if (was != null) {
+                    for (int q = 0; q < parts.length; q++) if (parts[q] != was[q]) r.l0PartMoved[q]++;
+                }
+            }
+            l0Held += r.l0Held;
+            l0Moved += r.l0Moved;
+            l0KeyOnly += r.l0KeyOnly;
+            l0Checked += r.l0Checked;
+            l0Wrong += r.l0Wrong;
+            for (int q = 0; q < l0PartMoved.length; q++) l0PartMoved[q] += r.l0PartMoved[q];
         }
 
         /**
@@ -12137,6 +12524,166 @@ public class MapCheck {
         }
     }
 
+    /**
+     * What the runs draw on a far node as the map stands (batch UP5): each stretch {x, y, heading, steps} of the highways (once they reach a
+     * street) and of the railway, each yard's dot and each quay work's, by a name that says what and where, with the box {x0, y0, x1, y1, pad}
+     * in plots it may be drawn in (the stretch's end to end; pad 0 for it, 1 for a dot, two pixels across).
+     */
+    static java.util.Map<String, long[]> runsDrawn(CityMap m) {
+        java.util.Map<String, long[]> out = new HashMap<>();
+        CityRuns runs = m.runs();
+        for (int net = 0; net < 2; net++) {
+            if (net == 0 && !runs.highwaysReach()) continue;
+            for (long[] s : (net == 0 ? runs.highways() : runs.rail()).stretches()) {
+                int h = (int) s[2];
+                long ex = s[0] + CityRuns.DX[h] * s[3], ey = s[1] + CityRuns.DY[h] * s[3];
+                out.put(net + ":" + s[0] + "," + s[1] + "," + h + "," + s[3], new long[] { Math.min(s[0], ex), Math.min(s[1], ey), Math.max(s[0], ex), Math.max(s[1], ey), 0 });
+            }
+        }
+        for (long[] y : runs.yards()) {
+            long x = y[0] + y[2] / 2, yy = y[1] + y[3] / 2;
+            out.put("Y:" + x + "," + yy, new long[] { x, yy, x, yy, 1 });
+        }
+        for (CityShore.Work w : m.shore().works()) {
+            if (w.quay() <= 0) continue;
+            long x = w.x0() + w.w() / 2, y = w.y0() + w.h() / 2;
+            out.put("Q:" + x + "," + y, new long[] { x, y, x, y, 1 });
+        }
+        return out;
+    }
+
+    /** The boxes of what the runs drew on a far node in one of two states and not the other (runsDrawn() before and after a month), into `out`. */
+    static void runBoxesInto(java.util.Map<String, long[]> before, java.util.Map<String, long[]> after, java.util.List<long[]> out) {
+        for (java.util.Map.Entry<String, long[]> e : before.entrySet()) if (!after.containsKey(e.getKey())) out.add(e.getValue());
+        for (java.util.Map.Entry<String, long[]> e : after.entrySet()) if (!before.containsKey(e.getKey())) out.add(e.getValue());
+    }
+
+    /**
+     * Check on the months that laid a run at 5B (batch UP5; far screen `s` of `w`, the one wide enough to draw no pictures): the far nodes
+     * whose key moved in each, against those over a district whose version moved (and its 3 x 3 districts) and those over a stretch or dot
+     * put there or taken away (with the plot or two the runs are drawn beyond their node, and a dot's two pixels), and against every
+     * node in view, which is how many moved before the runs' key was a node's own.
+     */
+    static void runNodes(Redraw w, int s) {
+        FarScreen fs = w.fars.get(s);
+        long D = World.DISTRICT;
+        int months = 0, everyMoved = 0, held = 0, mostHeld = 0, unexplained = 0, byRun = 0;
+        java.util.List<String> figures = new ArrayList<>();
+        boolean fewer = true;
+        for (RedrawMonth r : w.all) {
+            if (r.kind == SETTLE || !r.runsMoved) continue;
+            months++;
+            java.util.List<Integer> moved = r.keyMoved.get(s);
+            int off = 0, ranOver = 0;
+            for (int i : moved) {
+                boolean over = false;
+                for (CityMap.District d : r.movedList) {
+                    long dx0 = (w.m.baseDX() + d.dx - 1) * D, dy0 = (w.m.baseDY() + d.dy - 1) * D;
+                    if (over = fs.overlaps(i, dx0, dy0, dx0 + 3 * D, dy0 + 3 * D)) break;
+                }
+                boolean crossed = false;
+                for (long[] b : r.runBoxes) {
+                    long pad = 2 + b[4] * 2 * fs.plots;
+                    if (crossed = fs.overlaps(i, b[0] - pad, b[1] - pad, b[2] + pad + 1, b[3] + pad + 1)) break;
+                }
+                if (!over && !crossed) off++;
+                if (!over && crossed) ranOver++;
+            }
+            unexplained += off;
+            byRun += ranOver;
+            int stayed = fs.count - moved.size();
+            held += stayed;
+            mostHeld = Math.max(mostHeld, stayed);
+            fewer &= moved.size() < fs.count;
+            if (moved.size() == fs.count) everyMoved++;
+            figures.add(moved.size() + " of " + fs.count + " (" + r.runBoxes.size() + " runs put or taken)");
+        }
+        out.printf("      %s, the far screen of %d nodes at %d plots a pixel, the %d months that laid a run: nodes whose key moved %s (every node, before); %d off every moved district's 3 x 3 and every run put or taken; %d over a run alone%n",
+                w.name, fs.count, fs.plots, months, figures, unexplained, byRun);
+        check("fixture: " + w.name + " has months that laid a run (the runs' version moved) with far nodes that held their key through one, and every one of its far nodes was drawn before the month",
+                months > 0 && mostHeld > 0 && !fs.pictures && fs.count > 0);
+        check("in the months that laid a run at " + w.name + " the far nodes whose key moved are those over a district whose version moved (and its 3 x 3) and those a run put or taken away crosses - none other - fewer than"
+                + " today's every node in view", months > 0 && unexplained == 0 && fewer && everyMoved == 0);
+    }
+
+    /**
+     * Checks on the runs index (batch UP5): the nodes it enters a stretch at are the nodes stretchHash() - stroke()'s clip - says it is drawn on,
+     * for random stretches of all eight headings at four scales (starts on and beside a node's edge among them), and the key it gives a node is
+     * the one the walk of every stretch and dot gives, on the nodes the fixtures' own runs cross and those about them at six scales.
+     */
+    static void runsIndexHolds(Redraw[] fx) {
+        java.util.Random rnd = new java.util.Random(0x5255L);
+        long[] scales = { 1, 3, 8, 64 };
+        int entered = 0, wrong = 0, stray = 0, longest = 0;
+        boolean[] headings = new boolean[8];
+        for (int t = 0; t < 400; t++) {
+            long plots = scales[t % scales.length], span = MapFrame.NODE_PX * plots;
+            int h = rnd.nextInt(8);
+            long steps = t % 7 == 0 ? rnd.nextInt(4) : rnd.nextInt((int) Math.min(40_000, span * 6));
+            long sx = rnd.nextInt(200_001) - 100_000, sy = rnd.nextInt(200_001) - 100_000;
+            if (t % 5 == 0) sx = Math.floorDiv(sx, span) * span + (t % 3) - 1;
+            if (t % 4 == 0) sy = Math.floorDiv(sy, span) * span + (t % 3) - 1;
+            long[] s = { sx, sy, h, steps, h };
+            headings[h] = true;
+            java.util.Map<Long, Long> sums = MapTiles.indexOfStretch(1L, s, plots);
+            long ex = sx + CityRuns.DX[h] * steps, ey = sy + CityRuns.DY[h] * steps;
+            int inRange = 0, nodes = 0;
+            for (long ny = Math.floorDiv(Math.min(sy, ey), span) - 2; ny <= Math.floorDiv(Math.max(sy, ey), span) + 2; ny++) {
+                for (long nx = Math.floorDiv(Math.min(sx, ex), span) - 2; nx <= Math.floorDiv(Math.max(sx, ex), span) + 2; nx++) {
+                    long want = MapTiles.stretchKey(1L, s, nx * span, ny * span, plots);
+                    Long got = sums.get(MapTiles.nodeId(nx, ny));
+                    if ((got == null ? 0 : got) != want) wrong++;
+                    if (want != 0) inRange++;
+                    nodes++;
+                }
+            }
+            if (sums.size() != inRange) stray++;
+            entered += inRange;
+            longest = Math.max(longest, nodes);
+        }
+        boolean all = true;
+        for (boolean b : headings) all &= b;
+        out.printf("      the runs index: 400 random stretches entered at %d nodes in all, %d nodes the most looked at a stretch; %d nodes it differs from stretchHash() at, %d stretches it has nodes for that stretchHash() gives none%n",
+                entered, longest, wrong, stray);
+        check("the runs index enters a stretch of any heading, at any scale and start (on a node's edge, beside it, inside it), at exactly the nodes stroke()'s clip draws it on",
+                entered > 0 && all && wrong == 0 && stray == 0);
+        long[] fixtureScales = { 1, 2, 8, 64, 128, 1024 };
+        int compared = 0, differ = 0, nonEmpty = 0;
+        for (Redraw w : fx) {
+            CityRuns runs = w.m.runs();
+            java.util.List<long[]> points = new ArrayList<>();
+            for (CityRuns.Net net : new CityRuns.Net[] { runs.highways(), runs.rail() }) {
+                java.util.List<long[]> ss = net.stretches();
+                int stride = Math.max(1, ss.size() / 100);
+                for (int i = 0; i < ss.size(); i += stride) {
+                    long[] s = ss.get(i);
+                    for (int q = 0; q <= 2; q++) points.add(new long[] { s[0] + CityRuns.DX[(int) s[2]] * s[3] * q / 2, s[1] + CityRuns.DY[(int) s[2]] * s[3] * q / 2 });
+                }
+            }
+            java.util.List<long[]> ys = runs.yards();
+            for (int i = 0; i < ys.size(); i += Math.max(1, ys.size() / 100)) points.add(new long[] { ys.get(i)[0] + ys.get(i)[2] / 2, ys.get(i)[1] + ys.get(i)[3] / 2 });
+            for (CityShore.Work work : w.m.shore().works()) points.add(new long[] { work.x0() + work.w() / 2, work.y0() + work.h() / 2 });
+            for (long plots : fixtureScales) {
+                long span = MapFrame.NODE_PX * plots;
+                long empty = w.tk.runsKeyWalked(span * 10_000_000L, span * 10_000_000L, plots);
+                java.util.Set<Long> seen = new java.util.HashSet<>();
+                for (long[] p : points) {
+                    for (long ny = Math.floorDiv(p[1], span) - 1; ny <= Math.floorDiv(p[1], span) + 1; ny++) {
+                        for (long nx = Math.floorDiv(p[0], span) - 1; nx <= Math.floorDiv(p[0], span) + 1; nx++) {
+                            if (!seen.add(MapTiles.nodeId(nx, ny))) continue;
+                            long walked = w.tk.runsKeyWalked(nx * span, ny * span, plots);
+                            compared++;
+                            if (walked != empty) nonEmpty++;
+                            if (w.tk.runsKey(nx * span, ny * span, plots) != walked) differ++;
+                        }
+                    }
+                }
+            }
+        }
+        out.printf("      the runs key of %d nodes about the fixtures' stretches, yards and quays, at %d scales: %d with something drawn on them, %d where the index's differs from the walk's%n", compared, fixtureScales.length, nonEmpty, differ);
+        check("the runs key of a far node from the scale's index is the key the walk of every stretch and dot gives it, on x 1, x 80 and 5B, at six scales", compared > 0 && nonEmpty > 0 && differ == 0);
+    }
+
     static int differ(int[] a, int[] b) {
         int n = 0;
         for (int i = 0; i < a.length && i < b.length; i++) if (a[i] != b[i]) n++;
@@ -12234,8 +12781,17 @@ public class MapCheck {
         MiniMapFrame.Box frameBefore = MiniMapFrame.frame(far);
         long[] block = purchaseBlock(far, copy);
         RedrawMonth bought = null;
+        // (batch UP5) What the city owns of the tiles about the block, as part of their keys, just before the purchase and just after it.
+        final java.util.Map<Long, Long> ownedBefore = new HashMap<>();
         if (block != null) {
-            pl.beforeReconcile = () -> copy.extend(new LandParcel(-3, 1, 0, 8, block[0], block[1], block[0] + PURCHASE_SIDE, block[1] + PURCHASE_SIDE, null, null, null, 0, 0), city.getMonth(), 0);
+            pl.beforeReconcile = () -> {
+                for (long ty = Math.floorDiv(block[1], World.TILE) - 2; ty <= Math.floorDiv(block[1] + PURCHASE_SIDE - 1, World.TILE) + 2; ty++) {
+                    for (long tx = Math.floorDiv(block[0], World.TILE) - 2; tx <= Math.floorDiv(block[0] + PURCHASE_SIDE - 1, World.TILE) + 2; tx++) {
+                        ownedBefore.put(MapTiles.key(tx, ty), far.tileKeyParts(tx, ty)[0]);
+                    }
+                }
+                copy.extend(new LandParcel(-3, 1, 0, 8, block[0], block[1], block[0] + PURCHASE_SIDE, block[1] + PURCHASE_SIDE, null, null, null, 0, 0), city.getMonth(), 0);
+            };
             bought = pl.month(GROW, PLAYED_BEFORE, false);
         }
         for (int i = 0; i < PLAYED_AFTER; i++) pl.month(GROW, PLAYED_BEFORE + 1 + i, false);
@@ -12315,8 +12871,70 @@ public class MapCheck {
                 astray += r.astray;
                 if (r.kept <= 0) noLinks++;
             }
-            check("stampOf from the cache equals a fresh one for every link kept after each of " + grown + " months on " + w.name + " (none astray, links kept every month)",
+            check("stampOf and the margins' hash from the cache equal a fresh one for every link kept after each of " + grown + " months on " + w.name + " (none astray, links kept every month)",
                     grown == REDRAW_MONTHS && astray == 0 && noLinks == 0);
+        }
+
+        // ----- 6b. The chain's early exit (batch UP5, slice A) -----
+        boolean carryFixture = false, jobsCounted = true;
+        for (Redraw w : new Redraw[] { x1, x80 }) {
+            int carryMonths = 0, quietMonths = 0, reuseMonths = 0, months = 0, failed = 0;
+            long plansMade = 0, linksTaken = 0, wasted = 0;
+            for (RedrawMonth r : w.all) {
+                if (r.kind == SETTLE) continue;
+                months++;
+                if (r.carryMoved > 0) carryMonths++;
+                else quietMonths++;
+                if (r.reusedLinks > 0) reuseMonths++;
+                plansMade += r.madePlans;
+                linksTaken += r.reusedLinks;
+                failed += r.failedJobs;
+                wasted += r.wastedPlans;
+                jobsCounted &= r.handed == r.madePlans + r.reusedLinks + r.failedJobs;
+            }
+            out.printf("      %s, %d months: %d plans made, %d links taken as they stood (in %d months), %d jobs that could do neither, %d plans not needed; the carry on moved in %d months, in %d it did not%n",
+                    w.name, months, plansMade, linksTaken, reuseMonths, failed, wasted, carryMonths, quietMonths);
+            if (w == x80) carryFixture = carryMonths > 0 && quietMonths > 0;
+        }
+        check("fixture: x 80 has months in which a district's carry on moved (the district after it had to be planned again) and months in which none did", carryFixture);
+        check("every plan job the chain was handed was kept as a plan made, a link taken as it stood, or a job that could do neither (x 1, x 80)", jobsCounted);
+        // A district's link let go and nothing else moved: the early exit in its plain case, against the links of every district after it let go.
+        int quietAt = x80.m.districts().size() / 4;
+        while (quietAt < x80.m.districts().size() - 1 && x80.m.districts().get(quietAt).usedCells() <= 0) quietAt++;
+        double[] quiet = quietChain(x80.m, quietAt, false), noExit = quietChain(x80.m, quietAt, true);
+        out.printf("      x 80, the link of district %d of %d let go, nothing else moved: %.0f plan jobs handed out (%.0f lazy, no input gathered), %.0f plans made, %.0f links taken, %.0f jobs that could do neither, %.0f plans not needed; the worker %.1f ms,"
+                + " the FX side %.2f ms; against the links of districts %d to %d let go: %.0f plan jobs, %.0f plans made, %.0f links taken; the worker %.1f ms, the FX side %.2f ms%n", quietAt, x80.m.districts().size(),
+                quiet[0], quiet[1], quiet[2], quiet[3], quiet[4], quiet[5], quiet[6], quiet[7], quietAt, x80.m.districts().size() - 1, noExit[0], noExit[2], noExit[3], noExit[6], noExit[7]);
+        check("a district's link gone and nothing else moved: the chain plans that district and takes the link of every district after it, none planned that need not be - "
+                + (int) quiet[2] + " plan made, " + (int) quiet[3] + " links taken, " + (int) quiet[4] + " jobs that could not (x 80)",
+                quiet[0] > 2 && quiet[1] == quiet[0] - 1 && quiet[2] == 1 && quiet[3] == quiet[0] - 1 && quiet[4] == 0 && quiet[5] == 0 && quiet[8] == 0);
+        check("...the links of every district after it gone too, it plans each one (the chain before the early exit), the same pictures current: " + (int) noExit[2] + " plans made (x 80)",
+                noExit[0] == quiet[0] && noExit[1] == 0 && noExit[2] == noExit[0] && noExit[3] == 0 && noExit[8] == 0 && quiet[6] * 4 < noExit[6]);
+        for (Redraw w : new Redraw[] { x1, x80 }) {
+            int[] whole = chainEqualsWhole(w);
+            out.printf("      %s: %d links and %d plans kept after %d months, planned again from nothing: %d links and %d plans differ%n", w.name, whole[0], whole[3], w.all.size(), whole[1], whole[2]);
+            check("the links and plans kept after " + w.all.size() + " months - districts planned again only where their carry or edges moved - equal the chain planned whole (stamp, margins, carry on, picture, plan), on " + w.name,
+                    whole[0] > 0 && whole[3] > 0 && whole[1] == 0 && whole[2] == 0);
+        }
+
+        // ----- 6c. The own stamps kept (batch UP5, slice A) -----
+        for (Redraw w : new Redraw[] { x1, x80, b5, pl }) {
+            int stampMonths = 0, heldKeys = 0, astray = 0, kept = 0, fewer = 0;
+            long asked = 0, worked = 0;
+            for (RedrawMonth r : w.all) {
+                if (r.kind == SETTLE) continue;
+                stampMonths++;
+                kept += r.ownKept[0];
+                heldKeys += r.ownKept[1];
+                astray += r.ownKept[2];
+                asked += r.ownCalls[0];
+                worked += r.ownCalls[1];
+                if (r.ownCalls[1] < r.ownCalls[0]) fewer++;
+            }
+            out.printf("      %s, %d months: %d own stamps asked, %d worked out; after each month %d kept, %d of them with their key held, %d of those not the stamp worked out afresh%n", w.name, stampMonths, asked, worked, kept, heldKeys, astray);
+            check("fixture: " + w.name + " keeps own stamps, and months leave the key of some of them as it was (they are asked and handed out kept) - the kept stamp is compared with one worked out afresh " + heldKeys + " times",
+                    kept > 0 && heldKeys > 0 && fewer > 0);
+            check("an own stamp kept against its key equals ownStamp() worked out afresh for every district whose key held, after each of " + stampMonths + " months on " + w.name + " (none astray)", astray == 0);
         }
 
         // ----- 7. The budget -----
@@ -12328,9 +12946,43 @@ public class MapCheck {
         }
         double worstNow = worst18(nows), worstToday = worst18(todays);
         out.printf("      5B, %d months read: a month's FX-side map work, worst %.1f ms (median %.1f) against today's %.1f (median %.1f) and the budget %.0f ms%n", nows.size(), worstNow, median18(nows), worstToday, median18(todays), MAP_MONTH_MS);
-        // The median month: a month that lays a run moves every far node's key (the runs' key is the city's) and draws the screen whole, as today, plus its keys.
+        // The median month: a month that lays a run moves the key of the far nodes it crosses (the runs' key is a node's own since UP5, the city's before) and of every tile in view (the tile key's runs part is the city's).
         check("a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than "
                 + (int) MAP_MONTH_MS + " ms of " + (CPU_TIMED ? "the main thread's CPU" : "the wall clock") + ", the median month", nows.size() == REDRAW_MONTHS_5B - REDRAW_WARM && Timing.within(median18(nows), MAP_MONTH_MS));
+
+        // ----- 8. The screens' keys (batch UP5, slice B): the runs' key a far node's own, and a tile's key for the L0 screen -----
+        runNodes(b5, 1);
+        runsIndexHolds(fx);
+        int boughtOver = 0, boughtMoved = 0, boughtAway = 0, awayMoved = 0;
+        if (block != null) {
+            for (long ty = Math.floorDiv(block[1], World.TILE) - 2; ty <= Math.floorDiv(block[1] + PURCHASE_SIDE - 1, World.TILE) + 2; ty++) {
+                for (long tx = Math.floorDiv(block[0], World.TILE) - 2; tx <= Math.floorDiv(block[0] + PURCHASE_SIDE - 1, World.TILE) + 2; tx++) {
+                    boolean over = tx * World.TILE < block[0] + PURCHASE_SIDE && (tx + 1) * World.TILE > block[0] && ty * World.TILE < block[1] + PURCHASE_SIDE && (ty + 1) * World.TILE > block[1];
+                    boolean moved = far.tileKeyParts(tx, ty)[0] != ownedBefore.get(MapTiles.key(tx, ty));
+                    if (over) {
+                        boughtOver++;
+                        if (moved) boughtMoved++;
+                    } else {
+                        boughtAway++;
+                        if (moved) awayMoved++;
+                    }
+                }
+            }
+        }
+        out.printf("      the played city's purchase: of the %d tiles over the %d x %d plots bought the part of the key that is what the city owns of the tile moved in %d, of the %d tiles about them in %d%n",
+                boughtOver, PURCHASE_SIDE, PURCHASE_SIDE, boughtMoved, boughtAway, awayMoved);
+        check("a land purchase moves the key of every tile over the ground bought, in what the city owns of the tile, and of no tile about it",
+                block != null && boughtOver > 0 && boughtMoved == boughtOver && boughtAway > 0 && awayMoved == 0);
+        for (Redraw w : fx) {
+            out.printf("      %s: the L0 screen's tiles over %d months - %d keys held (each read afresh, %d with the stamp it was kept at), %d moved (%d of them with the stamp unmoved: the key reads more than the stamp does);"
+                            + " of the keys that moved, those that moved in what the city owns of the tile %d, in its plans %d (a district's version moved in %d, a plan was drawn again in %d), in the railway's bends on it %d,"
+                            + " in the whole map's part %d%n",
+                    w.name, w.all.size() - 1, w.l0Held, w.l0Held - w.l0Wrong, w.l0Moved, w.l0KeyOnly, w.l0PartMoved[0], w.l0PartMoved[1], w.l0PartMoved[4], w.l0PartMoved[5], w.l0PartMoved[2], w.l0PartMoved[3]);
+        }
+        check("fixture: the L0 screen on x 1, x 80 and 5B has tiles whose key held through a month, to compare, and tiles whose key moved, read again",
+                x1.l0Held > 0 && x80.l0Held > 0 && b5.l0Held > 0 && x1.l0Moved > 0 && x80.l0Moved > 0 && b5.l0Moved > 0);
+        check("a tile whose key did not move holds the stamp a fresh input() gives it, every month on x 1, x 80 and 5B",
+                x1.l0Wrong == 0 && x80.l0Wrong == 0 && b5.l0Wrong == 0 && x1.l0Checked == x1.l0Held && x80.l0Checked == x80.l0Held && b5.l0Checked == b5.l0Held);
         out.printf("      section 18 took %.1f s%n", (System.nanoTime() - begun) / 1e9);
     }
 
@@ -12341,18 +12993,8 @@ public class MapCheck {
         long D = World.DISTRICT;
         long x0 = d == null ? 0 : (w.m.baseDX() + d.dx - 1) * D, y0 = d == null ? 0 : (w.m.baseDY() + d.dy - 1) * D, x1 = x0 + 3 * D, y1 = y0 + 3 * D;
         java.util.List<Integer> moved = one.keyMoved.get(s);
-        int outside = 0, unexplained = 0;
-        for (int i : moved) {
-            if (fs.overlaps(i, x0, y0, x1, y1)) continue;
-            outside++;
-            // ...where the pictures are drawn, a node over a district whose picture the chain no longer holds current moves its key too (it is dithered until the picture comes back).
-            boolean overStale = false;
-            for (CityMap.District sd : one.staleList) {
-                long sx = (w.m.baseDX() + sd.dx) * D, sy = (w.m.baseDY() + sd.dy) * D;
-                overStale |= fs.overlaps(i, sx, sy, sx + D, sy + D);
-            }
-            if (!picturesOn || !overStale) unexplained++;
-        }
+        int outside = 0;
+        for (int i : moved) if (!fs.overlaps(i, x0, y0, x1, y1)) outside++;
         out.printf("      %s, one built type raised by one: %d district(s) moved%s; the far screen of %d nodes at %d plots a pixel (pictures %s): %d nodes' keys moved, %d of them off the 3 x 3 districts round the one, against today's %d (every node in view)%s%n",
                 w.name, one.moved, d == null ? "" : " (index " + d.index + " of " + w.m.districts().size() + " in the map's order)", fs.count, fs.plots, fs.pictures ? "on" : "off", moved.size(), outside, fs.count,
                 one.built < 0 ? "" : "; the pictures of " + one.stale + " of the " + one.built + " built districts were no longer current after the month (the chain re-plans from the first link that broke)");
@@ -12363,14 +13005,124 @@ public class MapCheck {
             check("a month that places in one district re-colours only the far nodes over that district and its neighbours - at least one, all within the 3 x 3 districts round it, fewer than today's every node in view - on "
                     + w.name, !moved.isEmpty() && outside == 0 && moved.size() < fs.count);
         } else {
-            // Where the far view draws the pictures, a month in one district moves the pictures of every district after it in its band
-            // until the chain has re-planned them (CityMap's chain: a band's links hold up to the first that broke; its early exit is
-            // UP3's Pending): what is asserted is that no node moves its key but over the district, its neighbours or a picture gone.
-            out.printf("      ...%s, pictures on: %d of the %d nodes whose keys moved lie off the 3 x 3 districts, every one over a district whose picture the chain no longer holds current but %d%n",
-                    w.name, outside, moved.size(), unexplained);
-            check("...where the pictures are drawn (" + w.name + "), a month in one district re-colours only the nodes over it, its neighbours and the districts whose pictures the chain re-plans - at least one",
-                    !moved.isEmpty() && unexplained == 0);
+            // Where the far view draws the pictures, the month's own round (right after the month, before the chain has run) moves the key of
+            // every node over a built district after the first link that broke, as its picture is not current until that link is planned again
+            // (pictureIfCurrent()); that cannot change. What the early exit (batch UP5) changes is the chain: once it has settled, the month
+            // left the nodes over the district and its neighbours as the only ones that differ from before it, no built district without a
+            // current picture, and only what had to be planned again was.
+            java.util.List<Integer> settled = one.keyMovedFinal.get(s);
+            int settledOutside = 0;
+            for (int i : settled) if (!fs.overlaps(i, x0, y0, x1, y1)) settledOutside++;
+            int districts = w.m.districts().size(), after = d == null ? 0 : districts - 1 - d.index;
+            out.printf("      ...%s, pictures on: of the %d nodes whose keys moved in the month's own round %d lie off the 3 x 3 districts (over a district whose picture was not yet current: %d of the %d built);"
+                    + " once the chain settled, %d nodes differ from before the month, %d off the 3 x 3 districts, and %d built districts have no current picture%n",
+                    w.name, moved.size(), outside, one.stale, one.built, settled.size(), settledOutside, one.staleAfter);
+            check("fixture: " + w.name + "'s month moved a district early in the band's order (index " + (d == null ? -1 : d.index) + " of " + districts + "), so the chain had " + after
+                    + " districts after it to re-plan", d != null && after * 2 >= districts);
+            check("a month that places in one district re-colours only the far nodes over that district and its neighbours, pictures on, at " + w.name
+                    + " - every node current after the chain settles (at least one node moved, none off the 3 x 3 districts, every built district's picture current)",
+                    !settled.isEmpty() && settledOutside == 0 && one.staleAfter == 0 && one.built > 0 && one.settled);
+            out.printf("      ...%s, that month's chain: %d plan jobs handed out in %d rounds (%d plans made, %d links taken as they stood, %d jobs that could do neither); %d plans made that were not needed; the worker %.1f ms, the chain's FX side %.2f ms; %d links made again, %d with another carry on%n",
+                    w.name, one.handed, one.rounds, one.madePlans, one.reusedLinks, one.failedJobs, one.wastedPlans, one.workerMs, one.chain, one.remade, one.carryMoved);
+            check("...the chain re-plans the district that moved and those whose carry or edges moved, and no other: " + one.madePlans + " plans made, " + one.reusedLinks + " reused"
+                    + " (" + one.failedJobs + " lazy jobs that could not take their links, " + one.wastedPlans + " plans made that were not needed)",
+                    one.madePlans >= 1 && one.wastedPlans == 0 && one.reusedLinks > one.madePlans && one.handed == one.madePlans + one.reusedLinks + one.failedJobs);
         }
+    }
+
+    /**
+     * The chain asked for the picture of every built district after links were let go and nothing else moved (batch UP5, check 6b), as the far
+     * view asks: the link of district `at` alone, or (`all`) of every district from it on - the chain then plans each, as it planned every one
+     * after the first that broke before the early exit. Returns {plan jobs handed out, those handed out lazy, plans made, links taken, jobs that
+     * could do neither, plans not needed, the worker's ms, the FX side's ms (handing out and adopting), built districts with no current picture}.
+     */
+    static double[] quietChain(CityMap m, int at, boolean all) {
+        java.util.List<CityMap.District> ds = m.districts();
+        m.epochMoves();
+        for (int i = at; i < (all ? ds.size() : at + 1); i++) m.dropLink(ds.get(i));
+        long[] j0 = m.chainJobs();
+        java.util.List<CityMap.Job> jobs = new ArrayList<>();
+        long t0 = System.nanoTime();
+        for (CityMap.District d : ds) if (d.usedCells() > 0) jobs.addAll(m.pictureJobs(d));
+        long t1 = System.nanoTime();
+        int handed = 0, lazy = 0;
+        double workerMs = 0;
+        for (CityMap.Job j : jobs) {
+            j.run();
+            if (j instanceof CityMap.PlanJob pj) {
+                handed++;
+                if (pj.in == null) lazy++;
+                workerMs += pj.ms() + pj.pictureMs();
+            }
+        }
+        long t2 = System.nanoTime();
+        for (CityMap.Job j : jobs) m.adopt(j);
+        long t3 = System.nanoTime();
+        long[] j1 = m.chainJobs();
+        int stale = 0;
+        for (CityMap.District d : ds) if (d.usedCells() > 0 && m.pictureIfCurrent(d) == null) stale++;
+        return new double[] { handed, lazy, j1[0] - j0[0], j1[1] - j0[1], j1[2] - j0[2], j1[3] - j0[3], workerMs, ((t1 - t0) + (t3 - t2)) / 1e6, stale };
+    }
+
+    /** A plan as the painter reads it, hashed all through (batch UP5, check 6b): what two plans of one district are compared by. */
+    static long drawnHash(CityMap.Drawn g) {
+        long h = g.stamp;
+        h = h * 31 + Arrays.deepHashCode(g.tiles);
+        h = h * 31 + Arrays.hashCode(g.east);
+        h = h * 31 + Arrays.hashCode(g.south);
+        h = h * 31 + Arrays.deepHashCode(g.boxes);
+        h = h * 31 + Arrays.hashCode(g.siding);
+        h = h * 31 + Arrays.deepHashCode(g.sidingWays);
+        h = h * 31 + g.sidingsStub;
+        h = h * 31 + Arrays.hashCode(g.avenue);
+        h = h * 31 + Arrays.deepHashCode(g.access);
+        if (g.curves != null) {
+            for (CityMap.DrawnCurve c : g.curves) h = h * 31 + c.kind + 7 * Double.hashCode(c.radius) + 11 * Arrays.hashCode(c.geom) + 13 * Arrays.hashCode(c.plots) + 17 * c.own;
+        }
+        h = h * 31 + g.placed + 3 * g.refused + 5 * g.streets + 7 * g.tracks + 11 * g.joinsOut + 13 * g.partedOut + 17 * g.seamsSurfaced;
+        h = h * 31 + Arrays.hashCode(g.halves) + Double.hashCode(g.surplus) + Arrays.hashCode(g.leftover);
+        return h;
+    }
+
+    /**
+     * The links and plans a fixture's months left kept equal a chain planned whole (batch UP5, check 6b): each district's link (stamp, the margins'
+     * hash, the carry on, its picture's stamp) and plan, as kept, are noted; the map's painted state is let go (forgetPainted()) and every
+     * district planned again from nothing, in the map's order, with its picture; and the two compared. Returns {districts compared, links that
+     * differ, plans that differ, plans compared}.
+     */
+    static int[] chainEqualsWhole(Redraw w) {
+        CityMap m = w.m;
+        java.util.List<CityMap.District> ds = m.districts();
+        long[][] links = new long[ds.size()][];
+        long[] plans = new long[ds.size()];
+        boolean[] hadPlan = new boolean[ds.size()];
+        for (int i = 0; i < ds.size(); i++) {
+            links[i] = m.linkDigest(ds.get(i));
+            CityMap.Drawn g = m.drawnKept(ds.get(i));
+            hadPlan[i] = g != null;
+            if (g != null) plans[i] = drawnHash(g);
+        }
+        m.forgetPainted();
+        // ...each plan hashed as it is made: the map keeps no more than PLANS_KEPT of them.
+        long[] wholePlans = new long[ds.size()];
+        for (int i = 0; i < ds.size(); i++) {
+            CityMap.District d = ds.get(i);
+            CityMap.Drawn g = m.drawn(d);
+            if (g != null) wholePlans[i] = drawnHash(g);
+            if (d.usedCells() > 0) m.picture(d);
+        }
+        int[] res = new int[4];
+        for (int i = 0; i < ds.size(); i++) {
+            CityMap.District d = ds.get(i);
+            if (links[i] == null) continue;
+            res[0]++;
+            if (!Arrays.equals(links[i], m.linkDigest(d))) res[1]++;
+            if (hadPlan[i]) {
+                res[3]++;
+                if (wholePlans[i] != plans[i]) res[2]++;
+            }
+        }
+        return res;
     }
 
     /** The figures section 18 prints for a fixture. */
@@ -12378,6 +13130,8 @@ public class MapCheck {
         java.util.List<Double> sn = new ArrayList<>(), st = new ArrayList<>(), fn = new ArrayList<>(), ft = new ArrayList<>(), l0 = new ArrayList<>(), ch = new ArrayList<>(),
                 ns = new ArrayList<>(), ts = new ArrayList<>(), keys = new ArrayList<>(), lazy = new ArrayList<>();
         java.util.List<Integer> moved = new ArrayList<>(), rep = new ArrayList<>(), recol = new ArrayList<>(), onStamp = new ArrayList<>();
+        java.util.List<Double> lk = new ArrayList<>(), li = new ArrayList<>();
+        java.util.List<Integer> lt = new ArrayList<>(), lh = new ArrayList<>(), lm = new ArrayList<>();
         int unsettled = 0, runsMoved = 0, runsDrawn = 0;
         for (RedrawMonth r : w.all) {
             if (r.kind == SETTLE) continue;
@@ -12389,6 +13143,11 @@ public class MapCheck {
             fn.add(r.farNow);
             ft.add(r.farToday);
             l0.add(r.l0);
+            lk.add(r.l0Keys);
+            li.add(r.l0Inputs);
+            lt.add(r.l0Tiles);
+            lh.add(r.l0Held);
+            lm.add(r.l0Moved);
             ch.add(r.chain);
             ns.add(r.nowSum());
             ts.add(r.todaySum());
@@ -12400,7 +13159,7 @@ public class MapCheck {
             if (r.recoloured.length > 0) recol.add(r.recoloured[0]);
             if (!r.settled) unsettled++;
         }
-        out.printf("      %s (%,d districts, %.0f s): in ms, median and worst of %d months, now's / today's - stamp %.2f (%.2f) / %.2f (%.2f); far screen %.2f (%.2f) / %.2f (%.2f), its %d node keys %.2f; L0 re-stamped %.2f (%.2f); chain %.2f (%.2f);"
+        out.printf("      %s (%,d districts, %.0f s): in ms, median and worst of %d months, now's / today's - stamp %.2f (%.2f) / %.2f (%.2f); far screen %.2f (%.2f) / %.2f (%.2f), its %d node keys %.2f; L0 keyed and read %.2f (%.2f); chain %.2f (%.2f);"
                         + " the month's sum %.2f (%.2f) / %.2f (%.2f); the lazy checks %.2f%n", w.name, w.m.districts().size(), w.tookS, ns.size(), median18(sn), worst18(sn), median18(st), worst18(st),
                 median18(fn), worst18(fn), median18(ft), worst18(ft), w.fars.isEmpty() ? 0 : w.fars.get(0).count, median18(keys), median18(l0), worst18(l0), median18(ch), worst18(ch),
                 median18(ns), worst18(ns), median18(ts), worst18(ts), median18(lazy));
@@ -12408,6 +13167,26 @@ public class MapCheck {
                         + " the runs' layer drawn in %d of the %d months the runs moved; %d months not settled in %d rounds; the stamp's view made %d times%n", w.name,
                 w.fars.stream().map(f -> f.count + " at " + f.plots + " plots a px").toList(), recol.isEmpty() ? "-" : String.valueOf(medianInt(recol)), medianInt(moved), medianInt(rep),
                 medianInt(onStamp), runsDrawn, runsMoved, unsettled, CHAIN_ROUNDS, w.viewChanges);
+        if (w.withL0) {
+            out.printf("      %s: the L0 screen (batch UP5), a month's median: %d ready tiles in view, %d keys held and %d moved (read again); the key pass %.2f ms (worst %.2f), the input pass %.2f ms (worst %.2f)%n",
+                    w.name, medianInt(lt), medianInt(lh), medianInt(lm), median18(lk), worst18(lk), median18(li), worst18(li));
+        }
+        // (batch UP5, slice A) The chain a month: plan jobs handed out, the plans made and the links taken as they stood, the worker's ms and the chain's FX side; the own stamps asked and worked out.
+        java.util.List<Integer> jh = new ArrayList<>(), jp = new ArrayList<>(), jr = new ArrayList<>(), jf = new ArrayList<>(), oa = new ArrayList<>(), om = new ArrayList<>();
+        java.util.List<Double> jw = new ArrayList<>(), jfx = new ArrayList<>();
+        for (RedrawMonth r : w.all) {
+            if (r.kind == SETTLE || !r.timed) continue;
+            jh.add(r.handed);
+            jp.add((int) r.madePlans);
+            jr.add((int) r.reusedLinks);
+            jf.add((int) r.failedJobs);
+            jw.add(r.workerMs);
+            jfx.add(r.chain);
+            oa.add((int) r.ownCalls[0]);
+            om.add((int) r.ownCalls[1]);
+        }
+        out.printf("      %s: the chain (batch UP5), a month's median: %d plan jobs handed out, %d plans made, %d links taken as they stood, %d jobs that could do neither; the worker %.1f ms, the chain's FX side %.2f ms (worst %.2f); own stamps asked %d, worked out %d%n",
+                w.name, medianInt(jh), medianInt(jp), medianInt(jr), medianInt(jf), median18(jw), median18(jfx), worst18(jfx), medianInt(oa), medianInt(om));
     }
 
     /* =====================================================================

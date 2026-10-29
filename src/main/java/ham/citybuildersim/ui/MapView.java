@@ -314,6 +314,9 @@ final class MapView {
     private static final class Img {
         WritableImage image;
         long stamp, version = Long.MIN_VALUE;
+        /** A tile's key (MapTiles.tileKey(), batch UP5) at the moment `stamp` was taken, and whether it was: while the key holds the stamp does, and the tile's inputs are not read again. */
+        long key;
+        boolean keyed;
         byte[] ground;
         /** The node's relief beside its ground (ET1 slice D): null on a generated world, whose ground is all flat. */
         byte[] relief;
@@ -740,7 +743,8 @@ final class MapView {
 
     /**
      * The frame's painting, until the deadline: the tiles in view with no
-     * picture at this level, or one from an older version - stamped again,
+     * picture at this level, or one from an older version - keyed
+     * (MapTiles.tileKey(), batch UP5), stamped again only if the key moved,
      * and painted only when the stamp moved - from the middle of the view out;
      * at FAR the far nodes, their ground asked of WORKER and coloured here.
      * True when there is more to do.
@@ -764,8 +768,17 @@ final class MapView {
                 ask(tx, ty);
                 continue;
             }
+            // The version moved: its inputs are read again only if the key they are worked out from did (MapTiles.tileKey(), batch UP5: equal
+            // keys, equal inputs, so the stamp the picture holds), a few lookups where reading them is the streets of a ring and the runs over a box.
+            long tileKey = tiles.tileKey(tx, ty);
+            if (img != null && img.keyed && img.key == tileKey) {
+                img.version = version;
+                continue;
+            }
             long stamp = tiles.input(tx, ty, in);
             if (img != null && img.stamp == stamp) {
+                img.key = tileKey;
+                img.keyed = true;
                 img.version = version;
                 continue;
             }
@@ -779,6 +792,8 @@ final class MapView {
             }
             img.image.getPixelWriter().setPixels(0, 0, w, w, PixelFormat.getIntArgbInstance(), buffer, 0, w);
             img.stamp = stamp;
+            img.key = tileKey;
+            img.keyed = true;
             img.version = version;
             dirty = true;
         }
