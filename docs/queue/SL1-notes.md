@@ -78,9 +78,12 @@ a quarter of main's; the coast still caps what is drawn, and now nothing grows w
 
 ## 3. The calls (each ★ took the recommended way, BP1)
 
-- **★1 The terminals' price** (sent to the orchestrator at 20:50 with the recommendation; no
-  answer by the ship file): scaled with capacity, so cost and port dues a tonne stand and only
-  the step grows (General Cargo $70k -> $311k). Else: capacity alone, 4.4x cheaper a tonne.
+- **★1 The terminals' price** (put to the orchestrator with the recommendation; its answer,
+  2026-10-28: "take your recommendation"): each terminal's cash, construction points,
+  materials, jobs and land scaled by its capacity ratio, so cost and port dues a tonne stand and
+  only the step grows (General Cargo $70k -> $311k; Tanker x9.23, Bulk Terminal x1.82, Container
+  x3.6, General Cargo x4.44, on the terminals cited in section 2). Else: capacity alone, 4.4x
+  cheaper a tonne. Jerus can overturn it.
 - **★2 The size by the whole trade.** On the uncovered tonnes alone (the first draft) the Bulk
   Berths kept dry bulk under the 50 Mt terminal's break-even for ever: 33 berths, never a
   terminal. The kind's carriable tonnes choose the size; the playtest's 21 terminals include one.
@@ -92,9 +95,14 @@ a quarter of main's; the coast still caps what is drawn, and now nothing grows w
 - **★6 BERTH_PLOTS_MOST = the Bulk Terminal's box before SL1 (~244 plots).** A 72 ha Container
   Terminal is drawn 16 x 15; its ground is counted whole. Else: a terminal laid over several
   tiles, a rework of the shore's rule.
-- **★7 No small general cargo terminal.** The first General Cargo Terminal waits for 100 kt a
-  month uncovered (22.5 kt before): the playtest's first port came at m1113 (main m1085). Rec:
-  leave it; a General Cargo Berth (a new id, 450 kt) only if the young city should ship sooner.
+- **★7 No small general cargo terminal** (the orchestrator's answer, 2026-10-28: add a General
+  Cargo Berth "only if the ensemble shows growth hurt by the first General Cargo Terminal's later
+  arrival; otherwise leave it out and name it under pending"). The first General Cargo Terminal
+  waits for 100 kt a month uncovered (22.5 kt before, a 2 Mt terminal against PSA Breakbulk
+  Antwerp's ~2 Mt): the playtest's first port came at m1113 (main m1085). The ensemble shows
+  growth unhurt (section 5), so it is not built: pending SL1-B, a General Cargo Berth (the next
+  free id, the old 450 kt terminal's values) as general cargo's small terminal, as the Bulk Berth
+  is dry bulk's, if Jerus wants the young city to ship break bulk sooner.
 - **The A\* skipped on a clear line** (B's): pull() makes the same two points of any way the A*
   finds when the straight line keeps to the sea; no route changes.
 - **Fixtures on the ground before SL1** (`GatewayCheck.GROUND_BEFORE_SL1`): GatewayCheck 21 (a
