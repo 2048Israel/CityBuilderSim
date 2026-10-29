@@ -59,7 +59,7 @@
 
 **Uses:** [WorldData](WorldData.md) (106), [EarthData](EarthData.md) (10), [Freight](Freight.md) (3), [EarthCheck](EarthCheck.md) (3), [Money](Money.md) (1)
 
-**Used by (3):** [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [NationsCheck](NationsCheck.md)
+**Used by (6):** [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [NationsCheck](NationsCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldMarketCheck](WorldMarketCheck.md)
 
 ## Sections
 

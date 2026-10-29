@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**152 harness files, 16,097 labelled assertions.** AllChecks runs 152 of them.
+**153 harness files, 16,196 labelled assertions.** AllChecks runs 153 of them.
 
 ## Which harnesses read which class
 
@@ -56,7 +56,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, ReadPathCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, YearBookCheck |
+| [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
@@ -122,8 +122,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Geology](map/Geology.md) | CoalMiningCheck, EarthDepositsCheck, EarthTerrainCheck |
 | [GlobeFrame](map/GlobeFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, VanCheck, WellCheck, WoodProductsCheck |
-| [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, FoodProcessingCheck, ForeignCheck, GdpCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck |
+| [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, FoodProcessingCheck, ForeignCheck, GdpCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
 | [GridConversion](map/GridConversion.md) | ConversionCheck, EarthTerrainCheck, LandCheck |
 | [GridOffers](map/GridOffers.md) | BuildCardCheck, ConversionCheck, GridCheck, LandCheck, LandmassCheck, MapCheck |
@@ -191,7 +191,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
 | [Names](map/Names.md) | StaleCheck |
 | [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperMiningCheck, DeskCheck, EducationCheck, FloatLinkCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SlopeCheck, TreasuryCheck, WoodProductsCheck |
-| [Nations](map/Nations.md) | GlobeCheck, LongPlaytest, NationsCheck, SaveFileCheck |
+| [Nations](map/Nations.md) | GlobeCheck, LongPlaytest, NationsCheck, SaveFileCheck, WorldMarketCheck |
 | [NationsMap](map/NationsMap.md) | GlobeCheck, MapCheck |
 | [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, ConstructionControlCheck, InboxCheck, KeptCheck, LandmassCheck, LongPlaytest, PlaytestFixCheck, SaveSlotCheck |
 | [Offending](map/Offending.md) | **none** |
@@ -203,6 +203,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [OrphanHousehold](map/OrphanHousehold.md) | OutsideCheck |
 | [OutwardInvestment](map/OutwardInvestment.md) | AuctionCheck, BondCheck, BuybackCheck, CapitalFlowCheck, ExchangeCheck, HoldersCheck, LongPlaytest |
 | [Palette](map/Palette.md) | **none** |
+| [PartnerTrade](map/PartnerTrade.md) | ReadPathCheck, SaveFileCheck |
 | [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, TradeCostCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck |
@@ -269,10 +270,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
 | [TimeSkipReport](map/TimeSkipReport.md) | AuctionCheck, HealthCheck, ReloadCheck, SkipReportCheck |
-| [Timing](map/Timing.md) | BridgeCheck, BridgeMapCheck, EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandNetCheck, KeptCheck, MapCheck, PlanCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck |
+| [Timing](map/Timing.md) | BridgeCheck, BridgeMapCheck, EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandNetCheck, KeptCheck, MapCheck, PlanCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck, WorldMarketCheck |
 | [TrackCurves](map/TrackCurves.md) | GatewayCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [TradeBand](map/TradeBand.md) | TradeBandCheck |
+| [TradeLanes](map/TradeLanes.md) | GlobeCheck, ReadPathCheck, SaveFileCheck |
 | [TradeScreen](map/TradeScreen.md) | **none** |
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckCheck, VanCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, RailCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
@@ -292,8 +294,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
 | [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, IslandNetCheck, JunctionCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
-| [WorldData](map/WorldData.md) | GlobeCheck, MapCheck, NationsCheck, WorldDataCheck |
+| [WorldData](map/WorldData.md) | GlobeCheck, MapCheck, NationsCheck, ReadPathCheck, SaveFileCheck, WorldDataCheck, WorldMarketCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
+| [WorldMarket](map/WorldMarket.md) | ReadPathCheck, SaveFileCheck, WorldMarketCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, ReadPathCheck, ScaleCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurveCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
 | [Zoning](map/Zoning.md) | ForestryCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
@@ -8877,7 +8880,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L951 ...the same luxuries
   - L952 ...and strikes the same GDP
 
-## GlobeCheck.java - 108 labelled assertions
+## GlobeCheck.java - 133 labelled assertions
 
 > The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's three cameras, and the planet's picture with a frame drawn from it - on screen since 0.7.135 (batch E9), which MapCheck 13 holds.
 > 
@@ -8893,131 +8896,159 @@ _(this harness does not label its checks through a helper - it prints its findin
 > What this has to prove (spec-globe 4's E8 row):
 > ...
 
-- **L251 the fixture**
-  - L253 EarthCheck's fixture and its expected figures are beside the classes (
-- **L287 1. the orthographic projection: forward and inverse round a view centre, with a roll**
-  - L325 a point on the disc goes to the planet and back to within ROUND_TRIP_M
-  - L326 ...and a point on the planet within LIMB_DEG of the centre to the disc and back
-  - L328 every point on the far side is refused - the globe hides it - and nothing past the disc is on the planet
-  - L330 the view's centre is its middle, and north there is the roll clockwise from up (to a millionth of a degree)
-  - L331 ...and it is Snyder's textbook projection (the study's prototype's) turned by the roll, to a millimetre
-- **L362 2. the view: zoom at the pointer, a drag, Fit, the tiers, the roll and the reach**
-  - L428 a zoom in keeps the point under the pointer within POINTER_PX, wide and through the GROUND tier; in and out on the plane and near the handoff
-  - L430 ...and across the handoff, both ways, the point put in the new tier's own projection
-  - L431 ...and a zoom out wide wherever north up can put the point there (the spherical triangle allows it)
-  - L432 a drag keeps the point grabbed under the pointer within POINTER_PX, on the GROUND tier and the plane
-  - L436 the tiers change at the dials: PICTURE from PICTURE_FROM_KM (the picture's texel), GROUND to HANDOFF_KM, PLANE closer
-  - L458 the plane's up at a place, in closed form, is EarthProj.forward()'s own along the meridian, and nought at the city
-  - L460 the roll is nought ROLL_NOTCHES notches before the handoff, the plane's up at it, eased by notches between, and nought beyond the reach
-  - L476 away from the city the wheel goes on closer than the handoff, five notches in, the GROUND tier (MS1: it stopped at the handoff)
-  - L477 ...and a pan at the plane's scales carries the centre past the reach, the GROUND tier past it (MS1: it stopped at the reach)
-  - L479 a city's ground reaching farther extends the reach by REACH_MARGIN_KM round it; a small city's is REACH_KM
-  - L487 the plane's view handed over and taken back leaves the view where it was
-- **L575 2b. the near view anywhere and no wall (MS1): the wheel, a drag and a pan go anywhere at every scale; the reach only decides the picture**
-  - L580 tierOf(kmPx, withinReach): the plane's scales are the PLANE within the reach and the GROUND tier past it; the wider scales are the scale's either way
-  - L624 far from the city (another continent, and across the antimeridian from it) the wheel reaches leastKmPx(), nothing stopping it at the handoff
-  - L626 ...the tier there is GROUND, in and out, and the view still far from the city
-  - L627 ...and the point under the pointer stays under it within POINTER_PX, in and out
-  - L650 at the closest scale far from the city a drag moves the centre every time, keeping the point grabbed under the pointer (POINTER_PX)
-  - L651 ...and a held key's frames turn the globe as the pixels say, the GROUND tier still
-  - L697 drags outward at a near scale carry the centre past the reach with no stop: its distance from the city grows every drag, through the reach and beyond it
-  - L698 ...the tier is PLANE inside the reach and GROUND past it, at the same scale
-  - L699 ...and the point grabbed stays under the pointer within POINTER_PX at every step, across the crossing too
-  - L700 ...the roll the view takes is rollFor()'s, and one drag turns it by no more than the share of ROLL_EASE_KM and of REACH_KM its step covers, of the plane's up...
-  - L708 a view set at the closest scale three reaches from the city is where it was set, GROUND, and a reach set again moves nothing
-  - L712 the view's own crossfade: the globe's share by notches inside the handoff while the plane is drawn, whole where there is no plane under it
-  - L737 a view straddling the antimeridian draws it as longitude continuous: one seam, a pixel's longitude step across it as its neighbour's is elsewhere, two points...
-  - L772 the crossing drawn at the handoff: the plane's ground and the GROUND tier's far rule part by under a thousandth of a patch's pixels, at the reach's edge as a...
-  - L774 ...and at a near scale, where the plane draws a finer far node than the camera's least stride, under CROSSING_NEAR_SHARE of them - the coasts and rivers part...
-  - L821 fixture: the view straddles longitude 180 over ground with a coast - the seam's two columns each hold land and water
-  - L823 the GROUND tier across the antimeridian, over that coast: the two pixel columns either side of the seam differ no more than adjacent columns elsewhere in the...
-  - L856 the full file: the GROUND tier across the antimeridian over Chukotka's coast, the seam's columns differ no more than adjacent columns elsewhere
-  - L1112 closer than the handoff - his scale, a quarter of the handoff and the closest - the plane's nodes are drawn wherever the square holds the ground, the reach a...
-  - L1118 ...a half-resolution copy of a view keeps its rule (the frame a moving view is drawn at is 2 x the km a pixel: past the handoff on its own)
-  - L1121 ...and the legend is the plane's at every scale closer than the handoff, past the reach too, the GROUND tier's from the handoff and the picture's wide
-  - L1154 at the world's square's edge, past the hand-over, the charts draw both sides of it: chartHolds() and ground() agree, the plane draws neither side (drawsHold(...
-  - L1173 Baddeck
-  - L1181 one plot a pixel (his scale and the closest): the classes the nodes give through the camera are the plane's own, plot for plot, on both sides of the reach - ...
-  - L1183 two, four and eight plots a pixel: within NEAR_PAST_FOLDED of the plane's own plots' classes (the forest folded), and within NEAR_PAST_CLASSES with it told a...
-  - L1185 ...and the two sides of the reach agree with the plane's plots as well as each other: no seam where the camera crosses it
-  - L1186 not dithered: the reprojected nodes' pixels that differ from both horizontal neighbours are no more of them than the plane's own, to NEAR_PAST_SPECKLE
-  - L1188 ...where the far rule's own speckle - what Jerus's second screenshot shows - is at least FAR_SPECKLE_AT_LEAST of the pixels over a forested window, so the fi...
-  - L1201 fixture: lakes where the far rule draws a perfect disc and the plane's lake is frayed are found - at least LAKES_PICKED of them in the windows
-  - L1202 a small lake through the camera is the plane's own lake, pixel for pixel at one plot a pixel (LAKE_SAME_IOU), frayed by its own noise - not the far rule's disc
-  - L1225 a frame of the plane's nodes through the camera at his scale is drawn in no more than FRAME_MS of
-- **L1457 2d. the slanted ground (MS3): the streak Jerus's screenshot shows, as a number: the plane's shape distortion makes it (not the turn, not ...**
-  - L1493 the measure, calibrated on the rule's own noise: no stretch reads 1 within STREAK_READ_TOL, a stretch of 2 or 4 (and 3 turned 30 degrees) between STREAK_READ...
-  - L1496 ...and a north-up view's bearing of a field stretched along y is north-south, and a rolled view's bearing is the screen direction less the roll (streakBearin...
-  - L1573 the cause - the plane's own noise: the noise under each pixel is stretched exactly as Lambert's projection stretches it - at every placement its E over its E...
-  - L1575 ...the plane's own plots streak along the line to the city, and more as sigma grows: from sigma 1.5 their streak is within STREAK_BEARING_DEG of the line, th...
-  - L1578 ...the fixture causes it: the plane's plots' E / E_ref is at least STREAK_SHOWN at 12,000 km on at least one fixture window
-  - L1580 not the pixel lookup (MS3: restricted to the plane's own ground, within the hand-over): at every placement within GlobeFrame.handoverKm() of the city the pla...
-  - L1583 not the turn: the turn is done - the roll is 0 (north up) at every placement 2,000 km and farther; and a turn cannot stretch anyway (E is the same under a ro...
-  - L1585 the fix - past the hand-over the drawn ground is true in shape: its E / E_ref is within STREAK_READ_TOL of 1 at every placement past GlobeFrame.SHAPE_HANDOVE...
-  - L1752 no seam where the plane hands over to the charts, nor where the sphere's noise is blended in whole: on a fixture window and near Goose Bay, at both ends of t...
-  - L1754 ...the measure sees one: the sphere's noise switched on at the hand-over with no band reads at least SEAM_SHOWN on every window
-  - L1755 ...and the class shares (water, forest, grass, the rest) either side of the line are within SHARE_TOL of each other
-  - L1795 the sphere's noise keeps the plane's spread: over 2^16 sampled points its standard deviation is within SPREAD_TOL of the plane's noiseAt() over 2^16 plot cen...
-  - L1849 a chart node (classes, relief, colours) at
-  - L1869 a ground() frame of 2d's view over held chart nodes is drawn in no more than FRAME_MS of
-- **L1921 3. the handoff: the globe and the city's plane at the swap, facing the city and at the reach**
-  - L1939 facing the city the plane and the globe part by under half a pixel on the expanded map at HANDOFF_PLOTS
-  - L1940 ...and by more at twice it: the handoff is the widest power of two under half a pixel
-  - L1970 at REACH_KM, turned to the plane's up, the swap parts by under REACH_PARTING_PX
-  - L1971 ...where north up it parts by more than ten times that: the roll is what makes it fit
-- **L2013 4. the plane's camera is today's far nodes: every stride, the windows and the world, as 0.7.131 drew them**
-  - L2023 on the fixture's four windows every stride's far node, aligned and centred, and the whole world's, are 0.7.131's byte for byte
-  - L2037 on the full file, eight spots' far nodes at every stride and their worlds' are 0.7.131's byte for byte
-- **L2048 5. the globe's camera: its ground the plane's at the handoff, its dither on the ground**
-  - L2094 facing the city at the handoff the globe's camera draws the plane's node but for the forest's dither (a pixel in a thousand at most)
-  - L2095 ...its forest of the dry ground within SHARE_POINTS of the plane's, and its rivers where the plane's are
-  - L2097 a turn of TURN_PX flips the forest on no more than that share of the dry pixels: the dither moves with the ground
-  - L2106 the globe's dither cell is at least a pixel tall and under two at every scale of the GROUND tier, and the picture's texel at its own
-- **L2114 6. the planet's picture: a class a texel through the grid's camera, its land and its rule the far layers'**
-  - L2117 the picture is the same made twice, on two threads as on one
-  - L2120 on the fixture each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast
-  - L2124 ...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS
-  - L2138 on the full file each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast
-  - L2140 ...and the planet's land, by area, is theirs within EarthTerrainCheck.LAND_WITHIN
-  - L2144 ...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS
-  - L2145 ...and it draws ice (Greenland's sheet), desert (the Sahara), forest and rivers (the Amazon's)
-- **L2262 7. a frame of the expanded map from the picture, timed on the main thread's CPU**
-  - L2286 a frame from the planet's picture is drawn in no more than FRAME_MS of
-- **L2345 8. the planet's picture holds each texel's relief beside its class: mountains grey from orbit, snow white, the classes as they were**
-  - L2356 a texel's code is its class in the low bits and its relief above, CODES of them, FLAT's the class itself; the globe's colour for each is the map's (TileRaste...
-  - L2370 every texel's relief is on dry ground alone (no slope on water or ice: snow stays white), and the picture has slopes
-  - L2386 the fixture's hilliest degree in the picture is the far rule's, texel for texel, through a band of one degree's rows instead of ten
-  - L2408 a frame over it colours each pixel by its texel's code - a grey on open ground, forest shaded - and from a table of the classes alone, as before
-  - L2424 on the full file the Himalaya and Tibet's relief shares are the data's within RELIEF_SIGMAS spreads, with grey in all three classes, and its snow all white
-- **L2473 9 to 12. the nations on the map: the fixture**
-  - L2475 WorldDataCheck's fixture and its expected figures are beside the classes (
-  - L2480 the map holds the fixture's
-- **L2489 9 to 12. the nations on the map: the full file, when it is named**
-  - L2491 the file -D
-  - L2503 the map holds the full file's
-  - L2506 the map is built from the file in no more than BUILD_MS (
-- **L2607 9. the borders culled to the view, at its level, and timed (1,389 x 868, a Halifax city)**
-  - L2638 the city's ground at 1 km a pixel is the GROUND tier, not the plane
-  - L2639 over Europe fewer than a quarter of the lines are considered (
-  - L2641 the whole planet draws no more than VERTICES_MOST (
-- **L2653 10. the nations' dots and labels: the full file**
-  - L2715 Canada and the United States are labelled over the North Atlantic
-  - L2725 Luxembourg and Belgium, whose coarse area is under LABEL_AREA_TIMES boxes at this view, keep only their dots
-- **L2748 11. the hit test: the fixture**
-  - L2769 the fixture's cells (
-  - L2770 a view centred on a Belgian, a German or a Dutch cell with no dot near gives that cell's nation through nationAt (
-  - L2771 a view centred on a sea cell gives no one through nationAt; ownerName says Belgium for 2 and no one for 0
-  - L2776 a point at a dot's centre gives its nation (
-  - L2792 a point within a dot's radius and HIT_SLOP_PX of its centre gives the nearest centre's nation of the dots that reach it (
-- **L2796 11. the hit test: the full file**
-  - L2804 the point at each dot's centre gives its nation (
-  - L2805 the open Atlantic (40 N, 40 W) gives no one and Canada's interior (60 N, 100 W) gives Canada
-  - L2806 ownerAt is the owner layer's, and ownerName names an area as well as a nation (Kosovo)
-  - L2889 the ordinal words are 1st 2nd 3rd 4th 11th 12th 13th 21st 22nd 101st 111th 112th (
-  - L2896 usd() writes US$2.24T, US$580B, US$58.1B, US$5.81B, the same in M, a whole number with thousands separated below, and steps up where a rounding reaches the n...
-  - L2901 people() writes 1.43B, 41.5M, 390k, 57k (not 57.0k), 5.81k, the whole number below a thousand, and steps up where a rounding reaches the next unit
-  - L2902 sig3() keeps three significant figures: 54,300 for 54,321, 1.37, 0.857, 0.86 (not 0.860), 15,800 for 15,812, 150 and 1.30
-  - L2909 a hover says the name, \"GDP ... people\", the km from the city and CLICK_FOR_CARD last (
+- **L273 the fixture**
+  - L275 EarthCheck's fixture and its expected figures are beside the classes (
+- **L310 1. the orthographic projection: forward and inverse round a view centre, with a roll**
+  - L348 a point on the disc goes to the planet and back to within ROUND_TRIP_M
+  - L349 ...and a point on the planet within LIMB_DEG of the centre to the disc and back
+  - L351 every point on the far side is refused - the globe hides it - and nothing past the disc is on the planet
+  - L353 the view's centre is its middle, and north there is the roll clockwise from up (to a millionth of a degree)
+  - L354 ...and it is Snyder's textbook projection (the study's prototype's) turned by the roll, to a millimetre
+- **L385 2. the view: zoom at the pointer, a drag, Fit, the tiers, the roll and the reach**
+  - L451 a zoom in keeps the point under the pointer within POINTER_PX, wide and through the GROUND tier; in and out on the plane and near the handoff
+  - L453 ...and across the handoff, both ways, the point put in the new tier's own projection
+  - L454 ...and a zoom out wide wherever north up can put the point there (the spherical triangle allows it)
+  - L455 a drag keeps the point grabbed under the pointer within POINTER_PX, on the GROUND tier and the plane
+  - L459 the tiers change at the dials: PICTURE from PICTURE_FROM_KM (the picture's texel), GROUND to HANDOFF_KM, PLANE closer
+  - L481 the plane's up at a place, in closed form, is EarthProj.forward()'s own along the meridian, and nought at the city
+  - L483 the roll is nought ROLL_NOTCHES notches before the handoff, the plane's up at it, eased by notches between, and nought beyond the reach
+  - L499 away from the city the wheel goes on closer than the handoff, five notches in, the GROUND tier (MS1: it stopped at the handoff)
+  - L500 ...and a pan at the plane's scales carries the centre past the reach, the GROUND tier past it (MS1: it stopped at the reach)
+  - L502 a city's ground reaching farther extends the reach by REACH_MARGIN_KM round it; a small city's is REACH_KM
+  - L510 the plane's view handed over and taken back leaves the view where it was
+- **L598 2b. the near view anywhere and no wall (MS1): the wheel, a drag and a pan go anywhere at every scale; the reach only decides the picture**
+  - L603 tierOf(kmPx, withinReach): the plane's scales are the PLANE within the reach and the GROUND tier past it; the wider scales are the scale's either way
+  - L647 far from the city (another continent, and across the antimeridian from it) the wheel reaches leastKmPx(), nothing stopping it at the handoff
+  - L649 ...the tier there is GROUND, in and out, and the view still far from the city
+  - L650 ...and the point under the pointer stays under it within POINTER_PX, in and out
+  - L673 at the closest scale far from the city a drag moves the centre every time, keeping the point grabbed under the pointer (POINTER_PX)
+  - L674 ...and a held key's frames turn the globe as the pixels say, the GROUND tier still
+  - L720 drags outward at a near scale carry the centre past the reach with no stop: its distance from the city grows every drag, through the reach and beyond it
+  - L721 ...the tier is PLANE inside the reach and GROUND past it, at the same scale
+  - L722 ...and the point grabbed stays under the pointer within POINTER_PX at every step, across the crossing too
+  - L723 ...the roll the view takes is rollFor()'s, and one drag turns it by no more than the share of ROLL_EASE_KM and of REACH_KM its step covers, of the plane's up...
+  - L731 a view set at the closest scale three reaches from the city is where it was set, GROUND, and a reach set again moves nothing
+  - L735 the view's own crossfade: the globe's share by notches inside the handoff while the plane is drawn, whole where there is no plane under it
+  - L760 a view straddling the antimeridian draws it as longitude continuous: one seam, a pixel's longitude step across it as its neighbour's is elsewhere, two points...
+  - L795 the crossing drawn at the handoff: the plane's ground and the GROUND tier's far rule part by under a thousandth of a patch's pixels, at the reach's edge as a...
+  - L797 ...and at a near scale, where the plane draws a finer far node than the camera's least stride, under CROSSING_NEAR_SHARE of them - the coasts and rivers part...
+  - L844 fixture: the view straddles longitude 180 over ground with a coast - the seam's two columns each hold land and water
+  - L846 the GROUND tier across the antimeridian, over that coast: the two pixel columns either side of the seam differ no more than adjacent columns elsewhere in the...
+  - L879 the full file: the GROUND tier across the antimeridian over Chukotka's coast, the seam's columns differ no more than adjacent columns elsewhere
+  - L1135 closer than the handoff - his scale, a quarter of the handoff and the closest - the plane's nodes are drawn wherever the square holds the ground, the reach a...
+  - L1141 ...a half-resolution copy of a view keeps its rule (the frame a moving view is drawn at is 2 x the km a pixel: past the handoff on its own)
+  - L1144 ...and the legend is the plane's at every scale closer than the handoff, past the reach too, the GROUND tier's from the handoff and the picture's wide
+  - L1177 at the world's square's edge, past the hand-over, the charts draw both sides of it: chartHolds() and ground() agree, the plane draws neither side (drawsHold(...
+  - L1196 Baddeck
+  - L1204 one plot a pixel (his scale and the closest): the classes the nodes give through the camera are the plane's own, plot for plot, on both sides of the reach - ...
+  - L1206 two, four and eight plots a pixel: within NEAR_PAST_FOLDED of the plane's own plots' classes (the forest folded), and within NEAR_PAST_CLASSES with it told a...
+  - L1208 ...and the two sides of the reach agree with the plane's plots as well as each other: no seam where the camera crosses it
+  - L1209 not dithered: the reprojected nodes' pixels that differ from both horizontal neighbours are no more of them than the plane's own, to NEAR_PAST_SPECKLE
+  - L1211 ...where the far rule's own speckle - what Jerus's second screenshot shows - is at least FAR_SPECKLE_AT_LEAST of the pixels over a forested window, so the fi...
+  - L1224 fixture: lakes where the far rule draws a perfect disc and the plane's lake is frayed are found - at least LAKES_PICKED of them in the windows
+  - L1225 a small lake through the camera is the plane's own lake, pixel for pixel at one plot a pixel (LAKE_SAME_IOU), frayed by its own noise - not the far rule's disc
+  - L1248 a frame of the plane's nodes through the camera at his scale is drawn in no more than FRAME_MS of
+- **L1480 2d. the slanted ground (MS3): the streak Jerus's screenshot shows, as a number: the plane's shape distortion makes it (not the turn, not ...**
+  - L1516 the measure, calibrated on the rule's own noise: no stretch reads 1 within STREAK_READ_TOL, a stretch of 2 or 4 (and 3 turned 30 degrees) between STREAK_READ...
+  - L1519 ...and a north-up view's bearing of a field stretched along y is north-south, and a rolled view's bearing is the screen direction less the roll (streakBearin...
+  - L1596 the cause - the plane's own noise: the noise under each pixel is stretched exactly as Lambert's projection stretches it - at every placement its E over its E...
+  - L1598 ...the plane's own plots streak along the line to the city, and more as sigma grows: from sigma 1.5 their streak is within STREAK_BEARING_DEG of the line, th...
+  - L1601 ...the fixture causes it: the plane's plots' E / E_ref is at least STREAK_SHOWN at 12,000 km on at least one fixture window
+  - L1603 not the pixel lookup (MS3: restricted to the plane's own ground, within the hand-over): at every placement within GlobeFrame.handoverKm() of the city the pla...
+  - L1606 not the turn: the turn is done - the roll is 0 (north up) at every placement 2,000 km and farther; and a turn cannot stretch anyway (E is the same under a ro...
+  - L1608 the fix - past the hand-over the drawn ground is true in shape: its E / E_ref is within STREAK_READ_TOL of 1 at every placement past GlobeFrame.SHAPE_HANDOVE...
+  - L1775 no seam where the plane hands over to the charts, nor where the sphere's noise is blended in whole: on a fixture window and near Goose Bay, at both ends of t...
+  - L1777 ...the measure sees one: the sphere's noise switched on at the hand-over with no band reads at least SEAM_SHOWN on every window
+  - L1778 ...and the class shares (water, forest, grass, the rest) either side of the line are within SHARE_TOL of each other
+  - L1818 the sphere's noise keeps the plane's spread: over 2^16 sampled points its standard deviation is within SPREAD_TOL of the plane's noiseAt() over 2^16 plot cen...
+  - L1872 a chart node (classes, relief, colours) at
+  - L1892 a ground() frame of 2d's view over held chart nodes is drawn in no more than FRAME_MS of
+- **L1944 3. the handoff: the globe and the city's plane at the swap, facing the city and at the reach**
+  - L1962 facing the city the plane and the globe part by under half a pixel on the expanded map at HANDOFF_PLOTS
+  - L1963 ...and by more at twice it: the handoff is the widest power of two under half a pixel
+  - L1993 at REACH_KM, turned to the plane's up, the swap parts by under REACH_PARTING_PX
+  - L1994 ...where north up it parts by more than ten times that: the roll is what makes it fit
+- **L2036 4. the plane's camera is today's far nodes: every stride, the windows and the world, as 0.7.131 drew them**
+  - L2046 on the fixture's four windows every stride's far node, aligned and centred, and the whole world's, are 0.7.131's byte for byte
+  - L2060 on the full file, eight spots' far nodes at every stride and their worlds' are 0.7.131's byte for byte
+- **L2071 5. the globe's camera: its ground the plane's at the handoff, its dither on the ground**
+  - L2117 facing the city at the handoff the globe's camera draws the plane's node but for the forest's dither (a pixel in a thousand at most)
+  - L2118 ...its forest of the dry ground within SHARE_POINTS of the plane's, and its rivers where the plane's are
+  - L2120 a turn of TURN_PX flips the forest on no more than that share of the dry pixels: the dither moves with the ground
+  - L2129 the globe's dither cell is at least a pixel tall and under two at every scale of the GROUND tier, and the picture's texel at its own
+- **L2137 6. the planet's picture: a class a texel through the grid's camera, its land and its rule the far layers'**
+  - L2140 the picture is the same made twice, on two threads as on one
+  - L2143 on the fixture each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast
+  - L2147 ...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS
+  - L2161 on the full file each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast
+  - L2163 ...and the planet's land, by area, is theirs within EarthTerrainCheck.LAND_WITHIN
+  - L2167 ...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS
+  - L2168 ...and it draws ice (Greenland's sheet), desert (the Sahara), forest and rivers (the Amazon's)
+- **L2285 7. a frame of the expanded map from the picture, timed on the main thread's CPU**
+  - L2309 a frame from the planet's picture is drawn in no more than FRAME_MS of
+- **L2368 8. the planet's picture holds each texel's relief beside its class: mountains grey from orbit, snow white, the classes as they were**
+  - L2379 a texel's code is its class in the low bits and its relief above, CODES of them, FLAT's the class itself; the globe's colour for each is the map's (TileRaste...
+  - L2393 every texel's relief is on dry ground alone (no slope on water or ice: snow stays white), and the picture has slopes
+  - L2409 the fixture's hilliest degree in the picture is the far rule's, texel for texel, through a band of one degree's rows instead of ten
+  - L2431 a frame over it colours each pixel by its texel's code - a grey on open ground, forest shaded - and from a table of the classes alone, as before
+  - L2447 on the full file the Himalaya and Tibet's relief shares are the data's within RELIEF_SIGMAS spreads, with grey in all three classes, and its snow all white
+- **L2496 9 to 12. the nations on the map: the fixture**
+  - L2498 WorldDataCheck's fixture and its expected figures are beside the classes (
+  - L2503 the map holds the fixture's
+- **L2513 9 to 12. the nations on the map: the full file, when it is named**
+  - L2515 the file -D
+  - L2527 the map holds the full file's
+  - L2530 the map is built from the file in no more than BUILD_MS (
+- **L2633 9. the borders culled to the view, at its level, and timed (1,389 x 868, a Halifax city)**
+  - L2664 the city's ground at 1 km a pixel is the GROUND tier, not the plane
+  - L2665 over Europe fewer than a quarter of the lines are considered (
+  - L2667 the whole planet draws no more than VERTICES_MOST (
+- **L2679 10. the nations' dots and labels: the full file**
+  - L2741 Canada and the United States are labelled over the North Atlantic
+  - L2751 Luxembourg and Belgium, whose coarse area is under LABEL_AREA_TIMES boxes at this view, keep only their dots
+- **L2774 11. the hit test: the fixture**
+  - L2795 the fixture's cells (
+  - L2796 a view centred on a Belgian, a German or a Dutch cell with no dot near gives that cell's nation through nationAt (
+  - L2797 a view centred on a sea cell gives no one through nationAt; ownerName says Belgium for 2 and no one for 0
+  - L2802 a point at a dot's centre gives its nation (
+  - L2818 a point within a dot's radius and HIT_SLOP_PX of its centre gives the nearest centre's nation of the dots that reach it (
+- **L2822 11. the hit test: the full file**
+  - L2830 the point at each dot's centre gives its nation (
+  - L2831 the open Atlantic (40 N, 40 W) gives no one and Canada's interior (60 N, 100 W) gives Canada
+  - L2832 ownerAt is the owner layer's, and ownerName names an area as well as a nation (Kosovo)
+  - L2915 the ordinal words are 1st 2nd 3rd 4th 11th 12th 13th 21st 22nd 101st 111th 112th (
+  - L2922 usd() writes US$2.24T, US$580B, US$58.1B, US$5.81B, the same in M, a whole number with thousands separated below, and steps up where a rounding reaches the n...
+  - L2927 people() writes 1.43B, 41.5M, 390k, 57k (not 57.0k), 5.81k, the whole number below a thousand, and steps up where a rounding reaches the next unit
+  - L2928 sig3() keeps three significant figures: 54,300 for 54,321, 1.37, 0.857, 0.86 (not 0.860), 15,800 for 15,812, 150 and 1.30
+  - L2935 a hover says the name, \"GDP ... people\", the km from the city and CLICK_FOR_CARD last (
+- **L3002 13. the city's trade as lanes: shared and branching, each edge once, cached, culled to the view and timed (1,389 x 868, a Halifax city)**
+- **L3008 14. a generated world's partners as arrows at the map's edge**
+  - L3065 the lanes share:
+  - L3067 every partner over MIN_LANE is reached: its lane's last vertex is its node, and each edge on the way back starts where the one before it ends, the last at th...
+  - L3069 every route through the tree is within BUNDLE_DETOUR (
+  - L3070 an edge's sums are the sales and the purchases of the partners beyond it, and the edges that leave the city carry all of them (
+  - L3072 a partner under MIN_LANE has no lane (Poland,
+  - L3074 the sampled vertices are fewer than lanes apiece would be (
+  - L3091 each edge is kept once: no two edges join the same two places, no inner vertex is kept twice, and an edge is sampled every LANE_STEP (
+  - L3094 a width is 0 for no money, LANE_MIN_PX for a trace, LANE_MAX_PX for the largest, 3 for a tenth of it and 2 for a hundredth (the square root of the share), an...
+  - L3102 the widest edge is LANE_MAX_PX (
+  - L3107 no trade is no lane and no draw; a partner at the city has none, one at its antipode a lane of ninety segments, a node or a figure that is not a number, or i...
+  - L3134 the lanes are the same for the same month, city and every figure (the build keeps a copy), and not for another month, another city, one figure moved by one, ...
+  - L3149 lanes kept while their month and figures stand are built once a month: 12 months of 30 frames, and one figure moved in the middle of a month, are
+  - L3153 the same view twice gives back the same Drawn (the cache), and a view moved a little does not
+  - L3161 with the view turned away from the lanes (the city's antipode at 10 km a pixel) nothing is projected:
+  - L3169 over Europe at 3 km a pixel fewer than half the edges are in view (
+  - L3179 every vertex drawn, in the four views of section 9, is within DRAW_MARGIN_PX (
+  - L3202 a frame projects each vertex to the pixel GlobeFrame.at() gives it, from the unit vectors:
+  - L3223 the sales (8 px) and the purchases (5 px) of a lane lie side by side, each stroke half the other's width off the line on opposite sides, 6.5 px apart, stroke...
+  - L3278 a partner due east of the stand-in has an arrow on the right edge, at the middle (
+  - L3279 the arrows' widths are by money as the lanes' are: the largest direction (5,000 sold east) is LANE_MAX_PX and its 1,000 bought
+  - L3287 the same size places the arrows as they were, a new size places them again
+  - L3298 a bearing from the stand-in, followed the distance to the partner, lands on the partner (the initial great-circle bearing): the worst miss of 200 pairs
+  - L3324 with
+  - L3344 twelve partners within four degrees of east stand on the right edge at least ARROW_GAP_PX (
+  - L3349 a partner under MIN_LANE has no arrow (299 sold; 150 and 149.99 bought), one at MIN_LANE (300 bought) has; no stand-in place, no trade, or a partner on the s...
+- **L3356 13. the city's trade as lanes: the full file's nodes**
 
 ## GridCheck.java - 45 labelled assertions
 
@@ -16800,7 +16831,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1634 ...drawn in the blocks' views as the yard's class on every plot of every part:
   - L1635 ...and counted on the tile holding its first plot:
 
-## ReadPathCheck.java - 31 labelled assertions
+## ReadPathCheck.java - 34 labelled assertions
 
 > Reading the city must not change the city.
 > 
@@ -16835,26 +16866,30 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L1808 a rate change reaches the treasury at once**
   - L1838 doubling the rate moves the very next month's commercial tax
 - **L1841 the build advice's reads, after a load (0.7.51)**
-  - L1931 fixture: the city holds hills by hand - the centre,
-  - L1940 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
-  - L1950 fixture: the city has suggestions to compare
-  - L1951 every one of them the same after a load, to the bit
-  - L1952 ...the high schools' leavers a number, not NaN
-  - L1954 the land on the world is the same after a load: its centre, its blocks and purchases
-  - L1956 ...its offers, field for field
-  - L1958 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
-  - L1972 the save carries the three keys of the ground by relief, and they are what the load read
-  - L1984 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
-  - L1987 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
-  - L1992 the saved file reads:
-  - L1994 ...and what was taken out of its ground
-  - L1996 ...and out of its offshore pool (0.7.93)
-  - L1998 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
-- **L2013 and a city on the real Earth: reading its world fifty times**
-  - L2015 fixture: EarthCheck's fixture is beside the classes
-  - L2041 fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links
-  - L2047 fixture: a plot of the North Sea west of it
-  - L2074 reading an Earth city's world fifty times changed nothing (
+  - L1932 fixture: the city holds hills by hand - the centre,
+  - L1941 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
+  - L1951 fixture: the city has suggestions to compare
+  - L1952 every one of them the same after a load, to the bit
+  - L1953 ...the high schools' leavers a number, not NaN
+  - L1955 the land on the world is the same after a load: its centre, its blocks and purchases
+  - L1957 ...its offers, field for field
+  - L1959 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
+  - L1973 the save carries the three keys of the ground by relief, and they are what the load read
+  - L1985 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
+  - L1988 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
+  - L1993 the saved file reads:
+  - L1995 ...and what was taken out of its ground
+  - L1997 ...and out of its offshore pool (0.7.93)
+  - L1999 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
+- **L2014 and a city on the real Earth: reading its world fifty times**
+  - L2016 fixture: EarthCheck's fixture is beside the classes
+  - L2042 fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links
+  - L2048 fixture: a plot of the North Sea west of it
+  - L2075 reading an Earth city's world fifty times changed nothing (
+- **L2086 the world market and the trade by partner: reading them changes nothing (WN3)**
+  - L2088 fixture: the twelve-nation world file is beside the classes
+  - L2108 fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn
+  - L2128 reading the world market and the trade by partner fifty times changed nothing (
 
 ## RefineryCheck.java - 108 labelled assertions
 
@@ -17631,7 +17666,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1295 a run plot over fresh water is a bridge and never a tunnel, whatever relief the plot carries
   - L1301 ...and this tile has no run on steep ground, so it has no viaduct and no tunnel: the bridges are over water alone
 
-## SaveFileCheck.java - 584 labelled assertions
+## SaveFileCheck.java - 608 labelled assertions
 
 > Verifies where saves go and how they are written.
 > 
@@ -18185,76 +18220,101 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2810 every refused save byte for byte as it was, and nothing written beside it
   - L2816 a save at the floor is loadable
   - L2820 ...and loads, at the month it was saved
-- **L2852 every id crosses a save, the highest past a gap in the ids too**
-  - L2875 fixture: the highest id,
-  - L2877 fixture: two of it stand
-  - L2880 fixture: the city saved
-  - L2885 the highest id's buildings came back
-  - L2890 ...and every id's count is the one saved
-- **L2921 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
-  - L2938 fixture: a generated city saved
-  - L2942 a generated city writes none of the four Earth fields
-  - L2954 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
-  - L2958 ...its land and map the city's that wrote it
-  - L2960 saved again
-  - L2963 ...and writes its own bytes back, but for this build's stamp: its format, version and time
-  - L2966 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
-  - L2973 fixture: EarthCheck's fixture is beside the classes
-  - L2989 fixture: a city founded on the real Earth, played four months
-  - L2991 saved
-  - L2993 the save carries its kind, its spot and its data, and its seed (0.7.121)
-  - L2998 ...read back as the same key
-  - L3002 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
-  - L3005 saved again
-  - L3008 ...and writes the same bytes but its time
-  - L3011 two months on: the treasury
-  - L3012 ...the households' savings
-  - L3015 ...and every sector's till
-  - L3016 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
-  - L3022 the save carries the ground by relief in keys of its own, a row for each holding and each offer standing (ET1)
-  - L3027 ...and no row of the land's own is wider for it: the centre 24, a holding 31, an offer 29
-  - L3031 ...read back, the relief is the city's: its centre's, each holding's and each offer's, to the bit
-  - L3043 fixture: Perth's window
-  - L3053 fixture: Perth's city holds a purchase with foothill in it and one with shallow sea
-  - L3059 fixture: the land with its relief wrote itself
-  - L3064 a holding with foothill and shallow sea round-trips: the land rebuilt from the file is the land written, every relief figure of it
-  - L3072 ...each holding's own row, the foothill in this one and the shallow sea in that
-  - L3079 an offer whose relief row is set by hand reads it back through its record, and the record is still 29 wide
-  - L3085 a save without the three keys has none of them
-  - L3095 ...reads all flat: the dry ground flat in the centre, in the total and in every holding, nothing steep, nothing shallow (never refused)
-  - L3102 a relief row of the wrong width reads that holding flat and leaves the rest as saved
-  - L3111 a land office restoring an offer reads its relief row, and with none reads it all flat
-  - L3121 a city on one landmass writes no \"landmasses\" key (its save is the old bytes)
-  - L3126 fixture: a square of Goeree-Overflakkee with dry ground and shore, found by search with the model's own reader
-  - L3139 fixture: a terminal stands on the island, which owns shore the city bought and no port at home links
-  - L3141 saved
-  - L3144 the save carries the key \"landmasses\", a row for the terminal's template with the island's id for its one standing unit, and nothing leaving
-  - L3151 read back, the terminal stands on the island again and the land is the same
-  - L3154 saved again
-  - L3157 ...and writes the same bytes but its time
-  - L3165 a save without the key loads - it is not refused - and reads every terminal at home: none on the island, none placed
-  - L3180 a row of a template that is no terminal is passed over (not refused): the terminal's row stands alone
-  - L3189 an Earth save of the format before the landmasses (
-  - L3195 a city with no bridge writes no \"bridges\" key (its save is the old bytes), and the island city of the landmasses' block writes none either
-  - L3215 fixture: a Road Bridge stands (built at once) and a Rail Bridge is on site, over a crossing the survey found; the island is linked by the one that stands
-  - L3218 saved
-  - L3220 the save carries the key \"bridges\", a row for each bridge, and the format of every Earth save of this build (no bump)
-  - L3224 read back, the bridges run where they ran, the one that stands links the island, and the land is the same
-  - L3228 saved again
-  - L3231 ...and writes the same bytes but its time
-  - L3238 a save without the key loads - it is not refused - and reads no bridge: none recorded, the island unlinked
-  - L3253 a row of a template that is no bridge, and one of a kind the game does not know, are passed over (not refused): the two real bridges stand alone
-  - L3278 a save with
-  - L3280 ...nothing of it applied, and every file as it was
-- **L3298 and a refused save loaded into a running city leaves that city as it was**
-  - L3309 fixture: the city is loaded and running, past month 1
-  - L3310 fixture: slot 2 is below the floor and slot 5 from a newer build
-  - L3318 the save below the floor is refused, naming the build that still opens it
-  - L3320 ...and the city in play is the same city: its managers the same objects, its month and cash
-  - L3325 the newer build's save is refused, naming the build that opens it
-  - L3327 ...words that name that build and this one
-  - L3330 ...and the city in play is still the same city
-  - L3339 ...and what it saves after both refusals is what it saved before them, key for key
+- **L2853 every id crosses a save, the highest past a gap in the ids too**
+  - L2876 fixture: the highest id,
+  - L2878 fixture: two of it stand
+  - L2881 fixture: the city saved
+  - L2886 the highest id's buildings came back
+  - L2891 ...and every id's count is the one saved
+- **L2922 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
+  - L2939 fixture: a generated city saved
+  - L2943 a generated city writes none of the four Earth fields
+  - L2955 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
+  - L2959 ...its land and map the city's that wrote it
+  - L2961 saved again
+  - L2964 ...and writes its own bytes back, but for this build's stamp: its format, version and time
+  - L2967 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
+  - L2974 fixture: EarthCheck's fixture is beside the classes
+  - L2990 fixture: a city founded on the real Earth, played four months
+  - L2992 saved
+  - L2994 the save carries its kind, its spot and its data, and its seed (0.7.121)
+  - L2999 ...read back as the same key
+  - L3003 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
+  - L3006 saved again
+  - L3009 ...and writes the same bytes but its time
+  - L3012 two months on: the treasury
+  - L3013 ...the households' savings
+  - L3016 ...and every sector's till
+  - L3017 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
+  - L3023 the save carries the ground by relief in keys of its own, a row for each holding and each offer standing (ET1)
+  - L3028 ...and no row of the land's own is wider for it: the centre 24, a holding 31, an offer 29
+  - L3032 ...read back, the relief is the city's: its centre's, each holding's and each offer's, to the bit
+  - L3044 fixture: Perth's window
+  - L3054 fixture: Perth's city holds a purchase with foothill in it and one with shallow sea
+  - L3060 fixture: the land with its relief wrote itself
+  - L3065 a holding with foothill and shallow sea round-trips: the land rebuilt from the file is the land written, every relief figure of it
+  - L3073 ...each holding's own row, the foothill in this one and the shallow sea in that
+  - L3080 an offer whose relief row is set by hand reads it back through its record, and the record is still 29 wide
+  - L3086 a save without the three keys has none of them
+  - L3096 ...reads all flat: the dry ground flat in the centre, in the total and in every holding, nothing steep, nothing shallow (never refused)
+  - L3103 a relief row of the wrong width reads that holding flat and leaves the rest as saved
+  - L3112 a land office restoring an offer reads its relief row, and with none reads it all flat
+  - L3122 a city on one landmass writes no \"landmasses\" key (its save is the old bytes)
+  - L3127 fixture: a square of Goeree-Overflakkee with dry ground and shore, found by search with the model's own reader
+  - L3140 fixture: a terminal stands on the island, which owns shore the city bought and no port at home links
+  - L3142 saved
+  - L3145 the save carries the key \"landmasses\", a row for the terminal's template with the island's id for its one standing unit, and nothing leaving
+  - L3152 read back, the terminal stands on the island again and the land is the same
+  - L3155 saved again
+  - L3158 ...and writes the same bytes but its time
+  - L3166 a save without the key loads - it is not refused - and reads every terminal at home: none on the island, none placed
+  - L3181 a row of a template that is no terminal is passed over (not refused): the terminal's row stands alone
+  - L3193 an Earth save of the format before the landmasses (
+  - L3195 an Earth save of the format before the landmasses (
+  - L3204 a city with no bridge writes no \"bridges\" key (its save is the old bytes), and the island city of the landmasses' block writes none either
+  - L3224 fixture: a Road Bridge stands (built at once) and a Rail Bridge is on site, over a crossing the survey found; the island is linked by the one that stands
+  - L3227 saved
+  - L3229 the save carries the key \"bridges\", a row for each bridge, and the format of every Earth save of this build (no bump)
+  - L3233 read back, the bridges run where they ran, the one that stands links the island, and the land is the same
+  - L3237 saved again
+  - L3240 ...and writes the same bytes but its time
+  - L3247 a save without the key loads - it is not refused - and reads no bridge: none recorded, the island unlinked
+  - L3262 a row of a template that is no bridge, and one of a kind the game does not know, are passed over (not refused): the two real bridges stand alone
+  - L3287 a save with
+  - L3289 ...nothing of it applied, and every file as it was
+- **L3307 and a refused save loaded into a running city leaves that city as it was**
+  - L3318 fixture: the city is loaded and running, past month 1
+  - L3319 fixture: slot 2 is below the floor and slot 5 from a newer build
+  - L3327 the save below the floor is refused, naming the build that still opens it
+  - L3329 ...and the city in play is the same city: its managers the same objects, its month and cash
+  - L3334 the newer build's save is refused, naming the build that opens it
+  - L3336 ...words that name that build and this one
+  - L3339 ...and the city in play is still the same city
+  - L3348 ...and what it saves after both refusals is what it saved before them, key for key
+- **L3423 the world market and the trade by partner cross a save; a format-47 save is refused (WN3)**
+  - L3425 fixture: the twelve-nation world file is beside the classes
+  - L3458 the month's record of trade by good is the month's fills and draws, every month of the fixture and every good, to the unit
+  - L3459 ...and it holds what GoodsMarket's own tally does not: draws made before the clearing, which the clearing wipes from the tally (
+  - L3462 fixture: with the file named, the city built a market and solved the year it is in (
+  - L3466 fixture: it tallied its trade by partner, and one year turned into the history (
+  - L3469 fixture: the city traded with the world's nations this month or this year (so the round trip has something to carry):
+  - L3472 saved
+  - L3474 the save writes the market's year, its prices and scales, and the trade by partner
+  - L3478 ...and the history writes each finished year's table by partner and good (1)
+  - L3486 a load builds the market and restores its year
+  - L3489 ...its mill prices and supply scales bit for bit
+  - L3496 ...restored and not solved again: no sweeps in the loaded market (
+  - L3498 ...the trade by partner, the month and the year to date, as it was
+  - L3499 ...the finished years in the history
+  - L3501 ...so the map's feed is last month's trade at once: its month, its lanes and its year to date
+  - L3514 ...and every good's market stands at the band it was struck at (
+  - L3517 a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve
+  - L3519 the month after runs the same in both: the cash to the cent and the trade by partner
+  - L3532 a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)
+  - L3546 fixture: with no world file the city has no market and no partner record
+  - L3548 saved
+  - L3550 ...and its save writes none of the new keys, in the markets or beside them
+  - L3555 ...every market on the goods' literals
 
 ## SaveSlotCheck.java - 150 labelled assertions
 
@@ -20356,6 +20416,71 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L853 6. the base year reproduces BACI's flows on the kept pairs**
 - **L922 7. a nation for every land cell inside every border tile**
 - **L977 8. the moneys and paths are whole**
+
+## WorldMarketCheck.java - 47 labelled assertions
+
+> The world market (batch WN3; the project's spec-nations.md 4): the nations'
+> January solve held to the equations it solves, the calibration held to the
+> game's literals, and the city's band held to what makes it a band - the
+> floor under the ceiling, a small city a price-taker and a big one not, the
+> month's step near a re-solve with the city's tonnes in.
+> 
+> WHY. The world was a price list, and the market that replaces it can be
+> wrong in ways no city would show: a solve that stops before the makers clear
+> (every price off by a percent and nobody the wiser), a calibration that
+> leaves Halifax a different band from the literals the whole economy was
+> balanced on (D12), a floor above a ceiling (a city that makes money buying
+> and selling the same tonne to itself), a band that does not move with the
+> ...
+
+  - L176 no fixture:
+- **L196 the full file, when it is named**
+  - L198 the file -D
+  - L285 the solved year is the year asked for
+  - L286 every maker's sales are within SOLVE_TOL of its supply, recomputed from the file's pairs: 2000, 2005 and 2010 on both paths
+  - L287 the mean mill price is within SOLVE_TOL of the good's real price path (over the base year's), 2000, 2005 and 2010 on both paths
+  - L292 no good stopped at SOLVE_MAX_PASSES (
+  - L342 the reference city (Halifax, no berth, 2025, Historical) sees the literal on every side the city has, to 1e-9: calibrated goods both, one-sided goods theirs
+  - L343 every good the market scales has a price scale and a freight scale above 0
+  - L344 a one-sided good, and a two-sided one that would not calibrate, takes its class's median freight scale
+  - L346 no two-sided good goes uncalibrated:
+  - L347 the reference city stands in Canada (
+  - L359 a city at Rotterdam with a berth does not see the literals: its floor differs from the literal by more than 1% for
+  - L424 the floor is never above the ceiling: every good, 2000-2040, both paths, exports and imports each 0, 0.1%, 1%, 10% and 50% of the world's use, three sites
+  - L425 the same in the game's money, for every good with both sides
+  - L426 the floor falls as the city's exports grow and the ceiling rises as its imports do
+  - L440 past every seller's capacity the ceiling stays finite and over the floor (WorldMarket.SCARCITY_MULTIPLE), every good with sellers
+  - L479 a city selling 0.01% of a good's world use moves its netback by under
+  - L480 a city selling 10% of a good's world use moves its netback by at least
+  - L530 a city selling
+  - L532 a city selling
+  - L602 Random on seeds 1 and 2: some good's band in 2010 differs
+  - L625 two markets on one seed, each solving 2000-2030 afresh, have bit-identical bands every year (the solve repeats itself)
+  - L626 a third, answered from the solved years the first two left, has them too
+  - L633 Historical on seeds 1 and 2, each solving 2025 afresh: the same bands to the bit
+  - L648 a market that has solved nothing saves nothing
+  - L654 a wrong length of prices or scales, or a price that is no number, is refused and nothing changes
+  - L655 the right prices and scales are taken
+  - L671 the restored market's bands and prices are the saved market's to the bit: every good, every volume, every nation
+  - L672 and its allocations, who took the exports and who sold the imports
+  - L677 the next January from the restored market is the saved market's, to the bit (it was restored to the state it would have started from)
+  - L697 the same seed gives the same nation, and it is never landlocked, over
+  - L712 each coastal nation is drawn as often as its share of the coastal nations' base-year output says (within
+  - L717 setStandIn puts the city in the nation the seed draws (
+  - L837 the sale fill equals a bisection on the capped total of the same sinks, and the sinks take what the city sells, or what they can
+  - L838 the purchase fill equals a bisection on the capped total of the same makers, and is +infinity past what the world makes
+  - L839 no sink takes more than its best buyer uses, no maker sells more than it makes, in the fills and in the allocations
+  - L840 the exports' allocation adds up to the exports, and is nothing where the city sells nothing
+  - L841 the imports' allocation adds up to the imports, and is nothing where the city buys nothing
+  - L842 what the cheapest landed seller asks a nation's buyers is never more than its own mills ask
+  - L868 a city in mid-Atlantic (0, -30) is hosted by the nation whose node is nearest,
+  - L869 a berth never makes a nation's buyer price dearer than the same city's without one
+  - L870 setBerth gives the legs setSite with the berth gives, to the bit
+  - L871 a market that is not told where the city stands stands at the reference site
+  - L933 the Base on the
+  - L957 the founding solve (2000, every good, from nothing) takes under SOLVE_COLD_MS, the median of
+  - L959 a January (every good, from last year's answer) takes under SOLVE_WARM_MS, the median of
+  - L976 a month's bands for every good take under BAND_MONTH_US, the median of
 
 ## YearBookCheck.java - 137 labelled assertions
 

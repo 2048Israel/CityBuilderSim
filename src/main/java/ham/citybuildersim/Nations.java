@@ -222,6 +222,13 @@ public final class Nations {
     private final int[] priceLast;
     private final double[] swing;
 
+    /**
+     * Whose shock each good's price draws after the file's years, by good number: the first good that follows its Pink Sheet series (WN3).
+     * WHY: each good drew its own, so a chain on one series - anode, cathode and rod on copper; crude's six fuels; ore and steel - drifted apart
+     * after 2025, and on Random from 2000, and a refinery bought anode dearer than its cathode (the playtest's GDP went below zero, months 422-637).
+     */
+    private final int[] shockOf;
+
     /* THE PATH SO FAR, a year at a time: the records, what was drawn, each money's rate and each good's price. */
     private final List<Year[]> years = new ArrayList<>();
     private final List<Draws[]> drawn = new ArrayList<>();
@@ -331,6 +338,7 @@ public final class Nations {
         price = new Series[goods];
         priceLast = new int[goods];
         swing = new double[goods];
+        shockOf = new int[goods];
         for (int g = 0; g < goods; g++) {
             goodKey[g] = file.good(g + 1).key();
             int cap = file.priceYears() - 1;
@@ -350,6 +358,14 @@ public final class Nations {
             }
             priceLast[g] = historical ? price[g].last : 0;
             swing[g] = swingOf(price[g]);
+            // A good draws its series' shock, not its own (WN3): the first good that follows the same Pink Sheet series draws it for all of them.
+            String series = file.priceSeries(g + 1);
+            shockOf[g] = g + 1;
+            if (series != null && !series.isBlank()) {
+                for (int e = 0; e < g; e++) {
+                    if (series.equals(file.priceSeries(e + 1))) { shockOf[g] = shockOf[e]; break; }
+                }
+            }
         }
         perHead = new double[n];
         priceLevel = new double[n];
@@ -640,7 +656,7 @@ public final class Nations {
                 gm[g] = price[g].mark[t];
             } else {
                 double innovation = swing[g] * Math.sqrt((1 + PRICE_PERSISTENCE) / 2);
-                gp[g] = Math.exp(PRICE_PERSISTENCE * Math.log(goodPrices.get(t - 1)[g]) + share * innovation * gauss(PRICE, GOOD_BASE + g + 1, year));
+                gp[g] = Math.exp(PRICE_PERSISTENCE * Math.log(goodPrices.get(t - 1)[g]) + share * innovation * gauss(PRICE, GOOD_BASE + shockOf[g], year));
                 gm[g] = WorldData.MARK_ESTIMATE;
             }
         }
