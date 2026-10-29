@@ -335,7 +335,7 @@ final class BankScreen {
         if (!sheet) {
             double nim = bank.netInterestMargin();
             rows.add(SectorScreen.ratioRow("Net interest margin", ratePerYear(nim), nim < 0 ? Palette.BAD : Palette.TEXT_LABEL,
-                    "What it charges less what it pays for its money, on everything it has lent, a year at this month's."));
+                    "What it charges less what it pays for its money, on everything that earns it interest: its loans, the bonds and the city's paper it holds, and its reserves at the central bank, a year at this month's."));
             double costs = income > 0 ? bank.thisMonth(Bank.Line.COSTS) / income : Double.NaN;
             rows.add(SectorScreen.ratioRow("Cost to income", Double.isFinite(costs) ? share1(costs) : "—",
                     !Double.isFinite(costs) || costs > 1 ? Palette.BAD : Palette.TEXT_LABEL,
@@ -1042,7 +1042,7 @@ final class BankScreen {
                 new Cell("HOW FULL", full, "of what its capital and its deposits carry",
                         need >= 2 ? Palette.BAD : need == 1 ? Palette.WARN : Palette.TEXT_HEAD,
                         "Funding: what it can carry"),
-                new Cell("INTEREST MARGIN", ratePct(nim), "net, on what it lent, " + yearWords(bank),
+                new Cell("INTEREST MARGIN", ratePct(nim), "net, on what earns it interest, " + yearWords(bank),
                         nim < 0 ? Palette.BAD : Palette.TEXT_HEAD, "Profit: the margin and the year"),
                 new Cell("COSTS", Double.isNaN(costs) ? "—" : share1(costs),
                         Double.isNaN(costs) ? "it earned nothing to set them against"
@@ -1612,14 +1612,14 @@ final class BankScreen {
     /* ------------------------------ the four cards ------------------------------ */
 
     /** The ratios' note (Profit 874), behind MARGIN's and COSTS' (i). */
-    static final String RATIOS_INFO = "The margin is what it charges less what it pays for its money, on everything lent. "
+    static final String RATIOS_INFO = "The margin is what it charges less what it pays for its money, on everything that earns it interest - its loans, the bonds and the city's paper it holds, and its reserves at the central bank. "
             + "Its costs are read against what it earns before them - about half to three-fifths at a real bank.";
 
     VBox marginCard(Bank bank) {
         double nim = bank.netInterestMarginOverYear();
         return card(cardHead(null, null, "INTEREST MARGIN", RATIOS_INFO, null),
                 big(ratePct(nim), nim < 0 ? Palette.BAD : Palette.TEXT_HEAD),
-                line("net, on what it lent, over " + yearWords(bank)),
+                line("net, on what earns it interest, over " + yearWords(bank)),
                 muted("this month alone " + ratePct(bank.netInterestMargin())));
     }
 
@@ -1895,7 +1895,7 @@ final class BankScreen {
         /* ------------------------------- as ratios ------------------------------- */
         column.getChildren().add(subHead("Read as ratios, over " + yearWords(bank)));
         double nim = bank.netInterestMarginOverYear();
-        column.getChildren().add(statementLine("Net interest margin, on what it lent",
+        column.getChildren().add(statementLine("Net interest margin, on what earns it interest",
                 ratePerYear(nim), nim < 0 ? Palette.BAD : null));
         column.getChildren().add(statementLine("...this month alone", ratePerYear(bank.netInterestMargin()),
                 Palette.TEXT_MUTED));
@@ -3848,6 +3848,7 @@ final class BankScreen {
                 {"New shares it issued", mv.issued()},
                 {"Absorbed when it failed", mv.absorbed()},
                 {"Gain on paper the treasury bought back", mv.treasuryBuyback()},
+                {"A reopened line's discount, re-struck", mv.discountRestruck()},
                 {"Set aside when this older save was opened", -mv.allowanceOpened()}};
         for (Object[] c : causes) {
             double a = (Double) c[1];
@@ -4016,6 +4017,7 @@ final class BankScreen {
             moved(column, "New shares it issued", m.issued());
             moved(column, "Absorbed when it failed", m.absorbed());
             moved(column, "Gain on paper the treasury bought back", m.treasuryBuyback());
+            moved(column, "A reopened line's discount, re-struck", m.discountRestruck());
             moved(column, "Set aside when this older save was opened", -m.allowanceOpened());
             double residual = m.residual();
             boolean off = Math.abs(residual) > .005;

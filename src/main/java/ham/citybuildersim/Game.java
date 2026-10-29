@@ -15139,14 +15139,19 @@ public class Game {
        --------------------------------------------------------------------------- */
     /** A harness's look at the households either side of their share of the settle (HoldersCheck): false before, true after. Null in play. */
     java.util.function.Consumer<Boolean> settleProbeForTest;
+    /** HoldersCheck's twin (BK1): true books no re-strike, as main did, so the harness can hold the two cities' figures side by side. False in play. */
+    boolean restrikeOffForTest;
 
     private double householdsTakeTheirShare() {
+        // BK1: the bank's book and its unearned discount before any face moves, for the re-strike below.
+        double bankFaceBefore = debtManager.bankBook(), bankUnearnedBefore = debtManager.bankUnearnedDiscount();
         java.util.List<Debt> settling = new java.util.ArrayList<>();
-        double wanted = 0;
+        double wanted = 0, settleDue = 0;
         for (Debt d : debtManager.getDebt()) {
             if (d.isForeign() || d.getSettleDue() <= 0) continue;
             settling.add(d);
             wanted += d.allotHouseholdsCash();
+            settleDue += d.getSettleDue();
         }
         double paid = 0;
         if (wanted > 0) {
@@ -15165,12 +15170,31 @@ public class Game {
             }
         }
         // ...and the businesses, from their tills, before the allotment is cleared.
-        firmsTakeTheirShare(settling);
+        double firmsPaid = firmsTakeTheirShare(settling);
         // ...and the world, from abroad (CD2, slice 5).
-        worldTakesItsShare(settling);
+        double worldPaid = worldTakesItsShare(settling);
         for (Debt d : settling) d.settled();
+        // BK1: the bank is the residual buyer, so it paid the settle's due less these three; if a line it
+        // settles part of was reopened at another price while they hold part, the pool's discount re-blended.
+        restrikeBankDiscount(bankUnearnedBefore, bankFaceBefore, settleDue - paid - firmsPaid - worldPaid);
         householdsBoughtPaper += paid;
         return paid;
+    }
+
+    /**
+     * BK1: books the bank's gain or loss from a line's pooled discount re-blending (Bank.restrikeDiscount()):
+     * what its paper gained in face since the snapshot, less what it paid for it, less what its unearned
+     * discount rose by - nothing when only its own purchase moved. The 1e-9 is a numerical guard, not a policy:
+     * the three are sums of thousands of pieces, a fresh line leaves only their rounding, and booking that would
+     * move every month's figures at the last bit.
+     */
+    private void restrikeBankDiscount(double unearnedBefore, double faceBefore, double bankPaid) {
+        if (restrikeOffForTest) return;
+        double faceMoved = debtManager.bankBook() - faceBefore;
+        double unearnedMoved = debtManager.bankUnearnedDiscount() - unearnedBefore;
+        double gain = faceMoved - bankPaid - unearnedMoved;
+        if (Math.abs(gain) <= 1e-9 * (Math.abs(faceMoved) + Math.abs(bankPaid) + Math.abs(unearnedMoved))) return;
+        bank.restrikeDiscount(gain);
     }
 
     /**
@@ -15708,6 +15732,8 @@ public class Game {
         centralBankAlone.clear();
         if (!(par > 0)) return;
         double paid = 0, took = 0;
+        // BK1: the bank's book and unearned discount before the central bank's face joins a line, for the re-strike below.
+        double bankFaceBefore = debtManager.bankBook(), bankUnearnedBefore = debtManager.bankUnearnedDiscount();
         if (!alone.isEmpty()) {
             for (ParAlone a : alone) {
                 DebtQuote q = a.quote();
@@ -15759,6 +15785,10 @@ public class Game {
                 took += addOn;
             }
         }
+        // BK1: the central bank's face joined a line (reopenForCentralBank(), addOnForCentralBank()) with the bank's
+        // own unchanged and nothing paid by it, but the pool's discount re-blended over a larger line: its share of
+        // the discount moved with no cash behind it, which is its gain or loss on the paper.
+        restrikeBankDiscount(bankUnearnedBefore, bankFaceBefore, 0);
         String here = getCurrency().qualifiedSymbol();
         if (took < par * (1 - 1e-12)) {
             GameLog.note(String.format("The central bank's %s%,.0fk falling due runs off: nothing was issued"

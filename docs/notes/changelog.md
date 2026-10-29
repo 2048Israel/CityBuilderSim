@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.72 — BK1, the bank's equity split and its interest margin — 2026-10-29, ready, see docs/queue/BK1-notes.md
+Issue #5, Jerus's San Francisco city. The bank's equity no longer drifts from its two parts: a line of the city's
+paper keeps one pool of discount shared by face, and reopened at another price while households, firms, the world or
+the central bank hold part of it, the pool re-blended and the bank's unearned discount moved with no cause named
+(found at m260 of 0.8.52's San Francisco playtest, +$0.856k; $212.5M in his city). The re-blend is now measured at the
+settle and the central bank's add-on and routed to retained earnings, a row of the equity's movement; no profit, tax
+or dividend moves (HoldersCheck 12, against a twin that books none). His save keeps its $212.5M and its red card (no
+conversion) but no longer grows. The interest margin is on earning assets - the book and the reserves, which earn
+the policy rate - month and year: San Francisco's 9,972% was reserves 700 times the loans. The trace is main's.
+
 ### 0.8.71 — UP5, the map's month, the rest — 2026-10-29, ready, see docs/queue/UP5-notes.md
 The map's month at his size and at 5B, at its causes. A month in one district no longer re-plans every district after
 it: a plan read by another keeps only its edges' hash, and a district whose carry and edges hold takes its old plan
