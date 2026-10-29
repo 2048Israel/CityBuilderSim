@@ -1027,6 +1027,7 @@ final class MapView {
         planeBorders(gc, f);
         worldLines(gc, f);
         overlays(gc, f);
+        tradeArrows(gc);
         drawRings(gc);
         drawBox(gc);
         placeBuyCard();
@@ -3704,8 +3705,12 @@ final class MapView {
        placement. THE MAP MUST NOT GET SLOWER (MP1 made it fast): nothing is
        drawn or read of the nations while a chip is off; the file is read on the
        FX thread only for a click's or a hover's one ownerAt(); a view at rest
-       draws from NationsMap's caches and the marks kept here. The trade routes
-       are WN3's, and so is their chip.
+       draws from NationsMap's caches and the marks kept here. THE TRADE ROUTES
+       (WN3, board 1) are TradeLanes': the lanes of the city's trade by partner,
+       shared and branching, cached by the month's figures, culled to the view
+       and stroked as one path a width; on a generated world, the biggest
+       partners as arrows at the edge. Their figures come from one seam,
+       tradeFeed().
        ===================================================================== */
 
     /** The Nations chip's tooltip (WN2). */
@@ -3714,6 +3719,26 @@ final class MapView {
 
     /** ...and the Borders chip's. */
     static final String BORDERS_TIP = "The nations' borders, dashed white, at the far views; up close only where one crosses the city's ground.";
+
+    /** ...and the Trade routes chip's (WN3). */
+    static final String TRADE_TIP = "This month's trade as routes from the city: violet what we sell, sand what we buy, the width by money, none under D$0.3M a month."
+            + " Partners the same way share a lane. On a generated world, the biggest partners as arrows at the map's edge.";
+
+    /** The legend's words for the two kinds of route (the board's, less its "it"). */
+    static final String TRADE_SELL_WORDS = "What we sell, a month", TRADE_BUY_WORDS = "What we buy";
+
+    /** A route's colours: the business violet for what we sell and the ore's sand for what we buy (Palette's), at the board's stroke opacity, .78. */
+    static final double TRADE_ALPHA = 0.78;
+    static final Color TRADE_SELL = Color.web(Palette.BUSINESS, TRADE_ALPHA), TRADE_BUY = Color.web(Palette.ORE, TRADE_ALPHA);
+
+    /** A generated world's arrow is this many pixels long from its tip inward... */
+    static final double ARROW_LEN_PX = 34;
+
+    /** ...with a head this many pixels long, and this much wider than the shaft either side. */
+    static final double ARROW_HEAD_PX = 9, ARROW_HEAD_WIDE_PX = 3;
+
+    /** A stand-in for a feed that gave no figures. */
+    private static final double[] NO_FIGURES = new double[0];
 
     /** A dot's label, the name: sans semibold, 11 px (the board's .lbl)... */
     static final double LABEL_NAME_PX = 11;
@@ -3797,8 +3822,13 @@ final class MapView {
     private EarthProj planeProj;
     private World.Key planeProjKey;
 
+    /** The city's trade as the screen holds it (WN3): the lanes of the last figures and the map they were made for, a generated world's arrows. */
+    private TradeLanes lanes;
+    private NationsMap lanesOf;
+    private TradeLanes.Arrows arrows;
+
     /** The head's chips and their group, and what they were last styled for. */
-    private Label nationsChip, bordersChip;
+    private Label nationsChip, bordersChip, tradeChip;
     private HBox nationsGroup;
     private String chipsFor;
 
@@ -3834,18 +3864,23 @@ final class MapView {
         nationsAskedOf = null;
         marksView = null;
         marks = List.of();
+        lanes = null;
+        lanesOf = null;
+        arrows = null;
     }
 
     /**
      * Asked every frame (keepUp()): on an Earth world, once a chip is on or the map is over the window - the chips are shown only once the
      * map is built, so a player who turned both off can turn them on - the nations' map is asked of WORKER (once for the process) and, when
      * Nations is on, the game's nations (once for the game). Each comes back on the FX thread and draws the view again. Nothing is asked
-     * of a generated world.
+     * of a generated world but, with Trade routes on and the feed naming a stand-in place (WN3), the map alone: its nodes are where the arrows stand.
      */
     private void nationsUp(CityLand land) {
-        if (!NationsMap.drawsOn(land.key()) || ui.prefs == null) return;
-        boolean nationsOn = ui.prefs.isNationsOnMap();
-        if (!nationsOn && !ui.prefs.isBordersOnMap() && !expanded) return;
+        if (ui.prefs == null) return;
+        boolean earth = NationsMap.drawsOn(land.key());
+        if (!earth && !(expanded && ui.prefs.isTradeRoutesOnMap() && standsIn())) return;
+        boolean nationsOn = earth && ui.prefs.isNationsOnMap();
+        if (earth && !nationsOn && !ui.prefs.isBordersOnMap() && !ui.prefs.isTradeRoutesOnMap() && !expanded) return;
         CompletableFuture<NationsMap> build = askNationsBuild();
         if (!build.isDone() && !nationsWaiting) {
             nationsWaiting = true;
@@ -3887,6 +3922,50 @@ final class MapView {
     /** The game's nations when they are in for the game on the screen, else null. */
     private Nations nationsNow() { return nationsOf == ui.game ? nations : null; }
 
+    /** The nations' map when it is built, whatever world this is: a generated world's arrows stand by its nodes though it draws no nations. */
+    private NationsMap builtMap() {
+        CompletableFuture<NationsMap> build = nationsBuild;
+        return build == null || !build.isDone() || build.isCompletedExceptionally() ? null : build.getNow(null);
+    }
+
+    /* ----- the city's trade (WN3) ----- */
+
+    /**
+     * The city's trade by partner - THE ONE SEAM the wiring slice fills (WN3): until the game keeps its trade by partner this is no trade, so
+     * nothing is drawn, no chip shows on a generated world and no card has trade rows. It becomes `return ui.game.<the game's TradeLanes.Feed>;`
+     * and nothing else in the screen changes.
+     */
+    private TradeLanes.Feed tradeFeed() { return TradeLanes.Feed.NONE; }
+
+    /** Whether this is a generated world whose feed names the place the city stands in, so its partners can be drawn as arrows. */
+    private boolean standsIn() {
+        Game g = ui.game;
+        if (g == null || NationsMap.drawsOn(g.getCityLand().key())) return false;
+        TradeLanes.Feed f = tradeFeed();
+        return Double.isFinite(f.standInLat()) && Double.isFinite(f.standInLon());
+    }
+
+    /** The lanes of the feed's figures now: the ones kept while the month, the city, the map and every figure are the same, else made again (a fraction of a millisecond; never in a frame that has them). */
+    private TradeLanes lanesNow(NationsMap nm) {
+        TradeLanes.Feed f = tradeFeed();
+        double[] ex = f.exportsByNation() == null ? NO_FIGURES : f.exportsByNation(), im = f.importsByNation() == null ? NO_FIGURES : f.importsByNation();
+        if (lanes == null || lanesOf != nm || !lanes.matches(f.month(), globe.cityLat(), globe.cityLon(), ex, im)) {
+            lanes = TradeLanes.of(nm, globe.cityLat(), globe.cityLon(), f.month(), ex, im);
+            lanesOf = nm;
+        }
+        return lanes;
+    }
+
+    /** A generated world's arrows of the feed's figures now, kept the same way; null where the map is not built or the feed names no stand-in. */
+    private TradeLanes.Arrows arrowsNow() {
+        NationsMap nm = builtMap();
+        if (nm == null || !standsIn()) return null;
+        TradeLanes.Feed f = tradeFeed();
+        double[] ex = f.exportsByNation() == null ? NO_FIGURES : f.exportsByNation(), im = f.importsByNation() == null ? NO_FIGURES : f.importsByNation();
+        if (arrows == null || !arrows.matches(f.month(), f.standInLat(), f.standInLon(), ex, im)) arrows = TradeLanes.Arrows.of(nm, f.standInLat(), f.standInLon(), f.month(), ex, im);
+        return arrows;
+    }
+
     /* ----- the chips ----- */
 
     /** A toggle chip of the head: a dot before its word, lit or not (styleChip()); a click runs `flip`. */
@@ -3914,17 +3993,23 @@ final class MapView {
         chip.getGraphic().setStyle("-fx-background-color: " + (lit ? Palette.ACCENT : Palette.TEXT_SPENT) + "; -fx-background-radius: 4;");
     }
 
-    /** The chips shown only on an Earth world whose nations' map is built, and lit as the settings stand (each frame of the head). */
+    /**
+     * The chips shown only on an Earth world whose nations' map is built, and lit as the settings stand (each frame of the head). On a generated
+     * world the group shows the Trade routes chip alone, and only while the feed names a stand-in place (WN3): its partners are the arrows.
+     */
     private void syncChips() {
         if (nationsGroup == null) return;
-        boolean built = nationsMap() != null;
-        showIf(nationsGroup, built);
-        if (!built) return;
-        boolean n = ui.prefs.isNationsOnMap(), b = ui.prefs.isBordersOnMap();
-        String key = n + "|" + b;
+        boolean built = nationsMap() != null, arrowsOnly = !built && standsIn();
+        showIf(nationsGroup, built || arrowsOnly);
+        showIf(nationsChip, built);
+        showIf(bordersChip, built);
+        if (!built && !arrowsOnly) return;
+        boolean n = ui.prefs.isNationsOnMap(), t = ui.prefs.isTradeRoutesOnMap(), b = ui.prefs.isBordersOnMap();
+        String key = n + "|" + t + "|" + b + "|" + built;
         if (key.equals(chipsFor)) return;
         chipsFor = key;
         styleChip(nationsChip, n);
+        styleChip(tradeChip, t);
         styleChip(bordersChip, b);
     }
 
@@ -3938,6 +4023,11 @@ final class MapView {
         layersFlipped();
     }
 
+    private void flipTrade() {
+        ui.prefs.setTradeRoutesOnMap(!ui.prefs.isTradeRoutesOnMap());
+        layersFlipped();
+    }
+
     /** A chip flipped: saved at once (the settings are the player's, beside the saves), the card put away if its nations are off, the chips restyled and the view drawn again - which lays the legend out again (legendFor() keys on the nations' entries). */
     private void layersFlipped() {
         ui.prefs.save(ui.game.getGameFiles());
@@ -3948,12 +4038,29 @@ final class MapView {
 
     /* ----- the legend ----- */
 
-    /** The legend's nations entries - {colour, words} - on an Earth world with the map built: the border's white while Borders is on, the dot's colour while Nations is on and the view is a globe's. */
+    /**
+     * The legend's nations entries - {colour, words} - on an Earth world with the map built: the border's white while Borders is on, the dot's colour
+     * while Nations is on and the view is a globe's, and (WN3) the violet and the sand of the trade while Trade routes is on and there is trade to
+     * draw - lanes on a globe, arrows on a generated world's map.
+     */
     private List<String[]> nationsEntries() {
-        if (nationsMap() == null) return List.of();
+        NationsMap nm = nationsMap();
         List<String[]> out = new ArrayList<>();
-        if (ui.prefs.isBordersOnMap()) out.add(new String[] { css(NationsMap.BORDER_ARGB), NationsMap.BORDER_WORDS });
-        if (ui.prefs.isNationsOnMap() && onGlobe()) out.add(new String[] { css(NationsMap.DOT_ARGB), NationsMap.NATION_WORDS });
+        if (nm != null) {
+            if (ui.prefs.isBordersOnMap()) out.add(new String[] { css(NationsMap.BORDER_ARGB), NationsMap.BORDER_WORDS });
+            if (ui.prefs.isNationsOnMap() && onGlobe()) out.add(new String[] { css(NationsMap.DOT_ARGB), NationsMap.NATION_WORDS });
+        }
+        boolean trade;
+        if (!ui.prefs.isTradeRoutesOnMap()) trade = false;
+        else if (nm != null) trade = onGlobe() && lanesNow(nm).partners() > 0;
+        else {
+            TradeLanes.Arrows a = expanded ? arrowsNow() : null;
+            trade = a != null && a.count() > 0;
+        }
+        if (trade) {
+            out.add(new String[] { Palette.BUSINESS, TRADE_SELL_WORDS });
+            out.add(new String[] { Palette.ORE, TRADE_BUY_WORDS });
+        }
         return out;
     }
 
@@ -3980,11 +4087,114 @@ final class MapView {
         gc.setLineWidth(width);
     }
 
-    /** The globe's nations (after its picture, under the city's own drawing): the borders with Borders on, the dots and labels with Nations on - each only when the map is built, and the dots only once the game's nations are in. */
+    /**
+     * The city's trade lanes on the globe, between the borders and the dots (WN3, board 1): TradeLanes.runs() of the view - the edges in view,
+     * each shared lane once - stroked a path to each colour and whole width (at most TradeLanes.BUCKETS strokes however many partners), violet
+     * what we sell and sand what we buy, round ended, at TRADE_ALPHA; the line's width, cap and join put back. Nothing when the chip is off or
+     * there is no trade; the lanes themselves are made only when the month's figures move (lanesNow()).
+     */
+    private void tradeLanes(GraphicsContext gc, NationsMap nm) {
+        if (!ui.prefs.isTradeRoutesOnMap()) return;
+        TradeLanes l = lanesNow(nm);
+        if (l.partners() == 0) return;
+        TradeLanes.Drawn d = l.runs(globe);
+        NationsMap.Runs r = d.runs;
+        if (r.runs() == 0) return;
+        double width = gc.getLineWidth();
+        javafx.scene.shape.StrokeLineCap cap = gc.getLineCap();
+        javafx.scene.shape.StrokeLineJoin join = gc.getLineJoin();
+        gc.setLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
+        gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+        for (int b = 0; b < TradeLanes.BUCKETS; b++) {
+            int firstRun = d.bucketRuns[b], endRun = d.bucketRuns[b + 1];
+            if (endRun == firstRun) continue;
+            gc.setStroke(TradeLanes.Drawn.sellBucket(b) ? TRADE_SELL : TRADE_BUY);
+            gc.setLineWidth(TradeLanes.Drawn.widthOf(b));
+            gc.beginPath();
+            for (int k = firstRun; k < endRun; k++) {
+                int from = r.starts[k], to = r.starts[k + 1];
+                if (to - from < 2) continue;
+                gc.moveTo(r.xs[from], r.ys[from]);
+                for (int i = from + 1; i < to; i++) gc.lineTo(r.xs[i], r.ys[i]);
+            }
+            gc.stroke();
+        }
+        gc.beginPath();
+        gc.setLineCap(cap);
+        gc.setLineJoin(join);
+        gc.setLineWidth(width);
+    }
+
+    /**
+     * A generated world's partners as arrows at the edge of its map (WN3, the study 6.4): the biggest TradeLanes.ARROWS_MAX over the floor, each at
+     * the edge on its bearing from the stand-in place the feed names - a violet arrow pointing out for what we sell and a sand one pointing in for
+     * what we buy, side by side, widths by money - with the nation's name where the feed gives it. On the expanded map only.
+     */
+    private void tradeArrows(GraphicsContext gc) {
+        if (!expanded || ui.prefs == null || !ui.prefs.isTradeRoutesOnMap()) return;
+        TradeLanes.Arrows a = arrowsNow();
+        if (a == null || a.count() == 0) return;
+        a.place(canvas.getWidth(), canvas.getHeight());
+        TradeLanes.Feed feed = tradeFeed();
+        double width = gc.getLineWidth();
+        javafx.scene.shape.StrokeLineCap cap = gc.getLineCap();
+        gc.setLineCap(javafx.scene.shape.StrokeLineCap.BUTT);
+        for (int k = 0; k < a.count(); k++) {
+            if (a.sellPx(k) > 0) arrow(gc, a.x(k), a.y(k), a.dirX(k), a.dirY(k), a.sellPx(k), -a.buyPx(k) / 2.0, true, TRADE_SELL);
+            if (a.buyPx(k) > 0) arrow(gc, a.x(k), a.y(k), a.dirX(k), a.dirY(k), a.buyPx(k), a.sellPx(k) / 2.0, false, TRADE_BUY);
+        }
+        gc.setLineCap(cap);
+        gc.setLineWidth(width);
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+        gc.setFont(Palette.Fonts.sansStrongFont(LABEL_NAME_PX));
+        for (int k = 0; k < a.count(); k++) {
+            String name = feed.nameOf(a.nation(k));
+            if (name == null || name.isEmpty()) continue;
+            double lx = a.x(k) - a.dirX(k) * (ARROW_LEN_PX + 8 + name.length() * 2.5), ly = a.y(k) - a.dirY(k) * (ARROW_LEN_PX + 8);
+            gc.setLineWidth(HALO_PX);
+            gc.setStroke(colour(NationsMap.DOT_EDGE_ARGB, HALO_ALPHA));
+            gc.strokeText(name, lx, ly);
+            gc.setFill(Color.web(Palette.TEXT));
+            gc.fillText(name, lx, ly);
+        }
+        gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.MITER);
+        gc.setLineWidth(width);
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.BASELINE);
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+    }
+
+    /**
+     * One arrow of the edge: a shaft ARROW_LEN_PX long inward from its tip, a head at the outer end if it points out (what we sell) and at the inner
+     * end if it points in (what we buy), the whole moved `off` pixels sideways (to the right of the outward way) so the pair lie side by side.
+     */
+    private static void arrow(GraphicsContext gc, double tipX, double tipY, double ux, double uy, double width, double off, boolean out, Color colour) {
+        double nx = -uy, ny = ux, ax = tipX + nx * off, ay = tipY + ny * off;
+        double bx = ax - ux * ARROW_LEN_PX, by = ay - uy * ARROW_LEN_PX;
+        double head = ARROW_HEAD_PX + width / 2, wide = width / 2 + ARROW_HEAD_WIDE_PX;
+        double hx = out ? ax : bx, hy = out ? ay : by, dx = out ? ux : -ux, dy = out ? uy : -uy;
+        double baseX = hx - dx * head, baseY = hy - dy * head;
+        gc.setStroke(colour);
+        gc.setLineWidth(width);
+        gc.strokeLine(out ? bx : ax, out ? by : ay, baseX, baseY);
+        gc.setFill(colour);
+        gc.beginPath();
+        gc.moveTo(hx, hy);
+        gc.lineTo(baseX + nx * wide, baseY + ny * wide);
+        gc.lineTo(baseX - nx * wide, baseY - ny * wide);
+        gc.closePath();
+        gc.fill();
+        gc.beginPath();
+    }
+
+    /** The globe's nations (after its picture, under the city's own drawing): the borders with Borders on, the trade's lanes with Trade routes on, the dots and labels with Nations on - each only when the map is built, and the dots only once the game's nations are in. */
     private void globeNations(GraphicsContext gc) {
         NationsMap nm = nationsMap();
         if (nm == null) return;
         if (ui.prefs.isBordersOnMap()) strokeRuns(gc, nm.borders(globe));
+        tradeLanes(gc, nm);
         Nations ns = nationsNow();
         if (ui.prefs.isNationsOnMap() && ns != null) drawMarks(gc, nationMarks(nm, ns));
     }
@@ -4159,7 +4369,8 @@ final class MapView {
         }
         Game g = ui.game;
         // The D$ a US$ is the foreign accounts' rate (Markets.getExchangeRate() is that times the world's price level).
-        NationsMap.Card c = nm.card(ns, nationShown, Nations.yearOf(g.getMonth()), globe.cityLat(), globe.cityLon(), g.getForeignAccounts().getRate());
+        NationsMap.Card c = nm.card(ns, nationShown, Nations.yearOf(g.getMonth()), globe.cityLat(), globe.cityLon(), g.getForeignAccounts().getRate(),
+                tradeFeed().yearToDate(nationShown));
         nationKey = nationCardKey();
         Label name = new Label(c.name());
         name.setStyle(Palette.strong(15, Palette.TEXT));
@@ -4373,8 +4584,9 @@ final class MapView {
         Label close = stepChip("Back to the land office · Esc", () -> collapse(true), true);
         close.setMinWidth(Region.USE_PREF_SIZE);
         nationsChip = layerChip("Nations", NATIONS_TIP, this::flipNations);
+        tradeChip = layerChip("Trade routes", TRADE_TIP, this::flipTrade);
         bordersChip = layerChip("Borders", BORDERS_TIP, this::flipBorders);
-        nationsGroup = new HBox(Palette.GAP_TIGHT, nationsChip, bordersChip);
+        nationsGroup = new HBox(Palette.GAP_TIGHT, nationsChip, tradeChip, bordersChip);
         nationsGroup.setAlignment(Pos.CENTER_LEFT);
         nationsGroup.setMinWidth(Region.USE_PREF_SIZE);
         // The board's .grp: a hairline either side, 4 px between the chips (top, right, bottom, left).

@@ -395,6 +395,16 @@ adds its line here, not in `CLAUDE.md`.
                                    file to 2025, Random's swings and crises against their dials over a
                                    thousand seeded years, goods' swings, pegs held, output never negative,
                                    the ease past 2100 and a missing figure filled (WN1)
+        TradeLanes.java            the city's trade as routes on the map, without the toolkit (batch WN3,
+                                   slice C; docs/studies/spec-nations.md 8, board 1): the partners over
+                                   MIN_LANE as a tree of great-circle lanes from the city, a partner joining
+                                   the nearest vertex of a nearer one's lane within BUNDLE_DETOUR of its
+                                   direct way, each edge kept once with its sums and widths; built once
+                                   a month, culled to the view, projected from unit vectors and cut as one
+                                   run list a width (NationsMap.Cut), timed (LANE_FRAME_MS); the card's
+                                   trade rows (NationsMap.card) and a generated world's partners as
+                                   arrows at the edge (Arrows); Feed is what ui/MapView is given. Tested
+                                   by GlobeCheck 13 and 14, beside NationsMap (WN2) which cuts its borders
         GlobeFrame.java, GlobePicture.java
                                    the Earth's map as a globe, its model half (0.7.132, batch E8;
                                    docs/studies/spec-globe.md 3): the view - its centre in latitude and
