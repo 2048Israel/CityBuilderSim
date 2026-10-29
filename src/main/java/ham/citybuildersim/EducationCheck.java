@@ -1136,11 +1136,7 @@ public class EducationCheck {
                         // ...and the central bank's profit, a revenue line since 0.7.0 that
                         // this sum left out while the fixture's month happened to remit none
                         // (0.7.8's bank moved the city's month onto one that does).
-                        + ln.getCentralBankRemittance()
-                        // ...and the rest of getTotalRevenue()'s lines, which this sum left out the same way (HD1,
-                        // 2026-10-29): the fixture's month moved onto one with a premium, a fare or a due on it.
-                        + ln.getMortgagePremiums() + ln.getFundTransfer() + ln.getTransitFares()
-                        + ln.getReserveCrudeSold() + ln.getFuelDuty() + ln.getPortDues())) < 1e-9);
+                        + ln.getCentralBankRemittance())) < 1e-9);
         assertTrue("...while the journal's line is principal, net of what was lent",
                 lender.getStudentLoansRepaid() == lb.totalStudentRepaid()
                         && journalLine(lender, "Lent to students, net of repayments")

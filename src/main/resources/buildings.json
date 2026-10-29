@@ -204,9 +204,6 @@
    "constructionMaterials": 320,
    "electricity": 8,
    "water": 2,
-   "jobs": {
-    "DIPLOMA": 2
-   },
    "land": 25000,
    "roadLoad": 35,
    "makes": {
@@ -225,9 +222,6 @@
    "constructionMaterials": 377,
    "electricity": 25,
    "water": 6,
-   "jobs": {
-    "DIPLOMA": 2
-   },
    "land": 60000,
    "roadLoad": 100,
    "makes": {

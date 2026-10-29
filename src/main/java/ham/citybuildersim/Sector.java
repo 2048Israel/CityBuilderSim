@@ -393,14 +393,6 @@ public abstract class Sector {
         };
     }
 
-    /**
-     * Whether this sector's orders and the investors' build card hold a building to staffing()
-     * (HD1, 2026-10-29): true for every sector but the landlords, whose homes come before the
-     * workers - population is min(housing, jobs x 2.25), so a block that waited for spare
-     * workers to staff it would wait for the people only it can house (RealEstate overrides).
-     */
-    public boolean ordersOnlyWhatItCanStaff() { return true; }
-
     /** The staffing test every planner that builds posts asks before ordering one (0.7.18); see above. */
     public Staffing staffing(BuildingsTemplate t) {
         return staffing(t, 1);

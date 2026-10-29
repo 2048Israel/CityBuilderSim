@@ -340,7 +340,6 @@ final class HistoryScreen {
         new Trace("credibility",    "Trust in the bank",  "CREDIT",     "percent"),
         new Trace("expectedLevel",  "Expected price level", "CREDIT",   "index"),
         new Trace("businessDebt",   "Business debt",      "CREDIT",     "money"),
-        new Trace("businessBonds",  "Business bonds",     "CREDIT",     "money"),
         new Trace("policyRate",     "Policy rate",        "CREDIT",     "percent"),
         new Trace("bankPrime",      "Bank prime",         "CREDIT",     "percent"),
         new Trace("bankDepositRate","Savers' rate",       "CREDIT",     "percent"),

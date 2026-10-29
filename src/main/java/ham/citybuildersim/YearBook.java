@@ -164,7 +164,6 @@ public final class YearBook {
         level(m, "cash", "the treasury's cash in hand - negative is an overdraft, in thousands");
         level(m, "debt", "the city's own borrowing outstanding, in thousands");
         level(m, "businessDebt", "what the private sector owes the bank, in thousands");
-        level(m, "businessBonds", "the face of every business bond outstanding, in thousands (recorded since HD1)");
         level(m, "jobs", "posts the city offers");
         level(m, "workforce", "adults of working age - the students and the prisoners are still in it");
         level(m, "outOfWork", "people out of work - the labour force less the posts filled, the People screen's figure");

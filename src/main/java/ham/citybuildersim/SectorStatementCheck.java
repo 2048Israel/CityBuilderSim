@@ -867,9 +867,7 @@ public class SectorStatementCheck {
                         && Math.abs(mine.a() - gate.a()) <= CENT && Math.abs(mine.b() - gate.b()) <= CENT) first++;
                 double posts = 0;
                 for (JobType job : JobType.values()) posts += t.getJobs(job);
-                // ...a staffing gate is a building with posts whose owner asks them staffable (HD1: the landlords' homes have posts and no such gate).
-                boolean[] has = { Game.siteOf(t) != null, t.getRequiresLicence() != null,
-                        posts > 0 && a.owner().ordersOnlyWhatItCanStaff(), t.getLandSqFt() > 0, true };
+                boolean[] has = { Game.siteOf(t) != null, t.getRequiresLicence() != null, posts > 0, t.getLandSqFt() > 0, true };
                 boolean right = true;
                 for (int i = 0; i < has.length; i++) right &= has[i] == (a.gates().get(i).mark() != BuildCard.Mark.NONE);
                 if (right) none++;
