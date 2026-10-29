@@ -404,13 +404,21 @@ public final class TilePainter {
 
         /** Adds a yard: its whole box in the tile's plots, its type id, its layout (TileRaster.yardLayout()'s four ints) and whether it is the freight station. */
         public void addYard(int x0, int y0, int w, int h, int type, int[] layout, boolean station) {
+            addYard(x0, y0, w, h, type, layout, station, false);
+        }
+
+        /** ...and (MF1) whether it stands idle, its building gone (CityRuns.yardIdleSince()): the last int is 1 for the station, 2 for idle, 3 for both, and an idle yard is drawn with no wagons. */
+        public void addYard(int x0, int y0, int w, int h, int type, int[] layout, boolean station, boolean idle) {
             if ((yards + 1) * YARD_INTS > yard.length) yard = Arrays.copyOf(yard, yard.length * 2);
             int o = yards * YARD_INTS;
             yard[o] = x0; yard[o + 1] = y0; yard[o + 2] = w; yard[o + 3] = h; yard[o + 4] = type;
             yard[o + 5] = layout[0]; yard[o + 6] = layout[1]; yard[o + 7] = layout[2]; yard[o + 8] = layout[3];
-            yard[o + 9] = station ? 1 : 0;
+            yard[o + 9] = (station ? YARD_STATION : 0) | (idle ? YARD_IDLE : 0);
             yards++;
         }
+
+        /** The bits of a yard's last int (YARD_INTS): the freight station, and (MF1) idle. */
+        public static final int YARD_STATION = 1, YARD_IDLE = 2;
 
         /** Copies the yards of `from`, the array reused. */
         public void copyYards(Input from) {

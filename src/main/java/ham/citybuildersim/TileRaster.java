@@ -614,7 +614,7 @@ public final class TileRaster {
         }
         int[] layout = yardLayout(rail, boxW, boxH);
         boolean station = in.tx * tile + bx == in.stationX && in.ty * tile + by == in.stationY;
-        yardPicture(in, t, px, img, w, x0, y0, x1, y1, bx, by, bw, bh, boxW, boxH, layout, station);
+        yardPicture(in, t, px, img, w, x0, y0, x1, y1, bx, by, bw, bh, boxW, boxH, layout, station, false);
         headTrack(in, p, px, img, bx, by, boxW, boxH, layout);
     }
 
@@ -635,7 +635,8 @@ public final class TileRaster {
         int[] layout = { in.yard[o + 5], in.yard[o + 6], in.yard[o + 7], in.yard[o + 8] };
         int cw = ew * px, ch = eh * px, inset = px >= INSET_FROM ? 1 : 0;
         int[] canvas = yardCanvas(cw * ch);
-        yardPicture(in, t, px, canvas, cw, inset, inset, cw - inset, ch - inset, 0, 0, ew, eh, ew, eh, layout, in.yard[o + 9] != 0);
+        yardPicture(in, t, px, canvas, cw, inset, inset, cw - inset, ch - inset, 0, 0, ew, eh, ew, eh, layout,
+                (in.yard[o + 9] & TilePainter.Input.YARD_STATION) != 0, (in.yard[o + 9] & TilePainter.Input.YARD_IDLE) != 0);
         for (int y = y0; y < y1; y++) System.arraycopy(canvas, (y - ey * px) * cw + (x0 - ex * px), img, y * w + x0, x1 - x0);
         headTrack(in, p, px, img, ex, ey, ew, eh, layout);
     }
@@ -679,7 +680,7 @@ public final class TileRaster {
      */
     private static void yardPicture(TilePainter.Input in, BuildingVisual.Type t, int px, int[] img, int w,
                                     int x0, int y0, int x1, int y1, int bx, int by, int bw, int bh, int boxW, int boxH,
-                                    int[] layout, boolean station) {
+                                    int[] layout, boolean station, boolean idle) {
         fillRect(img, w, x0, y0, x1, y1, YARD_GROUND);
         boolean ew = layout[0] == 1;
         int spanA = layout[2], spanB = layout[3], boxLong = ew ? boxW : boxH;
@@ -770,7 +771,7 @@ public final class TileRaster {
         if (container) containers(px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanNear, fanFar);
         else stockpiles(px, img, w, sx0, sy0, sx1, sy1, ew, fanA, fanB, fanFar);
         // Wagons standing on the first wagonTracks tracks from the shed's side, never on all of them (a siding stays clear for a train).
-        int wagonTracks = wagonTracksOn(in.wagonTracks, n);
+        int wagonTracks = wagonTracksOn(idle ? 0 : in.wagonTracks, n);   // (MF1) an idle yard, its building gone, has no wagons standing
         for (int k = 0; k < wagonTracks && k < n; k++) {
             int mid = (int) Math.round(at[k]);
             int wide = px >= RAILS_FROM ? bed : 1;

@@ -65,7 +65,10 @@ import java.util.Map;
  *      main line at the hub, the yard gone and laid again, Elevated Highways
  *      drawn across them - moves none of them, every box of the plan before
  *      standing in the plan after, and the arrivals after a run stand on none
- *      of its plots;
+ *      of its plots; and (2e, MF1) a yard whose building left stays laid, idle,
+ *      for CityRuns.YARD_IDLE_MONTHS - the depot ordered again takes the same
+ *      yard back, nothing taken up and laid anew, the net held, no record in
+ *      the journal - and is taken up when its time is up;
  *   3. the painter draws the plan (0.7.88; the mockup's rules on the deal's
  *      tiles before): on the dense screen every plot a district's plan
  *      surfaces is painted as that street - kind and width - its seams once;
@@ -473,6 +476,8 @@ public class MapCheck {
         districtsHoldAndSpill(city);
         districtBuysLandInside(city);
         runsLaidAcross(city);
+        idleYards(city);
+        idleYardsOnRuns();
         Squares sq = new Squares();
         painterRules(sq.maps[DENSE]);
         drawnAsItIs(sq.maps[DENSE]);
@@ -483,6 +488,7 @@ public class MapCheck {
         viewHalf(city, sq, root);
         atSea(sq.types, sq.seed);
         trains(sq, city);
+        idleYardsTrains(sq);
         onEarth(sq.types);
         pictures(city, sq);
         pictureRelief(sq.types);
@@ -1612,6 +1618,9 @@ public class MapCheck {
 
         // ----- the yard goes: no Rail Depot, and the month that follows -----
         model[depot] = 0;
+        // (MF1) The yard of a depot that left stands idle (2e); it goes when its time is up, so the months run on to that: the fixture is a yard that goes.
+        quietMonth(h, d);
+        h.month += CityRuns.YARD_IDLE_MONTHS;
         Snap s3 = quietMonth(h, d);
         int goneMonth = h.last();
         int moved3 = movedOf(s2b.boxes, s3.boxes), yardLeft = s3.plots(DistrictPlan.FIXED_YARD), freed = s2b.plots(DistrictPlan.FIXED_YARD) - yardLeft;
@@ -1744,6 +1753,242 @@ public class MapCheck {
         check("the sidecar read back carries the same journal: the district's records and its plan's input frame's records are the written map's (" + frameRecords + " of them)", journalRead);
         check("the sidecar written after them and read back plans the district box for box as the map it was written from (" + s6.boxes.size() + " boxes, " + readDiffer + " differ)",
                 back != null && same != null && readDiffer == 0 && s6.boxes.size() > 0);
+    }
+
+    /* =====================================================================
+       2e. A YARD WHOSE BUILDING LEFT STAYS LAID, IDLE (batch MF1, item 6; FX7's star 4)
+       ===================================================================== */
+
+    /*
+     * On the default playtest the founding district's Rail Depot yard was taken up and laid again on one and the same box sixteen times in 3,140 months
+     * (month 861 to 4,000), each time with the railway's net (a hub of one plot) reset and started anew, and in the district's plan the ground it left free
+     * and took back. The cause is the model's: its Freight sector sells its only Rail Depot once its spurs are gone and buys another 3 to 93 months later
+     * (docs/queue/MF1/MF1YardProbe, a scratch tool), and the map followed the count. The model is not the map's, so the map lets a yard its building left stand idle
+     * (CityRuns.YARD_IDLE_MONTHS; Jerus: MF1 "stops the relays on the map"): it stays laid where it is, with its ground, its branch and the main line it
+     * stands on, but gets no trains, no wagons and is no freight station; the depot asked for again is the yard again, and a yard idle that long is taken up.
+     * 2e is that on the played city's ground (a copy, nothing built): a Rail Depot, the model's count falling to 0 and coming back after IDLE_GAP months,
+     * then staying away YARD_IDLE_MONTHS, and the sidecar with a yard idle; then (idleYardsOnRuns) several yards on open ground, the newest idling first and
+     * taken up first; and (idleYardsTrains) on the yard city, where trains run, no train to an idle yard.
+     */
+
+    /** Months a depot is away in 2e's short gap: fewer than CityRuns.YARD_IDLE_MONTHS (the playtest's gaps were 3 to 93). */
+    static final int IDLE_GAP = 3;
+
+    /** The records of the runs' journal over all the map's districts (THE RUNS DATED): one for each plot whose kind of fixed ground a month changed. */
+    static int journalRecords(CityMap m) {
+        int n = 0;
+        for (CityMap.District d : m.districts()) n += d.journalSize();
+        return n;
+    }
+
+    /** How many routes a train runs to yard i of the map (not to a works' siding). */
+    static int routesToYard(CityMap m, int i) {
+        int n = 0;
+        for (TrainSchedule.Route rt : m.trainRoutes()) if (!rt.works() && rt.yard() == i) n++;
+        return n;
+    }
+
+    /** The wagon pixels the tiles a yard's box reaches paint at 8 px a plot (TileRaster.WAGON): 0 where no wagons stand. */
+    static int wagonPixels(CityMap m, long[] yard) {
+        int px = 8, w = TilePainter.TILE * px, n = 0;
+        TilePainter.Input in = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted();
+        int[] img = new int[w * w];
+        for (long ty = Math.floorDiv(yard[1], World.TILE); ty <= Math.floorDiv(yard[1] + yard[3] - 1, World.TILE); ty++) {
+            for (long tx = Math.floorDiv(yard[0], World.TILE); tx <= Math.floorDiv(yard[0] + yard[2] - 1, World.TILE); tx++) {
+                m.tileInput(tx, ty, in);
+                TilePainter.paint(in, p);
+                Arrays.fill(img, 0);
+                TileRaster.raster(in, p, px, img);
+                for (int c : img) if (c == TileRaster.WAGON) n++;
+            }
+        }
+        return n;
+    }
+
+    /** Whether the tiles a yard's box reaches hand the painter a yard at all, and whether any is handed as idle (TilePainter.Input.YARD_IDLE): {handed, idle}. */
+    static boolean[] idleOnTiles(CityMap m, long[] yard) {
+        boolean seen = false, idle = false;
+        TilePainter.Input in = new TilePainter.Input();
+        for (long ty = Math.floorDiv(yard[1], World.TILE); ty <= Math.floorDiv(yard[1] + yard[3] - 1, World.TILE); ty++) {
+            for (long tx = Math.floorDiv(yard[0], World.TILE); tx <= Math.floorDiv(yard[0] + yard[2] - 1, World.TILE); tx++) {
+                m.tileInput(tx, ty, in);
+                for (int e = 0; e < in.yards; e++) {
+                    seen = true;
+                    idle |= (in.yard[e * TilePainter.Input.YARD_INTS + 9] & TilePainter.Input.YARD_IDLE) != 0;
+                }
+            }
+        }
+        return new boolean[] { seen, idle };
+    }
+
+    static void idleYards(Game g) {
+        out.println("\n--- 2e. a yard whose building left stays laid, idle, and the depot ordered again takes it back (MF1) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), depot = idOf(g, "Rail Depot");
+        CityLand land = g.getCityLand().copy();
+        long[] model = new long[types.length];
+        CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
+        Months h = new Months(m, model, house, g.getMonth() + 1);
+        CityRuns runs = m.runs();
+        m.railPicture(new CityMap.RailPicture(false, 1));   // the whole fleet: wagons stand on the yard's sidings while it works
+
+        // ----- a Rail Depot: the yard laid for it, wagons on it -----
+        model[depot] = 1;
+        h.run(0);
+        long[] yard = runs.yards().isEmpty() ? null : runs.yards().get(0);
+        long[] box = yard == null ? null : yard.clone();
+        boolean laid = runs.yards().size() == 1 && runs.yardsActive() == 1 && runs.rail().started;
+        check("fixture: a Rail Depot lays one yard and a railway for it, the model's yard, and the gap (" + IDLE_GAP + " months) is shorter than the yard's idle time ("
+                + CityRuns.YARD_IDLE_MONTHS + ")", laid && IDLE_GAP < CityRuns.YARD_IDLE_MONTHS && m.yardTypeOf(0) == depot);
+        if (!laid) return;
+        long netPlots = runs.rail().plots();
+        int records = journalRecords(m);
+        int wagons0 = wagonPixels(m, box);
+        boolean[] tile0 = idleOnTiles(m, box);
+        check("fixture: while the depot works wagons stand on its yard (" + wagons0 + " pixels) and the tiles hand the painter it as a yard in use", wagons0 > 0 && tile0[0] && !tile0[1]);
+
+        // ----- the depot sold: the yard stays -----
+        model[depot] = 0;
+        long changes = m.changes();
+        h.run(0);
+        int goneMonth = h.last();
+        for (int i = 1; i < IDLE_GAP; i++) h.run(0);
+        check("the depot sold, its yard stays laid where it was: the same box, not taken up (" + runs.yards().size() + " yard, " + IDLE_GAP + " months on)",
+                runs.yards().size() == 1 && runs.yards().get(0) == yard && Arrays.equals(yard, box));
+        if (runs.yards().isEmpty()) return;
+        check("...idle from the month it left (" + goneMonth + "): the model asks for no yard (" + runs.yardsActive() + " active)",
+                runs.yardsActive() == 0 && runs.yardIdleSince(0) == goneMonth);
+        check("...the railway's net held with it, not reset (" + runs.rail().plots() + " plots, " + netPlots + " before), and the map's changes moved, so the tiles are drawn again",
+                runs.rail().started && runs.rail().plots() == netPlots && m.changes() != changes);
+        check("...nothing of it is dated in the journal of the runs: no plot changed its kind (" + journalRecords(m) + " records, " + records + " before)", journalRecords(m) == records);
+        boolean[] tile1 = idleOnTiles(m, box);
+        int wagons1 = wagonPixels(m, box);
+        check("...and it is painted as a yard with no wagons (" + wagons1 + " pixels, " + wagons0 + " before): the tiles hand it as idle, and still as the depot's yard, not a Rail Terminal's",
+                tile1[0] && tile1[1] && wagons1 == 0 && m.yardTypeOf(0) == depot);
+
+        // ----- the depot again: the same yard -----
+        model[depot] = 1;
+        h.run(0);
+        check("the depot ordered again, the yard is the yard again: the same box object, not taken up and laid anew (" + runs.yards().size() + " yard)",
+                runs.yards().size() == 1 && runs.yards().get(0) == yard && runs.yardsActive() == 1);
+        check("...with nothing dated in the journal (" + journalRecords(m) + " records, " + records + " before), the net as it was, and the wagons back (" + wagonPixels(m, box) + " pixels)",
+                journalRecords(m) == records && runs.rail().plots() == netPlots && wagonPixels(m, box) == wagons0);
+
+        // ----- the sidecar with a yard idle -----
+        model[depot] = 0;
+        h.run(0);
+        int idleMonth = h.last();
+        byte[] side = m.writeSidecar(idleMonth, CityMap.FORMAT);
+        CityMap back = CityMap.readSidecar(side, land, r -> land.amountsInOrder(r), types, idleMonth, CityMap.stampIn(side));
+        check("the sidecar written with a yard idle and read back is the same runs, the yard idle from month " + idleMonth,
+                back != null && back.runs().same(runs) && back.runs().yardsActive() == 0 && back.runs().yardIdleSince(0) == idleMonth);
+        byte[] old = m.writeSidecar(idleMonth, 13);
+        CityMap older = CityMap.readSidecar(old, land, r -> land.amountsInOrder(r), types, idleMonth, CityMap.stampIn(old));
+        check("a sidecar of FORMAT 13 has no idle yard: it reads the yard as the model's (" + (older == null ? -1 : older.runs().yardsActive()) + " active)",
+                older != null && older.runs().yards().size() == 1 && older.runs().yardsActive() == 1);
+        if (older != null) {
+            long[] atRead = older.runs().yards().get(0);
+            Months o = new Months(older, model.clone(), house, idleMonth + 1);
+            o.run(0);
+            check("...and the first month after it, the model asking for none, the yard idles from that month: not taken up (idle from " + older.runs().yardIdleSince(0) + ")",
+                    older.runs().yards().size() == 1 && older.runs().yards().get(0) == atRead && older.runs().yardsActive() == 0 && older.runs().yardIdleSince(0) == o.last());
+        }
+
+        // ----- gone for good: taken up when its idle time is up -----
+        h.month = idleMonth + CityRuns.YARD_IDLE_MONTHS - 1;
+        h.run(0);
+        boolean standsStill = runs.yards().size() == 1 && runs.yards().get(0) == yard;
+        int lastMonth = h.last();
+        h.run(0);
+        check("a depot gone for good: the yard is there the month before its idle time is up (month " + lastMonth + " of " + (idleMonth + CityRuns.YARD_IDLE_MONTHS) + ")", standsStill);
+        check("...and taken up in the month it is up, " + CityRuns.YARD_IDLE_MONTHS + " months after it left, and the net with it (" + runs.yards().size() + " yards, the railway "
+                + (runs.rail().started ? "started" : "taken back") + ")", runs.yards().isEmpty() && !runs.rail().started && runs.rail().plots() == 0);
+        check("...which is dated: the plots it leaves are records in the journal (" + journalRecords(m) + " records, " + records + " before)", journalRecords(m) > records);
+        model[depot] = 1;
+        h.run(0);
+        check("...and a depot after that has a yard laid anew, on the same box as the first (the runs' own order) but not the same yard",
+                runs.yards().size() == 1 && runs.yards().get(0) != yard && Arrays.equals(runs.yards().get(0), box) && runs.yardsActive() == 1);
+    }
+
+    /** 2e's runs-level half: several yards on open ground (MainLineCheck's), one month at a time. */
+    static void idleYardsOnRuns() {
+        int[] term = MainLineCheck.terminalYard(), depot = MainLineCheck.depotYard();
+        JunctionCheck.PatchGround ground = MainLineCheck.longGround();
+        List<int[]> none = new ArrayList<>(), one = new ArrayList<>(List.of(depot)), two = new ArrayList<>(List.of(depot, depot));
+        CityRuns r = new CityRuns();
+        r.setGateway(0);
+        r.setMonth(100);
+        MainLineCheck.layYards(r, ground, two, 0);
+        List<long[]> boxes = new ArrayList<>(r.yards());
+        check("fixture: two depots lay two yards on open ground, both the model's, one of them the freight station", boxes.size() == 2 && r.yardsActive() == 2 && r.freightStation() != null);
+        if (boxes.size() != 2) return;
+        // one sold, the newest yard idles
+        r.setMonth(110);
+        MainLineCheck.layYards(r, ground, one, 0);
+        check("two depots, one sold: the newest yard idles (" + r.yardsActive() + " of " + r.yards().size() + " active, idle from month " + r.yardIdleSince(1) + "), neither yard moves",
+                r.yards().size() == 2 && r.yards().get(0) == boxes.get(0) && r.yards().get(1) == boxes.get(1) && r.yardsActive() == 1 && r.yardIdleSince(0) == -1 && r.yardIdleSince(1) == 110);
+        check("...and the freight station is the yard the model asks for, never the idle one", r.freightStation() != null && Arrays.equals(r.freightStation(), boxes.get(0)));
+        // both back
+        r.setMonth(120);
+        MainLineCheck.layYards(r, ground, two, 0);
+        check("two depots again: both yards the model's, the same boxes, nothing laid or taken (" + r.yardsActive() + " active)",
+                r.yards().size() == 2 && r.yards().get(0) == boxes.get(0) && r.yards().get(1) == boxes.get(1) && r.yardsActive() == 2);
+        // the newest idles first, the other later; each is taken up when its own time is up, the newest first
+        r.setMonth(125);
+        MainLineCheck.layYards(r, ground, one, 0);
+        r.setMonth(130);
+        MainLineCheck.layYards(r, ground, none, 0);
+        check("...then one sold at month 125 and the other at 130: both idle, each from its own month", r.yardsActive() == 0 && r.yardIdleSince(1) == 125 && r.yardIdleSince(0) == 130);
+        r.setMonth(125 + CityRuns.YARD_IDLE_MONTHS - 1);
+        MainLineCheck.layYards(r, ground, none, 0);
+        boolean both = r.yards().size() == 2;
+        r.setMonth(125 + CityRuns.YARD_IDLE_MONTHS);
+        MainLineCheck.layYards(r, ground, none, 0);
+        boolean newestGone = r.yards().size() == 1 && r.yards().get(0) == boxes.get(0) && r.yardsActive() == 0;
+        r.setMonth(130 + CityRuns.YARD_IDLE_MONTHS - 1);
+        MainLineCheck.layYards(r, ground, none, 0);
+        boolean oldestStands = r.yards().size() == 1;
+        r.setMonth(130 + CityRuns.YARD_IDLE_MONTHS);
+        MainLineCheck.layYards(r, ground, none, 0);
+        check("...the newest taken up first when its time is up (month " + (125 + CityRuns.YARD_IDLE_MONTHS) + "), the other still standing the month before its own (" + (130 + CityRuns.YARD_IDLE_MONTHS) + ")",
+                both && newestGone && oldestStands);
+        check("...and the last gone in its month, the railway with it (" + r.yards().size() + " yards, started: " + r.rail().started + ")", r.yards().isEmpty() && !r.rail().started);
+        // a yard asked at another footprint is still taken up at once, as before (the Terminal-before-Depot shift is left as it was)
+        CityRuns s = new CityRuns();
+        s.setGateway(0);
+        s.setMonth(200);
+        MainLineCheck.layYards(s, ground, one, 0);
+        long[] first = s.yards().get(0);
+        s.setMonth(201);
+        MainLineCheck.layYards(s, ground, new ArrayList<>(List.of(term)), 0);
+        check("a yard asked for at another footprint is not idle but taken up at once and laid anew, as before (" + s.yards().size() + " yard, asked " + Arrays.toString(s.yardAsked(0)) + ")",
+                s.yards().size() == 1 && s.yards().get(0) != first && Arrays.equals(s.yardAsked(0), term) && s.yardsActive() == 1);
+    }
+
+    /** 2e's last part, on the yard city (its gateway, its railway's world line, two depots' yards): no train runs to an idle yard. */
+    static void idleYardsTrains(Squares sq) {
+        out.println("      an idle yard gets no trains (MF1):");
+        CityMap m = yardCity(sq);
+        CityRuns runs = m.runs();
+        int depot = -1;
+        for (BuildingVisual.Type t : sq.types) if (t != null && BuildingVisual.depot(t)) depot = t.id();
+        long[] model = m.totals().clone();
+        check("fixture: the yard city has two depots' yards, both the model's, with trains running to each (" + routesToYard(m, 0) + " and " + routesToYard(m, 1) + " routes)",
+                depot >= 0 && model[depot] == YARDS_ADDED && runs.yards().size() == YARDS_ADDED && runs.yardsActive() == YARDS_ADDED && routesToYard(m, 0) > 0 && routesToYard(m, 1) > 0);
+        if (depot < 0 || runs.yards().size() != YARDS_ADDED) return;
+        List<long[]> boxes = new ArrayList<>(runs.yards());
+        model[depot]--;
+        m.reconcile(model);
+        check("one depot sold: its yard (the newest) stays, idle, and no train runs to it (" + routesToYard(m, 1) + " routes), the other yard keeps its trains (" + routesToYard(m, 0) + ")",
+                runs.yards().size() == YARDS_ADDED && runs.yards().get(0) == boxes.get(0) && runs.yards().get(1) == boxes.get(1) && runs.yardsActive() == 1
+                        && routesToYard(m, 1) == 0 && routesToYard(m, 0) > 0);
+        check("...the idle yard is still drawn as the depot's yard (" + m.yardTypeOf(1) + " of " + depot + ") and is no freight station", m.yardTypeOf(1) == depot
+                && (runs.freightStation() == null || !Arrays.equals(runs.freightStation(), boxes.get(1))));
+        model[depot]++;
+        m.reconcile(model);
+        check("the depot ordered again, the trains run to it again (" + routesToYard(m, 1) + " routes), the same yard (" + runs.yardsActive() + " active)",
+                runs.yards().get(1) == boxes.get(1) && runs.yardsActive() == YARDS_ADDED && routesToYard(m, 1) > 0);
     }
 
     /** The smallest and the largest footprint, in cells, of the types listed. */

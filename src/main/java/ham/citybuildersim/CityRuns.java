@@ -2166,6 +2166,46 @@ public final class CityRuns {
         yardAsked.add(new int[] { asked[0], asked[1] });
     }
 
+    /* ----- a yard whose building left stays laid, idle (MF1, 2026-10-28) ----- */
+
+    /**
+     * How many months a yard whose building has left stays laid, idle, before it is taken up: 120, ten years - the default playtest's Freight sector sold its only Rail Depot and bought another 3 to 93 months later, sixteen times in 3,140 months, and each time the yard was taken up and laid again on the same box (MF1 item 6, FX7's star 4).
+     */
+    public static final int YARD_IDLE_MONTHS = 120;
+
+    /**
+     * WHY (MF1 item 6; Jerus, "Into MF1"): the founding district's yard was "taken up and laid again on the same spot eleven times" over the
+     * playtest's run. Traced (docs/queue/MF1/MF1YardProbe, a scratch tool): not keepYards() shifting a list - the playtest has no Rail Terminal - but the
+     * model's own churn, the Freight sector selling its last station once its spurs were gone and buying another a few months later: the
+     * map followed the count, 16 yards taken up and 16 laid on one box, and with each the railway's net (a hub of one plot) reset and started
+     * again. The model is not the map's to change, so the map lets a yard its building left stand idle for YARD_IDLE_MONTHS: the yards
+     * past the sizes the model asks stay laid, with the month they went idle (yardIdleSince()); the model asks for one again, the idle
+     * yard that fits it is the yard again, nothing taken up and nothing laid. An idle yard keeps its ground (the plans' as any yard's), its
+     * branch and the main line it stands on (layRail() holds the line while one stands), gets no trains and is drawn with no wagons
+     * (CityMap.trainRoutes(), the tile's yard flag), and is the freight station no more.
+     */
+    private int month;
+
+    /** The month the runs are laid in, the map's (CityMap.layRuns()): what an idle yard's time is counted from. */
+    public void setMonth(int month) { this.month = month; }
+
+    /** The month each idle yard went idle, for the trailing yards of `yards` past the first yardsActive() of them, in order. */
+    private final List<Integer> idleSince = new ArrayList<>();
+
+    /** How many of the yards the model asks for now: the first of them. The rest, if any, stand idle (yardIdleSince()). */
+    public int yardsActive() { return yards.size() - idleSince.size(); }
+
+    /** The month yard i went idle, or -1 where it is the model's, active (or there is no such yard). */
+    public int yardIdleSince(int i) {
+        int k = i - yardsActive();
+        return k < 0 || k >= idleSince.size() ? -1 : idleSince.get(k);
+    }
+
+    /** Whether the oldest-idle yard's time is up (idle YARD_IDLE_MONTHS): layRail() runs for it though nothing it is stamped by moved. */
+    private boolean idleExpired() {
+        return !idleSince.isEmpty() && month - idleSince.get(idleSince.size() - 1) >= YARD_IDLE_MONTHS;
+    }
+
     /**
      * Takes the yards back to the longest run, from the first, that were
      * laid for the sizes the model now asks (FR7 slice 3, 2026-10-18): a Rail
@@ -2179,6 +2219,11 @@ public final class CityRuns {
      * (FX5 Y1) A yard is compared by the footprint it was asked for, not by its
      * box: laid YARD_LONG along its line, or short by the ground, its box is not
      * the footprint, and comparing the boxes would lay it again every month.
+     * (MF1) The yards past the sizes asked, the run matching all it asks for, are
+     * not taken up: they stand idle from this month (YARD_IDLE_MONTHS) and are
+     * the yards again if the model asks for them; a yard idle that long is
+     * taken up, the newest first. A yard asked at another footprint than it was
+     * laid for is taken up with every yard after it, as before.
      */
     private void keepYards(List<int[]> sizes) {
         int keep = 0;
@@ -2187,10 +2232,27 @@ public final class CityRuns {
             if (asked[0] != now[0] || asked[1] != now[1]) break;
             keep++;
         }
-        for (int i = keep; i < yards.size(); i++) sawBox(witness, yards.get(i)[0], yards.get(i)[1], yards.get(i)[2], yards.get(i)[3]);
-        while (yards.size() > keep) yards.remove(yards.size() - 1);
-        while (yardAsked.size() > keep) yardAsked.remove(yardAsked.size() - 1);
+        if (keep < yards.size() && keep < sizes.size()) {
+            takeYards(keep);
+            idleSince.clear();   // what is left is the run that matched: all of it the model's
+        } else {
+            int wasActive = yardsActive();
+            List<Integer> idle = new ArrayList<>();
+            for (int i = keep; i < yards.size(); i++) idle.add(i < wasActive ? month : idleSince.get(i - wasActive));
+            idleSince.clear();
+            idleSince.addAll(idle);
+            while (idleExpired()) takeYards(yards.size() - 1);
+        }
         yardsShort = 0;
+    }
+
+    /** Takes the yards from index `from` on (the newest last), the witness told of each box first, and the idle months of those that were idle. */
+    private void takeYards(int from) {
+        int wasActive = yardsActive();
+        for (int i = from; i < yards.size(); i++) sawBox(witness, yards.get(i)[0], yards.get(i)[1], yards.get(i)[2], yards.get(i)[3]);
+        while (yards.size() > from) yards.remove(yards.size() - 1);
+        while (yardAsked.size() > from) yardAsked.remove(yardAsked.size() - 1);
+        while (idleSince.size() > Math.max(0, from - wasActive)) idleSince.remove(idleSince.size() - 1);
     }
 
     /** Every box a yard could take, the nearest a mine first: the YARD_LONG boxes, then (where none fits, in the order of the tiers) the cell's interior's, then the footprint's own; two a cell the track runs straight through on its line, one at either end of it. */
@@ -2531,15 +2593,18 @@ public final class CityRuns {
     private void layRail(long trackPlots, List<int[]> sizes, int spurs, Ground g, long rx, long ry,
                          List<long[]> mines, List<long[]> works) {
         long stamp = railStampOf(trackPlots, sizes, spurs, g, rx, ry, mines, works);
-        if (railStampSet && stamp == railStamp) return;
+        // (MF1) An idle yard whose time is up is taken up this month, though nothing the stamp holds has moved.
+        if (railStampSet && stamp == railStamp && !idleExpired()) return;
         dropWays();
+        keepYards(sizes);
         // A station stands on the main line whatever track the model has (a yard is no track): the line is grown till it waits at the city's ground.
-        long lineTo = sizes.isEmpty() ? trackPlots : Math.max(trackPlots, rail.plots + MAIN_LINE_REACH);
+        // (MF1) A yard idle stands on it as a station does: the line is held as it is (never taken back, never grown) while one stands.
+        boolean idle = !idleSince.isEmpty();
+        long lineTo = !sizes.isEmpty() ? Math.max(trackPlots, rail.plots + MAIN_LINE_REACH) : idle ? Math.max(trackPlots, rail.plots) : trackPlots;
         if (lineTo < rail.plots) trim(rail, lineTo, gateway);
         else growMainLine(rail, highways, lineTo, g, rx, ry, gateway);
         if (!sizes.isEmpty() && !rail.started) start(rail, g, rx, ry, gateway);
-        if (trackPlots == 0 && sizes.isEmpty() && rail.plots == 0 && rail.started) rail.reset();
-        keepYards(sizes);
+        if (trackPlots == 0 && sizes.isEmpty() && yards.isEmpty() && rail.plots == 0 && rail.started) rail.reset();
         long[] budget = { Math.max(0, trackPlots - rail.plots) };
         if (rail.started) {
             Ctx ctx = new Ctx(mines, works);
@@ -2554,8 +2619,10 @@ public final class CityRuns {
                 if (i < yards.size()) reachYard(yards.get(i), g, ctx, budget);
                 else if (!placeFurther(sizes.get(i), g, ctx, budget)) break;
             }
+            // (MF1) ...and an idle yard keeps the branch it had.
+            if (!ctx.works.isEmpty()) for (int i = Math.max(1, yardsActive()); i < yards.size(); i++) reachYard(yards.get(i), g, ctx, budget);
         }
-        yardsShort = Math.max(0, sizes.size() - yards.size());
+        yardsShort = Math.max(0, sizes.size() - yardsActive());
         railStamp = stamp;
         railStampSet = true;
     }
@@ -3307,12 +3374,14 @@ public final class CityRuns {
     /** The freight station found afresh (freightStation()'s rule). */
     private long[] findStation() {
         int main = mainArm();
-        if (main < 0 || yards.isEmpty()) return null;
+        if (main < 0 || yardsActive() == 0) return null;
         Arm a = rail.arms.get(main);
         double bx = a.x, by = a.y;
         long[] best = null;
         double bestD = Double.MAX_VALUE;
-        for (long[] y : yards) {
+        // (MF1) An idle yard is no freight station: the trains come to the yards the model asks for.
+        for (int yi = 0; yi < yardsActive(); yi++) {
+            long[] y = yards.get(yi);
             double cx = y[0] + y[2] / 2.0, cy = y[1] + y[3] / 2.0;
             double d = (cx - bx) * (cx - bx) + (cy - by) * (cy - by);
             if (d < bestD) { bestD = d; best = y; }
@@ -3852,6 +3921,11 @@ public final class CityRuns {
             for (int j = 1; j < n.pieceHubs.size(); j++) h = World.mix(h ^ n.pieceHubs.get(j)[0] * 0x9E3779B97F4A7C15L ^ n.pieceHubs.get(j)[1] ^ ((long) j << 56));
         }
         for (long[] y : yards) h = World.mix(h ^ y[0] * 0x9E3779B97F4A7C15L ^ y[1] ^ (y[2] << 24) ^ (y[3] << 44));
+        // (MF1) The yards that stand idle, only while there are any, so a city with none signs as it did.
+        if (!idleSince.isEmpty()) {
+            h = World.mix(h ^ 0x49444C45L ^ ((long) idleSince.size() << 32));
+            for (int since : idleSince) h = World.mix(h ^ since);
+        }
         h = World.mix(h ^ (doubleMain ? 1L : 0L));
         // The long bridges that stand (ET6): their stamp, only while there are any, so a city with none signs as it did.
         if (bridgeStamp != 0) h = World.mix(h ^ bridgeStamp);
@@ -4395,6 +4469,8 @@ public final class CityRuns {
      * From FORMAT 12 (CL5) each net writes, after its plots, the hubs of its pieces after the home piece's (a count, then x and y each) and with each
      * corridor its piece (int) and role (byte): an older format has one piece, the spine the corridors 0 and 1.
      * From FORMAT 13 (CC1-M) each arm's record ends with what last stopped it (stoppedBy, a byte); an older format has none and reads OPEN.
+     * From FORMAT 14 (MF1) the yards that stand idle are written last, after what was short: a count and the month each went idle (they are the
+     * last of the yards); an older format has none, all its yards the model's.
      */
     void write(DataOutputStream out, int format) throws IOException {
         for (Net n : new Net[] { highways, rail }) {
@@ -4445,6 +4521,10 @@ public final class CityRuns {
         out.writeLong(highwayShort);
         out.writeLong(trackSurplus);
         out.writeInt(yardsShort);
+        if (format >= 14) {
+            out.writeInt(idleSince.size());
+            for (int since : idleSince) out.writeInt(since);
+        }
     }
 
     /** The runs write() wrote, read back; null when they do not add up. */
@@ -4452,7 +4532,7 @@ public final class CityRuns {
         return read(in, CityMap.FORMAT);
     }
 
-    /** ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then; before FORMAT 12 the net is one piece (CL5); before FORMAT 13 each arm reads as stopped by nothing (OPEN, CC1-M). */
+    /** ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then; before FORMAT 12 the net is one piece (CL5); before FORMAT 13 each arm reads as stopped by nothing (OPEN, CC1-M); before FORMAT 14 no yard stands idle (MF1). */
     static CityRuns read(DataInputStream in, int format) throws IOException {
         CityRuns r = new CityRuns();
         for (Net n : new Net[] { r.highways, r.rail }) {
@@ -4544,6 +4624,11 @@ public final class CityRuns {
         r.highwayShort = in.readLong();
         r.trackSurplus = in.readLong();
         r.yardsShort = in.readInt();
+        if (format >= 14) {
+            int idle = in.readInt();
+            if (idle < 0 || idle > ny) return null;
+            for (int i = 0; i < idle; i++) r.idleSince.add(in.readInt());
+        }
         r.version = r.signature();
         return r;
     }
@@ -4572,6 +4657,7 @@ public final class CityRuns {
         }
         if (yards.size() != o.yards.size()) return false;
         for (int i = 0; i < yards.size(); i++) if (!Arrays.equals(yards.get(i), o.yards.get(i)) || !Arrays.equals(yardAsked(i), o.yardAsked(i))) return false;
+        if (!idleSince.equals(o.idleSince)) return false;
         return highwayShort == o.highwayShort && trackSurplus == o.trackSurplus;
     }
 }

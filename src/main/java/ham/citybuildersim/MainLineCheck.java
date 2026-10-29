@@ -1290,9 +1290,15 @@ public class MainLineCheck {
                 someGate.steps + 1 > little && g.x1 - someGate.x >= 0 && g.x1 - someGate.x < CityRuns.LOOK);
         check("...and lays no siding (the track is short of the line) and shows no surplus", some.sidings().isEmpty() && some.trackSurplus() == 0);
 
-        // The station gone: the model's track alone sets the line again.
+        // The station gone: its yard stands idle and the line with it (MF1, YARD_IDLE_MONTHS); once its time is up the model's track alone sets the line again.
+        long lineWas = alone.rail.plots();
+        alone.setMonth(10);
         alone.layTo(0, 0, new ArrayList<>(), 0, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
-        check("with the station gone and no track, the line is taken back", alone.rail.plots() == 0 && alone.yards().isEmpty());
+        check("with the station gone and no track, its yard stands idle and the main line is held, not taken back (MF1)",
+                alone.yards().size() == 1 && alone.yardsActive() == 0 && alone.rail.plots() == lineWas && lineWas > 0);
+        alone.setMonth(10 + CityRuns.YARD_IDLE_MONTHS);
+        alone.layTo(0, 0, new ArrayList<>(), 0, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        check("...and with its idle time up, no station and no track, the line is taken back", alone.rail.plots() == 0 && alone.yards().isEmpty());
     }
 
     /** The Rail Terminal's yard size, {across, down}: BuildingVisual.footprint() of the catalogue's terminal that is no depot. */
