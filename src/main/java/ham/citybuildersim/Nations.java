@@ -50,10 +50,11 @@ public final class Nations {
     public enum Path { HISTORICAL, RANDOM }
 
     /**
-     * The path a founding takes when nobody picks one: Random (WN3; Jerus, 2026-10-29: "(2a) Random by default").
+     * The path a founding takes when nobody picks one, on the Earth and on a generated world alike: Random (WN3;
+     * Jerus, 2026-10-29: "A new world defaults to the Random path instead of Historical").
      * WHY: on the world market a young city on Historical meets the 2000s commodity boom as imported inflation
-     * (the default playtest's prices 4.38x by 2012, its treasury dry in 2008, ~5,000 people for 60 years; WN3-B).
-     * Historical stays the founding screen's first chip, for the player who picks it.
+     * (the default playtest's prices 4.38x by 2012, its treasury dry in 2008, ~5,000 people for 60 years; WN3-B),
+     * and most new players found on the Earth. Historical stays the founding screen's first chip on both pages.
      */
     public static final Path DEFAULT_PATH = Path.RANDOM;
 
