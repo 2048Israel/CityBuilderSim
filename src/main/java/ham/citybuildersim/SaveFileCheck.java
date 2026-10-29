@@ -3187,7 +3187,15 @@ public class SaveFileCheck {
                 Files.writeString(isleFiles.saveFile(10), gson.toJson(beforeLandmasses));
                 Game refused = new Game(isleFiles);
                 quietly(() -> refused.loadGameSave(10));
-                assertEquals("an Earth save of the format before the landmasses (" + (EarthSite.LANDMASS_FORMAT - 1) + ") is refused in the words saying so", refused.getLoadFailure(), EarthSite.BEFORE_LANDMASS_WORDS);
+                // Since WN3 the floor (48) stands above the landmasses' format (47): a save before them is the floor's to refuse, in its words, and the
+                // landmass words are for a save between the two floors, which no build can write while the general floor is the higher.
+                if (EarthSite.LANDMASS_FORMAT - 1 >= GameVersion.OLDEST_LOADABLE_FORMAT) {
+                    assertEquals("an Earth save of the format before the landmasses (" + (EarthSite.LANDMASS_FORMAT - 1) + ") is refused in the words saying so", refused.getLoadFailure(), EarthSite.BEFORE_LANDMASS_WORDS);
+                } else {
+                    assertTrue("an Earth save of the format before the landmasses (" + (EarthSite.LANDMASS_FORMAT - 1) + "), now under the floor ("
+                            + GameVersion.OLDEST_LOADABLE_FORMAT + "), is refused by the floor, in its words, and nothing of it applied",
+                            refused.getLoadFailure() != null && refused.getLoadFailure().contains("can no longer read") && refused.getMonth() == 1);
+                }
 
                 // THE LONG BRIDGES (ET6, 2026-10-26; Bridges): a city with a bridge built or building writes one key, "bridges" - a row for each, its
                 // template, kind, state, landings, landmasses, length, depths and corner plots - and a city with none writes none. Read back it puts every

@@ -390,7 +390,7 @@ adds its line here, not in `CLAUDE.md`.
                                    at Barro's rate, prices by income group, moneys by relative parity or
                                    their peg. Founding carries the path and seed, DataSave saves them
                                    (worldPath, pathSeed), ui/FoundingScreen picks them; Game.getNations()
-                                   builds it lazily, and nothing in the month reads it yet
+                                   builds it lazily, and WN3's WorldMarket reads it every January
         NationsCheck.java          Nations held to its dials: one seed one path, Historical equal to the
                                    file to 2025, Random's swings and crises against their dials over a
                                    thousand seeded years, goods' swings, pegs held, output never negative,
@@ -408,7 +408,8 @@ adds its line here, not in `CLAUDE.md`.
                                    answer to its tonnes. Base is
                                    the file's, once a process (pairs, freight, the calibration that keeps
                                    the literals the prices at Halifax in 2025); WorldMarket is one city's.
-                                   Nothing in the month reads it yet
+                                   Game's THE WORLD MARKET solves it every January and strikes its band
+                                   into each traded good's GoodsMarket every month (WN3)
         WorldMarketCheck.java      WorldMarket held to its equations: every maker clears and the level
                                    meets the path (recomputed from the file's pairs), the reference city
                                    sees Good's literals to 1e-9, the floor never above the ceiling in every
