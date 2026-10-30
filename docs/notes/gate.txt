@@ -1,9 +1,42 @@
-# gate of Merge batch/WN3: nations: the world market - the January solve on the partner rule, the city's month by the slopes, the band from the world, trade by partner; every trace moves, 0.8.75
+# gate of Merge batch/HD2: hD1's coupon on the businesses' dollars abroad as profit, kept abroad: on the statement, taxed and paid out, the cash staying abroad and the till recalling dollars only when short, so MonetaryCheck's rate dial keeps its sign (Jerus, 2026-10-29: "hd1, same", then "Kept abroad (Recommended)"); settles HD1-C; the trace moves, 0.8.76
 # date: 2026-10-30
 # earth-2.bin: named
-# suite: 154 harnesses run in 1267s: 154 passed, 0 failed
-# timing: 13 harnesses run in 487s: 12 passed, 1 failed; its red lines were judged side by side with main's, below
+# suite: 154 harnesses run in 1430s: 152 passed, 2 failed
+# timing: 13 harnesses run in 430s: 10 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 6.92 ms, batch 8.97 ms (+29.6%), budget 5 ms: main over the budget too]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 33.0 ms, batch 27.0 ms (-18.2%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 5.95 ms, batch 5.74 ms (-3.6%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 22.3 ms, batch 27.6 ms (+23.7%), budget 19 ms: main over the budget too]
 # timing red not the batch's (paired): MapCheck | 2 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the kept month is within KEPT_MONTH_MS (12.0 ms)                         FAIL   [main 6.12 ms, batch 10.7 ms (+74.2%), budget 12 ms: the batch within the budget]
+# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): PassThroughCheck | exit 1
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): PassThroughCheck | ...and so does the price index (mean gap 0.74% against 0.51%)            FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): PassThroughCheck | 1 FAILED
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | exit 1
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | fixture: the city is growing - more people than a year before                        FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | fixture: ...and its own rents price no migrant out in the months its copies are read against (the affordability pull 1 in all 6) FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | fixture: the free copy ordered - an order sized from more than a million needed, and one judged on its interest FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | fixture: the free copy ordered - an order sized from more than a million needed, and one judged on its interest FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.20e+00) FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 3.54e-02) FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | ...deposits: the copy is K times the city's within 0.0260 in all 6 months (worst 4.46e-02) FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | ...prices: the copy is equal to the city's within 0.00400 in all 6 months (worst 9.01e-03) FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | ...unemployment: the copy is equal to the city's within 0.0330 in all 6 months (worst 1.00e-01) FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | 11 FAILED
+PassThroughCheck | exit 1
+PassThroughCheck | ...and so does the price index (mean gap 0.74% against 0.51%)            FAIL
+PassThroughCheck | 1 FAILED
+ScaleCheck | exit 1
+ScaleCheck | fixture: the city is growing - more people than a year before                        FAIL
+ScaleCheck | fixture: ...and its own rents price no migrant out in the months its copies are read against (the affordability pull 1 in all 6) FAIL
+ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
+ScaleCheck | fixture: the free copy ordered - an order sized from more than a million needed, and one judged on its interest FAIL
+ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.20e+00) FAIL
+ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 3.54e-02) FAIL
+ScaleCheck | ...deposits: the copy is K times the city's within 0.0260 in all 6 months (worst 4.46e-02) FAIL
+ScaleCheck | ...prices: the copy is equal to the city's within 0.00400 in all 6 months (worst 9.01e-03) FAIL
+ScaleCheck | ...unemployment: the copy is equal to the city's within 0.0330 in all 6 months (worst 1.00e-01) FAIL
+ScaleCheck | 11 FAILED

@@ -1,4 +1,4 @@
-# SectorStatementCheck.java - 932 lines · 23 methods · 4 constants · harnesses
+# SectorStatementCheck.java - 937 lines · 23 methods · 4 constants · harnesses
 
 `ham/citybuildersim/SectorStatementCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      lent after it and section 3 holds its debt, land and buildings to
 > ... (3 more lines in the source)
 
-**Uses:** [SectorStatements](SectorStatements.md) (146), [Game](Game.md) (25), [SectorBooks](SectorBooks.md) (17), [LongPlaytest](LongPlaytest.md) (16), [Bank](Bank.md) (15), [Equity](Equity.md) (11), [BuildCard](BuildCard.md) (11), [Sector](Sector.md) (9), [Debt](Debt.md) (8), [Sectors](Sectors.md) (8), [GameVersion](GameVersion.md) (5), [GameFiles](GameFiles.md) (3), [JobType](JobType.md) (2), [TempDirs](TempDirs.md) (1), [TreasuryFund](TreasuryFund.md) (1), [EconomyManager](EconomyManager.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
+**Uses:** [SectorStatements](SectorStatements.md) (148), [Game](Game.md) (25), [SectorBooks](SectorBooks.md) (17), [LongPlaytest](LongPlaytest.md) (16), [Bank](Bank.md) (15), [Equity](Equity.md) (11), [BuildCard](BuildCard.md) (11), [Sector](Sector.md) (9), [Debt](Debt.md) (8), [Sectors](Sectors.md) (8), [GameVersion](GameVersion.md) (5), [GameFiles](GameFiles.md) (3), [JobType](JobType.md) (2), [TempDirs](TempDirs.md) (1), [TreasuryFund](TreasuryFund.md) (1), [EconomyManager](EconomyManager.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
 
 **Used by (2):** [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md)
 
@@ -75,17 +75,17 @@
 | 167 | · the two cities |
 | 256 | · one month |
 | 271 | · · 1. the income statement |
-| 327 | · · 2. the cash flow |
-| 341 | · · 3. the classified sheet |
-| 389 | · · 4. the equity statement |
-| 437 | · · 5. the bank |
-| 473 | · 8, a month |
-| 507 | · 1-5 |
-| 540 | · 6 |
-| 741 | · 7 |
-| 781 | · 6, an older save |
-| 839 | · 8 |
-| 860 | · 9 |
+| 330 | · · 2. the cash flow |
+| 346 | · · 3. the classified sheet |
+| 394 | · · 4. the equity statement |
+| 442 | · · 5. the bank |
+| 478 | · 8, a month |
+| 512 | · 1-5 |
+| 545 | · 6 |
+| 746 | · 7 |
+| 786 | · 6, an older save |
+| 844 | · 8 |
+| 865 | · 9 |
 
 ## Constants
 
@@ -94,7 +94,7 @@
 | 93 | `SectorStatementCheck.CENT` | `.00001` | A cent, in the model's thousands. |
 | 131 | `SectorStatementCheck.tallies` | `new LinkedHashMap<>()` | The tallies of one city's run, by identity. |
 | 259 | `SectorStatementCheck.bondsSoonBefore` | `new LinkedHashMap<>()` | Last month's bonds falling due within a year, by sector: what this month's bond repayments must be inside. |
-| 784 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", ...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
+| 789 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", ...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
 
 ## Fields (state)
 
@@ -109,13 +109,13 @@
 | 136 | `static int statements, outsideMonths, splitCounted, splitMissing, owedMissing, dueSoonMonths, residualShown...` | What the cities caused: sector-months with each condition. |
 | 140 | `static int upfrontMonths, bondCostMonths, foundedMonths, issuedMonths, boughtBackMonths, derivedMonths, sto...` | ...and S2's (0.7.75): sector-months with each of the new lines, and with each flow of the debt schedule. |
 | 145 | `static int expensedMonths` | ...and 0.7.102's (A16): sector-months that expensed some of what their borrowing cost them up front. |
-| 573 | `static String worstRow` | The row the last comparison missed worst on, for the message. |
+| 578 | `static String worstRow` | The row the last comparison missed worst on, for the message. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 847 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
+| 86 | 852 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
 | 95 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 100 | 5 | `static void quietly(Runnable r)` |  |
 | 107 | 22 | **type** `static final class Tally` | One identity's tally over a run: how many times it was checked, how many missed by more than a cent, and the worst miss. |
@@ -133,56 +133,56 @@
 | 236 | 11 | `static Game youngCity(Path root)` | A plain founding three years old, for section 9's F11: its labour is slack (about four in ten of its workers have no job), so a building that would lose money still passes its staffing gate and stops first at the land. |
 | 249 | 6 | `static void months(Game g, int n)` | Months played one at a time, each audited. |
 
-### one month (lines 256-472)
+### one month (lines 256-477)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 262 | 210 | `static void audit(Game g)` | Every sector's four statements and the bank's two, held to the model. |
+| 262 | 215 | `static void audit(Game g)` | Every sector's four statements and the bank's two, held to the model. |
 
-### 8, a month (lines 473-506)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 483 | 23 | `static void scheduleOf(String key, SectorBooks books, SectorBooks.SectorMonth now, String at)` | The debt schedule (R7), this month: each kind closes from last month's sheet to this month's; and from close to close the running totals are the month's own figures - the loans' principal written (what it was handed a... |
-
-### 1-5 (lines 507-539)
+### 8, a month (lines 478-511)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 509 | 30 | `static void everyMonth()` |  |
+| 488 | 23 | `static void scheduleOf(String key, SectorBooks books, SectorBooks.SectorMonth now, String at)` | The debt schedule (R7), this month: each kind closes from last month's sheet to this month's; and from close to close the running totals are the month's own figures - the loans' principal written (what it was handed a... |
 
-### 6 (lines 540-740)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 543 | 10 | `static Map<String, double[]> rows(SectorStatements.Table t)` | Every row of a table, this month and last, as text to the cent: what a save must keep. |
-| 555 | 16 | `static double compare(Map<String, double[]> a, Map<String, double[]> b, Set<String> skip)` | The rows two tables share, compared to the cent; @return the worst miss, infinite for a figure one knows and the other does not. |
-| 576 | 6 | `static boolean sameDebt(SectorBooks.Debt x, SectorBooks.Debt y)` | Two of R1 and R2's records the same to the cent, field by field: both null, or every array alike. |
-| 583 | 6 | `static boolean near(double[][] x, double[][] y)` |  |
-| 590 | 6 | `static boolean near(double[] x, double[] y)` |  |
-| 597 | 143 | `static void savedAndLoaded(Path root, Game g)` |  |
-
-### 7 (lines 741-780)
+### 1-5 (lines 512-544)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 743 | 37 | `static void theFormats(Game g)` |  |
+| 514 | 30 | `static void everyMonth()` |  |
 
-### 6, an older save (lines 781-838)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 797 | 41 | `static void anOlderSave(Game g) throws Exception` | A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by taking out what 0.7.75 added - the register's three slots a company and the books' new fields - is refused since 0.7.120 (batch I3: the floor, Gam... |
-
-### 8 (lines 839-859)
+### 6 (lines 545-745)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 841 | 18 | `static void theSchedule()` |  |
+| 548 | 10 | `static Map<String, double[]> rows(SectorStatements.Table t)` | Every row of a table, this month and last, as text to the cent: what a save must keep. |
+| 560 | 16 | `static double compare(Map<String, double[]> a, Map<String, double[]> b, Set<String> skip)` | The rows two tables share, compared to the cent; @return the worst miss, infinite for a figure one knows and the other does not. |
+| 581 | 6 | `static boolean sameDebt(SectorBooks.Debt x, SectorBooks.Debt y)` | Two of R1 and R2's records the same to the cent, field by field: both null, or every array alike. |
+| 588 | 6 | `static boolean near(double[][] x, double[][] y)` |  |
+| 595 | 6 | `static boolean near(double[] x, double[] y)` |  |
+| 602 | 143 | `static void savedAndLoaded(Path root, Game g)` |  |
 
-### 9 (lines 860-932)
+### 7 (lines 746-785)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 871 | 61 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
+| 748 | 37 | `static void theFormats(Game g)` |  |
+
+### 6, an older save (lines 786-843)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 802 | 41 | `static void anOlderSave(Game g) throws Exception` | A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by taking out what 0.7.75 added - the register's three slots a company and the books' new fields - is refused since 0.7.120 (batch I3: the floor, Gam... |
+
+### 8 (lines 844-864)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 846 | 18 | `static void theSchedule()` |  |
+
+### 9 (lines 865-937)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 876 | 61 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
 

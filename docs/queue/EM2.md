@@ -77,3 +77,17 @@ The full suite runs before the ship file, and the trace moves, so the
 ensemble runs too.
 
 Money and saves: an Opus session with Sonnet slices.
+
+## Also: HD2-S, ScaleCheck's growing town
+
+Added 2026-10-30 at HD2's gate (0.8.76), which shipped with ScaleCheck's 11
+section-6 lines red. Jerus: "Ship, fix after (Recommended)", the
+recommendation being that EM2 rescans the town, since EM2 moves it anyway.
+`docs/queue/HD2-notes.md` §2 has the finding: since HD2 the town (the
+playtest's player, on the literals, the rate pinned) builds two police
+stations at m731, spends its treasury and never takes off, so no month from
+m306 to m1,965 holds every assertion. On EM2's own trajectory, rescan for a
+month where the town grows and every line holds; if none does, section 6
+takes a town that grows by its own plan (a scripted build, or the attentive
+player) rather than by the advisor's one look. The premise does not move:
+the copy is K times the city within the same tolerances.

@@ -1,4 +1,4 @@
-# SectorState.java - 274 lines · 6 methods · 0 constants · model
+# SectorState.java - 278 lines · 6 methods · 0 constants · model
 
 `ham/citybuildersim/SectorState.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -65,19 +65,20 @@
 | 223 | `public double capitalTaxCredit` |  |
 | 225 | `public double borrowingCosts` | Sector.Statement.borrowingCosts (0.7.102, A16); an older save reads none, which is what it expensed. |
 | 227 | `public double powerSold` | Sector.Statement.powerSold (0.7.112, batch I2); an older save reads none, which is what it sold. |
+| 229 | `public double foreignIncome` | Sector.Statement.foreignIncome (HD1, 2026-10-29): the coupon on its dollars abroad, paid home and inside the profit; an older save reads none, which is what it earned. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 253 | **type** `public final class SectorState` | One sector, as a save carries it. |
+| 22 | 257 | **type** `public final class SectorState` | One sector, as a save carries it. |
 | 111 | 3 | **type** `public static final class SplitState` | A good's money in a save: what it sold or bought at home and abroad. |
 | 115 | 10 | `static Map<String, SplitState> splitsOf(Map<Good, Sector.Split> from)` |  |
 | 126 | 12 | `static Map<Good, Sector.Split> splitsTo(Map<String, SplitState> from)` |  |
 | 143 | 64 | **type** `public static final class LedgerState` | The month in progress, unstruck. |
 | 161 | 19 | `static LedgerState of(Sector.Ledger l)` _(in SectorState.LedgerState)_ |  |
 | 181 | 25 | `Sector.Ledger toLedger()` _(in SectorState.LedgerState)_ |  |
-| 209 | 65 | **type** `public static final class StatementState` | The month last struck. |
-| 229 | 21 | `static StatementState of(Sector.Statement t)` _(in SectorState.StatementState)_ |  |
-| 251 | 22 | `Sector.Statement toStatement()` _(in SectorState.StatementState)_ |  |
+| 209 | 69 | **type** `public static final class StatementState` | The month last struck. |
+| 231 | 22 | `static StatementState of(Sector.Statement t)` _(in SectorState.StatementState)_ |  |
+| 254 | 23 | `Sector.Statement toStatement()` _(in SectorState.StatementState)_ |  |
 

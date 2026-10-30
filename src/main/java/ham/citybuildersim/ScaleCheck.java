@@ -276,6 +276,14 @@ public class ScaleCheck {
      * 1,120, 1,121, 1,124, 1,125 and 1,128, and at the months about them one tracking figure alone misses (GDP at 1,122, .26
      * against .14; prices at 1,119, 4.11e-3 against 4.00e-3) or the copies build no home (1,126, 1,127). 1,124 is the middle of
      * 1,120 to 1,128: 6,442 people at 1,125. This window is five months of nine, not 31 in a row.
+     *
+     * ...AND HD2 (2026-10-30) FOUND NO MONTH. With the coupon on the businesses' dollars abroad a line of their profit and kept
+     * abroad, the town is EM1's to two people at 301 and parts at 731, where the playtest's player builds two police stations where
+     * EM1's built roads and clinics; their running costs spend the treasury (937k at 900 against 2.2M) and the build that took the
+     * town off at 1,075 never comes: 2,600 to 4,100 people to 1,100, 2,009 at 2,499. Scanned (sections 6 to 9 with the month
+     * changed, every growing window from 306 to 1,965, every third month and every month about the best): no month holds them all,
+     * the fewest misses two (474 to 476, 482, 838). Left at 1,124 and red (docs/queue/HD2-notes.md, HD2-S): the next batch that
+     * moves the town rescans it, and if no town grows, section 6 wants one that grows by its own plan, not by one look of the advisor.
      */
     static final int FREE_FIXTURE_MONTHS = 1124;
 

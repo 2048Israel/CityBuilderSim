@@ -225,6 +225,8 @@ public final class SectorState {
         public double borrowingCosts;
         /** Sector.Statement.powerSold (0.7.112, batch I2); an older save reads none, which is what it sold. */
         public double powerSold;
+        /** Sector.Statement.foreignIncome (HD1, 2026-10-29): the coupon on its dollars abroad, paid home and inside the profit; an older save reads none, which is what it earned. */
+        public double foreignIncome;
 
         static StatementState of(Sector.Statement t) {
             StatementState s = new StatementState();
@@ -245,6 +247,7 @@ public final class SectorState {
             s.capitalTaxCredit = t.capitalTaxCredit;
             s.borrowingCosts = t.borrowingCosts;
             s.powerSold = t.powerSold;
+            s.foreignIncome = t.foreignIncome;
             return s;
         }
 
@@ -268,6 +271,7 @@ public final class SectorState {
             t.capitalTaxCredit = capitalTaxCredit;
             t.borrowingCosts = borrowingCosts;
             t.powerSold = powerSold;
+            t.foreignIncome = foreignIncome;
             return t;
         }
     }
