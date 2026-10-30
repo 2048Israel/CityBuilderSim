@@ -2792,17 +2792,15 @@ public abstract class Sector {
      * abroad, or what its own works' inputs cost a unit of it, whichever is more, to no more than it would cost to buy. WHY: inputPrice() is the IMPORT
      * price whenever nobody offers the good here, and a sector whose own works take all of it offers none, so a rod mill fed by its own refinery was
      * costed at the world's ceiling and cut while it paid. A sector that makes less than its works need buys the marginal unit, at inputPrice().
+     * What it makes is its nameplate at the rate (madeAtRate()), which a save holds - not last month's lift off the output rows, which a save does
+     * not keep, so a reloaded city costed it otherwise and played a different month (SaveFileCheck, TradeBandCheck): a scrap yard short of old
+     * steel is taken at its nameplate.
      */
     private double inputCost(Good i, Set<Good> costing) {
         double price = inputPrice(i);
         if (!captive(i) || costing.contains(i)) return price;
         double need = getInputAtCapacity(i) * getOperatingRate();
-        double own;
-        Output row = i.stockable() ? null : outputs.get(i);
-        double lifted = row == null ? 0 : row.produced + row.captive + (i.exportable() ? row.idled : 0);
-        if (i.stockable()) own = madeAtRate(i);
-        else own = lifted > 0 ? lifted : getCapacity(i) * getOperatingRate();
-        if (!(own >= need)) return price;
+        if (!(madeAtRate(i) >= need)) return price;
         GoodsMarket m = markets == null ? null : markets.get(i);
         double sale = i.exportable() && m != null && Double.isFinite(m.netExportPrice()) ? m.netExportPrice() : 0;
         return Math.min(price, Math.max(sale, unitCost(i, costing)));
