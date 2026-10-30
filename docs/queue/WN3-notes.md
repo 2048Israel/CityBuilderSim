@@ -207,7 +207,7 @@ wait on it. If Jerus would rather no premise shipped red, (b).
 ## 4. The checks
 
 **The final tip** (fb639039: main 0.8.74 merged - BK1, HD1, EM1 - and the M7 mends), both files named: **the full
-suite exits 4, two NEW reds, both WN3-F** (5 item 10, shipped on Jerus's word): SlopeCheck's Rod Mill, and
+suite exits 4, two NEW reds, both WN3-F** (5 item 10, shipped on Jerus's word, the fix queued as FL1): SlopeCheck's Rod Mill, and
 LandmassCheck's Rotterdam run, which meets the same fault m962-m968 on the merged path (after the January re-solve
 cathode's import price 79.8 to 120.1, rod's export price 97.5 to 70.7; Copper Refining imports 10.1M of cathode and
 exports 5.3M of rod a month until it cuts back; GDP -997k at m962). SectorStatementCheck is green (5 item 9).
@@ -221,8 +221,13 @@ railway now carrying the town's petrol; MapCheck relisting the pick it holds and
 view change; LandmassCheck filling the island in the month it links, EM1's city having no free ground left at m504).
 The ninth was a model fault, fixed at its cause: `DebtManager.debtAfterProceedsOf()` left out the indexation a linker
 had accrued, which `getPricedDebt()` counts (CD5), so a linker sale was priced rich and FloatLinkCheck 7's round trip
-came out 20.48 ahead (latent on main, where the fee hid it; -12.72 now). No assertion moved. The ensemble
-(`docs/ensemble/WN3.md`) is the one on 48c92296, before BK1, HD1 and EM1; not rerun on this tip.
+came out 20.48 ahead (latent on main, where the fee hid it; -12.72 now). No assertion moved. **The ensemble rerun
+on the merged tip** (d039d33f, scored against EM1's 0.8.74; `docs/ensemble/WN3.md`): **23 of 26** (22 before the
+merge; EM1 alone 23 of 25). AUTO2 median 292,982 (EM1's 261,977), T1 16 of 16 (m874-m1,154), F1 clean; A2 and S1 as
+on main; A3 passes now; **R3 red in 3 seeds** (median -1.12): seeds 3, 4 and 10 at +2.16, +1.40 and +1.05 points, rent
++42% and +111% over the twin in 3 and 4 (the D$ 17% the stronger and level), seed 10's rent 10% under it (the D$ 42%
+the stronger) - two of the three are 3b's channel. Seed 13 grows (237,445 at m2400) and never draws on the central
+bank's window; 8 AUTO2 seeds still draw on it for a while (seed 1 for 297 months, m242-m638), none trapped (WN3-B).
 
 Before them:
 
@@ -329,7 +334,8 @@ On the branch's tip (018f7761: main 0.8.71 merged, (2a), THE ORDER, the mends), 
    m1837. The fix is THE ORDER's for flow goods (a flow good's line idles when its net export price is under its
    marginal cost, as `getExportBoundOutput()` already rules for a stockable good's spare) - a model change, for
    Jerus's word with 3b. After main 0.8.74 was merged LandmassCheck's Rotterdam run meets it too (m962-m968, 4 above):
-   both reds shipped on his word ("WN3 yes ship, ill look into it later"), the row WN3-F.
+   both reds shipped on his word (2026-10-30, asked whether WN3 ships with them known: "Ship, fix next
+   (Recommended)"), the fix queued as FL1 beside HD2, built on WN3 (`docs/queue/FL1.md`).
 
 ## 6. For the next batches
 
