@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.75 — WN3, the world market — 2026-10-29, ready (Jerus: "WN3 yes ship, ill look into it later"), see docs/queue/WN3-notes.md
+The world outside the city stops being a price list: where `world-1.bin` is named, 196 nations trade each of 60 goods on
+a smooth spatial equilibrium solved every January (19-31 ms), and each traded good's import ceiling and export floor
+come from where the city stands, what it traded last month (a big seller depresses its own price) and the good's path,
+calibrated so Halifax in 2025 sees the old literals. A new world's path defaults to Random (Jerus, 2026-10-29: "A new
+world defaults to the Random path instead of Historical"), Historical a chip on both pages. A works now orders its
+inputs for what its month will make (an idle refinery had bought 114-242k a month of anode for nothing, GDP negative in
+6 of 16 ensemble seeds). A sale of linked paper is quoted on the debt the books show after it, its indexation counted.
+The city's trade is kept by nation (PartnerTrade, the History by partner and good, saved; SAVE_FORMAT and its floor 48),
+drawn on the map as lanes and on each nation's card. Ensemble 23 of 26: AUTO2 median 292,982 (EM1's 261,977), F1 clean,
+every seed past 40,000; R3 red in 3 seeds (in two a higher rate lifts rent more than the stronger D$ cools imports),
+shipped on his word with its study queued (WN3-R).
+
 ### 0.8.74 — EM1, an efficient market: one value for a share, every holder trading on it — 2026-10-29, ready, see docs/queue/EM1-notes.md
 A share has one value: the company's money past a six-month cushion at face, plus its last year's net income at the world
 rate plus 3% (a company in its first year on its prospects, as before); and one expected return, its income and what its

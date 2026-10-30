@@ -1,4 +1,4 @@
-# WN3 - the world market ({next}, 2026-10-29)
+# WN3 - the world market (0.8.75, 2026-10-29)
 
 The batch's record. The study's WN3 row (`docs/studies/spec-nations.md` §9, line 408 ★) and §4: the world outside the
 city stops being a price list. A night-line batch (2026-10-28, Jerus: "you are to continue all night until 7am"),

@@ -34,3 +34,8 @@ UP5 measured it and found the causes; what fixes them is this batch. A map batch
 
 Done when the 10B line's worst bounded month is under 5 ms with room under a gate's load (paired with main's), the
 full copy's month figures are in the notes, and no budget or premise moved.
+
+**WN3's gate, 2026-10-30** (0.8.75): the 10B line was red again, and `ship.sh` judged it main's, since main
+is over the 5 ms budget too. But WN3 moved it: main 6.92 ms, the merge 8.97 ms (+29.6%), medians of 3 paired
+rounds. The FX-side 5B line went the other way (main 33.0 ms, the merge 27.0 ms). Find what WN3 added to the
+10B month as part of this batch's causes.
