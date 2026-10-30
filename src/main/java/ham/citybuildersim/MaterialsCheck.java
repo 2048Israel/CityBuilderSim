@@ -806,6 +806,10 @@ public class MaterialsCheck {
                 String.format("formats %d to %d", GameVersion.OLDEST_LOADABLE_FORMAT, GameVersion.SAVE_FORMAT));
         GameFiles files = GameFiles.scratch("materialscheck-split");
         Game g = town(files);
+        // ...on the literals, steel's world prices doubled (FL1): an Arc Furnace on imported scrap makes steel that nets under its scrap's cost
+        // abroad, and THE ORDER no longer buys scrap for an export at a loss; the premise is furnaces that bought scrap, so their steel pays.
+        g.playOnLiterals();
+        g.getMarkets().get(Good.STEEL).setWorldPrices(Good.STEEL.worldImportPrice() * 2, Good.STEEL.worldExportPrice() * 2);
         quietly(() -> {
             g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 2, true);
             g.simulateMonths(3);

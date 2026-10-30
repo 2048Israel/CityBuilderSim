@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.77 — FL1, a works making a flow good stops running at a loss — 2026-10-30, ready (Jerus: "Ship, fix next (Recommended)"; FL1-R on "Fix first"), see docs/queue/FL1-notes.md
+A works that makes a flow good - rod, wire and cable, pig iron, steel, pellets - no longer buys its inputs for exports
+that sell under them. WN3's order rule held a works' inputs to what its month would make only for goods that keep, so
+with the world file named Rotterdam's Rod Mills went on importing cathode at 120.1 to ship rod at 68.8 after a January
+re-solve (GDP -997k), and Medellin's sank rod's world price to 3.33 against cathode at 443 (GDP -60.7M). Now a flow
+good's home demand and its works' own need are made at any price; the spare is exported only while it nets over the
+building's own inputs (an input the sector makes itself at what not using it saves), and on the world's slope only so
+far as keeps next month's price 2% over that cost; a by-product comes out of its run. No negative-GDP month left in
+Rotterdam, Medellin or the playtest's founding (7, 16 and 0 before). A reloaded bank now carries its desk's shares as
+saved, not re-marked from the quote, which a share traded since the exchange's step had moved (28.21 of equity apart
+after a load). Ensemble 23 of 26 against 0.8.76: R2 newly red, R3 passing.
+
 ### 0.8.76 — HD2, the coupon abroad as profit, kept abroad — 2026-10-30, ready (Jerus: "Kept abroad (Recommended)"; two reds on "Ship, fix after (Recommended)", 2026-10-30), see docs/queue/HD2-notes.md
 The coupon a business earns on its dollars abroad is a line of its profit, as HD1 built it (finance income below the
 operating line, taxed, in the dividend), and its cash now stays abroad: the dollars grow by it, the till pays the tax and

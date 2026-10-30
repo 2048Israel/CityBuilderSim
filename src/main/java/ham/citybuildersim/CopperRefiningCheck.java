@@ -81,6 +81,29 @@ import java.util.Locale;
  *      rate orders what it always did; and the month's books lose nothing
  *      (the works' imports are matched by output made), so its GDP is not
  *      below what C + G alone would make it.
+ *
+ *   9. A WORKS MAKING A FLOW GOOD ORDERS NO INPUT FOR EXPORTS THAT SELL AT A
+ *      LOSS (FL1): two Rod Mills on imported cathode, rod's net export price
+ *      under what its cathode costs, order no cathode and make no rod past
+ *      the home market's demand (none here: nothing made, nothing exported;
+ *      the books lose nothing); with a Wire & Cable Works beside them the rod
+ *      the home market demanded at the last strike is made, whatever it
+ *      fetches, and its cathode ordered; a rod that pays orders and makes
+ *      exactly what it did, to the bit; on the world's slope - a band that
+ *      falls with the city's exports of the good - the spare rod exported is
+ *      the most whose next month's band still nets the cost plus
+ *      Sector.FLOW_EXPORT_HEADROOM; a chain whose rod does not pay still has
+ *      its smelter make the refinery's anode, the cost of a unit of anode
+ *      the smelter's inputs less its acid; a by-product comes out of the run
+ *      it is made in (a smelter whose anode sells under its concentrate still
+ *      runs for its acid, and makes its anode and acid in the template's
+ *      ratios of the concentrate it bought); a works' own input costs it what
+ *      the works save by not using it (a rod mill on its own refinery's
+ *      cathode is not cut for rod that sells between that cost and imported
+ *      cathode's, in the chain's first month as in its third); and in a
+ *      Rotterdam city played a thousand months the rule cuts an order, no
+ *      month's GDP is negative, and every curve reproduces the band it was
+ *      set at.
  */
 public class CopperRefiningCheck {
 
@@ -116,6 +139,7 @@ public class CopperRefiningCheck {
         plannerWeighsOldCopper();
         wireWorksEstimate();
         idleWorks();
+        flowGoods();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -675,6 +699,9 @@ public class CopperRefiningCheck {
                         && fin.bid == fr.getInputAtCapacity(Good.ANODE) * fr.getOperatingRate(),
                 fin == null || fcu == null ? "none" : String.format("made %,.1f of %,.1f t; ordered %,.1f t of anode", fcu.produced, nameplate, fin.bid));
         Game chain = copperWorks("copperrefiningcheck-wholechain", 1, 1, 1, Double.NaN);
+        // ...its rod's world prices doubled before its third month: this premise is a chain whose month makes its whole rate, and a Rod Mill's rod on
+        // the literals no longer pays for its cathode (FL1, section 9).
+        rodPays(chain);
         CopperRefining kr = chain.getSectors().copperRefining();
         quietly(() -> chain.simulateMonths(1));
         boolean same = true;
@@ -689,5 +716,399 @@ public class CopperRefiningCheck {
         report("...and so does a chain whose month makes its whole rate (a smelter, a refinery and a rod mill): every order is the need at the"
                         + " rate less what is captive, to the bit",
                 same && seen.length() > 0 && kr.getOperatingRate() > 0, seen.toString());
+    }
+
+    /* ============================ 9. a works making a flow good orders no input for exports that sell under it ============================ */
+
+    /** A Rod Mill's rod paying for its cathode at any price the cathode is costed at: rod's world prices doubled, import above export as a band must be (FL1). */
+    static void rodPays(Game g) {
+        g.getMarkets().get(Good.COPPER_ROD).setWorldPrices(Good.COPPER_ROD.worldImportPrice() * 2, Good.COPPER_ROD.worldExportPrice() * 2);
+    }
+
+    /** ...and rod's export price at half the literal, the import price as it was: what a unit sells for abroad is under what its cathode costs (FL1). */
+    static void rodUnpaid(Game g) {
+        g.getMarkets().get(Good.COPPER_ROD).setWorldPrices(Good.COPPER_ROD.worldImportPrice(), Good.COPPER_ROD.worldExportPrice() * .5);
+    }
+
+    /**
+     * Whether a figure made at one moment of the month is another's, to what the month's vans add to the rate between them: the flow goods are made at
+     * the top of the market pass and the inputs ordered as each good clears, and the fleet that arrives in between moves the rate by a third of a
+     * per cent in these fixtures.
+     */
+    static boolean close(double a, double b) {
+        return Math.abs(a - b) <= .02 * Math.max(Math.abs(a), Math.abs(b));
+    }
+
+    /** The operating rate a month ran at, read off an input's row (needed = the need at the nameplate times the rate the month cleared at): the rate itself moves at the month's end. */
+    static double monthRate(Sector s, Good in) {
+        Sector.Input row = s.inputRow(in);
+        double nameplate = s.getInputAtCapacity(in);
+        return row == null || !(nameplate > 0) ? 0 : row.needed / nameplate;
+    }
+
+    /** The books of the month before, as section 8 (d) reads them: the month's GDP plus the rest of the imports is not below C + G. */
+    static void booksLine(String label, Game g, CopperRefining cr) {
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+        double gdp = g.getEconomyManager().getMonthGdp();
+        double consumables = cr.statement().otherInputs.getOrDefault(Sector.CONSUMABLES, 0.0);
+        double inputImports = cr.statement().imports - consumables;
+        double rest = na.getTotalImports() - inputImports;
+        report(label, gdp + rest >= na.getConsumption() + na.getGovernment() - 1e-6,
+                String.format("GDP D$%,.1f; C D$%,.1f + G D$%,.1f; the rest of the imports D$%,.1f; the works' input imports D$%,.1f", gdp, na.getConsumption(),
+                        na.getGovernment(), rest, inputImports));
+    }
+
+    static void flowGoods() {
+        out.println("\n--- 9. a works making a flow good orders no input for exports that sell under it: the rod mill, the slope, the count ---");
+        BuildingManager tb = new BuildingManager();
+        tb.initializeTemplates();
+        BuildingsTemplate rodMill = tb.getTemplate(CopperRefining.ROD_MILL), smelter = tb.getTemplate(CopperRefining.SMELTER);
+        double cathodePerRod = rodMill.uses(Good.COPPER) / rodMill.makes(Good.COPPER_ROD);
+
+        // (a) the found case: two rod mills on imported cathode (no refinery), rod's net export price under what its cathode costs.
+        Game g = copperWorks("copperrefiningcheck-flow", 0, 0, 2, Double.NaN);
+        CopperRefining cr = g.getSectors().copperRefining();
+        GoodsMarket rod = g.getMarkets().get(Good.COPPER_ROD);
+        rodUnpaid(g);
+        quietly(() -> g.simulateMonths(2));
+        Sector.Output ro = cr.outputRow(Good.COPPER_ROD);
+        Sector.Input cin = cr.inputRow(Good.COPPER);
+        double cost = cr.flowCostPerUnit(Good.COPPER_ROD);
+        report("fixture (a): two Rod Mills on imported cathode, no refinery and no wire works, rod's export price half the literal: its net"
+                        + " export price is under what a tonne of rod's cathode costs",
+                cr.getOperatingRate() > 0 && ro != null && cin != null && cost > 0 && rod.netExportPrice() < cost
+                        && near(cost, cathodePerRod * g.getMarkets().get(Good.COPPER).landedPrice()),
+                String.format("rate %.4f; net export D$%.4f, cost D$%.4f a tonne", cr.getOperatingRate(), rod.netExportPrice(), cost));
+        double nameplate = ro == null ? 0 : ro.capacity * monthRate(cr, Good.COPPER);
+        report("(a) the mills order no cathode past the home market's demand (none here: the bid is nothing, nothing is imported), make no rod,"
+                        + " export none, and idle the whole nameplate at the rate",
+                ro != null && cin != null && cin.bid == 0 && cin.imported == 0 && cin.boughtLocal == 0 && ro.planned == 0 && ro.produced == 0
+                        && ro.exported == 0 && ro.exportBound == 0 && nameplate > 0 && close(ro.idled, nameplate),
+                ro == null || cin == null ? "none" : String.format("cathode bid %,.1f of %,.1f t needed, %,.1f imported; rod made %,.1f, exported %,.1f,"
+                        + " idled %,.1f of %,.1f t", cin.bid, cin.needed, cin.imported, ro.produced, ro.exported, ro.idled, nameplate));
+        booksLine("...and the books lose nothing: the month's GDP plus the rest of the imports is not below C + G", g, cr);
+
+        // (b) the home market is made whatever it fetches: a wire works beside the mills asks for rod, so that much is made and its cathode ordered.
+        Game w = copperWorks("copperrefiningcheck-flowhome", 0, 0, 2, Double.NaN);
+        CopperRefining wr = w.getSectors().copperRefining();
+        GoodsMarket wrod = w.getMarkets().get(Good.COPPER_ROD);
+        BuildingManager wb = w.getBuildingManager();
+        quietly(() -> wb.addStack(wb.getTemplate(Manufacturing.WIRE_CABLE_WORKS), 1, true));
+        MaterialsCheck.handWorkers(w);
+        rodUnpaid(w);
+        quietly(() -> w.simulateMonths(3));
+        double home = wrod.getDemand();
+        quietly(() -> w.simulateMonths(1));
+        Sector.Output wo = wr.outputRow(Good.COPPER_ROD);
+        Sector.Input wcin = wr.inputRow(Good.COPPER);
+        Sector.Input wire = w.getSectors().manufacturing().inputRow(Good.COPPER_ROD);
+        double wcost = wr.flowCostPerUnit(Good.COPPER_ROD);
+        double wname = wo == null ? 0 : wo.capacity * monthRate(wr, Good.COPPER);
+        report("fixture (b): (a) with a Wire & Cable Works beside the mills: rod is still under its cathode's cost, and the home market asked for"
+                        + " some rod at the last strike, less than the mills' nameplate",
+                wo != null && wcin != null && wcost > 0 && wrod.netExportPrice() < wcost && home > 0 && home < wname && wire != null && wire.bid > 0,
+                String.format("net export D$%.4f, cost D$%.4f; the last strike's demand %,.1f t, nameplate %,.1f t; the wire works bid %,.1f t",
+                        wrod.netExportPrice(), wcost, home, wname, wire == null ? 0 : wire.bid));
+        report("(b) the rod made is that demand, whatever it fetches, and the cathode bid is that times the Rod Mill's cathode for a tonne of rod",
+                wo != null && wcin != null && near(wo.planned, home) && near(wo.produced, home) && close(wcin.bid, home * cathodePerRod),
+                wo == null || wcin == null ? "none" : String.format("rod made %,.1f of the %,.1f t demanded; cathode bid %,.1f t (%,.1f expected)",
+                        wo.produced, home, wcin.bid, home * cathodePerRod));
+        report("...and none of it is exported: it all sold at home, and what the mills could not sell at home they did not make",
+                wo != null && wo.exported == 0 && wo.exportBound == 0 && close(wo.idled, wname - home),
+                wo == null ? "none" : String.format("sold at home %,.1f t, exported %,.1f t, idled %,.1f t", wo.soldLocal, wo.exported, wo.idled));
+
+        // (c) a month that pays is unchanged: rod's prices doubled, the order is what it always was, to the bit.
+        Game c = copperWorks("copperrefiningcheck-flowpays", 0, 0, 2, Double.NaN);
+        CopperRefining pr = c.getSectors().copperRefining();
+        rodPays(c);
+        quietly(() -> c.simulateMonths(1));
+        Sector.Output po = pr.outputRow(Good.COPPER_ROD);
+        Sector.Input pin = pr.inputRow(Good.COPPER);
+        double pcost = pr.flowCostPerUnit(Good.COPPER_ROD);
+        double rate = pr.getOperatingRate();
+        report("fixture (c): the same mills, rod's export price twice the literal: its net export price is over the cost and its headroom",
+                pcost > 0 && c.getMarkets().get(Good.COPPER_ROD).netExportPrice() >= pcost * (1 + Sector.FLOW_EXPORT_HEADROOM),
+                String.format("net export D$%.4f, cost D$%.4f a tonne", c.getMarkets().get(Good.COPPER_ROD).netExportPrice(), pcost));
+        report("(c) a rod that pays orders exactly the need at the rate - getInputAtCapacity() times the operating rate, less what is captive - and"
+                        + " makes its nameplate at the rate, idling none, the order and the idling to the bit",
+                po != null && pin != null && rate > 0 && pin.bid == pr.getInputAtCapacity(Good.COPPER) * rate
+                        && po.produced == po.planned && close(po.produced, pr.getCapacity(Good.COPPER_ROD) * rate) && po.idled == 0,
+                po == null || pin == null ? "none" : String.format("cathode bid %,.1f t of %,.1f; rod made %,.1f t, idled %,.1f t", pin.bid,
+                        pr.getInputAtCapacity(Good.COPPER) * rate, po.produced, po.idled));
+
+        // (d) the world's slope: rod's band falls with the city's exports of it, from over the cost at none to far under it at the mills' whole
+        // nameplate. What is exported is the most whose next month's band still nets the cost and its headroom.
+        Game s = copperWorks("copperrefiningcheck-flowslope", 0, 0, 2, Double.NaN);
+        CopperRefining sr = s.getSectors().copperRefining();
+        GoodsMarket srod = s.getMarkets().get(Good.COPPER_ROD);
+        quietly(() -> s.simulateMonths(4));
+        double whole = sr.getCapacity(Good.COPPER_ROD) * sr.getOperatingRate() * 2;
+        double ceiling = Good.COPPER_ROD.worldImportPrice() * 3;
+        double top = Good.COPPER_ROD.worldExportPrice() * 1.5, bottom = Good.COPPER_ROD.worldExportPrice() * .2;
+        srod.setWorldPrices(ceiling, top);
+        srod.setWorldBandCurve(units -> new double[] { top - (top - bottom) * Math.min(1, units / whole), ceiling }, 0);
+        quietly(() -> s.simulateMonths(1));
+        Sector.Output so = sr.outputRow(Good.COPPER_ROD);
+        double scost = sr.flowCostPerUnit(Good.COPPER_ROD), target = scost * (1 + Sector.FLOW_EXPORT_HEADROOM);
+        double spare = so == null ? 0 : so.capacity * monthRate(sr, Good.COPPER);
+        report("fixture (d): the same mills (no wire works), rod's band a straight line in the city's exports: this month's net export price is over"
+                        + " the cost and its headroom, the whole spare would sink next month's under it",
+                so != null && scost > 0 && srod.netExportPrice() >= target && spare > 0 && srod.netExportPriceAt(spare) < target
+                        && srod.netExportPriceAt(0) >= target,
+                String.format("net export D$%.4f, D$%.4f at the whole spare of %,.1f t; cost D$%.4f, with headroom D$%.4f", srod.netExportPrice(),
+                        srod.netExportPriceAt(spare), spare, scost, target));
+        double exported = so == null ? 0 : so.exported;
+        report("(d) the rod exported is some, and less than the spare, and it is the most the slope allows: at it next month's net export price still"
+                        + " clears the cost with its headroom, one per cent more would not",
+                so != null && exported > 0 && exported < spare && near(so.produced, exported) && srod.netExportPriceAt(exported) >= target
+                        && srod.netExportPriceAt(exported * 1.01) < target,
+                String.format("%,.1f of %,.1f t exported; next month's net export price D$%.4f there, D$%.4f at 1%% more, the aim D$%.4f", exported, spare,
+                        srod.netExportPriceAt(exported), srod.netExportPriceAt(exported * 1.01), target));
+        srod.setWorldPrices(ceiling, top);
+        boolean flat = true;
+        for (double units : new double[] { 0, 1, exported, spare, 10 * spare }) flat &= srod.netExportPriceAt(units) == srod.netExportPrice();
+        report("...and with no curve (prices set by hand again) the net export price at any exports is this month's, to the bit; no curve reads"
+                        + " no exports", flat && Double.isNaN(srod.worldBandExports()),
+                String.format("D$%.4f", srod.netExportPrice()));
+
+        // (e) the chain: a smelter, a refinery and a rod mill, rod unpaid: the smelter still makes the refinery's anode.
+        Game k = copperWorks("copperrefiningcheck-flowchain", 1, 1, 1, Good.COPPER.worldExportPrice() * 2);
+        CopperRefining kr = k.getSectors().copperRefining();
+        rodUnpaid(k);
+        quietly(() -> k.simulateMonths(3));
+        Sector.Output ka = kr.outputRow(Good.ANODE), kr0 = kr.outputRow(Good.COPPER_ROD);
+        Sector.Input kin = kr.inputRow(Good.ANODE);
+        GoodsMarket krod = k.getMarkets().get(Good.COPPER_ROD);
+        double kcost = kr.flowCostPerUnit(Good.COPPER_ROD), krate = monthRate(kr, Good.ANODE);
+        report("fixture (e): a smelter, a refinery and a rod mill, rod's export price half the literal, cathode's twice it: rod is under its"
+                        + " cathode's cost and makes none, the refinery runs",
+                kr0 != null && ka != null && kin != null && kcost > 0 && krod.netExportPrice() < kcost && kr0.produced == 0 && kr0.idled > 0 && krate > 0,
+                String.format("rod net export D$%.4f, cost D$%.4f; rod made %,.1f, idled %,.1f t; rate %.4f", krod.netExportPrice(), kcost,
+                        kr0 == null ? 0 : kr0.produced, kr0 == null ? 0 : kr0.idled, krate));
+        double need = kin == null ? 0 : kin.needed;
+        report("(e) the smelter still makes the refinery's anode need: it is kept for the refinery, none of it lost to the market, and the refinery"
+                        + " orders from the market no more than its need at the rate past that",
+                ka != null && kin != null && ka.captive > 0 && close(ka.captive, Math.min(ka.capacity * krate, need)) && ka.idled == 0
+                        && kin.bid <= Math.max(0, need - ka.captive) + 1e-6,
+                ka == null || kin == null ? "none" : String.format("anode kept %,.1f t of the refinery's %,.1f t, to market %,.1f, idled %,.1f; refinery bid %,.1f t",
+                        ka.captive, need, ka.produced, ka.idled, kin.bid));
+        BuildingsTemplate sm = smelter;
+        GoodsMarket acidMarket = k.getMarkets().get(Good.ACID);
+        double inputs = 0;
+        for (Good in : sm.goodsUsed().keySet()) if (in.traded()) inputs += sm.uses(in) * k.getMarkets().get(in).landedPrice();
+        double acidValue = Good.ACID.exportable() && Double.isFinite(acidMarket.netExportPrice()) ? acidMarket.netExportPrice() : acidMarket.getLocalPrice();
+        double byHand = Math.max(0, inputs - sm.makes(Good.ACID) * acidValue) / sm.makes(Good.ANODE);
+        report("...and a tonne of anode costs the smelter's inputs at what they cost here less its acid at what that nets abroad, over its anode, from"
+                        + " the template's own figures",
+                byHand > 0 && near(kr.flowCostPerUnit(Good.ANODE), byHand),
+                String.format("D$%.4f by hand, D$%.4f by the sector", byHand, kr.flowCostPerUnit(Good.ANODE)));
+
+        // (g) the by-product: a smelter beside a leach plant (section 4's fixture), anode sold under what its concentrate costs less its acid.
+        Game bg = CopperMiningCheck.copperTown("copperrefiningcheck-flowbyproduct", 0);
+        bg.playOnLiterals();
+        CopperRefining br = bg.getSectors().copperRefining();
+        CopperMining bm = bg.getSectors().copperMining();
+        BuildingManager bgb = bg.getBuildingManager();
+        quietly(() -> {
+            bgb.addStack(bgb.getTemplate(CopperRefining.SMELTER), 1, true);
+            bgb.addStack(bgb.getTemplate(CopperMining.LEACH_PLANT), 1, true);
+        });
+        MaterialsCheck.handWorkers(bg);
+        GoodsMarket banode = bg.getMarkets().get(Good.ANODE);
+        // ...anode's export price half the literal, its import price as it was (the way rodUnpaid() sets rod's): a unit nets under its concentrate.
+        banode.setWorldPrices(Good.ANODE.worldImportPrice(), Good.ANODE.worldExportPrice() * .5);
+        quietly(() -> bg.simulateMonths(3));
+        Sector.Output bga = br.outputRow(Good.ANODE), bgacid = br.outputRow(Good.ACID);
+        Sector.Input bconc = br.inputRow(Good.COPPER_CONC), bwants = bm.inputRow(Good.ACID);
+        double bcost = br.flowCostPerUnit(Good.ANODE), brate = monthRate(br, Good.COPPER_CONC);
+        report("fixture (g): a smelter beside a leach plant, anode's export price half the literal: its net export price is under what a tonne of"
+                        + " anode's concentrate costs less its acid, and the leach plant bids for acid at home",
+                bga != null && bgacid != null && bconc != null && bwants != null && bcost > 0 && banode.netExportPrice() < bcost && bwants.bid > 0
+                        && brate > 0,
+                String.format("rate %.4f; anode net export D$%.4f, cost D$%.4f a tonne; the leach plant bid %,.1f t of acid", brate, banode.netExportPrice(),
+                        bcost, bwants == null ? 0 : bwants.bid));
+        double bought = bconc == null ? 0 : bconc.boughtLocal + bconc.imported;
+        double anodeMade = bga == null ? 0 : bga.produced + bga.captive;
+        double anodeRatio = smelter.makes(Good.ANODE) / smelter.uses(Good.COPPER_CONC), acidRatio = smelter.makes(Good.ACID) / smelter.uses(Good.COPPER_CONC);
+        double anodeRun = bga == null ? 0 : anodeMade / (bga.capacity * brate), acidRun = bgacid == null ? 0 : bgacid.produced / (bgacid.capacity * brate);
+        report("(g) the smelter still runs for its acid, and every tonne of concentrate it bought was made into anode and acid in the template's"
+                        + " ratios: the anode comes out of the run the acid is made in, at the same share of its nameplate, not at a share of its own",
+                bga != null && bgacid != null && bought > 0 && anodeMade > 0 && close(anodeMade / bought, anodeRatio)
+                        && close(bgacid.produced / bought, acidRatio) && close(anodeRun, acidRun),
+                bga == null || bgacid == null ? "none" : String.format("bought %,.1f t of concentrate; anode made %,.1f t (%.4f a tonne, template %.4f),"
+                                + " acid %,.1f t (%.4f, template %.4f); the run %.4f of the anode's nameplate, %.4f of the acid's", bought, anodeMade,
+                        anodeMade / bought, anodeRatio, bgacid.produced, bgacid.produced / bought, acidRatio, anodeRun, acidRun));
+
+        // (h) the chain's own input: a smelter, a refinery and a rod mill (section 3's chain, no wire works), rod's export price between what a tonne
+        // of rod costs on the chain's own cathode and what it would cost on imported cathode: the mill is not cut, in the chain's first month at work
+        // (the second: the first has no workers yet, its rate is nothing) and in the third.
+        BuildingsTemplate refinery = tb.getTemplate(CopperRefining.ELECTROLYTIC_REFINERY);
+        Game hc = CopperMiningCheck.copperTown("copperrefiningcheck-flowown", 0);
+        hc.playOnLiterals();
+        CopperRefining hr = hc.getSectors().copperRefining();
+        BuildingManager hb = hc.getBuildingManager();
+        quietly(() -> {
+            hb.addStack(hb.getTemplate(CopperRefining.SMELTER), 1, true);
+            hb.addStack(hb.getTemplate(CopperRefining.ELECTROLYTIC_REFINERY), 1, true);
+            hb.addStack(hb.getTemplate(CopperRefining.ROD_MILL), 1, true);
+        });
+        MaterialsCheck.handWorkers(hc);
+        GoodsMarket hrod = hc.getMarkets().get(Good.COPPER_ROD), hcath = hc.getMarkets().get(Good.COPPER);
+        double ownCost = hr.flowCostPerUnit(Good.COPPER_ROD), importedCost = cathodePerRod * hcath.importPrice();
+        netExportAt(hrod, Good.COPPER_ROD, (ownCost * (1 + Sector.FLOW_EXPORT_HEADROOM) + importedCost) / 2);
+        report("fixture (h): a smelter, a refinery and a rod mill, the refinery's cathode covering the mill's, rod's net export price over what a"
+                        + " tonne of rod costs on the chain's own cathode (and its headroom) and under what it would cost on imported cathode",
+                refinery.makes(Good.COPPER) >= rodMill.uses(Good.COPPER) && ownCost > 0 && ownCost * (1 + Sector.FLOW_EXPORT_HEADROOM) <= hrod.netExportPrice()
+                        && hrod.netExportPrice() < importedCost,
+                String.format("rod net export D$%.4f; own cathode D$%.4f a tonne of rod (D$%.4f with headroom), imported cathode D$%.4f; %,.0f t of cathode"
+                                + " against the mill's %,.0f", hrod.netExportPrice(), ownCost, ownCost * (1 + Sector.FLOW_EXPORT_HEADROOM), importedCost,
+                        refinery.makes(Good.COPPER), rodMill.uses(Good.COPPER)));
+        for (int months : new int[] { 2, 1 }) {
+            quietly(() -> hc.simulateMonths(months));
+            Sector.Output ho = hr.outputRow(Good.COPPER_ROD);
+            double hrate = monthRate(hr, Good.ANODE);
+            String when = months == 2 ? "first month at work" : "third month";
+            report("(h) in the chain's " + when + " the mill is not cut: rod made at its nameplate at the rate, none idled, the spare exported",
+                    ho != null && hrate > 0 && close(ho.produced, ho.capacity * hrate) && ho.idled == 0 && ho.exported > 0 && near(ho.exported, ho.produced),
+                    ho == null ? "none" : String.format("rate %.4f; rod made %,.1f of %,.1f t, exported %,.1f, idled %,.1f", hrate, ho.produced,
+                            ho.capacity * hrate, ho.exported, ho.idled));
+            double byRule = cathodePerRod * Math.min(hcath.landedPrice(), Math.max(hcath.netExportPrice(), hr.flowCostPerUnit(Good.COPPER)));
+            report("...and a tonne of rod costs the mill's cathode at what the chain saves by not using it: the cathode market's landed price, or"
+                            + " less if what an unused unit nets abroad and what its anode costs to make, the more of the two, is under it",
+                    byRule > 0 && near(hr.flowCostPerUnit(Good.COPPER_ROD), byRule),
+                    String.format("D$%.4f by the rule, D$%.4f by the sector; landed D$%.4f, net export D$%.4f, made at D$%.4f", byRule,
+                            hr.flowCostPerUnit(Good.COPPER_ROD), hcath.landedPrice(), hcath.netExportPrice(), hr.flowCostPerUnit(Good.COPPER)));
+        }
+
+        rotterdam();
+    }
+
+    /** Sets a good's world export price, its import price as the literal, so its net export price is `net` (the net price rises with the export price: bisection) (FL1). */
+    static void netExportAt(GoodsMarket m, Good g, double net) {
+        double low = 0, high = g.worldImportPrice();
+        for (int i = 0; i < 80; i++) {
+            m.setWorldPrices(g.worldImportPrice(), (low + high) / 2);
+            if (m.netExportPrice() < net) low = (low + high) / 2;
+            else high = (low + high) / 2;
+        }
+        m.setWorldPrices(g.worldImportPrice(), (low + high) / 2);
+    }
+
+    /** The Rotterdam run's tally of a flow order's cuts (9 (f)). */
+    static final class Cuts {
+        int months, cutMonths, firstCut = -1, negativeMonths, firstNegative = -1;
+        final java.util.EnumSet<Good> goods = java.util.EnumSet.noneOf(Good.class);
+        final java.util.TreeSet<String> sectors = new java.util.TreeSet<>();
+        double units;
+
+        /** Counts the month just played: an exportable traded flow good is cut where its row idled units (the order's cut is all it idles), and the month's GDP. */
+        void month(Game g) {
+            months++;
+            boolean cut = false;
+            for (Sector sec : g.getSectors().all()) {
+                for (Good gd : sec.goodsMade()) {
+                    if (gd.stockable() || !gd.traded() || !gd.exportable()) continue;
+                    Sector.Output o = sec.outputRow(gd);
+                    if (o == null || !(o.idled > 0)) continue;
+                    cut = true;
+                    goods.add(gd);
+                    sectors.add(sec.key());
+                    units += o.idled;
+                }
+            }
+            if (cut) {
+                cutMonths++;
+                if (firstCut < 0) firstCut = g.getMonth();
+            }
+            if (g.getEconomyManager().getMonthGdp() < 0) {
+                negativeMonths++;
+                if (firstNegative < 0) firstNegative = g.getMonth();
+            }
+        }
+    }
+
+    /** The months the Rotterdam run plays. */
+    static final int RUN_MONTHS = 1000;
+
+    /** Plays months one at a time, each counted (LongPlaytest.run(g, 1) is the same month as a run of many). */
+    static void play(Game g, int months, Cuts cuts) {
+        for (int i = 0; i < months; i++) {
+            LongPlaytest.run(g, 1);
+            cuts.month(g);
+        }
+    }
+
+    /** (f) how often the rule fires in a real run: a Rotterdam city played as LandmassCheck 13 plays it, each month counted. */
+    static void rotterdam() {
+        if (!EarthSite.gameData().here()) {
+            out.println("earth-2.bin not named: the Rotterdam run was not played");
+            return;
+        }
+        long started = System.currentTimeMillis();
+        LongPlaytest.findings.clear();
+        PrintStream was = LongPlaytest.out;
+        LongPlaytest.out = quiet;
+        Game g = new Game(GameFiles.scratch("copperrefiningcheck-rotterdam"), LongPlaytest.earthFounding("rotterdam"));
+        Cuts cuts = new Cuts();
+        try {
+            quietly(() -> {
+                g.run();
+                g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
+                g.setRolloverMode(LongPlaytest.ROLLOVER);
+                g.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
+                LongPlaytest.villageBuild(g, "House", 40);
+                LongPlaytest.villageBuild(g, "Convenience Store", 3);
+                LongPlaytest.villageBuild(g, "Mixed Farm", 2);
+                play(g, 3, cuts);
+                LongPlaytest.villageBuild(g, "House", 20);
+                play(g, 4, cuts);
+                LongPlaytest.villageBuild(g, "Convenience Store", 2);
+                LongPlaytest.villageBuild(g, "Construction Depot", 1);
+                play(g, 5, cuts);
+                LongPlaytest.advise(g);
+                play(g, 6, cuts);
+                int stop = 0;
+                while (g.getMonth() < RUN_MONTHS) {
+                    stop++;
+                    int skip = switch (stop % 6) { case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120; };
+                    play(g, Math.min(skip, RUN_MONTHS - g.getMonth()), cuts);
+                    if (g.getMonth() >= RUN_MONTHS) break;
+                    for (int move = 0; move < LongPlaytest.movesPerLook(); move++) {
+                        if (LongPlaytest.advise(g) == null) break;
+                        play(g, 1, cuts);
+                    }
+                    play(g, 2, cuts);
+                }
+            });
+        } finally {
+            LongPlaytest.out = was;
+        }
+        out.printf("      %d months in %d s: a flow order was cut in %d months (the first at month %s), %,.0f units cut, of %s in %s; GDP was negative in %d months%n",
+                cuts.months, (System.currentTimeMillis() - started) / 1000, cuts.cutMonths, cuts.firstCut < 0 ? "-" : String.valueOf(cuts.firstCut), cuts.units,
+                cuts.goods, cuts.sectors, cuts.negativeMonths);
+        report("(f) the run played its months with no month's GDP negative",
+                g.getMonth() >= RUN_MONTHS && cuts.negativeMonths == 0,
+                cuts.negativeMonths == 0 ? cuts.months + " months" : "the first at month " + cuts.firstNegative);
+        boolean world = g.getWorldMarket() != null;
+        if (world) {
+            report("...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under"
+                            + " its cathode's)", cuts.cutMonths > 0,
+                    cuts.cutMonths + " months; " + cuts.goods);
+        } else {
+            out.println("      the world file is not named: no world market, the literals have no slope; the rule's cut was not asserted");
+        }
+        boolean curves = true;
+        int traded = 0;
+        StringBuilder bad = new StringBuilder();
+        for (GoodsMarket m : g.getMarkets().all()) {
+            if (!m.good().traded() || Double.isNaN(m.worldBandExports())) continue;
+            traded++;
+            if (m.netExportPriceAt(m.worldBandExports()) != m.netExportPrice() && !(Double.isNaN(m.netExportPrice()) && Double.isNaN(m.netExportPriceAt(m.worldBandExports())))) {
+                curves = false;
+                bad.append(m.good()).append(' ');
+            }
+        }
+        report("...and every curve the world gave a market reproduces the band it was set at: the net export price at the exports it was struck at is"
+                        + " the month's, to the bit", curves && (!world || traded > 0), traded + " goods" + (bad.length() > 0 ? "; not " + bad : ""));
     }
 }

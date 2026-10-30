@@ -1324,7 +1324,9 @@ public class ScaleCheck {
 
     /** The save's top-level keys scaled: scale_save.py's list, less the works yard. */
     static final String[] TOP = { "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxCharged",
-            "rentWeight", "rentWeightStudio", "bankCash", "cityMaintenancePaid", "bankProfitLastMonth",
+            "rentWeight", "rentWeightStudio", "bankCash",
+            // FL1-R: the bank's desk inventory as it carries it, saved since FL1; the load used to re-mark it from the scaled shares.
+            "bankSecurities", "cityMaintenancePaid", "bankProfitLastMonth",
             "bankTaxCharged", "population", "workforce", "landBlocksPurchased",
             "materialsConsumed", "buildings", "underConstructionById", "constructionProgressById",
             "materialsOwedById", "contractValueById", "cohorts", "skilledWorkforce", "housingOccupancy",

@@ -240,6 +240,46 @@ public final class GoodsMarket {
     public void setWorldPrices(double importPrice, double exportPrice) {
         worldImport = Double.isFinite(importPrice) ? importPrice : Double.NaN;
         worldExport = Double.isFinite(exportPrice) ? exportPrice : Double.NaN;
+        // ...and the curve it was struck on is gone: a fixture or a load that sets prices by hand has no stale slope (FL1).
+        worldBandAt = null;
+        worldBandExports = Double.NaN;
+    }
+
+    /** The world's band as a function of the city's exports of the good this month, in game units: {floor, ceiling}, as setWorldPrices() takes them, or null (FL1). */
+    private java.util.function.DoubleFunction<double[]> worldBandAt;
+
+    /** The exports, in units, the month's band was set at (FL1): NaN with no curve. */
+    private double worldBandExports = Double.NaN;
+
+    /**
+     * Gives the market the world's SLOPE for the month (Markets.setWorldBand(); FL1): the band as a function of the city's exports of the good, and the
+     * exports it was struck at. Call it after setWorldPrices(), which clears it.
+     */
+    void setWorldBandCurve(java.util.function.DoubleFunction<double[]> bandAt, double setAtExports) {
+        worldBandAt = bandAt;
+        worldBandExports = setAtExports;
+    }
+
+    /** The exports, in units, the month's band was set at (FL1): NaN where the market has no curve. */
+    public double worldBandExports() { return worldBandExports; }
+
+    /**
+     * What the net export price would be next month were the city to export `units` of the good this month (the world's slope, WN3's D16; FL1): the
+     * band the world makes of that many units, read through this market's own freight and exchange. netExportPrice() where the market has no curve.
+     */
+    public double netExportPriceAt(double units) {
+        java.util.function.DoubleFunction<double[]> curve = worldBandAt;
+        if (curve == null) return netExportPrice();
+        double[] band = curve.apply(units);
+        double was = worldImport, wasExport = worldExport;
+        try {
+            worldImport = Double.isFinite(band[1]) ? band[1] : Double.NaN;
+            worldExport = Double.isFinite(band[0]) ? band[0] : Double.NaN;
+            return netExportPrice();
+        } finally {
+            worldImport = was;
+            worldExport = wasExport;
+        }
     }
 
     /** The world's import price now in force, thousands of world dollars a unit: the market's where it was set, else the good's literal. */

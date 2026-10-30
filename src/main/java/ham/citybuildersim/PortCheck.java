@@ -759,6 +759,10 @@ public class PortCheck {
         Game g = town("portcheck-port", 300, 2_000_000);
         BuildingsTemplate terminal = template(g, "General Cargo Terminal");
         Game.BuildResult[] stood = new Game.BuildResult[2];
+        // ...on the literals, steel's world prices doubled (FL1): an Arc Furnace on imported scrap ships steel that nets under its scrap's cost,
+        // and THE ORDER no longer buys scrap for an export at a loss; the premise is foundries that ship, so their steel pays.
+        g.playOnLiterals();
+        g.getMarkets().get(Good.STEEL).setWorldPrices(Good.STEEL.worldImportPrice() * 2, Good.STEEL.worldExportPrice() * 2);
         quietly(() -> {
             g.setCashForTest(Founding.WEALTHY_CASH * 100);
             stood[0] = g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 2, true);
