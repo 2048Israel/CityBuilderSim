@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**154 harness files, 16,525 labelled assertions.** AllChecks runs 154 of them.
+**154 harness files, 16,565 labelled assertions.** AllChecks runs 154 of them.
 
 ## Which harnesses read which class
 
@@ -92,7 +92,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck, ScaleCheck |
-| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BuildCardCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, WoodProductsCheck |
+| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck |
@@ -237,12 +237,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SaveWriter](map/SaveWriter.md) | SaveSlotCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, TruckRouteCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
-| [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ReloadCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, TruckRouteCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CapitalFlowCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ReloadCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, HomeRailCheck, RailCheck, SectorBooksCheck, TruckCheck, VanCheck |
-| [SectorStatements](map/SectorStatements.md) | CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
+| [SectorStatements](map/SectorStatements.md) | CapitalFlowCheck, CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
 | [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
@@ -257,7 +257,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SourceTree](map/SourceTree.md) | StaleCheck |
 | [SpreadPlanner](map/SpreadPlanner.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LongPlaytest, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PortCheck, QuarryingCheck, RefineryCheck, RefineryViewCheck, WoodProductsCheck |
 | [Stale](map/Stale.md) | StaleCheck |
-| [Statement](map/Statement.md) | BankCheck, BondCheck, BooksCheck, CopperRefiningCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, MiningCheck, NewGameCheck, RailCheck, SectorBooksCheck, WellCheck, WoodProductsCheck |
+| [Statement](map/Statement.md) | BankCheck, BondCheck, BooksCheck, CapitalFlowCheck, CopperRefiningCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, MiningCheck, NewGameCheck, RailCheck, SectorBooksCheck, WellCheck, WoodProductsCheck |
 | [StatementView](map/StatementView.md) | **none** |
 | [StrategicReserve](map/StrategicReserve.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, SaveFileCheck |
 | [StreetCurves](map/StreetCurves.md) | MapCheck, PlanCheck |
@@ -3037,7 +3037,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L790 ...and callable under the same rule
   - L792 fixture: the callable lines were among the pieces
 
-## CapitalFlowCheck.java - 49 labelled assertions
+## CapitalFlowCheck.java - 89 labelled assertions
 
 > Hot money: does it come for the right reason, and does it leave for one?
 > 
@@ -3053,63 +3053,104 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      and produced 110 sudden stops in 333 years, each of them a city fleeing
 > ...
 
-- **L62 1. it comes for the spread**
-  - L67 a city paying the world rate attracts nothing
-  - L82 ...nor does one whose whole spread is its own risk premium
-  - L90 a real spread pulls money in
-  - L91 ...and it settles near what the spread justifies
-  - L93 ...on the spread NET of the premium
-- **L95 2. and it leaves when it closes**
-  - L101 a closing spread takes the money with it
-  - L102 ...without anybody panicking
-- **L104 3. fragility is not a crisis**
-  - L119 a city with no reserves still attracts money
-  - L120 ...and is not in crisis for it
-  - L129 a shock on top of fragility is a run
-  - L130 ...and the money starts leaving at once
-  - L131 ...and is told why in words, both halves
-- **L135 4. reserves are the defence**
-  - L147 the same shock on a backed position is not a run
-  - L148 ...and the money stays
-  - L168 the defence works exactly where the constant says it does
-  - L178 a default runs the money however deep the reserves
-- **L181 5. painful, never fatal**
-  - L197 the money does not vanish in a single month
-  - L198 ...but it is gone within a couple of years
-  - L204 a city that survives a stop can be lent to again
-  - L206 ...and is not still marked as stopped
-- **L208 6. it reaches the bank**
-  - L220 hot money is funding the branch network could not gather
-  - L222 ...so it lifts what the bank can lend
-  - L224 ...and the bank knows how much of its funding can walk
-  - L245 money arriving does not make the bank richer
-  - L250 ...and money leaving does not make it poorer either
-  - L266 a position CAN get big enough to be fragile
-- **L269 7. in a real city, and across a reload**
-  - L324 fixture: the city actually offered a carry over the world
-  - L333 hot money actually arrives in a real city that offers a carry
-  - L335 ...in real money, not a rounding error
-  - L337 ...and the books balance every month it does
-  - L352 the position reloads
-  - L353 ...and the record of what has moved
-  - L355 ...and the bank is funded by it on the first tick, not the second
-  - L368 the fixture is genuinely mid-stop
-  - L373 a city loaded mid-stop is still in it
-  - L374 ...with the same months left to run
-- **L377 8. and the city's own money goes the other way**
-  - L400 fixture: the borrower really owes something
-  - L409 idle money goes abroad for the world's rate
-  - L410 ...most of it, at this spread
-  - L412 ...and not all of it - working capital stays
-  - L415 the coupon rolls where it is earned, so the wealth grew
-  - L417 ...and nothing of it landed in the till
-  - L419 a sector with a loan keeps its money home
-  - L426 it comes home when the bank pays better
-  - L427 ...to nothing, in the end
-  - L445 fixture: the surplus alone would strengthen the currency
-  - L447 a surplus sent abroad pushes the currency nowhere
-  - L467 a live city sends money abroad on its own
-  - L468 ...and every month of it is conserved
+- **L69 1. it comes for the spread**
+  - L74 a city paying the world rate attracts nothing
+  - L89 ...nor does one whose whole spread is its own risk premium
+  - L97 a real spread pulls money in
+  - L98 ...and it settles near what the spread justifies
+  - L100 ...on the spread NET of the premium
+- **L102 2. and it leaves when it closes**
+  - L108 a closing spread takes the money with it
+  - L109 ...without anybody panicking
+- **L111 3. fragility is not a crisis**
+  - L126 a city with no reserves still attracts money
+  - L127 ...and is not in crisis for it
+  - L136 a shock on top of fragility is a run
+  - L137 ...and the money starts leaving at once
+  - L138 ...and is told why in words, both halves
+- **L142 4. reserves are the defence**
+  - L154 the same shock on a backed position is not a run
+  - L155 ...and the money stays
+  - L175 the defence works exactly where the constant says it does
+  - L185 a default runs the money however deep the reserves
+- **L188 5. painful, never fatal**
+  - L204 the money does not vanish in a single month
+  - L205 ...but it is gone within a couple of years
+  - L211 a city that survives a stop can be lent to again
+  - L213 ...and is not still marked as stopped
+- **L215 6. it reaches the bank**
+  - L227 hot money is funding the branch network could not gather
+  - L229 ...so it lifts what the bank can lend
+  - L231 ...and the bank knows how much of its funding can walk
+  - L252 money arriving does not make the bank richer
+  - L257 ...and money leaving does not make it poorer either
+  - L273 a position CAN get big enough to be fragile
+- **L276 7. in a real city, and across a reload**
+  - L331 fixture: the city actually offered a carry over the world
+  - L340 hot money actually arrives in a real city that offers a carry
+  - L342 ...in real money, not a rounding error
+  - L344 ...and the books balance every month it does
+  - L359 the position reloads
+  - L360 ...and the record of what has moved
+  - L362 ...and the bank is funded by it on the first tick, not the second
+  - L375 the fixture is genuinely mid-stop
+  - L380 a city loaded mid-stop is still in it
+  - L381 ...with the same months left to run
+- **L384 8. and the city's own money goes the other way**
+  - L407 fixture: the borrower really owes something
+  - L416 idle money goes abroad for the world's rate
+  - L417 ...most of it, at this spread
+  - L419 ...and not all of it - working capital stays
+  - L425 takeMonth() alone earns no coupon: the wealth is what it began with
+  - L426 ...the dollars held are what was sent, none rolled in
+  - L428 ...and it struck no coupon
+  - L429 ...so the till is touched by the move and by nothing else
+  - L431 a sector with a loan keeps its money home
+  - L438 it comes home when the bank pays better
+  - L439 ...to nothing, in the end
+  - L457 fixture: the surplus alone would strengthen the currency
+  - L459 a surplus sent abroad pushes the currency nowhere
+  - L479 a live city sends money abroad on its own
+  - L480 ...and every month of it is conserved
+- **L482 9. the coupon abroad is profit, kept abroad (HD1, HD2)**
+  - L530 fixture: the two cities are the same city before the dollars
+  - L537 fixture: a sector really holds dollars abroad and its twin holds none
+  - L551 the coupon is the dollars held x the world's rate / 12, at the month's rate
+  - L553 fixture: the till covered the month's dividend, so no dollars were called home
+  - L555 fixture: both twins bought back the same shares, so none were called home for it
+  - L558 ...and the dollars held grew by it: what was held, the coupon and what the month moved
+  - L563 the statement carries it as a line of its own
+  - L564 ...the twin's carries none
+  - L565 ...inside the profit: before tax is operating + interest abroad - the costs below it
+  - L569 ...not in the operating line: the twins' operating income is the same
+  - L571 ...nor in what it sold: the twins' revenue is the same
+  - L572 fixture: the twin is in profit, so the profit tax has something to take
+  - L575 profit before tax differs by the coupon
+  - L577 ...the profit tax by the coupon x the tax rate
+  - L579 ...the profit it kept by the coupon x (1 - the tax rate)
+  - L581 ...and its books read the same coupon
+  - L585 the till moved only by the tax: the coupon x the tax rate less, none of it received
+  - L590 ...and its cash flow still closes: nothing unaccounted for
+  - L595 ...with the coupon a line of its own in the cash flows, taken out again: minus the coupon
+  - L597 ...the twin's has none there
+  - L598 ...and the line shows for the one and not the other
+  - L603 the balance of payments: the income received differs by the coupon
+  - L605 ...and the capital sent out less brought home by the coupon and what the month moved
+  - L610 the dividend it will be struck on is larger by PAYOUT x the coupon x (1 - the tax rate)
+  - L617 the register reads the business without the coupon: the twin's net income
+  - L619 ...the coupon after its tax is left to what its money earns: the coupon x (1 - the tax rate)
+  - L621 ...and the register's earnings are the twin's, the same twelve months
+  - L632 the dividend paid the next month is larger
+  - L633 ...by PAYOUT x the coupon x (1 - the tax rate)
+  - L639 fixture: the rate moved between the two struck months
+  - L640 fixture: the till covered that month's dividend too, so no dollars were called home
+  - L642 what it holds abroad, revalued, is the dollars held x the rate's move
+  - L644 ...and the month's coupon is struck on the dollars it began with, at the new rate
+  - L646 ...the revaluation is not in the profit: it differs from its twin's by the coupon alone
+  - L653 over both months the till moved only by the tax on both coupons and the extra dividend
+  - L664 the statement's coupon survives a save
+  - L666 ...and a load puts it back
+  - L680 every month of it is conserved: the money audit closes
 
 ## CarCheck.java - 66 labelled assertions
 
@@ -18886,103 +18927,103 @@ _(this harness does not label its checks through a helper - it prints its findin
 > model, the save, the history and the screens.
 > ...
 
-- **L393 1. the fixture, and its copy K times over**
-  - L430 fixture: the founded city has people, posts and homes
-  - L432 fixture: K times its people passes 2^31
-- **L438 2. the counts read back whole**
-  - L442 the slot header of a save past 2^31 people reads (an int could not parse it)
-  - L443 ...and its population is K times the founded city's
-  - L449 the copy loads
-  - L450 its population is K times the founded city's, past 2^31
-  - L451 ...its workforce too, not stuck at 2,147,483,647
-  - L452 ...both past the int ceiling
-  - L465 its ground is K times the founded city's
-  - L466 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
-  - L477 ...its iron as the founded city's: sites and tonnes
-- **L481 3. posts, doors and household places**
-  - L483 every post is K times the founded city's
-  - L484 every home is K times the founded city's
-  - L485 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
-  - L487 ...because the copy holds K founding endowments where the founded city holds one
-- **L491 4. three months at that size**
-  - L500 the months ran
-  - L501 the population is still past 2^31
-  - L502 ...and is the pyramid's, rounded once
-  - L503 the workforce is still past 2^31
-  - L506 the history's last population is the city's
-  - L507 ...its workforce
-  - L508 ...its posts
-  - L509 ...the people out of work
-  - L510 ...and its homes
-- **L512 5. the save round-trips them**
-  - L514 the city past 2^31 saves
-  - L516 its header reads
-  - L517 ...with the population it was saved with
-  - L523 it loads at the month it was saved
-  - L524 the population came back
-  - L525 ...the workforce
-  - L526 ...the posts
-  - L527 ...the posts filled
-  - L528 ...the people out of work
-  - L529 ...the homes
-  - L530 ...the household places
-  - L531 ...the founding endowments it holds (FW9)
-  - L534 ...and the history, month for month
-  - L541 the loaded city plays its next month to the same population
-  - L543 ...the same workforce
-  - L544 ...and the same people out of work
-- **L546 6. the sectors free, at 5 and 10 billion**
-  - L568 fixture: the city is growing - more people than a year before
-  - L572 fixture: ...with ground free for a home
-  - L576 fixture: ...and its own rents price no migrant out in the months its copies are read against
-- **L580 7. money at that size reads**
-- **L583 8. the audit's floor at size**
-- **L586 9. a copy tracks its city month by month**
-- **L598 the audit's floor is never under the figures' own step (0.7.63)**
-  - L608 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
-  - L609 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
-  - L613 ...so the cash-flow statement K's copy missed on rounding alone is within it
-  - L619 a cent never moves: a cent or a part in a trillion, at every size, as before
-  - L620 ...and a size that is not a number keeps the floor alone
-- **L626 money at that size reads in its own unit**
-  - L628 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
-  - L629 ...a thousand quadrillion and more is grouped
-  - L630 ...a negative one keeps its sign
-  - L631 ...and a trillion still reads as one
-  - L633 cash() prints every whole dollar a double holds, as before
-  - L635 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
-  - L636 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
-  - L726 the copy loads
-  - L762 every month the population is past 2^31, whole, and the pyramid's rounded once
-  - L763 ...and the posts, the doors and the household places add up exactly, every month
-  - L772 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
-  - L775 ...and its businesses pay the city's price for it
-  - L785 ...and it builds: more homes at the end than at the start
-  - L786 fixture: the free copy ordered - an order sized from more than a million needed,
-  - L835 the copy at K =
-  - L1045 the month's money audit closes, to the cent (BankCheck and four more)
-  - L1054 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
-  - L1060 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
-  - L1065 the money the audit saw made is the central bank's (LongPlaytest)
-  - L1069 M0 moved by the money made (LongPlaytest, already relative)
-  - L1077 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
-  - L1082 the treasury's window opens where it closed (TreasuryCheck)
-  - L1086 the treasury's closing balance is its cash (TreasuryCheck)
-  - L1092 the treasury's bridge foots (TreasuryCheck)
-  - L1110 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
-  - L1113 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
-  - L1119 the history's net income is the sector books', to the cent (HistoryCheck)
-  - L1126 the history's bank figures are the bank's own, to the cent (HistoryCheck)
-  - L1139 ...
-  - L1203 no order sized read more waits than one a bit of what it needed, and one more
-  - L1204 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
-  - L1226 every post,
-  - L1229 ...the posts on offer by job type add up to the total
-  - L1230 ...and the total is every post less those withheld
-  - L1235 every home is the stacks' quantity times their doors
-  - L1236 ...and the homes by size add up to it
-  - L1238 ...and the landlords' studio and family doors to it too
-  - L1240 the household places are the city's hundred for each founding endowment and the stacks' places
+- **L401 1. the fixture, and its copy K times over**
+  - L438 fixture: the founded city has people, posts and homes
+  - L440 fixture: K times its people passes 2^31
+- **L446 2. the counts read back whole**
+  - L450 the slot header of a save past 2^31 people reads (an int could not parse it)
+  - L451 ...and its population is K times the founded city's
+  - L457 the copy loads
+  - L458 its population is K times the founded city's, past 2^31
+  - L459 ...its workforce too, not stuck at 2,147,483,647
+  - L460 ...both past the int ceiling
+  - L473 its ground is K times the founded city's
+  - L474 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
+  - L485 ...its iron as the founded city's: sites and tonnes
+- **L489 3. posts, doors and household places**
+  - L491 every post is K times the founded city's
+  - L492 every home is K times the founded city's
+  - L493 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
+  - L495 ...because the copy holds K founding endowments where the founded city holds one
+- **L499 4. three months at that size**
+  - L508 the months ran
+  - L509 the population is still past 2^31
+  - L510 ...and is the pyramid's, rounded once
+  - L511 the workforce is still past 2^31
+  - L514 the history's last population is the city's
+  - L515 ...its workforce
+  - L516 ...its posts
+  - L517 ...the people out of work
+  - L518 ...and its homes
+- **L520 5. the save round-trips them**
+  - L522 the city past 2^31 saves
+  - L524 its header reads
+  - L525 ...with the population it was saved with
+  - L531 it loads at the month it was saved
+  - L532 the population came back
+  - L533 ...the workforce
+  - L534 ...the posts
+  - L535 ...the posts filled
+  - L536 ...the people out of work
+  - L537 ...the homes
+  - L538 ...the household places
+  - L539 ...the founding endowments it holds (FW9)
+  - L542 ...and the history, month for month
+  - L549 the loaded city plays its next month to the same population
+  - L551 ...the same workforce
+  - L552 ...and the same people out of work
+- **L554 6. the sectors free, at 5 and 10 billion**
+  - L576 fixture: the city is growing - more people than a year before
+  - L580 fixture: ...with ground free for a home
+  - L584 fixture: ...and its own rents price no migrant out in the months its copies are read against
+- **L588 7. money at that size reads**
+- **L591 8. the audit's floor at size**
+- **L594 9. a copy tracks its city month by month**
+- **L606 the audit's floor is never under the figures' own step (0.7.63)**
+  - L616 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
+  - L617 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
+  - L621 ...so the cash-flow statement K's copy missed on rounding alone is within it
+  - L627 a cent never moves: a cent or a part in a trillion, at every size, as before
+  - L628 ...and a size that is not a number keeps the floor alone
+- **L634 money at that size reads in its own unit**
+  - L636 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
+  - L637 ...a thousand quadrillion and more is grouped
+  - L638 ...a negative one keeps its sign
+  - L639 ...and a trillion still reads as one
+  - L641 cash() prints every whole dollar a double holds, as before
+  - L643 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
+  - L644 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
+  - L734 the copy loads
+  - L770 every month the population is past 2^31, whole, and the pyramid's rounded once
+  - L771 ...and the posts, the doors and the household places add up exactly, every month
+  - L780 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
+  - L783 ...and its businesses pay the city's price for it
+  - L793 ...and it builds: more homes at the end than at the start
+  - L794 fixture: the free copy ordered - an order sized from more than a million needed,
+  - L843 the copy at K =
+  - L1053 the month's money audit closes, to the cent (BankCheck and four more)
+  - L1062 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
+  - L1068 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
+  - L1073 the money the audit saw made is the central bank's (LongPlaytest)
+  - L1077 M0 moved by the money made (LongPlaytest, already relative)
+  - L1085 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
+  - L1090 the treasury's window opens where it closed (TreasuryCheck)
+  - L1094 the treasury's closing balance is its cash (TreasuryCheck)
+  - L1100 the treasury's bridge foots (TreasuryCheck)
+  - L1118 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
+  - L1121 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
+  - L1127 the history's net income is the sector books', to the cent (HistoryCheck)
+  - L1134 the history's bank figures are the bank's own, to the cent (HistoryCheck)
+  - L1147 ...
+  - L1211 no order sized read more waits than one a bit of what it needed, and one more
+  - L1212 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
+  - L1234 every post,
+  - L1237 ...the posts on offer by job type add up to the total
+  - L1238 ...and the total is every post less those withheld
+  - L1243 every home is the stacks' quantity times their doors
+  - L1244 ...and the homes by size add up to it
+  - L1246 ...and the landlords' studio and family doors to it too
+  - L1248 the household places are the city's hundred for each founding endowment and the stacks' places
 
 ## SectorBooksCheck.java - 16 labelled assertions
 
@@ -19000,28 +19041,28 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L127 the sheet**
-  - L129 balance sheet
-- **L132 the income statement**
-  - L133 operating
-  - L138 pre-tax
-  - L142 net
-- **L145 the cash flow**
-  - L146 cash flow
-  - L172 revenue by good
-  - L178 cost of sales by good and named line
-  - L191 exports by good
-  - L199 imports by good
-  - L214 other revenue named
-- **L233 AND IT HAS TO SURVIVE A SAVE.**
-  - L251 survives a save
-  - L253 ...and its cash
-- **L265 and the month after**
-  - L268 cash flow across a reload
-- **L271 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46)**
-  - L314 fixture: the crews bought materials in more than one month, and in the month last struck
-  - L324 Construction's struck materials are the row as it stood at the strike, and cross a save
-  - L335 ...and a save from before them loads them as not counted, not as nothing
+- **L128 the sheet**
+  - L130 balance sheet
+- **L133 the income statement**
+  - L134 operating
+  - L140 pre-tax
+  - L144 net
+- **L147 the cash flow**
+  - L148 cash flow
+  - L174 revenue by good
+  - L180 cost of sales by good and named line
+  - L193 exports by good
+  - L201 imports by good
+  - L216 other revenue named
+- **L235 AND IT HAS TO SURVIVE A SAVE.**
+  - L253 survives a save
+  - L255 ...and its cash
+- **L267 and the month after**
+  - L270 cash flow across a reload
+- **L273 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46)**
+  - L316 fixture: the crews bought materials in more than one month, and in the month last struck
+  - L326 Construction's struck materials are the row as it stood at the strike, and cross a save
+  - L337 ...and a save from before them loads them as not counted, not as nothing
 
 ## SectorFlowCheck.java - 20 labelled assertions
 
@@ -19084,37 +19125,37 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 - **L171 the cities: the test player's, 360 months, and a plain founding, 120**
 - **L271 1. the income statement**
-- **L327 2. the cash flow**
-- **L341 3. the classified sheet**
-- **L389 4. the equity statement**
-- **L437 5. the bank**
-  - L517 fixture: the cities had months with the outside lines, debt falling due within a year, and the bank's
-  - L524 every month with last month's sheet drew an equity statement (
-  - L530 fixture: the cities had months with fees kept out of a loan, bonds' issuing costs, founders' shares,
-  - L533 fixture: the businesses expensed what their borrowing cost them up front in
-  - L535 fixture: ...and R6's parts: the stock, the land, the buildings and what is held abroad each moved in some
-  - L537 a city founded in this build derives no paid-in:
-- **L598 6. a save and a load keep every comparative**
-  - L611 fixture: the loaded city stands on its buildings, its bank's branches with them (
-  - L659 a sector owes, and its loaded sheet splits the debt by when it falls due
-  - L660 R1 and R2 are saved (FW2): after a load every sector's interest and debt by kind, both months, read the
-  - L662 the shares are saved (FW6): after a load every sector's share, this month's and last month's, reads the
-  - L710 a month on, R1 and R2 are counted, the split's last month is the saved city's (FW2), and the sheet's
-  - L737 ...and the loaded city's month holds every identity of sections 1 to 5 (
-- **L744 7. the formats**
-  - L761 the shops, the luxury shops and the kitchens are merchants, the landlords landlords, the builders builders,
-  - L763 every format but the bank's is some sector's:
-  - L770 the landlords' statement has no gross line and its middle line is its net operating income; a maker's
-  - L778 an income statement with R1 not counted keeps no finance note
-- **L798 6b. a format-32 save is refused since 0.7.120 (to 0.7.119 it loaded, its paid-in derived)**
-  - L803 the save says format
-  - L832 a format-32 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
-  - L836 ...so no sector's paid-in is derived
-- **L842 8. the debt schedule (R7)**
-  - L854 fixture: the cities' schedules borrowed, repaid and wrote off
-  - L856 the sheet is read at the month's close: nothing is lent after it, in any schedule (0.7.102)
-- **L872 9. every building at every gate (R4)**
-  - L930 ...and the ground put back, each city is as it was
+- **L330 2. the cash flow**
+- **L346 3. the classified sheet**
+- **L394 4. the equity statement**
+- **L442 5. the bank**
+  - L522 fixture: the cities had months with the outside lines, debt falling due within a year, and the bank's
+  - L529 every month with last month's sheet drew an equity statement (
+  - L535 fixture: the cities had months with fees kept out of a loan, bonds' issuing costs, founders' shares,
+  - L538 fixture: the businesses expensed what their borrowing cost them up front in
+  - L540 fixture: ...and R6's parts: the stock, the land, the buildings and what is held abroad each moved in some
+  - L542 a city founded in this build derives no paid-in:
+- **L603 6. a save and a load keep every comparative**
+  - L616 fixture: the loaded city stands on its buildings, its bank's branches with them (
+  - L664 a sector owes, and its loaded sheet splits the debt by when it falls due
+  - L665 R1 and R2 are saved (FW2): after a load every sector's interest and debt by kind, both months, read the
+  - L667 the shares are saved (FW6): after a load every sector's share, this month's and last month's, reads the
+  - L715 a month on, R1 and R2 are counted, the split's last month is the saved city's (FW2), and the sheet's
+  - L742 ...and the loaded city's month holds every identity of sections 1 to 5 (
+- **L749 7. the formats**
+  - L766 the shops, the luxury shops and the kitchens are merchants, the landlords landlords, the builders builders,
+  - L768 every format but the bank's is some sector's:
+  - L775 the landlords' statement has no gross line and its middle line is its net operating income; a maker's
+  - L783 an income statement with R1 not counted keeps no finance note
+- **L803 6b. a format-32 save is refused since 0.7.120 (to 0.7.119 it loaded, its paid-in derived)**
+  - L808 the save says format
+  - L837 a format-32 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
+  - L841 ...so no sector's paid-in is derived
+- **L847 8. the debt schedule (R7)**
+  - L859 fixture: the cities' schedules borrowed, repaid and wrote off
+  - L861 the sheet is read at the month's close: nothing is lent after it, in any schedule (0.7.102)
+- **L877 9. every building at every gate (R4)**
+  - L935 ...and the ground put back, each city is as it was
 
 ## SicknessCheck.java - 55 labelled assertions
 

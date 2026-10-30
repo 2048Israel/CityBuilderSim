@@ -1,4 +1,4 @@
-# Equity.java - 1,223 lines · 100 methods · 20 constants · model
+# Equity.java - 1,225 lines · 100 methods · 20 constants · model
 
 `ham/citybuildersim/Equity.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -66,7 +66,7 @@
 
 **Uses:** [HouseholdBalance](HouseholdBalance.md) (5), [Sectors](Sectors.md) (1), [Exchange](Exchange.md) (1)
 
-**Used by (47):** [AgricultureCheck](AgricultureCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BuildCardCheck](BuildCardCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Household](Household.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MarketCheck](MarketCheck.md), [MoneyAudit](MoneyAudit.md), [MortgageCheck](MortgageCheck.md), [PeopleScreen](PeopleScreen.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [TreasuryFund](TreasuryFund.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (48):** [AgricultureCheck](AgricultureCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BuildCardCheck](BuildCardCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Household](Household.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MarketCheck](MarketCheck.md), [MoneyAudit](MoneyAudit.md), [MortgageCheck](MortgageCheck.md), [PeopleScreen](PeopleScreen.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [TreasuryFund](TreasuryFund.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 
@@ -79,8 +79,8 @@
 | 454 | THE OFFERING |
 | 618 | THE DIVIDEND |
 | 766 | THE HOLDERS |
-| 1015 | · reading |
-| 1065 | · saving |
+| 1017 | · reading |
+| 1067 | · saving |
 
 ## Enum constants
 
@@ -109,12 +109,12 @@
 | 181 | `Equity.HORIZON_YEARS` | `3` | In good times, the years of expansion a company raises for ahead. |
 | 184 | `Equity.UNDER_TARGET` | `.10` | Under target by this much before a normal year raises instead of borrows. |
 | 187 | `Equity.FOREIGN_PREMIUM` | `.03` | What the world wants over its own rate to buy a share here, annual. |
-| 1073 | `Equity.SLOTS_BEFORE_DESK` | `RECORD_MONTHS * 2 + 10` | Slots a company before the desk (2026-09-10, night). |
-| 1076 | `Equity.SLOTS_BEFORE_PAID` | `SLOTS_BEFORE_DESK + 2` | ...and before the dividends actually paid (0.7.12 round 2). |
-| 1079 | `Equity.SLOTS_BEFORE_CITY` | `SLOTS_BEFORE_PAID + RECORD_MONTHS + 1` | ...and before the city's fund (0.7.14): the ring of dividends paid and its count, appended. |
-| 1082 | `Equity.SLOTS_BEFORE_PAID_IN` | `SLOTS_BEFORE_CITY + 3` | ...and before its paid-in capital (0.7.75): the city's shares, its rescue book and what it has been paid, appended (0.7.14). |
-| 1085 | `Equity.SLOTS` | `SLOTS_BEFORE_PAID_IN + 3` | Its founders' book, what its buybacks paid and whether the two were derived, appended (0.7.75, R3; SAVE_FORMAT 33). |
-| 1088 | `Equity.PAID_IN_FORMAT` | `33` | The first save format that keeps a company's paid-in capital (0.7.75, R3): an older save's is derived at the load (restore(), SectorBooks.derivePaidIn()). |
+| 1075 | `Equity.SLOTS_BEFORE_DESK` | `RECORD_MONTHS * 2 + 10` | Slots a company before the desk (2026-09-10, night). |
+| 1078 | `Equity.SLOTS_BEFORE_PAID` | `SLOTS_BEFORE_DESK + 2` | ...and before the dividends actually paid (0.7.12 round 2). |
+| 1081 | `Equity.SLOTS_BEFORE_CITY` | `SLOTS_BEFORE_PAID + RECORD_MONTHS + 1` | ...and before the city's fund (0.7.14): the ring of dividends paid and its count, appended. |
+| 1084 | `Equity.SLOTS_BEFORE_PAID_IN` | `SLOTS_BEFORE_CITY + 3` | ...and before its paid-in capital (0.7.75): the city's shares, its rescue book and what it has been paid, appended (0.7.14). |
+| 1087 | `Equity.SLOTS` | `SLOTS_BEFORE_PAID_IN + 3` | Its founders' book, what its buybacks paid and whether the two were derived, appended (0.7.75, R3; SAVE_FORMAT 33). |
+| 1090 | `Equity.PAID_IN_FORMAT` | `33` | The first save format that keeps a company's paid-in capital (0.7.75, R3): an older save's is derived at the load (restore(), SectorBooks.derivePaidIn()). |
 
 ## Fields (state)
 
@@ -146,13 +146,13 @@
 | 278 | `Regime regime` |  |
 | 279 | `double targetShare` |  |
 | 318 | `private final Listing[] listings` |  |
-| 1009 | `private double ordinaryPaidAtClose` | Every company's ordinary dividends at the last close (closeDividendMonth()): the month's, for the playtest. |
+| 1011 | `private double ordinaryPaidAtClose` | Every company's ordinary dividends at the last close (closeDividendMonth()): the month's, for the playtest. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 105 | 1119 | **type** `public class Equity` | The share register: who owns the city's companies, what they paid for them, and what the companies pay them back. |
+| 105 | 1121 | **type** `public class Equity` | The share register: who owns the city's companies, what they paid for them, and what the companies pay them back. |
 | 110 | 7 | `static { ... }` |  |
 | 118 | 4 | `public static int indexOf(String company)` |  |
 
@@ -223,7 +223,7 @@
 | 763 | 1 | `public double getLifetimeDividendsCity(int company)` |  |
 | 764 | 1 | `public double getDividendDeskThisMonth()` |  |
 
-### THE HOLDERS (lines 766-1014)
+### THE HOLDERS (lines 766-1016)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -250,55 +250,55 @@
 | 938 | 1 | `public double getBoughtBackPaid(int company)` | What its buybacks paid over its life - since the load, on a derived figure. |
 | 940 | 1 | `public double getFoundedThisMonth(int company)` | The founders' shares issued this month, at their book. |
 | 942 | 1 | `public boolean isPaidInDerived(int company)` | True when its paid-in was derived at the load of a save from before 0.7.75 kept it. |
-| 977 | 7 | `public double fairValue(int company, double bookEquity, double spare, double worldRate)` | What a share is worth on the register's own reckoning (EM1, 2026-10-29): the company's money past its working cushion at face (the spare, which the exchange strikes from its till, its dollars abroad and the bonds it h... |
-| 986 | 4 | `public boolean valuedOnRecord(int company)` | True when fairValue() prices the company on its record: it has shares and a full year on the record (EM1); before that it is held on prospects. |
-| 992 | 15 | `public double dividendPerShareAnnual(int company)` | The dividend a share paid over the last twelve months - the ordinary dividend actually paid, since 0.7.12 round 2 (it was PAYOUT of the income before the principal, which nobody was paid). |
-| 1010 | 1 | `public double getOrdinaryDividendsLastClose()` |  |
-| 1013 | 1 | `public double getDividendsPaidOverYear(int company)` | The ordinary dividends paid over the last twelve months, the company's whole (0.7.12 round 2). |
+| 979 | 7 | `public double fairValue(int company, double bookEquity, double spare, double worldRate)` | What a share is worth on the register's own reckoning (EM1, 2026-10-29): the company's money past its working cushion at face (the spare, which the exchange strikes from its till, its dollars abroad and the bonds it h... |
+| 988 | 4 | `public boolean valuedOnRecord(int company)` | True when fairValue() prices the company on its record: it has shares and a full year on the record (EM1); before that it is held on prospects. |
+| 994 | 15 | `public double dividendPerShareAnnual(int company)` | The dividend a share paid over the last twelve months - the ordinary dividend actually paid, since 0.7.12 round 2 (it was PAYOUT of the income before the principal, which nobody was paid). |
+| 1012 | 1 | `public double getOrdinaryDividendsLastClose()` |  |
+| 1015 | 1 | `public double getDividendsPaidOverYear(int company)` | The ordinary dividends paid over the last twelve months, the company's whole (0.7.12 round 2). |
 
-### reading (lines 1015-1064)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1017 | 1 | `public double getShares(int company)` |  |
-| 1018 | 1 | `public double getForeignShares(int company)` |  |
-| 1019 | 1 | `public double getDomesticShares(int company)` |  |
-| 1020 | 1 | `public double getLastPrice(int company)` |  |
-| 1021 | 1 | `public Regime getRegime(int company)` |  |
-| 1022 | 1 | `public double getTargetEquityShare(int company)` |  |
-| 1023 | 1 | `public int getMonthsRecorded(int company)` |  |
-| 1025 | 1 | `public double getTrailingIncome(int company)` | Its net income over the last twelve months on the record (fewer while it has fewer): what its business earned, after tax (EM1). |
-| 1026 | 1 | `public int getOfferings(int company)` |  |
-| 1029 | 4 | `public double foreignShare(int company)` | Share of the company held abroad, 0-1. |
-| 1035 | 4 | `public double deskShare(int company)` | Share of the company on the bank's trading desk, 0-1: what the desk is long over what is in issue - nothing while it is short. |
-| 1040 | 1 | `public double getOfferedThisMonth(int company)` |  |
-| 1041 | 1 | `public double getRaisedHomeThisMonth(int company)` |  |
-| 1042 | 1 | `public double getRaisedAbroadThisMonth(int company)` |  |
-| 1043 | 1 | `public double getDividendHomeThisMonth(int company)` |  |
-| 1044 | 1 | `public double getDividendAbroadThisMonth(int company)` |  |
-| 1045 | 1 | `public double getRaisedThisMonth(int company)` |  |
-| 1046 | 1 | `public double getDividendThisMonth(int company)` |  |
-| 1048 | 1 | `public double getLifetimeRaisedHome(int company)` |  |
-| 1049 | 1 | `public double getLifetimeRaisedAbroad(int company)` |  |
-| 1050 | 1 | `public double getLifetimeDividendsHome(int company)` |  |
-| 1051 | 1 | `public double getLifetimeDividendsAbroad(int company)` |  |
-| 1055 | 1 | `public double getRaisedHomeThisMonth()` | ---- the city, for MoneyAudit and the summary ---- |
-| 1056 | 1 | `public double getRaisedAbroadThisMonth()` |  |
-| 1057 | 1 | `public double getDividendHomeThisMonth()` |  |
-| 1058 | 1 | `public double getDividendAbroadThisMonth()` |  |
-| 1059 | 1 | `public double getLifetimeRaisedHome()` |  |
-| 1060 | 1 | `public double getLifetimeRaisedAbroad()` |  |
-| 1061 | 1 | `public double getLifetimeDividendsHome()` |  |
-| 1062 | 1 | `public double getLifetimeDividendsAbroad()` |  |
-| 1063 | 1 | `public int getOfferings()` |  |
-
-### saving (lines 1065-1223)
+### reading (lines 1017-1066)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1090 | 1 | `public String[] keys()` |  |
-| 1092 | 29 | `public double[] toSaveArray()` |  |
-| 1123 | 77 | `public boolean restore(String[] keys, double[] saved)` |  |
-| 1201 | 3 | `public void reset()` |  |
-| 1209 | 14 | `public void redenominate(double scale)` | Everything in money, in the new unit. |
+| 1019 | 1 | `public double getShares(int company)` |  |
+| 1020 | 1 | `public double getForeignShares(int company)` |  |
+| 1021 | 1 | `public double getDomesticShares(int company)` |  |
+| 1022 | 1 | `public double getLastPrice(int company)` |  |
+| 1023 | 1 | `public Regime getRegime(int company)` |  |
+| 1024 | 1 | `public double getTargetEquityShare(int company)` |  |
+| 1025 | 1 | `public int getMonthsRecorded(int company)` |  |
+| 1027 | 1 | `public double getTrailingIncome(int company)` | Its net income over the last twelve months on the record (fewer while it has fewer): what its business earned, after tax (EM1). |
+| 1028 | 1 | `public int getOfferings(int company)` |  |
+| 1031 | 4 | `public double foreignShare(int company)` | Share of the company held abroad, 0-1. |
+| 1037 | 4 | `public double deskShare(int company)` | Share of the company on the bank's trading desk, 0-1: what the desk is long over what is in issue - nothing while it is short. |
+| 1042 | 1 | `public double getOfferedThisMonth(int company)` |  |
+| 1043 | 1 | `public double getRaisedHomeThisMonth(int company)` |  |
+| 1044 | 1 | `public double getRaisedAbroadThisMonth(int company)` |  |
+| 1045 | 1 | `public double getDividendHomeThisMonth(int company)` |  |
+| 1046 | 1 | `public double getDividendAbroadThisMonth(int company)` |  |
+| 1047 | 1 | `public double getRaisedThisMonth(int company)` |  |
+| 1048 | 1 | `public double getDividendThisMonth(int company)` |  |
+| 1050 | 1 | `public double getLifetimeRaisedHome(int company)` |  |
+| 1051 | 1 | `public double getLifetimeRaisedAbroad(int company)` |  |
+| 1052 | 1 | `public double getLifetimeDividendsHome(int company)` |  |
+| 1053 | 1 | `public double getLifetimeDividendsAbroad(int company)` |  |
+| 1057 | 1 | `public double getRaisedHomeThisMonth()` | ---- the city, for MoneyAudit and the summary ---- |
+| 1058 | 1 | `public double getRaisedAbroadThisMonth()` |  |
+| 1059 | 1 | `public double getDividendHomeThisMonth()` |  |
+| 1060 | 1 | `public double getDividendAbroadThisMonth()` |  |
+| 1061 | 1 | `public double getLifetimeRaisedHome()` |  |
+| 1062 | 1 | `public double getLifetimeRaisedAbroad()` |  |
+| 1063 | 1 | `public double getLifetimeDividendsHome()` |  |
+| 1064 | 1 | `public double getLifetimeDividendsAbroad()` |  |
+| 1065 | 1 | `public int getOfferings()` |  |
+
+### saving (lines 1067-1225)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1092 | 1 | `public String[] keys()` |  |
+| 1094 | 29 | `public double[] toSaveArray()` |  |
+| 1125 | 77 | `public boolean restore(String[] keys, double[] saved)` |  |
+| 1203 | 3 | `public void reset()` |  |
+| 1211 | 14 | `public void redenominate(double scale)` | Everything in money, in the new unit. |
 

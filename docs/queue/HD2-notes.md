@@ -59,8 +59,35 @@ cash-flow line, the Trade screen's holdings).
   close, so cash put in between would be NOT ACCOUNTED FOR), and "both twins
   bought back the same shares" is a fixture line. No tolerance moved: the till
   identities hold at 1e-9.
-- ★ **ScaleCheck's fixture month.** {scale}
-- **MonetaryCheck holds; nothing queued for it.** {monetary-call}
+- ★ **ScaleCheck's section 6 is red: its town no longer grows into a city,
+  and no month holds.** Section 6 copies "a growing city", the town
+  `OrderSearchCheck.playtestCity()` plays on the goods' literals with the rate
+  pinned, at `FREE_FIXTURE_MONTHS` (1124 since EM1, a window of five months in
+  nine after the town took off at m1,075). On HD2 the town is the base's to two
+  people at m301, and parts at m731: there the playtest's player builds two
+  police stations where the base's built roads and clinics, their running costs
+  spend the treasury (937k at m900 against 2.2M), and the build that took the
+  base's town off at m1,075 (1.7M of a 2.9M treasury) never comes. The town
+  hovers at 2,600 to 4,100 people and is 2,009 at m2,499 (the base's 8,097 at
+  m1,201). It is the mechanism, not luck: at m600 HD2's businesses hold 20% less
+  cash (99k against 123k), because the till pays the tax and the dividend on a
+  coupon that stays abroad, and the base town nudged by $1,000 at its founding
+  still takes off at m1,075. A scan with a scratch copy of the check (the month
+  a property, sections 1-5 skipped, 15 s a month) over every growing window from
+  m306 to m1,965 (every third month; every month about the best) found no month
+  that holds every assertion; the fewest misses are two, at m474-476
+  (affordability; GDP tracking .167 against .14), m482 (affordability; it
+  builds) and m838 (affordability; the free copy orders nothing). HD1 as built
+  stalls the same town (2,348 at m2,499). Taken: the month left at 1124 (a month
+  that fails fewer lines would hide nothing and fix nothing), the red named for
+  the gate on his word for HD1-C ("hd1, same": ship, look later), and the
+  fixture pending (HD2-S): EM2 moves this trajectory and rescans it in any case;
+  if its town grows again a window may return, and if not, section 6 needs a
+  town that grows by its own plan rather than by one look of the advisor.
+- **MonetaryCheck holds; nothing queued for it.** The brief's fallback (ship on
+  `--red-ok "hd1, same"` with MonetaryCheck's lines, and queue the coupon's part
+  beside WN3-R) is not needed: the dial keeps its sign. WN3-R's row already says
+  the band's study reads HD2's dial beside its own.
 
 ## 3. What moved
 
@@ -101,11 +128,78 @@ the person until about m100 and part there, with $34 abroad (a coupon of six
 cents a month): a founding town amplifies any difference into another city, so
 one run's D$ at m2,852 (96 against 218) is not a finding; the ensemble's is.
 
-{ensemble}
+**The ensemble** (80 of 80, 2 at once, 16.9 min; committed as
+`docs/ensemble/HD2.md`, against WN3's, `docs/ensemble/0.8.75.md`): 23 of 25
+counted against WN3's 23 of 26, and no criterion that passed on WN3 fails.
+
+| | WN3 (0.8.75) | HD2 |
+|---|---|---|
+| T1, every AUTO2 seed past 40,000 | 16/16, m1,101 [874 to 1,154] | 16/16, m1,156 [1,076 to 1,429] |
+| T2, AUTO2 at m2,400 | 292,982 [198,117 to 375,661] | 280,956 [241,817 to 336,963] |
+| A1, inflation from m240 | 1.95% | 2.15% (16/16 in band) |
+| A2, longest spell over 10% | 12 [9 to 15], FAIL | 10 [6 to 17], FAIL |
+| S1, zero-rate slack | longest spell 36, FAIL | longest spell 60, FAIL |
+| R1, 15% against its twin | -2.12% | -2.95% |
+| R3, the rate's sign at m660-720 | FAIL, 3 seeds over +1 pt | PASS, 1 seed over (median -3.04%) |
+| H2 | PASS, 14/16 | VACUOUS: no burst to stop (1st half +1.40% over the twin, WN3's +4.53%) |
+| T2, HIGH / SHOCK / ZERO_HOT / ZERO_SLACK | 10,504 / 20,686 / 5,466 / 213,162 | 8,136 / 17,884 / 4,555 / 181,971 |
+| F1, M1 | clean | clean |
+
+The rate lever is the stronger for it (R1, R3), and the young cities are a
+little smaller: the four short policies end 10-20% under WN3's medians, AUTO2
+4% under at m2,400 with a narrower spread, and T1 comes 55 months later in the
+median - the coupon's tax and dividend leave the businesses' tills while its
+cash stays abroad, as in ScaleCheck's town above. The two reds are WN3's.
 
 ## 4. The checks
 
-{checks}
+The full suite on the merged tip (main 0.8.75, WN3, merged in; no `earth-2.bin`
+here, so the Earth harnesses' full-file sections did not run; timing soft):
+**154 harnesses, 152 passed, 2 red, exit 4** (MapCheck's one SOFT timing
+figure not counted). Every other harness is green, MonetaryCheck among them; the
+default playtest passed every month's audit and every reload. The slice's own
+runs: CapitalFlowCheck, SectorBooksCheck, SectorStatementCheck, MoneyCheck,
+EquityCheck and ExchangeCheck green. After the suite, ScaleCheck's
+`FREE_FIXTURE_MONTHS` javadoc took a paragraph for this finding (a comment; the
+maps regenerated, Stale 0 firm).
+
+The red lines, word for word, for the gate (`--red-ok "hd1, same"`, a
+`--red-line` each):
+
+```
+PassThroughCheck | exit 1
+PassThroughCheck | ...and so does the price index (mean gap 0.74% against 0.51%)            FAIL
+PassThroughCheck | 1 FAILED
+ScaleCheck | exit 1
+ScaleCheck | fixture: the city is growing - more people than a year before                        FAIL
+ScaleCheck | fixture: ...and its own rents price no migrant out in the months its copies are read against (the affordability pull 1 in all 6) FAIL
+ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
+ScaleCheck | fixture: the free copy ordered - an order sized from more than a million needed, and one judged on its interest FAIL
+ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
+ScaleCheck | fixture: the free copy ordered - an order sized from more than a million needed, and one judged on its interest FAIL
+ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.20e+00) FAIL
+ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 3.54e-02) FAIL
+ScaleCheck | ...deposits: the copy is K times the city's within 0.0260 in all 6 months (worst 4.46e-02) FAIL
+ScaleCheck | ...prices: the copy is equal to the city's within 0.00400 in all 6 months (worst 9.01e-03) FAIL
+ScaleCheck | ...unemployment: the copy is equal to the city's within 0.0330 in all 6 months (worst 1.00e-01) FAIL
+ScaleCheck | 11 FAILED
+```
+
+- **ScaleCheck**: section 6's town, §2 above (HD2-S).
+- **PassThroughCheck**, section 4's last line, "...and so does the price
+  index": over the swing's 37 months the price index's mean gap between the
+  twins is 0.74% at `PASS_THROUGH` against 0.51% one for one (the base: 0.24%
+  against 0.87%), while the goods' own rate, the line above it, holds widely
+  (0.58% against 3.54%). A probe of the twins month by month: HD2's base town
+  is a slightly other one (1,393 people at the load, the base's 1,376); in both
+  twins 105 homes come down at month 31 (the base's at 24), and from month 34
+  the shock twin's price index stands 3.4% to 5.5% over its twin's while the
+  goods' gap is -0.1%. Something other than the goods' rate moved the index
+  inside the horizon; the coupon in that town is 0.37 a month. The check's own
+  history says the same of its ten-year form ("a gap is the economy amplifying a
+  small difference either way"), which is why it reads the horizon. Not moved:
+  its premise is not this batch's to change. Pending as HD2-P, with WN3-R, whose
+  study puts PassThroughCheck back on the band in any case.
 
 ## 5. How it was done
 
