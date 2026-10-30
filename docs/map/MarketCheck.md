@@ -1,4 +1,4 @@
-# MarketCheck.java - 673 lines · 22 methods · 3 constants · harnesses
+# MarketCheck.java - 684 lines · 22 methods · 3 constants · harnesses
 
 `ham/citybuildersim/MarketCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -50,6 +50,8 @@
 
 **Uses:** [Exchange](Exchange.md) (57), [Equity](Equity.md) (22), [ExchangeCheck](ExchangeCheck.md) (20), [HouseholdBalance](HouseholdBalance.md) (20), [Household](Household.md) (12), [OrderBook](OrderBook.md) (11), [PayTier](PayTier.md) (7), [FamilyStructure](FamilyStructure.md) (5), [Sectors](Sectors.md) (4), [OutwardInvestment](OutwardInvestment.md) (4), [Bank](Bank.md) (2)
 
+**Used by (1):** [ShortSellingCheck](ShortSellingCheck.md)
+
 ## Sections
 
 | line | section |
@@ -57,10 +59,10 @@
 | 201 | · 1. one value |
 | 268 | · 2. one yardstick |
 | 292 | · 3. two alike but for price |
-| 424 | · 4. the buyback finds its sellers |
-| 466 | · 5. a share earning less than dollars abroad is sold |
-| 506 | · 6. a quiet market |
-| 558 | · 7. the save |
+| 435 | · 4. the buyback finds its sellers |
+| 477 | · 5. a share earning less than dollars abroad is sold |
+| 517 | · 6. a quiet market |
+| 569 | · 7. the save |
 
 ## Constants
 
@@ -90,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 622 | **type** `public class MarketCheck` | Verifies the efficient market (EM1, 2026-10-29): one value for a share, every holder reading it, and a price that follows it - each claim on a fixture that causes it, not on a city that happens to show it. |
+| 52 | 633 | **type** `public class MarketCheck` | Verifies the efficient market (EM1, 2026-10-29): one value for a share, every holder reading it, and a price that follows it - each claim on a fixture that causes it, not on a city that happens to show it. |
 | 58 | 5 | `static void assertTrue(String label, boolean ok)` |  |
 | 64 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 77 | 4 | `static void section(String title)` |  |
@@ -110,8 +112,8 @@
 | 176 | 3 | `static double heldBy(Household cell, int company)` | What a cell holds of a company, all its households together. |
 | 181 | 5 | `static int tradesThisStep(Exchange ex)` | Trades made on every book since the step opened them (the books clear their month at the step; Exchange.getLastTrades() reads the month before). |
 | 188 | 3 | `static double alternative(double depositRate)` | The best the alternatives to a share earn a year: the deposit, the dollars abroad and the city's paper (none in these fixtures), plus the premium. |
-| 192 | 417 | `public static void main(String[] args) throws Exception` |  |
-| 618 | 18 | `static City switchCity(int a, int b, double lastA, double lastB, double deskCapital)` | Section 3c's market: two companies alike in everything but where they last traded. |
-| 643 | 10 | `static City buybackCity(int company, boolean atTarget)` | Section 4's company: a cash box - a little earned, a great deal of money past its cushion, the money earning what the world pays - all equity, held by one cell that is neither short of anything nor has anything to spend. |
-| 661 | 12 | `static City quietCity(int third, int first, int second, double secondMoney)` | Section 6's market: three companies earning $1,200 a year on a book of $1,000, the third also holding this much money past its cushion, earning 2% - a spread of returns inside the band. |
+| 192 | 428 | `public static void main(String[] args) throws Exception` |  |
+| 629 | 18 | `static City switchCity(int a, int b, double lastA, double lastB, double deskCapital)` | Section 3c's market: two companies alike in everything but where they last traded. |
+| 654 | 10 | `static City buybackCity(int company, boolean atTarget)` | Section 4's company: a cash box - a little earned, a great deal of money past its cushion, the money earning what the world pays - all equity, held by one cell that is neither short of anything nor has anything to spend. |
+| 672 | 12 | `static City quietCity(int third, int first, int second, double secondMoney)` | Section 6's market: three companies earning $1,200 a year on a book of $1,000, the third also holding this much money past its cushion, earning 2% - a spread of returns inside the band. |
 

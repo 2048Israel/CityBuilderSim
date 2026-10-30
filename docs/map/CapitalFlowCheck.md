@@ -1,4 +1,4 @@
-# CapitalFlowCheck.java - 715 lines · 8 methods · 0 constants · harnesses
+# CapitalFlowCheck.java - 727 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -58,13 +58,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 680 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
+| 36 | 692 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
 | 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 58 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
-| 64 | 621 | `public static void main(String[] args) throws Exception` |  |
-| 687 | 6 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
-| 695 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
-| 701 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
-| 709 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 64 | 633 | `public static void main(String[] args) throws Exception` |  |
+| 699 | 6 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
+| 707 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
+| 713 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
+| 721 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

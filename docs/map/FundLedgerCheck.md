@@ -1,4 +1,4 @@
-# FundLedgerCheck.java - 996 lines · 27 methods · 1 constants · harnesses
+# FundLedgerCheck.java - 999 lines · 27 methods · 1 constants · harnesses
 
 `ham/citybuildersim/FundLedgerCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -48,7 +48,7 @@
 >      from the rule; its order a row from the step that posts it to the step
 >      that withdraws it, with what lapsed.
 
-**Uses:** [Exchange](Exchange.md) (68), [OrderBook](OrderBook.md) (65), [FundLedger](FundLedger.md) (65), [TreasuryFund](TreasuryFund.md) (41), [Equity](Equity.md) (34), [Game](Game.md) (33), [FundView](FundView.md) (16), [BondMarket](BondMarket.md) (10), [Household](Household.md) (7), [CorporateBond](CorporateBond.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [FundCheck](FundCheck.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Bank](Bank.md) (1)
+**Uses:** [Exchange](Exchange.md) (68), [OrderBook](OrderBook.md) (65), [FundLedger](FundLedger.md) (65), [TreasuryFund](TreasuryFund.md) (42), [Equity](Equity.md) (34), [Game](Game.md) (33), [FundView](FundView.md) (16), [BondMarket](BondMarket.md) (10), [Household](Household.md) (7), [CorporateBond](CorporateBond.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [FundCheck](FundCheck.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Bank](Bank.md) (1)
 
 ## Sections
 
@@ -82,7 +82,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 941 | **type** `public class FundLedgerCheck` | Proves the city's fund's cost basis (FundLedger, 0.7.39): average cost, what sales, maturities, write-downs and a rescue realize, income apart, through a split, a reform and a save, and that the ledger and the fund's ... |
+| 56 | 944 | **type** `public class FundLedgerCheck` | Proves the city's fund's cost basis (FundLedger, 0.7.39): average cost, what sales, maturities, write-downs and a rescue realize, income apart, through a split, a reform and a save, and that the ledger and the fund's ... |
 | 62 | 4 | `static void check(String label, boolean ok)` |  |
 | 67 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 77 | 4 | `static void quietly(Runnable r)` |  |
@@ -135,7 +135,7 @@
 | 617 | 5 | `static double residual(Snap s0, Snap s)` | The identity's residual between two snapshots: realized + the change in unrealized, less the change in value + proceeds - purchases - rescues. |
 | 623 | 56 | `static void theIdentity()` |  |
 
-### 8. the hand (lines 680-996)
+### 8. the hand (lines 680-999)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -144,6 +144,6 @@
 | 753 | 13 | `static int companyAtTheCap(int c0)` | The company a fund at the cap is still at the cap of when the step is over: section 8's, or the first other whose step leaves the fund's holding alone. |
 | 768 | 7 | `static double capsOf(Game g)` | The market caps of every company with shares and a fair value, on a city. |
 | 777 | 10 | `static double ruleAloneFor(int c)` | What the rule alone bids for company c at the step, given money for about a hundredth of the market and four orders' worth of 4% of c (theCapCountsEveryBuy()'s twin): its shares resting on c's book. |
-| 799 | 175 | `static void theCapCountsEveryBuy(int c0)` | THE CAP COUNTS EVERY BUY OF THE FUND'S ON THE COMPANY (0.7.39, closed after its docs pass): what it holds, its own bids on the book - the rule's and the hand's - and the hand's buys still waiting, as if every one fill... |
-| 976 | 20 | `static boolean fillTheFundsBids(Game g, int c)` | Every bid of the fund's on a company's book filled, at its price: the others' bids withdrawn, households selling into the fund's. |
+| 799 | 178 | `static void theCapCountsEveryBuy(int c0)` | THE CAP COUNTS EVERY BUY OF THE FUND'S ON THE COMPANY (0.7.39, closed after its docs pass): what it holds, its own bids on the book - the rule's and the hand's - and the hand's buys still waiting, as if every one fill... |
+| 979 | 20 | `static boolean fillTheFundsBids(Game g, int c)` | Every bid of the fund's on a company's book filled, at its price: the others' bids withdrawn, households selling into the fund's. |
 

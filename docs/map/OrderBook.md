@@ -53,7 +53,7 @@
 
 **Uses:** [SaveCopy](SaveCopy.md) (2)
 
-**Used by (19):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [HistoryCheck](HistoryCheck.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [OrderBookCheck](OrderBookCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (20):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [HistoryCheck](HistoryCheck.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [OrderBookCheck](OrderBookCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Sections
 
