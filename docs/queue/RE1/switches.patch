@@ -1,0 +1,207 @@
+diff --git a/src/main/java/ham/citybuildersim/BuildingsTemplate.java b/src/main/java/ham/citybuildersim/BuildingsTemplate.java
+index a12a7aac..de745f34 100644
+--- a/src/main/java/ham/citybuildersim/BuildingsTemplate.java
++++ b/src/main/java/ham/citybuildersim/BuildingsTemplate.java
+@@ -1140,6 +1140,8 @@ public class BuildingsTemplate {
+         return nationalized;
+     }
+     public int getJobs(JobType type) {
++        // RE1 study switch (posts): from the arming month a landlord's block has no posts (read each month off the template, so the finished and the new alike).
++        if (RE1.off("posts") && Sectors.REAL_ESTATE.equals(sector)) return 0;
+         return jobsByEducation[type.ordinal()];
+     }
+     
+@@ -1186,6 +1188,8 @@ public class BuildingsTemplate {
+     
+     //sum of all jobs
+     public int getTotalJobs() {
++        // RE1 study switch (posts): see getJobs().
++        if (RE1.off("posts") && Sectors.REAL_ESTATE.equals(sector)) return 0;
+         int sum = 0;
+         for (int j: jobsByEducation) sum += j;
+         return sum;
+diff --git a/src/main/java/ham/citybuildersim/BusinessDebtManager.java b/src/main/java/ham/citybuildersim/BusinessDebtManager.java
+index ee2a8ba7..f898fba7 100644
+--- a/src/main/java/ham/citybuildersim/BusinessDebtManager.java
++++ b/src/main/java/ham/citybuildersim/BusinessDebtManager.java
+@@ -2093,7 +2093,8 @@ public class BusinessDebtManager {
+         if (!lendingOpen) { mortgageRefusal = MORTGAGE_BANK_SHUT; return false; }
+         if (isBorrowingBlocked(sector)) { mortgageRefusal = MORTGAGE_BANNED; return false; }
+         double loan = Mortgage.loanFor(shortfall);
+-        if (loan > Mortgage.MORTGAGE_MAX_LOAN_TO_COST * cost * (1 + 1e-9)) {
++        // RE1 study switch (down): the lender may lend the whole cost (and the fee on it), so the loan-to-cost test is not read.
++        if (!ham.citybuildersim.RE1.off("down") && loan > Mortgage.MORTGAGE_MAX_LOAN_TO_COST * cost * (1 + 1e-9)) {
+             mortgageRefusal = MORTGAGE_DOWN_PAYMENT;
+             return false;
+         }
+diff --git a/src/main/java/ham/citybuildersim/Mortgage.java b/src/main/java/ham/citybuildersim/Mortgage.java
+index 1a4ac2b7..a5b9e1e4 100644
+--- a/src/main/java/ham/citybuildersim/Mortgage.java
++++ b/src/main/java/ham/citybuildersim/Mortgage.java
+@@ -228,6 +228,8 @@ public class Mortgage extends BusinessDebt {
+      */
+     public static double ownFundsFor(double cost) {
+         if (!(cost > 0)) return 0;
++        // RE1 study switch (down): the landlords' mortgages ask no down payment (every caller is a landlord's order).
++        if (ham.citybuildersim.RE1.off("down")) return 0;
+         return cost - MORTGAGE_MAX_LOAN_TO_COST * cost * (1 - Bank.LOAN_FEE * (1 + premiumRate()));
+     }
+ 
+@@ -338,7 +340,9 @@ public class Mortgage extends BusinessDebt {
+             // ...within the lender's own rounding (BusinessDebtManager.canFundMortgage(), 1 + 1e-9): a landlord raises equity to
+             // the down payment exactly, and without it a ten-trillionth decided the order - one city built, its reformed twin
+             // refused (DenominationCheck, FR2's notes).
+-            if (!(cash > 0) || cash < own * (1 - 1e-9)) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
++            // RE1 study switch (down): no down payment is asked, so never short of it; the coverage test below stays.
++            if (!ham.citybuildersim.RE1.off("down")
++                    && (!(cash > 0) || cash < own * (1 - 1e-9))) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
+             double coverage = Mortgage.coverage(noiPerUnit * n, cost - cash, annualRate);
+             return new Slice(false, own, false, coverage,
+                     coverage >= MORTGAGE_DEBT_COVERAGE ? null : Decision.LENDERS_TEST);
+diff --git a/src/main/java/ham/citybuildersim/RE1.java b/src/main/java/ham/citybuildersim/RE1.java
+new file mode 100644
+index 00000000..ddc66130
+--- /dev/null
++++ b/src/main/java/ham/citybuildersim/RE1.java
+@@ -0,0 +1,35 @@
++package ham.citybuildersim;
++
++import java.util.Set;
++
++/**
++ * RE1's study switches (never shipped): each is OFF unless named in -Dre1.off=a,b and the month has reached -Dre1.from.
++ * The driver sets {@link #month} to the months already run before it plays the next one, so a run forks from an identical path.
++ * With re1.off unset every switch is inert and the run is byte-identical to an unswitched one.
++ *
++ * Keys: floor, latent, gate, wages, posts, down (the landlords), subsidy (the driver's).
++ */
++public final class RE1 {
++
++    private RE1() { }
++
++    /** The months already run, set by the study driver every month. */
++    public static volatile int month;
++
++    private static final Set<String> KEYS = parse(System.getProperty("re1.off", ""));
++    private static final int FROM = Integer.getInteger("re1.from", 0);
++
++    private static Set<String> parse(String list) {
++        Set<String> out = new java.util.HashSet<>();
++        for (String k : list.split(",")) {
++            String t = k.trim();
++            if (!t.isEmpty()) out.add(t);
++        }
++        return out;
++    }
++
++    /** Whether this switch is armed: named in re1.off, and the month has reached re1.from. */
++    public static boolean off(String key) {
++        return !KEYS.isEmpty() && month >= FROM && KEYS.contains(key);
++    }
++}
+diff --git a/src/main/java/ham/citybuildersim/sectors/RealEstate.java b/src/main/java/ham/citybuildersim/sectors/RealEstate.java
+index 5c1d6092..25396377 100644
+--- a/src/main/java/ham/citybuildersim/sectors/RealEstate.java
++++ b/src/main/java/ham/citybuildersim/sectors/RealEstate.java
+@@ -349,6 +349,8 @@ public final class RealEstate extends Sector {
+     public double rentBreakEven() {
+         if (ownedCapacity <= 0) return 0;
+         double carry = getMaintenanceExpense() + getPropertyTaxExpense() + getInterestExpense() + getPayroll();
++        // RE1 study switch: the rent floor leaves the payroll out of the carry (the books still pay it).
++        if (ham.citybuildersim.RE1.off("floor")) carry -= getPayroll();
+         return carry > 0 ? carry / ownedCapacity : 0;
+     }
+ 
+@@ -533,6 +535,17 @@ public final class RealEstate extends Sector {
+     @Override
+     public boolean ordersOnlyWhatItCanStaff() { return false; }
+ 
++    /**
++     * RE1 study switch (wages): the landlords are not charged their payroll. Sector.getPayroll() sums this, and getPayroll() is
++     * the one place the sector's statement (payroll, so operating income and so its cash and the audit's debit), its cost per
++     * unit, its purchase budget and its rent floor all read the bill. The households are still paid, off the city's posts.
++     */
++    @Override
++    public double[] getStaffedPayrollPerType() {
++        if (ham.citybuildersim.RE1.off("wages")) return new double[wages.length];
++        return super.getStaffedPayrollPerType();
++    }
++
+     @Override
+     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
+ 
+@@ -562,6 +575,8 @@ public final class RealEstate extends Sector {
+         // (HD1: the landlords' own posts are in these two - 2 a Studio or Low-Rise, at 2.25 heads each: about 2.8% more
+         // latent demand on a 160-head block, a little that converges, since the block then houses those heads too.)
+         double latentDemand = (totalJobs + jobsComing) * 2.25;
++        // RE1 study switch: the landlords' own posts, built and on site, do not count towards the latent demand.
++        if (ham.citybuildersim.RE1.off("latent")) latentDemand -= ownPostsBuiltAndOnSite() * 2.25;
+         /*
+          * ...AND SO DO THE HOMES ON SITE (0.7.17), for the same reason and now
+          * that there can be more than one order of them. With one order at a
+@@ -589,6 +604,9 @@ public final class RealEstate extends Sector {
+         BuildingsTemplate best = null;
+         double bestScore = 0, bestDoors = 0;
+         String blocked = null;
++        // RE1 study switch (gate): the best template the city could not staff, as the other planners hold one (Sector.staffing()).
++        Staffing staffingHold = null;
++        String staffingHoldName = null;
+         // Every template that passed the tests below, with the doors it would
+         // let - what a smaller home is chosen from (0.7.17; see TRY A SMALLER
+         // HOME, where the order is sized).
+@@ -598,6 +616,18 @@ public final class RealEstate extends Sector {
+         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
+             if (t.getCapacity() <= 0) continue;
+ 
++            // RE1 study switch (gate): every post fillable at MIN_STAFFABLE_TO_ORDER, and none in a band nobody could fill, as the other planners ask.
++            if (ham.citybuildersim.RE1.off("gate")) {
++                Staffing staffing = staffing(t);
++                if (!staffing.passes()) {
++                    if (staffingHold == null || staffing.share > staffingHold.share) {
++                        staffingHold = staffing;
++                        staffingHoldName = t.getName();
++                    }
++                    continue;
++                }
++            }
++
+             // What it would actually let, not what it holds.
+             double doors = fillableDoors(t, headShortfall);
+             if (doors <= 0) {
+@@ -629,6 +659,10 @@ public final class RealEstate extends Sector {
+         }
+ 
+         if (best == null) {
++            // RE1 study switch (gate): the hold, in the words the other planners use (Sector.Staffing.why()).
++            if (staffingHold != null) {
++                return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
++            }
+             return BusinessInvestment.Decision.no(sector, blocked != null ? blocked : "nothing worth building");
+         }
+ 
+@@ -749,11 +783,25 @@ public final class RealEstate extends Sector {
+         return doorShortfall(family) < 0;
+     }
+ 
++    /**
++     * RE1 study: every post of the landlords' own finished buildings (their stacks' quantity times the template's posts, all job
++     * types, whether or not offered this month) plus every post of the buildings of theirs on site (underConstruction times the
++     * template's posts) - the same "every post" basis as plan()'s totalJobs + jobsComing.
++     */
++    private double ownPostsBuiltAndOnSite() {
++        if (buildings == null) return 0;
++        long built = 0;
++        for (long n : buildings.getOwnedJobArrayBySector(key())) built += n;
++        return built + buildings.underConstructionBySector(key(), t -> t.getTotalJobs());
++    }
++
+     /** The head shortage plan() would see if it were asked right now - for the credit check. */
+     private double latentHeadShortfall() {
+         long standing = buildings.getPostsWithheld();   // every post, as plan() reads them (0.7.17)
+         for (long n : buildings.getTotalJobs()) standing += n;
+         double latent = (standing + buildings.getJobsUnderConstruction()) * 2.25;
++        // RE1 study switch: the same as plan()'s (the landlords' own posts do not count towards the latent demand).
++        if (ham.citybuildersim.RE1.off("latent")) latent -= ownPostsBuiltAndOnSite() * 2.25;
+         return latent - (buildings.getTotalHouseCapacity() + capacityOnSite())
+                 * (1 + BusinessInvestment.TARGET_HEADROOM);
+     }

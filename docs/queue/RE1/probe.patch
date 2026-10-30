@@ -1,0 +1,76 @@
+--- a/tools/ensemble/Ensemble.java
++++ b/tools/ensemble/Ensemble.java
+@@ -250,16 +250,55 @@
+     static boolean stuck;
+     static long started;
+ 
++    static final int PROBE_FROM = Integer.getInteger("probe.from", 0), PROBE_TO = Integer.getInteger("probe.to", 1 << 30);
++    static final java.io.PrintStream PROBE = openProbe();
++    static java.io.PrintStream openProbe() {
++        String f = System.getProperty("probe.file");
++        try { return f == null ? null : new java.io.PrintStream(new java.io.FileOutputStream(f), false, "UTF-8"); }
++        catch (java.io.IOException e) { throw new RuntimeException(e); }
++    }
+     static void run(Game g, int months) {
+         for (int i = 0; i < months && !stuck && g.getMonth() < endMonth; i++) step(g);
+     }
+ 
++    /** RE1's month field and its off(key), found once by reflection; both null in a tree without the class. */
++    static final java.lang.reflect.Field RE1_MONTH;
++    static final java.lang.reflect.Method RE1_OFF;
++    static {
++        java.lang.reflect.Field f = null;
++        java.lang.reflect.Method m = null;
++        try {
++            Class<?> c = Class.forName("ham.citybuildersim.RE1");
++            f = c.getField("month");
++            m = c.getMethod("off", String.class);
++        } catch (ReflectiveOperationException | LinkageError e) {
++            f = null;
++            m = null;
++        }
++        RE1_MONTH = f;
++        RE1_OFF = m;
++    }
++
++    static void re1Arm(Game g) {
++        if (RE1_MONTH == null || RE1_OFF == null) return;
++        try {
++            RE1_MONTH.setInt(null, g.getMonth());
++            if ((Boolean) RE1_OFF.invoke(null, "subsidy")) {
++                g.setAutoSubsidised(g.getSectors().realEstate(), true);
++            }
++        } catch (ReflectiveOperationException e) {
++            throw new RuntimeException(e);
++        }
++    }
++
+     static void step(Game g) {
+         int before = g.getMonth();
+         String ph = phase(policy, before);
+         applyPolicy(g);
+         int flagsBefore = Adapter.findingCount();
+         List<String> namesBefore = new ArrayList<>(Adapter.findingNames());
++        // RE1 study: tell the switches the month, and apply the driver's own (subsidy). By reflection, so a tree without RE1 still builds and runs.
++        re1Arm(g);
+         // System.out is already the quiet stream (foundAndPlay); progress goes to `real`.
+         LongPlaytest.run(g, 1);
+         if (g.getMonth() == before) stuck = true;
+@@ -268,6 +307,17 @@
+             if (!namesBefore.contains(n)) names.append(names.length() > 0 ? " | " : "").append(n);
+         }
+         write(columns(g, ph, Adapter.findingCount() - flagsBefore, names.toString()));
++        if (PROBE != null && g.getMonth() >= PROBE_FROM && g.getMonth() <= PROBE_TO) {
++            for (java.util.Map.Entry<String, String> e : g.getLastInvestments().entrySet())
++                PROBE.println(g.getMonth() + "	" + e.getKey() + "	" + e.getValue());
++            ham.citybuildersim.SectorBooks.SectorMonth b = g.getSectorBooks().get(g.getSectors().realEstate());
++            if (b != null) PROBE.println(g.getMonth() + "	BOOKS	" + String.format(java.util.Locale.ROOT,
++                    "rev %.0f pay %.0f opinc %.0f int %.0f ptax %.0f pre %.0f tax %.0f net %.0f cash %.0f div %.0f buyback %.0f abroadIn %.0f foreign %.0f spent %.0f borrowed %.0f repaid %.0f raised %.0f maint %.0f",
++                    b.revenue(), b.payroll(), b.operatingIncome(), b.interest(), b.propertyTax(), b.preTaxIncome(), b.tax(), b.netIncome(),
++                    b.cash(), b.dividendsPaid(), b.sharesBoughtBack(), b.investedAbroad(), b.foreignAssets(), b.spentOnBuildings(),
++                    b.borrowed(), b.repaid(), b.equityRaised(), b.maintenance()));
++            PROBE.flush();
++        }
+         if (g.getMonth() % 120 == 0) {
+             real.printf("  %s seed %d month %d pop %.0f index %.4f rate %.2f%% (%.0fs)%n", policy,
+                     seed, g.getMonth(), Adapter.num(g, "getPopulationManager.getPopulation"),
