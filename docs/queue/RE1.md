@@ -1,7 +1,9 @@
 # RE1 - Real Estate's workers, once the stall they cause is found
 
 Queued 2026-10-29 by the orchestrator, from HD1 (item 2), on the HD1 session's
-recommendation. Jerus, 2026-10-28: "gotta add workers to real estate". The
+recommendation. Jerus, 2026-10-29: "sure queue the small thing to find
+cause": RE1 is the cause alone, found on seed 4; the posts go back in as
+their own batch, queued by RE1's ship file, once it is known. Jerus, 2026-10-28: "gotta add workers to real estate". The
 landlords let every home in the city and employ nobody: their three buildings
 (ids 0, 1, 6) have no `jobs`, against $57B a month of rent and $48.4B of
 operating income in his San Francisco city at m2,852.
