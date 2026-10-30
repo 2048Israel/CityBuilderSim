@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * The stock exchange: one order book per company, where every share that
- * changes hands meets its buyer, and the price is the last trade.
+ * changes hands meets its buyer, and the price is the quote: the middle of the book (EM2).
  *
  * ==================== WHY ====================
  *
@@ -33,7 +33,8 @@ import java.util.List;
  *
  * One OrderBook per company: price-time priority, a trade at the resting
  * order's price, nobody obliged to trade, no trade with oneself. A
- * company's PRICE is its last trade, and its fair value - the register's
+ * company's PRICE is its quote since EM2 - the middle of the book, or the
+ * last trade held inside the side that stands (price()) - and its fair value - the register's
  * reckoning, Equity.fairValue(): book, or the dividend it actually pays
  * capitalised at what the world asks, whichever is more - is beside it,
  * not in it. Before its first trade a company is priced at its fair value.
@@ -444,30 +445,72 @@ public class Exchange {
        THE PRICES
        ===================================================================== */
 
-    /** A share's price: its last trade, or its fair value before its first. */
+    /**
+     * A SHARE'S PRICE IS ITS QUOTE (EM2, 2026-10-30): the middle of its book
+     * while a bid and an ask both rest; with one side empty, the last trade -
+     * never over the ask that stands, nor under the bid; with neither, the
+     * last trade; and fair value before the first trade, held the same way
+     * inside a side that stands.
+     *
+     * WHY. It was the last trade, and one print far over the book stayed the
+     * price for as long as nobody traded. Jerus, 2026-10-29: "share price
+     * should reflect mid price, and if no ask or bid then last traded", over
+     * a book where "last traded is 448k but current bids are 4k". On main's
+     * default playtest Business Services stood 231 months with its last trade
+     * over ten times its best bid, 167 of them in a row, at worst 18.80 over a
+     * bid of .0104 with fair value .0103: the asks rested at the last trade,
+     * because a seller who takes the market rests at the price, and the price
+     * was that trade. The middle of such a book is still 900 times its value,
+     * so the quote is held inside a side that stands, and a short seller's
+     * ask near value (EM2's shorts) is what brings it down. Every reader of
+     * the price reads the quote - trading, the households, the world, the
+     * bank's strike, the marks; what is about trades (hasTraded(), the age of
+     * the last trade) reads the book's last trade.
+     */
     public double price(int c) {
+        double bid = books[c].bestBid(), ask = books[c].bestAsk();
+        boolean hasBid = bid > 0, hasAsk = ask > 0;
+        if (hasBid && hasAsk) return (bid + ask) / 2;
         double last = books[c].lastPrice();
-        return last > 0 ? last : fair[c];
+        double base = last > 0 ? last : fair[c];
+        if (hasAsk) return Math.min(base, ask);
+        if (hasBid) return Math.max(base, bid);
+        return base;
     }
+
+    /** True when the quote is the book's last trade as it stands: no side resting that sets or bounds it (EM2) - the one quote that can grow stale. */
+    public boolean quoteIsLastTrade(int c) {
+        if (!hasTraded(c)) return false;
+        double bid = books[c].bestBid(), ask = books[c].bestAsk(), last = books[c].lastPrice();
+        boolean hasBid = bid > 0, hasAsk = ask > 0;
+        if (hasBid && hasAsk) return false;
+        if (hasAsk) return last <= ask;
+        if (hasBid) return last >= bid;
+        return true;
+    }
+
+    /** The book's last trade, or NaN before the first: what the screens show beside the quote (EM2). */
+    public double lastTrade(int c) { return books[c].lastPrice(); }
 
     /** True once a share of this company has traded on the book. */
     public boolean hasTraded(int c) { return books[c].lastPrice() > 0; }
 
     /**
-     * WHAT THE CITY'S HOLDING OF A SHARE IS MARKED AT (0.7.48, C4): its last
-     * trade while that is no older than STALE_MARK_MONTHS, and fair value
-     * after - a price nobody has paid for a year says nothing about what the
-     * fund holds (city2400 held nine companies at trades 22 to 34 months
-     * old, Mining at 1.644 against a fair value of .000592). The fund's
-     * worth, its transfer, the rescue book and the warrants read it; price()
-     * stays the last trade for trading, the households, the world and the
-     * bank's strike.
+     * WHAT THE CITY'S HOLDING OF A SHARE IS MARKED AT (0.7.48, C4): its quote
+     * while that is current, and fair value once the quote is a last trade
+     * older than STALE_MARK_MONTHS - a price nobody has paid for a year says
+     * nothing about what the fund holds (city2400 held nine companies at
+     * trades 22 to 34 months old, Mining at 1.644 against a fair value of
+     * .000592). The fund's worth, its transfer, the rescue book and the
+     * warrants read it. A quote set by a bid and an ask that both rest, or
+     * held inside one, is current however old the last trade (EM2's ★1):
+     * somebody stands ready to trade there now.
      */
     public double cityMark(int c)   { return markedAtFair(c) ? fair[c] : price(c); }
 
-    /** ...true when that is fair value: a last trade older than STALE_MARK_MONTHS. */
+    /** ...true when that is fair value: a quote that is the last trade, older than STALE_MARK_MONTHS. */
     public boolean markedAtFair(int c) {
-        return hasTraded(c) && month - books[c].lastTradeMonth() > STALE_MARK_MONTHS;
+        return quoteIsLastTrade(c) && month - books[c].lastTradeMonth() > STALE_MARK_MONTHS;
     }
 
     /** The register's reckoning of a share, struck at the step: its money past the cushion at face and its earnings capitalised (Equity.fairValue(), EM1). */

@@ -978,6 +978,7 @@ public class LongPlaytest {
         }
         marketCum.put(month, new double[] {buybackFilledRun, buybackLeftRun, ex.getLifeTurnover()});
         marketCum.remove(month - 13);
+        countBubbles(ex, month);
         boolean print = month == TARGET_MONTHS;
         for (int m : MARKET_MONTHS) print |= month == m;
         if (!print) return;
@@ -1006,6 +1007,50 @@ public class LongPlaytest {
                 month, gdp > 0 ? tills / gdp : Double.NaN, gdp > 0 ? abroad / gdp : Double.NaN,
                 now[0] - before[0], now[1] - before[1], spread(pb), spread(pe),
                 cap > 0 ? (now[2] - before[2]) / cap * 100 : Double.NaN);
+    }
+
+    /* ---- EM2: the bubbles - a last trade standing more than BUBBLE_RATIO over the best bid (Jerus, 2026-10-29: "last traded is 448k but current bids are 4k") ---- */
+    /** A share's last trade this many times its best bid is a bubble month. */
+    static final double BUBBLE_RATIO = 10;
+    /** Per company: months bubbled, the spell running now, the longest spell, the worst ratio and its month, months with a last trade and no bid at all. */
+    static int[] bubbleMonths, bubbleSpell, bubbleLongest, bubbleWorstMonth, noBidMonths;
+    static double[] bubbleWorst;
+    static int[] bothSides, noSides, overValue;
+    static String[] bubbleDetail;
+
+    static void countBubbles(Exchange ex, int month) {
+        int n = Equity.COMPANIES.length;
+        if (bubbleMonths == null) {
+            bubbleMonths = new int[n]; bubbleSpell = new int[n]; bubbleLongest = new int[n];
+            bubbleWorstMonth = new int[n]; noBidMonths = new int[n]; bubbleWorst = new double[n];
+            bothSides = new int[n]; noSides = new int[n]; overValue = new int[n]; bubbleDetail = new String[n];
+        }
+        for (int c = 0; c < n; c++) {
+            double last = ex.bookOf(c).lastPrice(), bid = ex.bestBid(c), ask = ex.bestAsk(c), fair = ex.fair(c);
+            boolean bubbled = false;
+            if (last > 0 && !(bid > 0)) noBidMonths[c]++;
+            if (bid > 0 && ask > 0) bothSides[c]++;
+            if (!(bid > 0) && !(ask > 0)) noSides[c]++;
+            if (last > 0 && fair > 0 && last > BUBBLE_RATIO * fair) overValue[c]++;
+            if (last > 0 && bid > 0 && last > BUBBLE_RATIO * bid) {
+                bubbled = true;
+                if (last / bid > bubbleWorst[c]) {
+                    bubbleWorst[c] = last / bid; bubbleWorstMonth[c] = month;
+                    bubbleDetail[c] = String.format("last %.4g (m%d) bid %.4g ask %.4g fair %.4g", last, ex.bookOf(c).lastTradeMonth(), bid, ask, fair);
+                }
+            }
+            if (bubbled) { bubbleMonths[c]++; bubbleLongest[c] = Math.max(bubbleLongest[c], ++bubbleSpell[c]); }
+            else bubbleSpell[c] = 0;
+        }
+        if (month != TARGET_MONTHS) return;
+        StringBuilder s = new StringBuilder();
+        for (int c = 0; c < n; c++) {
+            if (bubbleMonths[c] == 0 && noBidMonths[c] == 0) continue;
+            s.append(String.format("%n  %s %d (longest %d, worst %.0fx at m%d: %s) | no bid %d, both sides %d, neither %d, last over 10x fair %d",
+                    Equity.COMPANIES[c], bubbleMonths[c], bubbleLongest[c], bubbleWorst[c], bubbleWorstMonth[c], bubbleDetail[c],
+                    noBidMonths[c], bothSides[c], noSides[c], overValue[c]));
+        }
+        out.printf("BUBBLES months a last trade stood over %.0fx the best bid:%s%n", BUBBLE_RATIO, s.length() == 0 ? " none" : s.toString());
     }
 
     /** Lowest, median and highest of a sorted list, or "none". */
