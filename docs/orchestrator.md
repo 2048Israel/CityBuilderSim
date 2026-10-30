@@ -191,11 +191,12 @@ and decides **once, at its start** (lesson d).
 
 A batch shipped from the PC ships from a temp clone of `origin`, never the
 checkout: `%TEMP%\cbs-<id>` (the scratchpad's path is past Windows' 260
-characters), `JDK_JAVA_OPTIONS` naming the PC's `data\earth-2.bin` (lesson c),
+characters), `JDK_JAVA_OPTIONS` naming the PC's `data\earth-2.bin` (lesson c) and
+`data\world-1.bin` (FL1-G, 2026-10-30: WN3's world market never ran at a gate),
 in Git Bash:
 
 ```
-JDK_JAVA_OPTIONS=-Dcbs.earth=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/earth-2.bin ./ship.sh batch/<id>
+JDK_JAVA_OPTIONS="-Dcbs.earth=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/earth-2.bin -Dcbs.world=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/world-1.bin" ./ship.sh batch/<id>
 ```
 
 Once shipped, delete the clone and every other `%TEMP%\cbs-<id>*` folder the
