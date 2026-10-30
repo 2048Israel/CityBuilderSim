@@ -1,6 +1,6 @@
-# PortCheck.java - 1,177 lines · 23 methods · 10 constants · harnesses
+# PortCheck.java - 1,181 lines · 23 methods · 10 constants · harnesses
 
-`ham/citybuildersim/PortCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PortCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md
 > 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5).
@@ -81,9 +81,9 @@
 | 638 | 4. THE SHARES |
 | 713 | 5. NO PORT, THE SAME BAND |
 | 755 | 6. A PORT ON A TOWN |
-| 872 | 7. CRUDE NEEDS ROOM |
-| 989 | 8. THE BOATS |
-| 1123 | 9. THE SAVE |
+| 876 | 7. CRUDE NEEDS ROOM |
+| 993 | 8. THE BOATS |
+| 1127 | 9. THE SAVE |
 
 ## Constants
 
@@ -112,7 +112,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 1102 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
+| 76 | 1106 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
 | 82 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 87 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 92 | 5 | `static void quietly(Runnable r)` |  |
@@ -172,28 +172,28 @@
 |---:|---:|---|---|
 | 715 | 39 | `static void noPortTheSameBand()` |  |
 
-### 6. A PORT ON A TOWN (lines 755-871)
+### 6. A PORT ON A TOWN (lines 755-875)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 757 | 114 | `static Game aPortOnATown()` |  |
+| 757 | 118 | `static Game aPortOnATown()` |  |
 
-### 7. CRUDE NEEDS ROOM (lines 872-988)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 874 | 114 | `static void crudeNeedsRoom()` |  |
-
-### 8. THE BOATS (lines 989-1122)
+### 7. CRUDE NEEDS ROOM (lines 876-992)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 991 | 113 | `static void theBoats()` |  |
-| 1106 | 16 | `static Ports monthAtSea()` | A month's trade by sea on every kind: Ports handed a month with each kind's berths taking its share. |
+| 878 | 114 | `static void crudeNeedsRoom()` |  |
 
-### 9. THE SAVE (lines 1123-1177)
+### 8. THE BOATS (lines 993-1126)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1125 | 52 | `static void acrossASave(Game g) throws Exception` |  |
+| 995 | 113 | `static void theBoats()` |  |
+| 1110 | 16 | `static Ports monthAtSea()` | A month's trade by sea on every kind: Ports handed a month with each kind's berths taking its share. |
+
+### 9. THE SAVE (lines 1127-1181)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1129 | 52 | `static void acrossASave(Game g) throws Exception` |  |
 

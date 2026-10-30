@@ -1,6 +1,6 @@
 # Rollover.java - 378 lines · 34 methods · 2 constants · model
 
-`ham/citybuildersim/Rollover.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Rollover.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > What falls due next month, refinanced: the treasury's rollover setting and the ledger of the surplus it has netted (0.7.13).
 > 

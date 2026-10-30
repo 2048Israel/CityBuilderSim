@@ -390,11 +390,48 @@ adds its line here, not in `CLAUDE.md`.
                                    at Barro's rate, prices by income group, moneys by relative parity or
                                    their peg. Founding carries the path and seed, DataSave saves them
                                    (worldPath, pathSeed), ui/FoundingScreen picks them; Game.getNations()
-                                   builds it lazily, and nothing in the month reads it yet
+                                   builds it lazily, and WN3's WorldMarket reads it every January
         NationsCheck.java          Nations held to its dials: one seed one path, Historical equal to the
                                    file to 2025, Random's swings and crises against their dials over a
                                    thousand seeded years, goods' swings, pegs held, output never negative,
                                    the ease past 2100 and a missing figure filled (WN1)
+        WorldMarket.java           the world market (batch WN3; docs/studies/spec-nations.md 4): each traded
+                                   good's mill price in each of the 196 nations on a smooth spatial
+                                   equilibrium (a CES gravity model on the base year's flows, exact hat
+                                   algebra), solved every January from the nations' growth and the good's
+                                   real price path (Anderson-accelerated, warm), and the city's band in it
+                                   - the import ceiling it pays, the export floor it nets - from its site's
+                                   freight to the nations, the sale fill over the binding suppliers (each at
+                                   its best buyer's netback, its sales' own slope over its displacement
+                                   share, capped at what that buyer uses) and the purchase fill from the
+                                   cheapest landed sellers (capped at what they make), and the world's
+                                   answer to its tonnes. Base is
+                                   the file's, once a process (pairs, freight, the calibration that keeps
+                                   the literals the prices at Halifax in 2025); WorldMarket is one city's.
+                                   Game's THE WORLD MARKET solves it every January and strikes its band
+                                   into each traded good's GoodsMarket every month (WN3)
+        WorldMarketCheck.java      WorldMarket held to its equations: every maker clears and the level
+                                   meets the path (recomputed from the file's pairs), the reference city
+                                   sees Good's literals to 1e-9, the floor never above the ceiling in every
+                                   good, year, path and site, a small city a price-taker and a big one not,
+                                   the month's step against a re-solve with the city's tonnes in, seeds
+                                   repeat to the bit, the save round trip, the stand-in, the timings (WN3)
+        PartnerTrade.java          the city's trade by partner (batch WN3; spec-nations 6 and 8): the
+                                   month's and the year's trade with each nation and by good, split from the
+                                   month's own fills by WorldMarket.allocate() (Game, tallyThePartners()),
+                                   the finished years' tables for the history, an immutable snapshot
+                                   published through a volatile for the screens (it is TradeLanes.Feed),
+                                   and the save's State
+        TradeLanes.java            the city's trade as routes on the map, without the toolkit (batch WN3,
+                                   slice C; docs/studies/spec-nations.md 8, board 1): the partners over
+                                   MIN_LANE as a tree of great-circle lanes from the city, a partner joining
+                                   the nearest vertex of a nearer one's lane within BUNDLE_DETOUR of its
+                                   direct way, each edge kept once with its sums and widths; built once
+                                   a month, culled to the view, projected from unit vectors and cut as one
+                                   run list a width (NationsMap.Cut), timed (LANE_FRAME_MS); the card's
+                                   trade rows (NationsMap.card) and a generated world's partners as
+                                   arrows at the edge (Arrows); Feed is what ui/MapView is given. Tested
+                                   by GlobeCheck 13 and 14, beside NationsMap (WN2) which cuts its borders
         GlobeFrame.java, GlobePicture.java
                                    the Earth's map as a globe, its model half (0.7.132, batch E8;
                                    docs/studies/spec-globe.md 3): the view - its centre in latitude and

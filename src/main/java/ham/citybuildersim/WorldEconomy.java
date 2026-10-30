@@ -194,6 +194,21 @@ public class WorldEconomy {
 
     private static final long SEED = 0x5F3A91C7L;
 
+    /**
+     * The seed of the world's own draws: the founding's path seed (Founding.getPathSeed(); WN3, 2026-10-28, docs/studies/spec-nations.md 11, item 1).
+     * Until then every city met the same dollar - advanceMonth() drew from SEED and the month alone - whatever world it stood in, so two cities
+     * on different seeds had one inflation path for the world's price level (the nations beyond them took their own, Nations). Now two cities on
+     * one path seed meet one world and two seeds two. A world built bare (a harness's) is the default founding's. The default seed's dollar is the one drawn before WN3, to the bit: the seed's
+     * difference from Nations.DEFAULT_SEED is what is mixed in, so a harness tuned on the default founding meets the dollar it was tuned on. Not saved: the founding is, and
+     * the load puts it back (Game.loadGame()).
+     */
+    private long seed = Nations.DEFAULT_SEED;
+
+    /** Sets the seed the draws are made from (Game: buildWorld() and the load, from the founding's path seed). Takes effect from the next month drawn. */
+    public void setSeed(long seed) { this.seed = seed; }
+
+    public long getSeed() { return seed; }
+
     private double annualInflation = DEFAULT_MEAN_INFLATION;
     private double priceLevel = 1.0;
 
@@ -262,7 +277,10 @@ public class WorldEconomy {
 
     public void advanceMonth(int month) {
         if (pinned) return;
-        Random roll = new Random(scramble(SEED + month));
+        // The default path seed draws the dollar it always drew (the mix of the seed's difference from it is 0 there), so the default founding's
+        // world is the one every harness and the playtest were tuned on; any other seed draws its own (WN3).
+        long off = seed == Nations.DEFAULT_SEED ? 0 : World.mix(seed - Nations.DEFAULT_SEED);
+        Random roll = new Random(scramble(SEED + month) ^ off);
         // Flat, on a band centred at the mean - see LOW_BIAS, which this
         // retired, and the block at the top of the class.
         double draw = minInflation() + roll.nextDouble()

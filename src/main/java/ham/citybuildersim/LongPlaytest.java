@@ -2084,9 +2084,10 @@ public class LongPlaytest {
        -Dplaytest.world=historical|random (any case) founds the city on that
        path of the nations beyond it, and -Dplaytest.pathSeed=<whole number>
        draws it from that seed; unset they are Nations.DEFAULT_PATH and
-       Nations.DEFAULT_SEED, the founding exactly as it was. Nothing in the
-       economy reads the path yet (WN3), so the run is the same to the byte
-       whichever they say; the run prints nothing of them.
+       Nations.DEFAULT_SEED, the founding exactly as it was. Without the
+       world file nothing in the economy reads the path, so the run is the
+       same to the byte whichever they say; with it the world market trades
+       on it (WN3). The run prints nothing of them.
        ===================================================================== */
 
     /** The path under -Dplaytest.world, Nations.DEFAULT_PATH when unset. */

@@ -1,6 +1,6 @@
-# ExchangeRateCheck.java - 1,098 lines · 36 methods · 6 constants · harnesses
+# ExchangeRateCheck.java - 1,105 lines · 36 methods · 6 constants · harnesses
 
-`ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Proves the D$ is a float that follows its parity and swings like a real
 > currency (XR1, 2026-10-21): parity is the basket with rent held to a third,
@@ -81,7 +81,7 @@
 | 684 | 6. one seed, one path |
 | 789 | 7. a save mid-swing continues exactly |
 | 847 | 8. in a real city the D$ moves like a float |
-| 992 | 9. the game survives the spiral |
+| 999 | 9. the game survives the spiral |
 
 ## Constants
 
@@ -108,7 +108,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 92 | 1007 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
+| 92 | 1014 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
 | 98 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 103 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 114 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
@@ -177,7 +177,7 @@
 |---:|---:|---|---|
 | 791 | 55 | `static void aSaveMidSwing()` |  |
 
-### 8. in a real city the D$ moves like a float (lines 847-991)
+### 8. in a real city the D$ moves like a float (lines 847-998)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -186,14 +186,14 @@
 | 880 | 4 | `double volatility()` _(in ExchangeRateCheck.Tally)_ |  |
 | 886 | 6 | `static void play(Game g, int months, Tally tally)` |  |
 | 898 | 43 | `static Game playtestCity(String label, int target, Tally tally)` | The default playtest's city, founded and played as LongPlaytest.main plays it (its founding by hand, then its rhythm of skips and looks - the fixture AuctionCheck's real run borrows), up to this month. |
-| 942 | 41 | `static void inARealCity()` |  |
-| 985 | 6 | `static void stepQuietly(Tally t, Game g)` | One counted month with the narration sent nowhere (LongPlaytest prints through a stream of its own). |
+| 942 | 48 | `static void inARealCity()` |  |
+| 992 | 6 | `static void stepQuietly(Tally t, Game g)` | One counted month with the narration sent nowhere (LongPlaytest prints through a stream of its own). |
 
-### 9. the game survives the spiral (lines 992-1098)
+### 9. the game survives the spiral (lines 999-1105)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 995 | 10 | `static String notANumber(Game g)` | The first figure of the city that is not a number, or null: the rate, the price index, the treasury's cash, GDP, M0 and the vault. |
-| 1007 | 4 | `static boolean auditCloses(Game g)` | The audit closes as it does in the playtest (LongPlaytest.audit(), CurrencyCheck 4): no residual over a cent, or none over a ten-millionth of the money moved. |
-| 1012 | 86 | `static void theGameSurvivesTheSpiral()` |  |
+| 1002 | 10 | `static String notANumber(Game g)` | The first figure of the city that is not a number, or null: the rate, the price index, the treasury's cash, GDP, M0 and the vault. |
+| 1014 | 4 | `static boolean auditCloses(Game g)` | The audit closes as it does in the playtest (LongPlaytest.audit(), CurrencyCheck 4): no residual over a cent, or none over a ten-millionth of the money moved. |
+| 1019 | 86 | `static void theGameSurvivesTheSpiral()` |  |
 

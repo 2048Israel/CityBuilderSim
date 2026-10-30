@@ -1,6 +1,6 @@
-# BondCheck.java - 1,581 lines · 37 methods · 1 constants · harnesses
+# BondCheck.java - 1,617 lines · 38 methods · 1 constants · harnesses
 
-`ham/citybuildersim/BondCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BondCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it
 > over the bank, who loses what in a default, what the bank charges for
@@ -64,7 +64,7 @@
 >      short of capital still covers a healthy sector's short month - the
 > ... (7 more lines in the source)
 
-**Uses:** [BusinessDebtManager](BusinessDebtManager.md) (71), [Bank](Bank.md) (56), [CorporateBond](CorporateBond.md) (50), [BondMarket](BondMarket.md) (47), [Game](Game.md) (30), [OrderBook](OrderBook.md) (18), [Sectors](Sectors.md) (11), [MoneyAudit](MoneyAudit.md) (10), [HouseholdBalance](HouseholdBalance.md) (10), [Sector](Sector.md) (9), [Household](Household.md) (8), [PayTier](PayTier.md) (7), [Good](Good.md) (6), [FamilyStructure](FamilyStructure.md) (5), [EconomyManager](EconomyManager.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [Statement](Statement.md) (3), [GameFiles](GameFiles.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [LongPlaytest](LongPlaytest.md) (1), [TempDirs](TempDirs.md) (1), [BankCheck](BankCheck.md) (1), [Retail](Retail.md) (1), [BusinessLoan](BusinessLoan.md) (1), [SupplierCredit](SupplierCredit.md) (1), [Haulage](Haulage.md) (1)
+**Uses:** [BusinessDebtManager](BusinessDebtManager.md) (71), [Bank](Bank.md) (59), [CorporateBond](CorporateBond.md) (51), [BondMarket](BondMarket.md) (48), [Game](Game.md) (31), [OrderBook](OrderBook.md) (18), [Sectors](Sectors.md) (11), [MoneyAudit](MoneyAudit.md) (10), [HouseholdBalance](HouseholdBalance.md) (10), [Sector](Sector.md) (9), [Household](Household.md) (8), [PayTier](PayTier.md) (7), [Good](Good.md) (6), [FamilyStructure](FamilyStructure.md) (5), [EconomyManager](EconomyManager.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [Statement](Statement.md) (3), [GameFiles](GameFiles.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [LongPlaytest](LongPlaytest.md) (1), [TempDirs](TempDirs.md) (1), [BankCheck](BankCheck.md) (1), [Retail](Retail.md) (1), [BusinessLoan](BusinessLoan.md) (1), [SupplierCredit](SupplierCredit.md) (1), [Haulage](Haulage.md) (1)
 
 **Used by (2):** [GroceryCheck](GroceryCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md)
 
@@ -72,20 +72,20 @@
 
 | line | section |
 |---:|---|
-| 202 | 1. THE ARITHMETIC |
-| 242 | 2. BOOKBUILDING |
-| 301 | 3. THE CHOICE |
-| 349 | 7a. A BOND SOLD IN THE MONTH |
-| 381 | 1b. THE COUPONS |
-| 410 | 4. THE BOOK IN PLAY |
-| 443 | 7. THE PARTICIPANTS |
-| 648 | 5c. CAN'T PAY MEANS DEFAULT |
-| 810 | 5d. BUY ONLY WHAT IT CAN PAY FOR |
-| 1024 | 5. RECOVERIES BY INSTRUMENT |
-| 1186 | 6. CONCENTRATION |
-| 1293 | 8. SAVE AND LOAD |
-| 1461 | 9. EACH HOUSEHOLD TYPE TRADES |
-| 1557 | 1c. MATURITY |
+| 204 | 1. THE ARITHMETIC |
+| 244 | 2. BOOKBUILDING |
+| 303 | 3. THE CHOICE |
+| 351 | 7a. A BOND SOLD IN THE MONTH |
+| 410 | 1b. THE COUPONS |
+| 439 | 4. THE BOOK IN PLAY |
+| 472 | 7. THE PARTICIPANTS |
+| 677 | 5c. CAN'T PAY MEANS DEFAULT |
+| 846 | 5d. BUY ONLY WHAT IT CAN PAY FOR |
+| 1060 | 5. RECOVERIES BY INSTRUMENT |
+| 1222 | 6. CONCENTRATION |
+| 1329 | 8. SAVE AND LOAD |
+| 1497 | 9. EACH HOUSEHOLD TYPE TRADES |
+| 1593 | 1c. MATURITY |
 
 ## Constants
 
@@ -101,17 +101,17 @@
 | 88 | `static PrintStream out` |  |
 | 89 | `static PrintStream quiet` |  |
 | 90 | `static int closedMonths, brokenMonths` |  |
-| 808 | `static String interimSector` | The sector §5c lent an interim loan to, for the save's round trip (§8). |
-| 1472 | `final HouseholdBalance hb` |  |
-| 1473 | `final BondMarket bm` |  |
-| 1474 | `final Household poor, rich` |  |
-| 1475 | `final CorporateBond bond` |  |
+| 844 | `static String interimSector` | The sector §5c lent an interim loan to, for the save's round trip (§8). |
+| 1508 | `final HouseholdBalance hb` |  |
+| 1509 | `final BondMarket bm` |  |
+| 1510 | `final Household poor, rich` |  |
+| 1511 | `final CorporateBond bond` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 1497 | **type** `public class BondCheck` | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for concentration, who buys and sells, and the save. |
+| 85 | 1533 | **type** `public class BondCheck` | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for concentration, who buys and sells, and the save. |
 | 92 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 97 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 104 | 5 | `static void cents(String label, double line, double figure)` | An audit line against the figure it declares: the audit's detail is written to the cent. |
@@ -120,104 +120,105 @@
 | 143 | 10 | `static MoneyAudit.Result play(Game g)` | One played month, and whether its audit closed. |
 | 154 | 3 | `static boolean closes(MoneyAudit.Result r)` |  |
 | 159 | 9 | `static double line(MoneyAudit.Result r, String label)` | One line of a month's audit, by its label: what MoneyAudit declared under it, 0 when it declared nothing. |
-| 169 | 32 | `public static void main(String[] args) throws Exception` |  |
+| 169 | 34 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE ARITHMETIC (lines 202-241)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 204 | 37 | `static void arithmetic()` |  |
-
-### 2. BOOKBUILDING (lines 242-300)
+### 1. THE ARITHMETIC (lines 204-243)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 244 | 56 | `static void bookbuilding(Game g)` |  |
+| 206 | 37 | `static void arithmetic()` |  |
 
-### 3. THE CHOICE (lines 301-348)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 303 | 45 | `static void theChoice(Game g)` |  |
-
-### 7a. A BOND SOLD IN THE MONTH (lines 349-380)
+### 2. BOOKBUILDING (lines 244-302)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 351 | 29 | `static CorporateBond issuedInTheMonth(Game g)` |  |
+| 246 | 56 | `static void bookbuilding(Game g)` |  |
 
-### 1b. THE COUPONS (lines 381-409)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 383 | 26 | `static void coupons(Game g)` |  |
-
-### 4. THE BOOK IN PLAY (lines 410-442)
+### 3. THE CHOICE (lines 303-350)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 412 | 30 | `static void theBookInPlay(Game g)` |  |
+| 305 | 45 | `static void theChoice(Game g)` |  |
 
-### 7. THE PARTICIPANTS (lines 443-647)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 445 | 58 | `static void participants(Game g, CorporateBond bond)` |  |
-| 505 | 25 | `static void companies(Game g)` | The companies, on the fixture's month before anything borrows: the one that owes nothing bids for another's bonds and never its own. |
-| 532 | 26 | `static void underItsTarget()` | A market of its own around a bank rebuilding its capital. |
-| 560 | 6 | `static void worldRunning()` | The world's rule while its money is running: no bid. |
-| 567 | 14 | `static BondMarket.Readings readings(boolean running)` |  |
-| 583 | 64 | `static void shortOfMoney(Game g, CorporateBond bond)` | A household cell short of money asks at the price its own borrowing rate makes the buyer's yield: into a bid at or over it, it sells at the bid's price; under every bid, it waits. |
-
-### 5c. CAN'T PAY MEANS DEFAULT (lines 648-809)
+### 7a. A BOND SOLD IN THE MONTH (lines 351-409)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 659 | 147 | `static void cantPayInPlay(Game g)` | 0.7.12 round 4 (Jerus: "Can't pay means default"): a sector whose till the month leaves short first sells what it holds, by the households' waterfall rule - the other sectors' bonds, into the bids resting - then asks ... |
+| 353 | 34 | `static CorporateBond issuedInTheMonth(Game g)` |  |
+| 397 | 12 | `static void theBankHoldsSome(Game g)` | The bank holds some of every bond, caused. |
 
-### 5d. BUY ONLY WHAT IT CAN PAY FOR (lines 810-1023)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 821 | 181 | `static void buyOnlyWhatItCanPayFor(Path root)` | 0.7.12 round 6 (Jerus: "Buy only what it can pay for"; Kashyap, Lamont & Stein, QJE 109(3), 1994): a sector's orders for stock - the shops' shelves and every fleet - are limited to its cash plus the credit it can get ... |
-| 1004 | 13 | `static double[] stockBought(Sector s)` | What a sector bought of its stock in the month just played: {its value, the units it asked for, the units it got}. |
-| 1018 | 5 | `static void check0(String label, double actual)` |  |
-
-### 5. RECOVERIES BY INSTRUMENT (lines 1024-1185)
+### 1b. THE COUPONS (lines 410-438)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1026 | 83 | `static void seniorityOnTheLender()` |  |
-| 1110 | 75 | `static void seniorityInPlay(Game g)` |  |
+| 412 | 26 | `static void coupons(Game g)` |  |
 
-### 6. CONCENTRATION (lines 1186-1292)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1188 | 94 | `static void concentration(Game g)` |  |
-| 1283 | 9 | `static double concentrationAt(Bank b, double a, double b2, double c)` |  |
-
-### 8. SAVE AND LOAD (lines 1293-1460)
+### 4. THE BOOK IN PLAY (lines 439-471)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1295 | 125 | `static void saveAndLoad(Game g, Path root) throws Exception` |  |
-| 1421 | 5 | `static int resting(BondMarket bm)` |  |
-| 1427 | 12 | `static boolean sameBonds(BondMarket a, BondMarket b)` |  |
-| 1440 | 10 | `static boolean sameBooks(BondMarket a, BondMarket b)` |  |
-| 1451 | 9 | `static boolean sameOrders(List<OrderBook.Order> a, List<OrderBook.Order> b)` |  |
+| 441 | 30 | `static void theBookInPlay(Game g)` |  |
 
-### 9. EACH HOUSEHOLD TYPE TRADES (lines 1461-1556)
+### 7. THE PARTICIPANTS (lines 472-676)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1471 | 43 | **type** `static final class TwoCells` | Two cells and one bond, on a market of their own: skilled couples with $88k each past their cushion and no bonds, and unskilled couples with nothing saved holding the households' face. |
-| 1477 | 36 | `TwoCells(double face, double poorHolds)` _(in BondCheck.TwoCells)_ |  |
-| 1515 | 41 | `static void eachTypeTrades()` |  |
+| 474 | 58 | `static void participants(Game g, CorporateBond bond)` |  |
+| 534 | 25 | `static void companies(Game g)` | The companies, on the fixture's month before anything borrows: the one that owes nothing bids for another's bonds and never its own. |
+| 561 | 26 | `static void underItsTarget()` | A market of its own around a bank rebuilding its capital. |
+| 589 | 6 | `static void worldRunning()` | The world's rule while its money is running: no bid. |
+| 596 | 14 | `static BondMarket.Readings readings(boolean running)` |  |
+| 612 | 64 | `static void shortOfMoney(Game g, CorporateBond bond)` | A household cell short of money asks at the price its own borrowing rate makes the buyer's yield: into a bid at or over it, it sells at the bid's price; under every bid, it waits. |
 
-### 1c. MATURITY (lines 1557-1581)
+### 5c. CAN'T PAY MEANS DEFAULT (lines 677-845)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1559 | 22 | `static void maturity(Game g)` |  |
+| 688 | 154 | `static void cantPayInPlay(Game g)` | 0.7.12 round 4 (Jerus: "Can't pay means default"): a sector whose till the month leaves short first sells what it holds, by the households' waterfall rule - the other sectors' bonds, into the bids resting - then asks ... |
+
+### 5d. BUY ONLY WHAT IT CAN PAY FOR (lines 846-1059)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 857 | 181 | `static void buyOnlyWhatItCanPayFor(Path root)` | 0.7.12 round 6 (Jerus: "Buy only what it can pay for"; Kashyap, Lamont & Stein, QJE 109(3), 1994): a sector's orders for stock - the shops' shelves and every fleet - are limited to its cash plus the credit it can get ... |
+| 1040 | 13 | `static double[] stockBought(Sector s)` | What a sector bought of its stock in the month just played: {its value, the units it asked for, the units it got}. |
+| 1054 | 5 | `static void check0(String label, double actual)` |  |
+
+### 5. RECOVERIES BY INSTRUMENT (lines 1060-1221)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1062 | 83 | `static void seniorityOnTheLender()` |  |
+| 1146 | 75 | `static void seniorityInPlay(Game g)` |  |
+
+### 6. CONCENTRATION (lines 1222-1328)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1224 | 94 | `static void concentration(Game g)` |  |
+| 1319 | 9 | `static double concentrationAt(Bank b, double a, double b2, double c)` |  |
+
+### 8. SAVE AND LOAD (lines 1329-1496)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1331 | 125 | `static void saveAndLoad(Game g, Path root) throws Exception` |  |
+| 1457 | 5 | `static int resting(BondMarket bm)` |  |
+| 1463 | 12 | `static boolean sameBonds(BondMarket a, BondMarket b)` |  |
+| 1476 | 10 | `static boolean sameBooks(BondMarket a, BondMarket b)` |  |
+| 1487 | 9 | `static boolean sameOrders(List<OrderBook.Order> a, List<OrderBook.Order> b)` |  |
+
+### 9. EACH HOUSEHOLD TYPE TRADES (lines 1497-1592)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1507 | 43 | **type** `static final class TwoCells` | Two cells and one bond, on a market of their own: skilled couples with $88k each past their cushion and no bonds, and unskilled couples with nothing saved holding the households' face. |
+| 1513 | 36 | `TwoCells(double face, double poorHolds)` _(in BondCheck.TwoCells)_ |  |
+| 1551 | 41 | `static void eachTypeTrades()` |  |
+
+### 1c. MATURITY (lines 1593-1617)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1595 | 22 | `static void maturity(Game g)` |  |
 

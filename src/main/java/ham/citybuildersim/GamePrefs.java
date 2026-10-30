@@ -188,6 +188,17 @@ public final class GamePrefs {
     public boolean isBordersOnMap()            { return bordersOnMap; }
     public void setBordersOnMap(boolean value) { this.bordersOnMap = value; }
 
+    /**
+     * Whether the map draws the city's trade as routes: on the Earth's globe a lane from the city toward each partner over D$0.3M a month, the lanes
+     * that go the same way shared, violet what the city sells and sand what it buys, the width by money; on a generated world's map the biggest
+     * partners as arrows at the edge (WN3; Jerus: "dot and routes"). ON BY DEFAULT, like Nations and Borders; an older settings.json has no key
+     * and reads on. Kept here for the same reason.
+     */
+    private boolean tradeRoutesOnMap = true;
+
+    public boolean isTradeRoutesOnMap()            { return tradeRoutesOnMap; }
+    public void setTradeRoutesOnMap(boolean value) { this.tradeRoutesOnMap = value; }
+
     /** Whether the expanded map's legend is folded to its head line (WN2; Jerus: "legend should be collapsable"). Open by default, and kept here so it stays as the player left it. */
     private boolean mapLegendFolded = false;
 

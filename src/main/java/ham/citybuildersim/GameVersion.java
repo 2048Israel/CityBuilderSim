@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.8.74";
+    public static final String VERSION = "0.8.75";
 
     /**
      * The save shape.
@@ -8185,8 +8185,33 @@ public final class GameVersion {
      *     the build that still opens it. A generated world has one landmass,
      *     home, always linked, and its saves load as they did, so
      *     OLDEST_LOADABLE_FORMAT stays at 45. No conversion is written.
+     *
+     * 48 - THE WORLD MARKET (batch WN3; docs/studies/spec-nations.md 4 and
+     *     D28): where a world file is there, the city's band is the world's -
+     *     the nations' January solve (WorldMarket) and the city's own tonnes
+     *     move the floor and the ceiling of every traded good - and its trade
+     *     is kept by partner (PartnerTrade). Saved: the year the world last
+     *     solved and its solved state (DataSave.worldYear, worldPrices,
+     *     worldScales: a load restores it, it does not solve again), the
+     *     trade by partner (DataSave.partnerTrade: the month last tallied by
+     *     nation and the year to date by nation and by good, because the map's
+     *     lanes of a loaded city are last month's trade and a flow cannot be
+     *     reconstructed), the world prices each good's market was struck at
+     *     (Markets.State.worldImport and worldExport, absent on a city with
+     *     none), and each finished year's table by partner and good
+     *     (HistorySave.tradeByPartner). The goods' literals stay the game's
+     *     prices (a Halifax city in 2025 trading nothing meets exactly them);
+     *     a city with no world file reads them as ever.
+     *
+     *     THE FLOOR RISES TO 48 WITH IT (the rule): a save of format 47 or
+     *     older was played on a band that was the literals alone, with no
+     *     solved world and no trade by partner, and loaded on the world market
+     *     its band would be struck from a world it never traded with, and its
+     *     lanes and its history by partner would start from nothing it had
+     *     traded - so it is refused, naming the build that still opens it. No
+     *     conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 47;
+    public static final int SAVE_FORMAT = 48;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8196,7 +8221,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 45 since batch PT1-M4 (THE WORKS DEPARTMENT RETIRED above: a save
+     * 48 since batch WN3 (THE WORLD MARKET above: a save's band was the
+     * literals and it has no solved world and no trade by partner). 45 from
+     * batch PT1-M4 (THE WORKS DEPARTMENT RETIRED above: a save
      * without a depot would load into a city that can never build). 44 from
      * batch CD3 (THE CITY'S PAPER ON AMORTISED COST above: a save's
      * pieces carry no carrying value and would book their interest wrongly).
@@ -8226,7 +8253,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 45;
+    public static final int OLDEST_LOADABLE_FORMAT = 48;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

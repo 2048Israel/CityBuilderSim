@@ -1,6 +1,6 @@
 # Oil.java - 1,360 lines · 89 methods · 14 constants · sectors
 
-`ham/citybuildersim/sectors/Oil.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Oil.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Oil wells. THE SIXTEENTH SECTOR (0.7.62, batch K; the project's
 > spec-land.md 2.7).
@@ -39,7 +39,7 @@
 
 **Uses:** [BusinessInvestment](BusinessInvestment.md) (33), [BuildingsTemplate](BuildingsTemplate.md) (31), [LandManager](LandManager.md) (29), [Good](Good.md) (25), [Deposit](Deposit.md) (8), [Game](Game.md) (7), [Resource](Resource.md) (4), [Sector](Sector.md) (2), [BuildingType](BuildingType.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Formats](Formats.md) (2), [BuildingsStacks](BuildingsStacks.md) (1), [World](World.md) (1), [Sectors](Sectors.md) (1)
 
-**Used by (18):** [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [WellCheck](WellCheck.md)
+**Used by (19):** [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [WellCheck](WellCheck.md)
 
 ## Sections
 

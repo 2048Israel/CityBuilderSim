@@ -303,6 +303,11 @@ public class TradeCostCheck {
         System.out.println("\n--- and the network's total did not move ---");
         quietly(() -> {
             game.newGame();
+            // WN3 (the world market): at the world's band for 2000 wood pellets fetch about twice their literal (.358 at the floor against
+            // .150) and the town raises a Wood Pellet Mill inside the ninety months - 780 of the 1,088 road load, 755 of it bulk, in a town of
+            // forty-five houses - so ore, not people, is most of it (commuters 31%, bulk 69%). One mill in a hamlet is not a real city, which
+            // is what the assertion below is about; the sector that raises it is held.
+            game.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
             for (int i = 0; i < 90; i++) game.toggleNextMonth();
         });
         InfrastructureManager roads = game.getInfrastructureManager();

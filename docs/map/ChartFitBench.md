@@ -1,6 +1,6 @@
 # ChartFitBench.java - 130 lines · 3 methods · 3 constants · interface
 
-`ham/citybuildersim/ui/ChartFitBench.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ChartFitBench.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The full-screen chart on a scene of its own - no stage, no window - laid out at a window's size
 > with some lines picked, for ChartFitCheck (FW10): the harness's hands on the chart, since what it

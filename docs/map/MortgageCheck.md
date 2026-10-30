@@ -1,6 +1,6 @@
 # MortgageCheck.java - 1,223 lines · 26 methods · 2 constants · harnesses
 
-`ham/citybuildersim/MortgageCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MortgageCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The landlords' insured mortgages (0.7.11): the instrument, the lender's
 > tests, the city's insurance and the bank's book.

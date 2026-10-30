@@ -333,7 +333,11 @@ public class WellCheck {
         // four depots opened the first of the two new wells in the ninth month after the retirements and the second after the
         // eight the section watches; two depots more stand beside them (and the ground they need), as the other fixtures'
         // builders do, and both wells open by the sixth.
-        final int moreDepots = 2;
+        // WN3 (the world market): the town trades at the world's band for 2000, where its other businesses (a machine works, a lime kiln, a
+        // pellet mill, a boutique, a diner, a contact centre) are all on site at the end of the first year beside the wells, and the four
+        // depots and the two more gave the freed sites' wells a share of the work of eight months for the first and nine for the second
+        // (committed [3, 3, 3, 3, 3, 3, 3, 3] by the eighth). Six depots more are done by the fifth month after the retirements.
+        final int moreDepots = 6;
         Game g = town("wellcheck-worn", 600, 12 * 87_120 + 300 * 10_000 + moreDepots * 75_000, 0);
         BuildingsTemplate well = template(g, "Oil Well");
         LandManager land = g.getLandManager();
@@ -672,17 +676,23 @@ public class WellCheck {
                 none && g.getWellsWornOut() - retiredBefore == 2 && wells.vintages().get(0).equals(new Vintage(month - 100, d.sites() - 2, WellKind.PLATFORM)),
                 String.format("%d retired; %s", g.getWellsWornOut() - retiredBefore, wells.vintages()));
         // A platform well is 2,800 points of the town's builders' work, some months each.
-        int[] committed = new int[25];
+        // WN3 (the world market): the planner orders a platform well when it carries the interest on its whole cost, and at the world's
+        // crude price for 2000 to 2002 and the rates of the time it does not ("would not carry the interest on its whole cost" until month
+        // 37, January 2003, against the 25 months the literals' price took); so the section waits for the planner, up to five years, and
+        // stops at the last slot standing.
+        int[] committed = new int[61];
         boolean oneAMonth = true;
         committed[0] = g.platformWellsCommitted();
-        for (int m = 1; m < committed.length; m++) {
+        int last = 0;
+        for (int m = 1; m < committed.length && (m == 1 || wells.platformWellsStanding() < d.sites()); m++) {
             quietly(() -> g.simulateMonths(1));
             committed[m] = g.platformWellsCommitted();
             oneAMonth &= committed[m] - committed[m - 1] <= 1 && committed[m] <= wells.slotsStanding();
+            last = m;
         }
         quietly(() -> g.getBusinessInvestment().holdSector(Sectors.OIL));
         report("...and the planner drills the freed slots again, one at a time", wells.platformWellsStanding() == d.sites() && oneAMonth,
-                java.util.Arrays.toString(committed) + " platform wells committed by month");
+                java.util.Arrays.toString(java.util.Arrays.copyOf(committed, last + 1)) + " platform wells committed by month");
         return g;
     }
 

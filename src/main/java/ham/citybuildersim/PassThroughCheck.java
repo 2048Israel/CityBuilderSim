@@ -169,6 +169,13 @@ public class PassThroughCheck {
      */
     static Game town(String label) {
         Game city = new Game(files(label), Founding.defaults());
+        // WN3: on the goods' literals, here and in every twin loaded from it (load()). The premise of the ring is a world whose prices
+        // stand still (the markets' rate is the struck rate times a world level of one, section 2): the D$'s swing and the goods'
+        // following are the only thing moving the twins. Measured on the world's band, one for one: the twins' D$ gap, 10% at the
+        // purchase and under 3% after two years, stood at 34% at month 120, its widest at the very end (the goods a month behind it),
+        // and the vault of the twin that bought held 89 more than it had bought, not fewer (US$2,400k of US$2,311k); the world's own
+        // years moving the goods' prices is the difference between that run and the literals' (not isolated further).
+        city.playOnLiterals();
         quietly(() -> {
             city.run();
             city.setCashForTest(Founding.WEALTHY_CASH);
@@ -193,6 +200,7 @@ public class PassThroughCheck {
     /** A city loaded from the base city's slot 1 (BASE_SLOT), into a city of its own. */
     static Game load(Game base) {
         Game g = new Game(base.getGameFiles());
+        g.playOnLiterals();   // WN3: as the base city (town()); the choice is not saved
         quietly(() -> g.loadGameSave(BASE_SLOT));
         return g;
     }

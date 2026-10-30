@@ -250,9 +250,14 @@ public class CurveCheck {
 
     /** The playtest's founding with the rule's hand on the dial, played on to this month. */
     static Game city(Path root, String label, int toMonth) {
+        return city(root, label, toMonth, false);
+    }
+
+    /** ...on the goods' literals where asked (Game.playOnLiterals(); see steepCity()). */
+    static Game city(Path root, String label, int toMonth, boolean onLiterals) {
         Game[] g = new Game[1];
         quietly(() -> {
-            g[0] = MonetaryCheck.founding(root, label);
+            g[0] = MonetaryCheck.founding(root, label, onLiterals);
             g[0].getDebtManager().setAutopilot(true);
             while (g[0].getMonth() < toMonth) press(g[0]);
         });
@@ -490,7 +495,14 @@ public class CurveCheck {
      * target, which is the month's own strike.
      */
     static Game steepCity(Path root, String label) {
-        Game g = city(root, label, 38);
+        // WN3: on the goods' literals. The curve is steep only while the short end is the dial's, and on the world's band the founding
+        // is not that city: its planners lay a cement works on a bank loan of some 40,000 against 12,000 of deposits the month the dial
+        // is held at 1% (and a 15,000 wood-products works before it), the bank goes to the window, and its cost of funds plus
+        // Bank.MIN_MARGIN floors the 1-month at 2.1% on a dial of 1%: the 10-year stands 1.3 points over the 1-month, not two. Holding the
+        // cement works (BusinessInvestment.holdSector) left the wood-products loan and a 1.6% floor, 1.85 points; and setting the cost of
+        // funds by hand is not saved, so the reload section found a different curve. The question is the dial's hold on the curve, on
+        // the city the study's rows were struck on, so the founding is played on the literals.
+        Game g = city(root, label, 38, true);
         DebtManager dm = g.getDebtManager();
         double rule = dm.advisedPolicyRate(inflationRead(g));
         dm.takeTheDial(Math.max(0, rule - .02));

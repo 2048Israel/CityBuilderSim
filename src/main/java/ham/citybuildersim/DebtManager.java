@@ -2944,7 +2944,12 @@ public class DebtManager {
     private double debtAfterProceedsOf(double received) {
         double owedShort = Math.max(0, overdraft) + advances;
         double clears = Math.min(owedShort, Math.max(0, received));
-        return getAllPrincipal() + owedShort - clears;
+        // WN3: the indexation a linker has accrued past its face counts, as getPricedDebt() counts it (CD5), so a sale is quoted on
+        // the debt the books show after it. Without it a linker sale priced a hair rich of the curve the city stood on after it, and
+        // FloatLinkCheck 7's linker sold at 99.088 and was bought back at fair 99.073, the city 20.48 ahead on D$215,400 of face
+        // (latent on main, where the issue's fee hid it). A city with no linker owes what it did.
+        double indexation = getIndexationOwed();
+        return getAllPrincipal() + owedShort - clears + (indexation > 0 ? indexation : 0);
     }
 
     /* -----------------------------------------------------------------------

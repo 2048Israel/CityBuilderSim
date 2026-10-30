@@ -577,7 +577,14 @@ public class ForeignDebtCheck {
             // A shut window refuses the issue, so it has to be both, in this
             // order, and neither half is decoration.
             city.getDebtManager().restoreForeignStanding(new double[] { .04, 200 });
-            city.handleForeignLogic("Term", 8_000, 10, 100, true);   // a dollar bond; there is no dollar serial since CD2
+            // WN3: the bond is sized to the city. The issue is converted at once (the treasury buys the dollars it raised: Game.handleForeignLogic()),
+            // and a purchase is felt at INTERVENTION_IMPACT per 1% of a year's GDP, fading by half in INTERVENTION_HALF_LIFE months. On the
+            // world's band this trading city earns a good deal less than on the literals (ore, copper and crude at a half to a third of them), and
+            // US$8,000k was 45% of a year's GDP: the D$ stood at 2.5 against a parity of 0.9, and the first month after the reload moved it 10% as the
+            // purchase faded - the reload's twin, not yet reloaded, books the same -1,948 that month, so it is no phantom, but a month's move over
+            // the 5% the assertion below allows. No more than 5% of a year's GDP is bought, as before wherever the city is large enough for 8,000.
+            double bondUsd = Math.min(8_000, .05 * 12 * fx.getGdpTrailing() / fx.getRate());
+            city.handleForeignLogic("Term", bondUsd, 10, 100, true);   // a dollar bond; there is no dollar serial since CD2
             city.getDebtManager().restoreForeignStanding(new double[] { .04, 12 });
             city.simulateMonths(3);
             city.saveGame(4, "the indebted city");

@@ -1944,6 +1944,10 @@ public class MapCheck {
     /**
      * Hands the city, between months, every whole block of its level that lies in the square of CityRuns.CELL plots each way round `at` and that it does not own
      * (a row of them side by side one parcel, bought as 2c's blocks are, dated `month`): the ground the highways' hub and their first arms stand on. The plots handed.
+     *
+     * WN3, 2026-10-29: a block the city owns part of is handed in its halves, down to LandGrid.MIN_LEVEL's. On the world's band the city's month-40 iron purchase
+     * (the mine's fields, level-2 parcels) falls across the square, and the blocks of the city's level that hold one are part owned: handing only the wholly
+     * unowned left plots of the square unowned, and the highways did not start in the district.
      */
     static long handGroundRound(CityLand land, DistrictPlan.Input frame, long[] at, int month) {
         return handGroundRound(land, frame, at, month, null);
@@ -1953,19 +1957,33 @@ public class MapCheck {
     static long handGroundRound(CityLand land, DistrictPlan.Input frame, long[] at, int month, long[] skip) {
         long b = 1L << land.level(), r = CityRuns.CELL;
         long x0 = Math.floorDiv(at[0] - r, b) * b, y0 = Math.floorDiv(at[1] - r, b) * b, x1 = Math.floorDiv(at[0] + r, b) * b + b, y1 = Math.floorDiv(at[1] + r, b) * b + b;
-        long handed = 0;
+        return handBlocks(land, x0, y0, x1, y1, land.level(), month, skip);
+    }
+
+    /**
+     * Hands the city the blocks of `level` in [x0, x1) x [y0, y1) that no holding owns (a row of them side by side one parcel), and each block it owns part of in its
+     * four halves, one level down, until LandGrid.MIN_LEVEL (a block of that level is owned whole or not at all). The block holding plot `skip` is left out
+     * whole, neither handed nor halved: handBlock() hands it later. The plots handed.
+     */
+    static long handBlocks(CityLand land, long x0, long y0, long x1, long y1, int level, int month, long[] skip) {
+        long b = 1L << level, handed = 0;
+        List<long[]> part = new ArrayList<>();
         for (long y = y0; y < y1; y += b) {
             long start = -1;
             for (long x = x0; x <= x1; x += b) {
-                boolean free = x < x1 && land.grid().owned(x, y, x + b, y + b) == 0 && !(skip != null && skip[0] >= x && skip[0] < x + b && skip[1] >= y && skip[1] < y + b);
+                boolean skipped = x < x1 && skip != null && skip[0] >= x && skip[0] < x + b && skip[1] >= y && skip[1] < y + b;
+                long owned = x < x1 ? land.grid().owned(x, y, x + b, y + b) : b * b;
+                boolean free = owned == 0 && !skipped;
+                if (!skipped && owned > 0 && owned < b * b) part.add(new long[] { x, y });
                 if (free && start < 0) start = x;
                 if (!free && start >= 0) {
-                    land.extend(new LandParcel(-5, 1, 0, land.level(), start, y, x, y + b, null, null, null, 0, 0), month, 0);
+                    land.extend(new LandParcel(-5, 1, 0, level, start, y, x, y + b, null, null, null, 0, 0), month, 0);
                     handed += (x - start) * b;
                     start = -1;
                 }
             }
         }
+        if (level > LandGrid.MIN_LEVEL) for (long[] p : part) handed += handBlocks(land, p[0], p[1], p[0] + b, p[1] + b, level - 1, month, skip);
         return handed;
     }
 
@@ -9433,6 +9451,18 @@ public class MapCheck {
         check("two picks whose ground the city bought are dropped together, and the note counts them",
                 picks.live(g).equals(held) && String.format(LandMap.Picks.BOUGHT_MANY_NOTE, 2).equals(picks.dropNote()));
 
+        // WN3 (after EM1): the offer picked second came back over other ground than its own. An office lists a place from the grid and the offers
+        // standing, at the grid's block level, so a place taken off and listed again returns to the ground it stood on only if it was listed under
+        // today's grid and today's offers. In the merged city the grid is at block level 4 and the picked North 3 and North 4 are older
+        // listings at level 3 (North 3, 8 x 16 plots, came back as 16 x 32 plots at level 4, two rows nearer in), so no place was "listed again over
+        // the same free ground". The mend causes it: the picked place is taken off and listed once at the grid's level now, and the pick is the
+        // offer that stands there - taken off again, an office lists that place on the same ground (nothing it is listed from has moved).
+        LandParcel stale = market.find(held.get(1));
+        String staleWhere = stale.where();
+        market.take(stale.getId());
+        office.updateMarket(g.getPopulationManager().getPopulation());
+        for (LandParcel p : market.getListing()) if (p.where().equals(staleWhere)) held.set(1, p.getId());
+
         // An offer off the shelf with its ground offered under none: dropped and said so.
         picks.clear();
         picks.add(g, held);
@@ -11985,6 +12015,9 @@ public class MapCheck {
     /** The months the played city is grown before its land purchase and after it: 3 and 3. */
     static final int PLAYED_BEFORE = 3, PLAYED_AFTER = 3;
 
+    /** The most months the played city is grown, not judged, to settle its stamp's view before the months judged: 6 (WN3, after EM1: it took 1). */
+    static final int PLAYED_WARM_MAX = 6;
+
     /** The side of the block the played city buys, in plots: 32, a hole in its built-up ground's box (the played city's ground is irregular). */
     static final int PURCHASE_SIDE = 32;
 
@@ -12790,6 +12823,18 @@ public class MapCheck {
         CityMap far = CityMap.canonical(copy, r -> copy.amountsInOrder(r), city.getMapTypes(), counts);
         Redraw pl = new Redraw("the played city", far, counts, GROW_PER_MILLE, false, false, false, false);
         pl.month(SETTLE, -1, false);
+        // WN3 (after EM1): the played city's first month of growth moved the stamp's view. Two of its four districts, (0,-1) and (-1,-1), held no
+        // building at the settle; one more building of each type put 191 and 612 cells in them, the built-up box the frame is drawn from grew from
+        // 224 x 144 to 264 x 192 plots and the stamp from 5 plots a pixel to 6 - where the city before the merge held its view through all 8 months.
+        // A view that moves is drawn anew, every layer with it: not the land layer's purchase-only redraw this section is about. The fixture grows
+        // the city (GROW months, not judged) until a month leaves the view as it was, and the months before and after the purchase are the ones
+        // judged from there, as many as before.
+        int warm = 0;
+        while (warm < PLAYED_WARM_MAX) {
+            RedrawMonth w = pl.month(GROW, -2 - warm++, false);
+            if (!w.viewChanged) break;
+        }
+        final int judgedFrom = 1 + warm;
         for (int i = 0; i < PLAYED_BEFORE; i++) pl.month(GROW, i, false);
         boolean equalBefore = pl.stampEqual && pl.previewEqual;
         MiniMapFrame.Box frameBefore = MiniMapFrame.frame(far);
@@ -12871,7 +12916,7 @@ public class MapCheck {
 
         // ----- 5. The land layer -----
         boolean landOnlyByPurchase = bought != null && !bought.viewChanged && bought.lands == 1;
-        for (RedrawMonth r : pl.all) if (r.kind != SETTLE && r != bought) landOnlyByPurchase &= !r.viewChanged && r.lands == 0;
+        for (RedrawMonth r : pl.all.subList(judgedFrom, pl.all.size())) if (r.kind != SETTLE && r != bought) landOnlyByPurchase &= !r.viewChanged && r.lands == 0;
         check("fixture: the block lies inside the built-up ground's box, so inside the stamp's frame, the city owns it after its purchase and the frame is the one it was",
                 block != null && blockOwned && frameBefore.equals(MiniMapFrame.frame(far)));
         check("the land layer is drawn again by a purchase and only then: once in the month of the purchase, never in the " + PLAYED_BEFORE + " before it or the " + PLAYED_AFTER

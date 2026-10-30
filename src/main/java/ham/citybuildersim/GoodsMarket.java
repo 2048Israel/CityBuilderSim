@@ -207,19 +207,86 @@ public final class GoodsMarket {
 
     /** What the freight on one unit has moved by, in the world's money. Exactly zero at rest. */
     public double freightChange() {
-        return good.baseFreight() * (freightFactor - 1);
+        return bandFreight() * (freightFactor - 1);
+    }
+
+    /* -----------------------------------------------------------------------
+       THE WORLD'S BAND (WN3, 2026-10-28; docs/studies/spec-nations.md 4)
+
+       The two prices the band is struck from - what the world asks for a unit
+       delivered here and what it pays for one delivered there, in thousands of
+       world dollars - are Good.worldImportPrice() and worldExportPrice() until
+       a world market gives the city its own (Game, THE WORLD MARKET): the
+       prices the nations' January solve and the city's own tonnes make of it.
+       A value that is not a number means the literal, the default, so a city
+       with no world file reads exactly the figures it always read; and every
+       read of a literal in this class goes through the two readers below, so
+       there is no third place that could still quote the old price. Freight's
+       moves (freightFactor, railCharge) stay on top of either, by the change.
+       ----------------------------------------------------------------------- */
+
+    /** The world's import price for the month, thousands of world dollars a unit, or NaN for the good's literal. */
+    private double worldImport = Double.NaN;
+
+    /** ...and its export price likewise. */
+    private double worldExport = Double.NaN;
+
+    /**
+     * Hands the market the world's two prices for the month (Game, THE WORLD MARKET), thousands of world dollars a game unit: what an import
+     * costs delivered here and what an export fetches delivered there, before freight's change. A value that is not a number (and an infinity)
+     * is the good's literal, which is what a market never told reads; a side the good lacks stays NaN in importPrice() and exportPrice() whatever
+     * is handed here (importable() and exportable() are the good's).
+     */
+    public void setWorldPrices(double importPrice, double exportPrice) {
+        worldImport = Double.isFinite(importPrice) ? importPrice : Double.NaN;
+        worldExport = Double.isFinite(exportPrice) ? exportPrice : Double.NaN;
+    }
+
+    /** The world's import price now in force, thousands of world dollars a unit: the market's where it was set, else the good's literal. */
+    private double worldImportNow() { return Double.isNaN(worldImport) ? good.worldImportPrice() : worldImport; }
+
+    /** ...and its export price. */
+    private double worldExportNow() { return Double.isNaN(worldExport) ? good.worldExportPrice() : worldExport; }
+
+    /** Whether a world market has set either price (the state a save carries and a screen can say "the world's band" by). */
+    public boolean hasWorldPrices() { return !Double.isNaN(worldImport) || !Double.isNaN(worldExport); }
+
+    /** The prices as set, NaN for the literal: for the save (Markets.toState()). */
+    public double getWorldImportSet() { return worldImport; }
+
+    /** ...and the export side. */
+    public double getWorldExportSet() { return worldExport; }
+
+    /**
+     * The lorries' freight on one unit in the band, each way, in the world's money: Good.baseFreight(), to the bit, for the literal band; and for a
+     * band the world sets, that freight shrunk with the band where the band is narrower than the literal (never grown).
+     *
+     * WHY (WN3): the literal band cannot cross - its gap is the world's margin plus two baseFreight()s and freightChange() moves each end by at most
+     * one - but the world's band is as wide as the city's legs to its buyers and sellers make it, which can be less than two lorry freights; a railway
+     * and a quay carrying everything then took more freight off the band than it held, and the export floor stood over the import ceiling (WOOD_PELLETS
+     * in the playtest's month 1399), an arbitrage a city could live on. Shrunk in proportion, the band keeps the literal's rule: its gap is
+     * bandFreight() x 2 x the literal's own share of freight in its gap or more, so freight's moves can narrow it to no less than the world's margin,
+     * and worldMargin() + freightInBand() is still the band. The railway's own invoice (domesticFreight()) stays on the lorry rate: it is what the
+     * railway charges at home, not what the band holds.
+     */
+    public double bandFreight() {
+        double lorry = good.baseFreight();
+        if (!hasWorldPrices() || !good.importable() || !good.exportable()) return lorry;
+        double literal = good.worldImportPrice() - good.worldExportPrice(), world = worldImportNow() - worldExportNow();
+        if (!(literal > 0) || !(world >= 0) || world >= literal) return lorry;
+        return lorry * (world / literal);
     }
 
     /** What an import costs the city, in the city's money. NaN when the good cannot be imported. */
     public double importPrice() {
         return good.importable()
-                ? (good.worldImportPrice() + freightChange()) * exchangeRate : Double.NaN;
+                ? (worldImportNow() + freightChange()) * exchangeRate : Double.NaN;
     }
 
     /** What the world pays the city for one, in the city's money. NaN when it will not buy. */
     public double exportPrice() {
         return good.exportable()
-                ? (good.worldExportPrice() - freightChange()) * exchangeRate : Double.NaN;
+                ? (worldExportNow() - freightChange()) * exchangeRate : Double.NaN;
     }
 
     /* =======================================================================
@@ -265,14 +332,14 @@ public final class GoodsMarket {
        InfrastructureCheck holds the sums. Pure reads, in city money. */
 
     /** The freight still in the band, both ways: what the lorries are paid abroad on one unit bought and one sold (0.7.29). Zero with the railway carrying all of it. */
-    public double freightInBand() { return 2 * good.baseFreight() * freightFactor * exchangeRate; }
+    public double freightInBand() { return 2 * bandFreight() * freightFactor * exchangeRate; }
 
     /** The band with every tonne on a lorry: the world's asking less its buying price, freight and all (0.7.29). */
-    public double bandByLorry() { return (good.worldImportPrice() - good.worldExportPrice()) * exchangeRate; }
+    public double bandByLorry() { return (worldImportNow() - worldExportNow()) * exchangeRate; }
 
     /** The world's own margin in the band: the band with no freight in it at all, which no railway narrows (0.7.29). */
     public double worldMargin() {
-        return (good.worldImportPrice() - good.worldExportPrice() - 2 * good.baseFreight()) * exchangeRate;
+        return (worldImportNow() - worldExportNow() - 2 * bandFreight()) * exchangeRate;
     }
 
     /** The railway's charge on the wedge, both ways: what an importer pays on top and an exporter gives up (0.7.29). Zero with no railway. */
@@ -512,6 +579,8 @@ public final class GoodsMarket {
         localPrice = openingPrice();
         // A city with no railway quotes the literal it always quoted. See above.
         freightFactor = 1;
+        // ...and one with no world market the literal prices (WN3; Game sets the world's again at the top of the next month).
+        worldImport = worldExport = Double.NaN;
         rSupplyFlow = rSupplyStock = rDemand = 0;
         java.util.Arrays.fill(taken, 0);
         takenAt = 0;

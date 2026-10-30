@@ -70,6 +70,17 @@ import java.util.Locale;
  *      insulation at the exchange factor and its freight; the sector's older
  *      rows the maker's less their city legs (since FR2, as every maker's), to
  *      the bit.
+ *
+ *   8. A WORKS BUYS INPUTS ONLY FOR WHAT IT MAKES (WN3): an Electrolytic
+ *      Refinery whose shed stands at the dump line, its cathode under what a
+ *      unit costs to make and to ship, orders no anode and makes no cathode,
+ *      and every unit of input it did buy is made, held or written off, never
+ *      lost; beside a smelter that makes less anode than the refineries want,
+ *      the refineries that make nothing do not swallow the smelter's anode as
+ *      captive, it is sold or shipped; a works whose month makes its whole
+ *      rate orders what it always did; and the month's books lose nothing
+ *      (the works' imports are matched by output made), so its GDP is not
+ *      below what C + G alone would make it.
  */
 public class CopperRefiningCheck {
 
@@ -104,6 +115,7 @@ public class CopperRefiningCheck {
         oldCopper();
         plannerWeighsOldCopper();
         wireWorksEstimate();
+        idleWorks();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -534,5 +546,148 @@ public class CopperRefiningCheck {
                 shop.getConsumables() == 0 && legs > 0
                         && man.estimatedMonthlyProfit(shop, plans) == plans.estimatedMakerProfit(man, shop) - legs,
                 String.format("D$%,.1fk a month; its legs D$%,.1fk", man.estimatedMonthlyProfit(shop, plans), legs));
+    }
+
+    /* ============================ 8. a works buys inputs only for what it makes ============================ */
+
+    /**
+     * A copper town on the goods' literals (Game.playOnLiterals(): the premise is a fixed world price) with the works standing and, where the
+     * cathode's export price is given, that price set on its market (nothing resets it on a city that plays on the literals), two months settled.
+     */
+    static Game copperWorks(String label, int smelters, int refineries, int rodMills, double cathodeExport) {
+        Game g = CopperMiningCheck.copperTown(label, 0);
+        g.playOnLiterals();
+        if (Double.isFinite(cathodeExport)) g.getMarkets().get(Good.COPPER).setWorldPrices(Good.COPPER.worldImportPrice(), cathodeExport);
+        BuildingManager b = g.getBuildingManager();
+        quietly(() -> {
+            if (smelters > 0) b.addStack(b.getTemplate(CopperRefining.SMELTER), smelters, true);
+            if (refineries > 0) b.addStack(b.getTemplate(CopperRefining.ELECTROLYTIC_REFINERY), refineries, true);
+            if (rodMills > 0) b.addStack(b.getTemplate(CopperRefining.ROD_MILL), rodMills, true);
+        });
+        MaterialsCheck.handWorkers(g);
+        quietly(() -> g.simulateMonths(2));
+        return g;
+    }
+
+    /** One month with the cathode shed put back at the dump line first: the condition caused again each month, not waited for. */
+    static void holdAndRun(Game g, CopperRefining cr) {
+        cr.setStock(Good.COPPER, cr.getStockCapacity(Good.COPPER) * Sector.DUMP_THRESHOLD);
+        quietly(() -> g.simulateMonths(1));
+    }
+
+    /** Whether a number is within a relative hair of another (a month's figures are sums of products). */
+    static boolean near(double a, double b) {
+        return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    static void idleWorks() {
+        out.println("\n--- 8. a works buys inputs only for what it makes: the idle refinery orders no anode, and does not swallow its smelter's ---");
+        BuildingManager tb = new BuildingManager();
+        tb.initializeTemplates();
+        BuildingsTemplate refinery = tb.getTemplate(CopperRefining.ELECTROLYTIC_REFINERY);
+        double anodePerCathode = refinery.uses(Good.ANODE) / refinery.makes(Good.COPPER);
+
+        // (a) the found case: a refinery on imported anode, its shed full to the dump line, its cathode under what a unit costs to make and to ship.
+        Game g = copperWorks("copperrefiningcheck-idle", 0, 1, 0, Double.NaN);
+        CopperRefining cr = g.getSectors().copperRefining();
+        double pantryBefore = cr.getPantry(Good.ANODE);
+        holdAndRun(g, cr);
+        Sector.Output cu = cr.outputRow(Good.COPPER);
+        Sector.Input anodeIn = cr.inputRow(Good.ANODE);
+        GoodsMarket cathode = g.getMarkets().get(Good.COPPER);
+        double marginal = cr.getMarginalCostPerUnit(Good.COPPER);
+        double dumpLine = cr.getStockCapacity(Good.COPPER) * Sector.DUMP_THRESHOLD;
+        report("fixture (a): an Electrolytic Refinery on imported anode, the shed held at the dump line: the whole shed withheld, none offered,"
+                        + " the cathode's price and its net export price both under what a unit costs to make",
+                cr.getOperatingRate() > 0 && cu != null && anodeIn != null && near(cu.withheld, dumpLine) && cu.offered == 0
+                        && cathode.getLocalPrice() < marginal && cathode.netExportPrice() < marginal,
+                cu == null ? "none" : String.format("rate %.4f; withheld %,.0f of %,.0f t; price %.4f, net export %.4f, marginal cost %.4f",
+                        cr.getOperatingRate(), cu.withheld, dumpLine, cathode.getLocalPrice(), cathode.netExportPrice(), marginal));
+        double received = anodeIn == null ? 0 : anodeIn.boughtLocal + anodeIn.imported;
+        double made = cu == null ? 0 : cu.produced + cu.exportBound + cu.captive;
+        double used = made * anodePerCathode;
+        double pantry = cr.getPantry(Good.ANODE) - pantryBefore;
+        report("(a) every unit of anode it bought this month was made into cathode (which the yard then holds or writes off) or went to a pantry,"
+                        + " none was lost",
+                near(received, used + pantry),
+                String.format("bought %,.1f t; made %,.1f t of cathode (%,.1f t of anode); pantry %+,.1f t", received, made, used, pantry));
+        report("...and in this case it orders no anode and makes no cathode",
+                anodeIn != null && cu != null && anodeIn.bid == 0 && received == 0 && cu.produced == 0 && cu.exportBound == 0,
+                anodeIn == null || cu == null ? "none" : String.format("ordered %,.1f t of anode of its %,.1f; made %,.1f t of cathode, idled %,.1f",
+                        anodeIn.bid, anodeIn.needed, cu.produced + cu.exportBound, cu.idled));
+
+        // (d) the books, struck a month on (a statement describes the month before): the same shed held once more, then the accounts read.
+        double madeThen = made, marginalThen = marginal;
+        holdAndRun(g, cr);
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+        double gdp = g.getEconomyManager().getMonthGdp();
+        double consumables = cr.statement().otherInputs.getOrDefault(Sector.CONSUMABLES, 0.0);
+        double inputImports = cr.statement().imports - consumables;
+        double rest = na.getTotalImports() - inputImports;
+        report("(d) the books lose nothing: what the works' input imports came to in the accounts is matched by the cathode it made, at no more"
+                        + " than a unit costs to make",
+                inputImports <= madeThen * marginalThen + 1e-6,
+                String.format("input imports D$%,.1f; made %,.1f t at D$%.4f; consumables D$%,.1f", inputImports, madeThen, marginalThen, consumables));
+        report("...so the month's GDP (C + Iconstr + Istock + G + NX) is not below what C + G alone would make it, less the rest of the imports line",
+                gdp + rest >= na.getConsumption() + na.getGovernment() - 1e-6,
+                String.format("GDP D$%,.1f; C D$%,.1f + G D$%,.1f; Istock D$%,.1f; the rest of the imports D$%,.1f", gdp, na.getConsumption(),
+                        na.getGovernment(), na.getInvestmentInventories(), rest));
+
+        // (b) the shared pool: one smelter, two refineries (the smelter's anode covers half their need), the cathode's export price low enough
+        // that the refineries' marginal cost, the anode they must buy included, is over it.
+        Game pool = copperWorks("copperrefiningcheck-pool", 1, 2, 0, 3.0);
+        CopperRefining pr = pool.getSectors().copperRefining();
+        holdAndRun(pool, pr);
+        Sector.Output pcu = pr.outputRow(Good.COPPER), panode = pr.outputRow(Good.ANODE);
+        GoodsMarket pcathode = pool.getMarkets().get(Good.COPPER);
+        double pmarginal = pr.getMarginalCostPerUnit(Good.COPPER);
+        report("fixture (b): a smelter and two refineries, the shed held at the dump line, the cathode's price and net export price under"
+                        + " their marginal cost: the refineries make nothing",
+                pr.getOperatingRate() > 0 && pcu != null && panode != null && pcu.offered == 0 && pcu.produced == 0 && pcu.exportBound == 0
+                        && pcathode.getLocalPrice() < pmarginal && pcathode.netExportPrice() < pmarginal,
+                pcu == null ? "none" : String.format("rate %.4f; made %,.1f t; price %.4f, net export %.4f, marginal cost %.4f",
+                        pr.getOperatingRate(), pcu.produced + pcu.exportBound, pcathode.getLocalPrice(), pcathode.netExportPrice(), pmarginal));
+        double smelted = panode == null ? 0 : panode.captive + panode.produced;
+        double pused = pcu == null ? 0 : (pcu.produced + pcu.exportBound + pcu.captive) * anodePerCathode;
+        double disposed = panode == null ? 0 : panode.soldLocal + panode.exported;
+        report("(b) the smelter's anode is not swallowed as captive by refineries that make nothing: what it smelted was used by the cathode"
+                        + " made, sold here or shipped",
+                panode != null && near(smelted, pused + disposed) && panode.captive <= pused,
+                String.format("smelted %,.1f t (%,.1f kept, %,.1f to market); used %,.1f t; sold %,.1f t, shipped %,.1f t", smelted,
+                        panode == null ? 0 : panode.captive, panode == null ? 0 : panode.produced, pused,
+                        panode == null ? 0 : panode.soldLocal, panode == null ? 0 : panode.exported));
+        Sector.Input pin = pr.inputRow(Good.ANODE);
+        double pbought = pin == null ? 0 : pin.boughtLocal + pin.imported;
+        report("...and the anode it bought from the world is likewise used, none of it lost",
+                pin != null && near(pbought, pused),
+                String.format("bought %,.1f t; used %,.1f t", pbought, pused));
+
+        // (c) a month that makes its whole rate is unchanged: the order is nameplate at the rate, less what is captive.
+        Game full = copperWorks("copperrefiningcheck-whole", 0, 1, 0, Double.NaN);
+        CopperRefining fr = full.getSectors().copperRefining();
+        quietly(() -> full.simulateMonths(1));
+        Sector.Output fcu = fr.outputRow(Good.COPPER);
+        Sector.Input fin = fr.inputRow(Good.ANODE);
+        double nameplate = fr.getCapacity(Good.COPPER) * fr.getOperatingRate();
+        report("(c) a refinery that makes its whole rate (a yard with room) orders exactly its need at the rate: getInputAtCapacity() times"
+                        + " the operating rate, to the bit",
+                fcu != null && fin != null && fr.getOperatingRate() > 0 && fcu.produced == nameplate
+                        && fin.bid == fr.getInputAtCapacity(Good.ANODE) * fr.getOperatingRate(),
+                fin == null || fcu == null ? "none" : String.format("made %,.1f of %,.1f t; ordered %,.1f t of anode", fcu.produced, nameplate, fin.bid));
+        Game chain = copperWorks("copperrefiningcheck-wholechain", 1, 1, 1, Double.NaN);
+        CopperRefining kr = chain.getSectors().copperRefining();
+        quietly(() -> chain.simulateMonths(1));
+        boolean same = true;
+        StringBuilder seen = new StringBuilder();
+        for (Good in : new Good[] { Good.COPPER_CONC, Good.ANODE, Good.COPPER, Good.COPPER_SCRAP }) {
+            Sector.Input row = kr.inputRow(in);
+            if (row == null) continue;
+            double expect = Math.max(0, kr.getInputAtCapacity(in) * kr.getOperatingRate() - (kr.captive(in) ? kr.captiveUnits(in) : 0));
+            same &= row.bid == expect;
+            seen.append(String.format("%s %,.1f of %,.1f t; ", in, row.bid, expect));
+        }
+        report("...and so does a chain whose month makes its whole rate (a smelter, a refinery and a rod mill): every order is the need at the"
+                        + " rate less what is captive, to the bit",
+                same && seen.length() > 0 && kr.getOperatingRate() > 0, seen.toString());
     }
 }

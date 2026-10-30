@@ -189,7 +189,14 @@ public class SectorBooksCheck {
                     for (Sector.Split x : st.sold.values())   abroadSold += x.abroad;
                     for (Sector.Split x : st.bought.values()) abroadBought += x.abroad;
                     near("exports by good", sector, m.month(), abroadSold, st.exports);
-                    near("imports by good", sector, m.month(), abroadBought, st.imports);
+                    // ...and the imports are the goods bought abroad AND what a sector buys from the world with no good behind it, which
+                    // belongs to no good's split and is named on the input line: a works' consumables (0.7.112) and the shuttle
+                    // tankers (0.7.91). WN3: a city on the world's band builds the works that buy them by month 77, which the
+                    // literals' city had not by month 120, so this identity met a sector with them for the first time; the model
+                    // (MaterialsCheck 5: st.imports == the consumables' bill) has always counted them in `imports`.
+                    double abroadServices = st.otherInputs.getOrDefault(Sector.CONSUMABLES, 0.0)
+                            + st.otherInputs.getOrDefault(ham.citybuildersim.sectors.Oil.SHUTTLE_TANKERS, 0.0);
+                    near("imports by good", sector, m.month(), abroadBought + abroadServices, st.imports);
 
                     /*
                      * AND THE PART OF REVENUE THAT IS NOT A GOOD SPLITS ALL

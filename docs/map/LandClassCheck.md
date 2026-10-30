@@ -1,6 +1,6 @@
 # LandClassCheck.java - 1,349 lines · 51 methods · 8 constants · harnesses
 
-`ham/citybuildersim/LandClassCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandClassCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going
 > price stays the price of flat ground, foothill is that price less its preparation and never under the base price of

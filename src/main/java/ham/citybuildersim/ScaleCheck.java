@@ -548,6 +548,13 @@ public class ScaleCheck {
                 + " and its player's look ---");
         GameFiles grown = new GameFiles(root.resolve("grown"), root.resolve("grown-no-legacy"));
         Game city = new Game(grown, LongPlaytest.founding());
+        // WN3: the city, and every copy read against it below (free(), tracks()), play on the goods' literals, as the game did before the
+        // world market: a copy K times over is read against its city to a percent, and on the world's band it cannot track it - the
+        // band is struck from a city's own exports and imports against the world's (a big seller depresses its own floor), so a copy
+        // of a million times the exports trades at another band than the town it copies, by design. On the literals the premise,
+        // that a copy is its city K times over, holds as it did (FREE_FIXTURE_MONTHS, 807); on the world's band the town stalls at
+        // 3,000 to 3,800 people from month 300 on and its own rents price migrants out in every month scanned from 420 to 900.
+        city.playOnLiterals();
         // XR1 (2026-10-21): this check measures counts, sums and copies at size, not the currency. Under THE FLOAT the
         // playtest's city is in spiral by month 600 and its money reads 1e18 and more (main's 1e11), past the history's
         // cents (a long: 9.2e16), so the history and the audit cannot be held "to the cent"; the rate is held at the
@@ -714,6 +721,7 @@ public class ScaleCheck {
         scale(small.saveFile(10), files.saveFile(10), k);
         Files.copy(small.historyFile(10), files.historyFile(10));
         Game g = new Game(files);
+        g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
         quietly(() -> g.loadGameSave(10));
         assertTrue("the copy loads", g.getLoadFailure() == null);
         Orders orders = new Orders();
@@ -822,6 +830,7 @@ public class ScaleCheck {
             scale(grown.saveFile(10), files.saveFile(10), times[c]);
             Files.copy(grown.historyFile(10), files.historyFile(10));
             Game g = new Game(files);
+            g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
             quietly(() -> g.loadGameSave(10));
             assertTrue("the copy at K = " + times[c] + " loads", g.getLoadFailure() == null);
             registers[c][0] = registersMiss(g);

@@ -41,16 +41,22 @@ import java.util.Set;
  * Past 2100 a Historical nation's growth eases to LONG_RUN_GROWTH (the
  * leaderboard's D8; the nations study's D14) and people are held.
  *
- * Nothing in the economy reads this yet (WN1): the map is WN2's and the market
- * WN3's. It copies what it needs from the file and keeps no reference to it.
+ * The map draws it (WN2) and the world market trades on it (WN3). It copies
+ * what it needs from the file and keeps no reference to it.
  */
 public final class Nations {
 
     /** The world's path, picked at founding (D9): the real years from January 2000, or a path drawn from the seed. */
     public enum Path { HISTORICAL, RANDOM }
 
-    /** The path a founding takes when nobody picks one: Historical, the founding screen's first chip (board 4). */
-    public static final Path DEFAULT_PATH = Path.HISTORICAL;
+    /**
+     * The path a founding takes when nobody picks one, on the Earth and on a generated world alike: Random (WN3;
+     * Jerus, 2026-10-29: "A new world defaults to the Random path instead of Historical").
+     * WHY: on the world market a young city on Historical meets the 2000s commodity boom as imported inflation
+     * (the default playtest's prices 4.38x by 2012, its treasury dry in 2008, ~5,000 people for 60 years; WN3-B),
+     * and most new players found on the Earth. Historical stays the founding screen's first chip on both pages.
+     */
+    public static final Path DEFAULT_PATH = Path.RANDOM;
 
     /** The path's seed when nobody rolls one: 48,213, the founding board's (spec-nations, board 4), so every harness and the playtest meet one world. */
     public static final long DEFAULT_SEED = 48_213L;
@@ -222,6 +228,13 @@ public final class Nations {
     private final int[] priceLast;
     private final double[] swing;
 
+    /**
+     * Whose shock each good's price draws after the file's years, by good number: the first good that follows its Pink Sheet series (WN3).
+     * WHY: each good drew its own, so a chain on one series - anode, cathode and rod on copper; crude's six fuels; ore and steel - drifted apart
+     * after 2025, and on Random from 2000, and a refinery bought anode dearer than its cathode (the playtest's GDP went below zero, months 422-637).
+     */
+    private final int[] shockOf;
+
     /* THE PATH SO FAR, a year at a time: the records, what was drawn, each money's rate and each good's price. */
     private final List<Year[]> years = new ArrayList<>();
     private final List<Draws[]> drawn = new ArrayList<>();
@@ -331,6 +344,7 @@ public final class Nations {
         price = new Series[goods];
         priceLast = new int[goods];
         swing = new double[goods];
+        shockOf = new int[goods];
         for (int g = 0; g < goods; g++) {
             goodKey[g] = file.good(g + 1).key();
             int cap = file.priceYears() - 1;
@@ -350,6 +364,14 @@ public final class Nations {
             }
             priceLast[g] = historical ? price[g].last : 0;
             swing[g] = swingOf(price[g]);
+            // A good draws its series' shock, not its own (WN3): the first good that follows the same Pink Sheet series draws it for all of them.
+            String series = file.priceSeries(g + 1);
+            shockOf[g] = g + 1;
+            if (series != null && !series.isBlank()) {
+                for (int e = 0; e < g; e++) {
+                    if (series.equals(file.priceSeries(e + 1))) { shockOf[g] = shockOf[e]; break; }
+                }
+            }
         }
         perHead = new double[n];
         priceLevel = new double[n];
@@ -640,7 +662,7 @@ public final class Nations {
                 gm[g] = price[g].mark[t];
             } else {
                 double innovation = swing[g] * Math.sqrt((1 + PRICE_PERSISTENCE) / 2);
-                gp[g] = Math.exp(PRICE_PERSISTENCE * Math.log(goodPrices.get(t - 1)[g]) + share * innovation * gauss(PRICE, GOOD_BASE + g + 1, year));
+                gp[g] = Math.exp(PRICE_PERSISTENCE * Math.log(goodPrices.get(t - 1)[g]) + share * innovation * gauss(PRICE, GOOD_BASE + shockOf[g], year));
                 gm[g] = WorldData.MARK_ESTIMATE;
             }
         }

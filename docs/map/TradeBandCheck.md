@@ -1,6 +1,6 @@
-# TradeBandCheck.java - 439 lines · 18 methods · 0 constants · harnesses
+# TradeBandCheck.java - 440 lines · 18 methods · 0 constants · harnesses
 
-`ham/citybuildersim/TradeBandCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TradeBandCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > TradeBand, the model behind the Trade tab's band in legs, held to the
 > study's last bullet of section 6 (docs/studies/spec-freight-and-infrastructure.md):
@@ -52,9 +52,9 @@
 | 154 | 1. NO TRADE |
 | 191 | 2. THE LEGS SUM TO THE BAND |
 | 241 | 3. THE LORRIES AND THE SHIPS |
-| 282 | 4. THE WHOLE |
-| 348 | 5. THE ORDER |
-| 369 | 6. A RELOAD |
+| 283 | 4. THE WHOLE |
+| 349 | 5. THE ORDER |
+| 370 | 6. A RELOAD |
 
 ## Fields (state)
 
@@ -66,7 +66,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 385 | **type** `public class TradeBandCheck` | TradeBand, the model behind the Trade tab's band in legs, held to the study's last bullet of section 6 (docs/studies/spec-freight-and-infrastructure.md): the freight band split into the world's margin, the long haul b... |
+| 55 | 386 | **type** `public class TradeBandCheck` | TradeBand, the model behind the Trade tab's band in legs, held to the study's last bullet of section 6 (docs/studies/spec-freight-and-infrastructure.md): the freight band split into the world's margin, the long haul b... |
 | 59 | 3 | `static void quietly(Runnable r)` |  |
 | 63 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 68 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -95,29 +95,29 @@
 |---:|---:|---|---|
 | 195 | 45 | `static void legs(Game g, Band b)` |  |
 
-### 3. THE LORRIES AND THE SHIPS (lines 241-281)
+### 3. THE LORRIES AND THE SHIPS (lines 241-282)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 245 | 36 | `static void lorriesAndShips(Game g, Band b)` |  |
+| 245 | 37 | `static void lorriesAndShips(Game g, Band b)` |  |
 
-### 4. THE WHOLE (lines 282-347)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 286 | 61 | `static void whole(Game g, Band b)` |  |
-
-### 5. THE ORDER (lines 348-368)
+### 4. THE WHOLE (lines 283-348)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 352 | 16 | `static void order(Game g, Band b)` |  |
+| 287 | 61 | `static void whole(Game g, Band b)` |  |
 
-### 6. A RELOAD (lines 369-439)
+### 5. THE ORDER (lines 349-369)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 373 | 42 | `static void reload(Game g, GameFiles files)` |  |
-| 416 | 4 | `static boolean sameGoods(Band a, Band b)` |  |
-| 421 | 18 | `public static void main(String[] args) throws Exception` |  |
+| 353 | 16 | `static void order(Game g, Band b)` |  |
+
+### 6. A RELOAD (lines 370-440)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 374 | 42 | `static void reload(Game g, GameFiles files)` |  |
+| 417 | 4 | `static boolean sameGoods(Band a, Band b)` |  |
+| 422 | 18 | `public static void main(String[] args) throws Exception` |  |
 

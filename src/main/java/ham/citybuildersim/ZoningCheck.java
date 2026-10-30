@@ -466,6 +466,17 @@ public class ZoningCheck {
         assertTrue("fixture: nine houses in ten demolished, households sleep outside", outside > 0);
         ham.citybuildersim.sectors.Agriculture fields = (ham.citybuildersim.sectors.Agriculture)
                 g.getSectors().byKey(Sectors.AGRICULTURE);
+        /*
+         * WN3: THE FIELDS AT THEIR LITERAL BAND. The fields' gate reads what a farm clears at the export floor
+         * (Agriculture.worthAtTheFloor()), and on the world's band at the founding's January - the Random path starts
+         * from the prices of January 2000 - crops' floor is .126 against the literal .28, so no farm clears it and the
+         * fixture below ("a bad year would leave $12,628 a month on it") no longer causes its condition. This section
+         * asks about the zone, not the price; the goods a farm makes are handed their literal band, as XR1 holds the
+         * rate. Nothing here plays a month after, so the price holds.
+         */
+        for (Good made : fields.goodsMade()) {
+            g.getMarkets().get(made).setWorldPrices(made.worldImportPrice(), made.worldExportPrice());
+        }
         BusinessInvestment plans = g.getBusinessInvestment();
         BusinessInvestment.Decision none = fields.plan(plans, g);
         assertTrue("with no zone the fields yield, as they always have", !none.build && none.reason.contains("short of homes"));

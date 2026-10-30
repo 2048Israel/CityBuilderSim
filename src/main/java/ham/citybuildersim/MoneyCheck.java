@@ -362,6 +362,13 @@ public class MoneyCheck {
         System.out.println("\n--- a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks ---");
         Game yards = new Game(GameFiles.scratch("moneycheck-oldsteel"));
         quietly(yards::run);
+        // WN3: Heavy Industry (Iron & Steel) is held out of the planner's retiring as well as its building (Game: a held sector is skipped by both), so
+        // the yard the fixture stands is still standing when the audit is read. On the world's band scrap's export price is 0.13 a
+        // tonne (0.30 on the literals), the yard buys old steel at 70% of it and sells the scrap at it, and "a Scrap Yard would lose
+        // $100k a month": the sector retires it in month 9 after eight months at a loss, the pool goes to landfill from month 10 and
+        // the last month's audit has no old steel to name. The fixture is about the money audit's naming of what the yard buys, not
+        // whether a yard pays at that price, and an assertion whose subject a planner decides is an assertion about the planner.
+        yards.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         yards.setCashForTest(Founding.WEALTHY_CASH);
         yards.getLandManager().setOwnedSqFt(yards.getLandManager().getOwnedSqFt() + 400_000_000L);
         quietly(() -> {

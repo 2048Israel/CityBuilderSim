@@ -1,6 +1,6 @@
 # HydroCheck.java - 611 lines · 17 methods · 6 constants · harnesses
 
-`ham/citybuildersim/HydroCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HydroCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The Hydro Station and the river it needs (HY1, 2026-10-26; docs/queue/HY1-notes.md): the physics of a drop against
 > its own constants, the sites on synthetic ground, a generated world's city that has none, a city given sites by fiat

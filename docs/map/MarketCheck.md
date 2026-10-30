@@ -1,6 +1,6 @@
 # MarketCheck.java - 673 lines · 22 methods · 3 constants · harnesses
 
-`ham/citybuildersim/MarketCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MarketCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Verifies the efficient market (EM1, 2026-10-29): one value for a share,
 > every holder reading it, and a price that follows it - each claim on a

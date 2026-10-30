@@ -1,6 +1,6 @@
-# AuctionCheck.java - 1,654 lines · 42 methods · 4 constants · harnesses
+# AuctionCheck.java - 1,664 lines · 42 methods · 4 constants · harnesses
 
-`ham/citybuildersim/AuctionCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AuctionCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The city's paper sold at auction: one clearing yield, and what it costs.
 > 
@@ -64,7 +64,7 @@
 >      and the inbox name which. Filled, the same sale covers at the higher
 > ... (21 more lines in the source)
 
-**Uses:** [Auction](Auction.md) (130), [Game](Game.md) (56), [AutoBuilder](AutoBuilder.md) (42), [LongPlaytest](LongPlaytest.md) (25), [DebtQuote](DebtQuote.md) (21), [CapSetting](CapSetting.md) (13), [BuildAdvice](BuildAdvice.md) (12), [OutwardInvestment](OutwardInvestment.md) (11), [Debt](Debt.md) (11), [LongTermBond](LongTermBond.md) (8), [CapitalFlows](CapitalFlows.md) (7), [HouseholdBalance](HouseholdBalance.md) (6), [MediumTermBond](MediumTermBond.md) (5), [Notice](Notice.md) (5), [CityNeeds](CityNeeds.md) (5), [ChildcareCheck](ChildcareCheck.md) (4), [YieldCurve](YieldCurve.md) (4), [DebtManager](DebtManager.md) (4), [GameFiles](GameFiles.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [TimeSkipReport](TimeSkipReport.md) (4), [Rollover](Rollover.md) (4), [Bank](Bank.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Founding](Founding.md) (2), [AuctionTally](AuctionTally.md) (2), [TempDirs](TempDirs.md) (1), [TreasuryFund](TreasuryFund.md) (1), [CityCalendar](CityCalendar.md) (1)
+**Uses:** [Auction](Auction.md) (130), [Game](Game.md) (56), [AutoBuilder](AutoBuilder.md) (42), [LongPlaytest](LongPlaytest.md) (25), [DebtQuote](DebtQuote.md) (21), [CapSetting](CapSetting.md) (13), [BuildAdvice](BuildAdvice.md) (12), [OutwardInvestment](OutwardInvestment.md) (11), [Debt](Debt.md) (11), [LongTermBond](LongTermBond.md) (8), [CapitalFlows](CapitalFlows.md) (7), [HouseholdBalance](HouseholdBalance.md) (6), [MediumTermBond](MediumTermBond.md) (5), [Notice](Notice.md) (5), [CityNeeds](CityNeeds.md) (5), [ChildcareCheck](ChildcareCheck.md) (4), [YieldCurve](YieldCurve.md) (4), [DebtManager](DebtManager.md) (4), [GameFiles](GameFiles.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [TimeSkipReport](TimeSkipReport.md) (4), [Rollover](Rollover.md) (4), [Bank](Bank.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Founding](Founding.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [AuctionTally](AuctionTally.md) (2), [TempDirs](TempDirs.md) (1), [TreasuryFund](TreasuryFund.md) (1)... and 1 more
 
 ## Sections
 
@@ -80,10 +80,10 @@
 | 716 | THE GAME'S OWN SALES (sections 7, 8 and 11): a city that sells its paper |
 | 778 | 7. the lineup in a city |
 | 905 | 8. the quote is the deal, and the settle pays the allotment |
-| 1006 | 11. the real run (D33) |
-| 1088 | SECTIONS 9 AND 10: THE SALES NOBODY PRESSES (CD2, slice 6; D28 to D30) |
-| 1156 | 9. the rollover's own cap, and a short sale paid in full |
-| 1329 | 10. automatic building: its own cap, and the ask a short sale keeps open |
+| 1016 | 11. the real run (D33) |
+| 1098 | SECTIONS 9 AND 10: THE SALES NOBODY PRESSES (CD2, slice 6; D28 to D30) |
+| 1166 | 9. the rollover's own cap, and a short sale paid in full |
+| 1339 | 10. automatic building: its own cap, and the ask a short sale keeps open |
 
 ## Constants
 
@@ -107,14 +107,14 @@
 | 150 | `double bankRoom` | risk-weighted |
 | 151 | `double bankExtra` | risk-weighted |
 | 152 | `boolean panic` |  |
-| 1107 | `static PrintStream quiet` | The stream ChildcareCheck's town and the cities here are built behind. |
-| 1337 | `static double deposit` | The deposit rate of section 10's fixture, found by tuneDeposit(): low enough that at a cap of fair the buyers bid a real share of an issue. |
+| 1117 | `static PrintStream quiet` | The stream ChildcareCheck's town and the cities here are built behind. |
+| 1347 | `static double deposit` | The deposit rate of section 10's fixture, found by tuneDeposit(): low enough that at a cap of fair the buyers bid a real share of an issue. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 100 | 1555 | **type** `public class AuctionCheck` | The city's paper sold at auction: one clearing yield, and what it costs. |
+| 100 | 1565 | **type** `public class AuctionCheck` | The city's paper sold at auction: one clearing yield, and what it costs. |
 | 106 | 5 | `static void assertTrue(String label, boolean ok)` |  |
 | 113 | 6 | `static void close(String label, double actual, double expected, double tol)` | Equal within tol, or within tol of the expected figure's size, whichever is larger. |
 | 121 | 6 | `static void near(String label, double actual, double expected, double abs)` | Equal within an absolute tolerance, for prices per 100. |
@@ -187,46 +187,46 @@
 |---:|---:|---|---|
 | 779 | 125 | `static void section7(Game city)` |  |
 
-### 8. the quote is the deal, and the settle pays the allotment (lines 905-1005)
+### 8. the quote is the deal, and the settle pays the allotment (lines 905-1015)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 906 | 99 | `static void section8(Game city)` |  |
+| 906 | 109 | `static void section8(Game city)` |  |
 
-### 11. the real run (D33) (lines 1006-1087)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1007 | 80 | `static void section11()` |  |
-
-### SECTIONS 9 AND 10: THE SALES NOBODY PRESSES (CD2, slice 6; D28 to D30) (lines 1088-1155)
+### 11. the real run (D33) (lines 1016-1097)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1110 | 7 | `static String printed(Runnable r)` | What a piece of work printed: the log is where the rollover and the builder say what they did. |
-| 1119 | 10 | `static void roomTo(Game g, double faceRoom)` | Leaves the bank room for this much face of the city's paper and no more: its weighted book raised until the room the auction reads is that. |
-| 1131 | 4 | `static Game reload(Game g)` | A city saved to its own scratch folder's slot 10 and loaded into another Game, as a player's reload. |
-| 1137 | 5 | `static Game load(Game g)` | ...the same save loaded again, into a city of its own. |
-| 1144 | 5 | `static int salesBy(Game g, String by)` | The sales automatic building and the rollover made in the month just run, by whom. |
-| 1150 | 5 | `static int siteCount(Game g)` |  |
+| 1017 | 80 | `static void section11()` |  |
 
-### 9. the rollover's own cap, and a short sale paid in full (lines 1156-1328)
+### SECTIONS 9 AND 10: THE SALES NOBODY PRESSES (CD2, slice 6; D28 to D30) (lines 1098-1165)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1159 | 9 | `static Game rolloverTown(Path root, String label)` | A town with the rollover on, a 3-month note of D$20M on its books that falls due next month. |
-| 1170 | 1 | **type** `record Scene(Rollover.Issue issue, double askFace, double hhCapped, double hhFilled, double room, double cash)` | What the rollover is about to roll, and the room that makes it short at the default cap and covered at Fill it. |
-| 1177 | 12 | `static Scene scene(Game g, double cash)` | The rollover's one issue as the city stands with `cash` in the treasury and the deposit rate at 3% (so the households' appetite has a slope), with the bank's room ample, and the room that leaves the default cap short ... |
-| 1190 | 138 | `static void section9(Path root) throws Exception` |  |
+| 1120 | 7 | `static String printed(Runnable r)` | What a piece of work printed: the log is where the rollover and the builder say what they did. |
+| 1129 | 10 | `static void roomTo(Game g, double faceRoom)` | Leaves the bank room for this much face of the city's paper and no more: its weighted book raised until the room the auction reads is that. |
+| 1141 | 4 | `static Game reload(Game g)` | A city saved to its own scratch folder's slot 10 and loaded into another Game, as a player's reload. |
+| 1147 | 5 | `static Game load(Game g)` | ...the same save loaded again, into a city of its own. |
+| 1154 | 5 | `static int salesBy(Game g, String by)` | The sales automatic building and the rollover made in the month just run, by whom. |
+| 1160 | 5 | `static int siteCount(Game g)` |  |
 
-### 10. automatic building: its own cap, and the ask a short sale keeps open (lines 1329-1654)
+### 9. the rollover's own cap, and a short sale paid in full (lines 1166-1338)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1332 | 3 | `static BuildAdvice.Measure streets()` | The measure Streets, whose card is a Paved Road: the first the pass walks to in the fixture's town. |
-| 1346 | 13 | `static double tuneDeposit(Game g, double gap, Cap cap)` | The deposit rate at which a bond for `gap` sold at the builder's cap of fair sells short, but a share of the issue that is over the smallest deal worth arranging (Game.isTinySale(): under it a short sale is no sale), ... |
-| 1365 | 4 | `static void useUpTheRoom(Game g)` | The room used up and the deposit rate tuneDeposit() found, so that at a cap of fair the buyers bid a real share of an issue and the bank bids D$100k of face: a bond for an order sells short, over the smallest deal wor... |
-| 1375 | 6 | `static String month(Game g, boolean ample)` | One month of the fixture's, run and printed: the room used up as above (unless `ample`), and the treasury's cash set to the reserve plus what the asks hold - the month's other bills are met from elsewhere, so what an ... |
-| 1383 | 5 | `static double placedIn(AutoBuilder ab, int month)` | What the builder's orders placed in a month cost, ground with them: the cash they took out of the treasury. |
-| 1389 | 265 | `static void section10(Path root) throws Exception` |  |
+| 1169 | 9 | `static Game rolloverTown(Path root, String label)` | A town with the rollover on, a 3-month note of D$20M on its books that falls due next month. |
+| 1180 | 1 | **type** `record Scene(Rollover.Issue issue, double askFace, double hhCapped, double hhFilled, double room, double cash)` | What the rollover is about to roll, and the room that makes it short at the default cap and covered at Fill it. |
+| 1187 | 12 | `static Scene scene(Game g, double cash)` | The rollover's one issue as the city stands with `cash` in the treasury and the deposit rate at 3% (so the households' appetite has a slope), with the bank's room ample, and the room that leaves the default cap short ... |
+| 1200 | 138 | `static void section9(Path root) throws Exception` |  |
+
+### 10. automatic building: its own cap, and the ask a short sale keeps open (lines 1339-1664)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1342 | 3 | `static BuildAdvice.Measure streets()` | The measure Streets, whose card is a Paved Road: the first the pass walks to in the fixture's town. |
+| 1356 | 13 | `static double tuneDeposit(Game g, double gap, Cap cap)` | The deposit rate at which a bond for `gap` sold at the builder's cap of fair sells short, but a share of the issue that is over the smallest deal worth arranging (Game.isTinySale(): under it a short sale is no sale), ... |
+| 1375 | 4 | `static void useUpTheRoom(Game g)` | The room used up and the deposit rate tuneDeposit() found, so that at a cap of fair the buyers bid a real share of an issue and the bank bids D$100k of face: a bond for an order sells short, over the smallest deal wor... |
+| 1385 | 6 | `static String month(Game g, boolean ample)` | One month of the fixture's, run and printed: the room used up as above (unless `ample`), and the treasury's cash set to the reserve plus what the asks hold - the month's other bills are met from elsewhere, so what an ... |
+| 1393 | 5 | `static double placedIn(AutoBuilder ab, int month)` | What the builder's orders placed in a month cost, ground with them: the cash they took out of the treasury. |
+| 1399 | 265 | `static void section10(Path root) throws Exception` |  |
 

@@ -927,6 +927,10 @@ public final class Refining extends Sector {
         return lines;
     }
 
+    /** Their crude is the run's (THE RUN), and every product leaves (THE RUN'S PRODUCTS ALL LEAVE): it is not ordered for what one line plans (Sector, THE ORDER; WN3). */
+    @Override
+    protected boolean ordersForWhatItMakes() { return false; }
+
     /** Their crude, while they keep it, is stock (Sector.buysAhead()). */
     @Override
     public boolean buysAhead(Good g) {

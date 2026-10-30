@@ -199,7 +199,8 @@ public final class TradeBand {
             double margin = Math.max(0, fin(m.worldMargin()));
             double inBand = fin(m.freightInBand());
             double seaShare = unit(freight.seaShareInForce(g));
-            double seaMost = 2 * g.baseFreight() * fin(m.getExchangeRate()) * Ports.seaFactor(seaShare, Ports.seaFreightShareOf(g));
+            // ...the ships' piece of the band's own freight (WN3: bandFreight(), the lorries' freight shrunk to a world-struck band, not Good.baseFreight()).
+            double seaMost = 2 * fin(m.bandFreight()) * fin(m.getExchangeRate()) * Ports.seaFactor(seaShare, Ports.seaFreightShareOf(g));
             double sea = Math.max(0, Math.min(inBand, fin(seaMost)));
             double lorry = inBand - sea;
             double rail = fin(m.railInWedge());

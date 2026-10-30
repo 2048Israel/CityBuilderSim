@@ -1,6 +1,6 @@
 # LandConversion.java - 219 lines · 7 methods · 9 constants · model
 
-`ham/citybuildersim/LandConversion.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandConversion.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > A saved city's land put on the block grid, and a city's land drawn again to hold a new figure: a format-31 save's lanes snapped to whole blocks, an older save's one figure drawn as a centre of blocks to the plot round the site found for it, its iron as its save had it, and twenty-four offers listed round it.
 > 

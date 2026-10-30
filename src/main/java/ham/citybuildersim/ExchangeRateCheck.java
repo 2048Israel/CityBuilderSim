@@ -974,7 +974,14 @@ public class ExchangeRateCheck {
         // The treasury dealt in no month of this run (the count above): a counter that reads nothing must be shown to read, so the
         // harness makes a deal itself, between months as a player does, and the next month must count it, here and in the playtest.
         int dealtRun = t.dealt, playtestDealt = LongPlaytest.floatDealt;
-        quietly(() -> g.buyForeignCurrency(Math.max(1, g.getCash() * .001)));
+        // WN3: on the world's band the playtest's treasury ends month 360 in overdraft (cash -18,397 on 201,258 of debt), and
+        // Game.buyForeignCurrency() spends min(amount, cash): no dollars are bought, none is pending, and the counter is shown
+        // nothing. A player buys with money in hand, so the treasury is given some (a thousandth of a month's GDP) as
+        // the deal is made; the months that follow are counted as ever.
+        quietly(() -> {
+            if (g.getCash() < 1) g.setCashForTest(g.getEconomyManager().getMonthGdp() * .001);
+            g.buyForeignCurrency(Math.max(1, g.getCash() * .001));
+        });
         assertTrue("fixture: a purchase of dollars is pending", g.getForeignAccounts().getDealtSinceReprice() > 0);
         stepQuietly(t, g);
         assertTrue("a month that opens with a purchase of dollars pending is counted as one the treasury dealt in, here and in the playtest",

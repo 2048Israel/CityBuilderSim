@@ -170,6 +170,28 @@ import java.util.zip.CRC32;
  *      written by usd() and people() with its mark, the ranks rankings in
  *      ordinal words, the money row for the US dollar and another money, the
  *      hover's words; on the fixture and the full file.
+ *  13. THE CITY'S TRADE AS LANES (WN3, slice C; spec-nations 8, board 1):
+ *      TradeLanes builds, once when a month's figures change, a tree of
+ *      great-circle lanes from the city with the partners over MIN_LANE: a
+ *      partner joins the nearest vertex of a nearer one's lane if the
+ *      route stays within BUNDLE_DETOUR of its direct way, so ten European
+ *      partners of a Halifax city leave it in fewer lanes than partners and
+ *      branch; every partner is reached, an edge's sums are its partners',
+ *      a partner under MIN_LANE has none, an edge is kept once and sampled
+ *      every LANE_STEP degrees on its great circle; the lanes are the same
+ *      for the same month and figures and built again for no other; a view
+ *      turned away projects nothing and every vertex drawn is within
+ *      DRAW_MARGIN_PX of the canvas; a frame's pixels are GlobeFrame.at()'s,
+ *      the sales and the purchases of an edge side by side, each half the
+ *      other's width off the line, one stroke a width; 196 partners are built
+ *      in LANE_BUILD_MS and a frame of them drawn in LANE_FRAME_MS (the
+ *      median of 31 rounds). The card's trade rows (Buys from us, Sells us,
+ *      The haul) are the card's own words and formats, absent without trade.
+ *  14. A GENERATED WORLD'S PARTNERS AS ARROWS: a partner due east of the
+ *      stand-in has an arrow on the right edge (north the top, ...), at most
+ *      ARROWS_MAX of the largest, the rest counted, none under MIN_LANE, a
+ *      crowd on one bearing moved apart ARROW_GAP_PX along the edge, the
+ *      bearing the initial great-circle one.
  *
  * The fixture (EarthCheck's) causes the camera's conditions: its windows
  * hold coasts, rivers and small lakes and Fiji's the date line; its bands
@@ -273,6 +295,7 @@ public class GlobeCheck {
         reliefInPicture(data, id, full, pic);
         frame(pic);
         nations();
+        tradeRoutes();
         out.println();
         if (fails == 0) out.println("All checks passed.");
         else out.println(fails + " check(s) failed.");
@@ -2483,6 +2506,7 @@ public class GlobeCheck {
             agreeWithAt("the fixture, Benelux at 1 km a pixel", map, fixture, viewOf(51.44, 4.93, 1), 1);
             fixtureHits(map, nations, expect);
             cards("the fixture", map, nations, 2030);
+            tradeCard("the fixture", map, nations);
         }
         Path fullPath = WorldData.locate();
         String named = System.getProperty(WorldData.PROPERTY);
@@ -2510,6 +2534,8 @@ public class GlobeCheck {
             dotsAndLabels(map, full, nations);
             fullHits(map, nations);
             cards("the full file", map, nations, 2025);
+            tradeCard("the full file", map, nations);
+            fullLanes(map);
         }
     }
 
@@ -2910,5 +2936,456 @@ public class GlobeCheck {
                 && hover.get(1).equals("GDP " + NationsMap.usd(nations.year(bel, YEAR).output()) + " · " + NationsMap.people(nations.year(bel, YEAR).people()) + " people")
                 && hover.get(2).equals(String.format(Locale.US, "%,d km from the city", km)) && hover.get(3).equals(NationsMap.CLICK_FOR_CARD) && card.distance().equals(hover.get(2))
                 && card.region().equals("Europe & Central Asia"));
+    }
+
+    /* =====================================================================
+       13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4)
+       ===================================================================== */
+
+    /** Twelve partners of a Halifax city, {lat, lon}: the ten nodes of Europe that are partners at 1,000 sold and 500 bought, Poland at 100 and 100 (under MIN_LANE) and Sweden at 200 and 100 (at it). */
+    static final double[][] EUROPE = { { 54.0, -2.0 }, { 53.4, -8.0 }, { 64.9, -18.6 }, { 60.5, 8.5 }, { 46.6, 2.3 }, { 40.4, -3.7 }, { 39.6, -8.0 }, { 51.0, 10.0 }, { 52.1, 5.3 }, { 42.8, 12.6 },
+            { 52.0, 19.0 }, { 62.0, 15.0 } };
+
+    /** The rounds a trade timing takes the median of (31), after as many as it takes to warm the JIT (300). */
+    static final int TRADE_ROUNDS = 31, TRADE_WARM = 300;
+
+    /** The angle between two unit vectors, radians, from the chord (exact for two that are the same place, where an arc cosine reads 1.5e-8). */
+    static double angleBetween(double[] a, double[] b) {
+        double dx = a[0] - b[0], dy = a[1] - b[1], dz = a[2] - b[2];
+        return 2 * Math.asin(Math.min(1, Math.sqrt(dx * dx + dy * dy + dz * dz) / 2));
+    }
+
+    /** A vertex of the lanes as a unit vector. */
+    static double[] vertexOf(TradeLanes t, int vertex) { return TradeLanes.unit(t.vertexLat(vertex), t.vertexLon(vertex)); }
+
+    /** An edge's length along its vertices, radians. */
+    static double lengthOf(TradeLanes t, int edge) {
+        double sum = 0;
+        for (int k = t.edgeFirst(edge); k < t.edgeLast(edge); k++) sum += angleBetween(vertexOf(t, k), vertexOf(t, k + 1));
+        return sum;
+    }
+
+    /** The median of figures. */
+    static double medianOf(double[] v) {
+        double[] s = v.clone();
+        Arrays.sort(s);
+        return s[s.length / 2];
+    }
+
+    /** n partners all over the planet, seeded, each over MIN_LANE both ways: {lat}, {lon}, {sold}, {bought}. */
+    static double[][] everywhere(int n, long seed) {
+        Random r = new Random(seed);
+        double[][] a = new double[4][n];
+        for (int i = 0; i < n; i++) {
+            a[0][i] = Math.toDegrees(Math.asin(r.nextDouble() * 2 - 1));
+            a[1][i] = r.nextDouble() * 360 - 180;
+            a[2][i] = TradeLanes.MIN_LANE + r.nextDouble() * 20_000;
+            a[3][i] = TradeLanes.MIN_LANE + r.nextDouble() * 20_000;
+        }
+        return a;
+    }
+
+    /** The twelve partners of EUROPE: {lat}, {lon}, {sold}, {bought}, the ten at 1,000 and 500, Poland at 100 and 100, Sweden at 200 and 100. */
+    static double[][] europe() {
+        int n = EUROPE.length;
+        double[][] a = new double[4][n];
+        for (int i = 0; i < n; i++) {
+            a[0][i] = EUROPE[i][0];
+            a[1][i] = EUROPE[i][1];
+            a[2][i] = i < 10 ? 1000 : i == 10 ? 100 : 200;
+            a[3][i] = i < 10 ? 500 : 100;
+        }
+        return a;
+    }
+
+    static void tradeRoutes() {
+        out.println("\n--- 13. the city's trade as lanes: shared and branching, each edge once, cached, culled to the view and timed (1,389 x 868, a Halifax city) ---");
+        lanesShare();
+        lanesCached();
+        lanesCulled();
+        lanesDrawn();
+        lanesTimed("196 partners all over the planet", everywhere(196, 196));
+        out.println("\n--- 14. a generated world's partners as arrows at the map's edge ---");
+        arrowsAtTheEdge();
+    }
+
+    static void lanesShare() {
+        double[][] a = europe();
+        double[] la = a[0], lo = a[1], ex = a[2], im = a[3];
+        int n = la.length;
+        TradeLanes t = TradeLanes.of(CITIES[0][0], CITIES[0][1], 7, la, lo, ex, im);
+        double[] city = TradeLanes.unit(CITIES[0][0], CITIES[0][1]);
+        int lanes = 0, missing = 0, wrongEnd = 0, broken = 0, tooLong = 0, laneForNone = 0, bySum = 0, separate = 0;
+        double longest = 0;
+        double[] sell = new double[t.edges()], buy = new double[t.edges()];
+        for (int i = 0; i < n; i++) {
+            boolean over = ex[i] + im[i] >= TradeLanes.MIN_LANE;
+            int e = t.partnerEdge(i);
+            if (!over) {
+                if (e != -1) laneForNone++;
+                continue;
+            }
+            lanes++;
+            if (e < 0) {
+                missing++;
+                continue;
+            }
+            double[] node = TradeLanes.unit(la[i], lo[i]);
+            if (angleBetween(vertexOf(t, t.edgeLast(e)), node) > 1e-9) wrongEnd++;
+            double route = 0;
+            int steps = 0;
+            for (int c = e; c >= 0; c = t.edgeParent(c)) {
+                route += lengthOf(t, c);
+                sell[c] += ex[i];
+                buy[c] += im[i];
+                int p = t.edgeParent(c);
+                if (angleBetween(vertexOf(t, t.edgeFirst(c)), p >= 0 ? vertexOf(t, t.edgeLast(p)) : city) > 1e-9) broken++;
+                if (++steps > t.edges()) {
+                    broken++;
+                    break;
+                }
+            }
+            double d = angleBetween(city, node);
+            separate += (int) Math.max(1, Math.ceil(Math.toDegrees(d) / TradeLanes.LANE_STEP - 1e-9)) + 1;
+            if (route > (1 + TradeLanes.BUNDLE_DETOUR) * d + 1e-9) tooLong++;
+            longest = Math.max(longest, route / d - 1);
+        }
+        for (int e = 0; e < t.edges(); e++) if (Math.abs(sell[e] - t.edgeSell(e)) > 1e-9 || Math.abs(buy[e] - t.edgeBuy(e)) > 1e-9) bySum++;
+        double trunkSell = 0, trunkBuy = 0, allSell = 0, allBuy = 0;
+        for (int e = 0; e < t.edges(); e++) if (t.edgeParent(e) < 0) {
+            trunkSell += t.edgeSell(e);
+            trunkBuy += t.edgeBuy(e);
+        }
+        for (int i = 0; i < n; i++) if (ex[i] + im[i] >= TradeLanes.MIN_LANE) {
+            allSell += ex[i];
+            allBuy += im[i];
+        }
+        out.printf("      %d partners (Poland under MIN_LANE has none, Sweden at it has one) are %d edges of %d sampled vertices where lanes apiece would sample %d: %d leave the city, %d are branch points; the longest route is %.1f%% over its direct way%n",
+                t.partners(), t.edges(), t.vertices(), separate, t.leavingCity(), t.branchPoints(), 100 * longest);
+        check("the lanes share: " + t.partners() + " Halifax partners in Europe are " + t.edges() + " edges, " + t.leavingCity() + " of them leaving the city (fewer than the partners) and " + t.branchPoints() + " branch points (at least one)",
+                lanes == t.partners() && t.leavingCity() < t.partners() && t.leavingCity() >= 1 && t.branchPoints() >= 1);
+        check("every partner over MIN_LANE is reached: its lane's last vertex is its node, and each edge on the way back starts where the one before it ends, the last at the city",
+                missing == 0 && wrongEnd == 0 && broken == 0 && lanes == 11);
+        check("every route through the tree is within BUNDLE_DETOUR (" + TradeLanes.BUNDLE_DETOUR + ") of its direct great circle, the longest " + String.format(Locale.US, "%.1f", 100 * longest) + "%", tooLong == 0);
+        check("an edge's sums are the sales and the purchases of the partners beyond it, and the edges that leave the city carry all of them (" + trunkSell + " sold, " + trunkBuy + " bought)",
+                bySum == 0 && Math.abs(trunkSell - allSell) < 1e-9 && Math.abs(trunkBuy - allBuy) < 1e-9);
+        check("a partner under MIN_LANE has no lane (Poland, " + (ex[10] + im[10]) + "), one at MIN_LANE has (Sweden, " + (ex[11] + im[11]) + ")",
+                laneForNone == 0 && t.partnerEdge(10) == -1 && t.partnerEdge(11) >= 0 && ex[11] + im[11] == TradeLanes.MIN_LANE);
+        check("the sampled vertices are fewer than lanes apiece would be (" + t.vertices() + " of " + separate + "), the shared stretches kept once", t.vertices() < separate);
+        int doubled = 0, twice = 0, coarse = 0, off = 0;
+        for (int x = 0; x < t.edges(); x++) {
+            double[] first = vertexOf(t, t.edgeFirst(x)), last = vertexOf(t, t.edgeLast(x));
+            for (int y = x + 1; y < t.edges(); y++) {
+                if (angleBetween(first, vertexOf(t, t.edgeFirst(y))) < 1e-9 && angleBetween(last, vertexOf(t, t.edgeLast(y))) < 1e-9) doubled++;
+                for (int u = t.edgeFirst(x) + 1; u < t.edgeLast(x); u++)
+                    for (int v = t.edgeFirst(y) + 1; v < t.edgeLast(y); v++) if (angleBetween(vertexOf(t, u), vertexOf(t, v)) < 1e-9) twice++;
+            }
+            for (int k = t.edgeFirst(x); k < t.edgeLast(x); k++) {
+                if (Math.toDegrees(angleBetween(vertexOf(t, k), vertexOf(t, k + 1))) > TradeLanes.LANE_STEP + 1e-9) coarse++;
+                // on the great circle through the edge's ends: the triple product vanishes
+                double[] v = vertexOf(t, k);
+                double det = v[0] * (first[1] * last[2] - first[2] * last[1]) - v[1] * (first[0] * last[2] - first[2] * last[0]) + v[2] * (first[0] * last[1] - first[1] * last[0]);
+                if (Math.abs(det) > 1e-9) off++;
+            }
+        }
+        check("each edge is kept once: no two edges join the same two places, no inner vertex is kept twice, and an edge is sampled every LANE_STEP (" + TradeLanes.LANE_STEP + ") degrees or less on its great circle",
+                doubled == 0 && twice == 0 && coarse == 0 && off == 0);
+        double ref = 10_000;
+        check("a width is 0 for no money, LANE_MIN_PX for a trace, LANE_MAX_PX for the largest, 3 for a tenth of it and 2 for a hundredth (the square root of the share), and never less for more",
+                TradeLanes.widthPx(0, ref) == 0 && TradeLanes.widthPx(Double.NaN, ref) == 0 && TradeLanes.widthPx(1, ref) == TradeLanes.LANE_MIN_PX && TradeLanes.widthPx(ref, ref) == TradeLanes.LANE_MAX_PX
+                        && TradeLanes.widthPx(ref * 2, ref) == TradeLanes.LANE_MAX_PX && TradeLanes.widthPx(ref / 10, ref) == 3 && TradeLanes.widthPx(ref / 100, ref) == 2 && widthsRise(ref));
+        int widest = 0, trunkPx = 0;
+        for (int e = 0; e < t.edges(); e++) {
+            widest = Math.max(widest, Math.max(t.edgeSellPx(e), t.edgeBuyPx(e)));
+            if (t.edgeParent(e) < 0) trunkPx = Math.max(trunkPx, t.edgeSellPx(e));
+        }
+        check("the widest edge is LANE_MAX_PX (" + widest + "), and it is a trunk's (" + trunkPx + ")", widest == TradeLanes.LANE_MAX_PX && trunkPx == TradeLanes.LANE_MAX_PX);
+        TradeLanes none = TradeLanes.of(CITIES[0][0], CITIES[0][1], 1, new double[0], new double[0], new double[0], new double[0]);
+        TradeLanes odd = TradeLanes.of(CITIES[0][0], CITIES[0][1], 1, new double[] { CITIES[0][0], -CITIES[0][0], 10, 20, 30 }, new double[] { CITIES[0][1], CITIES[0][1] + 180, Double.NaN, 20, 30 },
+                new double[] { 1000, 1000, 1000, Double.NaN, -5 }, new double[] { 0, 0, 0, 0, 100 });
+        GlobeFrame plane = viewOf(CITIES[0][0], CITIES[0][1], 0.1);
+        check("no trade is no lane and no draw; a partner at the city has none, one at its antipode a lane of ninety segments, a node or a figure that is not a number, or is negative, none, and the city's plane draws none",
+                none.partners() == 0 && none.edges() == 0 && none.runs(viewOf(0, 0, 0)).runs.runs() == 0 && odd.partners() == 1 && odd.partnerEdge(0) == -1 && odd.partnerEdge(1) >= 0
+                        && odd.edgeLast(odd.partnerEdge(1)) - odd.edgeFirst(odd.partnerEdge(1)) == 90 && odd.partnerEdge(2) == -1 && odd.partnerEdge(3) == -1 && odd.partnerEdge(4) == -1
+                        && plane.tier() == GlobeFrame.PLANE && t.runs(plane).runs.runs() == 0);
+    }
+
+    /** Whether widthPx() never falls as the money grows, over a thousand steps. */
+    static boolean widthsRise(double ref) {
+        int last = 0;
+        for (int k = 0; k <= 1000; k++) {
+            int w = TradeLanes.widthPx(ref * k / 1000, ref);
+            if (w < last) return false;
+            last = w;
+        }
+        return true;
+    }
+
+    static void lanesCached() {
+        double[][] a = europe();
+        double[] la = a[0], lo = a[1], ex = new double[la.length], im = a[3];
+        for (int i = 0; i < ex.length; i++) ex[i] = 1000 + i;
+        double[] mine = ex.clone();
+        TradeLanes t = TradeLanes.of(CITIES[0][0], CITIES[0][1], 7, la, lo, mine, im);
+        mine[0] = 12345;
+        double[] moved = ex.clone();
+        moved[3] += 1;
+        double[] shorter = Arrays.copyOf(ex, ex.length - 1);
+        check("the lanes are the same for the same month, city and every figure (the build keeps a copy), and not for another month, another city, one figure moved by one, a shorter list, or the caller's array changed after the build",
+                t.matches(7, CITIES[0][0], CITIES[0][1], ex.clone(), im.clone()) && !t.matches(8, CITIES[0][0], CITIES[0][1], ex, im) && !t.matches(7, CITIES[1][0], CITIES[1][1], ex, im)
+                        && !t.matches(7, CITIES[0][0], CITIES[0][1], moved, im) && !t.matches(7, CITIES[0][0], CITIES[0][1], shorter, im) && !t.matches(7, CITIES[0][0], CITIES[0][1], mine, im));
+        // the screen's rule - lanes kept while matches() holds - over twelve months of thirty frames, the feed handing back fresh arrays every frame
+        TradeLanes kept = null;
+        int builds = 0;
+        for (int month = 1; month <= 12; month++)
+            for (int frame = 0; frame < 30; frame++) {
+                double[] e = ex.clone();
+                if (month == 6 && frame >= 15) e[2] += 1;
+                if (kept == null || !kept.matches(month, CITIES[0][0], CITIES[0][1], e, im)) {
+                    kept = TradeLanes.of(CITIES[0][0], CITIES[0][1], month, la, lo, e, im);
+                    builds++;
+                }
+            }
+        check("lanes kept while their month and figures stand are built once a month: 12 months of 30 frames, and one figure moved in the middle of a month, are " + builds + " builds (13)", builds == 13);
+        GlobeFrame f = viewOf(0, 0, 0), g = viewOf(0, 0, 0), h = viewOf(0, 0, 0);
+        h.set(h.centreLat() + 0.01, h.centreLon(), h.kmPx());
+        TradeLanes.Drawn d = t.runs(f);
+        check("the same view twice gives back the same Drawn (the cache), and a view moved a little does not", t.runs(f) == d && t.runs(g) == d && t.runs(h) != d);
+    }
+
+    static void lanesCulled() {
+        double[][] a = europe();
+        TradeLanes t = TradeLanes.of(CITIES[0][0], CITIES[0][1], 7, a[0], a[1], a[2], a[3]);
+        GlobeFrame away = viewOf(-CITIES[0][0], CITIES[0][1] + 180, 10), planet = viewOf(0, 0, 0);
+        TradeLanes.Drawn gone = t.runs(away), whole = t.runs(planet);
+        check("with the view turned away from the lanes (the city's antipode at 10 km a pixel) nothing is projected: " + gone.projected + " vertices, " + gone.edgesInView + " edges in view, " + gone.runs.runs() + " runs; the whole planet projects "
+                + whole.projected + " (a branch point is read by both its edges; " + t.vertices() + " are sampled) and has " + whole.edgesInView + " of " + t.edges() + " edges in view",
+                away.tier() == GlobeFrame.PICTURE && gone.projected == 0 && gone.edgesInView == 0 && gone.runs.runs() == 0 && whole.projected > 0 && whole.edgesInView == t.edges() && whole.runs.runs() > 0);
+        double[][] all = everywhere(196, 196);
+        TradeLanes big = TradeLanes.of(CITIES[0][0], CITIES[0][1], 7, all[0], all[1], all[2], all[3]);
+        TradeLanes.Drawn planetBig = big.runs(viewOf(0, 0, 0)), europe = big.runs(viewOf(VIEWS[2][0], VIEWS[2][1], VIEWS[2][2]));
+        out.printf("      196 partners: %d edges, %d branch points, %d leave the city, %d sampled vertices; the planet has %d edges in view and projects %d vertices, Europe at 3 km a pixel %d edges and %d vertices%n",
+                big.edges(), big.branchPoints(), big.leavingCity(), big.vertices(), planetBig.edgesInView, planetBig.projected, europe.edgesInView, europe.projected);
+        check("over Europe at 3 km a pixel fewer than half the edges are in view (" + europe.edgesInView + " of " + big.edges() + ") and fewer vertices are projected than for the planet (" + europe.projected + " of " + planetBig.projected + ")",
+                europe.edgesInView * 2 < big.edges() && europe.projected < planetBig.projected);
+        int outside = 0;
+        for (int v = 0; v < VIEWS.length; v++) {
+            GlobeFrame f = viewOf(VIEWS[v][0], VIEWS[v][1], VIEWS[v][2]);
+            NationsMap.Runs r = big.runs(f).runs;
+            double eps = 1e-6;
+            for (int k = 0; k < r.vertices(); k++)
+                if (r.xs[k] < -NationsMap.DRAW_MARGIN_PX - eps || r.xs[k] > f.width() + NationsMap.DRAW_MARGIN_PX + eps || r.ys[k] < -NationsMap.DRAW_MARGIN_PX - eps || r.ys[k] > f.height() + NationsMap.DRAW_MARGIN_PX + eps) outside++;
+        }
+        check("every vertex drawn, in the four views of section 9, is within DRAW_MARGIN_PX (" + NationsMap.DRAW_MARGIN_PX + ") of the canvas", outside == 0);
+    }
+
+    static void lanesDrawn() {
+        double[][] a = europe();
+        // sales alone: nothing moves sideways, so each point is its vertex's own pixel through GlobeFrame.at()
+        TradeLanes t = TradeLanes.of(CITIES[0][0], CITIES[0][1], 7, a[0], a[1], a[2], new double[a[0].length]);
+        GlobeFrame f = viewOf(0, 0, 0);
+        NationsMap.Runs r = t.runs(f).runs;
+        List<double[]> expect = new ArrayList<>();
+        for (int e = 0; e < t.edges(); e++) {
+            int from = t.edgeFirst(e), to = t.edgeLast(e);
+            double[][] at = new double[to - from + 1][];
+            for (int k = from; k <= to; k++) at[k - from] = f.at(t.vertexLat(k), t.vertexLon(k));
+            for (int k = from; k <= to; k++)
+                if (at[k - from] != null && ((k > from && at[k - from - 1] != null) || (k < to && at[k - from + 1] != null))) expect.add(at[k - from]);
+        }
+        List<double[]> got = new ArrayList<>();
+        for (int k = 0; k < r.vertices(); k++) got.add(new double[] { r.xs[k], r.ys[k] });
+        expect.sort((p, q) -> Double.compare(p[0], q[0]));
+        got.sort((p, q) -> Double.compare(p[0], q[0]));
+        double worst = 0;
+        for (int k = 0; k < Math.min(expect.size(), got.size()); k++) worst = Math.max(worst, Math.max(Math.abs(expect.get(k)[0] - got.get(k)[0]), Math.abs(expect.get(k)[1] - got.get(k)[1])));
+        check("a frame projects each vertex to the pixel GlobeFrame.at() gives it, from the unit vectors: " + got.size() + " points against " + expect.size() + ", the worst " + String.format(Locale.US, "%.2g", worst) + " px",
+                expect.size() == got.size() && worst < 1e-6 && r.vertices() > 20);
+        // side by side: Halifax to Lisbon, sold 8,000 and bought 2,000 - widths 8 and 5
+        TradeLanes one = TradeLanes.of(CITIES[0][0], CITIES[0][1], 7, new double[] { 38.7 }, new double[] { -9.1 }, new double[] { 8000 }, new double[] { 2000 });
+        GlobeFrame atlantic = viewOf(45, -35, 10);
+        TradeLanes.Drawn d = one.runs(atlantic);
+        int sellBucket = TradeLanes.LANE_MAX_PX - 1, buyBucket = TradeLanes.LANE_MAX_PX + 5 - 1;
+        int sellRuns = d.bucketRuns[sellBucket + 1] - d.bucketRuns[sellBucket], buyRuns = d.bucketRuns[buyBucket + 1] - d.bucketRuns[buyBucket], inOthers = d.runs.runs() - sellRuns - buyRuns;
+        boolean side = one.edges() == 1 && sellRuns == 1 && buyRuns == 1 && inOthers == 0 && one.edgeSellPx(0) == 8 && one.edgeBuyPx(0) == 5;
+        double wrong = 0;
+        if (side) {
+            int s0 = d.runs.starts[d.bucketRuns[sellBucket]], s1 = d.runs.starts[d.bucketRuns[sellBucket] + 1], b0 = d.runs.starts[d.bucketRuns[buyBucket]], b1 = d.runs.starts[d.bucketRuns[buyBucket] + 1];
+            side = s1 - s0 == b1 - b0 && s1 - s0 == one.edgeLast(0) - one.edgeFirst(0) + 1;
+            for (int k = 0; side && k < s1 - s0; k++) {
+                double[] p = atlantic.at(one.vertexLat(one.edgeFirst(0) + k), one.vertexLon(one.edgeFirst(0) + k));
+                double sx = d.runs.xs[s0 + k] - p[0], sy = d.runs.ys[s0 + k] - p[1], bx = d.runs.xs[b0 + k] - p[0], by = d.runs.ys[b0 + k] - p[1];
+                // the sales stand half the purchases' width off the line (2.5), the purchases half the sales' (4), on its two sides: 6.5 apart
+                wrong = Math.max(wrong, Math.max(Math.abs(Math.hypot(sx, sy) - 2.5), Math.max(Math.abs(Math.hypot(bx, by) - 4), Math.abs(Math.hypot(sx - bx, sy - by) - 6.5))));
+                if (sx * bx + sy * by >= 0) wrong = Math.max(wrong, 1);
+            }
+        }
+        check("the sales (8 px) and the purchases (5 px) of a lane lie side by side, each stroke half the other's width off the line on opposite sides, 6.5 px apart, stroked each in its own width's bucket (worst miss " + String.format(Locale.US, "%.2g", wrong) + " px)",
+                side && wrong < 1e-6);
+    }
+
+    static void lanesTimed(String scope, double[][] a) {
+        int n = a[0].length;
+        TradeLanes t = null;
+        for (int k = 0; k < TRADE_WARM; k++) t = TradeLanes.of(CITIES[0][0], CITIES[0][1], k, a[0], a[1], a[2], a[3]);
+        double[] builds = new double[TRADE_ROUNDS];
+        for (int k = 0; k < TRADE_ROUNDS; k++) {
+            long c0 = MapCheck.monthClock();
+            t = TradeLanes.of(CITIES[0][0], CITIES[0][1], k, a[0], a[1], a[2], a[3]);
+            builds[k] = (MapCheck.monthClock() - c0) / 1e6;
+        }
+        double built = medianOf(builds);
+        out.printf("      %s: %d partners, %d edges, %d branch points, %d leave the city, %d sampled vertices; built in %.3f ms (median of %d)%n", scope, t.partners(), t.edges(), t.branchPoints(), t.leavingCity(), t.vertices(), built, TRADE_ROUNDS);
+        check(scope + ": the lanes are built in no more than LANE_BUILD_MS (" + TradeLanes.LANE_BUILD_MS + ") of " + clock() + ", the median of " + TRADE_ROUNDS + " rounds", t.partners() == n && Timing.within(built, TradeLanes.LANE_BUILD_MS));
+        for (int v = 0; v < VIEWS.length; v++) {
+            GlobeFrame f = viewOf(VIEWS[v][0], VIEWS[v][1], VIEWS[v][2]);
+            double lat = f.centreLat(), lon = f.centreLon(), km = f.kmPx();
+            double[] frames = new double[TRADE_ROUNDS];
+            TradeLanes.Drawn d = null;
+            for (int k = 1; k <= TRADE_WARM + TRADE_ROUNDS; k++) {
+                f.set(lat + k * 1e-3, lon + k * 1.3e-3, km);
+                long c0 = MapCheck.monthClock();
+                d = t.runs(f);
+                long c1 = MapCheck.monthClock();
+                if (k > TRADE_WARM) frames[k - TRADE_WARM - 1] = (c1 - c0) / 1e6;
+            }
+            double ms = medianOf(frames);
+            out.printf("      %s: a frame's lanes in %.3f ms (median of %d): %d edges in view, %d vertices projected, %d runs, %d points%n", VIEW_NAMES[v], ms, TRADE_ROUNDS, d.edgesInView, d.projected, d.runs.runs(), d.runs.vertices());
+            check(VIEW_NAMES[v] + ": a frame's lanes (cull, project, cut) in no more than LANE_FRAME_MS (" + TradeLanes.LANE_FRAME_MS + ") of " + clock() + ", the median of " + TRADE_ROUNDS + " rounds", Timing.within(ms, TradeLanes.LANE_FRAME_MS) && d.projected > 0);
+        }
+    }
+
+    /** The place d radians from (lat, lon) on a bearing, degrees: {lat, lon}. */
+    static double[] destination(double lat, double lon, double bearingDeg, double d) {
+        double p = Math.toRadians(lat), th = Math.toRadians(bearingDeg);
+        double p2 = Math.asin(Math.sin(p) * Math.cos(d) + Math.cos(p) * Math.sin(d) * Math.cos(th));
+        double dl = Math.atan2(Math.sin(th) * Math.sin(d) * Math.cos(p), Math.cos(d) - Math.sin(p) * Math.sin(p2));
+        return new double[] { Math.toDegrees(p2), lon + Math.toDegrees(dl) };
+    }
+
+    static void arrowsAtTheEdge() {
+        double w = MapCheck.SCREEN_W_PX, h = MapCheck.SCREEN_H_PX, ins = TradeLanes.ARROW_INSET_PX;
+        // due east, north, west and south of a stand-in on the equator: the right, top, left and bottom edge
+        double[] la = { 0, 40, 0, -40 }, lo = { 40, 0, -40, 0 }, ex = { 5000, 4000, 3000, 2000 }, im = { 1000, 1000, 1000, 1000 };
+        TradeLanes.Arrows a = TradeLanes.Arrows.of(0, 0, 7, la, lo, ex, im);
+        a.place(w, h);
+        int[] at = new int[4];
+        for (int k = 0; k < a.count(); k++) at[a.nation(k) - 1] = k;
+        boolean edges = a.count() == 4 && Math.abs(a.x(at[0]) - (w - ins)) < 1e-9 && Math.abs(a.y(at[0]) - h / 2) < 1e-9 && Math.abs(a.bearing(at[0]) - 90) < 1e-9 && Math.abs(a.dirX(at[0]) - 1) < 1e-9
+                && Math.abs(a.x(at[1]) - w / 2) < 1e-9 && Math.abs(a.y(at[1]) - ins) < 1e-9 && Math.abs(a.bearing(at[1])) < 1e-9
+                && Math.abs(a.x(at[2]) - ins) < 1e-9 && Math.abs(a.y(at[2]) - h / 2) < 1e-9 && Math.abs(a.bearing(at[2]) - 270) < 1e-9
+                && Math.abs(a.x(at[3]) - w / 2) < 1e-9 && Math.abs(a.y(at[3]) - (h - ins)) < 1e-9 && Math.abs(a.bearing(at[3]) - 180) < 1e-9;
+        check("a partner due east of the stand-in has an arrow on the right edge, at the middle (" + (w - ins) + ", " + h / 2 + "), bearing 90; due north the top, west the left, south the bottom", edges);
+        check("the arrows' widths are by money as the lanes' are: the largest direction (5,000 sold east) is LANE_MAX_PX and its 1,000 bought " + a.buyPx(at[0]) + " px",
+                a.sellPx(at[0]) == TradeLanes.LANE_MAX_PX && a.buyPx(at[0]) == TradeLanes.widthPx(1000, 5000) && a.sellPx(at[3]) == TradeLanes.widthPx(2000, 5000));
+        double x0 = a.x(at[0]), y0 = a.y(at[0]);
+        a.place(w, h);
+        boolean kept = a.x(at[0]) == x0 && a.y(at[0]) == y0;
+        a.place(w / 2, h / 2);
+        boolean moves = a.x(at[0]) != x0;
+        a.place(w, h);
+        check("the same size places the arrows as they were, a new size places them again", kept && moves && a.x(at[0]) == x0);
+        // a bearing and the distance from the stand-in to the partner, followed, land on the partner: the bearing is the initial great-circle one
+        double worst = 0;
+        Random rng = new Random(14);
+        for (int k = 0; k < 200; k++) {
+            double lat = Math.toDegrees(Math.asin(rng.nextDouble() * 1.8 - 0.9)), lon = rng.nextDouble() * 360 - 180, plat = Math.toDegrees(Math.asin(rng.nextDouble() * 1.8 - 0.9)), plon = rng.nextDouble() * 360 - 180;
+            double b = TradeLanes.bearingDeg(lat, lon, plat, plon), d = angleBetween(TradeLanes.unit(lat, lon), TradeLanes.unit(plat, plon));
+            double[] to = destination(lat, lon, b, d);
+            double dLon = Math.abs(((to[1] - plon + 540) % 360 + 360) % 360 - 180);
+            worst = Math.max(worst, Math.max(Math.abs(to[0] - plat), dLon));
+        }
+        check("a bearing from the stand-in, followed the distance to the partner, lands on the partner (the initial great-circle bearing): the worst miss of 200 pairs " + String.format(Locale.US, "%.2g", worst) + " degrees", worst < 1e-6);
+        // forty partners all round: the twelve largest, the rest counted
+        int n = 40;
+        double[] pla = new double[n], plo = new double[n], pex = new double[n], pim = new double[n];
+        Integer[] byMoney = new Integer[n];
+        double allSell = 0, allBuy = 0;
+        for (int i = 0; i < n; i++) {
+            double[] to = destination(44.65, -63.57, 9 * i + 3, Math.toRadians(30));
+            pla[i] = to[0];
+            plo[i] = to[1];
+            pex[i] = 1000 + 37 * ((i * 7) % n);
+            pim[i] = i % 3 == 0 ? 0 : 400 + i;
+            allSell += pex[i];
+            allBuy += pim[i];
+            byMoney[i] = i;
+        }
+        Arrays.sort(byMoney, (p, q) -> pex[q] + pim[q] != pex[p] + pim[p] ? Double.compare(pex[q] + pim[q], pex[p] + pim[p]) : Integer.compare(p, q));
+        TradeLanes.Arrows many = TradeLanes.Arrows.of(44.65, -63.57, 7, pla, plo, pex, pim);
+        many.place(w, h);
+        boolean largest = many.count() == TradeLanes.ARROWS_MAX && many.hidden() == n - TradeLanes.ARROWS_MAX;
+        double shownSell = 0, shownBuy = 0;
+        for (int k = 0; k < many.count(); k++) {
+            largest &= many.nation(k) == byMoney[k] + 1;
+            shownSell += many.sell(k);
+            shownBuy += many.buy(k);
+        }
+        check("with " + n + " partners over MIN_LANE at most ARROWS_MAX (" + TradeLanes.ARROWS_MAX + ") are drawn, the " + many.count() + " largest by money in order, and the other " + many.hidden() + " are counted with their sums, not drawn",
+                largest && Math.abs(many.hiddenSell() - (allSell - shownSell)) < 1e-9 && Math.abs(many.hiddenBuy() - (allBuy - shownBuy)) < 1e-9);
+        // a crowd on one bearing: moved apart along the edge, still on it
+        int c = TradeLanes.ARROWS_MAX;
+        double[] cla = new double[c], clo = new double[c], cex = new double[c], cim = new double[c];
+        for (int i = 0; i < c; i++) {
+            double[] to = destination(0, 0, 88 + 0.3 * i, Math.toRadians(40));
+            cla[i] = to[0];
+            clo[i] = to[1];
+            cex[i] = 2000 - i;
+            cim[i] = 1000;
+        }
+        TradeLanes.Arrows crowd = TradeLanes.Arrows.of(0, 0, 7, cla, clo, cex, cim);
+        crowd.place(w, h);
+        double nearest = Double.MAX_VALUE;
+        boolean onRight = crowd.count() == c;
+        for (int i = 0; i < crowd.count(); i++) {
+            onRight &= Math.abs(crowd.x(i) - (w - ins)) < 1e-9 && crowd.y(i) > ins && crowd.y(i) < h - ins;
+            for (int j = i + 1; j < crowd.count(); j++) nearest = Math.min(nearest, Math.hypot(crowd.x(i) - crowd.x(j), crowd.y(i) - crowd.y(j)));
+        }
+        check("twelve partners within four degrees of east stand on the right edge at least ARROW_GAP_PX (" + TradeLanes.ARROW_GAP_PX + ") apart (the nearest pair " + String.format(Locale.US, "%.1f", nearest) + " px)",
+                onRight && nearest >= TradeLanes.ARROW_GAP_PX - 1e-6);
+        TradeLanes.Arrows under = TradeLanes.Arrows.of(0, 0, 7, new double[] { 0, 0, 0 }, new double[] { 30, 40, 50 }, new double[] { 299, 150, 0 }, new double[] { 0, 149.99, 300 });
+        TradeLanes.Arrows nowhere = TradeLanes.Arrows.of(Double.NaN, 0, 7, la, lo, ex, im), nothing = TradeLanes.Arrows.of(0, 0, 7, new double[0], new double[0], new double[0], new double[0]);
+        TradeLanes.Arrows here = TradeLanes.Arrows.of(0, 0, 7, new double[] { 0 }, new double[] { 0 }, new double[] { 5000 }, new double[] { 5000 });
+        check("a partner under MIN_LANE has no arrow (299 sold; 150 and 149.99 bought), one at MIN_LANE (300 bought) has; no stand-in place, no trade, or a partner on the stand-in itself, none; the arrows match only their own month, place and figures",
+                under.count() == 1 && under.nation(0) == 3 && nowhere.count() == 0 && nothing.count() == 0 && here.count() == 0
+                        && a.matches(7, 0, 0, ex, im) && !a.matches(8, 0, 0, ex, im) && !a.matches(7, 1, 0, ex, im));
+    }
+
+    /** The lanes of the full file's real nodes, 196 partners all over MIN_LANE, timed as the random ones are. */
+    static void fullLanes(NationsMap map) {
+        out.println("--- 13. the city's trade as lanes: the full file's nodes ---");
+        int n = map.count();
+        double[][] a = new double[4][n];
+        Random r = new Random(5);
+        for (int i = 0; i < n; i++) {
+            a[0][i] = map.nodeLat(i + 1);
+            a[1][i] = map.nodeLon(i + 1);
+            a[2][i] = TradeLanes.MIN_LANE + r.nextDouble() * 20_000;
+            a[3][i] = TradeLanes.MIN_LANE + r.nextDouble() * 20_000;
+        }
+        lanesTimed("the full file's " + n + " nodes", a);
+    }
+
+    /** The card's trade rows (13): with the year's trade, three more rows in the card's own words and formats; without, the five alone and no word of "coming". */
+    static void tradeCard(String scope, NationsMap map, Nations nations) {
+        int bel = map.numberOf("BEL");
+        NationsMap.Card plain = map.card(nations, bel, YEAR, 51.44, 4.93, D_PER_USD), nullTrade = map.card(nations, bel, YEAR, 51.44, 4.93, D_PER_USD, null);
+        NationsMap.Card with = map.card(nations, bel, YEAR, 51.44, 4.93, D_PER_USD, new TradeLanes.YearToDate(25_000, 41_000, 41_500, 3_100));
+        List<NationsMap.Row> rows = with.rows();
+        boolean shape = rows.size() == 8 && rows.subList(0, 5).equals(plain.rows()) && rows.get(5).label().equals(NationsMap.BUYS_WORDS) && rows.get(6).label().equals(NationsMap.SELLS_WORDS)
+                && rows.get(7).label().equals(NationsMap.HAUL_WORDS) && rows.get(5).rank().isEmpty() && rows.get(6).rank().isEmpty() && rows.get(7).rank().isEmpty();
+        check(scope + ": a card given the year's trade has three rows more - \"" + NationsMap.BUYS_WORDS + "\", \"" + NationsMap.SELLS_WORDS + "\" and \"" + NationsMap.HAUL_WORDS + "\" - after the five, which are the same, with no rank beside them", shape);
+        check(scope + ": the rows read " + rows.get(5).value() + ", " + rows.get(6).value() + " and " + rows.get(7).value() + " - the city's money as D$ (25,000 thousand is D$25M), the tonnes out and in as people() writes a count",
+                rows.get(5).value().equals("D$25M") && rows.get(6).value().equals("D$41M") && rows.get(7).value().equals(NationsMap.people(41_500) + " t out · " + NationsMap.people(3_100) + " t in"));
+        NationsMap.Card sold = map.card(nations, bel, YEAR, 51.44, 4.93, D_PER_USD, new TradeLanes.YearToDate(580, 0, 12, 0));
+        NationsMap.Card nothing = map.card(nations, bel, YEAR, 51.44, 4.93, D_PER_USD, new TradeLanes.YearToDate(0, 0, 5, 5));
+        boolean words = true;
+        for (NationsMap.Row r : plain.rows()) words &= !r.label().toLowerCase(Locale.US).contains("coming") && !r.value().toLowerCase(Locale.US).contains("coming");
+        check(scope + ": no trade given, or none in the money, is the five rows alone and no \"coming\" word; one direction of trade writes the other as nothing (" + sold.rows().get(5).value() + ", " + sold.rows().get(6).value() + ", " + sold.rows().get(7).value() + ")",
+                plain.equals(nullTrade) && plain.rows().size() == 5 && nothing.rows().size() == 5 && words && sold.rows().size() == 8 && sold.rows().get(5).value().equals("D$580,000") && sold.rows().get(6).value().equals("D$0")
+                        && sold.rows().get(7).value().equals(NationsMap.people(12) + " t out"));
+        check(scope + ": city() writes D$25M, D$580,000, D$1.50B and \"-\" for NaN, haulWords() a dash for no tonnes, and usd() is as it was",
+                NationsMap.city(25_000).equals("D$25M") && NationsMap.city(580).equals("D$580,000") && NationsMap.city(1_500_000).equals("D$1.50B") && NationsMap.city(Double.NaN).equals("-") && NationsMap.haulWords(0, 0).equals("-")
+                        && NationsMap.usd(2.24e12).equals("US$2.24T"));
     }
 }

@@ -1,6 +1,6 @@
-# MonetaryCheck.java - 917 lines · 10 methods · 5 constants · harnesses
+# MonetaryCheck.java - 930 lines · 11 methods · 5 constants · harnesses
 
-`ham/citybuildersim/MonetaryCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MonetaryCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Money: what a basket costs, what the world charges, and what the rate does.
 > 
@@ -37,7 +37,7 @@
 >      assertion since 0.7.3, with the households' saving answering the real
 >      deposit rate - and the columns that say which channel carried it.
 
-**Uses:** [PriceIndex](PriceIndex.md) (62), [DebtManager](DebtManager.md) (24), [Game](Game.md) (18), [ForeignAccounts](ForeignAccounts.md) (17), [Retail](Retail.md) (13), [LongPlaytest](LongPlaytest.md) (12), [WorldEconomy](WorldEconomy.md) (6), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [Bank](Bank.md) (1)
+**Uses:** [PriceIndex](PriceIndex.md) (62), [DebtManager](DebtManager.md) (24), [Game](Game.md) (19), [ForeignAccounts](ForeignAccounts.md) (17), [Retail](Retail.md) (13), [LongPlaytest](LongPlaytest.md) (12), [WorldEconomy](WorldEconomy.md) (6), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [Bank](Bank.md) (1)
 
 **Used by (3):** [CurveCheck](CurveCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [HouseholdCheck](HouseholdCheck.md)
 
@@ -71,26 +71,27 @@
 | 46 | `static int fails` |  |
 | 47 | `static PrintStream out` |  |
 | 48 | `static PrintStream quiet` |  |
-| 797 | `static double fewestCrews` | The fewest of its posts the builders offered in any held month of the runs since the last reset (0.7.17). |
+| 810 | `static double fewestCrews` | The fewest of its posts the builders offered in any held month of the runs since the last reset (0.7.17). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 874 | **type** `public class MonetaryCheck` | Money: what a basket costs, what the world charges, and what the rate does. |
+| 44 | 887 | **type** `public class MonetaryCheck` | Money: what a basket costs, what the world charges, and what the rate does. |
 | 50 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 55 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 65 | 539 | `public static void main(String[] args) throws Exception` |  |
 
-### 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured (lines 605-917)
+### 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured (lines 605-930)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 716 | 3 | `static void step(Game g, double heldRate)` | One month, as the playtest steps it: a broke city steps rather than skips. |
 | 721 | 6 | `static void step(Game g, double heldRate, int heldFrom)` | ...holding the dial from a month of the caller's: the noise run holds it a month late. |
-| 729 | 66 | `static Game founding(Path root, String label)` | The playtest's founding (seed 0), to the month before the dial is held. |
-| 800 | 8 | `static double[] fingerprint(Game g)` | What the founding looks like the month before the dial moves - equal across the runs, or they are not one founding. |
-| 814 | 17 | `static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city)` | One run of the founding at a held rate: the dial held from heldFrom to MEASURED_MONTHS, and inflation over the held months as an annual rate. |
-| 832 | 78 | `static void inflationFallsWithTheRate(Path root)` |  |
-| 911 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 729 | 3 | `static Game founding(Path root, String label)` | The playtest's founding (seed 0), to the month before the dial is held. |
+| 741 | 67 | `static Game founding(Path root, String label, boolean onLiterals)` | ...on the goods' literals where asked (Game.playOnLiterals()). |
+| 813 | 8 | `static double[] fingerprint(Game g)` | What the founding looks like the month before the dial moves - equal across the runs, or they are not one founding. |
+| 827 | 17 | `static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city)` | One run of the founding at a held rate: the dial held from heldFrom to MEASURED_MONTHS, and inflation over the held months as an annual rate. |
+| 845 | 78 | `static void inflationFallsWithTheRate(Path root)` |  |
+| 924 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

@@ -1,6 +1,6 @@
 # FundLedger.java - 766 lines · 92 methods · 7 constants · model
 
-`ham/citybuildersim/FundLedger.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FundLedger.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in income, and every trade, income, transfer and event the fund saw (0.7.39).
 > 

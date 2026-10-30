@@ -195,7 +195,7 @@ public final class FoundingScreen {
         mean = WorldEconomy.DEFAULT_MEAN_INFLATION;
         // A new world every time the page opens (spec-land, J1a): the dice's first roll.
         worldSeed = String.valueOf(Founding.rollWorldSeed());
-        // ...and the path of the world beyond it (WN1): Historical, and a path seed rolled as the ground's is.
+        // ...and the path of the world beyond it (WN1): the default (Random since WN3), and a path seed rolled as the ground's is.
         path = Nations.DEFAULT_PATH;
         pathSeed = String.valueOf(Founding.rollWorldSeed());
         // The Earth, when its data is here (0.7.121): looked for off the screen's thread, the page redrawn when it is known.
@@ -893,8 +893,8 @@ public final class FoundingScreen {
             rest = "Then the UN's projected people and the game's own rule for output, with small shocks drawn"
                     + " from the seed. The same seed gives the same world. Chosen once: it can't be changed later.";
         }
-        String whole = first + " " + rest + " The nations' trade with the city comes with the world market,"
-                + " in a later version; until then the path is kept with the city.";
+        String whole = first + " " + rest + " Where the world's file is here, the nations trade with the city:"
+                + " the path sets what its imports cost and its exports fetch.";
         return new String[] { line, whole, first };
     }
 

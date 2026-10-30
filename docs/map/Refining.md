@@ -1,6 +1,6 @@
-# Refining.java - 1,918 lines · 108 methods · 19 constants · sectors
+# Refining.java - 1,922 lines · 109 methods · 19 constants · sectors
 
-`ham/citybuildersim/sectors/Refining.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Refining.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The refinery. THE SEVENTEENTH SECTOR (0.7.62, batch K; the project's
 > spec-land.md 2.7), and since 0.7.76 a crude unit that cuts a barrel into
@@ -61,21 +61,21 @@
 | 515 | · the reads, off the flow (spec-oil 2.3, 6) |
 | 647 | THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103, batch P4; Jerus's A9, |
 | 746 | THE TANK FARM (0.7.85, batch O8; spec-oil 2.8, the research's 4.5) |
-| 986 | THE RUN (0.7.105, batch P6; Jerus's A2 (b), 2026-10-10, on the |
-| 1217 | · the run in words (THE RUN): the refiners' page, the refinery's picture and the oil page |
-| 1272 | THE SPREAD PLANNER (0.7.82, batch O5; spec-oil 2.4) |
-| 1866 | · idle, then shed |
+| 990 | THE RUN (0.7.105, batch P6; Jerus's A2 (b), 2026-10-10, on the |
+| 1221 | · the run in words (THE RUN): the refiners' page, the refinery's picture and the oil page |
+| 1276 | THE SPREAD PLANNER (0.7.82, batch O5; spec-oil 2.4) |
+| 1870 | · idle, then shed |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 1072 | `Refining.RunStop.FIRST` |  |
-| 1072 | `Refining.RunStop.PETROL` |  |
-| 1072 | `Refining.RunStop.DIESEL` |  |
-| 1072 | `Refining.RunStop.WELLS` |  |
-| 1072 | `Refining.RunStop.LUBRICANTS` |  |
-| 1072 | `Refining.RunStop.NAMEPLATE` |  |
+| 1076 | `Refining.RunStop.FIRST` |  |
+| 1076 | `Refining.RunStop.PETROL` |  |
+| 1076 | `Refining.RunStop.DIESEL` |  |
+| 1076 | `Refining.RunStop.WELLS` |  |
+| 1076 | `Refining.RunStop.LUBRICANTS` |  |
+| 1076 | `Refining.RunStop.NAMEPLATE` |  |
 
 ## Constants
 
@@ -97,9 +97,9 @@
 | 674 | `Refining.LUBRICANTS_WORLD_SHARE` | `.01` | The share of a city's crude, litre for litre, the world takes in lubricants a month: the real share of crude that becomes lubricants, about 1% [R37] (docs/studies/spec-oil.md 6; the research's risk line was 2%). |
 | 785 | `Refining.CRUDE_COVER_MONTHS` | `1` | Months of the crude units' run kept on hand in a Tank Farm's room (★ spec-oil 2.8): one, a month's run. |
 | 827 | `Refining.CARGO_KEPT_FREE` | `ham.citybuildersim.Ports.Ship.MR.tonnes()` | Tonnes of a farm's room kept free for the next cargo (R2): an MR's, the smallest tanker's (Ports.Ship.MR). |
-| 1037 | `Refining.RUN_PACE` | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | The most of nameplate the crude units' run moves in a month (★ the brief's example, not measured): BusinessInvestment.MAX_RETIREMENT_FRACTION, the quarter the spare-capacity rule sheds at most. |
-| 1337 | `Refining.PACKAGE_MOST_UNITS` | `12` | The most conversion units a crude unit is weighed with: the prototype's twelve rounds (spread.py, its package) - more than one of each of the seven kinds. |
-| 1340 | `Refining.KIND_NAMES` |  | Each kind's name, in Kind's order: what the idle months are saved by. |
+| 1041 | `Refining.RUN_PACE` | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | The most of nameplate the crude units' run moves in a month (★ the brief's example, not measured): BusinessInvestment.MAX_RETIREMENT_FRACTION, the quarter the spare-capacity rule sheds at most. |
+| 1341 | `Refining.PACKAGE_MOST_UNITS` | `12` | The most conversion units a crude unit is weighed with: the prototype's twelve rounds (spread.py, its package) - more than one of each of the seven kinds. |
+| 1344 | `Refining.KIND_NAMES` |  | Each kind's name, in Kind's order: what the idle months are saved by. |
 
 ## Fields (state)
 
@@ -113,16 +113,16 @@
 | 476 | `private RefineryFlow.Flow flowSolved` | The flow last solved, and what it was solved on. |
 | 477 | `private double[] flowFeed, flowMix, flowPrices` |  |
 | 478 | `private double flowCrude` |  |
-| 945 | `private boolean crudeCleared` | Whether the month's crude has cleared with a store kept, so the rate is held to the crude (afterClearing()); until the month's end. |
-| 1040 | `private double runShare` | The share of the crude units' nameplate they run this month (THE RUN): 1 until the rule moves it. |
-| 1043 | `private final List<Double> runHistory` | The shares the last months ran at, the oldest first, at most SpreadPlanner.IDLE_MONTHS of them: what the spare is read off. |
-| 1348 | `private final SpreadPlanner planner` | The refiners' spread planner: their money gate and their kinds' idle months. |
+| 949 | `private boolean crudeCleared` | Whether the month's crude has cleared with a store kept, so the rate is held to the crude (afterClearing()); until the month's end. |
+| 1044 | `private double runShare` | The share of the crude units' nameplate they run this month (THE RUN): 1 until the rule moves it. |
+| 1047 | `private final List<Double> runHistory` | The shares the last months ran at, the oldest first, at most SpreadPlanner.IDLE_MONTHS of them: what the spare is read off. |
+| 1352 | `private final SpreadPlanner planner` | The refiners' spread planner: their money gate and their kinds' idle months. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 65 | 1854 | **type** `public final class Refining extends Sector` | The refinery. |
+| 65 | 1858 | **type** `public final class Refining extends Sector` | The refinery. |
 
 ### THE SLATE (0.7.76, batch O1; spec-oil 2.2 and 2.3) (lines 67-261)
 
@@ -195,7 +195,7 @@
 | 729 | 5 | `public static double boughtHere(Slate s)` | The products the city buys, a month, at a crude unit's nameplate: its petrol and its diesel. |
 | 739 | 6 | `public double spareCrude()` | The crude the city's wells could lift this month that no refinery standing or on site will take, in tonnes (never below nothing). |
 
-### THE TANK FARM (0.7.85, batch O8; spec-oil 2.8, the research's 4.5) (lines 746-985)
+### THE TANK FARM (0.7.85, batch O8; spec-oil 2.8, the research's 4.5) (lines 746-989)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -208,88 +208,89 @@
 | 865 | 5 | `public static SpreadPlanner.Candidate farmEstimate(BuildingsTemplate farm, double tonnes, double saved, SpreadPlanner.City city)` | A Tank Farm weighed (pure): `tonnes` of crude a month at `saved` a tonne, less its running and standing; refused at its feed with nothing held back. |
 | 872 | 14 | `public SpreadPlanner.Candidate farmCandidate(BusinessInvestment plans, Game game)` | The Tank Farm's candidate this month: null with no farm in the catalogue, one standing or on site, or none of their crude held back. |
 | 895 | 34 | `public List<Sector.Line> ownLines(Game game)` | ...AND THE PORT'S TANKERS LAND IN IT (0.7.86, batch O9; spec-oil 2.9): a tanker berth takes crude only while the farms have room free for at least an MR's cargo (ham.citybuildersim.Ports.freeCrudeRoom()). |
-| 932 | 3 | `public boolean buysAhead(Good g)` | Their crude, while they keep it, is stock (Sector.buysAhead()). |
-| 938 | 5 | `public double bid(Good g)` | ...and their order for it is the month's run at the rate, and what brings the store back to crudeKept(). |
-| 948 | 3 | `protected void afterClearing(Good g)` |  |
-| 953 | 4 | `double monthsCrudeFill()` | The crude bought this month, at home and from the world, in tonnes. |
-| 963 | 4 | `public static double crudeRunCap(double onHand, double fill, double nameplate)` | The share of nameplate the crude on hand and the month's fill will run (pure): the two over the crude units' nameplate run, in tonnes; no cap (infinite) with no crude unit. |
-| 969 | 3 | `public static double crudeAfterRun(double onHand, double fill, double run)` | What is left on hand after the month's run (pure): what it had and the fill, less the run, never below nothing. |
-| 979 | 6 | `public double getOperatingRate()` | The plant's rate times the run (THE RUN, 0.7.105: runShare()) - and, once crude has cleared with a store kept, no more than the crude will run (crudeRunCap()). |
+| 932 | 1 | `protected boolean ordersForWhatItMakes()` | Their crude is the run's (THE RUN), and every product leaves (THE RUN'S PRODUCTS ALL LEAVE): it is not ordered for what one line plans (Sector, THE ORDER; WN3). |
+| 936 | 3 | `public boolean buysAhead(Good g)` | Their crude, while they keep it, is stock (Sector.buysAhead()). |
+| 942 | 5 | `public double bid(Good g)` | ...and their order for it is the month's run at the rate, and what brings the store back to crudeKept(). |
+| 952 | 3 | `protected void afterClearing(Good g)` |  |
+| 957 | 4 | `double monthsCrudeFill()` | The crude bought this month, at home and from the world, in tonnes. |
+| 967 | 4 | `public static double crudeRunCap(double onHand, double fill, double nameplate)` | The share of nameplate the crude on hand and the month's fill will run (pure): the two over the crude units' nameplate run, in tonnes; no cap (infinite) with no crude unit. |
+| 973 | 3 | `public static double crudeAfterRun(double onHand, double fill, double run)` | What is left on hand after the month's run (pure): what it had and the fill, less the run, never below nothing. |
+| 983 | 6 | `public double getOperatingRate()` | The plant's rate times the run (THE RUN, 0.7.105: runShare()) - and, once crude has cleared with a store kept, no more than the crude will run (crudeRunCap()). |
 
-### THE RUN (0.7.105, batch P6; Jerus's A2 (b), 2026-10-10, on the (lines 986-1216)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1046 | 1 | `public double runShare()` | The share of the crude units' nameplate they run this month (THE RUN). |
-| 1049 | 1 | `public double plantRate()` | The plant's own rate - staffing, power, water, roads, health and vans (Sector.getOperatingRate()) - without the run: what the planner weighs an order at. |
-| 1052 | 3 | `public void setRunShareForTest(double share)` | A fixture's run, as a save would give it (nothing in the game calls it). |
-| 1068 | 2 | **type** `public record RunPrices(double[] home, double[] away, double[] take, double lubricantsHome, double wellsCru...` | What a barrel's products fetch, and what its crude costs (THE RUN). |
-| 1072 | 1 | **type** `public enum RunStop` | Where the run stops (THE RUN): at no barrel, where the city's take of petrol or diesel is covered, where the wells' crude runs out, where the world's lubricants are taken, or at nameplate. |
-| 1083 | 1 | **type** `public record RunVerdict(double share, RunStop stop, double first, double last, double next)` | The run's verdict (runRule()). |
-| 1092 | 31 | `public static RunVerdict runRule(RefineryFlow.Flow f, RunPrices p)` | The run (pure; THE RUN): the share of nameplate whose barrels each beat their crude - the flow's products a tonne of its crude at `p`'s prices, the city's take of petrol and diesel at home and the rest away, less the ... |
-| 1125 | 4 | `private static double stepAt(List<double[]> steps, double tonnes)` | The step at `tonnes` (the first there, in steps' order). |
-| 1131 | 3 | `static double crudeCostAt(double at, RunPrices p)` | A tonne's crude at the `at`-th tonne of the run: the wells' while they last, then the world's. |
-| 1136 | 18 | `static double marginAt(double at, double[] q, RunPrices p)` | A tonne's margin at the `at`-th tonne of the run: its products (`q`, a tonne's, by Good's ordinal) at what they fetch there, less its crude and its other cost. |
-| 1156 | 30 | `public RunPrices runPrices()` | This month's prices for the run (THE RUN), read after the clearing: petrol and diesel's net import price and the city's take of each on the trend (BusinessInvestment.forecast()), every product's net export price, the ... |
-| 1188 | 3 | `public RunVerdict runVerdict()` | The run's verdict this month (runRule() on the campus at nameplate and runPrices()): what the month's end moves the run toward. |
-| 1193 | 4 | `public static double paced(double share, double toward)` | The share the run moves to from `share` toward `toward` (pure): at most RUN_PACE either way, within nothing and nameplate. |
-| 1205 | 11 | `private void strikeRun()` | The month's end for the run: the share it ran at kept (at most IDLE_MONTHS of them), and next month's struck toward the verdict at the pace. |
-
-### the run in words (THE RUN): the refiners' page, the refinery's picture and the oil page (lines 1217-1271)
+### THE RUN (0.7.105, batch P6; Jerus's A2 (b), 2026-10-10, on the (lines 990-1220)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1220 | 4 | `static String marginWords(double share)` | A margin, a share of the crude's cost, in words: "loses 1.7%", "earns 2.3%". |
-| 1231 | 19 | `public static String runWords(RunVerdict v, double share)` | Why the crude units run what they run, in a sentence or two (THE RUN): where the run stops and what the barrels either side of it earn - and, while the run is still moving there, the share it is heading for. |
-| 1252 | 11 | `public static String runShortWords(RunVerdict v)` | ...in a few words, for a table's cell: "every barrel pays", "first barrel loses 1.7%", "past the city's petrol, loses 0.7%". |
-| 1265 | 6 | `public double runUsed()` | The most of nameplate the run used over the last IDLE_MONTHS months; NaN until it has run that long (THE RUN: what the spare is read off). |
+| 1050 | 1 | `public double runShare()` | The share of the crude units' nameplate they run this month (THE RUN). |
+| 1053 | 1 | `public double plantRate()` | The plant's own rate - staffing, power, water, roads, health and vans (Sector.getOperatingRate()) - without the run: what the planner weighs an order at. |
+| 1056 | 3 | `public void setRunShareForTest(double share)` | A fixture's run, as a save would give it (nothing in the game calls it). |
+| 1072 | 2 | **type** `public record RunPrices(double[] home, double[] away, double[] take, double lubricantsHome, double wellsCru...` | What a barrel's products fetch, and what its crude costs (THE RUN). |
+| 1076 | 1 | **type** `public enum RunStop` | Where the run stops (THE RUN): at no barrel, where the city's take of petrol or diesel is covered, where the wells' crude runs out, where the world's lubricants are taken, or at nameplate. |
+| 1087 | 1 | **type** `public record RunVerdict(double share, RunStop stop, double first, double last, double next)` | The run's verdict (runRule()). |
+| 1096 | 31 | `public static RunVerdict runRule(RefineryFlow.Flow f, RunPrices p)` | The run (pure; THE RUN): the share of nameplate whose barrels each beat their crude - the flow's products a tonne of its crude at `p`'s prices, the city's take of petrol and diesel at home and the rest away, less the ... |
+| 1129 | 4 | `private static double stepAt(List<double[]> steps, double tonnes)` | The step at `tonnes` (the first there, in steps' order). |
+| 1135 | 3 | `static double crudeCostAt(double at, RunPrices p)` | A tonne's crude at the `at`-th tonne of the run: the wells' while they last, then the world's. |
+| 1140 | 18 | `static double marginAt(double at, double[] q, RunPrices p)` | A tonne's margin at the `at`-th tonne of the run: its products (`q`, a tonne's, by Good's ordinal) at what they fetch there, less its crude and its other cost. |
+| 1160 | 30 | `public RunPrices runPrices()` | This month's prices for the run (THE RUN), read after the clearing: petrol and diesel's net import price and the city's take of each on the trend (BusinessInvestment.forecast()), every product's net export price, the ... |
+| 1192 | 3 | `public RunVerdict runVerdict()` | The run's verdict this month (runRule() on the campus at nameplate and runPrices()): what the month's end moves the run toward. |
+| 1197 | 4 | `public static double paced(double share, double toward)` | The share the run moves to from `share` toward `toward` (pure): at most RUN_PACE either way, within nothing and nameplate. |
+| 1209 | 11 | `private void strikeRun()` | The month's end for the run: the share it ran at kept (at most IDLE_MONTHS of them), and next month's struck toward the verdict at the pace. |
 
-### THE SPREAD PLANNER (0.7.82, batch O5; spec-oil 2.4) (lines 1272-1865)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1341 | 5 | `static { ... }` |  |
-| 1351 | 1 | `public SpreadPlanner planner()` | The refiners' spread planner (a probe sets its money gate for the counterfactual). |
-| 1363 | 11 | `public double[] cityValues()` | Each product at the city's own price at the margin (SpreadPlanner. |
-| 1376 | 7 | `public double[] awayValues()` | Each product's net export price, by Good's ordinal (0 for one the world will not take): what a litre past the city's imports fetches (R1). |
-| 1385 | 8 | `public double importsOf(Good g)` | Litres a month of a product the city imports on the trend past what its refinery makes at nameplate and has coming (R1; the Outlook's room, one product); never below nothing. |
-| 1420 | 5 | `static double worth(Outlook o, double[] delta)` | Petrol and diesel past the city's imports at the net export price (R1, pure): what `delta` (litres by Good's ordinal, a change in the products) is worth at the outlook's values, less, for each of the two, the litres p... |
-| 1427 | 9 | `static double pastImports(Outlook o, double[] delta)` | ...the part of it lost past the city's imports: petrol and diesel past what it imports, at their value less their net export price; nothing in the prototype's frame. |
-| 1438 | 3 | `static double runWith(Outlook o, RefineryFlow.Flow f)` | The share of nameplate the run would take with the campus `f` standing (R1, THE RUN): runRule()'s, or the whole with no run in the outlook (the prototype's frame). |
-| 1465 | 23 | **type** `public record Outlook(double[] feed, double crude, double[] mix, double[] values, double room, double spare...` | What the planner reads of the city (spec-oil 2.4). |
-| 1470 | 4 | `public Outlook(double[] feed, double crude, double[] mix, double[] values, double room, double spareCrude, double[] spareMix, d...` _(in Refining.Outlook)_ | ...in the prototype's frame (spec-oil 2.4): no cap on lubricants. |
-| 1476 | 5 | `public Outlook(double[] feed, double crude, double[] mix, double[] values, double room, double spareCrude, double[] spareMix, d...` _(in Refining.Outlook)_ | ...in the prototype's frame with the lubricants capped (0.7.103): every litre at `values`, no run. |
-| 1482 | 5 | `private static double[] endless()` _(in Refining.Outlook)_ |  |
-| 1490 | 16 | `public Outlook outlook(BusinessInvestment plans)` | This month's outlook, as plan() reads it. |
-| 1515 | 10 | `double[] wellsGradesAhead()` | The grades the wells lift next: their month's potential laid along the city's oil from what has been lifted (LandManager.oilRuns()); MEDIUM with no wells. |
-| 1532 | 17 | `public static double[] gradesAhead(double[][] runs, double from, double tonnes)` | The grades of the city's oil from `from` to `from + tonnes` tonnes, as it is worked out (pure): each run's part of it ({end, grade's ordinal}, LandManager.oilRuns()), past the last run MEDIUM, as a mix in Deposit.Grad... |
-| 1551 | 10 | `static double[] blend(double[] a, double wa, double[] b, double wb)` | Two runs' mixes as one: `a` over `wa` tonnes and `b` over `wb`, each grade's share of the two; MEDIUM_MIX for none. |
-| 1563 | 7 | `public static double spareFeed(RefineryFlow.Flow f, RefineryFlow.Kind k)` | The feed a kind of unit would find spare in a flow (the prototype's): its stream's; the coker's the residue and the heavy residue; a hydrocracker's no more gas oil than the spare hydrogen treats. |
-| 1572 | 4 | `static String feedWords(RefineryFlow.Kind k)` | What a kind's feed is called in a refusal: its stream, and a hydrocracker's the hydrogen with it. |
-| 1583 | 9 | `public static List<SpreadPlanner.Candidate> appraise(Outlook o, List<BuildingsTemplate> templates, SpreadPlanner.City city)` | Every building of the refiners' weighed at the gates, in `templates`' order (pure in its arguments): each conversion unit on its spread, each crude unit as a package. |
-| 1594 | 3 | `public static SpreadPlanner.Candidate unitEstimate(Outlook o, RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City c...` | One conversion unit weighed at an outlook (pure): unitEstimate()'s, its lubricants capped at the outlook's, and since 0.7.105 (R1) its petrol and diesel past the city's imports at the net export price, at the run the ... |
-| 1599 | 3 | `public static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city)` | One conversion unit weighed (pure): its spread on the feed it would find spare in `flow`, at most its own, at the rate less its costs; its feed gate FEED_GATE of one. |
-| 1604 | 4 | `public static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city, double...` | ...a lube unit on no more gas oil than makes the lubricants the world and the city's `lubricantsHome` would still take (0.7.103; lubricantsRoom()). |
-| 1610 | 29 | `private static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city, doubl...` | ...and with an outlook (0.7.105, R1), past the city's imports at the net export price and at the run with it standing; none, as before. |
-| 1641 | 5 | `static double[] madeOf(RefineryFlow.Kind k, double litres)` | What `litres` of a kind's feed make with nothing downstream, by Good's ordinal (RefineryFlow.madeAlone()). |
-| 1658 | 60 | `public static SpreadPlanner.Candidate packageEstimate(Outlook o, RefineryFlow.Flow before, BuildingsTemplate t, List<BuildingsT...` | One crude unit weighed as a package (pure; spec-oil 2.4, rule 6 and the package): a candidate only while the city's petrol and diesel short on the trend come to FEED_GATE of what it would make of them, or the wells' s... |
-| 1720 | 6 | `private static double bestGross(RefineryFlow.Flow f, BuildingsTemplate u, Outlook o)` | A unit's gross in a package round: its spread on the feed it would find spare in `f`, at most its own, its lubricants capped at the outlook's (packageEstimate()). |
-| 1728 | 7 | `static int sizeOf(BuildingsTemplate t, List<BuildingsTemplate> templates)` | A crude unit's size among the crude units of `templates`: 0 for the one taking the least crude, and so on. |
-| 1737 | 7 | `static BuildingsTemplate unitOfSize(RefineryFlow.Kind k, int size, List<BuildingsTemplate> templates)` | A kind's unit of a size: its templates by feed, the smallest first, the one at `size` (its largest past them); null for a kind with none. |
-| 1746 | 3 | `static String a(String name)` | "a Small Coker", "an Oil Refinery". |
-| 1751 | 11 | `static String named(SpreadPlanner.Candidate c)` | A candidate named, with the units it was weighed with: "an Oil Refinery with a Small Lube Plant and a Small Coker behind it". |
-| 1770 | 43 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to build, and what (THE SPREAD PLANNER): one order in flight; of the refiners' buildings that pass the gates, the one that earns most on its cost; with none, ground if ground was all that stood in the way, els... |
-| 1832 | 8 | `int crudeUnitsOnSite()` | The crude units on site, anyone's order (R3). |
-| 1842 | 7 | `public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans)` | One building of the refiners' weighed now (THE SPREAD PLANNER), at this month's outlook and the game's gates. |
-| 1857 | 8 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more building of the refiners' would earn its owner a month (THE SPREAD PLANNER): a conversion unit's earnings on the feed it would find, and a crude unit's share of its package's earnings by cost - what Game... |
-
-### idle, then shed (lines 1866-1918)
+### the run in words (THE RUN): the refiners' page, the refinery's picture and the oil page (lines 1221-1275)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1869 | 9 | `private void noteIdleUnits()` | The month's end for the units: each kind standing counted idle (no feed in the month's flow) or working. |
-| 1880 | 8 | `public double idleFeed()` | Litres a month the kinds idle long enough to shed would take: their units standing. |
-| 1890 | 1 | `public int idleMonths(RefineryFlow.Kind k)` | Months a kind of unit has stood idle running (extras idleMonths.<KIND>). |
-| 1894 | 5 | `public boolean mayRetire(BuildingsTemplate t)` | A conversion unit only once its kind has stood idle long enough; a crude unit only while no kind has (THE SPREAD PLANNER); a Tank Farm never (it makes nothing either rule could measure, and neither sold one). |
-| 1912 | 6 | `public double[] retirementDemandAndCapacity(Game game)` | The spare-capacity rule's measure: {0, the idle kinds' feed} while a kind stands idle long enough to shed - and otherwise, since 0.7.105 (THE RUN), {what the run used, the crude units' nameplate} in tonnes once the ru... |
+| 1224 | 4 | `static String marginWords(double share)` | A margin, a share of the crude's cost, in words: "loses 1.7%", "earns 2.3%". |
+| 1235 | 19 | `public static String runWords(RunVerdict v, double share)` | Why the crude units run what they run, in a sentence or two (THE RUN): where the run stops and what the barrels either side of it earn - and, while the run is still moving there, the share it is heading for. |
+| 1256 | 11 | `public static String runShortWords(RunVerdict v)` | ...in a few words, for a table's cell: "every barrel pays", "first barrel loses 1.7%", "past the city's petrol, loses 0.7%". |
+| 1269 | 6 | `public double runUsed()` | The most of nameplate the run used over the last IDLE_MONTHS months; NaN until it has run that long (THE RUN: what the spare is read off). |
+
+### THE SPREAD PLANNER (0.7.82, batch O5; spec-oil 2.4) (lines 1276-1869)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1345 | 5 | `static { ... }` |  |
+| 1355 | 1 | `public SpreadPlanner planner()` | The refiners' spread planner (a probe sets its money gate for the counterfactual). |
+| 1367 | 11 | `public double[] cityValues()` | Each product at the city's own price at the margin (SpreadPlanner. |
+| 1380 | 7 | `public double[] awayValues()` | Each product's net export price, by Good's ordinal (0 for one the world will not take): what a litre past the city's imports fetches (R1). |
+| 1389 | 8 | `public double importsOf(Good g)` | Litres a month of a product the city imports on the trend past what its refinery makes at nameplate and has coming (R1; the Outlook's room, one product); never below nothing. |
+| 1424 | 5 | `static double worth(Outlook o, double[] delta)` | Petrol and diesel past the city's imports at the net export price (R1, pure): what `delta` (litres by Good's ordinal, a change in the products) is worth at the outlook's values, less, for each of the two, the litres p... |
+| 1431 | 9 | `static double pastImports(Outlook o, double[] delta)` | ...the part of it lost past the city's imports: petrol and diesel past what it imports, at their value less their net export price; nothing in the prototype's frame. |
+| 1442 | 3 | `static double runWith(Outlook o, RefineryFlow.Flow f)` | The share of nameplate the run would take with the campus `f` standing (R1, THE RUN): runRule()'s, or the whole with no run in the outlook (the prototype's frame). |
+| 1469 | 23 | **type** `public record Outlook(double[] feed, double crude, double[] mix, double[] values, double room, double spare...` | What the planner reads of the city (spec-oil 2.4). |
+| 1474 | 4 | `public Outlook(double[] feed, double crude, double[] mix, double[] values, double room, double spareCrude, double[] spareMix, d...` _(in Refining.Outlook)_ | ...in the prototype's frame (spec-oil 2.4): no cap on lubricants. |
+| 1480 | 5 | `public Outlook(double[] feed, double crude, double[] mix, double[] values, double room, double spareCrude, double[] spareMix, d...` _(in Refining.Outlook)_ | ...in the prototype's frame with the lubricants capped (0.7.103): every litre at `values`, no run. |
+| 1486 | 5 | `private static double[] endless()` _(in Refining.Outlook)_ |  |
+| 1494 | 16 | `public Outlook outlook(BusinessInvestment plans)` | This month's outlook, as plan() reads it. |
+| 1519 | 10 | `double[] wellsGradesAhead()` | The grades the wells lift next: their month's potential laid along the city's oil from what has been lifted (LandManager.oilRuns()); MEDIUM with no wells. |
+| 1536 | 17 | `public static double[] gradesAhead(double[][] runs, double from, double tonnes)` | The grades of the city's oil from `from` to `from + tonnes` tonnes, as it is worked out (pure): each run's part of it ({end, grade's ordinal}, LandManager.oilRuns()), past the last run MEDIUM, as a mix in Deposit.Grad... |
+| 1555 | 10 | `static double[] blend(double[] a, double wa, double[] b, double wb)` | Two runs' mixes as one: `a` over `wa` tonnes and `b` over `wb`, each grade's share of the two; MEDIUM_MIX for none. |
+| 1567 | 7 | `public static double spareFeed(RefineryFlow.Flow f, RefineryFlow.Kind k)` | The feed a kind of unit would find spare in a flow (the prototype's): its stream's; the coker's the residue and the heavy residue; a hydrocracker's no more gas oil than the spare hydrogen treats. |
+| 1576 | 4 | `static String feedWords(RefineryFlow.Kind k)` | What a kind's feed is called in a refusal: its stream, and a hydrocracker's the hydrogen with it. |
+| 1587 | 9 | `public static List<SpreadPlanner.Candidate> appraise(Outlook o, List<BuildingsTemplate> templates, SpreadPlanner.City city)` | Every building of the refiners' weighed at the gates, in `templates`' order (pure in its arguments): each conversion unit on its spread, each crude unit as a package. |
+| 1598 | 3 | `public static SpreadPlanner.Candidate unitEstimate(Outlook o, RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City c...` | One conversion unit weighed at an outlook (pure): unitEstimate()'s, its lubricants capped at the outlook's, and since 0.7.105 (R1) its petrol and diesel past the city's imports at the net export price, at the run the ... |
+| 1603 | 3 | `public static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city)` | One conversion unit weighed (pure): its spread on the feed it would find spare in `flow`, at most its own, at the rate less its costs; its feed gate FEED_GATE of one. |
+| 1608 | 4 | `public static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city, double...` | ...a lube unit on no more gas oil than makes the lubricants the world and the city's `lubricantsHome` would still take (0.7.103; lubricantsRoom()). |
+| 1614 | 29 | `private static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city, doubl...` | ...and with an outlook (0.7.105, R1), past the city's imports at the net export price and at the run with it standing; none, as before. |
+| 1645 | 5 | `static double[] madeOf(RefineryFlow.Kind k, double litres)` | What `litres` of a kind's feed make with nothing downstream, by Good's ordinal (RefineryFlow.madeAlone()). |
+| 1662 | 60 | `public static SpreadPlanner.Candidate packageEstimate(Outlook o, RefineryFlow.Flow before, BuildingsTemplate t, List<BuildingsT...` | One crude unit weighed as a package (pure; spec-oil 2.4, rule 6 and the package): a candidate only while the city's petrol and diesel short on the trend come to FEED_GATE of what it would make of them, or the wells' s... |
+| 1724 | 6 | `private static double bestGross(RefineryFlow.Flow f, BuildingsTemplate u, Outlook o)` | A unit's gross in a package round: its spread on the feed it would find spare in `f`, at most its own, its lubricants capped at the outlook's (packageEstimate()). |
+| 1732 | 7 | `static int sizeOf(BuildingsTemplate t, List<BuildingsTemplate> templates)` | A crude unit's size among the crude units of `templates`: 0 for the one taking the least crude, and so on. |
+| 1741 | 7 | `static BuildingsTemplate unitOfSize(RefineryFlow.Kind k, int size, List<BuildingsTemplate> templates)` | A kind's unit of a size: its templates by feed, the smallest first, the one at `size` (its largest past them); null for a kind with none. |
+| 1750 | 3 | `static String a(String name)` | "a Small Coker", "an Oil Refinery". |
+| 1755 | 11 | `static String named(SpreadPlanner.Candidate c)` | A candidate named, with the units it was weighed with: "an Oil Refinery with a Small Lube Plant and a Small Coker behind it". |
+| 1774 | 43 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to build, and what (THE SPREAD PLANNER): one order in flight; of the refiners' buildings that pass the gates, the one that earns most on its cost; with none, ground if ground was all that stood in the way, els... |
+| 1836 | 8 | `int crudeUnitsOnSite()` | The crude units on site, anyone's order (R3). |
+| 1846 | 7 | `public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans)` | One building of the refiners' weighed now (THE SPREAD PLANNER), at this month's outlook and the game's gates. |
+| 1861 | 8 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more building of the refiners' would earn its owner a month (THE SPREAD PLANNER): a conversion unit's earnings on the feed it would find, and a crude unit's share of its package's earnings by cost - what Game... |
+
+### idle, then shed (lines 1870-1922)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1873 | 9 | `private void noteIdleUnits()` | The month's end for the units: each kind standing counted idle (no feed in the month's flow) or working. |
+| 1884 | 8 | `public double idleFeed()` | Litres a month the kinds idle long enough to shed would take: their units standing. |
+| 1894 | 1 | `public int idleMonths(RefineryFlow.Kind k)` | Months a kind of unit has stood idle running (extras idleMonths.<KIND>). |
+| 1898 | 5 | `public boolean mayRetire(BuildingsTemplate t)` | A conversion unit only once its kind has stood idle long enough; a crude unit only while no kind has (THE SPREAD PLANNER); a Tank Farm never (it makes nothing either rule could measure, and neither sold one). |
+| 1916 | 6 | `public double[] retirementDemandAndCapacity(Game game)` | The spare-capacity rule's measure: {0, the idle kinds' feed} while a kind stands idle long enough to shed - and otherwise, since 0.7.105 (THE RUN), {what the run used, the crude units' nameplate} in tonnes once the ru... |
 

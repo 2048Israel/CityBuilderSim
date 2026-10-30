@@ -177,7 +177,7 @@ public final class CopperRefining extends ProcessingSector {
     protected double inputCostAtRate() {
         double total = super.inputCostAtRate();
         double old = Math.min(oldCopperTaken(), getInputAtCapacity(Good.COPPER_SCRAP) * getOperatingRate());
-        if (old > 0) total -= old * (priceOf(Good.COPPER_SCRAP) - oldCopperPrice());
+        if (old > 0) total -= old * (inputPrice(Good.COPPER_SCRAP) - oldCopperPrice());
         return total;
     }
 

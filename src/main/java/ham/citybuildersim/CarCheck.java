@@ -876,6 +876,19 @@ public class CarCheck {
             final boolean dear = k == 1;
             quietly(() -> {
                 fareTown.newGame();
+                /*
+                 * WN3 (after EM1): the railway is held out of both towns. The fixture is a town whose petrol comes in at the world's
+                 * import price with nothing moved off the band (the "no refinery" line below asserts importPrice() == the world's price
+                 * x the exchange rate, so the freight in the band has to stand at its literal). On the merged model the town's
+                 * investors order a railway in month 102 (7,262 people; sectors.Freight.plan(): a station once the tonnes crossing the
+                 * boundary fill 60% of the smallest) that carries all of petrol's stream, so the lorries' freight leaves the band
+                 * (freightFactor 0, the import price $0.8650 a litre against the world's $0.9077) and the line compared the ladder with
+                 * a price the railway had lowered; the ladder itself (journey = litres x pump price on the import price) held to the bit.
+                 * On main 0.8.74 and on WN3 before the merge this line was green, so no railway carried petrol's freight by month 120.
+                 * A held sector orders nothing (BusinessInvestment.holdSector()); both towns hold it, so they stay the same but for the
+                 * fare, which is what the section weighs.
+                 */
+                fareTown.getBusinessInvestment().holdSector(Sectors.FREIGHT);
                 fareTown.setCashForTest(Founding.WEALTHY_CASH);
                 fareTown.getLandManager().setOwnedSqFt(400_000_000L);
                 BuildingManager b = fareTown.getBuildingManager();
@@ -949,12 +962,14 @@ public class CarCheck {
         GoodsMarket petrol = priced.getMarkets().get(Good.PETROL);
         double journey = pricedRoads.getFuelPerJourney();
         double grocersTax = priced.getEconomyManager().getTaxPolicy().effectiveSalesRate(priced.getSectors().retail());
+        // ...the world's import price in force (WN3: where the world market has struck the band it is its price, else the good's literal).
+        double worldIn = Double.isNaN(petrol.getWorldImportSet()) ? Good.PETROL.worldImportPrice() : petrol.getWorldImportSet();
         report("a journey's fuel is its litres of petrol at the pump price on the import price, in a town with no refinery:"
                         + " the wholesale ladder, the forecourts' margin and the sales tax on it",
                 priced.getSectors().refining().buildingsStanding() == 0 && journey > 0
                         && Math.abs(journey - Motoring.LITRES_PER_JOURNEY
                                 * ham.citybuildersim.sectors.Retail.pumpPrice(petrol.importPrice(), grocersTax)) <= 1e-12 * journey
-                        && petrol.importPrice() == Good.PETROL.worldImportPrice() * petrol.getExchangeRate(),
+                        && petrol.importPrice() == worldIn * petrol.getExchangeRate(),
                 String.format("$%,.4f a journey: %.1f L at $%,.4f a litre wholesale", journey * 1000, Motoring.LITRES_PER_JOURNEY,
                         petrol.importPrice() * 1000));
         double dial = priced.getEconomyManager().getTaxPolicy().getTransitFare();

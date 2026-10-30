@@ -65,7 +65,7 @@ import java.util.zip.DataFormatException;
 public final class WorldData implements AutoCloseable {
 
     /**
-     * Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored). It is the asset of the GitHub release world-1, which tools/earth/get-earth.bat fetches with "world-1" as its second argument, against tools/world/world-1.sha256. Nothing in the game reads it yet.
+     * Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored). It is the asset of the GitHub release world-1, which tools/earth/get-earth.bat fetches with "world-1" as its second argument, against tools/world/world-1.sha256. The nations' map (WN2) and the world market (WN3) read it; without it the game plays on the literals.
      */
     public static final String DATA_FILE = "data/world-1.bin";
 

@@ -430,7 +430,7 @@ public class CallCheck {
         city.setCashForTest(Founding.WEALTHY_CASH);
         check("fixture: the city has a year of prices before it sells, so the curve it sells on already reads an inflation",
                 city.getPriceIndex().hasRate());
-        double ask = saleOf(city, 3);
+        double ask = askTheMarketTakes(city);
         double face = Math.ceil(ask / 100) * 100;
 
         DebtQuote plain = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, false);
@@ -517,6 +517,25 @@ public class CallCheck {
                     !q.isEmpty() && q.callable() && q.firstCallMonth() == city.getMonth() + CallTree.FIRST_CALL_LONG * 12);
         }
         check("the audit still closes", closes(play(city)));
+    }
+
+    /**
+     * The ask the market takes whole: EM1's sale of three spares (saleOf: no more than a third of a year of tax), or the largest half of
+     * it (a half, a quarter, ...) that both the plain and the callable quote fill without stopping short at the cap. WN3: on the world's
+     * band the town's bidders take at the fair yield about half of the households' spare (the spare 302,000 of face, the bank's
+     * room 187,000): an ask of three spares sold short in both quotes (459,000 and 508,000 of face, not one face) at the cap's tail,
+     * a coupon 88 basis points over the callable's fair yield, and the line worth 106.7 per 100 and not about its face. Section 4's
+     * assertions are about a sale the market takes at fair, so the sale is sized to cause that; where the market takes three spares
+     * (the literals, the Historical path) the ask is EM1's.
+     */
+    static double askTheMarketTakes(Game city) {
+        for (double share = 3; share > 1e-3; share /= 2) {
+            double ask = saleOf(city, share);
+            DebtQuote plain = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, false);
+            DebtQuote call = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, true);
+            if (!plain.isEmpty() && !call.isEmpty() && !plain.isShort() && !call.isShort() && plain.faceValue() == call.faceValue()) return ask;
+        }
+        return saleOf(city, 1e-3);
     }
 
     /** A callable line built with another first call date is not the line a standard callable sale reopens. */
@@ -674,11 +693,17 @@ public class CallCheck {
         reprice(city);
         int left = 60;
         double face = 1_000;
-        double coupon = ledger.curve().parYield(left);
-        Debt line = ledger.addCallableBond(face, left, city.getMonth(), coupon, city.getMonth());
         double policy = ledger.getPolicyRate();
         boolean wasStruck = ledger.isStruck();
         double struckInflation = ledger.getStruckInflation(), struckExpected = ledger.getStruckExpected();
+        // WN3: the line is struck on a curve that has room to fall. The pushing down below takes the dial to nothing and the expectations
+        // to nothing, and on the world's band this town's curve stands at 2.2% for five years on 2.0% inflation and 0.4% expected: the
+        // 5-year falls to 2.0% at the floor, a saving of 2.4% of the face after the fee, under the 3% the line must save. The line is the
+        // one a city sold when its market expected a point and a half more (the 5-year 4.2%), and the pushing down is the fall that
+        // makes it worth calling.
+        ledger.strikeExpectations(struckInflation + .015, struckExpected + .015);
+        double coupon = ledger.curve().parYield(left);
+        Debt line = ledger.addCallableBond(face, left, city.getMonth(), coupon, city.getMonth());
         try {
             check("fixture: a callable line with five years left, at today's par yield, callable now", city.canCall(line));
             double saving0 = city.callSaving(line);

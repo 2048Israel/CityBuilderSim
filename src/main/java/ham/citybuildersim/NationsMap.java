@@ -495,7 +495,7 @@ public final class NationsMap {
     }
 
     /** The angle from a view's centre to the farthest point it shows, radians: its corner's if all four are on the planet, a quarter turn once one is off it. */
-    private static double viewRadius(GlobeFrame v) {
+    static double viewRadius(GlobeFrame v) {
         double far = Math.hypot(v.width() / 2, v.height() / 2) * v.kmPx() * 1000;
         return far >= EarthProj.RADIUS_M ? Math.PI / 2 : Math.asin(far / EarthProj.RADIUS_M);
     }
@@ -610,9 +610,9 @@ public final class NationsMap {
 
     /**
      * Collects runs of pixels, each segment clipped to the canvas widened by DRAW_MARGIN_PX (Liang-Barsky): a segment wholly outside is dropped and
-     * the run it was in is cut there; a segment that leaves ends at the margin, one that enters starts a run at it. Reused from frame to frame.
+     * the run it was in is cut there; a segment that leaves ends at the margin, one that enters starts a run at it. Reused from frame to frame (TradeLanes keeps one of its own).
      */
-    private static final class Cut {
+    static final class Cut {
         private double[] xs = new double[4096], ys = new double[4096];
         private int[] starts = new int[512];
         private int points, runs;
@@ -631,6 +631,9 @@ public final class NationsMap {
 
         /** The run in progress ends (a vertex was on the far side, or the line did). */
         void gap() { open = false; }
+
+        /** The runs begun so far (TradeLanes reads where each of its stroke widths' runs begin). */
+        int runCount() { return runs; }
 
         void segment(double ax, double ay, double bx, double by) {
             double dx = bx - ax, dy = by - ay, t0 = 0, t1 = 1;
@@ -826,6 +829,18 @@ public final class NationsMap {
      * file marks a projection carries " ◐" and the game's estimate " ○"; a head takes the lower of its two figures' marks.
      */
     public Card card(Nations nations, int nation, int year, double cityLat, double cityLon, double dollarsAUsd) {
+        return card(nations, nation, year, cityLat, cityLon, dollarsAUsd, null);
+    }
+
+    /** The words of the card's trade rows: what the nation bought of the city this year, what it sold the city, and the haul in tonnes (WN3, board 1). */
+    public static final String BUYS_WORDS = "Buys from us this year", SELLS_WORDS = "Sells us this year", HAUL_WORDS = "The haul, this year";
+
+    /**
+     * The same, with the trade of the year so far (WN3: the city's money, thousands, and the tonnes each way): when it is given and the money is not
+     * both nothing, three rows follow - BUYS_WORDS, SELLS_WORDS and HAUL_WORDS - with no rank beside them. Null, or no trade, and the card is the five rows
+     * alone: no row says it is coming.
+     */
+    public Card card(Nations nations, int nation, int year, double cityLat, double cityLon, double dollarsAUsd, TradeLanes.YearToDate trade) {
         Table t = table(nations, year);
         Nations.Year y = nations.year(nation, year);
         int i = nation - 1;
@@ -837,6 +852,11 @@ public final class NationsMap {
         double growth = Math.expm1(nations.growth(nation, year)), prices = y.inflation();
         rows.add(new Row("This year", Double.isNaN(growth) && Double.isNaN(prices) ? "-" : percent(growth, true) + " real · " + percent(prices, false) + " prices", ""));
         rows.add(new Row("Its money", moneyWords(y, dollarsAUsd), ""));
+        if (trade != null && (trade.exports() > 0 || trade.imports() > 0)) {
+            rows.add(new Row(BUYS_WORDS, city(trade.exports()), ""));
+            rows.add(new Row(SELLS_WORDS, city(trade.imports()), ""));
+            rows.add(new Row(HAUL_WORDS, haulWords(trade.tonnesOut(), trade.tonnesIn()), ""));
+        }
         return new Card(nations.name(nation), region[nation] == null ? "" : region[nation], distanceWords(nation, cityLat, cityLon), List.copyOf(rows));
     }
 
@@ -873,14 +893,26 @@ public final class NationsMap {
      * US$ as words: "US$2.24T" from a trillion (two decimals), "US$580B", "US$58.1B" and "US$5.81B" from a billion (three significant figures, a
      * trailing ".0" dropped), the same in M from a million, and below that "US$" and a whole number with its thousands separated. "-" for NaN.
      */
-    public static String usd(double v) {
+    public static String usd(double v) { return money("US$", v); }
+
+    /** Money as words in any sign, as usd() writes the US dollar's: "D$25M", and below a million the whole number, "D$580,000"; "-" for NaN. */
+    static String money(String sign, double v) {
         if (Double.isNaN(v)) return "-";
-        if (v >= 1e12) return "US$" + String.format(Locale.US, "%.2f", v / 1e12) + "T";
+        if (v >= 1e12) return sign + String.format(Locale.US, "%.2f", v / 1e12) + "T";
         String s;
-        if (v >= 1e9) return (s = three(v / 1e9)) != null ? "US$" + s + "B" : "US$1.00T";
-        if (v >= 1e6) return (s = three(v / 1e6)) != null ? "US$" + s + "M" : "US$1.00B";
+        if (v >= 1e9) return (s = three(v / 1e9)) != null ? sign + s + "B" : sign + "1.00T";
+        if (v >= 1e6) return (s = three(v / 1e6)) != null ? sign + s + "M" : sign + "1.00B";
         long whole = Math.round(v);
-        return whole >= 1_000_000 ? "US$1.00M" : "US$" + String.format(Locale.US, "%,d", whole);
+        return whole >= 1_000_000 ? sign + "1.00M" : sign + String.format(Locale.US, "%,d", whole);
+    }
+
+    /** The city's money, given in thousands (the trade's unit), as words: 25,000 is "D$25M"; "-" for NaN. */
+    public static String city(double thousands) { return money("D$", thousands * 1000); }
+
+    /** The haul as words: the tonnes sold and the tonnes bought, each as people() writes a count, " t out" and " t in", only those that are more than none; "-" for neither. */
+    public static String haulWords(double tonnesOut, double tonnesIn) {
+        String out = tonnesOut > 0 ? people(tonnesOut) + " t out" : null, in = tonnesIn > 0 ? people(tonnesIn) + " t in" : null;
+        return out != null && in != null ? out + " · " + in : out != null ? out : in != null ? in : "-";
     }
 
     /** People as words: "1.43B", "41.5M", "390k", "57k" (three significant figures, a trailing ".0" dropped), below a thousand the whole number. "-" for NaN. */

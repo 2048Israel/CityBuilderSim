@@ -816,8 +816,21 @@ public class FloatLinkCheck {
 
         city = readyCity("floatlink", true, .1);
         DebtManager dm = city.getDebtManager();
-        double ask = saleOf(city, .25);
-        double huge = askOf(city, 60);
+        // WN3: the sales are asked at the households' whole spare, not a quarter of it, and no more than EM1's third of a year of tax
+        // (saleOf). The fixed fee of an issue is a share of its face that falls as the face rises, and the near-par assertions read against
+        // it (see playedCity()); a quarter of this town's spare on the world's band was 7,400 of face, and a 2-year floater's effective rate
+        // then stood 8.7 basis points over its coupon where 5 are allowed.
+        double ask = saleOf(city, 1);
+        // WN3: "far past the bids" is reckoned from the bidders, not from the households' savings alone: 60 times the households' spare
+        // (1.77 million of face) was one bid in the world band's city, whose bank alone has room for 1.98 million, and the sale sold in full
+        // at no tail. Sixty times everything the bidders could take, at the maturities the harness sells (AuctionCheck 8 reckons its huge
+        // sale the same way).
+        double bids = 0;
+        for (int months : new int[] { 24, 60, 120, 360 }) {
+            Auction.Bidders bd = city.auctionBidders(months);
+            bids = Math.max(bids, bd.householdSpare() + bd.bankRoomFace() + bd.firmsIdle() + bd.worldStock() + bd.monthlyGdp() * 12);
+        }
+        double huge = 60 * bids;
         double step = Auction.COUPON_STEP;
 
         // The tail, caused: a sale far past the bids stops at the cap, short, and the tail is the cap.
@@ -970,6 +983,18 @@ public class FloatLinkCheck {
         for (int i = 0; i < piecesSold; i++) nobodyReopened &= dm.getDebt().get(i).getFaceValue() == facesSold.get(i);
         check("...it opened a line of its own: no floater and no linker took any of its face (a bond's benchmark line is a bond's)", nobodyReopened);
 
+        // WN3: the floater the dial's move is read on is sold here, beside the fixed 2-year it is compared with, not the one sold sections
+        // ago. The dial is held by hand at 3% while the market's curve is not: in this town at month 62 the 1- and 2-year stand at 4.3%
+        // to 4.6%, and the 2-year floater sold earlier in this harness (at 99.99 of par) stood at 99.52 when this section began and
+        // 99.66 two months on (the 5-year one at 99.09) - 0.34 under par before the dial moved, 0.45 after, outside the quarter
+        // point the assertion allows. A floater is near par when it is fresh; its distance from par after a long while is the held
+        // dial's distance from the curve, which is not what the assertion is about.
+        Set<Debt> beforeFresh = piecesOf(dm);
+        quietly(() -> city.handleFloatingNoteLogic(ask, 2, 100));
+        Debt freshPiece = newest(dm, beforeFresh);
+        check("fixture: a 2-year floater is sold beside the fixed one, for the dial's move to be read on", freshPiece instanceof FloatingRateNote);
+        FloatingRateNote fresh = freshPiece instanceof FloatingRateNote fn ? fn : floaters.get(0);
+
         Books b = new Books();
         b.prevBank = 0;
         press(city, b, "sale month: the settle");
@@ -978,11 +1003,11 @@ public class FloatLinkCheck {
         double[] dials = { .045, 0, .005, .02, .03 };
         String[] events = { "dial moved up", "dial at nothing", "dial moved to half a point", "dial moved to two points", "dial back to three" };
         for (int i = 0; i < dials.length; i++) {
-            double was = dm.priceOfPar(floaters.get(0)), wasFixed = dm.priceOfPar(fixedTwoYear);
+            double was = dm.priceOfPar(fresh), wasFixed = dm.priceOfPar(fixedTwoYear);
             double to = dials[i];
             quietly(() -> dm.takeTheDial(to));
             if (i == 0) {
-                double nowFloat = dm.priceOfPar(floaters.get(0)), nowFixed = dm.priceOfPar(fixedTwoYear);
+                double nowFloat = dm.priceOfPar(fresh), nowFixed = dm.priceOfPar(fixedTwoYear);
                 out.printf("   the dial from %.2f%% to %.2f%%: the 2-year floater's value %.4f -> %.4f per 100, the fixed 2-year bond's %.4f -> %.4f%n",
                         3.0, to * 100, was, nowFloat, wasFixed, nowFixed);
                 // The floater is not quite deaf to the dial: its coupon in a month reads the dial of that tick while the curve discounts

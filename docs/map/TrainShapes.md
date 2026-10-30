@@ -1,6 +1,6 @@
 # TrainShapes.java - 92 lines · 6 methods · 6 constants · model
 
-`ham/citybuildersim/TrainShapes.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TrainShapes.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > How the map draws a train: each vehicle's body and its load's mark as
 > points in plots about where it is and the way it heads, and their colours

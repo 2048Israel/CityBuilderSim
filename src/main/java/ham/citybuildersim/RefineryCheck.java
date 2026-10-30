@@ -977,6 +977,15 @@ public class RefineryCheck {
     static void theInvestorsOrderAUnit() throws Exception {
         out.println("\n--- 14. the investors order a unit, and Game.consider() tests the planner's estimate ---");
         Game g = plannerTown("refinerycheck-plan", false);
+        /*
+         * ...ON THE GOODS' LITERALS (WN3, the world market): the section's premise is a unit that earns something at the city's prices, and in this
+         * town it does so by a hair - $0.4k to $1k a month on $30M at the literals' prices, the run at nameplate - which is a figure of the literals'
+         * price level against the unit's costs in D$. On the world's band for 2000 (prices a quarter under the literals, the costs not) the best unit
+         * loses $27k a month (the product spread a quarter smaller, the run held to the city's take: past it a barrel exported does not beat the wells'
+         * crude), whatever the wells or the houses: so no order is placed. The planner's path to an order is what is under test, not the world's
+         * prices, so the town trades at the literals, as before.
+         */
+        g.playOnLiterals();
         // ...its orders asked on the rule to 0.7.112 (0.7.113, I2b): on the whole cost no unit here pays (11b), and the section is the order's path.
         g.setOrderGate(SpreadPlanner.ON_ITS_BORROWING);
         Refining r = g.getSectors().refining();
@@ -1335,6 +1344,15 @@ public class RefineryCheck {
                 + " six months, and sold (0.7.105) ---");
         Game g = plannerTown("refinerycheck-run", false);
         Game held = plannerTown("refinerycheck-run-held", true);
+        /*
+         * ...ON THE GOODS' LITERALS (WN3, the world market), as section 14's town. The section's premise is the study's: crude imported by
+         * lorry loses (section 16's margins: by lorry -10.0% at the literals' prices), so the first barrel does not pay and the run goes to
+         * nothing. On the world's band the lorries' freight is shrunk to the band (GoodsMarket.bandFreight()) and on the Random path's
+         * January 2000 the last barrel earns 1.1% over its crude: a fixed world price is what the premise needs. The choice is not saved,
+         * so the twin loaded below plays on the literals too.
+         */
+        g.playOnLiterals();
+        held.playOnLiterals();
         Refining r = g.getSectors().refining(), h = held.getSectors().refining();
         BuildingManager b = g.getBuildingManager();
         BuildingsTemplate refinery = b.getTemplateByName("Oil Refinery"), farm = b.getTemplateByName("Tank Farm"),
@@ -1374,6 +1392,7 @@ public class RefineryCheck {
         quietly(() -> g.saveGame(10, "run"));
         Game twin = new Game(files);
         quietly(() -> twin.loadGameSave(10));
+        twin.playOnLiterals();   // WN3: as g; the choice is not saved
         Refining back = twin.getSectors().refining();
         boolean same = back.runShare() == r.runShare();
         quietly(() -> g.simulateMonths(2));

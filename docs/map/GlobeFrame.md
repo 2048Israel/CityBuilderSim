@@ -1,6 +1,6 @@
 # GlobeFrame.java - 1,078 lines · 91 methods · 19 constants · model
 
-`ham/citybuildersim/GlobeFrame.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GlobeFrame.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a drag, a held key and Fit move it, which of three pictures it draws - the planet's picture, the ground through the globe, or the city's plane - and where a pixel is on the planet and on the city's plane; what the land office's map on Earth and the founding screen's globe draw by (since 0.7.135) and GlobeCheck and MapCheck 13 hold.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [EarthProj](EarthProj.md) (53), [World](World.md) (28), [MapFrame](MapFrame.md) (6), [GlobePicture](GlobePicture.md) (3), [EarthTerrain](EarthTerrain.md) (2), [CityLand](CityLand.md) (1), [LandMarket](LandMarket.md) (1), [LandGrid](LandGrid.md) (1), [LandParcel](LandParcel.md) (1)
 
-**Used by (10):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [NationsMap](NationsMap.md), [ReliefRenders](ReliefRenders.md)
+**Used by (11):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [NationsMap](NationsMap.md), [ReliefRenders](ReliefRenders.md), [TradeLanes](TradeLanes.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
-# ManufacturingCheck.java - 609 lines · 8 methods · 5 constants · harnesses
+# ManufacturingCheck.java - 614 lines · 8 methods · 5 constants · harnesses
 
-`ham/citybuildersim/ManufacturingCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ManufacturingCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The ninth sector: what the city makes out of its own steel, and ships.
 > 
@@ -39,7 +39,7 @@
 | 207 | · 3. the templates are the design's arithmetic |
 | 364 | · 4. the traps |
 | 403 | · 5. the two brakes, each caused |
-| 490 | · 6. the books, the audit, and a reload |
+| 495 | · 6. the books, the audit, and a reload |
 
 ## Constants
 
@@ -63,18 +63,18 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 574 | **type** `public class ManufacturingCheck` | The ninth sector: what the city makes out of its own steel, and ships. |
+| 36 | 579 | **type** `public class ManufacturingCheck` | The ninth sector: what the city makes out of its own steel, and ships. |
 | 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 47 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 52 | 9 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 62 | 5 | `static void quietly(Runnable r)` |  |
 
-### WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is (lines 84-609)
+### WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is (lines 84-614)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 97 | 23 | `static void costSharesAddUp(Game g)` |  |
-| 121 | 476 | `public static void main(String[] args) throws Exception` |  |
-| 598 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
-| 604 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
+| 121 | 481 | `public static void main(String[] args) throws Exception` |  |
+| 603 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
+| 609 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
 

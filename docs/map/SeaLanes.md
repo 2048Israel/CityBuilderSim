@@ -1,6 +1,6 @@
 # SeaLanes.java - 210 lines · 15 methods · 1 constants · model
 
-`ham/citybuildersim/SeaLanes.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SeaLanes.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The sea lanes a map draws: every leg of every terminal's route once - a leg that many routes share, once - indexed by the district cells it reaches, so a frame asks for the legs on its screen and touches only those; pure, kept by the map with its routes and never saved.
 > 

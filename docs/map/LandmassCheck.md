@@ -1,6 +1,6 @@
-# LandmassCheck.java - 3,275 lines · 94 methods · 14 constants · harnesses
+# LandmassCheck.java - 3,290 lines · 94 methods · 14 constants · harnesses
 
-`ham/citybuildersim/LandmassCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandmassCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the
 > Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city has not linked is owned,
@@ -94,7 +94,7 @@
 | 2071 | 10. THE MAP |
 | 2581 | 11. THE WORDS |
 | 2907 | 12. GROWN ACROSS LANDMASSES |
-| 3153 | 13. THE FULL FILE |
+| 3168 | 13. THE FULL FILE |
 
 ## Constants
 
@@ -113,7 +113,7 @@
 | 1519 | `LandmassCheck.HOME_COAST_SHORE` | `90` | Shore plots the square of home's open coast must hold in section 10: 90. |
 | 1522 | `LandmassCheck.GROWN_MONTHS` | `480` | Months section 12 runs after its two terminals are ordered: 480 (it was 96, for terminals of 35,000 points; see TERMINAL_MONTHS). |
 | 1553 | `LandmassCheck.GSON` | `new com.google.gson.Gson()` |  |
-| 3173 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
+| 3188 | `LandmassCheck.RUN_MONTHS` | `1200` | The months the Rotterdam run plays. |
 
 ## Fields (state)
 
@@ -143,7 +143,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 109 | 3167 | **type** `public class LandmassCheck` | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city h... |
+| 109 | 3182 | **type** `public class LandmassCheck` | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city h... |
 | 133 | 4 | `static void check(String label, boolean ok)` |  |
 | 138 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 143 | 5 | `static void quietly(Runnable r)` |  |
@@ -343,7 +343,7 @@
 | 2589 | 3 | `static boolean islandPort(City c, BuildingsTemplate gc)` | The landmass kinds of terminal ordered by the card's path: the general cargo terminal, on the island. |
 | 2593 | 313 | `static void theWords(Fixtures f)` |  |
 
-### 12. GROWN ACROSS LANDMASSES (lines 2907-3152)
+### 12. GROWN ACROSS LANDMASSES (lines 2907-3167)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -351,14 +351,14 @@
 | 2982 | 12 | `static String booksDiffer(List<Landmasses.Row> books, List<Landmasses.Row> recount)` | What differs between the books' rows and a recount's, ignoring the name and whether the landmass is linked; null when they are the same books. |
 | 2996 | 16 | `static void theAudit(Fixtures f)` | The audit, tried on books gone stale: land bought and the books never told. |
 | 3014 | 5 | `static int buildingsOf(Game g)` | The buildings standing, every template's. |
-| 3020 | 132 | `static void grown(Fixtures f)` |  |
+| 3020 | 147 | `static void grown(Fixtures f)` |  |
 
-### 13. THE FULL FILE (lines 3153-3275)
+### 13. THE FULL FILE (lines 3168-3290)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3158 | 13 | `static EarthData theEarth()` | The Earth's data where it is named or lies at its place, or null - and the one line saying so. |
-| 3175 | 74 | `static void fullFile(EarthData file)` |  |
-| 3250 | 17 | `private static void look(Game g, int[] looks, String[] first)` |  |
-| 3269 | 6 | `static double[] dryArea(double km2)` | The five areas of an offer of this many square kilometres of dry ground. |
+| 3173 | 13 | `static EarthData theEarth()` | The Earth's data where it is named or lies at its place, or null - and the one line saying so. |
+| 3190 | 74 | `static void fullFile(EarthData file)` |  |
+| 3265 | 17 | `private static void look(Game g, int[] looks, String[] first)` |  |
+| 3284 | 6 | `static double[] dryArea(double km2)` | The five areas of an offer of this many square kilometres of dry ground. |
 

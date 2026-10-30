@@ -143,6 +143,12 @@ public class PolicyPreviewCheck {
             g.run();
             // AN1 (2026-10-22): the D$ is held (see above); the reload twin of section 5 runs no month, so no side of it floats.
             g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
+            // WN3: the cement sector builds nothing here. On the world's band it borrows $53M by month 13 for a Lime Kiln the town's
+            // crews take 45 months to open (its plan reads "already building" the while), pays $343k a month of interest on it with
+            // nothing coming in, defaults in months 48 to 56 ($9.7M of write-offs in month 53 alone) and the bank, at $35M of equity,
+            // makes a loss through month 63: sections 6 and 7 are about the bank's profit tax, and there is none to preview. The
+            // fixture measures the Policy tab's previews, not the credit cycle, so no sector borrows a works the town cannot build.
+            g.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
@@ -175,6 +181,7 @@ public class PolicyPreviewCheck {
         theBudget(g);
         theOtherReads(g);
         afterALoad(root, g);
+        anEiPool(g);
         appliedIsTheModel(g);
         aDialAtZero(g);
         theWithdrawal(g);
@@ -183,6 +190,28 @@ public class PolicyPreviewCheck {
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /**
+     * An EI pool that stays, caused. WN3: on the world's band the fixture's city is job-rich, and the 125 on EI it opens month 61 with
+     * (the month's separations) are hired again the month after, so by the sections that play a month (1, then 6 and 7 here) nobody is
+     * on EI and the bill the dials are previewed on is nothing. Sections 6 and 7 are about the EI bill, so as OutsideCheck does it,
+     * half of the largest employer's buildings close and a month passes: those out of work are on EI, and they stay (the posts are gone).
+     */
+    static void anEiPool(Game g) {
+        BuildingsTemplate biggest = null;
+        int biggestJobs = 0;
+        for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
+            if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
+            int jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
+            if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
+        }
+        final BuildingsTemplate closing = biggest;
+        if (closing == null) return;
+        quietly(() -> {
+            g.getBuildingManager().retire(closing, Math.max(1, g.getBuildingManager().getQuantity(closing.getId()) / 2));
+            g.simulateMonths(1);
+        });
     }
 
     /** The city as the previews read it, for the record. */

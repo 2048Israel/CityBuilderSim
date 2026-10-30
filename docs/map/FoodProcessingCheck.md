@@ -1,6 +1,6 @@
-# FoodProcessingCheck.java - 442 lines · 7 methods · 3 constants · harnesses
+# FoodProcessingCheck.java - 455 lines · 7 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The third of the shelf that arrives already made.
 > 
@@ -33,7 +33,7 @@
 > 
 > Every fixture CAUSES its condition: the meat price is set, not waited for.
 
-**Uses:** [Good](Good.md) (23), [BuildingsTemplate](BuildingsTemplate.md) (12), [LongPlaytest](LongPlaytest.md) (11), [Formats](Formats.md) (7), [JobType](JobType.md) (6), [Game](Game.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [Equity](Equity.md) (3), [GameFiles](GameFiles.md) (2), [FoodProcessing](FoodProcessing.md) (2), [PayTier](PayTier.md) (1), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [Markets](Markets.md) (1), [TaxPolicy](TaxPolicy.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (25), [BuildingsTemplate](BuildingsTemplate.md) (12), [LongPlaytest](LongPlaytest.md) (11), [Formats](Formats.md) (7), [JobType](JobType.md) (6), [Game](Game.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [Equity](Equity.md) (3), [GameFiles](GameFiles.md) (2), [FoodProcessing](FoodProcessing.md) (2), [PayTier](PayTier.md) (1), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [Markets](Markets.md) (1), [TaxPolicy](TaxPolicy.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 ## Sections
 
@@ -44,7 +44,7 @@
 | 159 | · 3. what a plant earns per person who runs it |
 | 209 | · 4. the estimate: the price it leaves behind, and the tax |
 | 337 | · 5. the meat price is the bet, and it is real |
-| 409 | · 6. it survives a save, by name |
+| 422 | · 6. it survives a save, by name |
 
 ## Constants
 
@@ -66,12 +66,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 402 | **type** `public class FoodProcessingCheck` | The third of the shelf that arrives already made. |
+| 41 | 415 | **type** `public class FoodProcessingCheck` | The third of the shelf that arrives already made. |
 | 47 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 52 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 57 | 5 | `static void quietly(Runnable r)` |  |
 | 67 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
 | 73 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
 | 80 | 9 | `static double midBandRevenue(BuildingsTemplate t)` | A template's nameplate valued at the middle of each good's world band, in thousands. |
-| 90 | 352 | `public static void main(String[] args) throws Exception` |  |
+| 90 | 365 | `public static void main(String[] args) throws Exception` |  |
 

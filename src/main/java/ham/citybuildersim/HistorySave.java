@@ -501,6 +501,20 @@ public class HistorySave {
     private Map<String, List<Double>> sectorNetIncome = new LinkedHashMap<>();
     private Map<String, List<Double>> sectorWorkers = new LinkedHashMap<>();
 
+    /* ------------------- the trade by partner (WN3, 2026-10-28) -------------------
+
+       Each finished calendar year's table of the city's trade with the world's
+       nations (PartnerTrade.Table): per (good, nation) the units and the
+       thousands of the city's money, sold and bought, sparse. A list a YEAR and
+       not a series on the month axis, so it is not in seriesByName(): appendMonth()
+       adds nothing to it and foldOldYears() leaves it alone - a year is already
+       the fold. Game's tallyThePartners() sets it when a year finishes; a city
+       with no world file keeps none. A flow cannot be reconstructed, so there is
+       no back-fill: an older city's list starts at its first year on this build.
+       The tables are immutable (records of numbers), so a snapshot shares them.
+       ------------------------------------------------------------------ */
+    private List<PartnerTrade.Table> tradeByPartner = new ArrayList<>();
+
     /** The series name the screens ask for, per sector: the month's net income after tax. */
     public static String netIncomeKey(String sector) { return "netIncome:" + sector; }
     /** ...and its posts filled. */
@@ -1183,6 +1197,23 @@ public class HistorySave {
 
         sectorNetIncome = copyMap(loaded.sectorNetIncome);
         sectorWorkers = copyMap(loaded.sectorWorkers);
+
+        // The trade by partner (WN3): each year's table rebuilt, so a table read by Gson (a list it made) is the immutable one the model keeps.
+        tradeByPartner = new ArrayList<>();
+        if (loaded.tradeByPartner != null) {
+            for (PartnerTrade.Table t : loaded.tradeByPartner) if (t != null) tradeByPartner.add(new PartnerTrade.Table(t.year(), t.cells()));
+        }
+    }
+
+    /** The finished years of the city's trade by partner (WN3), oldest first; empty on a city with no world market or a history from before it. */
+    public List<PartnerTrade.Table> getTradeByPartner() { return tradeByPartner == null ? List.of() : List.copyOf(tradeByPartner); }
+
+    /** How many finished years of trade by partner the history holds. */
+    public int tradeYears() { return tradeByPartner == null ? 0 : tradeByPartner.size(); }
+
+    /** Sets the finished years (Game, when a year finishes): a copy of the list; the tables are immutable. */
+    public void setTradeByPartner(List<PartnerTrade.Table> years) {
+        tradeByPartner = years == null ? new ArrayList<>() : new ArrayList<>(years);
     }
 
     /** A map of series, copied list by list, and never null - see copy(). */
