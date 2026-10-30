@@ -78,18 +78,21 @@ Population at the end: Rotterdam 53,511 (54,842), Medellin 171,735 (178,014), th
   Furnaces on imported scrap: steel nets 0.205 abroad against 0.264 of scrap), HomeRailCheck's rail city and
   TruckRouteCheck 9 (HaulageCheck's Pelletising Plant: pellets 0.057 against 0.066) play on the literals with their
   product's world prices doubled - their premise is works that ship, and on imported feed those exports lose.
-- **The full suite, as the gate runs it** (`earth-2.bin` named, on 5c0e320b and the HomeRailCheck mend after it): 154
-  harnesses, every red main's recorded ones aside, once TradeBandCheck 6 was mended back (its city is
-  `HomeRailCheck.railed()`'s, which this batch had first mended for every caller: a city on the literals is not saved
-  so, and the reload read another band; now only HomeRailCheck's own rail city plays its pellets paying, and
-  TradeBandCheck, FreightViewCheck and HomeRailCheck are green both ways). `--pick` at the end (on e3f75b50): exit 0, 43 harnesses with LongPlaytest in `Sector`'s place.
-- **With both files named**: two NEW reds, both reached on FL1's path and neither shown at the gate (5 items 2 and 6):
-  SaveFileCheck "...and the bank's equity with it in" FAIL 64,620.418011 != 64,592.313823 and "...its three parts
-  still adding up" FAIL 50,666.800267 != 50,694.904455; LongPlaytest's finding "an old works moved" (m4000).
-- **The ensemble** (both files, as WN3's; `docs/ensemble/FL1.md`, against 0.8.75, on the final model 5c0e320b and
-  the same to the figure on 349be77f): **23 of 26**, as WN3's. AUTO2 median 320,550 (292,982), T1 16 of 16 at m1,120
-  (m802-m1,150), F1 0 of 80, M1 0. A2 and S1 fail as on 0.8.75 (S1's longest spell 47 months, 36 before); **R3 fails in
-  5 seeds** (3 before), median +0.35 points (-1.12): WN3-R's premise, the band's monetary study queued.
+- **The full suite, as the gate runs it** (`earth-2.bin` named, on 5c0e320b): 154 harnesses, every red main's
+  recorded ones aside, once TradeBandCheck 6 was mended back (its city is `HomeRailCheck.railed()`'s, which this
+  batch had first mended for every caller: a city on the literals is not saved so, and the reload read another band;
+  now only HomeRailCheck's own rail city plays its pellets paying, and TradeBandCheck, FreightViewCheck and
+  HomeRailCheck are green both ways). After main 0.8.76 (HD2) was merged, `--pick`: **exit 0**, 43 harnesses with
+  LongPlaytest in `Sector`'s place.
+- **With both files named**, on the merged tip (a8190fb1): SlopeCheck, LandmassCheck, CopperRefiningCheck, the four
+  mended harnesses, TradeBandCheck and LongPlaytest (543,040 at m4000, nothing found) green; **one NEW red**, reached on
+  FL1's path and not shown at the gate (5 item 2): SaveFileCheck "...and the bank's equity with it in" FAIL
+  64,614.915170 != 64,586.700448 and "...its three parts still adding up" FAIL 50,662.214296 != 50,690.429019.
+- **The ensemble** (both files, as WN3's and HD2's; `docs/ensemble/FL1.md`, on the merged tip, against 0.8.76):
+  **23 of 26** (0.8.76: 23 of 25, one vacuous). AUTO2 median 317,518 (280,956), T1 16 of 16 at m1,104 (m956-m1,145),
+  F1 0 of 80, M1 0. A2 and S1 fail as on 0.8.76; R3 passes (2 seeds over +1 point, median -0.95); **R2 fails**: the
+  15% rate's unemployment over its twin, median +0.32 points against +0.50 (0.8.76 +2.86; FL1 on WN3, before HD2,
+  +1.35 and passing), seeds -1.84 to +8.46 (FL1-E). On WN3 (0.8.75) FL1 scored 23 of 26 as WN3 did, R3 red in 5 seeds.
 
 ## 5. Found on the way
 
@@ -111,10 +114,10 @@ Population at the end: Rotterdam 53,511 (54,842), Medellin 171,735 (178,014), th
 5. **On the literals an Arc Furnace on imported scrap and a Pelletising Plant on imported ore lose on what they
    export** (steel nets 0.205 against 0.264 of scrap). The rule now stops those exports in every city; the planner's
    estimate (`SpreadPlanner`) already weighs them at those prices.
-6. **LongPlaytest meets WN3-M on FL1's path** (both files): "an old works moved", m4000, district (0,0), Rod Mills
-   (4 of the 8 standing at m1001 not where they stood). The map fault WN3's notes 5 item 1 (2) found on Historical -
-   ground bought inside a built district moves old works - latent on the default path until a path builds 35 rod
-   mills. The watcher is not weakened; WN3-M holds the fault.
+6. **LongPlaytest met WN3-M on FL1's path before HD2** (both files, on 5c0e320b): "an old works moved", m4000,
+   district (0,0), Rod Mills (4 of the 8 standing at m1001 not where they stood) - the map fault WN3's notes 5 item 1
+   (2) found on Historical, ground bought inside a built district moving old works. On the merged tip the path finds
+   nothing; the fault is latent, and WN3-M holds it.
 
 ## 6. One in, one out
 
