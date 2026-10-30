@@ -85,9 +85,12 @@ Population at the end: Rotterdam 53,511 (54,842), Medellin 171,735 (178,014), th
   HomeRailCheck are green both ways). After main 0.8.76 (HD2) was merged, `--pick`: **exit 0**, 43 harnesses with
   LongPlaytest in `Sector`'s place.
 - **With both files named**, on the merged tip (a8190fb1): SlopeCheck, LandmassCheck, CopperRefiningCheck, the four
-  mended harnesses, TradeBandCheck and LongPlaytest (543,040 at m4000, nothing found) green; **one NEW red**, reached on
-  FL1's path and not shown at the gate (5 item 2): SaveFileCheck "...and the bank's equity with it in" FAIL
-  64,614.915170 != 64,586.700448 and "...its three parts still adding up" FAIL 50,662.214296 != 50,690.429019.
+  mended harnesses, TradeBandCheck and LongPlaytest (543,040 at m4000, nothing found) green; SaveFileCheck red on the
+  bank's equity after a load (FL1-R), sent back at the gate and fixed (5 item 2).
+- **After FL1-R's fix** (3ab01031), both files named as the gate names them now: the full suite red only on main's
+  recorded reds, word for word, once ScaleCheck's scaler took the new saved key (its copy's bank had carried the small
+  city's desk: cash's worst 3.96e+01 against main's recorded 1.20e+00, now 1.20e+00 again); `--pick` (46 harnesses, LongPlaytest in `Game` and `Sector`'s place): **exit 3**, ScaleCheck its only red, main's. The
+  default playtest's trace is the merged tip's to the byte but for its run time, so the ensemble below stands.
 - **The ensemble** (both files, as WN3's and HD2's; `docs/ensemble/FL1.md`, on the merged tip, against 0.8.76):
   **23 of 26** (0.8.76: 23 of 25, one vacuous). AUTO2 median 317,518 (280,956), T1 16 of 16 at m1,104 (m956-m1,145),
   F1 0 of 80, M1 0. A2 and S1 fail as on 0.8.76; R3 passes (2 seeds over +1 point, median -0.95); **R2 fails**: the
@@ -96,15 +99,20 @@ Population at the end: Rotterdam 53,511 (54,842), Medellin 171,735 (178,014), th
 
 ## 5. Found on the way
 
-1. **The gate does not name `world-1.bin`.** `docs/orchestrator.md` names `earth-2.bin` alone, so WN3's world market
-   has never run at a gate: its two reds and FL1's fix are visible only in a batch session that names both. For the
-   orchestrator: name both files (★ in the report).
-2. **SaveFileCheck's bank after a load** (both files named only): the fund city's bank reads 64,620.42 of equity just
-   after its load against 64,592.31 live, no month played, its paid-in, retained and preferred unchanged (the split's
-   residual off by the same 28.10). Green on slice A's model, red on slice B's (the by-product's run share and the
-   captive input's cost move this city's path); FL1's own state (the shares, the cut, the curve) is cleared each month
-   and is not read at a load. Not traced: which of the bank's assets (cash reserves, net loans, securities) is rebuilt
-   from something the save does not keep (FL1-R).
+1. **The gate did not name `world-1.bin`.** `docs/orchestrator.md` named `earth-2.bin` alone, so WN3's world market
+   had never run at a gate: its two reds and FL1's fix were visible only in batch sessions that named both. Settled at
+   FL1's first gate the recommended way (FL1-G): the gate names both files from now on.
+2. **The bank's desk was re-marked at a load (FL1-R, fixed here; sent back at the gate on Jerus's "Fix first").**
+   SaveFileCheck's fund city, both files named, read 28.21 more bank equity just after its load than live, its parts
+   unchanged. Traced: the bank's securities (its desk's shares at the exchange's mark) were 49,977.00 live and 50,005.22
+   loaded. The month re-marks them only at the exchange's step, and after an ordinary month what the bank carries is
+   the quote (49,977.00 at m166); the load put them back from the quote now (`Exchange.markToMarket()`), and the
+   fixture's share trades between steps (`Exchange.tradeForCheck()`, the world bidding on each candidate company)
+   moved the quote of companies the desk held - on FL1's path, not on WN3's. **The fix**: `DataSave.bankSecurities`
+   keeps what the bank carries and the load restores it, re-marking from the quote only for a save without it (an
+   older save loads as before: no format change). SaveFileCheck gains a fixture that makes the desk carry other than
+   today's quote (where its trades did not) and "...the desk's inventory as the bank carried it, not re-marked from the
+   quote": red on the old load (23,872.82 against 23,873.82), green now, with both files and with the Earth file alone.
 3. **The operating rate moves inside a month**: the vans that arrive between `produceFlow()` and the clearing move
    it by about 0.3%, so a flow works buys its inputs at the clearing's rate for output made at the earlier one
    (CopperRefiningCheck 9 (b) compares with a 2% `close()` there). As before FL1.
@@ -127,4 +135,5 @@ Not a process batch: no script, check machinery or session rule changed.
 
 Two Sonnet 5.5 slices at xhigh, reviewed: A (the rule, the slope, section 9 (a)-(f)), B (the by-product, the captive
 input, 9 (g)-(h); it stalled before its runs and the four fixture mends, which this session finished and checked). The
-save fix in `inputCost()` and the notes are this session's.
+save fix in `inputCost()`, FL1-R's fix (`DataSave.bankSecurities`, ten lines and the harness's line) and the notes are
+this session's.

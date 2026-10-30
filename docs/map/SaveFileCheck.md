@@ -1,4 +1,4 @@
-# SaveFileCheck.java - 3,638 lines · 17 methods · 2 constants · harnesses
+# SaveFileCheck.java - 3,646 lines · 17 methods · 2 constants · harnesses
 
 `ham/citybuildersim/SaveFileCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -43,14 +43,14 @@
 | 2120 | · 13b. a bond in the saved history (HD1, 2026-10-29) |
 | 2159 | · 14. a reloaded city PLAYS ON as the one it was saved from |
 | 2482 | · the city's fund, its rescue setting and the bank's preferred (0.7.14) |
-| 2781 | · the oldest format this build loads (0.7.108) |
+| 2789 | · the oldest format this build loads (0.7.108) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 31 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nati...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 3426 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 3434 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ## Fields (state)
 
@@ -62,22 +62,22 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 3613 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
+| 26 | 3621 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
 | 33 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 38 | 10 | `static void assertEquals(String label, Object actual, Object expected)` |  |
 | 50 | 9 | `static void same(String label, double actual, double expected)` | Two readings of one month, which must not differ at all. |
 | 61 | 3 | `static String flat(Path p)` | Forward slashes, so the assertions read the same on any host. |
-| 65 | 2830 | `public static void main(String[] args) throws Exception` |  |
-| 2896 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 2913 | 41 | `static void everyIdCrossesASave(Path root)` | EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19). |
-| 2982 | 372 | `static void onEarth(Path root) throws IOException` | A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). |
-| 3366 | 46 | `static void refusedIntoARunningCity(GameFiles files, Game running, String olderBuild, com.google.gson.JsonObject newerSave) thr...` | A REFUSED LOAD LEAVES THE CITY IN PLAY ALONE (FW1, 0.8.37). |
-| 3414 | 10 | `static java.util.List<String> jsonDiff(com.google.gson.JsonObject a, com.google.gson.JsonObject b, java.util.Set<String> except)` | The keys two saves differ on, by name and value, but those left out. |
-| 3429 | 4 | `static void quietly(Runnable r)` | Runs a piece of the city with the game's narration off. |
-| 3434 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
-| 3454 | 10 | `static boolean refusedAtTheFloor(GameFiles files, int slot, Game loaded, byte[] before)` | Whether a load of `slot` from `files` into `loaded` was refused at the floor (0.7.120, batch I3): the save's format below GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming the build that saved it ... |
-| 3466 | 9 | `static java.util.Map<String, byte[]> folderBytes(Path dir) throws IOException` | Every file under a folder and its bytes, by its path within it - to say nothing in it moved. |
-| 3483 | 138 | `static void worldMarketCrossesASave(Path root) throws IOException` | THE WORLD MARKET CROSSES A SAVE (WN3, format 48; Game, THE WORLD MARKET). |
-| 3623 | 6 | `static String printedMonths(Game city, int months)` | The narration of some months of a city, as text. |
-| 3631 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
+| 65 | 2838 | `public static void main(String[] args) throws Exception` |  |
+| 2904 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 2921 | 41 | `static void everyIdCrossesASave(Path root)` | EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19). |
+| 2990 | 372 | `static void onEarth(Path root) throws IOException` | A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). |
+| 3374 | 46 | `static void refusedIntoARunningCity(GameFiles files, Game running, String olderBuild, com.google.gson.JsonObject newerSave) thr...` | A REFUSED LOAD LEAVES THE CITY IN PLAY ALONE (FW1, 0.8.37). |
+| 3422 | 10 | `static java.util.List<String> jsonDiff(com.google.gson.JsonObject a, com.google.gson.JsonObject b, java.util.Set<String> except)` | The keys two saves differ on, by name and value, but those left out. |
+| 3437 | 4 | `static void quietly(Runnable r)` | Runs a piece of the city with the game's narration off. |
+| 3442 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
+| 3462 | 10 | `static boolean refusedAtTheFloor(GameFiles files, int slot, Game loaded, byte[] before)` | Whether a load of `slot` from `files` into `loaded` was refused at the floor (0.7.120, batch I3): the save's format below GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming the build that saved it ... |
+| 3474 | 9 | `static java.util.Map<String, byte[]> folderBytes(Path dir) throws IOException` | Every file under a folder and its bytes, by its path within it - to say nothing in it moved. |
+| 3491 | 138 | `static void worldMarketCrossesASave(Path root) throws IOException` | THE WORLD MARKET CROSSES A SAVE (WN3, format 48; Game, THE WORLD MARKET). |
+| 3631 | 6 | `static String printedMonths(Game city, int months)` | The narration of some months of a city, as text. |
+| 3639 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
 
