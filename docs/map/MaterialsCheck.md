@@ -1,4 +1,4 @@
-# MaterialsCheck.java - 1,537 lines · 31 methods · 27 constants · harnesses
+# MaterialsCheck.java - 1,541 lines · 31 methods · 27 constants · harnesses
 
 `ham/citybuildersim/MaterialsCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      estimate.
 > ... (88 more lines in the source)
 
-**Uses:** [Good](Good.md) (207), [SpreadPlanner](SpreadPlanner.md) (95), [BuildingsTemplate](BuildingsTemplate.md) (46), [OldMetal](OldMetal.md) (45), [Game](Game.md) (40), [HeavyIndustry](HeavyIndustry.md) (32), [Sector](Sector.md) (31), [Sectors](Sectors.md) (30), [ProcessingSector](ProcessingSector.md) (27), [BuildingManager](BuildingManager.md) (27), [Mining](Mining.md) (22), [Resource](Resource.md) (20), [GameFiles](GameFiles.md) (19), [BusinessInvestment](BusinessInvestment.md) (14), [Deposit](Deposit.md) (12), [Trade](Trade.md) (11), [GameVersion](GameVersion.md) (11), [Markets](Markets.md) (8), [GoodsMarket](GoodsMarket.md) (8), [UtilitiesHandler](UtilitiesHandler.md) (8), [JobType](JobType.md) (8), [MoneyAudit](MoneyAudit.md) (7), [BuildingType](BuildingType.md) (7), [LandManager](LandManager.md) (5), [Statement](Statement.md) (4), [PayTier](PayTier.md) (4), [LandCheck](LandCheck.md) (4), [Traffic](Traffic.md) (3), [MiningCheck](MiningCheck.md) (3), [Founding](Founding.md) (2)... and 6 more
+**Uses:** [Good](Good.md) (210), [SpreadPlanner](SpreadPlanner.md) (95), [BuildingsTemplate](BuildingsTemplate.md) (46), [OldMetal](OldMetal.md) (45), [Game](Game.md) (40), [HeavyIndustry](HeavyIndustry.md) (32), [Sector](Sector.md) (31), [Sectors](Sectors.md) (30), [ProcessingSector](ProcessingSector.md) (27), [BuildingManager](BuildingManager.md) (27), [Mining](Mining.md) (22), [Resource](Resource.md) (20), [GameFiles](GameFiles.md) (19), [BusinessInvestment](BusinessInvestment.md) (14), [Deposit](Deposit.md) (12), [Trade](Trade.md) (11), [GameVersion](GameVersion.md) (11), [Markets](Markets.md) (8), [GoodsMarket](GoodsMarket.md) (8), [UtilitiesHandler](UtilitiesHandler.md) (8), [JobType](JobType.md) (8), [MoneyAudit](MoneyAudit.md) (7), [BuildingType](BuildingType.md) (7), [LandManager](LandManager.md) (5), [Statement](Statement.md) (4), [PayTier](PayTier.md) (4), [LandCheck](LandCheck.md) (4), [Traffic](Traffic.md) (3), [MiningCheck](MiningCheck.md) (3), [Founding](Founding.md) (2)... and 6 more
 
 **Used by (10):** [BuildCardCheck](BuildCardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ForestryCheck](ForestryCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [QuarryingCheck](QuarryingCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md)
 
@@ -82,13 +82,13 @@
 | 680 | 8. Mining on the extraction base |
 | 718 | 9. the iron rows against the study |
 | 797 | 10. a save from before the split |
-| 850 | 11. the integrated route's rows against the study |
-| 955 | 12. old steel, and the 70% rule |
-| 1145 | 13. captive coke and pig iron |
-| 1204 | 14. the works' own power sold |
-| 1237 | 15. Iron Mining's rows against the study |
-| 1335 | 16. a mine fits its field |
-| 1416 | 17. the dig and the retirement by type |
+| 854 | 11. the integrated route's rows against the study |
+| 959 | 12. old steel, and the 70% rule |
+| 1149 | 13. captive coke and pig iron |
+| 1208 | 14. the works' own power sold |
+| 1241 | 15. Iron Mining's rows against the study |
+| 1339 | 16. a mine fits its field |
+| 1420 | 17. the dig and the retirement by type |
 
 ## Constants
 
@@ -102,25 +102,25 @@
 | 730 | `MaterialsCheck.STUDY_RUNS` | `{ 469, 187, 708 }` | ...and their running cost a month, D$ thousands, the study's 2.4 "Runs" (the mine's with its diesel in it). |
 | 733 | `MaterialsCheck.STUDY_DIESEL` | `.0006` | The study's price of a litre of diesel in its runs, D$ thousands: the oil mockups' D$0.60 (its 1.5). |
 | 736 | `MaterialsCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its cases to a tenth of a point, its years to a tenth. |
-| 853 | `MaterialsCheck.ROUTE_ROWS` | `{ HeavyIndustry.SCRAP_YARD, HeavyIndustry.PELLETISING_PLANT, HeavyIndustry.CO...` | The integrated route's rows of batch I4 (0.7.123), by their permanent ids, in the study's 2.4 order. |
-| 857 | `MaterialsCheck.ROUTE_CASES` | `{ { 1.5, 1.5, 4.7, 4.7 }, { 0.1, 1.8, 3.7, 2.0 }, { - 0.2, 0.7, 2.2, 1.3 }, {...` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
-| 861 | `MaterialsCheck.ROUTE_YEARS` | `{ 1.0, 1.2, 1.7, 0.8, 1.1, 1.1, 1.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 864 | `MaterialsCheck.ROUTE_RUNS` | `{ 255, 1000, 1250, 868, 11700, 25600, 5100 }` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). |
-| 867 | `MaterialsCheck.ROUTE_COSTS` | `{ 35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800_000, 1_200_000 }` | ...their all-in cost, D$ thousands (the study's 2.4). |
-| 870 | `MaterialsCheck.ROUTE_POSTS` | `{ 40, 150, 200, 150, 1200, 1800, 400 }` | ...their posts (the study's 2.4). |
-| 873 | `MaterialsCheck.ROUTE_KW` | `{ 550, 5750, 2200, 2050, 51400, 51600, 77000 }` | ...their draw, kW (the study's 2.4 and 1.6). |
-| 876 | `MaterialsCheck.ROUTE_GEN` | `{ 0, 0, 8000, 0, 60000, 25000, 0 }` | ...and what they make, kW: the Coke Ovens', the Blast Furnace's and the Oxygen Steel Shop's power from their gas (the study's 2.4 and 1.6). |
-| 879 | `MaterialsCheck.ROUTE_HECTARES` | `{ 1.9, 15, 9, 3.7, 60, 84, 46 }` | ...and their ground, hectares (the study's 2.4). |
-| 1240 | `MaterialsCheck.MINE_ROWS` | `{ Mining.LARGE_OPEN_PIT, Mining.MAGNETITE_MINE, Mining.LARGE_MAGNETITE }` | Iron Mining's rows of batch I5 (0.7.124), by their permanent ids, in the study's 2.4 order: the Large Open-Pit Mine, the Magnetite Mine & Concentrator, the Large Magnetite Complex. |
-| 1243 | `MaterialsCheck.MINE_CASES` | `{ { 3.7, 3.7, 5.2, 5.2 }, { 1.2, 1.2, 2.2, 2.2 }, { 2.2, 2.2, 3.3, 3.3 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
-| 1246 | `MaterialsCheck.MINE_YEARS` | `{ 2.0, 2.9, 2.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 1249 | `MaterialsCheck.MINE_RUNS` | `{ 5_420, 951, 9_580 }` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs". |
-| 1252 | `MaterialsCheck.MINE_COSTS` | `{ 1_000_000, 60_000, 1_100_000 }` | ...their all-in cost, D$ thousands (the study's 2.4). |
-| 1255 | `MaterialsCheck.MINE_POSTS` | `{ 400, 120, 500 }` | ...their posts (the study's 2.4). |
-| 1258 | `MaterialsCheck.MINE_KW` | `{ 3_000, 3_000, 52_000 }, MINE_WATER = { 300, 400, 7_900 }` | ...their draw, kW, and water, units a month (the study's 2.4). |
-| 1261 | `MaterialsCheck.MINE_MAKES` | `{ 500_000, 20_000, 400_000 }, MINE_ROCK = { 500_000, 60_000, 1_200_000 }` | ...what each makes a month, t of ore or concentrate, and the t of rock it digs for it (the study's 2.4: 60,000 t for the small magnetite works' 20,000, 1.2 Mt for the large one's 400,000; the hematite pit ships its or... |
-| 1264 | `MaterialsCheck.MINE_TYPES` | `{ Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType....` | ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). |
-| 1266 | `MaterialsCheck.MINE_SITES` | `{ 20, 1, 20 }` | ...and the sites each takes. |
+| 857 | `MaterialsCheck.ROUTE_ROWS` | `{ HeavyIndustry.SCRAP_YARD, HeavyIndustry.PELLETISING_PLANT, HeavyIndustry.CO...` | The integrated route's rows of batch I4 (0.7.123), by their permanent ids, in the study's 2.4 order. |
+| 861 | `MaterialsCheck.ROUTE_CASES` | `{ { 1.5, 1.5, 4.7, 4.7 }, { 0.1, 1.8, 3.7, 2.0 }, { - 0.2, 0.7, 2.2, 1.3 }, {...` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
+| 865 | `MaterialsCheck.ROUTE_YEARS` | `{ 1.0, 1.2, 1.7, 0.8, 1.1, 1.1, 1.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
+| 868 | `MaterialsCheck.ROUTE_RUNS` | `{ 255, 1000, 1250, 868, 11700, 25600, 5100 }` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). |
+| 871 | `MaterialsCheck.ROUTE_COSTS` | `{ 35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800_000, 1_200_000 }` | ...their all-in cost, D$ thousands (the study's 2.4). |
+| 874 | `MaterialsCheck.ROUTE_POSTS` | `{ 40, 150, 200, 150, 1200, 1800, 400 }` | ...their posts (the study's 2.4). |
+| 877 | `MaterialsCheck.ROUTE_KW` | `{ 550, 5750, 2200, 2050, 51400, 51600, 77000 }` | ...their draw, kW (the study's 2.4 and 1.6). |
+| 880 | `MaterialsCheck.ROUTE_GEN` | `{ 0, 0, 8000, 0, 60000, 25000, 0 }` | ...and what they make, kW: the Coke Ovens', the Blast Furnace's and the Oxygen Steel Shop's power from their gas (the study's 2.4 and 1.6). |
+| 883 | `MaterialsCheck.ROUTE_HECTARES` | `{ 1.9, 15, 9, 3.7, 60, 84, 46 }` | ...and their ground, hectares (the study's 2.4). |
+| 1244 | `MaterialsCheck.MINE_ROWS` | `{ Mining.LARGE_OPEN_PIT, Mining.MAGNETITE_MINE, Mining.LARGE_MAGNETITE }` | Iron Mining's rows of batch I5 (0.7.124), by their permanent ids, in the study's 2.4 order: the Large Open-Pit Mine, the Magnetite Mine & Concentrator, the Large Magnetite Complex. |
+| 1247 | `MaterialsCheck.MINE_CASES` | `{ { 3.7, 3.7, 5.2, 5.2 }, { 1.2, 1.2, 2.2, 2.2 }, { 2.2, 2.2, 3.3, 3.3 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
+| 1250 | `MaterialsCheck.MINE_YEARS` | `{ 2.0, 2.9, 2.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
+| 1253 | `MaterialsCheck.MINE_RUNS` | `{ 5_420, 951, 9_580 }` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs". |
+| 1256 | `MaterialsCheck.MINE_COSTS` | `{ 1_000_000, 60_000, 1_100_000 }` | ...their all-in cost, D$ thousands (the study's 2.4). |
+| 1259 | `MaterialsCheck.MINE_POSTS` | `{ 400, 120, 500 }` | ...their posts (the study's 2.4). |
+| 1262 | `MaterialsCheck.MINE_KW` | `{ 3_000, 3_000, 52_000 }, MINE_WATER = { 300, 400, 7_900 }` | ...their draw, kW, and water, units a month (the study's 2.4). |
+| 1265 | `MaterialsCheck.MINE_MAKES` | `{ 500_000, 20_000, 400_000 }, MINE_ROCK = { 500_000, 60_000, 1_200_000 }` | ...what each makes a month, t of ore or concentrate, and the t of rock it digs for it (the study's 2.4: 60,000 t for the small magnetite works' 20,000, 1.2 Mt for the large one's 400,000; the hematite pit ships its or... |
+| 1268 | `MaterialsCheck.MINE_TYPES` | `{ Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType....` | ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). |
+| 1270 | `MaterialsCheck.MINE_SITES` | `{ 20, 1, 20 }` | ...and the sites each takes. |
 
 ## Fields (state)
 
@@ -132,7 +132,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 168 | 1370 | **type** `public class MaterialsCheck` | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and iron's sections as its batches came (I3 to I5) - coal, stone and co... |
+| 168 | 1374 | **type** `public class MaterialsCheck` | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and iron's sections as its batches came (I3 to I5) - coal, stone and co... |
 | 176 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 181 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 186 | 5 | `static void quietly(Runnable r)` |  |
@@ -201,53 +201,53 @@
 |---:|---:|---|---|
 | 738 | 58 | `static void ironRows()` |  |
 
-### 10. a save from before the split (lines 797-849)
+### 10. a save from before the split (lines 797-853)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 799 | 50 | `static void olderSave() throws Exception` |  |
+| 799 | 54 | `static void olderSave() throws Exception` |  |
 
-### 11. the integrated route's rows against the study (lines 850-954)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 881 | 73 | `static void routeRows()` |  |
-
-### 12. old steel, and the 70% rule (lines 955-1144)
+### 11. the integrated route's rows against the study (lines 854-958)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 957 | 187 | `static void oldSteel() throws Exception` |  |
+| 885 | 73 | `static void routeRows()` |  |
 
-### 13. captive coke and pig iron (lines 1145-1203)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1147 | 56 | `static void captiveRoute()` |  |
-
-### 14. the works' own power sold (lines 1204-1236)
+### 12. old steel, and the 70% rule (lines 959-1148)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1206 | 30 | `static void routePower()` |  |
+| 961 | 187 | `static void oldSteel() throws Exception` |  |
 
-### 15. Iron Mining's rows against the study (lines 1237-1334)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1268 | 66 | `static void mineRows()` |  |
-
-### 16. a mine fits its field (lines 1335-1415)
+### 13. captive coke and pig iron (lines 1149-1207)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1337 | 56 | `static void mineFits()` |  |
-| 1402 | 6 | `static void handWorkers(Game g)` | A fixture city made ready to plan before its next month is played: workers handed to it as InvestCheck hands a shop's - twenty thousand, with diplomas, college and university among them - and the investors told the gr... |
-| 1410 | 5 | `static Game.BuildResult quietlyBuild(Game g, BuildingsTemplate t)` | buildStack() quietly, as the Build tab places one. |
+| 1151 | 56 | `static void captiveRoute()` |  |
 
-### 17. the dig and the retirement by type (lines 1416-1537)
+### 14. the works' own power sold (lines 1208-1240)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1418 | 119 | `static void mineTypes()` |  |
+| 1210 | 30 | `static void routePower()` |  |
+
+### 15. Iron Mining's rows against the study (lines 1241-1338)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1272 | 66 | `static void mineRows()` |  |
+
+### 16. a mine fits its field (lines 1339-1419)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1341 | 56 | `static void mineFits()` |  |
+| 1406 | 6 | `static void handWorkers(Game g)` | A fixture city made ready to plan before its next month is played: workers handed to it as InvestCheck hands a shop's - twenty thousand, with diplomas, college and university among them - and the investors told the gr... |
+| 1414 | 5 | `static Game.BuildResult quietlyBuild(Game g, BuildingsTemplate t)` | buildStack() quietly, as the Build tab places one. |
+
+### 17. the dig and the retirement by type (lines 1420-1541)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1422 | 119 | `static void mineTypes()` |  |
 

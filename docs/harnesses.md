@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**154 harness files, 16,525 labelled assertions.** AllChecks runs 154 of them.
+**154 harness files, 16,547 labelled assertions.** AllChecks runs 154 of them.
 
 ## Which harnesses read which class
 
@@ -87,7 +87,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [DistrictPlan](map/DistrictPlan.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [EarthData](map/EarthData.md) | BridgeCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, HydroCheck, LandCheck, LandmassCheck, LongPlaytest, MapCheck, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck, WorldDataCheck |
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandmassCheck, MapCheck |
-| [EarthSite](map/EarthSite.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
+| [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
@@ -114,7 +114,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
 | [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeskCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -122,7 +122,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Geology](map/Geology.md) | CoalMiningCheck, EarthDepositsCheck, EarthTerrainCheck |
 | [GlobeFrame](map/GlobeFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, ZoningCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, ZoningCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, FoodProcessingCheck, ForeignCheck, GdpCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
 | [GridConversion](map/GridConversion.md) | ConversionCheck, EarthTerrainCheck, LandCheck |
@@ -279,7 +279,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckCheck, VanCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, RailCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TrainShapes](map/TrainShapes.md) | ReadPathCheck |
-| [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, HomeRailCheck, LandmassCheck, LongPlaytest, MapCheck, OrderSearchCheck, PlanCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, SlopeCheck |
+| [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, CopperRefiningCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, HomeRailCheck, LandmassCheck, LongPlaytest, MapCheck, OrderSearchCheck, PlanCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, SlopeCheck |
 | [TreasuryJournal](map/TreasuryJournal.md) | CentralBankCheck, ConstructionControlCheck, CurrencyRegimeCheck, EducationCheck, FloatLinkCheck, FundCheck, LandCheck, OilCheck, SaveFileCheck, TreasuryCheck |
 | [TreasuryLine](map/TreasuryLine.md) | BankCheck, CentralBankCheck, FundCheck, GroceryCheck, LongPlaytest |
 | [TruckSchedule](map/TruckSchedule.md) | MapCheck, TruckCheck, TruckRouteCheck |
@@ -4441,7 +4441,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L519 ...the leach plant bought its acid - from the world, no smelter standing
   - L522 the month's money audit closes
 
-## CopperRefiningCheck.java - 47 labelled assertions
+## CopperRefiningCheck.java - 69 labelled assertions
 
 > Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
 > 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -
@@ -4457,61 +4457,84 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L126 1. the sector on the registry: a works on concentrate, anode, cathode and scrap; the wire works in Manufacturing**
-  - L129 Sectors.KEYS has Copper Refining after Copper Mining, the twenty-second - wood's Forestry after it since 0.7.138
-  - L133 ...a processing sector found by its saved name, Iron & Steel's group, making cathode, anode, acid and rod of
-  - L140 ...anode and cathode captive - made and used inside it - and nothing else
-  - L144 Manufacturing makes wire and cable of rod, appended after its own two goods and two inputs; its planning good still
-  - L160 the buyers (spec 2.12): concentrate the smelters', cathode the mines' leach plants' and the refineries', the rod mills'
-- **L215 2. the five rows at parity: the study's 4.3, and its 4.4 table's four cases to its rounding**
-  - L234 the
-  - L246 ...its ground
-  - L254 its consumables are its running cost less its wages, power and water
-  - L264 ...its four cases are the study's 4.4 to its rounding:
-  - L268 the study's 4.4: the smelter loses on imported concentrate (case A), so the rule never builds one without a mine - on the
-  - L271 ...imported scrap just breaks even: the scrap refinery's case A the study's -0.02%
-  - L273 ...the rod mill's 11% in case C, a thin premium on a big tonnage; the wire works built to replace imports (C) far past
-  - L280 the scrap refinery takes the city's old copper, its whole feed - oldMetal COPPER 4,400 t a month, its scrap's tonnes; it and
-  - L286 the heavy plants' posts 54/35/9/2 by largest remainder: the smelter's 700 are 378/245/63/14
-- **L297 3. the chain by its ratios: concentrate to anode to cathode to rod to wire, anode and cathode captive**
-  - L302 the rows' ratios: 33,000 t of concentrate into 9,750 t of anode and 0.9 t of acid a tonne; the anode into 9,700 t of
-  - L322 fixture: a smelter, a refinery and a rod mill standing beside a wire works, two months on: the smelter's anode all to the
-  - L329 ...the refinery's cathode to the rod mill first, captive: min of its 9,700 t and the mill's 8,016 at the rate; the rest to
-  - L335 ...the rod mill's 8,000 t of rod at the rate to the market: what the wire works bid sold at home, the rest shipped
-  - L340 ...and the wire works' wire and cable, a tonne a tonne of rod, nobody here buying it, all shipped
-  - L344 the month's money audit closes
-- **L351 4. the smelter's acid sold, the leach plant's bought at home, the rest shipped**
-  - L365 fixture: a smelter beside a leach plant, two months on: the smelter made 29,700 t of acid to its 9,750 of anode, the
-  - L374 ...on the books (struck at the next month's top): Copper Mining bought acid at home, Copper Refining sold it at home and
-- **L384 5. the city's old copper: from cars and demolitions, bought by a scrap refinery at 70% of scrap's export, the rest landfill**
-  - L393 a thousand cars scrapped leave 23 kg of copper each at 85%, and two Houses pulled down 0.1 t a unit of their material at
-  - L400 ...beside the steel's pool, which is as it was: 0.9 t a car and 0.3 t a unit, at 85%
-  - L409 its state carries the copper beside the steel, and reads back the same; a state with none (a save from before 0.7.133)
-  - L428 fixture: a Scrap Copper Refinery standing, 6,000 t of old copper handed it - half the households' cars', half a sector's:
-  - L434 ...at PAY_SHARE of COPPER_SCRAP's export price, from each seller pro rata
-  - L438 ...and its bid for scrap its need at the clearing past the old copper it took - next to none, the old copper covering
-  - L446 ...on the books at the next strike: its input line \"Old metal\" what it paid, the households' part billed by them, the
-  - L454 with less old copper than its intake it buys all of it, nothing to landfill, and bids for the rest of its scrap
-  - L459 the month's money audit closes (MoneyCheck holds its old-metal lines over two years)
-  - L466 ...and with no scrap refinery standing the month's old copper all goes to landfill, nobody paid
-- **L473 6. the planner weighs one more scrap refinery on the old copper past what those standing take**
-  - L483 fixture: a town, its own few cars' old copper: one more refinery weighed on it and the market's scrap
-  - L493 3,000 t of old copper arisen, no refinery standing: one more weighs it at PAY_SHARE of scrap's export price and the rest
-  - L498 ...with one standing it takes its 4,400 t first: one more is weighed on what is left past them, the last on what
-- **L526 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows with their legs, as every maker**
-  - L539 the wire works' estimate: the maker's, less its insulation (its consumables) at the exchange factor and its freight, to the
-  - L545 ...and a Fabrication Shop's, which buys no consumables, the maker's estimate less its city legs, to the bit
-- **L584 8. a works buys inputs only for what it makes: the idle refinery orders no anode, and does not swallow its smelter's**
-  - L600 fixture (a): an Electrolytic Refinery on imported anode, the shed held at the dump line: the whole shed withheld, none offered,
-  - L610 (a) every unit of anode it bought this month was made into cathode (which the yard then holds or writes off) or went to a pantry,
-  - L614 ...and in this case it orders no anode and makes no cathode
-  - L627 (d) the books lose nothing: what the works' input imports came to in the accounts is matched by the cathode it made, at no more
-  - L631 ...so the month's GDP (C + Iconstr + Istock + G + NX) is not below what C + G alone would make it, less the rest of the imports line
-  - L644 fixture (b): a smelter and two refineries, the shed held at the dump line, the cathode's price and net export price under
-  - L653 (b) the smelter's anode is not swallowed as captive by refineries that make nothing: what it smelted was used by the cathode
-  - L661 ...and the anode it bought from the world is likewise used, none of it lost
-  - L672 (c) a refinery that makes its whole rate (a yard with room) orders exactly its need at the rate: getInputAtCapacity() times
-  - L689 ...and so does a chain whose month makes its whole rate (a smelter, a refinery and a rod mill): every order is the need at the
+- **L150 1. the sector on the registry: a works on concentrate, anode, cathode and scrap; the wire works in Manufacturing**
+  - L153 Sectors.KEYS has Copper Refining after Copper Mining, the twenty-second - wood's Forestry after it since 0.7.138
+  - L157 ...a processing sector found by its saved name, Iron & Steel's group, making cathode, anode, acid and rod of
+  - L164 ...anode and cathode captive - made and used inside it - and nothing else
+  - L168 Manufacturing makes wire and cable of rod, appended after its own two goods and two inputs; its planning good still
+  - L184 the buyers (spec 2.12): concentrate the smelters', cathode the mines' leach plants' and the refineries', the rod mills'
+- **L239 2. the five rows at parity: the study's 4.3, and its 4.4 table's four cases to its rounding**
+  - L258 the
+  - L270 ...its ground
+  - L278 its consumables are its running cost less its wages, power and water
+  - L288 ...its four cases are the study's 4.4 to its rounding:
+  - L292 the study's 4.4: the smelter loses on imported concentrate (case A), so the rule never builds one without a mine - on the
+  - L295 ...imported scrap just breaks even: the scrap refinery's case A the study's -0.02%
+  - L297 ...the rod mill's 11% in case C, a thin premium on a big tonnage; the wire works built to replace imports (C) far past
+  - L304 the scrap refinery takes the city's old copper, its whole feed - oldMetal COPPER 4,400 t a month, its scrap's tonnes; it and
+  - L310 the heavy plants' posts 54/35/9/2 by largest remainder: the smelter's 700 are 378/245/63/14
+- **L321 3. the chain by its ratios: concentrate to anode to cathode to rod to wire, anode and cathode captive**
+  - L326 the rows' ratios: 33,000 t of concentrate into 9,750 t of anode and 0.9 t of acid a tonne; the anode into 9,700 t of
+  - L346 fixture: a smelter, a refinery and a rod mill standing beside a wire works, two months on: the smelter's anode all to the
+  - L353 ...the refinery's cathode to the rod mill first, captive: min of its 9,700 t and the mill's 8,016 at the rate; the rest to
+  - L359 ...the rod mill's 8,000 t of rod at the rate to the market: what the wire works bid sold at home, the rest shipped
+  - L364 ...and the wire works' wire and cable, a tonne a tonne of rod, nobody here buying it, all shipped
+  - L368 the month's money audit closes
+- **L375 4. the smelter's acid sold, the leach plant's bought at home, the rest shipped**
+  - L389 fixture: a smelter beside a leach plant, two months on: the smelter made 29,700 t of acid to its 9,750 of anode, the
+  - L398 ...on the books (struck at the next month's top): Copper Mining bought acid at home, Copper Refining sold it at home and
+- **L408 5. the city's old copper: from cars and demolitions, bought by a scrap refinery at 70% of scrap's export, the rest landfill**
+  - L417 a thousand cars scrapped leave 23 kg of copper each at 85%, and two Houses pulled down 0.1 t a unit of their material at
+  - L424 ...beside the steel's pool, which is as it was: 0.9 t a car and 0.3 t a unit, at 85%
+  - L433 its state carries the copper beside the steel, and reads back the same; a state with none (a save from before 0.7.133)
+  - L452 fixture: a Scrap Copper Refinery standing, 6,000 t of old copper handed it - half the households' cars', half a sector's:
+  - L458 ...at PAY_SHARE of COPPER_SCRAP's export price, from each seller pro rata
+  - L462 ...and its bid for scrap its need at the clearing past the old copper it took - next to none, the old copper covering
+  - L470 ...on the books at the next strike: its input line \"Old metal\" what it paid, the households' part billed by them, the
+  - L478 with less old copper than its intake it buys all of it, nothing to landfill, and bids for the rest of its scrap
+  - L483 the month's money audit closes (MoneyCheck holds its old-metal lines over two years)
+  - L490 ...and with no scrap refinery standing the month's old copper all goes to landfill, nobody paid
+- **L497 6. the planner weighs one more scrap refinery on the old copper past what those standing take**
+  - L507 fixture: a town, its own few cars' old copper: one more refinery weighed on it and the market's scrap
+  - L517 3,000 t of old copper arisen, no refinery standing: one more weighs it at PAY_SHARE of scrap's export price and the rest
+  - L522 ...with one standing it takes its 4,400 t first: one more is weighed on what is left past them, the last on what
+- **L550 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows with their legs, as every maker**
+  - L563 the wire works' estimate: the maker's, less its insulation (its consumables) at the exchange factor and its freight, to the
+  - L569 ...and a Fabrication Shop's, which buys no consumables, the maker's estimate less its city legs, to the bit
+- **L608 8. a works buys inputs only for what it makes: the idle refinery orders no anode, and does not swallow its smelter's**
+  - L624 fixture (a): an Electrolytic Refinery on imported anode, the shed held at the dump line: the whole shed withheld, none offered,
+  - L634 (a) every unit of anode it bought this month was made into cathode (which the yard then holds or writes off) or went to a pantry,
+  - L638 ...and in this case it orders no anode and makes no cathode
+  - L651 (d) the books lose nothing: what the works' input imports came to in the accounts is matched by the cathode it made, at no more
+  - L655 ...so the month's GDP (C + Iconstr + Istock + G + NX) is not below what C + G alone would make it, less the rest of the imports line
+  - L668 fixture (b): a smelter and two refineries, the shed held at the dump line, the cathode's price and net export price under
+  - L677 (b) the smelter's anode is not swallowed as captive by refineries that make nothing: what it smelted was used by the cathode
+  - L685 ...and the anode it bought from the world is likewise used, none of it lost
+  - L696 (c) a refinery that makes its whole rate (a yard with room) orders exactly its need at the rate: getInputAtCapacity() times
+  - L716 ...and so does a chain whose month makes its whole rate (a smelter, a refinery and a rod mill): every order is the need at the
+- **L762 9. a works making a flow good orders no input for exports that sell under it: the rod mill, the slope, the count**
+  - L777 fixture (a): two Rod Mills on imported cathode, no refinery and no wire works, rod's export price half the literal: its net
+  - L783 (a) the mills order no cathode past the home market's demand (none here: the bid is nothing, nothing is imported), make no rod,
+  - L789 ...and the books lose nothing: the month's GDP plus the rest of the imports is not below C + G
+  - L807 fixture (b): (a) with a Wire & Cable Works beside the mills: rod is still under its cathode's cost, and the home market asked for
+  - L812 (b) the rod made is that demand, whatever it fetches, and the cathode bid is that times the Rod Mill's cathode for a tonne of rod
+  - L816 ...and none of it is exported: it all sold at home, and what the mills could not sell at home they did not make
+  - L829 fixture (c): the same mills, rod's export price twice the literal: its net export price is over the cost and its headroom
+  - L832 (c) a rod that pays orders exactly the need at the rate - getInputAtCapacity() times the operating rate, less what is captive - and
+  - L854 fixture (d): the same mills (no wire works), rod's band a straight line in the city's exports: this month's net export price is over
+  - L861 (d) the rod exported is some, and less than the spare, and it is the most the slope allows: at it next month's net export price still
+  - L870 ...and with no curve (prices set by hand again) the net export price at any exports is this month's, to the bit; no curve reads
+  - L883 fixture (e): a smelter, a refinery and a rod mill, rod's export price half the literal, cathode's twice it: rod is under its
+  - L889 (e) the smelter still makes the refinery's anode need: it is kept for the refinery, none of it lost to the market, and the refinery
+  - L901 ...and a tonne of anode costs the smelter's inputs at what they cost here less its acid at what that nets abroad, over its anode, from
+  - L924 fixture (g): a smelter beside a leach plant, anode's export price half the literal: its net export price is under what a tonne of
+  - L934 (g) the smelter still runs for its acid, and every tonne of concentrate it bought was made into anode and acid in the template's
+  - L959 fixture (h): a smelter, a refinery and a rod mill, the refinery's cathode covering the mill's, rod's net export price over what a
+  - L971 (h) in the chain's
+  - L976 ...and a tonne of rod costs the mill's cathode at what the chain saves by not using it: the cathode market's landed price, or
+  - L1089 (f) the run played its months with no month's GDP negative
+  - L1094 ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under
+  - L1111 ...and every curve the world gave a market reproduces the band it was set at: the net export price at the exports it was struck at is
 
 ## CreditCheck.java - 264 labelled assertions
 
@@ -10178,60 +10201,60 @@ _(this harness does not label its checks through a helper - it prints its findin
 > It was written by one agent from the brief and is held here by another, from
 > ...
 
-- **L299 1. no railway, no change: with no station and no spur the city's own bulk rides the trucks, to the bit**
-  - L316 dealHome() with no station and no siding takes exactly nothing, whatever is offered or left of the track
-  - L335 legTonnes() with zero shares is the three-argument form for every sector, good and railed share, bit for bit
-  - L337 ...and that form is the pre-FR6 leg: the tonnes bought at home in full and the crossing tonnes less the siding's railed part
-  - L341 a played city with no station and no spur: the railway is offered the home tonnes and takes none, bills none
-  - L348 ...and so is a city with four freight lines laid and no station or spur: track alone rails nothing of it
-- **L360 2. dealt after the boundary: what the track and the stations leave of the boundary's tonnes, never more**
-  - L387 each cap binds in turn: the offer, the track or sets, the stations and sidings, each alone, and each used up
-  - L392 the boundary's bulk and goods take the room first: a boundary that fills the railway leaves the city's tonnes nothing
-  - L399 ...a lighter one leaves what the stations and sidings have left when that is the lesser (track 1,000, rooms 700 less the boundary's 300)
-  - L402 ...and what the track has left when that is the lesser (track 600, rooms 700 less the boundary's 150)
-  - L424 at random: never negative, never more than the offer, the track left or the stations and sidings left, and one of them is the answer
-  - L428 an offer that is not a positive number is nothing, with room to spare
-  - L436 a played city whose boundary fills the railway (a depot and three spurs): the city's own bulk is offered and none is dealt
-  - L443 ...and one the boundary leaves room in (a depot and four spurs): the city's tonnes are exactly the room left, the share in force strictly between nothing and...
-- **L454 3. each leg once: a home tonne's truck leg and the railway's tonnes are the tonne, billed and relieved together**
-  - L460 fixture: the railway carries a share of the city's own bulk, strictly between nothing and all, and of the landed ore
-  - L463 the plant's ore leg at the home share h is its home tonnes x (1 - RAIL_ROAD_RELIEF x h) plus its crossing tonnes at the boundary's rule
-  - L474 ...and at any share the truck tonnes and the railed tonnes (RAIL_ROAD_RELIEF x h of it) are the home tonne, once
-  - L476 a home share cannot make a leg dearer or the legs negative: the share is clamped to a share
-  - L506 ...and the home tonnes are the railway's and the trucks' together, none paid twice and none left out
-- **L517 4. the port yard: a station and a sea terminal both standing, and then the quay's tonnes ride rails too**
-  - L542 hasPortYard() is true with a station and a sea terminal standing, and false with either missing, a spur or track alone not being a station
-  - L545 fixture: the depot is a station and the berth a sea terminal, and the spur is neither, so the combinations above are what they say
-  - L552 a played city with a Rail Depot and a Bulk Berth: the yard stands, the ore comes by sea, and the quay share is above zero
-  - L555 ...the quay and the home tonnes are dealt together, one share for both, pro rata
-  - L559 a city with a depot and spurs and no sea terminal has no yard and no quay share, while its home share is above zero
-  - L563 ...and a city with spurs, track and a berth but no station has no yard either, the ore going by sea all the same
-  - L573 with the yard and a quay share q, a sea tonne's truck leg is 1 - RAIL_ROAD_RELIEF x rail - PORT_YARD_SHARE x q x sea of it
-  - L576 ...so the yard takes exactly PORT_YARD_SHARE x q x sea of the crossing tonnes off the legs, and nothing off the home tonnes
-  - L583 by hand: a tonne wholly by sea has PORT_YARD_SHARE of its leg railed at a quay share of 1, half of that at a half, none at none
-  - L585 ...and a leg is never below zero, whatever shares are asked of it
-  - L592 ...and a haul run by hand in the cities with no yard leaves the quay share at nought
-- **L602 5. the bill: the city's tonnes pay the railway its quote on Haulage's, in the shippers' own line, once**
-  - L624 ...the lines come to Freight's rail revenue (boundary and city), to the cent
-  - L628 ...the city part is the railed city tonnes x the railway's quote x Haulage's, both read before the haul
-  - L639 the mines that sold their ore at home pay the railway no city bill for it: their line is their boundary tonnes alone
-  - L644 ...while the plant that bought the ore at home pays its home tonnes' city leg, on top of its boundary tonnes
-- **L660 6. the diesel: a city tonne burns CITY_LITRES_A_TONNE, a third of a truck's leg, and the boundary's tonnes their own**
-  - L662 a city tonne burns less than a truck's whole leg and far less than a boundary haul's tonne: CITY_LITRES_A_TONNE is a third of Haulage's
-  - L673 ...and the haul's diesel is the boundary tonnes' at FUEL_LITRES_PER_TONNE and the city's on top, the boundary's count untouched by them
-  - L679 a city with no railway burns nothing on city tonnes
-- **L689 7. the weighing: a planner weighs a home-bought tonne at the steady quote x (its truck weight + the railway's quote x its rail weight)**
-  - L725 ...a received tonne of the ore is cheaper to plan for with the railway on the city's tonnes than with the trucks alone, the railway's quote being below 1
-  - L733 ...by exactly the steady quote x the rail weight x (1 - the railway's quote)
-- **L744 8. the save: the shares in force cross a save, and the reload bills the next month as the live city does**
-  - L756 the home and quay shares come back from the file to the bit, and the month's tonnes, bill and offer with them
-  - L761 ...the yard stands in the loaded city as it does in the live one, and the litres, which are not saved, are none until the next haul
-  - L774 the next haul bills the city's tonnes the same in the loaded city as in the live one, to the bit: every shipper's line
-  - L778 ...and the shares they strike for the month after are the same too, as are the litres burned
-- **L789 9. a real run: LongPlaytest's city, played with its advisor, counted month by month**
-  - L879 the railway took some of the city's own bulk in at least one month of the run
-  - L882 ...and never without a station or a spur to take it, and the quay share was never above zero without a yard (at the haul that struck it or at the month's end)
-  - L889 the home share was above zero in the played fixture the run was too short to reach
+- **L314 1. no railway, no change: with no station and no spur the city's own bulk rides the trucks, to the bit**
+  - L331 dealHome() with no station and no siding takes exactly nothing, whatever is offered or left of the track
+  - L350 legTonnes() with zero shares is the three-argument form for every sector, good and railed share, bit for bit
+  - L352 ...and that form is the pre-FR6 leg: the tonnes bought at home in full and the crossing tonnes less the siding's railed part
+  - L356 a played city with no station and no spur: the railway is offered the home tonnes and takes none, bills none
+  - L363 ...and so is a city with four freight lines laid and no station or spur: track alone rails nothing of it
+- **L375 2. dealt after the boundary: what the track and the stations leave of the boundary's tonnes, never more**
+  - L402 each cap binds in turn: the offer, the track or sets, the stations and sidings, each alone, and each used up
+  - L407 the boundary's bulk and goods take the room first: a boundary that fills the railway leaves the city's tonnes nothing
+  - L414 ...a lighter one leaves what the stations and sidings have left when that is the lesser (track 1,000, rooms 700 less the boundary's 300)
+  - L417 ...and what the track has left when that is the lesser (track 600, rooms 700 less the boundary's 150)
+  - L439 at random: never negative, never more than the offer, the track left or the stations and sidings left, and one of them is the answer
+  - L443 an offer that is not a positive number is nothing, with room to spare
+  - L451 a played city whose boundary fills the railway (a depot and three spurs): the city's own bulk is offered and none is dealt
+  - L458 ...and one the boundary leaves room in (a depot and four spurs): the city's tonnes are exactly the room left, the share in force strictly between nothing and...
+- **L469 3. each leg once: a home tonne's truck leg and the railway's tonnes are the tonne, billed and relieved together**
+  - L475 fixture: the railway carries a share of the city's own bulk, strictly between nothing and all, and of the landed ore
+  - L478 the plant's ore leg at the home share h is its home tonnes x (1 - RAIL_ROAD_RELIEF x h) plus its crossing tonnes at the boundary's rule
+  - L489 ...and at any share the truck tonnes and the railed tonnes (RAIL_ROAD_RELIEF x h of it) are the home tonne, once
+  - L491 a home share cannot make a leg dearer or the legs negative: the share is clamped to a share
+  - L521 ...and the home tonnes are the railway's and the trucks' together, none paid twice and none left out
+- **L532 4. the port yard: a station and a sea terminal both standing, and then the quay's tonnes ride rails too**
+  - L557 hasPortYard() is true with a station and a sea terminal standing, and false with either missing, a spur or track alone not being a station
+  - L560 fixture: the depot is a station and the berth a sea terminal, and the spur is neither, so the combinations above are what they say
+  - L567 a played city with a Rail Depot and a Bulk Berth: the yard stands, the ore comes by sea, and the quay share is above zero
+  - L570 ...the quay and the home tonnes are dealt together, one share for both, pro rata
+  - L574 a city with a depot and spurs and no sea terminal has no yard and no quay share, while its home share is above zero
+  - L578 ...and a city with spurs, track and a berth but no station has no yard either, the ore going by sea all the same
+  - L588 with the yard and a quay share q, a sea tonne's truck leg is 1 - RAIL_ROAD_RELIEF x rail - PORT_YARD_SHARE x q x sea of it
+  - L591 ...so the yard takes exactly PORT_YARD_SHARE x q x sea of the crossing tonnes off the legs, and nothing off the home tonnes
+  - L598 by hand: a tonne wholly by sea has PORT_YARD_SHARE of its leg railed at a quay share of 1, half of that at a half, none at none
+  - L600 ...and a leg is never below zero, whatever shares are asked of it
+  - L607 ...and a haul run by hand in the cities with no yard leaves the quay share at nought
+- **L617 5. the bill: the city's tonnes pay the railway its quote on Haulage's, in the shippers' own line, once**
+  - L639 ...the lines come to Freight's rail revenue (boundary and city), to the cent
+  - L643 ...the city part is the railed city tonnes x the railway's quote x Haulage's, both read before the haul
+  - L654 the mines that sold their ore at home pay the railway no city bill for it: their line is their boundary tonnes alone
+  - L659 ...while the plant that bought the ore at home pays its home tonnes' city leg, on top of its boundary tonnes
+- **L675 6. the diesel: a city tonne burns CITY_LITRES_A_TONNE, a third of a truck's leg, and the boundary's tonnes their own**
+  - L677 a city tonne burns less than a truck's whole leg and far less than a boundary haul's tonne: CITY_LITRES_A_TONNE is a third of Haulage's
+  - L688 ...and the haul's diesel is the boundary tonnes' at FUEL_LITRES_PER_TONNE and the city's on top, the boundary's count untouched by them
+  - L694 a city with no railway burns nothing on city tonnes
+- **L704 7. the weighing: a planner weighs a home-bought tonne at the steady quote x (its truck weight + the railway's quote x its rail weight)**
+  - L740 ...a received tonne of the ore is cheaper to plan for with the railway on the city's tonnes than with the trucks alone, the railway's quote being below 1
+  - L748 ...by exactly the steady quote x the rail weight x (1 - the railway's quote)
+- **L759 8. the save: the shares in force cross a save, and the reload bills the next month as the live city does**
+  - L771 the home and quay shares come back from the file to the bit, and the month's tonnes, bill and offer with them
+  - L776 ...the yard stands in the loaded city as it does in the live one, and the litres, which are not saved, are none until the next haul
+  - L789 the next haul bills the city's tonnes the same in the loaded city as in the live one, to the bit: every shipper's line
+  - L793 ...and the shares they strike for the month after are the same too, as are the litres burned
+- **L804 9. a real run: LongPlaytest's city, played with its advisor, counted month by month**
+  - L894 the railway took some of the city's own bulk in at least one month of the run
+  - L897 ...and never without a station or a spur to take it, and the quay share was never above zero without a yard (at the haul that struck it or at the month's end)
+  - L904 the home share was above zero in the played fixture the run was too short to reach
 
 ## HouseholdCheck.java - 273 labelled assertions
 
@@ -14421,78 +14444,78 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L791 where caseEarns() and the study differ: the mine's diesel is a feed at the case's price, not D$0.60 a litre in its
 - **L800 10. a save from before the split is refused, in P7's words and its file untouched; this build's loads**
   - L803 the floor is at or past the split's format (GameVersion): a save one format older is no longer readable, and one
-  - L819 fixture: a town whose two furnaces bought scrap three months, saved by this build in its own format, SCRAP in it by name
-  - L831 its twin written down to format 36 and stamped 0.7.115 is refused in P7's words: the build that saved it, which still
-  - L835 ...nothing of it applied, and its file byte for byte as it was
-  - L843 this build's own save loads, its month, the scrap market's price and the furnaces' scrap as saved
-- **L882 11. the integrated route's rows of batch I4 at parity: the study's four cases and its years abroad, to its rounding**
-  - L893 the
-  - L906 its consumables are the study's running cost less its wages, the power it buys from the grid and its water
-  - L918 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
-  - L923 ...and its cost over a year of what it would sell abroad is the study's
-  - L939 the yard's old steel is in every case at 70% of scrap's export price, D$210 a tonne at parity: 10,500 t, D$2,205k
-  - L951 on imported feed for export (case A) no works of the route earns past 0.25% of its cost a month at parity (the study's
-- **L958 12. old steel: the four sources at 85%, a yard buying it pro rata at 70% of scrap's export price, the rest to landfill**
-  - L970 each source arises at RECOVERY (85%) of the steel in it, kept by its seller: 100 cars at 0.9 t the households', two Houses
-  - L990 the yards take a quarter of what stands: from every seller a quarter of theirs, each paid its tonnes at the price; the
-  - L998 ...and asked for more than arose they take what arose, no more, and nothing goes to landfill
-  - L1001 ...a month nothing arose records nothing, and pays nobody
-  - L1019 the households are paid for their cars into their savings, all of it, by the cars each scrapped
-  - L1029 fixture: a town's Scrap Yard standing, its pool handed 4,000 t of old steel from the households' cars and 3,000 t from
-  - L1038 the yard makes its scrap from what arose, at 1.05 t of old steel a tonne, no more than arose, and buys it at 70% of scrap's
-  - L1045 each seller paid pro rata: the households into their savings and on the yard's input billed by them, the fabricators by
-  - L1057 struck: the fabricators' sale is \"
-  - L1067 a second yard is refused its feed while the old steel past what the yard standing takes is under FEED_GATE of one
-  - L1081 ...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills, paying 70% for its old steel and
-  - L1090 a yard keeps no van for its 10,000 t of scrap, which is bulk and goes by Haulage's trucks (FR2): no van, no van's capital
-  - L1122 in a town played four months, the yard buying each month's old steel: every month's audit closes, the households' part
-  - L1135 the pool crosses a save (DataSave.oldMetal) to the bit - what stands by seller and source, the last month's record and
-- **L1148 13. captive coke and pig iron: the ovens' coke to the furnaces first, their pig iron to the shop, nothing booked for either**
-  - L1164 fixture: Iron & Steel's real rows, one Coke Ovens, two Mini Blast Furnaces and one Oxygen Steel Shop, the coke and pig iron
-  - L1168 the coke: the furnaces' 13,500 t met first out of the ovens' 40,000, the market bid none of it
-  - L1172 ...and what the ovens make for the market - for home, for the ship and idled - is the 26,500 t past it
-  - L1176 the pig iron: all the furnaces' 30,000 t to the shop, none to the market, and the shop bids for the 216,500 t past it
-  - L1180 ...no sale and no purchase booked for what it handed itself: no pig iron sold or bought, no coke bought
-  - L1197 its vans move its GOODS tonnes less what the works hands itself (Sector.tonnesMoved(), FR2): the route's coke, pig iron, ore,
-- **L1207 14. the works' own power: the ovens and the furnace sell what they make past their draws, the shop buys the rest**
-  - L1223 fixture: a town with the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop standing, two months on
-  - L1227 its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the tariff, in its revenue past its sales;
-  - L1231 the utility pays the works what their statement booked, and the grid counts their surplus as generation
-  - L1234 the month's money audit closes
-- **L1269 15. Iron Mining's rows of batch I5 at parity: by type and size, the study's four cases and its years abroad, to its rounding**
-  - L1277 the Iron Mine (14) stands on one site of a hematite field, ore as dug (ANY until batch I5)
-  - L1285 the
-  - L1296 ...its ground the iron sites it takes, an iron site's ground each (Resource.IRON.siteKm2())
-  - L1303 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
-  - L1314 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
-  - L1317 ...and its cost over a year of what it would sell abroad is the study's
-  - L1330 the open pit burns the Iron Mine's diesel a tonne; the magnetite works burn none
-- **L1338 16. a mine fits its field: twenty sites of one field of its type for a large mine, never magnetite works on hematite**
-  - L1348 fixture: a town's iron by fiat, one field of 19 hematite sites (ground by fiat is the first type), none magnetite
-  - L1354 a works of twenty sites is refused on a field of nineteen: no deposit for it, before the money
-  - L1356 ...where one-site Iron Mines fit, nineteen and not twenty
-  - L1358 a magnetite works is refused on hematite, nineteen sites free: the small one and the large
-  - L1363 ...and the plan orders the mine that fits, the Iron Mine - never the pit or a magnetite works
-  - L1367 on a field of twenty the works of twenty fits, one and not two
-  - L1373 ...and the plan orders the one of the two that earns more on its whole cost, its freight in it
-  - L1382 a run counts the sites its orders take, not the orders: an Iron Mine ahead leaves the pit nineteen, the pit ahead
-  - L1386 with the pit standing its twenty sites are taken: not one Iron Mine more fits, and the sites committed are twenty
-  - L1390 ...a twenty-first site takes one more Iron Mine, and still no magnetite works
-- **L1419 17. on real fields of both types: what fits, the plan's choice, the dig by type with W exact, and retirement by type**
-  - L1444 fixture: a city on world
-  - L1451 as many twenty-site works fit as the fields of their type hold twenty sites, each on one field: the open pits on
-  - L1457 ...one-site works on every site of their type and not one more; magnetite works never on the hematite's
-  - L1479 the plan's order is the best earnings on the whole cost, freight in, of the mines that fit, staff and pay
-  - L1483 ...its freight in what it earns and costs: the open pit's vans carry its goods alone, the diesel it burns and not its ore
-  - L1504 fixture: two Iron Mines and two magnetite works standing, a month's ore asked of them at the sector's rate
-  - L1506 each type's share of the ask comes out of its own ground: the hematite as dug, the magnetite three tonnes of rock a tonne
-  - L1511 ...E rising by the ground taken out, the land office's month the same tonnes, and W by type to the tonne
-  - L1514 ...and from the first dig by type the save carries E by type
-  - L1518 while both types have ore no mine is spare, and any may be sold
-  - L1523 once the hematite is out the Iron Mines are spare - nothing used against their nameplate - while the magnetite has ore
-  - L1526 ...and only they may be sold, by the spare-capacity rule and the distress rule alike
-  - L1528 ...no hematite works is ordered on hematite sites with no ore under them, a magnetite one still may be
-  - L1533 ...and the next month's dig gives the hematite mines nothing and the magnetite works their share
+  - L823 fixture: a town whose two furnaces bought scrap three months, saved by this build in its own format, SCRAP in it by name
+  - L835 its twin written down to format 36 and stamped 0.7.115 is refused in P7's words: the build that saved it, which still
+  - L839 ...nothing of it applied, and its file byte for byte as it was
+  - L847 this build's own save loads, its month, the scrap market's price and the furnaces' scrap as saved
+- **L886 11. the integrated route's rows of batch I4 at parity: the study's four cases and its years abroad, to its rounding**
+  - L897 the
+  - L910 its consumables are the study's running cost less its wages, the power it buys from the grid and its water
+  - L922 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
+  - L927 ...and its cost over a year of what it would sell abroad is the study's
+  - L943 the yard's old steel is in every case at 70% of scrap's export price, D$210 a tonne at parity: 10,500 t, D$2,205k
+  - L955 on imported feed for export (case A) no works of the route earns past 0.25% of its cost a month at parity (the study's
+- **L962 12. old steel: the four sources at 85%, a yard buying it pro rata at 70% of scrap's export price, the rest to landfill**
+  - L974 each source arises at RECOVERY (85%) of the steel in it, kept by its seller: 100 cars at 0.9 t the households', two Houses
+  - L994 the yards take a quarter of what stands: from every seller a quarter of theirs, each paid its tonnes at the price; the
+  - L1002 ...and asked for more than arose they take what arose, no more, and nothing goes to landfill
+  - L1005 ...a month nothing arose records nothing, and pays nobody
+  - L1023 the households are paid for their cars into their savings, all of it, by the cars each scrapped
+  - L1033 fixture: a town's Scrap Yard standing, its pool handed 4,000 t of old steel from the households' cars and 3,000 t from
+  - L1042 the yard makes its scrap from what arose, at 1.05 t of old steel a tonne, no more than arose, and buys it at 70% of scrap's
+  - L1049 each seller paid pro rata: the households into their savings and on the yard's input billed by them, the fabricators by
+  - L1061 struck: the fabricators' sale is \"
+  - L1071 a second yard is refused its feed while the old steel past what the yard standing takes is under FEED_GATE of one
+  - L1085 ...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills, paying 70% for its old steel and
+  - L1094 a yard keeps no van for its 10,000 t of scrap, which is bulk and goes by Haulage's trucks (FR2): no van, no van's capital
+  - L1126 in a town played four months, the yard buying each month's old steel: every month's audit closes, the households' part
+  - L1139 the pool crosses a save (DataSave.oldMetal) to the bit - what stands by seller and source, the last month's record and
+- **L1152 13. captive coke and pig iron: the ovens' coke to the furnaces first, their pig iron to the shop, nothing booked for either**
+  - L1168 fixture: Iron & Steel's real rows, one Coke Ovens, two Mini Blast Furnaces and one Oxygen Steel Shop, the coke and pig iron
+  - L1172 the coke: the furnaces' 13,500 t met first out of the ovens' 40,000, the market bid none of it
+  - L1176 ...and what the ovens make for the market - for home, for the ship and idled - is the 26,500 t past it
+  - L1180 the pig iron: all the furnaces' 30,000 t to the shop, none to the market, and the shop bids for the 216,500 t past it
+  - L1184 ...no sale and no purchase booked for what it handed itself: no pig iron sold or bought, no coke bought
+  - L1201 its vans move its GOODS tonnes less what the works hands itself (Sector.tonnesMoved(), FR2): the route's coke, pig iron, ore,
+- **L1211 14. the works' own power: the ovens and the furnace sell what they make past their draws, the shop buys the rest**
+  - L1227 fixture: a town with the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop standing, two months on
+  - L1231 its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the tariff, in its revenue past its sales;
+  - L1235 the utility pays the works what their statement booked, and the grid counts their surplus as generation
+  - L1238 the month's money audit closes
+- **L1273 15. Iron Mining's rows of batch I5 at parity: by type and size, the study's four cases and its years abroad, to its rounding**
+  - L1281 the Iron Mine (14) stands on one site of a hematite field, ore as dug (ANY until batch I5)
+  - L1289 the
+  - L1300 ...its ground the iron sites it takes, an iron site's ground each (Resource.IRON.siteKm2())
+  - L1307 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
+  - L1318 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
+  - L1321 ...and its cost over a year of what it would sell abroad is the study's
+  - L1334 the open pit burns the Iron Mine's diesel a tonne; the magnetite works burn none
+- **L1342 16. a mine fits its field: twenty sites of one field of its type for a large mine, never magnetite works on hematite**
+  - L1352 fixture: a town's iron by fiat, one field of 19 hematite sites (ground by fiat is the first type), none magnetite
+  - L1358 a works of twenty sites is refused on a field of nineteen: no deposit for it, before the money
+  - L1360 ...where one-site Iron Mines fit, nineteen and not twenty
+  - L1362 a magnetite works is refused on hematite, nineteen sites free: the small one and the large
+  - L1367 ...and the plan orders the mine that fits, the Iron Mine - never the pit or a magnetite works
+  - L1371 on a field of twenty the works of twenty fits, one and not two
+  - L1377 ...and the plan orders the one of the two that earns more on its whole cost, its freight in it
+  - L1386 a run counts the sites its orders take, not the orders: an Iron Mine ahead leaves the pit nineteen, the pit ahead
+  - L1390 with the pit standing its twenty sites are taken: not one Iron Mine more fits, and the sites committed are twenty
+  - L1394 ...a twenty-first site takes one more Iron Mine, and still no magnetite works
+- **L1423 17. on real fields of both types: what fits, the plan's choice, the dig by type with W exact, and retirement by type**
+  - L1448 fixture: a city on world
+  - L1455 as many twenty-site works fit as the fields of their type hold twenty sites, each on one field: the open pits on
+  - L1461 ...one-site works on every site of their type and not one more; magnetite works never on the hematite's
+  - L1483 the plan's order is the best earnings on the whole cost, freight in, of the mines that fit, staff and pay
+  - L1487 ...its freight in what it earns and costs: the open pit's vans carry its goods alone, the diesel it burns and not its ore
+  - L1508 fixture: two Iron Mines and two magnetite works standing, a month's ore asked of them at the sector's rate
+  - L1510 each type's share of the ask comes out of its own ground: the hematite as dug, the magnetite three tonnes of rock a tonne
+  - L1515 ...E rising by the ground taken out, the land office's month the same tonnes, and W by type to the tonne
+  - L1518 ...and from the first dig by type the save carries E by type
+  - L1522 while both types have ore no mine is spare, and any may be sold
+  - L1527 once the hematite is out the Iron Mines are spare - nothing used against their nameplate - while the magnetite has ore
+  - L1530 ...and only they may be sold, by the spare-capacity rule and the distress rule alike
+  - L1532 ...no hematite works is ordered on hematite sites with no ore under them, a magnetite one still may be
+  - L1537 ...and the next month's dig gives the hematite mines nothing and the magnetite works their share
 
 ## MiningCheck.java - 36 labelled assertions
 
@@ -16683,52 +16706,52 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L747 ...the road's rail share the railway's carried share and the ships' nothing
   - L749 ...and nothing went by sea, and no boat called
 - **L758 6. a port on a town: the coast, the band, the road, the crews, the calls, the audit**
-  - L768 fixture: the town's two foundries ship steel and land iron, and it owns no sea
-  - L772 A TERMINAL WITH NO SEA IS REFUSED NO_COAST, before land and money
-  - L774 ...the card's verdict says so before the click
-  - L778 ...and a run stops at it
-  - L780 fixture: the city buys an offer that runs out to the sea
-  - L782 WITH SEA THE ORDER PASSES THE COAST
-  - L788 fixture: the terminal stood
-  - L803 ITS KIND GOES BY SEA IN ITS SHARE: the berth's month over the general cargo that crossed the boundary
-  - L825 EACH GOOD'S BAND IS ITS FORMULA: Ports.factor() of its rail and sea shares, to the bit
-  - L826 ...narrower than the lorries': it lands cheaper and ships dearer than the world's delivered prices
-  - L828 ...and a kind with no berth keeps the lorries' band
-  - L831 THE ROAD IS TOLD THE SHIPS' SHARE of each stream, relieved at the railway's RAIL_ROAD_RELIEF
-  - L846 ITS CREWS ARE PAID BY FREIGHT: a town with no line pays only its terminal's upkeep with transit's, Freight's wage bill
-  - L860 CALLS = TONNES ÷ CARGO: the month's general cargo by sea, each way, over a 5,500 t ship, whole
-  - L864 ...the month's sea tonnes are the share that was in force while it moved, of what crossed
-  - L871 ...and the audit closes every month of a year with the port: its residual within MoneyAudit.tolerance() of
-- **L879 7. crude needs room: held back without a Tank Farm, in the largest class the room takes with one**
-  - L892 fixture: a refinery on imported crude, a tanker berth, and no Tank Farm
-  - L897 ITS CRUDE IS HELD BACK FOR ROOM: none by sea, what the berth would take held back
-  - L904 ...and the refiners' page says so
-  - L914 A TANK FARM IS WEIGHED while a port holds the refiners' crude back for room: their part of it, at the freight a
-  - L924 ...and the refiners order it only when it passes every gate and earns more on its cost than any unit
-  - L938 ...a Crude Unit's crude held back pays for one where an Oil Refinery's does not (a fixture's gates); nothing
-  - L948 fixture: a Tank Farm stood beside it
-  - L951 WITH A TANK FARM ITS CRUDE GOES BY SEA, in the largest class the free room takes
-  - L955 ...its calls in that class
-  - L968 fixture: one Crude Unit's month beside one Tank Farm's room: kept as far as the room held it (until 0.7.105) it
-  - L977 THE ROOM AN MR'S CARGO NEEDS IS KEPT FREE (Refining.CARGO_KEPT_FREE): the refiners keep the rest of the room,
-  - L986 ...and a month on, the store kept, its crude goes by sea in an MR, none held back for room
-  - L1006 A FRACTION OF A CALL IS A WHOLE ONE in the share of months it says: 12,345 t in 5,500 t ships is 2 or 3
-  - L1009 ...no tonnes, no call
-  - L1021 the schedule is pure in the month and the trade: built twice, the same calls
-  - L1023 ...each call's whole visit inside its month, on a quay of its own kind
-  - L1025 ...and another month hashes its arrivals afresh
-  - L1027 A LANE RUNS STRAIGHT OUT TO SEA AWAY FROM THE SITE, LANE_PLOTS long
-  - L1044 A BOAT IS PURE IN (CALL, t): asked twice, the same place; on the water only from a leg before it berths to
-  - L1046 ...halfway in, halfway along its lane; at the quay while it berths; halfway out on the way back
-  - L1057 ...an import comes in loaded and leaves empty, an export the other way, a box ship loaded both ways
-  - L1079 A FRAME TOUCHES ONLY THE ROUTES ON SCREEN, and finds every boat on them, a district and eight by eight
-- **L1130 9. the shares and the month cross a save; a save from before them has nothing at sea**
-  - L1144 the shares in force and the month's tonnes cross a save, to the bit
-  - L1155 ...the band put back on every market, and the road's two shares, to the bit
-  - L1156 ...the month's boats the same
-  - L1160 ...and a month on the city and its reload ship the same tonnes by sea and strike the same shares, to the bit
-  - L1174 A SAVE FROM BEFORE 0.7.86 (no portMonth) loads with nothing at sea
-  - L1177 ...and its terminal takes its share the first month it plays, the audit closing
+  - L772 fixture: the town's two foundries ship steel and land iron, and it owns no sea
+  - L776 A TERMINAL WITH NO SEA IS REFUSED NO_COAST, before land and money
+  - L778 ...the card's verdict says so before the click
+  - L782 ...and a run stops at it
+  - L784 fixture: the city buys an offer that runs out to the sea
+  - L786 WITH SEA THE ORDER PASSES THE COAST
+  - L792 fixture: the terminal stood
+  - L807 ITS KIND GOES BY SEA IN ITS SHARE: the berth's month over the general cargo that crossed the boundary
+  - L829 EACH GOOD'S BAND IS ITS FORMULA: Ports.factor() of its rail and sea shares, to the bit
+  - L830 ...narrower than the lorries': it lands cheaper and ships dearer than the world's delivered prices
+  - L832 ...and a kind with no berth keeps the lorries' band
+  - L835 THE ROAD IS TOLD THE SHIPS' SHARE of each stream, relieved at the railway's RAIL_ROAD_RELIEF
+  - L850 ITS CREWS ARE PAID BY FREIGHT: a town with no line pays only its terminal's upkeep with transit's, Freight's wage bill
+  - L864 CALLS = TONNES ÷ CARGO: the month's general cargo by sea, each way, over a 5,500 t ship, whole
+  - L868 ...the month's sea tonnes are the share that was in force while it moved, of what crossed
+  - L875 ...and the audit closes every month of a year with the port: its residual within MoneyAudit.tolerance() of
+- **L883 7. crude needs room: held back without a Tank Farm, in the largest class the room takes with one**
+  - L896 fixture: a refinery on imported crude, a tanker berth, and no Tank Farm
+  - L901 ITS CRUDE IS HELD BACK FOR ROOM: none by sea, what the berth would take held back
+  - L908 ...and the refiners' page says so
+  - L918 A TANK FARM IS WEIGHED while a port holds the refiners' crude back for room: their part of it, at the freight a
+  - L928 ...and the refiners order it only when it passes every gate and earns more on its cost than any unit
+  - L942 ...a Crude Unit's crude held back pays for one where an Oil Refinery's does not (a fixture's gates); nothing
+  - L952 fixture: a Tank Farm stood beside it
+  - L955 WITH A TANK FARM ITS CRUDE GOES BY SEA, in the largest class the free room takes
+  - L959 ...its calls in that class
+  - L972 fixture: one Crude Unit's month beside one Tank Farm's room: kept as far as the room held it (until 0.7.105) it
+  - L981 THE ROOM AN MR'S CARGO NEEDS IS KEPT FREE (Refining.CARGO_KEPT_FREE): the refiners keep the rest of the room,
+  - L990 ...and a month on, the store kept, its crude goes by sea in an MR, none held back for room
+  - L1010 A FRACTION OF A CALL IS A WHOLE ONE in the share of months it says: 12,345 t in 5,500 t ships is 2 or 3
+  - L1013 ...no tonnes, no call
+  - L1025 the schedule is pure in the month and the trade: built twice, the same calls
+  - L1027 ...each call's whole visit inside its month, on a quay of its own kind
+  - L1029 ...and another month hashes its arrivals afresh
+  - L1031 A LANE RUNS STRAIGHT OUT TO SEA AWAY FROM THE SITE, LANE_PLOTS long
+  - L1048 A BOAT IS PURE IN (CALL, t): asked twice, the same place; on the water only from a leg before it berths to
+  - L1050 ...halfway in, halfway along its lane; at the quay while it berths; halfway out on the way back
+  - L1061 ...an import comes in loaded and leaves empty, an export the other way, a box ship loaded both ways
+  - L1083 A FRAME TOUCHES ONLY THE ROUTES ON SCREEN, and finds every boat on them, a district and eight by eight
+- **L1134 9. the shares and the month cross a save; a save from before them has nothing at sea**
+  - L1148 the shares in force and the month's tonnes cross a save, to the bit
+  - L1159 ...the band put back on every market, and the road's two shares, to the bit
+  - L1160 ...the month's boats the same
+  - L1164 ...and a month on the city and its reload ship the same tonnes by sea and strike the same shares, to the bit
+  - L1178 A SAVE FROM BEFORE 0.7.86 (no portMonth) loads with nothing at sea
+  - L1181 ...and its terminal takes its share the first month it plays, the audit closing
 
 ## QuarryingCheck.java - 47 labelled assertions
 
@@ -20237,45 +20260,45 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L982 ...and every district's share together is 1 of each load, where every sector's buildings stand
   - L987 a sector with no building standing carries nothing, and the rest come to the share of the city's tonnes whose sectors stand
   - L990 a share is at most 1 where the city's tonnes are fewer, and 0 where they are 0
-  - L998 fixture: the city has played until Haulage has a fleet and a bill, so it carries tonnes
-  - L1018 truckedBy() over every sector comes to Freight.truckedIn(), truckedOut() and truckedHome() to a billionth, six hauls running
-  - L1019 ...and so it does in the months the game played through itself
-  - L1020 a sector that moved nothing, no freight and no sector carry nothing
-  - L1036 the districts of a map, over a played city's tonnes, each take a share in [0, 1] and together the share of the city's tonnes whose sectors stand on the map
-  - L1045 fixture: the played city imported, exported and bought at home, so no share is vacuous
-  - L1049 a district's schedule draws its shares' loads: the city's of each load times its share
-  - L1050 ...and keeps the city's N, the legend's: stands() is what the whole city's is
-  - L1052 ...its trucks, each for N loads, come to its loads within one a load group
-  - L1054 a district of no works (every share 0) draws no truck and keeps the city's N
-  - L1056 a share of 0 for the tonnes bought at home draws none of those, the imports and exports as they were
-  - L1058 a scalar share is the same share for every load
-  - L1066 a home trip is a home trip and a world trip is not: Route.home() and Route.through(true, ...)
-  - L1067 a home trip takes the tonnes bought at home alone: a schedule of one draws no import and no export
-  - L1069 ...and a world trip takes no home load, so every home load of a mix is on the home trip
-  - L1130 fixture: the catchment is how far a work looks for a ramp, 2 districts
-  - L1135 a district with trips and no works takes the share of the works district beside it that has no trips
-  - L1143 a works district 2 districts from a district with trips gives it its share, and one 3 districts from every district with trips gives nothing to any
-  - L1148 a district between two districts with trips goes to the nearer: 1 district from one and 2 from the other, and the other way about
-  - L1152 ...2 districts from both (Chebyshev), it goes to the nearer by Euclid, though that district's key is the larger
-  - L1157 ...and equally near by both, to the smaller key
-  - L1187 the shares of the districts with trips come to the shares of the districts within reach of one, at most 1 of a load
-  - L1213 the trips city, tonnes by hand (100 t a load for each of
-  - L1215 ...the whole city is within reach of a district with trips, so together they take 1 of each load
-  - L1233 fixture: a district with works and no trips rides a district with trips (the catchment does something here)
-  - L1258 a district whose trips' works are Truck Depots alone (its own works carry nothing) draws a share from the works about it: 1 such district, its share > 0 of e...
-  - L1262 ...and the tonnes moved by hand are drawn once: together the districts with trips still take 1 of each load
-- **L1268 10. the pace: the trains' legs, and any visit inside the month**
-  - L1279 a route of 100 plots takes LEG_SECONDS, one of 400 its length over TRAIN_PLOTS_A_SECOND, one of 5,000 LEG_MOST
-  - L1282 ...which is the trains' rule at each length: TrainSchedule.Route.legSeconds()
-  - L1283 LEG_MOST is the trains'
-  - L1304 fixture: trucks run both a route of 10 plots and one of 5,000
-  - L1305 every truck's whole visit lies inside the month, on a route of 10 plots and on one of 5,000
-  - L1306 ...a truck is at its gate at its arrival and at its route's start a leg (its route's own) before
-  - L1307 ...and is on the road at no moment outside its visit, a leg before its arrival to a stand and a leg after
-  - L1326 frame() is exactly the trucks position() puts in the box, in four boxes at nine moments, a 5,000-plot route among the routes
-- **L1341 7. a trip is whole: from the world to a gate, on a road all the way**
-  - L1342 the access city
-  - L1343 the trips city
+  - L1002 fixture: the city has played until Haulage has a fleet and a bill, so it carries tonnes
+  - L1022 truckedBy() over every sector comes to Freight.truckedIn(), truckedOut() and truckedHome() to a billionth, six hauls running
+  - L1023 ...and so it does in the months the game played through itself
+  - L1024 a sector that moved nothing, no freight and no sector carry nothing
+  - L1040 the districts of a map, over a played city's tonnes, each take a share in [0, 1] and together the share of the city's tonnes whose sectors stand on the map
+  - L1049 fixture: the played city imported, exported and bought at home, so no share is vacuous
+  - L1053 a district's schedule draws its shares' loads: the city's of each load times its share
+  - L1054 ...and keeps the city's N, the legend's: stands() is what the whole city's is
+  - L1056 ...its trucks, each for N loads, come to its loads within one a load group
+  - L1058 a district of no works (every share 0) draws no truck and keeps the city's N
+  - L1060 a share of 0 for the tonnes bought at home draws none of those, the imports and exports as they were
+  - L1062 a scalar share is the same share for every load
+  - L1070 a home trip is a home trip and a world trip is not: Route.home() and Route.through(true, ...)
+  - L1071 a home trip takes the tonnes bought at home alone: a schedule of one draws no import and no export
+  - L1073 ...and a world trip takes no home load, so every home load of a mix is on the home trip
+  - L1134 fixture: the catchment is how far a work looks for a ramp, 2 districts
+  - L1139 a district with trips and no works takes the share of the works district beside it that has no trips
+  - L1147 a works district 2 districts from a district with trips gives it its share, and one 3 districts from every district with trips gives nothing to any
+  - L1152 a district between two districts with trips goes to the nearer: 1 district from one and 2 from the other, and the other way about
+  - L1156 ...2 districts from both (Chebyshev), it goes to the nearer by Euclid, though that district's key is the larger
+  - L1161 ...and equally near by both, to the smaller key
+  - L1191 the shares of the districts with trips come to the shares of the districts within reach of one, at most 1 of a load
+  - L1217 the trips city, tonnes by hand (100 t a load for each of
+  - L1219 ...the whole city is within reach of a district with trips, so together they take 1 of each load
+  - L1237 fixture: a district with works and no trips rides a district with trips (the catchment does something here)
+  - L1262 a district whose trips' works are Truck Depots alone (its own works carry nothing) draws a share from the works about it: 1 such district, its share > 0 of e...
+  - L1266 ...and the tonnes moved by hand are drawn once: together the districts with trips still take 1 of each load
+- **L1272 10. the pace: the trains' legs, and any visit inside the month**
+  - L1283 a route of 100 plots takes LEG_SECONDS, one of 400 its length over TRAIN_PLOTS_A_SECOND, one of 5,000 LEG_MOST
+  - L1286 ...which is the trains' rule at each length: TrainSchedule.Route.legSeconds()
+  - L1287 LEG_MOST is the trains'
+  - L1308 fixture: trucks run both a route of 10 plots and one of 5,000
+  - L1309 every truck's whole visit lies inside the month, on a route of 10 plots and on one of 5,000
+  - L1310 ...a truck is at its gate at its arrival and at its route's start a leg (its route's own) before
+  - L1311 ...and is on the road at no moment outside its visit, a leg before its arrival to a stand and a leg after
+  - L1330 frame() is exactly the trucks position() puts in the box, in four boxes at nine moments, a 5,000-plot route among the routes
+- **L1345 7. a trip is whole: from the world to a gate, on a road all the way**
+  - L1346 the access city
+  - L1347 the trips city
 
 ## VanCheck.java - 32 labelled assertions
 

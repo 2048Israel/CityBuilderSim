@@ -1,4 +1,4 @@
-# TruckRouteCheck.java - 1,351 lines · 50 methods · 3 constants · harnesses
+# TruckRouteCheck.java - 1,355 lines · 50 methods · 3 constants · harnesses
 
 `ham/citybuildersim/TruckRouteCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      same object) and made again once a plan or the runs change;
 > ... (28 more lines in the source)
 
-**Uses:** [CityMap](CityMap.md) (174), [TruckSchedule](TruckSchedule.md) (145), [CityRuns](CityRuns.md) (18), [MapCheck](MapCheck.md) (16), [BuildingVisual](BuildingVisual.md) (13), [GatewayCheck](GatewayCheck.md) (13), [TilePainter](TilePainter.md) (10), [DistrictPlan](DistrictPlan.md) (9), [TrainSchedule](TrainSchedule.md) (7), [World](World.md) (5), [BuildingType](BuildingType.md) (3), [TruckCheck](TruckCheck.md) (3), [JunctionCheck](JunctionCheck.md) (2), [HaulageCheck](HaulageCheck.md) (2), [Sector](Sector.md) (2), [Founding](Founding.md) (1), [Mining](Mining.md) (1), [CityShore](CityShore.md) (1), [Game](Game.md) (1), [GameFiles](GameFiles.md) (1), [Freight](Freight.md) (1), [Haulage](Haulage.md) (1)
+**Uses:** [CityMap](CityMap.md) (174), [TruckSchedule](TruckSchedule.md) (145), [CityRuns](CityRuns.md) (18), [MapCheck](MapCheck.md) (16), [BuildingVisual](BuildingVisual.md) (13), [GatewayCheck](GatewayCheck.md) (13), [TilePainter](TilePainter.md) (10), [DistrictPlan](DistrictPlan.md) (9), [TrainSchedule](TrainSchedule.md) (7), [World](World.md) (5), [BuildingType](BuildingType.md) (3), [Good](Good.md) (3), [TruckCheck](TruckCheck.md) (3), [JunctionCheck](JunctionCheck.md) (2), [HaulageCheck](HaulageCheck.md) (2), [Sector](Sector.md) (2), [Founding](Founding.md) (1), [Mining](Mining.md) (1), [CityShore](CityShore.md) (1), [Game](Game.md) (1), [GameFiles](GameFiles.md) (1), [Freight](Freight.md) (1), [Haulage](Haulage.md) (1)
 
 ## Constants
 
@@ -84,7 +84,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 102 | 1250 | **type** `public class TruckRouteCheck` | Proves the trucks' routes (0.8.8, batch FR5, slice B; docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the map lets a truck drive, CityMap.truckRoutes() along the highways from their line to the wor... |
+| 102 | 1254 | **type** `public class TruckRouteCheck` | Proves the trucks' routes (0.8.8, batch FR5, slice B; docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the map lets a truck drive, CityMap.truckRoutes() along the highways from their line to the wor... |
 | 119 | 4 | `static void check(String label, boolean ok)` |  |
 | 125 | 4 | `static boolean same(TruckSchedule.Route a, TruckSchedule.Route b)` | Whether two routes are the same, point for point (a record holds arrays by reference, so equals() would not say). |
 | 130 | 5 | `static boolean same(List<TruckSchedule.Route> a, List<TruckSchedule.Route> b)` |  |
@@ -127,14 +127,14 @@
 | 848 | 34 | `static String tripsOnlyDrawn(CityMap m)` | Section 8's first half, on a city nothing of which is drawn: trips plan nothing, and a district drawn later gets its trips then. |
 | 884 | 55 | `static void tripsKept(CityMap m, BuildingVisual.Type[] types)` | Section 8's second half, on a city drawn whole: the list is kept while nothing changes and made again once a plan or the runs change; no world line, FR5's access routes alone. |
 | 942 | 3 | `static boolean near(double a, double b)` | ------------------------------------------------------------------ 9 |
-| 946 | 128 | `static void shares(BuildingVisual.Type[] types, CityMap trips)` |  |
-| 1078 | 5 | `static CityMap.District hand(BuildingVisual.Type[] types, int dx, int dy, int...typeAndCount)` | A district by hand at (dx, dy) holding `count` buildings of each type given as type, count pairs. |
-| 1085 | 3 | `static CityMap.DistrictTrips tripsOf(CityMap.District d)` | A district's trips, by hand: the trips themselves are nothing to the catchment. |
-| 1090 | 5 | `static java.util.function.BiFunction<Integer, Integer, CityMap.District> gridOf(java.util.Collection<CityMap.District> ds)` | A lookup of districts by (dx, dy), as CityMap.district() gives. |
-| 1096 | 3 | `static boolean same3(double[] x, double[] y)` |  |
-| 1101 | 13 | `static CityMap.DistrictTrips winnerOf(List<CityMap.DistrictTrips> trips, CityMap.District t)` | The district with trips that district t rides, by the rule written out again: the nearest within CATCHMENT_DISTRICTS, Chebyshev, then squared Euclidean, then key; null for none. |
-| 1116 | 10 | `static double[] ridersOf(List<CityMap.DistrictTrips> trips, java.util.Collection<CityMap.District> all, CityMap.DistrictTrips e...` | The shares of the districts that ride `e`'s trips, summed. |
-| 1128 | 136 | `static void catchment(BuildingVisual.Type[] types, CityMap trips, double[][] per, double[] city, int a, int b)` | Section 9's catchment: a district's trips carry the tonnes of the works about it, not its own alone. |
-| 1267 | 61 | `static void pace()` | ------------------------------------------------------------------ 10 |
-| 1329 | 22 | `public static void main(String[] args)` |  |
+| 946 | 132 | `static void shares(BuildingVisual.Type[] types, CityMap trips)` |  |
+| 1082 | 5 | `static CityMap.District hand(BuildingVisual.Type[] types, int dx, int dy, int...typeAndCount)` | A district by hand at (dx, dy) holding `count` buildings of each type given as type, count pairs. |
+| 1089 | 3 | `static CityMap.DistrictTrips tripsOf(CityMap.District d)` | A district's trips, by hand: the trips themselves are nothing to the catchment. |
+| 1094 | 5 | `static java.util.function.BiFunction<Integer, Integer, CityMap.District> gridOf(java.util.Collection<CityMap.District> ds)` | A lookup of districts by (dx, dy), as CityMap.district() gives. |
+| 1100 | 3 | `static boolean same3(double[] x, double[] y)` |  |
+| 1105 | 13 | `static CityMap.DistrictTrips winnerOf(List<CityMap.DistrictTrips> trips, CityMap.District t)` | The district with trips that district t rides, by the rule written out again: the nearest within CATCHMENT_DISTRICTS, Chebyshev, then squared Euclidean, then key; null for none. |
+| 1120 | 10 | `static double[] ridersOf(List<CityMap.DistrictTrips> trips, java.util.Collection<CityMap.District> all, CityMap.DistrictTrips e...` | The shares of the districts that ride `e`'s trips, summed. |
+| 1132 | 136 | `static void catchment(BuildingVisual.Type[] types, CityMap trips, double[][] per, double[] city, int a, int b)` | Section 9's catchment: a district's trips carry the tonnes of the works about it, not its own alone. |
+| 1271 | 61 | `static void pace()` | ------------------------------------------------------------------ 10 |
+| 1333 | 22 | `public static void main(String[] args)` |  |
 
