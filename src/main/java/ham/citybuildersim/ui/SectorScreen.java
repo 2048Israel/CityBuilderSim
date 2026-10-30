@@ -1703,8 +1703,8 @@ final class SectorScreen {
     /** The waterfall's (i). */
     static final String FALL_INFO = "Revenue at the left, less the sales tax it remitted and what it bought, to its "
             + "gross profit; less its wages, its running costs and the ground it stands on, to its operating profit - "
-            + "the statement's own subtotals; then its interest to profit before tax, and the business tax to what it "
-            + "kept. A refund steps up. A click on a bar opens its note in the Statement view.";
+            + "the statement's own subtotals; then the interest its dollars abroad paid home, less its own interest, to profit "
+            + "before tax, and the business tax to what it kept. A refund steps up. A click on a bar opens its note in the Statement view.";
 
     void incomePage(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then, boolean animate) {
 
@@ -1743,6 +1743,9 @@ final class SectorScreen {
         }
         if (now.propertyTax() != 0) steps.add(Step.of("Property tax", -now.propertyTax(), Palette.SPENDING_RAMP[2]));
         steps.add(fallTotal(StatementView.sentence(f.operating), t.now(SectorStatements.OPERATING)));
+        // ...and the coupon on its dollars abroad, paid home and inside the profit (HD1): a step up, before its own interest.
+        if (now.foreignInterest() != 0) steps.add(Step.of("Interest abroad", now.foreignInterest(), Palette.REVENUE_RAMP[2])
+                .tip("What its dollars abroad paid home, inside the profit\n" + m(now.foreignInterest())));
         if (now.interest() != 0) steps.add(Step.of("Interest", -now.interest(), Palette.SPENDING_RAMP[2])
                 .go(n -> openNote(sector, INCOME, SectorStatements.FINANCE_NOTE)));
         // ...and what its borrowing cost it up front, a month's share over each debt's life (0.7.102, A16).
@@ -2773,10 +2776,10 @@ final class SectorScreen {
 
     /** Note 6, and the equity statement's outside line: what the outside lines are (F1). */
     static final String OUTSIDE_INFO = "Money that reached its books outside its trading: the city's subsidy and the "
-            + "arrears it paid, the bank's interest on its till, the coupons on the bonds it holds, the interest its money "
-            + "abroad earned, an overdraft forgiven, loans and bonds its lenders wrote off, and a theft. Each moved its "
+            + "arrears it paid, the bank's interest on its till, the coupons on the bonds it holds, "
+            + "an overdraft forgiven, loans and bonds its lenders wrote off, and a theft. Each moved its "
             + "equity and reached no statement until this one, so none of it is taxed or in what its dividend is struck "
-            + "on. What its borrowing cost it up front - the bank's fee, a mortgage's insurance premium, a bond's issuing "
+            + "on. (The interest its money abroad earns is not here since HD1: it is paid home, a line above the profit.) What its borrowing cost it up front - the bank's fee, a mortgage's insurance premium, a bond's issuing "
             + "costs - was here until 0.7.102; it is a cost above the profit now, a month's share over each debt's life, "
             + "and deducted from its tax, and is here only for a month from an older save.";
 
@@ -2978,8 +2981,8 @@ final class SectorScreen {
             case SectorStatements.EQ_BUILDINGS -> "The construction materials in the buildings it had at last month's "
                     + "sheet, at this month's price a unit less last month's: its buildings are carried at what they "
                     + "would cost today, so the materials price moves the whole estate.";
-            case SectorStatements.EQ_ABROAD -> "What it holds abroad, less what it sent there and the interest rolled "
-                    + "in: the rate it is valued at in the city's money.";
+            case SectorStatements.EQ_ABROAD -> "What it holds abroad, less what it sent there: the rate it is valued "
+                    + "at in the city's money. Its interest abroad is paid home, inside the profit, and does not grow what it holds.";
             case SectorStatements.EQ_REVALUED -> REVALUED_INFO;
             case SectorStatements.EQ_CAPITAL_REST -> "Its share capital moved by something none of the lines above "
                     + "names. SectorStatementCheck holds this at nothing, so a figure here is news.";

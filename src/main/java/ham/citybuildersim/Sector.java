@@ -1018,6 +1018,8 @@ public abstract class Sector {
     private double interestExpense;
     private double propertyTaxExpense;
     private double maintenanceExpense;
+    /** The coupon on its dollars abroad, paid home this month, local money (HD1). Set at the top of the month by OutwardInvestment.payCoupons(); a line of the statement, inside the profit. */
+    private double foreignIncome;
 
     /** The profit rate in force this month. Set before the statement runs. */
     private double taxRate;
@@ -1031,11 +1033,13 @@ public abstract class Sector {
     public void setInterestExpense(double v)    { interestExpense = Math.max(0, v); }
     public void setPropertyTaxExpense(double v) { propertyTaxExpense = Math.max(0, v); }
     public void setMaintenanceExpense(double v) { maintenanceExpense = Math.max(0, v); }
+    public void setForeignIncome(double v)      { foreignIncome = Math.max(0, v); }
     public void setTaxRate(double rate)         { taxRate = Math.max(0, rate); }
 
     public double getInterestExpense()    { return interestExpense; }
     public double getPropertyTaxExpense() { return propertyTaxExpense; }
     public double getMaintenanceExpense() { return maintenanceExpense; }
+    public double getForeignIncome()      { return foreignIncome; }
     public double getTaxRate()            { return taxRate; }
 
     public void setBalanceSheetInputs(double land, double buildingsWorth, double bonds) {
@@ -2041,12 +2045,15 @@ public abstract class Sector {
          * Nothing for every sector until a works makes power.
          */
         public double powerSold;
+        /** The coupon on its dollars abroad, paid home (HD1): a line of finance income BELOW the operating line and inside preTaxIncome, so the profit tax and the dividend see it, and banked in the till with the rest of netIncome. Not revenue, not otherRevenue, not in the sales-tax base. */
+        public double foreignIncome;
 
         void scale(double s) {
             revenue *= s; inputs *= s; payroll *= s; electricity *= s; water *= s; maintenance *= s;
             paidEarlier *= s;
             borrowingCosts *= s;
             powerSold *= s;
+            foreignIncome *= s;
             operatingIncome *= s; interest *= s; propertyTax *= s; salesTax *= s;
             preTaxIncome *= s; profitTax *= s; netIncome *= s;
             localSales *= s; exports *= s; otherRevenue *= s; salesToHouseholds *= s;
@@ -2118,7 +2125,10 @@ public abstract class Sector {
         s.borrowingCosts = expenseBorrowingCosts();
         s.propertyTax = propertyTaxExpense;
         s.salesTax = 0;
-        s.preTaxIncome = s.operatingIncome - s.interest - s.borrowingCosts - s.propertyTax;
+        // ...and the coupon on its dollars abroad, paid home (HD1): added only when there is one, as a zero added is not always nothing.
+        s.foreignIncome = foreignIncome;
+        double earned = s.foreignIncome != 0 ? s.operatingIncome + s.foreignIncome : s.operatingIncome;
+        s.preTaxIncome = earned - s.interest - s.borrowingCosts - s.propertyTax;
         s.profitTax = Math.max(s.preTaxIncome * taxRate, 0);
         s.netIncome = s.preTaxIncome - s.profitTax;
     }
@@ -2149,7 +2159,8 @@ public abstract class Sector {
         // in floating point (-0.0 + 0.0 is 0.0), and a month with no credit
         // is struck exactly as it was before there were any.
         s.salesTax = capitalTaxCredit != 0 ? salesTaxRemitted + capitalTaxCredit : salesTaxRemitted;
-        s.preTaxIncome = s.operatingIncome - s.interest - s.borrowingCosts - s.propertyTax - s.salesTax;
+        double earned = s.foreignIncome != 0 ? s.operatingIncome + s.foreignIncome : s.operatingIncome;
+        s.preTaxIncome = earned - s.interest - s.borrowingCosts - s.propertyTax - s.salesTax;
         s.profitTax = Math.max(s.preTaxIncome * taxRate, 0);
         s.netIncome = s.preTaxIncome - s.profitTax;
         // ...less nothing twice: stock paid for when it was bought is a cost
@@ -2220,6 +2231,7 @@ public abstract class Sector {
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.capitalBySupplier);
         s.capitalTaxCredit = saved.capitalTaxCredit;
         s.powerSold = saved.powerSold;
+        s.foreignIncome = saved.foreignIncome;
     }
 
     /* ===================================================================
@@ -3277,7 +3289,7 @@ public abstract class Sector {
         carriedWrittenOff.clear();
         struckWrittenOff.clear();
         restoreStatement(new Statement());
-        interestExpense = propertyTaxExpense = maintenanceExpense = 0;
+        interestExpense = propertyTaxExpense = maintenanceExpense = foreignIncome = 0;
         landValue = buildingsValue = bondsPayable = 0;
         java.util.Arrays.fill(borrowingChargesLeft, 0);
         averageFill = 1;
@@ -3300,6 +3312,7 @@ public abstract class Sector {
         interestExpense *= scale;
         propertyTaxExpense *= scale;
         maintenanceExpense *= scale;
+        foreignIncome *= scale;
         landValue *= scale;
         buildingsValue *= scale;
         bondsPayable *= scale;
