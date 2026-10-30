@@ -156,8 +156,10 @@ its first decade never leaves it. The freight scale is studied before WN4.
 
 ## 3b. The policy rate on the band: Jerus's call (R3, MonetaryCheck's dial)
 
-**WN3 is held for this** (the orchestrator, 2026-10-29: a premise red is Jerus's call, never recorded away; HD1 met
-the same question today, its coupon inverting MonetaryCheck's inflation-with-rate relation).
+**Jerus chose (c), 2026-10-29: "WN3 yes ship, ill look into it later".** WN3 was held for this call (the orchestrator:
+a premise red is Jerus's call, never recorded away; HD1 met the same question today, its coupon inverting
+MonetaryCheck's inflation-with-rate relation). It ships with R3 red, the gate passing the suite's two model reds on his
+words (4), and the study queued as WN3-R, one study with HD1-C's coupon.
 
 **What the band does to the rate.** A higher policy rate does two things to the city's prices. It strengthens the D$,
 so what the city imports costs less: that pulls inflation down. And it raises what a landlord pays to finance a home,
