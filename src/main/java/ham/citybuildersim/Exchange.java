@@ -206,6 +206,67 @@ public class Exchange {
     public static final double BUYBACK_TOLERANCE = .10;
 
     /* =======================================================================
+       THE WORLD SELLS SHORT, AND THE CITY'S HOLDERS LEND (EM2, 2026-10-30)
+
+       WHY. Jerus, 2026-10-29: "we need to implement short selling cause ive
+       seen bubbles form in game, are that last traded is 448k but current
+       bids are 4k". A share that traded once far over its value stayed there:
+       every holder is a price-taker who rests its ask at the market, and the
+       market was that trade; nobody could sell what they did not hold, so no
+       seller with a price of his own came to the book. The world does now,
+       as a participant of its own (WORLD_SHORT): where the quote stands more
+       than SHORT_BAND over a share's fair value it sells shares it borrows
+       from the city's long holders - the households' cells and the fund's
+       market book, pro rata to what each holds - asking at that band, a limit
+       order, and buys them back to cover, bidding fair value, once the quote
+       is back within BAND of it.
+
+       THE SHORT IS A POSITION AND A COLLATERAL. Sold, S shares more are short
+       and INITIAL_MARGIN times the proceeds is held against them; covered, the
+       collateral goes back pro rata. The register does not know: the buyer's
+       holding rose as it does for any purchase, so the holdings add up to the
+       shares in issue PLUS S, and a company's dividend is paid by the short on
+       the S the holders were sold (Equity.payDividend()). The lent shares stay
+       the lender's: kept, sellable, and paid every dividend on. The lender is
+       paid a fee for them (the lending book, strikeLending()), by the world,
+       a year's LENDING_FEE of what is lent at its value, more as the shares
+       get hard to borrow. Nothing that moves is the world's own long.
+
+       WHO SHORTS: the world alone, and never the bank's own shares; the
+       households' cells, the fund and the desk lend or trade, they do not sell
+       short. WHO LENDS: the cells and the fund's market book (never its rescue
+       book), the desk and the world not.
+
+       THE SQUEEZE AND THE RECALL. A short whose account is under
+       MAINTENANCE_MARGIN of its market value covers all of it at the most it
+       can pay (the break price, collateral over shares) - the margin call. A
+       short that is more than the lenders hold has the difference recalled
+       and covers it at the same price. Both rest as limit bids: a holder who
+       sells into them is paid up to the break price.
+       ======================================================================= */
+
+    /** The world sells short only at this far over fair value; over BUYBACK_TOLERANCE, so a short never sells into a company's bid for its own shares, and past it a share's price is over what its business and money are worth by more than the fee, the dividend and the margin's risk. */
+    public static final double SHORT_BAND = .20;
+
+    /** The collateral held against a short at its sale, a multiple of the sale: the proceeds and half as much again (Regulation T). */
+    public static final double INITIAL_MARGIN = 1.5;
+
+    /** The account's equity under this share of the short's market value is a margin call (FINRA Rule 4210 for shorts): the short covers at the most it can pay. */
+    public static final double MAINTENANCE_MARGIN = .30;
+
+    /** The most of a company's outstanding shares that may be short at once. */
+    public static final double MAX_SHORT_INTEREST = .20;
+
+    /** The general fee a year on the shares lent, at their value: the market's rate is .3% to 1%. */
+    public static final double LENDING_FEE = .005;
+
+    /** The share of the lendable shares lent past which a share is hard to borrow... */
+    public static final double HARD_TO_BORROW = .50;
+
+    /** ...and the fee a year it adds at full utilisation, linearly from HARD_TO_BORROW. */
+    public static final double HARD_TO_BORROW_FEE = .10;
+
+    /* =======================================================================
        THE DESK'S OWN CAPS ON SHARES (0.7.12 round 3; Jerus: "Put them back")
 
        Round 1's dealer carried two, and round 2 took them out with the
@@ -332,6 +393,8 @@ public class Exchange {
     public static final String DESK = "bank";
     /** The world's investors. */
     public static final String WORLD = "world";
+    /** The world's short seller (EM2): a participant of its own, so a short and the world's long never trade with each other, and never a cell's name (no BondMarket.CELL prefix). */
+    public static final String WORLD_SHORT = "world, short";
     /** The month's leavers, selling on the way out. */
     public static final String EMIGRANTS = "emigrants";
     /** One household cell: this, then its key (the bond market's prefix, deliberately). */
@@ -392,6 +455,23 @@ public class Exchange {
     private final int[] betweenHouseholdsTrades = new int[n];
     private double ownBoughtThisMonth, ownSoldThisMonth;          // the bank's own shares, for the pace
 
+    /* ---- the shorts (EM2): the world's position in each company, the account behind it, and who lends it ---- */
+    /** Whether the world sells short at all: on, the default; the checks and -Dplaytest.shorts=off switch it off to see the market without it. */
+    private boolean shortSelling = true;
+    /** Shares the world has sold short, per company: the S of the rule. Not saved yet (the saves are EM2's third slice). */
+    private final double[] shortShares = new double[n];
+    /** The collateral held against them, money: INITIAL_MARGIN times each sale, released pro rata as they are covered. */
+    private final double[] shortCollateral = new double[n];
+    /** Of the shares short, those the cells lend and those the fund's market book lends: struck at the step and again at each fill of a short. */
+    private final double[] lentCells = new double[n], lentFund = new double[n];
+    /** The quote of the last step's books before it withdrew them (the fee is charged on it), per company with a short. */
+    private final double[] quoteBefore = new double[n];
+    /** The month's lending fee, money, by who was paid: this month's, cleared by startMonth(). */
+    private final double[] feeToCells = new double[n], feeToFund = new double[n];
+    /** Over the city's life: shares sold short and their value, covered and their value, company-months an ask was posted and a short was open, margin calls and recalls, fees paid. */
+    private double lifeShortSold, lifeShortSoldValue, lifeShortCovered, lifeShortCoveredValue, lifeLendingFees;
+    private int lifeShortAsks, lifeShortMonths, lifeMarginCalls, lifeRecalls;
+
     // the last step's books, all companies, and over the city's life - for the screens and the playtest
     private double lastPostedSellValue, lastFilledValue;
     private int lastSellsPosted, lastSellsWaited, lastTrades;
@@ -436,6 +516,7 @@ public class Exchange {
             volume[c] = 0;
             split[c] = 0;
             betweenHouseholdsTrades[c] = 0;
+            feeToCells[c] = 0; feeToFund[c] = 0;
         }
         ownBoughtThisMonth = 0;
         ownSoldThisMonth = 0;
@@ -677,6 +758,7 @@ public class Exchange {
         if (fund != null) fund.closePosted(false);
         for (int c = 0; c < n; c++) {
             OrderBook b = books[c];
+            quoteBefore[c] = shortShares[c] > 0 ? price(c) : 0;
             b.withdrawAll();
             noteBook(c, b);
             b.startMonth();
@@ -688,6 +770,8 @@ public class Exchange {
             if (register.getShares(c) <= 0) {
                 fair[c] = register.foundingPrice(); emigrantShares[c] = 0;
                 spare[c] = earnings[c] = moneyIncome[c] = 0;
+                // ...a company with no shares left has nothing to be short of: the short is closed (EM2), keeping what it was paid.
+                shortShares[c] = shortCollateral[c] = lentCells[c] = lentFund[c] = 0;
                 continue;
             }
             // ...the bank's money is its business and a fixture with no companies holds none: nothing past a cushion.
@@ -700,6 +784,8 @@ public class Exchange {
                     : Math.max(0, Math.min(households.getSharesTakenAway(c), register.getForeignShares(c)));
         }
         deskOpen = hasDealerCapital(bank);
+        // ...the lending book struck and its fee paid on the shares as the last step left them (EM2), before anybody posts.
+        strikeLending();
 
         /* ---- and the orders, in the order they rest ---- */
         if (deskOpen) postDesk();
@@ -707,6 +793,7 @@ public class Exchange {
         postWorld(worldRate);
         postCompanies();
         postWorldPrice();
+        postShorts();
         postHouseholds(depositRate, worldRate, paperYield);
         postFund();
 
@@ -980,6 +1067,128 @@ public class Exchange {
     /** What the world holds that it can sell: what is held abroad less this month's leavers' shares, which are theirs to sell. */
     private double worldHolding(int c) {
         return Math.max(0, register.getForeignShares(c) - emigrantShares[c]);
+    }
+
+    /* ---------------------------------- the shorts (EM2) ---------------------------------- */
+
+    /** What the city's long holders can lend of a company now, shares: the cells' holding and the fund's market book (never its rescue book). The desk and the world lend nothing. */
+    private double lendable(int c) {
+        double cells = households == null ? 0 : households.sharesHeld(c);
+        double fundBook = fund == null ? 0 : register.getCityMarketShares(c);
+        return cells + fundBook;
+    }
+
+    /** What the world may still sell short of a company, shares: under MAX_SHORT_INTEREST of what is outstanding and under what the lenders have left to lend. Read at each fill, so concurrent fills keep both. */
+    private double shortRoom(int c) {
+        return Math.max(0, Math.min(MAX_SHORT_INTEREST * register.getOutstanding(c) - shortShares[c], lendable(c) - shortShares[c]));
+    }
+
+    /**
+     * The fee a year on the shares lent, at a utilisation (the shares short
+     * over the shares lendable): LENDING_FEE up to HARD_TO_BORROW, rising
+     * linearly from there to LENDING_FEE + HARD_TO_BORROW_FEE when all of
+     * them are lent - and no further beyond.
+     */
+    public static double lendingRate(double utilisation) {
+        double u = Math.max(0, Math.min(1, utilisation));
+        return LENDING_FEE + (u > HARD_TO_BORROW ? HARD_TO_BORROW_FEE * (u - HARD_TO_BORROW) / (1 - HARD_TO_BORROW) : 0);
+    }
+
+    /**
+     * THE LENDING BOOK AND ITS FEE, at each step before anybody posts: what
+     * is short is lent by the cells and the fund's market book pro rata to
+     * what each holds, and the world pays them lendingRate() of it a year,
+     * a twelfth a month, at the quote the last step's book stood at
+     * (quoteBefore[], struck before the orders were withdrawn). The cells'
+     * part goes into their savings pro rata to what each holds
+     * (HouseholdBalance.creditLendingFee(), investment income and no
+     * dividend); the fund's into its cash (TreasuryFund.receiveLendingFee()),
+     * which MoneyAudit declares as income from the world. The world and the
+     * households are outside the audited pools, so the cells' part is no
+     * line there.
+     */
+    private void strikeLending() {
+        for (int c = 0; c < n; c++) {
+            double s = shortShares[c];
+            if (!(s > OrderBook.DUST)) { shortShares[c] = 0; shortCollateral[c] = 0; lentCells[c] = lentFund[c] = 0; continue; }
+            lifeShortMonths++;
+            double cells = households == null ? 0 : households.sharesHeld(c);
+            double fundBook = fund == null ? 0 : register.getCityMarketShares(c);
+            double lendable = cells + fundBook;
+            if (!(lendable > 0)) { lentCells[c] = lentFund[c] = 0; continue; }
+            lentCells[c] = s * cells / lendable;
+            lentFund[c] = s * fundBook / lendable;
+            double q0 = quoteBefore[c] > 0 ? quoteBefore[c] : price(c);
+            double fee = lendingRate(s / lendable) * s * q0 / 12;
+            if (!(fee > 0)) continue;
+            double toCells = fee * cells / lendable, toFund = fee * fundBook / lendable;
+            double paidCells = toCells > 0 && cells > 0 ? households.creditLendingFee(c, toCells / cells) : 0;
+            double paidFund = 0;
+            if (toFund > 0) { fund.receiveLendingFee(toFund); paidFund = toFund; }
+            feeToCells[c] += paidCells;
+            feeToFund[c] += paidFund;
+            lifeLendingFees += paidCells + paidFund;
+        }
+    }
+
+    /** The lending book as the shorts' fills leave it (EM2): what is short, lent by the cells and the fund pro rata, none with nothing to lend. */
+    private void restrikeLentBook(int c) {
+        double s = shortShares[c];
+        double cells = households == null ? 0 : households.sharesHeld(c);
+        double fundBook = fund == null ? 0 : register.getCityMarketShares(c);
+        double lendable = cells + fundBook;
+        if (!(s > 0) || !(lendable > 0)) { lentCells[c] = lentFund[c] = 0; return; }
+        lentCells[c] = s * cells / lendable;
+        lentFund[c] = s * fundBook / lendable;
+    }
+
+    /**
+     * THE WORLD SELLS SHORT (EM2), in every company valued on its record and
+     * worth something, the bank's own never: it reads the quote now, after
+     * the others have posted, and the position S it is short, and does the
+     * first of these that applies.
+     *
+     *   1. A MARGIN CALL (the squeeze). Its account's equity, the collateral
+     *      less S at the quote, is under MAINTENANCE_MARGIN of that value: it
+     *      covers all of S as a price-taker (post()), taking every ask up to
+     *      the most it can pay before the account is under water (the
+     *      collateral over S, the break price), cheapest first, and resting
+     *      the rest at the market - a buy-in at the market, not at the break
+     *      price, which a holder selling into a bid over value would be paid.
+     *   2. A RECALL. S is more than the lenders hold: the loans over what
+     *      they hold are called in, and it covers S less the lendable shares
+     *      the same way.
+     *   3. SHORT MORE. The quote is over fair value by more than SHORT_BAND:
+     *      an ask at that band, a limit order (it names its price, it does
+     *      not rest at the market), for FOREIGN_SPEED of the gap to fair value
+     *      over the shares outstanding, no more than shortRoom().
+     *   4. COVER. It is short and the quote is back within BAND of fair
+     *      value: a bid for all of S at fair value.
+     */
+    private void postShorts() {
+        if (!shortSelling) return;
+        for (int c = 0; c < n; c++) {
+            if (c == Equity.BANK || !register.valuedOnRecord(c) || fair[c] <= minFair) continue;
+            double s = shortShares[c];
+            double q = price(c);
+            double lendable = s > OrderBook.DUST ? lendable(c) : 0;
+            double value = s * q;
+            if (s > OrderBook.DUST && shortCollateral[c] - value < MAINTENANCE_MARGIN * value) {
+                lifeMarginCalls++;
+                post(c, WORLD_SHORT, OrderBook.Side.BUY, shortCollateral[c] / s, s);
+            } else if (s > lendable + OrderBook.DUST) {
+                lifeRecalls++;
+                post(c, WORLD_SHORT, OrderBook.Side.BUY, shortCollateral[c] / s, s - lendable);
+            } else if (q > fair[c] * (1 + SHORT_BAND)) {
+                double want = Math.min(shortRoom(c), FOREIGN_SPEED * (q / fair[c] - 1) * register.getOutstanding(c));
+                if (want > OrderBook.DUST) {
+                    lifeShortAsks++;
+                    submit(c, WORLD_SHORT, OrderBook.Side.SELL, fair[c] * (1 + SHORT_BAND), want);
+                }
+            } else if (s > OrderBook.DUST && q <= fair[c] * (1 + BAND)) {
+                submit(c, WORLD_SHORT, OrderBook.Side.BUY, fair[c], s);
+            }
+        }
     }
 
     /* ---------------------------------- the companies ---------------------------------- */
@@ -1590,7 +1799,7 @@ public class Exchange {
     public static final int BY_DESK = 0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3, BY_FUND = 4;
     private static int classOf(String who) {
         if (DESK.equals(who)) return BY_DESK;
-        if (WORLD.equals(who)) return BY_WORLD;
+        if (WORLD.equals(who) || WORLD_SHORT.equals(who)) return BY_WORLD;
         if (EMIGRANTS.equals(who)) return BY_EMIGRANTS;
         if (isFund(who)) return BY_FUND;
         return BY_HOUSEHOLDS;
@@ -1624,6 +1833,8 @@ public class Exchange {
             if (side == OrderBook.Side.BUY) {
                 if (DESK.equals(who)) return deskCapacity(register, c, price);
                 if (WORLD.equals(who)) return Double.POSITIVE_INFINITY;
+                // ...the short only buys to cover what it is short (EM2).
+                if (WORLD_SHORT.equals(who)) return shortShares[c];
                 if (EMIGRANTS.equals(who)) return 0;
                 if (who.startsWith(CELL)) {
                     Household h = cellOf(who);
@@ -1641,6 +1852,8 @@ public class Exchange {
             }
             if (DESK.equals(who)) return deskHolding(c);
             if (WORLD.equals(who)) return worldHolding(c);
+            // ...and sells what the lenders still have to lend and the cap leaves, read now (EM2).
+            if (WORLD_SHORT.equals(who)) return shortRoom(c);
             if (EMIGRANTS.equals(who)) return Math.max(0, Math.min(emigrantShares[c], register.getForeignShares(c)));
             if (who.startsWith(CELL)) {
                 Household h = cellOf(who);
@@ -1662,13 +1875,18 @@ public class Exchange {
          */
         @Override public boolean mayTrade(String buyer, String seller) {
             if (isFund(buyer) && isFund(seller)) return false;
+            // ...nor the world with itself: its long and its short never trade (EM2).
+            if ((WORLD.equals(buyer) && WORLD_SHORT.equals(seller)) || (WORLD_SHORT.equals(buyer) && WORLD.equals(seller))) return false;
             return !(c == Equity.BANK && DESK.equals(seller) && isFund(buyer));
         }
 
         @Override public void settle(String buyer, String seller, double q, double price) {
             double cash = q * price;
             boolean cellSells = seller.startsWith(CELL), cellBuys = buyer.startsWith(CELL);
-            boolean abroadSells = WORLD.equals(seller) || EMIGRANTS.equals(seller);
+            // ...the world's short sells abroad and buys from the world, as its long does (EM2): what crosses the pools' edge is the same.
+            boolean shortSells = WORLD_SHORT.equals(seller), shortBuys = WORLD_SHORT.equals(buyer);
+            boolean worldBuys = WORLD.equals(buyer) || shortBuys;
+            boolean abroadSells = WORLD.equals(seller) || EMIGRANTS.equals(seller) || shortSells;
             boolean deskSells = DESK.equals(seller), deskBuys = DESK.equals(buyer);
             boolean companyBuys = companies != null && buyer.equals(Equity.COMPANIES[c]) && c != Equity.BANK;
             boolean fundBuys = isFund(buyer) && fund != null, fundSells = isFund(seller) && fund != null;
@@ -1686,6 +1904,13 @@ public class Exchange {
                 }
             } else if (WORLD.equals(seller)) {
                 register.moveForeign(c, -q);
+            } else if (shortSells) {
+                // ...the short sells shares it borrowed: it is short that many more and holds INITIAL_MARGIN times the sale against
+                // them; the register moves nothing, the buyer's holding rising below as it does for any purchase (EM2).
+                shortShares[c] += q;
+                shortCollateral[c] += INITIAL_MARGIN * cash;
+                lifeShortSold += q;
+                lifeShortSoldValue += cash;
             } else if (EMIGRANTS.equals(seller)) {
                 register.moveForeign(c, -q);
                 emigrantShares[c] = Math.max(0, emigrantShares[c] - q);
@@ -1729,6 +1954,15 @@ public class Exchange {
                 }
             } else if (WORLD.equals(buyer)) {
                 register.moveForeign(c, q);
+            } else if (shortBuys) {
+                // ...the short covers: the seller's holding already fell, the short falls by as much and the collateral goes back pro rata (EM2).
+                double was = shortShares[c];
+                double released = was > 0 ? shortCollateral[c] * Math.min(1, q / was) : 0;
+                shortCollateral[c] = Math.max(0, shortCollateral[c] - released);
+                shortShares[c] = Math.max(0, was - q);
+                if (shortShares[c] <= OrderBook.DUST) { shortShares[c] = 0; shortCollateral[c] = 0; }
+                lifeShortCovered += q;
+                lifeShortCoveredValue += cash;
             } else if (cellBuys) {
                 Household h = cellOf(buyer);
                 h.shares[c] += q / h.households();
@@ -1748,25 +1982,27 @@ public class Exchange {
 
             /* ---- and what crossed the pools' edge, for the audit ---- */
             if (deskSells && cellBuys) soldToHouseholds[c] += cash;
-            if (deskSells && WORLD.equals(buyer)) soldAbroad[c] += cash;
+            if (deskSells && worldBuys) soldAbroad[c] += cash;
             if (deskSells && companyBuys) buybackToDesk[c] += cash;
             if (cellSells && deskBuys) boughtFromHouseholds[c] += cash;
             if (abroadSells && deskBuys) boughtFromAbroad[c] += cash;
             if (cellSells && companyBuys) buybackToHouseholds[c] += cash;
             if (abroadSells && companyBuys) buybackAbroad[c] += cash;
             if (abroadSells && cellBuys) householdsBoughtAbroad[c] += cash;
-            if (cellSells && WORLD.equals(buyer)) householdsSoldAbroad[c] += cash;
+            if (cellSells && worldBuys) householdsSoldAbroad[c] += cash;
             // ...and the city's fund, a pool (0.7.14): with a cell, or the world.
             if (cellSells && fundBuys) fundBoughtFromHouseholds[c] += cash;
             if (abroadSells && fundBuys) fundBoughtAbroad[c] += cash;
             if (fundSells && cellBuys) fundSoldToHouseholds[c] += cash;
-            if (fundSells && WORLD.equals(buyer)) fundSoldAbroad[c] += cash;
+            if (fundSells && worldBuys) fundSoldAbroad[c] += cash;
             if (cellSells && cellBuys) {
                 betweenHouseholds[c] += cash;
                 betweenHouseholdsTrades[c]++;
                 lifeBetweenHouseholds += cash;
                 lifeBetweenHouseholdsTrades++;
             }
+            // ...and the lending book follows the short, the buyer's holding and the seller's having moved (EM2).
+            if (shortSells || shortBuys) restrikeLentBook(c);
             volume[c] += q;
             lifetimeVolume += q;
             lifeFilledSellBy[classOf(seller)] += q * price(c);
@@ -1802,6 +2038,8 @@ public class Exchange {
             books[c].split(k);
             fair[c] /= k;
             emigrantShares[c] *= k;
+            // ...what is short and who lends it count shares, so move by the factor; the collateral is money and does not (EM2).
+            shortShares[c] *= k; lentCells[c] *= k; lentFund[c] *= k;
             volume[c] *= k;
             split[c] = k;
             splitFactor[c] *= k;
@@ -1911,6 +2149,36 @@ public class Exchange {
     public double getFundBoughtAbroad()         { return sum(fundBoughtAbroad); }
     public double getFundSoldToHouseholds()     { return sum(fundSoldToHouseholds); }
     public double getFundSoldAbroad()           { return sum(fundSoldAbroad); }
+
+    /* ---- the shorts (EM2) ---- */
+
+    /** Whether the world sells short at all. */
+    public boolean isShortSelling()                  { return shortSelling; }
+    /** Switches the world's short selling on or off: for the checks, and -Dplaytest.shorts=off, to see the market without it. */
+    void setShortSelling(boolean on)                 { shortSelling = on; }
+    /** Shares the world is short of one company, and the collateral held against them. */
+    public double shortShares(int c)                 { return shortShares[c]; }
+    public double shortCollateral(int c)             { return shortCollateral[c]; }
+    /** ...of those, the shares the households' cells lend and the fund's market book lends: they add to the shares short (lent by none, with none to lend). */
+    public double lentByCells(int c)                 { return lentCells[c]; }
+    public double lentByFund(int c)                  { return lentFund[c]; }
+    /** What the world paid the cells and the fund this month for the shares lent, money. */
+    public double lendingFeeToCells(int c)           { return feeToCells[c]; }
+    public double lendingFeeToFund(int c)            { return feeToFund[c]; }
+    public double lendingFeeThisMonth(int c)         { return feeToCells[c] + feeToFund[c]; }
+    /** ...and in all companies, for MoneyAudit: the fund's part is cash in a pool, the cells' goes to their savings. */
+    public double getLendingFeeToFund()              { return sum(feeToFund); }
+    public double getLendingFeeToCells()             { return sum(feeToCells); }
+    /** Over the city's life: shares sold short and what they fetched, shares covered and what that cost, company-months an ask was posted and a short stood open, margin calls and recalls, and the fees paid. */
+    public double getLifeShortSold()                 { return lifeShortSold; }
+    public double getLifeShortSoldValue()            { return lifeShortSoldValue; }
+    public double getLifeShortCovered()              { return lifeShortCovered; }
+    public double getLifeShortCoveredValue()         { return lifeShortCoveredValue; }
+    public int getLifeShortAsks()                    { return lifeShortAsks; }
+    public int getLifeShortMonths()                  { return lifeShortMonths; }
+    public int getLifeMarginCalls()                  { return lifeMarginCalls; }
+    public int getLifeRecalls()                      { return lifeRecalls; }
+    public double getLifeLendingFees()               { return lifeLendingFees; }
 
     /* ------------------------------- saving ------------------------------- */
 
@@ -2077,6 +2345,13 @@ public class Exchange {
         java.util.Arrays.fill(spare, 0);
         java.util.Arrays.fill(earnings, 0);
         java.util.Arrays.fill(moneyIncome, 0);
+        java.util.Arrays.fill(shortShares, 0);
+        java.util.Arrays.fill(shortCollateral, 0);
+        java.util.Arrays.fill(lentCells, 0);
+        java.util.Arrays.fill(lentFund, 0);
+        java.util.Arrays.fill(quoteBefore, 0);
+        lifeShortSold = lifeShortSoldValue = lifeShortCovered = lifeShortCoveredValue = lifeLendingFees = 0;
+        lifeShortAsks = lifeShortMonths = lifeMarginCalls = lifeRecalls = 0;
         lifetimeVolume = lifePostedSellValue = lifeFilledValue = lifeBetweenHouseholds = lifeTurnover = 0;
         lifeEmigrantsOffered = lifeEmigrantsPaid = 0;
         java.util.Arrays.fill(lifePostedSellBy, 0);
@@ -2108,6 +2383,9 @@ public class Exchange {
             householdsBoughtAbroad[c] *= scale; householdsSoldAbroad[c] *= scale; betweenHouseholds[c] *= scale;
             fundBoughtFromHouseholds[c] *= scale; fundBoughtAbroad[c] *= scale;
             fundSoldToHouseholds[c] *= scale; fundSoldAbroad[c] *= scale;
+            // ...the shorts' collateral and the month's fees are money; what is short and lent are shares and stay (EM2).
+            shortCollateral[c] *= scale; quoteBefore[c] *= scale;
+            feeToCells[c] *= scale; feeToFund[c] *= scale;
         }
         fundBondsValue *= scale;
         lastPostedSellValue *= scale; lastFilledValue *= scale;
@@ -2115,6 +2393,7 @@ public class Exchange {
         lifeEmigrantsOffered *= scale; lifeEmigrantsPaid *= scale;
         for (int k = 0; k < lifePostedSellBy.length; k++) { lifePostedSellBy[k] *= scale; lifeFilledSellBy[k] *= scale; }
         lifeRebalanceSold *= scale; lifeValueSold *= scale;
+        lifeShortSoldValue *= scale; lifeShortCoveredValue *= scale; lifeLendingFees *= scale;
         lifeExcessOffered *= scale; lifeExcessSold *= scale;
         if (buying != null) buyingBudget *= scale;
     }

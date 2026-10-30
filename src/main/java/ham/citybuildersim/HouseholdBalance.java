@@ -4065,6 +4065,30 @@ public class HouseholdBalance {
     }
 
     /**
+     * Pays every household the lending fee on the shares of one company it
+     * lends, per share it holds, straight into its savings (EM2): the world
+     * pays it for the shares it sold short, which the cells lend pro rata to
+     * what each holds (Exchange.strikeLending()). Income from investing, so a
+     * household plans on it as on a dividend (Household.investmentIncome) -
+     * but not a dividend, which is a company's: it is no part of
+     * `dividends`, and the company paid nothing.
+     *
+     * @return what the city's households received in total
+     */
+    public double creditLendingFee(int company, double perShare) {
+        if (!(perShare > 0)) return 0;
+        double paid = 0;
+        for (Household c : cells) {
+            if (c.isEmpty() || c.shares[company] <= 0) continue;
+            double each = c.shares[company] * perShare;
+            c.savings += each;
+            c.investmentIncome += each;
+            paid += each * c.households;
+        }
+        return paid;
+    }
+
+    /**
      * EVERY CELL GIVES UP ITS SHARES OF ONE COMPANY, for nothing: a failed
      * bank's resolution (0.7.14; Equity.takeAllForCity() - the old owners
      * are wiped out, CDIC). Nothing is paid, so no cash moves: the loss is a

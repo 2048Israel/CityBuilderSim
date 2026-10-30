@@ -349,6 +349,9 @@ public class MarketCheck {
         poor3b.savings = 0;                                  // $300 under its cushion each: a big shortfall, so a big offer
         rich3b.savings = 100;
         City c3b = new City(hb3b, ExchangeCheck.bankWith(0));
+        // The world's short is off here (EM2): it would sell A at SHORT_BAND over its value, under the stale ask, and a cell would buy that. What this holds is what a
+        // buyer does with a stale ask nobody undercuts; what the shorts do to one is ShortSellingCheck's.
+        c3b.ex.setShortSelling(false);
         c3b.list(A, 1_000, 1_200).list(B, 1_000, 1_200);
         c3b.firm(A, 0, 0, 0).firm(B, 0, 0, 0);
         holdOnly(hb3b, A, poor3b);

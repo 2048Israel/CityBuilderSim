@@ -2679,6 +2679,9 @@ public class LongPlaytest {
     /** The answer to the bank's offer under -Dplaytest.preferred, ACCEPT when unset. */
     static final boolean PREFERRED_ACCEPT = !"DECLINE".equalsIgnoreCase(System.getProperty("playtest.preferred", "ACCEPT").trim());
 
+    /** Whether the world sells short under -Dplaytest.shorts, on when unset; "off" is the counterfactual (EM2): the market without them, to see what they change. */
+    static final boolean SHORTS = !"off".equalsIgnoreCase(System.getProperty("playtest.shorts", "on").trim());
+
     /** The fund's dial under -Dplaytest.fund, 0 when unset. */
     static final double FUND_DIAL = fundDial(System.getProperty("playtest.fund", "0"));
 
@@ -5991,6 +5994,7 @@ public class LongPlaytest {
             // ...and the rescue setting and the fund's dial (0.7.14), as the
             // flags say: the constructor founds on the button at 0.
             g.setRescueMode(RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
+            g.getExchange().setShortSelling(SHORTS);
             g.setFundDial(FUND_DIAL);
             if (ADVANCES_MONTHS != null) g.getCentralBank().setAdvancesCeilingMonths(ADVANCES_MONTHS);
             if (INFLATION_TARGET != null) g.getDebtManager().setInflationTarget(INFLATION_TARGET);
