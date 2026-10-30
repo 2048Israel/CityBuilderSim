@@ -284,6 +284,14 @@ public class ScaleCheck {
      * changed, every growing window from 306 to 1,965, every third month and every month about the best): no month holds them all,
      * the fewest misses two (474 to 476, 482, 838). Left at 1,124 and red (docs/queue/HD2-notes.md, HD2-S): the next batch that
      * moves the town rescans it, and if no town grows, section 6 wants one that grows by its own plan, not by one look of the advisor.
+     *
+     * ...AND EM2 (2026-10-30) FOUND NONE EITHER, nor a town that grows by the attentive player's plan. On EM2's quote the town is
+     * HD2's: two police stations at 731, its homes 4,920 from 600 on, its treasury dry from 1,125, 2,033 people at 2,500. Scanned
+     * (sections 6 to 9, every month from 306 to 478): the fewest misses two, at 474 to 476, the affordability pull and GDP's
+     * tracking, as HD2 found. The attentive player (a look every 12 months at most, eight moves; LongPlaytest's) grows the same
+     * town to 8,672 people by 500, its homes 12,120 from 500 on, its treasury under nothing from 100; scanned every second month
+     * from 300 to 756, it misses three at best (456: people, cash and unemployment out of their tracking bounds), and the
+     * copy's cash leaves its 0.0125 in every month scanned. Left at 1,124 and red (docs/queue/EM2-notes.md, section 5).
      */
     static final int FREE_FIXTURE_MONTHS = 1124;
 

@@ -144,16 +144,52 @@ short, the margin call and the recall run in ShortSellingCheck's fixtures
 and its town with a short opened by hand (sections 3 to 6), and in the
 audit's own month.
 
-**The ensemble** (`docs/ensemble/EM2.md`, 80 runs, two at a time, against
-`docs/ensemble/0.8.76.md`): 23 of 25 criteria, as the baseline; the same two
-fail - A2, the longest spell of inflation over 10% from m240, 11 months [3 to
-20] against 10 [6 to 17], and S1, ZERO_SLACK's inflation against its twin,
-its longest spell 44 months against 60. AUTO2's final population 271,853
-against 280,956 (T2 holds: at least 75%).
+The table is the playtest a session runs without the data files, main's
+and EM2's alike; with `earth-2.bin` and `world-1.bin` in `data/`, as the
+gate has them since FL1, the world market changes the town, and EM2's run
+is in the suite's log (section 7).
 
-## 5. HD2-S: ScaleCheck's growing town
+**The ensemble** (`docs/ensemble/EM2.md`, 80 runs, two at a time, on the
+merged tip with both files, against `docs/ensemble/0.8.77.md`): **23 of 26**,
+as FL1's. A2 and S1 fail as on 0.8.77 (A2 12 months [3 to 23] against 11
+[9 to 14]; S1's longest spell 35 months against 24); R2, which failed on
+FL1 (+0.32 points), passes; R3 fails - the HIGH rate's inflation over its
+twin, median -1.50% but 6 seeds over +1 point (FL1 2, WN3 5; the band's
+study, WN3-R, pending). AUTO2's median 320,481 against 317,518; T1 16 of 16
+at m1,052. Run first without the files (23 of 25 against 0.8.76, the same
+two failing), and once more on the merged tip without them: identical to
+the digit, since FL1's rule binds only on the world's band.
 
-(filled in below)
+## 5. HD2-S: ScaleCheck's growing town - no month, and no town by its own plan either
+
+Given to EM2 at HD2's gate (`docs/queue/HD2-notes.md` §2): rescan section 6's
+town on EM2's trajectory, and if no month holds, give the section a town that
+grows by its own plan. Done on EM2's model before FL1 merged (FL1's gate kept
+the same section-6 lines red), with a scratch ScaleCheck: the month a
+property, sections 1-5 skipped, 7 seconds a month.
+
+- **The town is HD2's.** Watched month by month to m2,500: two police
+  stations at m731, homes 4,920 from m600 on and no more, the treasury from
+  1.37M at m725 to under nothing at m1,125 and for good, 2,033 people at
+  m2,500 (3,800 at most).
+- **No month holds.** Every month from m306 to m478: the fewest misses two,
+  at m474-476 (the affordability pull, and GDP tracking), as HD2 found. Past
+  m600 the town builds no home, so "it builds" cannot hold.
+- **Nor does the attentive player's town** (LongPlaytest's `attentive`: a
+  look every 12 months at most, eight moves, the brief's own fallback). It
+  grows faster (8,672 people by m500) and stalls the same way: homes 12,120
+  from m500 on, the treasury under nothing from m100. Every second month
+  from m300 to m756: three misses at best (m456: people, cash and
+  unemployment out of their tracking bounds, every fixture line holding),
+  and the copy's cash leaves its 0.0125 in every month scanned.
+- **Taken (★8):** `FREE_FIXTURE_MONTHS` left at 1124 and section 6 red,
+  named for the gate. On EM2 its reds are six of main's lines word for word
+  and the cash line with another worst figure (3.26e-02 against main's
+  1.20e+00); main's savings, deposits, prices and unemployment lines pass.
+  A town that grows by a scripted plan is a fixture of its own, and the
+  scans say the stall is the town's (its homes stop and its treasury empties
+  under either player), so the row stays pending with these findings rather
+  than a premise moved to a town that hides it.
 
 ## 6. The calls (★; each the recommended way, BP1)
 
@@ -194,6 +230,15 @@ against 280,956 (T2 holds: at least 75%).
 - ★7 **The dials where the brief gave a range or none**: `LENDING_FEE` .005
   (the brief's .3% to 1%), `HARD_TO_BORROW` .50 and `HARD_TO_BORROW_FEE` .10,
   `MAX_SHORT_INTEREST` .20 of the shares outstanding.
+
+- ★8 **HD2-S: section 6 left at 1124 and red** (section 5): no month holds
+  on EM2's town, and the brief's fallback, the attentive player, stalls the
+  same way. Recommended and taken: ship with its reds named for the gate,
+  six of main's lines word for word and the cash line with another worst
+  figure; HD2-S stays pending with the scans, for a town of its own plan.
+- ★9 **PassThroughCheck's main red, its figure moved**: "...and so does the
+  price index (mean gap 0.68% against 0.51%)" where main reads 0.74%, the
+  same line nearer its bound (HD2-P, pending on main). Named for the gate.
 
 ## 7. The harnesses
 
