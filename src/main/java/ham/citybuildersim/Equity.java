@@ -257,7 +257,8 @@ public class Equity {
         double dividendCity, lifetimeDividendsCity;
         /**
          * What the world paid on the shares it was short at this month's dividend (EM2), and over its life: the holders were paid on them and
-         * the company was not, so it is the short's. Not saved: the month's, like its siblings, and the life of the run.
+         * the company was not, so it is the short's. The month's is not saved, like its siblings; the life is, with the exchange's state of the short
+         * (Exchange.State.shortPays), which hands it back at the load (setLifetimeShortPays()).
          */
         double shortPays, lifetimeShortPays;
         double boughtBackThisMonth, lifetimeBoughtBack;
@@ -791,9 +792,11 @@ public class Equity {
     /** What the world paid on the shares it was short at this month's dividend, one company's and all (EM2); MoneyAudit declares it: the holders were paid it and the company's till was not debited. */
     public double getShortPaysThisMonth(int company) { return listings[company].shortPays; }
     public double getShortPaysThisMonth() { double s = 0; for (Listing l : listings) s += l.shortPays; return s; }
-    /** ...and over the city's life (the run's: it is not saved). */
+    /** ...and over the city's life (saved with the exchange's short: Exchange.State.shortPays). */
     public double getLifetimeShortPays(int company) { return listings[company].lifetimeShortPays; }
     public double getLifetimeShortPays() { double s = 0; for (Listing l : listings) s += l.lifetimeShortPays; return s; }
+    /** A load puts the short's life back (Exchange.attach()); money in today's unit, as saved. */
+    void setLifetimeShortPays(int company, double paid) { listings[company].lifetimeShortPays = Math.max(0, paid); }
 
     /* =====================================================================
        THE HOLDERS
@@ -1209,6 +1212,9 @@ public class Equity {
             }
             l.paidThisMonth = 0;
             l.foundedThisMonth = 0;
+            // ...and the short's dividends (EM2): none in this array; the exchange's state hands back the life's (Exchange.attach()).
+            l.shortPays = 0;
+            l.lifetimeShortPays = 0;
             /*
              * ITS PAID-IN CAPITAL (0.7.75, R3), or derived: a save from before
              * kept what it raised since founding, at home and abroad, and its

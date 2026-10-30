@@ -311,6 +311,7 @@ public class ShortSellingCheck {
         theRegister();
         theLender();
         theCalls();
+        theSave();
         howOften();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -490,10 +491,20 @@ public class ShortSellingCheck {
         throw new IllegalStateException("no template named " + name);
     }
 
-    /** A whole month of a city, with a short open, a dividend paid on it and the lending fee: the audit balances. */
-    static void theCity() {
-        out.println("   -- a city with a short open through its dividend and its lending fee --");
-        Game city = town("shortsellingcheck", 48);
+    /** A town with the world short of one company (openShort()): the town, and the company's index. */
+    static final class Shorted {
+        final Game city;
+        final int firm;
+        Shorted(Game city, int firm) { this.city = city; this.firm = firm; }
+    }
+
+    /**
+     * The playtest's town, 48 months old, with the world short of the company that pays a dividend and has most in the households' hands: the
+     * fund comes to hold 4% of it, bought from the cell that holds most, and the world sells short nine tenths of what the lenders could lend,
+     * to the desk. Null, with its assertion failed, when the town has no such company.
+     */
+    static Shorted openShort(String label) {
+        Game city = town(label, 48);
         Equity cityReg = city.getEquity();
         Exchange cityEx = city.getExchange();
         int firm = -1;
@@ -504,7 +515,7 @@ public class ShortSellingCheck {
             if (held > most) { most = held; firm = c; }
         }
         assertTrue("fixture: a company valued on its record, paying a dividend, whose shares the households hold", firm >= 0);
-        if (firm < 0) return;
+        if (firm < 0) return null;
         final int f = firm;
         Household lender = null;
         for (Household h : city.getHouseholdBalance().cells()) {
@@ -529,6 +540,18 @@ public class ShortSellingCheck {
                 fundGot > 0 && sold > 0 && cityEx.shortShares(f) == sold);
         out.printf("   %s: %,.0f shares in issue, the fund holds %,.0f, short %,.0f (%.2f%% of the shares outstanding)%n", Equity.COMPANIES[f],
                 cityReg.getShares(f), cityReg.getCityMarketShares(f), cityEx.shortShares(f), 100 * cityEx.shortShares(f) / cityReg.getOutstanding(f));
+        return fundGot > 0 && sold > 0 && cityEx.shortShares(f) == sold ? new Shorted(city, f) : null;
+    }
+
+    /** A whole month of a city, with a short open, a dividend paid on it and the lending fee: the audit balances. */
+    static void theCity() {
+        out.println("   -- a city with a short open through its dividend and its lending fee --");
+        Shorted opened = openShort("shortsellingcheck");
+        if (opened == null) return;
+        Game city = opened.city;
+        Equity cityReg = city.getEquity();
+        Exchange cityEx = city.getExchange();
+        final int f = opened.firm;
         boolean paid = false, named = false;
         int audited = 0, bad = 0;
         double worst = 0, feeFund = 0, feeCells = 0;
@@ -721,6 +744,105 @@ public class ShortSellingCheck {
                 recall.ex.getLifeShortCovered(), sold, 1e-9);
         close("...at fair value, the bid's price", recall.ex.getLifeShortCoveredValue(), sold * recall.fair, 1e-9 * recall.fair);
         close("...it is short " + String.format("%.0f", sr - sold) + " now", recall.shortShares(), sr - sold, 1e-9);
+        sectionEnd();
+    }
+
+    /**
+     * Section 6's two cities, the saved and the loaded, read the same way: every figure of the short the exchange carries (Exchange.State), on
+     * the company the world is short of and over all of them, to this tolerance of each figure (0 before a month is played, a rounding after).
+     */
+    static void sameShort(String when, Game live, Game back, int f, double tol) {
+        Exchange a = live.getExchange(), b = back.getExchange();
+        int n = Equity.COMPANIES.length;
+        double[][] sums = new double[2][5];
+        for (int c = 0; c < n; c++) {
+            sums[0][0] += a.shortShares(c); sums[1][0] += b.shortShares(c);
+            sums[0][1] += a.shortCollateral(c); sums[1][1] += b.shortCollateral(c);
+            sums[0][2] += a.lentByCells(c) + a.lentByFund(c); sums[1][2] += b.lentByCells(c) + b.lentByFund(c);
+            sums[0][3] += a.lendingFeeThisMonth(c); sums[1][3] += b.lendingFeeThisMonth(c);
+            sums[0][4] += live.getEquity().getLifetimeShortPays(c); sums[1][4] += back.getEquity().getLifetimeShortPays(c);
+        }
+        String name = Equity.COMPANIES[f];
+        close(when + ": " + name + "'s shares short", b.shortShares(f), a.shortShares(f), tol * Math.max(1, a.shortShares(f)));
+        close("...the collateral held against them", b.shortCollateral(f), a.shortCollateral(f), tol * Math.max(1, a.shortCollateral(f)));
+        close("...the shares the cells lend", b.lentByCells(f), a.lentByCells(f), tol * Math.max(1, a.lentByCells(f)));
+        close("...the shares the fund lends", b.lentByFund(f), a.lentByFund(f), tol * Math.max(1, a.lentByFund(f)));
+        close("...the month's lending fee the cells were paid", b.lendingFeeToCells(f), a.lendingFeeToCells(f), tol * Math.max(1, a.lendingFeeToCells(f)));
+        close("...and the fund", b.lendingFeeToFund(f), a.lendingFeeToFund(f), tol * Math.max(1, a.lendingFeeToFund(f)));
+        close("...what the short has paid at the dividends over the city's life",
+                back.getEquity().getLifetimeShortPays(f), live.getEquity().getLifetimeShortPays(f), tol * Math.max(1, live.getEquity().getLifetimeShortPays(f)));
+        close("...shares sold short and what they fetched over the city's life", b.getLifeShortSold() + b.getLifeShortSoldValue(),
+                a.getLifeShortSold() + a.getLifeShortSoldValue(), tol * Math.max(1, a.getLifeShortSold() + a.getLifeShortSoldValue()));
+        close("...shares covered and what that cost", b.getLifeShortCovered() + b.getLifeShortCoveredValue(),
+                a.getLifeShortCovered() + a.getLifeShortCoveredValue(), tol * Math.max(1, a.getLifeShortCovered() + a.getLifeShortCoveredValue()));
+        close("...asks posted, company-months a short stood open, margin calls and recalls",
+                b.getLifeShortAsks() + 1e3 * b.getLifeShortMonths() + 1e6 * b.getLifeMarginCalls() + 1e9 * b.getLifeRecalls(),
+                a.getLifeShortAsks() + 1e3 * a.getLifeShortMonths() + 1e6 * a.getLifeMarginCalls() + 1e9 * a.getLifeRecalls(), 0);
+        close("...the lending fees paid over the city's life", b.getLifeLendingFees(), a.getLifeLendingFees(), tol * Math.max(1, a.getLifeLendingFees()));
+        close("...the quote of " + name, b.price(f), a.price(f), tol * Math.max(1, a.price(f)));
+        boolean all = true;
+        for (int k = 0; k < sums[0].length; k++) all &= Math.abs(sums[0][k] - sums[1][k]) <= tol * Math.max(1, Math.abs(sums[0][k]));
+        assertTrue("...and every company's shorts, collateral, lenders, fees and dividends added up, the same", all);
+    }
+
+    static void theSave() throws Exception {
+        section("6. a save in the middle of a short: the shorts, their lenders, their fees and the dividends paid on them come back, and the month after is the same");
+
+        Shorted opened = openShort("shortsellingcheck-save");
+        if (opened == null) { sectionEnd(); return; }
+        Game live = opened.city;
+        final int f = opened.firm;
+        Exchange ex = live.getExchange();
+        // Months until the short has been paid a dividend on and charged a fee, and still stands: the state a save has to carry.
+        for (int m = 0; m < 8 && !(live.getEquity().getLifetimeShortPays(f) > 0 && ex.shortShares(f) > 0 && ex.lendingFeeThisMonth(f) > 0); m++) {
+            PrintStream real = System.out;
+            System.setOut(quiet);
+            try { live.simulateMonths(1); } finally { System.setOut(real); }
+        }
+        assertTrue("fixture: the short stands, lent by the cells and the fund, charged a fee this month, and has been paid a dividend on",
+                ex.shortShares(f) > 0 && ex.lentByCells(f) > 0 && ex.lentByFund(f) > 0 && ex.lendingFeeToCells(f) > 0 && ex.lendingFeeToFund(f) > 0
+                        && ex.shortCollateral(f) > 0 && live.getEquity().getLifetimeShortPays(f) > 0);
+        assertTrue("...with its life counted: sold short, asks posted, months open and the fees paid",
+                ex.getLifeShortSold() > 0 && ex.getLifeShortSoldValue() > 0 && ex.getLifeShortMonths() > 0 && ex.getLifeLendingFees() > 0);
+        out.printf("   %s: short %,.0f, lent by the cells %,.0f and the fund %,.0f; fee this month %,.4f; paid on the short over its life %,.4f%n",
+                Equity.COMPANIES[f], ex.shortShares(f), ex.lentByCells(f), ex.lentByFund(f), ex.lendingFeeThisMonth(f), live.getEquity().getLifetimeShortPays(f));
+
+        // Saved to slot 10 of its own scratch folder, and loaded into a second game.
+        boolean[] saved = new boolean[1];
+        PrintStream real = System.out;
+        System.setOut(quiet);
+        Game back;
+        try {
+            saved[0] = live.saveGame(10, "shortsellingcheck: a short open").ok;
+            back = new Game(live.getGameFiles());
+            back.loadGameSave(10);
+        } finally {
+            System.setOut(real);
+        }
+        assertTrue("saved to slot 10 of the scratch folder and loaded into a second game", saved[0] && back.getLoadFailure() == null);
+        sameShort("the loaded city", live, back, f, 0);
+
+        // The month after: both cities play one month, and a city that never saved has the month the loaded one does.
+        System.setOut(quiet);
+        try {
+            live.simulateMonths(1);
+            back.simulateMonths(1);
+        } finally {
+            System.setOut(real);
+        }
+        sameShort("a month later", live, back, f, 1e-9);
+
+        // A save from before the shorts has none of these fields (Gson leaves a missing key alone): it restores, and nothing is short. No format bump.
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        Exchange.State old = gson.fromJson(gson.toJson(live.getExchange().toState()), Exchange.State.class);
+        assertTrue("fixture: the state carries a short before the fields are taken out of it", old.shortShares != null && old.shortShares[f] > 0);
+        old.shortShares = old.shortCollateral = old.lentCells = old.lentFund = old.feeToCells = old.feeToFund = old.shortPays = null;
+        old.lifeShortSold = old.lifeShortSoldValue = old.lifeShortCovered = old.lifeShortCoveredValue = old.lifeLendingFees = 0;
+        old.lifeShortAsks = old.lifeShortMonths = old.lifeMarginCalls = old.lifeRecalls = 0;
+        Exchange older = new Exchange();
+        assertTrue("a state without the shorts' fields still restores", older.restore(old));
+        close("...with nothing short, lent or charged, and nothing counted", older.shortShares(f) + older.shortCollateral(f) + older.lentByCells(f)
+                + older.lentByFund(f) + older.lendingFeeThisMonth(f) + older.getLifeShortSold() + older.getLifeShortMonths() + older.getLifeLendingFees(), 0, 0);
         sectionEnd();
     }
 

@@ -1678,6 +1678,11 @@ public class ScaleCheck {
         whole(e, "buybackBudget", k);
         // ...what each company's spare money, its net income and its money's income came to: totals, K times (EM1).
         for (String field : new String[] { "spare", "earnings", "moneyIncome" }) whole(e, field, k);
+        // ...the world's short (EM2): the shares short and lent are counts of shares, the collateral, the month's fees and what the short paid at
+        // the dividends are money, all K times as the register they are held against; the life's shares and money scale, its counts of asks, months,
+        // margin calls and recalls stay.
+        for (String field : new String[] { "shortShares", "shortCollateral", "lentCells", "lentFund", "feeToCells", "feeToFund", "shortPays",
+                "lifeShortSold", "lifeShortSoldValue", "lifeShortCovered", "lifeShortCoveredValue", "lifeLendingFees" }) whole(e, field, k);
         // life: the volume and the values (0 to 4), the leavers (9, 10), the sellers (11 to 18), the rebalance and the excess
         // (23 to 27) and what the cells sold on a share's value (28, EM1) scale; the counts of sells and trades (5 to 8) and the desk-bound counts (19 to 22) stay.
         allBut(e, "life", k, 5, 6, 7, 8, 19, 20, 21, 22);

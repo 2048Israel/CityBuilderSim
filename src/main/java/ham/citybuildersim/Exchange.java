@@ -458,7 +458,7 @@ public class Exchange {
     /* ---- the shorts (EM2): the world's position in each company, the account behind it, and who lends it ---- */
     /** Whether the world sells short at all: on, the default; the checks and -Dplaytest.shorts=off switch it off to see the market without it. */
     private boolean shortSelling = true;
-    /** Shares the world has sold short, per company: the S of the rule. Not saved yet (the saves are EM2's third slice). */
+    /** Shares the world has sold short, per company: the S of the rule. Saved with the rest of the short (Exchange.State). */
     private final double[] shortShares = new double[n];
     /** The collateral held against them, money: INITIAL_MARGIN times each sale, released pro rata as they are covered. */
     private final double[] shortCollateral = new double[n];
@@ -468,6 +468,8 @@ public class Exchange {
     private final double[] quoteBefore = new double[n];
     /** The month's lending fee, money, by who was paid: this month's, cleared by startMonth(). */
     private final double[] feeToCells = new double[n], feeToFund = new double[n];
+    /** What a load read of the short's dividends over the city's life, per company, until attach() hands it to the register (EM2). Null when nothing waits. */
+    private double[] restoredShortPays;
     /** Over the city's life: shares sold short and their value, covered and their value, company-months an ask was posted and a short was open, margin calls and recalls, fees paid. */
     private double lifeShortSold, lifeShortSoldValue, lifeShortCovered, lifeShortCoveredValue, lifeLendingFees;
     private int lifeShortAsks, lifeShortMonths, lifeMarginCalls, lifeRecalls;
@@ -568,6 +570,20 @@ public class Exchange {
         if (hasAsk) return last <= ask;
         if (hasBid) return last >= bid;
         return true;
+    }
+
+    /**
+     * What a share's price is made of now, in words, for the caption beside it (EM2): "the middle of the bid and the ask" while both rest;
+     * with one side standing the last trade "held inside the ask" or "held over the bid"; with neither "the last trade"; and fair value,
+     * the same way, before the first trade. The screens put "the quote: " in front of it; the rule is price()'s.
+     */
+    public String quoteWords(int c) {
+        boolean hasBid = books[c].bestBid() > 0, hasAsk = books[c].bestAsk() > 0;
+        String base = books[c].lastPrice() > 0 ? "the last trade" : "fair value";
+        if (hasBid && hasAsk) return "the middle of the bid and the ask";
+        if (hasAsk) return base + ", held inside the ask";
+        if (hasBid) return base + ", held over the bid";
+        return books[c].lastPrice() > 0 ? base : base + ": nothing has traded";
     }
 
     /** The book's last trade, or NaN before the first: what the screens show beside the quote (EM2). */
@@ -812,6 +828,18 @@ public class Exchange {
         this.dealer = bank;
         if (companies != null) this.companies = companies;
         this.month = month;
+        handShortPaysToRegister();
+    }
+
+    /**
+     * What the short has paid at the dividends over the city's life is the register's (Equity.getLifetimeShortPays()) and is saved here with the
+     * rest of the short (EM2): a load reads it into restoredShortPays, and the register - which restore() is not given - gets it at the first
+     * attach() after, which Game's load path makes at once. Nothing waiting, nothing to hand.
+     */
+    private void handShortPaysToRegister() {
+        if (restoredShortPays == null || register == null) return;
+        for (int c = 0; c < n; c++) register.setLifetimeShortPays(c, restoredShortPays[c]);
+        restoredShortPays = null;
     }
 
     /** Adds a book's month, as the step closed it, to the market's record. */
@@ -1756,6 +1784,17 @@ public class Exchange {
         return books[c].submit(who, side, price, quantity, month, clearing(c));
     }
 
+    /**
+     * A short's record set to figures a save has to carry back, none of them the same as another's, for SaveFileCheck's fixture (EM2): one
+     * company's lending fees this month and the life counters - a margin call, a recall and the rest, which a fixture cannot cause on demand
+     * beside the position itself. The month never calls it.
+     */
+    void stampShortRecordForCheck(int c) {
+        feeToCells[c] = 1.25; feeToFund[c] = .75;
+        lifeShortSold = 91.5; lifeShortSoldValue = 1_234.5; lifeShortCovered = 33.25; lifeShortCoveredValue = 456.75; lifeLendingFees = 7.125;
+        lifeShortAsks = 17; lifeShortMonths = 41; lifeMarginCalls = 3; lifeRecalls = 2;
+    }
+
     /** ...and the splits the step would make now: for FundLedgerCheck, after it has traded a share past SPLIT_AT. */
     void splitForCheck() { splitWhatNeedsIt(); }
 
@@ -2162,6 +2201,16 @@ public class Exchange {
     /** ...of those, the shares the households' cells lend and the fund's market book lends: they add to the shares short (lent by none, with none to lend). */
     public double lentByCells(int c)                 { return lentCells[c]; }
     public double lentByFund(int c)                  { return lentFund[c]; }
+    /** The shares the world is short of one company as a share of those outstanding, for the sector screen (EM2): 0 with none short. */
+    public double shortInterest(int c) {
+        double outstanding = register == null ? 0 : register.getOutstanding(c);
+        return outstanding > 0 ? shortShares[c] / outstanding : 0;
+    }
+    /** The fee a year the lenders are paid on a company now: lendingRate() at the shares short over those lendable. 0 with none short or none to lend. */
+    public double lendingRateOf(int c) {
+        double lendable = lendable(c);
+        return shortShares[c] > OrderBook.DUST && lendable > 0 ? lendingRate(shortShares[c] / lendable) : 0;
+    }
     /** What the world paid the cells and the fund this month for the shares lent, money. */
     public double lendingFeeToCells(int c)           { return feeToCells[c]; }
     public double lendingFeeToFund(int c)            { return feeToFund[c]; }
@@ -2200,6 +2249,16 @@ public class Exchange {
         double[] fair, splitFactor, emigrantShares, buybackBudget;
         /** What fair value was struck on (EM1): each company's spare money, its net income over the last year and what its money earns it, totals. Null in a save from before them: the next step strikes them. */
         double[] spare, earnings, moneyIncome;
+        /**
+         * The world's short and who lends it (EM2), per company in keys' order: the shares short, the collateral held against them (money), the shares
+         * the cells and the fund lend, and the month's lending fee each was paid (money, a flow the screen reads the month after a load), and what the
+         * short has paid at the dividends over the city's life (money; the register's, Equity.getLifetimeShortPays()). Null in a save from before them:
+         * nothing is short, and an old save needs no conversion.
+         */
+        double[] shortShares, shortCollateral, lentCells, lentFund, feeToCells, feeToFund, shortPays;
+        /** ...and over the city's life: shares sold short and their value, covered and their value, the fees paid, the company-months an ask was posted and a short stood open, the margin calls and the recalls. Zero in a save from before them. */
+        double lifeShortSold, lifeShortSoldValue, lifeShortCovered, lifeShortCoveredValue, lifeLendingFees;
+        int lifeShortAsks, lifeShortMonths, lifeMarginCalls, lifeRecalls;
         double[] life;
         double[] last;
 
@@ -2222,6 +2281,13 @@ public class Exchange {
                 c.spare = spare == null ? null : spare.clone();
                 c.earnings = earnings == null ? null : earnings.clone();
                 c.moneyIncome = moneyIncome == null ? null : moneyIncome.clone();
+                c.shortShares = shortShares == null ? null : shortShares.clone();
+                c.shortCollateral = shortCollateral == null ? null : shortCollateral.clone();
+                c.lentCells = lentCells == null ? null : lentCells.clone();
+                c.lentFund = lentFund == null ? null : lentFund.clone();
+                c.feeToCells = feeToCells == null ? null : feeToCells.clone();
+                c.feeToFund = feeToFund == null ? null : feeToFund.clone();
+                c.shortPays = shortPays == null ? null : shortPays.clone();
                 c.life = life == null ? null : life.clone();
                 c.last = last == null ? null : last.clone();
                 return c;
@@ -2242,6 +2308,21 @@ public class Exchange {
         s.spare = spare.clone();
         s.earnings = earnings.clone();
         s.moneyIncome = moneyIncome.clone();
+        // ...the world's short, its lenders and its fees (EM2); what the short paid at the dividends is the register's, or what a load left waiting for it.
+        s.shortShares = shortShares.clone();
+        s.shortCollateral = shortCollateral.clone();
+        s.lentCells = lentCells.clone();
+        s.lentFund = lentFund.clone();
+        s.feeToCells = feeToCells.clone();
+        s.feeToFund = feeToFund.clone();
+        s.shortPays = new double[n];
+        for (int c = 0; c < n; c++) {
+            s.shortPays[c] = restoredShortPays != null ? restoredShortPays[c] : register != null ? register.getLifetimeShortPays(c) : 0;
+        }
+        s.lifeShortSold = lifeShortSold; s.lifeShortSoldValue = lifeShortSoldValue;
+        s.lifeShortCovered = lifeShortCovered; s.lifeShortCoveredValue = lifeShortCoveredValue; s.lifeLendingFees = lifeLendingFees;
+        s.lifeShortAsks = lifeShortAsks; s.lifeShortMonths = lifeShortMonths;
+        s.lifeMarginCalls = lifeMarginCalls; s.lifeRecalls = lifeRecalls;
         s.life = new double[] { lifetimeVolume, lifePostedSellValue, lifeFilledValue, lifeBetweenHouseholds, lifeTurnover,
                 lifeSellsPosted, lifeSellsWaited, lifeTrades, lifeBetweenHouseholdsTrades,
                 lifeEmigrantsOffered, lifeEmigrantsPaid,
@@ -2276,7 +2357,23 @@ public class Exchange {
             if (s.spare != null && i < s.spare.length) spare[c] = s.spare[i];
             if (s.earnings != null && i < s.earnings.length) earnings[c] = s.earnings[i];
             if (s.moneyIncome != null && i < s.moneyIncome.length) moneyIncome[c] = s.moneyIncome[i];
+            // ...and the world's short (EM2): a save from before it has none, which is nothing short.
+            if (s.shortShares != null && i < s.shortShares.length) shortShares[c] = s.shortShares[i];
+            if (s.shortCollateral != null && i < s.shortCollateral.length) shortCollateral[c] = s.shortCollateral[i];
+            if (s.lentCells != null && i < s.lentCells.length) lentCells[c] = s.lentCells[i];
+            if (s.lentFund != null && i < s.lentFund.length) lentFund[c] = s.lentFund[i];
+            if (s.feeToCells != null && i < s.feeToCells.length) feeToCells[c] = s.feeToCells[i];
+            if (s.feeToFund != null && i < s.feeToFund.length) feeToFund[c] = s.feeToFund[i];
+            if (s.shortPays != null && i < s.shortPays.length) {
+                if (restoredShortPays == null) restoredShortPays = new double[n];
+                restoredShortPays[c] = s.shortPays[i];
+            }
         }
+        lifeShortSold = s.lifeShortSold; lifeShortSoldValue = s.lifeShortSoldValue;
+        lifeShortCovered = s.lifeShortCovered; lifeShortCoveredValue = s.lifeShortCoveredValue; lifeLendingFees = s.lifeLendingFees;
+        lifeShortAsks = s.lifeShortAsks; lifeShortMonths = s.lifeShortMonths;
+        lifeMarginCalls = s.lifeMarginCalls; lifeRecalls = s.lifeRecalls;
+        handShortPaysToRegister();
         if (s.life != null && s.life.length >= 9) {
             lifetimeVolume = s.life[0]; lifePostedSellValue = s.life[1]; lifeFilledValue = s.life[2];
             lifeBetweenHouseholds = s.life[3]; lifeTurnover = s.life[4];
@@ -2352,6 +2449,7 @@ public class Exchange {
         java.util.Arrays.fill(quoteBefore, 0);
         lifeShortSold = lifeShortSoldValue = lifeShortCovered = lifeShortCoveredValue = lifeLendingFees = 0;
         lifeShortAsks = lifeShortMonths = lifeMarginCalls = lifeRecalls = 0;
+        restoredShortPays = null;
         lifetimeVolume = lifePostedSellValue = lifeFilledValue = lifeBetweenHouseholds = lifeTurnover = 0;
         lifeEmigrantsOffered = lifeEmigrantsPaid = 0;
         java.util.Arrays.fill(lifePostedSellBy, 0);

@@ -441,8 +441,8 @@ final class FundScreen {
                 default -> "bought back or exercised; they cost nothing";
             };
             String priceNote = p.stale(now) ? (p.company() >= 0 && g.getExchange().markedAtFair(p.company())
-                    ? "marked at fair value: last traded " : "last traded ") + month(p.priceMonth())
-                    : p.isShare() && p.priceMonth() < 0 ? "fair value: never traded" : null;
+                    ? "marked at fair value: the quote is its last trade, " : "the quote is its last trade, ") + month(p.priceMonth())
+                    : p.isShare() && p.priceMonth() < 0 ? "never traded: the quote is fair value" : null;
             String avg = FundView.WARRANTS.equals(p.kind()) ? "nothing"
                     : FundView.PREFERRED.equals(p.kind()) ? "at par" : price(g, bond, p.average());
             String tag = p.seeded() ? "cost from " + month(p.since()) : null;
@@ -529,7 +529,7 @@ final class FundScreen {
                 case FundView.PREFERRED -> { sub = "held, not traded"; tag = "PREFERRED"; mv = pct2(h.yield()) + " a year"; }
                 case FundView.WARRANTS -> { sub = "held, not traded"; tag = "WARRANTS"; mv = ""; }
                 default -> {
-                    sub = h.priceMonth() >= 0 ? "last traded " + month(h.priceMonth()) : "fair value: never traded";
+                    sub = h.priceMonth() >= 0 ? "the quote · last traded " + month(h.priceMonth()) : "the quote · never traded";
                     tag = h.company() == Equity.BANK ? "BANK" : "SHARES";
                     String m = move(h.move());
                     mv = m != null ? m + " over 1Y"
@@ -559,12 +559,14 @@ final class FundScreen {
             Equity reg = g.getEquity();
             OrderBook book = ex.bookOf(c);
             double p = ex.price(c);
-            String note = ex.hasTraded(c) ? "last trade, " + month(book.lastTradeMonth())
+            // The price is the quote (EM2): the middle of the book, or the last trade held inside a side that stands; only a quote that is
+            // the last trade itself grows stale, and is marked at fair value a year on.
+            boolean lastIsQuote = ex.quoteIsLastTrade(c);
+            String note = "the quote: " + ex.quoteWords(c) + (ex.hasTraded(c) ? "; last traded " + month(book.lastTradeMonth()) : "")
                     + (ex.markedAtFair(c) ? " - the city's holding is marked at fair value, a year on; the others' at it"
-                        : now - book.lastTradeMonth() > FundView.STALE_MONTHS ? " - every holding is marked at it" : "")
-                    : "fair value: it has never traded";
+                        : lastIsQuote && now - book.lastTradeMonth() > FundView.STALE_MONTHS ? " - every holding is marked at it" : "");
             double div = reg.dividendPerShareAnnual(c);
-            facts.add(new String[] {"PRICE", price(g, false, p), ex.hasTraded(c) ? "the last trade" : "fair value"});
+            facts.add(new String[] {"PRICE", price(g, false, p), "the quote: " + ex.quoteWords(c)});
             facts.add(new String[] {"FAIR VALUE", price(g, false, ex.fair(c)), reg.valuedOnRecord(c)
                     ? String.format("its money past a cushion at face (%s a share), and a year's net income at %.0f%%",
                             price(g, false, ex.fairSpare(c)), Equity.requiredReturn(DebtManager.WORLD_BASE_RATE) * 100)
@@ -580,9 +582,11 @@ final class FundScreen {
                     "the market book; past the cap the rule asks the excess at fair value"});
             facts.add(new String[] {"IN ISSUE", shares(reg.getShares(c)), "shares"});
             double bid = ex.bestBid(c), ask = ex.bestAsk(c);
-            facts.add(new String[] {"BEST BID / ASK", (Double.isNaN(bid) ? "none" : price(g, false, bid)) + " / "
-                    + (Double.isNaN(ask) ? "none" : price(g, false, ask)), c == Equity.BANK
-                    ? "the desk's asks are new shares; the fund never buys them" : "on today's book; the step posts it afresh"});
+            facts.add(new String[] {"BID / ASK / LAST", (Double.isNaN(bid) ? "none" : price(g, false, bid)) + " / "
+                    + (Double.isNaN(ask) ? "none" : price(g, false, ask)) + " / "
+                    + (ex.hasTraded(c) ? price(g, false, ex.lastTrade(c)) : "none"), c == Equity.BANK
+                    ? "the desk's asks are new shares; the fund never buys them"
+                    : "on today's book, the step posts it afresh; last traded " + (ex.hasTraded(c) ? month(book.lastTradeMonth()) : "never")});
             String tag = c == Equity.BANK ? "BANK" : "SHARES";
             return new Security(Equity.COMPANIES[c], tag, price(g, false, p), note, facts);
         }
@@ -1599,7 +1603,7 @@ final class FundScreen {
         HistorySave h = g.getHistorySave();
         double[][] s = FundView.sharePrices(g, c);
         List<TimeChart.Line> lines = new ArrayList<>(List.of(
-                new TimeChart.Line("last", "the last trade", Palette.BUSINESS, 0, s[0],
+                new TimeChart.Line("last", "the quote", Palette.BUSINESS, 0, s[0],
                         v -> HistoryScreen.plotScale("share", v), v -> price(g, false, v), ""),
                 new TimeChart.Line("fair", "fair value", Palette.RAMP_REST, 0, s[1],
                         v -> HistoryScreen.plotScale("share", v), v -> price(g, false, v), "")));

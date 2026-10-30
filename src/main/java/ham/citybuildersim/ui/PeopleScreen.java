@@ -4015,7 +4015,8 @@ final class PeopleScreen {
         /*
          * AND WHAT IT OWNS. Shares in the city's companies - bought at
          * offerings out of what was past the cushion, or held since the
-         * founding. At the price - the last trade on each company's book, or
+         * founding. At the price - the quote on each company's book (EM2: the
+         * middle of it, or the last trade held inside a side that stands), or
          * fair value before its first (0.7.12 round 2; the desk's quote until
          * then, and book with no bank).
          */
@@ -4038,7 +4039,7 @@ final class PeopleScreen {
         double shares = toDollars(shareWorth);
         if (held > 0) {
             panel.getChildren().add(statementLine(
-                    "Shares, at the last trade",
+                    "Shares, at the quote",
                     tightMoney(shares, false), Palette.GOOD));
             panel.getChildren().add(statementLine("Dividends this month",
                     tightMoney(toDollars(own.dividends()), false),
