@@ -2474,9 +2474,9 @@ public abstract class Sector {
         Output o = output(g);
         o.capacity = getCapacity(g);
         double full = o.capacity * getOperatingRate();
-        // ...no more than its inputs were ordered for (THE ORDER, FL1): the whole rate while nothing is cut, to the bit.
-        Double share = ordering ? orderShares.get(g) : null;
-        double asked = share == null ? full : full * share;
+        // ...no more than its inputs were ordered for (THE ORDER, FL1): the whole rate while nothing is cut, to the bit; a by-product at the run it
+        // comes out of (flowRunShare()).
+        double asked = ordering && g.traded() ? full * flowRunShare(g) : full;
         o.planned = asked;
         o.produced = groundLimit(g, asked);
         o.idled = full - asked;
@@ -2488,6 +2488,19 @@ public abstract class Sector {
             o.captive = Math.max(0, Math.min(o.produced, inputToMake(g) * getOperatingRate()));
             o.produced -= o.captive;
         }
+    }
+
+    /**
+     * The share of its nameplate a flow good is made at this month (THE ORDER, FL1): the share of the run of the buildings that make it, nameplate-weighted -
+     * what buildingOrder() orders their inputs for - and not the good's own share, because a by-product comes out of the run whatever it fetches. WHY: the
+     * Copper Smelter orders its concentrate for the whole run when its acid has a home buyer, but made 17% of its anode when the anode sold under its
+     * inputs, and the rest of the concentrate was lost. Exactly 1 where every building's order is 1 (x * 1.0 is x, so the two sums are one sum); the good's own
+     * share where no standing building makes it.
+     */
+    private double flowRunShare(Good g) {
+        double made = buildings == null ? 0 : buildings.totalBySector(key, t -> t.makes(g));
+        if (!(made > 0)) return orderShares.getOrDefault(g, 1.0);
+        return buildings.totalBySector(key, t -> t.makes(g) * buildingOrder(t)) / made;
     }
 
     /** A sector whose output is limited by what is in the ground says so here. */
@@ -2601,9 +2614,16 @@ public abstract class Sector {
        spare would sink next month's, so the spare exported is the most whose
        next month's band still nets the cost plus FLOW_EXPORT_HEADROOM, or
        failing that the cost itself - else the line would run every other
-       month. A month where nothing is cut has share exactly 1 and is what it
-       was, to the bit; with no world market the literals have no slope and
-       the rule is a stockable good's export bound.
+       month. A by-product comes out of the run it is made in: a flow good is
+       made at the share of the run of the buildings that make it
+       (flowRunShare()), not at its own, so the Copper Smelter's anode comes
+       out of the concentrate it bought for its acid. An input the sector makes
+       itself and enough of is costed at what the sector saves by not using
+       it (inputCost()), not at the import price its own works' appetite
+       leaves it - a rod mill on its own refinery's cathode. A month where
+       nothing is cut has share exactly 1 and is what it was, to the bit; with
+       no world market the literals have no slope and the rule is a stockable
+       good's export bound.
        =================================================================== */
 
     /** The margin over its inputs' cost a works aims next month's export price at on the world's slope (FL1): a month's drift in the band then leaves this month's price over the cost, so the line does not stop every other month. */
@@ -2728,24 +2748,34 @@ public abstract class Sector {
 
     /**
      * What the inputs of a unit of a flow good cost the sector (THE ORDER, FL1): over its standing buildings that make it, nameplate-weighted, each
-     * one's traded inputs at inputPrice() less what its other traded goods are worth (their export price, else their price here), to no less than
+     * one's traded inputs at inputCost() less what its other traded goods are worth (their export price, else their price here), to no less than
      * nothing. Power, water and consumables are left out (they do not move with the order), and so is the joint bill's split by sales value that
      * getMarginalCostPerUnit() makes. 0 for a good no building of it makes, or one that buys nothing to make it.
      */
     public double flowCostPerUnit(Good g) {
+        return unitCost(g, EnumSet.noneOf(Good.class));
+    }
+
+    /** What the inputs of a unit of any good cost the sector, flow or stockable (flowCostPerUnit()'s body); `costing` holds the goods being costed up the chain, so one that loops back is priced as an input is. */
+    private double unitCost(Good g, Set<Good> costing) {
         if (buildings == null) return 0;
         double made = buildings.totalBySector(key, t -> t.makes(g));
         if (!(made > 0)) return 0;
-        double cost = buildings.totalBySector(key, t -> t.makes(g) > 0 ? inputsLessCoProducts(t, g) : 0);
-        return cost / made;
+        costing.add(g);
+        try {
+            double cost = buildings.totalBySector(key, t -> t.makes(g) > 0 ? inputsLessCoProducts(t, g, costing) : 0);
+            return cost / made;
+        } finally {
+            costing.remove(g);
+        }
     }
 
     /** What a month of one building's traded inputs costs here, less its other traded goods at their worth, to no less than nothing (flowCostPerUnit()). */
-    private double inputsLessCoProducts(BuildingsTemplate t, Good made) {
+    private double inputsLessCoProducts(BuildingsTemplate t, Good made, Set<Good> costing) {
         double inputs = 0;
         for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
             if (!(e.getValue() > 0) || !e.getKey().traded()) continue;
-            double price = inputPrice(e.getKey());
+            double price = inputCost(e.getKey(), costing);
             if (Double.isFinite(price)) inputs += e.getValue() * price;
         }
         double credit = 0;
@@ -2754,6 +2784,28 @@ public abstract class Sector {
             credit += e.getValue() * coProductValue(e.getKey());
         }
         return Math.max(0, inputs - credit);
+    }
+
+    /**
+     * What a unit of an input costs the works that use it, for flowCostPerUnit() (THE ORDER, FL1): inputPrice() for one the sector buys; for one it
+     * makes itself (captive) and makes enough of to cover its own works' need, what the sector saves by not using it - what an unused unit would net
+     * abroad, or what its own works' inputs cost a unit of it, whichever is more, to no more than it would cost to buy. WHY: inputPrice() is the IMPORT
+     * price whenever nobody offers the good here, and a sector whose own works take all of it offers none, so a rod mill fed by its own refinery was
+     * costed at the world's ceiling and cut while it paid. A sector that makes less than its works need buys the marginal unit, at inputPrice().
+     */
+    private double inputCost(Good i, Set<Good> costing) {
+        double price = inputPrice(i);
+        if (!captive(i) || costing.contains(i)) return price;
+        double need = getInputAtCapacity(i) * getOperatingRate();
+        double own;
+        Output row = i.stockable() ? null : outputs.get(i);
+        double lifted = row == null ? 0 : row.produced + row.captive + (i.exportable() ? row.idled : 0);
+        if (i.stockable()) own = madeAtRate(i);
+        else own = lifted > 0 ? lifted : getCapacity(i) * getOperatingRate();
+        if (!(own >= need)) return price;
+        GoodsMarket m = markets == null ? null : markets.get(i);
+        double sale = i.exportable() && m != null && Double.isFinite(m.netExportPrice()) ? m.netExportPrice() : 0;
+        return Math.min(price, Math.max(sale, unitCost(i, costing)));
     }
 
     /** What a unit of a good a building makes beside the one asked about is worth: its net export price where the world will buy it, else its price here; 0 if neither is a number. */

@@ -991,6 +991,10 @@ public class TruckRouteCheck {
 
         // On a played city, the model's own figure.
         Game city2 = HaulageCheck.base(GameFiles.scratch("truckroutecheck-shares"));
+        // ...on the literals, pellets' world prices doubled (FL1): the Pelletising Plant's pellets net under its ore and coal abroad, and THE ORDER
+        // no longer buys ore for an export at a loss; the premise is a city that ships, so its pellets pay.
+        city2.playOnLiterals();
+        city2.getMarkets().get(Good.PELLETS).setWorldPrices(Good.PELLETS.worldImportPrice() * 2, Good.PELLETS.worldExportPrice() * 2);
         Freight fr = city2.getSectors().freight();
         Haulage h = fr.haulage();
         int guard = 0;

@@ -108,7 +108,12 @@ public class HomeRailCheck {
      * and one building from the ports (`berth`, or none) laid on their ground (HaulageCheck.lay), then `months` months.
      */
     static Game railed(GameFiles files, int depots, int spurs, int lines, String berth, int months) {
-        Game g = HaulageCheck.played(files, BASE_MONTHS);
+        Game g = HaulageCheck.base(files, true);
+        // ...on the literals, pellets' world prices doubled (FL1): the Pelletising Plant's pellets net under its ore and coal abroad, and THE ORDER
+        // no longer buys ore for an export at a loss, so the mines would ship what the plant left; the premise is mines that sell their ore at home.
+        g.playOnLiterals();
+        g.getMarkets().get(Good.PELLETS).setWorldPrices(Good.PELLETS.worldImportPrice() * 2, Good.PELLETS.worldExportPrice() * 2);
+        quietly(() -> { for (int i = 0; i < BASE_MONTHS; i++) g.toggleNextMonth(); });
         quietly(() -> {
             if (depots > 0) HaulageCheck.lay(g, "Rail Depot", depots);
             if (spurs > 0) HaulageCheck.lay(g, "Rail Spur", spurs);
