@@ -14598,6 +14598,8 @@ public class Game {
         // ...and the graduates the next census carries the loans of (0.7.63).
         dataSave.setHouseholdGraduates(householdBalance.graduatesToSave());
         dataSave.setBankCash(bank.getCash());
+        // ...and its desk's inventory as it carries it, at the last step's mark (FL1): the quote can have moved since.
+        dataSave.setBankSecurities(bank.getSecurities());
         // ...and its deposit book as the month last set it (FW2): the load re-reads the city's after the month.
         dataSave.setBankDeposits(bank.getHouseholdDeposits(), bank.getSectorDeposits());
         dataSave.setBankBranchesCapitalised(bank.getBranchesCapitalised());
@@ -18087,7 +18089,10 @@ public class Game {
                 exchange.restore(loaded.getEquityKeys(), loaded.getExchange());
             }
             exchange.attach(equity, householdBalance, bank, exchangeCompanies, month);
-            bank.restoreSecurities(exchange.markToMarket(equity));
+            // ...the desk's inventory as the bank carried it (FL1: re-marked from the quote, a share traded since the step read another
+            // equity), and from the quote only for a save that has none.
+            Double carried = loaded.getBankSecurities();
+            bank.restoreSecurities(carried != null ? carried : exchange.markToMarket(equity));
             exchange.reopen(bank);
             labourMarket.setCostOfLiving(loaded.getCostOfLiving());
             carriedCarOwnership = loaded.getCarsPerHousehold();

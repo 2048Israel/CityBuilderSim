@@ -108,7 +108,22 @@ public class HomeRailCheck {
      * and one building from the ports (`berth`, or none) laid on their ground (HaulageCheck.lay), then `months` months.
      */
     static Game railed(GameFiles files, int depots, int spurs, int lines, String berth, int months) {
-        Game g = HaulageCheck.played(files, BASE_MONTHS);
+        return railed(files, depots, spurs, lines, berth, months, false);
+    }
+
+    /**
+     * ...and, with `pelletsPay`, on the literals with pellets' world prices doubled (FL1): the Pelletising Plant's pellets net under its ore and
+     * coal abroad, and THE ORDER no longer buys ore for an export at a loss, so the mines would ship what the plant left; section 5's premise is
+     * mines that sell their ore at home. Only the city that premise reads: a city played on the literals is not saved so (Game.playOnLiterals()
+     * is the harness's), and TradeBandCheck's reload of a railed city reads the band as the save holds it.
+     */
+    static Game railed(GameFiles files, int depots, int spurs, int lines, String berth, int months, boolean pelletsPay) {
+        Game g = pelletsPay ? HaulageCheck.base(files, true) : HaulageCheck.played(files, BASE_MONTHS);
+        if (pelletsPay) {
+            g.playOnLiterals();
+            g.getMarkets().get(Good.PELLETS).setWorldPrices(Good.PELLETS.worldImportPrice() * 2, Good.PELLETS.worldExportPrice() * 2);
+            quietly(() -> { for (int i = 0; i < BASE_MONTHS; i++) g.toggleNextMonth(); });
+        }
         quietly(() -> {
             if (depots > 0) HaulageCheck.lay(g, "Rail Depot", depots);
             if (spurs > 0) HaulageCheck.lay(g, "Rail Spur", spurs);
@@ -266,7 +281,7 @@ public class HomeRailCheck {
         Game plain = HaulageCheck.played(GameFiles.scratch("homerailcheck-plain"), BASE_MONTHS);
         Game trackOnly = railed(GameFiles.scratch("homerailcheck-track"), 0, 0, 4, null, 3);
         Game tight = railed(GameFiles.scratch("homerailcheck-tight"), 1, 3, 0, null, 8);
-        Game rail = railed(GameFiles.scratch("homerailcheck-rail"), 1, 4, 0, null, 3);
+        Game rail = railed(GameFiles.scratch("homerailcheck-rail"), 1, 4, 0, null, 3, true);
         untilFractional(rail);
         Game yard = railed(yardFiles, 1, 0, 0, "Bulk Berth", 4);
         Game spurBerth = railed(GameFiles.scratch("homerailcheck-spurberth"), 0, 3, 4, "Bulk Berth", 4);

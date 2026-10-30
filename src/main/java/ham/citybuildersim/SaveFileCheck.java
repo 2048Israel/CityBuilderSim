@@ -2598,6 +2598,13 @@ public class SaveFileCheck {
         }
         assertTrue("fixture: the fund holds a share of a company the world sells and somebody stands bid for", shareCo >= 0);
         fundCity.fundBuyShares(0, 1_000);
+        // FL1: the desk carries its inventory at the last step's mark, and a share traded between steps moves the quote, not what the bank
+        // carries (this fixture's trades above do it on some paths: 28.21 on FL1's). Where they did not, the bank is made to carry one more than
+        // the quote, so the save must keep what it carries - the load re-marked it from the quote and read another equity.
+        double quoted = fundCity.getExchange().markToMarket(fundCity.getEquity());
+        if (fb.getSecurities() == quoted) fb.restoreSecurities(quoted + 1);
+        assertTrue("fixture: the desk carries its inventory at other than today's quote, as after a share traded since the step",
+                fb.getSecurities() != fundCity.getExchange().markToMarket(fundCity.getEquity()));
         assertTrue("saved it with the preferred bought and an order waiting", fundCity.saveGame(4, "preferred").ok);
         Game bought = new Game(fundCity.getGameFiles());
         bought.loadGameSave(4);
@@ -2617,6 +2624,7 @@ public class SaveFileCheck {
                 is.issued() == was.issued() && is.capPerShare() == was.capPerShare()
                         && is.warrantShares() == was.warrantShares() && is.strike() == was.strike()
                         && is.warrantsExpire() == was.warrantsExpire() && is.warrantsOut() == was.warrantsOut());
+        same("...the desk's inventory as the bank carried it, not re-marked from the quote", bought.getBank().getSecurities(), fb.getSecurities());
         same("...and the bank's equity with it in", bought.getBank().equity(), fb.equity());
         same("...its three parts still adding up", bought.getBank().equitySplitResidual(), fb.equitySplitResidual());
         same("...and what the fund is worth", bought.fundValue(), fundCity.fundValue());

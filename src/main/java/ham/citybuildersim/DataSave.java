@@ -1351,6 +1351,14 @@ public class DataSave implements Cloneable {
      */
     private double bankCash;
 
+    /**
+     * The desk's inventory as the bank carries it (Bank.getSecurities(), FL1): the mark of its last re-mark, the exchange's step. WHY: the load
+     * put it back from the quote now (Exchange.markToMarket()), which is the same figure only while nothing has traded since the step; a share
+     * traded between steps (SaveFileCheck's fixture) moved the quote of a company the desk held, and the reloaded bank read 28.21 more equity
+     * than the one saved. Null on an older save, whose load re-marks from the quote as it always did.
+     */
+    private Double bankSecurities;
+
 
     /**
      * The housing match the month's rent was struck on.
@@ -1389,6 +1397,9 @@ public class DataSave implements Cloneable {
 
     public void setBankCash(double cash) { this.bankCash = cash; }
     public double getBankCash()          { return bankCash; }
+
+    public void setBankSecurities(Double value) { this.bankSecurities = value; }
+    public Double getBankSecurities()           { return bankSecurities; }
 
     /**
      * The bank's deposit book as the month last set it (FW2, 2026-10-24;
