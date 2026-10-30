@@ -129,7 +129,18 @@ public final class SectorBooks {
             double foreignAssets,
             /** Sent abroad this month, net: positive went, negative came home. A cash-flow line. */
             double investedAbroad,
-            /** What the world paid it this month, rolled into what it holds there. NOT a cash-flow line: it never reaches the till. */
+            /**
+             * What the world paid it this month on its dollars abroad (HD1,
+             * 2026-10-29; kept abroad, HD2, 2026-10-30): a line of finance
+             * income below the operating line and INSIDE net income, so the
+             * profit tax and the dividend see it, but NOT cash: it stays
+             * abroad, in the dollars it holds there, so unexplained() takes it
+             * out of what net income puts in the till and the cash flow
+             * statement shows it as a non-cash line (SectorStatements,
+             * CASH_KEPT_ABROAD). It rolled into what it held there, in no
+             * statement, until HD1. Kept in this position for the reason
+             * salesTaxPaid is.
+             */
             double foreignInterest,
 
             /* ------------------------ and its owners ------------------------ */
@@ -332,7 +343,8 @@ public final class SectorBooks {
          * the Services screen for the same rule.
          */
         public double unexplained() {
-            return cash - (openingCash + netIncome + paidEarlier
+            // netIncome includes the coupon on its dollars abroad, which the till does not (HD2): it is kept abroad.
+            return cash - (openingCash + netIncome - foreignInterest + paidEarlier
                     + borrowed - repaid + fromTheCity + forgiven + depositInterest
                     - investedAbroad
                     + equityRaised - dividendsPaid - sharesBoughtBack
@@ -352,10 +364,30 @@ public final class SectorBooks {
         public double unexplainedScale() {
             double[] terms = { cash, openingCash, netIncome, paidEarlier, borrowed, repaid, fromTheCity, forgiven,
                     depositInterest, investedAbroad, equityRaised, dividendsPaid, sharesBoughtBack, spentOnBuildings,
-                    stolen, bondsIssued, bondsRepaid, bondsBought, bondCoupons, tradeCredit, arrearsPaid, borrowingCosts };
+                    stolen, bondsIssued, bondsRepaid, bondsBought, bondCoupons, tradeCredit, arrearsPaid, borrowingCosts,
+                    foreignInterest };
             double size = 0;
             for (double t : terms) size += Math.abs(t);
             return size;
+        }
+
+        /**
+         * Its net income without the coupon on its dollars abroad, after the tax
+         * that coupon carried: what the business itself earned, the figure the
+         * share register values it on (EM1), its money counted at face beside it
+         * (HD2). The tax is struck at the rate the month's statement used, the
+         * profit tax being max(preTaxIncome x rate, 0).
+         */
+        public double businessNetIncome() {
+            if (foreignInterest == 0) return netIncome;
+            double pre = preTaxIncome - foreignInterest;
+            double rate = preTaxIncome > 0 ? tax / preTaxIncome : 0;   // tax = max(preTax x rate, 0), Sector's strike
+            return pre - Math.max(pre * rate, 0);
+        }
+
+        /** What the coupon on its dollars abroad left it after its tax: netIncome() less businessNetIncome(). Counted with what its money earns, not with what the business does (HD2). */
+        public double foreignInterestAfterTax() {
+            return netIncome - businessNetIncome();
         }
 
         public double margin() {
@@ -692,8 +724,8 @@ public final class SectorBooks {
                 economy.getForeignAssets(key),
                 economy.getOutwardInvestment() == null ? 0
                         : economy.getOutwardInvestment().getMovedThisMonth(key),
-                economy.getOutwardInvestment() == null ? 0
-                        : economy.getOutwardInvestment().getInterestThisMonth(key),
+                // ...the coupon it was paid on its dollars abroad, as the statement struck it (HD1): one source with the profit.
+                st.foreignIncome,
                 economy.getEquityRaised(key),
                 economy.getDividendsPaid(key),
                 economy.getSharesBoughtBack(key),

@@ -1,4 +1,4 @@
-# CapitalFlowCheck.java - 489 lines · 6 methods · 0 constants · harnesses
+# CapitalFlowCheck.java - 715 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -22,39 +22,49 @@
 > 
 >   4. Does it reach the bank, and does the bank's capacity go with it? Money
 >      that arrives and changes nothing is a number on a screen.
+> 
+>   5. Is the coupon the businesses earn on their dollars abroad profit, kept
+>      abroad (HD1, 2026-10-29; HD2, 2026-10-30)? A line of the statement
+>      below the operating line, taxed, in the dividend, with the cash kept
+>      where it was earned: the dollars held grow by it, the till pays the tax
+>      and the dividend and receives none of it - while the rate moving the
+>      dollars is a revaluation, no income.
 
-**Uses:** [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (12), [Game](Game.md) (7), [Bank](Bank.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [GameFiles](GameFiles.md) (3), [TempDirs](TempDirs.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (14), [Game](Game.md) (12), [SectorStatements](SectorStatements.md) (10), [SectorBooks](SectorBooks.md) (6), [Bank](Bank.md) (4), [GameFiles](GameFiles.md) (4), [Sectors](Sectors.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [Sector](Sector.md) (4), [Equity](Equity.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [MoneyAudit](MoneyAudit.md) (3), [TempDirs](TempDirs.md) (2), [Statement](Statement.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 62 | · 1. it comes for the spread |
-| 95 | · 2. and it leaves when it closes |
-| 104 | · 3. fragility is not a crisis |
-| 135 | · 4. reserves are the defence |
-| 181 | · 5. painful, never fatal |
-| 208 | · 6. it reaches the bank |
-| 269 | · 7. in a real city, and across a reload |
-| 377 | · 8. and the city's own money goes the other way |
+| 69 | · 1. it comes for the spread |
+| 102 | · 2. and it leaves when it closes |
+| 111 | · 3. fragility is not a crisis |
+| 142 | · 4. reserves are the defence |
+| 188 | · 5. painful, never fatal |
+| 215 | · 6. it reaches the bank |
+| 276 | · 7. in a real city, and across a reload |
+| 384 | · 8. and the city's own money goes the other way |
+| 482 | · 9. the coupon abroad is profit, kept abroad (HD1, HD2) |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 31 | `static int fails` |  |
-| 32 | `static PrintStream out` |  |
-| 33 | `static PrintStream quiet` |  |
+| 38 | `static int fails` |  |
+| 39 | `static PrintStream out` |  |
+| 40 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 461 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
-| 35 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 40 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 51 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
-| 57 | 416 | `public static void main(String[] args) throws Exception` |  |
-| 475 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
-| 483 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 36 | 680 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
+| 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 58 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
+| 64 | 621 | `public static void main(String[] args) throws Exception` |  |
+| 687 | 6 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
+| 695 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
+| 701 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
+| 709 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

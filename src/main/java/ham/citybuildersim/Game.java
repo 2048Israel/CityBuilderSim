@@ -3379,15 +3379,16 @@ public class Game {
             }
             // ...and its money, at face, and what it earns a year (EM1): the closed
             // month's sheet, whose till, dollars abroad and bonds a share's fair value
-            // counts past the cushion, and whose deposit interest, foreign interest
-            // and bond coupons - off its statement - the month's twelve times.
+            // counts past the cushion, and whose deposit interest and bond coupons - off
+            // its statement - the month's twelve times; the coupon abroad is on it since
+            // HD2 and is taken out of the register's earnings (recordMonth), after its tax.
             @Override public double money(int company) {
                 SectorBooks.SectorMonth m = sectorBooks.get(Equity.COMPANIES[company]);
                 return m.cash() + m.foreignAssets() + m.bondAssets();
             }
             @Override public double moneyIncome(int company) {
                 SectorBooks.SectorMonth m = sectorBooks.get(Equity.COMPANIES[company]);
-                return 12 * (m.depositInterest() + m.foreignInterest() + m.bondCoupons());
+                return 12 * (m.depositInterest() + m.foreignInterestAfterTax() + m.bondCoupons());
             }
             // Whether the bank buys its own shares back or issues them is its
             // capital policy since 0.7.8, which the exchange reads off the bank
@@ -12134,6 +12135,9 @@ public class Game {
         // reason: an expense on eleven sets of books and revenue on a twelfth.
         chargeFreight();
 
+        // ...and the coupon on the dollars its businesses hold abroad, struck as a line of their profit and kept abroad: the profit tax and the dividend see it, the till pays them (HD1, 2026-10-29; HD2, 2026-10-30).
+        outward.payCoupons(DebtManager.WORLD_BASE_RATE, foreign.getRate(), economyManager);
+
         /*
          * THE MONTH'S BUILDING WORK, AS THE STATEMENT WILL CARRY IT. The work
          * is recognised where the sites advance and the crews draw their
@@ -14347,7 +14351,10 @@ public class Game {
                 equity.recordMonth(c, bank.getProfitAfterTaxLastMonth(bankProfitTaxRate()), 0);
             } else {
                 SectorBooks.SectorMonth m = sectorBooks.get(Equity.COMPANIES[c]);
-                equity.recordMonth(c, m.netIncome(), m.spentOnBuildings());
+                // The register values the business on what it earned and its money at face beside it (EM1): since HD2 the coupon on its
+                // dollars abroad is inside netIncome, so it is taken out here after its tax, and counted with what its money earns
+                // (moneyIncome). The dividend (dividendDue) still reads netIncome: PAYOUT sees the coupon.
+                equity.recordMonth(c, m.businessNetIncome(), m.spentOnBuildings());
             }
         }
     }

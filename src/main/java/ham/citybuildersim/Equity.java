@@ -967,8 +967,10 @@ public class Equity {
      * ... perhaps make it an actual efficient market"). The money is valued at
      * face and the business on what it earns, with no double count: a
      * business's net income leaves out what its money earns (deposit
-     * interest, the coupon on its dollars abroad, its bonds' coupons are
-     * cash-flow lines off its statement). No growth term: the business is
+     * interest and its bonds' coupons are cash-flow lines off its statement;
+     * the coupon on its dollars abroad is on it since HD2, and is taken out
+     * of the income the register records - Game, the recordMonth call). No
+     * growth term: the business is
      * capitalised at the required return alone, since the model has no
      * honest forecast to put there.
      *

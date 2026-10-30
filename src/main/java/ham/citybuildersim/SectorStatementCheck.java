@@ -278,6 +278,8 @@ public class SectorStatementCheck {
             }
             t("1 operating is the model's operating income less property and sales tax").near(
                     inc.now(SectorStatements.OPERATING), now.operatingIncome() - now.propertyTax() - now.salesTaxPaid(), at);
+            t("1 the interest abroad is a line of the profit, below the operating line (HD1)").near(
+                    inc.now(SectorStatements.FOREIGN_INCOME), now.foreignInterest(), at);
             if (!then.isEmpty()) {
                 t("1 last month's profit before tax is last month's preTaxIncome").near(
                         inc.then(SectorStatements.PRE_TAX), then.preTaxIncome(), at);
@@ -290,8 +292,9 @@ public class SectorStatementCheck {
              * them over each debt's life inside the profit, so they are outside nothing; an older save's month as before.
              */
             double upfront = now.loanFees() + now.premiums() + now.bondCosts();
+            // ...the interest abroad is not among them since HD1 (2026-10-29): it is inside the profit, a line above it (kept abroad since HD2).
             double outside = now.fromTheCity() + now.arrearsPaid() + now.depositInterest() + now.bondCoupons()
-                    + now.foreignInterest() + now.forgiven() + now.writtenOff() - now.stolen()
+                    + now.forgiven() + now.writtenOff() - now.stolen()
                     // ...and since 0.7.75 the bonds written off, and what its borrowing cost up front (F2, R5) -
                     // until 0.7.102, which expenses it (A16).
                     + now.bondsWrittenOff() - (now.borrowingCostsDeferred() ? 0 : upfront);
@@ -329,6 +332,8 @@ public class SectorStatementCheck {
             double sections = cash.now(SectorStatements.FROM_OPERATING) + cash.now(SectorStatements.FROM_INVESTING)
                     + cash.now(SectorStatements.FROM_FINANCING);
             t("2 the three sections are the net change").near(sections, cash.now(SectorStatements.NET_CHANGE), at);
+            t("2 the interest abroad is in the profit and no cash: the operating section takes it out again (HD2)").near(
+                    cash.now(SectorStatements.CASH_KEPT_ABROAD), -now.foreignInterest(), at);
             t("2 ...and with the cash at the start and unexplained() are the cash at the end, the cash").near(
                     sections + now.openingCash() + now.unexplained(), now.cash(), at);
             t("2 the statement's cash at the end is the cash").near(cash.now(SectorStatements.CASH_END), now.cash(), at);
