@@ -683,6 +683,9 @@ adds its line here, not in `CLAUDE.md`.
                                    start screen; BrandingCheck holds the files and the store's title art to
                                    it). The model never imports it.
         *Check.java                142 harnesses, each a main() with static helpers
+        MarketCheck.java           the efficient market (EM1), each case on a fixture that causes it: one value for a share, one
+                                   yardstick, two shares alike but for price, the buyback finding its sellers, a share earning
+                                   less than dollars abroad sold, a quiet market, the save
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones;
                                    since SP1 three at a time (PARALLEL), each JVM under -Xmx HEAP_MB

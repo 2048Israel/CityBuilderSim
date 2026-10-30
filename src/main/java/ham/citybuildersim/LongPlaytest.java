@@ -960,6 +960,60 @@ public class LongPlaytest {
         for (int c = 0; c < Equity.COMPANIES.length; c++) if (c != Equity.BANK) buybackRestingRun += ex.getBuybackBudget(c);
     }
 
+    /* ---- EM1: the companies' money against GDP, the buybacks, the spread of P/B and P/E, the turnover ---- */
+    /** The months the MARKET line prints: EM1's before-and-after (its brief), and the run's last. */
+    static final int[] MARKET_MONTHS = {600, 1200, 2400};
+    /** Over the run, month by month: the companies' buybacks filled (their statements), the bids left resting at the month's end, the book's turnover. */
+    static double buybackFilledRun, buybackLeftRun;
+    static final java.util.Map<Integer, double[]> marketCum = new java.util.HashMap<>();
+
+    static void countMarket(Game g) {
+        Exchange ex = g.getExchange();
+        Equity reg = g.getEquity();
+        int month = g.getMonth();
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (c == Equity.BANK) continue;
+            buybackFilledRun += g.getSectorBooks().get(Equity.COMPANIES[c]).sharesBoughtBack();
+            buybackLeftRun += ex.getBuybackBudget(c);
+        }
+        marketCum.put(month, new double[] {buybackFilledRun, buybackLeftRun, ex.getLifeTurnover()});
+        marketCum.remove(month - 13);
+        boolean print = month == TARGET_MONTHS;
+        for (int m : MARKET_MONTHS) print |= month == m;
+        if (!print) return;
+        double[] now = marketCum.get(month), before = marketCum.get(month - 12);
+        if (before == null) before = new double[3];
+        EconomyManager em = g.getEconomyManager();
+        double gdp = em.getNationalAccounts().getAnnualGdp();
+        double tills = 0;
+        for (String s : Sectors.KEYS) tills += Math.max(0, em.getSectorCash(s));
+        double abroad = g.getOutwardInvestment().totalLocalValue();
+        java.util.List<Double> pb = new java.util.ArrayList<>(), pe = new java.util.ArrayList<>();
+        double cap = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (reg.getShares(c) <= 0) continue;
+            double mcap = ex.price(c) * reg.getShares(c);
+            cap += mcap;
+            if (c == Equity.BANK) continue;
+            double book = g.getSectorBooks().get(Equity.COMPANIES[c]).equity();
+            if (book > 0) pb.add(mcap / book);
+            double e = reg.getTrailingIncome(c);
+            if (e > 0) pe.add(mcap / e);
+        }
+        java.util.Collections.sort(pb);
+        java.util.Collections.sort(pe);
+        out.printf("MARKET m%-4d tills %.2fx GDP abroad %.2fx | buybacks a year filled %,.0f left resting %,.0f | P/B %s | P/E %s | turnover %.1f%% of cap a year%n",
+                month, gdp > 0 ? tills / gdp : Double.NaN, gdp > 0 ? abroad / gdp : Double.NaN,
+                now[0] - before[0], now[1] - before[1], spread(pb), spread(pe),
+                cap > 0 ? (now[2] - before[2]) / cap * 100 : Double.NaN);
+    }
+
+    /** Lowest, median and highest of a sorted list, or "none". */
+    static String spread(java.util.List<Double> v) {
+        if (v.isEmpty()) return "none";
+        return String.format("%.2f/%.2f/%.2f (%d)", v.get(0), v.get(v.size() / 2), v.get(v.size() - 1), v.size());
+    }
+
     /** Every overdraft forgiven over the run: the backstop's, the one path left that forgives (round 4's cash-flow test forgave too; since round 5 it lends the rest as interim financing). */
     static double forgivenTotal(EconomyManager em) {
         double t = 0;
@@ -1001,6 +1055,7 @@ public class LongPlaytest {
         }
         countDefaults(g);
         countRound4(g);
+        countMarket(g);
         countRound6(g);
         countRound7(g);
         countPriceAndPlant(g);
@@ -2235,7 +2290,8 @@ public class LongPlaytest {
                 + "bankFails,policy,cityRate,refusedSkips,noMoney,stake,fundValue,fundCash,preferred,"
                 + "floor,bankFloor,cbPaperShare,cbHeld,m0,cbBoughtHH,"
                 + "cbParAtIssue,cbPaidAtIssue,cbBought,cbSold,bankPaidForPaper,"
-                + "grant,revenue,luxNet,luxRevenue,luxMargin,sectorsPreTax");
+                + "grant,revenue,luxNet,luxRevenue,luxMargin,sectorsPreTax,"
+                + "bizCash,bizAbroad,bizDebt,bizBonds");
         traceBorrow.println("month,type,kind,foreign,face,rate,rateIs,months,for");
         traceHouse.println("month,pop,homes,households,capacity,jobs,latent,pressure,rentF,rentS,reqF,reqS,"
                 + "breakEven,reCash,reAssets,rePrincipal,mortgages,mortgagePrincipal,bulletPrincipal,"
@@ -2288,7 +2344,8 @@ public class LongPlaytest {
         }
         traceMonths.printf(java.util.Locale.ROOT,
                 "%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d,%.6f,%.6f,%d,%d,%.6f,%.3f,%.3f,%.3f,"
-                + "%.6f,%.6f,%.6f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f%n",
+                + "%.6f,%.6f,%.6f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f,"
+                + "%.3f,%.3f,%.3f,%.3f%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(), g.getCash(),
                 g.getEconomyManager().getMonthGdp(), g.getEconomyManager().getTaxIncome(),
                 g.getEconomyManager().getNationalAccounts().getInterestExpense(),
@@ -2318,7 +2375,12 @@ public class LongPlaytest {
                 g.getEconomyManager().getNationalAccounts().getTotalRevenue(),
                 g.getSectors().luxuryRetail().statement().preTaxIncome,
                 g.getSectors().luxuryRetail().statement().revenue,
-                g.getSectors().luxuryRetail().getMargin(), sectorsPreTax(g));
+                g.getSectors().luxuryRetail().getMargin(), sectorsPreTax(g),
+                // ...and (HD1) the businesses' hoard: their tills, their dollars abroad at the
+                // month's rate, and what they owe the bank and their bondholders.
+                sectorsCash(g), g.getOutwardInvestment().totalLocalValue(),
+                g.getEconomyManager().getBusinessDebtManager().getTotalPrincipal(),
+                g.getBondMarket().totalFace());
         traceHouse(g);
         tracePop(g);
         traceBuild(g);
@@ -2447,6 +2509,13 @@ public class LongPlaytest {
             if ("City".equals(r.payer)) value += r.value;
         }
         return value * g.getEconomyManager().buildersSalesRate();
+    }
+
+    /** Every sector's till, summed (HD1): the cash half of the businesses' hoard. */
+    static double sectorsCash(Game g) {
+        double t = 0;
+        for (Sector s : g.getSectors().all()) t += s.getCash();
+        return t;
     }
 
     /** Every sector's month before profit tax, summed - what Luxury's share of the city's profit is read against (0.7.19). */

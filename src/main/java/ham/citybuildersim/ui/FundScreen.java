@@ -565,7 +565,10 @@ final class FundScreen {
                     : "fair value: it has never traded";
             double div = reg.dividendPerShareAnnual(c);
             facts.add(new String[] {"PRICE", price(g, false, p), ex.hasTraded(c) ? "the last trade" : "fair value"});
-            facts.add(new String[] {"FAIR VALUE", price(g, false, ex.fair(c)), "the register's reckoning: book, or its dividend capitalised"});
+            facts.add(new String[] {"FAIR VALUE", price(g, false, ex.fair(c)), reg.valuedOnRecord(c)
+                    ? String.format("its money past a cushion at face (%s a share), and a year's net income at %.0f%%",
+                            price(g, false, ex.fairSpare(c)), Equity.requiredReturn(DebtManager.WORLD_BASE_RATE) * 100)
+                    : "on its prospects in its first year: book, or its dividend capitalised"});
             facts.add(new String[] {"MARKET VALUE", d(g, ex.marketCap(reg, c)), "every share in owners' hands, at the price"});
             facts.add(new String[] {"DIVIDEND", div > 0 ? price(g, false, div) + " a share a year" : "none this year",
                     div > 0 ? pct2(ex.yieldAt(reg, c, p)) + " at the price" : "it paid nothing over the last twelve months"});

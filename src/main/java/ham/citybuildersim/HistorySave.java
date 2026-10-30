@@ -239,6 +239,13 @@ public class HistorySave {
     private List<Double> expectedInflation = new ArrayList<>();
     private List<Double> credibility = new ArrayList<>();
     private List<Double> businessDebt = new ArrayList<>();
+    /**
+     * The face of every business bond outstanding, in money (HD1, 2026-10-29):
+     * businessDebt is the loans and mortgages only, so the fade of the bonds
+     * (the companies that borrow in the bond market, the funds that hold them)
+     * had no series to chart. An older save has none until it plays a month.
+     */
+    private List<Double> businessBonds = new ArrayList<>();
     /*
      * bankPremium WAS HERE until 0.7.7: the points the strained bank added to
      * every rate in the city. The premium is gone, so the series is: a save's
@@ -691,6 +698,7 @@ public class HistorySave {
         expectedInflation.add(round4(game.getExpectations().getExpectedInflation()));
         credibility.add(round4(game.getExpectations().getCredibility()));
         businessDebt.add(round2(economy.getBusinessDebtManager().getTotalPrincipal()));
+        businessBonds.add(round2(game.getBondMarket().totalFace()));
 
         Bank lender = game.getBank();
         bankDeposits.add(round2(lender.depositsGathered()));
@@ -1101,6 +1109,7 @@ public class HistorySave {
         expectedInflation = copy(loaded.expectedInflation);
         credibility = copy(loaded.credibility);
         businessDebt = copy(loaded.businessDebt);
+        businessBonds = copy(loaded.businessBonds);
         bankDeposits = copy(loaded.bankDeposits);
         bankLent = copy(loaded.bankLent);
         bankEquity = copy(loaded.bankEquity);
@@ -1612,6 +1621,7 @@ public class HistorySave {
         map.put("luxuryMargin", luxuryMargin);
         map.put("luxuryTargetMargin", luxuryTargetMargin);
         map.put("businessDebt", businessDebt);
+        map.put("businessBonds", businessBonds);
         map.put("bankDeposits", bankDeposits);
         map.put("bankLent", bankLent);
         map.put("bankEquity", bankEquity);
@@ -1775,7 +1785,7 @@ public class HistorySave {
          * none of them is money at all.
          */
         scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad,
-                businessDebt, bankDeposits, bankLent, bankEquity, bankWriteOffs,
+                businessDebt, businessBonds, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
                 householdSavings, bankFees,
                 bankAllowance, bankProvisions, bankDividends,

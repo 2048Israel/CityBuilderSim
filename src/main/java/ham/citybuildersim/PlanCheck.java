@@ -734,13 +734,23 @@ public class PlanCheck {
      * no wider along the way than its line may bridge (an arterial's on an
      * arterial's line, a street's off it), beneath a highway or across a
      * railway, never along one, never over a mine's site. Its buildings are
-     * no part of the ground: a piece they wall in is the plan's to join.
+     * no part of the ground: a piece they wall in is the plan's to join -
+     * but for a building on a site (a farm on its field, a mine, a well),
+     * which the join does not cross (DistrictPlan.wallJoinable(), FW11's
+     * "a building on a site ... is not the way's to cross"). Parted there
+     * since EM1 (2026-10-29), the orchestrator's call on the batch's
+     * recommendation: its played city walled a piece in behind a farm's
+     * building on its field in district (0, 0) at months 91 and 121, where
+     * this said the ground did not part it.
      */
     static boolean groundParts(DistrictPlan p, DistrictPlan.Input in, int[] lab, List<Integer> sizes) {
         int n = DistrictPlan.FRAME, area = DistrictPlan.AREA;
         int main = 0;
         for (int i = 1; i < sizes.size(); i++) if (sizes.get(i) > sizes.get(main)) main = i;
-        boolean[] seen = new boolean[area];
+        boolean[] seen = new boolean[area], onSite = new boolean[area];
+        for (int i = 0; i < p.buildings; i++)
+            for (int y = p.by[i]; y < p.by[i] + p.bh[i]; y++) for (int x = p.bx[i]; x < p.bx[i] + p.bw[i]; x++)
+                if (x >= 0 && y >= 0 && x < n && y < n && in.site[y * n + x] != 0) onSite[y * n + x] = true;
         int[] q = new int[area];
         int qh = 0, qt = 0;
         for (int i = 0; i < area; i++) if (lab[i] == main) { seen[i] = true; q[qt++] = i; }
@@ -752,7 +762,7 @@ public class PlanCheck {
                 int a = ay * n + ax;
                 if (seen[a]) continue;
                 if (lab[a] >= 0) return false;
-                if (!in.owned[a] || in.terrain[a] == World.SALT || in.site[a] == DistrictPlan.SITE_MINED) continue;
+                if (!in.owned[a] || in.terrain[a] == World.SALT || in.site[a] == DistrictPlan.SITE_MINED || onSite[a]) continue;
                 boolean horizontal = TilePainter.DY[d] == 0, arterial = horizontal ? ay % DistrictPlan.CELL == 0 : ax % DistrictPlan.CELL == 0;
                 if (in.terrain[a] == World.FRESH && waterRun(in, a, d) > (arterial ? DistrictPlan.ARTERIAL_BRIDGE : DistrictPlan.STREET_BRIDGE)) continue;
                 if (in.fixed[a] != 0 && DistrictPlan.along(in.fixed, a, horizontal)) continue;
@@ -1028,8 +1038,6 @@ public class PlanCheck {
         final int[] cellCount = new int[4];
         /** The open homes cells by kind (0 long blocks, 1 squared) and layout (CL2), and the merges undone in them. */
         final int[][] homes = new int[2][3];
-        /** ...and the places of those cells (the district's corner and the cell's number in it), so a cell sampled again counts once in homesPlaces() (WN3). */
-        final java.util.Set<String> homesAt = new java.util.HashSet<>();
         long mergesUndone;
         /** The avenues' counts summed (CL4): plots laid, beneath a highway, across the railway, bridging, not laid at a yard, reserve or mine, at water too wide, stops, open cells crossed; and the floor and outer-plot breaches. */
         final long[] av = new long[8];
@@ -1109,7 +1117,7 @@ public class PlanCheck {
             for (int k = 0; k < 4; k++) { cellStreets[k] += f.cellStreets[k]; cellGround[k] += f.cellGround[k]; cellCount[k] += f.cellCount[k]; }
             int[][] h = homesByLayout(p);
             for (int k = 0; k < 2; k++) for (int l = 0; l < 3; l++) homes[k][l] += h[k][l];
-            for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellKind[c] == DistrictPlan.HOMES && p.cellLayout[c] <= DistrictPlan.LAYOUT_BRICK) homesAt.add(in.x0 + "," + in.y0 + "," + c);
+            for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellKind[c] == DistrictPlan.HOMES && p.cellLayout[c] <= DistrictPlan.LAYOUT_BRICK) homesSeen.add(where + ", cell " + c);
             mergesUndone += p.mergesUndone;
             av[0] += p.avenuePlots; av[1] += p.avenueUnder; av[2] += p.avenueRail; av[3] += p.avenueBridged;
             av[4] += p.avenueBroken; av[5] += p.avenueWater; av[6] += p.avenueStops; av[7] += p.avenueCells;
@@ -1125,12 +1133,17 @@ public class PlanCheck {
             return n;
         }
 
-        /** The open homes cells by place: a cell sampled in four months is one (WN3; homesCells() counts it four times). */
-        int homesPlaces() { return homesAt.size(); }
-
-        /** All the open homes cells. */
+        /** All the open homes cells, counted once for every plan that has them: a cell that stands in four samples is four. */
         int homesCells() {
             return homes[0][0] + homes[0][1] + homes[0][2] + homes[1][0] + homes[1][1] + homes[1][2];
+        }
+
+        /** The open homes cells seen, by where they are (the district and the cell in it), each once however many samples it stands in (EM1, 2026-10-29). */
+        final java.util.Set<String> homesSeen = new java.util.HashSet<>();
+
+        /** How many different open homes cells the plans held: what HOMES_ENOUGH is a number of. */
+        int distinctHomesCells() {
+            return homesSeen.size();
         }
 
         static double median(List<Double> v) {
@@ -1316,17 +1329,23 @@ public class PlanCheck {
         playedCurves = t.cv.clone();
         check("...the avenues were laid in the played city (" + t.av[0] + " plots in " + t.av[7] + " open cells over the samples), every check holding with them", t.av[0] > 0 && t.allHold());
         // CL2: how often the variety fired in this run. A city of a few homes cells says little, so the assertion waits for enough of them.
-        // WN3: ENOUGH PLACES, NOT SAMPLED CELLS. The samples read the same cells again (a town's homes stand in the same few cells at every
-        // look), so 11 cells of the samples were 3 places on the world's band (8 were 2 on the literals, one short of the threshold, which is
-        // why this never fired before): three cells all keeping the comb by the hash alone is a chance of 1 in 27, not 1 in 59,049.
-        if (t.homesPlaces() >= HOMES_ENOUGH) {
-            check("...the layouts fired: of " + t.homesPlaces() + " homes cells (" + t.homesCells() + " in the samples) " + t.varied() + " took dropped crossings or brick", t.varied() > 0);
+        if (t.distinctHomesCells() >= HOMES_ENOUGH) {
+            check("...the layouts fired: of " + t.distinctHomesCells() + " homes cells in the samples " + t.varied() + " took dropped crossings or brick", t.varied() > 0);
         } else {
-            out.printf("      ...only %d homes cells (%d in the samples), fewer than the %d a layout's share needs to show: no assertion that the variety fired%n", t.homesPlaces(), t.homesCells(), HOMES_ENOUGH);
+            out.printf("      ...only %d homes cells in the samples (%d seen, a cell once in every sample it stands in), fewer than the %d a layout's share needs to show:"
+                    + " no assertion that the variety fired%n", t.distinctHomesCells(), t.homesCells(), HOMES_ENOUGH);
         }
     }
 
-    /** The homes cells (places, each counted once however often it is sampled) a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all keeping the comb by the hash alone has a chance of 1 in 59,049. */
+    /**
+     * The homes cells a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all
+     * keeping the comb by the hash alone has a chance of 1 in 59,049.
+     *
+     * ...OF DIFFERENT CELLS, SINCE EM1 (2026-10-29). The guard counted the cells of every sample, so a cell that stands in all four of the
+     * city's samples was four. On EM1's path MapCheck 1's city holds three homes cells (district (0, 0), cells 9, 17 and 18, seen ten times
+     * in its four samples) and counted ten, all the comb, a chance of 1 in 27 and not of 1 in 59,049; on main's it counted eight, under the
+     * guard by luck, and nothing was asked of it. Counted once each, the city says too little to be asked, as the guard meant.
+     */
     static final int HOMES_ENOUGH = 10;
 
     /* =====================================================================

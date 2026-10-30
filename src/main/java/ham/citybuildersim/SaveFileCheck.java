@@ -2106,6 +2106,45 @@ public class SaveFileCheck {
         assertTrue("each cell's income after its fixed bills crosses a save (" + cellsStruck + " cells)",
                 cellsKept == cellsStruck);
 
+        /* ============ 13b. a bond in the saved history (HD1, 2026-10-29) ============
+
+           businessDebt is the loans and mortgages only; the face of every
+           business bond outstanding had no series, so the fade of the bonds
+           could not be charted. The city above owes bonds (the section on its
+           businesses' bonds asserts it), so its history is the fixture: the
+           series reads the market's face at the month's end, it crosses a
+           save point by point, and a redenomination scales it as it scales
+           the debt beside it.
+           ================================================================= */
+        System.out.println("\n--- a bond in the saved history ---");
+
+        double[] bondsKept = full.getHistorySave().aligned("businessBonds");
+        double faceNow = full.getBondMarket().totalFace();
+        assertTrue("fixture: the city's businesses owe bonds, and the series has its months",
+                faceNow > 0 && bondsKept.length > 0 && !Double.isNaN(bondsKept[bondsKept.length - 1]));
+        assertTrue("the series' last point is the face outstanding, to the cent of a thousand",
+                Math.abs(bondsKept[bondsKept.length - 1] - faceNow) <= .005 + 1e-9);
+        assertTrue("...and it is above zero, one point per month of the axis",
+                bondsKept[bondsKept.length - 1] > 0 && bondsKept.length == full.getHistorySave().months());
+        double[] bondsBack = back.getHistorySave().aligned("businessBonds");
+        assertTrue("fixture: the reloaded history has the points to compare", bondsBack.length == bondsKept.length);
+        assertTrue("a reloaded city's history reads the same points, month by month",
+                java.util.Arrays.equals(bondsBack, bondsKept));
+        Game reformed = new Game(full.getGameFiles());
+        reformed.loadGameSave(1);
+        double[] bondsBefore = reformed.getHistorySave().aligned("businessBonds");
+        double[] debtBefore = reformed.getHistorySave().aligned("businessDebt");
+        assertTrue("fixture: the city owes loans and mortgages too, to be scaled beside the bonds",
+                debtBefore[debtBefore.length - 1] > 0);
+        reformed.getHistorySave().redenominate(.01);
+        double[] bondsAfter = reformed.getHistorySave().aligned("businessBonds");
+        double[] debtAfter = reformed.getHistorySave().aligned("businessDebt");
+        boolean bondsScaled = bondsAfter.length == bondsBefore.length, debtScaled = debtAfter.length == debtBefore.length;
+        for (int i = 0; bondsScaled && i < bondsBefore.length; i++) bondsScaled &= Math.abs(bondsAfter[i] - bondsBefore[i] * .01) < 1e-9;
+        for (int i = 0; debtScaled && i < debtBefore.length; i++) debtScaled &= Math.abs(debtAfter[i] - debtBefore[i] * .01) < 1e-9;
+        assertTrue("a hundred-for-one reform scales the bonds' series, every month, as it scales the debt beside it",
+                bondsScaled && debtScaled);
+
         /* ============ 14. a reloaded city PLAYS ON as the one it was saved from ============ */
         System.out.println("\n--- and a reloaded city plays on as the one it was saved from ---");
 
@@ -2472,7 +2511,11 @@ public class SaveFileCheck {
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             if (c == Equity.BANK || !(fundCity.getEquity().getForeignShares(c) > 1) || !(fundCity.getExchange().fair(c) > 0)) continue;
             Exchange ex = fundCity.getExchange();
-            if (!(ex.bookOf(c).bestBid() >= ex.fair(c) * (1 - TreasuryFund.RULE_PREMIUM))) continue;
+            // EM1: no book was found with a bid standing at the desk's bid under the new value (a share is a business's earnings capitalised, and the
+            // desk's capacity moved with it), so the fixture stands one: the world's, at what the withdrawal below will ask, for the share it holds.
+            double bidAt = ex.fair(c) * (1 - TreasuryFund.RULE_PREMIUM);
+            if (!(ex.bookOf(c).bestBid() >= bidAt)) ex.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.BUY, bidAt, 1);
+            if (!(ex.bookOf(c).bestBid() >= bidAt)) continue;
             double p = ex.price(c), q = Math.min(1, fundCity.getFund().getCash() / Math.max(1e-9, 2 * p));
             ex.bookOf(c).withdrawAll();
             ex.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.SELL, p, q);

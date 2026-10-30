@@ -18,6 +18,29 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.74 — EM1, an efficient market: one value for a share, every holder trading on it — 2026-10-29, ready, see docs/queue/EM1-notes.md
+A share has one value: the company's money past a six-month cushion at face, plus its last year's net income at the world
+rate plus 3% (a company in its first year on its prospects, as before); and one expected return, its income and what its
+money earns over its price. Households, the world and the fund sell a tenth of a holding a month into a bid 5% over the
+value, households also when its return is 5% under the deposit rate, the dollars abroad, the city's paper or another share
+on offer, and buy the best return; the desk quotes on the new value. So a buyback, bidding 10% over the value, finds its
+sellers and a company's cash reaches its owners (his 0.7.12 call kept: no special dividend). On the default playtest the
+companies' tills fall from 9.17x GDP to 0.39x at m4,000 and their dollars abroad from 36.59x to 0.01x, every buyback bid
+fills (540B a year was left resting), P/E sits about 22 across companies, and the town ends at 656,580 people against
+599,734. The sector screen shows the value as money plus business, with its return; MarketCheck causes each case. The
+ensemble: 23 of 25 as before, growth up (AUTO2 261,977 against 255,250), its inflation spells shorter.
+
+### 0.8.73 — HD1, the hoard: business bonds in the history — 2026-10-29, ready, see docs/queue/HD1-notes.md
+Business bonds go into the history: the face of every business bond outstanding, beside the business debt (loans and
+mortgages only), so the bonds' fade in his runs (the last issued at m1,533) can be charted, on the History screen and in
+the year book; SaveFileCheck 13b holds it across a save and a reform. The brief's other two items were built and taken
+back, the orchestrator's call on the session's recommendation, as calls for Jerus. The coupon on the businesses' dollars
+abroad, as profit paid home, halved the hoard abroad by m4,000 (35x GDP to 18x) but turned the rate dial upside down in
+a young city (inflation 7.9/6.3/6.8/8.2% at 3/10/20/40% against main's 10.4/9.7/9.0/8.8%): paid home, it lifts the D$
+at low rates more than the dial restrains (HD1-C; recommended: counted as profit, kept abroad). Real Estate's posts (2
+DIPLOMA a Studio and Low-Rise, by the NAA's rule) stalled the ensemble's seed 4 near 25,000 people (44,157 at the end
+against 249,634; RE1, its cause first). The model is main's and so is the trace: no ensemble.
+
 ### 0.8.72 — BK1, the bank's equity split and its interest margin — 2026-10-29, ready, see docs/queue/BK1-notes.md
 Issue #5, Jerus's San Francisco city. The bank's equity no longer drifts from its two parts: a line of the city's
 paper keeps one pool of discount shared by face, and reopened at another price while households, firms, the world or

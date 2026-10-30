@@ -1,8 +1,5 @@
-# gate of Merge batch/BK1: the bank's equity split ($212.5M neither paid in nor retained in his San Francisco city at m2,852) found at its cause and fixed, and the interest margin on earning assets, not the loan book (9,972% today); issue #5 (Jerus, 2026-10-28: "Tomorrow", first after the night line), 0.8.72
+# gate of Merge batch/EM1: an efficient market: one value for a share (spare cash at face plus the business on its earnings), every holder - households, the fund, the world, the desk - moving toward the best expected return against the other shares, the bank, bonds and dollars abroad, at a pace and past a band; so a cash-box company's buyback finds sellers and its cash reaches the owners with no special dividend (his 0.7.12 call kept); after HD1 (Jerus, 2026-10-28: "perhaps make it an actual efficient market", "Yes, split it"), 0.8.74
 # date: 2026-10-29
 # earth-2.bin: named
-# suite: 152 harnesses run in 533s: 152 passed, 0 failed
-# timing: 12 harnesses run in 387s: 11 passed, 1 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 6.71 ms, batch 4.47 ms (-33.5%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite: 153 harnesses run in 498s: 153 passed, 0 failed
+# timing: 12 harnesses run in 383s: 12 passed, 0 failed

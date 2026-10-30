@@ -393,6 +393,19 @@ public class CallCheck {
        4. THE SALE
        ===================================================================== */
 
+    /**
+     * A sale of this many times what the households could take, and of no more than that many times a third of a year's tax revenue
+     * (EM1, 2026-10-29). Sized by the households alone it grew with their savings: at month 85 of the played city they could take 152,000
+     * and now, holding the money the companies' tills did, 417,000, so the sales of this section put 4.1 million of paper on the books
+     * where they put 1.9, took the credit spread to 5.0% where it was 2.5%, and left the auction's bidders (the bank's room above all)
+     * nothing for a callable 20-year: a sale under the minimum issue, quoted empty. What the section asserts is that the option can be
+     * sold, not how much paper the households' wealth would let a fixture pile up.
+     */
+    static double saleOf(Game city, double spares) {
+        return Math.max(100, Math.min(city.getHouseholdBalance().spareForPaper() * spares,
+                spares * FloatLinkCheck.SALE_OF_REVENUE * 12 * city.getDebtManager().getMonthlyTaxRevenue()));
+    }
+
     static void theSale(Game city) {
         out.println("\n--- 4. the sale: a callable 10-year costs its option in the coupon, callable from year 5; nothing sells it unasked ---");
 
@@ -401,7 +414,7 @@ public class CallCheck {
 
         // Nothing asks for the option: two more years of the city, the rollover and the auto-builder at their work, and a sale or two by the old signatures.
         check("fixture: the city holds no callable piece before it starts", callables(city).isEmpty());
-        double plainAsk = Math.max(100, hb.spareForPaper());
+        double plainAsk = saleOf(city, 1);
         quietly(() -> {
             city.handleLongBondLogic(plainAsk, 10, 100);
             city.handleLongBondLogic(plainAsk, 20, 100, Auction.Cap.FILL);
@@ -507,23 +520,22 @@ public class CallCheck {
     }
 
     /**
-     * The ask the market takes whole: three times the households' spare, as this fixture has always sold, or the largest half of it
-     * (a half, a quarter, ...) that both the plain and the callable quote fill without stopping short at the cap. WN3: on the world's
+     * The ask the market takes whole: EM1's sale of three spares (saleOf: no more than a third of a year of tax), or the largest half of
+     * it (a half, a quarter, ...) that both the plain and the callable quote fill without stopping short at the cap. WN3: on the world's
      * band the town's bidders take at the fair yield about half of the households' spare (the spare 302,000 of face, the bank's
      * room 187,000): an ask of three spares sold short in both quotes (459,000 and 508,000 of face, not one face) at the cap's tail,
      * a coupon 88 basis points over the callable's fair yield, and the line worth 106.7 per 100 and not about its face. Section 4's
      * assertions are about a sale the market takes at fair, so the sale is sized to cause that; where the market takes three spares
-     * (the literals, the Historical path) the ask is the old one.
+     * (the literals, the Historical path) the ask is EM1's.
      */
     static double askTheMarketTakes(Game city) {
-        double spare = city.getHouseholdBalance().spareForPaper();
         for (double share = 3; share > 1e-3; share /= 2) {
-            double ask = Math.max(100, spare * share);
+            double ask = saleOf(city, share);
             DebtQuote plain = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, false);
             DebtQuote call = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, true);
             if (!plain.isEmpty() && !call.isEmpty() && !plain.isShort() && !call.isShort() && plain.faceValue() == call.faceValue()) return ask;
         }
-        return Math.max(100, spare * 1e-3);
+        return saleOf(city, 1e-3);
     }
 
     /** A callable line built with another first call date is not the line a standard callable sale reopens. */

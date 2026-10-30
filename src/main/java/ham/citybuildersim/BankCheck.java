@@ -3353,6 +3353,22 @@ public class BankCheck {
 
             for (int m = 0; m < played; m++) {
                 city.simulateMonths(1);
+                /*
+                 * A HOLDER SELLS THE BANK ITS OWN SHARES (EM1). The bank bids for them
+                 * over its target at half a spread under fair value, which is their
+                 * earnings capitalised at the return they are asked to make - and a holder
+                 * is paid that for a share only when it can do better elsewhere, which the
+                 * played city rarely gives it: a bank earning five times its book is not
+                 * sold at its bid, by the world that holds every share of it or by anybody.
+                 * So the world sells a quarter of what it holds into the bid between the
+                 * presses, where the treasury's buyback and the rescue are done, and the
+                 * month's movement is read with it.
+                 */
+                Exchange market = city.getExchange();
+                if (market.bookOf(Equity.BANK).resting(Exchange.DESK, OrderBook.Side.BUY) > 0) {
+                    market.tradeForCheck(Equity.BANK, Exchange.WORLD, OrderBook.Side.SELL,
+                            market.bestBidOf(Equity.BANK, Exchange.DESK), city.getEquity().getForeignShares(Equity.BANK) / 4);
+                }
 
                 Bank.EquityMovement moved = bank.equityMovement();
                 worstResidual = Math.max(worstResidual, Math.abs(moved.residual()));
@@ -4188,8 +4204,13 @@ public class BankCheck {
 
         out.printf("   the households paid $%,.2fk of it at the settle, the bank $%,.2fk%n",
                 householdsPaid, bankPaid);
+        // EM1: a company's buyback asks its till for the cushion and the bid, and what its dollars abroad cannot cover it raises by selling the
+        // paper it just bought to the desk: cash from the bank's pool to a till, which the ordinary month above does not hold, and the gain on a
+        // piece bought under its face (a loss over it), which is in its net income and no cash.
+        double paperFromFirms = bank.getPaperBoughtFromFirms();
         close("the bank's cash fell by exactly what the treasury received less what the households"
-                + " paid, less the ordinary month", cashMoved - ordinary, -bankPaid, 1e-6);
+                + " paid, less the ordinary month and what it paid the businesses for paper they sold it, less its gain on that",
+                cashMoved - ordinary, -bankPaid - paperFromFirms - bank.getPaperGains(), 1e-6);
         close("...which is the figure the settle reports", city.getCityPaperSettled(), bankPaid, 1e-9);
         close("...and between them the holders paid every dollar the treasury received",
                 city.getCityPaperSettled() + householdsPaid + firmsPaid + worldPaid, received, 1e-9);
@@ -4227,8 +4248,12 @@ public class BankCheck {
         double serialShare = serialBond.bankPrincipal() / serialBond.getOustandingPrincipal();
         double oneMonth = noteShare * noteDiscount / note.getDuration()
                 + serialShare * serialDiscount / serialBond.getDuration();
+        // EM1: paper a business sold the desk in the month moved into the bank's share after the month's accretion was struck, so the expected
+        // figure, on the shares as they ended, is out by no more than that much face at the faster piece's monthly accretion a dollar of face.
+        double perFace = Math.max(noteDiscount / note.getOustandingPrincipal() / note.getDuration(),
+                serialDiscount / serialBond.getOustandingPrincipal() / serialBond.getDuration());
         close("the bank's interest in the settle month carries one month of its share of the discount,"
-                + " not the whole", accreted, oneMonth, 1e-6);
+                + " not the whole", accreted, oneMonth, 1e-6 + 1.1 * paperFromFirms * perFace);
         assertTrue("...which is well short of the whole (the old rule booked all of it)",
                 accreted < .5 * (noteShare * noteDiscount + serialShare * serialDiscount));
         close("the rest sits against its book, unearned, so its equity did not move for the discount",

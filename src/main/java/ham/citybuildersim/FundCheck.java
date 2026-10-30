@@ -1065,10 +1065,12 @@ public class FundCheck {
                 && TreasuryFund.RULE_PREMIUM == Exchange.SPREAD / 2);
         check("...and the desk's bid meets it at the step: some of it sold, into the fund's cash", (soldA > 0 || soldB > 0)
                 && o.getCash() > 0);
-        // A bid caused: the world takes whatever of the fund's asks still rests, at the fund's own price.
+        // A bid caused: the world takes whatever still rests at the fund's own price, the fund's asks and any that stand ahead of them at it
+        // (EM1: the cells that hold a little of the company rebalance at the market, which is that price, and are first in the queue).
         for (int c : two) {
-            double resting = ox.bookOf(c).resting(Exchange.FUND, OrderBook.Side.SELL);
-            if (resting > 0) ox.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.BUY, ox.fair(c) * (1 - TreasuryFund.RULE_PREMIUM), resting);
+            double price = ox.fair(c) * (1 - TreasuryFund.RULE_PREMIUM), resting = 0;
+            for (OrderBook.Order ask : ox.bookOf(c).asks()) if (ask.price() <= price) resting += ask.quantity();
+            if (resting > 0) ox.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.BUY, price, resting);
         }
         check("fixture: a bid took every share the fund asked", ox.bookOf(two[0]).resting(Exchange.FUND, OrderBook.Side.SELL) == 0
                 && ox.bookOf(two[1]).resting(Exchange.FUND, OrderBook.Side.SELL) == 0 && o.getCash() > 0);
