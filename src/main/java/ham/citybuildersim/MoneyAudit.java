@@ -691,11 +691,11 @@ public final class MoneyAudit {
          * and payCoupons().
          */
         in += credit.apply("+ sectors BroughtHome", g.getOutwardInvestment().getBroughtHomeThisMonth(), Scope.FINANCIAL);
-        // Earned abroad and paid home (HD1, 2026-10-29): an income credit alone. The coupon
-        // reaches the sectors' pools through Sector.bank(), inside this window, as a line of
-        // each one's profit; the profit tax on it moves a sector's pool to the city's, both
-        // audited, so nothing else is declared. (It was rolled abroad until HD1: an income
-        // credit matched by a financial debit, "sectors ForeignInterestReinvested", and no cash.)
+        // Earned abroad and kept there (HD2, 2026-10-30): an income credit and a financial
+        // debit of the same size, "sectors ForeignInterestReinvested", and no cash in any pool.
+        // Declared both ways so the balance of payments reads what a reinvested coupon is. It
+        // is a line of each sector's profit (HD1), so the profit tax and the dividend struck on
+        // it move a sector's till to the city and to the owners like any other, audited.
         in += credit.apply("+ sectors ForeignInterest", g.getOutwardInvestment().getInterestThisMonth(), Scope.INCOME);
         /*
          * WHAT THE GROCERS' SUPPLIERS ABROAD WAITED FOR (0.7.44; SupplierCredit).
@@ -717,8 +717,8 @@ public final class MoneyAudit {
          * that cancels here and reads on the balance of payments: what came
          * home is a financial inflow into their savings (domestic, out of
          * nobody's pool); what went abroad is a financial outflow out of
-         * their savings; the coupon is income paid home, like the
-         * sectors' since HD1. See HouseholdBalance.investAbroad().
+         * their savings; the coupon is income paid home, unlike the
+         * sectors', which is kept abroad (HD2). See HouseholdBalance.investAbroad().
          */
         in += credit.apply("+ households BroughtHome", g.getHouseholdBalance().getBroughtHome(), Scope.FINANCIAL);
         in += credit.apply("+ households SavedFromAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.DOMESTIC);
@@ -1079,7 +1079,7 @@ public final class MoneyAudit {
         out += debit.apply("- bank CarryLent",
                 g.getBank().getCarryLent(), Scope.FINANCIAL);
         out += debit.apply("- sectors InvestedAbroad", g.getOutwardInvestment().getInvestedAbroadThisMonth(), Scope.FINANCIAL);
-        // (The coupon on those dollars is not reinvested any more, so no debit stands for it here: see "+ sectors ForeignInterest".)
+        out += debit.apply("- sectors ForeignInterestReinvested", g.getOutwardInvestment().getInterestThisMonth(), Scope.FINANCIAL);
         // ...and the world's supplier credit repaid (0.7.44). See the credit's note.
         for (Sector s : sectors.all()) {
             SupplierCredit trade = s.supplierCredit();
@@ -1118,9 +1118,13 @@ public final class MoneyAudit {
          * "- households BroughtHomeSaved" gets two lines up, and for the same
          * reason: the money is at home.
          *
-         * The SECTORS' coupon is paid home too, since HD1 (2026-10-29), but into
-         * a sector's till, which IS an audited pool: it arrives through
-         * Sector.bank() inside the window, so its credit above stands alone.
+         * The SECTORS' coupon is not paid home, though it is a line of their
+         * profit since HD1 (2026-10-29): it is earned abroad and kept there
+         * (HD2, 2026-10-30), so it is a pair, FINANCIAL against INCOME, and no cash
+         * in any pool: "+ sectors ForeignInterest" above and "- sectors
+         * ForeignInterestReinvested" in the debits, the same size. The profit tax and the
+         * dividend struck on it move a sector's till (audited) to the city and the
+         * owners like any other.
          */
         out += debit.apply("- households ForeignInterestBanked",
                 g.getHouseholdBalance().getForeignInterest(), Scope.DOMESTIC);

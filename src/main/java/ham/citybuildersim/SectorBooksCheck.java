@@ -20,7 +20,7 @@ package ham.citybuildersim;
  *   2. THE INCOME STATEMENT ADDS UP, top to bottom: revenue less the operating
  *      lines is operating income, less property tax, interest, the borrowing
  *      costs (0.7.102) and sales tax, plus the interest its dollars abroad
- *      paid home (HD1), is pre-tax, less profit tax is what the
+ *      earned and kept there (HD1, HD2), is pre-tax, less profit tax is what the
  *      sector kept. Every line on the
  *      screen is one of these, so a break here is a screen that does not foot.
  *
@@ -136,7 +136,7 @@ public class SectorBooksCheck {
                         m.revenue() - m.operatingCost());
                 // ...less, since 0.7.102 (Jerus's A16), what its borrowing cost it up front, over each debt's life:
                 // a deductible expense beside the interest. Before: operating - property tax - interest - sales tax.
-                // ...plus, since HD1 (2026-10-29), the interest its dollars abroad paid home: finance income inside the profit.
+                // ...plus, since HD1 (2026-10-29), the interest its dollars abroad earned: finance income inside the profit, kept abroad since HD2 (the cash flow takes it out, unexplained() with it).
                 near("pre-tax", sector, m.month(),
                         m.preTaxIncome(),
                         m.operatingIncome() - m.propertyTax() + m.foreignInterest() - m.interest() - m.borrowingCosts()

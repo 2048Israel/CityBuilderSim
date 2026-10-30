@@ -312,7 +312,7 @@ public final class SectorStatements {
        Revenue less the sales tax it remitted (D4: revenue is booked net of
        VAT, Sector.bank()'s own note), less its cost of sales, is GROSS
        PROFIT; less wages, power, water, repairs and property tax (D5) is
-       OPERATING PROFIT; plus the interest its dollars abroad paid home (HD1)
+       OPERATING PROFIT; plus the interest its dollars abroad earned, kept there (HD1, HD2)
        and less finance costs is PROFIT BEFORE TAX - which must
        be preTaxIncome to the cent; less business tax is PROFIT FOR THE MONTH,
        netIncome, what the tax, the dividend and the six-months-losing rule are
@@ -329,7 +329,7 @@ public final class SectorStatements {
             PRE_TAX = "preTax", TAX = "tax", PROFIT = "profit", OUTSIDE = "outside", RESULT = "result",
             // ...and since 0.7.102 (A16) what its borrowing cost it up front, over each debt's life, beside the interest.
             BORROWING_COSTS = "borrowingCosts",
-            // ...and since HD1 (2026-10-29) the coupon on its dollars abroad, paid home: finance income, below the operating line and inside the profit. It was an outside line, "foreignInterest", while it rolled.
+            // ...and since HD1 (2026-10-29) the coupon on its dollars abroad, earned and kept there (HD2): finance income, below the operating line and inside the profit. It was an outside line, "foreignInterest", while it rolled.
             FOREIGN_INCOME = "foreignIncome";
 
     /** The outside-the-trading-result lines' ids, in their order (F1; since 0.7.75 the bonds written off and F2's three). */
@@ -349,9 +349,9 @@ public final class SectorStatements {
      * arrears, the bank's interest on its till, the coupons it is paid, the
      * overdraft a restructure forgave, the loans its lenders wrote off, and
      * the theft. (The interest abroad was one of them while it rolled into
-     * what the business held there; since HD1 it is paid home and inside the
-     * profit, a line of the statement above, so it moves the equity through
-     * the profit and is outside nothing.)
+     * what the business held there; since HD1 it is inside the profit, a line
+     * of the statement above, kept abroad since HD2 (the dollars it holds grow
+     * by it), so it moves the equity through the profit and is outside nothing.)
      * {label, id} order, now and then.
      *
      * ...AND SINCE 0.7.75, the bonds its holders wrote off in a default
@@ -410,7 +410,7 @@ public final class SectorStatements {
         b.line(MAINTENANCE, "Repairs", -now.maintenance(), -then.maintenance(), 0);
         b.line(PROPERTY_TAX, "Property tax", -now.propertyTax(), -then.propertyTax(), 0);
         b.subtotal(OPERATING, f.operating);
-        // ...and the coupon on its dollars abroad, paid home (HD1): finance income inside the profit, shown only when either month had some.
+        // ...and the coupon on its dollars abroad, earned and kept there (HD1, HD2): finance income inside the profit, shown only when either month had some.
         b.line(FOREIGN_INCOME, "Interest abroad", now.foreignInterest(), then.foreignInterest(), 0);
         b.line(INTEREST, "Finance costs", -now.interest(), -then.interest(), FINANCE_NOTE);
         // ...and what its borrowing cost it up front, over each debt's life (0.7.102, A16): only when either month had some.
@@ -547,14 +547,16 @@ public final class SectorStatements {
        Every term of SectorMonth.unexplained() lands in exactly one section,
        so the three plus the cash at the start are the cash at the end, and
        NOT ACCOUNTED FOR is unexplained() itself, shown only when it is not
-       nothing. Interest received is operating (IAS 7 allows it); the subsidy
+       nothing. Interest received is operating (IAS 7 allows it); the interest
+       abroad, earned and kept there (HD2), is in the profit and no cash, so it
+       is operating too, a line that takes it out again; the subsidy
        and the arrears are grants, operating; the forgiven overdraft is
        financing, the creditors' money.
        ===================================================================== */
 
     /** The cash flow statement's row ids, which the screens and SectorStatementCheck look a row up by. */
     public static final String OPERATING_HEAD = "operatingHead", NET_INCOME = "netIncome",
-            PAID_EARLIER = "paidEarlier", BORROWING_PAID_EARLIER = "borrowingPaidEarlier",
+            PAID_EARLIER = "paidEarlier", CASH_KEPT_ABROAD = "cash.keptAbroad", BORROWING_PAID_EARLIER = "borrowingPaidEarlier",
             TRADE_CREDIT = "tradeCredit", CASH_DEPOSIT_INTEREST = "cash.depositInterest",
             CASH_COUPONS = "cash.coupons", CASH_SUBSIDY = "cash.subsidy", CASH_ARREARS = "cash.arrears",
             CASH_STOLEN = "cash.stolen", FROM_OPERATING = "fromOperating", INVESTING_HEAD = "investingHead",
@@ -577,6 +579,8 @@ public final class SectorStatements {
         b.head(OPERATING_HEAD, "Cash flows from operating").group();
         b.line(NET_INCOME, "Profit for the month", now.netIncome(), then.netIncome(), 0);
         b.line(PAID_EARLIER, "Stock used, paid for in an earlier month", now.paidEarlier(), then.paidEarlier(), 0);
+        // ...and the coupon on its dollars abroad, in the profit and kept there (HD2): no cash, so it is taken out again (shown only when either month had some).
+        b.line(CASH_KEPT_ABROAD, "Interest abroad, kept there", -now.foreignInterest(), -then.foreignInterest(), 0);
         // ...and its borrowing's costs expensed, paid when it borrowed (0.7.102, A16).
         if (now.borrowingCosts() != 0 || then.borrowingCosts() != 0) {
             b.line(BORROWING_PAID_EARLIER, "Borrowing costs, paid when it borrowed", now.borrowingCosts(),
@@ -620,14 +624,14 @@ public final class SectorStatements {
         b.head(RECORD_HEAD, "For the record");
         b.memo(INTEREST_PAID, "Interest paid, inside the profit", now.interest(), then.interest());
         b.memo(TAX_PAID, "Business tax paid, inside the profit", now.tax(), then.tax());
-        b.memo(INTEREST_ABROAD, "Interest abroad, inside the profit", now.foreignInterest(), then.foreignInterest());
+        b.memo(INTEREST_ABROAD, "Interest abroad, inside the profit: kept there", now.foreignInterest(), then.foreignInterest());
         b.memo(FREE_CASH, "Free cash flow: operating less premises", freeCashOf(now), freeCashOf(then));
         return b.table("Statement of cash flows");
     }
 
-    /** Free cash flow: the operating section less what its premises and scrapped plant took (the investing section's buildings). */
+    /** Free cash flow: the operating section less what its premises and scrapped plant took (the investing section's buildings). The coupon abroad is in the profit and no cash (HD2), so the operating section takes it out. */
     public static double freeCashOf(SectorBooks.SectorMonth m) {
-        return m.netIncome() + m.paidEarlier() + m.borrowingCosts() + m.tradeCredit() + m.depositInterest()
+        return m.netIncome() - m.foreignInterest() + m.paidEarlier() + m.borrowingCosts() + m.tradeCredit() + m.depositInterest()
                 + m.bondCoupons() + m.fromTheCity() + m.arrearsPaid() - m.stolen() - m.spentOnBuildings();
     }
 
@@ -694,9 +698,9 @@ public final class SectorStatements {
                 ? then.buildingMaterials() * (now.materialsPrice() - then.materialsPrice()) : Double.NaN;
     }
 
-    /** ...and what it holds abroad, less what it sent there: the rate it is valued at. The interest abroad is paid home and in the profit since HD1, so the dollars held no longer grow by it. */
+    /** ...and what it holds abroad, less what it sent there and the interest it earned and kept there (a line of its profit, HD2): the rate it is valued at. */
     public static double abroadRevalued(SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
-        return now.foreignAssets() - then.foreignAssets() - now.investedAbroad();
+        return now.foreignAssets() - then.foreignAssets() - now.investedAbroad() - now.foreignInterest();
     }
 
     /** The month's statement of changes in equity, in columns; null when last month's sheet is not on file. */

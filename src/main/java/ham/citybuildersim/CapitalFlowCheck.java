@@ -26,10 +26,12 @@ import java.nio.file.Path;
  *   4. Does it reach the bank, and does the bank's capacity go with it? Money
  *      that arrives and changes nothing is a number on a screen.
  *
- *   5. Is the coupon the businesses earn on their dollars abroad profit, paid
- *      home (HD1, 2026-10-29)? A line of the statement below the operating
- *      line, taxed, in the dividend, in the till, and the dollars held not
- *      grown by it - while the rate moving them is a revaluation, no income.
+ *   5. Is the coupon the businesses earn on their dollars abroad profit, kept
+ *      abroad (HD1, 2026-10-29; HD2, 2026-10-30)? A line of the statement
+ *      below the operating line, taxed, in the dividend, with the cash kept
+ *      where it was earned: the dollars held grow by it, the till pays the tax
+ *      and the dividend and receives none of it - while the rate moving the
+ *      dollars is a revaluation, no income.
  */
 public class CapitalFlowCheck {
 
@@ -417,9 +419,9 @@ public class CapitalFlowCheck {
         assertTrue("...and not all of it - working capital stays",
                 econ.getSectorCash(con) > 0
                         && abroad.localValue(con) / wealth <= OutwardInvestment.MAX_SHARE + 1e-9);
-        // HD1 (2026-10-29): the coupon is paid home with the statement (payCoupons(), section 9), not rolled
-        // here, so takeMonth() alone earns nothing: the wealth is what it began with, the dollars held are
-        // what was sent, and the till is touched by the move and by nothing else.
+        // HD1, HD2 (2026-10-29, 30): payCoupons() strikes the coupon with the statement and keeps it abroad
+        // (section 9), so takeMonth() alone earns nothing: the wealth is what it began with, the dollars held
+        // are what was sent, and the till is touched by the move and by nothing else.
         close("takeMonth() alone earns no coupon: the wealth is what it began with", wealth, 1_000_000, .005);
         close("...the dollars held are what was sent, none rolled in",
                 abroad.totalUsd(), abroad.getLifetimeOut() - abroad.getLifetimeHome(), .005);
@@ -477,25 +479,49 @@ public class CapitalFlowCheck {
         assertTrue("a live city sends money abroad on its own", abroad.totalUsd() > 0);
         assertTrue("...and every month of it is conserved", worstResidual < 1e-9);
 
-        /* ======== 9. the coupon abroad is profit, paid home (HD1) ======== */
-        out.println("\n--- the coupon abroad is profit, paid home ---");
+        /* ======== 9. the coupon abroad is profit, kept abroad (HD1, HD2) ======== */
+        out.println("\n--- the coupon abroad is profit, kept abroad ---");
 
         /*
-         * JERUS, 2026-10-28: "interest abroad as profit sure". The coupon on a
+         * JERUS, 2026-10-28: "interest abroad as profit sure"; 2026-10-29, of
+         * HD1-C's three ways: "Kept abroad (Recommended)". The coupon on a
          * business's dollars abroad used to roll into the dollars held and
          * reach no statement, so no profit tax and no dividend ever saw it
          * (his San Francisco city held $406.8T abroad, 47x GDP, 57% of it
-         * compounded coupon). It is paid home now, struck with the statements
+         * compounded coupon). It is struck with the statements now
          * (OutwardInvestment.payCoupons()) as a line of finance income below
-         * the operating line. THE FIXTURE IS A TWIN: two cities that are the
-         * same city, one of whose builders holds dollars abroad and the
-         * other's none, played through the same months - so the one difference
-         * between them is the coupon, and the profit, the tax, the till and the
-         * dividend each differ by exactly what the rule says.
+         * the operating line, and the cash stays where it was earned: the
+         * dollars held grow by it, and the till pays the profit tax and the
+         * dividend struck on it and receives none of it. (Paid home, as HD1
+         * had it, it lifted the currency at low policy rates and inverted
+         * MonetaryCheck's rate dial.) THE FIXTURE IS A TWIN: two cities that
+         * are the same city, one of whose builders holds dollars abroad and
+         * the other's none, played through the same months - so the one
+         * difference between them is the coupon, and the profit, the tax, the
+         * till, the dollars and the dividend each differ by exactly what the
+         * rule says.
+         *
+         * BOTH TILLS ARE TOPPED UP first. A company over its target equity
+         * has the exchange post a buyback bid for it (Exchange.postCompanies())
+         * and asks for the cash with its cushion over: a till that is short
+         * calls dollars home to find it. With the dollars only in one twin
+         * that one recalls and buys, and the other cannot - a decision that
+         * reads the till, and a recall at last month's rate besides - and the
+         * twins part by far more than the coupon. With each till able to pay
+         * what the exchange asks, both buy the same shares from the same
+         * cash and no dollars are called home. A month is played with the
+         * top-up in, in both and before any dollars: a sector's opening cash
+         * is last month's close, so cash put in between would be NOT
+         * ACCOUNTED FOR in the month measured.
          */
         String earner = Sectors.CONSTRUCTION;
+        double topUp = 1_000;
         Game plainCity = couponCity("couponplain"), heldCity = couponCity("couponheld");
         Sector plainSector = plainCity.getSectors().byKey(earner), heldSector = heldCity.getSectors().byKey(earner);
+        plainSector.addCash(topUp);
+        heldSector.addCash(topUp);
+        quietMonth(plainCity);
+        quietMonth(heldCity);
         boolean sameCity = plainCity.getMonth() == heldCity.getMonth()
                 && Double.compare(plainCity.getForeignAccounts().getRate(), heldCity.getForeignAccounts().getRate()) == 0;
         for (Sector x : plainCity.getSectors().all()) {
@@ -526,8 +552,13 @@ public class CapitalFlowCheck {
                 coupon, heldUsd * DebtManager.WORLD_BASE_RATE / 12 * monthRate, 1e-9);
         assertTrue("fixture: the till covered the month's dividend, so no dollars were called home",
                 heldMonth.openingCash() >= heldMonth.dividendsPaid());
-        close("...and the dollars held did not grow by it: they are what was held and what the month moved",
-                held.getUsd(earner), heldUsd + held.getMovedThisMonth(earner) / monthRate, 1e-9);
+        close("fixture: both twins bought back the same shares, so none were called home for it",
+                heldMonth.sharesBoughtBack(), plainMonth.sharesBoughtBack(), 1e-9);
+        // ...kept abroad: the dollars held GREW by it, at this month's rate, beside what the month moved.
+        close("...and the dollars held grew by it: what was held, the coupon and what the month moved",
+                held.getUsd(earner), heldUsd + coupon / monthRate + held.getMovedThisMonth(earner) / monthRate, 1e-9);
+        out.printf("   its dollars after the month: US$%,.3fk, of which the coupon US$%,.3fk; its till %,.3fk against its twin's %,.3fk%n",
+                held.getUsd(earner), coupon / monthRate, heldMonth.cash(), plainMonth.cash());
 
         close("the statement carries it as a line of its own", heldStatement.foreignIncome, coupon, 1e-9);
         close("...the twin's carries none", plainStatement.foreignIncome, 0, 0);
@@ -549,19 +580,46 @@ public class CapitalFlowCheck {
                 heldStatement.netIncome - plainStatement.netIncome, coupon * (1 - taxRate), 1e-9);
         close("...and its books read the same coupon", heldMonth.foreignInterest(), coupon, 1e-9);
 
-        // ...what the month moved abroad, and the thieves took of the larger till (a share of it), aside.
-        close("the till gained the coupon x (1 - the tax rate), the move and the thieves aside",
+        // ...the till pays the tax on it and none of it arrives: what the month moved abroad or home, what the thieves
+        // took of the larger till (a share of it) and the shares each bought back (the same, by the guard above), aside.
+        close("the till moved only by the tax: the coupon x the tax rate less, none of it received",
                 (heldMonth.cash() - plainMonth.cash()) + (heldMonth.investedAbroad() - plainMonth.investedAbroad())
-                        + (heldMonth.stolen() - plainMonth.stolen()),
-                coupon * (1 - taxRate), 1e-9);
+                        + (heldMonth.stolen() - plainMonth.stolen())
+                        + (heldMonth.sharesBoughtBack() - plainMonth.sharesBoughtBack()),
+                -coupon * taxRate, 1e-9);
         assertTrue("...and its cash flow still closes: nothing unaccounted for",
                 Math.abs(heldMonth.unexplained()) <= 1e-9 * Math.max(1, heldMonth.unexplainedScale()));
+        SectorBooks.SectorMonth noMonth = SectorBooks.SectorMonth.none(earner);
+        SectorStatements.Table heldFlow = SectorStatements.cashFlow(heldMonth, noMonth);
+        SectorStatements.Table plainFlow = SectorStatements.cashFlow(plainMonth, noMonth);
+        close("...with the coupon a line of its own in the cash flows, taken out again: minus the coupon",
+                heldFlow.now(SectorStatements.CASH_KEPT_ABROAD), -coupon, 1e-9);
+        close("...the twin's has none there", plainFlow.now(SectorStatements.CASH_KEPT_ABROAD), 0, 0);
+        assertTrue("...and the line shows for the one and not the other",
+                heldFlow.row(SectorStatements.CASH_KEPT_ABROAD).shown() && !plainFlow.row(SectorStatements.CASH_KEPT_ABROAD).shown());
+
+        // ...and the balance of payments reads what a reinvested coupon is: income in, the same out as investment.
+        MoneyAudit.Result heldAudit = heldCity.getLastMoneyAudit(), plainAudit = plainCity.getLastMoneyAudit();
+        close("the balance of payments: the income received differs by the coupon",
+                heldAudit.incomeIn - plainAudit.incomeIn, coupon, 1e-9);
+        close("...and the capital sent out less brought home by the coupon and what the month moved",
+                (heldAudit.financialOut - heldAudit.financialIn) - (plainAudit.financialOut - plainAudit.financialIn),
+                coupon + held.getMovedThisMonth(earner), 1e-9 * Math.max(1, Math.abs(coupon + held.getMovedThisMonth(earner))));
 
         int company = Equity.indexOf(earner);
         close("the dividend it will be struck on is larger by PAYOUT x the coupon x (1 - the tax rate)",
                 heldCity.getEquity().dividendDue(company, heldMonth.netIncome())
                         - plainCity.getEquity().dividendDue(company, plainMonth.netIncome()),
                 Equity.PAYOUT * coupon * (1 - taxRate), 1e-9);
+
+        // ...and the register values the business on what it earned, its money at face beside it (EM1): the coupon is in the profit
+        // since HD2, so it is taken out of the income the register records, and counted with what its money earns.
+        close("the register reads the business without the coupon: the twin's net income",
+                heldMonth.businessNetIncome(), plainMonth.netIncome(), 1e-9);
+        close("...the coupon after its tax is left to what its money earns: the coupon x (1 - the tax rate)",
+                heldMonth.foreignInterestAfterTax(), coupon * (1 - taxRate), 1e-9);
+        close("...and the register's earnings are the twin's, the same twelve months",
+                heldCity.getEquity().getTrailingIncome(company) - plainCity.getEquity().getTrailingIncome(company), 0, 1e-9);
 
         // ...and the next month pays it, and the rate has moved under the dollars it still holds.
         double usdBefore = held.getUsd(earner), rateBefore = held.getLastRate();
@@ -587,6 +645,19 @@ public class CapitalFlowCheck {
                 couponNext, usdBefore * DebtManager.WORLD_BASE_RATE / 12 * rateNow, 1e-9);
         close("...the revaluation is not in the profit: it differs from its twin's by the coupon alone",
                 heldSector.statement().preTaxIncome - plainSector.statement().preTaxIncome, couponNext, 1e-9);
+
+        // ...over both months the till moved only by the tax on both coupons and the extra dividend: the move abroad or
+        // home, the thieves' share of the larger till and the shares bought back (the same, by the guard above) named
+        // aside, as each is a line of the cash flows. (The bank's interest on the larger till is no term: it paid
+        // this sector's till nothing in either month, which the cash flows' own line would show.)
+        close("over both months the till moved only by the tax on both coupons and the extra dividend",
+                (heldNext.cash() - plainNext.cash())
+                        + (heldMonth.investedAbroad() - plainMonth.investedAbroad())
+                        + (heldNext.investedAbroad() - plainNext.investedAbroad())
+                        + (heldMonth.stolen() - plainMonth.stolen()) + (heldNext.stolen() - plainNext.stolen())
+                        + (heldMonth.sharesBoughtBack() - plainMonth.sharesBoughtBack())
+                        + (heldNext.sharesBoughtBack() - plainNext.sharesBoughtBack()),
+                -taxRate * (coupon + couponNext) - Equity.PAYOUT * coupon * (1 - taxRate), 1e-9);
 
         // ...and what a save keeps of it.
         Sector.Statement kept = heldSector.toState().statement.toStatement();

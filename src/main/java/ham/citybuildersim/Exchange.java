@@ -477,7 +477,7 @@ public class Exchange {
     public double spareOf(int c)       { return spare[c]; }
     /** ...its net income over the last year, total: what its business earned, after tax (EM1). */
     public double earningsOf(int c)    { return earnings[c]; }
-    /** ...and what its money earned it over the last year, total: deposit interest, the coupon on its dollars abroad and its bonds' coupons, the month's twelve times (EM1). */
+    /** ...and what its money earned it over the last year, total: deposit interest, the coupon on its dollars abroad (after its tax) and its bonds' coupons, the month's twelve times (EM1, HD2). */
     public double moneyIncomeOf(int c) { return moneyIncome[c]; }
 
     /** The money past the cushion a share carries in its fair value: the spare over the shares in issue; none until the company is valued on its record (EM1). */
@@ -581,7 +581,7 @@ public class Exchange {
          * says nothing, so that fixture's companies hold no money to value.
          */
         default double money(int company) { return 0; }
-        /** ...and what that money earns it a year at the month's rates: deposit interest, the coupon on its dollars abroad and its bonds' coupons - off its statement, so not in the earnings the business is valued on (EM1). */
+        /** ...and what that money earns it a year at the month's rates: deposit interest, the coupon on its dollars abroad after its tax (on its statement since HD2, taken out of the earnings) and its bonds' coupons - so not in the earnings the business is valued on (EM1). */
         default double moneyIncome(int company) { return 0; }
     }
 

@@ -1018,7 +1018,7 @@ public abstract class Sector {
     private double interestExpense;
     private double propertyTaxExpense;
     private double maintenanceExpense;
-    /** The coupon on its dollars abroad, paid home this month, local money (HD1). Set at the top of the month by OutwardInvestment.payCoupons(); a line of the statement, inside the profit. */
+    /** The coupon on its dollars abroad this month, local money (HD1, HD2). Set at the top of the month by OutwardInvestment.payCoupons(); a line of the statement, inside the profit, and kept abroad: bank() puts none of it in the till. */
     private double foreignIncome;
 
     /** The profit rate in force this month. Set before the statement runs. */
@@ -2045,7 +2045,7 @@ public abstract class Sector {
          * Nothing for every sector until a works makes power.
          */
         public double powerSold;
-        /** The coupon on its dollars abroad, paid home (HD1): a line of finance income BELOW the operating line and inside preTaxIncome, so the profit tax and the dividend see it, and banked in the till with the rest of netIncome. Not revenue, not otherRevenue, not in the sales-tax base. */
+        /** The coupon on its dollars abroad (HD1, HD2): a line of finance income BELOW the operating line and inside preTaxIncome, so the profit tax and the dividend see it. It is inside netIncome but NOT cash: it is kept abroad, so bank() takes it out of what it puts in the till, and the till pays the tax on it and receives none of it. Not revenue, not otherRevenue, not in the sales-tax base. */
         public double foreignIncome;
 
         void scale(double s) {
@@ -2125,7 +2125,7 @@ public abstract class Sector {
         s.borrowingCosts = expenseBorrowingCosts();
         s.propertyTax = propertyTaxExpense;
         s.salesTax = 0;
-        // ...and the coupon on its dollars abroad, paid home (HD1): added only when there is one, as a zero added is not always nothing.
+        // ...and the coupon on its dollars abroad, kept there (HD1, HD2): added only when there is one, as a zero added is not always nothing.
         s.foreignIncome = foreignIncome;
         double earned = s.foreignIncome != 0 ? s.operatingIncome + s.foreignIncome : s.operatingIncome;
         s.preTaxIncome = earned - s.interest - s.borrowingCosts - s.propertyTax;
@@ -2167,6 +2167,8 @@ public abstract class Sector {
         // this month and no cash this month (Ledger.paidEarlier); and the tax
         // credited back on a building is cash back on the building.
         cash += s.netIncome + s.paidEarlier;
+        // ...the coupon on its dollars abroad is in the profit and stays abroad (HD2): payCoupons() grew the dollars by it, so the till pays its tax and receives none of it.
+        if (s.foreignIncome != 0) cash -= s.foreignIncome;
         if (s.capitalTaxCredit != 0) cash += s.capitalTaxCredit;
         // ...and what its borrowing cost it up front was paid when it borrowed (0.7.102): a cost now, no cash now.
         if (s.borrowingCosts != 0) cash += s.borrowingCosts;
