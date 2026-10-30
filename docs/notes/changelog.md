@@ -18,7 +18,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.76 — HD2, the coupon abroad as profit, kept abroad — 2026-10-30, ready (Jerus: "Kept abroad (Recommended)"; two reds on "hd1, same"), see docs/queue/HD2-notes.md
+### 0.8.76 — HD2, the coupon abroad as profit, kept abroad — 2026-10-30, ready (Jerus: "Kept abroad (Recommended)"; two reds on "Ship, fix after (Recommended)", 2026-10-30), see docs/queue/HD2-notes.md
 The coupon a business earns on its dollars abroad is a line of its profit, as HD1 built it (finance income below the
 operating line, taxed, in the dividend), and its cash now stays abroad: the dollars grow by it, the till pays the tax and
 the dividend struck on it and calls dollars home only when it is short, and the balance of payments books it as
@@ -26,7 +26,7 @@ reinvested earnings, income in and the same out as investment. The cash flows ca
 register values the business without it, after its tax, so EM1's fair value counts the dollars once. MonetaryCheck's
 rate dial keeps its sign (10.75/9.71/9.04/8.72% at 3/10/20/40%): EM1's market has already emptied HD1's hoard (a
 hundredth of a year's GDP abroad), so even paid home it would. Ensemble 23 of 25 against WN3's 23 of 26: R3 passes,
-the young cities a little smaller (AUTO2 median 280,956, WN3's 292,982). Shipped on "hd1, same" with two reds pending:
+the young cities a little smaller (AUTO2 median 280,956, WN3's 292,982). Shipped on "Ship, fix after (Recommended)", two reds pending:
 ScaleCheck's town no longer grows into a city (HD2-S), PassThroughCheck's price-index line reads a housing event (HD2-P).
 
 ### 0.8.75 — WN3, the world market — 2026-10-29, ready (Jerus: "WN3 yes ship, ill look into it later"), see docs/queue/WN3-notes.md
