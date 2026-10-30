@@ -1,6 +1,6 @@
 # WorldData.java - 1,067 lines · 105 methods · 20 constants · model
 
-`ham/citybuildersim/WorldData.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldData.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The reader of world-1.bin, the nations' world as data: the 196 nations and
 > the areas no nation holds, their borders (an owner a 15" cell, and the

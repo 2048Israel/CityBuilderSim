@@ -1,6 +1,6 @@
 # FloatLinkCheck.java - 1,840 lines · 60 methods · 16 constants · harnesses
 
-`ham/citybuildersim/FloatLinkCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FloatLinkCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The floating-rate note and the inflation-linked bond (CD5, spec-city-debt.md
 > sections 2.4, 2.5, 5.3 and 5.4; D25): a floater pays the month's policy rate
@@ -66,7 +66,7 @@
 
 **Uses:** [Debt](Debt.md) (72), [InflationLinkedBond](InflationLinkedBond.md) (63), [FloatingRateNote](FloatingRateNote.md) (62), [Game](Game.md) (30), [DebtManager](DebtManager.md) (29), [YieldCurve](YieldCurve.md) (16), [MoneyAudit](MoneyAudit.md) (12), [Rollover](Rollover.md) (11), [NationalAccounts](NationalAccounts.md) (9), [Buyback](Buyback.md) (8), [Auction](Auction.md) (7), [DebtQuote](DebtQuote.md) (6), [CallCheck](CallCheck.md) (5), [Founding](Founding.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [TreasuryJournal](TreasuryJournal.md) (2), [GameFiles](GameFiles.md) (2), [Sectors](Sectors.md) (2), [CapitalFlows](CapitalFlows.md) (2), [LongTermBond](LongTermBond.md) (2), [ShortTermTBill](ShortTermTBill.md) (2), [CentralBank](CentralBank.md) (1), [Bank](Bank.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
-**Used by (2):** [CallCheck](CallCheck.md), [DeskCheck](DeskCheck.md)
+**Used by (3):** [CallCheck](CallCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DeskCheck](DeskCheck.md)
 
 ## Sections
 

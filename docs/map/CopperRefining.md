@@ -1,6 +1,6 @@
 # CopperRefining.java - 251 lines · 12 methods · 4 constants · sectors
 
-`ham/citybuildersim/sectors/CopperRefining.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CopperRefining.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Smelters, refineries and rod mills - Copper Refining (0.7.133, batch I8;
 > docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12 and 5's I8 row; the

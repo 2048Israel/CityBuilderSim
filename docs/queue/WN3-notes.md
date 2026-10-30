@@ -206,6 +206,26 @@ wait on it. If Jerus would rather no premise shipped red, (b).
 
 ## 4. The checks
 
+**The final tip** (fb639039: main 0.8.74 merged - BK1, HD1, EM1 - and the M7 mends), both files named: **the full
+suite exits 4, two NEW reds, both WN3-F** (5 item 10, shipped on Jerus's word): SlopeCheck's Rod Mill, and
+LandmassCheck's Rotterdam run, which meets the same fault m962-m968 on the merged path (after the January re-solve
+cathode's import price 79.8 to 120.1, rod's export price 97.5 to 70.7; Copper Refining imports 10.1M of cathode and
+exports 5.3M of rod a month until it cuts back; GDP -997k at m962). SectorStatementCheck is green (5 item 9).
+LongPlaytest finds nothing. 3 timing lines soft, Stale no firm finding. **M7**: the merge turned nine harnesses red
+that were green on both sides; eight fixtures were mended to cause their conditions again (CreditCheck's Note sized to
+half a year of tax; CurrencyRegimeCheck 10's candidates given the world's appetite for the city's paper, EM1's buybacks
+abroad emptying the peg's vault a month early; SaveFileCheck waiting for hot money to arrive; EducationCheck's hand-sum
+carrying every line of the revenue total, EM1's fund transfer among them; HealthCheck's drain keeping the bank shut for
+the window, a fixture that had never caused its condition, 52.33 against 52.61 before; CarCheck holding Freight, a
+railway now carrying the town's petrol; MapCheck relisting the pick it holds and warming its played city past its first
+view change; LandmassCheck filling the island in the month it links, EM1's city having no free ground left at m504).
+The ninth was a model fault, fixed at its cause: `DebtManager.debtAfterProceedsOf()` left out the indexation a linker
+had accrued, which `getPricedDebt()` counts (CD5), so a linker sale was priced rich and FloatLinkCheck 7's round trip
+came out 20.48 ahead (latent on main, where the fee hid it; -12.72 now). No assertion moved. The ensemble
+(`docs/ensemble/WN3.md`) is the one on 48c92296, before BK1, HD1 and EM1; not rerun on this tip.
+
+Before them:
+
 On the branch's tip (018f7761: main 0.8.71 merged, (2a), THE ORDER, the mends), earth-2.bin and world-1.bin named:
 
 - **The full suite** (`./batch-check.sh`): **exit 4, two NEW reds, both model faults** left for Jerus's word (5 items
@@ -308,7 +328,8 @@ On the branch's tip (018f7761: main 0.8.71 merged, (2a), THE ORDER, the mends), 
    of rod at 314.59 - a works whose product sells under its input: GDP -1,219,708 at m834, 49 negative months to
    m1837. The fix is THE ORDER's for flow goods (a flow good's line idles when its net export price is under its
    marginal cost, as `getExportBoundOutput()` already rules for a stockable good's spare) - a model change, for
-   Jerus's word with 3b.
+   Jerus's word with 3b. After main 0.8.74 was merged LandmassCheck's Rotterdam run meets it too (m962-m968, 4 above):
+   both reds shipped on his word ("WN3 yes ship, ill look into it later"), the row WN3-F.
 
 ## 6. For the next batches
 

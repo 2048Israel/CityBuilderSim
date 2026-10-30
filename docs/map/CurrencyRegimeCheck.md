@@ -1,6 +1,6 @@
-# CurrencyRegimeCheck.java - 1,627 lines · 45 methods · 7 constants · harnesses
+# CurrencyRegimeCheck.java - 1,638 lines · 45 methods · 7 constants · harnesses
 
-`ham/citybuildersim/CurrencyRegimeCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CurrencyRegimeCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Proves the D$'s four regimes - Float, Lean against falls (the default), Band
 > and Peg to the US$ - hold the currency where they say and cost what they
@@ -64,7 +64,7 @@
 >      array is 19 long (FX8): slot 15 the doubt's lifetime, 16 to 18 the month's
 > ... (46 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (119), [Game](Game.md) (43), [DebtManager](DebtManager.md) (32), [CapitalFlows](CapitalFlows.md) (29), [CurrencyCheck](CurrencyCheck.md) (11), [Expectations](Expectations.md) (11), [ExchangeRateCheck](ExchangeRateCheck.md) (11), [Founding](Founding.md) (9), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (119), [Game](Game.md) (43), [DebtManager](DebtManager.md) (32), [CapitalFlows](CapitalFlows.md) (29), [CurrencyCheck](CurrencyCheck.md) (11), [Expectations](Expectations.md) (11), [ExchangeRateCheck](ExchangeRateCheck.md) (11), [Founding](Founding.md) (9), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
 
 ## Sections
 
@@ -81,9 +81,9 @@
 | 1090 | 8. the currency aim holds a band, counted over 1,000 seeded years |
 | 1134 | 9. the toggle's two payers each pay exactly what the edge bought |
 | 1304 | 10. saved and loaded mid-peg |
-| 1435 | 11. a real run, counted |
-| 1503 | 12. the hot money's month crosses a save (FX8) |
-| 1567 | 13. leaving a peg takes its doubt with it (FX8) |
+| 1446 | 11. a real run, counted |
+| 1514 | 12. the hot money's month crosses a save (FX8) |
+| 1578 | 13. leaving a peg takes its doubt with it (FX8) |
 
 ## Constants
 
@@ -104,13 +104,13 @@
 | 121 | `static int fails` |  |
 | 122 | `static PrintStream out` |  |
 | 123 | `static PrintStream quiet` |  |
-| 1506 | `static Game doubtCitySaved` | Section 12's city, kept for section 13: saved to slot 2 of its own scratch folder in the month the hot money left on doubt, then played on. |
+| 1517 | `static Game doubtCitySaved` | Section 12's city, kept for section 13: saved to slot 2 of its own scratch folder in the month the hot money left on doubt, then played on. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 119 | 1509 | **type** `public class CurrencyRegimeCheck` | Proves the D$'s four regimes - Float, Lean against falls (the default), Band and Peg to the US$ - hold the currency where they say and cost what they should (XR2, 2026-10-22): Lean is exactly the float the city had be... |
+| 119 | 1520 | **type** `public class CurrencyRegimeCheck` | Proves the D$'s four regimes - Float, Lean against falls (the default), Band and Peg to the US$ - hold the currency where they say and cost what they should (XR2, 2026-10-22): Lean is exactly the float the city had be... |
 | 125 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 130 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 141 | 9 | `static void same(String label, double actual, double expected)` | Equal to the bit. |
@@ -202,28 +202,28 @@
 | 1291 | 4 | `static boolean keepsSomething(CentralBank cb)` | A miss, as LongPlaytest counts one: past a cent and past a billionth of M0. |
 | 1297 | 6 | `static void tallyKept(int[] tally, Game...cities)` | One more month held to the identity in each of these cities: tally[0] counts the city-months, tally[1] the misses. |
 
-### 10. saved and loaded mid-peg (lines 1304-1434)
+### 10. saved and loaded mid-peg (lines 1304-1445)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1307 | 7 | `static double[] regimeFields(ForeignAccounts fx)` | The regime's state as the getters say it: every figure XR2 added to the currency, as one row. |
-| 1315 | 119 | `static void savedMidPeg()` |  |
+| 1315 | 130 | `static void savedMidPeg()` |  |
 
-### 11. a real run, counted (lines 1435-1502)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1437 | 65 | `static void aRealRun()` |  |
-
-### 12. the hot money's month crosses a save (FX8) (lines 1503-1566)
+### 11. a real run, counted (lines 1446-1513)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1508 | 58 | `static void theHotMoneysMonthCrossesASave()` |  |
+| 1448 | 65 | `static void aRealRun()` |  |
 
-### 13. leaving a peg takes its doubt with it (FX8) (lines 1567-1627)
+### 12. the hot money's month crosses a save (FX8) (lines 1514-1577)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1569 | 58 | `static void leavingAPegTakesItsDoubt()` |  |
+| 1519 | 58 | `static void theHotMoneysMonthCrossesASave()` |  |
+
+### 13. leaving a peg takes its doubt with it (FX8) (lines 1578-1638)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1580 | 58 | `static void leavingAPegTakesItsDoubt()` |  |
 

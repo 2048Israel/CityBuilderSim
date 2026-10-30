@@ -1,6 +1,6 @@
 # GlobePicture.java - 411 lines · 33 methods · 9 constants · model
 
-`ham/citybuildersim/GlobePicture.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GlobePicture.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The planet's picture: a code a texel on a latitude-longitude grid at ARCMIN - a World class and, since ET1, its relief - made from the Earth's data by the far rule through the grid's camera - ice and desert, the forest dithered, the rivers wide enough for a texel - and a frame of the globe drawn from it, each pixel's orthographic inverse then its texel.
 > 

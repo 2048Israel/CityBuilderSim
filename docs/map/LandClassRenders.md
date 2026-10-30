@@ -1,6 +1,6 @@
 # LandClassRenders.java - 175 lines · 6 methods · 0 constants · tools
 
-`ham/citybuildersim/tools/LandClassRenders.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/LandClassRenders.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Renders what ET3 says about the classes of ground, for review: the land office's prices and offers by class and note 11
 > of the sector statements, in the words the screens use (LandClassView), for cities played on the real Earth.

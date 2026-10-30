@@ -1,6 +1,6 @@
 # TradeLanes.java - 840 lines · 65 methods · 14 constants · model
 
-`ham/citybuildersim/TradeLanes.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TradeLanes.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The city's trade as routes on the Earth's map, without the toolkit: one lane from the city toward each partner, the lanes that go the same way
 > shared and branching where they part, cut to a view and projected to pixels, each edge once, with the widths of what is sold and what is bought

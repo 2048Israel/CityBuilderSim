@@ -1,6 +1,6 @@
 # TradeBandCheck.java - 440 lines · 18 methods · 0 constants · harnesses
 
-`ham/citybuildersim/TradeBandCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TradeBandCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > TradeBand, the model behind the Trade tab's band in legs, held to the
 > study's last bullet of section 6 (docs/studies/spec-freight-and-infrastructure.md):

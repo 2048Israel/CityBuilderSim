@@ -1,6 +1,6 @@
 # Sickness.java - 357 lines · 24 methods · 6 constants · model
 
-`ham/citybuildersim/Sickness.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Sickness.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Who has been sick, and for how long - and the ones it kills.
 > 

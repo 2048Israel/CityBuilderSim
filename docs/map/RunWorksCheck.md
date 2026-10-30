@@ -1,6 +1,6 @@
 # RunWorksCheck.java - 1,303 lines · 40 methods · 8 constants · harnesses
 
-`ham/citybuildersim/RunWorksCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RunWorksCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a
 > highway's or a railway line's ground comes from every class of ground in the city's proportions, not from the

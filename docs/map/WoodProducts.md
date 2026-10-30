@@ -1,6 +1,6 @@
 # WoodProducts.java - 107 lines · 2 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/WoodProducts.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/WoodProducts.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Sawmills, and the panel, pulp, paper and pellet mills - Wood Products
 > (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.7, 2.8, 2.12 and

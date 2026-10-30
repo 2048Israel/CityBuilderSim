@@ -1,6 +1,6 @@
 # CopperRefiningCheck.java - 693 lines · 17 methods · 15 constants · harnesses
 
-`ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
 > 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -

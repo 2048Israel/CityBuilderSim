@@ -1,6 +1,6 @@
 # InvestCheck.java - 1,614 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/InvestCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InvestCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > Verifies the private investment engine: forecasting, the demand tests, and
 > the brake. Not part of the game.

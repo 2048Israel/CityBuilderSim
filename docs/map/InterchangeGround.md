@@ -1,6 +1,6 @@
 # InterchangeGround.java - 169 lines · 9 methods · 5 constants · model
 
-`ham/citybuildersim/InterchangeGround.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InterchangeGround.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
 > The ground a highway interchange keeps: a 19 x 19 plot reserve centred on
 > each highway x highway crossing (a cloverleaf), an 11 x 11 one beside each
