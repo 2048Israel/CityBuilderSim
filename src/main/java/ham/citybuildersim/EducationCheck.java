@@ -1143,7 +1143,15 @@ public class EducationCheck {
                         // ...and the central bank's profit, a revenue line since 0.7.0 that
                         // this sum left out while the fixture's month happened to remit none
                         // (0.7.8's bank moved the city's month onto one that does).
-                        + ln.getCentralBankRemittance())) < 1e-9);
+                        + ln.getCentralBankRemittance()
+                        // WN3 (after EM1): ...and the rest of getTotalRevenue()'s lines, which this sum left out while the fixture's month
+                        // happened to have none of them - the same mend as the remittance above. On the merged model the city rescues its
+                        // bank in month 125 ($42.6M for 3,200 shares, the rescue book) and, by month 150, the stake is worth $738.5M at
+                        // EM1's fair value of a bank (its earnings capitalised); the fund pays its transfer on it, a twelfth of
+                        // TreasuryFund.TRANSFER_RATE of all it is worth, $1,862k in the month read here, which the total counts (a revenue
+                        // line since 0.7.14) and this sum did not. The difference was that line to 13 digits and nothing else.
+                        + ln.getFundTransfer() + ln.getMortgagePremiums() + ln.getTransitFares() + ln.getReserveCrudeSold()
+                        + ln.getFuelDuty() + ln.getPortDues())) < 1e-9);
         assertTrue("...while the journal's line is principal, net of what was lent",
                 lender.getStudentLoansRepaid() == lb.totalStudentRepaid()
                         && journalLine(lender, "Lent to students, net of repayments")

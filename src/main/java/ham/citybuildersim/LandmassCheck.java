@@ -3071,10 +3071,40 @@ public class LandmassCheck {
         boolean island = orderOn(c, gc, 1, false, 648) == Game.BuildResult.SUCCESS;
         boolean atHome = order(c, gc, 1, false, Landmasses.RULE) == Game.BuildResult.SUCCESS;
         look.run();
+        // Home filled by a fixture: houses ordered until the linked free ground is below half the island's buildable ground. The island is linked, so the map's districts there are room, and the houses home has no room for are drawn on the island.
+        // WN3 (after EM1): this ran after the 480 months, on a city the run had left with its linked ground free: until EM1 the grown city stood still
+        // from month 312 (528 buildings, about 2,300 people, 43.8M sq ft of linked ground free at month 504; BK1's merge point gives the same figures
+        // at every sample). With EM1 it grows on - 956 buildings and 26,000 people by month 504, 26,440 sq ft free of the 56.3M it owns, the island's
+        // as full as home's - so no house was left to order, "0 houses ordered", and the fixture's own premise (ground to fill) was gone. The mend steps
+        // the city to the condition: the fill is made in the month the island links (month 239, 43.5M sq ft of linked ground free, as the old city had
+        // at month 504), and the rest of the 480 months is played and audited on the filled city.
+        double halfIsland = 0, filledAvailable = Double.NaN;
+        int filledWith = 0, onIsland = 0;
+        int[] afterFilled = { -1 };
+        boolean filledLinked = false, filledClean = false;
         for (int m = 0; m < GROWN_MONTHS; m++) {
             quietly(() -> g.simulateMonths(1));
             look.run();
-            if (month648 < 0 && lms.linked(648)) month648 = g.getMonth();
+            if (month648 < 0 && lms.linked(648)) {
+                month648 = g.getMonth();
+                Landmasses.Row isl = lms.rows().get(1);
+                halfIsland = isl.buildableSqFt() / 2;
+                BuildingsTemplate house = tpl(c, "House");
+                for (int round = 0; round < 40 && c.lm.getAvailableSqFt() >= halfIsland; round++) {
+                    quietly(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
+                    int n = (int) Math.floor((c.lm.getAvailableSqFt() - halfIsland) / house.getLandSqFt()) + 1;
+                    if (order(c, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
+                    filledWith += n;
+                }
+                quietly(() -> g.simulateMonths(1));
+                look.run();
+                CityMap filledMap = g.getCityMap();
+                onIsland = boxesOnLandmass(filledMap, w, 648, mtx0, mty0, 4);
+                afterFilled = drawnOnUnlinked(filledMap, w, land, lms, mtx0, mty0, 4);
+                filledAvailable = c.lm.getAvailableSqFt();
+                filledLinked = lms.linked(648);
+                filledClean = audit(g) == null && g.getMapFailures() == 0;
+            }
             if (lms.anyUnlinked()) unlinkedMonths++;
         }
         report("24 months with the island owned and no terminal: it stays unlinked, owned and counted, and no investor's refusal hides it", stillUnlinked && unlinkedFree > 0, clause);
@@ -3087,25 +3117,10 @@ public class LandmassCheck {
         boolean grownSites = true;
         for (Resource sr : CityMap.SITED) grownSites &= g.getCityMap().ownedSites(sr) == c.lm.getSites(sr);
         check("the grown city's map, which measured every district again in the month " + month648 + " that linked the island, holds the model's sites (every sited resource)", grownSites);
-        // Home filled by a fixture: houses ordered until the linked free ground is below half the island's buildable ground. The island is linked now, so the map's districts there are room, and the houses home has no room for are drawn on the island.
-        Landmasses.Row isl = lms.rows().get(1);
-        double halfIsland = isl.buildableSqFt() / 2;
-        BuildingsTemplate house = tpl(c, "House");
-        int filledWith = 0;
-        for (int round = 0; round < 40 && c.lm.getAvailableSqFt() >= halfIsland; round++) {
-            quietly(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
-            int n = (int) Math.floor((c.lm.getAvailableSqFt() - halfIsland) / house.getLandSqFt()) + 1;
-            if (order(c, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
-            filledWith += n;
-        }
-        quietly(() -> g.simulateMonths(1));
-        look.run();
-        CityMap filledMap = g.getCityMap();
-        int onIsland = boxesOnLandmass(filledMap, w, 648, mtx0, mty0, 4);
-        int[] afterFilled = drawnOnUnlinked(filledMap, w, land, lms, mtx0, mty0, 4);
+        // ...(the fill itself ran in the month the island linked, above): the report is made here, where it always stood.
         report("home filled by a fixture (" + filledWith + " houses ordered until the linked free ground is under half the island's buildable ground): the map's districts on the island hold buildings, and none stands on an unlinked plot",
-                filledWith > 0 && c.lm.getAvailableSqFt() < halfIsland && lms.linked(648) && onIsland > 0 && afterFilled[0] == 0 && audit(g) == null && g.getMapFailures() == 0,
-                String.format("%d buildings drawn on the island; linked free %,.0f sq ft of %,.0f", onIsland, c.lm.getAvailableSqFt(), halfIsland));
+                filledWith > 0 && filledAvailable < halfIsland && filledLinked && onIsland > 0 && afterFilled[0] == 0 && filledClean,
+                String.format("%d buildings drawn on the island; linked free %,.0f sq ft of %,.0f", onIsland, filledAvailable, halfIsland));
         // ...and a city founded on the island itself, owning the mainland's field of iron across the water: 24 months with the automatic builder on, audited every
         // month. Here are sites no works may stand on, so the audit's count of the usable ones (getSites() against the pieces on linked ground, and the works against them) is asked of a field that matters.
         IslandCity ic = onTheIsland(f.key.data());

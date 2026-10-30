@@ -743,7 +743,14 @@ public class CreditCheck {
                 Math.abs(modest.rateBefore() - city.getDebtManager().getRate()) < 1e-12);
 
         // Now book each instrument and hold the ledger against the quote.
-        bookAndCompare(city, "Note",      5_000,  3,  1000,   true);
+        // WN3 (after EM1): the Note's ask is sized to the city's tax, half a year of it, not a flat D$5M. The struck expectations leave the
+        // 3-month rate flat on the floor, so all that lifts a Note's quote off it is the credit spread, linear in the debt over a year of
+        // tax and of output (DebtManager.spreadFor()). This city collects D$2,522k a month at month 61, where it collected D$1,705k before
+        // main's 0.8.72-0.8.74 (BK1, HD1, EM1), so D$5M of Note stood 0.93 basis points over the floor where onCurve() asks for more than 1
+        // (1.25 before: a quarter of a basis point from the clamp all along). Half a year of tax is D$15M here, a Note quoted at 3.02%, two
+        // basis points over, and the section is still about the quote and the booking agreeing, not the size.
+        double noteAsk = Math.rint(city.getDebtManager().getMonthlyTaxRevenue() * 12 / 2 / 1000) * 1000;
+        bookAndCompare(city, "Note",      noteAsk,  3,  1000,   true);
         bookAndCompare(city, "Serial", 20_000, 5,  10000,  true);
 
         /*

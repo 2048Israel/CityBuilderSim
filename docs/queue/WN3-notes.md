@@ -300,6 +300,8 @@ On the branch's tip (018f7761: main 0.8.71 merged, (2a), THE ORDER, the mends), 
    the harness stays red on its two lines: 223 of 479 bank months off by more than a cent, the worst 5.40 at m263
    (234 months and -2,444.78 at m284 before). What moves the rest is not traced: perhaps an event that grows a line's
    pool besides BK1's two. SectorStatementCheck is green on main, so it is reached only on the band.
+   **Green after main 0.8.73-0.8.74 (HD1, EM1) was merged**: 0 of 479 bank months off; what cleared the 5.40 is not
+   traced. No row left.
 10. **A works making a flow good runs at a loss** (SlopeCheck, red; a model fault, left): THE ORDER holds a works'
    order for what it makes of a *stockable* good; a Rod Mill makes rod, a flow good, made at the rate whatever it
    fetches. On SlopeCheck's city from m834 Copper Refining imports 163,302 t of cathode at 347.18 and exports 160,728 t

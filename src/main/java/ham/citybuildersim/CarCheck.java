@@ -876,6 +876,19 @@ public class CarCheck {
             final boolean dear = k == 1;
             quietly(() -> {
                 fareTown.newGame();
+                /*
+                 * WN3 (after EM1): the railway is held out of both towns. The fixture is a town whose petrol comes in at the world's
+                 * import price with nothing moved off the band (the "no refinery" line below asserts importPrice() == the world's price
+                 * x the exchange rate, so the freight in the band has to stand at its literal). On the merged model the town's
+                 * investors order a railway in month 102 (7,262 people; sectors.Freight.plan(): a station once the tonnes crossing the
+                 * boundary fill 60% of the smallest) that carries all of petrol's stream, so the lorries' freight leaves the band
+                 * (freightFactor 0, the import price $0.8650 a litre against the world's $0.9077) and the line compared the ladder with
+                 * a price the railway had lowered; the ladder itself (journey = litres x pump price on the import price) held to the bit.
+                 * On main 0.8.74 and on WN3 before the merge this line was green, so no railway carried petrol's freight by month 120.
+                 * A held sector orders nothing (BusinessInvestment.holdSector()); both towns hold it, so they stay the same but for the
+                 * fare, which is what the section weighs.
+                 */
+                fareTown.getBusinessInvestment().holdSector(Sectors.FREIGHT);
                 fareTown.setCashForTest(Founding.WEALTHY_CASH);
                 fareTown.getLandManager().setOwnedSqFt(400_000_000L);
                 BuildingManager b = fareTown.getBuildingManager();

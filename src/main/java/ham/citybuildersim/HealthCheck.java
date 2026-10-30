@@ -1306,6 +1306,21 @@ public class HealthCheck {
                 town.getEconomyManager().getTaxPolicy().setHealthFeeScale(scales[k]);
                 for (int m = 0; m < window; m++) {
                     trucksKeepUp(town);
+                    /*
+                     * WN3 (after EM1): THE BANK STAYS SHUT FOR THE WINDOW. The drain above shuts it once, for HouseholdBalance.LOCKOUT_MONTHS
+                     * (12), and then the households borrow again. From month 12 the old's cells have $8k to $27k a household to spend against
+                     * a care bill of $100 to $120 a household at x1 and $2.2k to $3.6k at x15, so every old head pays at both fees (at month 30,
+                     * 1,815 of them at x1 and 2,058 at x15, none turned away): the fee on senior care turned nobody away after the first eleven
+                     * months, and in those it turned away the same 965 of 1,767 old heads at x1 and at x15 (the ones the drain left with
+                     * nothing, whatever the fee). The twins' old were served alike (senior coverage 0.924 mean in both) and what the assertion
+                     * read was the all-ages sickness that general care sets: the old's rate 52.33 at x1 against 52.61 at x15 on WN3 before
+                     * the merge (e1be7c9f), a margin of 0.5%, and 53.17 against 53.14 on the merged model, 0.06% the other way. The fixture
+                     * had never caused its condition. Renewed each month, the shut bank is the drain's premise for all 96 months (households
+                     * with nothing behind them): the old's cells are broke or between the two bills, senior care is priced out in every month
+                     * and more of it at x15 (senior coverage 0.344 mean against 0.379 at x1), and the old's rate is 79.95 against 82.18.
+                     * The same renewal as CreditCheck's ban (heldBroke): a condition that wears off is caused again.
+                     */
+                    for (Household c : town.getHouseholdBalance().cells()) c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
                     town.simulateMonths(1);
                     Healthcare hc = town.getHealthcare();
                     double treated = 0, offered = 0;

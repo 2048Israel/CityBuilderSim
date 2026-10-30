@@ -1364,6 +1364,16 @@ public class SaveFileCheck {
          * shelf before each waited month makes the month the loop stops on
          * one the shops fell short in.
          */
+        /*
+         * ...AND FOR HOT MONEY TO HAVE ARRIVED (WN3, after EM1): the section below asserts the month's arrival crosses the save, so
+         * the loop waits for a month the stock fell short of its target. The stock tracks a target that is a spread times a year of
+         * the city's output (CapitalFlows.takeMonth), and the squeeze above pulls the output down (D$77,746k a month at month 151,
+         * D$50,885k at 154). This city is far bigger since EM1 (D$35,277k of hot money against D$11,922k, in an output of D$70,612k
+         * against D$34,088k a month, at the month the old conditions held), so the stock stood 13% over its target that month and
+         * 1,029.6k left with none arriving; before it hugged the target within 4% and the month fell either way. The stock closes
+         * its gap by a fifth a month and the first month the target is over it is month 168 in this path (1.97k arriving), so the
+         * loop waits for it as it waits for the hunger.
+         */
         int extraMonths = 0;
         do {
             full.buyForeignCurrency(1);
@@ -1374,7 +1384,8 @@ public class SaveFileCheck {
                 && (full.getHealth().getHungerRate() <= 0
                     || full.getTotalSubsidyPaid() <= 0
                     || full.getBank().depositRate() <= 0
-                    || full.getHouseholdBalance().getDeliveredShare() >= 1));
+                    || full.getHouseholdBalance().getDeliveredShare() >= 1
+                    || full.getCapitalFlows().getArrived() <= 0));
 
         // The treasury's rollover (0.7.13), set after the city has played to
         // the one setting no city founds with, so the round trip can fail.

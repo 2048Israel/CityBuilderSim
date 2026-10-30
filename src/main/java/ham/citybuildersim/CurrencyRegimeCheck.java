@@ -1323,9 +1323,20 @@ public class CurrencyRegimeCheck {
          * (the twelve months the section plays on after the save) until the month it is pegged, held, in doubt and owes a purchase;
          * a peg that breaks first is no candidate.
          */
+        /*
+         * ...WITH THE WORLD WANTING THE CITY'S MONEY (WN3, after EM1). The young town's month at the peg is a deficit (its companies'
+         * buybacks bought from the world took D$549k out of the city in month 46, against imports of D$608k), so the vault of
+         * the peg sells dollars every month, from US$18.8k at month 46 to US$3.9k at 55, and on the Random path every candidate that
+         * has outlived the doubt gives out by the vault at month 56 - one month before credibility has climbed and hot money floods
+         * in (month 57, D$1.3-1.5M owed), which is the first month with a purchase owed. The world is given an appetite for the
+         * city, as FloatLinkCheck's played city is given one (a tenth of the hot money it had, as early in a boom): the dollars it
+         * brings keep the vault above its floor to month 57, and the candidates that survive the doubt (SEED + 2 and + 3) are pegged,
+         * held, in doubt and owe a purchase in the month the loop's year ends.
+         */
         Game live = null;
         for (int attempt = 0; attempt < 6 && live == null; attempt++) {
             Game candidate = doubtTown("xr2-save-" + attempt, attempt == 0 ? 0 : SEED + attempt);
+            FloatLinkCheck.worldWantsPaper(candidate);
             ForeignAccounts fx = candidate.getForeignAccounts();
             for (int m = 0; m < 12 && live == null && !fx.brokeThisMonth(); m++) {
                 play(candidate, 1);
