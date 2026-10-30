@@ -112,9 +112,12 @@ public final class Markets {
                 m.setWorldPrices(Double.NaN, Double.NaN);
                 continue;
             }
-            double[] band = world.band(g, exportedLastMonth.applyAsDouble(g), importedLastMonth.applyAsDouble(g));
+            double exported = exportedLastMonth.applyAsDouble(g), imported = importedLastMonth.applyAsDouble(g);
+            double[] band = world.band(g, exported, imported);
             // {floor, ceiling}: the export price is the floor and the import price the ceiling.
             m.setWorldPrices(band[1], band[0]);
+            // ...and the slope it was struck on, so a works can ask what next month's band would be were it to export more (FL1).
+            m.setWorldBandCurve(units -> world.band(g, units, imported), exported);
         }
     }
 

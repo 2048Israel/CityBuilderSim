@@ -2473,11 +2473,16 @@ public abstract class Sector {
         if (g.stockable()) return;
         Output o = output(g);
         o.capacity = getCapacity(g);
-        double asked = o.capacity * getOperatingRate();
+        double full = o.capacity * getOperatingRate();
+        // ...no more than its inputs were ordered for (THE ORDER, FL1): the whole rate while nothing is cut, to the bit.
+        Double share = ordering ? orderShares.get(g) : null;
+        double asked = share == null ? full : full * share;
         o.planned = asked;
         o.produced = groundLimit(g, asked);
-        o.idled = 0;
+        o.idled = full - asked;
         o.exportBound = 0;
+        if (o.idled > 0) flowCut.put(g, o.idled);
+        else flowCut.remove(g);
         // ...its own need of it first, the rest to the market (0.7.112, CAPTIVE USE).
         if (captive(g)) {
             o.captive = Math.max(0, Math.min(o.produced, inputToMake(g) * getOperatingRate()));
@@ -2551,19 +2556,64 @@ public abstract class Sector {
        home market and the ship (getPlannedOutput() + getExportBoundOutput(),
        asked at the stock it expects to hold once the shed has sold what the
        market will take of it) over its nameplate past what its own works use;
-       a building's is the greatest of its stockable goods' (1 when it makes
-       a flow good, which is made at the rate whatever anyone buys, or
-       nothing). planOrders() fixes the shares once, at the top of the market
+       a building's is the greatest of its traded goods', flow or stockable
+       (1 when it makes nothing traded; a flow good's is FL1's, below).
+       planOrders() fixes the shares once, at the top of the market
        pass: the orders come before the market clears, and the stock moves in
        it. produceStock() then makes no more than was ordered for, and a
        forecast that missed high is held (written off past the room, as ever),
        so no input bought is lost. A month that makes its whole rate has
        share 1 everywhere and is what it was, to the bit; outside the pass
        nothing is planned and every share reads 1.
+
+       FL1 (2026-10-30): THE ORDER FOR A FLOW GOOD. WN3 left a flow good out:
+       a works that makes one makes it at the whole rate whatever it fetches,
+       and ships what the city does not take. WHY that was a fault:
+       LandmassCheck's Rotterdam city, in the January of month 961 when the
+       world market re-solved, had fourteen Rod Mills on imported cathode;
+       cathode's import price went from 79.7 to 120.1 and rod's net export
+       price from 95.5 to 68.8, and the mills still made 84,000 t a month,
+       shipped 75,000 t of it at 68.8 and imported the cathode at 120.1: GDP
+       -997,331 at month 962, and negative until the planner retired mills at
+       968. SlopeCheck's Medellin city, months 962 to 969: twenty-three mills
+       shipped 153,600 t of rod a month and rod's net export price fell to 3.33
+       with cathode at 442.6 (GDP -60.7M at 962), because the world's band has
+       a SLOPE: a month's band is set at its top from LAST month's exports of
+       the good, so a big export this month sinks next month's price.
+
+       A traded flow good's order share is now the share of its nameplate at
+       the rate that is made whatever it fetches, plus what of the rest can be
+       exported at no loss. The sector's own works' need of it (captive) and
+       the home market's demand at the last strike (plannedDemand(), as the
+       stockable rule's plan for home is) are made at any price, because the
+       city would otherwise import them at the ceiling; only the spare, which
+       can only be exported, is gated (forecastFlow()). A unit of it is worth
+       exporting while what it nets abroad is over what the inputs of a unit
+       cost the works (flowCostPerUnit()): the building's own traded inputs at
+       what they cost here, less the worth of any other good the same building
+       makes. That is the building's inputs and NOT getMarginalCostPerUnit(),
+       which splits the joint bill by sales value (costShareOf()) and in
+       Medellin read 214 a tonne of rod while the cathode in it cost 443;
+       power, water and consumables are left out on purpose, as their bills do
+       not move with the order, so inputs are all an order can save. The
+       volume is judged on the slope too (GoodsMarket.netExportPriceAt()): it
+       is not enough that this month's price pays, since exporting the whole
+       spare would sink next month's, so the spare exported is the most whose
+       next month's band still nets the cost plus FLOW_EXPORT_HEADROOM, or
+       failing that the cost itself - else the line would run every other
+       month. A month where nothing is cut has share exactly 1 and is what it
+       was, to the bit; with no world market the literals have no slope and
+       the rule is a stockable good's export bound.
        =================================================================== */
 
-    /** The share of each stockable good's market-facing nameplate this month's inputs are ordered for (THE ORDER): empty outside the market pass, never saved - it is decided afresh each month. */
+    /** The margin over its inputs' cost a works aims next month's export price at on the world's slope (FL1): a month's drift in the band then leaves this month's price over the cost, so the line does not stop every other month. */
+    public static final double FLOW_EXPORT_HEADROOM = .02;
+
+    /** The share of each traded good's nameplate this month's inputs are ordered for (THE ORDER; a flow good's since FL1): empty outside the market pass, never saved - it is decided afresh each month. */
     private final Map<Good, Double> orderShares = new EnumMap<>(Good.class);
+
+    /** The units of a flow good this month's order cut from its nameplate at the rate (FL1): only a cut over 0 is here, empty outside the market pass and never saved. */
+    private final Map<Good, Double> flowCut = new EnumMap<>(Good.class);
 
     /** Whether the market pass is on and its shares apply (THE ORDER). */
     private boolean ordering;
@@ -2577,13 +2627,14 @@ public abstract class Sector {
     /** Whether the sector orders its inputs for what it will make (THE ORDER): yes here; sectors.Refining says no, its crude is the run's (THE RUN, 0.7.105). */
     protected boolean ordersForWhatItMakes() { return true; }
 
-    /** Decides the month's order shares, before the flow goods are made (Markets.clearMonth(), after the fleets): nothing to decide for a sector that makes no stockable good (THE ORDER). */
+    /** Decides the month's order shares, before the flow goods are made (Markets.clearMonth(), after the fleets): nothing to decide for a sector that makes no traded good (THE ORDER; a flow good's since FL1). */
     public void planOrders() {
         orderShares.clear();
+        flowCut.clear();
         ordering = false;
         if (buildings == null || markets == null || !ordersForWhatItMakes()) return;
         boolean any = false;
-        for (Good g : makes) any |= g.stockable() && g.traded();
+        for (Good g : makes) any |= g.traded();
         if (!any) return;
         ordering = true;
         deciding = true;
@@ -2597,18 +2648,19 @@ public abstract class Sector {
     /** The market pass is over: nothing is planned, every share reads 1 again (THE ORDER). */
     public void endOrders() {
         orderShares.clear();
+        flowCut.clear();
         ordering = false;
     }
 
-    /** What share of a stockable good's market-facing nameplate this month's inputs are ordered for: 1 for a flow good and outside the market pass (THE ORDER). */
+    /** What share of a traded good's nameplate this month's inputs are ordered for (THE ORDER; a flow good's is FL1's): 1 for a good that is not traded and outside the market pass. */
     public double orderShare(Good g) {
-        if (!ordering || !g.stockable() || !g.traded()) return 1;
+        if (!ordering || !g.traded()) return 1;
         Double known = orderShares.get(g);
         if (known != null) return known;
         if (!deciding || !planning.add(g)) return 1;
         double share;
         try {
-            share = forecastOrder(g);
+            share = g.stockable() ? forecastOrder(g) : forecastFlow(g);
         } finally {
             planning.remove(g);
         }
@@ -2632,6 +2684,87 @@ public abstract class Sector {
         return made >= 0 ? Math.min(1, made / market) : 1;
     }
 
+    /**
+     * The share of a traded flow good's nameplate at the rate this month's inputs are ordered for (THE ORDER, FL1): what its own works need of it and
+     * what the home market demanded at the last strike are made at any price; of the spare, which can only be exported, what exportsAtNoLoss() says
+     * sells over its inputs' cost. Exactly 1 when none of the spare is cut, and for a good the world will not buy.
+     */
+    private double forecastFlow(Good g) {
+        double n = madeAtRate(g);
+        GoodsMarket m = markets.get(g);
+        if (!(n > 0) || m == null || !g.exportable()) return 1;
+        double own = captive(g) ? Math.min(n, inputToMake(g) * getOperatingRate()) : 0;
+        double home = Math.min(n - own, Math.max(0, plannedDemand(g)));
+        double spare = n - own - home;
+        if (!(spare > 0)) return 1;
+        double exported = exportsAtNoLoss(g, spare);
+        return exported >= spare ? 1 : 1 - (spare - exported) / n;
+    }
+
+    /**
+     * Of `spare` units of a flow good that can only be exported, the most that sells at no loss on the world's band (THE ORDER, FL1): all of it when
+     * nothing bought makes it, or when the whole of it nets over the inputs' cost plus FLOW_EXPORT_HEADROOM next month; none when this month's net
+     * export price is under the cost; otherwise the most whose next month's band (netExportPriceAt()) still nets the cost plus the headroom, found by
+     * bisection - or, where even none exported would net under the headroom, the most that nets the cost itself.
+     */
+    private double exportsAtNoLoss(Good g, double spare) {
+        double cost = flowCostPerUnit(g);
+        if (!(cost > 0)) return spare;
+        GoodsMarket m = markets.get(g);
+        if (!(m.netExportPrice() >= cost)) return 0;
+        double target = cost * (1 + FLOW_EXPORT_HEADROOM);
+        if (m.netExportPriceAt(spare) >= target) return spare;
+        double goal = m.netExportPriceAt(0) >= target ? target : cost;
+        if (!(m.netExportPriceAt(0) >= goal)) return 0;
+        if (m.netExportPriceAt(spare) >= goal) return spare;
+        double low = 0, high = spare;
+        for (int i = 0; i < 60; i++) {
+            double mid = (low + high) / 2;
+            if (m.netExportPriceAt(mid) >= goal) low = mid;
+            else high = mid;
+        }
+        return low;
+    }
+
+    /**
+     * What the inputs of a unit of a flow good cost the sector (THE ORDER, FL1): over its standing buildings that make it, nameplate-weighted, each
+     * one's traded inputs at inputPrice() less what its other traded goods are worth (their export price, else their price here), to no less than
+     * nothing. Power, water and consumables are left out (they do not move with the order), and so is the joint bill's split by sales value that
+     * getMarginalCostPerUnit() makes. 0 for a good no building of it makes, or one that buys nothing to make it.
+     */
+    public double flowCostPerUnit(Good g) {
+        if (buildings == null) return 0;
+        double made = buildings.totalBySector(key, t -> t.makes(g));
+        if (!(made > 0)) return 0;
+        double cost = buildings.totalBySector(key, t -> t.makes(g) > 0 ? inputsLessCoProducts(t, g) : 0);
+        return cost / made;
+    }
+
+    /** What a month of one building's traded inputs costs here, less its other traded goods at their worth, to no less than nothing (flowCostPerUnit()). */
+    private double inputsLessCoProducts(BuildingsTemplate t, Good made) {
+        double inputs = 0;
+        for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+            if (!(e.getValue() > 0) || !e.getKey().traded()) continue;
+            double price = inputPrice(e.getKey());
+            if (Double.isFinite(price)) inputs += e.getValue() * price;
+        }
+        double credit = 0;
+        for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+            if (e.getKey() == made || !(e.getValue() > 0) || !e.getKey().traded()) continue;
+            credit += e.getValue() * coProductValue(e.getKey());
+        }
+        return Math.max(0, inputs - credit);
+    }
+
+    /** What a unit of a good a building makes beside the one asked about is worth: its net export price where the world will buy it, else its price here; 0 if neither is a number. */
+    private double coProductValue(Good o) {
+        GoodsMarket m = markets == null ? null : markets.get(o);
+        if (m == null) return 0;
+        double v = o.exportable() ? m.netExportPrice() : Double.NaN;
+        if (!Double.isFinite(v)) v = m.getLocalPrice();
+        return Double.isFinite(v) ? v : 0;
+    }
+
     /** Asks what the sector's own rules say with some units of a good in the shed instead of what is there, and puts the shed back (THE ORDER). */
     private double whenHolding(Good g, double units, java.util.function.DoubleSupplier ask) {
         Double had = stock.get(g);
@@ -2644,18 +2777,18 @@ public abstract class Sector {
         }
     }
 
-    /** The share of its nameplate a building's inputs are ordered for: the greatest of its stockable goods' order shares; 1 for one that makes a flow good, or nothing (THE ORDER). */
+    /** The share of its nameplate a building's inputs are ordered for: the greatest of its traded goods' order shares, flow or stockable; 1 for one that makes an untraded good, or nothing (THE ORDER, FL1). */
     private double buildingOrder(BuildingsTemplate t) {
         if (!ordering) return 1;
         double most = 0;
-        boolean stockable = false;
+        boolean traded = false;
         for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
             if (!(e.getValue() > 0)) continue;
-            if (!e.getKey().stockable() || !e.getKey().traded()) return 1;
-            stockable = true;
+            if (!e.getKey().traded()) return 1;
+            traded = true;
             most = Math.max(most, orderShare(e.getKey()));
         }
-        return stockable ? most : 1;
+        return traded ? most : 1;
     }
 
     /** Units of an input its buildings use a month at the shares they run at (THE ORDER): getInputAtCapacity(), to the bit, while every share is 1 and outside the market pass. */
@@ -2674,7 +2807,7 @@ public abstract class Sector {
         double need = getInputAtCapacity(g) * getOperatingRate();
         if (!g.stockable()) {
             Output o = outputs.get(g);
-            return o == null ? 0 : Math.max(0, Math.min(o.produced + o.captive, need));
+            return o == null ? 0 : Math.max(0, Math.min(o.produced + o.captive + flowCut.getOrDefault(g, 0.0), need));
         }
         return Math.max(0, Math.min(getCapacity(g) * getOperatingRate(), need));
     }
