@@ -60,6 +60,24 @@ FILES = [
     ('eia', 'INTL.zip', 'https://www.eia.gov/opendata/bulk/INTL.zip'),
 ]
 
+# The BLS's CPI-U (all items, US city average), annual averages 2015-2025, for the file's cpi_u: a figure of any year
+# in the window becomes 2015 dollars by them. The public API takes a POST and at most ten years a request.
+BLS_URL = 'https://api.bls.gov/publicAPI/v2/timeseries/data/'
+BLS = [('bls', 'CUUR0000SA0-%s-%s.json' % span, span) for span in (('2015', '2024'), ('2025', '2025'))]
+
+
+def bls_file(first, last):
+    """One BLS API answer for the CPI-U with its annual averages (period M13), as the API sends it."""
+    body = json.dumps({'seriesid': ['CUUR0000SA0'], 'startyear': first, 'endyear': last,
+                       'annualaverage': True}).encode('utf-8')
+    req = urllib.request.Request(BLS_URL, data=body, headers={'Content-Type': 'application/json',
+                                                              'User-Agent': 'Mozilla/5.0 (CityBuilderSim measures_fetch)'})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        data = r.read()
+    if json.loads(data).get('status') != 'REQUEST_SUCCEEDED':
+        raise ValueError('BLS: ' + json.loads(data).get('status', '?'))
+    return data
+
 
 def wdi_codes():
     """Every WDI code measures.tsv names (wdi:A, wdi:A/B*k, wdi-cagr:A:10) plus WDI_EXTRA, in first-seen order."""
@@ -131,6 +149,7 @@ def main():
     failed = []
     jobs = [('%s/wdi/%s.json' % (a.sources, c), (lambda c=c: wdi_file(c)), c in WN0_WDI) for c in wdi_codes()]
     jobs += [('%s/%s/%s' % (a.sources, d, n), (lambda u=u: get(u)), False) for d, n, u in FILES]
+    jobs += [('%s/%s/%s' % (a.sources, d, n), (lambda s=s: bls_file(*s)), False) for d, n, s in BLS]
     for path, data, protected in jobs:
         try:
             save(path, data, a.force, protected)

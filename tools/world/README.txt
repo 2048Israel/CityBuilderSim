@@ -22,8 +22,8 @@ THE ORDER (a stage's inputs are the files named; the geography and the economy a
   5. fixture.py             src/main/resources/world/world-1-fixture.bin and world-1-fixture.expect, cut from the baked
                             file (--full PATH, --out-dir DIR, --econ DIR for baci-samples.tsv); a few seconds.
   6. measures_fetch.py (LB1) downloads what measures.tsv names into <sources>: the WDI series (wdi/) and the OECD, BIS,
-                            UNODC, UN WUP and EIA files (oecd/ bis/ unodc/ wup/ eia/); --force downloads again a file
-                            that exists (never WN0's six WDI files). MEASURES-SOURCES.txt there, written by hand, says
+                            UNODC, UN WUP, EIA and BLS files (oecd/ bis/ unodc/ wup/ eia/ bls/); --force downloads again
+                            a file that exists (never WN0's six WDI files). MEASURES-SOURCES.txt there, by hand, says
                             where each file is from, under what licence, and how measures.tsv's pointers read it.
   7. measures.py (LB1)      reads measures.tsv, regions.tsv, those downloads and world-1.bin (--world PATH, via
                             worldread.py); writes src/main/resources/world/world-2025.json (--out PATH, --made DATE,

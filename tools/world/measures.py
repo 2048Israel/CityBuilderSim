@@ -52,8 +52,24 @@ POP_GROWTH_YEARS = 5
 DOWNLOADED = '2026-10-30'
 # The 20 members of the euro area in 2025 (Bulgaria joined on 2026-01-01); BIS has the euro area's rate under XM only.
 EURO_AREA = 'AUT BEL CYP DEU ESP EST FIN FRA GRC HRV IRL ITA LTU LUX LVA MLT NLD PRT SVK SVN'.split()
-# The US consumer price index the BLS publishes as annual averages (CUUR0000SA0, all items, 1982-84 = 100).
-CPI_U = {'2015': 237.017, '2025': 321.943}
+# The BLS's series of the US consumer price index (all items, US city average, 1982-84 = 100) whose annual averages
+# (period M13) measures_fetch.py downloads into <sources>/bls/: every year of the window, so a figure of any year
+# becomes 2015 dollars (LB2's real US$), and 2015 over 2025 is the board's own ratio.
+CPI_U_SERIES = 'CUUR0000SA0'
+
+
+def read_cpi_u(sources):
+    """The CPI-U's annual averages for the window's years, {'2015': 237.017, ...}, from the BLS files."""
+    out = {}
+    for name in sorted(os.listdir(sources + '/bls')):
+        if name.startswith(CPI_U_SERIES) and name.endswith('.json'):
+            with open('%s/bls/%s' % (sources, name), encoding='utf-8') as f:
+                for row in json.load(f)['Results']['series'][0]['data']:
+                    if row['period'] == 'M13':
+                        out[row['year']] = float(row['value'])
+    years = [str(y) for y in range(WINDOW_FIRST, WINDOW_LAST + 1)]
+    assert all(y in out for y in years), 'the BLS files lack a year of the window: ' + str(sorted(out))
+    return {y: out[y] for y in years}
 # Bulgaria's lev is a currency board at this many to the euro; the WDI gives Bulgaria's PPP factor in euros (the
 # GDP at PPP over the GDP at market rates says so in every year) and the OECD its minimum wage in euros, while the WDI's
 # exchange rate is in levs.
@@ -767,7 +783,7 @@ def measure_entry(m):
     return e
 
 
-def meta_of(measures, places, made):
+def meta_of(measures, places, made, cpi_u):
     """The meta member."""
     figures = estimates = 0
     used = set(['bls'])
@@ -781,8 +797,8 @@ def meta_of(measures, places, made):
     return {
         'name': 'world-2025', 'made': made, 'year': BOARD_YEAR, 'window': [WINDOW_FIRST, WINDOW_LAST],
         'marks': MARKS,
-        'us_prices_2015_over_2025': CPI_U['2015'] / CPI_U['2025'],
-        'cpi_u': dict(CPI_U, series='CUUR0000SA0', source='bls'),
+        'us_prices_2015_over_2025': cpi_u['2015'] / cpi_u['2025'],
+        'cpi_u': dict(cpi_u, series=CPI_U_SERIES, source='bls'),
         'sources': {i: {'name': r[0], 'url': r[1], 'licence': r[2], 'downloaded': r[3]}
                     for i, r in SOURCE_ROWS.items() if i in used},
         'rules': RULES, 'definitions': DEFINITIONS,
@@ -874,7 +890,7 @@ def main():
     args = p.parse_args()
     made = args.made or time.strftime('%Y-%m-%d')
     measures, regions, places, order, folder, notes = build(args)
-    meta = meta_of(measures, places, made)
+    meta = meta_of(measures, places, made, read_cpi_u(args.sources))
     text = render(meta, places)
     data = text.encode('utf-8')
     assert len(data) < SIZE_LIMIT, 'the file is %d bytes' % len(data)

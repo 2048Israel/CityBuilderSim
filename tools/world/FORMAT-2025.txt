@@ -14,8 +14,9 @@ META
                "1": {"symbol": "○", "name": "the game's estimate"}}: world-1.bin's marks, the same numbers
   us_prices_2015_over_2025   the US's consumer prices of 2015 over 2025's: the CPI-U's annual averages divided,
                unrounded, so a real 2025 dollar becomes a 2015 dollar by this factor (the Rankings' real US$, D1/D29)
-  cpi_u       {"2015": 237.017, "2025": 321.943, "series": "CUUR0000SA0", "source": "bls"}: the two annual averages
-               the ratio is made from, as the BLS publishes them
+  cpi_u       {"2015": 237.017, "2016": ..., "2025": 321.943, "series": "CUUR0000SA0", "source": "bls"}: the CPI-U's
+               annual averages for every year of the window, as the BLS publishes them; a figure in US$ of its year
+               y becomes 2015 dollars times cpi_u["2015"] / cpi_u[y] (the ratio above is y = 2025's)
   sources     {id: {"name": ..., "url": ..., "licence": ..., "downloaded": yyyy-mm-dd}}: every source a figure
                names, each with its licence. Never the IMF's World Economic Outlook (nations 3.3).
   rules       {id: "one or two sentences"}: how the game made each kind of estimate (mark 1), for the drawer

@@ -64,3 +64,44 @@ Commodity Markets, the Pink Sheet (the World Bank), annual prices
   Licence: CC BY 4.0 (https://datacatalog.worldbank.org/public-licenses)
   Used for: the prices layer: each good's real price path 2000-2025 (its series, or a proxy's, over the US CPI)
   Source:  https://www.worldbank.org/en/research/commodity-markets
+
+world-2025: the Rankings' measures file (LB1, 2026-10-30)
+
+world-2025.json (src/main/resources/world/) is derived from the data sets below, and from world-1.bin's 2025 figures
+for the few nations the World Bank does not cover (the credits above). Its meta names each source with its licence;
+the Rankings' (i) and the Credits page carry these credits.
+
+World Development Indicators (the World Bank), as of 2026-10-08
+  Credit:  The World Bank, World Development Indicators (49 series, measures.tsv names them)
+  Licence: CC BY 4.0, each series' own License_Type checked 2026-10-30
+           (https://datacatalog.worldbank.org/public-licenses)
+  Used for: most nations' measures: output in three moneys, prices, trade, public money, banks, people, land
+
+OECD data
+  Credit:  OECD (2026), Earnings; Financial market statistics; Social Expenditure Database; National Accounts at a
+           Glance; Regions, cities and local areas (functional urban areas); Affordable Housing Database
+  Licence: the OECD's terms and conditions, Data: "for any purpose, even for commercial use", with credit
+           (https://www.oecd.org/en/about/terms-conditions.html)
+  Used for: wages, the minimum wage, long-term yields, pensions, household debt, homes, homelessness; the 16 city
+           regions on the OECD's functional urban areas (people, area, share of output, real growth)
+
+Central bank policy rates (Bank for International Settlements)
+  Credit:  Bank for International Settlements, central bank policy rates (WS_CBPOL)
+  Licence: BIS terms of use of statistics: unrestricted, with the BIS cited (https://data.bis.org/help/legal)
+  Used for: the policy rate at 2025's end
+
+World Urbanization Prospects 2025 (United Nations, DESA, Population Division)
+  Credit:  United Nations, Department of Economic and Social Affairs, Population Division (2025). World
+           Urbanization Prospects 2025, cities of 50,000 people or more (Degree of Urbanisation)
+  Licence: CC BY 3.0 IGO (https://creativecommons.org/licenses/by/3.0/igo/)
+  Used for: the 46 other city regions' people, growth and area
+
+International Energy Statistics (US Energy Information Administration)
+  Credit:  Source: U.S. Energy Information Administration
+  Licence: Public domain (a US government work)
+  Used for: electricity used per person, oil produced
+
+Consumer Price Index for All Urban Consumers, CPI-U (US Bureau of Labor Statistics)
+  Credit:  US Bureau of Labor Statistics, CPI-U, US city average, all items (CUUR0000SA0), annual averages
+  Licence: Public domain (a US government work)
+  Used for: the US's prices 2015-2025, which turn a year's US$ into 2015 dollars
