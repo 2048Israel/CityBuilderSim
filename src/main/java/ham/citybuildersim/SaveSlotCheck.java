@@ -57,7 +57,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * leaves the earlier autosave whole, and is followed by one that writes; and
  * 7c.7 that the floor of real time (SaveWriter.FLOOR_SECONDS) holds the
  * autosaves to one in thirty seconds however fast the months come, on a clock
- * the check moves and on the real one.
+ * the check moves and on the real one. Section 7d (LB3) holds a file open while
+ * a write swaps over it, as the Rankings board's read and an antivirus scan do on
+ * Windows: the write waits for the handle (GameFiles.SWAP_RETRIES) and lands, one
+ * held past every retry fails whole and says so, and the next lands.
  */
 public class SaveSlotCheck {
 
@@ -305,6 +308,9 @@ public class SaveSlotCheck {
         /* ============ 7c. the autosave off the clock (UP1, 2026-10-22) ============ */
         offTheClock();
 
+        /* ============ 7d. a file held open while a write swaps over it (LB3) ============ */
+        heldOpen();
+
         /* ==================== 8. histories are per slot ==================== */
         System.out.println("\n--- and each city keeps its own past ---");
 
@@ -346,6 +352,76 @@ public class SaveSlotCheck {
      * overtime) is 7c.1b's, on states built field by field.
      */
     static final int GROWN_MONTHS = 180;
+
+    /** How long 7d holds the file open before letting go: a fifth of the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS), well inside them. */
+    static final long HOLD_MS = GameFiles.SWAP_RETRIES * GameFiles.SWAP_RETRY_MS / 5;
+
+    /**
+     * 7d (LB3's gate review, 2026-10-31): a write's swap over a file another handle has open. On Windows the move is
+     * refused while the handle is open - the Rankings board reading a slot, an antivirus scan - and the slot kept its
+     * old history beside its new save. The fixture causes it: a reader holds the target open, and a plain move over it
+     * is refused. Then a write whose handle is let go after HOLD_MS lands, having waited; one whose handle outlasts every
+     * retry fails, says so, and leaves the file whole; and the next write lands. Another filesystem lets a file be
+     * replaced while it is open, and there is nothing to wait for: the section says so and asserts nothing.
+     */
+    static void heldOpen() throws Exception {
+        System.out.println("\n--- 7d. a file held open while a write swaps over it: the write waits for it ---");
+        Path root = TempDirs.create("heldopen");
+        GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
+        Path target = files.historyFile(4);
+        Path tmp = target.resolveSibling(target.getFileName() + ".tmp"), bak = target.resolveSibling(target.getFileName() + ".bak");
+        Files.createDirectories(target.getParent());
+        Files.writeString(target, "old");
+
+        Path probe = target.resolveSibling("probe.json");
+        Files.writeString(probe, "probe");
+        boolean refused;
+        try (java.io.Reader in = Files.newBufferedReader(target)) {
+            try {
+                Files.move(probe, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+                refused = false;
+            } catch (java.nio.file.FileSystemException e) {
+                refused = true;
+            }
+        }
+        if (!System.getProperty("os.name", "").startsWith("Windows")) {
+            System.out.println("not Windows: a file " + (refused ? "is" : "is not") + " refused a move while it is open here; 7d asserts nothing");
+            cleanUp(root);
+            return;
+        }
+        assertTrue("fixture: on Windows a reader holding the file open makes a plain move over it fail", refused);
+        Files.deleteIfExists(probe);
+        int waitedBefore = GameFiles.swapsThatWaited();
+
+        java.io.Reader held = Files.newBufferedReader(target);
+        Thread release = new Thread(() -> {
+            try {
+                Thread.sleep(HOLD_MS);
+                held.close();
+            } catch (Exception ignored) {
+                // The write's assertions below say what happened.
+            }
+        }, "slotcheck-release");
+        long from = System.nanoTime();
+        release.start();
+        GameFiles.Result waited = files.write(target, out -> out.write("new"));
+        long took = (System.nanoTime() - from) / 1_000_000;
+        release.join();
+        assertTrue("a write over a file let go after " + HOLD_MS + " ms lands (" + took + " ms)", waited.ok && Files.readString(target).equals("new"));
+        assertTrue("...after waiting for it: its swap was refused and landed on a later try (GameFiles.swapsThatWaited)", GameFiles.swapsThatWaited() == waitedBefore + 1);
+        assertTrue("...with the .tmp gone and the file before it in the .bak", !Files.exists(tmp) && Files.readString(bak).equals("old"));
+
+        GameFiles.Result refusedWrite;
+        try (java.io.Reader stays = Files.newBufferedReader(target)) {
+            refusedWrite = files.write(target, out -> out.write("newer"));
+        }
+        assertTrue("a write over a file held past every retry fails, and says so (" + refusedWrite.error + ")", !refusedWrite.ok && refusedWrite.error != null);
+        assertTrue("...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed",
+                Files.readString(target).equals("new") && !Files.exists(tmp) && GameFiles.swapsThatWaited() == waitedBefore + 1);
+        GameFiles.Result after = files.write(target, out -> out.write("newest"));
+        assertTrue("...and once it is let go the next write lands", after.ok && Files.readString(target).equals("newest"));
+        cleanUp(root);
+    }
 
     /**
      * 7c: grows the city and runs the subsections on it. 7c.1 is the walk:

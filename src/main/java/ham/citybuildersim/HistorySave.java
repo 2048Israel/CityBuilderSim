@@ -233,6 +233,17 @@ public class HistorySave {
        year's, and dividing both by a hundred leaves it exactly where it was.
        ------------------------------------------------------------------ */
     private List<Double> priceIndex = new ArrayList<>();
+    /**
+     * The game dollar's price level since founding (LB3, 2026-10-31): the US prices
+     * (WorldEconomy.getPriceLevel()), 1 at founding, the "P" the Rankings board divides
+     * a city's money by to reach a dollar of 2015. Like priceIndex a ratio of two
+     * baskets, so a reform leaves it alone: it is US prices, not the city's money, and
+     * it is not in redenominate(). At FULL precision, no round4: a level wants its
+     * digits. WorldEconomy's ring keeps only the last 13 months, so an earlier P
+     * cannot be rebuilt from a save, and this is where it is kept. A history older
+     * than this has none, and its months read as not recorded.
+     */
+    private List<Double> usPrices = new ArrayList<>();
     /*
      * THE ANCHOR (0.7.42): what the city expected inflation to be, a fraction
      * a year, and how far it believed the bank (Expectations) - both ratios,
@@ -728,6 +739,7 @@ public class HistorySave {
 
         /* --------------------- money and credit --------------------- */
         priceIndex.add(round4(game.getPriceIndex().getIndex()));
+        usPrices.add(game.getWorldEconomy().getPriceLevel());
         expectedInflation.add(round4(game.getExpectations().getExpectedInflation()));
         credibility.add(round4(game.getExpectations().getCredibility()));
         businessDebt.add(round2(economy.getBusinessDebtManager().getTotalPrincipal()));
@@ -1140,6 +1152,7 @@ public class HistorySave {
         importsAbroad = copy(loaded.importsAbroad);
 
         priceIndex = copy(loaded.priceIndex);
+        usPrices = copy(loaded.usPrices);
         expectedInflation = copy(loaded.expectedInflation);
         credibility = copy(loaded.credibility);
         businessDebt = copy(loaded.businessDebt);
@@ -1639,6 +1652,7 @@ public class HistorySave {
         map.put("importsAbroad", importsAbroad);
 
         map.put("priceIndex", priceIndex);
+        map.put("usPrices", usPrices);
         map.put("expectedInflation", expectedInflation);
         map.put("credibility", credibility);
         // The new price model, read (0.7.45).
@@ -1851,6 +1865,25 @@ public class HistorySave {
                 if (v != null) s.set(i, v * scale);
             }
         }
+    }
+
+    /**
+     * A history with this one's axis and only the named series (LB3): every other series empty, so it reads as not
+     * recorded, a name this history has no series of ignored. The Rankings board keeps a saved city's history this way
+     * (SavedCities): the file can be 26 MB, and the measures read a few dozen of its series.
+     */
+    @SuppressWarnings("unchecked")
+    public HistorySave slim(java.util.Set<String> keep) {
+        HistorySave out = new HistorySave();
+        out.month = copy(month);
+        out.foldedMonths = copy(foldedMonths);
+        while (out.foldedMonths.size() > out.month.size()) out.foldedMonths.remove(out.foldedMonths.size() - 1);
+        Map<String, List<? extends Number>> from = seriesByName(), into = out.seriesByName();
+        for (String name : keep) {
+            List<? extends Number> source = from.get(name), target = into.get(name);
+            if (source != null && target != null) ((List<Number>) target).addAll(source);
+        }
+        return out;
     }
 
 }

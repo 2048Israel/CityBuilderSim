@@ -28,8 +28,9 @@ import java.util.TreeSet;
  * Builds spec-leaderboards 3 (the pivot, the display, the identities, the lock, the sentence), 4 (the two
  * boards: Real world 2025 from WorldMeasures, Your world from Nations at the city's month, the city
  * regions by share), 6 (the city's side, CityMeasures), 7 (the marks), 9 (Around you, Your size, the
- * drawer) and 10 (D1, D9, D10, D13, D14, D15). The saved cities (LB3) are Kind.SAVED and the Prices
- * toggle's reason to exist: none in LB2, so it locks.
+ * drawer) and 10 (D1, D9, D10, D13, D14, D15). The saved cities (LB3, spec-leaderboards 5) are Kind.SAVED rows,
+ * each its own world pivoted by its own rate, parity and founding rate, and by its own price level or the active
+ * city's (Prices, D2): the toggle's reason to exist.
  */
 public final class Rankings {
 
@@ -41,13 +42,13 @@ public final class Rankings {
     /** The money a figure is shown in: the city's own, the game's US dollars, or real US dollars at 2015 prices. */
     public enum Money { CITY, GAME_USD, REAL_USD }
 
-    /** Whether a saved city's figure is in its own year's dollars (PER_YEAR) or this city's year (STATIC). Moves only saved rows (LB3), so it locks in LB2. */
+    /** Whether a saved city's figure is in its own year's dollars (PER_YEAR) or the active city's year (STATIC). Moves only saved rows (LB3), and not under real US$ or Constant, which pricesLocked says. */
     public enum Prices { PER_YEAR, STATIC }
 
     /** How a foreign figure becomes this city's: at this month's rate, at the constant 2015 rate, or at purchasing power parity (D14). */
     public enum Convert { MARKET, CONSTANT, PPP }
 
-    /** What a row is. SAVED is LB3's other slots; none in LB2. */
+    /** What a row is. SAVED is one of the other slots (LB3), read through SavedCities. */
     public enum Kind { NATION, REGION, CITY, SAVED }
 
     /** What the player picked on the four controls. */
@@ -70,14 +71,15 @@ public final class Rankings {
          * The live city, off public getters only: its name, its money (Currency.plural()), its month and year,
          * ForeignAccounts' rate and parity, WorldEconomy's price level, the founding rate in today's money
          * (Denomination.money(ForeignAccounts.OPENING_RATE), as WN4 gives the real dollar), and CityMeasures
-         * over its history with the land it owns (LandManager.getOwnedKm2), the people in each age band (PopulationCohorts)
+         * over its history with its dry ground (LandManager.km2 of getOwnedSqFt: the real file's area is land area, inland
+         * water left out, and a save keeps only the dry ground, LB3), the people in each age band (PopulationCohorts)
          * and the wage floor in today's money (LabourMarket.cashMinimumWage). It reads the history through
          * alignedTail a measure at a time: a screen that draws it more than once a month should keep it.
          */
         public static City of(Game g) {
             double[] bands = new double[AgeBand.values().length];
             for (AgeBand band : AgeBand.values()) bands[band.ordinal()] = g.getCohorts().get(band);
-            CityMeasures.Extras extras = new CityMeasures.Extras(g.getLandManager().getOwnedKm2(), bands, g.getLabourMarket().cashMinimumWage());
+            CityMeasures.Extras extras = new CityMeasures.Extras(LandManager.km2(g.getLandManager().getOwnedSqFt()), bands, g.getLabourMarket().cashMinimumWage());
             ForeignAccounts abroad = g.getForeignAccounts();
             int month = g.getMonth();
             return new City(g.getCityName(), g.getCurrency().plural(), month, CityCalendar.yearOf(month),
@@ -104,6 +106,21 @@ public final class Rankings {
     public record Table(WorldMeasures.Measure measure, Settings settings, List<Row> rows, int you, boolean ranked, boolean realFigures,
                         int estimates, int figures) { }
 
+    /**
+     * A saved city on the board (LB3): the slot it was read from and the city as that save has it, a City in the units of its last save (its own fx,
+     * parity, P and founding rate, all rescaled together by a reform, so the pivot divides the unit out). Its row's id is "saved:" + slot, its year the
+     * city's, its mark 0 and its source SOURCE_SAVE, as the active city's row has SOURCE_CITY. SavedCities makes them, at the last save or at an age.
+     */
+    public record Saved(int slot, City city) {
+        /** The id of this city's row, and what the drawer is asked for. */
+        public String id() {
+            return SAVED_PREFIX + slot;
+        }
+    }
+
+    /** One value of the rank over the years: the active city's rank on one measure at a December (a game month), among `of` places. */
+    public record RankPoint(int month, int rank, int of) { }
+
     /** One measure for one place, in the drawer: its figure on each board in the display money, with its mark and source on the real board, NaN where there is none. */
     public record Line(WorldMeasures.Measure measure, double real2025 /* shown */, int realMark, String realSource,
                        double yourWorld /* shown, NaN when that board does not rank it */, int yourMark) { }
@@ -121,8 +138,11 @@ public final class Rankings {
     /** The id the drawer takes for the active city. */
     public static final String PLACE_CITY = "city";
 
-    /** A row's source: the active city's own figure, and a nation of the game's world file (a source id of world-2025.json's meta). */
-    public static final String SOURCE_CITY = "city", SOURCE_WORLD = "world-1";
+    /** A row's source: the active city's own figure, a nation of the game's world file (a source id of world-2025.json's meta), and a saved city's figure. */
+    public static final String SOURCE_CITY = "city", SOURCE_WORLD = "world-1", SOURCE_SAVE = "save";
+
+    /** What a saved city's row id starts with, then its slot: the id the drawer is asked for. */
+    public static final String SAVED_PREFIX = "saved:";
 
     /** The rule a city region's Your-world figure is an estimate by: its share of its nation's path (a rule id of the file's meta). */
     public static final String RULE_REGION = "region-output";
@@ -132,6 +152,9 @@ public final class Rankings {
 
     /** Around you: the rows from the top, and either side of the city; the rows from the top when the city is off the board. */
     public static final int AROUND_TOP = 3, AROUND_EITHER_SIDE = 6, AROUND_OFF = 10;
+
+    /** Two figures within this fraction of each other are one figure and share a rank: a city saved before and after a reform by 100 differs in its last digits only (LB3). */
+    public static final double TIE = 1e-9;
 
     /** The money measures with a series at constant prices (gdp, gdp per person, household spending per person); the rest show this month's rate under Constant. */
     static final Set<String> CONSTANT_SERIES = Set.of("gdp", "gdp_pp", "hh_spend_pp");
@@ -178,7 +201,10 @@ public final class Rankings {
        THE LOCK AND THE SENTENCE (spec-leaderboards 3)
        --------------------------------------------------------------------- */
 
-    /** Whether Prices is greyed: Money is real US$ (2015 prices by definition), Convert is Constant, the measure is not money, or no saved city is on the board (always, until LB3). */
+    /**
+     * Whether Prices is greyed: Money is real US$ (2015 prices by definition), Convert is Constant, the measure is not money, or no saved city is on the
+     * board (the caller passes !saved.isEmpty()). A locked Prices reads as STATIC in the saved rows' pivot (savedCell).
+     */
     public static boolean pricesLocked(Settings s, WorldMeasures.Measure m, boolean anySaved) {
         return !pricesLockedWhy(s, m, anySaved).isEmpty();
     }
@@ -228,6 +254,29 @@ public final class Rankings {
         return b.toString();
     }
 
+    /**
+     * sentence() with the saved cities named when there are any (LB3). The saved clause follows the board's sentence: "Your saved cities", then for a money
+     * measure that Prices can move (not locked) per year "in their own year's dollars" or static "at Arden's prices of 2027" (the active city's), then "as last
+     * saved" or, with atAge, "at 4 years 2 months" (the active city's age, ageWords). With none on the board it is sentence() unchanged.
+     */
+    public static String sentence(City c, Settings s, WorldMeasures.Measure m, Nations.Path path, List<Saved> saved, boolean atAge) {
+        String base = sentence(c, s, m, path);
+        if (saved == null || saved.isEmpty()) return base;
+        StringBuilder b = new StringBuilder(base).append(" Your saved cities");
+        if (m.money() && !pricesLocked(s, m, true)) {
+            b.append(s.prices() == Prices.PER_YEAR ? " in their own year's dollars" : " at " + c.name() + "'s prices of " + c.year());
+            b.append(',');
+        }
+        return b.append(atAge ? " at " + ageWords(c.month()) : " as last saved").append('.').toString();
+    }
+
+    /** A number of months as a person says an age: "4 years 2 months", "1 year", "7 months". */
+    public static String ageWords(int months) {
+        int years = Math.max(0, months) / 12, rest = Math.max(0, months) % 12;
+        String y = years + (years == 1 ? " year" : " years"), mo = rest + (rest == 1 ? " month" : " months");
+        return years == 0 ? mo : rest == 0 ? y : y + " " + mo;
+    }
+
     private static String capitalised(String s) {
         return s.isEmpty() ? s : Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
@@ -266,6 +315,70 @@ public final class Rankings {
         if (!usable(value)) return null;
         CityMeasures.Figure population = c.figures().get("people");
         return new Cell(value, c.year(), 0, SOURCE_CITY, null, population == null ? Double.NaN : population.value());
+    }
+
+    /* ---------------------------------------------------------------------
+       A SAVED CITY (spec-leaderboards 3 and 5; LB3)
+       --------------------------------------------------------------------- */
+
+    /**
+     * A saved city's figure for a measure, pivoted to US$ of 2015 as cityCell does but by ITS OWN rate, parity and founding rate, all in the units of its last
+     * save (a reform rescales them with its money, so a reform never moves a rank). A money figure X is X over its rate over a price level at this month's
+     * rate, X over its parity over that level at PPP, and under Constant its figure at founding's prices over its founding rate. The level is the saved
+     * city's own P under static prices, so the figure is in real dollars; under per year (D2, the default) it is the ACTIVE city's P, so the figure the
+     * display shows in game US$ is the saved city's own year's game dollars (X over its rate). Prices is read as static where pricesLocked says it is
+     * greyed (real US$ and Constant are at fixed prices already), so Prices moves only a saved row, and never under those. Null where it has no figure.
+     */
+    private static Cell savedCell(Saved saved, City active, Settings s, WorldMeasures.Measure m, Settings eff) {
+        City c = saved.city();
+        CityMeasures.Figure f = c.figures().get(m.key());
+        if (f == null) return null;
+        double value = f.value();
+        if (m.money()) {
+            double level = s.prices() == Prices.PER_YEAR && !pricesLocked(s, m, true) ? active.usPrices() : c.usPrices();
+            value = switch (eff.convert()) {
+                case MARKET -> f.value() / c.fx() / level;
+                case PPP -> f.value() / c.parity() / level;
+                case CONSTANT -> f.real() / c.foundingRate();
+            };
+        }
+        if (!usable(value)) return null;
+        CityMeasures.Figure population = c.figures().get("people");
+        return new Cell(value, CityCalendar.yearOf(c.month()), 0, SOURCE_SAVE, null, population == null ? Double.NaN : population.value());
+    }
+
+    /**
+     * A city as a history stood at the end of game month `month` (LB3): its name, its money and its founding rate as given, its rate, parity and the game
+     * dollar's price level from the history's fxRate, fxParity and usPrices at that month (NaN where the history did not record them, so a money figure
+     * is then absent, never wrong), and its figures from CityMeasures.at with the extras given. Null when the history does not hold that month as a month.
+     * The one place a City is built off a history: SavedCities at an age and rankOverYears both use it.
+     */
+    public static City cityAt(String name, String currency, double foundingRate, HistorySave h, CityMeasures.Extras extras, int month) {
+        if (CityMeasures.entriesTo(h, month) < 0) return null;
+        return new City(name, currency, month, CityCalendar.yearOf(month), CityMeasures.valueAt(h, "fxRate", month), CityMeasures.valueAt(h, "fxParity", month),
+                CityMeasures.valueAt(h, "usPrices", month), foundingRate, CityMeasures.at(h, extras, month));
+    }
+
+    /**
+     * The active city's rank on one measure at each December of its history (D12, LB3), against Real world 2025 only: its nations and regions, no saved
+     * rows and no Your world, a board that holds still, at the money and conversion in s (the board in s is ignored). Each December is the city built
+     * by cityAt with Extras.UNKNOWN (its land and bands are not in the history), ranked by table() exactly as the board ranks it; a December in a folded
+     * year, or where the city has no figure, has no point. Oldest first. city supplies the name, the money and the founding rate.
+     */
+    public static List<RankPoint> rankOverYears(WorldMeasures wm, City city, HistorySave h, Settings s, String measure) {
+        List<RankPoint> out = new ArrayList<>();
+        if (h == null) return out;
+        Settings real = new Settings(Board.REAL_2025, s.money(), s.prices(), s.convert());
+        List<Integer> axis = h.getMonth();
+        for (int i = h.yearlyPoints(); i < axis.size(); i++) {
+            int month = axis.get(i);
+            if (CityCalendar.monthOfYear(month) != 12) continue;
+            City then = cityAt(city.name(), city.currency(), city.foundingRate(), h, CityMeasures.Extras.UNKNOWN, month);
+            if (then == null) continue;
+            Table t = table(wm, null, then, real, measure);
+            if (t.you() >= 0) out.add(new RankPoint(month, t.rows().get(t.you()).rank(), t.rows().size()));
+        }
+        return out;
     }
 
     /* ---------------------------------------------------------------------
@@ -460,6 +573,17 @@ public final class Rankings {
      * is no row. Throws IllegalArgumentException for a key that is no measure.
      */
     public static Table table(WorldMeasures wm, Nations nations, City city, Settings s, String measure) {
+        return table(wm, nations, city, List.of(), s, measure);
+    }
+
+    /**
+     * table() with the saved cities beside the active one (LB3): each is a Kind.SAVED row ranked by the same function, pivoted by its own rate and price
+     * level (savedCell) and shown in the active city's money, on any board that ranks the measure (Your world's ten, and Real world 2025's, where a measure
+     * nothing real publishes has only the player's cities). A saved city with no figure of the measure is no row. The caller sets pricesLocked's anySaved
+     * from !saved.isEmpty().
+     */
+    public static Table table(WorldMeasures wm, Nations nations, City city, List<Saved> saved, Settings s, String measure) {
+        if (saved == null) saved = List.of();
         WorldMeasures.Measure m = wm.measure(measure);
         if (m == null) throw new IllegalArgumentException("rankings: no measure " + measure);
         Settings eff = effective(s, m);
@@ -488,6 +612,10 @@ public final class Rankings {
         if (ranked) {
             Cell c = cityCell(city, m, eff);
             if (c != null) rows.add(row(PLACE_CITY, Kind.CITY, city.name(), null, c, m, eff, city));
+            for (Saved sv : saved) {
+                Cell sc = savedCell(sv, city, s, m, eff);
+                if (sc != null) rows.add(row(sv.id(), Kind.SAVED, sv.city().name(), null, sc, m, eff, city));
+            }
         }
         return rank(m, s, rows, ranked, s.board() == Board.YOUR_WORLD && ranked || real);
     }
@@ -511,13 +639,18 @@ public final class Rankings {
         int rank = 0, you = -1, estimates = 0, figures = 0;
         for (int i = 0; i < sorted.size(); i++) {
             Row r = sorted.get(i);
-            if (i == 0 || r.value() != sorted.get(i - 1).value()) rank = i + 1;
+            if (i == 0 || !tied(r.value(), sorted.get(i - 1).value())) rank = i + 1;
             rows.add(new Row(rank, r.id(), r.kind(), r.name(), r.nation(), r.value(), r.shown(), r.year(), r.mark(), r.source(), r.rule(), r.people()));
             if (r.kind() == Kind.CITY) you = i;
             if (r.mark() > 0) figures++;
             if (r.mark() == 1) estimates++;
         }
         return new Table(m, s, Collections.unmodifiableList(rows), you, ranked, realFigures, estimates, figures);
+    }
+
+    /** Whether two figures, next to each other in rank order, are one figure: equal, or within TIE of each other. */
+    static boolean tied(double a, double b) {
+        return a == b || Math.abs(a - b) <= TIE * Math.max(Math.abs(a), Math.abs(b));
     }
 
     /** The rows Around you shows (spec-leaderboards 1, 11): the top three, then the city and six either side, none twice, in rank order; the first ten when the city is off the board. */
@@ -557,14 +690,29 @@ public final class Rankings {
      * money and conversion picked. A measure the place has no figure for is a line of NaN; the city's marks are 0.
      */
     public static List<Line> drawer(WorldMeasures wm, Nations nations, City city, Settings s, String placeId) {
+        return drawer(wm, nations, city, List.of(), s, placeId);
+    }
+
+    /**
+     * drawer() that also opens a saved city (LB3): placeId is then its row's id, "saved:" + slot (Saved.id()), and its lines are its own figures pivoted by
+     * its own rate and price level (savedCell), on both boards as the active city's are, shown in the active city's money. A placeId that names no saved
+     * city in the list and no place is a list of NaN lines, as drawer() has it.
+     */
+    public static List<Line> drawer(WorldMeasures wm, Nations nations, City city, List<Saved> saved, Settings s, String placeId) {
+        if (saved == null) saved = List.of();
         World world = nations == null ? null : new World(wm, nations, city);
         WorldMeasures.Place place = PLACE_CITY.equals(placeId) ? null : wm.place(placeId);
+        Saved opened = null;
+        for (Saved sv : saved) if (sv.id().equals(placeId)) opened = sv;
         List<Line> out = new ArrayList<>();
         for (WorldMeasures.Measure m : wm.measures()) {
             Settings eff = effective(s, m);
             Cell real = null, mine = null;
             if (PLACE_CITY.equals(placeId)) {
                 real = cityCell(city, m, eff);
+                mine = world != null && m.yourWorld() ? real : null;
+            } else if (opened != null) {
+                real = savedCell(opened, city, s, m, eff);
                 mine = world != null && m.yourWorld() ? real : null;
             } else if (place != null) {
                 if (m.sourced()) real = realCell(wm, place, m, eff);

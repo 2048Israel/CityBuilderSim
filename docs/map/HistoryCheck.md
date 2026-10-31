@@ -1,4 +1,4 @@
-# HistoryCheck.java - 851 lines · 11 methods · 2 constants · harnesses
+# HistoryCheck.java - 857 lines · 11 methods · 2 constants · harnesses
 
 `ham/citybuildersim/HistoryCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -46,9 +46,9 @@
 | 431 | · 3. A SHORT SERIES LINES UP WITH THE END |
 | 509 | · 3a. a year of a flow (B7, 0.7.47) |
 | 538 | · 3b. a 0.7.6 history still loads (0.7.7) |
-| 602 | · 4. the derived series do not divide by zero |
-| 626 | · 5. a new game forgets it |
-| 644 | 6. past five hundred years, a year to a point (0.7.55) |
+| 608 | · 4. the derived series do not divide by zero |
+| 632 | · 5. a new game forgets it |
+| 650 | 6. past five hundred years, a year to a point (0.7.55) |
 
 ## Constants
 
@@ -67,21 +67,21 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 814 | **type** `public class HistoryCheck` | Verifies the graph history: recording, alignment, and the round trip. |
+| 38 | 820 | **type** `public class HistoryCheck` | Verifies the graph history: recording, alignment, and the round trip. |
 | 49 | 4 | `static void quietly(Runnable work)` | Runs a stretch of months without the monthly report burying the results. |
 | 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 6 | `static void close(String label, double a, double b)` |  |
-| 66 | 577 | `public static void main(String[] args) throws Exception` |  |
+| 66 | 583 | `public static void main(String[] args) throws Exception` |  |
 
-### 6. past five hundred years, a year to a point (0.7.55) (lines 644-851)
+### 6. past five hundred years, a year to a point (0.7.55) (lines 650-857)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 656 | 128 | `static void folds(Path root) throws Exception` |  |
-| 786 | 7 | `static double value(String name, int month)` | The value grown for a series in a month: a flow and a level whole numbers, a rate a quarter. |
-| 800 | 16 | `static double[] expected(String name, List<Double> in, int from, int years)` | What a series must hold after the fold, worked out here and not by the fold: its months from `from`, the first `years` calendar years folded by its rule - a flow added oldest first, a rate's months added and divided, ... |
-| 818 | 5 | `static String bookCell(double v)` | The year book's cell for a figure, as the book prints it: its own compact(), through a one-row history. |
-| 825 | 7 | `static HistorySave withSeries(HistorySave h, String map, String key)` | A history with one more company's series, empty, so it begins with the next month appended. |
-| 834 | 9 | `static String dropSeries(String json, String name)` | Removes one "name": [ ... |
-| 844 | 7 | `static void cleanUp(Path root)` |  |
+| 662 | 128 | `static void folds(Path root) throws Exception` |  |
+| 792 | 7 | `static double value(String name, int month)` | The value grown for a series in a month: a flow and a level whole numbers, a rate a quarter. |
+| 806 | 16 | `static double[] expected(String name, List<Double> in, int from, int years)` | What a series must hold after the fold, worked out here and not by the fold: its months from `from`, the first `years` calendar years folded by its rule - a flow added oldest first, a rate's months added and divided, ... |
+| 824 | 5 | `static String bookCell(double v)` | The year book's cell for a figure, as the book prints it: its own compact(), through a one-row history. |
+| 831 | 7 | `static HistorySave withSeries(HistorySave h, String map, String key)` | A history with one more company's series, empty, so it begins with the next month appended. |
+| 840 | 9 | `static String dropSeries(String json, String name)` | Removes one "name": [ ... |
+| 850 | 7 | `static void cleanUp(Path root)` |  |
 

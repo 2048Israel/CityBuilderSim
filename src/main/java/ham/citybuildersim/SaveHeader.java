@@ -33,6 +33,20 @@ public class SaveHeader {
     /** The city's name (0.7.10), DataSave's founding record's; absent on an older save. */
     private String cityName;
 
+    /*
+     * What the Rankings board reads of a saved city beside its history (LB3, SavedCities): the money's name, the world's
+     * prices, the money's unit, and the land and the people by age band as they stood at the last save. Raw, as saved: the
+     * class that owns each decodes it (WorldEconomy.restore, Denomination.restore, PopulationCohorts.restore), never an
+     * index here.
+     */
+    private String currencyPlural;
+    private double[] worldEconomy;
+    private double[] denomination;
+    private double[] cohorts;
+    private String[] bandNames;
+    /** The city's dry ground in square feet (DataSave.landOwned); 0 on a save from before land existed. */
+    private double landOwned;
+
     public int getMonth()          { return month; }
     public long getPopulation()    { return population; }
     public double getCash()        { return cash; }
@@ -40,6 +54,19 @@ public class SaveHeader {
     public String getGameVersion() { return gameVersion; }
     public int getSaveFormat()     { return saveFormat; }
     public long getSavedAt()       { return savedAt; }
+
+    /** The city's money in the plural ("Arden dollars"), or null on a save that does not carry it. */
+    public String getCurrencyPlural() { return currencyPlural; }
+    /** WorldEconomy.toSaveArray(), or null: WorldEconomy.restore reads it. */
+    public double[] getWorldEconomy() { return worldEconomy; }
+    /** Denomination.toSaveArray() (the unit and the reforms), or null: Denomination.restore reads it. */
+    public double[] getDenomination() { return denomination; }
+    /** The pyramid, PopulationCohorts.toSaveArray(), or null: PopulationCohorts.restore reads it with getBandNames(). */
+    public double[] getCohorts()      { return cohorts; }
+    /** The age bands the cohorts were written with, or null on a save from before they travelled. */
+    public String[] getBandNames()    { return bandNames; }
+    /** The city's dry ground in square feet as last saved; 0 when the save does not know. */
+    public double getLandOwned()      { return landOwned; }
 
     public boolean hasName() {
         return slotName != null && !slotName.isBlank();

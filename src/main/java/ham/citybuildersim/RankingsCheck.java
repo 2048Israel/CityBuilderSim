@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonPrimitive;
 import ham.citybuildersim.Rankings.Board;
 import ham.citybuildersim.Rankings.Convert;
@@ -10,8 +11,14 @@ import ham.citybuildersim.Rankings.Settings;
 import ham.citybuildersim.Rankings.Table;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,8 +66,31 @@ import java.util.function.Supplier;
  *      of a short city, a folded history and the life table.
  *  11. THE LOCK AND THE SENTENCE: Prices locked where it must be, and the opening sentence names what is on screen.
  *
+ * LB3, YOUR SAVED CITIES. The fixture is the live city saved to a scratch folder (GameFiles.scratch, never the real save folder) at its
+ * month, played on a year and saved, then reformed by a factor of 100 and saved again: three slots, one city at three points.
+ *  12. READING THE SLOTS: slot 0 is written and left out, an empty slot is off, a save from an older build, a newer one, a damaged
+ *      one and one with no history are off and counted, every file's bytes and modified time are as they were after a read, and a
+ *      second refresh with nothing changed reuses every slot while one re-saved slot alone is read again.
+ *  13. PRICES MOVES ONLY SAVED ROWS, NEVER UNDER REAL US$: per year against static changes no other row; under real US$ and
+ *      under Constant, or for a measure that is not money, it changes nothing; in game US$ a saved city's figure is its own
+ *      year's (X over its rate) per year and its real figure at this city's prices static; static boards keep one order in the
+ *      three moneys; the sentence and the drawer name and open a saved city.
+ *  14. A REFORM LEAVES EVERY RANK: the same city saved before and after a reform by 100 ranks alike, on both boards, in every money,
+ *      Prices and Convert, for every measure, its values equal to 1e-9; side by side on one board the two share a rank (Rankings.TIE).
+ *  15. AT YOUR AGE EQUALS THE HISTORY FILE'S MONTH: a saved city older than the age has the figures, rate, parity and price level
+ *      of its history file at that month; one younger is no row and is listed as stopped, with its last month.
+ *  16. THE RANK LINE: one point for each December the city has a figure for, the last one the board's own rank for the city at that
+ *      December, and neither Your world nor the saved cities play any part.
+ *  17. THE SLIM HISTORY EQUALS THE FULL ONE: a slot keeps only the series the measures read, and the measures from it are the
+ *      full history's, figure for figure, at every month; the game dollar's price level is recorded each month and the reform
+ *      does not touch it.
+ *  18. CITYMEASURES.AT: at the last month it is of(); at the first month it was asked it is what of() said then, however far the
+ *      city has played since; a month the history never reached or no longer holds as a month has no figures; Extras.UNKNOWN
+ *      leaves out exactly what needs the land and the bands.
+ *
  * Every fixture causes its condition: the founding city is a founded one, a tie is a real file with three
- * figures set equal, a missing figure a real file with one removed.
+ * figures set equal, a missing figure a real file with one removed, a save from an older build a real save with its
+ * format set below the oldest this build loads.
  */
 public class RankingsCheck {
 
@@ -204,6 +234,16 @@ public class RankingsCheck {
             theWindows(wm, random, live);
             theCity(wm, g, live);
             theLockAndSentence(wm, random, live);
+
+            // LB3: the live city saved, played on and saved, reformed and saved; the sections read those three slots.
+            Saves saves = makeSaves(g, live);
+            theSlots(wm, random, saves);
+            thePrices(wm, random, saves);
+            theReform(wm, random, saves);
+            theAge(wm, random, saves);
+            theRankLine(wm, random, saves);
+            theSlimHistory(saves);
+            theMonth(live, saves);
         }
 
         out.printf("%nRankingsCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
@@ -740,7 +780,9 @@ public class RankingsCheck {
         double[] bands = new double[AgeBand.values().length];
         for (AgeBand b : AgeBand.values()) bands[b.ordinal()] = g.getCohorts().get(b);
         check("old-age dependency is seniors and elders over adults, from the city's bands", near(f.get("old_age_dep").value(), 100 * (bands[AgeBand.SENIOR.ordinal()] + bands[AgeBand.ELDER.ordinal()]) / bands[AgeBand.ADULT.ordinal()]));
-        check("density is the people over the land the city owns (" + g.getLandManager().getOwnedKm2() + " km2)", near(f.get("density").value(), pop / g.getLandManager().getOwnedKm2()) && near(f.get("area").value(), g.getLandManager().getOwnedKm2()));
+        double dry = LandManager.km2(g.getLandManager().getOwnedSqFt());
+        check("area is the city's dry ground, the real file's land area (" + dry + " km2 of " + g.getLandManager().getOwnedKm2() + " with its water), and density the people over it",
+                near(f.get("area").value(), dry) && dry > 0 && dry <= g.getLandManager().getOwnedKm2() && near(f.get("density").value(), pop / dry));
         check("reserves in months of imports is the vault in dollars over a month of imports at each month's rate: " + f.get("reserves_months").value(), f.get("reserves_months").value() > 0);
 
         // The six bands' deaths are the month's dead, up to the deaths series' rounding: the orphans' and the unhoused are inside them.
@@ -829,5 +871,589 @@ public class RankingsCheck {
                 !plain.contains("Real US dollars") && plain.startsWith("Unemployment (" + unemployment.unit() + ")."));
         check("the Random path is named too", Rankings.sentence(live, set(Board.YOUR_WORLD, Money.REAL_USD, Convert.MARKET), gdp, Nations.Path.RANDOM).contains("Random path"));
         check("a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage", Rankings.hasConstantSeries(gdp) && Rankings.hasConstantSeries(wm.measure("hh_spend_pp")) && !Rankings.hasConstantSeries(wage) && !Rankings.hasConstantSeries(unemployment));
+    }
+
+    /* =====================================================================
+       LB3: YOUR SAVED CITIES. THE FIXTURE AND ITS HELPERS
+       ===================================================================== */
+
+    /**
+     * The live city saved three times to its own scratch folder: slot 1 at its month, slot 2 a year on, slot 3 the same month as slot 2 after a
+     * reform by 100. youngLast and oldLast are the last months of the histories those saves wrote; before and after the active city at slot 2's
+     * month either side of the reform (the units differ by 100); youngReplayed what CityMeasures.at says of slot 1's month once the city has
+     * played on, to be held to what of() said then (the live city's figures).
+     */
+    static final class Saves {
+        Game game;
+        GameFiles files;
+        boolean reformed;
+        int youngLast, oldLast;
+        Rankings.City before, after;
+        CityMeasures.Extras youngExtras;
+        Map<String, CityMeasures.Figure> youngReplayed;
+        SavedCities snapshot;
+    }
+
+    static final long LB3_FACTOR = 100;
+
+    static Saves makeSaves(Game g, Rankings.City live) {
+        Saves s = new Saves();
+        s.game = g;
+        s.files = g.getGameFiles();
+        s.youngExtras = liveExtras(g);
+        s.youngLast = lastMonth(g.getHistorySave());
+        quietly(() -> g.saveGame(1, "Young"));
+        quietly(() -> LongPlaytest.probePlay(g, live.month() + 12));
+        s.oldLast = lastMonth(g.getHistorySave());
+        s.youngReplayed = CityMeasures.at(g.getHistorySave(), s.youngExtras, s.youngLast);
+        s.before = Rankings.City.of(g);
+        quietly(() -> g.saveGame(2, "Old"));
+        quietly(() -> s.reformed = g.reformCurrencyForTest(LB3_FACTOR));
+        quietly(() -> g.saveGame(3, "Reformed"));
+        s.after = Rankings.City.of(g);
+        quietly(() -> s.snapshot = SavedCities.read(s.files));
+        return s;
+    }
+
+    static void quietly(Runnable work) {
+        PrintStream real = System.out;
+        System.setOut(nothing());
+        try {
+            work.run();
+        } finally {
+            System.setOut(real);
+        }
+    }
+
+    static int lastMonth(HistorySave h) {
+        return h.getMonth().get(h.months() - 1);
+    }
+
+    /** What Rankings.City.of(Game) gives CityMeasures for the live city: its land, its bands and the wage floor in today's money. */
+    static CityMeasures.Extras liveExtras(Game g) {
+        double[] bands = new double[AgeBand.values().length];
+        for (AgeBand band : AgeBand.values()) bands[band.ordinal()] = g.getCohorts().get(band);
+        return new CityMeasures.Extras(LandManager.km2(g.getLandManager().getOwnedSqFt()), bands, g.getLabourMarket().cashMinimumWage());
+    }
+
+    /** The saved cities of these slots, in the order the slots are named. */
+    static List<Rankings.Saved> only(List<Rankings.Saved> all, int... slots) {
+        List<Rankings.Saved> kept = new ArrayList<>();
+        for (int slot : slots) for (Rankings.Saved s : all) if (s.slot() == slot) kept.add(s);
+        return kept;
+    }
+
+    /** A slot's history file read whole, as Game.loadHistory reads it. */
+    static HistorySave fullHistory(GameFiles files, int slot) throws IOException {
+        try (Reader in = Files.newBufferedReader(files.historyFile(slot))) {
+            HistorySave h = new HistorySave();
+            h.restoreFrom(new Gson().fromJson(in, HistorySave.class));
+            return h;
+        }
+    }
+
+    /** Whether two sets of figures are the same, measure for measure in the same order, each figure to the digit. */
+    static boolean same(Map<String, CityMeasures.Figure> a, Map<String, CityMeasures.Figure> b) {
+        return new ArrayList<>(a.keySet()).equals(new ArrayList<>(b.keySet())) && a.equals(b);
+    }
+
+    /** Two figures equal to a relative 1e-9, with no floor: a small figure is held as tightly as a large one. */
+    static boolean relative(double a, double b) {
+        return a == b || Math.abs(a - b) <= TOLERANCE * Math.max(Math.abs(a), Math.abs(b));
+    }
+
+    /** Copies slot `from` of one folder to slot `to` of another: the save with its format set to `format` unless that is 0, and the history file if asked. */
+    static void copySlot(GameFiles from, int fromSlot, GameFiles to, int toSlot, int format, boolean history) throws IOException {
+        Files.createDirectories(to.savesDirectory());
+        String save = Files.readString(from.saveFile(fromSlot));
+        if (format != 0) {
+            String changed = save.replaceFirst("\"saveFormat\"\\s*:\\s*\\d+", "\"saveFormat\":" + format);
+            if (changed.equals(save)) throw new IllegalStateException("the save has no saveFormat to set");
+            save = changed;
+        }
+        Files.writeString(to.saveFile(toSlot), save);
+        if (history) Files.copy(from.historyFile(fromSlot), to.historyFile(toSlot), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /** Every file under a folder: its size, modified time and a hash of its bytes. */
+    static Map<Path, String> fingerprint(GameFiles files) throws IOException {
+        Map<Path, String> seen = new HashMap<>();
+        try (java.util.stream.Stream<Path> walk = Files.walk(files.getDirectory())) {
+            for (Path p : (Iterable<Path>) walk::iterator) {
+                if (Files.isRegularFile(p)) seen.put(p, Files.size(p) + ":" + Files.getLastModifiedTime(p).toMillis() + ":" + Arrays.hashCode(Files.readAllBytes(p)));
+            }
+        }
+        return seen;
+    }
+
+    /* =====================================================================
+       12. READING THE SLOTS
+       ===================================================================== */
+
+    static void theSlots(WorldMeasures wm, Nations nations, Saves f) throws IOException {
+        out.println("--- 12. reading the slots ---");
+        check("fixture: the live city was saved in slots 1, 2 and 3 with a history each, and slot 3 is after a reform by " + LB3_FACTOR,
+                f.reformed && f.youngLast < f.oldLast && Files.isRegularFile(f.files.saveFile(1)) && Files.isRegularFile(f.files.historyFile(3))
+                        && Files.isRegularFile(f.files.saveFile(2)) && Files.isRegularFile(f.files.historyFile(2)) && Files.isRegularFile(f.files.saveFile(3)));
+        GameFiles files = GameFiles.scratch("rankingsslots");
+        copySlot(f.files, 1, files, 1, 0, true);                                                    // a city
+        copySlot(f.files, 2, files, 2, 0, true);                                                    // ...and another
+        copySlot(f.files, 1, files, 0, 0, true);                                                    // the autosave, a good save, to be left out
+        copySlot(f.files, 1, files, 5, GameVersion.OLDEST_LOADABLE_FORMAT - 1, true);               // a save from an older build
+        copySlot(f.files, 1, files, 6, GameVersion.SAVE_FORMAT + 1, true);                          // ...and from a newer
+        Files.writeString(files.saveFile(7), "{ this is not a save");                               // a save that cannot be read
+        copySlot(f.files, 1, files, 8, 0, false);                                                   // a save with no history file
+        copySlot(f.files, 1, files, 9, 0, true);
+        Files.writeString(files.historyFile(9), "[[[ this is not a history");                       // ...and one whose history cannot be read
+        int saves = 0;
+        for (int slot = 1; slot <= GameFiles.SLOT_COUNT; slot++) if (Files.isRegularFile(files.saveFile(slot))) saves++;
+
+        Map<Path, String> before = fingerprint(files);
+        SavedCities[] read = new SavedCities[1];
+        quietly(() -> read[0] = SavedCities.read(files));
+        SavedCities snap = read[0];
+        check("a read writes nothing: every file's bytes and modified time are as they were, none added and none removed", before.equals(fingerprint(files)) && before.size() >= 10);
+
+        List<Rankings.Saved> now = snap.now();
+        List<Integer> slots = now.stream().map(Rankings.Saved::slot).toList();
+        check("the cities on the board are slots 1 and 2, in slot order: " + slots, slots.equals(List.of(1, 2)));
+        check("slot 0, the autosave, holds a good save and is left out: not on the board, not counted", Files.isRegularFile(files.saveFile(0)) && !slots.contains(0) && snap.left().total() == 5);
+        check("the empty slots (3, 4 and 10) are off the board and not counted as left out", !slots.contains(3) && !slots.contains(4) && !slots.contains(10) && !Files.exists(files.saveFile(3)));
+        SavedCities.LeftOut left = snap.left();
+        check("a save from an older build (format " + (GameVersion.OLDEST_LOADABLE_FORMAT - 1) + ") is off and counted, and one from a newer build too: " + left,
+                left.olderBuild() == 1 && left.newerBuild() == 1);
+        check("a save that cannot be read and a history that cannot be read are two damaged", left.damaged() == 2);
+        check("a save with no history file is off and counted", left.noHistory() == 1 && !slots.contains(8));
+        check("a first read parses every save in slots 1 to " + GameFiles.SLOT_COUNT + " (" + saves + "), the autosave not among them: reads " + snap.reads(), snap.reads() == saves);
+
+        Rankings.City active = f.before;
+        Row row = byId(Rankings.table(wm, nations, active, now, Settings.OPENING, "people")).get("saved:1");
+        Rankings.City city = now.get(0).city();
+        check("a saved city's row is id saved:1, kind SAVED, the city's name, its year, mark 0, source " + Rankings.SOURCE_SAVE + " and its people",
+                row != null && row.kind() == Rankings.Kind.SAVED && row.name().equals(city.name()) && row.year() == CityCalendar.yearOf(city.month()) && row.mark() == 0
+                        && row.source().equals(Rankings.SOURCE_SAVE) && row.people() == city.figures().get("people").value() && now.get(0).id().equals("saved:1"));
+        check("...and it is the city as its history left it: its month is the history's last (" + f.youngLast + "), its money the header's (" + city.currency() + ")",
+                city.month() == f.youngLast && city.currency().equals(f.game.getCurrency().plural()) && city.name().equals(f.game.getCityName()));
+
+        SavedCities again = snap.refresh(files);
+        boolean reused = again.now().size() == now.size();
+        for (int i = 0; i < now.size() && reused; i++) reused = again.now().get(i).city() == now.get(i).city();
+        check("a second refresh with nothing changed reads no slot and reuses every one (reads " + again.reads() + ")", again.reads() == 0 && reused && again.left().equals(left));
+        copySlot(f.files, 1, files, 2, 0, true);
+        SavedCities third = again.refresh(files);
+        check("slot 2 saved since is the only slot read again (reads " + third.reads() + "): it is now slot 1's city, and slot 1's city is the very object it was",
+                third.reads() == 1 && third.now().size() == 2 && third.now().get(1).city().month() == f.youngLast && third.now().get(0).city() == again.now().get(0).city());
+        check("a slot deleted is gone from the next snapshot, and counted nowhere", delete(files, 1) && third.refresh(files).now().stream().map(Rankings.Saved::slot).toList().equals(List.of(2)));
+    }
+
+    static boolean delete(GameFiles files, int slot) throws IOException {
+        Files.delete(files.saveFile(slot));
+        Files.delete(files.historyFile(slot));
+        return true;
+    }
+
+    /* =====================================================================
+       13. PRICES MOVES ONLY SAVED ROWS, NEVER UNDER REAL US$
+       ===================================================================== */
+
+    static void thePrices(WorldMeasures wm, Nations nations, Saves f) {
+        out.println("--- 13. Prices moves only saved rows, never under real US$ ---");
+        Rankings.City active = f.before;
+        List<Rankings.Saved> saved = only(f.snapshot.now(), 1, 2);
+        Rankings.City young = saved.get(0).city(), old = saved.get(1).city();
+        out.printf("      the active city's game dollar stands at %.4f, the young save's at %.4f and the old save's at %.4f%n", active.usPrices(), young.usPrices(), old.usPrices());
+        check("fixture: the young save's price level differs from the active city's, and the old save, of the active city's month, has the same",
+                !relative(young.usPrices(), active.usPrices()) && relative(old.usPrices(), active.usPrices()));
+
+        Tally others = new Tally(), moves = new Tally(), control = new Tally(), identity = new Tally(), present = new Tally();
+        for (String key : MONEY) {
+            WorldMeasures.Measure m = wm.measure(key);
+            CityMeasures.Figure x = young.figures().get(key);
+            for (Board board : Board.values()) {
+                if (board == Board.YOUR_WORLD && !m.yourWorld()) continue;
+                for (Convert conv : List.of(Convert.MARKET, Convert.PPP)) {
+                    double rate = conv == Convert.MARKET ? young.fx() : young.parity(), activeRate = conv == Convert.MARKET ? active.fx() : active.parity();
+                    for (Money money : List.of(Money.CITY, Money.GAME_USD)) {
+                        Table per = Rankings.table(wm, nations, active, saved, new Settings(board, money, Prices.PER_YEAR, conv), key);
+                        Table fixed = Rankings.table(wm, nations, active, saved, new Settings(board, money, Prices.STATIC, conv), key);
+                        String what = key + " on " + board + " in " + money + " at " + conv;
+                        Map<String, Row> a = byId(per), b = byId(fixed);
+                        boolean same = a.size() == b.size();
+                        for (Row r : per.rows()) {
+                            if (r.kind() == Rankings.Kind.SAVED) continue;
+                            Row o = b.get(r.id());
+                            same &= o != null && o.value() == r.value() && o.shown() == r.shown();
+                        }
+                        others.see(same, () -> what);
+                        boolean both = a.containsKey("saved:1") && b.containsKey("saved:1") && a.containsKey("saved:2") && b.containsKey("saved:2");
+                        present.see(both, () -> what);
+                        if (!both) continue;
+                        moves.see(!relative(a.get("saved:1").value(), b.get("saved:1").value()) && !relative(a.get("saved:1").shown(), b.get("saved:1").shown()), () -> what);
+                        control.see(relative(a.get("saved:2").value(), b.get("saved:2").value()), () -> what + " (the save of the active city's own month)");
+                        if (x != null && money == Money.GAME_USD) {
+                            identity.see(relative(a.get("saved:1").shown(), x.value() / rate), () -> what + ": per year its own year's game dollars, X over its rate");
+                            identity.see(relative(b.get("saved:1").value(), x.value() / rate / young.usPrices()) && relative(b.get("saved:1").shown(), b.get("saved:1").value() * active.usPrices()),
+                                    () -> what + ": static its real dollars times this city's price level");
+                        }
+                        if (x != null && money == Money.CITY) {
+                            identity.see(relative(a.get("saved:1").shown(), x.value() / rate * activeRate), () -> what + ": per year X over its rate times this city's rate");
+                        }
+                    }
+                }
+            }
+        }
+        tally("Prices per year against static moves no row that is not a saved city's: value and shown the same, on both boards, in the city's money and the game's, at this month's rate and PPP", others);
+        tally("...and the boards had both saved cities to move (money measures)", present);
+        tally("...it moves the saved city whose game dollar is dearer or cheaper than this city's", moves);
+        tally("...and does not move the one whose price level is this city's", control);
+        tally("in game US$ a saved city per year is its own year's dollars (X over its rate), static its real dollars (X over rate over its price level) times this city's level; in the city's money per year X over its rate times this city's", identity);
+
+        Tally fixedPrices = new Tally(), shown = new Tally();
+        for (WorldMeasures.Measure m : wm.measures()) {
+            for (Board board : Board.values()) {
+                if (board == Board.YOUR_WORLD && !m.yourWorld()) continue;
+                for (Money money : Money.values()) {
+                    for (Convert conv : Convert.values()) {
+                        if (m.money() && money != Money.REAL_USD && conv != Convert.CONSTANT) continue;
+                        Table per = Rankings.table(wm, nations, active, saved, new Settings(board, money, Prices.PER_YEAR, conv), m.key());
+                        Table fixed = Rankings.table(wm, nations, active, saved, new Settings(board, money, Prices.STATIC, conv), m.key());
+                        String what = m.key() + " on " + board + " in " + money + " at " + conv;
+                        fixedPrices.see(per.rows().equals(fixed.rows()), () -> what);
+                        if (m.key().equals("gdp") || m.key().equals("people")) shown.see(byId(per).containsKey("saved:1") && byId(per).containsKey("saved:2"), () -> what);
+                    }
+                }
+            }
+        }
+        tally("under real US$, under Constant, and for a measure that is not money, Prices changes nothing: the whole table the same, every row, rank, value and figure shown", fixedPrices);
+        tally("...with saved cities on those boards to have moved (GDP and people)", shown);
+
+        Tally order = new Tally();
+        for (String key : MONEY) {
+            WorldMeasures.Measure m = wm.measure(key);
+            for (Board board : Board.values()) {
+                if (board == Board.YOUR_WORLD && !m.yourWorld()) continue;
+                for (Convert conv : Convert.values()) {
+                    List<List<String>> orders = new ArrayList<>();
+                    List<List<Integer>> ranks = new ArrayList<>();
+                    for (Money money : Money.values()) {
+                        Table t = Rankings.table(wm, nations, active, saved, new Settings(board, money, Prices.STATIC, conv), key);
+                        orders.add(ids(t));
+                        ranks.add(t.rows().stream().map(Row::rank).toList());
+                    }
+                    order.see(orders.get(0).equals(orders.get(1)) && orders.get(0).equals(orders.get(2)) && ranks.get(0).equals(ranks.get(1)) && ranks.get(0).equals(ranks.get(2))
+                            && orders.get(0).contains("saved:1"), () -> key + " on " + board + " at " + conv);
+                }
+            }
+        }
+        tally("a static board is one order, with the saved cities in it, in the city's money, game US$ and real US$", order);
+
+        Settings perYear = new Settings(Board.REAL_2025, Money.CITY, Prices.PER_YEAR, Convert.MARKET), fixedYear = new Settings(Board.REAL_2025, Money.CITY, Prices.STATIC, Convert.MARKET);
+        WorldMeasures.Measure gdp = wm.measure("gdp"), unemployment = wm.measure("unemployment");
+        check("with a saved city on the board Prices is open for money in the city's money at this month's rate", !Rankings.pricesLocked(perYear, gdp, !saved.isEmpty()) && Rankings.pricesLockedWhy(perYear, gdp, !saved.isEmpty()).isEmpty());
+        String plain = Rankings.sentence(active, perYear, gdp, null);
+        check("with no saved city on the board the sentence is the board's alone", Rankings.sentence(active, perYear, gdp, null, List.of(), false).equals(plain));
+        String yearly = Rankings.sentence(active, perYear, gdp, null, saved, false);
+        String stat = Rankings.sentence(active, fixedYear, gdp, null, saved, true);
+        out.println("      " + yearly);
+        out.println("      " + stat);
+        check("per year it adds that the saved cities are in their own year's dollars, as last saved", yearly.equals(plain + " Your saved cities in their own year's dollars, as last saved."));
+        check("static at an age it adds that they are at this city's prices of its year, at its age",
+                stat.equals(plain + " Your saved cities at " + active.name() + "'s prices of " + active.year() + ", at " + Rankings.ageWords(active.month()) + "."));
+        Settings realUsd = new Settings(Board.REAL_2025, Money.REAL_USD, Prices.PER_YEAR, Convert.MARKET);
+        check("under real US$, which Prices cannot move, it names no prices: just the saved cities as last saved",
+                Rankings.sentence(active, realUsd, gdp, null, saved, false).endsWith(" Your saved cities as last saved.") && !Rankings.sentence(active, realUsd, gdp, null, saved, false).contains("own year"));
+        check("a measure that is not money names none either, at an age too",
+                Rankings.sentence(active, perYear, unemployment, null, saved, true).endsWith(" Your saved cities at " + Rankings.ageWords(active.month()) + "."));
+        check("an age is said as years and months: 50 months is 4 years 2 months, 12 is 1 year, 13 is 1 year 1 month, 7 is 7 months",
+                Rankings.ageWords(50).equals("4 years 2 months") && Rankings.ageWords(12).equals("1 year") && Rankings.ageWords(13).equals("1 year 1 month") && Rankings.ageWords(7).equals("7 months"));
+
+        Settings yourWorld = new Settings(Board.YOUR_WORLD, Money.CITY, Prices.PER_YEAR, Convert.MARKET);
+        List<Rankings.Line> lines = Rankings.drawer(wm, nations, active, saved, perYear, "saved:1");
+        Rankings.Line line = lines.stream().filter(l -> l.measure().key().equals("gdp")).findFirst().orElseThrow();
+        Row onReal = byId(Rankings.table(wm, nations, active, saved, perYear, "gdp")).get("saved:1");
+        Row onYours = byId(Rankings.table(wm, nations, active, saved, yourWorld, "gdp")).get("saved:1");
+        check("the drawer opens a saved city by its row id: its GDP line is its row on each board, mark 0, source " + Rankings.SOURCE_SAVE,
+                line.real2025() == onReal.shown() && line.yourWorld() == onYours.shown() && line.realMark() == 0 && Rankings.SOURCE_SAVE.equals(line.realSource()) && lines.size() == wm.measures().size());
+        check("...and with no saved cities handed over, the same id opens nothing: a line of NaN each",
+                Rankings.drawer(wm, nations, active, perYear, "saved:1").stream().allMatch(l -> Double.isNaN(l.real2025()) && Double.isNaN(l.yourWorld())));
+    }
+
+    /* =====================================================================
+       14. A REFORM LEAVES EVERY RANK
+       ===================================================================== */
+
+    static void theReform(WorldMeasures wm, Nations nations, Saves f) {
+        out.println("--- 14. a reform leaves every rank ---");
+        List<Rankings.Saved> pair = only(f.snapshot.now(), 2, 3);
+        Rankings.City was = pair.get(0).city(), is = pair.get(1).city();
+        out.printf("      slot 2 before the reform: rate %.6f, GDP %.6g; slot 3 after: rate %.6f, GDP %.6g%n", was.fx(), was.figures().get("gdp").value(), is.fx(), is.figures().get("gdp").value());
+        check("fixture: slot 3 is slot 2's city in a money a " + LB3_FACTOR + "th the size: its rate, founding rate and GDP are that fraction, its prices, month and people the same",
+                relative(is.fx() * LB3_FACTOR, was.fx()) && relative(is.foundingRate() * LB3_FACTOR, was.foundingRate()) && relative(is.figures().get("gdp").value() * LB3_FACTOR, was.figures().get("gdp").value())
+                        && is.usPrices() == was.usPrices() && is.month() == was.month() && is.figures().get("people").value() == was.figures().get("people").value());
+        Tally ranks = new Tally(), values = new Tally(), absent = new Tally(), money = new Tally(), together = new Tally();
+        for (Rankings.City active : List.of(f.before, f.after)) {
+            for (WorldMeasures.Measure m : wm.measures()) {
+                for (Board board : Board.values()) {
+                    if (board == Board.YOUR_WORLD && !m.yourWorld()) continue;
+                    for (Money inMoney : Money.values()) {
+                        for (Prices prices : Prices.values()) {
+                            for (Convert conv : Convert.values()) {
+                                Settings s = new Settings(board, inMoney, prices, conv);
+                                String what = m.key() + " on " + board + " in " + inMoney + ", " + prices + ", " + conv + " beside the city of " + (active.fx() == f.before.fx() ? "before" : "after");
+                                Row a = byId(Rankings.table(wm, nations, active, List.of(pair.get(0)), s, m.key())).get("saved:2");
+                                Row b = byId(Rankings.table(wm, nations, active, List.of(pair.get(1)), s, m.key())).get("saved:3");
+                                if (a == null || b == null) {
+                                    absent.see(a == null && b == null, () -> what + ": a row before the reform and none after, or the other way");
+                                    continue;
+                                }
+                                ranks.see(a.rank() == b.rank(), () -> what + ": rank " + a.rank() + " before the reform, " + b.rank() + " after");
+                                values.see(relative(a.value(), b.value()) && relative(a.shown(), b.shown()), () -> what + ": " + a.value() + " against " + b.value());
+                                if (m.money()) money.see(true, () -> what);
+                                Map<String, Row> both = byId(Rankings.table(wm, nations, active, pair, s, m.key()));
+                                Row a2 = both.get("saved:2"), b2 = both.get("saved:3");
+                                together.see(a2 != null && b2 != null && a2.rank() == b2.rank(),
+                                        () -> what + ": side by side, rank " + (a2 == null ? "none" : a2.rank()) + " and " + (b2 == null ? "none" : b2.rank()));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        tally("the same city saved before and after the reform has the same rank in every measure and every Settings combination, on both boards, beside the city before and after it", ranks);
+        tally("...and the same value, and the same figure shown, to a relative 1e-9", values);
+        tally("...and where one has no row, so has the other (no figure of that measure)", absent);
+        tally("...and side by side on one board, beside the live city they were saved from, the two copies share one rank (Rankings.TIE: the reform leaves noise in the last digits only)", together);
+        check("...the money measures among them (" + money.n + " rows compared)", money.n > 100);
+    }
+
+    /* =====================================================================
+       15. AT YOUR AGE EQUALS THE HISTORY FILE'S MONTH
+       ===================================================================== */
+
+    static void theAge(WorldMeasures wm, Nations nations, Saves f) throws IOException {
+        out.println("--- 15. at your age ---");
+        int age = (f.youngLast + f.oldLast) / 2;
+        check("fixture: the age (" + age + ", " + Rankings.ageWords(age) + ") is past slot 1's last month (" + f.youngLast + ") and before slot 2's (" + f.oldLast + ")", f.youngLast < age && age < f.oldLast && age > 24);
+        List<Rankings.Saved> rows = f.snapshot.at(age);
+        List<SavedCities.Stopped> stopped = f.snapshot.stoppedAt(age);
+        check("at that age the cities on the board are slots 2 and 3, and slot 1 is no row", rows.stream().map(Rankings.Saved::slot).toList().equals(List.of(2, 3)));
+        check("slot 1 is listed as stopped, with its name and its last month (stopped at " + CityCalendar.formatShort(f.youngLast) + ")",
+                stopped.equals(List.of(new SavedCities.Stopped(1, f.game.getCityName(), f.youngLast))));
+        Table t = Rankings.table(wm, nations, f.before, rows, Settings.OPENING, "people");
+        check("...and the board has no row for it, with slots 2 and 3 on it", !byId(t).containsKey("saved:1") && byId(t).containsKey("saved:2") && byId(t).containsKey("saved:3"));
+
+        HistorySave full = fullHistory(f.files, 2);
+        int at = full.getMonth().indexOf(age);
+        check("fixture: slot 2's history file holds the age as a month, with a year behind it", at >= CityMeasures.YEAR);
+        Rankings.City c = rows.get(0).city();
+        Map<String, CityMeasures.Figure> expect = CityMeasures.at(full, CityMeasures.Extras.UNKNOWN, age);
+        check("slot 2 at the age has CityMeasures.at of its history file at that month (" + expect.size() + " measures), its month and year the age's",
+                expect.size() > 30 && same(expect, c.figures()) && c.month() == age && c.year() == CityCalendar.yearOf(age));
+        double[] gdp = full.aligned("gdp");
+        double year = 0;
+        for (int i = at - CityMeasures.YEAR + 1; i <= at; i++) year += gdp[i];
+        check("...its GDP is the history's GDP over the twelve months to the age, times THOUSANDS (" + c.figures().get("gdp").value() + ")", relative(c.figures().get("gdp").value(), year * CityMeasures.THOUSANDS));
+        check("...its rate, parity and the game dollar's price level are the history file's fxRate, fxParity and usPrices at that month",
+                c.fx() == full.aligned("fxRate")[at] && c.parity() == full.aligned("fxParity")[at] && c.usPrices() == full.aligned("usPrices")[at] && c.usPrices() > 1);
+        Set<String> needLand = Set.of("area", "density", "old_age_dep", "life_exp", "orphans");
+        check("...and the measures that need the land and the bands are absent, never guessed", needLand.stream().noneMatch(c.figures()::containsKey) && c.figures().containsKey("gdp") && c.figures().containsKey("people"));
+
+        Rankings.City last = only(f.snapshot.now(), 2).get(0).city();
+        check("at its last saved month it is the whole history's last month (" + last.month() + "), with the header's land and bands: area, density and life expectancy are there",
+                last.month() == f.oldLast && last.fx() == full.aligned("fxRate")[full.months() - 1] && last.usPrices() == full.aligned("usPrices")[full.months() - 1]
+                        && needLand.stream().allMatch(last.figures()::containsKey));
+        check("...its area is the live city's at the month it was saved (" + last.figures().get("area").value() + " km2): both are the dry ground, the save's and the land manager's",
+                f.before.month() == last.month() && relative(last.figures().get("area").value(), f.before.figures().get("area").value()));
+        Rankings.City reformed = only(f.snapshot.at(age), 3).get(0).city();
+        check("the reform reaches the saved history: slot 3 at the age has a rate a " + LB3_FACTOR + "th of slot 2's and the same price level, and its GDP is that fraction of slot 2's",
+                relative(reformed.fx() * LB3_FACTOR, c.fx()) && reformed.usPrices() == c.usPrices() && relative(reformed.figures().get("gdp").value() * LB3_FACTOR, c.figures().get("gdp").value()));
+
+        check("a city still on the board at the month its history ends is not stopped, one past it is: at " + f.youngLast + " slot 1 is a row, at " + (f.youngLast + 1) + " it has stopped",
+                f.snapshot.stoppedAt(f.youngLast).isEmpty() && f.snapshot.at(f.youngLast).stream().anyMatch(s -> s.slot() == 1) && f.snapshot.stoppedAt(f.youngLast + 1).size() == 1);
+        check("at an age none has reached, there are no rows and every city is stopped, at its own last month, in slot order",
+                f.snapshot.at(f.oldLast + 100).isEmpty() && f.snapshot.stoppedAt(f.oldLast + 100).stream().map(SavedCities.Stopped::lastMonth).toList().equals(List.of(f.youngLast, f.oldLast, f.oldLast)));
+        check("at an age before the history began there is no row either, and no city has stopped", f.snapshot.at(0).isEmpty() && f.snapshot.stoppedAt(0).isEmpty());
+    }
+
+    /* =====================================================================
+       16. THE RANK LINE
+       ===================================================================== */
+
+    static void theRankLine(WorldMeasures wm, Nations nations, Saves f) {
+        out.println("--- 16. the rank over the years ---");
+        HistorySave h = f.game.getHistorySave();
+        Rankings.City city = f.after;
+        List<Integer> decembers = new ArrayList<>();
+        for (int m : h.getMonth()) if ((m - 1) % 12 == 11) decembers.add(m);
+        out.printf("      the history holds %d months and %d Decembers: %s%n", h.months(), decembers.size(), decembers);
+        check("fixture: the history is all months (nothing folded) and holds at least three Decembers", h.yearlyPoints() == 0 && decembers.size() >= 3);
+        Settings real = set(Board.REAL_2025, Money.REAL_USD, Convert.MARKET);
+        Tally months = new Tally(), every = new Tally(), board = new Tally(), plays = new Tally(), within = new Tally();
+        // The measures the real world still publishes, read from the file: a sourced measure with real figures on the board (LC1 left the rest
+        // with a none: source, ranking the player's cities alone).
+        List<String> published = new ArrayList<>();
+        for (WorldMeasures.Measure m : wm.measures()) if (m.sourced() && Rankings.table(wm, nations, city, real, m.key()).realFigures()) published.add(m.key());
+        List<String> lined = new ArrayList<>();
+        check("fixture: the measures the real world still publishes, read from the file (" + published.size() + " of " + wm.measures().size()
+                + "), people, GDP and unemployment among them", published.size() > 20 && published.containsAll(List.of("people", "gdp", "unemployment")));
+        for (String key : published) {
+            List<Rankings.RankPoint> points = Rankings.rankOverYears(wm, city, h, real, key);
+            List<Integer> want = new ArrayList<>();
+            for (int m : decembers) if (CityMeasures.at(h, CityMeasures.Extras.UNKNOWN, m).containsKey(key)) want.add(m);
+            if (!want.isEmpty()) lined.add(key);
+            months.see(points.stream().map(Rankings.RankPoint::month).toList().equals(want), () -> key + ": " + points + " against the Decembers " + want);
+            if (key.equals("people") || key.equals("gdp") || key.equals("unemployment")) months.see(points.size() == decembers.size(), () -> key + " has a figure in every December: " + points.size() + " of " + decembers.size());
+            for (Rankings.RankPoint p : points) {
+                Rankings.City then = Rankings.cityAt(city.name(), city.currency(), city.foundingRate(), h, CityMeasures.Extras.UNKNOWN, p.month());
+                Table t = Rankings.table(wm, nations, then, real, key);
+                Row me = cityRow(t);
+                every.see(me != null && me.rank() == p.rank() && t.rows().size() == p.of(), () -> key + " in " + CityCalendar.format(p.month()) + ": " + p);
+                within.see(p.rank() >= 1 && p.rank() <= p.of() && p.of() > 1, () -> key + " in " + CityCalendar.format(p.month()) + ": " + p);
+            }
+            board.see(Rankings.rankOverYears(wm, city, h, set(Board.YOUR_WORLD, Money.REAL_USD, Convert.MARKET), key).equals(points), () -> key + " on Your world's settings");
+            if (!points.isEmpty()) {
+                Rankings.RankPoint lastPoint = points.get(points.size() - 1);
+                Rankings.City then = Rankings.cityAt(city.name(), city.currency(), city.foundingRate(), h, CityMeasures.Extras.UNKNOWN, lastPoint.month());
+                List<Rankings.Saved> saved = f.snapshot.at(lastPoint.month());
+                Table withSaved = Rankings.table(wm, nations, then, saved, real, key);
+                Table without = Rankings.table(wm, nations, then, real, key);
+                plays.see(!saved.isEmpty() && withSaved.rows().size() > without.rows().size() && lastPoint.of() == without.rows().size(), () -> key + ": the board with " + saved.size() + " saved cities has " + withSaved.rows().size() + " rows, the point " + lastPoint.of());
+            }
+        }
+        check("...of which the city has a figure in some December for " + lined.size() + " (the rest need the land or the bands, or the city has none)", lined.size() > 15);
+        tally("the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them", months);
+        tally("each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)", every);
+        tally("...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)", within);
+        WorldMeasures.Measure out1 = wm.measure("inflation");
+        List<Rankings.Saved> savedNow = f.snapshot.now();
+        Table alone = Rankings.table(wm, nations, city, savedNow, real, "inflation");
+        check("a measure LC1 took out (inflation, its source " + out1.source() + ") ranks the player's cities alone: the city and its " + savedNow.size()
+                        + " saved cities, no real place, and its rank line is the city alone each December",
+                !out1.sourced() && !alone.realFigures() && alone.rows().size() == 1 + savedNow.size() && savedNow.size() > 1
+                        && alone.rows().stream().allMatch(r -> r.kind() == Rankings.Kind.CITY || r.kind() == Rankings.Kind.SAVED)
+                        && Rankings.rankOverYears(wm, city, h, real, "inflation").stream().allMatch(p -> p.rank() == 1 && p.of() == 1));
+        tally("Your world's settings give the same points: the line is against Real world 2025 only", board);
+        tally("saved cities would change the places ranked (the board with them has more rows), and the point leaves them out", plays);
+
+        check("a measure that needs the land has no point, since the history does not keep it: area and density", Rankings.rankOverYears(wm, city, h, real, "area").isEmpty() && Rankings.rankOverYears(wm, city, h, real, "density").isEmpty());
+        String later = null;
+        for (String key : lined) {
+            List<Rankings.RankPoint> points = Rankings.rankOverYears(wm, city, h, real, key);
+            if (!points.isEmpty() && points.get(0).month() > decembers.get(0)) { later = key; break; }
+        }
+        String startsLater = later;
+        check("a measure the city had no figure for in its first Decembers starts when it has one: " + startsLater + ", published, has no point in the first December and some after",
+                startsLater != null && Rankings.rankOverYears(wm, city, h, real, startsLater).stream().noneMatch(p -> p.month() == decembers.get(0)));
+        Settings constant = set(Board.REAL_2025, Money.CITY, Convert.CONSTANT);
+        List<Rankings.RankPoint> constantPoints = Rankings.rankOverYears(wm, city, h, constant, "gdp");
+        Rankings.RankPoint lastConstant = constantPoints.isEmpty() ? null : constantPoints.get(constantPoints.size() - 1);
+        Table atLast = lastConstant == null ? null : Rankings.table(wm, nations, Rankings.cityAt(city.name(), city.currency(), city.foundingRate(), h, CityMeasures.Extras.UNKNOWN, lastConstant.month()), constant, "gdp");
+        check("under Constant the line is the board's Constant rank at each December: the last of " + constantPoints.size() + " points is " + lastConstant,
+                lastConstant != null && cityRow(atLast).rank() == lastConstant.rank() && lastConstant.month() == decembers.get(decembers.size() - 1));
+        check("a history of nothing, or none, has no points", Rankings.rankOverYears(wm, city, new HistorySave(), real, "people").isEmpty() && Rankings.rankOverYears(wm, city, null, real, "people").isEmpty());
+        Rankings.City first = Rankings.cityAt(city.name(), city.currency(), city.foundingRate(), h, CityMeasures.Extras.UNKNOWN, decembers.get(0));
+        check("the city at a December is the history's: its rate, parity and price level at that month, its month and year the calendar's",
+                first.month() == decembers.get(0) && first.fx() == CityMeasures.valueAt(h, "fxRate", first.month()) && first.usPrices() == CityMeasures.valueAt(h, "usPrices", first.month())
+                        && CityCalendar.monthOfYear(first.month()) == 12 && Rankings.cityAt(city.name(), city.currency(), city.foundingRate(), h, CityMeasures.Extras.UNKNOWN, lastMonth(h) + 1) == null);
+    }
+
+    /* =====================================================================
+       17. THE SLIM HISTORY EQUALS THE FULL ONE
+       ===================================================================== */
+
+    static void theSlimHistory(Saves f) throws IOException {
+        out.println("--- 17. the slim history equals the full one ---");
+        CityMeasures.Extras x = new CityMeasures.Extras(3.5, new double[] {900, 3000, 1500, 9000, 2000, 600}, 0.4);
+        Tally figures = new Tally(), months = new Tally(), kept = new Tally(), axis = new Tally();
+        for (int slot = 1; slot <= 3; slot++) {
+            HistorySave slim = f.snapshot.history(slot), full = fullHistory(f.files, slot);
+            int slotNumber = slot;
+            axis.see(slim != null && slim.getMonth().equals(full.getMonth()) && slim.yearlyPoints() == full.yearlyPoints() && slim.months() == full.months(), () -> "slot " + slotNumber + "'s axis");
+            figures.see(!CityMeasures.of(full, x).isEmpty() && same(CityMeasures.of(slim, x), CityMeasures.of(full, x)), () -> "slot " + slotNumber + "'s measures at its last month");
+            for (int m : full.getMonth()) months.see(same(CityMeasures.at(slim, x, m), CityMeasures.at(full, x, m)), () -> "slot " + slotNumber + " at month " + m);
+            int loaded = 0, keptSeries = 0;
+            boolean inside = true;
+            Map<String, List<? extends Number>> fullByName = full.seriesByName(), slimByName = slim.seriesByName();
+            for (Map.Entry<String, List<? extends Number>> e : fullByName.entrySet()) {
+                if (!e.getValue().isEmpty()) loaded++;
+                // a series is kept as the file has it if it is one of the kept, and empty if it is not
+                List<? extends Number> mine = slimByName.get(e.getKey());
+                inside &= SavedCities.KEPT.contains(e.getKey()) ? e.getValue().equals(mine) : mine == null || mine.isEmpty();
+                if (mine != null && !mine.isEmpty()) keptSeries++;
+            }
+            int fullSeries = loaded, slimSeries = keptSeries;
+            boolean ok = inside && slimSeries * 3 < fullSeries && slimSeries > 40;
+            kept.see(ok, () -> "slot " + slotNumber + " keeps " + slimSeries + " of " + fullSeries + " series");
+        }
+        tally("a slot's slim history has the full one's axis", axis);
+        tally("CityMeasures.of over it is the full history's, figure for figure", figures);
+        tally("...and so is CityMeasures.at of it at every month of the history", months);
+        tally("it keeps only the series the measures read and the pivot's three, each as the file has it, under a third of the series the file has", kept);
+        HistorySave probe = fullHistory(f.files, 2);
+        check("every series CityMeasures reads is a series a history has, and the pivot's fxRate, fxParity and usPrices are kept",
+                probe.seriesByName().keySet().containsAll(CityMeasures.SERIES) && SavedCities.KEPT.containsAll(CityMeasures.SERIES) && SavedCities.KEPT.containsAll(List.of("fxRate", "fxParity", "usPrices")));
+
+        // The game dollar's price level, recorded each month at full precision: the history's last entry is the world's level the month ended at.
+        Game g = f.game;
+        Tally each = new Tally();
+        int steps = 15;
+        for (int i = 0; i < steps; i++) {
+            quietly(() -> g.simulateMonths(1));
+            double level = g.getWorldEconomy().getPriceLevel();
+            double recorded = g.getHistorySave().alignedTail("usPrices", 1)[0];
+            each.see(recorded == level, () -> "month " + g.getMonth() + ": recorded " + recorded + ", the world's level " + level);
+        }
+        tally("usPrices is the world economy's price level, to the digit, at the end of each month played (" + steps + " months)", each);
+        List<? extends Number> series = g.getHistorySave().seriesByName().get("usPrices");
+        check("...and it has an entry for every month of the history (" + series.size() + " of " + g.getHistorySave().months() + "), none rounded to four places",
+                series.size() == g.getHistorySave().months() && series.stream().anyMatch(v -> v.doubleValue() != Math.round(v.doubleValue() * 10_000.0) / 10_000.0));
+        HistorySave before = fullHistory(f.files, 2), after = fullHistory(f.files, 3);
+        double[] fxBefore = before.aligned("fxRate"), fxAfter = after.aligned("fxRate");
+        boolean scaled = fxBefore.length == fxAfter.length;
+        for (int i = 0; i < fxBefore.length && scaled; i++) scaled = relative(fxAfter[i] * LB3_FACTOR, fxBefore[i]);
+        check("the reform divides the rate's whole history by " + LB3_FACTOR + " and leaves usPrices alone: slot 3's series is slot 2's, to the digit",
+                scaled && Arrays.equals(before.aligned("usPrices"), after.aligned("usPrices")) && !Double.isNaN(before.aligned("usPrices")[0]));
+    }
+
+    /* =====================================================================
+       18. CITYMEASURES.AT
+       ===================================================================== */
+
+    static void theMonth(Rankings.City live, Saves f) {
+        out.println("--- 18. CityMeasures.at ---");
+        HistorySave h = f.game.getHistorySave();
+        CityMeasures.Extras x = f.youngExtras;
+        int last = lastMonth(h);
+        check("at the history's last month it is of(), figure for figure (" + CityMeasures.of(h, x).size() + " measures)", !CityMeasures.of(h, x).isEmpty() && same(CityMeasures.at(h, x, last), CityMeasures.of(h, x)));
+        check("at the first month it was asked (" + f.youngLast + "), after the city played on " + (last - f.youngLast) + " months, it is what of() said then: the live city's figures",
+                same(f.youngReplayed, live.figures()) && f.youngReplayed.size() > 30);
+        check("a month the history never reached has no figures, nor month 0 or a negative one, nor a null history",
+                CityMeasures.at(h, x, last + 1).isEmpty() && CityMeasures.at(h, x, 0).isEmpty() && CityMeasures.at(h, x, -5).isEmpty() && CityMeasures.at(null, x, last).isEmpty());
+        int first = h.getMonth().get(0);
+        check("a younger month has fewer measures than an older: inflation needs 13 months, so none in the history's twelfth month (" + (first + 11) + ") and one in its thirteenth",
+                !CityMeasures.at(h, x, first + 11).containsKey("inflation") && CityMeasures.at(h, x, first + 12).containsKey("inflation") && CityMeasures.at(h, x, first + 11).containsKey("gdp"));
+
+        Map<String, CityMeasures.Figure> unknown = CityMeasures.at(h, CityMeasures.Extras.UNKNOWN, last), known = CityMeasures.at(h, x, last);
+        Set<String> needLand = Set.of("area", "density", "old_age_dep", "life_exp", "orphans");
+        boolean others = true;
+        for (String key : known.keySet()) if (!needLand.contains(key) && !key.equals("min_wage") && !key.equals("kaitz")) others &= unknown.containsKey(key) && unknown.get(key).equals(known.get(key));
+        check("Extras.UNKNOWN leaves out exactly what needs the land and the bands (" + needLand + "): the other measures are the same",
+                needLand.stream().noneMatch(unknown::containsKey) && needLand.stream().allMatch(known::containsKey) && others && unknown.containsKey("gdp"));
+        double floor = h.aligned("minimumWage")[h.months() - 1] * h.aligned("priceIndex")[h.months() - 1] * CityMeasures.YEAR * CityMeasures.THOUSANDS;
+        check("...and its minimum wage is the history's floor lifted by the price index, times 12 and THOUSANDS (" + unknown.get("min_wage").value() + ")", relative(unknown.get("min_wage").value(), floor));
+
+        // A history with folded years: only the entries that are months can be read at.
+        int total = HistorySave.MONTHLY_KEPT + 3 * 12 + 5;
+        HistorySave folded = new HistorySave();
+        for (int m = 1; m <= total; m++) folded.appendMonth(m, name -> constantSeries(name));
+        CityMeasures.Extras bands = new CityMeasures.Extras(4, new double[] {100, 100, 100, 100, 100, 100});
+        check("fixture: three years of the history are folded (" + folded.yearlyPoints() + ") and the first month it holds as a month is " + (folded.yearlyPoints() * 12 + 1), folded.yearlyPoints() == 3);
+        check("a month in a folded year has no figures (months 12 and 36), nor does the month before the fold ends", CityMeasures.at(folded, bands, 12).isEmpty() && CityMeasures.at(folded, bands, 36).isEmpty() && CityMeasures.at(folded, bands, 1).isEmpty());
+        check("the first month after the fold is read as a month: a year of output scaled from the one month it has, 12 times the month",
+                CityMeasures.at(folded, bands, 37).containsKey("gdp") && relative(CityMeasures.at(folded, bands, 37).get("gdp").value(), 100 * 12 * CityMeasures.THOUSANDS));
+        check("a month in the folded history's middle has the figures of that month, a year of output 12 of the month; its last month is of()",
+                relative(CityMeasures.at(folded, bands, total - 24).get("gdp").value(), 100 * 12 * CityMeasures.THOUSANDS) && same(CityMeasures.at(folded, bands, total), CityMeasures.of(folded, bands)));
+        check("valueAt reads a series at a month and is NaN where the history has no such month or series",
+                CityMeasures.valueAt(folded, "gdp", total - 5) == 100 && Double.isNaN(CityMeasures.valueAt(folded, "gdp", 12)) && Double.isNaN(CityMeasures.valueAt(folded, "noSuchSeries", total - 5)) && Double.isNaN(CityMeasures.valueAt(null, "gdp", 5)));
     }
 }

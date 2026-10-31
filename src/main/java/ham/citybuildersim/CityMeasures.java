@@ -1,7 +1,10 @@
 package ham.citybuildersim;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The city's figure for each of the Rankings' 70 measures (spec-leaderboards 6,
@@ -79,6 +82,12 @@ import java.util.Map;
  * deathsUnhoused are INSIDE them (Unemployment.attributeDeaths splits the bands'
  * dead, it adds none), so the six sum to the month's deaths up to the rounding of
  * the deaths series, and neither is added.
+ *
+ * AT A MONTH (LB3). at() reads the same rules as of() with the history's entries after a game month ignored, so that a saved city is read at the
+ * active city's age (SavedCities) and the rank line reads each December (Rankings.rankOverYears); of() is at() at the last month. A month must be
+ * one the history holds as a month, never a folded year's last, or at() has no figures. The history does not keep the land or the bands, so at an
+ * earlier month the caller has Extras.UNKNOWN, and the measures that need them are absent. SERIES lists every series read, so that a cache can keep
+ * only those.
  */
 public final class CityMeasures {
 
@@ -104,6 +113,13 @@ public final class CityMeasures {
         /** Extras without the wage floor in today's money: the minimum wage is then the history's floor lifted by the price index. */
         public Extras(double areaKm2, double[] bandPeople) { this(areaKm2, bandPeople, Double.NaN); }
 
+        /**
+         * Nothing the history lacks is known (LB3, a saved city at an earlier month, whose land and bands the save keeps only as they stood at its last save):
+         * no area, no bands and no wage floor in today's money, so the measures that need them (area, density, old-age dependency, life expectancy, orphans)
+         * are absent and the minimum wage is the history's floor lifted by the price index.
+         */
+        public static final Extras UNKNOWN = new Extras(Double.NaN, null);
+
         /** The people of a band, NaN where the extras do not know. */
         double people(AgeBand band) {
             return bandPeople == null || band.ordinal() >= bandPeople.length ? Double.NaN : bandPeople[band.ordinal()];
@@ -120,13 +136,55 @@ public final class CityMeasures {
      */
     public record Figure(double value, double real, String how) { }
 
+    /**
+     * Every history series of() and at() read, and the YearBook definitions they lean on read through the same Reading (LB3): a cache of a saved city's
+     * history (SavedCities) keeps only these, and the figures it makes are the full history's, figure for figure (RankingsCheck 17).
+     */
+    public static final Set<String> SERIES = Set.of("arrivals", "bankLent", "bankLeverageRatio", "bankPrime", "births", "careCoverage", "consumption",
+            "crimeRate", "currentAccount", "deathsAdults", "deathsBabies", "deathsChildren", "deathsElders", "deathsKilled", "deathsSeniors", "deathsTeens",
+            "debt", "departures", "exportsAbroad", "fundValue", "fxParity", "fxRate", "gdp", "government", "healthBill", "homes", "households", "hunger",
+            "importsAbroad", "investment", "jobs", "m2", "minimumWage", "netExports", "orphans", "outOfWork", "pensionBill", "policeCoverage", "policyRate",
+            "population", "priceIndex", "prisoners", "rentPrice", "reservesUsd", "sickRate", "students", "surplus", "taxBusiness", "taxIndustrial",
+            "taxProperty", "taxSales", "taxWage", "totalWage", "unhoused", "workforce");
+
     /** Every measure the city has a figure for at the history's last month, in the file's order; a measure it has none for is absent, never 0. */
     public static Map<String, Figure> of(HistorySave h, Extras x) {
+        return h == null || h.months() == 0 ? new LinkedHashMap<>() : at(h, x, h.getMonth().get(h.months() - 1));
+    }
+
+    /**
+     * Every measure the city has a figure for as of the end of game month `month` (LB3), the history's entries after it ignored; of() is this at the
+     * history's last month. The month must be one the history holds as a month: a month in a folded year (HistorySave.foldOldYears), or one the history
+     * never reached, has no figures (an empty map). The extras are the city's as they stood at that month, or Extras.UNKNOWN.
+     */
+    public static Map<String, Figure> at(HistorySave h, Extras x, int month) {
+        if (h == null) return new LinkedHashMap<>();
+        int end = entriesTo(h, month);
+        return end < 0 ? new LinkedHashMap<>() : figures(h, x, end);
+    }
+
+    /** How many of the axis's entries run to the one that is `month`, or -1 when no entry that is a month of its own (not a folded year) is that month. */
+    static int entriesTo(HistorySave h, int month) {
+        List<Integer> axis = h.getMonth();
+        for (int i = axis.size() - 1; i >= h.yearlyPoints(); i--) {
+            int m = axis.get(i);
+            if (m == month) return i + 1;
+            if (m < month) return -1;
+        }
+        return -1;
+    }
+
+    /** A series' value at `month`, NaN when the history does not hold that month as a month or has not recorded the series there. */
+    public static double valueAt(HistorySave h, String series, int month) {
+        int end = h == null ? -1 : entriesTo(h, month);
+        return end < 0 ? Double.NaN : new Reading(h, end).last(series);
+    }
+
+    private static Map<String, Figure> figures(HistorySave h, Extras x, int end) {
         Map<String, Figure> out = new LinkedHashMap<>();
-        if (h == null) return out;
-        Reading r = new Reading(h);
+        Reading r = new Reading(h, end);
         if (r.monthly < 1) return out;
-        if (x == null) x = new Extras(Double.NaN, null);
+        if (x == null) x = Extras.UNKNOWN;
         String per = r.window < YEAR ? " (" + r.window + " months, scaled to a year)" : "";
 
         // ---- economy ----
@@ -149,11 +207,13 @@ public final class CityMeasures {
         put(out, "current_account", share(r.flow("currentAccount"), gdp), Double.NaN, "exports less imports less interest paid abroad, over output" + per);
 
         // ---- work and pay ----
-        double[] unemployed = YearBook.unemploymentTail(h, 1);
+        double[] force = YearBook.labourForce(r.tail("workforce", 1), r.tail("students", 1), r.tail("prisoners", 1));
+        double[] posts = r.tail("jobs", 1), pool = r.tail("outOfWork", 1);
+        double[] unemployed = YearBook.unemployment(force, posts, pool);
         put(out, "unemployment", 100 * unemployed[0], Double.NaN,
                 "people out of work over the labour force: the workforce less the students and the prisoners");
-        double[] wages = YearBook.averageWage(h);
-        double avgWage = wages.length > 0 ? wages[wages.length - 1] * YEAR * THOUSANDS : Double.NaN;
+        double[] wages = YearBook.averageWage(r.tail("totalWage", 1), YearBook.filledPosts(force, posts, pool));
+        double avgWage = wages[0] * YEAR * THOUSANDS;
         put(out, "avg_wage", avgWage, Double.NaN, "the month's wage bill over the posts filled, times 12");
         double minWage;
         String minHow;
@@ -225,8 +285,8 @@ public final class CityMeasures {
 
         // ---- land ----
         double area = x.areaKm2();
-        put(out, "area", area > 0 ? area : Double.NaN, Double.NaN, "the land the city owns");
-        put(out, "density", pop / area, Double.NaN, "the people over the land the city owns");
+        put(out, "area", area > 0 ? area : Double.NaN, Double.NaN, "the dry ground the city owns, its land area (lakes and sea left out, as the World Bank's land area leaves inland water out)");
+        put(out, "density", pop / area, Double.NaN, "the people over the dry ground the city owns");
         return out;
     }
 
@@ -310,26 +370,45 @@ public final class CityMeasures {
     }
 
     /**
-     * A history read the way the rules above say: the series a month at a time, in the entries that are months. monthly is how many of the axis's
-     * entries are months (HistorySave.yearlyPoints() are folded years); window is the months a year's sum reaches back (12, or fewer in a city
-     * that has lived fewer); scale lifts that sum to a year.
+     * A history read the way the rules above say: the series a month at a time, in the entries that are months. end is how many of the axis's
+     * entries are counted (all of them, or those up to a month: the entries after it are ignored, LB3); monthly is how many of those are months
+     * (HistorySave.yearlyPoints() are folded years); window is the months a year's sum reaches back (12, or fewer in a city that has lived fewer);
+     * scale lifts that sum to a year.
      */
     private static final class Reading {
         final HistorySave h;
-        final int monthly, window;
+        final Map<String, List<? extends Number>> by;
+        final int end, monthly, window;
         final double scale;
 
-        Reading(HistorySave h) {
+        Reading(HistorySave h, int end) {
             this.h = h;
-            monthly = h.months() - h.yearlyPoints();
+            by = h.seriesByName();
+            this.end = end;
+            monthly = end - h.yearlyPoints();
             window = Math.min(YEAR, monthly);
             scale = window > 0 ? (double) YEAR / window : Double.NaN;
         }
 
-        /** The last n months of a series, or null when the history holds fewer than n as months. */
+        /**
+         * The last n months of a series up to end, or null when the history holds fewer than n as months. A series shorter than the axis was not
+         * being recorded yet and is padded at the front with NaN, as HistorySave.alignedTail pads it; the entries read are months, never a folded year,
+         * so no flow needs dividing back to a month.
+         */
         double[] tail(String series, int n) {
             if (n < 1 || n > monthly) return null;
-            return h.alignedTail(series, n);
+            double[] out = new double[n];
+            List<? extends Number> raw = by.get(series);
+            if (raw == null) {
+                Arrays.fill(out, Double.NaN);
+                return out;
+            }
+            int offset = h.months() - raw.size(), first = end - n;
+            for (int k = 0; k < n; k++) {
+                int j = first + k - offset;
+                out[k] = j >= 0 && j < raw.size() ? raw.get(j).doubleValue() : Double.NaN;
+            }
+            return out;
         }
 
         /** F(s): the series summed over the window and scaled to a year; NaN where a month in it was not counted. */

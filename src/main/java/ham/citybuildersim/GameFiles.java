@@ -1,7 +1,9 @@
 package ham.citybuildersim;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -434,9 +436,31 @@ public final class GameFiles {
         }
     }
 
+    /** Times a swap is tried again when Windows refuses it because another handle has the file open: a reader, an antivirus scan, the indexer (LB3's gate review). */
+    static final int SWAP_RETRIES = 10;
+
+    /** The wait before each of those tries, in milliseconds: the ten cover half a second, long enough for a reader or a scan to let go, short enough that a write that cannot land says so. */
+    static final long SWAP_RETRY_MS = 50;
+
+    /** Swaps refused at first that landed on a later try, since the program started; each is in the log too (SaveSlotCheck 7d counts them). */
+    private static final java.util.concurrent.atomic.AtomicInteger WAITED = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** How many swaps had to wait for a file another handle held open, and landed. */
+    static int swapsThatWaited() {
+        return WAITED.get();
+    }
+
     /**
      * The tail both writes share: the existing file copied to .bak, then the
      * finished .tmp moved over it. The rule is stated once, here.
+     *
+     * A MOVE OVER AN OPEN FILE (LB3, 2026-10-31). Windows refuses to replace a
+     * file another handle has open, and says so as AccessDeniedException (or a
+     * plain FileSystemException for a sharing violation). The Rankings board's
+     * read of a slot, an antivirus scan and the search indexer each hold one for
+     * a moment, and a refused history swap left the slot with the new save beside
+     * the old history. So the move is tried again SWAP_RETRIES times,
+     * SWAP_RETRY_MS apart, and only then reported (SaveSlotCheck 7d).
      */
     private static Result swapIn(Path file, Path tmp) throws IOException {
 
@@ -445,6 +469,31 @@ public final class GameFiles {
                     StandardCopyOption.REPLACE_EXISTING);
         }
 
+        for (int tried = 0; ; tried++) {
+            try {
+                moveOver(tmp, file);
+                if (tried > 0) {
+                    WAITED.incrementAndGet();
+                    System.out.println("Wrote " + file.getFileName() + " on its try " + (tried + 1)
+                            + ": another program had it open, and let go.");
+                }
+                return Result.succeeded(file);
+            } catch (FileSystemException e) {
+                // A missing .tmp, or any other failure that waiting cannot mend, is reported at once.
+                boolean held = e instanceof AccessDeniedException || e.getClass() == FileSystemException.class;
+                if (!held || tried >= SWAP_RETRIES) throw e;
+                try {
+                    Thread.sleep(SWAP_RETRY_MS);
+                } catch (InterruptedException stop) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
+        }
+    }
+
+    /** The finished .tmp moved over the file, atomically where the filesystem can. */
+    private static void moveOver(Path tmp, Path file) throws IOException {
         try {
             Files.move(tmp, file,
                     StandardCopyOption.REPLACE_EXISTING,
@@ -455,8 +504,6 @@ public final class GameFiles {
             // target directly, because the content is already known good.
             Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
         }
-
-        return Result.succeeded(file);
     }
 
     private static void deleteQuietly(Path path) {

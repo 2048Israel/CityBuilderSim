@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.87 — LB3, Rankings: your saved cities — 2026-10-31, ready, see docs/queue/LB3-notes.md
+The other slots (1-10, the autosave left out) rank beside the city on the Rankings board, read and never written
+(`SavedCities`): each its own world, pivoted by its own rate, parity and US prices in the units of its last save, so a
+currency reform never moves a rank. Prices opens with them (D2): per year, each in its own year's dollars, or static.
+Your cities at: Now or Your age (D3), one that never got there named with the month it stopped. The city's card draws
+its rank over the years, one point a December, against Real world 2025 (D12); Compare beside YOUR CITIES opens it. The
+history records the US price level (`usPrices`); a city's area is its dry ground, as the real figures are land area. A
+save now waits up to half a second for a file another reader holds open (Windows refused the move, and the slot kept
+its old history). Today's ten saves are from older builds and stay off the board. No ensemble.
+
 ### 0.8.86 — DW1, platforms in deep water, at deep water's cost — 2026-10-31, ready, see docs/queue/DW1-notes.md
 An Offshore Platform now stands in sea deeper than 150 m (Jerus, 2026-10-31: "Allow deep, costlier"): past the fixed
 jacket's limit it floats, an FPSO, down to 2,914 m, the Turritella FPSO's record at Shell's Stones field (BOEM). It is

@@ -3576,6 +3576,22 @@ public class UserInterface extends Application {
         HBox headRow = new HBox(6, head, infoButton("The cities saved most recently, from slots 1 to "
                 + GameFiles.SLOT_COUNT + ". A click loads one. Every slot, and the autosave, is under"
                 + " Load a city.", false));
+        // Compare (LB3, D5): only with a city in play, as the board ranks that city. It leaves the menu as Continue does (the city resumed) and opens
+        // the Rankings tab on Your cities; the screen Continue would redraw is not drawn first, as the tab replaces it at once.
+        if (cityOpen) {
+            Label compare = new Label("Compare ›");
+            String rest = Fonts.sansSemiBold() + " -fx-font-size: 12px; -fx-text-fill: " + Palette.MONEY + "; -fx-cursor: hand;";
+            compare.setStyle(rest);
+            compare.setOnMouseEntered(e -> compare.setStyle(rest + " -fx-underline: true;"));
+            compare.setOnMouseExited(e -> compare.setStyle(rest));
+            compare.setOnMouseClicked(e -> {
+                game.resumeGame();
+                rankingsScreen.openSaved();
+            });
+            HBox.setMargin(compare, new javafx.geometry.Insets(0, 0, 0, 8));
+            Tooltip.install(compare, new Tooltip("Rank " + game.getCityName() + " against the cities you saved."));
+            headRow.getChildren().add(compare);
+        }
         headRow.setAlignment(Pos.CENTER_LEFT);
         VBox box = new VBox(10, headRow, cards);
         box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);

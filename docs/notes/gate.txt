@@ -1,8 +1,11 @@
-# gate of Merge batch/DW1: offshore platforms in deep water: past 150 m a floating platform, to about 3,000 m, its build, running and well costs rising with depth from real deepwater figures, the screens saying so (Jerus, 2026-10-31: "offshore oil platforms cant build on deep oceans... so uh", then "Allow deep, costlier (Recommended)"); running now, 0.8.86
+# gate of Merge batch/LB3: rankings: your saved cities - per year by default or static, at your age from their history, a reform never moving a rank; the rank over the years against Real world 2025; Compare on the main menu; the manual (Jerus, 2026-10-21: D2, D3, D12), 0.8.87
 # date: 2026-10-31
 # earth-2.bin: named
-# suite: 161 harnesses run in 1599s: 159 passed, 2 failed
-# timing: 13 harnesses run in 404s: 12 passed, 1 failed
+# suite: 161 harnesses run in 1574s: 159 passed, 2 failed
+# timing: 13 harnesses run in 407s: 11 passed, 2 failed; its red lines were judged side by side with main's, below
+# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 3.95 ms, batch 3.89 ms (-1.5%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
 PassThroughCheck | exit 1
 PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
 PassThroughCheck | 1 FAILED

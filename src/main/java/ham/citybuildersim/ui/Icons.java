@@ -155,6 +155,12 @@ public final class Icons {
           + "M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
           + "M18 2H6v7a6 6 0 0 0 12 0V2Z";
 
+    /** A floppy disk: a saved city's row on the Rankings board (LB3), Lucide's save (ISC), every subpath an absolute move. */
+    public static final String SAVE =
+            "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
+          + "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"
+          + "M7 3v4a1 1 0 0 0 1 1h7";
+
     /** Three lines: the game menu, at the foot of the rail since 0.7.21 (it was the gear). */
     public static final String MENU = "M4 7h16 M4 12h16 M4 17h16";
 
