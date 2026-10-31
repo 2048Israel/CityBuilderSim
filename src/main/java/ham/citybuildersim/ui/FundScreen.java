@@ -2189,6 +2189,11 @@ final class FundScreen {
         card.getChildren().add(line("Once a year, in December, the fund takes this share of the year's surplus."));
         card.getChildren().add(cardLine("This year's surplus so far", d(g, g.surplusThisYearSoFar()),
                 g.surplusThisYearSoFar() < 0 ? Palette.WARN : null));
+        // CD7: the surplus above leaves out the D$'s move on the foreign debt (it moved no cash), so the budget's own surplus can differ from it by that.
+        double exchange = g.debtExchangeThisYearSoFar();
+        if (Math.abs(exchange) >= .5) {
+            card.getChildren().add(muted("the D$'s move on the foreign debt, " + signed(g, exchange) + ", left out: it moved no cash"));
+        }
         card.getChildren().add(cardLine("...kept for the fund from the rollover", d(g, g.fundReservation()), null));
         card.getChildren().add(cardLine("A month of the treasury's spending, the floor", d(g, g.monthOfSpending()), null));
         card.getChildren().add(cardLine("The last pay-in", fund.getLastPayInMonth() >= 0

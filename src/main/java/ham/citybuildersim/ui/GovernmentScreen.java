@@ -417,17 +417,23 @@ final class GovernmentScreen {
     /** ...the gain (loss) on debt retired, which the balance carries and spending does not (CD4, CD3's ★5). */
     static final String RETIRED_GAIN_KEY = "retiredGain";
 
+    /** ...and the exchange gain (loss) on the city's foreign-currency paper, which the balance carries and spending does not (CD7). */
+    static final String DEBT_EXCHANGE_KEY = "debtExchange";
+
     /**
      * ...what was paid out: what came in less the balance, plus the gain on debt retired that the
      * balance carries (NationalAccounts.getBalance() is revenue less expenses plus that gain) - their
      * trailing years, or the month × 12. Without the gain a buyback's gain read as less spending for
      * a year while the month's "Paid out" left it out (CD3's ★5). A month before the gain was
-     * recorded counts as none (recentTotal() skips it).
+     * recorded counts as none (recentTotal() skips it). CD7: the balance carries the exchange gain
+     * (loss) on the foreign paper too, so the year adds that series as well - without it a year of the
+     * D$ falling read as less spending while the month's "Paid out" left it out.
      */
     double spendingYear(double monthly) {
         return trailing(REVENUE_KEYS) && trailing(SURPLUS_KEYS)
                 ? yearOf(0, REVENUE_KEYS) - yearOf(0, SURPLUS_KEYS)
                         + ui.game.getHistorySave().recentTotal(RETIRED_GAIN_KEY, TRAILING_MONTHS)
+                        + ui.game.getHistorySave().recentTotal(DEBT_EXCHANGE_KEY, TRAILING_MONTHS)
                 : monthly * 12;
     }
 
@@ -604,6 +610,7 @@ final class GovernmentScreen {
                  "Inflation uplift on linked bonds, not yet paid"
                                               -> new Door("Finances", () -> openFinances("The position", "Debt service"));
             case "Gain (loss) on debt retired" -> new Door("Finances", () -> openFinances("The book", "Buy back"));
+            case "Exchange gain (loss) on foreign debt" -> new Door("Finances", () -> openFinances("The book", "Every piece"));
             case "Police and prisons"         -> new Door("Services", () -> ui.servicesScreen.open("Safety", ServicesScreen.OVERVIEW));
             case "Utility income"             -> new Door("Services", () -> ui.servicesScreen.open("Utilities", ServicesScreen.OVERVIEW));
             case "Transit fares", "Transit"   -> new Door("Infrastructure", () -> ui.infrastructureScreen.open("Transit"));
@@ -634,7 +641,7 @@ final class GovernmentScreen {
             case "Repairs"                           -> Icons.BUILD;
             case "Utility income"                    -> Icons.UTILITIES;
             case "Transfer from the fund", "Interest on the city's paper", "Discount amortised on the city's paper",
-                 "Gain (loss) on debt retired", "Inflation uplift on linked bonds",
+                 "Gain (loss) on debt retired", "Exchange gain (loss) on foreign debt", "Inflation uplift on linked bonds",
                  "Inflation uplift on linked bonds, not yet paid" -> Icons.FINANCES;
             case "Central bank remittance", "Interest to the central bank" -> Icons.BANK;
             case "Mortgage insurance premiums", "Mortgage insurance claims" -> Icons.HOMES;
@@ -803,6 +810,9 @@ final class GovernmentScreen {
         // The books (CD3): the balance takes the gain on paper retired, which is below the two bars' lines.
         Node gainLine = retiredGainLine(na, 230);
         if (gainLine != null) block.getChildren().add(gainLine);
+        // ...and the exchange gain (loss) on the foreign paper (CD7), in the balance the same way.
+        Node exchangeLine = debtExchangeLine(na, 230);
+        if (exchangeLine != null) block.getChildren().add(exchangeLine);
         if (annual > 0) {
             // The last twelve months' balance where History has them (B7): a busy month is not a year.
             double year = yearOf(balance, SURPLUS_KEYS);
@@ -833,6 +843,18 @@ final class GovernmentScreen {
                 Palette.SIZE_LABEL, Palette.TEXT_MUTED, wide);
     }
 
+    /**
+     * CD7: the exchange gain (loss) on the city's foreign-currency paper as a muted line with its (i), or null at
+     * nothing: the balance takes it (NationalAccounts.getDebtExchangeGain()) and the lines above it do not, so a
+     * month it is not zero the balance would not foot to the two bars without it. No colour, as the retired gain.
+     */
+    static Node debtExchangeLine(NationalAccounts na, double wide) {
+        double gain = na.getDebtExchangeGain();
+        if (Math.abs(gain) < .5) return null;
+        return infoLine("Exchange gain (loss) on foreign debt " + s(gain) + ", in the balance", DEBT_EXCHANGE_INFO, true,
+                Palette.SIZE_LABEL, Palette.TEXT_MUTED, wide);
+    }
+
     /** ...and as a row under the Spending page's total, its own line below the operating lines: the words, an (i), the figure on the right. Null at nothing. */
     static Node retiredGainRow(NationalAccounts na) {
         double gain = na.getRetiredGain();
@@ -841,6 +863,20 @@ final class GovernmentScreen {
         HBox.setHgrow(gap, Priority.ALWAYS);
         HBox row = new HBox(Palette.GAP,
                 infoLine("Gain (loss) on debt retired", RETIRED_GAIN_INFO, true, Palette.SIZE_BODY, Palette.TEXT_BODY, 300),
+                gap, figure(s(gain), Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 4 6 0 6;");
+        return row;
+    }
+
+    /** CD7: ...and the same exchange gain (loss) as a row under the Spending page's total, beside the retired gain's. Null at nothing. */
+    static Node debtExchangeRow(NationalAccounts na) {
+        double gain = na.getDebtExchangeGain();
+        if (Math.abs(gain) < .5) return null;
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP,
+                infoLine("Exchange gain (loss) on foreign debt", DEBT_EXCHANGE_INFO, true, Palette.SIZE_BODY, Palette.TEXT_BODY, 300),
                 gap, figure(s(gain), Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 4 6 0 6;");
@@ -906,9 +942,9 @@ final class GovernmentScreen {
             + "did between two presses of the arrow. The steps between them are the money that moved without being "
             + "a budget line: paper raised and repaid, the central bank's advances, reserves, capital put into the "
             + "bank, bonds bought back, the students' loans and the fund's pay-ins - each a loan, a saving or a "
-            + "debt, not spending. Two steps are the books and not money: the discount wearing off the city's "
-            + "paper, which the budget charges as interest and nobody has been paid yet, and the gain on paper "
-            + "bought back. "
+            + "debt, not spending. Some steps are the books and not money: the discount wearing off the city's "
+            + "paper, which the budget charges as interest and nobody has been paid yet, the gain on paper "
+            + "bought back, the inflation uplift not yet paid, and (CD7) the D$'s move on the city's dollar paper. "
             + "“Not accounted for” is what is left after them - timing between the books and the money, "
             + "such as a coupon booked the month it is charged and paid the month after, and anything not yet "
             + "journalled - printed rather than folded in, because a bridge that hides its own gap is not a bridge.";
@@ -947,6 +983,20 @@ final class GovernmentScreen {
             + "at less the price paid: a gain when it cost less, a loss when it cost more. It is below the lines "
             + "above and in the balance, not in what was paid out. It moves no cash; the price paid does, in the "
             + "buyback line on the bridge.";
+
+    /** CD7: the exchange gain (loss) on the city's foreign-currency paper: the line under the budget's operating lines, and what is in the balance. */
+    static final String DEBT_EXCHANGE_INFO = "The city owes its dollar paper in US$, and the books carry each piece at "
+            + "what it is carried at in US$, read at the month's exchange rate. When the D$ falls the same dollars cost "
+            + "more D$ and the month books a loss; when it rises, a gain. It is below the lines above and in the "
+            + "balance, not in what was paid out. It moves no cash: coupons and principal are paid at the rate of the "
+            + "month they fall due. The rollover and the fund's pay-in leave it out, because it is not a surplus "
+            + "anyone could spend.";
+
+    /** CD7: the exchange step's tooltip: the D$'s move on the dollar paper, booked in the budget, paid by nobody. */
+    static final String NOT_CASH_EXCHANGE_INFO = "The budget books the D$'s move on the city's dollar paper every "
+            + "month: a loss when the D$ fell and the same dollars cost more, a gain when it rose. No cash came in "
+            + "or went out for it, so the budget is higher than the cash by a gain, and this step takes it off; a "
+            + "loss it puts back. The cash moves when a coupon or the principal is paid, at that month's rate.";
 
     /**
      * FROM EARNED TO BANKED: three tiles - the header's figure, the budget,
@@ -1021,17 +1071,22 @@ final class GovernmentScreen {
         out.add(BridgeStep.of("Principal repaid", -ui.game.getTreasuryRepaid(), Icons.FINANCES).go(borrow)
                 .tip("Not spending: the money went out and the debt went down by the same amount."));
         // The books (CD3): the budget charges the discount wearing off the city's paper and books the gain on
-        // paper bought back, and neither moved the cash, so these two bring the budget back to it. Their sum is
-        // Game.getTreasuryNotCash(), which the model's residual already takes off.
+        // paper bought back, and neither moved the cash, so these two bring the budget back to it. With the uplift
+        // and the exchange gain below (CD5, CD7) their sum is Game.getTreasuryNotCash(), which the model's residual
+        // already takes off.
         NationalAccounts na = ui.game.getEconomyManager().getNationalAccounts();
         out.add(BridgeStep.of("Interest that was no cash", na.getInterestNotCash(), Icons.FINANCES)
                 .tip(NOT_CASH_INTEREST_INFO).go(() -> openFinances("The position", "Debt service")));
         out.add(BridgeStep.of("Gain (loss) on paper bought back", -na.getRetiredGain(), Icons.FINANCES)
                 .tip(NOT_CASH_GAIN_INFO).go(() -> openFinances("The book", "Buy back")));
         // ...and the linked bonds' indexation (CD5): charged to the budget every month and paid in the bond's last, so the cash
-        // is higher than the budget by what has not been paid yet. With the two above it is Game.getTreasuryNotCash().
+        // is higher than the budget by what has not been paid yet.
         out.add(BridgeStep.of("Inflation uplift not yet paid", na.getUpliftNotCash(), Icons.FINANCES)
                 .tip(NOT_CASH_UPLIFT_INFO).go(() -> openFinances("The position", "Debt service")));
+        // ...and the D$'s move on the dollar paper (CD7): booked in the budget every month and paid by nobody, so a gain
+        // comes off and a loss goes back. The four steps sum to Game.getTreasuryNotCash() (interest + uplift - gain - exchange).
+        out.add(BridgeStep.of("Exchange gain (loss) on foreign debt", -na.getDebtExchangeGain(), Icons.FINANCES)
+                .tip(NOT_CASH_EXCHANGE_INFO).go(() -> openFinances("The book", "Every piece")));
         for (TreasuryJournal.Entry e : ui.game.getTreasuryJournal()) {
             BridgeStep step = BridgeStep.of(e.label(), e.amount(), journalIcon(e.label()));
             Runnable go = journalDoor(e.label());
@@ -1114,6 +1169,11 @@ final class GovernmentScreen {
             row = moved(grid, row, "Gain (loss) on paper bought back (no cash: the price is in the buyback line)",
                     -na.getRetiredGain(), false);
         }
+        // CD7: the D$'s move on the dollar paper, booked in the budget and paid by nobody.
+        if (Math.abs(na.getDebtExchangeGain()) >= .5) {
+            row = moved(grid, row, "Exchange gain (loss) on foreign debt (no cash: the D$'s move on the dollar paper)",
+                    -na.getDebtExchangeGain(), false);
+        }
         if (Math.abs(na.getUpliftNotCash()) >= .5) {
             row = moved(grid, row, "Inflation uplift not yet paid (the linked bonds' indexation, no cash until they fall due)",
                     na.getUpliftNotCash(), false);
@@ -1124,6 +1184,13 @@ final class GovernmentScreen {
         c.getChildren().add(grid);
         c.getChildren().add(statementTotal("Which is the change", s(change), null));
         return c;
+    }
+
+    /** CD7: the rows under the Spending page's total that the balance carries and the total does not: the retired gain's and the exchange gain's, one or both, or null at neither. */
+    static Node outsideRows(NationalAccounts na) {
+        Node gain = retiredGainRow(na), exchange = debtExchangeRow(na);
+        if (gain == null || exchange == null) return gain != null ? gain : exchange;
+        return new VBox(0, gain, exchange);
     }
 
     /** One row of the fold's grid: a movement, signed, and a zero written as one. */
@@ -1963,7 +2030,7 @@ final class GovernmentScreen {
         double total = na.getTotalExpenses();
         // "Outside the budget's total: repairs ..." stood here from 0.7.31; a line of the list since 0.7.102 (A15).
         // Under the total now stands the gain (loss) on debt retired (CD3), when there is one: in the balance, not in this total.
-        Node outside = retiredGainRow(na);
+        Node outside = outsideRows(na);
         listPage(page, "Spending", "paid out", names, amounts, total, na,
                 name -> {
                     double amount = amounts.get(names.indexOf(name));

@@ -1042,6 +1042,40 @@ public class NationalAccounts {
     /** The part of the uplift that is not cash: what was booked less what was paid. The treasury bridge adds it back (Game.getTreasuryNotCash()). */
     public double getUpliftNotCash()    { return inflationUplift - upliftPaid; }
 
+    /* ---------------------------------------------------------------------
+       THE EXCHANGE ON FOREIGN DEBT (CD7)
+
+       One more line the debt's books add to the month's result, below the
+       operating lines as the gain on debt retired is:
+
+         debtExchangeGain  what the D$'s move against the money the city
+                           borrowed in did to the D$ value of that debt this
+                           month: each dollar piece's carrying value in US$
+                           times the change in the rate from the rate it was
+                           last valued at (DebtManager.revalueForeign()), the
+                           rule the vault is valued by. A gain is positive (the
+                           D$ rose, the debt costs fewer D$), a loss below
+                           nothing. In getBalance(); the totals leave it out.
+                           Not cash - no pool moves, the coupons and the
+                           principal are paid as before - so the treasury
+                           bridge takes it back out (Game.getTreasuryNotCash()).
+
+       Struck after the budget: the strike (Game.strikeGovernmentBooks()) opens
+       the line at nothing and the month's reprice (the rate moves there) books
+       it, before the bridge and the history read the month. Saved as slot 37
+       of the government block, read when the block is at least 38 long: an
+       older save holds none, which reads nothing.
+       --------------------------------------------------------------------- */
+    private double debtExchangeGain;
+
+    /** The month's exchange gain (a loss below nothing) on the city's foreign-currency debt, as the reprice hands it over. */
+    public void setDebtExchangeGain(double gain) {
+        this.debtExchangeGain = Double.isFinite(gain) ? gain : 0;
+    }
+
+    /** The exchange gain (below nothing, a loss) on the city's foreign-currency debt this month: in the result, not in the totals, not cash. */
+    public double getDebtExchangeGain() { return debtExchangeGain; }
+
     /**
      * THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): a duty a litre on the
      * drivers' petrol at the pump (TaxPolicy, THE FUEL DUTY), a revenue
@@ -1194,11 +1228,14 @@ public class NationalAccounts {
             interestNotCash, retiredGain,
             // ...and the linked bonds' two (CD5): the month's indexation booked, and the uplift paid in cash. An
             // older save reads zero for both, which is right: it holds no linked bond.
-            inflationUplift, upliftPaid };
+            inflationUplift, upliftPaid,
+            // ...and the exchange on the city's foreign debt (CD7): the month's gain, a loss below nothing. An
+            // older save reads zero, which is right: its books booked none.
+            debtExchangeGain };
     }
 
     void restoreGovernment(double[] saved) {
-        // Thirty-seven since the linked bonds' uplift (CD5); thirty-five since the city's paper on amortised cost (CD3); thirty-three
+        // Thirty-eight since the exchange on foreign debt (CD7); thirty-seven since the linked bonds' uplift (CD5); thirty-five since the city's paper on amortised cost (CD3); thirty-three
         // since the repairs, the arrears and the reserve's crude (0.7.102);
         // twenty-nine since food assistance; twenty-eight since the city's fund; twenty-seven since the mortgage
         // insurance; twenty-five since the central bank; twenty-three since
@@ -1209,7 +1246,8 @@ public class NationalAccounts {
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
                 && saved.length != 25 && saved.length != 27 && saved.length != 28
                 && saved.length != 29 && saved.length != 33 && saved.length != 35
-                && saved.length != 37)) return;
+                && saved.length != 37 && saved.length != 38)) return;
+        debtExchangeGain      = saved.length >= 38 ? saved[37] : 0;
         inflationUplift       = saved.length >= 37 ? saved[35] : 0;
         upliftPaid            = saved.length >= 37 ? saved[36] : 0;
         interestNotCash       = saved.length >= 35 ? saved[33] : 0;
@@ -1426,13 +1464,15 @@ public class NationalAccounts {
     /**
      * Surplus or deficit - the month's result. What moves the city's cash is
      * this less the non-cash lines (interestNotCash, which it takes off, and
-     * retiredGain, which it adds): the bridge adds the first back and takes
-     * the second out (Game.getTreasuryNotCash()). The gain on paper retired
-     * is below the operating lines, so the totals leave it out and the result
-     * has it (spec-city-debt.md 5.4).
+     * retiredGain and debtExchangeGain, which it adds): the bridge adds the
+     * first back and takes the others out (Game.getTreasuryNotCash()). The
+     * gain on paper retired and the exchange gain on the foreign debt (CD7)
+     * are below the operating lines, so the totals leave them out and the
+     * result has them (spec-city-debt.md 5.4).
      */
     public double getBalance() {
-        return getTotalRevenue() - getTotalExpenses() + retiredGain;
+        // CD7: revenue - expenses + the gain on debt retired + the exchange gain on the foreign debt.
+        return getTotalRevenue() - getTotalExpenses() + retiredGain + debtExchangeGain;
     }
 
     /** Revenue as a share of output. The city's effective take from the economy. */
@@ -1509,7 +1549,7 @@ public class NationalAccounts {
         cityRepairs *= scale;  arrearsPaid *= scale;
         reserveCrudeBought *= scale;  reserveCrudeSold *= scale;
         fuelDuty *= scale;  portDues *= scale;
-        interestNotCash *= scale;  retiredGain *= scale;
+        interestNotCash *= scale;  retiredGain *= scale;  debtExchangeGain *= scale;
         inflationUplift *= scale;  upliftPaid *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;

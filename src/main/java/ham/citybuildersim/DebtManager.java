@@ -735,6 +735,35 @@ public class DebtManager {
 
     public double getExchangeRate() { return exchangeRate; }
 
+    /**
+     * THE MONTH'S EXCHANGE GAIN ON THE CITY'S FOREIGN-CURRENCY PAPER (CD7):
+     * tells every piece the rate (setExchangeRate()) and returns what the move
+     * did to the local value of what the city carries in dollars, a gain
+     * positive - the local money rose, the debt costs fewer of it.
+     *
+     * For each dollar piece, its carrying value in its own money times the
+     * rate it was last valued at less the rate now, summed: the rule
+     * ForeignAccounts.revalueVault() values the vault by. Per piece, at the
+     * piece's OWN last rate and not the manager's, because a piece sold between
+     * two presses (Game.handleForeignLogic()) learned the rate of the day it
+     * was booked, and what it has moved since is the move from there; at the
+     * manager's, the press after a sale would book a move the piece never
+     * made. Domestic paper is carried in the local money and moves nothing.
+     * Not cash: the coupons and the principal are paid as before.
+     *
+     * A rate of zero or less is refused (nothing is moved, nothing returned),
+     * as setExchangeRate() refuses it.
+     */
+    public double revalueForeign(double rate) {
+        if (!(rate > 0)) return 0;
+        double gain = 0;
+        for (Debt d : debts) {
+            if (d.isForeign()) gain += d.carryingInCurrency() * (d.getExchangeRate() - rate);
+        }
+        setExchangeRate(rate);
+        return gain;
+    }
+
     /** What the city owes abroad, in local money at today's rate. */
     public double getForeignPrincipal() {
         double total = 0;

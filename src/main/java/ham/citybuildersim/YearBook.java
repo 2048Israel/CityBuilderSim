@@ -112,6 +112,7 @@ public final class YearBook {
         flow(m, "revenue", "every government receipt, in thousands");
         flow(m, "surplus", "revenue less spending - negative is a deficit, in thousands");
         flow(m, "retiredGain", "the gain (loss) on debt retired, which the surplus carries and spending does not, in thousands");
+        flow(m, "debtExchange", "the exchange gain (loss) on the city's foreign-currency debt, which the surplus carries and spending does not, in thousands");
         flow(m, "births", "people born");
         flow(m, "deaths", "people who died, of all three causes together");
         flow(m, "arrivals", "people who moved in");
