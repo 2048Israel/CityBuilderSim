@@ -50,7 +50,7 @@
 > to a node is added once ({@link #isNew}) or through {@link #play}/{@link #tip}; and the page
 > reaches the window through UserInterface.setPage(), not rootMenu.getChildren().add().
 
-**Used by (10):** [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [MapTiles](MapTiles.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [SectorScreen](SectorScreen.md), [Statement](Statement.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
+**Used by (11):** [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [MapTiles](MapTiles.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [SectorScreen](SectorScreen.md), [Statement](Statement.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

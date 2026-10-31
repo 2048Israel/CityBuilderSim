@@ -235,6 +235,12 @@ final class PeopleScreen {
         if (landed) {
             countUp(vitals);
             if (grow[0] != null) grow[0].animate(COUNT_MILLIS);
+        } else {
+            // ...and otherwise a count still running from the month before is stopped (KP1: the clock sped past
+            // COUNT_UP_TOP), or it would write that month's figure over this one's. The bars may finish growing.
+            Label figure = headcount(vitals);
+            javafx.animation.Animation running = figure == null ? null : Kept.animationOf(figure);
+            if (running != null) running.stop();
         }
     }
 
@@ -1016,9 +1022,8 @@ final class PeopleScreen {
      * COUNT_MILLIS - only on a month that landed while the page was watched.
      */
     void countUp(VBox vitals) {
-        if (vitals.getChildren().isEmpty() || !(vitals.getChildren().get(0) instanceof HBox bar)) return;
-        if (bar.getChildren().isEmpty() || !(bar.getChildren().get(0) instanceof VBox cell)) return;
-        if (cell.getChildren().size() < 2 || !(cell.getChildren().get(1) instanceof Label figure)) return;
+        Label figure = headcount(vitals);
+        if (figure == null) return;
         List<Long> pop = ui.game.getHistorySave().getPopulation();
         if (pop.size() < 2) return;
         double from = pop.get(pop.size() - 2);
@@ -1030,6 +1035,13 @@ final class PeopleScreen {
         // Played through Kept: the figure is a kept label, and the last count-up on it is stopped first.
         Kept.play(figure, new javafx.animation.Timeline(new javafx.animation.KeyFrame(Duration.millis(COUNT_MILLIS),
                 new javafx.animation.KeyValue(n, to, javafx.animation.Interpolator.EASE_OUT))));
+    }
+
+    /** LIVING HERE's figure in the vitals as drawn, or null. */
+    static Label headcount(VBox vitals) {
+        if (vitals.getChildren().isEmpty() || !(vitals.getChildren().get(0) instanceof HBox bar)) return null;
+        if (bar.getChildren().isEmpty() || !(bar.getChildren().get(0) instanceof VBox cell)) return null;
+        return cell.getChildren().size() >= 2 && cell.getChildren().get(1) instanceof Label figure ? figure : null;
     }
 
     /* ------------------------------- the pyramid ------------------------------- */

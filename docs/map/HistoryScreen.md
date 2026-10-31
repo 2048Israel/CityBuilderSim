@@ -1,4 +1,4 @@
-# HistoryScreen.java - 3,321 lines · 121 methods · 25 constants · interface
+# HistoryScreen.java - 3,326 lines · 122 methods · 25 constants · interface
 
 `ham/citybuildersim/ui/HistoryScreen.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -33,9 +33,9 @@
 > goods table followed later the same day (it had sat under the shell's THE
 > STATEMENT banner); since 0.7.37 it is PRICES THIS MONTH.
 
-**Uses:** [Palette](Palette.md) (153), [Kept](Kept.md) (115), [YearBook](YearBook.md) (55), [HistorySave](HistorySave.md) (48), [TimeChart](TimeChart.md) (24), [Icons](Icons.md) (23), [ChartModel](ChartModel.md) (20), [PriceIndex](PriceIndex.md) (15), [CityCalendar](CityCalendar.md) (14), [Good](Good.md) (10), [DecisionLog](DecisionLog.md) (9), [GamePrefs](GamePrefs.md) (9), [Crime](Crime.md) (6), [FamilyStructure](FamilyStructure.md) (6), [GoodsMarket](GoodsMarket.md) (6), [Equity](Equity.md) (5), [Sector](Sector.md) (5), [Pieces](Pieces.md) (4), [UserInterface](UserInterface.md) (3), [Sectors](Sectors.md) (3), [SectorScreen](SectorScreen.md) (3), [GameFiles](GameFiles.md) (2), [Currency](Currency.md) (2), [LandManager](LandManager.md) (2)
+**Uses:** [Palette](Palette.md) (153), [Kept](Kept.md) (116), [YearBook](YearBook.md) (55), [HistorySave](HistorySave.md) (48), [TimeChart](TimeChart.md) (27), [Icons](Icons.md) (23), [ChartModel](ChartModel.md) (20), [PriceIndex](PriceIndex.md) (15), [CityCalendar](CityCalendar.md) (14), [Good](Good.md) (10), [DecisionLog](DecisionLog.md) (9), [GamePrefs](GamePrefs.md) (9), [Crime](Crime.md) (6), [FamilyStructure](FamilyStructure.md) (6), [GoodsMarket](GoodsMarket.md) (6), [Equity](Equity.md) (5), [Sector](Sector.md) (5), [Pieces](Pieces.md) (4), [UserInterface](UserInterface.md) (3), [Sectors](Sectors.md) (3), [SectorScreen](SectorScreen.md) (3), [GameFiles](GameFiles.md) (2), [Currency](Currency.md) (2), [LandManager](LandManager.md) (2)
 
-**Used by (12):** [BankScreen](BankScreen.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [LandScreen](LandScreen.md), [MapView](MapView.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (13):** [BankScreen](BankScreen.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [MapView](MapView.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -50,13 +50,13 @@
 | 1143 | · the strip |
 | 1320 | · a chip on this page, and the thing pressed held still (0.7.5) |
 | 1430 | THE PINS (0.7.5) |
-| 1665 | GDP IN LAYERS (0.7.6) |
-| 1766 | THE BIG CHART (0.7.5) |
-| 1863 | THE CHART, REBUILT (0.7.23) |
-| 1973 | FULL SCREEN (0.7.23) |
-| 2198 | WHAT EACH LINE DID (0.7.37) |
-| 2783 | HARD TIMES AND YOUR DECISIONS (0.7.37) |
-| 3119 | PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) |
+| 1670 | GDP IN LAYERS (0.7.6) |
+| 1771 | THE BIG CHART (0.7.5) |
+| 1868 | THE CHART, REBUILT (0.7.23) |
+| 1978 | FULL SCREEN (0.7.23) |
+| 2203 | WHAT EACH LINE DID (0.7.37) |
+| 2788 | HARD TIMES AND YOUR DECISIONS (0.7.37) |
+| 3124 | PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) |
 
 ## Constants
 
@@ -72,21 +72,21 @@
 | 997 | `HistoryScreen.LEAD_INFO` | `"Every month the city has lived, and what it did.The big chart draws the line...` | The title's (i): the old lead, and how the big chart is read. |
 | 1003 | `HistoryScreen.YEAR_BOOK_INFO` | `"Writes the whole run out as plain text - every series the history " + "keeps...` | What "Write the year book" writes (the old SEND THIS RUN TO SOMEBODY paragraph). |
 | 1445 | `HistoryScreen.SMALL_CHART` | `120` | How tall a pinned chart's plot is: 150 until 0.7.37, 120 since, so the big plot ends above the fold at 1,389 x 868 (D2). |
-| 1698 | `HistoryScreen.LAYERED` | `"realGdp"` | The one line this page can draw in layers. |
-| 1701 | `HistoryScreen.LAYERED_LINE` | `Palette.TEXT_HEAD` | What the GDP line is drawn in over the layers: the headings' ink, which no step of the blue ramp is near. |
-| 1704 | `HistoryScreen.LAYER_NAMES` | `{ "consumption", "investment", "government", "net exports" }` | What each part is called on the key and in the crosshair, in YearBook.GDP_PARTS' order. |
-| 1771 | `HistoryScreen.BIG_CHART` | `380` | How tall the big chart's plot is on the page; the lanes and the overview are under it. |
-| 1774 | `HistoryScreen.CONTROLS` | `130` | Room kept at the right of the preset row for "clear all" and "log". |
-| 2052 | `HistoryScreen.FULL_PAD_TOP` | `14, FULL_PAD_SIDE = 22, FULL_PAD_BOTTOM = 12` | The full-screen pane's padding: above the chart, beside it on each side, and below it, in pixels; the chart gets the window less these. |
-| 2397 | `HistoryScreen.MOVE_MILLIS` | `600` | How long a figure takes to slide to a month's new reading, in milliseconds - the range bar's dot; the figure counts on over SectorScreen's own time. |
-| 2594 | `HistoryScreen.AXES_INFO` | `"Lines measured in the same thing are drawn against each other on a real axis...` | PICK WHAT TO DRAW's (i): how the lines share axes. |
-| 2801 | `HistoryScreen.HARD_TIMES_SHOWN` | `5` | At most this many hard times are listed in view; the rest are counted, and in the details. |
-| 2804 | `HistoryScreen.DECISIONS_SHOWN` | `8` | At most this many decisions are listed in view. |
-| 2807 | `HistoryScreen.KINDS` | `{ "recession", "depression", "slump", "epidemic", "financial", "currency", "i...` | The kinds of episode, in the order the details list them. |
-| 2810 | `HistoryScreen.KIND_NAMES` | `{ "Recessions", "Depressions", "Slumps", "Epidemics", "Financial crises", "Cu...` | ...and what the details call each, in that order. |
-| 3142 | `HistoryScreen.AT_END` | `1e-6` | How near an end of its band a price must be to be AT it - a rounding hair of the band (the market strikes an end exactly). |
-| 3145 | `HistoryScreen.BAND_ROOM` | `1.25` | The scale a good's row is drawn on: the band from 0 to 1, and room past its ceiling for the month's trade. |
-| 3148 | `HistoryScreen.GOODS_INFO` | `"What a unit costs here this month, against what the world pays for one and "...` | The section's (i). |
+| 1703 | `HistoryScreen.LAYERED` | `"realGdp"` | The one line this page can draw in layers. |
+| 1706 | `HistoryScreen.LAYERED_LINE` | `Palette.TEXT_HEAD` | What the GDP line is drawn in over the layers: the headings' ink, which no step of the blue ramp is near. |
+| 1709 | `HistoryScreen.LAYER_NAMES` | `{ "consumption", "investment", "government", "net exports" }` | What each part is called on the key and in the crosshair, in YearBook.GDP_PARTS' order. |
+| 1776 | `HistoryScreen.BIG_CHART` | `380` | How tall the big chart's plot is on the page; the lanes and the overview are under it. |
+| 1779 | `HistoryScreen.CONTROLS` | `130` | Room kept at the right of the preset row for "clear all" and "log". |
+| 2057 | `HistoryScreen.FULL_PAD_TOP` | `14, FULL_PAD_SIDE = 22, FULL_PAD_BOTTOM = 12` | The full-screen pane's padding: above the chart, beside it on each side, and below it, in pixels; the chart gets the window less these. |
+| 2402 | `HistoryScreen.MOVE_MILLIS` | `600` | How long a figure takes to slide to a month's new reading, in milliseconds - the range bar's dot; the figure counts on over SectorScreen's own time. |
+| 2599 | `HistoryScreen.AXES_INFO` | `"Lines measured in the same thing are drawn against each other on a real axis...` | PICK WHAT TO DRAW's (i): how the lines share axes. |
+| 2806 | `HistoryScreen.HARD_TIMES_SHOWN` | `5` | At most this many hard times are listed in view; the rest are counted, and in the details. |
+| 2809 | `HistoryScreen.DECISIONS_SHOWN` | `8` | At most this many decisions are listed in view. |
+| 2812 | `HistoryScreen.KINDS` | `{ "recession", "depression", "slump", "epidemic", "financial", "currency", "i...` | The kinds of episode, in the order the details list them. |
+| 2815 | `HistoryScreen.KIND_NAMES` | `{ "Recessions", "Depressions", "Slumps", "Epidemics", "Financial crises", "Cu...` | ...and what the details call each, in that order. |
+| 3147 | `HistoryScreen.AT_END` | `1e-6` | How near an end of its band a price must be to be AT it - a rounding hair of the band (the market strikes an end exactly). |
+| 3150 | `HistoryScreen.BAND_ROOM` | `1.25` | The scale a good's row is drawn on: the band from 0 to 1, and room past its ceiling for the month's trade. |
+| 3153 | `HistoryScreen.GOODS_INFO` | `"What a unit costs here this month, against what the world pays for one and "...` | The section's (i). |
 
 ## Fields (state)
 
@@ -104,7 +104,7 @@
 | 149 | `final java.util.Set<String> folds` | The folds this page keeps open - the hard times by kind, and every good's price - by name (0.7.37). |
 | 156 | `private final java.util.Map<String, Double> shownBefore` | What each pin and each reading card last showed, by "pin:side:key" or "card:key" (0.7.37), so a month landing on the open page counts the figure on from it and slides the range bar's dot (SectorScreen.countUp()). |
 | 159 | `private int drawnMonth` | The game month this page was last drawn at; -1 before its first draw. |
-| 162 | `final Kept.Pool pool` | The page's kept nodes (Kept; study UP4, KP1): the page is drawn over them on each redraw. |
+| 162 | `Kept.Pool pool` | The page's kept nodes (Kept; study UP4, KP1): the page is drawn over them on each redraw. |
 | 176 | `private final java.util.Map<String, Integer> episodeSeen` | The month each named episode was first listed, by kind and first month (0.7.37): an episode the list did not have at the previous draw is NEW for the month it appears. |
 | 177 | `private int episodesSeenAt` |  |
 | 180 | `private String scrollTarget` | Where the next draw scrolls the page to - the chart's top, or the hard times - once it is laid out; null: the scroll memory's. |
@@ -120,17 +120,17 @@
 | 1330 | `private final java.util.Map<String, javafx.scene.Node> named` | This build's chips by name, so the rebuild can find the one that was pressed. |
 | 1333 | `private TextField filterField` | The picker's filter box, so a redraw can hand the focus back to it; see showHistoryMenu. |
 | 1558 | `private final TimeChart[] smallCharts` | The two small charts' nodes, kept from one redraw to the next, as the big chart is: each follows the big chart's window as it is dragged, which a chart rebuilt every month could not (0.7.23). |
-| 1893 | `private TimeChart bigChart` | The big chart, made once; see the banner. |
-| 1896 | `private boolean chartFull` | Whether the big chart has the whole window (0.7.23); see FULL SCREEN. |
-| 1990 | `private VBox fullPane` | The pane the chart is laid in over the whole window, and its clock line. |
-| 1991 | `private Label fullClock` |  |
-| 2513 | `private VBox pickerGroups` | The picker's groups box, the one the last draw made, so the filter box's listener (added once) refills the right one. |
+| 1898 | `private TimeChart bigChart` | The big chart, made once; see the banner. |
+| 1901 | `private boolean chartFull` | Whether the big chart has the whole window (0.7.23); see FULL SCREEN. |
+| 1995 | `private VBox fullPane` | The pane the chart is laid in over the whole window, and its clock line. |
+| 1996 | `private Label fullClock` |  |
+| 2518 | `private VBox pickerGroups` | The picker's groups box, the one the last draw made, so the filter box's listener (added once) refills the right one. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 3262 | **type** `final class HistoryScreen` | City History: the city as a shape over time. |
+| 60 | 3267 | **type** `final class HistoryScreen` | City History: the city as a shape over time. |
 | 65 | 1 | `HistoryScreen(UserInterface ui)` |  |
 
 ### THE HISTORY SCREEN (lines 67-548)
@@ -210,7 +210,7 @@
 | 1394 | 18 | `private void holdInPlace(javafx.scene.Node node, double wasAt)` | Puts `node` back `wasAt` scene pixels down the window, once the page has been laid out. |
 | 1421 | 8 | `List<String> pickedUnits()` | The units of the picked lines, each once, in the order they were picked. |
 
-### THE PINS (0.7.5) (lines 1430-1664)
+### THE PINS (0.7.5) (lines 1430-1669)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -223,113 +223,114 @@
 | 1529 | 13 | `GridPane pins(HistorySave h, List<YearBook.Band> bands, boolean fresh)` | The two pins as cards side by side (0.7.37; two bare charts at 374 wide until then), each half the page, on the big chart's window. |
 | 1544 | 3 | `double pinChartWidth()` | A pin's chart: its card's half of the page, less the card's padding and edge - in whole pixels, less SLACK (0.7.40). |
 | 1549 | 3 | `double bigChartWidth()` | The big chart's canvas: the page, less its padding and edge (TimeChart's 30) and SLACK, in whole pixels (0.7.40). |
-| 1561 | 1 | **type** `record PinHead(String key, String label, String figure, String move, String moveTip, double last, boolean r...` | One pin's head, as words (0.7.37): its line, its figure in the window's last month, and how far it moved over the window. |
-| 1563 | 10 | `PinHead pinHead(HistorySave h, boolean left)` |  |
-| 1581 | 83 | `VBox pinCard(HistorySave h, boolean left, List<YearBook.Band> bands, boolean fresh)` | One pin as a card (0.7.37): its head - the line's name, a click that draws it alone on the big chart (openOn(), which never pins), its figure, its move over the window in neutral ink, "unpin" and "layers" - and the li... |
+| 1561 | 3 | `TimeChart[] charts()` | The charts the page holds, for KeptBench: the big chart, then the two pins' (null where not made yet). |
+| 1566 | 1 | **type** `record PinHead(String key, String label, String figure, String move, String moveTip, double last, boolean r...` | One pin's head, as words (0.7.37): its line, its figure in the window's last month, and how far it moved over the window. |
+| 1568 | 10 | `PinHead pinHead(HistorySave h, boolean left)` |  |
+| 1586 | 83 | `VBox pinCard(HistorySave h, boolean left, List<YearBook.Band> bands, boolean fresh)` | One pin as a card (0.7.37): its head - the line's name, a click that draws it alone on the big chart (openOn(), which never pins), its figure, its move over the window in neutral ink, "unpin" and "layers" - and the li... |
 
-### GDP IN LAYERS (0.7.6) (lines 1665-1765)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1707 | 3 | `boolean bigInLayers()` | Whether the big chart draws its one line in layers: real GDP picked alone, with the toggle on. |
-| 1712 | 11 | `Label layersChip(String where)` | The chip that toggles the layers, on the small chart's head and on the big chart's reading. |
-| 1730 | 6 | `TimeChart.Stack gdpStack(HistorySave h, String unit)` | GDP's four parts, a rolling year in founding money each - C, I, G, then NX - as a chart stacks them (0.7.23): C, I and G drawn from zero in the three steps of the ramp, net exports read on the crosshair, in the muted ... |
-| 1742 | 23 | `VBox layersKey(double[][] layers, double wide)` | The key under a layered chart - a swatch per layer and one for the line - and the sentence that says how to read the gap. |
-
-### THE BIG CHART (0.7.5) (lines 1766-1862)
+### GDP IN LAYERS (0.7.6) (lines 1670-1770)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1780 | 53 | `HBox chartControls(HistorySave h)` | The row above the big chart: the presets on the left, "clear all" and "log" on the right. |
-| 1844 | 18 | `String logRefusal(HistorySave h)` | Why the log scale cannot draw what is picked, or null when it can. |
+| 1712 | 3 | `boolean bigInLayers()` | Whether the big chart draws its one line in layers: real GDP picked alone, with the toggle on. |
+| 1717 | 11 | `Label layersChip(String where)` | The chip that toggles the layers, on the small chart's head and on the big chart's reading. |
+| 1735 | 6 | `TimeChart.Stack gdpStack(HistorySave h, String unit)` | GDP's four parts, a rolling year in founding money each - C, I, G, then NX - as a chart stacks them (0.7.23): C, I and G drawn from zero in the three steps of the ramp, net exports read on the crosshair, in the muted ... |
+| 1747 | 23 | `VBox layersKey(double[][] layers, double wide)` | The key under a layered chart - a swatch per layer and one for the line - and the sentence that says how to read the gap. |
 
-### THE CHART, REBUILT (0.7.23) (lines 1863-1972)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1899 | 53 | `TimeChart bigChart(HistorySave h, List<YearBook.Band> bands, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` | The big chart with this redraw's lines, bands, episodes and flags - the flags as its lane draws them (ChartModel.onAxis(), 0.7.37) - at the page's width. |
-| 1960 | 7 | `boolean drawsAnIndex(List<String> keys)` | Whether the picked lines include a price index - the level, what people expect it to be, or a part of the basket - whose line answers to the basket's links: the big chart marks them only then (0.7.45; the UI spec's D12). |
-| 1969 | 3 | `static TimeChart.Axis axisFor(String unit)` | One value axis: its gridlines in the unit's own words (axisTick()), and from zero when a per cent. |
-
-### FULL SCREEN (0.7.23) (lines 1973-2197)
+### THE BIG CHART (0.7.5) (lines 1771-1867)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1998 | 28 | `void setChartFull(boolean on, boolean redraw)` | Gives the big chart the whole window, or takes it back - and redraws the page, unless another screen is about to be drawn instead (the main menu, a rail button: UserInterface.leaveChartFullScreen()). |
-| 2031 | 3 | `void leaving()` | The page is going: another screen is being drawn (UserInterface.clearMenu()). |
-| 2044 | 6 | `private void fitFull()` | The chart sized to the pane: the whole width, and the plot whatever height the rest leaves - read off the window (0.7.40), which the pane is laid over and nothing in it can move, not off the pane, which a chart a pixe... |
-| 2055 | 6 | `static VBox newFullPane()` | The pane the chart is laid in over the whole window: the stage's colour, padded by FULL_PAD_*. |
-| 2063 | 5 | `static Label newFullTitle()` | The page's title in the full-screen toolbar. |
-| 2070 | 5 | `static Label newFullClock()` | The clock's line in the full-screen toolbar, empty until the screen says the date. |
-| 2077 | 6 | `static void fitToWindow(TimeChart chart, double windowW, double windowH)` | The chart sized to a window of this size: the window less the pane's padding, the canvas SLACK short of that (nothing when the window has no room). |
-| 2085 | 4 | `private void refreshFullScreen()` | A redraw in full screen: the clock's line, and the chart's size if the window moved. |
-| 2102 | 23 | `static String axisTick(String unit, double v, double step)` | One gridline's label: short enough to fit, honest about its unit. |
-| 2135 | 5 | `static String priceTick(double a, double step)` | A price on an axis: cents only when the gridlines are finer than a dollar. |
-| 2142 | 6 | `static String shortCash(double a)` | Dollars, abbreviated from a thousand up - an axis has no room for digits. |
-| 2150 | 5 | `static String shortCount(double a)` | People, homes, jobs - the same abbreviation without the dollar. |
-| 2157 | 4 | `static String trim(double a)` | One decimal at most, and none at all when it would read ".0". |
-| 2163 | 16 | `static String unitName(String unit, Currency money)` | What the y-axis is measured in, when every line agrees - the rate in this city's own money (0.7.10). |
-| 2189 | 8 | `static double plotScale(String unit, double v)` | The stored value, in the units the axis is labelled in. |
+| 1785 | 53 | `HBox chartControls(HistorySave h)` | The row above the big chart: the presets on the left, "clear all" and "log" on the right. |
+| 1849 | 18 | `String logRefusal(HistorySave h)` | Why the log scale cannot draw what is picked, or null when it can. |
 
-### WHAT EACH LINE DID (0.7.37) (lines 2198-2782)
+### THE CHART, REBUILT (0.7.23) (lines 1868-1977)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2212 | 4 | **type** `record Span(double first, double last, double lo, double hi, int loAt, int hiAt)` | A line over the window: its first and last recorded values, its low and high and the indices of each; NaN where nothing is recorded. |
-| 2214 | 1 | `boolean flat()` _(in HistoryScreen.Span)_ | Whether it never moved over the window. |
-| 2218 | 12 | `static Span span(double[] all, int[] shown)` | One series over the window's indices {from, to} (shownIndices()). |
-| 2232 | 2 | **type** `record Reading(String key, String label, String latest, String move, String caption, String rangeTip, doubl...` | One reading card, as words and figures (0.7.37): what the probe reads. |
-| 2235 | 24 | `Reading reading(HistorySave h, String key, String axis)` |  |
-| 2261 | 3 | `String shown(String unit, double v)` | A figure as this page's cards and pins write it: fmtUnit()'s, with a true minus (0.7.37) - the chart's own card keeps fmtUnit()'s. |
-| 2271 | 7 | `String moveWords(String unit, double first, double last)` | How far a line moved, as this page writes it (0.7.37, D5): an up or a down arrow and changeText()'s figure without its sign - points for a rate, per cent for a quantity - in neutral ink; a move too small to show in th... |
-| 2280 | 29 | `VBox readings(HistorySave h, boolean fresh)` | The section: its head, the cards three across, and the line that says when two lines share a colour. |
-| 2317 | 78 | `VBox readingCard(HistorySave h, String key, String colour, String axis, boolean fresh)` | One line's card: its swatch, name and axis, "pin" or "pinned" (and "layers" for real GDP alone); its figure and its move; its range bar; the caption. |
-| 2407 | 22 | `String changeText(String unit, double first, double last)` | How far it moved, in terms the unit deserves. |
-| 2462 | 49 | `VBox historyPickerRows()` | The chips, one heading per group - each group closed until it is wanted, and a box over them that finds a line by name (0.7.5). |
-| 2516 | 29 | `void fillPicker(VBox groups)` | The groups, as the filter and the player have left them. |
-| 2547 | 45 | `private void pickerGroup(VBox groups, String group, int size, int picked, List<Trace> matching, boolean finding)` | One group of the picker: its heading and how many of its lines are picked, and - open - its chips. |
-| 2598 | 4 | `Trace traceFor(String key)` |  |
-| 2619 | 117 | `double[] historyValues(HistorySave h, String key)` | A series, aligned to the month axis, derived ones included. |
-| 2737 | 5 | `double[] minus(double[] a, double[] b)` |  |
-| 2744 | 38 | `String fmtUnit(String unit, double v)` | A value in the units it is actually kept in. |
+| 1904 | 53 | `TimeChart bigChart(HistorySave h, List<YearBook.Band> bands, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` | The big chart with this redraw's lines, bands, episodes and flags - the flags as its lane draws them (ChartModel.onAxis(), 0.7.37) - at the page's width. |
+| 1965 | 7 | `boolean drawsAnIndex(List<String> keys)` | Whether the picked lines include a price index - the level, what people expect it to be, or a part of the basket - whose line answers to the basket's links: the big chart marks them only then (0.7.45; the UI spec's D12). |
+| 1974 | 3 | `static TimeChart.Axis axisFor(String unit)` | One value axis: its gridlines in the unit's own words (axisTick()), and from zero when a per cent. |
 
-### HARD TIMES AND YOUR DECISIONS (0.7.37) (lines 2783-3118)
+### FULL SCREEN (0.7.23) (lines 1978-2202)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2814 | 8 | `static String hardTimesInfo()` | The section's (i): the rules that name an episode, the year book's own. |
-| 2829 | 15 | `List<YearBook.Episode> hardTimesInView(List<YearBook.Episode> episodes, int lastMonth)` | The hard times touching the window, as this page lists them (pure): those still running first, in RUNNING NOW's order, but a chronic one last of all; then those the history closed, the most recently ended first. |
-| 2846 | 6 | `static List<DecisionLog.Entry> decisionsInView(List<ChartModel.Flag> flags, int from, int to)` | The decisions inside the window, newest first (pure): a founding-month one counts at the history's first month, where its flag stands. |
-| 2854 | 4 | `static String spanWords(YearBook.Episode e, int lastMonth)` | "Jun 2192 – May 2197 · 60 months", or "Aug 2199 – now · 6 months" while it runs. |
-| 2860 | 3 | `static String worstLine(YearBook.Episode e)` | "real output 13.78% below the year before at Feb 2193": the episode's worst, the year book's words. |
-| 2865 | 5 | `String viewWords()` | What the window spans, for an empty list: "these 10 years", "these 18 months", or "the whole history". |
-| 2871 | 73 | `VBox hardTimes(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` |  |
-| 2946 | 3 | `static String decisionKey(DecisionLog.Entry d)` | A decision's name for its scope: its month, kind and words, which do not change as the log grows (an Entry has no equality of its own). |
-| 2951 | 10 | `HBox columnHead(String words, int count)` | A column's head: its words, and how many. |
-| 2963 | 6 | `static Label quiet(String text)` | A quiet line: an empty list's words. |
-| 2971 | 6 | `Label showAll()` | "show All ›": the whole history in view. |
-| 2979 | 8 | `void rowGoes(javafx.scene.layout.Pane row, String tipText, Runnable go)` | A row that moves the chart: the pointer's hand, a ground under it, and the click. |
-| 2993 | 26 | `HBox episodeRow(YearBook.Episode e, int lastMonth)` | One hard time: its kind's icon and tag in its colour (the chart's verdict colours, 0.7.23), its name, its span; under it its worst, in the year book's words. |
-| 3021 | 17 | `HBox decisionRow(DecisionLog.Entry d)` | One decision: its icon in its flag's area colour, its month, its words - wrapping, never cut; "this month" when it is. |
-| 3044 | 13 | `VBox fold(String key, String caption, java.util.function.Supplier<javafx.scene.Node> body)` | A fold on this page (Pieces.details()), its toggle held under the pointer as it opens or closes, a chip's way (D7, D8): the page under it changes length and the scroll memory keeps the bottom. |
-| 3059 | 1 | **type** `record KindRow(String kind, String name, int count, int months, List<YearBook.Episode> episodes)` | One kind of episode in the details, as words (pure): its kind, how many, how long all told, and its episodes. |
-| 3061 | 10 | `static List<KindRow> kindRows(List<YearBook.Episode> episodes)` |  |
-| 3073 | 3 | `static String howLong(int months)` | "42 years" all told, or "9 months" under two years. |
-| 3085 | 33 | `javafx.scene.Node byKind(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` | Every named episode since founding, by kind (0.7.37): a row a kind that has happened, its episodes on one scale of the history's months in their colour - each at least two pixels, its name, span and worst on its toolt... |
+| 2003 | 28 | `void setChartFull(boolean on, boolean redraw)` | Gives the big chart the whole window, or takes it back - and redraws the page, unless another screen is about to be drawn instead (the main menu, a rail button: UserInterface.leaveChartFullScreen()). |
+| 2036 | 3 | `void leaving()` | The page is going: another screen is being drawn (UserInterface.clearMenu()). |
+| 2049 | 6 | `private void fitFull()` | The chart sized to the pane: the whole width, and the plot whatever height the rest leaves - read off the window (0.7.40), which the pane is laid over and nothing in it can move, not off the pane, which a chart a pixe... |
+| 2060 | 6 | `static VBox newFullPane()` | The pane the chart is laid in over the whole window: the stage's colour, padded by FULL_PAD_*. |
+| 2068 | 5 | `static Label newFullTitle()` | The page's title in the full-screen toolbar. |
+| 2075 | 5 | `static Label newFullClock()` | The clock's line in the full-screen toolbar, empty until the screen says the date. |
+| 2082 | 6 | `static void fitToWindow(TimeChart chart, double windowW, double windowH)` | The chart sized to a window of this size: the window less the pane's padding, the canvas SLACK short of that (nothing when the window has no room). |
+| 2090 | 4 | `private void refreshFullScreen()` | A redraw in full screen: the clock's line, and the chart's size if the window moved. |
+| 2107 | 23 | `static String axisTick(String unit, double v, double step)` | One gridline's label: short enough to fit, honest about its unit. |
+| 2140 | 5 | `static String priceTick(double a, double step)` | A price on an axis: cents only when the gridlines are finer than a dollar. |
+| 2147 | 6 | `static String shortCash(double a)` | Dollars, abbreviated from a thousand up - an axis has no room for digits. |
+| 2155 | 5 | `static String shortCount(double a)` | People, homes, jobs - the same abbreviation without the dollar. |
+| 2162 | 4 | `static String trim(double a)` | One decimal at most, and none at all when it would read ".0". |
+| 2168 | 16 | `static String unitName(String unit, Currency money)` | What the y-axis is measured in, when every line agrees - the rate in this city's own money (0.7.10). |
+| 2194 | 8 | `static double plotScale(String unit, double v)` | The stored value, in the units the axis is labelled in. |
 
-### PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) (lines 3119-3321)
+### WHAT EACH LINE DID (0.7.37) (lines 2203-2787)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3154 | 3 | `GoodsMarket market(Good g)` | A good's market, or null. |
-| 3159 | 4 | `Sector seller(Good g)` | The business that sells a seller-priced good: the sector that makes it, or null. |
-| 3165 | 5 | `static String goodPrice(double thousands)` | A good's price, to the cent: "$296.67", "$11,454.16" - tiny ones to the place that shows them. |
-| 3172 | 8 | `static String flowWords(GoodsMarket m)` | "imported 54,201", "exported 87,294", both, or null when nothing crossed; a fraction of a unit is "under 1" (a wagon set's worth read "imported 0"). |
-| 3182 | 3 | `static String units(double v)` | A count of units that crossed: whole ones grouped, or "under 1". |
-| 3187 | 3 | `static String some(int n)` | "1 at", "none at": a count in the summary's words. |
-| 3197 | 17 | `String priceSummary()` | The line over the fold (pure): how many goods trade with the world and where in their bands the both-ways ones stand - at what the world charges, between, at what it pays - how many are open at one end, and how many t... |
-| 3216 | 11 | `VBox prices()` | The section: its head with the (i), the line of counts, and every good behind "details". |
-| 3229 | 1 | **type** `record GoodLine(Good good, String figure, String says, double at, String flow)` | One good as a row of the fold, as words (pure): what the probe reads. |
-| 3232 | 30 | `List<GoodLine> goodLines()` | Every good, as the fold draws it: the both-ways goods with their place in the band, the rest with their words. |
-| 3272 | 49 | `javafx.scene.Node goodsRows()` | The fold: the goods traded both ways on their bands, the world's floor and ceiling a rule through every row; then those open at one end and those their seller prices, in words. |
+| 2217 | 4 | **type** `record Span(double first, double last, double lo, double hi, int loAt, int hiAt)` | A line over the window: its first and last recorded values, its low and high and the indices of each; NaN where nothing is recorded. |
+| 2219 | 1 | `boolean flat()` _(in HistoryScreen.Span)_ | Whether it never moved over the window. |
+| 2223 | 12 | `static Span span(double[] all, int[] shown)` | One series over the window's indices {from, to} (shownIndices()). |
+| 2237 | 2 | **type** `record Reading(String key, String label, String latest, String move, String caption, String rangeTip, doubl...` | One reading card, as words and figures (0.7.37): what the probe reads. |
+| 2240 | 24 | `Reading reading(HistorySave h, String key, String axis)` |  |
+| 2266 | 3 | `String shown(String unit, double v)` | A figure as this page's cards and pins write it: fmtUnit()'s, with a true minus (0.7.37) - the chart's own card keeps fmtUnit()'s. |
+| 2276 | 7 | `String moveWords(String unit, double first, double last)` | How far a line moved, as this page writes it (0.7.37, D5): an up or a down arrow and changeText()'s figure without its sign - points for a rate, per cent for a quantity - in neutral ink; a move too small to show in th... |
+| 2285 | 29 | `VBox readings(HistorySave h, boolean fresh)` | The section: its head, the cards three across, and the line that says when two lines share a colour. |
+| 2322 | 78 | `VBox readingCard(HistorySave h, String key, String colour, String axis, boolean fresh)` | One line's card: its swatch, name and axis, "pin" or "pinned" (and "layers" for real GDP alone); its figure and its move; its range bar; the caption. |
+| 2412 | 22 | `String changeText(String unit, double first, double last)` | How far it moved, in terms the unit deserves. |
+| 2467 | 49 | `VBox historyPickerRows()` | The chips, one heading per group - each group closed until it is wanted, and a box over them that finds a line by name (0.7.5). |
+| 2521 | 29 | `void fillPicker(VBox groups)` | The groups, as the filter and the player have left them. |
+| 2552 | 45 | `private void pickerGroup(VBox groups, String group, int size, int picked, List<Trace> matching, boolean finding)` | One group of the picker: its heading and how many of its lines are picked, and - open - its chips. |
+| 2603 | 4 | `Trace traceFor(String key)` |  |
+| 2624 | 117 | `double[] historyValues(HistorySave h, String key)` | A series, aligned to the month axis, derived ones included. |
+| 2742 | 5 | `double[] minus(double[] a, double[] b)` |  |
+| 2749 | 38 | `String fmtUnit(String unit, double v)` | A value in the units it is actually kept in. |
+
+### HARD TIMES AND YOUR DECISIONS (0.7.37) (lines 2788-3123)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2819 | 8 | `static String hardTimesInfo()` | The section's (i): the rules that name an episode, the year book's own. |
+| 2834 | 15 | `List<YearBook.Episode> hardTimesInView(List<YearBook.Episode> episodes, int lastMonth)` | The hard times touching the window, as this page lists them (pure): those still running first, in RUNNING NOW's order, but a chronic one last of all; then those the history closed, the most recently ended first. |
+| 2851 | 6 | `static List<DecisionLog.Entry> decisionsInView(List<ChartModel.Flag> flags, int from, int to)` | The decisions inside the window, newest first (pure): a founding-month one counts at the history's first month, where its flag stands. |
+| 2859 | 4 | `static String spanWords(YearBook.Episode e, int lastMonth)` | "Jun 2192 – May 2197 · 60 months", or "Aug 2199 – now · 6 months" while it runs. |
+| 2865 | 3 | `static String worstLine(YearBook.Episode e)` | "real output 13.78% below the year before at Feb 2193": the episode's worst, the year book's words. |
+| 2870 | 5 | `String viewWords()` | What the window spans, for an empty list: "these 10 years", "these 18 months", or "the whole history". |
+| 2876 | 73 | `VBox hardTimes(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` |  |
+| 2951 | 3 | `static String decisionKey(DecisionLog.Entry d)` | A decision's name for its scope: its month, kind and words, which do not change as the log grows (an Entry has no equality of its own). |
+| 2956 | 10 | `HBox columnHead(String words, int count)` | A column's head: its words, and how many. |
+| 2968 | 6 | `static Label quiet(String text)` | A quiet line: an empty list's words. |
+| 2976 | 6 | `Label showAll()` | "show All ›": the whole history in view. |
+| 2984 | 8 | `void rowGoes(javafx.scene.layout.Pane row, String tipText, Runnable go)` | A row that moves the chart: the pointer's hand, a ground under it, and the click. |
+| 2998 | 26 | `HBox episodeRow(YearBook.Episode e, int lastMonth)` | One hard time: its kind's icon and tag in its colour (the chart's verdict colours, 0.7.23), its name, its span; under it its worst, in the year book's words. |
+| 3026 | 17 | `HBox decisionRow(DecisionLog.Entry d)` | One decision: its icon in its flag's area colour, its month, its words - wrapping, never cut; "this month" when it is. |
+| 3049 | 13 | `VBox fold(String key, String caption, java.util.function.Supplier<javafx.scene.Node> body)` | A fold on this page (Pieces.details()), its toggle held under the pointer as it opens or closes, a chip's way (D7, D8): the page under it changes length and the scroll memory keeps the bottom. |
+| 3064 | 1 | **type** `record KindRow(String kind, String name, int count, int months, List<YearBook.Episode> episodes)` | One kind of episode in the details, as words (pure): its kind, how many, how long all told, and its episodes. |
+| 3066 | 10 | `static List<KindRow> kindRows(List<YearBook.Episode> episodes)` |  |
+| 3078 | 3 | `static String howLong(int months)` | "42 years" all told, or "9 months" under two years. |
+| 3090 | 33 | `javafx.scene.Node byKind(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` | Every named episode since founding, by kind (0.7.37): a row a kind that has happened, its episodes on one scale of the history's months in their colour - each at least two pixels, its name, span and worst on its toolt... |
+
+### PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) (lines 3124-3326)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3159 | 3 | `GoodsMarket market(Good g)` | A good's market, or null. |
+| 3164 | 4 | `Sector seller(Good g)` | The business that sells a seller-priced good: the sector that makes it, or null. |
+| 3170 | 5 | `static String goodPrice(double thousands)` | A good's price, to the cent: "$296.67", "$11,454.16" - tiny ones to the place that shows them. |
+| 3177 | 8 | `static String flowWords(GoodsMarket m)` | "imported 54,201", "exported 87,294", both, or null when nothing crossed; a fraction of a unit is "under 1" (a wagon set's worth read "imported 0"). |
+| 3187 | 3 | `static String units(double v)` | A count of units that crossed: whole ones grouped, or "under 1". |
+| 3192 | 3 | `static String some(int n)` | "1 at", "none at": a count in the summary's words. |
+| 3202 | 17 | `String priceSummary()` | The line over the fold (pure): how many goods trade with the world and where in their bands the both-ways ones stand - at what the world charges, between, at what it pays - how many are open at one end, and how many t... |
+| 3221 | 11 | `VBox prices()` | The section: its head with the (i), the line of counts, and every good behind "details". |
+| 3234 | 1 | **type** `record GoodLine(Good good, String figure, String says, double at, String flow)` | One good as a row of the fold, as words (pure): what the probe reads. |
+| 3237 | 30 | `List<GoodLine> goodLines()` | Every good, as the fold draws it: the both-ways goods with their place in the band, the rest with their words. |
+| 3277 | 49 | `javafx.scene.Node goodsRows()` | The fold: the goods traded both ways on their bands, the world's floor and ceiling a rule through every row; then those open at one end and those their seller prices, in words. |
 

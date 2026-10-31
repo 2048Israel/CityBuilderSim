@@ -163,7 +163,7 @@
 | 188 | `private StackPane stagePane` | The middle of the window, with the City overview's drawer and the construction panel (both since 0.7.24), the inbox's list and the toasts on top of it. |
 | 190 | `VBox inboxCorner` | The inbox's list, dropped down at the stage's top right while it is open (its envelope is the header's since 0.7.21). |
 | 192 | `private VBox toastStack` | The toasts, stacked at the stage's bottom right (0.7.20); see TOASTS. |
-| 194 | `private StackPane windowStack` | The whole window, with a dialog laid over it when one is open (0.7.20). |
+| 194 | `StackPane windowStack` | The whole window, with a dialog laid over it when one is open (0.7.20). |
 | 196 | `private StackPane quitDialog` | The dialog that is up - Quit's, or since 0.7.22 a confirmation (confirm()) - or null. |
 | 204 | `private boolean cityOpen` | Whether a city has been founded or loaded this session (0.7.20; anotherCity()). |
 | 206 | `javafx.scene.control.ScrollPane menuScroller` | The middle column's scroller. |

@@ -130,18 +130,28 @@ public final class Pieces {
      */
     public static javafx.scene.layout.FlowPane chipStrip(String[] names, String current,
                                                    int size, Consumer<String> pick) {
+        return chipStrip(names, null, current, size, pick, Pos.CENTER);
+    }
+
+    private static javafx.scene.layout.FlowPane chipStrip(String[] names, String[] icons, String current,
+                                                          int size, Consumer<String> pick, Pos align) {
 
         javafx.scene.layout.FlowPane strip = Kept.flow(6, 6);
-        strip.setAlignment(Pos.CENTER);
+        strip.setAlignment(align);
         strip.setPrefWrapLength(Palette.BUILD_ROW + 160);
 
-        for (String name : names) {
+        for (int i = 0; i < names.length; i++) {
+            String name = names[i];
             boolean on = name.equals(current);
             Button chip = Kept.of(Button.class, Button::new);
             chip.setText(name);
-            // The icon form below gives some chips a graphic: a kept button starts without one.
-            if (chip.getGraphic() != null) chip.setGraphic(null);
-            chip.setGraphicTextGap(4);
+            // The icon form gives some chips a graphic. It is handed over here, where the chip is made (KP1):
+            // a kept chip handed its own icon again is not stripped of it and given it back, which would
+            // take the icon off the scene and put it on every draw.
+            boolean hasIcon = icons != null && i < icons.length && icons[i] != null;
+            javafx.scene.Node graphic = hasIcon ? icon(icons[i], on ? Palette.ACCENT : Palette.TEXT_LABEL, size + 3) : null;
+            if (chip.getGraphic() != graphic) chip.setGraphic(graphic);
+            chip.setGraphicTextGap(hasIcon ? 6 : 4);
             chip.setStyle(Palette.words(size, on ? Palette.TEXT_HEAD : Palette.TEXT_BODY)
                     + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
                     + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
@@ -161,15 +171,7 @@ public final class Pieces {
      */
     public static javafx.scene.layout.FlowPane chipStrip(String[] names, String[] icons, String current,
                                                          int size, Consumer<String> pick) {
-        javafx.scene.layout.FlowPane strip = chipStrip(names, current, size, pick);
-        strip.setAlignment(Pos.CENTER_LEFT);
-        for (int i = 0; i < names.length && i < strip.getChildren().size(); i++) {
-            if (icons == null || i >= icons.length || icons[i] == null) continue;
-            Button chip = (Button) strip.getChildren().get(i);
-            chip.setGraphic(icon(icons[i], names[i].equals(current) ? Palette.ACCENT : Palette.TEXT_LABEL, size + 3));
-            chip.setGraphicTextGap(6);
-        }
-        return strip;
+        return chipStrip(names, icons, current, size, pick, Pos.CENTER_LEFT);
     }
 
     /** The bar itself: its cells - four, and People's five since 0.7.27 - the last one without its dividing rule. */
@@ -1637,23 +1639,20 @@ public final class Pieces {
      */
     public static HBox pageHead(String title, String areaColour, Runnable back, String sub, String info,
                                 javafx.scene.Node... right) {
-        Label t = Kept.label(title);
+        // Kept: what is drawn only sometimes is a scope of its own, and the label is handed its swatch
+        // where it is made, so a kept title is not stripped of it and given it back (KP1).
+        Region swatch = areaColour == null ? null : Kept.scope("swatch", () -> {
+            Region s = Kept.region();
+            s.setMinSize(10, 10);
+            s.setPrefSize(10, 10);
+            s.setMaxSize(10, 10);
+            s.setStyle("-fx-background-color: " + areaColour + "; -fx-background-radius: 3;");
+            return s;
+        });
+        Label t = Kept.label(title, swatch);
         t.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
         t.setMinWidth(Region.USE_PREF_SIZE);
-        // Kept: what is drawn only sometimes is a scope of its own, and a value set under a condition is set on both sides of it.
-        if (areaColour != null) {
-            t.setGraphic(Kept.scope("swatch", () -> {
-                Region swatch = Kept.region();
-                swatch.setMinSize(10, 10);
-                swatch.setPrefSize(10, 10);
-                swatch.setMaxSize(10, 10);
-                swatch.setStyle("-fx-background-color: " + areaColour + "; -fx-background-radius: 3;");
-                return swatch;
-            }));
-            t.setGraphicTextGap(10);
-        } else {
-            t.setGraphicTextGap(4);
-        }
+        t.setGraphicTextGap(areaColour != null ? 10 : 4);
         HBox titled = Kept.row(10, t);
         titled.setAlignment(Pos.CENTER_LEFT);
         if (sub != null) {

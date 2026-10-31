@@ -1,6 +1,7 @@
 package ham.citybuildersim;
 
 import ham.citybuildersim.ui.KeptBench;
+import javafx.animation.Animation;
 import javafx.application.Platform;
 
 import java.io.OutputStream;
@@ -84,6 +85,31 @@ import java.util.concurrent.TimeUnit;
  *      row keeps its hover look under a still pointer; an inbox button loses the focus;
  *  13. the whole chrome kept (header, rail and the three panels) in one month is within
  *      KEPT_ALL_CHROME_MS through Timing, the same month built new printed beside it.
+ *
+ * ...and City History (KP1), its page drawn kept from a pool of its own, the big chart and the two pins'
+ * charts the screen's own and shared by the kept page and the one built new (the bench puts them back):
+ *  14. City History is kept: each month's redraw keeps the page's top nodes and hands back nine in ten
+ *      of the first draw's nodes, most months make none, and the big chart, both pins' charts, the
+ *      legend's chips and the range buttons are the same nodes in the same boxes, in the scene;
+ *  15. it shows what a page built new shows: for MONTHS months the kept page's signature equals that of the
+ *      page built new (the pool, and the big chart's chips' pool, swapped for empty ones), line for line;
+ *  16. and looks it: the same pictures at three of those months (alike()); one figure made wrong by hand parts
+ *      signature and picture, and the next kept draw sets it right;
+ *  17. what reshapes the page keeps it right: a line picked and unpicked, a preset, a picker group closed and
+ *      opened, a word typed in the filter, the hard times' and the goods' folds, the log scale, real GDP alone
+ *      in layers, a line hidden in the legend, the chart's window moved (a range, an episode's span, by hand),
+ *      a line pinned and a pin taken off, the chart's full screen, the year book's card - the redraw after each
+ *      and the one after that equal a page built new;
+ *  18. the crosshair and the window survive a month: a window on the newest month follows it and one put by
+ *      hand stays; the crosshair a MOUSE_MOVED set on the big chart's plot is there after a kept redraw and gone
+ *      from a page built new (which takes the chart off the scene); a legend chip under the pointer is still the
+ *      same chip, under it, with the same tooltip;
+ *  19. the count-up only at 1x-10x: with the clock running at each rung of the speed ladder, a month that lands on
+ *      People starts LIVING HERE's count-up, and on City History the left pin's, exactly at the rungs
+ *      UserInterface.countsUp() allows (COUNT_UP_TOP) and always when the clock is paused; a count-up still
+ *      running when a month lands past COUNT_UP_TOP is stopped;
+ *  20. it is cheap: the kept City History month (its draw, then the pulse's CSS and layout) is within
+ *      KEPT_HISTORY_MS through Timing, the same month built new printed beside it.
  */
 public class KeptCheck {
 
@@ -709,6 +735,481 @@ public class KeptCheck {
         if (!ok) fails++;
     }
 
+    /**
+     * The budget for the kept City History month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC:
+     * twice the kept month's median, rounded up (5.0 to 8.2 ms in five runs, 6.2 between them; the same month built new
+     * 20.6 to 26.3 ms).
+     */
+    static final double KEPT_HISTORY_MS = 13;
+
+    /** A hand on City History's choices: what it does to the bench, and why it cannot be shown (null when it can). */
+    @FunctionalInterface
+    interface Hand {
+        String on(KeptBench bench) throws Exception;
+    }
+
+    /** One choice that reshapes the page: its name and the hand that makes it. */
+    record Choice(String name, Hand hand) { }
+
+    /** The first of these lines picked and not in the preset the page opens on: a line to tick and untick. */
+    static final String TICKED = "unemployment";
+
+    /**
+     * Sections 14 to 20: City History kept (KP1). The same city, played on; the bench draws the page
+     * kept from its pool and built new (the pools swapped for empty ones), the two charts shared by both.
+     */
+    static void history(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 14: City History is kept ---");
+        // The first draw makes the page; it is laid out (to where the scroller's width settles the charts' size) before the months start.
+        int firstMade = fx(() -> {
+            bench.drawHistoryKept();
+            for (int i = 0; i < 3; i++) bench.passes();
+            return bench.historyCounts()[0];
+        });
+        List<javafx.scene.Node> charts = fx(bench::historyCharts);
+        List<javafx.scene.Node> chartParents = fx(() -> {
+            List<javafx.scene.Node> parents = new ArrayList<>();
+            for (javafx.scene.Node c : charts) parents.add(c.getParent());
+            return parents;
+        });
+        List<javafx.scene.Node> legend = fx(bench::historyLegend), ranges = fx(bench::historyRanges);
+        System.out.printf("  the first draw made %d nodes through Kept; the page holds %d charts, a legend of %d chips and %d range buttons%n",
+                firstMade, charts.size(), legend.size(), ranges.size());
+        check("the page holds the big chart and the two pins' (" + charts.size() + " charts)", charts.size() == 3);
+        int watched = fx(bench::watchGraphics);
+        int sameTop = 0, quiet = 0, madeMost = 0, chartsKept = 0, chipsKept = 0, graphicMoves = 0;
+        long handedBack = 0;
+        for (int m = 1; m <= MONTHS; m++) {
+            Object[] r = fx(() -> {
+                List<javafx.scene.Node> before = bench.historyTop();
+                month(g);
+                bench.drawHistoryKept();
+                bench.passes();
+                int[] c = bench.historyCounts();
+                boolean chartsStay = bench.historyCharts().equals(charts);
+                for (int i = 0; chartsStay && i < charts.size(); i++) {
+                    chartsStay = charts.get(i).getScene() != null && charts.get(i).getParent() == chartParents.get(i);
+                }
+                boolean chipsStay = bench.historyLegend().equals(legend) && bench.historyRanges().equals(ranges);
+                return new Object[]{before.equals(bench.historyTop()), c[0], c[1], chartsStay, chipsStay, bench.graphicMoves()};
+            });
+            if ((boolean) r[0]) sameTop++;
+            if ((int) r[1] == 0) quiet++;
+            madeMost = Math.max(madeMost, (int) r[1]);
+            handedBack += (int) r[2];
+            if ((boolean) r[3]) chartsKept++;
+            if ((boolean) r[4]) chipsKept++;
+            graphicMoves += (int) r[5];
+        }
+        System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d%n",
+                MONTHS, handedBack / MONTHS, quiet, madeMost);
+        check("each month's redraw keeps the page it drew (the same top nodes, " + sameTop + " of " + MONTHS + ")", sameTop == MONTHS);
+        check("each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
+                + firstMade + ")", handedBack / MONTHS * 10 >= firstMade * 9L);
+        check("most months make no node at all (" + quiet + " of " + MONTHS + ")", quiet * 2 > MONTHS);
+        check("the big chart and both pins' stay in the scene, in the same box, after every redraw (" + chartsKept + " of " + MONTHS + ")",
+                chartsKept == MONTHS);
+        check("the legend's chips and the range buttons are the same nodes after every redraw (" + chipsKept + " of " + MONTHS + ")",
+                chipsKept == MONTHS);
+        check("no label's graphic is taken off the scene and put back by a kept redraw (" + watched + " watched, " + graphicMoves + " moves)",
+                watched >= 3 && graphicMoves == 0);
+
+        System.out.println("\n--- 15 and 16: the kept page, month after month, against a page built new, and its pixels ---");
+        List<Integer> shotAt = List.of(1, MONTHS / 2, MONTHS);
+        int differ = 0, shotsSame = 0, shotsAlike = 0;
+        String firstDiffer = null;
+        for (int m = 1; m <= MONTHS; m++) {
+            final int at = m;
+            Object[] r = fx(() -> {
+                month(g);
+                bench.drawHistoryKept();
+                bench.passes();
+                bench.settle();
+                bench.finishPageAnimations();
+                List<String> kept = bench.signature();
+                int[] keptPx = shotAt.contains(at) ? bench.pixels() : null;
+                bench.showFreshHistory();
+                bench.settle();
+                bench.finishPageAnimations();
+                List<String> fresh = bench.signature();
+                int[] freshPx = shotAt.contains(at) ? bench.pixels() : null;
+                bench.restoreKeptHistory();
+                return new Object[]{firstDifference(kept, fresh), keptPx, freshPx};
+            });
+            if (r[0] != null) {
+                differ++;
+                if (firstDiffer == null) firstDiffer = "month " + g.getMonth() + ", " + r[0];
+            }
+            if (r[1] != null) {
+                int[] a = (int[]) r[1], b = (int[]) r[2];
+                if (java.util.Arrays.equals(a, b)) shotsSame++;
+                if (alike(a, b)) shotsAlike++;
+                if (!java.util.Arrays.equals(a, b)) {
+                    System.out.println("  pixels differ at month " + g.getMonth() + ": " + pixelDifference(a, b));
+                    String to = System.getProperty("keptcheck.out");
+                    if (to != null) {
+                        png(a, java.nio.file.Path.of(to, "history-kept-m" + g.getMonth() + ".png"));
+                        png(b, java.nio.file.Path.of(to, "history-new-m" + g.getMonth() + ".png"));
+                    }
+                }
+            }
+        }
+        if (firstDiffer != null) System.out.println("  first difference: " + firstDiffer);
+        check("the kept page's signature equals the new page's at every month (" + differ + " differ)", differ == 0);
+        System.out.printf("  %d of %d months the very same pixels%n", shotsSame, shotAt.size());
+        check("the kept page and the new page are the same picture at " + shotAt.size() + " months, to SHADE_LEVELS ("
+                + shotsAlike + ")", shotsAlike == shotAt.size());
+
+        // The fixture that causes a difference: one figure on the kept page made wrong by hand.
+        Object[] spoilt = fx(() -> {
+            bench.drawHistoryKept();
+            bench.passes();
+            String was = bench.spoilHistory();
+            bench.settle();
+            List<String> kept = bench.signature();
+            int[] keptPx = bench.pixels();
+            bench.showFreshHistory();
+            bench.settle();
+            List<String> fresh = bench.signature();
+            int[] freshPx = bench.pixels();
+            bench.restoreKeptHistory();
+            bench.drawHistoryKept();
+            bench.settle();
+            List<String> mended = bench.signature();
+            return new Object[]{was, firstDifference(kept, fresh), alike(keptPx, freshPx), firstDifference(mended, fresh)};
+        });
+        check("one figure made wrong on the kept page (\"" + spoilt[0] + "\") parts its signature from the new page's",
+                spoilt[0] != null && spoilt[1] != null);
+        check("...and its picture", !(boolean) spoilt[2]);
+        check("...and the next kept draw sets it right again", spoilt[3] == null);
+
+        System.out.println("\n--- 17: what reshapes the page ---");
+        int[] bounds = fx(bench::historyBounds);
+        double[] episode = fx(bench::historyEpisodeSpan);
+        String population = "population";
+        String peopleGroup = fx(() -> bench.historyGroupOf(population));
+        List<Choice> choices = new ArrayList<>(List.of(
+                new Choice("a line picked", b -> { b.historyPick(TICKED, true); return null; }),
+                new Choice("a line unpicked", b -> { b.historyPick(TICKED, false); return null; }),
+                new Choice("a preset (the budget)", b -> { b.historyPreset(3); return null; }),
+                new Choice("another preset (the people)", b -> { b.historyPreset(2); return null; }),
+                new Choice("a picker group closed", b -> { b.historyGroup(peopleGroup, false); return null; }),
+                new Choice("a picker group opened", b -> { b.historyGroup(peopleGroup, true); return null; }),
+                new Choice("a word typed in the filter", b -> b.historyType("rate") ? null : "the page has no filter box"),
+                new Choice("the filter cleared", b -> b.historyType("") ? null : "the page has no filter box"),
+                new Choice("the hard times' fold opened", b -> { b.historyFold("hard times", true); return null; }),
+                new Choice("the hard times' fold closed", b -> { b.historyFold("hard times", false); return null; }),
+                new Choice("the goods' fold opened", b -> { b.historyFold("goods", true); return null; }),
+                new Choice("the goods' fold closed", b -> { b.historyFold("goods", false); return null; }),
+                new Choice("the log scale on", b -> {
+                    b.historyPickOnly(population);
+                    return nullIfOffered(b.historyLog(true), "log");
+                }),
+                new Choice("the log scale off", b -> { b.historyLog(false); return null; }),
+                new Choice("real GDP alone, in layers", b -> {
+                    b.historyPickOnly("realGdp");
+                    b.historyLayers(true);
+                    return null;
+                }),
+                new Choice("the layers off", b -> { b.historyLayers(false); return null; }),
+                new Choice("a line hidden in the legend", b -> {
+                    // The legend shows the lines of the last draw: draw the preset's before a chip is pressed.
+                    b.historyPreset(0);
+                    b.drawHistoryKept();
+                    b.passes();
+                    return b.historyLegendClick(0) && b.historyHidden() == 1 ? null : "the legend's chip did not hide its line";
+                }),
+                new Choice("the line shown again", b -> b.historyLegendClick(0) && b.historyHidden() == 0 ? null : "the chip did not show its line"),
+                new Choice("a range on the chart", b -> { b.historyRange(ham.citybuildersim.ChartModel.ALL); return null; }),
+                new Choice("the first range on the chart", b -> { b.historyRange(ham.citybuildersim.ChartModel.RANGES[0]); return null; })));
+        if (episode != null) {
+            choices.add(new Choice("the window moved to an episode's span", b -> { b.historyWindow(episode[0], episode[1]); return null; }));
+        } else {
+            System.out.println("  this city has no named episode: the window is not moved to one");
+        }
+        choices.addAll(List.of(
+                new Choice("the window moved by hand", b -> {
+                    b.historyWindow(bounds[0] + 50, bounds[0] + 150);
+                    return null;
+                }),
+                new Choice("a line pinned", b -> { b.historyPin(TICKED); return null; }),
+                new Choice("a pin taken off", b -> { b.historyUnpin(false); return null; }),
+                new Choice("the chart's full screen on", b -> { b.historyFull(true); return null; }),
+                new Choice("the chart's full screen off", b -> { b.historyFull(false); return null; }),
+                new Choice("the year book's card shown", b -> { b.historyBook("The year book was written (KeptCheck's card)."); return null; }),
+                new Choice("the year book's card put away", b -> { b.historyBook(null); return null; })));
+        for (Choice c : choices) {
+            String d = fx(() -> {
+                String premise = c.hand().on(bench);
+                if (premise != null) return "the choice could not be made: " + premise;
+                month(g);
+                bench.drawHistoryKept();
+                bench.passes();
+                bench.settle();
+                bench.finishPageAnimations();
+                List<String> kept = bench.signature();
+                bench.showFreshHistory();
+                bench.settle();
+                bench.finishPageAnimations();
+                List<String> fresh = bench.signature();
+                bench.restoreKeptHistory();
+                // ...and a month later, the page drawn over the reshaped one.
+                month(g);
+                bench.drawHistoryKept();
+                bench.passes();
+                bench.settle();
+                bench.finishPageAnimations();
+                List<String> kept2 = bench.signature();
+                bench.showFreshHistory();
+                bench.settle();
+                bench.finishPageAnimations();
+                List<String> fresh2 = bench.signature();
+                bench.restoreKeptHistory();
+                String a = firstDifference(kept, fresh), b = firstDifference(kept2, fresh2);
+                return a != null ? a : b;
+            });
+            if (d != null) System.out.println("  " + c.name() + ": " + d);
+            check(c.name() + ": the redraw and the next equal a page built new", d == null);
+        }
+
+        crosshair(g, bench);
+        countUp(g, bench);
+        historyCost(g, bench);
+    }
+
+    /** Months landed until the figure has moved (at most twelve): whether it did. */
+    private static boolean landUntil(Game g, java.util.function.BooleanSupplier moved) {
+        for (int i = 0; i < 12; i++) {
+            month(g);
+            if (moved.getAsBoolean()) return true;
+        }
+        return false;
+    }
+
+    /** The choice's refusal, as the premise it could not meet, or null when the chart is offered. */
+    private static String nullIfOffered(String refusal, String what) {
+        return refusal == null ? null : "the " + what + " scale is refused: " + refusal;
+    }
+
+    /**
+     * Section 18: what a page built new loses and a kept one keeps. The window is the screen's (the
+     * ChartModel), so the charts' own state is what a month could take: the crosshair under the pointer
+     * (a chart clears it when its scene goes null, and a page built new takes the chart off the scene) and
+     * a legend chip under it.
+     */
+    static void crosshair(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 18: the crosshair and the window survive a month ---");
+        int range = ham.citybuildersim.ChartModel.DEFAULT_RANGE;
+        // The window on its range follows the newest month, and one put by hand stays where it was put.
+        Object[] win = fx(() -> {
+            bench.historyPreset(0);
+            bench.historyRange(range);
+            bench.drawHistoryKept();
+            bench.passes();
+            int[] end = bench.historyBounds(), on = bench.historyWindow();
+            month(g);
+            bench.drawHistoryKept();
+            bench.passes();
+            int[] end2 = bench.historyBounds(), followed = bench.historyWindow();
+            // Put by hand, a stretch ending before the newest month.
+            bench.historyWindow(end2[1] - 240, end2[1] - 120);
+            bench.drawHistoryKept();
+            bench.passes();
+            int[] put = bench.historyWindow();
+            month(g);
+            bench.drawHistoryKept();
+            bench.passes();
+            int[] end3 = bench.historyBounds(), stayed = bench.historyWindow();
+            return new Object[]{end, on, end2, followed, put, end3, stayed};
+        });
+        int[] end = (int[]) win[0], on = (int[]) win[1], end2 = (int[]) win[2], followed = (int[]) win[3],
+                put = (int[]) win[4], end3 = (int[]) win[5], stayed = (int[]) win[6];
+        System.out.printf("  on its range: months %d-%d of %d, then %d-%d of %d; put by hand: %d-%d, then %d-%d of %d%n",
+                on[0], on[1], end[1], followed[0], followed[1], end2[1], put[0], put[1], stayed[0], stayed[1], end3[1]);
+        check("a month landed (the history grew by one)", end2[1] == end[1] + 1 && end3[1] == end2[1] + 1);
+        check("a window on the newest month follows it across a kept redraw", on[1] == end[1] && followed[1] == end2[1]);
+        check("a window put by hand, ending before the newest month, stays where it was across a kept redraw",
+                put[1] < end2[1] && stayed[0] == put[0] && stayed[1] == put[1]);
+
+        // The crosshair: a move of the pointer fired on the big chart's plot (a MOUSE_MOVED event, not a setter).
+        Object[] cross = fx(() -> {
+            bench.historyRange(range);
+            bench.drawHistoryKept();
+            bench.passes();
+            boolean over = bench.historyHoverPlot();
+            month(g);
+            bench.drawHistoryKept();
+            bench.passes();
+            boolean afterKept = bench.historyHovering();
+            bench.showFreshHistory();
+            boolean afterNew = bench.historyHovering();
+            bench.restoreKeptHistory();
+            return new Object[]{over, afterKept, afterNew};
+        });
+        check("the pointer over the big chart's plot shows its crosshair", (boolean) cross[0]);
+        check("the crosshair is still there after a kept redraw", (boolean) cross[1]);
+        check("...and a page built new, which takes the chart off the scene, clears it", !(boolean) cross[2]);
+
+        // A legend chip under the pointer: the same chip, the same tooltip, still under it.
+        Object[] chip = fx(() -> {
+            bench.drawHistoryKept();
+            bench.passes();
+            javafx.scene.Node under = bench.historyLegend().get(0);
+            Object tip = KeptBench.tooltipOf(under);
+            KeptBench.hover(under, true);
+            month(g);
+            bench.drawHistoryKept();
+            bench.passes();
+            javafx.scene.Node now = bench.historyLegend().get(0);
+            boolean kept = now == under && under.isHover() && KeptBench.tooltipOf(under) == tip && tip != null;
+            bench.showFreshHistory();
+            javafx.scene.Node fresh = bench.historyLegend().get(0);
+            boolean freshIsNew = fresh != under && !fresh.isHover();
+            bench.restoreKeptHistory();
+            KeptBench.hover(under, false);
+            return new Object[]{tip != null, kept, freshIsNew};
+        });
+        check("a legend chip has a tooltip to keep", (boolean) chip[0]);
+        check("a legend chip under the pointer is still the same chip, still under it, with the same tooltip, after a kept redraw",
+                (boolean) chip[1]);
+        check("...and a page built new has a chip of its own, with no pointer on it", (boolean) chip[2]);
+    }
+
+    /**
+     * Section 19: the count-up is for a clock that can be followed. A month that lands on a page watched
+     * starts the figure's count-up when UserInterface.countsUp() allows - paused, or no faster than
+     * COUNT_UP_TOP - and sets it at once above. The real show methods are driven (People's and City
+     * History's), the clock's rung set on the window as the speed arrows set it, the page redrawn kept.
+     */
+    static void countUp(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 19: the count-up only at 1x-10x ---");
+        double[] ladder = KeptBench.speedLadder();
+        double top = KeptBench.countUpTop();
+        StringBuilder wrongPeople = new StringBuilder(), wrongPin = new StringBuilder();
+        int countingRungs = 0;
+        for (double speed : ladder) if (speed <= top) countingRungs++;
+        System.out.printf("  the ladder has %d rungs, %d of them at or under COUNT_UP_TOP (%.0fx)%n", ladder.length, countingRungs, top);
+
+        // People: the headcount on LIVING HERE.
+        fx(() -> {
+            bench.clock(true, null);
+            bench.speed(0);
+            bench.screen("showHistoryMenu");
+            bench.forgetPeople();
+            bench.showPeople();
+            return null;
+        });
+        for (int rung = 0; rung <= ladder.length; rung++) {
+            // The last pass is the clock stopped, at the top rung: a month stepped by hand counts at any speed.
+            boolean paused = rung == ladder.length;
+            int at = paused ? ladder.length - 1 : rung;
+            boolean expect = paused || ladder[at] <= top;
+            String result = fx(() -> {
+                bench.clock(!paused, null);
+                bench.speed(at);
+                bench.showPeople();
+                bench.finishPageAnimations();
+                Animation before = bench.peopleCount();
+                if (!landUntil(g, bench::headcountMoved)) return "no month in twelve moved the headcount";
+                bench.showPeople();
+                Animation after = bench.peopleCount();
+                boolean started = after != null && after != before;
+                return started == expect ? null : (started ? "counted" : "did not count") + " at " + ladder[at] + "x"
+                        + (paused ? " paused" : "") + ", where it " + (expect ? "should" : "should not");
+            });
+            if (result != null) wrongPeople.append(wrongPeople.length() == 0 ? "" : "; ").append(result);
+        }
+        if (wrongPeople.length() > 0) System.out.println("  People: " + wrongPeople);
+        check("a month landing on People starts the headcount's count-up exactly at the rungs countsUp() allows, and when paused ("
+                + (ladder.length + 1) + " clocks)", wrongPeople.length() == 0);
+
+        // City History: the left pin's figure, pinned to the headcount - a line that moves most months, whose last month the redraw takes up.
+        fx(() -> {
+            bench.clock(true, null);
+            bench.speed(0);
+            bench.historyPinLeft("population");
+            bench.forgetHistory();
+            bench.showHistory();
+            return null;
+        });
+        for (int rung = 0; rung <= ladder.length; rung++) {
+            boolean paused = rung == ladder.length;
+            int at = paused ? ladder.length - 1 : rung;
+            boolean expect = paused || ladder[at] <= top;
+            String result = fx(() -> {
+                bench.clock(!paused, null);
+                bench.speed(at);
+                bench.showHistory();
+                bench.finishPageAnimations();
+                Animation before = bench.pinCount();
+                if (!landUntil(g, bench::headcountMoved)) return "no month in twelve moved the headcount";
+                bench.showHistory();
+                Animation after = bench.pinCount();
+                boolean started = after != null && after != before;
+                return started == expect ? null : (started ? "counted" : "did not count") + " at " + ladder[at] + "x"
+                        + (paused ? " paused" : "") + ", where it " + (expect ? "should" : "should not");
+            });
+            if (result != null) wrongPin.append(wrongPin.length() == 0 ? "" : "; ").append(result);
+        }
+        if (wrongPin.length() > 0) System.out.println("  City History: " + wrongPin);
+        check("a month landing on City History starts the pin's count-up exactly at the rungs countsUp() allows, and when paused ("
+                + (ladder.length + 1) + " clocks)", wrongPin.length() == 0);
+
+        // A count-up still running when the clock has been sped past the top: the next month sets the figure at once and stops it.
+        String stopped = fx(() -> {
+            int slow = 0;
+            while (ladder[slow] > top) slow++;
+            bench.clock(true, null);
+            bench.speed(slow);
+            bench.showHistory();
+            bench.finishPageAnimations();
+            if (!landUntil(g, bench::headcountMoved)) return "no month in twelve moved the headcount";
+            bench.showHistory();
+            Animation running = bench.pinCount();
+            if (running == null || running.getStatus() == Animation.Status.STOPPED) return "no count-up was running to stop";
+            bench.speed(ladder.length - 1);
+            if (!landUntil(g, bench::headcountMoved)) return "no month in twelve moved the headcount";
+            bench.showHistory();
+            String[] figures = bench.pinFigures();
+            boolean left = running.getStatus() == Animation.Status.STOPPED && java.util.Objects.equals(figures[0], figures[1]);
+            return left ? null : "the pin's count-up is " + running.getStatus() + " and the figure reads " + figures[0] + ", not " + figures[1];
+        });
+        if (stopped != null) System.out.println("  " + stopped);
+        check("a count-up running when a month lands past COUNT_UP_TOP is stopped, and the figure is the month's", stopped == null);
+    }
+
+    /** Section 20: what the kept City History month costs, against the same month built new. */
+    static void historyCost(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 20: what the kept City History month costs ---");
+        double[] cost = fx(() -> {
+            // The page as it opens: the first preset, the default range, nothing folded open.
+            bench.historyPreset(0);
+            bench.historyRange(ham.citybuildersim.ChartModel.DEFAULT_RANGE);
+            bench.drawHistoryKept();
+            for (int i = 0; i < 3; i++) bench.passes();
+            List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
+            for (int i = 0; i < 9; i++) {
+                month(g);
+                double draw = bench.drawHistoryKept();
+                double[] p = bench.passes();
+                kept.add(draw + p[0] + p[1]);
+            }
+            // The same month built new: a page made from nothing in the column, as the redraw was before KP1.
+            for (int i = 0; i < 9; i++) {
+                month(g);
+                double[] f = bench.showFreshHistory();
+                fresh.add(f[0] + f[1] + f[2]);
+                bench.restoreKeptHistory();
+            }
+            return new double[]{median(kept), median(fresh)};
+        });
+        System.out.printf("  the page's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
+        boolean ok = Timing.within(cost[0], KEPT_HISTORY_MS);
+        String timed = "the kept City History month is within KEPT_HISTORY_MS (" + KEPT_HISTORY_MS + " ms)";
+        System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
+        if (!ok) fails++;
+    }
+
     /** A notice raised now, unread, in the inbox. */
     private static Notice add(Game g, String key, String title) {
         Notice n = new Notice(key, title, List.of("first line of " + key, "", "third line"), g.getMonth());
@@ -717,7 +1218,7 @@ public class KeptCheck {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("=== KeptCheck: the People page and the chrome kept between redraws (study UP4, UP2) ===");
+        System.out.println("=== KeptCheck: the People page, the chrome and City History kept between redraws (study UP4, UP2, KP1) ===");
         String down = startJavaFx();
         if (down != null) {
             System.out.println("skipped: the JavaFX toolkit cannot start here (" + down + "); the page needs it to be laid out");
@@ -882,6 +1383,7 @@ public class KeptCheck {
 
         chrome(g, bench);
         panels(g, bench);
+        history(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();

@@ -190,8 +190,8 @@ public class UserInterface extends Application {
     VBox inboxCorner;
     /** The toasts, stacked at the stage's bottom right (0.7.20); see TOASTS. */
     private VBox toastStack;
-    /** The whole window, with a dialog laid over it when one is open (0.7.20). */
-    private StackPane windowStack;
+    /** The whole window, with a dialog laid over it when one is open (0.7.20). Not private: KeptBench gives the chart's full screen a stack to go in. */
+    StackPane windowStack;
     /** The dialog that is up - Quit's, or since 0.7.22 a confirmation (confirm()) - or null. */
     private StackPane quitDialog;
     /**
@@ -478,7 +478,7 @@ public class UserInterface extends Application {
      * landing between two stops is not a speed anybody meant to pick. The
      * header's arrows (0.7.21) keep the stops and have no drag.
      */
-    private static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10, 20, SPEED_TOP};
+    static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10, 20, SPEED_TOP};
     private static final int NORMAL_SPEED = 3;              // 1x
 
     int speedIndex = NORMAL_SPEED;
@@ -5115,8 +5115,8 @@ public class UserInterface extends Application {
     }
 
     private HBox constructionHead() {
-        Label header = Kept.label("UNDER CONSTRUCTION");
-        header.setGraphic(areaSwatch(Palette.BUILDING, 8));
+        // The label is handed its swatch where it is made: a kept one is not stripped of it and given it back.
+        Label header = Kept.label("UNDER CONSTRUCTION", areaSwatch(Palette.BUILDING, 8));
         header.setGraphicTextGap(8);
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
                 + " -fx-text-fill: " + Palette.TEXT_HEAD + "; -fx-padding: 0 0 4 2;");

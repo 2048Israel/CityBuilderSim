@@ -158,8 +158,8 @@ final class HistoryScreen {
     /** The game month this page was last drawn at; -1 before its first draw. */
     private int drawnMonth = -1;
 
-    /** The page's kept nodes (Kept; study UP4, KP1): the page is drawn over them on each redraw. */
-    final Kept.Pool pool = new Kept.Pool();
+    /** The page's kept nodes (Kept; study UP4, KP1): the page is drawn over them on each redraw. Not final: KeptBench swaps it for an empty one to build the page new. */
+    Kept.Pool pool = new Kept.Pool();
 
     /** A new city or a load: no month has just landed, and nothing of the last city's page is kept. */
     void forget() {
@@ -1556,6 +1556,11 @@ final class HistoryScreen {
      * which a chart rebuilt every month could not (0.7.23).
      */
     private final TimeChart[] smallCharts = new TimeChart[2];
+
+    /** The charts the page holds, for KeptBench: the big chart, then the two pins' (null where not made yet). */
+    TimeChart[] charts() {
+        return new TimeChart[] {bigChart, smallCharts[0], smallCharts[1]};
+    }
 
     /** One pin's head, as words (0.7.37): its line, its figure in the window's last month, and how far it moved over the window. Pure. */
     record PinHead(String key, String label, String figure, String move, String moveTip, double last, boolean recorded) { }

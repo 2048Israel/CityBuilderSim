@@ -13,6 +13,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Control;
+import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
@@ -40,7 +41,8 @@ import java.util.Locale;
  * package's own. Since UP2 the window's chrome too: the header at the window's width and the rail
  * at its height, each on a scene of its own, drawn by the real refreshHeader() and
  * refreshTabRail() - kept, or with every node new (the pools swapped for empty ones, as a rebuild
- * made them).
+ * made them). Since KP1 City History too, on the same scene: its page drawn kept and built new, the
+ * hands on what reshapes it, the pointer on its big chart, and the real show methods for what the clock decides.
  *
  * <p>WHY. A kept page is right only if every month's redraw over last month's nodes ends where
  * a page built new from the same city would; the one way to know is to build both and compare
@@ -564,6 +566,442 @@ public final class KeptBench {
         Method m = Node.class.getDeclaredMethod("setHover", boolean.class);
         m.setAccessible(true);
         m.invoke(n, on);
+    }
+
+    /* =====================================================================
+       CITY HISTORY (KP1): the page kept and built new, and the hands on its choices
+       ===================================================================== */
+
+    private List<Node> keptHistory = List.of();
+    private Kept.Pool keptHistoryPool;
+    /** What a page built new took from the charts the kept page holds: their pools, their chips, and where they sat. */
+    private Kept.Pool[] keptChipPools;
+    private List<List<Node>> keptLegend = new ArrayList<>(), keptRanges = new ArrayList<>();
+    private javafx.scene.Parent[] chartParents;
+    private int[] chartAt;
+
+    /**
+     * City History's stage: the screen's name (its scroller is filed under it), the first-visit preset
+     * (showHistoryMenu() hands it over, and the bench draws the page itself), the window's scroller the
+     * page's height reads, and a stack for the chart's full screen to go in.
+     */
+    private void historyStage() {
+        historyEnsure();
+        ui.currentScreen = "showHistoryMenu";
+    }
+
+    /** ...without naming the screen on show: the real show methods name it themselves, and arriving is not being there. */
+    private void historyEnsure() {
+        if (!ui.historyScreen.historySeeded) {
+            ui.historyScreen.historySeeded = true;
+            ui.historyScreen.historyPicked.addAll(java.util.Arrays.asList(HistoryScreen.PRESETS[0].keys()));
+        }
+        if (ui.menuScroller == null) {
+            ScrollPane window = new ScrollPane();
+            window.resize(WIDTH, 900);
+            ui.menuScroller = window;
+        }
+        if (ui.windowStack == null) ui.windowStack = new javafx.scene.layout.StackPane();
+    }
+
+    /** City History drawn kept from its pool (the first draw makes every node): the draw's own milliseconds. */
+    public double drawHistoryKept() {
+        historyStage();
+        long t = System.nanoTime();
+        Kept.draw(ui.historyScreen.pool, () -> ui.historyScreen.drawPage(false));
+        return (System.nanoTime() - t) / 1e6;
+    }
+
+    /** The nodes the last kept draw of City History made new and handed back: {made, kept}. */
+    public int[] historyCounts() {
+        return new int[]{ui.historyScreen.pool.lastMade(), ui.historyScreen.pool.lastKept()};
+    }
+
+    /** The page's top nodes (the frame and its scroller), kept or not: the same objects from one kept draw to the next. */
+    public List<Node> historyTop() {
+        return new ArrayList<>(column.getChildren());
+    }
+
+    /** The charts the page holds, for scene and parent checks: the big chart, then the two pins' (those made). */
+    public List<Node> historyCharts() {
+        List<Node> out = new ArrayList<>();
+        for (TimeChart c : ui.historyScreen.charts()) if (c != null) out.add(c);
+        return out;
+    }
+
+    /**
+     * City History built new in place of the kept page - its pool and the big chart's chips' pool swapped for
+     * empty ones, so every node is made again, as every redraw was before KP1 - and laid out: {its draw ms,
+     * CSS ms, layout ms}. The charts are the screen's own and shared by both pages, so a page built new takes
+     * them off the kept one; restoreKeptHistory() puts them back.
+     */
+    public double[] showFreshHistory() throws Exception {
+        historyStage();
+        HistoryScreen screen = ui.historyScreen;
+        TimeChart[] charts = screen.charts();
+        keptHistory = new ArrayList<>(column.getChildren());
+        keptHistoryPool = screen.pool;
+        keptChipPools = new Kept.Pool[charts.length];
+        keptLegend = new ArrayList<>();
+        keptRanges = new ArrayList<>();
+        chartParents = new javafx.scene.Parent[charts.length];
+        chartAt = new int[charts.length];
+        for (int i = 0; i < charts.length; i++) {
+            TimeChart c = charts[i];
+            if (c == null) {
+                keptLegend.add(List.of());
+                keptRanges.add(List.of());
+                continue;
+            }
+            chartParents[i] = c.getParent();
+            chartAt[i] = chartParents[i] == null ? -1 : chartParents[i].getChildrenUnmodifiable().indexOf(c);
+            keptChipPools[i] = c.chipPool;
+            keptLegend.add(new ArrayList<>(c.legend.getChildren()));
+            keptRanges.add(new ArrayList<>(c.ranges.getChildren()));
+            c.chipPool = new Kept.Pool();
+        }
+        screen.pool = new Kept.Pool();
+        long t = System.nanoTime();
+        Kept.draw(screen.pool, () -> screen.drawPage(false));
+        double ms = (System.nanoTime() - t) / 1e6;
+        double[] p = passes();
+        return new double[]{ms, p[0], p[1]};
+    }
+
+    /** The kept page back in the column with its pool, the charts back in the boxes that held them, and laid out. */
+    public void restoreKeptHistory() throws Exception {
+        HistoryScreen screen = ui.historyScreen;
+        screen.pool = keptHistoryPool;
+        TimeChart[] charts = screen.charts();
+        ui.setPage(keptHistory.toArray(new Node[0]));
+        for (int i = 0; i < charts.length; i++) {
+            TimeChart c = charts[i];
+            if (c == null || keptChipPools[i] == null) continue;
+            c.chipPool = keptChipPools[i];
+            Kept.set(c.legend.getChildren(), keptLegend.get(i));
+            Kept.set(c.ranges.getChildren(), keptRanges.get(i));
+            if (chartParents[i] instanceof Pane box && c.getParent() != box) {
+                box.getChildren().add(Math.max(0, Math.min(chartAt[i], box.getChildren().size())), c);
+            }
+        }
+        passes();
+    }
+
+    /**
+     * The page laid out again, as the next frames would, until a pass moves nothing (at most SETTLE_PASSES): a wrapped
+     * label's height settles over a pass or two, and the scroller's under the frame a pass after that.
+     */
+    public void settle() throws Exception {
+        int was = signature().hashCode();
+        for (int i = 0; i < SETTLE_PASSES; i++) {
+            passes();
+            int now = signature().hashCode();
+            if (now == was) return;
+            was = now;
+        }
+    }
+
+    /** The most layout passes settle() runs. */
+    private static final int SETTLE_PASSES = 8;
+
+    /** One figure on City History made wrong: the first label whose words hold a digit gets a "9" in front (see spoil()). */
+    public String spoilHistory() {
+        return spoil(new ArrayList<>(column.getChildren()));
+    }
+
+    /** Every animation a draw started on the page run to its end, as a pulse would have: a scene with no window has none. */
+    public void finishPageAnimations() {
+        each(column, KeptBench::finishOne);
+    }
+
+    private static void finishOne(Node n) {
+        javafx.animation.Animation a = Kept.animationOf(n);
+        if (a != null && a.getStatus() != javafx.animation.Animation.Status.STOPPED) {
+            a.jumpTo(a.getTotalDuration());
+            a.stop();
+        }
+    }
+
+    /** `f` on a node and everything under it, through the scroller's content and a label's graphic too. */
+    private static void each(Node n, java.util.function.Consumer<Node> f) {
+        f.accept(n);
+        if (n instanceof Labeled l && l.getGraphic() != null) each(l.getGraphic(), f);
+        if (n instanceof ScrollPane sp && sp.getContent() != null) each(sp.getContent(), f);
+        if (n instanceof Group g) for (Node k : new ArrayList<>(g.getChildren())) each(k, f);
+        if (n instanceof Region r && !(n instanceof Control)) for (Node k : new ArrayList<>(r.getChildrenUnmodifiable())) each(k, f);
+    }
+
+    private int graphicMoves;
+
+    /** Every graphic of a label on the page now watched for entering or leaving the scene: how many are watched. */
+    public int watchGraphics() {
+        int[] n = {0};
+        each(column, node -> {
+            if (node instanceof Labeled l && l.getGraphic() != null) {
+                l.getGraphic().sceneProperty().addListener((o, was, now) -> graphicMoves++);
+                n[0]++;
+            }
+        });
+        return n[0];
+    }
+
+    /** How many times a watched graphic left or entered the scene since this was last asked. */
+    public int graphicMoves() {
+        int moves = graphicMoves;
+        graphicMoves = 0;
+        return moves;
+    }
+
+    /** The first node of this class under the page, or null. */
+    private <T extends Node> T first(Class<T> type) {
+        List<T> found = new ArrayList<>();
+        each(column, n -> {
+            if (found.isEmpty() && type.isInstance(n)) found.add(type.cast(n));
+        });
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    /* ----- the hands on what reshapes the page ----- */
+
+    /** A line ticked or unticked, as its chip would (the next draw shows it). */
+    public void historyPick(String key, boolean on) {
+        if (on) ui.historyScreen.historyPicked.add(key);
+        else ui.historyScreen.historyPicked.remove(key);
+        ui.historyScreen.groupOpen.put(ui.historyScreen.traceFor(key).group(), true);
+    }
+
+    /** Exactly these lines drawn, none hidden (what "clear all" and a preset leave). */
+    public void historyPickOnly(String... keys) {
+        ui.historyScreen.historyPicked.clear();
+        ui.historyScreen.historyPicked.addAll(java.util.Arrays.asList(keys));
+        ui.historyScreen.hiddenLines.clear();
+    }
+
+    /** How many presets there are. */
+    public static int historyPresets() {
+        return HistoryScreen.PRESETS.length;
+    }
+
+    /** The i-th preset pressed, as its chip would (the lines it names, none hidden). */
+    public void historyPreset(int i) {
+        historyPickOnly(HistoryScreen.PRESETS[i].keys());
+    }
+
+    /** The picker's group (by name) a line is in. */
+    public String historyGroupOf(String key) {
+        return ui.historyScreen.traceFor(key).group();
+    }
+
+    /** A picker group opened or closed, as its heading would. */
+    public void historyGroup(String group, boolean open) {
+        ui.historyScreen.groupOpen.put(group, open);
+    }
+
+    /** Typed into the picker's filter box, as a key would (it refills the groups in place); false when the page has no box. */
+    public boolean historyType(String text) {
+        javafx.scene.control.TextField box = first(javafx.scene.control.TextField.class);
+        if (box == null) return false;
+        box.setText(text);
+        return true;
+    }
+
+    /** A fold of the page opened or closed ("hard times", "goods"), as its toggle would. */
+    public void historyFold(String key, boolean open) {
+        if (open) ui.historyScreen.folds.add(key);
+        else ui.historyScreen.folds.remove(key);
+    }
+
+    /** The big chart on a log scale or off, as the chip would; why it cannot be drawn, or null when it can. */
+    public String historyLog(boolean on) {
+        ui.historyScreen.historyLog = on;
+        return ui.historyScreen.logRefusal(ui.game.getHistorySave());
+    }
+
+    /** Real GDP's layers on or off, as the chip would. */
+    public void historyLayers(boolean on) {
+        ui.historyScreen.gdpLayers = on;
+    }
+
+    /** The legend chip i of the big chart clicked, as the pointer would (it hides or shows the line); false when it has none. */
+    public boolean historyLegendClick(int i) {
+        TimeChart big = ui.historyScreen.charts()[0];
+        if (big == null || i < 0 || i >= big.legend.getChildren().size()) return false;
+        Node chip = big.legend.getChildren().get(i);
+        fireMouse(chip, javafx.scene.input.MouseEvent.MOUSE_CLICKED, 5, 5, javafx.scene.input.MouseButton.PRIMARY, 1);
+        return true;
+    }
+
+    /** The big chart's legend chips, as they are now. */
+    public List<Node> historyLegend() {
+        TimeChart big = ui.historyScreen.charts()[0];
+        return big == null ? List.of() : new ArrayList<>(big.legend.getChildren());
+    }
+
+    /** The tooltip installed on a node (the object, to see it is the same one from month to month), or null. */
+    public static Object tooltipOf(Node n) {
+        return Kept.tipOf(n);
+    }
+
+    /** The big chart's range buttons, as they are now. */
+    public List<Node> historyRanges() {
+        TimeChart big = ui.historyScreen.charts()[0];
+        return big == null ? List.of() : new ArrayList<>(big.ranges.getChildren());
+    }
+
+    /** How many lines the legend has switched off. */
+    public int historyHidden() {
+        return ui.historyScreen.hiddenLines.size();
+    }
+
+    /** The chart's window moved to these months, as a drag or an episode's row would. */
+    public void historyWindow(double from, double to) {
+        ui.historyScreen.chartWindow.setWindow(from, to);
+    }
+
+    /** The chart's window on one of its ranges (a number of months, as ChartModel.RANGES gives them, or ChartModel.ALL), as a range button would. */
+    public void historyRange(int months) {
+        ui.historyScreen.chartWindow.showRange(months);
+    }
+
+    /** The window as it is: {first month shown, last month shown}. */
+    public int[] historyWindow() {
+        return new int[]{ui.historyScreen.chartWindow.firstMonthShown(), ui.historyScreen.chartWindow.lastMonthShown()};
+    }
+
+    /** The history's ends: {first month, last month}. */
+    public int[] historyBounds() {
+        List<Integer> axis = ui.game.getHistorySave().getMonth();
+        return new int[]{axis.get(0), axis.get(axis.size() - 1)};
+    }
+
+    /** The first named episode's span with a year either side, as moveChartTo(episode) would put the window, or null when the city has none. */
+    public double[] historyEpisodeSpan() {
+        List<ham.citybuildersim.YearBook.Episode> episodes = ham.citybuildersim.ChartModel.episodes(ui.game.getHistorySave());
+        if (episodes.isEmpty()) return null;
+        ham.citybuildersim.YearBook.Episode e = episodes.get(0);
+        return new double[]{e.fromMonth() - 12, e.toMonth() + 12};
+    }
+
+    /** A line pinned, as its chip would (it writes the city's scratch preferences). */
+    public void historyPin(String key) {
+        ui.historyScreen.pin(key);
+    }
+
+    /** A pin taken off, as its "unpin" would. */
+    public void historyUnpin(boolean left) {
+        ui.historyScreen.unpin(left);
+    }
+
+    /** The line on a pin. */
+    public String historyPinned(boolean left) {
+        return ui.historyScreen.pinned(left);
+    }
+
+    /** The chart's full screen on or off, as its button would (the page is drawn by the caller). */
+    public void historyFull(boolean on) {
+        ui.historyScreen.setChartFull(on, false);
+    }
+
+    /** The year book's card shown (with this said) or put away (null), without writing a book. */
+    public void historyBook(String said) {
+        ui.historyScreen.bookExportSaid = said;
+    }
+
+    /* ----- the pointer on the big chart ----- */
+
+    /** The pointer moved over the big chart's plot, as the toolkit would: a MOUSE_MOVED fired on the canvas; whether the chart now shows its crosshair. */
+    public boolean historyHoverPlot() {
+        TimeChart big = ui.historyScreen.charts()[0];
+        if (big == null) return false;
+        fireMouse(big.plot, javafx.scene.input.MouseEvent.MOUSE_MOVED, big.plot.getWidth() / 2, big.plot.getHeight() / 2,
+                javafx.scene.input.MouseButton.NONE, 0);
+        return big.hovering();
+    }
+
+    /** Whether the big chart shows its crosshair. */
+    public boolean historyHovering() {
+        TimeChart big = ui.historyScreen.charts()[0];
+        return big != null && big.hovering();
+    }
+
+    private static void fireMouse(Node target, javafx.event.EventType<javafx.scene.input.MouseEvent> type, double x, double y,
+                                  javafx.scene.input.MouseButton button, int clicks) {
+        javafx.event.Event.fireEvent(target, new javafx.scene.input.MouseEvent(type, x, y, x, y, button, clicks,
+                false, false, false, false, button == javafx.scene.input.MouseButton.PRIMARY, false, false,
+                false, false, true, null));
+    }
+
+    /* ----- the real show methods, for what the clock decides (the count-up) ----- */
+
+    /** The speed ladder, as the clock steps along it. */
+    public static double[] speedLadder() {
+        return UserInterface.SPEEDS.clone();
+    }
+
+    /** The fastest speed a figure still counts up at. */
+    public static double countUpTop() {
+        return UserInterface.COUNT_UP_TOP;
+    }
+
+    /** People shown, as the rail's tab or a month landing shows it: the real show method (the chrome, then the page kept). */
+    public void showPeople() {
+        ui.peopleScreen.showPopulationInfoMenu();
+    }
+
+    /** City History shown, as the rail's tab or a month landing shows it. */
+    public void showHistory() {
+        historyEnsure();
+        ui.historyScreen.showHistoryMenu();
+    }
+
+    /** People forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetPeople() {
+        ui.peopleScreen.forget();
+    }
+
+    /** City History forgotten, as another city opened would leave it. */
+    public void forgetHistory() {
+        ui.historyScreen.forget();
+    }
+
+    /** The count-up last started on LIVING HERE's figure on People, or null. */
+    public javafx.animation.Animation peopleCount() {
+        Label figure = livingHere();
+        return figure == null ? null : Kept.animationOf(figure);
+    }
+
+    /** The count-up last started on the left pin's figure on City History, or null. */
+    public javafx.animation.Animation pinCount() {
+        Pieces.CardHead head = first(Pieces.CardHead.class);
+        return head == null ? null : Kept.animationOf(head.figure);
+    }
+
+    private Label livingHere() {
+        List<Label> found = new ArrayList<>();
+        each(column, n -> {
+            if (found.isEmpty() && n instanceof VBox v && v.getChildren().size() > 1
+                    && v.getChildren().get(0) instanceof Label what && what.getText() != null
+                    && what.getText().startsWith("LIVING HERE") && v.getChildren().get(1) instanceof Label figure) found.add(figure);
+        });
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    /** Whether last month's headcount differs from this month's, as LIVING HERE's count-up reads them (it counts nothing from the same figure). */
+    public boolean headcountMoved() {
+        List<Long> pop = ui.game.getHistorySave().getPopulation();
+        return pop.size() >= 2 && pop.get(pop.size() - 2) != ui.game.getPopulationManager().getPopulation();
+    }
+
+    /** The line on the left pin set directly (the preferences are not written): a line that moves most months, for the count-up. */
+    public void historyPinLeft(String key) {
+        ui.prefs.setPinnedLeft(key);
+    }
+
+    /** The left pin's figure on the page now, and the figure the model gives it now: they differ when a month has landed that the page has not drawn. */
+    public String[] pinFigures() {
+        Pieces.CardHead head = first(Pieces.CardHead.class);
+        return new String[]{head == null ? null : head.figure.getText(),
+                ui.historyScreen.pinHead(ui.game.getHistorySave(), true).figure()};
     }
 
     private static Method doCSSPass, doLayoutPass;
