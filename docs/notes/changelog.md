@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.82 — LB2, Rankings: the board — 2026-10-31, ready, see docs/queue/LB2-notes.md
+A Rankings tab on the rail after History (Lucide's trophy, in money blue; Jerus, D5): the city ranked measure by measure
+among the real world's 196 nations and 62 city regions (Real world 2025, LB1's file), or among the nations of its own
+world at its month on the ten they carry (Your world, D15). It opens on GDP's full list in real US$ at this month's rate
+(D9). Every money figure becomes US$ of 2015 once (a founding game dollar counts as a 2015 one, D1) and is only then
+shown in the city's money, game US$ or real US$, so Money never reorders a board; Convert at this month's rate,
+constant 2015 or PPP (D14). The page: four controls, a sentence that says what is on screen, the measures with pins, the
+table with its marks (● ◐ ○), Around you, Your size, the city's card, and a place's drawer (the map's nation card opens
+it). The city has 51 of the 70 measures, from its history (`CityMeasures`, with a life table); `Rankings` is the pure
+model, held by `RankingsCheck`'s 130 checks. Prices waits for LB3. Nothing in the month reads it: no ensemble.
+
 ### 0.8.81 — WN4, the world's moneys, the vault in eight and the real US$ — 2026-10-31, ready, see docs/queue/WN4-notes.md
 Every money of the world moves against the US$ each month on the exchange-rate study's rule (XR3 folded in): its PPP path,
 the dollar cycle, risk-offs about once in eight years (the yen and the franc rise, the Australian dollar and the emerging

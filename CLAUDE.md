@@ -58,7 +58,7 @@ every call after it.
 ## Open these before reading source
 
 The tree is over 300,000 lines; `Game.java` alone is over 16,000, and the
-interface is thirty-five files, the largest about 6,000.
+interface is thirty-six files, the largest about 6,000.
 
 | document | what it answers |
 |---|---|

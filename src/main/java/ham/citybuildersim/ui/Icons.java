@@ -148,6 +148,13 @@ public final class Icons {
             "M3 3v16a2 2 0 0 0 2 2h16"
           + "M19 9 l-5 5 -4-4 -3 3";
 
+    /** A trophy with its two handles and its stem: the Rankings tab (LB2), Lucide's, every subpath an absolute move. */
+    public static final String TROPHY =
+            "M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16"
+          + "M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
+          + "M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
+          + "M18 2H6v7a6 6 0 0 0 12 0V2Z";
+
     /** Three lines: the game menu, at the foot of the rail since 0.7.21 (it was the gear). */
     public static final String MENU = "M4 7h16 M4 12h16 M4 17h16";
 

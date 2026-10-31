@@ -1,4 +1,4 @@
-# UiProbe.java - 726 lines · 23 methods · 6 constants · interface
+# UiProbe.java - 729 lines · 23 methods · 6 constants · interface
 
 `ham/citybuildersim/ui/UiProbe.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -70,7 +70,7 @@
 
 | line | section |
 |---:|---|
-| 586 | reading the recording |
+| 589 | reading the recording |
 
 ## Constants
 
@@ -79,9 +79,9 @@
 | 139 | `UiProbe.report` | `System.out` | Where the probe's own lines go: the console, as it was when the class loaded. |
 | 151 | `UiProbe.FRAME_P95_MS` | `34` | The 95th-percentile frame on People at 50x at month 4,000 the clock must keep under, ms (UP2: 49 in the brief's figures and 42 in this probe's before it; the redraw paced, the months budgeted and the chrome kept). |
 | 160 | `UiProbe.FRAME_P95` | `Map.ofEntries(Map.entry("Build", 99.0), Map.entry("Land", 57.0), Map.entry("P...` | Every rail screen's 95th-percentile frame at 50x at month 4,000, ms: its figure before UP2, as this probe measured it on the PC on main f29b9938 (0.8.27) with nothing else running, the run the batch's own is set besid... |
-| 167 | `UiProbe.FRAME_P95_FROM` | `4000` | The month from which FRAME_P95 is asserted: the city it was measured on. |
-| 593 | `UiProbe.KEYS` | `{ "ham.citybuildersim.ui.UserInterface$", "ham.citybuildersim.Game.nextMonth"...` | The prefixes of "type.method" an FX-thread sample is counted under, if any frame of its stack starts with one: inclusive shares, so a sample counts once for each key it is under. |
-| 630 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` | The JavaFX thread's name, as the recording names it: the only thread whose samples analyse() reads. |
+| 169 | `UiProbe.FRAME_P95_FROM` | `4000` | The month from which FRAME_P95 is asserted: the city it was measured on. |
+| 596 | `UiProbe.KEYS` | `{ "ham.citybuildersim.ui.UserInterface$", "ham.citybuildersim.Game.nextMonth"...` | The prefixes of "type.method" an FX-thread sample is counted under, if any frame of its stack starts with one: inclusive shares, so a sample counts once for each key it is under. |
+| 633 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` | The JavaFX thread's name, as the recording names it: the only thread whose samples analyse() reads. |
 
 ## Fields (state)
 
@@ -91,44 +91,44 @@
 | 142 | `private static Game g` |  |
 | 143 | `private static Stage stage` |  |
 | 144 | `private static Path out` |  |
-| 169 | `private static Method focusCleanup, doCSSPass, doLayoutPass` |  |
-| 517 | `final List<Double> frames` |  |
-| 518 | `private final Field clockRunning, pausedBecause, speedIndex` |  |
-| 519 | `private long last` |  |
+| 171 | `private static Method focusCleanup, doCSSPass, doLayoutPass` |  |
+| 520 | `final List<Double> frames` |  |
+| 521 | `private final Field clockRunning, pausedBecause, speedIndex` |  |
+| 522 | `private long last` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 129 | 598 | **type** `public final class UiProbe` | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on it, and times every rail screen, the real clock at 50x and the save. |
+| 129 | 601 | **type** `public final class UiProbe` | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on it, and times every rail screen, the real clock at 50x and the save. |
 | 131 | 1 | `private UiProbe()` |  |
-| 175 | 17 | `static double[] pulse(javafx.scene.Scene sc) throws Exception` | The pulse's CSS and layout, as a frame runs them (Scene.focusCleanup and doCSSPass, then doLayoutPass; by reflection, since the toolkit is on the class path): {CSS ms, layout ms}. |
-| 194 | 9 | `private static Method forgetChrome()` | UserInterface.forgetChrome() where the chrome is kept (UP2), or null on a build that rebuilds it. |
-| 205 | 7 | `private static void chrome() throws Exception` | The chrome drawn again, as every redraw draws it: the header, the rail, the city panel, the construction panel and the inbox. |
-| 214 | 5 | `private static<T> T fx(Callable<T> c) throws Exception` | The window's pump: runs on the FX thread and waits for the answer. |
-| 220 | 1 | **type** `private record Screen(String name, Runnable show)` |  |
-| 223 | 15 | `private static List<Screen> screens()` | The twelve rail screens, in rail order. |
-| 239 | 5 | `private static Field field(String name) throws Exception` |  |
-| 245 | 5 | `private static void call(String name) throws Exception` |  |
-| 252 | 3 | `private static void settle() throws Exception` | Waits, on the FX thread as the game does, for the save writer to have every file whole. |
-| 256 | 1 | `private static double ms(long nanos)` |  |
-| 258 | 6 | `private static double median(List<Double> v)` |  |
-| 265 | 6 | `private static double pct(List<Double> v, double p)` |  |
-| 272 | 3 | `private static double megabytes(Path p)` |  |
-| 276 | 3 | `private static long modified(Path p)` |  |
-| 281 | 13 | `private static String startJavaFx()` | Why JavaFX cannot start here, in a few words, or null when it can: the toolkit is started and the answer is whether it came up. |
-| 295 | 27 | `public static void main(String[] args) throws Exception` |  |
-| 323 | 184 | `private static void run(String[] args) throws Exception` |  |
-| 515 | 24 | **type** `private static final class FrameTimer extends javafx.animation.AnimationTimer` | One frame's length at a time, and the clock kept running at 50x: the window's own AnimationTimer would stop for a menu or a dialog, so the probe sets its three fields on every frame. |
-| 521 | 5 | `FrameTimer(Field clockRunning, Field pausedBecause, Field speedIndex)` _(in UiProbe.FrameTimer)_ |  |
-| 527 | 11 | `public void handle(long now)` _(in UiProbe.FrameTimer)_ |  |
-| 548 | 31 | `private static void saveAndLoad(GameFiles files) throws Exception` | The save as UP1 made it, then the load. |
-| 580 | 5 | `private static int buildings()` |  |
+| 177 | 17 | `static double[] pulse(javafx.scene.Scene sc) throws Exception` | The pulse's CSS and layout, as a frame runs them (Scene.focusCleanup and doCSSPass, then doLayoutPass; by reflection, since the toolkit is on the class path): {CSS ms, layout ms}. |
+| 196 | 9 | `private static Method forgetChrome()` | UserInterface.forgetChrome() where the chrome is kept (UP2), or null on a build that rebuilds it. |
+| 207 | 7 | `private static void chrome() throws Exception` | The chrome drawn again, as every redraw draws it: the header, the rail, the city panel, the construction panel and the inbox. |
+| 216 | 5 | `private static<T> T fx(Callable<T> c) throws Exception` | The window's pump: runs on the FX thread and waits for the answer. |
+| 222 | 1 | **type** `private record Screen(String name, Runnable show)` |  |
+| 225 | 16 | `private static List<Screen> screens()` | The thirteen rail screens, in rail order. |
+| 242 | 5 | `private static Field field(String name) throws Exception` |  |
+| 248 | 5 | `private static void call(String name) throws Exception` |  |
+| 255 | 3 | `private static void settle() throws Exception` | Waits, on the FX thread as the game does, for the save writer to have every file whole. |
+| 259 | 1 | `private static double ms(long nanos)` |  |
+| 261 | 6 | `private static double median(List<Double> v)` |  |
+| 268 | 6 | `private static double pct(List<Double> v, double p)` |  |
+| 275 | 3 | `private static double megabytes(Path p)` |  |
+| 279 | 3 | `private static long modified(Path p)` |  |
+| 284 | 13 | `private static String startJavaFx()` | Why JavaFX cannot start here, in a few words, or null when it can: the toolkit is started and the answer is whether it came up. |
+| 298 | 27 | `public static void main(String[] args) throws Exception` |  |
+| 326 | 184 | `private static void run(String[] args) throws Exception` |  |
+| 518 | 24 | **type** `private static final class FrameTimer extends javafx.animation.AnimationTimer` | One frame's length at a time, and the clock kept running at 50x: the window's own AnimationTimer would stop for a menu or a dialog, so the probe sets its three fields on every frame. |
+| 524 | 5 | `FrameTimer(Field clockRunning, Field pausedBecause, Field speedIndex)` _(in UiProbe.FrameTimer)_ |  |
+| 530 | 11 | `public void handle(long now)` _(in UiProbe.FrameTimer)_ |  |
+| 551 | 31 | `private static void saveAndLoad(GameFiles files) throws Exception` | The save as UP1 made it, then the load. |
+| 583 | 5 | `private static int buildings()` |  |
 
-### reading the recording (lines 586-726)
+### reading the recording (lines 589-729)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 632 | 49 | `private static void analyse(Path jfr) throws Exception` |  |
-| 688 | 38 | `private static void callers(String[] a) throws Exception` | {@code --callers file.jfr method-prefix [rows]}: for the FX-thread samples with a method starting with the prefix in their stack, the ham.* frames from there up (six at most), most common path first. |
+| 635 | 49 | `private static void analyse(Path jfr) throws Exception` |  |
+| 691 | 38 | `private static void callers(String[] a) throws Exception` | {@code --callers file.jfr method-prefix [rows]}: for the FX-thread samples with a method starting with the prefix in their stack, the ham.* frames from there up (six at most), most common path first. |
 

@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,884 constants in 456 files.**
+**4,921 constants in 460 files.**
 
-## model (2445 constants)
+## model (2460 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -550,6 +550,17 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 9650 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned buildable plots. |
 | 9653 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
 | 9656 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned buildable plots. |
+
+### CityMeasures.java ([map](map/CityMeasures.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 88 | `CityMeasures.THOUSANDS` | `1_000` | The model counts money in thousands (ui/Money): this turns a money series' figure into whole units of the city's money. |
+| 91 | `CityMeasures.YEAR` | `12` | The months in a year: the window F(s) sums, and the distance inflation and population growth look back. |
+| 94 | `CityMeasures.GROWTH_MONTHS` | `2 * YEAR` | Months the real growth of a year over the year before needs: two years. |
+| 97 | `CityMeasures.DECADE` | `10, DECADE_MONTHS = DECADE * YEAR + YEAR` | Years the long growth compounds over, and the months it needs monthly: that decade, and the year after it (growth_10y's 12 months ending 120 back, and the last 12). |
+| 100 | `CityMeasures.LEVERAGE_CEILING` | `10` | The ceiling the bank's leverage ratio is recorded at (HistorySave: clamped at ten, which is also what a city with no book reads); a city at it has no ratio to rank. |
+| 264 | `CityMeasures.BAND_DEATHS` | `{ "deathsBabies", "deathsChildren", "deathsTeens", "deathsAdults", "deathsSeniors", "de...` | The six bands' deaths, in AgeBand order, by the series that carry them. |
 
 ### CityNeeds.java ([map](map/CityNeeds.md))
 
@@ -1433,7 +1444,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.8.81"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.8.82"` | Bump on release. |
 | 8237 | `GameVersion.SAVE_FORMAT` | `49` | The save shape. |
 | 8282 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `49` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8290 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -2376,6 +2387,20 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 576 | `PriceIndex.SLOTS_BEFORE_CHAIN` | `5 + WINDOW + 5` | The slots a save carried before the chained basket (0.7.43): the two-component basket, the ring, the marks and the settling count. |
 | 579 | `PriceIndex.CHAIN_MARKER` | `743` | What follows them in a save from 0.7.43 on, so an older array - which ends there - is told apart from one that goes on. |
 | 582 | `PriceIndex.CHAIN_TAIL_0743` | `4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS *(COMPONENTS + FEE_LINES)` | The chained basket's slots behind the marker as 0.7.43 wrote them: the link, its month, the pending flag, the bases, weights and last prices, the fee lines', and the trailing year. |
+
+### Rankings.java ([map](map/Rankings.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 56 | `Rankings.Settings.OPENING` | `new Settings(Board.REAL_2025, Money.REAL_USD, Prices.PER_YEAR, Convert.MARKET)` | What the tab opens on (D9, spec-leaderboards 9): Real world 2025, real US$, per year, this month's rate. |
+| 116 | `Rankings.BASE_YEAR` | `2015` | The year the real dollar is struck at: US$ of 2015 (D29: "later the start date will move back anyways"). |
+| 119 | `Rankings.REAL_YEAR` | `2025` | The real world's year: the board Real world 2025. |
+| 122 | `Rankings.PLACE_CITY` | `"city"` | The id the drawer takes for the active city. |
+| 125 | `Rankings.SOURCE_CITY` | `"city", SOURCE_WORLD = "world-1"` | A row's source: the active city's own figure, and a nation of the game's world file (a source id of world-2025.json's meta). |
+| 128 | `Rankings.RULE_REGION` | `"region-output"` | The rule a city region's Your-world figure is an estimate by: its share of its nation's path (a rule id of the file's meta). |
+| 131 | `Rankings.YOUR_SIZE_FACTOR` | `10` | The places Your size keeps: those within this factor of the city's people, either way. |
+| 134 | `Rankings.AROUND_TOP` | `3, AROUND_EITHER_SIDE = 6, AROUND_OFF = 10` | Around you: the rows from the top, and either side of the city; the rows from the top when the city is off the board. |
+| 137 | `Rankings.CONSTANT_SERIES` | `Set.of("gdp", "gdp_pp", "hh_spend_pp")` | The money measures with a series at constant prices (gdp, gdp per person, household spending per person); the rest show this month's rate under Constant. |
 
 ### RefineryView.java ([map](map/RefineryView.md))
 
@@ -3597,7 +3622,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (971 constants)
+## interface (985 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -3941,63 +3966,64 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 134 | `Icons.TRADE` | `"M2 12 a10 10 0 1 0 20 0 a10 10 0 1 0 -20 0" + "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 ...` | A globe. |
 | 140 | `Icons.POLICY` | `"M12 3v18 M7 21h10" + "M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" + "M19 8 l3 8 a5 5 0 0...` | Scales. |
 | 147 | `Icons.REPORTS` | `"M3 3v16a2 2 0 0 0 2 2h16" + "M19 9 l-5 5 -4-4 -3 3"` | A line on axes. |
-| 152 | `Icons.MENU` | `"M4 7h16 M4 12h16 M4 17h16"` | Three lines: the game menu, at the foot of the rail since 0.7.21 (it was the gear). |
-| 155 | `Icons.MAIL` | `"M4 6h16v12H4z M4 7l8 6 8-6"` | An envelope: the inbox, in the header since 0.7.21. |
-| 158 | `Icons.INFO` | `"M3 12 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0" + "M12 11v5 M12 8h.01"` | A circled i: the (i) that opens a line's full text (0.7.21; Pieces.infoButton()). |
-| 172 | `Icons.OVERVIEW` | `"M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z"` | Four squares: the Build overview. |
-| 175 | `Icons.UTILITIES` | `"M13 3L5 13h6l-1 8 8-10h-6l1-8z"` | A bolt: Utilities. |
-| 178 | `Icons.ROADS` | `"M8 3L5 21 M16 3l3 18 M12 4v3 M12 10.5v3 M12 17v3"` | Two kerbs and a dashed line: Roads & transit. |
-| 181 | `Icons.HEALTH` | `"M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"` | A cross: Healthcare. |
-| 184 | `Icons.EDUCATION` | `"M2 9l10-5 10 5-10 5z M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5 M22 9v6"` | A mortarboard: Education. |
-| 187 | `Icons.SAFETY` | `"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M9 12l2 2 4-4"` | A shield with a tick: Safety. |
-| 190 | `Icons.HOMES` | `"M4 20V10l8-6 8 6v10z M10 20v-5h4v5"` | A house: Homes. |
-| 193 | `Icons.SHOPS` | `"M4 9l1.5-5h13L20 9" + "M4 9h16v1.5a2.7 2.7 0 0 1-5.3 0 2.7 2.7 0 0 1-5.4 0A2.7 2.7 0 0...` | An awning over a shopfront: Shops. |
-| 198 | `Icons.INDUSTRY` | `"M3 20h18 M4 20V10l5 3V10l5 3V7h3l.6-3h1.2l.6 3v13"` | Saw-tooth roofs and a chimney: Industry. |
-| 201 | `Icons.OFFICES` | `"M5 20V4h10v16 M15 9h4v11 M3 20h18" + "M8 7h1 M11 7h1 M8 10h1 M11 10h1 M8 13h1 M11 13h1...` | An office block: Offices. |
-| 205 | `Icons.FARMS` | `"M12 21V9" + "M12 9c-2.4-.8-3.6-2.8-3.6-5.4 2.4.3 3.6 2.4 3.6 5.4z" + "M12 9c2.4-.8 3.6...` | An ear of wheat: Farms. |
-| 214 | `Icons.RAIL` | `"M7 3h10a2 2 0 0 1 2 2v9a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V5a2 2 0 0 1 2-2z" + "M5 10h14 M9...` | A train's face: Rail, and the Freight sector whose railway it is. |
-| 218 | `Icons.VEHICLES` | `"M5 16v-4l2-5h10l2 5v4z M3 12h18" + "M6 17 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0" + "M14 17 a2...` | A car: Vehicles. |
-| 223 | `Icons.LUXURY` | `"M6 4h12l3 5-9 11L3 9z M3 9h18 M9 4l3 16 3-16"` | A cut stone: Luxury shops. |
-| 226 | `Icons.FOOD` | `"M7 3v7a2 2 0 0 0 2 2v9 M5 3v5 M9 3v5 M17 21V3c-2 1-3.2 4-3.2 8H17"` | A fork and a knife: Restaurants. |
-| 229 | `Icons.CRANE` | `"M6 21V5 M3 5h17 M6 5l4-3 M18 5v5 M17 10h2v2h-2z M3 21h7"` | A tower crane: what is on site - the overview's tiles and the construction tab. |
-| 232 | `Icons.COIN` | `"M4 12 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0" + "M14.5 9.2c-.6-.8-1.5-1.2-2.5-1.2-1.4 0-2.5....` | A coin: the header's money block. |
-| 237 | `Icons.ALERT` | `"M12 4l9 16H3z M12 10v4 M12 17h.01"` | A warning triangle: the header's "Needs you" chip. |
-| 240 | `Icons.STAFF` | `"M8.5 7 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0" + "M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5 M1...` | A person: a Build card's staff bar, the posts the city can't fill. |
-| 244 | `Icons.PIN` | `"M12 17v5" + "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h1...` | A pin: the drawer that stays open (Lucide's pin). |
-| 250 | `Icons.CLOSE` | `"M6 6l12 12 M18 6L6 18"` | A cross: close. |
-| 257 | `Icons.ORE` | `"M4 20L16 8 M9.5 4.5Q19.5 4.5 19.5 14.5Q17 7 9.5 4.5z"` | A pick: ore - the land office's Ore card (0.7.26). |
-| 267 | `Icons.BIRTH` | `"M9 7a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M6 20c0-4 3-6 6-6s6 2 6 6 M19 3v4 M17 5h4"` | A head and shoulders with a plus: born. |
-| 270 | `Icons.DEATH` | `"M7 21V9a5 5 0 0 1 10 0v12 M4 21h16 M12 10v5 M10 12h4"` | A headstone on the ground: died. |
-| 273 | `Icons.ARRIVE` | `"M3 12h11 M10 8l4 4-4 4 M15 4h5v16h-5"` | An arrow into a door: moved in. |
-| 276 | `Icons.LEAVE` | `"M21 12H10 M17 8l4 4-4 4 M9 4H4v16h5"` | An arrow out of a door: moved out. |
-| 279 | `Icons.CHILD` | `"M10 6a2 2 0 1 0 4 0a2 2 0 1 0-4 0 M8 20v-6l4-3 4 3v6"` | A small figure: a child, the orphans' tile. |
-| 282 | `Icons.TICK` | `"M5 12.5l4.5 4.5L19 7.5"` | A tick: nothing needed (the "Needs you" chip, a ring's middle). |
-| 291 | `Icons.DROP` | `"M12 3c-3.5 5-6 8-6 11a6 6 0 0 0 12 0c0-3-2.5-6-6-11z"` | A drop: water. |
-| 294 | `Icons.CANE` | `"M9 8a3 3 0 0 1 6 0v13"` | A walking cane, its crook at the top: senior care. |
-| 297 | `Icons.CELL` | `"M5 4h14v16H5z M9 4v16 M12 4v16 M15 4v16"` | A door of bars: the prisons. |
-| 300 | `Icons.BUS` | `"M8 6v6 M15 6v6 M2 12h19.6" + " M18 18h3s0.5 -1.7 0.8 -2.8c0.1 -0.4 0.2 -0.8 0.2 -1.2 0...` | A bus, from the side (0.7.29, Lucide's bus): the Infrastructure tab's Transit page. |
-| 306 | `Icons.LORRY` | `"M14 18V6a2 2 0 0 0 -2 -2H4a2 2 0 0 0 -2 2v11a1 1 0 0 0 1 1h2 M15 18H9" + " M19 18h2a1 ...` | A lorry (0.7.29, Lucide's truck): the Infrastructure tab's Freight page, and the fleets on it. |
-| 319 | `Icons.MILL` | `"M9.5 21l1-8h3l1 8z M11 21v-2.5h2V21" + " M12 10L6.5 4.5 M12 10l5.5-5.5 M12 10l-4.5 4.5...` | A windmill, its sails crossed over the tower: Industry, the food mills. |
-| 323 | `Icons.CAN` | `"M6 6.5 a6 2.5 0 1 0 12 0 a6 2.5 0 1 0 -12 0" + " M6 6.5v11 a6 2.5 0 0 0 12 0v-11 M6 12...` | A tin, its lid an ellipse: Food Processing. |
-| 327 | `Icons.INGOT` | `"M2 18h20l-3-6H5z M5 12l2.5-4h9l2.5 4"` | An ingot, its top face over its side: Heavy Industry, the steel. |
-| 330 | `Icons.GEAR` | `"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915" + "a2.34 2.34 0 0 1 ...` | A gear: Manufacturing (the settings gear's outline, drawn since 0.7.30). |
-| 340 | `Icons.PICK` | `ORE` | A pick: Mining, and an investors' word about ore (the land office's ORE). |
-| 351 | `Icons.PAPER` | `"M15 2H6a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2V7z" + " M14 2v4a2 2 0 0 0 2 ...` | A sheet of paper with its lines: the city's paper, The book. |
-| 355 | `Icons.BANKNOTE` | `"M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2H4a2 2 0 0 1 -2 -2V8a2 2 0 0 1 2 -2z" + " M10 12...` | A banknote: the money itself, M0 and M2. |
-| 359 | `Icons.SAFE` | `"M5 3h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z" + " M7.5 ...` | A safe on two feet, its dial and its handle: the city's fund. |
-| 370 | `Icons.WELL` | `"M3 21h18 M8 21l3-9 3 9 M2 9l14-4 3 3-14 4z M16 5v3 M5 12v4"` | A land well, its beam nodding over the pad: the pictogram's land wells. |
-| 373 | `Icons.PLATFORM` | `"M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5" + " M6 18V10h12v...` | A platform on its legs over the waves: the pictogram's platform wells. |
-| 377 | `Icons.TANKER` | `"M2 15l2 4h16l2-4z M5 15v-3h9v3 M16 15V8h3v7"` | A tanker, low in the water: imported crude. |
-| 380 | `Icons.VESSEL` | `"M8 7a4 4 0 0 1 8 0v10a4 4 0 0 1 -8 0z M8 9h8 M8 15h8"` | A process vessel, a column with its trays: a conversion unit's box. |
-| 383 | `Icons.TANK` | `"M4 9l8-4 8 4 M4 9v11h16V9 M4 14h16"` | A storage tank, its roof a shallow cone: what goes into the refiners' tanks, and a Tank Farm's crude. |
-| 386 | `Icons.FLAME` | `"M12 3c3 4 5 6.5 5 10a5 5 0 0 1 -10 0c0-2 1-3.5 2.5-5.5 2 1.5 3 2.5 3 -1-3 -.5-5.5 0-8z"` | A flame: the furnaces, where residue no diesel can cut is burned. |
-| 389 | `Icons.EXCHANGE` | `"M8 3L4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4"` | Two arrows passing, one each way (Lucide's arrow-left-right): money changed from one currency to the other - the Trade tab's exchange (0.7.35). |
-| 514 | `Icons.DICE` | `"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z" + " M8 8h...` | A die showing five (Lucide "dice-5"): the founding screen's roll of a new world (0.7.56). |
-| 518 | `Icons.MAP` | `"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15"` | A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's shortcut, "Buy the best: North 3 · ..." (0.7.61; "Buy the best land" until 0.... |
-| 521 | `Icons.ZONING` | `"M12 8l6-3-6-3v10" + " M8 11.99l-5.5 3.14a1 1 0 0 0 0 1.74l8.5 4.86a2 2 0 0 0 2 0l8.5-4...` | A flag on a plot (Lucide "land-plot", its relative moves written absolute): Policy's Zoning area, its chip, its card and a zoning decision's flag (0.7.109, batch Z2). |
-| 526 | `Icons.TREES` | `"M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z M7 16v6 M13 19v3" + " M...` | Two trees (Lucide "trees"): the forest law - its tab, its card and its page (0.7.109, batch Z2). |
-| 530 | `Icons.EXPAND` | `"M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7"` | Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). |
-| 533 | `Icons.SETTINGS` | `"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915" + "a2.34 2.34 0 0 1 ...` | A gear. |
+| 152 | `Icons.TROPHY` | `"M6 9H4.5a2.5 2.5 0 0 1 0-5H6 M18 9h1.5a2.5 2.5 0 0 0 0-5H18 M4 22h16" + "M10 14.66V17c...` | A trophy with its two handles and its stem: the Rankings tab (LB2), Lucide's, every subpath an absolute move. |
+| 159 | `Icons.MENU` | `"M4 7h16 M4 12h16 M4 17h16"` | Three lines: the game menu, at the foot of the rail since 0.7.21 (it was the gear). |
+| 162 | `Icons.MAIL` | `"M4 6h16v12H4z M4 7l8 6 8-6"` | An envelope: the inbox, in the header since 0.7.21. |
+| 165 | `Icons.INFO` | `"M3 12 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0" + "M12 11v5 M12 8h.01"` | A circled i: the (i) that opens a line's full text (0.7.21; Pieces.infoButton()). |
+| 179 | `Icons.OVERVIEW` | `"M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z"` | Four squares: the Build overview. |
+| 182 | `Icons.UTILITIES` | `"M13 3L5 13h6l-1 8 8-10h-6l1-8z"` | A bolt: Utilities. |
+| 185 | `Icons.ROADS` | `"M8 3L5 21 M16 3l3 18 M12 4v3 M12 10.5v3 M12 17v3"` | Two kerbs and a dashed line: Roads & transit. |
+| 188 | `Icons.HEALTH` | `"M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"` | A cross: Healthcare. |
+| 191 | `Icons.EDUCATION` | `"M2 9l10-5 10 5-10 5z M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5 M22 9v6"` | A mortarboard: Education. |
+| 194 | `Icons.SAFETY` | `"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M9 12l2 2 4-4"` | A shield with a tick: Safety. |
+| 197 | `Icons.HOMES` | `"M4 20V10l8-6 8 6v10z M10 20v-5h4v5"` | A house: Homes. |
+| 200 | `Icons.SHOPS` | `"M4 9l1.5-5h13L20 9" + "M4 9h16v1.5a2.7 2.7 0 0 1-5.3 0 2.7 2.7 0 0 1-5.4 0A2.7 2.7 0 0...` | An awning over a shopfront: Shops. |
+| 205 | `Icons.INDUSTRY` | `"M3 20h18 M4 20V10l5 3V10l5 3V7h3l.6-3h1.2l.6 3v13"` | Saw-tooth roofs and a chimney: Industry. |
+| 208 | `Icons.OFFICES` | `"M5 20V4h10v16 M15 9h4v11 M3 20h18" + "M8 7h1 M11 7h1 M8 10h1 M11 10h1 M8 13h1 M11 13h1...` | An office block: Offices. |
+| 212 | `Icons.FARMS` | `"M12 21V9" + "M12 9c-2.4-.8-3.6-2.8-3.6-5.4 2.4.3 3.6 2.4 3.6 5.4z" + "M12 9c2.4-.8 3.6...` | An ear of wheat: Farms. |
+| 221 | `Icons.RAIL` | `"M7 3h10a2 2 0 0 1 2 2v9a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V5a2 2 0 0 1 2-2z" + "M5 10h14 M9...` | A train's face: Rail, and the Freight sector whose railway it is. |
+| 225 | `Icons.VEHICLES` | `"M5 16v-4l2-5h10l2 5v4z M3 12h18" + "M6 17 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0" + "M14 17 a2...` | A car: Vehicles. |
+| 230 | `Icons.LUXURY` | `"M6 4h12l3 5-9 11L3 9z M3 9h18 M9 4l3 16 3-16"` | A cut stone: Luxury shops. |
+| 233 | `Icons.FOOD` | `"M7 3v7a2 2 0 0 0 2 2v9 M5 3v5 M9 3v5 M17 21V3c-2 1-3.2 4-3.2 8H17"` | A fork and a knife: Restaurants. |
+| 236 | `Icons.CRANE` | `"M6 21V5 M3 5h17 M6 5l4-3 M18 5v5 M17 10h2v2h-2z M3 21h7"` | A tower crane: what is on site - the overview's tiles and the construction tab. |
+| 239 | `Icons.COIN` | `"M4 12 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0" + "M14.5 9.2c-.6-.8-1.5-1.2-2.5-1.2-1.4 0-2.5....` | A coin: the header's money block. |
+| 244 | `Icons.ALERT` | `"M12 4l9 16H3z M12 10v4 M12 17h.01"` | A warning triangle: the header's "Needs you" chip. |
+| 247 | `Icons.STAFF` | `"M8.5 7 a3.5 3.5 0 1 0 7 0 a3.5 3.5 0 1 0 -7 0" + "M5 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5 M1...` | A person: a Build card's staff bar, the posts the city can't fill. |
+| 251 | `Icons.PIN` | `"M12 17v5" + "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h1...` | A pin: the drawer that stays open (Lucide's pin). |
+| 257 | `Icons.CLOSE` | `"M6 6l12 12 M18 6L6 18"` | A cross: close. |
+| 264 | `Icons.ORE` | `"M4 20L16 8 M9.5 4.5Q19.5 4.5 19.5 14.5Q17 7 9.5 4.5z"` | A pick: ore - the land office's Ore card (0.7.26). |
+| 274 | `Icons.BIRTH` | `"M9 7a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M6 20c0-4 3-6 6-6s6 2 6 6 M19 3v4 M17 5h4"` | A head and shoulders with a plus: born. |
+| 277 | `Icons.DEATH` | `"M7 21V9a5 5 0 0 1 10 0v12 M4 21h16 M12 10v5 M10 12h4"` | A headstone on the ground: died. |
+| 280 | `Icons.ARRIVE` | `"M3 12h11 M10 8l4 4-4 4 M15 4h5v16h-5"` | An arrow into a door: moved in. |
+| 283 | `Icons.LEAVE` | `"M21 12H10 M17 8l4 4-4 4 M9 4H4v16h5"` | An arrow out of a door: moved out. |
+| 286 | `Icons.CHILD` | `"M10 6a2 2 0 1 0 4 0a2 2 0 1 0-4 0 M8 20v-6l4-3 4 3v6"` | A small figure: a child, the orphans' tile. |
+| 289 | `Icons.TICK` | `"M5 12.5l4.5 4.5L19 7.5"` | A tick: nothing needed (the "Needs you" chip, a ring's middle). |
+| 298 | `Icons.DROP` | `"M12 3c-3.5 5-6 8-6 11a6 6 0 0 0 12 0c0-3-2.5-6-6-11z"` | A drop: water. |
+| 301 | `Icons.CANE` | `"M9 8a3 3 0 0 1 6 0v13"` | A walking cane, its crook at the top: senior care. |
+| 304 | `Icons.CELL` | `"M5 4h14v16H5z M9 4v16 M12 4v16 M15 4v16"` | A door of bars: the prisons. |
+| 307 | `Icons.BUS` | `"M8 6v6 M15 6v6 M2 12h19.6" + " M18 18h3s0.5 -1.7 0.8 -2.8c0.1 -0.4 0.2 -0.8 0.2 -1.2 0...` | A bus, from the side (0.7.29, Lucide's bus): the Infrastructure tab's Transit page. |
+| 313 | `Icons.LORRY` | `"M14 18V6a2 2 0 0 0 -2 -2H4a2 2 0 0 0 -2 2v11a1 1 0 0 0 1 1h2 M15 18H9" + " M19 18h2a1 ...` | A lorry (0.7.29, Lucide's truck): the Infrastructure tab's Freight page, and the fleets on it. |
+| 326 | `Icons.MILL` | `"M9.5 21l1-8h3l1 8z M11 21v-2.5h2V21" + " M12 10L6.5 4.5 M12 10l5.5-5.5 M12 10l-4.5 4.5...` | A windmill, its sails crossed over the tower: Industry, the food mills. |
+| 330 | `Icons.CAN` | `"M6 6.5 a6 2.5 0 1 0 12 0 a6 2.5 0 1 0 -12 0" + " M6 6.5v11 a6 2.5 0 0 0 12 0v-11 M6 12...` | A tin, its lid an ellipse: Food Processing. |
+| 334 | `Icons.INGOT` | `"M2 18h20l-3-6H5z M5 12l2.5-4h9l2.5 4"` | An ingot, its top face over its side: Heavy Industry, the steel. |
+| 337 | `Icons.GEAR` | `"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915" + "a2.34 2.34 0 0 1 ...` | A gear: Manufacturing (the settings gear's outline, drawn since 0.7.30). |
+| 347 | `Icons.PICK` | `ORE` | A pick: Mining, and an investors' word about ore (the land office's ORE). |
+| 358 | `Icons.PAPER` | `"M15 2H6a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2V7z" + " M14 2v4a2 2 0 0 0 2 ...` | A sheet of paper with its lines: the city's paper, The book. |
+| 362 | `Icons.BANKNOTE` | `"M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2H4a2 2 0 0 1 -2 -2V8a2 2 0 0 1 2 -2z" + " M10 12...` | A banknote: the money itself, M0 and M2. |
+| 366 | `Icons.SAFE` | `"M5 3h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z" + " M7.5 ...` | A safe on two feet, its dial and its handle: the city's fund. |
+| 377 | `Icons.WELL` | `"M3 21h18 M8 21l3-9 3 9 M2 9l14-4 3 3-14 4z M16 5v3 M5 12v4"` | A land well, its beam nodding over the pad: the pictogram's land wells. |
+| 380 | `Icons.PLATFORM` | `"M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5" + " M6 18V10h12v...` | A platform on its legs over the waves: the pictogram's platform wells. |
+| 384 | `Icons.TANKER` | `"M2 15l2 4h16l2-4z M5 15v-3h9v3 M16 15V8h3v7"` | A tanker, low in the water: imported crude. |
+| 387 | `Icons.VESSEL` | `"M8 7a4 4 0 0 1 8 0v10a4 4 0 0 1 -8 0z M8 9h8 M8 15h8"` | A process vessel, a column with its trays: a conversion unit's box. |
+| 390 | `Icons.TANK` | `"M4 9l8-4 8 4 M4 9v11h16V9 M4 14h16"` | A storage tank, its roof a shallow cone: what goes into the refiners' tanks, and a Tank Farm's crude. |
+| 393 | `Icons.FLAME` | `"M12 3c3 4 5 6.5 5 10a5 5 0 0 1 -10 0c0-2 1-3.5 2.5-5.5 2 1.5 3 2.5 3 -1-3 -.5-5.5 0-8z"` | A flame: the furnaces, where residue no diesel can cut is burned. |
+| 396 | `Icons.EXCHANGE` | `"M8 3L4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4"` | Two arrows passing, one each way (Lucide's arrow-left-right): money changed from one currency to the other - the Trade tab's exchange (0.7.35). |
+| 521 | `Icons.DICE` | `"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z" + " M8 8h...` | A die showing five (Lucide "dice-5"): the founding screen's roll of a new world (0.7.56). |
+| 525 | `Icons.MAP` | `"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15"` | A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's shortcut, "Buy the best: North 3 · ..." (0.7.61; "Buy the best land" until 0.... |
+| 528 | `Icons.ZONING` | `"M12 8l6-3-6-3v10" + " M8 11.99l-5.5 3.14a1 1 0 0 0 0 1.74l8.5 4.86a2 2 0 0 0 2 0l8.5-4...` | A flag on a plot (Lucide "land-plot", its relative moves written absolute): Policy's Zoning area, its chip, its card and a zoning decision's flag (0.7.109, batch Z2). |
+| 533 | `Icons.TREES` | `"M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z M7 16v6 M13 19v3" + " M...` | Two trees (Lucide "trees"): the forest law - its tab, its card and its page (0.7.109, batch Z2). |
+| 537 | `Icons.EXPAND` | `"M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7"` | Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). |
+| 540 | `Icons.SETTINGS` | `"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915" + "a2.34 2.34 0 0 1 ...` | A gear. |
 
 ### InfrastructureScreen.java ([map](map/InfrastructureScreen.md))
 
@@ -4155,12 +4181,12 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 3784 | `MapView.WIDTHS_MOST` | `600` | The widths of label words kept, by string (the names never change and the figures change once a year): the 600 most recently used. |
 | 3787 | `MapView.NATION_CARD_W` | `330` | A nation's card is this wide, in pixels: 330 (the board's .card)... |
 | 3790 | `MapView.NATION_CARD_GAP` | `4` | ...and its head, its distance line and its rows stand this many pixels apart: 4. |
-| 4727 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 th... |
-| 4730 | `MapView.SHIP_SIZE_WORDS` | `"Ships are drawn 1.6\u00d7 their size until 6 px a plot"` | The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). |
-| 4733 | `MapView.TRUCK_WORDS` | `"Trucks: one per %s"` | The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). |
-| 4741 | `MapView.TRACK_ENTRY` | `LandMap.TRACK_ENTRY` | The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. |
-| 4759 | `MapView.LEGEND_NOTE_WIDTH` | `300` | The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. |
-| 4814 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
+| 4733 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 th... |
+| 4736 | `MapView.SHIP_SIZE_WORDS` | `"Ships are drawn 1.6\u00d7 their size until 6 px a plot"` | The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). |
+| 4739 | `MapView.TRUCK_WORDS` | `"Trucks: one per %s"` | The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). |
+| 4747 | `MapView.TRACK_ENTRY` | `LandMap.TRACK_ENTRY` | The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. |
+| 4765 | `MapView.LEGEND_NOTE_WIDTH` | `300` | The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. |
+| 4820 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
 
 ### MiniMap.java ([map](map/MiniMap.md))
 
@@ -4419,6 +4445,24 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5256 | `PolicyScreen.LOAN_CAVEAT` | `"Against the balances the graduates owe today.The instalment itself does " + "not chang...` | P56. |
 | 5301 | `PolicyScreen.SUBSIDY_INFO` | `"A protected sector is topped up to break-even every month it loses money, " + "so it n...` | P69. |
 
+### RankingsScreen.java ([map](map/RankingsScreen.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 65 | `RankingsScreen.OPENS_ON` | `"gdp"` | The measure the tab opens on (D9): GDP. |
+| 68 | `RankingsScreen.PINNED_AT_FIRST` | `List.of("gdp", "gdp_pp", "growth_real", "people", "unemployment", "inflation")` | The measures pinned the first time the tab opens: the six a player most often asks of a city. |
+| 71 | `RankingsScreen.GROUPS` | `Map.of("economy", "Economy", "work", "Work & pay", "prices", "Prices & money", "public"...` | The ten groups of the file, by their key, as the spec's table names them (spec-leaderboards 6). |
+| 131 | `RankingsScreen.FRAME_CHROME` | `210` | The frame's height before it is laid out, for the scroller's first guess at what is left of the stage. |
+| 134 | `RankingsScreen.STAGE_REST` | `36` | What the stage keeps under the scroller once the frame is laid out: City History's. |
+| 137 | `RankingsScreen.FIRST_WIDTH` | `1100, MEASURES_W = 250, CARD_W = 400, TABLE_MIN = 560, COLUMN_GAP = 16` | The page's width before the scroller says it, and the widths of the columns. |
+| 604 | `RankingsScreen.RANK_W` | `40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 16, BAR_H = 6` |  |
+| 786 | `RankingsScreen.ROW_H` | `24, PAD = 8, SPACE = 6` |  |
+| 789 | `RankingsScreen.TILE_ROWS` | `40` | Rows to a canvas: 40 of 24 pixels is under a thousand, well inside any texture. |
+| 794 | `RankingsScreen.Entry.GAP` | `new Entry(null, "", "", false, "", "", "", "", Double.NaN, "")` |  |
+| 801 | `RankingsScreen.RowsPicture.TEXT` | `Color.web(Palette.TEXT), HEAD = Color.web(Palette.TEXT_HEAD), BODY = Color.web(Palette....` |  |
+| 807 | `RankingsScreen.RowsPicture.RULER` | `new javafx.scene.text.Text()` | Measures a string against a column; one node, on the FX thread, where the drawing is. |
+| 985 | `RankingsScreen.D_NAME` | `128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60` | The drawer's columns: the measure, the real figure and its mark and source, Your world's figure and its mark. |
+
 ### SectorScreen.java ([map](map/SectorScreen.md))
 
 | line | constant | value | says |
@@ -4660,56 +4704,56 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 139 | `UiProbe.report` | `System.out` | Where the probe's own lines go: the console, as it was when the class loaded. |
 | 151 | `UiProbe.FRAME_P95_MS` | `34` | The 95th-percentile frame on People at 50x at month 4,000 the clock must keep under, ms (UP2: 49 in the brief's figures and 42 in this probe's before it; the redraw paced, the months budgeted and t... |
 | 160 | `UiProbe.FRAME_P95` | `Map.ofEntries(Map.entry("Build", 99.0), Map.entry("Land", 57.0), Map.entry("People", FR...` | Every rail screen's 95th-percentile frame at 50x at month 4,000, ms: its figure before UP2, as this probe measured it on the PC on main f29b9938 (0.8.27) with nothing else running, the run the batc... |
-| 167 | `UiProbe.FRAME_P95_FROM` | `4000` | The month from which FRAME_P95 is asserted: the city it was measured on. |
-| 593 | `UiProbe.KEYS` | `{ "ham.citybuildersim.ui.UserInterface$", "ham.citybuildersim.Game.nextMonth", "ham.cit...` | The prefixes of "type.method" an FX-thread sample is counted under, if any frame of its stack starts with one: inclusive shares, so a sample counts once for each key it is under. |
-| 630 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` | The JavaFX thread's name, as the recording names it: the only thread whose samples analyse() reads. |
+| 169 | `UiProbe.FRAME_P95_FROM` | `4000` | The month from which FRAME_P95 is asserted: the city it was measured on. |
+| 596 | `UiProbe.KEYS` | `{ "ham.citybuildersim.ui.UserInterface$", "ham.citybuildersim.Game.nextMonth", "ham.cit...` | The prefixes of "type.method" an FX-thread sample is counted under, if any frame of its stack starts with one: inclusive shares, so a sample counts once for each key it is under. |
+| 633 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` | The JavaFX thread's name, as the recording names it: the only thread whose samples analyse() reads. |
 
 ### UserInterface.java ([map](map/UserInterface.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 281 | `UserInterface.STAGE` | `Palette.STAGE` | The middle of the window: the blackish blue everything else sits on (Palette.STAGE since 0.7.21). |
-| 462 | `UserInterface.SECONDS_PER_MONTH` | `5.0` | Real seconds a month takes at 1x. |
-| 465 | `UserInterface.SPEED_TOP` | `50` | The clock's top speed, the ladder's last rung: 50x, a month in a fiftieth of SECONDS_PER_MONTH (SL1, 2026-10-28: what a month's new routes must be found within, MapCheck's ROUTES_MONTH_MS). |
-| 477 | `UserInterface.SPEEDS` | `{ 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, SPEED_TOP }` | The ladder the speed steps along: a rung a click on the clock's two arrows since 0.7.21, and the stops the speed slider stuck to before. |
-| 478 | `UserInterface.NORMAL_SPEED` | `3` | 1x |
-| 528 | `UserInterface.PRESS_HELD` | `"UserInterface.pressHeld"` | The scene property that says a button is down (0.7.40), for what waits on a timer outside this class (TimeChart's settle). |
-| 1420 | `UserInterface.WHEEL_STEP` | `48` | The least the first wheel event of a gesture may move the page, in pixels (since 2026-09-18 the first only; see scrollPageBy). |
-| 1845 | `UserInterface.WHEEL_GESTURE_GAP_NANOS` | `150_000_000L` | A wheel event this long after the last one starts a new gesture; a burst is closer than this. |
-| 1920 | `UserInterface.STRIP_INFLATION_QUIET` | `.03` | Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads as on target. |
-| 1923 | `UserInterface.STRIP_INFLATION_OVER_TARGET` | `.05` | Inflation more than this many points over the player's target reads red: prices running away from what the player asked for. |
-| 1926 | `UserInterface.STRIP_DEFLATION_ALARM` | `.10` | Deflation past this reads red, whatever the target: prices collapsing. |
-| 1938 | `UserInterface.DATE_WIDTH` | `164` | How wide the clock's date is held, so the tiles do not move as the day's name changes width: "28 September 2151" at the date's size, and a little over (0.7.24: at 17 px, so the money block and five... |
-| 1941 | `UserInterface.DATE_SIZE` | `17` | The date's size in the clock (0.7.24; it was 19). |
-| 1944 | `UserInterface.SPARK_MONTHS` | `120` | How many months a tile's sparkline draws: ten years, or everything recorded if less. |
-| 1947 | `UserInterface.SPARK_WIDTH` | `72` | A tile's sparkline at full size: on the label's row since 0.7.24, as the mockups draw it (it was 84 by 30, beside the words). |
-| 1949 | `UserInterface.SPARK_HEIGHT` | `16` | ...and its height, the label's row (0.7.24; it was 30). |
-| 1952 | `UserInterface.SPARK_MIN` | `30` | Narrower than this and a tile draws no sparkline: a line the width of a word says nothing. |
-| 1955 | `UserInterface.TILE_FIGURE` | `15` | The size of a tile's figure (0.7.24: 15, so the money block and five tiles fit a 1,280 window whole; it was 17). |
-| 1957 | `UserInterface.TILE_LABEL` | `10.5` | The size of a tile's label, and of the money block's. |
-| 1959 | `UserInterface.TILE_CHANGE` | `10.5` | The size of a tile's change line (0.7.24; it was 11). |
-| 2420 | `UserInterface.MONEY_FIGURE` | `28` | The cash in the money block: the mockups' 28 px. |
-| 3153 | `UserInterface.BACKDROP_BLOCK` | `"#121c28"` | The building blocks' fill and edge, and an unlit window, on the backdrop: the skyline's own darks, under the panels' ground. |
-| 3154 | `UserInterface.BACKDROP_EDGE` | `"#1d2b3c"` |  |
-| 3155 | `UserInterface.BACKDROP_WINDOW` | `"#22344a"` |  |
-| 3158 | `UserInterface.FOUNDING_DIM` | `.72` | How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. |
-| 3161 | `UserInterface.MENU_CITIES` | `3` | Up to this many of the cities saved last, as cards at the menu's bottom right. |
-| 3504 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
-| 3507 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
-| 3582 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
-| 3631 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
-| 4096 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
-| 4296 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
-| 4977 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
-| 5274 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
-| 5431 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
-| 5434 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
-| 5435 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
-| 5438 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
-| 5921 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
-| 6268 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
-| 6271 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
-| 6274 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
+| 285 | `UserInterface.STAGE` | `Palette.STAGE` | The middle of the window: the blackish blue everything else sits on (Palette.STAGE since 0.7.21). |
+| 466 | `UserInterface.SECONDS_PER_MONTH` | `5.0` | Real seconds a month takes at 1x. |
+| 469 | `UserInterface.SPEED_TOP` | `50` | The clock's top speed, the ladder's last rung: 50x, a month in a fiftieth of SECONDS_PER_MONTH (SL1, 2026-10-28: what a month's new routes must be found within, MapCheck's ROUTES_MONTH_MS). |
+| 481 | `UserInterface.SPEEDS` | `{ 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, SPEED_TOP }` | The ladder the speed steps along: a rung a click on the clock's two arrows since 0.7.21, and the stops the speed slider stuck to before. |
+| 482 | `UserInterface.NORMAL_SPEED` | `3` | 1x |
+| 532 | `UserInterface.PRESS_HELD` | `"UserInterface.pressHeld"` | The scene property that says a button is down (0.7.40), for what waits on a timer outside this class (TimeChart's settle). |
+| 1424 | `UserInterface.WHEEL_STEP` | `48` | The least the first wheel event of a gesture may move the page, in pixels (since 2026-09-18 the first only; see scrollPageBy). |
+| 1849 | `UserInterface.WHEEL_GESTURE_GAP_NANOS` | `150_000_000L` | A wheel event this long after the last one starts a new gesture; a burst is closer than this. |
+| 1924 | `UserInterface.STRIP_INFLATION_QUIET` | `.03` | Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads as on target. |
+| 1927 | `UserInterface.STRIP_INFLATION_OVER_TARGET` | `.05` | Inflation more than this many points over the player's target reads red: prices running away from what the player asked for. |
+| 1930 | `UserInterface.STRIP_DEFLATION_ALARM` | `.10` | Deflation past this reads red, whatever the target: prices collapsing. |
+| 1942 | `UserInterface.DATE_WIDTH` | `164` | How wide the clock's date is held, so the tiles do not move as the day's name changes width: "28 September 2151" at the date's size, and a little over (0.7.24: at 17 px, so the money block and five... |
+| 1945 | `UserInterface.DATE_SIZE` | `17` | The date's size in the clock (0.7.24; it was 19). |
+| 1948 | `UserInterface.SPARK_MONTHS` | `120` | How many months a tile's sparkline draws: ten years, or everything recorded if less. |
+| 1951 | `UserInterface.SPARK_WIDTH` | `72` | A tile's sparkline at full size: on the label's row since 0.7.24, as the mockups draw it (it was 84 by 30, beside the words). |
+| 1953 | `UserInterface.SPARK_HEIGHT` | `16` | ...and its height, the label's row (0.7.24; it was 30). |
+| 1956 | `UserInterface.SPARK_MIN` | `30` | Narrower than this and a tile draws no sparkline: a line the width of a word says nothing. |
+| 1959 | `UserInterface.TILE_FIGURE` | `15` | The size of a tile's figure (0.7.24: 15, so the money block and five tiles fit a 1,280 window whole; it was 17). |
+| 1961 | `UserInterface.TILE_LABEL` | `10.5` | The size of a tile's label, and of the money block's. |
+| 1963 | `UserInterface.TILE_CHANGE` | `10.5` | The size of a tile's change line (0.7.24; it was 11). |
+| 2424 | `UserInterface.MONEY_FIGURE` | `28` | The cash in the money block: the mockups' 28 px. |
+| 3157 | `UserInterface.BACKDROP_BLOCK` | `"#121c28"` | The building blocks' fill and edge, and an unlit window, on the backdrop: the skyline's own darks, under the panels' ground. |
+| 3158 | `UserInterface.BACKDROP_EDGE` | `"#1d2b3c"` |  |
+| 3159 | `UserInterface.BACKDROP_WINDOW` | `"#22344a"` |  |
+| 3162 | `UserInterface.FOUNDING_DIM` | `.72` | How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. |
+| 3165 | `UserInterface.MENU_CITIES` | `3` | Up to this many of the cities saved last, as cards at the menu's bottom right. |
+| 3508 | `UserInterface.MENU_LEFT` | `96` | How far in from the window's left the menu's column and version sit. |
+| 3511 | `UserInterface.MENU_BUTTON` | `360` | The menu's buttons' width, as the mockups draw them. |
+| 3586 | `UserInterface.CITY_CARD` | `250` | A city card's width, as the mockups draw it. |
+| 3635 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
+| 4100 | `UserInterface.TIP_WIDTH` | `420` | The width a tooltip's text wraps at, unless it asked for its own. |
+| 4300 | `UserInterface.PAGE_FOOT` | `24` | Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). |
+| 4981 | `UserInterface.CONSTRUCTION_TAB` | `44` | How wide the construction panel's tab is. |
+| 5278 | `UserInterface.PANEL_TEXT` | `256` | How wide the construction panel's lines wrap: the panel less its padding. |
+| 5435 | `UserInterface.RAIL_WIDTH` | `Palette.RAIL` | The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). |
+| 5438 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
+| 5439 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
+| 5442 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
+| 5929 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
+| 6276 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
+| 6279 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
+| 6282 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
 
 ### ZoningScreen.java ([map](map/ZoningScreen.md))
 
@@ -4740,7 +4784,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 718 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 974 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1240 constants)
+## harnesses (1248 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6133,6 +6177,19 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 131 | `RailDrawCheck.T` | `TilePainter.TILE` |  |
 | 134 | `RailDrawCheck.TYPES` | `BuildingVisual.table(new BuildingCatalog().load())` | The game's building templates, as the map draws them. |
 | 1642 | `RailDrawCheck.SPURS` | `30, WORKS = 300` | The Rail Spurs and bulk works added to the sidings fixture: 30 and 300, more than MapCheck 8c's 12 and 90, so that several sidings are laid that a unit train fits on and some turn corners. |
+
+### RankingsCheck.java ([map](map/RankingsCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 69 | `RankingsCheck.out` | `System.out` | Where the harness prints: the console. |
+| 72 | `RankingsCheck.SEED` | `7_001` | The seed of the nations' paths. |
+| 75 | `RankingsCheck.LIVE_MONTH` | `40` | The month the live city is played to: over the two years real growth needs. |
+| 78 | `RankingsCheck.TOLERANCE` | `1e-9` | How near two figures that should be one are: relative to the larger, with 1e-9 a floor. |
+| 81 | `RankingsCheck.YEAR_HISTORY` | `2012, YEAR_RULE = 2050` | The years Your world is read at: one inside the world file's history, one the game's rule makes. |
+| 84 | `RankingsCheck.MONEY` | `List.of("gdp", "gdp_pp", "hh_spend_pp", "avg_wage", "min_wage")` | The money measures of the file, and the ones Your world ranks of them. |
+| 87 | `RankingsCheck.ABSENT` | `Set.of("participation", "tertiary", "yield_10y", "debt_foreign", "interest_revenue", "c...` | The measures the brief leaves absent from the city, each for a reason CityMeasures' javadoc gives. |
+| 91 | `RankingsCheck.CORE` | `List.of("gdp", "gdp_pp", "growth_real", "hh_spend_pp", "investment", "gov_spend", "expo...` | What a city of a few years has: every one of these is in its figures. |
 
 ### RealDollarCheck.java ([map](map/RealDollarCheck.md))
 

@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**159 harness files, 17,238 labelled assertions.** AllChecks runs 159 of them.
+**160 harness files, 17,329 labelled assertions.** AllChecks runs 160 of them.
 
 ## Which harnesses read which class
 
@@ -10,7 +10,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 
 | class | harnesses that mention it |
 |---|---|
-| [AgeBand](map/AgeBand.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck |
+| [AgeBand](map/AgeBand.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, OutsideCheck, PopulationCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, LongPlaytest, ZoningCheck |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DeskCheck, FloatLinkCheck, HoldersCheck, NewGameCheck, RestructureCheck, SaveFileCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
@@ -56,9 +56,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, ReadPathCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, ReadPathCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
+| [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
+| [CityMeasures](map/CityMeasures.md) | RankingsCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
 | [CityRuns](map/CityRuns.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
 | [CityShore](map/CityShore.md) | LandmassCheck, MapCheck, RailDrawCheck, TruckRouteCheck |
@@ -102,7 +103,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FloatingRateNote](map/FloatingRateNote.md) | DeskCheck, FloatLinkCheck |
 | [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, WaterCheck |
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
-| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PassThroughCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
+| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PassThroughCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
 | [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
@@ -114,8 +115,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
-| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeskCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RealDollarCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeskCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -134,7 +135,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Healthcare](map/Healthcare.md) | BuildAdviceCheck, ChildcareCheck, DeathCareFirstCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, FreightViewCheck, GdpCheck, HaulageCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, PolicyPreviewCheck, PortCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
 | [HistoryGrapher](map/HistoryGrapher.md) | **none** |
-| [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ClockCheck, DeathRecordCheck, HistoryCheck, HouseholdMemoryCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
+| [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ClockCheck, DeathRecordCheck, HistoryCheck, HouseholdMemoryCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [HistoryScreen](map/HistoryScreen.md) | **none** |
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, MarketCheck, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ShortSellingCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyPreviewCheck, ReadPathCheck |
@@ -185,14 +186,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [MiniMap](map/MiniMap.md) | **none** |
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, ConservationCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PlanCheck, RailDepotCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
-| [Money](map/Money.md) | LandClassCheck, RunWorksCheck, TradeBandCheck, WorldDataCheck |
+| [Money](map/Money.md) | LandClassCheck, RankingsCheck, RunWorksCheck, TradeBandCheck, WorldDataCheck |
 | [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BondCheck, BuildersFirstCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, DeathCareFirstCheck, EducationCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FundCheck, GroceryCheck, HistoryCheck, HoldersCheck, InvestCheck, LandCheck, LongPlaytest, MaterialsCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PortCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TreasuryCheck, WoodProductsCheck |
 | [MonthOrder](map/MonthOrder.md) | **none** |
 | [Mortgage](map/Mortgage.md) | BooksCheck, BuildCardCheck, CreditCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
 | [Names](map/Names.md) | StaleCheck |
 | [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperMiningCheck, CopperRefiningCheck, DeskCheck, EducationCheck, FloatLinkCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, QuarryingCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, ScaleCheck, SlopeCheck, TreasuryCheck, WoodProductsCheck |
-| [Nations](map/Nations.md) | GlobeCheck, LongPlaytest, NationsCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMarketCheck, WorldMoneysCheck |
+| [Nations](map/Nations.md) | GlobeCheck, LongPlaytest, NationsCheck, RankingsCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMarketCheck, WorldMoneysCheck |
 | [NationsMap](map/NationsMap.md) | GlobeCheck, MapCheck |
 | [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, ConstructionControlCheck, InboxCheck, KeptCheck, LandmassCheck, LongPlaytest, PlaytestFixCheck, SaveSlotCheck |
 | [Offending](map/Offending.md) | **none** |
@@ -218,6 +219,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [ProcessingSector](map/ProcessingSector.md) | BuildCardCheck, CementConcreteCheck, CopperRefiningCheck, HaulageCheck, IndustryViewCheck, MaterialsCheck, WoodProductsCheck |
 | [Quarrying](map/Quarrying.md) | BuildCardCheck, BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
+| [Rankings](map/Rankings.md) | RankingsCheck |
+| [RankingsScreen](map/RankingsScreen.md) | **none** |
 | [RealDollar](map/RealDollar.md) | RealDollarCheck |
 | [RealEstate](map/RealEstate.md) | HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, ReadPathCheck, RoadCheck |
 | [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck |
@@ -296,12 +299,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
 | [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, IslandNetCheck, JunctionCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
-| [WorldData](map/WorldData.md) | GlobeCheck, MapCheck, NationsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
+| [WorldData](map/WorldData.md) | GlobeCheck, MapCheck, NationsCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, RealDollarCheck, SaveFileCheck, SkipReportCheck |
 | [WorldMarket](map/WorldMarket.md) | ReadPathCheck, SaveFileCheck, WorldMarketCheck, WorldMoneysCheck |
-| [WorldMeasures](map/WorldMeasures.md) | WorldMeasuresCheck |
+| [WorldMeasures](map/WorldMeasures.md) | RankingsCheck, WorldMeasuresCheck |
 | [WorldMoneys](map/WorldMoneys.md) | ExchangeRateCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
-| [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, ReadPathCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
+| [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, RankingsCheck, ReadPathCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurveCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
 | [Zoning](map/Zoning.md) | ForestryCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
 | [ZoningScreen](map/ZoningScreen.md) | **none** |
@@ -17363,6 +17366,125 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1888 with their works standing the sidings have trains' ways:
   - L1904 with the works gone no plan draws a siding:
   - L1905 ...no tile carries a plot of one, and no route runs to one (
+
+## RankingsCheck.java - 91 labelled assertions
+
+> The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9):
+> Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading
+> of the city's history.
+> 
+> WHY. A board that ranks a city's GDP beside Japan's has three ways to be quietly wrong that no screen would
+> show: a Money toggle that reorders the table (a city passing a nation by changing the unit it is shown in),
+> a city's own figure that does not come back to the figure the rest of the game shows, and a nation of the
+> city's own world whose row is not the figure Nations gives for that month. Each is an identity, and the rest
+> is the rules a rank is read by (lower is better ranks ascending, ties share, a place with no figure is no
+> row, never 0) and the sentence that names what is on screen. A city measure whose unit is wrong by a factor
+> of a thousand (the model counts money in thousands) would put the city a thousand times poorer than Japan, so
+> its figures are held to the history's own reader times the named factor.
+> ...
+
+  - L172 the file -D
+- **L219 1. the pivot's identities**
+  - L233 the city's figure in its own money is X under this month's rate and PPP, and X at founding's prices under Constant (a wage's, X)
+  - L234 the live city has the five money measures (
+  - L252 Money never reorders: a board's rows and ranks are the same in the city's money, game US$ and real US$, on both boards, at every Convert
+  - L254 and the boards have rows to be the same (
+  - L257 display: the city's money is US$ x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate
+  - L260 display: game US$ is US$ x the price level, and at Constant x 1; real US$ as is
+- **L271 2. at founding real US$ equals game US$**
+  - L272 a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (
+  - L295 at founding every row's game US$ is its real US$ (
+  - L296 the live city's game dollar has inflated (
+  - L297 and once it has inflated, the game US$ differs from the real US$ on every board of every money measure
+- **L314 3. Constant holds a steady real figure while its rate moves**
+  - L329 the same figures at a dearer game dollar and a weaker rate are the same US$ of 2015 under Constant, and in the city's money its real figure
+  - L330 ...and are not under this month's rate or PPP, which move with the rate and the price level
+- **L338 4. Your world's rows equal Nations' figures for the month**
+  - L340 the file carries exactly ten measures for Your world:
+  - L348 Your world ranks exactly the ten D15 names and has no rows for the other 60; with no Nations it ranks none
+  - L400 Your world
+  - L401 Your world
+  - L402 Your world
+  - L403 Your world
+  - L404 Your world
+  - L410 Your world
+  - L417 Your world
+  - L435 Your world
+  - L436 Your world
+- **L447 5. lower is better ranks ascending**
+  - L465 a DOWN measure's first row has the least value and the rows ascend (unemployment, deaths, debt, ...)
+  - L466 an UP measure's first row has the most and the rows descend (GDP, life expectancy, ...)
+  - L467 a NONE measure ranks largest first, like an UP (inflation, investment, ...)
+  - L468 on the real file:
+  - L470 unemployment, which is lower-is-better, has the city ranked by its value among the nations (rank
+- **L479 6. ties share a rank**
+  - L508 a tie in the middle (France, Germany, Italy at 80.25): one rank for the group, the next skips two, and the board is the same twice
+- **L518 7. a place with no figure is off, never 0**
+  - L541 a place without a figure of a measure is not a row (
+  - L542 and a place with one is a row of exactly its value, year and mark: the rows are the figures
+  - L543 every row's value is a finite number: none is NaN
+  - L546 a published 0 is a row and a missing figure is not: oil has
+  - L555 a copy of the file with one nation's GDP removed loses exactly that row (
+  - L564 a city with no figure for a measure is off its board (you
+  - L576 a measure nothing real publishes (D10) has the city alone, and realFigures false (
+  - L583 a published measure's table counts its rows with a mark (not the city) and the estimates among them
+- **L591 8. the real rows' pivot**
+  - L592 the CPI-U's 2015 over 2025 is the file's us_prices_2015_over_2025 (
+  - L596 a 2025 figure at this month's rate is its value times CPI-U 2015 over 2025: the US (
+  - L598 a city region's 2021 figure is its value times CPI-U 2015 over 2021: Tokyo (
+  - L621 every place's GDP and GDP per person at this month's rate: its value times CPI-U 2015 over its year's
+  - L622 under Constant GDP and GDP per person are the file's .k figure as it is, with its year
+  - L623 under PPP they are the file's .ppp figure times CPI-U 2015 over its year's
+  - L624 a row carries its figure's mark and source
+  - L649 household spending converts by gdp.k and gdp.ppp over gdp of the same place; a wage by gdp.ppp over gdp, and is this month's figure under Constant
+- **L657 9. around you and your size**
+  - L680 around the city
+  - L692 your size: the places within ten times the city's
+  - L694 ...and every one is within the factor of the city's people, in rank order
+  - L698 a city off the board has no size to match: yourSize is empty
+- **L706 10. the city's measures from History**
+  - L712 every figure is a measure of the file, with a way of being made, and is finite
+  - L714 it has every measure a city of its age has (
+  - L715 growth_10y needs 132 monthly months, which a city of
+  - L716 only gdp, gdp_pp and hh_spend_pp have a figure at founding's prices
+  - L723 gdp is the history's last 12 months times THOUSANDS (
+  - L724 ...and at founding's prices the same months each over that month's price index
+  - L725 gdp per person is that over the people now (
+  - L726 people are the history's last population
+  - L728 household spending per person is a year of consumption times THOUSANDS over the people
+  - L730 price level is parity over fx, and fx against parity its inverse (
+  - L731 the investment share is a year of investment over a year of output:
+  - L732 the debt share is the last month's debt over a year of output
+  - L734 the average wage is the book's wage bill over posts filled, times 12 and THOUSANDS (
+  - L735 the minimum wage is the floor in today's money times 12 and THOUSANDS, and the Kaitz index the one over the other (
+  - L737 inflation is the price index over its reading twelve months before
+  - L738 unemployment is the book's, over the labour force:
+  - L742 old-age dependency is seniors and elders over adults, from the city's bands
+  - L743 density is the people over the land the city owns (
+  - L744 reserves in months of imports is the vault in dollars over a month of imports at each month's rate:
+  - L750 the six bands' deaths add up to the deaths series over a year, to its rounding (
+  - L751 the death rate is the six bands' dead over the people, not the rounded series (
+  - L753 life expectancy is finite and between 20 and 120 (
+  - L760 the life table: a flat hazard m, in every band, gives a life expectancy of 1 over m
+  - L762 ...and with no one dying in the open band there is no life expectancy (NaN), not infinity
+  - L768 a city of six months: a year of output is the six months scaled by 12 over 6, times THOUSANDS, and says so
+  - L770 ...and inflation (13 months), real growth (24), 10-year growth and life expectancy (12 months) are absent, not 0
+  - L772 an empty history has no figures
+  - L777 a history with folded years (
+- **L797 11. the lock and the sentence**
+  - L800 Prices is locked under real US$
+  - L801 ...under Constant
+  - L802 ...on a measure that is not money (
+  - L803 ...and with no saved city on the board: always in LB2
+  - L804 it is open for money in the city's or the game's money at this month's rate or PPP once a saved city is on the board (LB3's seam)
+  - L811 with no saved city Prices is locked for every measure and setting; with one, locked exactly under real US$, Constant, or a measure that is not money
+  - L816 the opening sentence names real US dollars, 2015 prices, this month's rate, 2025, the city and its month
+  - L820 Your world in the city's money under Constant names the money, founding's prices, the constant rate and the path
+  - L823 game US dollars are of the city's month, and PPP is said:
+  - L825 a wage under Constant says it has no constant series and is at this month's rate; GDP under Constant does not
+  - L828 a measure that is not money drops the money clause and names its unit:
+  - L830 the Random path is named too
+  - L831 a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage
 
 ## ReadPathCheck.java - 34 labelled assertions
 

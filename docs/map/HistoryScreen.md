@@ -35,7 +35,7 @@
 
 **Uses:** [Palette](Palette.md) (153), [YearBook](YearBook.md) (54), [HistorySave](HistorySave.md) (47), [TimeChart](TimeChart.md) (24), [Icons](Icons.md) (23), [ChartModel](ChartModel.md) (20), [PriceIndex](PriceIndex.md) (15), [CityCalendar](CityCalendar.md) (14), [Good](Good.md) (10), [GamePrefs](GamePrefs.md) (9), [DecisionLog](DecisionLog.md) (7), [Crime](Crime.md) (6), [FamilyStructure](FamilyStructure.md) (6), [GoodsMarket](GoodsMarket.md) (6), [Equity](Equity.md) (5), [Sector](Sector.md) (5), [UserInterface](UserInterface.md) (3), [Sectors](Sectors.md) (3), [Pieces](Pieces.md) (3), [SectorScreen](SectorScreen.md) (3), [GameFiles](GameFiles.md) (2), [Currency](Currency.md) (2), [LandManager](LandManager.md) (2)
 
-**Used by (11):** [BankScreen](BankScreen.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [LandScreen](LandScreen.md), [MapView](MapView.md), [PolicyScreen](PolicyScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (12):** [BankScreen](BankScreen.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [LandScreen](LandScreen.md), [MapView](MapView.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
