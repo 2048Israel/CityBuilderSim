@@ -1,8 +1,9 @@
 world-1: the nations' world of CityBuilderSim (Civic Ledger)
 
-world-1.bin is derived from the data sets below. Their licences allow this use; their credits follow,
-each in the form its publisher asks for. Nothing in the game reads the file yet (WN0); the batch that does puts
-this text on the Credits page.
+world-1.bin, and its fixture world-1-fixture.bin in the game's jar, are derived from the data sets below: their
+figures selected, converted and combined by the game, not as published. Their credits follow, each in the form its
+publisher asks for; docs/studies/licences.md has each licence as read on 2026-10-31 (LC1). This file ships beside
+the exe as data/world-ATTRIBUTION.txt.
 
 Natural Earth 1:10m Cultural Vectors (5.1.2): Admin 0 - Countries, Admin 0 - Boundary Lines (land), Populated Places (simple), Ports
   Credit:  Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com.
@@ -18,8 +19,8 @@ CERDI-seadistance (1.1)
 
 BACI, international trade database at the product level, HS 2022, version 202601 (CEPII)
   Credit:  Gaulier, G. and Zignago, S. (2010) BACI: International Trade Database at the Product-Level. The 1994-2007
-           Version. CEPII Working Paper 2010-23. Data: CEPII, BACI HS22 V202601.
-  Licence: Etalab Open Licence 2.0 (https://www.etalab.gouv.fr/licence-ouverte-open-licence/)
+           Version. CEPII Working Paper 2010-23. Data: CEPII, BACI HS22 V202601 (last updated January 2026).
+  Licence: Etalab Open Licence 2.0 (https://www.etalab.gouv.fr/wp-content/uploads/2018/11/open-licence.pdf)
   Used for: the trade layer: the base year's (2024) flows between the nations, by pair and good, through the
            concordance from HS 2022 to the game's goods (concordance.tsv), and each good's unit value
   Source:  https://www.cepii.fr/DATA_DOWNLOAD/baci/doc/baci_webpage.html
@@ -30,6 +31,9 @@ World Development Indicators (the World Bank), as of 2026-10-08
   Licence: CC BY 4.0 (https://datacatalog.worldbank.org/public-licenses)
   Used for: the paths' output (US$ of 2015, current US$, international $ of 2021) and prices, 2000-2025; the
            annual official rate where the BIS has no month; each nation's region
+  Not yet: FP.CPI.TOTL and PA.NUS.FCRF are the IMF's figures (International Financial Statistics), whose terms ask
+           permission for any commercial reuse: world-1.bin and its fixture are baked again without them (LC3)
+           before the file ships beside the exe
   Source:  https://api.worldbank.org/v2/country/all/indicator/<id>?format=json&date=2000:2025
 
 World Population Prospects 2024 (United Nations, DESA, Population Division)
@@ -54,7 +58,11 @@ Penn World Table 11.0 (Groningen Growth and Development Centre)
 
 Maddison Project Database 2023 (Groningen Growth and Development Centre)
   Credit:  Bolt, J. and van Zanden, J. L. (2024) Maddison style estimates of the evolution of the world economy: A
-           new 2023 update. Journal of Economic Surveys. Data: Maddison Project Database, version 2023.
+           new 2023 update. Journal of Economic Surveys, doi:10.1111/joes.12618. Data: Maddison Project Database,
+           version 2023; for the few nations taken from it, the original sources its Sources sheet names: Cha, M.S.,
+           Kim, N.N., Park, K.-J. and Park, Y. (eds.) (2020) Historical Statistics of Korea, Springer (North Korea);
+           De Corso, G. (2013) Revista de Historia Economica 31(3): 321-357 (Venezuela); and from 2008 The Conference
+           Board's Total Economy Database or the UN's national accounts statistics
   Licence: CC BY 4.0
   Used for: North Korea's output and the years neither WDI nor PWT has for a few others, marked as estimates
   Source:  https://www.rug.nl/ggdc/historicaldevelopment/maddison/ (DataverseNL)
@@ -68,18 +76,29 @@ Commodity Markets, the Pink Sheet (the World Bank), annual prices
 world-2025: the Rankings' measures file (LB1, 2026-10-30)
 
 world-2025.json (src/main/resources/world/) is derived from the data sets below, and from world-1.bin's 2025 figures
-for the few nations the World Bank does not cover (the credits above). Its meta names each source with its licence;
-the Rankings' (i) and the Credits page carry these credits.
+for the few nations the World Bank does not cover (the credits above). Its meta names each source with its licence,
+and the Rankings' (i) shows it; this file, beside the exe, carries the credits in full. LC1 (2026-10-31) left out
+every figure whose maker's terms do not allow a sold game to ship it (docs/studies/licences.md).
 
 World Development Indicators (the World Bank), as of 2026-10-08
-  Credit:  The World Bank, World Development Indicators (49 series, measures.tsv names them)
-  Licence: CC BY 4.0, each series' own License_Type checked 2026-10-30
+  Credit:  The World Bank: World Development Indicators (29 series, measures.tsv names them): World Bank national
+           accounts data and OECD National Accounts data files; World Bank, International Comparison Program;
+           United Nations, DESA, Population Division (2024), World Population Prospects 2024 (CC BY 3.0 IGO);
+           ILO, ILOSTAT modelled estimates (CC BY 4.0); FAO, FAOSTAT and AQUASTAT, accessed through the WDI
+           2026-10-08, licence CC-BY-4.0; IEA, energy statistics, licence CC BY 4.0. The renewable share is a work
+           derived by the game from IEA material; the game alone is responsible for it, and the IEA does not
+           endorse it.
+  Licence: CC BY 4.0, each series' own License_Type checked 2026-10-31
            (https://datacatalog.worldbank.org/public-licenses)
-  Used for: most nations' measures: output in three moneys, prices, trade, public money, banks, people, land
+  Used for: most nations' measures: output in three moneys, the price level, trade, public spending, people, work,
+           land, water, food, energy
+  Not used: the WDI series the IMF, UNODC, the WHO, the World Federation of Exchanges, the UN IGME or UNESCO make
+           (inflation, public finance, banks, homicides, health spending, child deaths and others: LC1)
 
 OECD data
   Credit:  OECD (2026), Earnings; Financial market statistics; Social Expenditure Database; National Accounts at a
-           Glance; Regions, cities and local areas (functional urban areas); Affordable Housing Database
+           Glance; Regions, cities and local areas (functional urban areas); Affordable Housing Database;
+           https://data-explorer.oecd.org/ (accessed on 2026-10-30)
   Licence: the OECD's terms and conditions, Data: "for any purpose, even for commercial use", with credit
            (https://www.oecd.org/en/about/terms-conditions.html)
   Used for: wages, the minimum wage, long-term yields, pensions, household debt, homes, homelessness; the 16 city
@@ -92,12 +111,13 @@ Central bank policy rates (Bank for International Settlements)
 
 World Urbanization Prospects 2025 (United Nations, DESA, Population Division)
   Credit:  United Nations, Department of Economic and Social Affairs, Population Division (2025). World
-           Urbanization Prospects 2025, cities of 50,000 people or more (Degree of Urbanisation)
-  Licence: CC BY 3.0 IGO (https://creativecommons.org/licenses/by/3.0/igo/)
+           Urbanization Prospects 2025, Online Data. https://population.un.org/wup/ (cities of 50,000 people or
+           more, Degree of Urbanisation)
+  Licence: CC BY 3.0 IGO (https://creativecommons.org/licenses/by/3.0/igo/; the WUP FAQ, Data Use)
   Used for: the 46 other city regions' people, growth and area
 
 International Energy Statistics (US Energy Information Administration)
-  Credit:  Source: U.S. Energy Information Administration
+  Credit:  Source: U.S. Energy Information Administration (International Energy Statistics, October 2026)
   Licence: Public domain (a US government work)
   Used for: electricity used per person, oil produced
 
