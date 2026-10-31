@@ -27,8 +27,8 @@ META
   variants    {"gdp.k": {"of": "gdp", "money": "constant 2015 US$", "source": "wdi:NY.GDP.MKTP.KD"},
                "gdp.ppp": {"of": "gdp", "money": "current international $ (PPP)", "source": "wdi:NY.GDP.MKTP.PP.CD"},
                "gdp_pp.k": ..., "gdp_pp.ppp": ...}: GDP and GDP per person in the other two moneys (D14)
-  counts      {"nations": 196, "regions": R, "figures": F, "estimates": E}: F every figure in "places", E those
-               marked 1; the (i) prints them
+  counts      {"nations": 196, "regions": R, "figures": F, "estimates": E}: F the figures in the places' "f"
+               members (a region's two shares are not counted), E those of them marked 1; the (i) prints them
 
 PLACES, an array: the 196 nations in ISO 3166 alpha-3 order, then the city regions in tools/world/regions.tsv's order.
   id          a nation: its ISO3 (world-1.bin's); a city region: regions.tsv's three-letter id, which is never a
@@ -62,6 +62,8 @@ THE RULES the builder writes (ids), and where each applies
   share-people    a city region with no published output share takes its share of the nation's people.
   region-output   a city region's GDP in each money is its output share times its nation's figure of the share's
                   year: mark 3 where the share is published for a year the nation's figure is published for,
-                  else mark 1 with this rule (the nation's latest figure times a share of another year).
+                  else mark 1 with this rule (the nation's latest figure times a share of another year). A region
+                  whose output share is its share of people (share-people) has no GDP per person: it would only
+                  repeat its nation's.
   derived figures (a ratio of two published figures of one source and year, a ten-year compound rate) keep the
                   source's mark and need no rule: the measure's "source" spec says how they were made.

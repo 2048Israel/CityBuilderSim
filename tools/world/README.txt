@@ -21,6 +21,14 @@ THE ORDER (a stage's inputs are the files named; the geography and the economy a
                             --made DATE (default today; the SHA changes with it).
   5. fixture.py             src/main/resources/world/world-1-fixture.bin and world-1-fixture.expect, cut from the baked
                             file (--full PATH, --out-dir DIR, --econ DIR for baci-samples.tsv); a few seconds.
+  6. measures_fetch.py (LB1) downloads what measures.tsv names into <sources>: the WDI series (wdi/) and the OECD, BIS,
+                            UNODC, UN WUP and EIA files (oecd/ bis/ unodc/ wup/ eia/); --force downloads again a file
+                            that exists (never WN0's six WDI files). MEASURES-SOURCES.txt there, written by hand, says
+                            where each file is from, under what licence, and how measures.tsv's pointers read it.
+  7. measures.py (LB1)      reads measures.tsv, regions.tsv, those downloads and world-1.bin (--world PATH, via
+                            worldread.py); writes src/main/resources/world/world-2025.json (--out PATH, --made DATE,
+                            default today; the same inputs make the same bytes) and
+                            <sources>/work/measures/coverage.tsv. FORMAT-2025.txt is the file's contract; a few seconds.
   worldread.py [path]       the reference reader (parse and encode of every layer); the script prints a file's summary.
 
 CHOICES the contract leaves open (all in the docstrings too)
