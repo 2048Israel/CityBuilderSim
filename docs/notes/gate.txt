@@ -1,14 +1,15 @@
-# gate of Merge batch/EM2: a share quoted at the middle of its book (the last trade with a side empty, fair before the first), and short selling against bubbles like a 448k last print over 4k bids: long holders lend for a fee, Reg T's 150% margin, FINRA's 30% maintenance, the short pays the dividend (Jerus, 2026-10-29); saves new keys, the trace moves; and HD2-S, ScaleCheck section 6's town given a month where it grows (Jerus, 2026-10-30: "Ship, fix after (Recommended)"), 0.8.78
-# date: 2026-10-30
+# gate of Merge batch/EP0: eP1's study, running now beside the night line: the 1900/2025 price-level factor for the US$ and Canada's $ and every nominal anchor it reaches, Historical's series back to 1900 (the Macrohistory Database, Maddison, the gold and Bretton Woods parities), a rule for nations that did not exist, and the calendar's readers; docs and gathered CSVs only, shipped as a study (Jerus, 2026-10-30: "might as well run another subsession that does the research ep1 will need"), 0.8.79
+# date: 2026-10-31
 # earth-2.bin: named
-# suite: 155 harnesses run in 1476s: 153 passed, 2 failed
-# timing: 13 harnesses run in 431s: 11 passed, 2 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the kept month is within KEPT_MONTH_MS (12.0 ms)                         FAIL   [main 4.89 ms, batch 6.07 ms (+24.2%), budget 12 ms: the batch within the budget]
-# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# suite red passed on Jerus's word (Ship, fix after (Recommended)): PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
-# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 3.26e-02) FAIL
-# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | 7 FAILED
+# suite: 155 harnesses run in 1597s: 153 passed, 2 failed
+# timing: 13 harnesses run in 473s: 10 passed, 3 failed; its red lines were judged side by side with main's, below
+# timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.7 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.2 ms, batch 25.2 ms (-7.1%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 6.92 ms, batch 5.48 ms (-20.9%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 19.9 ms, batch 20.8 ms (+4.4%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 2 FAILED   [the harness's own count of the timing reds above]
 PassThroughCheck | exit 1
 PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
 PassThroughCheck | 1 FAILED

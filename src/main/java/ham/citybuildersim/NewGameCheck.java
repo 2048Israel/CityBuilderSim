@@ -51,6 +51,10 @@ import java.util.Map;
  * Game in the window of a city whose currency was reformed founds at unit 1,
  * and over two years reads the parity and the rate a city never reformed
  * reads.
+ *
+ * AND THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30), section 16: the
+ * name field opens blank, a place searched fills it unless the player has
+ * typed a name, and a blank name is the model's refusal.
  */
 public class NewGameCheck {
 
@@ -474,6 +478,9 @@ public class NewGameCheck {
 
         /* ============ 15. A NEW CITY AFTER A REFORMED ONE (FX4) ============ */
         aNewCityAfterAReform(files);
+
+        /* ============ 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1) ============ */
+        theNameOnThePage();
 
         cleanUp(root);
 
@@ -1291,6 +1298,84 @@ public class NewGameCheck {
                 Math.abs(parity / plainParity - 1) < AFTER_REFORM_BAND);
         assertTrue("...and its rate is not pulled away from that city's",
                 Math.abs(rate / plainRate - 1) < AFTER_REFORM_BAND);
+    }
+
+    /* =====================================================================
+       16. THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30). Jerus: "remove
+       the default name of danzik, have it just blank, or if you search for a
+       city, its that city name (unless someone already typed something, then
+       it doesnt change the city name)". FoundingName is the page's rule, the
+       screen only tells it each change; Founding is still the model's: it
+       refuses a blank name, so the start button waits for one.
+       ===================================================================== */
+    static void theNameOnThePage() throws Exception {
+        System.out.println("\n--- 16. the name on the Found-a-city page: blank, a place searched, or the player's own (FN1) ---");
+        FoundingName n = new FoundingName();
+        assertTrue("the page opens blank, not on " + Founding.DEFAULT_CITY_NAME + ", and nobody's",
+                n.text().isEmpty() && !n.isTyped() && !n.text().equals(Founding.DEFAULT_CITY_NAME));
+        assertTrue("...and a blank name is the model's refusal, so the start button waits with its hint",
+                "Name the city.".equals(Founding.cityNameProblem(n.text()))
+                        && Founding.custom(n.text(), 62_500, 12_500, .02).problem() != null);
+
+        assertTrue("a place picked from the search names the blank city", n.placePicked("Perth") && n.text().equals("Perth") && !n.isTyped());
+        Founding perth = Founding.custom(n.text(), 62_500, 12_500, .02);
+        assertTrue("...and the city then founds, its money named after the place",
+                perth.problem() == null && perth.getCurrency().equals(Currency.fromCityName("Perth")));
+        n.edited("Perth");
+        assertTrue("the field echoing the name the search set is not the player's edit", !n.isTyped() && n.text().equals("Perth"));
+        assertTrue("the next place searched replaces a name the search filled", n.placePicked("Rotterdam") && n.text().equals("Rotterdam"));
+
+        n.edited("Rotterdam Nova");
+        assertTrue("a player who changes the name the search filled owns it", n.isTyped() && n.text().equals("Rotterdam Nova"));
+        assertTrue("...and a place searched afterwards leaves it alone", !n.placePicked("Perth") && n.text().equals("Rotterdam Nova"));
+
+        FoundingName own = new FoundingName();
+        own.edited("Arden");
+        assertTrue("a name typed before any search is the player's", own.isTyped() && own.text().equals("Arden"));
+        assertTrue("...and a place searched leaves it, however many are", !own.placePicked("Perth") && !own.placePicked("Lima") && own.text().equals("Arden"));
+        own.edited("");
+        assertTrue("the player clearing the field leaves it nobody's", own.text().isEmpty() && !own.isTyped());
+        assertTrue("...so the next place searched fills it again", own.placePicked("Lima") && own.text().equals("Lima"));
+        own.edited("   ");
+        assertTrue("spaces alone are not a name the player wrote", !own.isTyped() && own.placePicked("Quito") && own.text().equals("Quito"));
+
+        own.edited("Arden");
+        own.reset();
+        assertTrue("the page opening afresh blanks a typed name too, and the next place fills it",
+                own.text().isEmpty() && !own.isTyped() && own.placePicked("Oslo") && own.text().equals("Oslo"));
+
+        String longName = "Villa Real de Santo Antonio de Something Very Long";
+        String cut = FoundingName.fromPlace("  " + longName + "  ");
+        assertTrue("a place's name longer than a city may have is cut to fit, and passes the model's check",
+                cut.length() <= Founding.MAX_CITY_NAME_LENGTH && longName.startsWith(cut) && Founding.cityNameProblem(cut) == null);
+        FoundingName odd = new FoundingName();
+        assertTrue("a place with no name that will do leaves the city blank",
+                !odd.placePicked("1234") && !odd.placePicked("  ") && !odd.placePicked(null) && odd.text().isEmpty());
+
+        // ...and the names of real places, as the page's search finds them, are cities the model accepts.
+        byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);
+        if (fixture == null) {
+            assertTrue("fixture: EarthCheck's fixture is beside the classes", false);
+            return;
+        }
+        EarthData data = EarthData.of(fixture);
+        java.util.List<EarthData.Place> hits = EarthSite.search(data, "Rotterdam", EarthSite.SEARCH_HITS);
+        assertTrue("fixture: the search finds Rotterdam", !hits.isEmpty());
+        if (hits.isEmpty()) return;
+        FoundingName searched = new FoundingName();
+        assertTrue("a place the Earth search found names the city with its own name, trimmed",
+                searched.placePicked(hits.get(0).name()) && searched.text().equals(hits.get(0).name().trim())
+                        && Founding.cityNameProblem(searched.text()) == null);
+        int sampled = 0;
+        java.util.List<String> refused = new java.util.ArrayList<>();
+        java.util.List<EarthData.Place> all = data.places();
+        for (int i = 0; i < all.size(); i += 53) {
+            sampled++;
+            String made = FoundingName.fromPlace(all.get(i).name());
+            if (made.isEmpty()) refused.add(all.get(i).name());
+        }
+        if (!refused.isEmpty()) System.out.println("  refused: " + refused);
+        assertTrue("...and every place's name in a sample of " + sampled + " of the data's makes one", sampled > 100 && refused.isEmpty());
     }
 
     static void cleanUp(Path root) {

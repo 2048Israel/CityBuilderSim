@@ -1,0 +1,44 @@
+# policy-rates-banks.csv - who set each of the eight vault moneys' rate, and when, 1900 onward (EP0 for EP1).
+# Written 2026-10-30; sources fetched 2026-10-30. The rate names and switch dates after 1946 are the BIS's own
+#   compilation notes in its CBPOL download (one note per country). Dates marked "unverified" are general history
+#   not checked against a primary page tonight. "gap" = no series found; policy-rates-eight.csv is empty there.
+# from/to: YYYY-MM-DD where the source gives a day, YYYY-MM or YYYY otherwise; an empty "to" = still in force in 2026.
+# The yearly values are in policy-rates-eight.csv (same keys).
+money,bank,rate_name,from,to,source,url
+USD,none (no central bank before the Federal Reserve),stand-in: New York commercial paper rate (prime 60-90 day double name),1900-01,1914-10,S: FRED M13002US35620M156NNBR (NBER Macrohistory),https://fred.stlouisfed.org/series/M13002US35620M156NNBR
+USD,Federal Reserve Bank of New York,discount rate,1914-11,1954-06,FRED M13009USM156NNBR (NBER Macrohistory; runs to 1969-07),https://fred.stlouisfed.org/series/M13009USM156NNBR
+USD,Federal Reserve (FOMC),effective federal funds rate,1954-07-01,1985-12-18,BIS CBPOL US (month-end); the yearly table uses FRED FEDFUNDS (monthly averages) 1955-1985,https://fred.stlouisfed.org/series/FEDFUNDS
+USD,Federal Reserve (FOMC),federal funds target rate (mid-point of the range),1985-12-19,,BIS CBPOL US,https://data.bis.org/topics/CBPOL
+EUR,Reichsbank (Germany; 1876-1945),official discount rate,1876-01,1938-12,FRED M13015DEM156NNBR (NBER Macrohistory; no series found for 1939-1945),https://fred.stlouisfed.org/series/M13015DEM156NNBR
+EUR,none (Reichsbank to 1945; no German central bank 1945 to Mar 1948),gap,1939-01,1948-06,gap: no series found (Reichsbank rate 1939-1945 in print only),
+EUR,Bank deutscher Laender (from 1948) then Deutsche Bundesbank (from 1957; dates unverified),discount rate,1948-07,1978-12-31,BIS CBPOL DE ("prior to 31 Dec 1978: discount rate"),https://data.bis.org/topics/CBPOL
+EUR,Deutsche Bundesbank,Lombard rate,1979-01-01,1984-12-31,BIS CBPOL DE,https://data.bis.org/topics/CBPOL
+EUR,Deutsche Bundesbank,repo rate,1985-01-01,1998-12-31,BIS CBPOL DE,https://data.bis.org/topics/CBPOL
+EUR,European Central Bank,main refinancing operations rate (fixed rate; minimum bid rate 2000-06-28 to 2008-10-14),1999-01-05,2024-09-17,BIS CBPOL XM,https://data.bis.org/topics/CBPOL
+EUR,European Central Bank,deposit facility rate,2024-09-18,,BIS CBPOL XM,https://data.bis.org/topics/CBPOL
+EUR (alternative),Bank deutscher Laender then Deutsche Bundesbank,discount rate (end of month; the cash advance rate too until 1990-07-31),1948-07,1998-12,Deutsche Bundesbank BBIN1.M.DE.BBK.BBKDIS.DEM.ME,https://api.statistiken.bundesbank.de/rest/data/BBIN1/M.DE.BBK.BBKDIS.DEM.ME?format=csv&lang=en
+JPY,Bank of Japan (opened 1882),official discount rate (named basic discount rate and basic loan rate since 2006),1882-10,1998-08,BOJ IR01 MADR1M; BIS CBPOL JP from 1946-01 (identical to it to 1998-08),https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=IR01&code=MADR1M
+JPY,Bank of Japan,guideline for the uncollateralized overnight call rate,1998-09,,BIS CBPOL JP (no value 1999-03 to 2000-07; no policy rate 2013-04-04 to 2016-09-20),https://data.bis.org/topics/CBPOL
+JPY,Bank of Japan,zero interest rate policy: call rate "as low as possible" (no number),1999-02,2000-07,stand-in for 1999: BOJ FM02 STRACLUCON (monthly average of the call rate),https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=FM02&code=STRACLUCON
+GBP,Bank of England (founded 1694),Bank Rate,1694-11,1972-10-15,FRED BOERUKM (Three Centuries dataset; used to 1945) and BIS CBPOL GB (from 1946-01),https://fred.stlouisfed.org/series/BOERUKM
+GBP,Bank of England,minimum lending rate,1972-10-16,1981-08-19,BIS CBPOL GB,https://data.bis.org/topics/CBPOL
+GBP,Bank of England,minimum band 1 dealing rate,1981-08-20,1997-05-05,BIS CBPOL GB,https://data.bis.org/topics/CBPOL
+GBP,Bank of England,repo rate,1997-05-06,2006-08-02,BIS CBPOL GB,https://data.bis.org/topics/CBPOL
+GBP,Bank of England,official Bank Rate,2006-08-03,,BIS CBPOL GB,https://data.bis.org/topics/CBPOL
+CNY,none (Qing and Republican China; Central Bank of China 1928-1949 (unverified)),gap,1900-01,1948-11,gap: no series found,
+CNY,People's Bank of China (founded 1948-12; unverified),gap (administered rates; no series found),1948-12,1990-02,gap: no series found,
+CNY,People's Bank of China,IMF IFS "discount rate" (the IMF gives no definition on FRED),1990-03,1995-12,FRED INTDSRCNM193N (IMF International Financial Statistics),https://fred.stlouisfed.org/series/INTDSRCNM193N
+CNY,People's Bank of China,official one-year lending rate,1996-01-01,2019-08-19,BIS CBPOL CN,https://data.bis.org/topics/CBPOL
+CNY,People's Bank of China,one-year loan prime rate,2019-08-20,,BIS CBPOL CN,https://data.bis.org/topics/CBPOL
+CAD,none (chartered banks on gold; no central bank),gap,1900-01,1914-07,gap: no series found,
+CAD,Department of Finance (Finance Act 1914),advance rate on loans to chartered banks (3.75% in the 1920s per POWELL),1914-08,1935-03,gap: research-1900.md section 6.3 [POWELL]; no yearly series found,https://www.bankofcanada.ca/wp-content/uploads/2010/07/dollar_book.pdf
+CAD,Bank of Canada (opened 1935-03-11),Bank Rate,1935-03-11,1994-05-31,BOC V122530 (series from 1935-01; used to 1959) and BIS CBPOL CA (from 1960-07-27),https://www.bankofcanada.ca/valet/observations/V122530/csv
+CAD,Bank of Canada,target for the overnight rate,1994-06-01,,BIS CBPOL CA,https://data.bis.org/topics/CBPOL
+AUD,none (no central bank; Commonwealth Bank of Australia from 1911; central bank by statute 1945 (unverified)),gap,1900-01,1969-06,gap: no series found that downloads,
+AUD,Reserve Bank of Australia (from 1960-01-14; unverified),stand-in: IMF IFS "discount rate" (not defined on FRED),1969-07,1976-03,S: FRED INTDSRAUM193N (IMF International Financial Statistics),https://fred.stlouisfed.org/series/INTDSRAUM193N
+AUD,Reserve Bank of Australia,interbank overnight cash rate,1976-04-07,1990-01-22,BIS CBPOL AU,https://data.bis.org/topics/CBPOL
+AUD,Reserve Bank of Australia,cash rate target (mid-point of the range 1990-01-23 to 1990-08-01),1990-01-23,,BIS CBPOL AU,https://data.bis.org/topics/CBPOL
+CHF,none (cantonal and commercial note banks; no central bank),gap (discount rates in Switzerland 1838-1906 in SNB HTS4 table 1.1a; xls; not read),1900-01,1907-05,gap,https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/publication-history/historical-time-series
+CHF,Swiss National Bank (founded 1907),discount rate,1907,1999-12-31,SNB HTS4 table 1.1 year-end (used 1907-1945) and BIS CBPOL CH (1946-01-01 to 1999-12-31),https://www.snb.ch/en/the-snb/mandates-goals/statistics/statistics-pub/publication-history/historical-time-series
+CHF,Swiss National Bank,mid-point of the target range for three-month CHF Libor,2000-01-01,2019-06-12,BIS CBPOL CH,https://data.bis.org/topics/CBPOL
+CHF,Swiss National Bank,SNB policy rate,2019-06-13,,BIS CBPOL CH,https://data.bis.org/topics/CBPOL
