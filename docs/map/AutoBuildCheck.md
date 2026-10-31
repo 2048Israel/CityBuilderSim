@@ -1,6 +1,6 @@
 # AutoBuildCheck.java - 1,934 lines · 44 methods · 10 constants · harnesses
 
-`ham/citybuildersim/AutoBuildCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AutoBuildCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Automatic building (0.7.73, batch N4): AutoBuilder's month held to its
 > rules, in a city it builds for decades and in fixtures that cause each of

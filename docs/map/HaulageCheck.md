@@ -1,6 +1,6 @@
 # HaulageCheck.java - 1,621 lines · 41 methods · 4 constants · harnesses
 
-`ham/citybuildersim/HaulageCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HaulageCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is
 > billed once, by Haulage, at a quote the trucks' own books set, and the vans

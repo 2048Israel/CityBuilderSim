@@ -1,10 +1,10 @@
 # The dials
 
-Generated 2026-10-30 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,768 constants in 449 files.**
+**4,816 constants in 451 files.**
 
-## model (2401 constants)
+## model (2402 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1421,7 +1421,7 @@ Generated 2026-10-30 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.8.79"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.8.80"` | Bump on release. |
 | 8214 | `GameVersion.SAVE_FORMAT` | `48` | The save shape. |
 | 8256 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `48` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8264 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -3194,6 +3194,12 @@ Generated 2026-10-30 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 963 | `WorldMarket.SOLVES` | `new LinkedHashMap<>(16,.75f, true) { @ Override protected boolean removeEldestEntry(Map...` |  |
 | 1390 | `WorldMarket.SCARCITY_MULTIPLE` | `4` | Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill has no level (infinity), and a market's strike needs a fi... |
 
+### WorldMeasures.java ([map](map/WorldMeasures.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 38 | `WorldMeasures.RESOURCE` | `"world/world-2025.json"` | Where the file lies, beside the classes. |
+
 ### YearBook.java ([map](map/YearBook.md))
 
 | line | constant | value | says |
@@ -4683,7 +4689,7 @@ Generated 2026-10-30 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 718 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 974 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1171 constants)
+## harnesses (1218 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6424,6 +6430,58 @@ Generated 2026-10-30 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 109 | `WorldMarketCheck.STAND_IN_SEEDS` | `2_000` | Seeds drawn for the stand-in. |
 | 112 | `WorldMarketCheck.SIGMAS` | `4.5` | A frequency is judged within this many standard deviations of a binomial. |
 | 494 | `WorldMarketCheck.NAMED` | `{ Good.LUMBER, Good.IRON, Good.CRUDE, Good.GRAINS, Good.MACHINERY, Good.CARS }` | The goods the study and the brief name, always printed. |
+
+### WorldMeasuresCheck.java ([map](map/WorldMeasuresCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 75 | `WorldMeasuresCheck.out` | `System.out` | Where the harness prints: the console. |
+| 78 | `WorldMeasuresCheck.NATIONS` | `196` | The nations of world-1.bin (the 193 UN members, Taiwan, Hong Kong and Macau). |
+| 81 | `WorldMeasuresCheck.MAX_BYTES` | `1_000_000` | The most the file may weigh: it is a resource inside the jar, and it is read whole. |
+| 84 | `WorldMeasuresCheck.CPI_U_2015` | `237.017` | The CPI-U's annual average of 2015, all urban consumers, US city average, all items, not seasonally adjusted (BLS series CUUR0000SA0). |
+| 87 | `WorldMeasuresCheck.CPI_U_2025` | `321.943` | The CPI-U's annual average of 2025 (BLS series CUUR0000SA0). |
+| 90 | `WorldMeasuresCheck.CPI_SERIES` | `"CUUR0000SA0"` | The BLS series the CPI-U is of. |
+| 93 | `WorldMeasuresCheck.GROUPS` | `List.of("economy 11", "work 6", "prices 8", "public 8", "banks 5", "people 11", "housin...` | The ten groups of measures, in the order of the file, each with how many it has. |
+| 96 | `WorldMeasuresCheck.SCOPE_NC` | `13, SCOPE_Y = 4` | The measures whose scope is city regions too (NC), and the ones only the player's cities rank (Y). |
+| 99 | `WorldMeasuresCheck.YOUR_WORLD` | `List.of("gdp", "gdp_pp", "growth_real", "growth_10y", "inflation", "price_level", "peop...` | The ten measures of Your world (spec-leaderboards D15), in the file's order. |
+| 102 | `WorldMeasuresCheck.POSITIVE` | `Set.of("gdp", "gdp.k", "gdp.ppp", "gdp_pp", "gdp_pp.k", "gdp_pp.ppp", "people", "area",...` | The measures (and the GDP variants) a place cannot have 0 of: a figure of 0 for one is a figure nobody published. |
+| 107 | `WorldMeasuresCheck.AGREE_SHARE` | `.95, AGREE_TOLERANCE =.01` | The share of the money figures that must agree with their identity, and how near is agreeing: a few nations' published figures miss each identity (the WDI converts AGO BDI NPL SYR UGA ZWE at an alt... |
+| 110 | `WorldMeasuresCheck.MIN_COUNTED` | `100` | The fewest nations an identity may be counted over before the share means anything. |
+| 113 | `WorldMeasuresCheck.US_ONE_TOLERANCE` | `1e-9` | The nearest the United States' price level and rate against parity are to 1: the base of both is the United States. |
+| 116 | `WorldMeasuresCheck.DOCTORED_NATION` | `"AFG"` | The nation the doctored copies change (Afghanistan, which has a published GDP and most of the others). |
+| 119 | `WorldMeasuresCheck.DOCTORED_REGION` | `"TYO"` | The city region the doctored copies change (Tokyo, an OECD region with published shares). |
+| 122 | `WorldMeasuresCheck.P_DUP_MEASURE` | `"a measure key that is in the file twice"` | The problems' sentences: problems() writes them and the sections look for them by these words. |
+| 123 | `WorldMeasuresCheck.P_DUP_PLACE` | `"a place id that is in the file twice"` |  |
+| 124 | `WorldMeasuresCheck.P_NOT_A_MEASURE` | `"is not a measure or a variant of the file"` |  |
+| 125 | `WorldMeasuresCheck.P_NO_SOURCE` | `"is a measure nothing publishes(its source is none:)"` |  |
+| 126 | `WorldMeasuresCheck.P_Y_ONLY` | `"is a measure only the player's cities rank(scope Y)"` |  |
+| 127 | `WorldMeasuresCheck.P_REGION_SCOPE` | `"is not a city-region measure(scope NC)"` |  |
+| 128 | `WorldMeasuresCheck.P_NOT_FINITE` | `"is not a finite number"` |  |
+| 129 | `WorldMeasuresCheck.P_NOT_POSITIVE` | `"is not over 0"` |  |
+| 130 | `WorldMeasuresCheck.P_WINDOW` | `"is outside the window"` |  |
+| 131 | `WorldMeasuresCheck.P_MARK` | `"is not 1, 2 or 3"` |  |
+| 132 | `WorldMeasuresCheck.P_MARK_UNLISTED` | `"is not in meta.marks"` |  |
+| 133 | `WorldMeasuresCheck.P_SOURCE` | `"is not in meta.sources"` |  |
+| 134 | `WorldMeasuresCheck.P_RULE_MISSING` | `"is an estimate(mark 1) with no rule"` |  |
+| 135 | `WorldMeasuresCheck.P_RULE_UNKNOWN` | `"is not in meta.rules"` |  |
+| 136 | `WorldMeasuresCheck.P_RULE_SPARE` | `"is not an estimate and carries a rule"` |  |
+| 137 | `WorldMeasuresCheck.P_LICENCE` | `"licence is blank"` |  |
+| 138 | `WorldMeasuresCheck.P_URL` | `"url is blank"` |  |
+| 139 | `WorldMeasuresCheck.P_WEO` | `"mentions the IMF's World Economic Outlook"` |  |
+| 140 | `WorldMeasuresCheck.P_SOURCE_UNUSED` | `"source is named by no figure"` |  |
+| 141 | `WorldMeasuresCheck.P_RULE_UNUSED` | `"rule is made by no figure"` |  |
+| 142 | `WorldMeasuresCheck.P_COUNT` | `"but the places hold"` |  |
+| 143 | `WorldMeasuresCheck.P_REGION_NATION` | `"is not a nation place"` |  |
+| 144 | `WorldMeasuresCheck.P_REGION_ID` | `"has a nation's id"` |  |
+| 145 | `WorldMeasuresCheck.P_REGION_DEF` | `"is not in meta.definitions"` |  |
+| 146 | `WorldMeasuresCheck.P_SHARE_MISSING` | `"is missing"` |  |
+| 147 | `WorldMeasuresCheck.P_SHARE_RANGE` | `"is not over 0 and under 1"` |  |
+| 148 | `WorldMeasuresCheck.P_REGION_PEOPLE` | `"is not under its nation's"` |  |
+| 149 | `WorldMeasuresCheck.P_CPI_YEAR` | `"is absent"` |  |
+| 150 | `WorldMeasuresCheck.P_CPI_RISE` | `"does not rise"` |  |
+| 151 | `WorldMeasuresCheck.P_CPI_CONSTANT` | `"is not the BLS's"` |  |
+| 152 | `WorldMeasuresCheck.P_CPI_SERIES` | `"series is not"` |  |
+| 153 | `WorldMeasuresCheck.P_RATIO` | `"is not cpi_u 2015 over 2025"` |  |
 
 ### YearBookCheck.java ([map](map/YearBookCheck.md))
 

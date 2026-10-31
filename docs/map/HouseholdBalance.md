@@ -1,6 +1,6 @@
 # HouseholdBalance.java - 4,710 lines · 245 methods · 48 constants · model
 
-`ham/citybuildersim/HouseholdBalance.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdBalance.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The households' balance sheet: what they have saved, what they owe, and what
 > happens in the month they cannot cover the shop.

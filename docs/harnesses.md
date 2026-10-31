@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-10-30 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-31 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**155 harness files, 16,808 labelled assertions.** AllChecks runs 155 of them.
+**156 harness files, 16,899 labelled assertions.** AllChecks runs 156 of them.
 
 ## Which harnesses read which class
 
@@ -295,9 +295,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
 | [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, IslandNetCheck, JunctionCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
-| [WorldData](map/WorldData.md) | GlobeCheck, MapCheck, NationsCheck, ReadPathCheck, SaveFileCheck, WorldDataCheck, WorldMarketCheck |
+| [WorldData](map/WorldData.md) | GlobeCheck, MapCheck, NationsCheck, ReadPathCheck, SaveFileCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
 | [WorldMarket](map/WorldMarket.md) | ReadPathCheck, SaveFileCheck, WorldMarketCheck |
+| [WorldMeasures](map/WorldMeasures.md) | WorldMeasuresCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, ReadPathCheck, ScaleCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurveCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
 | [Zoning](map/Zoning.md) | ForestryCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
@@ -21156,6 +21157,121 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L957 the founding solve (2000, every good, from nothing) takes under SOLVE_COLD_MS, the median of
   - L959 a January (every good, from last year's answer) takes under SOLVE_WARM_MS, the median of
   - L976 a month's bands for every good take under BAND_MONTH_US, the median of
+
+## WorldMeasuresCheck.java - 91 labelled assertions
+
+> The Rankings' real-world file held to what it promises (batch LB1; the
+> project's spec-leaderboards.md 6-8): WorldMeasures' reading of
+> world-2025.json, and the rules tools/world/FORMAT-2025.txt states of the
+> file, which the pipeline could break without the reader noticing.
+> 
+> WHY. The board's Real world 2025 ranks the player's cities beside 196
+> nations and 62 city regions on 70 measures, and a wrong figure there is a
+> rank nobody can trust: a missing figure read as 0 puts a nation last for a
+> number nobody published, a mark or a source that does not resolve is a
+> drawer that cannot say where a figure came from, and a ratio of US prices
+> that is not the CPI-U's turns every real dollar into the wrong 2015 one.
+> The rules are one method, problems(), each problem a short sentence naming
+> ...
+
+  - L347 no file:
+- **L372 1. the file**
+  - L373 it loads from the resources, once: load() twice is one instance
+  - L374 its name is world-2025, its year 2025 and its window 2015-2025
+  - L375 the resource is
+  - L390 it has 70 measures with unique keys (
+  - L391 in ten groups, in this order:
+  - L397 exactly
+  - L399 every POSITIVE key is a measure or a variant, so the test of section 3 can see it
+  - L401 and every POSITIVE key has a figure somewhere, so that it tests something
+  - L403 problems() of the real file is empty (
+- **L409 2. every nation of world-1.bin is present once**
+  - L412 there are
+  - L413 every place id is unique, and the nations come first
+  - L415 the nations are in ISO3 order, A to Z
+  - L416 no city region has a nation's id
+  - L424 the file -D
+  - L452 and none is there that world-1.bin lacks (
+- **L458 3. a missing figure is absent, never 0**
+  - L460 Taiwan (the WDI does not cover it) is a nation place and carries no figure from the WDI
+  - L466 but its GDP (each money), its GDP per person (each) and its people are there, from world-1
+  - L467 its PPP figures are its market ones (rule ppp-market)
+  - L471 no place carries a figure of a measure nothing publishes (source none:), in
+  - L472 no place carries a figure of a measure only the player's cities rank (scope Y)
+  - L473 a city region carries only city-region measures and the GDP variants
+  - L474 and every figure's key is a measure or a variant
+  - L475 the regions carry figures at all (
+  - L476 every figure's value is a finite number
+  - L477 every figure of the
+  - L479 doctored: a measure twice in the file is caught
+  - L483 doctored: a nation's GDP of 0 is caught
+  - L484 doctored: a figure of a measure nothing publishes (fund) is caught
+  - L485 doctored: a figure of a measure only the player's cities rank (orphans) is caught
+  - L486 doctored: a measure for nations only (investment) on a city region is caught
+  - L487 doctored: a key that is no measure or variant is caught
+  - L488 doctored: a value that is not a number is caught
+  - L489 doctored: a year before the window is caught
+- **L494 4. every mark and source resolves, and every source names its licence**
+  - L495 every figure's mark is 1, 2 or 3
+  - L496 and it is in meta.marks (
+  - L497 every figure's source is in meta.sources (
+  - L498 a mark 1 figure has a rule in meta.rules (
+  - L499 and its rule is one of them
+  - L500 a mark 2 or 3 figure has no rule
+  - L501 every source has a licence
+  - L502 and a url
+  - L503 no source is the IMF's World Economic Outlook (spec-nations 3.3)
+  - L504 every source in the meta is named by a figure or a share (bls by cpi_u)
+  - L505 every rule in the meta is made by a figure or a share
+  - L506 the meta's counts of nations, regions, figures and estimates are a recount of the places
+  - L508 doctored: a figure of source imf is caught
+  - L509 doctored: a mark 1 figure with its rule removed is caught
+  - L510 doctored: a mark 3 figure that carries a rule is caught
+  - L511 doctored: a mark 1 figure whose rule is not in the meta is caught
+  - L512 doctored: mark 4 is caught
+  - L513 doctored: a source's licence blanked is caught
+  - L514 doctored: a source's url blanked is caught
+  - L515 doctored: a source named the IMF's World Economic Outlook is caught
+  - L516 doctored: a source no figure names is caught
+  - L523 doctored: a rule no figure makes is caught
+  - L524 doctored: a mark taken out of meta.marks is caught on every figure of it
+  - L525 doctored: a figure count that is not the recount is caught
+  - L529 doctored: an estimate count that is not the recount is caught
+- **L537 5. a city region's shares of its nation are under 1**
+  - L540 there are city regions (
+  - L541 every region's nation is a nation place
+  - L542 and its boundary is in meta.definitions (
+  - L543 it has both shares
+  - L544 share.people and share.output are each over 0 and under 1
+  - L545 and a region has fewer people than its nation
+  - L547 doctored: a share of 1.2 is caught
+  - L548 doctored: a region without its output share is caught
+  - L549 doctored: a share of 0 is caught
+  - L550 doctored: a region whose nation is XXX is caught
+  - L551 doctored: a region whose boundary is not defined is caught
+  - L552 doctored: a region with a nation's id is caught
+  - L553 doctored: a region with more people than its nation is caught
+- **L558 6. the 2015-over-2025 ratio equals the CPI-U's to the digit**
+  - L559 the file's CPI-U of 2015 is the BLS's
+  - L562 us_prices_2015_over_2025 is the CPI-U's 2015 over 2025, to the last bit
+  - L563 and under 1, as prices rose
+  - L566 it carries a CPI-U for every year of the window,
+  - L569 and it rises from
+  - L570 a year it does not carry is NaN, not 0 (2014)
+  - L571 the series is
+  - L572 and the CPI-U raises no problem of any kind
+  - L575 doctored: the ratio changed in its last digit is caught
+  - L576 doctored: another series is caught
+  - L577 doctored: a CPI-U year taken out is caught
+  - L578 doctored: a CPI-U year that falls is caught
+  - L579 doctored: a CPI-U of 2025 that is not the BLS's is caught
+- **L587 7. the money figures agree with each other**
+  - L589 the United States' price level and its rate against parity are 1, within
+  - L613 nations whose GDP, GDP at PPP and price level are published in one year have GDP at PPP over GDP within
+  - L614 nations whose GDP, GDP per person and people are published in one year have GDP per person within
+  - L615 every place's band is the digits of its people (to 6 significant digits) less one, and absent with no people
+  - L626 each region's GDP is under its nation's of the same year, where both are of one year
+  - L643 a region whose output share is its share of people has no GDP per person (in any money), and every oecd region has all three (
 
 ## YearBookCheck.java - 137 labelled assertions
 

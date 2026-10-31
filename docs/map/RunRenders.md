@@ -1,6 +1,6 @@
 # RunRenders.java - 206 lines · 7 methods · 1 constants · tools
 
-`ham/citybuildersim/tools/RunRenders.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/RunRenders.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Renders what ET4 slice C did to the map, for review: where a city's highways and railway run across steep ground, a
 > viaduct, and across very steep ground, a tunnel, drawn by the game's own painters, headless.

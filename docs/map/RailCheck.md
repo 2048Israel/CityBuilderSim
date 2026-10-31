@@ -1,6 +1,6 @@
 # RailCheck.java - 747 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/RailCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RailCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The railway: what it charges, who pays it, and what it does to the band.
 > 

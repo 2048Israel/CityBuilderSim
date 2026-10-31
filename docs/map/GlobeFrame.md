@@ -1,6 +1,6 @@
 # GlobeFrame.java - 1,078 lines · 91 methods · 19 constants · model
 
-`ham/citybuildersim/GlobeFrame.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GlobeFrame.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a drag, a held key and Fit move it, which of three pictures it draws - the planet's picture, the ground through the globe, or the city's plane - and where a pixel is on the planet and on the city's plane; what the land office's map on Earth and the founding screen's globe draw by (since 0.7.135) and GlobeCheck and MapCheck 13 hold.
 > 

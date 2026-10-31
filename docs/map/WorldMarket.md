@@ -1,6 +1,6 @@
 # WorldMarket.java - 1,696 lines · 93 methods · 28 constants · model
 
-`ham/citybuildersim/WorldMarket.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMarket.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The world market: each traded good's price in each of the 196 nations on a
 > smooth spatial equilibrium (a CES gravity model), solved once a year, and

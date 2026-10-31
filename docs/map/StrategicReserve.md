@@ -1,6 +1,6 @@
 # StrategicReserve.java - 238 lines · 32 methods · 0 constants · model
 
-`ham/citybuildersim/StrategicReserve.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StrategicReserve.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The city's strategic reserve of crude oil: what it holds, what it paid for
 > it, and what the player has told it to fill and release (0.7.85, batch O8;

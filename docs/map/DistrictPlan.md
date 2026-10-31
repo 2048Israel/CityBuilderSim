@@ -1,6 +1,6 @@
 # DistrictPlan.java - 6,795 lines · 251 methods · 107 constants · model
 
-`ham/citybuildersim/DistrictPlan.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DistrictPlan.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > One district's street plan: from its ground, the buildings and road plots the city map gives it and the city's highway and railway plots through it, the cells it opens and the layout of each, every street with its kind and width, and a box for every building - the same plan from the same inputs on any machine.
 > 

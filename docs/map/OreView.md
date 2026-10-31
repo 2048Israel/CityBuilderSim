@@ -1,6 +1,6 @@
 # OreView.java - 71 lines · 4 methods · 0 constants · model
 
-`ham/citybuildersim/OreView.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OreView.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The land office's Ore card as the model reads it (batch I13-L): for each ore
 > the city's ground holds, its deposits, the tonnes still in the ground, the
