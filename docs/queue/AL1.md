@@ -44,7 +44,8 @@ overturns, restated by his words.
 
 ## Jerus's Bergen city, 2026-10-31 (month ~2,418, 0.8.90)
 
-He ticked two cases for this batch (pictures in `docs/queue/AL1/`). The
+He ticked two cases for this batch (pictures in `docs/queue/AL1/`; picture 5
+is in `docs/queue/HB1/`). The
 autosave (month 2,413, 0.8.90) is a read-only fixture at
 `C:\Users\Jerus\Documents\cbs-fixtures\bergen-pictures-2026-10-31\save\`,
 outside the repository: load a copy from a `GameFiles.scratch` folder, never
@@ -55,11 +56,10 @@ a slot.
    already runs out over the water (picture 2). Picture 6 shows island 10,
    0.706 km2. The links rule should see the highway that is there, and the
    auto-builder should link such ground by a bridge where one is allowed.
-2. **Too many small ports** (picture 5): about 15 small terminals with ships
-   along one coast. This is the worry behind his SL1-B drop: "general cargo
-   berth no otherwise we get the same issue of too many small ports." The
-   auto-builder's port links should share a port where one already serves,
-   not add one per island.
+2. **Too many small ports** (picture 5) went to its own batch, HB1, on his
+   correction: "also you still want ports.. just perhaps that they bundle up?"
+   The ports stay; HB1 draws them together as one harbour. AL1's port links
+   should still share a port where one already serves.
 
 Not a fault: the city owning open sea ("i bought that open sea... it had
 tasty oil lol"). The island label was left unticked; BK1-L's plate covers it.
