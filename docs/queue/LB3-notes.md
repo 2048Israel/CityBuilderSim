@@ -155,3 +155,8 @@ its old history and the game said "Saved". Mended, by Opus (no slice: each piece
 - **A read asked for during a read is queued** (`RankingsScreen.readAgain`), not dropped: a slot saved meanwhile is read.
 - Not mended here, each a Pending row with its recommendation: the memory a read takes (LB3-R) and `SaveWriter`'s
   silent history failure, which is main's (LB3-S).
+- **Checks after the mend** (both data files named): the full suite exit 4, its only reds beyond main's TimingCheck's
+  two lines on 7d's first draft (a time compared against `HOLD_MS` outside Timing), mended by counting the swap that
+  waited; then `--pick` exit 3 (19 harnesses; GameFiles, 127 readers, left to the gate's suite, LongPlaytest picked in
+  its place). Merged with main (CD7, 0.8.83; the conflicts only in the generated docs, main's taken and regenerated):
+  `--pick` exit 3, 20 harnesses, nothing red but ScaleCheck, main's recorded red; one timing figure SOFT (MapCheck).
