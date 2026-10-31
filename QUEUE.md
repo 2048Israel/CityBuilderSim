@@ -28,6 +28,7 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
+| TR1 | Replay a recorded city to film the trailer: a "Record this city" switch keeping every month and the player's input; replay with a time bar that plays both ways, nothing sticking; cinematic mode; smooth zoom and pan, A->B glides, the fly out to Earth, graphs behind the city; a ghost cursor that follows and re-enacts the player (Jerus, 2026-10-31: "top of queue", run on the side of the lanes) | [TR1](docs/queue/TR1.md) |
 | EP1 | The game starts in 1900, before research: the calendar's epoch to 1900 and Historical's history from 1900 (the world's series, the moneys on gold and Bretton Woods, the policy rates), today's tech kept until R0-R5; today's real economy at 1900's price level (Jerus: "1900 price level") (Jerus, 2026-10-30: "move the start date and history to 1900 once you finish all these batches youve scheduled, like a pre research batch") | [EP1](docs/queue/EP1.md) |
 | LD1 | A business short of workers bids the wage up: the posts the staffing gate refused join the band's shortage, so the wage rises until migrants come, only as far as the building would still earn its return (Jerus, 2026-10-31: "if the reason is not enough workers and the business can... then it raises its wage"); after ST1 | [LD1](docs/queue/LD1.md) |
 | WN5 | Nations: land bought from the nation it lies in, at its land price, in its money; offers split at a border | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
