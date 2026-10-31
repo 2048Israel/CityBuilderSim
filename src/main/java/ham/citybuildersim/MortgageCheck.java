@@ -538,10 +538,20 @@ public class MortgageCheck {
         double hRE = lender.getDefaultShareThisMonth(RE), lossRE = 1 - BusinessDebtManager.LOAN_RECOVERY;
         close("the insurer's claim is h x the insured balance x (1 - LOAN_RECOVERY), a first-lien loan's loss",
                 insured, owedInsured / (1 - hRE * lossRE) * hRE * lossRE, 1e-9);
-        close("the bank books only what nobody insured as its loss", bank.getWrittenOff(RE), written - insured, 1e-9);
+        /*
+         * ...WITH ITS LOSS ON THE SECTOR'S BONDS BESIDE THE LOANS' (XR4): a bond is no mortgage and nobody insured it, so the slice's share of
+         * the bonds the bank holds (at a bond's own recovery, and at what the bank paid) is booked with the loans' uninsured part
+         * (Game: restructured.getWrittenOffThisMonth(s) - insured + bondMarket.takeBankLoss(s)). Under the Fed's rate as the world's price of
+         * money (XR4) the bank holds a little of the landlords' bonds in this city; under the old flat 2% it held none (measured with the world
+         * quieted, as BondCheck's town is), and the identity read the loans alone. It reads the bond loss from the market now, so what is insured is
+         * still exactly what the bank did not book, bonds or no bonds.
+         */
+        BondMarket bonds = g.getBondMarket();
+        close("the bank books only what nobody insured as its loss, its bonds' beside the loans'",
+                bank.getWrittenOff(RE), written - insured + bonds.getBankLossThisMonth(RE), 1e-9);
         double uninsuredAll = 0, claimsAll = 0;
         for (String s : lender.sectors()) {
-            uninsuredAll += lender.getWrittenOffThisMonth(s) - lender.getInsuredWrittenOffThisMonth(s);
+            uninsuredAll += lender.getWrittenOffThisMonth(s) - lender.getInsuredWrittenOffThisMonth(s) + bonds.getBankLossThisMonth(s);
             claimsAll += lender.getInsuredWrittenOffThisMonth(s);
         }
         close("...so its month's write-offs carry none of the insured part", bank.getWriteOffs(), uninsuredAll, 1e-9);
@@ -565,7 +575,8 @@ public class MortgageCheck {
         close("its debt is gone", lender.getPrincipal(RE), 0, 1e-9);
         close("...every insured balance claimed - what was left after the month's payments",
                 wholeInsured, insuredBefore - lender.getMortgageRepaidThisMonth(RE), 1e-9);
-        close("the bank booked what nobody insured", g.getBank().getWrittenOff(RE), wholeWritten - wholeInsured, 1e-9);
+        close("the bank booked what nobody insured, its bonds' loss with the loans'", g.getBank().getWrittenOff(RE),
+                wholeWritten - wholeInsured + g.getBondMarket().getBankLossThisMonth(RE), 1e-9);
         close("the treasury paid the bank the insured balance, on its claims line",
                 g.getEconomyManager().getNationalAccounts().getMortgageClaims(), lender.getInsuredWrittenOffThisMonth(), 1e-12);
         close("...cash the bank received", g.getBank().getInsuranceClaims(), lender.getInsuredWrittenOffThisMonth(), 1e-12);

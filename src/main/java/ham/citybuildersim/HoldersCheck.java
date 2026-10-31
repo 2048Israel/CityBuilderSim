@@ -526,6 +526,13 @@ public class HoldersCheck {
         out.println("\n--- 9. the dial at the whole of the paper buys the households' once the bank's is gone ---");
         GameFiles files = GameFiles.scratch("holderscheck-whole");
         Game city = new Game(files);
+        // The world this section is written against: the constant world rate (XR4). Its premise is the split of the issue between the households and
+        // the bank - the households must hold more than the step that comes off them once the bank's paper is gone, which takes the bank's share to
+        // under half, and under the old world the households took 51.5% of it. Under the Fed's rate (2.25% at month 60 on the default path) their bid
+        // is 49.0%: the bank is gone in three steps, the fourth takes the households' last and a little of the businesses' and the world's, and
+        // there is no middle to save in. A fact of the world's price of money, not of the dial at the whole of the paper; quieted as BondCheck's town
+        // is, its premise unmoved. (The world's own paper has its section, theWorld().)
+        city.quietTheWorldForTheD();
         quietly(() -> {
             city.run();
             // The treasury and the ground it was written against (0.7.17): see main().
@@ -1419,9 +1426,9 @@ public class HoldersCheck {
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
                 Files.readString(files.saveFile(3))).getAsJsonObject();
         com.google.gson.JsonArray full = json.getAsJsonArray("capitalFlows");
-        // The array's whole length, not "at least": an append past it (XR2's slot 15, what left on doubt; FX8's 16-18, the month's flows) is
+        // The array's whole length, not "at least": an append past it (XR2's slot 15, what left on doubt; FX8's 16-18, the month's flows; XR4's 19-23, what a risk-off unwound) is
         // caught here, so whoever appends looks again at whether cutting it at 12 is still a save from before the world held any (FX8).
-        assertTrue("fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 19 slots long", full != null && full.size() == 19);
+        assertTrue("fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 24 slots long", full != null && full.size() == 24);
         com.google.gson.JsonArray cut12 = new com.google.gson.JsonArray();
         for (int i = 0; i < 12; i++) cut12.add(full.get(i));
         json.add("capitalFlows", cut12);

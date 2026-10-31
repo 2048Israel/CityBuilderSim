@@ -1213,6 +1213,13 @@ public class HealthCheck {
         for (int k = 0; k < scales.length; k++) {
             Game town = new Game(files);
             towns[k] = town;
+            // The world these twins are written against: the constant world rate and a D$ the world does not move (XR4). The fee's claim is the dear
+            // twin's burials against the founding fee's over ninety-six months, a few per cent of a rate that the twins' growth paths move by more:
+            // under the Fed's rate and the world's file the dear twin ended at 13,908 people against the founding fee's 10,258 and buried 14.09 a
+            // year per 1,000 against 14.26, the old 81.06 against 81.46 - the paths, not the clinic's price. Quieted they end at 11,295 and 10,600
+            // and bury 14.67 against 14.19, the old 82.22 against 80.31. A fact of the world's price of money, not of health care; quieted as
+            // BondCheck's and MapCheck's played cities are, its premise and its thresholds unmoved.
+            town.quietTheWorldForTheD();
             System.setOut(quiet);
             try {
                 town.run();
