@@ -428,7 +428,7 @@ public class TaxPolicy {
         WAGE_SHARE,
         /** A fixed REAL amount per student per month, in founding thousands, kept up with prices - by the expected price level since 0.7.42, the price index from 0.7.19 (a nominal amount until then) - the default since 0.7.19. Money, so a currency reform scales it. */
         FIXED,
-        /** A share of last month's budget surplus as ONE POOL, split evenly over this month's students; a deficit month pays nothing. */
+        /** A share of the cash part of last month's budget surplus (SG1: not the paper gains in it) as ONE POOL, split evenly over this month's students; a deficit month pays nothing. */
         SURPLUS_SHARE,
         /** A share of each student's own course tuition at today's price - after the tuition scale, before the subsidy. */
         TUITION_SHARE
@@ -668,7 +668,7 @@ public class TaxPolicy {
      *   FIXED          students x amount x the expected price level: a real
      *                  amount (0.7.19), kept up with what prices are expected
      *                  to be since 0.7.42 (the price index until then).
-     *   SURPLUS_SHARE  amount x last month's surplus, as ONE pool - a deficit
+     *   SURPLUS_SHARE  amount x last month's cash surplus (SG1), as ONE pool - a deficit
      *                  is a pool of nothing - and nothing at all with nobody
      *                  to split it over. Per student it is the pool over the
      *                  students.
@@ -682,8 +682,9 @@ public class TaxPolicy {
      * @param priceIndex         the expected price level against founding
      *                           (Expectations.getExpectedLevel(), since 0.7.42;
      *                           PriceIndex.getIndex() before), for the FIXED basis
-     * @param lastSurplus        last month's budget balance, as the Government
-     *                           tab shows it; negative in a deficit month
+     * @param lastSurplus        the cash part of last month's budget balance
+     *                           (Game.getTreasuryCashSurplus(), SG1); negative
+     *                           in a deficit month
      * @param studentBodyTuition the whole adult student body's tuition a month
      *                           at today's price, before the subsidy
      */

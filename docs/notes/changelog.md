@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.84 — SG1, the student grant on a surplus share paid on cash — 2026-10-31, ready, see docs/queue/SG1-notes.md
+The student grant on its surplus-share basis is now a share of last month's CASH surplus (Jerus, 2026-10-31, settling
+CD7-G: "Cash only (Recommended)"), not of the budget's balance. The balance holds the exchange gain on the dollar debt
+(CD7) and the gain on paper bought back below its book (CD3), which the budget books and no cash moves on; the grant
+paid them out the next month as cash, and a loss that took the balance below nothing paid no grant on a cash surplus.
+`Game.getTreasuryCashSurplus()` is the surplus plus the bridge's own not-cash row, read by the grant's bill and the
+dial a picked basis starts at; the grant card names the cash part when it differs (★ it also adds back the discount
+amortised, which the treasury never pays: the few tenths of a percent the grant moves with discount paper and no
+gain). Nothing saved. DebtExchangeCheck's sections 11 and 12 pin the D$ 10% up and down on a schooled city and buy a
+bond back below book; reverted, they fail 14 assertions. The default grant is FIXED, so no trace moves: no ensemble.
+
 ### 0.8.83 — CD7, the city's foreign debt revalued — 2026-10-31, ready, see docs/queue/CD7-notes.md
 The city's dollar paper now books what the D$ does to it (Jerus, 2026-10-23: "both as you said, but queud right with
 the WN batches"): at each month's reprice, every dollar piece's carrying value in US$ times the move from the rate it
