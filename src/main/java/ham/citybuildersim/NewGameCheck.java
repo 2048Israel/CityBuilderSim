@@ -787,18 +787,23 @@ public class NewGameCheck {
         /* --------------------------------------------------------------- 10 */
         System.out.println("\n--- 10. the world is chosen at founding ---");
 
+        // The founding screen's five chips went in WN4 (D29: the in-game US$ inflates on the US's path), but a Founding keeps its mean and the
+        // walk, which a city with no world file meets, takes it: the means the chips offered still found and still save.
+        final double[] means = { 0, WorldEconomy.DEFAULT_MEAN_INFLATION, .02, .0333, .05 };
         boolean everyChip = true, backcast = true, defaultOffered = false;
-        for (double m : WorldEconomy.FOUNDING_CHOICES) {
+        for (double m : means) {
             Game w = quietly(() -> { Game g = new Game(files,
                     Founding.named(Founding.DEFAULT_CITY_NAME, Founding.Preset.STANDARD, m)); g.run(); return g; });
             everyChip &= w.getWorldEconomy().getMeanInflation() == m && w.getFounding().getMeanInflation() == m;
             backcast &= Math.abs(w.getWorldEconomy().realisedInflation() - m) < 1e-12;
             defaultOffered |= m == WorldEconomy.DEFAULT_MEAN_INFLATION;
         }
-        assertTrue("founding at each of the screen's worlds sets the world's mean", everyChip);
+        assertTrue("founding at each of the means the screen once offered sets the world's mean", everyChip);
         assertTrue("...and back-casts its first year at that mean", backcast);
         assertTrue("...and the default is among them", defaultOffered);
-        double far = WorldEconomy.FOUNDING_CHOICES[WorldEconomy.FOUNDING_CHOICES.length - 1];
+        assertTrue("...and the founding with nothing chosen, which is every new city's now, is at the default mean",
+                Founding.defaults().getMeanInflation() == WorldEconomy.DEFAULT_MEAN_INFLATION);
+        double far = means[means.length - 1];
         Game switched = quietly(() -> {
             Game g = new Game(files, Founding.named(Founding.DEFAULT_CITY_NAME, Founding.Preset.STANDARD, far));
             g.run();

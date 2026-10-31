@@ -680,6 +680,42 @@ public final class WorldMoneys {
     }
 
     /* =====================================================================
+       THE NATIONS' PRICE LEVELS BY THE MONTH (WN4, D29)
+
+       The parity path's own interpolation, handed to a caller: ln P(t) runs
+       in a straight line between a nation's Januaries, so a month is 1/12th
+       of the year's log move. A pure function of the nations' path and the
+       month; the state of the moneys plays no part, so it reads the same
+       before the first step and after the last.
+       ===================================================================== */
+
+    /** The nation the US dollar is the money of, the frontier (Nations.FRONTIER), 1-based: the nation whose path the game's US$ follows. */
+    public int usNation() { return usa; }
+
+    /** A nation's price level in month t (months since January 2000) against its level in month 0, log-linear between Januaries: 1 in month 0. */
+    public double priceLevel(int nation, int t) {
+        if (nation < 1 || nation > nationCount) throw new IllegalArgumentException("world moneys: no nation numbered " + nation);
+        if (t < 0) throw new IllegalArgumentException("world moneys: no month " + t + " before January 2000");
+        return StrictMath.exp(lnPriceAt(nation, t) - lnPriceAt(nation, 0));
+    }
+
+    /** The US's price level in month t against its level in month 0: the in-game US$'s, whose prices follow the US's path (WorldEconomy). */
+    public double usPriceLevel(int t) { return priceLevel(usa, t); }
+
+    /** The US's inflation in the calendar year of month t: its price level in January of the next year over January of this one, less one. */
+    public double usPace(int t) {
+        int year = Nations.FIRST_YEAR + t / 12;
+        return StrictMath.exp(logPrice(usa, year + 1) - logPrice(usa, year)) - 1;
+    }
+
+    /** ln of a nation's price level in month t, in the file's index (2015 = 100): ln P(y) + (t mod 12)/12 (ln P(y+1) - ln P(y)). */
+    private double lnPriceAt(int nation, int t) {
+        int year = Nations.FIRST_YEAR + t / 12;
+        double a = logPrice(nation, year);
+        return a + (t % 12) / 12.0 * (logPrice(nation, year + 1) - a);
+    }
+
+    /* =====================================================================
        THE SAVE - the state, not what the file and the path give
        ===================================================================== */
 

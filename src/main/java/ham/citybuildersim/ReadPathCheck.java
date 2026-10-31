@@ -1133,7 +1133,6 @@ public class ReadPathCheck {
         for (Founding.Preset p : Founding.Preset.values()) {
             if (p != Founding.Preset.CUSTOM) g.whatItBuys(p.cash(), p.reserveUsd());
         }
-        for (double m : WorldEconomy.FOUNDING_CHOICES) WorldEconomy.settledLevelAt(m);
         g.getDenomination().name(money);
         g.getDenomination().describeUnit(money);
 

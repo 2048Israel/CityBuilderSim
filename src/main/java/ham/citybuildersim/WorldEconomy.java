@@ -3,7 +3,8 @@ package ham.citybuildersim;
 import java.util.Random;
 
 /**
- * The rest of the world, which has its own inflation and did not use to.
+ * The rest of the world, which has its own inflation and did not use to: the in-game US dollar's price level, which is the US's own path where the
+ * city has the nations' moneys (WN4, D29; THE US DOLLAR ON THE US'S PATH below) and a seeded walk around a mean where it has no world file.
  *
  * WHY THIS EXISTS. Every foreign price in the game was a constant - food at
  * $0.20, building materials at $2.00, ore at $0.20 - converted at the exchange
@@ -78,30 +79,11 @@ public class WorldEconomy {
     public static final double MIN_MEAN_INFLATION = .0;
     public static final double MAX_MEAN_INFLATION = .08;
 
-    /**
-     * The worlds the founding screen offers, as its five chips: none, the
-     * default, twice it, the mean every city grew up in before 2026-09-13
-     * (LEGACY_MEAN_INFLATION), and five. On Settings until 0.7.10, which moved
-     * them to the screen a city is founded on - the only moment they act.
+    /*
+     * The worlds the founding screen offered as five chips (FOUNDING_CHOICES) and the closed form under them (settledLevelAt) went in WN4: the US dollar
+     * is the US's money and inflates on its path, so no screen offers the mean any more (THE US DOLLAR ON THE US'S PATH below). The walk's own
+     * settling point is still mean/12 x L = TREND_PULL x (L - 1), above.
      */
-    public static final double[] FOUNDING_CHOICES = { 0, DEFAULT_MEAN_INFLATION, .02, .0333, .05 };
-
-    /**
-     * Where the world's price level settles at a given mean.
-     *
-     * Closed form, because the level IS a closed form: advanceMonth()
-     * compounds at the mean and pulls back toward a flat trend, so it rests
-     * where `mean/12 x L = TREND_PULL x (L - 1)` - the block above, the same
-     * arithmetic that predicted 1.84, 1.37 and 1.15 before any of them were
-     * measured. The founding screen's note under the chips; in the
-     * interface's window until 0.7.10, which is a screen computing a model
-     * figure, so it lives here now.
-     */
-    public static double settledLevelAt(double mean) {
-        double monthly = Math.pow(1 + Math.max(0, mean), 1.0 / 12) - 1;
-        double denom = TREND_PULL - monthly;
-        return denom <= 1e-9 ? 99 : TREND_PULL / denom;
-    }
 
     private double meanInflation = DEFAULT_MEAN_INFLATION;
 
@@ -277,6 +259,11 @@ public class WorldEconomy {
 
     public void advanceMonth(int month) {
         if (pinned) return;
+        // Where the city has the nations, the dollar's prices are the US's, on its path (WN4, D29): no draw, nothing pulled back.
+        if (path != null) {
+            stepOnUsPath(month);
+            return;
+        }
         // The default path seed draws the dollar it always drew (the mix of the seed's difference from it is 0 there), so the default founding's
         // world is the one every harness and the playtest were tuned on; any other seed draws its own (WN3).
         long off = seed == Nations.DEFAULT_SEED ? 0 : World.mix(seed - Nations.DEFAULT_SEED);
@@ -384,16 +371,105 @@ public class WorldEconomy {
         }
     }
 
+    /* =====================================================================
+       THE US DOLLAR ON THE US'S PATH (WN4, D29; Jerus, 2026-10-21)
+
+       "One is the in game us dollar which inflates over time, and the other
+       is the real us dollar": the in-game US$ is the US nation's money, and
+       the US inflates on the nations' path (WorldMoneys: the price level of
+       the US, log-linear between Januaries; about 2% a year on Random, the
+       real years on Historical). Where the city has the nations' moneys the
+       world's price level IS the US's:
+
+           level(t) = levelFactor x P_US(t) / P_US(0)
+
+       t the month since January 2000, P_US(0) the founding's, so the founding
+       month reads 1; the headline rate getInflation() is this year's pace,
+       P_US(y+1)/P_US(y) - 1; the thirteen-month ring and realisedInflation()
+       are as they were, and pin() holds it still as it did. NOTHING PULLS IT
+       BACK: TREND_PULL and the walk's draw belong to the case below, a city
+       with no world file, whose dollar walks around the founding's mean
+       (DEFAULT_MEAN_INFLATION) exactly as it always did.
+
+       WHY. The walk was stationary by design (THE WORLD'S PRICE LEVEL IS
+       STATIONARY above): a band that compounds reached 2,400,000x in three
+       centuries, so the level was dragged to a flat trend. That was the
+       world's price level and the founding screen's five chips set its mean.
+       But the US is a nation of the nations' study with a path of its own, and
+       a dollar that inflates by one rule and a US that inflates by another
+       are two dollars. The city's own inflation, which is the one that reaches
+       the player, is what Denomination answers.
+
+       THE SHOCK. levelFactor is 1 until shockLevel() multiplies it: the
+       ensemble's import shock (tools/ensemble, SHOCK) multiplies the world's
+       level once, and on the path the next month would recompute the level
+       from the US's and forget it. Here the step is PERMANENT - nothing pulls
+       it back, as the walk's TREND_PULL took it back over decades - and
+       it is saved in the slot after the mean.
+       ===================================================================== */
+
+    /** The US's price path, as the dollar follows it: WorldMoneys' interpolation of the nations' price levels (Game hands it, followUsPath()). */
+    public interface UsPath {
+        /** The US's price level in month t (months since January 2000) against its level in month 0. */
+        double level(int t);
+
+        /** The US's inflation in the calendar year of month t: P_US(y+1)/P_US(y) - 1. */
+        double pace(int t);
+    }
+
+    private UsPath path;
+    private double levelFactor = 1;
+
+    /** Follows the US's path from the next month (null: the walk again). Not saved: a load hands it again (Game), and the level is the path's times levelFactor. */
+    public void followUsPath(UsPath path) { this.path = path; }
+
+    /** Follows the US's price path in these moneys (WorldMoneys.usPriceLevel, usPace); null the walk again. */
+    public void followMoneys(WorldMoneys moneys) {
+        followUsPath(moneys == null ? null : new UsPath() {
+            @Override public double level(int t) { return moneys.usPriceLevel(t); }
+            @Override public double pace(int t) { return moneys.usPace(t); }
+        });
+    }
+
+    /** Whether the dollar's prices are the US's, on its path: false with no world file (the walk) and on the literals. */
+    public boolean isOnUsPath() { return path != null; }
+
+    /** What a shock has multiplied the path's level by: 1 until shockLevel() on a path. */
+    public double getLevelFactor() { return levelFactor; }
+
+    /**
+     * An import-price shock: the world's price level times `size`, once. The walk: the level times size and the ring kept (so realisedInflation()
+     * reads the jump for a year), which the trend pull then takes back over decades - exactly what the save-and-restore door did that the ensemble's
+     * SHOCK used before this existed. The path: levelFactor and the level times size, and PERMANENT - nothing pulls the US's path back, and the
+     * next month is the path's times the factor, not the path's alone.
+     */
+    public void shockLevel(double size) {
+        if (!(size > 0) || !Double.isFinite(size)) return;
+        if (path != null) levelFactor *= size;
+        priceLevel = Math.max(1e-6, priceLevel * size);
+    }
+
+    /** The month on the path: no draw, no pull; the level the US's times the factor, the headline rate this year's pace, the ring and the months run as ever. */
+    private void stepOnUsPath(int month) {
+        int t = WorldMoneys.monthIndex(month);
+        annualInflation = path.pace(t);
+        priceLevel = Math.max(1e-6, levelFactor * path.level(t));
+        monthsRun++;
+        recordLevel();
+    }
+
     /* -------------------------------- carrying -------------------------------- */
 
     public double[] toSaveArray() {
-        double[] out = new double[4 + LEVEL_RING];
+        double[] out = new double[5 + LEVEL_RING];
         out[0] = priceLevel;
         out[1] = annualInflation;
         out[2] = monthsRun;
         // Last, so a save written before this existed still reads back: the
         // ring is found by length and an older array simply has no slot here.
         out[3 + LEVEL_RING] = meanInflation;
+        // ...and after the mean, what a shock multiplied the US's path by (WN4): an array without it reads 1.
+        out[4 + LEVEL_RING] = levelFactor;
         // Oldest first, so restore() can replay them in order.
         for (int back = LEVEL_RING - 1; back >= 0; back--) {
             out[3 + (LEVEL_RING - 1 - back)] = levels[(head - back + LEVEL_RING) % LEVEL_RING];
@@ -423,6 +499,8 @@ public class WorldEconomy {
                 ? Math.max(MIN_MEAN_INFLATION,
                            Math.min(MAX_MEAN_INFLATION, saved[3 + LEVEL_RING]))
                 : LEGACY_MEAN_INFLATION;
+        // What a shock multiplied the US's path by (WN4); a save without the slot, or a walk's, is 1.
+        levelFactor = saved.length > 4 + LEVEL_RING && saved[4 + LEVEL_RING] > 0 ? saved[4 + LEVEL_RING] : 1;
     }
 
     /** The mean every city founded before 2026-09-13 grew up in. See restore(). */
@@ -433,6 +511,9 @@ public class WorldEconomy {
         annualInflation = meanInflation;
         monthsRun = 0;
         pinned = false;
+        // A new city meets no path until its moneys are built again (Game), and no shock (WN4).
+        path = null;
+        levelFactor = 1;
         head = 0;
         java.util.Arrays.fill(levels, 0);
         backcastLevels();

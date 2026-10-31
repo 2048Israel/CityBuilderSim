@@ -1943,7 +1943,9 @@ final class TradeScreen {
         WorldEconomy world = ui.game.getWorldEconomy();
         VBox c = card();
         if (world != null) {
-            c.getChildren().add(line(String.format("The world's prices are %.3f× their founding level, %s %.2f%% a year.",
+            // Where the city has the nations' moneys the dollar's prices are the US's own, on its path (WN4, D29).
+            c.getChildren().add(line(String.format("%s %.3f× their founding level, %s %.2f%% a year.",
+                    world.isOnUsPath() ? "US prices are" : "The world's prices are",
                     world.getPriceLevel(), world.getInflation() >= 0 ? "rising" : "falling",
                     Math.abs(world.getInflation()) * 100), WORLD_INFO));
         }

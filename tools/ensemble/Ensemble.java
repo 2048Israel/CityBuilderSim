@@ -583,16 +583,27 @@ public class Ensemble {
         }
 
         /**
-         * THE IMPORT SHOCK: the world's price level times `size`, once, through
-         * WorldEconomy's own public save and restore - the only door the level
-         * has. Only the level moves: the thirteen-month ring stays, so the
-         * world's realised inflation reads the jump for a year, and the trend
-         * pull (TREND_PULL) takes it back over decades. Returns the new level,
-         * NaN if this tree's world has no such door.
+         * THE IMPORT SHOCK: the world's price level times `size`, once. Through
+         * WorldEconomy.shockLevel() where the tree has it (WN4: on the US's
+         * path the next month would recompute the level and forget the shock,
+         * so the factor is kept and the step is permanent); else through
+         * WorldEconomy's own public save and restore, the only door the level
+         * had. Either way only the level moves: the thirteen-month ring stays,
+         * so the world's realised inflation reads the jump for a year, and on
+         * the walk the trend pull (TREND_PULL) takes it back over decades.
+         * Returns the new level, NaN if this tree's world has no such door.
          */
         static double shockWorldLevel(Game g, double size) {
             Object world = get(g, "getWorldEconomy");
             if (world == null) return Double.NaN;
+            try {
+                world.getClass().getMethod("shockLevel", double.class).invoke(world, size);
+                return num(world, "getPriceLevel");
+            } catch (NoSuchMethodException older) {
+                // An older tree: the save-and-restore door below.
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                return Double.NaN;
+            }
             try {
                 Method save = world.getClass().getMethod("toSaveArray");
                 Method restore = world.getClass().getMethod("restore", double[].class);

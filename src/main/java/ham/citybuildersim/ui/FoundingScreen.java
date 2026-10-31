@@ -40,8 +40,7 @@ import static ham.citybuildersim.ui.Pieces.*;
  *
  * EVERY FIGURE IS THE MODEL'S. The currency's name, code and symbols are
  * Currency.fromCityName() and Currency.typed(); the presets and the bounds on
- * a custom founding are Founding's; the world's settled level is
- * WorldEconomy.settledLevelAt(); and whether the city can be founded, and if
+ * a custom founding are Founding's; and whether the city can be founded, and if
  * not why, is Founding.problem(). The screen holds the player's half-made
  * choices between redraws and nothing else.
  *
@@ -116,11 +115,13 @@ import static ham.citybuildersim.ui.Pieces.*;
  * (Nations; Founding.getPathSeed()), and both are chosen once. Nothing in the
  * economy reads the path yet; it is saved with the city (DataSave.worldPath,
  * pathSeed). The five inflation chips, which this page called the world's
- * inflation, are named what they are, the US dollar's (spec-nations 11,
- * item 7): a Historical world replays the real prices of goods against each
- * other and never the dollar's own level, so the choice holds on both paths.
- * The row makes the page about 80 pixels taller: a generated world's no
- * longer fits a 768-pixel window whole, and scrolls there.
+ * inflation and then the US dollar's (spec-nations 11, item 7), went in WN4
+ * (D29, Jerus, 2026-10-21): the in-game US dollar is the US's own money and
+ * inflates on the US's path, so there is nothing to choose, and every city is
+ * founded at WorldEconomy.DEFAULT_MEAN_INFLATION (which the walk reads only
+ * where there is no world file). The row made the page about 80 pixels taller:
+ * a generated world's no longer fit a 768-pixel window whole and scrolled
+ * there; without the chips it is that much shorter again.
  */
 public final class FoundingScreen {
 
@@ -140,7 +141,6 @@ public final class FoundingScreen {
     private Founding.Preset preset = Founding.Preset.STANDARD;
     /** A custom founding, as typed: millions of the city's money, and millions of US dollars. */
     private String customCash = "", customUsd = "";
-    private double mean = WorldEconomy.DEFAULT_MEAN_INFLATION;
     /** The world's seed, as typed or rolled. */
     private String worldSeed = String.valueOf(Founding.DEFAULT_WORLD_SEED);
     /** The path of the world beyond the city (WN1): Historical or Random. */
@@ -192,7 +192,6 @@ public final class FoundingScreen {
         // Custom opens on the Standard figures, in millions, for the player to move.
         customCash = trim(Founding.Preset.STANDARD.cash() / 1000);
         customUsd = trim(Founding.Preset.STANDARD.reserveUsd() / 1000);
-        mean = WorldEconomy.DEFAULT_MEAN_INFLATION;
         // A new world every time the page opens (spec-land, J1a): the dice's first roll.
         worldSeed = String.valueOf(Founding.rollWorldSeed());
         // ...and the path of the world beyond it (WN1): the default (Random since WN3), and a path seed rolled as the ground's is.
@@ -351,26 +350,6 @@ public final class FoundingScreen {
         /* ------------------- the world beyond the city --------------------- */
         VBox pathBlock = pathBlock();
 
-        /* --------------------------- the dollar ---------------------------- */
-        HBox dollarRow = new HBox(0);
-        dollarRow.setAlignment(Pos.CENTER_LEFT);
-        double[] choices = WorldEconomy.FOUNDING_CHOICES;
-        for (int i = 0; i < choices.length; i++) {
-            dollarRow.getChildren().add(dollarChip(choices[i], i == 0, i == choices.length - 1));
-        }
-        HBox dollarLine = infoLine("A faster dollar makes your money stronger. It can't be changed later.",
-                String.format("How fast the US dollar's prices rise a year, on average. The dollar's price level "
-                        + "settles about %.2f× founding at this setting, and the city's currency is "
-                        + "worth its own prices against that - so a faster dollar is a stronger currency "
-                        + "here, cheaper imports, and a harder time selling abroad. %s is the default. "
-                        + "A Historical world replays what really moved - volumes, people, the prices of goods "
-                        + "against each other, the moneys against the dollar - but never the dollar's own price "
-                        + "level, so this choice holds on both paths. "
-                        + "Chosen once: a city keeps the dollar it grew up with.",
-                        WorldEconomy.settledLevelAt(mean), percent(WorldEconomy.DEFAULT_MEAN_INFLATION)),
-                false, Palette.SIZE_SECTION - 1, Palette.TEXT_MUTED, wide);
-        VBox dollarBlock = new VBox(8, caption("THE DOLLAR'S OWN INFLATION"), dollarRow, dollarLine);
-
         /* ------------------------------ found it ----------------------------- */
         found = new Button("Found the city");
         found.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: " + Palette.ON_FILL + ";"
@@ -400,7 +379,7 @@ public final class FoundingScreen {
         VBox panel;
         if (two) {
             // On Earth (0.7.121): the city's choices on the left, the world's on the right.
-            VBox left = new VBox(22, nameBlock, startBlock, pathBlock, dollarBlock);
+            VBox left = new VBox(22, nameBlock, startBlock, pathBlock);
             left.setPrefWidth(LEFT);
             left.setMinWidth(LEFT);
             left.setMaxWidth(LEFT);
@@ -410,7 +389,7 @@ public final class FoundingScreen {
             HBox columns = new HBox(COLUMN_GAP, left, groundBlock);
             panel = new VBox(22, title, columns, bar, whyNot);
         } else {
-            panel = new VBox(22, title, nameBlock, startBlock, groundBlock, pathBlock, dollarBlock, bar, whyNot);
+            panel = new VBox(22, title, nameBlock, startBlock, groundBlock, pathBlock, bar, whyNot);
         }
         panel.setPrefWidth(panelWidth);
         panel.setMinWidth(panelWidth);
@@ -855,20 +834,6 @@ public final class FoundingScreen {
         return amount.replaceAll("\\.0([kMBT])$", "$1");
     }
 
-    /** One choice of the dollar's inflation, as one of a row of five joined segments (worldChip until WN1: they are the US dollar's, spec-nations 11, item 7). */
-    private Button dollarChip(double m, boolean first, boolean last) {
-        boolean on = Math.abs(mean - m) < 1e-9;
-        Button b = new Button(percent(m));
-        String radius = first ? "8 0 0 8" : last ? "0 8 8 0" : "0";
-        b.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 13px;"
-                + " -fx-text-fill: " + (on ? Palette.ON_FILL : Palette.TEXT_LABEL) + ";"
-                + " -fx-background-color: " + (on ? Palette.MONEY : Palette.RAISED) + ";"
-                + " -fx-background-radius: " + radius + "; -fx-border-radius: " + radius + ";"
-                + " -fx-border-color: " + Palette.EDGE + "; -fx-padding: 8 16 8 16; -fx-cursor: hand;");
-        b.setOnAction(e -> { mean = m; draw(); });
-        return b;
-    }
-
     /* =====================================================================
        THE WORLD BEYOND THE CITY: HISTORICAL OR RANDOM (WN1; spec-nations 7, board 4)
 
@@ -882,12 +847,12 @@ public final class FoundingScreen {
     private static String[] pathWords(Nations.Path p) {
         String line, first, rest;
         if (p == Nations.Path.RANDOM) {
-            line = "The same January 2000, then a path of its own drawn from the seed.";
+            line = "The same January 2000, then a path of its own drawn from the seed. The US dollar's prices follow the US's path.";
             first = "The same world in January 2000, then a path of its own, drawn from the seed: booms, slumps,"
                     + " a crisis now and then, at the sizes the real world has had them.";
             rest = "The same seed gives the same world. Chosen once: it can't be changed later.";
         } else {
-            line = "The real world from January 2000; the seed draws its future from 2026.";
+            line = "The real world from January 2000; the seed draws its future from 2026. The US dollar's prices follow the US's path.";
             first = "The real world from January 2000: each nation's growth, its people, its money and the prices"
                     + " of what it makes, year by year to 2025.";
             rest = "Then the UN's projected people and the game's own rule for output, with small shocks drawn"
@@ -1005,7 +970,7 @@ public final class FoundingScreen {
     private Founding generatedChoices() {
         Long seed = seed();
         Long pathSeed = pathSeed();
-        Founding f = Founding.custom(cityName, cash(), reserveUsd(), mean)
+        Founding f = Founding.custom(cityName, cash(), reserveUsd(), WorldEconomy.DEFAULT_MEAN_INFLATION)
                 .withWorldSeed(seed != null ? seed : Founding.DEFAULT_WORLD_SEED)
                 .withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED);
         return ownCurrency ? f.withCurrency(currency()) : f;
@@ -1048,10 +1013,6 @@ public final class FoundingScreen {
 
     private static String trim(double v) {
         return v == Math.rint(v) ? String.format("%.0f", v) : String.valueOf(v);
-    }
-
-    private static String percent(double m) {
-        return String.format("%.2g%%", m * 100).replace("0.0%", "0%");
     }
 
     /* =====================================================================

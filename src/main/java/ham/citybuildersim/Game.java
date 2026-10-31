@@ -1231,6 +1231,7 @@ public class Game {
         worldMarket = null;
         partnerTrade = null;
         worldMoneys = null;
+        world.followMoneys(null);
         getMarkets().clearWorldPrices();
     }
 
@@ -1297,11 +1298,14 @@ public class Game {
             partnerTrade = trade;
             worldMarket = made;
             worldMoneys = buildWorldMoneys(file, beyond, base, made.nationCount());
+            // ...and the US$'s prices follow the US's path where the nations' moneys stand (WN4, D29); the walk where they would not build.
+            world.followMoneys(worldMoneys);
         } catch (IOException | RuntimeException e) {
             System.out.println("The world market could not be built from " + file + " (" + e + "): the city plays on the goods' literals.");
             worldMarket = null;
             partnerTrade = null;
             worldMoneys = null;
+            world.followMoneys(null);
         }
         return worldMarket;
     }
@@ -1532,9 +1536,20 @@ public class Game {
      * (PartnerTrade's history), else the year to date, else none - all US$ - mapped to the eight by tradeSharesByMoney().
      */
     private double[] tradeSharesByMoney(WorldMoneys moneys) {
+        double[] weight = tradeByNation();
+        if (weight == null) return new double[ForeignAccounts.MONEYS];
+        return tradeSharesByMoney(moneys, nations, Nations.yearOf(month), weight);
+    }
+
+    /**
+     * The city's trade with each nation: exports plus imports over the last finished year (PartnerTrade's history), else the year to date, else
+     * nothing (all zero); weight[n] for nation n, 1-based, index 0 unused, in thousands of the city's money. Null with no trade record or no
+     * nations. The MATCH_TRADE shares are made of it (tradeSharesByMoney()) and so are the real effective rate's weights (D29).
+     */
+    private double[] tradeByNation() {
         PartnerTrade trade = partnerTrade;
         Nations beyond = nations;
-        if (trade == null || beyond == null) return new double[ForeignAccounts.MONEYS];
+        if (trade == null || beyond == null) return null;
         double[] weight = new double[beyond.count() + 1];
         double total = 0;
         List<PartnerTrade.Table> history = trade.history();
@@ -1556,7 +1571,7 @@ public class Game {
                 }
             }
         }
-        return tradeSharesByMoney(moneys, beyond, Nations.yearOf(month), weight);
+        return weight;
     }
 
     /**
@@ -1672,6 +1687,60 @@ public class Game {
         if (moneys.month() >= target) return;
         if (!restored && saved == null) System.out.println("The save has no world moneys: they start from January 2000 and catch up to the city's month with no terms of trade.");
         while (moneys.month() < target) moneys.step(moneys.month() + 1, null);
+    }
+
+    /* =====================================================================
+       THE REAL US DOLLAR (WN4, D29; RealDollar, docs/studies/spec-exchange-rates.md 3.9)
+
+       Two US dollars: the in-game one, whose prices follow the US's path
+       (WorldEconomy), and the real one, constant 2015 dollars, which a
+       founding game dollar counts as one of. Three figures for comparison,
+       and NOTHING IN THE MODEL READS THEM (WN6 shows them): the D$ per real
+       US$, the city's GDP in real US$, and the real effective rate. All in
+       the city's money of today - the founding's rate is OPENING_RATE
+       through Denomination.money(), so a currency reform changes none of
+       them. A city founds at ForeignAccounts.OPENING_RATE (1.00), whatever
+       the rule then does to its D$.
+       ===================================================================== */
+
+    /** What a real 2015 US$ costs in D$ now: the rate (D$ per US$) times the US$'s price level since founding (RealDollar.dollarsPer2015Usd); the rate at founding. */
+    public double dollarsPer2015Usd() {
+        return RealDollar.dollarsPer2015Usd(foreign.getRate(), world.getPriceLevel());
+    }
+
+    /**
+     * The last finished month's GDP in real 2015 US$: the month's GDP over the city's price index (YearBook.realGdp's division) over the founding's
+     * rate in today's money (RealDollar.realGdp2015Usd).
+     */
+    public double realGdp2015Usd() {
+        return RealDollar.realGdp2015Usd(economyManager.getNationalAccounts().getGdp(), priceIndex.getIndex(),
+                denomination.money(ForeignAccounts.OPENING_RATE));
+    }
+
+    /**
+     * The D$'s real effective rate, 100 at founding (RealDollar.realEffectiveRate): the weights are the city's trade with each nation over the last
+     * finished year, else the year to date, else the US alone. Each partner's money is the one its nation uses now, against that money's rate in
+     * January 2000; the US's prices are the in-game US$'s own (the world's level, shock and all), a partner's its nation's on the path. With no
+     * world's moneys it is the D$ against the US$ alone, the US$'s prices the world's level.
+     */
+    public double realEffectiveRate() {
+        double foundingRate = denomination.money(ForeignAccounts.OPENING_RATE);
+        double us = world.getPriceLevel();
+        WorldMoneys moneys = worldMoneys;
+        double[] weight = tradeByNation();
+        List<RealDollar.Partner> partners = new ArrayList<>();
+        if (moneys != null && weight != null) {
+            int t = moneys.month();
+            for (int nation = 1; nation < weight.length; nation++) {
+                if (!(weight[nation] > 0)) continue;
+                String code = nations.year(nation, Nations.FIRST_YEAR + t / 12).money();
+                double prices = nation == moneys.usNation() ? us : moneys.priceLevel(nation, t);
+                RealDollar.Partner partner = new RealDollar.Partner(weight[nation], moneys.rate(code), moneys.rateAtStart(code), prices);
+                if (partner.usable()) partners.add(partner);
+            }
+        }
+        return RealDollar.realEffectiveRate(foreign.getRate(), foundingRate, priceIndex.getIndex(),
+                partners.isEmpty() ? RealDollar.usAlone(us) : partners);
     }
 
     /** The seed of the world this city stands on (0.7.56): chosen at founding, or derived from an older save. */
@@ -12345,7 +12414,14 @@ public class Game {
          * EconomyManager, THE D$ THE GOODS ARE STRUCK AT. Under XR1's float a
          * D$ struck one for one let the city's prices chase their own currency
          * without end.
+         *
+         * ...AND THE DOLLAR'S PRICES ARE THE US'S WHERE THE CITY HAS THE NATIONS
+         * (WN4, D29): the world's moneys are built first, so the level this
+         * advances to is the US's on its path (WorldEconomy, THE US DOLLAR ON
+         * THE US'S PATH); with no world file it is the walk it always was.
+         * Idempotent, and the first month's is the only one that builds.
          */
+        ensureWorldMarket();
         world.advanceMonth(month);
         economyManager.strikeExchangeRate(foreign.getRate(), world.getPriceLevel());
         // ...AND THE WORLD'S BAND BEHIND IT (WN3): the January solve when the year has turned, then every good's floor and ceiling from last month's trade; before any market clears.

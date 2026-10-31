@@ -3287,7 +3287,9 @@ final class PolicyScreen {
                     segmentBar(segs, 1, List.of(), 0, 12), key);
         }
         List<Node> lines = new ArrayList<>();
-        if (world != null) lines.add(cardLine("The world's, likewise", String.format("%.3f", world.getPriceLevel()), null));
+        // ...the US's where the dollar's prices follow its path (WN4, D29), the world's on the walk.
+        if (world != null) lines.add(cardLine(world.isOnUsPath() ? "The US's, likewise" : "The world's, likewise",
+                String.format("%.3f", world.getPriceLevel()), null));
         if (unit.getReforms() > 0) {
             lines.add(cardLine("The money is the", unit.name(ui.game.getCurrency()), null));
             lines.add(cardLine("...one of which is", String.format("%,.0f founding", unit.getUnit()), null));
