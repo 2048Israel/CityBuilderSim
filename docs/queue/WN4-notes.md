@@ -56,8 +56,14 @@ of trade (5).*
   shows them.
 - **Harnesses**: `WorldMoneysCheck` (new, 11 sections), `VaultMoneysCheck` (new, 7), `RealDollarCheck` (new, 6);
   ExchangeRateCheck 10-14; SaveFileCheck and ReadPathCheck for the new keys and slots (ForeignAccounts 95-104 the
-  world, 105-141 the vault; `DataSave.worldMoneys`; WorldEconomy's slot after the mean). No `SAVE_FORMAT` bump: the
-  new keys are additive and a missing one reads as no world, all US$, no shock.
+  world, 105-141 the vault; `DataSave.worldMoneys`; WorldEconomy's slot after the mean).
+- **`SAVE_FORMAT` 49 and `OLDEST_LOADABLE_FORMAT` 49** (the gate's review, 2026-10-31; CLAUDE.md's rule): a save of
+  format 48 or older is refused, naming the build that still opens it. It would load wrongly, not merely incompletely:
+  its dollar walked to a flat trend (about 1.15), and loaded with a world file it is handed the US's path, so its first
+  month jumps to the path's level (about 6.65 at m1,200), every import price with it and `realisedInflation()` reading
+  the jump for a year; and its D$ has no world reached (slots 95-104 absent), so its first reprice moves the rate by the
+  gate times the world's whole level. No conversion is written. (The batch first shipped the new keys as additive,
+  missing ones reading as no world; that read rightly only for the vault.)
 
 ## 2. The calls (★; each takes the study's recommendation where it has one, BP1)
 
@@ -123,6 +129,11 @@ are a batch of their own (`ForeignAccounts`, THE REGIMES; Policy › The currenc
 - **ForeignCheck's devaluation fixture** assumed a world whose prices hold still while its two cities buy one
   programme; with the dollar inflating, the slower city's later imports cost 14% more dollars. Its world is pinned.
 - **WoodProductsCheck's "imports none"** read 2.3e-13 m3 of dust from a subtraction; judged by its own `same()`.
+- **A city saved with the world file and loaded without it** (the gate's review, PLAUSIBLE; checked from the code, it is
+  real): `WorldEconomy.restore()` keeps the path's level and drops the path, so the dollar walks again from there, and
+  the walk pulls the level to its flat trend by TREND_PULL (0.6%) of the gap a month: from m1,200's 6.65 about 0.5% a
+  month, 6% a year at first, half the gap gone in about ten years. Its band goes back to the literals as well (WN3's
+  rule for a missing file). Not mended here: pending as WN4-W, in the ship file.
 - **The world's price level now inflates** about 1.9% a year on the default Random path (6.6x by m1200), where the
   walk held it near 1.15; the city's prices averaged +4.6% a year over 1,200 months against main's +3.7%.
 

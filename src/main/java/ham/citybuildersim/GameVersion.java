@@ -8210,8 +8210,31 @@ public final class GameVersion {
      *     lanes and its history by partner would start from nothing it had
      *     traded - so it is refused, naming the build that still opens it. No
      *     conversion is written.
+     *
+     * 49 - THE WORLD'S MONEYS (batch WN4; docs/studies/spec-nations.md 5 and
+     *     D29, spec-exchange-rates.md 3.5 and 3.7): where a world file is
+     *     there, every money of the world moves against the US$ a month at a
+     *     time (WorldMoneys), the D$ feels the world (the dollar cycle, a
+     *     risk-off by its traits, its own terms of trade), the vault keeps a
+     *     balance in each of the eight moneys, and the in-game US$'s prices
+     *     follow the US's path. Saved: the moneys' state (DataSave.worldMoneys),
+     *     the D$'s world (ForeignAccounts slots 95-104), the vault in eight
+     *     (105-141) and the factor an import shock left on the US's path
+     *     (WorldEconomy's slot after the mean).
+     *
+     *     THE FLOOR RISES TO 49 WITH IT (the rule; the gate's review, 2026-10-31):
+     *     a save of format 48 or older loaded with a world file would load
+     *     WRONGLY, not merely incompletely. Its world's price level was the
+     *     walk's, pulled to a flat trend (about 1.15), and the load hands it the
+     *     US's path, so its first month jumps to the path's level (about 6.65
+     *     at m1,200): every import price steps at once, and realisedInflation()
+     *     reads the jump for a year, moving the real rate gap and the D$. And
+     *     its D$ has no world reached (slots 95-104 absent), so its first
+     *     reprice moves the rate by the gate times the whole world's level at
+     *     once. It is refused, naming the build that still opens it. No
+     *     conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 48;
+    public static final int SAVE_FORMAT = 49;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8221,8 +8244,11 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 48 since batch WN3 (THE WORLD MARKET above: a save's band was the
-     * literals and it has no solved world and no trade by partner). 45 from
+     * 49 since batch WN4 (THE WORLD'S MONEYS above: a save's dollar walked
+     * and its D$ felt no world, and loaded on the US's path both would jump in
+     * its first month). 48 from batch WN3 (THE WORLD MARKET above: a save's
+     * band was the literals and it has no solved world and no trade by
+     * partner). 45 from
      * batch PT1-M4 (THE WORKS DEPARTMENT RETIRED above: a save
      * without a depot would load into a city that can never build). 44 from
      * batch CD3 (THE CITY'S PAPER ON AMORTISED COST above: a save's
@@ -8253,7 +8279,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 48;
+    public static final int OLDEST_LOADABLE_FORMAT = 49;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose
