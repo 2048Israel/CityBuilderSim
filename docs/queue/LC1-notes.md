@@ -110,7 +110,8 @@ found for EP1. The reference is `docs/studies/licences.md`; this note is what wa
 
 ## 7. The checks, and one in, one out
 
-- `./batch-check.sh WorldMeasuresCheck RankingsCheck`: exit 0 after the pipeline; the gate's `--pick` result is in
-  the ship file's paragraph.
+- `./batch-check.sh --pick`: exit 0 (WorldMeasuresCheck, RankingsCheck, LongPlaytest, TimingCheck; maps, Stale and
+  the tree clean). No ensemble: the month never reads `world-2025.json` (only the Rankings screen and its two
+  harnesses do), so the trace cannot move.
 - No process file changed (scripts of the checks, the rules a session reads): `Build EXE.bat` +3 -1, the pipeline
   and the harness's list are data code. licences.md is a study, read by data briefs only.
