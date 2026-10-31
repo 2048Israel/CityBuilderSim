@@ -780,7 +780,9 @@ public class RankingsCheck {
         double[] bands = new double[AgeBand.values().length];
         for (AgeBand b : AgeBand.values()) bands[b.ordinal()] = g.getCohorts().get(b);
         check("old-age dependency is seniors and elders over adults, from the city's bands", near(f.get("old_age_dep").value(), 100 * (bands[AgeBand.SENIOR.ordinal()] + bands[AgeBand.ELDER.ordinal()]) / bands[AgeBand.ADULT.ordinal()]));
-        check("density is the people over the land the city owns (" + g.getLandManager().getOwnedKm2() + " km2)", near(f.get("density").value(), pop / g.getLandManager().getOwnedKm2()) && near(f.get("area").value(), g.getLandManager().getOwnedKm2()));
+        double dry = LandManager.km2(g.getLandManager().getOwnedSqFt());
+        check("area is the city's dry ground, the real file's land area (" + dry + " km2 of " + g.getLandManager().getOwnedKm2() + " with its water), and density the people over it",
+                near(f.get("area").value(), dry) && dry > 0 && dry <= g.getLandManager().getOwnedKm2() && near(f.get("density").value(), pop / dry));
         check("reserves in months of imports is the vault in dollars over a month of imports at each month's rate: " + f.get("reserves_months").value(), f.get("reserves_months").value() > 0);
 
         // The six bands' deaths are the month's dead, up to the deaths series' rounding: the orphans' and the unhoused are inside them.
@@ -931,7 +933,7 @@ public class RankingsCheck {
     static CityMeasures.Extras liveExtras(Game g) {
         double[] bands = new double[AgeBand.values().length];
         for (AgeBand band : AgeBand.values()) bands[band.ordinal()] = g.getCohorts().get(band);
-        return new CityMeasures.Extras(g.getLandManager().getOwnedKm2(), bands, g.getLabourMarket().cashMinimumWage());
+        return new CityMeasures.Extras(LandManager.km2(g.getLandManager().getOwnedSqFt()), bands, g.getLabourMarket().cashMinimumWage());
     }
 
     /** The saved cities of these slots, in the order the slots are named. */
@@ -1260,6 +1262,8 @@ public class RankingsCheck {
         check("at its last saved month it is the whole history's last month (" + last.month() + "), with the header's land and bands: area, density and life expectancy are there",
                 last.month() == f.oldLast && last.fx() == full.aligned("fxRate")[full.months() - 1] && last.usPrices() == full.aligned("usPrices")[full.months() - 1]
                         && needLand.stream().allMatch(last.figures()::containsKey));
+        check("...its area is the live city's at the month it was saved (" + last.figures().get("area").value() + " km2): both are the dry ground, the save's and the land manager's",
+                f.before.month() == last.month() && relative(last.figures().get("area").value(), f.before.figures().get("area").value()));
         Rankings.City reformed = only(f.snapshot.at(age), 3).get(0).city();
         check("the reform reaches the saved history: slot 3 at the age has a rate a " + LB3_FACTOR + "th of slot 2's and the same price level, and its GDP is that fraction of slot 2's",
                 relative(reformed.fx() * LB3_FACTOR, c.fx()) && reformed.usPrices() == c.usPrices() && relative(reformed.figures().get("gdp").value() * LB3_FACTOR, c.figures().get("gdp").value()));

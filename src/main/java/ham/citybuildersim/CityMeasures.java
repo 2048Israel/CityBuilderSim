@@ -285,8 +285,8 @@ public final class CityMeasures {
 
         // ---- land ----
         double area = x.areaKm2();
-        put(out, "area", area > 0 ? area : Double.NaN, Double.NaN, "the land the city owns");
-        put(out, "density", pop / area, Double.NaN, "the people over the land the city owns");
+        put(out, "area", area > 0 ? area : Double.NaN, Double.NaN, "the dry ground the city owns, its land area (lakes and sea left out, as the World Bank's land area leaves inland water out)");
+        put(out, "density", pop / area, Double.NaN, "the people over the dry ground the city owns");
         return out;
     }
 

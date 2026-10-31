@@ -1,4 +1,4 @@
-# RankingsCheck.java - 1,432 lines · 44 methods · 9 constants · harnesses
+# RankingsCheck.java - 1,436 lines · 44 methods · 9 constants · harnesses
 
 `ham/citybuildersim/RankingsCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -50,7 +50,7 @@
 >      year's (X over its rate) per year and its real figure at this city's prices static; static boards keep one order in the
 >      three moneys; the sentence and the drawer name and open a saved city.
 >  14. A REFORM LEAVES EVERY RANK: the same city saved before and after a reform by 100 ranks alike, on both boards, in every money,
->      Prices and Convert, for every measure, its values equal to 1e-9.
+>      Prices and Convert, for every measure, its values equal to 1e-9; side by side on one board the two share a rank (Rankings.TIE).
 >  15. AT YOUR AGE EQUALS THE HISTORY FILE'S MONTH: a saved city older than the age has the figures, rate, parity and price level
 >      of its history file at that month; one younger is no row and is listed as stopped, with its last month.
 >  16. THE RANK LINE: one point for each December the city has a figure for, the last one the board's own rank for the city at that
@@ -64,7 +64,7 @@
 > 
 > ... (3 more lines in the source)
 
-**Uses:** [Rankings](Rankings.md) (226), [CityMeasures](CityMeasures.md) (105), [Money](Money.md) (66), [WorldMeasures](WorldMeasures.md) (60), [Nations](Nations.md) (37), [HistorySave](HistorySave.md) (22), [SavedCities](SavedCities.md) (16), [GameFiles](GameFiles.md) (13), [AgeBand](AgeBand.md) (11), [WorldData](WorldData.md) (9), [Game](Game.md) (9), [CityCalendar](CityCalendar.md) (8), [WorldMeasuresCheck](WorldMeasuresCheck.md) (6), [LongPlaytest](LongPlaytest.md) (4), [WorldDataCheck](WorldDataCheck.md) (3), [GameVersion](GameVersion.md) (3), [YearBook](YearBook.md) (2), [ForeignAccounts](ForeignAccounts.md) (1)
+**Uses:** [Rankings](Rankings.md) (226), [CityMeasures](CityMeasures.md) (105), [Money](Money.md) (66), [WorldMeasures](WorldMeasures.md) (60), [Nations](Nations.md) (37), [HistorySave](HistorySave.md) (22), [SavedCities](SavedCities.md) (16), [GameFiles](GameFiles.md) (13), [AgeBand](AgeBand.md) (11), [WorldData](WorldData.md) (9), [Game](Game.md) (9), [CityCalendar](CityCalendar.md) (8), [WorldMeasuresCheck](WorldMeasuresCheck.md) (6), [LongPlaytest](LongPlaytest.md) (4), [WorldDataCheck](WorldDataCheck.md) (3), [GameVersion](GameVersion.md) (3), [YearBook](YearBook.md) (2), [LandManager](LandManager.md) (2), [ForeignAccounts](ForeignAccounts.md) (1)
 
 ## Sections
 
@@ -80,15 +80,15 @@
 | 626 | 8. THE REAL ROWS' PIVOT |
 | 692 | 9. AROUND YOU AND YOUR SIZE |
 | 741 | 10. THE CITY'S MEASURES FROM HISTORY |
-| 832 | 11. THE LOCK AND THE SENTENCE |
-| 874 | LB3: YOUR SAVED CITIES. THE FIXTURE AND ITS HELPERS |
-| 987 | 12. READING THE SLOTS |
-| 1053 | 13. PRICES MOVES ONLY SAVED ROWS, NEVER UNDER REAL US$ |
-| 1179 | 14. A REFORM LEAVES EVERY RANK |
-| 1227 | 15. AT YOUR AGE EQUALS THE HISTORY FILE'S MONTH |
-| 1274 | 16. THE RANK LINE |
-| 1333 | 17. THE SLIM HISTORY EQUALS THE FULL ONE |
-| 1391 | 18. CITYMEASURES.AT |
+| 834 | 11. THE LOCK AND THE SENTENCE |
+| 876 | LB3: YOUR SAVED CITIES. THE FIXTURE AND ITS HELPERS |
+| 989 | 12. READING THE SLOTS |
+| 1055 | 13. PRICES MOVES ONLY SAVED ROWS, NEVER UNDER REAL US$ |
+| 1181 | 14. A REFORM LEAVES EVERY RANK |
+| 1229 | 15. AT YOUR AGE EQUALS THE HISTORY FILE'S MONTH |
+| 1278 | 16. THE RANK LINE |
+| 1337 | 17. THE SLIM HISTORY EQUALS THE FULL ONE |
+| 1395 | 18. CITYMEASURES.AT |
 
 ## Constants
 
@@ -102,7 +102,7 @@
 | 114 | `RankingsCheck.MONEY` | `List.of("gdp", "gdp_pp", "hh_spend_pp", "avg_wage", "min_wage")` | The money measures of the file, and the ones Your world ranks of them. |
 | 117 | `RankingsCheck.ABSENT` | `Set.of("participation", "tertiary", "yield_10y", "debt_foreign", "interest_re...` | The measures the brief leaves absent from the city, each for a reason CityMeasures' javadoc gives. |
 | 121 | `RankingsCheck.CORE` | `List.of("gdp", "gdp_pp", "growth_real", "hh_spend_pp", "investment", "gov_spe...` | What a city of a few years has: every one of these is in its figures. |
-| 895 | `RankingsCheck.LB3_FACTOR` | `100` |  |
+| 897 | `RankingsCheck.LB3_FACTOR` | `100` |  |
 
 ## Fields (state)
 
@@ -111,20 +111,20 @@
 | 97 | `static int fails` |  |
 | 135 | `int n, bad` |  |
 | 136 | `String first` |  |
-| 885 | `Game game` |  |
-| 886 | `GameFiles files` |  |
-| 887 | `boolean reformed` |  |
-| 888 | `int youngLast, oldLast` |  |
-| 889 | `Rankings.City before, after` |  |
-| 890 | `CityMeasures.Extras youngExtras` |  |
-| 891 | `Map<String, CityMeasures.Figure> youngReplayed` |  |
-| 892 | `SavedCities snapshot` |  |
+| 887 | `Game game` |  |
+| 888 | `GameFiles files` |  |
+| 889 | `boolean reformed` |  |
+| 890 | `int youngLast, oldLast` |  |
+| 891 | `Rankings.City before, after` |  |
+| 892 | `CityMeasures.Extras youngExtras` |  |
+| 893 | `Map<String, CityMeasures.Figure> youngReplayed` |  |
+| 894 | `SavedCities snapshot` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 95 | 1338 | **type** `public class RankingsCheck` | The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9): Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading of ... |
+| 95 | 1342 | **type** `public class RankingsCheck` | The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9): Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading of ... |
 | 128 | 4 | `static void check(String label, boolean ok)` | Prints a label and OK or FAIL; the exit code is the count of FAILs. |
 | 134 | 12 | **type** `static final class Tally` | A check over many things, that says how many there were and the first that was wrong. |
 | 138 | 7 | `void see(boolean ok, Supplier<String> what)` _(in RankingsCheck.Tally)_ |  |
@@ -195,75 +195,75 @@
 |---:|---:|---|---|
 | 696 | 44 | `static void theWindows(WorldMeasures wm, Nations nations, Rankings.City live)` |  |
 
-### 10. THE CITY'S MEASURES FROM HISTORY (lines 741-831)
+### 10. THE CITY'S MEASURES FROM HISTORY (lines 741-833)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 745 | 75 | `static void theCity(WorldMeasures wm, Game g, Rankings.City live)` |  |
-| 822 | 9 | `static double constantSeries(String name)` | A history by hand: every series the same every month, but the price index (1), the people and the bands' deaths (so that a life table has them). |
+| 745 | 77 | `static void theCity(WorldMeasures wm, Game g, Rankings.City live)` |  |
+| 824 | 9 | `static double constantSeries(String name)` | A history by hand: every series the same every month, but the price index (1), the people and the bands' deaths (so that a life table has them). |
 
-### 11. THE LOCK AND THE SENTENCE (lines 832-873)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 836 | 37 | `static void theLockAndSentence(WorldMeasures wm, Nations nations, Rankings.City live)` |  |
-
-### LB3: YOUR SAVED CITIES. THE FIXTURE AND ITS HELPERS (lines 874-986)
+### 11. THE LOCK AND THE SENTENCE (lines 834-875)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 884 | 10 | **type** `static final class Saves` | The live city saved three times to its own scratch folder: slot 1 at its month, slot 2 a year on, slot 3 the same month as slot 2 after a reform by 100. |
-| 897 | 18 | `static Saves makeSaves(Game g, Rankings.City live)` |  |
-| 916 | 9 | `static void quietly(Runnable work)` |  |
-| 926 | 3 | `static int lastMonth(HistorySave h)` |  |
-| 931 | 5 | `static CityMeasures.Extras liveExtras(Game g)` | What Rankings.City.of(Game) gives CityMeasures for the live city: its land, its bands and the wage floor in today's money. |
-| 938 | 5 | `static List<Rankings.Saved> only(List<Rankings.Saved> all, int...slots)` | The saved cities of these slots, in the order the slots are named. |
-| 945 | 7 | `static HistorySave fullHistory(GameFiles files, int slot) throws IOException` | A slot's history file read whole, as Game.loadHistory reads it. |
-| 954 | 3 | `static boolean same(Map<String, CityMeasures.Figure> a, Map<String, CityMeasures.Figure> b)` | Whether two sets of figures are the same, measure for measure in the same order, each figure to the digit. |
-| 959 | 3 | `static boolean relative(double a, double b)` | Two figures equal to a relative 1e-9, with no floor: a small figure is held as tightly as a large one. |
-| 964 | 11 | `static void copySlot(GameFiles from, int fromSlot, GameFiles to, int toSlot, int format, boolean history) throws IOException` | Copies slot `from` of one folder to slot `to` of another: the save with its format set to `format` unless that is 0, and the history file if asked. |
-| 977 | 9 | `static Map<Path, String> fingerprint(GameFiles files) throws IOException` | Every file under a folder: its size, modified time and a hash of its bytes. |
+| 838 | 37 | `static void theLockAndSentence(WorldMeasures wm, Nations nations, Rankings.City live)` |  |
 
-### 12. READING THE SLOTS (lines 987-1052)
+### LB3: YOUR SAVED CITIES. THE FIXTURE AND ITS HELPERS (lines 876-988)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 991 | 55 | `static void theSlots(WorldMeasures wm, Nations nations, Saves f) throws IOException` |  |
-| 1047 | 5 | `static boolean delete(GameFiles files, int slot) throws IOException` |  |
+| 886 | 10 | **type** `static final class Saves` | The live city saved three times to its own scratch folder: slot 1 at its month, slot 2 a year on, slot 3 the same month as slot 2 after a reform by 100. |
+| 899 | 18 | `static Saves makeSaves(Game g, Rankings.City live)` |  |
+| 918 | 9 | `static void quietly(Runnable work)` |  |
+| 928 | 3 | `static int lastMonth(HistorySave h)` |  |
+| 933 | 5 | `static CityMeasures.Extras liveExtras(Game g)` | What Rankings.City.of(Game) gives CityMeasures for the live city: its land, its bands and the wage floor in today's money. |
+| 940 | 5 | `static List<Rankings.Saved> only(List<Rankings.Saved> all, int...slots)` | The saved cities of these slots, in the order the slots are named. |
+| 947 | 7 | `static HistorySave fullHistory(GameFiles files, int slot) throws IOException` | A slot's history file read whole, as Game.loadHistory reads it. |
+| 956 | 3 | `static boolean same(Map<String, CityMeasures.Figure> a, Map<String, CityMeasures.Figure> b)` | Whether two sets of figures are the same, measure for measure in the same order, each figure to the digit. |
+| 961 | 3 | `static boolean relative(double a, double b)` | Two figures equal to a relative 1e-9, with no floor: a small figure is held as tightly as a large one. |
+| 966 | 11 | `static void copySlot(GameFiles from, int fromSlot, GameFiles to, int toSlot, int format, boolean history) throws IOException` | Copies slot `from` of one folder to slot `to` of another: the save with its format set to `format` unless that is 0, and the history file if asked. |
+| 979 | 9 | `static Map<Path, String> fingerprint(GameFiles files) throws IOException` | Every file under a folder: its size, modified time and a hash of its bytes. |
 
-### 13. PRICES MOVES ONLY SAVED ROWS, NEVER UNDER REAL US$ (lines 1053-1178)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1057 | 121 | `static void thePrices(WorldMeasures wm, Nations nations, Saves f)` |  |
-
-### 14. A REFORM LEAVES EVERY RANK (lines 1179-1226)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1183 | 43 | `static void theReform(WorldMeasures wm, Nations nations, Saves f)` |  |
-
-### 15. AT YOUR AGE EQUALS THE HISTORY FILE'S MONTH (lines 1227-1273)
+### 12. READING THE SLOTS (lines 989-1054)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1231 | 42 | `static void theAge(WorldMeasures wm, Nations nations, Saves f) throws IOException` |  |
+| 993 | 55 | `static void theSlots(WorldMeasures wm, Nations nations, Saves f) throws IOException` |  |
+| 1049 | 5 | `static boolean delete(GameFiles files, int slot) throws IOException` |  |
 
-### 16. THE RANK LINE (lines 1274-1332)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1278 | 54 | `static void theRankLine(WorldMeasures wm, Nations nations, Saves f)` |  |
-
-### 17. THE SLIM HISTORY EQUALS THE FULL ONE (lines 1333-1390)
+### 13. PRICES MOVES ONLY SAVED ROWS, NEVER UNDER REAL US$ (lines 1055-1180)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1337 | 53 | `static void theSlimHistory(Saves f) throws IOException` |  |
+| 1059 | 121 | `static void thePrices(WorldMeasures wm, Nations nations, Saves f)` |  |
 
-### 18. CITYMEASURES.AT (lines 1391-1432)
+### 14. A REFORM LEAVES EVERY RANK (lines 1181-1228)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1395 | 37 | `static void theMonth(Rankings.City live, Saves f)` |  |
+| 1185 | 43 | `static void theReform(WorldMeasures wm, Nations nations, Saves f)` |  |
+
+### 15. AT YOUR AGE EQUALS THE HISTORY FILE'S MONTH (lines 1229-1277)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1233 | 44 | `static void theAge(WorldMeasures wm, Nations nations, Saves f) throws IOException` |  |
+
+### 16. THE RANK LINE (lines 1278-1336)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1282 | 54 | `static void theRankLine(WorldMeasures wm, Nations nations, Saves f)` |  |
+
+### 17. THE SLIM HISTORY EQUALS THE FULL ONE (lines 1337-1394)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1341 | 53 | `static void theSlimHistory(Saves f) throws IOException` |  |
+
+### 18. CITYMEASURES.AT (lines 1395-1436)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1399 | 37 | `static void theMonth(Rankings.City live, Saves f)` |  |
 

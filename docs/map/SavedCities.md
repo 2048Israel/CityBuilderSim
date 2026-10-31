@@ -21,7 +21,7 @@
 
 **Uses:** [Rankings](Rankings.md) (12), [HistorySave](HistorySave.md) (6), [GameFiles](GameFiles.md) (6), [CityMeasures](CityMeasures.md) (4), [AgeBand](AgeBand.md) (3), [SaveHeader](SaveHeader.md) (2), [Denomination](Denomination.md) (2), [WorldEconomy](WorldEconomy.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [GameLog](GameLog.md) (1), [Currency](Currency.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (1):** [RankingsCheck](RankingsCheck.md)
+**Used by (2):** [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md)
 
 ## Sections
 

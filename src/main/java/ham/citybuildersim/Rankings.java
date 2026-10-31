@@ -71,14 +71,15 @@ public final class Rankings {
          * The live city, off public getters only: its name, its money (Currency.plural()), its month and year,
          * ForeignAccounts' rate and parity, WorldEconomy's price level, the founding rate in today's money
          * (Denomination.money(ForeignAccounts.OPENING_RATE), as WN4 gives the real dollar), and CityMeasures
-         * over its history with the land it owns (LandManager.getOwnedKm2), the people in each age band (PopulationCohorts)
+         * over its history with its dry ground (LandManager.km2 of getOwnedSqFt: the real file's area is land area, inland
+         * water left out, and a save keeps only the dry ground, LB3), the people in each age band (PopulationCohorts)
          * and the wage floor in today's money (LabourMarket.cashMinimumWage). It reads the history through
          * alignedTail a measure at a time: a screen that draws it more than once a month should keep it.
          */
         public static City of(Game g) {
             double[] bands = new double[AgeBand.values().length];
             for (AgeBand band : AgeBand.values()) bands[band.ordinal()] = g.getCohorts().get(band);
-            CityMeasures.Extras extras = new CityMeasures.Extras(g.getLandManager().getOwnedKm2(), bands, g.getLabourMarket().cashMinimumWage());
+            CityMeasures.Extras extras = new CityMeasures.Extras(LandManager.km2(g.getLandManager().getOwnedSqFt()), bands, g.getLabourMarket().cashMinimumWage());
             ForeignAccounts abroad = g.getForeignAccounts();
             int month = g.getMonth();
             return new City(g.getCityName(), g.getCurrency().plural(), month, CityCalendar.yearOf(month),
