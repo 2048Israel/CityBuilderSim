@@ -930,6 +930,13 @@ public class DebtManager {
         return total;
     }
 
+    /** ...and the same pieces in local money, each at the rate it is valued at (getOustandingPrincipal()): what the books carry them at, for a screen that names one money (CD8). */
+    public double getForeignPrincipalLocalIn(String code) {
+        double total = 0;
+        for (Debt d : debts) if (d.isForeign() && d.getMoney().equals(code)) total += d.getOustandingPrincipal();
+        return total;
+    }
+
     /** Whether any foreign piece on the books is written in this money (CD8). */
     public boolean hasForeignDebtIn(String code) {
         for (Debt d : debts) if (d.isForeign() && d.getMoney().equals(code)) return true;

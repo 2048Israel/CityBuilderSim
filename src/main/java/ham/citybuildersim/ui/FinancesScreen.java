@@ -330,6 +330,12 @@ final class FinancesScreen {
     double borrowAsk = 0;
     boolean borrowHold = false;
     /**
+     * The money the paper abroad is asked in (CD8, Jerus 2026-10-23): the code of one of WorldMoneys.EIGHT, the US$ by default; kept through the
+     * clock's redraw like borrowAsk, and read as the US$ again on the page when the world has no rate for it this month (DebtManager.offers()).
+     * borrowAsk, the quote and the button are all in it.
+     */
+    String borrowMoney = Currency.FOREIGN_CODE;
+    /**
      * Whether the bond is asked callable (CD4, spec-city-debt.md 2.6): off by
      * default, kept through the clock's redraw like borrowAsk, and in force
      * only where it can be - a home bond of ten years or more
@@ -897,7 +903,50 @@ final class FinancesScreen {
     }
 
     /** An exchange rate with its unit, as the land office writes it: "D$0.7035 per US$" (the spec's B10). */
-    String perUsd(double rate) { return sym() + fxRate(rate) + " per " + Currency.FOREIGN_SYMBOL; }
+    String perUsd(double rate) { return perMoney(Currency.FOREIGN_CODE, rate); }
+
+    /* ----- the city's paper in any of the eight moneys (CD8): the mark, the words and the figure of the money a piece is written in ----- */
+
+    /** The mark a figure in one of the eight's moneys is written with, by code: "US$", "€", "¥", "CHF " (ForeignAccounts.MONEY_MARK). The US$'s for null and for a code that is none of them. */
+    static String markOf(String code) {
+        int k = ForeignAccounts.moneyIndex(code);
+        return k < 0 ? Currency.FOREIGN_SYMBOL : ForeignAccounts.MONEY_MARK[k];
+    }
+
+    /** The mark of the money a piece is written in. */
+    static String pieceMark(Debt debt) { return markOf(debt.getMoney()); }
+
+    /** A figure in the model's thousands in one of the eight's moneys: "US$2.4M" (Money.usd() to the letter), "€2.4M", "¥310M". */
+    static String inMoney(String code, double thousands) { return marked(markOf(code), money(thousands)); }
+
+    /** ...in the money a piece is written in. */
+    static String inPiece(Debt debt, double thousands) { return inMoney(debt.getMoney(), thousands); }
+
+    /** inMoney() as a function, for the formatter a card hands its figures to. */
+    static java.util.function.DoubleFunction<String> figuresIn(String code) { return v -> inMoney(code, v); }
+
+    /** What a tag says of a piece's money and kind: "US$ BOND" abroad in dollars, "€ BOND" in euros, "BOND" at home. */
+    static String pieceTag(Debt debt) {
+        return (debt.isForeign() ? pieceMark(debt).trim() + " " : "") + kindTag(debt.getType());
+    }
+
+    /** A money in the words that follow "in": "dollars" for the US$, as the screen has always said it, then "euros", "yen", "Canadian dollars" (ForeignAccounts.MONEY_PLURAL). */
+    static String moneyWords(String code) {
+        int k = ForeignAccounts.moneyIndex(code);
+        return k <= 0 ? "dollars" : ForeignAccounts.MONEY_PLURAL[k];
+    }
+
+    /** A money's paper, lower case: "dollar paper" for the US$, as the screen has always said it, then "euro paper", "yen paper", "Canadian dollar paper". */
+    static String paperWord(String code) {
+        int k = ForeignAccounts.moneyIndex(code);
+        return k <= 0 ? "dollar paper" : ForeignAccounts.MONEY_NAME[k].replaceFirst("^the ", "") + " paper";
+    }
+
+    /** ...a sentence's first letter in capitals. */
+    static String upFirst(String words) { return words.isEmpty() ? words : Character.toUpperCase(words.charAt(0)) + words.substring(1); }
+
+    /** An exchange rate with its unit for any of the eight: "D$1.0731 per €", "D$0.7035 per US$" (perUsd() to the letter). */
+    String perMoney(String code, double rate) { return sym() + fxRate(rate) + " per " + markOf(code).trim(); }
 
     /** A share as a whole per cent: "58%". */
     static String pc(double share) { return String.format("%.0f%%", share * 100).replace('-', '−'); }
@@ -1108,7 +1157,7 @@ final class FinancesScreen {
             + "after the twelfth, together: a ghost, because it is many years summed, never one to be weighed "
             + "against the rest. When it is more than twice the tallest year it is drawn broken, a little above "
             + "that year, so the twelve keep the height to be read; its figure is still the whole of it. A "
-            + "striped edge is the part owed in dollars. Click a column for the paper that falls due in it.";
+            + "striped edge is the part owed abroad, in US$ or another of the eight moneys. Click a column for the paper that falls due in it.";
 
     /** The ladder with nothing on it (the spec's T11). */
     static final String NOTHING_DUE = "The city owes nothing, so nothing falls due. The Borrow page is where that "
@@ -1232,7 +1281,7 @@ final class FinancesScreen {
         for (int k = 0; k < 3; k++) {
             if (r.byKind()[k] < .5) continue;
             s.append(first ? ": " : ", ").append(KIND_NAMES[k].toLowerCase()).append(' ').append(d(r.byKind()[k]));
-            if (r.abroadByKind()[k] >= .5) s.append(", ").append(d(r.abroadByKind()[k])).append(" of it in dollars");
+            if (r.abroadByKind()[k] >= .5) s.append(", ").append(d(r.abroadByKind()[k])).append(" of it abroad");
             first = false;
         }
         if (first) s.append(": nothing owed falls in it");
@@ -1253,7 +1302,7 @@ final class FinancesScreen {
         }
         javafx.scene.layout.FlowPane key = keyRow();
         for (int k = 0; k < 3; k++) if (any[k] > 0) key.getChildren().add(keySwatch(Palette.LADDER[k], KIND_NAMES[k]));
-        if (abroad > 0) key.getChildren().add(keySwatch(Palette.BUSINESS, "the edge: in dollars"));
+        if (abroad > 0) key.getChildren().add(keySwatch(Palette.BUSINESS, "the edge: abroad"));
         if (extraColour != null && ladder.proposed() > 0) key.getChildren().add(swatch(extraColour, extraName, true));
         HBox.setHgrow(key, Priority.ALWAYS);
         key.setMaxWidth(Double.MAX_VALUE);
@@ -1314,7 +1363,7 @@ final class FinancesScreen {
     HBox nextDueRow(Debt debt, int month) {
         int due = debt.getMaturityMonth();
         Label amount = figure(d(debt.getOustandingPrincipal()), 13, urgency(due - month));
-        Label kind = tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), instrumentColour(debt.getType()));
+        Label kind = tag(pieceTag(debt), instrumentColour(debt.getType()));
         Label when = words(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due),
                 Palette.SIZE_CAPTION + 1, Palette.TEXT_LABEL);
         HBox under = new HBox(6, kind, when);
@@ -2140,11 +2189,20 @@ final class FinancesScreen {
             + "which is what a devaluation does to a country that borrowed in someone else's money. A stronger one "
             + "makes it smaller. It works both ways and it is not income either way.";
 
+    /** ...and once the city owes in another of the eight (CD8): the same card, every money counted in US$. */
+    static final String ABROAD_INFO = "Owed abroad in US$ and the other moneys the city has sold paper in, each of which "
+            + "does not move in its own money; counted here in US$ at this month's rates between them, and worth in the "
+            + "city's money whatever the exchange rates say. A weaker D$ makes the same paper a bigger debt, and so does "
+            + "the money it is owed in rising against the US$. It works both ways and it is not income either way.";
+
     /** THE DOLLAR DEBT: dollars times the rate is the local figure; what the currency did to it last month as a chip. */
     VBox dollarDebtCard() {
         DebtManager ledger = ui.game.getDebtManager();
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        VBox card = card(caption("THE DOLLAR DEBT", DOLLAR_INFO, door("The currency", Palette.ACCENT,
+        // CD8: the card counts every money abroad in US$ at the month's crosses, so it says so once the city owes in another of the eight.
+        boolean others = false;
+        for (int k = 1; k < WorldMoneys.EIGHT.size(); k++) others |= ledger.hasForeignDebtIn(WorldMoneys.EIGHT.get(k));
+        VBox card = card(caption(others ? "THE DEBT ABROAD" : "THE DOLLAR DEBT", others ? ABROAD_INFO : DOLLAR_INFO, door("The currency", Palette.ACCENT,
                 () -> openTrade("The currency", TradeScreen.TRADE_MONEY_PAGES[0]))));
         card.getChildren().add(figure(usd(ledger.getForeignPrincipalUsd()) + " × " + perUsd(ledger.getExchangeRate())
                 + " = " + d(ledger.getForeignPrincipal()), Palette.SIZE_BODY + 2, Palette.TEXT_HEAD));
@@ -2816,7 +2874,7 @@ final class FinancesScreen {
     static final String DESK_CURVE_INFO = "Today's zero curve is the line: what the city pays to borrow for each term. Each "
             + "line of paper is a dot at the months it has left and the yield the market prices it at now, in its kind's "
             + "colour, and a bond is named beside its dot where there is room. A floating-rate note has no fixed yield, "
-            + "and a linked bond's is a real yield, so neither is on the chart. Dollar paper is priced on the world's curve, "
+            + "and a linked bond's is a real yield, so neither is on the chart. Paper abroad is priced on its own money's curve, "
             + "not this one: its dot is hollow.";
 
     /** THE THREE BARS' (i): the board's paragraph. */
@@ -2837,10 +2895,10 @@ final class FinancesScreen {
             + "figure beside it is what that auction itself would book.";
 
     /** The (i) beside the D$'s move since a dollar piece was sold, on the desk's card and a line's page (CD7): what the figure and its colours mean. */
-    static final String EXCHANGE_INFO = "Dollar paper is owed in US$, and what it costs in D$ moves with the exchange "
-            + "rate. Green is a gain: the D$ has risen since the piece was sold, so the same dollars cost fewer D$. Red "
-            + "is a loss: the D$ has fallen and they cost more. The share is of what the line is carried at, so −10% is "
-            + "a D$ that has lost a tenth against the US$ since the sale. The budget books the move month by month as "
+    static final String EXCHANGE_INFO = "Paper abroad is owed in its own money - the US$ or another of the eight - and what it costs in D$ moves "
+            + "with the exchange rate. Green is a gain: the D$ has risen against that money since the piece was sold, so the "
+            + "same coupons and face cost fewer D$. Red is a loss: the D$ has fallen and they cost more. The share is of what "
+            + "the line is carried at, so −10% is a D$ that has lost a tenth against the piece's money since the sale. The budget books the move month by month as "
             + "the exchange gain (loss) on foreign debt; no cash moves until a coupon or the principal is paid, and "
             + "that is paid at that month's rate.";
 
@@ -2970,7 +3028,7 @@ final class FinancesScreen {
         key.addAll(kinds);
         if (present[3]) key.add(muted("floating: off the chart, no fixed yield"));
         if (present[4]) key.add(muted("linked: off the chart, its yield is real"));
-        if (dollars) key.add(swatch(Palette.TEXT_MUTED, "hollow: dollar paper, priced on the world's curve", true));
+        if (dollars) key.add(swatch(Palette.TEXT_MUTED, "hollow: paper abroad, priced on its money's curve", true));
         return card(caption("WHERE EACH LINE SITS ON THE CURVE", DESK_CURVE_INFO), muted("today's yield, by what it has left"),
                 new DeskCurve(tenors, zero, dots), keyRow(key.toArray(new Node[0])));
     }
@@ -2995,7 +3053,7 @@ final class FinancesScreen {
         // CD7: with dollar paper in the book, the D$'s move since the sales, and what the budget booked of it this month.
         if (holdsDollars(desk)) {
             card.getChildren().addAll(
-                    gainLine("The D$'s move since the dollar paper was sold", gainOf(desk.exchangeSinceSold(), desk.exchangeShare()), EXCHANGE_INFO),
+                    gainLine("The D$'s move since the paper abroad was sold", gainOf(desk.exchangeSinceSold(), desk.exchangeShare()), EXCHANGE_INFO),
                     cardLine("...this month, in the budget's result", signedD(ui.game.getEconomyManager().getNationalAccounts().getDebtExchangeGain()), null));
         }
         return card;
@@ -3192,7 +3250,7 @@ final class FinancesScreen {
         name.setMinWidth(Region.USE_PREF_SIZE);
         // The tag and the name wrap, the name to a second line where they do not fit the column together.
         javafx.scene.layout.FlowPane top = new javafx.scene.layout.FlowPane(Palette.GAP, 2,
-                tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), bookKindColour(debt.getType())), name);
+                tag(pieceTag(debt), bookKindColour(debt.getType())), name);
         top.setAlignment(Pos.CENTER_LEFT);
         List<String> parts = new ArrayList<>();
         parts.add(termWords(debt.getDuration()));
@@ -3289,7 +3347,7 @@ final class FinancesScreen {
             case "LINKED" -> years + "-year inflation-linked bond";
             default       -> years + "-year bond";
         };
-        return what + (debt.isForeign() ? " in dollars" : "");
+        return what + (debt.isForeign() ? " in " + moneyWords(debt.getMoney()) : "");
     }
 
     /** Who holds a piece, one bar (the card's, and the Close it now page's): the households, the bank, the central bank, the businesses and the world; "held abroad" for a dollar piece. */
@@ -3382,7 +3440,7 @@ final class FinancesScreen {
         open("The book", LINE_PAGE, null);
     }
 
-    /** A line named by its term and kind: "10-year bond", "6-month bill", "2-year floating-rate note", "5-year bond in dollars". */
+    /** A line named by its term and kind: "10-year bond", "6-month bill", "2-year floating-rate note", "5-year bond in dollars", "5-year bond in euros". */
     static String kindNoun(Debt debt) {
         String what = switch (debt.getType()) {
             case "NOTE"   -> "bill";
@@ -3391,7 +3449,7 @@ final class FinancesScreen {
             case "LINKED" -> "inflation-linked bond";
             default       -> "bond";
         };
-        return termWords(debt.getDuration()) + " " + what + (debt.isForeign() ? " in dollars" : "");
+        return termWords(debt.getDuration()) + " " + what + (debt.isForeign() ? " in " + moneyWords(debt.getMoney()) : "");
     }
 
     /**
@@ -3429,7 +3487,7 @@ final class FinancesScreen {
         // ----- the head -----
         Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox top = new HBox(Palette.GAP, tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), colour), name);
+        HBox top = new HBox(Palette.GAP, tag(pieceTag(debt), colour), name);
         top.setAlignment(Pos.CENTER_LEFT);
         Label dueOn = new Label(CityCalendar.formatShort(due));
         dueOn.setStyle(Palette.words(Palette.SIZE_LABEL, urgency(due - month)));
@@ -3512,7 +3570,7 @@ final class FinancesScreen {
             close.getChildren().add(gainLine("The D$'s move since it was sold · on what is carried",
                     gainOf(l.exchangeSinceSold(), l.exchangeShare()), EXCHANGE_INFO));
             if (debt.soldAtRate() > 0) {
-                close.getChildren().add(cardLine("Sold with the D$ at", perUsd(debt.soldAtRate()) + ", now " + perUsd(debt.getExchangeRate()), null));
+                close.getChildren().add(cardLine("Sold with the D$ at", perMoney(debt.getMoney(), debt.soldAtRate()) + ", now " + perMoney(debt.getMoney(), debt.getExchangeRate()), null));
             }
         }
         if (taken) {
@@ -3607,8 +3665,8 @@ final class FinancesScreen {
     VBox holdersCard(Debt debt, BookDesk.Line l) {
         VBox card = card(caption("WHO HOLDS IT", null), holdersBar(debt));
         if (debt.isForeign()) {
-            card.getChildren().add(holderLine("the world", Palette.BUILDING_DARK, usd(debt.principalInCurrency()) + " · all of it"));
-            card.getChildren().add(muted("Dollar paper: nobody at home holds it."));
+            card.getChildren().add(holderLine("the world", Palette.BUILDING_DARK, inPiece(debt, debt.principalInCurrency()) + " · all of it"));
+            card.getChildren().add(muted(upFirst(paperWord(debt.getMoney())) + ": nobody at home holds it."));
             return card;
         }
         Object[][] who = {
@@ -3647,10 +3705,10 @@ final class FinancesScreen {
             card.getChildren().add(muted("Not sold at auction: no sale is recorded for it, as the founding's bond has none."));
         }
         for (Debt.Sale s : sales) {
-            String face = dollars ? usd(s.getFace()) : d(s.getFace());
-            String raised = dollars ? usd(s.getProceeds()) : d(s.getProceeds());
+            String face = dollars ? inPiece(debt, s.getFace()) : d(s.getFace());
+            String raised = dollars ? inPiece(debt, s.getProceeds()) : d(s.getProceeds());
             card.getChildren().add(new VBox(1,
-                    words(CityCalendar.formatShort(s.getMonth()) + " · " + s.getHow() + (dollars ? " · in dollars" : ""),
+                    words(CityCalendar.formatShort(s.getMonth()) + " · " + s.getHow() + (dollars ? " · in " + moneyWords(debt.getMoney()) : ""),
                             Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
                     muted(face + " sold, " + raised + " raised · " + String.format("%.2f", s.getPricePer100()) + " per 100 · yield "
                             + pct2(s.getYield()))));
@@ -4243,7 +4301,7 @@ final class FinancesScreen {
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox head = new HBox(Palette.GAP, tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), colour), name, gap,
+        HBox head = new HBox(Palette.GAP, tag(pieceTag(debt), colour), name, gap,
                 figure(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due), Palette.SIZE_LABEL + 1,
                         urgency(due - month)));
         head.setAlignment(Pos.CENTER_LEFT);
@@ -4253,7 +4311,7 @@ final class FinancesScreen {
                 d(g.fairValueOf(debt)), ledger.priceOfPar(debt)));
         Node held = holdersBar(debt);
         Node central = debt.isForeign()
-                ? muted("Dollar paper: the world holds all of it, and offers every slice at fair (D26).")
+                ? muted(upFirst(paperWord(debt.getMoney())) + ": the world holds all of it, and offers every slice at fair (D26).")
                 : debt.centralBankPrincipal() > 0
                 ? muted("The central bank holds " + d(debt.centralBankPrincipal()) + " of it and does not sell (D18): "
                         + d(offerable) + " is on offer.")
@@ -4277,7 +4335,7 @@ final class FinancesScreen {
         ticket.getChildren().addAll(faceRow, faceChips);
         // The default, in words: everything on offer is the principal less the central bank's face, which does not sell (D18).
         ticket.getChildren().add(muted(debt.isForeign()
-                ? "Everything on offer is " + d(offerable) + ": dollar paper is the world's alone (D26)."
+                ? "Everything on offer is " + d(offerable) + ": " + paperWord(debt.getMoney()) + " is the world's alone (D26)."
                 : "Everything on offer is " + d(offerable) + ": the principal less the central bank's face - the central bank does not sell (D18)."));
         if (faceUnread) {
             ticket.getChildren().add(words("“" + closeFaceText.trim() + "” is not an amount: digits, then k, M, B or T - "
@@ -4678,6 +4736,17 @@ final class FinancesScreen {
             + "devaluation makes that debt bigger for free. Holding it leaves the net position unchanged and the next "
             + "bond cheaper - and buys nothing today. Every finance ministry in the literature has made this trade.";
 
+    /** ...where the money borrowed is another of the eight (CD8): the same trade, said in that money. The US$'s is DOLLARS_INFO to the letter. */
+    static String dollarsInfo(String money) {
+        if (ForeignAccounts.moneyIndex(money) <= 0) return DOLLARS_INFO;
+        String in = moneyWords(money);
+        return "Spending it leaves a debt in " + in + " with nothing behind it, and the next fall of the D$ against "
+                + ForeignAccounts.MONEY_NAME[ForeignAccounts.moneyIndex(money)] + " makes that debt bigger for free. "
+                + "Holding it keeps the " + in + " in the vault, in " + in + ": the debt and the holding are one money, "
+                + "so the net position is unchanged and the next bond cheaper - and it buys nothing today. Every "
+                + "finance ministry in the literature has made this trade.";
+    }
+
     void borrowPage(VBox page, boolean foreign) {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
@@ -4693,6 +4762,9 @@ final class FinancesScreen {
             return;
         }
 
+        // A money the world has no rate for this month (CD8) is not one to borrow in: the page reads as the US$, whose rate it always has.
+        if (foreign && !ledger.offers(borrowMoney)) borrowMoney = Currency.FOREIGN_CODE;
+
         // There is no dollar serial since CD2, and no dollar floater or linker since CD5 (spec-city-debt.md 2.7): abroad, a bond.
         if (foreign && homeOnly(instrument(borrowType))) {
             borrowType = "Term";
@@ -4706,7 +4778,7 @@ final class FinancesScreen {
         // ...a bond asked callable (CD4) goes through the callable overload of the same quote.
         boolean callable = callableAsked(kit, foreign);
         DebtQuote quote = borrowAsk > 0
-                ? (foreign ? g.quoteForeign(kit.key(), borrowAsk, borrowTerm, kit.rounding())
+                ? (foreign ? g.quoteForeign(kit.key(), borrowMoney, borrowAsk, borrowTerm, kit.rounding())
                    : callable ? g.quoteLongBond(borrowAsk, borrowTerm, kit.rounding(), borrowCap, true)
                            : g.quoteDebt(kit.key(), borrowAsk, borrowTerm, kit.rounding(), borrowCap))
                 : null;
@@ -4719,6 +4791,7 @@ final class FinancesScreen {
         // Fair for this paper, with the ask on the books: what the cap's chips are read against.
         double fair = sale != null ? sale.ask().fair()
                 : ledger.fairYield(auctionKind(kit), termMonths(kit, borrowTerm), Math.max(0, borrowAsk));
+        if (foreign) page.getChildren().add(moneyCard(kit));
         page.getChildren().add(pair(askCard(kit, foreign, quote, fair), quoteCard(kit, quote, foreign)));
         if (!foreign) {
             page.getChildren().add(auctionCard(kit, sale, quote));
@@ -4726,7 +4799,7 @@ final class FinancesScreen {
             if (red != null) page.getChildren().add(red);
         }
         if (quote != null && !quote.isEmpty()) {
-            double toLocal = foreign ? ledger.getExchangeRate() : 1;
+            double toLocal = foreign ? ledger.rateOf(borrowMoney) : 1;
             DebtManager.Ladder ladder = ledger.ladder(g.getMonth(), quote.schedule(toLocal));
             page.getChildren().add(card(caption("THE LADDER THIS WOULD BUILD", LADDER_INFO,
                             hint("the ghosts are this issue")),
@@ -4734,6 +4807,99 @@ final class FinancesScreen {
         }
         if (foreign) page.getChildren().add(pair(dollarsCard(), null));
         if (foreign && ledger.hasForeignDebt()) page.getChildren().add(foreignDoor());
+    }
+
+    /** IN WHICH MONEY's (i): what the figure under a money is, and what owing in it risks. */
+    static final String MONEY_INFO = "The city can sell its paper abroad in any of the eight moneys, each priced on its own curve: "
+            + "its central bank's policy rate, the city's country premium and the term premium at the term chosen - the "
+            + "figure under each money. A money with low rates is cheaper to owe, and it is owed in that money: if the D$ "
+            + "falls against it, every coupon and the face cost more D$, and if the D$ rises they cost less. A money the "
+            + "world has no rate for this month cannot be borrowed in.";
+
+    /** A money on its chip: its mark and code, "€ EUR"; the code alone where the mark is the code ("CHF"). */
+    static String moneyChip(String code) {
+        String mark = markOf(code).trim();
+        return mark.equals(code) ? code : mark + " " + code;
+    }
+
+    /**
+     * IN WHICH MONEY (CD8, Jerus 2026-10-23: "Borrow gets the choice of money, with each money's fair yield beside it and the risk said
+     * plainly (a falling D$ raises what the debt costs)"): one chip a money of WorldMoneys.EIGHT, its mark and code and under them that
+     * money's own fair yield at the term chosen (DebtManager.foreignCurveRate()), the chosen one lit; a money the world has no rate for
+     * this month (DebtManager.offers()) drawn spent, and a click on it does nothing. Under the chips the risk, in the model's figures: the
+     * D$ at today's rate to that money, that the paper is owed in it, what a fall of the D$ does, and what the city already owes in it.
+     * A city with no world has the US$ alone and a line saying the other seven come with the world.
+     */
+    VBox moneyCard(Instrument kit) {
+        Game g = ui.game;
+        DebtManager ledger = g.getDebtManager();
+        boolean world = g.getWorldMoneys() != null;
+        int months = "Note".equals(kit.key()) ? borrowTerm : borrowTerm * 12;
+        List<String> codes = new ArrayList<>();
+        for (String code : WorldMoneys.EIGHT) if (world || ForeignAccounts.moneyIndex(code) == 0) codes.add(code);
+        String[] labels = new String[codes.size()];
+        for (int i = 0; i < labels.length; i++) labels[i] = moneyChip(codes.get(i));
+        javafx.scene.layout.FlowPane chips = chipStrip(labels, moneyChip(borrowMoney), Palette.SIZE_LABEL,
+                pick -> { for (int i = 0; i < labels.length; i++) if (labels[i].equals(pick)) pickMoney(codes.get(i)); });
+        chips.setAlignment(Pos.CENTER_LEFT);
+        for (int i = 0; i < labels.length && i < chips.getChildren().size(); i++) {
+            if (!(chips.getChildren().get(i) instanceof Button b)) continue;
+            String code = codes.get(i);
+            boolean offered = ledger.offers(code);
+            String name = ForeignAccounts.MONEY_NAME[ForeignAccounts.moneyIndex(code)];
+            b.setText(labels[i] + "\n" + (offered ? pct2(ledger.foreignCurveRate(code, months)) : "no rate"));
+            b.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+            Tooltip tip = new Tooltip(offered
+                    ? upFirst(name) + " at " + borrowTerm + " " + kit.unit() + ": " + pct2(ledger.foreignCurveRate(code, months))
+                            + " a year - its central bank's rate, the city's country premium and the term premium"
+                    : "No rate for " + name + " this month: the world has not priced it, so the city cannot sell paper in it.");
+            tip.setShowDelay(Duration.millis(200));
+            tip.setWrapText(true);
+            tip.setMaxWidth(POPOVER_WIDTH);
+            b.setTooltip(tip);
+            if (!offered) {
+                b.setOnAction(e -> { });
+                b.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_SPENT) + " -fx-background-color: " + Palette.CONTROL + ";"
+                        + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-border-color: transparent;"
+                        + " -fx-border-width: 0 0 2 0; -fx-cursor: default;");
+            }
+        }
+        VBox card = card(caption("IN WHICH MONEY", MONEY_INFO), chips);
+        if (!world) card.getChildren().add(muted("The other seven moneys come with the world; this city has none, so its paper abroad is in US dollars."));
+        // The risk, plainly: the D$ today, what the paper is owed in, and what a fall of the D$ does to it.
+        String code = borrowMoney;
+        String name = ForeignAccounts.MONEY_NAME[Math.max(0, ForeignAccounts.moneyIndex(code))];
+        card.getChildren().add(line("Today's rate: " + perMoney(code, ledger.rateOf(code)) + ". The paper is owed in "
+                + ForeignAccounts.MONEY_PLURAL[Math.max(0, ForeignAccounts.moneyIndex(code))] + ", whatever the D$ does."));
+        card.getChildren().add(line("If the D$ falls against " + name + ", every coupon and the face cost more D$: when " + name
+                + " costs 10% more D$, each costs 10% more."));
+        if (ledger.hasForeignDebtIn(code)) {
+            double owed = ledger.getForeignPrincipalIn(code);
+            card.getChildren().add(line("Already owed in " + moneyWords(code) + ": " + inMoney(code, owed) + ", which is "
+                    + d(ledger.getForeignPrincipalLocalIn(code)) + " as the books carry it."));
+        }
+        return card;
+    }
+
+    /**
+     * A money picked on the chips: the ask, which is in the money's own units, is carried across at the month's cross rates and rounded to a
+     * lot (so a US$ ask does not become a yen-sized one on the click), what was typed goes, and the page is drawn on it.
+     */
+    void pickMoney(String code) {
+        if (code.equals(borrowMoney)) return;
+        DebtManager ledger = ui.game.getDebtManager();
+        double from = ledger.usdPer(borrowMoney), to = ledger.usdPer(code);
+        if (borrowAsk > 0 && from > 0 && to > 0 && Double.isFinite(from) && Double.isFinite(to)) {
+            double lot = instrument(borrowType).rounding();
+            borrowAsk = Math.max(lot, Math.round(borrowAsk * from / to / lot) * lot);
+        } else {
+            borrowAsk = 0;
+        }
+        borrowMoney = code;
+        askTyped = null;
+        askRefused = null;
+        askField = null;
+        showFinanceMenu();
     }
 
     /**
@@ -4744,7 +4910,7 @@ final class FinancesScreen {
      */
     VBox askCard(Instrument kit, boolean foreign, DebtQuote quote, double fair) {
         Game g = ui.game;
-        VBox card = card(caption(foreign ? "THE ASK, ABROAD, IN " + Currency.FOREIGN_CODE : "THE ASK, AT HOME", null));
+        VBox card = card(caption(foreign ? "THE ASK, ABROAD, IN " + borrowMoney : "THE ASK, AT HOME", null));
         GridPane tiles = equalColumns(foreign ? abroadKinds() : INSTRUMENTS.length, TILE_GAP);
         int column = 0;
         for (int i = 0; i < INSTRUMENTS.length; i++) {
@@ -4763,8 +4929,8 @@ final class FinancesScreen {
         if (callableOffered(kit, foreign)) card.getChildren().add(callableSwitch(quote));
 
         double minimum = g.minimumIssueSize();
-        card.getChildren().add(caption(foreign ? "HOW MANY " + Currency.FOREIGN_CODE
-                : "Note".equals(kit.key()) ? "HOW MUCH CASH" : "HOW MUCH FACE", ASK_TYPED_INFO));
+        card.getChildren().add(caption(foreign ? "HOW MANY " + borrowMoney
+                : "Note".equals(kit.key()) ? "HOW MUCH CASH" : "HOW MUCH FACE", foreign ? askTypedInfo(borrowMoney) : ASK_TYPED_INFO));
         /*
          * TYPED, AND BUTTONS THAT SCALE WITH IT (0.7.40). Jerus: "there should
          * be an option to raise trillions or tens of trillions right now max
@@ -4778,14 +4944,14 @@ final class FinancesScreen {
          * issue's size, so neither does this - the quote says what the
          * market takes.
          */
-        String[] shown = askShown(borrowAsk, foreign);
+        String[] shown = askShown(borrowAsk, foreign, borrowMoney);
         javafx.scene.layout.FlowPane figures = new javafx.scene.layout.FlowPane(8, 2);
         figures.getChildren().add(figure(shown[0], Palette.SIZE_TITLE, borrowAsk > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
         if (shown[1] != null) figures.getChildren().add(figure("· " + shown[1], Palette.SIZE_TITLE, Palette.TEXT_LABEL));
         card.getChildren().addAll(figures, askBox(foreign));
         if (askRefused != null) card.getChildren().add(words(askRefused, Palette.SIZE_LABEL, Palette.BAD));
 
-        java.util.function.DoubleFunction<String> w = v -> foreign ? usd(v) : d(v);
+        java.util.function.DoubleFunction<String> w = foreign ? figuresIn(borrowMoney) : this::d;
         double base = askBase();
         double[] by = askSteps(base, kit.rounding());
         javafx.scene.layout.FlowPane steps = new javafx.scene.layout.FlowPane(6, 6);
@@ -4805,7 +4971,7 @@ final class FinancesScreen {
         presets.getChildren().add(stepChip("clear", () -> setAsk(0), true));
         card.getChildren().addAll(steps, presets);
         card.getChildren().add(noteLine("lots of " + w.apply(kit.rounding()) + " · nothing under "
-                + w.apply(foreign ? g.minimumIssueSizeUsd() : minimum),
+                + w.apply(foreign ? g.minimumIssueSizeIn(borrowMoney) : minimum),
                 LOTS_INFO, 560));
         if (!foreign) card.getChildren().addAll(capControls(fair));
         return card;
@@ -4913,9 +5079,16 @@ final class FinancesScreen {
             + "and the ask stays as it was. ÷10 and ×10 scale it; the steps are one unit of its leading digit and "
             + "a tenth of that, never less than a lot; the presets are the city's own figures.";
 
-    /** A typed amount: an optional mark, digits (grouped by commas or not), an optional fraction, an optional unit. */
+    /** ...abroad in one of the eight's moneys (CD8): the same rules, the amount in that money, its mark ignored in front. The US$'s is ASK_TYPED_INFO to the letter. */
+    static String askTypedInfo(String money) {
+        if (ForeignAccounts.moneyIndex(money) <= 0) return ASK_TYPED_INFO;
+        return ASK_TYPED_INFO.replace("Type an amount in dollars", "Type an amount in " + moneyWords(money))
+                .replace("A D$, $ or US$ in front", "A D$, $ or " + markOf(money).trim() + " in front");
+    }
+
+    /** A typed amount: an optional mark (D$, US$, $, or one of the eight's - €, ¥, £, CN¥, C$, A$, CHF), digits (grouped by commas or not), an optional fraction, an optional unit. */
     private static final java.util.regex.Pattern ASK_WORDS = java.util.regex.Pattern.compile(
-            "(?:[A-Za-z]{0,3}\\$)?\\s*((?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?|\\.\\d+)\\s*([kKmMbBtT])?");
+            "(?:[A-Za-z]{0,3}[$€¥£]|(?i:chf))?\\s*((?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?|\\.\\d+)\\s*([kKmMbBtT])?");
 
     /** The ask a typed amount sets, in the model's thousands (Money.toDollars()'s unit), by ASK_TYPED_INFO's rules; NaN when it is not an amount. Pure. */
     static double askFromWords(String typed) {
@@ -4940,10 +5113,10 @@ final class FinancesScreen {
     }
 
     /** The ask written in full and short: {"D$2,500,000,000,000", "D$2.5T"} - the second null when it would say the same; nothing asked, {"nothing asked for yet", null}. Pure. */
-    String[] askShown(double ask, boolean foreign) {
+    String[] askShown(double ask, boolean foreign, String money) {
         if (!(ask > 0)) return new String[] { "nothing asked for yet", null };
-        String full = marked(foreign ? Currency.FOREIGN_SYMBOL : sym(), Money.cash(ask));
-        String brief = foreign ? usd(ask) : d(ask);
+        String full = marked(foreign ? markOf(money) : sym(), Money.cash(ask));
+        String brief = foreign ? inMoney(money, ask) : d(ask);
         return new String[] { full, full.equals(brief) ? null : brief };
     }
 
@@ -4980,18 +5153,20 @@ final class FinancesScreen {
      * (DebtManager.dueWithin()), a month of the treasury's spending
      * (Game.monthOfSpending()), a year of tax as the market prices it
      * (DebtManager.annualCapacityRevenue()) and what the treasury is
-     * overdrawn by (Game.cashShortfall()); abroad, in the dollars the ask is
-     * in, the minimum (Game.minimumIssueSizeUsd()) and what the dollar paper
-     * asks in the next twelve months (DebtManager.dueAbroadWithinUsd()).
+     * overdrawn by (Game.cashShortfall()); abroad, in the money the ask is
+     * in (CD8), the minimum (Game.minimumIssueSizeIn()) and what the paper
+     * abroad asks in the next twelve months (DebtManager.dueAbroadWithinUsd(),
+     * over the money's US$ per unit - the one conversion the screen makes,
+     * there being no getter that reads it in the money's own units).
      * Pure.
      */
     List<AskPreset> askPresets(Instrument kit, boolean foreign) {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
         List<AskPreset> out = new ArrayList<>();
-        out.add(new AskPreset("the minimum", Math.max(foreign ? g.minimumIssueSizeUsd() : g.minimumIssueSize(), kit.rounding())));
+        out.add(new AskPreset("the minimum", Math.max(foreign ? g.minimumIssueSizeIn(borrowMoney) : g.minimumIssueSize(), kit.rounding())));
         double[] figures = foreign
-                ? new double[] { ledger.dueAbroadWithinUsd(12) }
+                ? new double[] { ledger.dueAbroadWithinUsd(12) / ledger.usdPer(borrowMoney) }
                 : new double[] { ledger.dueWithin(12), g.monthOfSpending(), ledger.annualCapacityRevenue(), g.cashShortfall() };
         String[] names = foreign
                 ? new String[] { "falls due abroad within a year" }
@@ -5075,12 +5250,13 @@ final class FinancesScreen {
         return "Note".equals(kit.key()) ? "At a discount: no coupon." : "The world's price; the whole face at the end.";
     }
 
-    /** ...and its (i): what dollar paper is. */
-    static String abroadBlurb(Instrument kit) {
+    /** ...and its (i): what paper abroad is, in the money it is asked in (CD8; the US$'s words are the ones it has always had). */
+    static String abroadBlurb(Instrument kit, String money) {
+        String in = moneyWords(money);
         return "Note".equals(kit.key())
-                ? "Dollars borrowed at a discount to the face, repaid at the face: no coupon, nothing monthly and "
+                ? upFirst(in) + " borrowed at a discount to the face, repaid at the face: no coupon, nothing monthly and "
                         + "everything at once. Sold to the world at its price for the term, not at auction."
-                : "A coupon every month on the whole face, in dollars, and the whole face at the end. Sold to the "
+                : "A coupon every month on the whole face, in " + in + ", and the whole face at the end. Sold to the "
                         + "world at its price for the term, not at auction, and never reopened.";
     }
 
@@ -5096,7 +5272,7 @@ final class FinancesScreen {
         name.setMinWidth(0);
         name.setWrapText(true);
         HBox top = new HBox(compact ? 4 : 6, iconSquare(Icons.PAPER, kit.colour(), compact ? 20 : 24, compact ? 11 : 13), name,
-                infoButton(foreign ? abroadBlurb(kit) : kit.blurb(), true));
+                infoButton(foreign ? abroadBlurb(kit, borrowMoney) : kit.blurb(), true));
         top.setAlignment(Pos.CENTER_LEFT);
         VBox t = new VBox(4, top, muted(kit.range()),
                 words(foreign ? abroadLine(kit) : kit.line(), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
@@ -5199,9 +5375,11 @@ final class FinancesScreen {
         };
     }
 
-    /** The terms abroad as chips, each with the world's rate for it in its tooltip. */
+    /** The terms abroad as chips, each with the world's rate for it in its tooltip: in the money asked in (CD8), that money's curve, and the tooltip names it. */
     Node termChips(Instrument kit) {
         DebtManager ledger = ui.game.getDebtManager();
+        int moneyAt = ForeignAccounts.moneyIndex(borrowMoney);
+        String whose = moneyAt <= 0 ? "the world's" : ForeignAccounts.MONEY_NAME[moneyAt] + "'s";
         List<String> names = new ArrayList<>();
         for (int t : kit.terms()) names.add(String.valueOf(t));
         String[] all = names.toArray(new String[0]);
@@ -5214,7 +5392,7 @@ final class FinancesScreen {
             int t = Integer.parseInt(all[i]);
             int months = "Note".equals(kit.key()) ? t : t * 12;
             if (chips.getChildren().get(i) instanceof Button b) {
-                Tooltip tip = new Tooltip("the world's rate at " + t + " " + kit.unit() + ": " + pct2(ledger.foreignCurveRate(months)));
+                Tooltip tip = new Tooltip(whose + " rate at " + t + " " + kit.unit() + ": " + pct2(ledger.foreignCurveRate(borrowMoney, months)));
                 tip.setShowDelay(Duration.millis(200));
                 b.setTooltip(tip);
             }
@@ -5222,7 +5400,7 @@ final class FinancesScreen {
         return chips;
     }
 
-    /** What the quoted paper is called on its card: "10-year bond", "6-month bill", "20-year amortizing bond", "5-year floating-rate note", "30-year inflation-linked bond", "... in dollars". */
+    /** What the quoted paper is called on its card: "10-year bond", "6-month bill", "20-year amortizing bond", "5-year floating-rate note", "30-year inflation-linked bond", "... in dollars" (in euros, in yen... abroad: borrowMoney). */
     String quoteName(Instrument kit, boolean foreign) {
         String what = switch (kit.key()) {
             case "Note"   -> borrowTerm + "-month bill";
@@ -5231,7 +5409,7 @@ final class FinancesScreen {
             case "Linked" -> borrowTerm + "-year inflation-linked bond";
             default       -> borrowTerm + "-year " + (callableAsked(kit, foreign) ? "callable " : "") + "bond";
         };
-        return what + (foreign ? " in dollars" : "");
+        return what + (foreign ? " in " + moneyWords(borrowMoney) : "");
     }
 
     /**
@@ -5260,18 +5438,19 @@ final class FinancesScreen {
         int month = g.getMonth();
         int months = "Note".equals(kit.key()) ? borrowTerm : borrowTerm * 12;
         String ending = "the whole face falls due in " + CityCalendar.formatShort(month + months);
-        java.util.function.DoubleFunction<String> w = foreign ? Money::usd : this::d;
+        java.util.function.DoubleFunction<String> w = foreign ? figuresIn(borrowMoney) : this::d;
         DebtQuote booked = quote;
         int term = borrowTerm;
         double ask = borrowAsk;
         boolean hold = borrowHold;
+        String money = borrowMoney;
         Auction.Cap cap = borrowCap;
-        VBox offer = offerCard(quoteName(kit, foreign), foreign ? abroadBlurb(kit) : kit.blurb(), quote, pct2(quote.marketRate()) + " a year",
+        VBox offer = offerCard(quoteName(kit, foreign), foreign ? abroadBlurb(kit, money) : kit.blurb(), quote, pct2(quote.marketRate()) + " a year",
                 rateColour(quote, ledger), ending, "Issue for " + w.apply(quote.cashReceived()), () -> {
-                    String summary = foreign ? g.handleForeignLogic(kit.key(), ask, term, kit.rounding(), hold)
+                    String summary = foreign ? g.handleForeignLogic(kit.key(), money, ask, term, kit.rounding(), hold)
                                              : executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap);
                     borrowAsk = 0;
-                    showDebtResultMenu(booked, foreign, summary);
+                    showDebtResultMenu(booked, foreign, money, summary);
                 }, w);
         if (Math.abs(quote.cashReceived() - borrowAsk) > borrowAsk * .005) {
             Node why = noteLine(String.format("That is %s %s than you asked for.",
@@ -5365,7 +5544,7 @@ final class FinancesScreen {
         go.setOnAction(e -> {
             String summary = executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap, callable);
             borrowAsk = 0;
-            showDebtResultMenu(booked, false, summary);
+            showDebtResultMenu(booked, false, null, summary);
         });
         // A sale that does not cover its own fixed cost raises nothing: the button does not offer it.
         if (!(quote.cashReceived() > 0)) {
@@ -5765,12 +5944,17 @@ final class FinancesScreen {
         }
     }
 
-    /** AND THE DOLLARS: convert and spend, or hold as reserves (the spec's W8). */
+    /** AND THE DOLLARS: convert and spend, or hold as reserves (the spec's W8); AND THE EUROS, YEN... where the money borrowed is another of the eight (CD8), the hold line saying they stay in the vault in that money. */
     VBox dollarsCard() {
         String[] names = {"Convert and spend it", "Hold it as reserves"};
-        return card(setting("AND THE DOLLARS", DOLLARS_INFO, names, borrowHold ? names[1] : names[0],
-                new String[] {"Spending it leaves a dollar debt with nothing behind it.",
-                        "Holding it leaves the net position unchanged and the next bond cheaper - and buys nothing today."},
+        boolean usd = ForeignAccounts.moneyIndex(borrowMoney) <= 0;
+        String in = moneyWords(borrowMoney);
+        return card(setting("AND THE " + in.toUpperCase(java.util.Locale.ROOT), dollarsInfo(borrowMoney), names, borrowHold ? names[1] : names[0],
+                new String[] {usd ? "Spending it leaves a dollar debt with nothing behind it."
+                                  : "Spending it leaves a debt in " + in + " with nothing behind it.",
+                        usd ? "Holding it leaves the net position unchanged and the next bond cheaper - and buys nothing today."
+                            : "The " + in + " stay in the vault, in " + in + ": the debt and the holding are one money, "
+                                + "so the net position is unchanged and the next bond cheaper - and it buys nothing today."},
                 null, pick -> {
                     borrowHold = pick.startsWith("Hold");
                     showFinanceMenu();
@@ -6378,8 +6562,8 @@ final class FinancesScreen {
     }
 
     /** Shows the terms the player just agreed to: the quote booked as a receipt, and the ladder with it on the books; or what the booking said when nothing was booked. */
-    void showDebtResultMenu(DebtQuote quote, boolean foreign, String summary) {
-        ui.clearMenu("showDebtResultMenu", () -> showDebtResultMenu(quote, foreign, summary));
+    void showDebtResultMenu(DebtQuote quote, boolean foreign, String money, String summary) {
+        ui.clearMenu("showDebtResultMenu", () -> showDebtResultMenu(quote, foreign, money, summary));
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
         VBox page = widePage();
@@ -6389,7 +6573,7 @@ final class FinancesScreen {
             page.getChildren().add(card(caption("NOTHING WAS ISSUED", null),
                     line(summary == null ? "Nothing issued." : summary.trim())));
         } else {
-            java.util.function.DoubleFunction<String> w = foreign ? Money::usd : this::d;
+            java.util.function.DoubleFunction<String> w = foreign ? figuresIn(money) : this::d;
             int month = g.getMonth();
             Auction.Result sale = quote.auction();
             // A reopened line falls due on the line's date: the auction's months are the line's left.
@@ -6418,7 +6602,7 @@ final class FinancesScreen {
                             ? cardLine("Falls due, the indexed principal", CityCalendar.format(month + months) + " · never under the face", null)
                             : cardLine("Falls due, the whole face", CityCalendar.format(month + months), null),
                     cardLine(totalWords(instrument(quote.instrument())), w.apply(quote.totalCost()), null),
-                    foreign ? line("In dollars, at " + perUsd(ledger.getExchangeRate()) + ".") : null,
+                    foreign ? line(upFirst("in " + moneyWords(money)) + ", at " + perMoney(money, ledger.rateOf(money)) + ".") : null,
                     // A dollar quote's rates are the world's for this paper, not the city's own.
                     line(foreign ? String.format("Priced at %s on the world's curve (%s before this issue); the city's "
                                     + "own rate is %s.", pct2(quote.marketRate()), pct2(quote.rateBefore()),
