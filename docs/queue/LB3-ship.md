@@ -1,0 +1,14 @@
+## changelog
+### {next} — LB3, Rankings: your saved cities — 2026-10-31, ready, see docs/queue/LB3-notes.md
+The other slots (1-10, the autosave left out) rank beside the city on the Rankings board, read and never written
+(`SavedCities`): each its own world, pivoted by its own rate, parity and US prices in the units of its last save, so a
+currency reform never moves a rank. Prices opens with them (D2): per year, each in its own year's dollars, or static,
+at the city's prices. Your cities at: Now or Your age (D3), each saved city read from its history at the city's age,
+one that never got there named with the month it stopped. The city's card draws its rank over the years, one point a
+December, against Real world 2025 (D12). Compare beside YOUR CITIES on the main menu opens it. The history records the
+US price level (`usPrices`), which no save kept; a city's area is now its dry ground, as the real figures are land
+area. Today's ten saves are from older builds and stay off the board. `RankingsCheck` sections 12-18. No ensemble.
+## pending
+| LB3-C | Eye-check the saved cities on Rankings ({next}): found two cities in this build and save each to a slot, play one on and open Rankings. (1) A "Your cities" chip after Your size, with its count; beside it YOUR CITIES AT: Now / Your age. (2) Saved rows with a floppy icon, "slot N" and their month; a click opens their drawer. (3) Switch Money to game US$: Prices opens; Per year against Static moves only the saved rows. (4) Your age: a city younger than yours leaves the board and a line under the table says when it stopped. (5) Your card: RANK OVER THE YEARS, one dot a December. (6) Esc to the menu: "Compare ›" beside YOUR CITIES opens the tab on Your cities. (7) Under the table, a line counts the saves from older builds | Built at night, so nobody has looked at it. UiProbe drew it with no exception; the first read of the slots happens on a worker, so "(reading…)" may flash. The chip row wraps on a narrow window | [LB3-notes §4](docs/queue/LB3-notes.md) |
+| LB3-M | The manual's Rankings page ({next}): the text is written (`docs/queue/LB3-manual.md`, LB2's board and LB3's saved cities) and goes into the published manual at its next edition | The orchestrator's rule: a manual edition only at a milestone or when Jerus asks; republishing the 1.1 MB page for one chapter is not one | [LB3-manual](docs/queue/LB3-manual.md) |
+| LB3-D | The city in play beside its own slot ({next}): a city loaded from slot 3 also shows slot 3 as a saved row, and at Your age it nearly ties with itself. Recommended: mark a slot with the same founding (name and world seed) as "this city, as saved", and leave it out at Your age | The game does not know which slot a city came from; the fix reads `Game`'s founding, which lane A was editing tonight | [LB3-notes §8](docs/queue/LB3-notes.md) |
