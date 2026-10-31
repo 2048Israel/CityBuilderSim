@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,996 constants in 465 files.**
+**5,012 constants in 466 files.**
 
-## model (2489 constants)
+## model (2499 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -443,10 +443,10 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 28 | `CityCalendar.EPOCH_YEAR` | `2000` | The year month 1 falls in. |
-| 30 | `CityCalendar.MONTHS` | `{ "January", "February", "March", "April", "May", "June", "July", "August", "September"...` |  |
-| 35 | `CityCalendar.SHORT_MONTHS` | `{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }` |  |
-| 41 | `CityCalendar.DAYS` | `{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }` | Days in each month of a common year; February is corrected below. |
+| 32 | `CityCalendar.EPOCH_YEAR` | `1900` | The year month 1 falls in. |
+| 34 | `CityCalendar.MONTHS` | `{ "January", "February", "March", "April", "May", "June", "July", "August", "September"...` |  |
+| 39 | `CityCalendar.SHORT_MONTHS` | `{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }` |  |
+| 45 | `CityCalendar.DAYS` | `{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }` | Days in each month of a common year; February is corrected below. |
 
 ### CityLand.java ([map](map/CityLand.md))
 
@@ -1396,25 +1396,25 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1136 | `Game.FOUNDING_CASH` | `100_000` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
 | 1139 | `Game.FOUNDING_RESERVE_USD` | `25_000` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
 | 1142 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
-| 1458 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
-| 3001 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 5895 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 5898 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 7500 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 7707 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 8864 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 9424 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 10830 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 11000 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 11039 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 11200 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 13041 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 13053 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 13056 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 13071 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
-| 13082 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 14695 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 15088 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 1460 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
+| 3003 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 5897 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 5900 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 7502 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 7709 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 8866 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 9426 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 10832 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 11002 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 11041 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 11202 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
+| 13043 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 13055 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 13058 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 13073 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
+| 13084 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 14697 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 15090 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1455,9 +1455,9 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 7372 | `GameVersion.VERSION` | `"0.8.90"` | Bump on release. |
-| 8237 | `GameVersion.SAVE_FORMAT` | `49` | The save shape. |
-| 8282 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `49` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 8290 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
+| 8253 | `GameVersion.SAVE_FORMAT` | `50` | The save shape. |
+| 8300 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `50` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 8308 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ### Gateways.java ([map](map/Gateways.md))
 
@@ -2181,48 +2181,48 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 60 | `Nations.DEFAULT_PATH` | `Path.RANDOM` | The path a founding takes when nobody picks one, on the Earth and on a generated world alike: Random (WN3; Jerus, 2026-10-29: "A new world defaults to the Random path instead of Historical"). |
-| 63 | `Nations.DEFAULT_SEED` | `48_213L` | The path's seed when nobody rolls one: 48,213, the founding board's (spec-nations, board 4), so every harness and the playtest meet one world. |
-| 70 | `Nations.FIRST_YEAR` | `CityCalendar.EPOCH_YEAR` | The year a path begins in, January of it: the city's calendar's (CityCalendar.EPOCH_YEAR). |
-| 73 | `Nations.HISTORY_LAST_YEAR` | `2025` | The last year the file's history runs to (output, prices, rates): Historical replays it to here at most, and the game's own rule goes on [R11]. |
-| 76 | `Nations.PEOPLE_LAST_YEAR` | `2100` | The last year of the UN's people, the medium variant [R13]; past it people are held and a Historical nation's growth eases. |
-| 79 | `Nations.FRONTIER` | `"USA"` | The nation whose output a head is the frontier the others converge to: the United States [R11]. |
-| 82 | `Nations.FRONTIER_GROWTH` | `.015` | The frontier's growth a head a year (est.: the US's grew about 1.3% a year 2000-2024 [R11], about 2% over the long run). |
-| 85 | `Nations.CONVERGENCE` | `.02` | The share of the gap to the frontier (in logs) a nation closes a year: Barro and Sala-i-Martin's 2% [R29]. |
-| 88 | `Nations.CATCH_UP_MAX` | `.02` | The most the catch-up adds to the trend (est.: 2% of the whole gap would give the poorest about 10% a year; the typical developing nation grew about two points faster than the US in 2000-2019 [R11]). |
-| 91 | `Nations.SD_RICH` | `.018` | One standard deviation of a rich nation's yearly growth: the G7's, 2000-2019 [R11]. |
-| 94 | `Nations.SD_EMERGING` | `.027` | One standard deviation of an emerging economy's yearly growth: fifteen large ones, 2000-2019 [R11]. |
-| 97 | `Nations.EMERGING_GAP` | `1.7` | The gap to the frontier, in logs, at which a nation swings like an emerging economy (est.: the G7's output a head is about 5.5 times those fifteen's). |
-| 100 | `Nations.SD_MAX` | `.045` | The most a year's whole swing is, one standard deviation, however poor the nation (est.). |
-| 103 | `Nations.WORLD_SHARE_RICH` | `.27` | The share of a rich nation's output swings the world factor explains: 27% in the industrial nations, about 11% across 106 [R30]. |
-| 106 | `Nations.WORLD_SD` | `SD_RICH * Math.sqrt(WORLD_SHARE_RICH)` | The world factor's size, one standard deviation: that share of a rich nation's variance, so a fixed size that is 12% of an emerging one's [R30]. |
-| 109 | `Nations.REGION_SHARE` | `.10` | The share of an emerging economy's variance a region's factor is (est., after [R30]). |
-| 112 | `Nations.REGION_SD` | `SD_EMERGING * Math.sqrt(REGION_SHARE)` | A region's factor's size, one standard deviation, drawn per region and year. |
-| 115 | `Nations.OWN_PERSISTENCE` | `.3` | The share of this year's own shock that carries into the next: 0.3 (spec-nations 7.2). |
-| 118 | `Nations.CRISIS_RATE` | `.017` | The chance a year a nation not in a crisis starts one: Barro's falls of 15% or more in output a head, 1.7% of country-years over a century [R32]. |
-| 121 | `Nations.CRISIS_DEPTH_MIN` | `.15` | The shallowest a crisis is, the share of output a head lost over its years: Barro's threshold [R32]. |
-| 124 | `Nations.CRISIS_DEPTH_MAX` | `.30` | The deepest a crisis is (est.: Barro and Ursua's mean fall about 22%). |
-| 127 | `Nations.CRISIS_YEARS` | `3` | The years a crisis runs, the fall spread evenly over them (est.: "over a few years" [R32]). |
-| 130 | `Nations.HISTORICAL_SHOCK_SHARE` | `.5` | The size of a Historical nation's shocks after its data, against Random's: world, region and own (est.: spec 7.1, "sized as Random's but smaller"); it draws no crisis. |
-| 133 | `Nations.LONG_RUN_GROWTH` | `.01` | The growth a head a Historical nation eases to past 2100 (the leaderboard's D8; the nations study's D14: about what the world has sustained over the long run). |
-| 136 | `Nations.EASE_YEARS` | `50` | The years past 2100 a Historical nation's growth takes to ease from its 2091-2100 average to LONG_RUN_GROWTH. |
-| 139 | `Nations.LONG_RUN_WINDOW` | `10` | The years of growth a head, to 2100, the ease starts from (the leaderboard's D8). |
-| 142 | `Nations.NO_DATA_SHARE` | `.1` | The share of the frontier's output a head a nation with no output figure at all starts from (est.). |
-| 145 | `Nations.LOW_INCOME_MAX` | `890` | A nation below this output a head (US$ of 2015) is low income (est.: the World Bank's FY2026 US$1,135 of 2024 over the US GDP deflator since 2015). |
-| 148 | `Nations.LOWER_MIDDLE_MAX` | `3_510` | A nation below this is lower middle income (est.: the World Bank's FY2026 US$4,495 of 2024, deflated to 2015). |
-| 151 | `Nations.UPPER_MIDDLE_MAX` | `10_890` | A nation below this is upper middle income, above it high (est.: the World Bank's FY2026 US$13,935 of 2024, deflated to 2015). |
-| 154 | `Nations.INFLATION_MEAN` | `{.02,.035,.055,.065 }` | A year's mean inflation by income group, high, upper middle, lower middle, low (est., after the WDI's medians 2000-2019 [R11]). |
-| 157 | `Nations.INFLATION_SD` | `{.012,.025,.035,.045 }` | One standard deviation of a year's inflation innovation by income group, in the same order (est., after the WDI's medians 2000-2019 [R11]). |
-| 160 | `Nations.INFLATION_PERSISTENCE` | `.6` | The share of this year's inflation, above or below its group's mean, that carries into the next (est., after [R11]). |
-| 163 | `Nations.INFLATION_FLOOR` | `-.05` | The lowest a drawn year's inflation is, a shade of deflation (est.); a published year is the file's whatever it was. |
-| 166 | `Nations.DOLLAR` | `"USD"` | The US dollar's code: its rate is 1 always, and a money's rate is against it. |
-| 169 | `Nations.RATE_SD` | `.10` | A floating money's yearly change against the dollar beyond relative parity, one standard deviation (est.). |
-| 172 | `Nations.PRICE_PERSISTENCE` | `.7` | The share of a good's price shock that carries into the next year: 0.7 (spec-nations 7.2). |
-| 175 | `Nations.MIN_PRICE_SWING` | `.03` | The least a good's yearly price swing, one standard deviation of its log change, is taken to be (est.: manufactured goods move little). |
-| 178 | `Nations.DEFAULT_REGION` | `"East Asia & Pacific"` | The region of a nation the file gives none (Taiwan, which WDI lacks): East Asia & Pacific's. |
-| 181 | `Nations.WORLD` | `1, REGION = 2, OWN = 3, CRISIS = 4, CRISIS_DEPTH = 5, INFLATION = 6, RATE = 7, PRICE = 8` | The kinds of draw, and where a draw that belongs to no nation sits among the nations' numbers. |
-| 182 | `Nations.WORLD_NATION` | `0, REGION_BASE = 1000, GOOD_BASE = 2000` |  |
-| 206 | `Nations.NO_DRAWS` | `new Draws(0, 0, 0, 0, false)` |  |
+| 65 | `Nations.DEFAULT_PATH` | `Path.RANDOM` | The path a founding takes when nobody picks one, on the Earth and on a generated world alike: Random (WN3; Jerus, 2026-10-29: "A new world defaults to the Random path instead of Historical"). |
+| 68 | `Nations.DEFAULT_SEED` | `48_213L` | The path's seed when nobody rolls one: 48,213, the founding board's (spec-nations, board 4), so every harness and the playtest meet one world. |
+| 75 | `Nations.FIRST_YEAR` | `CityCalendar.EPOCH_YEAR` | The year a path begins in, January of it: the city's calendar's (CityCalendar.EPOCH_YEAR). |
+| 78 | `Nations.HISTORY_LAST_YEAR` | `2025` | The last year the file's history runs to (output, prices, rates): Historical replays it to here at most, and the game's own rule goes on [R11]. |
+| 81 | `Nations.PEOPLE_LAST_YEAR` | `2100` | The last year of the UN's people, the medium variant [R13]; past it people are held and a Historical nation's growth eases. |
+| 84 | `Nations.FRONTIER` | `"USA"` | The nation whose output a head is the frontier the others converge to: the United States [R11]. |
+| 87 | `Nations.FRONTIER_GROWTH` | `.015` | The frontier's growth a head a year (est.: the US's grew about 1.3% a year 2000-2024 [R11], about 2% over the long run). |
+| 90 | `Nations.CONVERGENCE` | `.02` | The share of the gap to the frontier (in logs) a nation closes a year: Barro and Sala-i-Martin's 2% [R29]. |
+| 93 | `Nations.CATCH_UP_MAX` | `.02` | The most the catch-up adds to the trend (est.: 2% of the whole gap would give the poorest about 10% a year; the typical developing nation grew about two points faster than the US in 2000-2019 [R11]). |
+| 96 | `Nations.SD_RICH` | `.018` | One standard deviation of a rich nation's yearly growth: the G7's, 2000-2019 [R11]. |
+| 99 | `Nations.SD_EMERGING` | `.027` | One standard deviation of an emerging economy's yearly growth: fifteen large ones, 2000-2019 [R11]. |
+| 102 | `Nations.EMERGING_GAP` | `1.7` | The gap to the frontier, in logs, at which a nation swings like an emerging economy (est.: the G7's output a head is about 5.5 times those fifteen's). |
+| 105 | `Nations.SD_MAX` | `.045` | The most a year's whole swing is, one standard deviation, however poor the nation (est.). |
+| 108 | `Nations.WORLD_SHARE_RICH` | `.27` | The share of a rich nation's output swings the world factor explains: 27% in the industrial nations, about 11% across 106 [R30]. |
+| 111 | `Nations.WORLD_SD` | `SD_RICH * Math.sqrt(WORLD_SHARE_RICH)` | The world factor's size, one standard deviation: that share of a rich nation's variance, so a fixed size that is 12% of an emerging one's [R30]. |
+| 114 | `Nations.REGION_SHARE` | `.10` | The share of an emerging economy's variance a region's factor is (est., after [R30]). |
+| 117 | `Nations.REGION_SD` | `SD_EMERGING * Math.sqrt(REGION_SHARE)` | A region's factor's size, one standard deviation, drawn per region and year. |
+| 120 | `Nations.OWN_PERSISTENCE` | `.3` | The share of this year's own shock that carries into the next: 0.3 (spec-nations 7.2). |
+| 123 | `Nations.CRISIS_RATE` | `.017` | The chance a year a nation not in a crisis starts one: Barro's falls of 15% or more in output a head, 1.7% of country-years over a century [R32]. |
+| 126 | `Nations.CRISIS_DEPTH_MIN` | `.15` | The shallowest a crisis is, the share of output a head lost over its years: Barro's threshold [R32]. |
+| 129 | `Nations.CRISIS_DEPTH_MAX` | `.30` | The deepest a crisis is (est.: Barro and Ursua's mean fall about 22%). |
+| 132 | `Nations.CRISIS_YEARS` | `3` | The years a crisis runs, the fall spread evenly over them (est.: "over a few years" [R32]). |
+| 135 | `Nations.HISTORICAL_SHOCK_SHARE` | `.5` | The size of a Historical nation's shocks after its data, against Random's: world, region and own (est.: spec 7.1, "sized as Random's but smaller"); it draws no crisis. |
+| 138 | `Nations.LONG_RUN_GROWTH` | `.01` | The growth a head a Historical nation eases to past 2100 (the leaderboard's D8; the nations study's D14: about what the world has sustained over the long run). |
+| 141 | `Nations.EASE_YEARS` | `50` | The years past 2100 a Historical nation's growth takes to ease from its 2091-2100 average to LONG_RUN_GROWTH. |
+| 144 | `Nations.LONG_RUN_WINDOW` | `10` | The years of growth a head, to 2100, the ease starts from (the leaderboard's D8). |
+| 147 | `Nations.NO_DATA_SHARE` | `.1` | The share of the frontier's output a head a nation with no output figure at all starts from (est.). |
+| 150 | `Nations.LOW_INCOME_MAX` | `890` | A nation below this output a head (US$ of 2015) is low income (est.: the World Bank's FY2026 US$1,135 of 2024 over the US GDP deflator since 2015). |
+| 153 | `Nations.LOWER_MIDDLE_MAX` | `3_510` | A nation below this is lower middle income (est.: the World Bank's FY2026 US$4,495 of 2024, deflated to 2015). |
+| 156 | `Nations.UPPER_MIDDLE_MAX` | `10_890` | A nation below this is upper middle income, above it high (est.: the World Bank's FY2026 US$13,935 of 2024, deflated to 2015). |
+| 159 | `Nations.INFLATION_MEAN` | `{.02,.035,.055,.065 }` | A year's mean inflation by income group, high, upper middle, lower middle, low (est., after the WDI's medians 2000-2019 [R11]). |
+| 162 | `Nations.INFLATION_SD` | `{.012,.025,.035,.045 }` | One standard deviation of a year's inflation innovation by income group, in the same order (est., after the WDI's medians 2000-2019 [R11]). |
+| 165 | `Nations.INFLATION_PERSISTENCE` | `.6` | The share of this year's inflation, above or below its group's mean, that carries into the next (est., after [R11]). |
+| 168 | `Nations.INFLATION_FLOOR` | `-.05` | The lowest a drawn year's inflation is, a shade of deflation (est.); a published year is the file's whatever it was. |
+| 171 | `Nations.DOLLAR` | `"USD"` | The US dollar's code: its rate is 1 always, and a money's rate is against it. |
+| 174 | `Nations.RATE_SD` | `.10` | A floating money's yearly change against the dollar beyond relative parity, one standard deviation (est.). |
+| 177 | `Nations.PRICE_PERSISTENCE` | `.7` | The share of a good's price shock that carries into the next year: 0.7 (spec-nations 7.2). |
+| 180 | `Nations.MIN_PRICE_SWING` | `.03` | The least a good's yearly price swing, one standard deviation of its log change, is taken to be (est.: manufactured goods move little). |
+| 183 | `Nations.DEFAULT_REGION` | `"East Asia & Pacific"` | The region of a nation the file gives none (Taiwan, which WDI lacks): East Asia & Pacific's. |
+| 186 | `Nations.WORLD` | `1, REGION = 2, OWN = 3, CRISIS = 4, CRISIS_DEPTH = 5, INFLATION = 6, RATE = 7, PRICE = 8` | The kinds of draw, and where a draw that belongs to no nation sits among the nations' numbers. |
+| 187 | `Nations.WORLD_NATION` | `0, REGION_BASE = 1000, GOOD_BASE = 2000` |  |
+| 211 | `Nations.NO_DRAWS` | `new Draws(0, 0, 0, 0, false)` |  |
 
 ### NationsMap.java ([map](map/NationsMap.md))
 
@@ -2353,19 +2353,21 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 43 | `PolicyRates.STEP` | `.0025` | The step a policy rate moves in: a quarter point, the step central banks move in. |
-| 46 | `PolicyRates.LOWER_BOUND` | `0` | The least the rule's target is: the rule does not go below zero (est.: the negative rates of 2014-2024 are replayed on Historical, and the banks that ran them had left them by 2024). |
-| 49 | `PolicyRates.TAYLOR_WEIGHT` | `.5` | Half a point of rate over inflation for each point inflation runs over the target (Taylor, 1993). |
-| 52 | `PolicyRates.RULE_HALF_LIFE` | `9` | The months for the rate's shadow to close half its gap to the rule's target (est.: an estimated rule's quarterly smoothing of about 0.8). |
-| 58 | `PolicyRates.TARGET` | `{.02,.02,.02,.02,.02,.02,.025,.01 }` | Each bank's inflation target, in WorldMoneys.EIGHT's order: 2% for all but the Reserve Bank of Australia's 2-3% band at its middle and the Swiss National Bank's 0-2% at its middle; China's "around ... |
-| 65 | `PolicyRates.NEUTRAL_REAL` | `{.01, 0, -.005,.01,.01,.0075,.01, 0 }` | Each bank's neutral real rate, in WorldMoneys.EIGHT's order: its own published long-run neutral nominal rate less its target (est.: the Fed's 3%, the ECB's about 2%, the Bank of Japan's 1-2.5% rang... |
-| 68 | `PolicyRates.CLOSE` | `1 - StrictMath.pow(.5, 1.0 / RULE_HALF_LIFE)` | The share of the gap to its target the shadow closes in a month: one less 0.5 to the 1 over RULE_HALF_LIFE. |
-| 71 | `PolicyRates.MONEYS` | `8` | The banks, in WorldMoneys.EIGHT's order. |
-| 74 | `PolicyRates.MONTHS` | `WorldMoneys.HISTORICAL_RULE_START` | The months the table covers: January 2000 to December 2025, the world file's (WorldMoneys.HISTORICAL_RULE_START). |
-| 77 | `PolicyRates.RESOURCE` | `"/policy-rates.tsv"` | Where the table is, on the classpath. |
-| 292 | `PolicyRates.SAVE_FORMAT` | `1` | The current format of toSaveArray. |
-| 294 | `PolicyRates.HEADER` | `3` |  |
-| 297 | `PolicyRates.NOT_READ` | `- 1e9` | What a target or an inflation not read yet is saved as (the state is no NaN, so that it goes through JSON). |
+| 50 | `PolicyRates.STEP` | `.0025` | The step a policy rate moves in: a quarter point, the step central banks move in. |
+| 53 | `PolicyRates.LOWER_BOUND` | `0` | The least the rule's target is: the rule does not go below zero (est.: the negative rates of 2014-2024 are replayed on Historical, and the banks that ran them had left them by 2024). |
+| 56 | `PolicyRates.TAYLOR_WEIGHT` | `.5` | Half a point of rate over inflation for each point inflation runs over the target (Taylor, 1993). |
+| 59 | `PolicyRates.RULE_HALF_LIFE` | `9` | The months for the rate's shadow to close half its gap to the rule's target (est.: an estimated rule's quarterly smoothing of about 0.8). |
+| 65 | `PolicyRates.TARGET` | `{.02,.02,.02,.02,.02,.02,.025,.01 }` | Each bank's inflation target, in WorldMoneys.EIGHT's order: 2% for all but the Reserve Bank of Australia's 2-3% band at its middle and the Swiss National Bank's 0-2% at its middle; China's "around ... |
+| 72 | `PolicyRates.NEUTRAL_REAL` | `{.01, 0, -.005,.01,.01,.0075,.01, 0 }` | Each bank's neutral real rate, in WorldMoneys.EIGHT's order: its own published long-run neutral nominal rate less its target (est.: the Fed's 3%, the ECB's about 2%, the Bank of Japan's 1-2.5% rang... |
+| 75 | `PolicyRates.CLOSE` | `1 - StrictMath.pow(.5, 1.0 / RULE_HALF_LIFE)` | The share of the gap to its target the shadow closes in a month: one less 0.5 to the 1 over RULE_HALF_LIFE. |
+| 78 | `PolicyRates.MONEYS` | `8` | The banks, in WorldMoneys.EIGHT's order. |
+| 86 | `PolicyRates.TABLE_FIRST_YEAR` | `2000` | The year the table's own lines begin in: January 2000, the first month of the BIS's CBPOL as transcribed. |
+| 89 | `PolicyRates.TABLE_FIRST_MONTH` | `(TABLE_FIRST_YEAR - Nations.FIRST_YEAR) * 12` | The month the table's own lines begin in, counted from Nations.FIRST_YEAR: January of TABLE_FIRST_YEAR. |
+| 92 | `PolicyRates.MONTHS` | `WorldMoneys.HISTORICAL_RULE_START` | The months the table covers: January of Nations.FIRST_YEAR to December 2025 (Nations.HISTORY_LAST_YEAR), the world file's reader's (WorldMoneys.HISTORICAL_RULE_START). |
+| 95 | `PolicyRates.RESOURCE` | `"/policy-rates.tsv"` | Where the table is, on the classpath. |
+| 315 | `PolicyRates.SAVE_FORMAT` | `1` | The current format of toSaveArray. |
+| 317 | `PolicyRates.HEADER` | `3` |  |
+| 320 | `PolicyRates.NOT_READ` | `- 1e9` | What a target or an inflation not read yet is saved as (the state is no NaN, so that it goes through JSON). |
 
 ### PopulationCohorts.java ([map](map/PopulationCohorts.md))
 
@@ -2416,6 +2418,16 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 576 | `PriceIndex.SLOTS_BEFORE_CHAIN` | `5 + WINDOW + 5` | The slots a save carried before the chained basket (0.7.43): the two-component basket, the ring, the marks and the settling count. |
 | 579 | `PriceIndex.CHAIN_MARKER` | `743` | What follows them in a save from 0.7.43 on, so an older array - which ends there - is told apart from one that goes on. |
 | 582 | `PriceIndex.CHAIN_TAIL_0743` | `4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS *(COMPONENTS + FEE_LINES)` | The chained basket's slots behind the marker as 0.7.43 wrote them: the link, its month, the pending flag, the bases, weights and last prices, the fee lines', and the trailing year. |
+
+### PriceLevel.java ([map](map/PriceLevel.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 23 | `PriceLevel.FIRST_YEAR` | `1900` | The series' first year, the calendar's (CityCalendar.EPOCH_YEAR). |
+| 26 | `PriceLevel.LAST_YEAR` | `2025` | The series' last year, the year the game's literals are priced in (WorldMarket.REFERENCE_YEAR). |
+| 29 | `PriceLevel.FIRST_PUBLISHED_YEAR` | `1913` | The first year the BLS published the index; the years before it are Rees's index joined at it (est.). |
+| 32 | `PriceLevel.US_CPI` | `{ 8.333, 8.333, 8.667, 9.000, 9.000, 9.000, 9.000, 9.333, 9.000, 9.000, 9.333, 9.333, 9...` | The US CPI-U a year, 1900 to 2025, 1982-84 = 100 (the class's sources). |
+| 52 | `PriceLevel.FACTOR` | `factor()` | Every nominal anchor's multiplier, the US CPI of the calendar's first year over its 2025: 8.333 / 321.943 = 0.02588, 1/38.6 (call 1). |
 
 ### Rankings.java ([map](map/Rankings.md))
 
@@ -3200,26 +3212,29 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 70 | `WorldData.DATA_FILE` | `"data/world-1.bin"` | Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored). |
-| 73 | `WorldData.PROPERTY` | `"cbs.world"` | The system property that names the file instead (-Dcbs.world=<path>), as the harness's run on the full file takes it. |
-| 76 | `WorldData.FIXTURE` | `"world/world-1-fixture.bin"` | The fixture, a resource beside the classes: the full file cut by tools/world/fixture.py to twelve nations and the Rotterdam window (WorldDataCheck's, with world-1-fixture.expect beside it). |
-| 79 | `WorldData.MAGIC` | `"WORLD-1\n"` | The bytes the first eight of the file are: the earth container's layout, under its own name. |
-| 82 | `WorldData.FORMAT` | `1` | The layout's version this reads (FORMAT.txt). |
-| 85 | `WorldData.KIND_TILES` | `EarthData.KIND_TILES` | A layer of 64,800 1-degree tiles, numbered (lat0 + 90) x 360 + (lon0 + 180) from the south-west corner (EarthData's). |
-| 87 | `WorldData.KIND_WHOLE` | `EarthData.KIND_WHOLE` | A layer held whole, one blob. |
-| 89 | `WorldData.TILES` | `EarthData.TILES` | The tiles in a KIND_TILES layer. |
-| 91 | `WorldData.META` | `"meta", NATIONS = "nations", MONEYS = "moneys", PATHS = "paths", GOODS = "goods", TRADE...` |  |
-| 95 | `WorldData.LAYERS` | `List.of(META, NATIONS, MONEYS, PATHS, GOODS, TRADE, FREIGHT, OWNER, LINES, PRICES)` | The layers, in the file's order (FORMAT.txt, LAYERS). |
-| 98 | `WorldData.OWNER_CELLS` | `240` | The owner layer's cells a degree: 240, 15", the earth file's landmass layer's grid. |
-| 101 | `WorldData.OWNER_TILE_BYTES` | `OWNER_CELLS * OWNER_CELLS` | The bytes of an owner tile with two owners or more: a byte a cell, OWNER_CELLS squared. |
-| 104 | `WorldData.MAX_OWNERS` | `255` | The most owners the layer's byte holds: nations and areas together are numbered up to this (FORMAT.txt, NUMBERS). |
-| 107 | `WorldData.CACHE_TILES` | `64` | The inflated owner tiles kept, 64 of 57,600 bytes: a screen or a scan reads the same few tiles over and over. |
-| 110 | `WorldData.FIRST_YEAR` | `2000` | The year month 0 is in: months are numbered from January of it. |
-| 113 | `WorldData.LINE_UNITS` | `100_000` | A lines layer's coordinate is stored in these units a degree. |
-| 116 | `WorldData.MARK_NONE` | `0, MARK_ESTIMATE = 1, MARK_PROJECTED = 2, MARK_PUBLISHED = 3` | The marks (see the class comment). |
-| 119 | `WorldData.KIND_NATION` | `"nation", KIND_AREA = "area"` | A nations row's kind for a nation, and for an area. |
-| 122 | `WorldData.LAND_PER_SEA` | `"LAND_PER_SEA"` | The meta dial that weighs a land km against a sea km in the freight cost (FORMAT.txt, freight). |
-| 125 | `WorldData.HEAD_BYTES` | `16 + 64 *(2 + 255 + 33)` | The first eight bytes' length, the format version, the layer count, and the room a layer's header row takes at most: the head read to find the layers. |
+| 76 | `WorldData.DATA_FILE` | `"data/world-1.bin"` | Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored). |
+| 79 | `WorldData.PROPERTY` | `"cbs.world"` | The system property that names the file instead (-Dcbs.world=<path>), as the harness's run on the full file takes it. |
+| 82 | `WorldData.FIXTURE` | `"world/world-1-fixture.bin"` | The fixture, a resource beside the classes: the full file cut by tools/world/fixture.py to twelve nations and the Rotterdam window (WorldDataCheck's, with world-1-fixture.expect beside it). |
+| 85 | `WorldData.MAGIC` | `"WORLD-1\n"` | The bytes the first eight of the file are: the earth container's layout, under its own name. |
+| 88 | `WorldData.FORMAT` | `1` | The layout's version this reads (FORMAT.txt). |
+| 91 | `WorldData.KIND_TILES` | `EarthData.KIND_TILES` | A layer of 64,800 1-degree tiles, numbered (lat0 + 90) x 360 + (lon0 + 180) from the south-west corner (EarthData's). |
+| 93 | `WorldData.KIND_WHOLE` | `EarthData.KIND_WHOLE` | A layer held whole, one blob. |
+| 95 | `WorldData.TILES` | `EarthData.TILES` | The tiles in a KIND_TILES layer. |
+| 97 | `WorldData.META` | `"meta", NATIONS = "nations", MONEYS = "moneys", PATHS = "paths", GOODS = "goods", TRADE...` |  |
+| 101 | `WorldData.LAYERS` | `List.of(META, NATIONS, MONEYS, PATHS, GOODS, TRADE, FREIGHT, OWNER, LINES, PRICES)` | The layers, in the file's order (FORMAT.txt, LAYERS). |
+| 104 | `WorldData.OWNER_CELLS` | `240` | The owner layer's cells a degree: 240, 15", the earth file's landmass layer's grid. |
+| 107 | `WorldData.OWNER_TILE_BYTES` | `OWNER_CELLS * OWNER_CELLS` | The bytes of an owner tile with two owners or more: a byte a cell, OWNER_CELLS squared. |
+| 110 | `WorldData.MAX_OWNERS` | `255` | The most owners the layer's byte holds: nations and areas together are numbered up to this (FORMAT.txt, NUMBERS). |
+| 113 | `WorldData.CACHE_TILES` | `64` | The inflated owner tiles kept, 64 of 57,600 bytes: a screen or a scan reads the same few tiles over and over. |
+| 116 | `WorldData.FIRST_YEAR` | `CityCalendar.EPOCH_YEAR` | The year month 0 is in, as this reads the file: the calendar's first year (EP1; it was 2000, the file's own first); months are numbered from January of it. |
+| 119 | `WorldData.FILE_FIRST_YEAR` | `2000` | The year the file's own figures begin in: its paths and prices run from it, and FORMAT.txt numbers its months from January of it (world-1.bin; EP1b rebuilds the file from 1900). |
+| 122 | `WorldData.FILE_MONTH_ZERO` | `(FILE_FIRST_YEAR - FIRST_YEAR) * 12` | The file's month 0, 2000-01, in the numbers this reads: the months the stand-in century has before it. |
+| 125 | `WorldData.NOMINAL_SERIES` | `List.of("cpi", "gdp_usd")` | The paths' series that are nominal money, which the stand-in carries back on the US price level; every other series is real and is held. |
+| 128 | `WorldData.LINE_UNITS` | `100_000` | A lines layer's coordinate is stored in these units a degree. |
+| 131 | `WorldData.MARK_NONE` | `0, MARK_ESTIMATE = 1, MARK_PROJECTED = 2, MARK_PUBLISHED = 3` | The marks (see the class comment). |
+| 134 | `WorldData.KIND_NATION` | `"nation", KIND_AREA = "area"` | A nations row's kind for a nation, and for an area. |
+| 137 | `WorldData.LAND_PER_SEA` | `"LAND_PER_SEA"` | The meta dial that weighs a land km against a sea km in the freight cost (FORMAT.txt, freight). |
+| 140 | `WorldData.HEAD_BYTES` | `16 + 64 *(2 + 255 + 33)` | The first eight bytes' length, the format version, the layer count, and the room a layer's header row takes at most: the head read to find the layers. |
 
 ### WorldEconomy.java ([map](map/WorldEconomy.md))
 
@@ -3252,7 +3267,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 88 | `WorldMarket.REFERENCE_YEAR` | `2025` | The year the literals are set in (the Historical path's last year of data, seed-free). |
 | 91 | `WorldMarket.SOLVES_KEPT` | `64` | The solved years kept in the process-wide cache, so harness cities on one world share a January. |
 | 94 | `WorldMarket.BASE_MS` | `2_000` | The Base on the full file, read and calibrated, takes at most this many milliseconds. |
-| 97 | `WorldMarket.SOLVE_COLD_MS` | `600` | The founding solve (year 2000, every good, from p-hat = 1) takes at most this many milliseconds. |
+| 97 | `WorldMarket.SOLVE_COLD_MS` | `600` | The founding solve (the calendar's first year, every good, from p-hat = 1) takes at most this many milliseconds. |
 | 100 | `WorldMarket.SOLVE_WARM_MS` | `60` | A January (every good, from last year's answer) takes at most this many milliseconds. |
 | 103 | `WorldMarket.BAND_MONTH_US` | `200` | A month's bands for every good take at most this many microseconds. |
 | 106 | `WorldMarket.ACCEL_MEMORY` | `5` | The steps Anderson's acceleration remembers: the solve is a fixed-point iteration that closes about a tenth of its distance a pass, and the last few steps tell it where it is going. |
@@ -3266,9 +3281,9 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 130 | `WorldMarket.PHI_FALLBACK` | `1` | The freight scale a world with no good that calibrates stands on (est.: the file's reference freight as it is). |
 | 295 | `WorldMarket.Base.LOADED` | `new HashMap<>()` |  |
 | 296 | `WorldMarket.Base.OF` | `new IdentityHashMap<>()` |  |
-| 719 | `WorldMarket.STAND_IN` | `0x57A4D1` | Draws a stand-in's nation (Nations.scramble's "what"). |
-| 987 | `WorldMarket.SOLVES` | `new LinkedHashMap<>(16,.75f, true) { @ Override protected boolean removeEldestEntry(Map...` |  |
-| 1414 | `WorldMarket.SCARCITY_MULTIPLE` | `4` | Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill has no level (infinity), and a market's strike needs a fi... |
+| 722 | `WorldMarket.STAND_IN` | `0x57A4D1` | Draws a stand-in's nation (Nations.scramble's "what"). |
+| 990 | `WorldMarket.SOLVES` | `new LinkedHashMap<>(16,.75f, true) { @ Override protected boolean removeEldestEntry(Map...` |  |
+| 1428 | `WorldMarket.SCARCITY_MULTIPLE` | `4` | Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill has no level (infinity), and a market's strike needs a fi... |
 
 ### WorldMeasures.java ([map](map/WorldMeasures.md))
 
@@ -3280,37 +3295,37 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 40 | `WorldMoneys.CYCLE_SIGMA` | `.016` | One standard deviation of the dollar cycle's monthly innovation: 1.6% (the broad dollar's swings of 35-50% over 6-11 years [R5]). |
-| 43 | `WorldMoneys.CYCLE_HALF_LIFE` | `60` | The dollar cycle's half-life in months: five years, one AR(1) for the world [R5]. |
-| 46 | `WorldMoneys.RISK_OFF_RATE` | `1.0 / 96` | The chance a month a risk-off starts: once in eight years [R6]. |
-| 49 | `WorldMoneys.RISK_OFF_HALF_LIFE` | `3` | The risk-off's half-life in months: it fades by half in three [R6]. |
-| 52 | `WorldMoneys.RISK_OFF_SIZE_MIN` | `.5` | The least a risk-off's size is, the multiple of the loadings it moves the moneys by (est.: 2024's was smaller than one). |
-| 55 | `WorldMoneys.RISK_OFF_SIZE_MAX` | `1.5` | The most a risk-off's size is (est.: 2008's was larger than one). |
-| 58 | `WorldMoneys.OWN_HALF_LIFE` | `42` | A money's own swing's half-life in months: three and a half years, an AR(1) around its parity [R1]. |
-| 61 | `WorldMoneys.TOT_PASS` | `.5` | The share of a nation's commodity share of exports its terms of trade pass into its money [R17][R18]: a better price of what it sells makes the money dearer. |
-| 64 | `WorldMoneys.TOT_MONTHS` | `3` | The months a January's change in the terms of trade takes to reach the rate, a third in each of the year's first (est.). |
-| 67 | `WorldMoneys.HISTORICAL_RULE_START` | `(Nations.HISTORY_LAST_YEAR + 1 - Nations.FIRST_YEAR) * 12` | The first month the rule rules on Historical: January 2026, after the file's 312 months (the file's real rates are replayed before it). |
-| 70 | `WorldMoneys.RANDOM_RULE_START` | `1` | The first month the rule rules on Random: February 2000, the month after the file's January 2000 it opens from. |
-| 73 | `WorldMoneys.CURRENCY_BOARDS` | `Set.of("HKD", "BND", "DJF", "XCD")` | The boards the file's pegs include, which never break: the game keeps no nation's vault, and a board breaks only if its vault falls under its money (est., the IMF's list [R21]). |
-| 79 | `WorldMoneys.EIGHT` | `List.of("USD", "EUR", "JPY", "GBP", "CNY", "CAD", "AUD", "CHF")` | The eight moneys the IMF's COFER names, the vault's (spec-nations 5.2), in this order. |
-| 82 | `WorldMoneys.MAJORS` | `List.of("EUR", "JPY", "GBP", "CHF", "CAD", "AUD")` | The six floating majors the dollar cycle is fitted to at the opening: the euro, the yen, the pound, the franc, and the Canadian and Australian dollars. |
-| 90 | `WorldMoneys.EURO` | `new Kind("euro",.020, 1,.03)` | The euro: own swing 2.0% a month, the cycle in full, +3% in a risk-off (the study's table 3.7, its own swing solved given the cycle [R6]). |
-| 93 | `WorldMoneys.YEN` | `new Kind("yen",.023, 1, -.08)` | The yen: 2.3%, the cycle in full, -8% in a risk-off (it rises) [R6]. |
-| 96 | `WorldMoneys.POUND` | `new Kind("pound",.019, 1,.06)` | The pound: 1.9%, the cycle in full, +6% [R6]. |
-| 99 | `WorldMoneys.FRANC` | `new Kind("franc",.021, 1, -.05)` | The Swiss franc: 2.1%, the cycle in full, -5% (it rises) [R6]. |
-| 102 | `WorldMoneys.CANADIAN` | `new Kind("Canadian dollar",.021,.6,.07)` | The Canadian dollar: 2.1%, 0.6 of the cycle (tied to the US), +7% [R6]. |
-| 105 | `WorldMoneys.AUSTRALIAN` | `new Kind("Australian dollar",.028, 1,.14)` | The Australian dollar: 2.8%, the cycle in full, +14% [R6]. |
-| 108 | `WorldMoneys.KIWI` | `new Kind("New Zealand dollar",.027, 1,.14)` | The New Zealand dollar: 2.7%, the cycle in full, +14% (est.: the Australian dollar's loading). |
-| 111 | `WorldMoneys.YUAN` | `new Kind("yuan",.010,.3, 0)` | The yuan: 1.0%, 0.3 of the cycle, no risk-off (est.: a managed money). |
-| 114 | `WorldMoneys.ADVANCED_FLOAT` | `new Kind("advanced float",.022, 1,.06)` | Another advanced float, one whose anchor nation is high income when the rule begins: 2.2%, the cycle in full, +6% (est.: the euro's and the pound's, between them). |
-| 117 | `WorldMoneys.EMERGING_FLOAT` | `new Kind("emerging float",.040, 1,.20)` | An emerging float, any other money: 4.0%, the cycle in full, +20% [R6]. |
-| 120 | `WorldMoneys.DOLLAR_KIND` | `new Kind("US dollar", 0, 0, 0)` | The US dollar: it moves against nothing, its rate is 1 always. |
-| 122 | `WorldMoneys.NAMED` | `Map.of("USD", DOLLAR_KIND, "EUR", EURO, "JPY", YEN, "GBP", POUND, "CHF", FRANC, "CAD", ...` |  |
-| 126 | `WorldMoneys.PHI_CYCLE` | `StrictMath.pow(.5, 1 / CYCLE_HALF_LIFE), PHI_RISK_OFF = StrictMath.pow(.5, 1 / RISK_OFF...` | The monthly persistence of each AR(1): 0.5 to the 1 over its half-life. |
-| 130 | `WorldMoneys.SAVE_FORMAT` | `1` | The current format of toSaveArray. |
-| 133 | `WorldMoneys.WORLD` | `9_999, MONEY_BASE = 10_000` | The draws' who and what: a world's draw sits at WORLD, a money's at MONEY_BASE plus its number in the file, and no what is a Nations draw's (1-8). |
-| 134 | `WorldMoneys.CYCLE_DRAW` | `100, RISK_START_DRAW = 101, RISK_SIZE_DRAW = 102, OWN_DRAW = 103, BREAK_DRAW = 104` |  |
-| 722 | `WorldMoneys.HEADER` | `4, GLOBALS = 5, PER_MONEY = 11` |  |
+| 41 | `WorldMoneys.CYCLE_SIGMA` | `.016` | One standard deviation of the dollar cycle's monthly innovation: 1.6% (the broad dollar's swings of 35-50% over 6-11 years [R5]). |
+| 44 | `WorldMoneys.CYCLE_HALF_LIFE` | `60` | The dollar cycle's half-life in months: five years, one AR(1) for the world [R5]. |
+| 47 | `WorldMoneys.RISK_OFF_RATE` | `1.0 / 96` | The chance a month a risk-off starts: once in eight years [R6]. |
+| 50 | `WorldMoneys.RISK_OFF_HALF_LIFE` | `3` | The risk-off's half-life in months: it fades by half in three [R6]. |
+| 53 | `WorldMoneys.RISK_OFF_SIZE_MIN` | `.5` | The least a risk-off's size is, the multiple of the loadings it moves the moneys by (est.: 2024's was smaller than one). |
+| 56 | `WorldMoneys.RISK_OFF_SIZE_MAX` | `1.5` | The most a risk-off's size is (est.: 2008's was larger than one). |
+| 59 | `WorldMoneys.OWN_HALF_LIFE` | `42` | A money's own swing's half-life in months: three and a half years, an AR(1) around its parity [R1]. |
+| 62 | `WorldMoneys.TOT_PASS` | `.5` | The share of a nation's commodity share of exports its terms of trade pass into its money [R17][R18]: a better price of what it sells makes the money dearer. |
+| 65 | `WorldMoneys.TOT_MONTHS` | `3` | The months a January's change in the terms of trade takes to reach the rate, a third in each of the year's first (est.). |
+| 68 | `WorldMoneys.HISTORICAL_RULE_START` | `(Nations.HISTORY_LAST_YEAR + 1 - Nations.FIRST_YEAR) * 12` | The first month the rule rules on Historical: January 2026, after the file's 1,512 months (1900-01 to 2025-12, the stand-in century's 1,200 and the file's 312; the file's real rates are replayed be... |
+| 71 | `WorldMoneys.RANDOM_RULE_START` | `1` | The first month the rule rules on Random: the second month (February of Nations.FIRST_YEAR), the month after the file's first it opens from. |
+| 74 | `WorldMoneys.CURRENCY_BOARDS` | `Set.of("HKD", "BND", "DJF", "XCD")` | The boards the file's pegs include, which never break: the game keeps no nation's vault, and a board breaks only if its vault falls under its money (est., the IMF's list [R21]). |
+| 80 | `WorldMoneys.EIGHT` | `List.of("USD", "EUR", "JPY", "GBP", "CNY", "CAD", "AUD", "CHF")` | The eight moneys the IMF's COFER names, the vault's (spec-nations 5.2), in this order. |
+| 83 | `WorldMoneys.MAJORS` | `List.of("EUR", "JPY", "GBP", "CHF", "CAD", "AUD")` | The six floating majors the dollar cycle is fitted to at the opening: the euro, the yen, the pound, the franc, and the Canadian and Australian dollars. |
+| 91 | `WorldMoneys.EURO` | `new Kind("euro",.020, 1,.03)` | The euro: own swing 2.0% a month, the cycle in full, +3% in a risk-off (the study's table 3.7, its own swing solved given the cycle [R6]). |
+| 94 | `WorldMoneys.YEN` | `new Kind("yen",.023, 1, -.08)` | The yen: 2.3%, the cycle in full, -8% in a risk-off (it rises) [R6]. |
+| 97 | `WorldMoneys.POUND` | `new Kind("pound",.019, 1,.06)` | The pound: 1.9%, the cycle in full, +6% [R6]. |
+| 100 | `WorldMoneys.FRANC` | `new Kind("franc",.021, 1, -.05)` | The Swiss franc: 2.1%, the cycle in full, -5% (it rises) [R6]. |
+| 103 | `WorldMoneys.CANADIAN` | `new Kind("Canadian dollar",.021,.6,.07)` | The Canadian dollar: 2.1%, 0.6 of the cycle (tied to the US), +7% [R6]. |
+| 106 | `WorldMoneys.AUSTRALIAN` | `new Kind("Australian dollar",.028, 1,.14)` | The Australian dollar: 2.8%, the cycle in full, +14% [R6]. |
+| 109 | `WorldMoneys.KIWI` | `new Kind("New Zealand dollar",.027, 1,.14)` | The New Zealand dollar: 2.7%, the cycle in full, +14% (est.: the Australian dollar's loading). |
+| 112 | `WorldMoneys.YUAN` | `new Kind("yuan",.010,.3, 0)` | The yuan: 1.0%, 0.3 of the cycle, no risk-off (est.: a managed money). |
+| 115 | `WorldMoneys.ADVANCED_FLOAT` | `new Kind("advanced float",.022, 1,.06)` | Another advanced float, one whose anchor nation is high income when the rule begins: 2.2%, the cycle in full, +6% (est.: the euro's and the pound's, between them). |
+| 118 | `WorldMoneys.EMERGING_FLOAT` | `new Kind("emerging float",.040, 1,.20)` | An emerging float, any other money: 4.0%, the cycle in full, +20% [R6]. |
+| 121 | `WorldMoneys.DOLLAR_KIND` | `new Kind("US dollar", 0, 0, 0)` | The US dollar: it moves against nothing, its rate is 1 always. |
+| 123 | `WorldMoneys.NAMED` | `Map.of("USD", DOLLAR_KIND, "EUR", EURO, "JPY", YEN, "GBP", POUND, "CHF", FRANC, "CAD", ...` |  |
+| 127 | `WorldMoneys.PHI_CYCLE` | `StrictMath.pow(.5, 1 / CYCLE_HALF_LIFE), PHI_RISK_OFF = StrictMath.pow(.5, 1 / RISK_OFF...` | The monthly persistence of each AR(1): 0.5 to the 1 over its half-life. |
+| 131 | `WorldMoneys.SAVE_FORMAT` | `1` | The current format of toSaveArray. |
+| 134 | `WorldMoneys.WORLD` | `9_999, MONEY_BASE = 10_000` | The draws' who and what: a world's draw sits at WORLD, a money's at MONEY_BASE plus its number in the file, and no what is a Nations draw's (1-8). |
+| 135 | `WorldMoneys.CYCLE_DRAW` | `100, RISK_START_DRAW = 101, RISK_SIZE_DRAW = 102, OWN_DRAW = 103, BREAK_DRAW = 104` |  |
+| 724 | `WorldMoneys.HEADER` | `4, GLOBALS = 5, PER_MONEY = 11` |  |
 
 ### YearBook.java ([map](map/YearBook.md))
 
@@ -3888,13 +3903,13 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 250 | `FoundingScreen.GLOBE_H` | `GlobeFrame.FOUNDING_H` | The globe's height: 270 px, so the page still fits an 868-pixel window with the longest card under it (the words probe's, 0.7.121; GlobeFrame.FOUNDING_H since 0.7.135). |
 | 253 | `FoundingScreen.LEFT` | `EARTH_PANEL - 2 * PANEL_PAD - COLUMN_GAP - GLOBE_W` | The left column's width on Earth: what the panel leaves. |
 | 689 | `FoundingScreen.NO_SPOT_WORDS` | `"None yet.Drag the globe or hold W, A, S and D to turn it, zoom with the wheel or - and...` | The card's line before a spot is picked; how the globe is used. |
-| 1055 | `FoundingScreen.Globe.MOST_KM_PX` | `2 * EarthProj.RADIUS_M / 1000 /(GlobeFrame.FIT_SHARE * GLOBE_H)` | The widest view: the whole planet, 12,742 km, across GlobeFrame.FIT_SHARE (nine tenths) of the globe's height. |
-| 1058 | `FoundingScreen.Globe.GROUND_KM_PX` | `GlobeFrame.FOUNDING_HANDOFF_KM` | From here closer the ground is drawn round the view's centre, not through the globe: GlobeFrame.FOUNDING_HANDOFF_KM, 2.32 km a pixel (★E9; 4 until 0.7.135). |
-| 1061 | `FoundingScreen.Globe.LEAST_KM_PX` | `5 * World.PLOT_M / 1000.0` | The closest view: 150 m a pixel, five plots (spec-earth 2's 150 m view). |
-| 1064 | `FoundingScreen.Globe.PICK_KM_PX` | `0.3` | How close a pick from the search or Random spot opens: 0.3 km a pixel, the 5 km round the site 33 pixels across. |
-| 1067 | `FoundingScreen.Globe.STEP` | `MapFrame.ZOOM_STEP` | A wheel notch's zoom, the map's: MapFrame.ZOOM_STEP. |
-| 1070 | `FoundingScreen.Globe.SPACE` | `0xff0b1118` | Space round the globe: the page's stage. |
-| 1073 | `FoundingScreen.Globe.COLOURS` | `GlobePicture.colours(false)` | The ground's colours, as the map draws them where the city owns it (GlobePicture.colours()): the founding globe dims nothing. |
+| 1059 | `FoundingScreen.Globe.MOST_KM_PX` | `2 * EarthProj.RADIUS_M / 1000 /(GlobeFrame.FIT_SHARE * GLOBE_H)` | The widest view: the whole planet, 12,742 km, across GlobeFrame.FIT_SHARE (nine tenths) of the globe's height. |
+| 1062 | `FoundingScreen.Globe.GROUND_KM_PX` | `GlobeFrame.FOUNDING_HANDOFF_KM` | From here closer the ground is drawn round the view's centre, not through the globe: GlobeFrame.FOUNDING_HANDOFF_KM, 2.32 km a pixel (★E9; 4 until 0.7.135). |
+| 1065 | `FoundingScreen.Globe.LEAST_KM_PX` | `5 * World.PLOT_M / 1000.0` | The closest view: 150 m a pixel, five plots (spec-earth 2's 150 m view). |
+| 1068 | `FoundingScreen.Globe.PICK_KM_PX` | `0.3` | How close a pick from the search or Random spot opens: 0.3 km a pixel, the 5 km round the site 33 pixels across. |
+| 1071 | `FoundingScreen.Globe.STEP` | `MapFrame.ZOOM_STEP` | A wheel notch's zoom, the map's: MapFrame.ZOOM_STEP. |
+| 1074 | `FoundingScreen.Globe.SPACE` | `0xff0b1118` | Space round the globe: the page's stage. |
+| 1077 | `FoundingScreen.Globe.COLOURS` | `GlobePicture.colours(false)` | The ground's colours, as the map draws them where the city owns it (GlobePicture.colours()): the founding globe dims nothing. |
 
 ### FundScreen.java ([map](map/FundScreen.md))
 
@@ -4844,7 +4859,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 718 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 974 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1273 constants)
+## harnesses (1279 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5157,8 +5172,8 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 166 | `CurrencyRegimeCheck.SEED` | `20_261_022L` | The market's seed in the sections that draw one. |
 | 169 | `CurrencyRegimeCheck.DEEP` | `1e9` | A vault no fixture of these can empty or come near the floor of, in dollars. |
 | 172 | `CurrencyRegimeCheck.DOLLAR` | `1e-6` | What the harness's own sums are held to where they are exact arithmetic on dollars. |
-| 882 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
-| 1138 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
+| 893 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
+| 1149 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
 
 ### CurveCheck.java ([map](map/CurveCheck.md))
 
@@ -5633,15 +5648,17 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 59 | `InterestAbroadCheck.out` | `System.out` | Where the harness prints: the console. |
-| 60 | `InterestAbroadCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` |  |
-| 63 | `InterestAbroadCheck.SEED` | `9_101` | The seed the single-world sections use, and the others the mean real rate is counted over. |
-| 64 | `InterestAbroadCheck.SEEDS` | `{ 9_101, 9_102, 9_103, 9_104, 9_105 }` |  |
-| 67 | `InterestAbroadCheck.LONG` | `1_200` | The months a long run covers: January 2000 to December 2099, the nations' path (the last month stepped is 1,199). |
-| 70 | `InterestAbroadCheck.EXACT` | `1e-12` | Two rates or two logs that should be one differ by less than this. |
-| 214 | `InterestAbroadCheck.SPOTS` | `{ { "USD", 2000, 1,.055 }, { "USD", 2000, 12,.065 }, { "USD", 2001, 1,.055 }, { "USD", ...` | The spot values of the table, from the file's own history: bank, year, month, rate. |
-| 692 | `InterestAbroadCheck.CROSS` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the section hands: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
-| 986 | `InterestAbroadCheck.HOT_DIAL` | `.15` | The dial the hot-money city is put at: well over the US's rate in any year, so the spread is there. |
+| 62 | `InterestAbroadCheck.out` | `System.out` | Where the harness prints: the console. |
+| 63 | `InterestAbroadCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 66 | `InterestAbroadCheck.SEED` | `9_101` | The seed the single-world sections use, and the others the mean real rate is counted over. |
+| 67 | `InterestAbroadCheck.SEEDS` | `{ 9_101, 9_102, 9_103, 9_104, 9_105 }` |  |
+| 70 | `InterestAbroadCheck.LONG` | `1_200` | The months a Random run covers: a hundred years from the calendar's first January (the last month stepped is 1,199). |
+| 73 | `InterestAbroadCheck.HISTORICAL_END` | `at(2099, 12) + 1` | The month after the last a Historical run steps: December 2099 is the last, the nations' path (the rule rules the 888 months after the table's end). |
+| 76 | `InterestAbroadCheck.RULED` | `888` | The months the rule rules on Historical after the table: January 2026 to December 2099. |
+| 79 | `InterestAbroadCheck.EXACT` | `1e-12` | Two rates or two logs that should be one differ by less than this. |
+| 223 | `InterestAbroadCheck.SPOTS` | `{ { "USD", 2000, 1,.055 }, { "USD", 2000, 12,.065 }, { "USD", 2001, 1,.055 }, { "USD", ...` | The spot values of the table, from the file's own history: bank, year, month, rate. |
+| 743 | `InterestAbroadCheck.CROSS` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the section hands: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
+| 1037 | `InterestAbroadCheck.HOT_DIAL` | `.15` | The dial the hot-money city is put at: well over the US's rate in any year, so the spread is there. |
 
 ### IslandNetCheck.java ([map](map/IslandNetCheck.md))
 
@@ -6081,9 +6098,9 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 64 | `NationsCheck.out` | `System.out` | Where the harness prints: the console. |
 | 67 | `NationsCheck.BASE_SEED` | `7_001` | The seed the single-world sections use, and the one the others start from. |
-| 70 | `NationsCheck.SEEDS` | `20` | The seeds the statistics are counted over, and the years each (2001-2100). |
+| 70 | `NationsCheck.SEEDS` | `20` | The seeds the statistics are counted over, and the years each (the 100 after the first: FIRST_YEAR + 1 to FIRST_YEAR + 100). |
 | 73 | `NationsCheck.GOOD_SEEDS` | `30` | The goods' statistics are counted over this many seeds of 100 years (a lag-1 autocorrelation's error is about 1 over the root of the count). |
-| 76 | `NationsCheck.GOOD_BURN_IN` | `30` | The years a good's price needs to settle from the file's 2000 ratio to its mean before it is counted: 0.7 to the 30th is 2e-5. |
+| 76 | `NationsCheck.GOOD_BURN_IN` | `30` | The years a good's price needs to settle from the first year's ratio (the file's 2000, held through the stand-in century) to its mean before it is counted: 0.7 to the 30th is 2e-5. |
 | 79 | `NationsCheck.SD_TOL` | `.10, FRONTIER_SD_TOL =.12, GOOD_SD_TOL =.12, SHARE_TOL =.15` | A swing's standard deviation is within this share of its dial (the world's, a region's, the frontier's, a good's). |
 | 82 | `NationsCheck.LAG_TOL` | `.06` | An autocorrelation is within this of its dial (error of a lag-1 estimate over 2,000 years is about .02). |
 | 85 | `NationsCheck.RATE_TOL` | `.004` | The crisis rate among the years a crisis could start is within this of CRISIS_RATE. |
@@ -6095,10 +6112,10 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 267 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
-| 1251 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 1252 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
-| 1278 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
-| 1280 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
+| 1256 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 1257 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 1283 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
+| 1285 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
 
 ### OilCheck.java ([map](map/OilCheck.md))
 
@@ -6612,50 +6629,53 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 76 | `WorldDataCheck.EXPECT` | `"world/world-1-fixture.expect"` | The fixture's expected figures, beside the classes (the fixture itself is WorldData.FIXTURE). |
-| 79 | `WorldDataCheck.FIXTURE_NAME` | `"world-1-fixture", FULL_NAME = "world-1"` | A fixture's meta name row, and the full file's. |
-| 82 | `WorldDataCheck.SUM_TOL` | `1e-9` | A sum, a make or a use, agrees with the flows it is the sum of within this share of it (FORMAT.txt, trade: 1e-9). |
-| 85 | `WorldDataCheck.TRIANGLE_SLACK` | `1e-9` | The triangle rule holds within this share of the dearer side (floating point adds the same route in a different order). |
-| 88 | `WorldDataCheck.TABLE_TOL` | `1e-9` | The freight table is symmetric, and is its edges' closure, within this share of the figure. |
-| 91 | `WorldDataCheck.MARGIN_TOL` | `1e-12` | The solve's margins meet when no make or use is off by more than this share of it (FORMAT.txt, THE KERNEL: 1e-12). |
-| 94 | `WorldDataCheck.FLOW_TOL` | `1e-9` | The solve gives the file's flow within this share of it (FORMAT.txt: 1e-9), plus MARGIN_ULPS of its margin over the flow (see there). |
-| 101 | `WorldDataCheck.MARGIN_ULPS` | `1e-15` | The room a flow is given beyond FLOW_TOL, as this share of the smaller of its row's make and its column's use, over the flow: 4 ulps of the margin. |
-| 104 | `WorldDataCheck.COST_TOL` | `1e-9` | A pair's cost is elasticity x ln(1 + freight / unit value) within this share of it. |
-| 107 | `WorldDataCheck.BACI_TOL` | `1e-6` | BACI's own sum for a pair is the file's flow within this share of it (the file's flow is BACI's, as the CSV is summed in a second pass). |
-| 110 | `WorldDataCheck.SWEEP_CAP` | `100_000` | The most passes (every nation's a and b solved together, the others held) the solve may take for one good before it is called not to converge. |
-| 113 | `WorldDataCheck.CHANGE_TOL` | `1e-9` | The solve may stop when no a or b moved by more than this share in a pass, and every margin is within MARGIN_TOL / TARGET_DIVISOR (econ_trade.py's rule). |
-| 116 | `WorldDataCheck.TARGET_DIVISOR` | `100` | A margin must be within MARGIN_TOL over this before the solve may stop: the margin floor of double precision is far below MARGIN_TOL. |
-| 119 | `WorldDataCheck.CHANGE_FLOOR` | `1e-15` | The solve stops at once when no a or b moved by more than this share in a pass: they have stopped moving, at the floor of double precision. |
-| 122 | `WorldDataCheck.STALE_PASSES` | `8` | ...or when this many passes after it may stop have moved them no less than the least so far: a nation whose own pair is nearly all of its make and use keeps a rounding wobble. |
-| 125 | `WorldDataCheck.TWELVE` | `List.of("AUS", "BEL", "CAN", "CHE", "CHN", "COL", "DEU", "FRA", "GBR", "JPN", "NLD", "U...` | The nations of the fixture, in iso3 order (FORMAT.txt, THE FIXTURE). |
-| 128 | `WorldDataCheck.THE_THREE` | `List.of("TWN", "HKG", "MAC")` | The three the 193 UN members do not hold, that the full file's N = 196 adds: Taiwan, Hong Kong and Macau. |
-| 131 | `WorldDataCheck.UN_MEMBER_COUNT` | `193` | How many member states the UN has (since South Sudan joined in 2011). |
-| 134 | `WorldDataCheck.WORLD_BANK_REGIONS` | `7` | How many regions the World Bank's countries list sorts the nations in (FORMAT.txt, nations). |
-| 137 | `WorldDataCheck.FULL_NATIONS` | `UN_MEMBER_COUNT + THE_THREE.size()` | How many nations the full file holds. |
-| 144 | `WorldDataCheck.UN_MEMBERS` | `"AFG AGO ALB AND ARE ARG ARM ATG AUS AUT AZE " + "BDI BEL BEN BFA BGD BGR BHR BHS BIH B...` | The United Nations' 193 member states by ISO 3166 alpha-3 code, A to Z: the list on the UN's member states page (https://www.un.org/en/about-us/member-states), written here and not read from the fi... |
-| 172 | `WorldDataCheck.LAST_MONTH` | `WorldData.monthNumber(2025, 12)` | The last month the rates and the figures run to: 2025-12. |
-| 175 | `WorldDataCheck.PEOPLE_LAST` | `2100, FIGURES_LAST = 2025` | The people run to this year; the figures (output, the exchange rate) to FIGURES_LAST. |
-| 178 | `WorldDataCheck.FIGURE_SERIES` | `List.of("gdp_2015usd", "gdp_usd", "gdp_ppp", "rate")` | The series that have a figure for every nation to FIGURES_LAST. |
-| 181 | `WorldDataCheck.FREIGHT_DIALS` | `List.of("SEA_USD_TKM", "LAND_USD_TKM", "HANDLING_USD_T", "LAND_PER_SEA")` | The dials the freight cost and the kernel read (FORMAT.txt, trade and freight). |
-| 184 | `WorldDataCheck.DAY` | `Pattern.compile("\\d{4}-\\d{2}-\\d{2}")` | A day as the meta writes it. |
-| 188 | `WorldDataCheck.out` | `System.out` | Where the harness prints: the console. |
+| 83 | `WorldDataCheck.EXPECT` | `"world/world-1-fixture.expect"` | The fixture's expected figures, beside the classes (the fixture itself is WorldData.FIXTURE). |
+| 86 | `WorldDataCheck.FIXTURE_NAME` | `"world-1-fixture", FULL_NAME = "world-1"` | A fixture's meta name row, and the full file's. |
+| 89 | `WorldDataCheck.SUM_TOL` | `1e-9` | A sum, a make or a use, agrees with the flows it is the sum of within this share of it (FORMAT.txt, trade: 1e-9). |
+| 92 | `WorldDataCheck.TRIANGLE_SLACK` | `1e-9` | The triangle rule holds within this share of the dearer side (floating point adds the same route in a different order). |
+| 95 | `WorldDataCheck.TABLE_TOL` | `1e-9` | The freight table is symmetric, and is its edges' closure, within this share of the figure. |
+| 98 | `WorldDataCheck.MARGIN_TOL` | `1e-12` | The solve's margins meet when no make or use is off by more than this share of it (FORMAT.txt, THE KERNEL: 1e-12). |
+| 101 | `WorldDataCheck.FLOW_TOL` | `1e-9` | The solve gives the file's flow within this share of it (FORMAT.txt: 1e-9), plus MARGIN_ULPS of its margin over the flow (see there). |
+| 108 | `WorldDataCheck.MARGIN_ULPS` | `1e-15` | The room a flow is given beyond FLOW_TOL, as this share of the smaller of its row's make and its column's use, over the flow: 4 ulps of the margin. |
+| 111 | `WorldDataCheck.COST_TOL` | `1e-9` | A pair's cost is elasticity x ln(1 + freight / unit value) within this share of it. |
+| 114 | `WorldDataCheck.BACI_TOL` | `1e-6` | BACI's own sum for a pair is the file's flow within this share of it (the file's flow is BACI's, as the CSV is summed in a second pass). |
+| 117 | `WorldDataCheck.SWEEP_CAP` | `100_000` | The most passes (every nation's a and b solved together, the others held) the solve may take for one good before it is called not to converge. |
+| 120 | `WorldDataCheck.CHANGE_TOL` | `1e-9` | The solve may stop when no a or b moved by more than this share in a pass, and every margin is within MARGIN_TOL / TARGET_DIVISOR (econ_trade.py's rule). |
+| 123 | `WorldDataCheck.TARGET_DIVISOR` | `100` | A margin must be within MARGIN_TOL over this before the solve may stop: the margin floor of double precision is far below MARGIN_TOL. |
+| 126 | `WorldDataCheck.CHANGE_FLOOR` | `1e-15` | The solve stops at once when no a or b moved by more than this share in a pass: they have stopped moving, at the floor of double precision. |
+| 129 | `WorldDataCheck.STALE_PASSES` | `8` | ...or when this many passes after it may stop have moved them no less than the least so far: a nation whose own pair is nearly all of its make and use keeps a rounding wobble. |
+| 132 | `WorldDataCheck.TWELVE` | `List.of("AUS", "BEL", "CAN", "CHE", "CHN", "COL", "DEU", "FRA", "GBR", "JPN", "NLD", "U...` | The nations of the fixture, in iso3 order (FORMAT.txt, THE FIXTURE). |
+| 135 | `WorldDataCheck.THE_THREE` | `List.of("TWN", "HKG", "MAC")` | The three the 193 UN members do not hold, that the full file's N = 196 adds: Taiwan, Hong Kong and Macau. |
+| 138 | `WorldDataCheck.UN_MEMBER_COUNT` | `193` | How many member states the UN has (since South Sudan joined in 2011). |
+| 141 | `WorldDataCheck.WORLD_BANK_REGIONS` | `7` | How many regions the World Bank's countries list sorts the nations in (FORMAT.txt, nations). |
+| 144 | `WorldDataCheck.FULL_NATIONS` | `UN_MEMBER_COUNT + THE_THREE.size()` | How many nations the full file holds. |
+| 151 | `WorldDataCheck.UN_MEMBERS` | `"AFG AGO ALB AND ARE ARG ARM ATG AUS AUT AZE " + "BDI BEL BEN BFA BGD BGR BHR BHS BIH B...` | The United Nations' 193 member states by ISO 3166 alpha-3 code, A to Z: the list on the UN's member states page (https://www.un.org/en/about-us/member-states), written here and not read from the fi... |
+| 179 | `WorldDataCheck.LAST_MONTH` | `WorldData.monthNumber(2025, 12)` | The last month the rates and the figures run to: 2025-12. |
+| 182 | `WorldDataCheck.FILE_MONTH_ZERO` | `WorldData.monthNumber(WorldData.FILE_FIRST_YEAR, 1)` | The file's own month 0, 2000-01, as WorldData numbers months from FIRST_YEAR: where the stand-in century ends and the file begins. |
+| 185 | `WorldDataCheck.PEOPLE_LAST` | `2100, FIGURES_LAST = 2025` | The people run to this year; the figures (output, the exchange rate) to FIGURES_LAST. |
+| 188 | `WorldDataCheck.FIGURE_SERIES` | `List.of("gdp_2015usd", "gdp_usd", "gdp_ppp", "rate")` | The series that have a figure for every nation to FIGURES_LAST. |
+| 191 | `WorldDataCheck.FREIGHT_DIALS` | `List.of("SEA_USD_TKM", "LAND_USD_TKM", "HANDLING_USD_T", "LAND_PER_SEA")` | The dials the freight cost and the kernel read (FORMAT.txt, trade and freight). |
+| 194 | `WorldDataCheck.DAY` | `Pattern.compile("\\d{4}-\\d{2}-\\d{2}")` | A day as the meta writes it. |
+| 198 | `WorldDataCheck.out` | `System.out` | Where the harness prints: the console. |
+| 1065 | `WorldDataCheck.NOMINAL` | `List.of("cpi", "gdp_usd")` | The paths' series the stand-in carries back on the US price level; it holds every other. |
+| 1068 | `WorldDataCheck.LEAD_TOL` | `1e-12` | The lead's figure is the rule's within this share of it (a product and a quotient of the same doubles: a rounding or two). |
 
 ### WorldMarketCheck.java ([map](map/WorldMarketCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 79 | `WorldMarketCheck.out` | `System.out` | Where the harness prints: the console. |
-| 85 | `WorldMarketCheck.BASE_SEED` | `11` | The seed the single-world sections use. |
-| 88 | `WorldMarketCheck.SHARES` | `{ 0,.001,.01,.1,.5 }` | The city's yearly exports and imports in sections 3 and 4, as shares of the good's world use. |
-| 91 | `WorldMarketCheck.STEPS` | `{.001,.01,.05,.10 }` | The volumes of section 5, shares of the world's use. |
-| 94 | `WorldMarketCheck.STEP_TOL` | `.03` | The month's step is within this share of the price (the served buyers' landed price, tonne-weighted) of the re-solve's figure: a freight-heavy good's netback is a small remainder of its price, so a... |
-| 97 | `WorldMarketCheck.SMALL_MOVE` | `.01, BIG_MOVE =.05` | An ordinary city (0.01% of the world's use) moves its netback by less than this share of the price it sells at, a big one (10%) by at least BIG_MOVE of it. |
-| 100 | `WorldMarketCheck.ORDINARY_SHARE` | `.0001, LARGE_SHARE =.001, BIG_SHARE =.1` | The shares of a good's world use section 4 reads: an ordinary city's, a large mill town's (printed only: the host's market is small), and a big city's. |
-| 103 | `WorldMarketCheck.ONE_PERCENT` | `{ Good.LUMBER, Good.CRUDE, Good.IRON, Good.GRAINS }` | The goods whose step is asserted within STEP_TOL at 1% of world use, beside the median: the study's and the brief's four. |
-| 106 | `WorldMarketCheck.SAME` | `1e-9` | Two figures that should be one are the same within this share. |
-| 109 | `WorldMarketCheck.STAND_IN_SEEDS` | `2_000` | Seeds drawn for the stand-in. |
-| 112 | `WorldMarketCheck.SIGMAS` | `4.5` | A frequency is judged within this many standard deviations of a binomial. |
-| 494 | `WorldMarketCheck.NAMED` | `{ Good.LUMBER, Good.IRON, Good.CRUDE, Good.GRAINS, Good.MACHINERY, Good.CARS }` | The goods the study and the brief name, always printed. |
+| 80 | `WorldMarketCheck.out` | `System.out` | Where the harness prints: the console. |
+| 86 | `WorldMarketCheck.BASE_SEED` | `11` | The seed the single-world sections use. |
+| 89 | `WorldMarketCheck.SHARES` | `{ 0,.001,.01,.1,.5 }` | The city's yearly exports and imports in sections 3 and 4, as shares of the good's world use. |
+| 92 | `WorldMarketCheck.STEPS` | `{.001,.01,.05,.10 }` | The volumes of section 5, shares of the world's use. |
+| 95 | `WorldMarketCheck.STEP_TOL` | `.03` | The month's step is within this share of the price (the served buyers' landed price, tonne-weighted) of the re-solve's figure: a freight-heavy good's netback is a small remainder of its price, so a... |
+| 98 | `WorldMarketCheck.SMALL_MOVE` | `.01, BIG_MOVE =.05` | An ordinary city (0.01% of the world's use) moves its netback by less than this share of the price it sells at, a big one (10%) by at least BIG_MOVE of it. |
+| 101 | `WorldMarketCheck.ORDINARY_SHARE` | `.0001, LARGE_SHARE =.001, BIG_SHARE =.1` | The shares of a good's world use section 4 reads: an ordinary city's, a large mill town's (printed only: the host's market is small), and a big city's. |
+| 104 | `WorldMarketCheck.ONE_PERCENT` | `{ Good.LUMBER, Good.CRUDE, Good.IRON, Good.GRAINS }` | The goods whose step is asserted within STEP_TOL at 1% of world use, beside the median: the study's and the brief's four. |
+| 107 | `WorldMarketCheck.SAME` | `1e-9` | Two figures that should be one are the same within this share. |
+| 110 | `WorldMarketCheck.STAND_IN_SEEDS` | `2_000` | Seeds drawn for the stand-in. |
+| 113 | `WorldMarketCheck.SIGMAS` | `4.5` | A frequency is judged within this many standard deviations of a binomial. |
+| 534 | `WorldMarketCheck.NAMED` | `{ Good.LUMBER, Good.IRON, Good.CRUDE, Good.GRAINS, Good.MACHINERY, Good.CARS }` | The goods the study and the brief name, always printed. |
 
 ### WorldMeasuresCheck.java ([map](map/WorldMeasuresCheck.md))
 
@@ -6713,20 +6733,21 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 59 | `WorldMoneysCheck.out` | `System.out` | Where the harness prints: the console. |
-| 62 | `WorldMoneysCheck.BASE_SEED` | `9_101` | The seed the single-world sections use. |
-| 65 | `WorldMoneysCheck.FULL_SEEDS` | `1_000, FIXTURE_SEEDS = 300` | The seeds the statistics are counted over: the full file's paths (26 years each), and the fixture's. |
-| 68 | `WorldMoneysCheck.PATH_MONTHS` | `311` | The months of a path the statistics are counted over: January 2000 to November 2025, the 26-year run. |
-| 71 | `WorldMoneysCheck.LONG_MONTHS` | `360` | The months the identity and restore sections run: thirty years, so Historical's rule runs 48 months. |
-| 74 | `WorldMoneysCheck.DIAL_TOL` | `.05` | A measured sd or persistence is within this share of the dial it is drawn from (a pooled lag-1 fit over 311 months a path is biased low by about 1.3%). |
-| 77 | `WorldMoneysCheck.SIGMAS` | `3` | A count of breaks or of risk-off starts is within this many standard deviations of its expected number. |
-| 80 | `WorldMoneysCheck.EXACT` | `1e-12` | Two logs or two rates that should be one differ by less than this (the rates are exp of sums of a few logs). |
-| 84 | `WorldMoneysCheck.FIXTURE_PEGS` | `Map.of("CHN", "peg:USD", "COL", "peg:CNY")` | Pegs the fixture is given: the yuan on the dollar, the peso on the yuan (a chain); and the loop of the two. |
-| 85 | `WorldMoneysCheck.FIXTURE_LOOP` | `Map.of("CHN", "peg:COP", "COL", "peg:CNY")` |  |
-| 88 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
-| 89 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { 9.1, 9.6, ...` |  |
-| 90 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
-| 1047 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
+| 61 | `WorldMoneysCheck.out` | `System.out` | Where the harness prints: the console. |
+| 64 | `WorldMoneysCheck.BASE_SEED` | `9_101` | The seed the single-world sections use. |
+| 67 | `WorldMoneysCheck.FULL_SEEDS` | `1_000, FIXTURE_SEEDS = 300` | The seeds the statistics are counted over: the full file's paths (26 years each), and the fixture's. |
+| 70 | `WorldMoneysCheck.PATH_MONTHS` | `311` | The months of a Random path the statistics are counted over: the 26-year run (the first January to the November 26 years on). |
+| 73 | `WorldMoneysCheck.LONG_MONTHS` | `360` | The months the identity and restore sections run on Random: thirty years. |
+| 76 | `WorldMoneysCheck.RULED_MONTHS` | `48` | The months Historical's rule runs in the identity and restore sections: 48, after the table's end. |
+| 84 | `WorldMoneysCheck.DIAL_TOL` | `.05` | A measured sd or persistence is within this share of the dial it is drawn from (a pooled lag-1 fit over 311 months a path is biased low by about 1.3%). |
+| 87 | `WorldMoneysCheck.SIGMAS` | `3` | A count of breaks or of risk-off starts is within this many standard deviations of its expected number. |
+| 90 | `WorldMoneysCheck.EXACT` | `1e-12` | Two logs or two rates that should be one differ by less than this (the rates are exp of sums of a few logs). |
+| 94 | `WorldMoneysCheck.FIXTURE_PEGS` | `Map.of("CHN", "peg:USD", "COL", "peg:CNY")` | Pegs the fixture is given: the yuan on the dollar, the peso on the yuan (a chain); and the loop of the two. |
+| 95 | `WorldMoneysCheck.FIXTURE_LOOP` | `Map.of("CHN", "peg:COP", "COL", "peg:CNY")` |  |
+| 98 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
+| 99 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { 9.1, 9.6, ...` |  |
+| 100 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
+| 1061 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
 
 ### YearBookCheck.java ([map](map/YearBookCheck.md))
 

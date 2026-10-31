@@ -3779,7 +3779,7 @@ public class SaveFileCheck {
                     GameVersion.isNoLongerReadable(47) && !GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT) && files.readHeader(2).isNoLongerReadable()
                             && refusedAtTheFloor(files, 2, refused, olderBytes));
 
-            // A save with no moneys (an older one): they start from January 2000 and are caught up to the city's month, with no terms of trade.
+            // A save with no moneys (an older one): they start from the first January (Nations.FIRST_YEAR) and are caught up to the city's month, with no terms of trade.
             // The cycle and the risk-off are pure functions of the seed and the month, so they are the saved ones'.
             com.google.gson.JsonObject noMoneys = json.deepCopy();
             noMoneys.remove("worldMoneys");
@@ -3788,18 +3788,18 @@ public class SaveFileCheck {
             Game caught = new Game(files);
             quietly(() -> caught.loadGameSave(3));
             WorldMoneys cm = caught.getWorldMoneys();
-            assertTrue("a save with no world moneys loads, and they are caught up from January 2000 to the saved month (" + (cm == null ? "none" : cm.month()) + ")",
+            assertTrue("a save with no world moneys loads, and they are caught up from the first January to the saved month (" + (cm == null ? "none" : cm.month()) + ")",
                     caught.getLoadFailure() == null && cm != null && cm.month() == savedMonth);
             assertTrue("...with the very cycle and risk-off the saved city had: they are a function of the seed and the month",
                     cm != null && Double.compare(cm.cycle(), savedCycle) == 0 && Double.compare(cm.riskOff(), savedRiskOff) == 0);
-            // A save with no policy rates (an older one): the load rebuilds them by stepping from January 2000 to the saved month, which is the saved state to the bit.
+            // A save with no policy rates (an older one): the load rebuilds them by stepping from the first January to the saved month, which is the saved state to the bit.
             com.google.gson.JsonObject noPolicy = json.deepCopy();
             noPolicy.remove("policyRates");
             Files.writeString(files.saveFile(4), gson.toJson(noPolicy));
             Files.copy(files.historyFile(1), files.historyFile(4), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             Game rebuilt = new Game(files);
             quietly(() -> rebuilt.loadGameSave(4));
-            assertTrue("a save with no policy rates loads, and they are rebuilt from January 2000 to the saved month: the very state the saved city had, to the bit (a function of the moneys' path), and the US's rate handed",
+            assertTrue("a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function of the moneys' path), and the US's rate handed",
                     rebuilt.getLoadFailure() == null && rebuilt.getPolicyRates() != null && rebuilt.getPolicyRates().month() == savedMonth
                             && java.util.Arrays.equals(rebuilt.getPolicyRates().toSaveArray(), savedPolicy)
                             && Double.compare(rebuilt.getDebtManager().worldRate(), savedWorldRate) == 0);

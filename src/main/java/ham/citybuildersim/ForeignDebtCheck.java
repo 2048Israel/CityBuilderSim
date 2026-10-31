@@ -946,6 +946,17 @@ public class ForeignDebtCheck {
         double tax = city.getEconomyManager().getTaxIncome();
         double small = tax;
         double big = tax * bigMonths;
+        // The world's rate is the US's policy rate on this seed's Random path, and that path's draws are keyed by calendar year, so a
+        // calendar that begins in 1900 meets other draws (EP1): at month 61 the US rate stood at 5.5% here, over the city's 3% dial, and the
+        // premise below was luck of the draw. A fixture causes its condition: the dial goes over the world's rate by enough for the share
+        // (ABROAD_SHARE) to hold.
+        dm.setPolicyRate(dm.worldRate() / LongPlaytest.ABROAD_SHARE + .02);
+        System.setOut(quiet);
+        try {
+            city.simulateMonths(1);   // the city's rate (getRate()) is struck in the month, so the dial is read once it has turned
+        } finally {
+            System.setOut(out);
+        }
 
         assertTrue("fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone",
                 !LongPlaytest.BORROW_AT_HOME);

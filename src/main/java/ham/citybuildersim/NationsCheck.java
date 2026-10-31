@@ -31,11 +31,11 @@ import java.util.function.Supplier;
  *
  * What this has to prove:
  *   1. ONE SEED, ONE PATH: two Nations of one path and seed agree on every
- *      component of every year, 2000-2150; one asked 2150 first agrees with one
+ *      component of every year, FIRST_YEAR (1900) to 2150; one asked 2150 first agrees with one
  *      asked in order; another seed differs; Historical on two seeds agrees to
  *      2025 and differs after.
  *   2. HISTORICAL EQUALS THE FILE TO 2025: output, people, price level, rate and
- *      each good's price, with their marks; Random starts from the file's 2000;
+ *      each good's price, with their marks; Random starts from the file's first January (the calendar's, 1900: the stand-in century's);
  *      people are the file's to 2100 on both paths.
  *   3. RANDOM'S SWINGS MATCH ITS DIALS over seeded years: the world factor, a
  *      region's, the own shock's persistence, the frontier's swing, a poorer
@@ -66,13 +66,13 @@ public class NationsCheck {
     /** The seed the single-world sections use, and the one the others start from. */
     static final long BASE_SEED = 7_001;
 
-    /** The seeds the statistics are counted over, and the years each (2001-2100). */
+    /** The seeds the statistics are counted over, and the years each (the 100 after the first: FIRST_YEAR + 1 to FIRST_YEAR + 100). */
     static final int SEEDS = 20;
 
     /** The goods' statistics are counted over this many seeds of 100 years (a lag-1 autocorrelation's error is about 1 over the root of the count). */
     static final int GOOD_SEEDS = 30;
 
-    /** The years a good's price needs to settle from the file's 2000 ratio to its mean before it is counted: 0.7 to the 30th is 2e-5. */
+    /** The years a good's price needs to settle from the first year's ratio (the file's 2000, held through the stand-in century) to its mean before it is counted: 0.7 to the 30th is 2e-5. */
     static final int GOOD_BURN_IN = 30;
 
     /** A swing's standard deviation is within this share of its dial (the world's, a region's, the frontier's, a good's). */
@@ -151,6 +151,7 @@ public class NationsCheck {
         WorldData fixture = WorldData.of(bytes);
         theSeed("fixture", fixture);
         theFile("fixture", fixture);
+        theStandInCentury("fixture", fixture);
         theSwings(fixture);
         theGoods(fixture);
         theHistoricalFuture(fixture);
@@ -175,6 +176,7 @@ public class NationsCheck {
                 assertTrue("the full file holds " + WorldDataCheck.FULL_NATIONS + " nations, and Nations numbers and names them as WorldData does", all.count() == WorldDataCheck.FULL_NATIONS && names.bad == 0 && names.n == all.count());
                 theSeed("full", full);
                 theFile("full", full);
+                theStandInCentury("full", full);
                 theFullPegs(full);
                 theFullCounts(full);
                 theNeverNegative("full", full, 2);
@@ -186,7 +188,7 @@ public class NationsCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
-    /** Whether every component of a nation's years agree between two paths, 2000 to last, and the goods' prices. */
+    /** Whether every component of a nation's years agree between two paths, FIRST_YEAR to last, and the goods' prices. */
     static void compare(Tally t, Nations a, Nations b, int nation, int last, String what) {
         for (int y = Nations.FIRST_YEAR; y <= last; y++) {
             int yy = y;
@@ -216,7 +218,7 @@ public class NationsCheck {
         }
         jump.year(1, 2150);   // asked 2150 before any year past 2100, and so before 2030's neighbours were asked in order
         for (int i = 1; i <= a.count(); i++) compare(order, a, jump, i, 2150, "asked 2150 first");
-        tally("two Nations of one Random path and seed agree on every component of every nation's year, 2000-2150", same);
+        tally("two Nations of one Random path and seed agree on every component of every nation's year, " + Nations.FIRST_YEAR + "-2150", same);
         tally("one asked for 2150 first agrees with one asked in order, to the last component", order);
         boolean differs = false;
         for (int i = 1; i <= a.count(); i++) differs |= a.year(i, 2030).output() != other.year(i, 2030).output();
@@ -235,6 +237,34 @@ public class NationsCheck {
     /* =====================================================================
        2. HISTORICAL EQUALS THE FILE TO 2025
        ===================================================================== */
+
+    /**
+     * EP1: the world file begins in 2000 and the nations in FIRST_YEAR, so a Historical world stands the stand-in century (WorldData's) before the file's
+     * years: every nation's prices rise as the US's do, its people, output and rate are the file's first figures held, and it is on the money it had in
+     * 2000-01. A nation with no figure of the series (a stand-in of the rule's) is left out of that series' tally.
+     */
+    static void theStandInCentury(String scope, WorldData data) {
+        out.println("--- the stand-in century reaches the nations: before the file's " + WorldData.FILE_FIRST_YEAR + " the US's prices, the file's first quantities (" + scope + ") ---");
+        Nations h = of(data, Nations.Path.HISTORICAL, BASE_SEED);
+        int first = Nations.FIRST_YEAR, file = WorldData.FILE_FIRST_YEAR;
+        Tally inflation = new Tally(), held = new Tally(), money = new Tally();
+        for (int i = 1; i <= data.nationCount(); i++) {
+            String iso = data.nation(i).iso3();
+            boolean prices = !Double.isNaN(data.pathValue("cpi", i, first));
+            boolean quantities = !Double.isNaN(data.pathValue("people", i, first)) && !Double.isNaN(data.pathValue("gdp_2015usd", i, first)) && !Double.isNaN(data.pathValue("rate", i, first));
+            String in2000 = data.moneyAt(i, WorldData.monthNumber(file, 1));
+            for (int y = first + 1; y < file; y++) {
+                int yy = y;
+                Nations.Year now = h.year(i, y), before = h.year(i, y - 1);
+                if (prices) inflation.see(Math.abs(now.inflation() - (PriceLevel.usCpi(y) / PriceLevel.usCpi(y - 1) - 1)) <= 1e-9, () -> iso + " " + yy + "'s inflation " + now.inflation());
+                if (quantities) held.see(now.people() == before.people() && now.output() == before.output() && now.rateToUsd() == before.rateToUsd(), () -> iso + " " + yy);
+                money.see(now.money().equals(in2000) && h.year(i, first).money().equals(in2000), () -> iso + " " + yy + " is on " + now.money() + ", its 2000-01 money " + in2000);
+            }
+        }
+        tally("every nation's inflation before the file is the US CPI-U's (PriceLevel.usCpi), its prices following the US's", inflation);
+        tally("...its people, output and rate are held at the file's first figures, year after year", held);
+        tally("...and it is on the money it had in 2000-01, from the first year", money);
+    }
 
     static void theFile(String scope, WorldData data) {
         out.println("--- Historical equals the file to " + Nations.HISTORY_LAST_YEAR + " (" + scope + ") ---");
@@ -266,15 +296,15 @@ public class NationsCheck {
                 goods.see(h.goodPrice(g, y) == data.price(g, y) && h.goodPriceMark(g, y) == data.priceMark(g, y), () -> "good " + gg + " " + yy);
             }
             int gg = g;
-            goods.see(r.goodPrice(g, Nations.FIRST_YEAR) == data.price(g, Nations.FIRST_YEAR) && h.goodKey(g).equals(data.good(g).key()), () -> "good " + gg + " in 2000 on Random");
+            goods.see(r.goodPrice(g, Nations.FIRST_YEAR) == data.price(g, Nations.FIRST_YEAR) && h.goodKey(g).equals(data.good(g).key()), () -> "good " + gg + " in the first year on Random");
         }
-        tally("every nation's output and its mark equal the file's, 2000-2025", outputs);
+        tally("every nation's output and its mark equal the file's, " + Nations.FIRST_YEAR + "-2025 (the stand-in century's, the reader's, included)", outputs);
         tally("every nation's price level equals the file's cpi, and its inflation is the change of it", prices);
-        tally("every nation's rate equals the file's, 2000-2025", rates);
+        tally("every nation's rate equals the file's, " + Nations.FIRST_YEAR + "-2025", rates);
         tally("every nation's people and their mark equal the file's to 2100, on Historical and on Random", people);
-        tally("Random starts from the file's January 2000: output, price level and rate are the file's, inflation is NaN", start);
+        tally("Random starts from the file's first January (the calendar's): output, price level and rate are the file's, inflation is NaN", start);
         tally("a Historical nation's money after the history is the file's money of 2025", money);
-        tally("every good's price and its mark equal the file's 2000-2025 on Historical, and 2000's on Random", goods);
+        tally("every good's price and its mark equal the file's " + Nations.FIRST_YEAR + "-2025 on Historical, and the first year's on Random", goods);
     }
 
     /* =====================================================================
@@ -294,7 +324,7 @@ public class NationsCheck {
             Nations r = of(data, Nations.Path.RANDOM, BASE_SEED + 977L * k);
             int[] running = new int[count + 1];
             double[] amount = new double[count + 1];
-            for (int y = 2001; y <= 2100; y++) {
+            for (int y = Nations.FIRST_YEAR + 1; y <= Nations.FIRST_YEAR + 100; y++) {
                 double w = r.draws(1, y).world();
                 world.add(w);
                 Map<String, Double> regionTerm = new HashMap<>();
@@ -305,7 +335,7 @@ public class NationsCheck {
                     Double seen = regionTerm.putIfAbsent(r.region(i), d.region());
                     if (seen == null) regions.computeIfAbsent(r.region(i), x -> new Moments()).add(d.region());
                     else shared.see(seen == d.region(), () -> "the region factor of nation " + ii + " in " + yy);
-                    if (y > 2001) {
+                    if (y > Nations.FIRST_YEAR + 1) {
                         double before = r.draws(i, y - 1).own();
                         lag += d.own() * before;
                         lagBase += before * before;
@@ -339,8 +369,8 @@ public class NationsCheck {
                         if (i == chn) chnSwing.add(swing);
                     }
                     if (i == usa) usaInflation.add(now.inflation());
-                    if (y <= 2008 && i == usa) usaEarly.add(now.inflation());
-                    if (y <= 2008 && i == chn) chnEarly.add(now.inflation());
+                    if (y <= Nations.FIRST_YEAR + 8 && i == usa) usaEarly.add(now.inflation());
+                    if (y <= Nations.FIRST_YEAR + 8 && i == chn) chnEarly.add(now.inflation());
                 }
                 int yearNow = y;
                 shared.see(new HashSet<>(regionTerm.values()).size() == regionTerm.size(), () -> "two regions drew the same factor in " + yearNow);
@@ -360,7 +390,8 @@ public class NationsCheck {
         tally("the trend is between FRONTIER_GROWTH and FRONTIER_GROWTH + CATCH_UP_MAX in every nation-year", trend);
         tally("inflation is never below INFLATION_FLOOR", floor);
         within("the frontier's mean inflation (the rich group's)", usaInflation.sum / usaInflation.n, Nations.INFLATION_MEAN[0], .004, false);
-        assertTrue(String.format("a poorer nation's inflation is higher while it is poor: China's mean 2001-2008 is %.4f against the frontier's %.4f (the groups' means differ by %.3f)", chnEarly.sum / chnEarly.n, usaEarly.sum / usaEarly.n, Nations.INFLATION_MEAN[2] - Nations.INFLATION_MEAN[0]),
+        assertTrue(String.format("a poorer nation's inflation is higher while it is poor: China's mean %d-%d is %.4f against the frontier's %.4f (the groups' means differ by %.3f)",
+                        Nations.FIRST_YEAR + 1, Nations.FIRST_YEAR + 8, chnEarly.sum / chnEarly.n, usaEarly.sum / usaEarly.n, Nations.INFLATION_MEAN[2] - Nations.INFLATION_MEAN[0]),
                 chnEarly.sum / chnEarly.n - usaEarly.sum / usaEarly.n > (Nations.INFLATION_MEAN[2] - Nations.INFLATION_MEAN[0]) / 2);
         assertTrue("the income groups are the thresholds': below LOW_INCOME_MAX low, up to LOWER_MIDDLE_MAX lower middle, up to UPPER_MIDDLE_MAX upper middle, above high",
                 Nations.incomeGroup(Nations.LOW_INCOME_MAX - 1) == 3 && Nations.incomeGroup(Nations.LOW_INCOME_MAX) == 2 && Nations.incomeGroup(Nations.LOWER_MIDDLE_MAX) == 1 && Nations.incomeGroup(Nations.UPPER_MIDDLE_MAX) == 0);
@@ -440,7 +471,7 @@ public class NationsCheck {
         }
         double ratio = hist.sd() / rand.sd();
         within(String.format("the frontier's Historical swing (%.4f) over Random's (%.4f), 2026-2100, crisis years left out", hist.sd(), rand.sd()), ratio, Nations.HISTORICAL_SHOCK_SHARE, SHARE_TOL, true);
-        tally("Historical draws no crisis, in any nation, 2000-2150", crises);
+        tally("Historical draws no crisis, in any nation, " + Nations.FIRST_YEAR + "-2150", crises);
         tally("Historical draws nothing in the years it replays the file", quiet);
         assertTrue("Historical draws a world factor in the years after the file's", drawn);
     }
@@ -458,7 +489,7 @@ public class NationsCheck {
         double ratio25 = h.year(col, Nations.HISTORY_LAST_YEAR).rateToUsd() / h.year(deu, Nations.HISTORY_LAST_YEAR).rateToUsd();
         double ratio00 = r.year(col, Nations.FIRST_YEAR).rateToUsd() / r.year(deu, Nations.FIRST_YEAR).rateToUsd();
         boolean euroMoves = false;
-        for (int y = 2001; y <= 2150; y++) {
+        for (int y = Nations.FIRST_YEAR + 1; y <= 2150; y++) {
             int yy = y;
             if (y > Nations.HISTORY_LAST_YEAR) {
                 hPeg.see(near(h.year(che, y).rateToUsd(), h.year(che, Nations.HISTORY_LAST_YEAR).rateToUsd(), HELD_TOL), () -> "CHF in " + yy);
@@ -475,13 +506,13 @@ public class NationsCheck {
             }
         }
         tally("a nation pegged to the dollar (CHF) holds its last published rate every year to 2150 on Historical", hPeg);
-        tally("...and its rate of 2000 on Random", rPeg);
+        tally("...and its rate of the first year on Random", rPeg);
         tally("a nation pegged to the euro (COP) holds its ratio to the euro's rate of 2025 on Historical, to 2150", hRatio);
-        tally("...and its ratio of 2000 on Random", rRatio);
+        tally("...and its ratio of the first year on Random", rRatio);
         assertTrue("the euro's own rate moves after 2025 on Historical, so the pegs above held against something moving", euroMoves);
-        tally("a nation that uses the dollar has rate 1 in the dollar from 2001 on Random", uses);
+        tally("a nation that uses the dollar has rate 1 in the dollar from the second year on Random", uses);
         tally("the euro's users share one rate every year after 2025 on Historical", hEuro);
-        tally("...and every year after 2000 on Random", rEuro);
+        tally("...and every year after the first on Random", rEuro);
     }
 
     static void theFullPegs(WorldData full) {
@@ -582,8 +613,8 @@ public class NationsCheck {
         int usa = h.index("USA"), col = h.index("COL"), chn = h.index("CHN"), jpn = h.index("JPN"), aus = h.index("AUS"), can = h.index("CAN"), bel = h.index("BEL"), deu = h.index("DEU");
 
         Tally none = new Tally();
-        none.see(near(h.year(col, 2000).output(), h.year(usa, 2000).outputPerHead() * h.year(col, 2000).people() * Nations.NO_DATA_SHARE, 1e-12), () -> "its 2000 stand-in");
-        for (int y = 2000; y <= 2150; y++) {
+        none.see(near(h.year(col, Nations.FIRST_YEAR).output(), h.year(usa, Nations.FIRST_YEAR).outputPerHead() * h.year(col, Nations.FIRST_YEAR).people() * Nations.NO_DATA_SHARE, 1e-12), () -> "its first year's stand-in");
+        for (int y = Nations.FIRST_YEAR; y <= 2150; y++) {
             int yy = y;
             none.see(h.year(col, y).outputMark() == WorldData.MARK_ESTIMATE && r.year(col, y).outputMark() == WorldData.MARK_ESTIMATE && ok(h.year(col, y).output()), () -> "Colombia in " + yy);
         }
@@ -591,12 +622,12 @@ public class NationsCheck {
 
         int id = data.numberOf("CHN");
         Tally early = new Tally();
-        for (int y = 2000; y <= 2025; y++) {
+        for (int y = Nations.FIRST_YEAR; y <= 2025; y++) {
             int yy = y;
             double file = data.pathValue("gdp_2015usd", id, y < 2003 ? 2003 : y);
             early.see(h.year(chn, y).output() == file && h.year(chn, y).outputMark() == (y < 2003 ? WorldData.MARK_ESTIMATE : data.pathMark("gdp_2015usd", id, y)), () -> "China in " + yy);
         }
-        early.see(r.year(chn, 2000).output() == data.pathValue("gdp_2015usd", id, 2003), () -> "Random's 2000");
+        early.see(r.year(chn, Nations.FIRST_YEAR).output() == data.pathValue("gdp_2015usd", id, 2003), () -> "Random's first year");
         tally("output missing before its first figure takes the first figure, marked 1; the figures after it are the file's", early);
 
         int ij = data.numberOf("JPN");
@@ -619,23 +650,23 @@ public class NationsCheck {
         tally("a price level that ends before 2025 is the file's to its last year, then the rule's (never the file's after it)", ended);
 
         Tally rates = new Tally();
-        rates.see(h.year(can, 2000).rateToUsd() == 1 && r.year(can, 2000).rateToUsd() == 1, () -> "Canada's stand-in");
-        rates.see(h.year(bel, 2000).rateToUsd() == data.pathValue("rate", data.numberOf("DEU"), 2000), () -> "Belgium's stand-in is Germany's euro rate");
-        for (int y = 2001; y <= 2025; y++) {
+        rates.see(h.year(can, Nations.FIRST_YEAR).rateToUsd() == 1 && r.year(can, Nations.FIRST_YEAR).rateToUsd() == 1, () -> "Canada's stand-in");
+        rates.see(h.year(bel, Nations.FIRST_YEAR).rateToUsd() == data.pathValue("rate", data.numberOf("DEU"), Nations.FIRST_YEAR), () -> "Belgium's stand-in is Germany's euro rate");
+        for (int y = Nations.FIRST_YEAR + 1; y <= 2025; y++) {
             int yy = y;
             rates.see(h.year(bel, y).rateToUsd() == h.year(deu, y).rateToUsd() && ok(h.year(can, y).rateToUsd()), () -> "in " + yy);
         }
-        tally("a nation with no rate takes another's of the same money (else 1), and the rule works its money from 2001", rates);
+        tally("a nation with no rate takes another's of the same money (else 1), and the rule works its money from the year after the first", rates);
     }
 
-    /** What Random counts across all the nations, against the spec's one country-year in twenty that grew less than -5% (2000-2024, the WDI) and Barro's crises: printed, for the person who tunes the dials. */
+    /** What Random counts across all the nations, against the spec's one country-year in twenty that grew less than -5% (over the 100 years after the first, as the WDI's 2000-2024 gave it) and Barro's crises: printed, for the person who tunes the dials. */
     static void theFullCounts(WorldData full) {
         out.println("--- what Random counts across all the nations (full) ---");
         int nationYears = 0, fell = 0, starts = 0, seeds = 5;
         for (int k = 0; k < seeds; k++) {
             Nations r = of(full, Nations.Path.RANDOM, BASE_SEED + 977L * k);
             for (int i = 1; i <= r.count(); i++) {
-                for (int y = 2001; y <= 2100; y++) {
+                for (int y = Nations.FIRST_YEAR + 1; y <= Nations.FIRST_YEAR + 100; y++) {
                     nationYears++;
                     if (r.year(i, y).output() / r.year(i, y - 1).output() - 1 < -.05) fell++;
                     if (r.draws(i, y).crisisStarts()) starts++;

@@ -854,15 +854,19 @@ public final class FoundingScreen {
     /** The path's three texts: the line under the row, the (i)'s whole words, and the chip's tooltip, which is the whole words' first sentence. */
     private static String[] pathWords(Nations.Path p) {
         String line, first, rest;
+        // The years are the model's (EP1): the calendar's first, the world file's first and the year its real history ends.
+        int start = CityCalendar.EPOCH_YEAR, fileFirst = WorldData.FILE_FIRST_YEAR, last = Nations.HISTORY_LAST_YEAR;
         if (p == Nations.Path.RANDOM) {
-            line = "The same January 2000, then a path of its own drawn from the seed. The US dollar's prices follow the US's path.";
-            first = "The same world in January 2000, then a path of its own, drawn from the seed: booms, slumps,"
+            line = "The same January " + start + ", then a path of its own drawn from the seed. The US dollar's prices follow the US's path.";
+            first = "The same world in January " + start + ", then a path of its own, drawn from the seed: booms, slumps,"
                     + " a crisis now and then, at the sizes the real world has had them.";
             rest = "The same seed gives the same world. Chosen once: it can't be changed later.";
         } else {
-            line = "The real world from January 2000; the seed draws its future from 2026. The US dollar's prices follow the US's path.";
-            first = "The real world from January 2000: each nation's growth, its people, its money and the prices"
-                    + " of what it makes, year by year to 2025.";
+            line = "Until " + fileFirst + " the world stands as it did then, at the US's prices of each year; then the real world;"
+                    + " the seed draws its future from " + (last + 1) + ". The US dollar's prices follow the US's path.";
+            first = "From January " + start + " the world stands as it did in " + fileFirst + ", at the US's prices of each year;"
+                    + " from January " + fileFirst + " it is the real world: each nation's growth, its people, its money and the prices"
+                    + " of what it makes, year by year to " + last + ".";
             rest = "Then the UN's projected people and the game's own rule for output, with small shocks drawn"
                     + " from the seed. The same seed gives the same world. Chosen once: it can't be changed later.";
         }

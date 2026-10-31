@@ -460,9 +460,20 @@ public class CurrencyRegimeCheck {
         fx.repriceCurrency();
     }
 
+    /**
+     * The founding the peg fixtures stand on: the default's, on the Historical path (EP1). These towns are read at months 36 to 60, the young town's deficit
+     * against the world's prices, and on the Random path those prices are draws keyed by calendar year, so what the town sells abroad, and whether a
+     * month at the peg is a surplus or a deficit, changed with the calendar's move to 1900 (the vault's dollars sold every month from the peg, the
+     * basket not based before the first break) and not with anything the fixture is about. Historical's world in the stand-in century is the file's first
+     * year held, with no draw in it: the same world whatever the key. A fixture causes its condition; the assertions' premises stand.
+     */
+    static Founding steady() {
+        return Founding.defaults().withPath(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
+    }
+
     /** A city on the default founding pegged with a surplus at the peg and the D$ a fifth over it: the doubt fixture, five months from its break at the peg's chance. */
     static Game doubtTown(String label, long reseed) {
-        Game g = town(label, Founding.defaults());
+        Game g = town(label, steady());
         play(g, 36);
         quietly(() -> {
             g.setCurrencyRegime(PEG);
@@ -1139,7 +1150,7 @@ public class CurrencyRegimeCheck {
 
     /** A city pegged at 36 months with a large positive spread: the dial high, money arriving, a surplus at the peg every month. */
     static Game surplusTown(String label, ForeignAccounts.EdgePayer payer) {
-        Game g = town(label, Founding.defaults());
+        Game g = town(label, steady());
         play(g, 36);
         quietly(() -> {
             g.setCurrencyRegime(PEG);

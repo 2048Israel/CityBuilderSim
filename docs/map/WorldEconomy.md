@@ -115,7 +115,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 412 | 7 | **type** `public interface UsPath` | The US's price path, as the dollar follows it: WorldMoneys' interpolation of the nations' price levels (Game hands it, followUsPath()). |
-| 414 | 1 | `double level(int t)` _(in WorldEconomy.UsPath)_ | The US's price level in month t (months since January 2000) against its level in month 0. |
+| 414 | 1 | `double level(int t)` _(in WorldEconomy.UsPath)_ | The US's price level in month t (months since January of Nations.FIRST_YEAR) against its level in month 0. |
 | 417 | 1 | `double pace(int t)` _(in WorldEconomy.UsPath)_ | The US's inflation in the calendar year of month t: P_US(y+1)/P_US(y) - 1. |
 | 424 | 1 | `public void followUsPath(UsPath path)` | Follows the US's path from the next month (null: the walk again). |
 | 427 | 6 | `public void followMoneys(WorldMoneys moneys)` | Follows the US's price path in these moneys (WorldMoneys.usPriceLevel, usPace); null the walk again. |

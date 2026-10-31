@@ -31,10 +31,15 @@ import java.util.TreeSet;
  * anchors are shared - eagerly to 2100 (the UN's last year) and on demand past
  * it.
  *
- * HISTORICAL replays the file's real years from January 2000, each series to
- * its last published year, and then the game's own rule with seeded shocks of
- * HISTORICAL_SHOCK_SHARE the size and no crises. RANDOM starts from the file's
- * January 2000 and draws its own path. The rule is the same in both: growth a
+ * HISTORICAL replays the file's real years, each series to its last published
+ * year, and then the game's own rule with seeded shocks of
+ * HISTORICAL_SHOCK_SHARE the size and no crises. It begins in January of
+ * FIRST_YEAR, the calendar's (1900, EP1): the world file begins in 2000, so
+ * the reader (WorldData's stand-in century) supplies the years before it, the
+ * nations held where the file finds them in 2000 and their prices following the
+ * US's, and the file's real years follow from 2000. RANDOM starts from the
+ * file's January of FIRST_YEAR, the same stand-in, and draws its own path.
+ * The rule is the same in both: growth a
  * head in logs (so output is never negative) is a trend that falls as a nation
  * nears the frontier, a world factor, its region's, its own persistent shock
  * and now and then a crisis; its prices are drawn around its income group's
@@ -47,7 +52,7 @@ import java.util.TreeSet;
  */
 public final class Nations {
 
-    /** The world's path, picked at founding (D9): the real years from January 2000, or a path drawn from the seed. */
+    /** The world's path, picked at founding (D9): the real years from January of FIRST_YEAR (the file's from 2000, the stand-in century before them), or a path drawn from the seed. */
     public enum Path { HISTORICAL, RANDOM }
 
     /**
@@ -187,7 +192,7 @@ public final class Nations {
 
     /**
      * A nation's year. output is real, US$ of 2015 (the file's gdp_2015usd); people are persons; priceLevel
-     * is the file's cpi, 2015 = 100; inflation is that year's, a share (NaN in 2000, the first year); rateToUsd is the
+     * is the file's cpi, 2015 = 100; inflation is that year's, a share (NaN in FIRST_YEAR, the first year); rateToUsd is the
      * nation's money a US dollar, year average, and money the ISO code of the money it is in; the marks are the file's
      * (3 published, 2 a published projection, 1 the game's estimate): every year the rule makes is 1.
      */
@@ -205,7 +210,7 @@ public final class Nations {
 
     private static final Draws NO_DRAWS = new Draws(0, 0, 0, 0, false);
 
-    /** A series by year index from 2000 with no holes up to last: the file's figures, the gaps and the years before the first filled in. */
+    /** A series by year index from FIRST_YEAR with no holes up to last: the file's figures (the stand-in century's before 2000), the gaps and the years before the first filled in. */
     record Series(double[] v, int[] mark, int last) { }
 
     /* =====================================================================
@@ -298,7 +303,7 @@ public final class Nations {
                 String code = file.moneyAt(i + 1, t * 12 + 11);
                 moneyDec[i][t] = code == null ? later : code;
             }
-            // After the history: Historical's is the 2025 money; Random keeps its money of 2000 unless its regime uses another's.
+            // After the history: Historical's is the 2025 money; Random keeps the money of its first December (the one it had in 2000-01) unless its regime uses another's.
             moneyLater[i] = historical ? later : regime[i].startsWith("uses:") ? regime[i].substring(5) : moneyDec[i][0];
             double out2025 = rawFigure(file, "gdp_2015usd", i + 1, HISTORY_LAST_YEAR, gone);
             size[i] = Double.isNaN(out2025) ? -1 : out2025;
@@ -311,14 +316,14 @@ public final class Nations {
         if (output[frontier] == null) throw new IllegalArgumentException("nations: the file has no output for " + FRONTIER + ", the frontier");
         double frontierStart = output[frontier].v[0] / people[frontier].v[0];
         for (int i = 0; i < n; i++) {
-            // A series with no figure at all starts from a stand-in, marked 1, and the rule works it from 2001 in both paths.
+            // A series with no figure at all starts from a stand-in, marked 1, and the rule works it from the year after FIRST_YEAR in both paths.
             if (output[i] == null) output[i] = fromFile(file, "gdp_2015usd", i + 1, dataLast, gone);
             if (output[i] == null) output[i] = standIn(frontierStart * people[i].v[0] * NO_DATA_SHARE);
             cpi[i] = fromFile(file, "cpi", i + 1, dataLast, gone);
             if (cpi[i] == null) cpi[i] = standIn(100);
             rate[i] = fromFile(file, "rate", i + 1, dataLast, gone);
         }
-        // No rate at all: 1 for a dollar, else another nation's figure for the same money in 2000, else 1.
+        // No rate at all: 1 for a dollar, else another nation's figure for the same money in the first year, else 1.
         Series[] fileRate = rate.clone();
         for (int i = 0; i < n; i++) {
             if (fileRate[i] != null) continue;
@@ -342,7 +347,7 @@ public final class Nations {
             }
             decided.addAll(anchor.keySet());
         }
-        // WN4: the moneys a path can use (Random: each nation's money of 2000 and its later one; Historical: every money of its history and its 2025 one),
+        // WN4: the moneys a path can use (Random: each nation's money of its first December and its later one; Historical: every money of its history and its 2025 one),
         // and the anchor of one that is no later money. Read by WorldMoneys; nothing above is changed by it.
         TreeSet<String> usable = new TreeSet<>();
         for (int i = 0; i < n; i++) {
@@ -387,7 +392,7 @@ public final class Nations {
                 price[g] = new Series(ones, marks, cap);
             }
             priceLast[g] = historical ? price[g].last : 0;
-            swing[g] = swingOf(price[g]);
+            swing[g] = swingOf(price[g], file.priceStandInYears());
             // A good draws its series' shock, not its own (WN3): the first good that follows the same Pink Sheet series draws it for all of them.
             String series = file.priceSeries(g + 1);
             shockOf[g] = g + 1;
@@ -480,10 +485,10 @@ public final class Nations {
     /** A nation's regime in the file (or the harness's): "float", "peg:CODE" or "uses:CODE". */
     String regime(int nation) { return regime[check(nation)]; }
 
-    /** Whether any nation is on this money after the history (Historical: in 2025, Random: from 2001): the later moneys, the ones a path goes on ruling. */
+    /** Whether any nation is on this money after the history (Historical: in 2025, Random: from the year after FIRST_YEAR): the later moneys, the ones a path goes on ruling. */
     boolean usedAfterHistory(String code) { return anchor.containsKey(code); }
 
-    /** Every money the path can name, sorted by code (WN4): Random's are each nation's money of 2000 and its later one, Historical's every money of the file's history and the 2025 one. */
+    /** Every money the path can name, sorted by code (WN4): Random's are each nation's money of its first December and its later one, Historical's every money of the file's history and the 2025 one. */
     String[] pathMoneys() { return pathMoneys.clone(); }
 
     /**
@@ -496,7 +501,7 @@ public final class Nations {
         return a == null ? 0 : a + 1;
     }
 
-    /** A good's yearly price swing, one standard deviation of its file's log change 2001-2025, never under MIN_PRICE_SWING. */
+    /** A good's yearly price swing, one standard deviation of its file's own log change 2001-2025 (not the stand-in century's), never under MIN_PRICE_SWING. */
     double priceSwing(int good) { return swing[checkGood(good)]; }
 
     /** The income group of a nation by its output a head in US$ of 2015: 0 high, 1 upper middle, 2 lower middle, 3 low. */
@@ -535,7 +540,7 @@ public final class Nations {
         return x > 0 && Double.isFinite(x) ? x : Double.NaN;
     }
 
-    /** A series of the file for a nation, indexed from 2000 and filled to its last figure at or before cap; null when it has none. */
+    /** A series of the file for a nation, indexed from FIRST_YEAR (the stand-in century's years first) and filled to its last figure at or before cap; null when it has none. */
     private static Series fromFile(WorldData file, String series, int number, int cap, Absent gone) {
         double[] raw = new double[file.pathYears()];
         int[] mark = new int[raw.length];
@@ -581,17 +586,20 @@ public final class Nations {
         return new Series(v, k, last);
     }
 
-    /** A series that is one figure, the game's estimate, in 2000: the rule works the rest. */
+    /** A series that is one figure, the game's estimate, in FIRST_YEAR: the rule works the rest. */
     private static Series standIn(double value) {
         return new Series(new double[] {value}, new int[] {WorldData.MARK_ESTIMATE}, 0);
     }
 
-    /** One standard deviation of a good's yearly log change over its file's years 2001 on, never under MIN_PRICE_SWING. */
-    private static double swingOf(Series s) {
-        int count = s.last;
+    /**
+     * One standard deviation of a good's yearly log change over the file's own years, the year after its first on, never under MIN_PRICE_SWING. The
+     * stand-in century (the first `lead` years of the series, WorldData's) is flat and no measure of the good, so it is left out.
+     */
+    private static double swingOf(Series s, int lead) {
+        int count = s.last - lead;
         if (count < 2) return MIN_PRICE_SWING;
-        double mean = Math.log(s.v[s.last] / s.v[0]) / count, sum = 0;
-        for (int i = 1; i <= s.last; i++) sum += Math.pow(Math.log(s.v[i] / s.v[i - 1]) - mean, 2);
+        double mean = Math.log(s.v[s.last] / s.v[lead]) / count, sum = 0;
+        for (int i = lead + 1; i <= s.last; i++) sum += Math.pow(Math.log(s.v[i] / s.v[i - 1]) - mean, 2);
         return Math.max(MIN_PRICE_SWING, Math.sqrt(sum / (count - 1)));
     }
 
@@ -718,7 +726,7 @@ public final class Nations {
         priceLevel = plNow;
     }
 
-    /** The money a nation is in in a year: Historical's is the file's of December to 2025 and its 2025 one after; Random's is its money of 2000, or the one its regime uses from 2001. */
+    /** The money a nation is in in a year: Historical's is the file's of December to 2025 and its 2025 one after; Random's is its money of its first December, or the one its regime uses from the year after FIRST_YEAR. */
     private String moneyOf(int i, int t) {
         if (t == 0 || historical && t <= HISTORY_LAST_YEAR - FIRST_YEAR) return moneyDec[i][t];
         return moneyLater[i];
@@ -728,7 +736,7 @@ public final class Nations {
      * A money's rate to the dollar this year, NaN for one no nation uses after the history. The dollar is 1. Else the
      * anchor's: its published figure while it has them (Historical), then by its regime - a float is last year's by
      * relative parity (the anchor's inflation against the dollar's) and a shock, a peg or a use the ratio to the
-     * other money's rate held at its last published year's (Random's: 2000's). A loop of pegs holds last year's rate;
+     * other money's rate held at its last published year's (Random's: the first year's). A loop of pegs holds last year's rate;
      * a money with no figure to go on is NaN, and a nation on it holds its own last rate (the fixtures have none).
      */
     private double moneyLevel(String code, int t, int year, double share, Map<String, Double> cur, Set<String> busy, double[] inflation) {

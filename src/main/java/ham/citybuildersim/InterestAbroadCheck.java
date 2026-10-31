@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 
 /**
  * The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8,
- * Jerus's calls 9 and 11): PolicyRates' monthly rate of each bank - the real table to December 2025 on Historical, the rule after it and from
- * February 2000 on Random - held to the table where the table is the truth, to the rule's own constants where it rules, and to the city where the
+ * Jerus's calls 9 and 11): PolicyRates' monthly rate of each bank - the real table to December 2025 on Historical (its January 2000 rate held through
+ * the stand-in century before it, EP1), the rule after it and from the second month on Random - held to the table where the table is the truth, to the rule's own constants where it rules, and to the city where the
  * US's rate stands for the world's price of money (DebtManager.worldRate()).
  *
  * WHY. The world's price of money was a constant 2% against a world whose inflation is a path, so the world's real rate swung with the path and the
@@ -20,12 +20,15 @@ import java.util.function.Supplier;
  * price levels; a line says when it is not named, and those sections did not run.
  *
  * What this has to prove:
- *   1. THE TABLE: each of the eight has a rate in every one of the 312 months, spot values agree with the file's history, historical() is NaN outside
- *      the table and for a code that is not one of the eight, and a table that is not whole is refused naming its line.
- *   2. HISTORICAL REPLAYS, THEN THE RULE: a PolicyRates over a Historical WorldMoneys equals the table in every month to 311 and is ruling from 312;
- *      from 312 to 1,199 every month's change of every money is a whole multiple of STEP, no rate falls below LOWER_BOUND, no rate is further than
- *      STEP from its shadow, and no rate moves past it.
- *   3. RANDOM RUNS THE RULE FROM FEBRUARY 2000: month 0 is the table's January 2000; ruling from month 1; two builds on one seed give identical
+ *   1. THE TABLE: each of the eight has a rate in every one of its months (the file's 312, from January 2000, and the stand-in century's 1,200 before
+ *      them, each bank's January 2000 rate held), spot values agree with the file's history, historical() is NaN outside the table and for a code that
+ *      is not one of the eight, and a table that is not whole is refused naming its line.
+ *   2. HISTORICAL IN THREE STRETCHES (EP1): a PolicyRates over a Historical WorldMoneys runs the rule in the stand-in century (months 1 to 1,199,
+ *      reading the US CPI's own inflation), equals the table in every month January 2000 to December 2025 and is not ruling there, and runs the rule
+ *      again from January 2026; in every ruled month (the 888 after the table to December 2099 included) the target is targetFor() of the inflation
+ *      read, the shadow closes its gap by the half-life, every change of every money is a whole multiple of STEP, no rate falls below LOWER_BOUND, no
+ *      rate is further than STEP from its shadow, and no rate moves past it.
+ *   3. RANDOM RUNS THE RULE FROM THE SECOND MONTH: month 0 is the table's first month; ruling from month 1; two builds on one seed give identical
  *      rates; the US's mean real rate is within a point of its neutral real rate; the target is the one targetFor() gives for the inflation read, the
  *      real target rises TAYLOR_WEIGHT for each point of inflation over the bank's target, never goes under LOWER_BOUND, and the shadow closes its gap
  *      to the target by the half-life.
@@ -63,8 +66,14 @@ public class InterestAbroadCheck {
     static final long SEED = 9_101;
     static final long[] SEEDS = {9_101, 9_102, 9_103, 9_104, 9_105};
 
-    /** The months a long run covers: January 2000 to December 2099, the nations' path (the last month stepped is 1,199). */
+    /** The months a Random run covers: a hundred years from the calendar's first January (the last month stepped is 1,199). */
     static final int LONG = 1_200;
+
+    /** The month after the last a Historical run steps: December 2099 is the last, the nations' path (the rule rules the 888 months after the table's end). */
+    static final int HISTORICAL_END = at(2099, 12) + 1;
+
+    /** The months the rule rules on Historical after the table: January 2026 to December 2099. */
+    static final int RULED = 888;
 
     /** Two rates or two logs that should be one differ by less than this. */
     static final double EXACT = 1e-12;
@@ -108,7 +117,7 @@ public class InterestAbroadCheck {
         assertTrue(String.format("%s: %.17g against %.17g", label, got, wanted), same(got, wanted));
     }
 
-    /** The month index of a calendar month: months since January 2000. */
+    /** The month index of a calendar month: months since January of the calendar's first year (Nations.FIRST_YEAR). */
     static int at(int year, int month) { return (year - Nations.FIRST_YEAR) * 12 + month - 1; }
 
     public static void main(String[] args) throws Exception {
@@ -218,7 +227,7 @@ public class InterestAbroadCheck {
     };
 
     static void theTable() {
-        out.println("--- 1. the table: eight banks, 312 months, the file's history ---");
+        out.println("--- 1. the table: eight banks, " + PolicyRates.MONTHS + " months, the file's history from January 2000 and the stand-in before it ---");
         Tally every = new Tally();
         for (String code : WorldMoneys.EIGHT) {
             for (int t = 0; t < PolicyRates.MONTHS; t++) {
@@ -236,11 +245,23 @@ public class InterestAbroadCheck {
             spots.see(Math.abs(got - wanted) <= EXACT, () -> code + " " + year + "-" + month + " is " + got + ", the file's is " + wanted);
         }
         tally("the spot values agree with the file's history (the Fed's two changes in January 2001 leave the second, the euro's negative rates, the pound at 0.5%...)", spots);
-        assertTrue("historical() is NaN before January 2000, after December 2025 and for a code that is not one of the eight",
+        assertTrue("historical() is NaN before the first month, after December 2025 and for a code that is not one of the eight",
                 Double.isNaN(PolicyRates.historical("USD", -1)) && Double.isNaN(PolicyRates.historical("USD", PolicyRates.MONTHS))
                         && Double.isNaN(PolicyRates.historical("XYZ", 0)) && Double.isNaN(PolicyRates.historical("usd", 0)));
-        assertTrue("the table covers January 2000 to December 2025: " + PolicyRates.MONTHS + " months, the world file's (WorldMoneys.HISTORICAL_RULE_START)",
-                PolicyRates.MONTHS == WorldMoneys.HISTORICAL_RULE_START && PolicyRates.MONTHS == 312);
+        assertTrue("the table covers the calendar's first January to December 2025: " + PolicyRates.MONTHS + " months, the world file's reader's (WorldMoneys.HISTORICAL_RULE_START)",
+                PolicyRates.MONTHS == WorldMoneys.HISTORICAL_RULE_START && PolicyRates.MONTHS == at(2025, 12) + 1);
+        assertTrue("...312 of them the table's own, January 2000 to December 2025, and the stand-in century's before them",
+                PolicyRates.MONTHS - at(2000, 1) == 312 && PolicyRates.TABLE_FIRST_MONTH == at(2000, 1));
+        Tally standIn = new Tally();
+        for (String code : WorldMoneys.EIGHT) {
+            double january2000 = PolicyRates.historical(code, at(2000, 1));
+            for (int t = 0; t < at(2000, 1); t++) {
+                final int month = t;
+                double r = PolicyRates.historical(code, t);
+                standIn.see(same(r, january2000), () -> code + " in month " + month + " is " + r + ", its January 2000 rate " + january2000);
+            }
+        }
+        tally("before January 2000 historical() is each bank's January 2000 rate held, back to the first month (only the opening, month 0, reads it: a Historical bank runs the rule in the rest of the stand-in century)", standIn);
         assertTrue("the dials a caller reads are the banks' own: a target and a neutral real rate for each of the eight, NaN for a code that is none",
                 Double.isFinite(PolicyRates.inflationTargetOf("AUD")) && PolicyRates.inflationTargetOf("AUD") == .025 && PolicyRates.neutralRealOf("JPY") == -.005
                         && Double.isNaN(PolicyRates.inflationTargetOf("XYZ")) && Double.isNaN(PolicyRates.neutralRealOf("XYZ")));
@@ -249,7 +270,10 @@ public class InterestAbroadCheck {
         String base = validTable();
         double[][] parsed = parsed(base + "USD\t2000-03\t2.00\n");
         assertTrue("fixture: a table of eight first lines and one change reads (a rate holds until the next change)",
-                parsed != null && same(parsed[0][1], .01) && same(parsed[0][2], .02) && same(parsed[0][311], .02) && same(parsed[1][311], .01));
+                parsed != null && same(parsed[0][at(2000, 2)], .01) && same(parsed[0][at(2000, 3)], .02) && same(parsed[0][PolicyRates.MONTHS - 1], .02)
+                        && same(parsed[1][PolicyRates.MONTHS - 1], .01));
+        assertTrue("...and a bank holds its first line's rate back to the calendar's first month (month 0 and the December before January 2000)",
+                parsed != null && same(parsed[0][0], .01) && same(parsed[0][at(2000, 1) - 1], .01) && same(parsed[1][0], .01));
         refused("a money that is not one of the eight", base + "XYZ\t2000-03\t2.00\n", "line 10");
         refused("a change not after the money's last", base + "USD\t2000-03\t2.00\nUSD\t2000-02\t1.00\n", "line 11");
         refused("a change in the same month as the money's last", base + "USD\t2000-03\t2.00\nUSD\t2000-03\t3.00\n", "line 11");
@@ -296,84 +320,112 @@ public class InterestAbroadCheck {
        ===================================================================== */
 
     static void theReplay(World world) {
-        out.println("--- 2. Historical replays the table to December 2025; from January 2026 the rule steps in quarter points ---");
+        out.println("--- 2. Historical: the rule in the stand-in century, the table January 2000 to December 2025, the rule again from January 2026 ---");
+        final int end = PolicyRates.MONTHS + RULED;   // December 2099 is the last month stepped
+        final int tableFirst = PolicyRates.TABLE_FIRST_MONTH;
+        assertTrue("the rule rules the months from January 2026 to December 2099: " + RULED + " of them", end == HISTORICAL_END);
         WorldMoneys w = world.moneys(Nations.Path.HISTORICAL, SEED);
         PolicyRates r = new PolicyRates(w);
-        assertTrue("the rule's first month is the moneys' (" + w.ruleStart() + ") and the table's end", r.ruleStart() == w.ruleStart() && r.ruleStart() == PolicyRates.MONTHS);
-        Tally replay = new Tally(), unread = new Tally();
-        for (int t = 0; t < PolicyRates.MONTHS; t++) {
-            if (t > 0) {
-                w.step(t, null);
-                r.step(t);
-            }
-            for (String code : WorldMoneys.EIGHT) {
-                final int month = t;
-                replay.see(same(r.rate(code), PolicyRates.historical(code, t)) && same(r.shadow(code), PolicyRates.historical(code, t)),
-                        () -> code + " in month " + month + " is " + r.rate(code) + ", the table's " + PolicyRates.historical(code, month));
-                unread.see(Double.isNaN(r.target(code)) && Double.isNaN(r.inflation(code)), () -> code + " has a target before the rule rules, in month " + month);
-            }
-            if (r.ruling()) unread.see(false, () -> "ruling in month " + r.month());
-        }
-        tally("to December 2025 every bank's rate, and its shadow with it, is the table's, exactly, in every month (0 to 311)", replay);
-        tally("...and the rule has read nothing and rules nothing: no target and no inflation, not ruling", unread);
+        assertTrue("the rule rules again from the moneys' month (" + w.ruleStart() + ") and the table's end; the table's own months begin at January 2000, month " + tableFirst,
+                r.ruleStart() == w.ruleStart() && r.ruleStart() == PolicyRates.MONTHS && tableFirst == at(2000, 1));
+        boolean opening = true;
+        for (String code : WorldMoneys.EIGHT) opening &= same(r.rate(code), PolicyRates.historical(code, 0)) && same(r.shadow(code), PolicyRates.historical(code, 0));
+        assertTrue("month 0, the opening, stands at the table's first line for each bank and is not ruling", r.month() == 0 && !r.ruling() && opening);
 
-        double[] was = ratesOf(r);
-        Tally ruled = new Tally(), multiple = new Tally(), floor = new Tally(), near = new Tally(), notPast = new Tally();
-        int[] moves = new int[WorldMoneys.EIGHT.size()];
-        for (int t = PolicyRates.MONTHS; t < LONG; t++) {
+        Tally replay = new Tally(), unread = new Tally(), ruled = new Tally(), reads = new Tally(), viaTheClass = new Tally(), halfLife = new Tally(), usPace = new Tally();
+        Tally multiple = new Tally(), floor = new Tally(), near = new Tally(), notPast = new Tally();
+        int[] movesStandIn = new int[WorldMoneys.EIGHT.size()], movesAfter = new int[WorldMoneys.EIGHT.size()];
+        double[] was = ratesOf(r), shadowBefore = new double[WorldMoneys.EIGHT.size()];
+        for (int t = 1; t < end; t++) {
+            for (int k = 0; k < shadowBefore.length; k++) shadowBefore[k] = r.shadow(WorldMoneys.EIGHT.get(k));
             w.step(t, null);
             r.step(t);
-            if (t == PolicyRates.MONTHS) {
-                assertTrue("January 2026 is the rule's first month: ruling, and every bank has read an inflation and has a target", r.ruling()
+            final int month = t;
+            boolean table = t >= tableFirst && t < PolicyRates.MONTHS;
+            if (t == tableFirst || t == PolicyRates.MONTHS) {
+                assertTrue(t == tableFirst ? "January 2000 is the table's first month: not ruling, every bank at the table's line, nothing read"
+                                : "January 2026 is the rule's first month again: ruling, and every bank has read an inflation and has a target",
+                        t == tableFirst ? !r.ruling() && WorldMoneys.EIGHT.stream().allMatch(c -> same(r.rate(c), PolicyRates.historical(c, month)) && Double.isNaN(r.target(c)))
+                                : r.ruling() && WorldMoneys.EIGHT.stream().allMatch(c -> Double.isFinite(r.target(c)) && Double.isFinite(r.inflation(c))));
+            }
+            if (t == tableFirst - 1) {
+                assertTrue("December 1999, the stand-in's last month, is ruled: every bank has read an inflation and has a target", r.ruling()
                         && WorldMoneys.EIGHT.stream().allMatch(c -> Double.isFinite(r.target(c)) && Double.isFinite(r.inflation(c))));
             }
-            for (int k = 0; k < moves.length; k++) {
+            for (int k = 0; k < movesAfter.length; k++) {
                 String code = WorldMoneys.EIGHT.get(k);
-                final int month = t;
                 double now = r.rate(k), shadow = r.shadow(code), change = now - was[k];
-                double steps = change / PolicyRates.STEP;
-                ruled.see(r.ruling(), () -> code + " is not ruling in month " + month);
-                multiple.see(Math.abs(steps - Math.rint(steps)) * PolicyRates.STEP <= EXACT, () -> code + " moved " + change + " in month " + month);
-                floor.see(now >= PolicyRates.LOWER_BOUND - EXACT, () -> code + " stands at " + now + " in month " + month);
-                near.see(Math.abs(now - shadow) <= PolicyRates.STEP + EXACT, () -> code + " is " + now + " with its shadow at " + shadow + " in month " + month);
-                notPast.see(change > 0 ? now <= shadow + EXACT : change < 0 ? now >= shadow - EXACT : true,
-                        () -> code + " moved " + change + " to " + now + " past its shadow " + shadow + " in month " + month);
-                if (Math.abs(change) > EXACT) moves[k]++;
+                if (table) {
+                    replay.see(same(now, PolicyRates.historical(code, t)) && same(shadow, PolicyRates.historical(code, t)),
+                            () -> code + " in month " + month + " is " + r.rate(code) + ", the table's " + PolicyRates.historical(code, month));
+                    unread.see(Double.isNaN(r.target(code)) && Double.isNaN(r.inflation(code)) && !r.ruling(), () -> code + " has a target, or is ruling, in the table's month " + month);
+                } else {
+                    double steps = change / PolicyRates.STEP, pi = r.inflation(code), target = r.target(code);
+                    final int bank = k;
+                    ruled.see(r.ruling(), () -> code + " is not ruling in month " + month);
+                    reads.see(Double.isFinite(pi) && Double.isFinite(target), () -> code + " has read no inflation in month " + month);
+                    viaTheClass.see(same(target, PolicyRates.targetFor(bank, pi)), () -> code + " in month " + month + " has target " + target + ", targetFor gives " + PolicyRates.targetFor(bank, pi));
+                    double gap = target - shadowBefore[k];
+                    if (Math.abs(gap) > 1e-6) {
+                        double closed = (shadow - shadowBefore[k]) / gap;
+                        halfLife.see(Math.abs(Math.pow(1 - closed, PolicyRates.RULE_HALF_LIFE) - .5) <= 1e-9, () -> code + " closed " + closed + " of its gap in month " + month);
+                    }
+                    multiple.see(Math.abs(steps - Math.rint(steps)) * PolicyRates.STEP <= EXACT, () -> code + " moved " + change + " in month " + month);
+                    floor.see(now >= PolicyRates.LOWER_BOUND - EXACT, () -> code + " stands at " + now + " in month " + month);
+                    near.see(Math.abs(now - shadow) <= PolicyRates.STEP + EXACT, () -> code + " is " + now + " with its shadow at " + shadow + " in month " + month);
+                    notPast.see(change > 0 ? now <= shadow + EXACT : change < 0 ? now >= shadow - EXACT : true,
+                            () -> code + " moved " + change + " to " + now + " past its shadow " + shadow + " in month " + month);
+                    if (Math.abs(change) > EXACT) (t < tableFirst ? movesStandIn : movesAfter)[k]++;
+                }
                 was[k] = now;
             }
+            // In the stand-in a January's inflation the dollar's bank reads is the US CPI-U's pace that year (WorldData's nominal stand-in follows PriceLevel).
+            if (t < tableFirst && t % 12 == 0) {
+                int year = Nations.FIRST_YEAR + t / 12;
+                double pace = PriceLevel.usCpi(year) / PriceLevel.usCpi(year - 1) - 1;
+                usPace.see(Math.abs(r.inflation("USD") - pace) <= 1e-9, () -> "January " + year + ": the Fed reads " + r.inflation("USD") + ", the US CPI-U's pace is " + pace);
+            }
         }
-        tally("ruling from month " + PolicyRates.MONTHS + " to " + (LONG - 1) + ", every month", ruled);
+        tally("in the table's months, January 2000 to December 2025 (" + tableFirst + " to " + (PolicyRates.MONTHS - 1) + "), every bank's rate, and its shadow with it, is the table's, exactly", replay);
+        tally("...and the rule has read nothing then: no target and no inflation, not ruling", unread);
+        tally("in every other month, the stand-in century (1 to " + (tableFirst - 1) + ") and from month " + PolicyRates.MONTHS + " to " + (end - 1) + ", the rule rules: ruling() says so", ruled);
+        tally("...and every bank has read an inflation and has a target", reads);
+        tally("...the target is what targetFor() gives for the inflation the bank read (the anchor's, the US CPI's in the stand-in)", viaTheClass);
+        tally("...the shadow closes the same share of its gap to the target every month, the half-life's: 0.5 after RULE_HALF_LIFE (" + PolicyRates.RULE_HALF_LIFE + ") months", halfLife);
         tally("...every change of every bank is a whole multiple of STEP (" + PolicyRates.STEP + ")", multiple);
         tally("...no rate is under LOWER_BOUND (" + PolicyRates.LOWER_BOUND + ")", floor);
         tally("...no rate is further than STEP from its shadow", near);
         tally("...and no rate moves past its shadow", notPast);
+        tally("...in the stand-in's Januaries the Fed reads the US CPI-U's pace of that year (PriceLevel.usCpi)", usPace);
         StringBuilder moved = new StringBuilder();
-        int total = 0;
-        for (int k = 0; k < moves.length; k++) {
-            moved.append(WorldMoneys.EIGHT.get(k)).append(' ').append(moves[k]).append(k + 1 < moves.length ? ", " : "");
-            total += moves[k];
+        int totalStandIn = 0, totalAfter = 0;
+        for (int k = 0; k < movesAfter.length; k++) {
+            moved.append(WorldMoneys.EIGHT.get(k)).append(' ').append(movesStandIn[k]).append('/').append(movesAfter[k]).append(k + 1 < movesAfter.length ? ", " : "");
+            totalStandIn += movesStandIn[k];
+            totalAfter += movesAfter[k];
         }
-        out.println("  months in which a bank moved its rate, 2026-2099: " + moved);
-        assertTrue("fixture: the rule did move the rates (" + total + " moves over the eight in 888 months), so the steps above were tested on something", total > 0);
+        out.println("  months in which a bank moved its rate, in the stand-in 1900-1999 / after the table 2026-2099: " + moved);
+        assertTrue("fixture: the rule did move the rates (" + totalStandIn + " moves over the eight in the stand-in's " + (tableFirst - 1) + " months, " + totalAfter + " in the " + RULED + " after the table), so the steps above were tested on something",
+                totalStandIn > 0 && totalAfter > 0);
     }
 
     /* =====================================================================
-       3. RANDOM RUNS THE RULE FROM FEBRUARY 2000
+       3. RANDOM RUNS THE RULE FROM THE SECOND MONTH
        ===================================================================== */
 
     static void theRandomRule(World world) {
-        out.println("--- 3. Random runs the rule from February 2000: the target, the Taylor weight, the half-life, one seed one path ---");
+        out.println("--- 3. Random runs the rule from February " + Nations.FIRST_YEAR + ": the target, the Taylor weight, the half-life, one seed one path ---");
         WorldMoneys w = world.moneys(Nations.Path.RANDOM, SEED);
         PolicyRates r = new PolicyRates(w);
         boolean januaryTable = true;
         for (String code : WorldMoneys.EIGHT) januaryTable &= same(r.rate(code), PolicyRates.historical(code, 0)) && same(r.shadow(code), PolicyRates.historical(code, 0));
-        assertTrue("month 0 is the table's January 2000, not yet ruling, and the rule's first month is February (" + r.ruleStart() + ")",
+        assertTrue("month 0 is the table's first month (its January 2000 rate held), not yet ruling, and the rule's first month is February (" + r.ruleStart() + ")",
                 r.month() == 0 && !r.ruling() && januaryTable && r.ruleStart() == 1 && r.ruleStart() == w.ruleStart());
         w.step(1, null);
         r.step(1);
         assertTrue("month 1 is ruled: every bank has read an inflation and has a target", r.ruling()
                 && WorldMoneys.EIGHT.stream().allMatch(c -> Double.isFinite(r.target(c)) && Double.isFinite(r.inflation(c))));
-        assertTrue("the Fed stood at 5.5% in January 2000 and a quarter-point rule has it at 5.5% or one step either side in February (" + r.usRate() + ")",
+        assertTrue("the Fed stood at the table's 5.5% in the first January and a quarter-point rule has it at 5.5% or one step either side in February (" + r.usRate() + ")",
                 Math.abs(r.usRate() - PolicyRates.historical("USD", 0)) <= PolicyRates.STEP + EXACT);
         assertTrue("a step out of turn is refused (the month after 1 is 2) and changes nothing", refusedStep(r, 5, ratesOf(r)));
 
@@ -489,8 +541,7 @@ public class InterestAbroadCheck {
 
     static void theSaveOfTheRates(World world) {
         out.println("--- 6. the save: a restored state steps on as the unbroken one does; one that is not this one's is refused ---");
-        for (Nations.Path path : Nations.Path.values()) {
-            int saveAt = path == Nations.Path.HISTORICAL ? 300 : 60;
+        for (Nations.Path path : Nations.Path.values()) for (int saveAt : path == Nations.Path.HISTORICAL ? new int[] {PolicyRates.TABLE_FIRST_MONTH - 12, PolicyRates.MONTHS - 12} : new int[] {60}) {
             WorldMoneys wa = world.moneys(path, SEED), wb = world.moneys(path, SEED);
             PolicyRates unbroken = new PolicyRates(wa), restored = new PolicyRates(wb);
             run(wa, unbroken, saveAt);
@@ -508,7 +559,7 @@ public class InterestAbroadCheck {
                 final int month = t;
                 continues.see(Arrays.equals(restored.toSaveArray(), unbroken.toSaveArray()), () -> "the restored one differs from the unbroken in month " + month);
             }
-            tally(path + ": the restored one steps on for 120 months (" + (path == Nations.Path.HISTORICAL ? "across the table's end into the rule" : "inside the rule")
+            tally(path + ": the restored one steps on for 120 months (" + (path != Nations.Path.HISTORICAL ? "inside the rule" : saveAt < PolicyRates.TABLE_FIRST_MONTH ? "across the stand-in century's end into the table" : "across the table's end into the rule")
                     + ") as the unbroken one does, bit for bit", continues);
         }
         // A fresh one has not read an inflation yet, and saves that without a NaN; the restore gives the NaN back.
@@ -529,7 +580,7 @@ public class InterestAbroadCheck {
         bad[4] = Arrays.copyOf(state, 2);
         bad[5] = state.clone(); bad[5][2] = -3;
         bad[6] = state.clone(); bad[6][5] = Double.NaN;
-        String[] why = {"another format", "another count of banks", "one number short", "one number long", "a header alone", "a month before January 2000", "a number that is none"};
+        String[] why = {"another format", "another count of banks", "one number short", "one number long", "a header alone", "a month before the first January", "a number that is none"};
         probe.restore(state);
         double[] held = probe.toSaveArray();
         for (int i = 0; i < bad.length; i++) {

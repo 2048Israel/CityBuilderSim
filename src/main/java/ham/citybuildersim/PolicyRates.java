@@ -14,8 +14,9 @@ import java.util.Objects;
 /**
  * The policy rates of the eight central banks of the moneys the vault holds (XR4; spec-exchange-rates 3.8, Jerus's calls 9 and 11): the Federal
  * Reserve's, the ECB's, the Bank of Japan's, the Bank of England's, the People's Bank's, the Bank of Canada's, the Reserve Bank of Australia's and the
- * Swiss National Bank's, a month at a time. On the Historical path their real rates January 2000 to December 2025 (policy-rates.tsv), then a rule;
- * on Random the rule from February 2000. The US's rate is the world's price of money to the city (DebtManager.worldRate()). A pure model: it reads
+ * Swiss National Bank's, a month at a time. On the Historical path their real rates January 2000 to December 2025 (policy-rates.tsv), and the rule in
+ * the months on either side of them: the stand-in century before January 2000 (EP1) and the months after December 2025; on Random the rule from the
+ * second month of the calendar (February 1900). The US's rate is the world's price of money to the city (DebtManager.worldRate()). A pure model: it reads
  * the table, the nations' price levels through WorldMoneys and its own state, and it is handed to the city by Game.
  *
  * WHY THIS EXISTS. The world's price of money was DebtManager.WORLD_BASE_RATE, a constant 2%, against a world whose inflation is a path: the world's
@@ -27,8 +28,14 @@ import java.util.Objects;
  * THE RULE. From its first month a bank's target is its neutral real rate plus the inflation it reads plus TAYLOR_WEIGHT of that inflation's
  * distance over its own target, never under LOWER_BOUND (Taylor, 1993). A shadow rate closes half its gap to the target in RULE_HALF_LIFE months (the
  * smoothing an estimated rule shows), and the policy rate moves in whole STEPs toward the shadow, never past it: the step central banks move in.
- * The inflation it reads is the anchor nation's price level over the year before (WorldMoneys.priceLevel), the year 2000's pace for the first
+ * The inflation it reads is the anchor nation's price level over the year before (WorldMoneys.priceLevel), the first year's pace for the first
  * twelve months. A bank whose money has no anchor nation holds its last rate.
+ *
+ * THE STAND-IN CENTURY (EP1, 2026-10-31). The table begins in January 2000 and the calendar in January 1900. A flat January 2000 rate (the Fed's 5.5%)
+ * held for a century against the US CPI's own path (-11% in 1921, +17% in 1918) would give real rates of -12% to +16% and kill the carry and the hot
+ * money, so before TABLE_FIRST_MONTH a Historical bank runs the rule exactly as Random's does, reading its anchor's inflation, which in the stand-in is
+ * the US CPI's (WorldData); the table replays from TABLE_FIRST_MONTH to the end of the world file's months, and the rule rules again after. Only the
+ * opening, month 0, is the table's first line. EP1b replays the real century's rates (LC1 cleared their sources), and the first stretch goes with it.
  *
  * THE SAVE is the month and each bank's rate, shadow, target and inflation (toSaveArray()), nothing NaN so it goes through JSON; a PolicyRates of
  * the same moneys that restores it steps on as this one does.
@@ -70,7 +77,18 @@ public final class PolicyRates {
     /** The banks, in WorldMoneys.EIGHT's order. */
     static final int MONEYS = 8;
 
-    /** The months the table covers: January 2000 to December 2025, the world file's (WorldMoneys.HISTORICAL_RULE_START). */
+    /**
+     * The year the table's own lines begin in: January 2000, the first month of the BIS's CBPOL as transcribed. The months from the calendar's first year
+     * to it (1,200 of the 1,512) hold each bank's first line's rate in the array, but only month 0 reads it: a Historical bank runs the rule there
+     * (the stand-in century, EP1; the world file's, WorldData). WHY not WorldData.FILE_FIRST_YEAR: EP1b rebuilds the world file from 1900, and these
+     * rates still begin in 2000.
+     */
+    static final int TABLE_FIRST_YEAR = 2000;
+
+    /** The month the table's own lines begin in, counted from Nations.FIRST_YEAR: January of TABLE_FIRST_YEAR. */
+    static final int TABLE_FIRST_MONTH = (TABLE_FIRST_YEAR - Nations.FIRST_YEAR) * 12;
+
+    /** The months the table covers: January of Nations.FIRST_YEAR to December 2025 (Nations.HISTORY_LAST_YEAR), the world file's reader's (WorldMoneys.HISTORICAL_RULE_START). */
     static final int MONTHS = WorldMoneys.HISTORICAL_RULE_START;
 
     /** Where the table is, on the classpath. */
@@ -99,7 +117,7 @@ public final class PolicyRates {
 
     /**
      * A table's text read: one line for each change (code, tab, yyyy-mm, tab, percent a year), the comment lines and the blank ones skipped; each bank's
-     * rate in each of the 312 months. Throws IllegalStateException, naming the line, for one that is not whole. Package-private for the check.
+     * rate in each of the MONTHS months (a bank holds its first line's rate before it, back to the calendar's first month). Throws IllegalStateException, naming the line, for one that is not whole. Package-private for the check.
      */
     static double[][] parse(java.io.Reader source) throws IOException {
         List<List<double[]>> changes = new ArrayList<>();
@@ -124,7 +142,7 @@ public final class PolicyRates {
             }
             if (!Double.isFinite(rate)) throw new IllegalStateException("policy rates: " + where + " has no rate");
             List<double[]> own = changes.get(k);
-            if (own.isEmpty() && t != 0) throw new IllegalStateException("policy rates: " + where + " is the first of its money and is not January 2000");
+            if (own.isEmpty() && t != TABLE_FIRST_MONTH) throw new IllegalStateException("policy rates: " + where + " is the first of its money and is not January " + TABLE_FIRST_YEAR);
             if (!own.isEmpty() && t <= (int) own.get(own.size() - 1)[0])
                 throw new IllegalStateException("policy rates: " + where + " is not after the money's last change");
             own.add(new double[]{t, rate});
@@ -134,14 +152,14 @@ public final class PolicyRates {
             List<double[]> own = changes.get(k);
             if (own.isEmpty()) throw new IllegalStateException("policy rates: " + RESOURCE + " has no line for " + WorldMoneys.EIGHT.get(k));
             for (int i = 0; i < own.size(); i++) {
-                int from = (int) own.get(i)[0], to = i + 1 < own.size() ? (int) own.get(i + 1)[0] : MONTHS;
+                int from = i == 0 ? 0 : (int) own.get(i)[0], to = i + 1 < own.size() ? (int) own.get(i + 1)[0] : MONTHS;
                 Arrays.fill(out[k], from, to, own.get(i)[1]);
             }
         }
         return out;
     }
 
-    /** The month index of "yyyy-mm" (months since January 2000); refused, naming the line, if it is not a month of 2000 to 2025. */
+    /** The month index of "yyyy-mm" (months since January of Nations.FIRST_YEAR); refused, naming the line, if it is not a month of TABLE_FIRST_YEAR to Nations.HISTORY_LAST_YEAR. */
     private static int monthOf(String text, String where) {
         if (text.length() != 7 || text.charAt(4) != '-') throw new IllegalStateException("policy rates: " + where + " has no month yyyy-mm");
         int year, month;
@@ -152,11 +170,12 @@ public final class PolicyRates {
             throw new IllegalStateException("policy rates: " + where + " has no month yyyy-mm", e);
         }
         int t = (year - Nations.FIRST_YEAR) * 12 + month - 1;
-        if (month < 1 || month > 12 || t < 0 || t >= MONTHS) throw new IllegalStateException("policy rates: " + where + " is outside January 2000 to December 2025");
+        if (month < 1 || month > 12 || t < TABLE_FIRST_MONTH || t >= MONTHS)
+            throw new IllegalStateException("policy rates: " + where + " is outside January " + TABLE_FIRST_YEAR + " to December " + Nations.HISTORY_LAST_YEAR);
         return t;
     }
 
-    /** A bank's real policy rate in a month (months since January 2000, WorldMoneys.monthIndex), a fraction a year: the last change at or before it. NaN outside the 312 months of the table and for a code that is not one of the eight. */
+    /** A bank's real policy rate in a month (months since January of Nations.FIRST_YEAR, WorldMoneys.monthIndex), a fraction a year: the last change at or before it, its first line's before the table begins. NaN outside the MONTHS months of the table and for a code that is not one of the eight. */
     public static double historical(String code, int t) {
         int k = WorldMoneys.EIGHT.indexOf(code);
         return k < 0 || t < 0 || t >= MONTHS ? Double.NaN : table()[k][t];
@@ -194,7 +213,7 @@ public final class PolicyRates {
     private final double[] rate = new double[MONEYS], shadow = new double[MONEYS], target = new double[MONEYS], inflation = new double[MONEYS];
 
     /**
-     * The banks of the moneys' world, standing in January 2000 (month() is 0): each bank's rate and shadow the table's of that month. The moneys give
+     * The banks of the moneys' world, standing in January of Nations.FIRST_YEAR (month() is 0): each bank's rate and shadow the table's of that month. The moneys give
      * the path (the rule's first month) and the nations' price levels; step() reads them, so they are the moneys the city steps.
      */
     public PolicyRates(WorldMoneys moneys) {
@@ -213,25 +232,29 @@ public final class PolicyRates {
        THE MONTH
        ===================================================================== */
 
-    /** The month now, months since January 2000: 0 after the constructor. */
+    /** The month now, months since January of Nations.FIRST_YEAR: 0 after the constructor. */
     public int month() { return month; }
 
-    /** The first month the rule rules: 1 on Random, 312 on Historical (the moneys'). */
+    /** The month the rule rules again after the table on Historical: MONTHS (1,512, January 2026); 1 on Random, which has no table (the moneys'). */
     public int ruleStart() { return ruleStart; }
 
-    /** Whether the rule rules this month (Historical replays the table before it). */
-    public boolean ruling() { return month >= ruleStart; }
+    /** Whether the table, not the rule, rules a month: Historical's real rates, TABLE_FIRST_MONTH to the month before ruleStart(). Never on Random. */
+    boolean replays(int t) { return t >= TABLE_FIRST_MONTH && t < ruleStart; }
+
+    /** Whether the rule rules this month: every month but the opening (0) and Historical's replay of the table, so the stand-in century and the months after the table. */
+    public boolean ruling() { return month >= 1 && !replays(month); }
 
     /**
-     * Steps to month t, which has to be the next. Before the rule's first month a bank takes the table's rate, and its shadow with it. After it, each
-     * bank reads its anchor's inflation, takes the rule's target for it, closes CLOSE of the shadow's gap to it, and moves its rate in whole STEPs
-     * toward the shadow, never past it. A bank that reads no inflation holds its rate and its shadow.
+     * Steps to month t, which has to be the next. In the table's months (Historical, TABLE_FIRST_MONTH to the month before ruleStart()) a bank takes the
+     * table's rate, and its shadow with it. In every other month each bank reads its anchor's inflation, takes the rule's target for it, closes CLOSE of
+     * the shadow's gap to it, and moves its rate in whole STEPs toward the shadow, never past it. A bank that reads no inflation holds its rate and its
+     * shadow.
      */
     public void step(int t) {
         if (t != month + 1) throw new IllegalArgumentException("policy rates: the month after " + month + " is " + (month + 1) + ", not " + t);
         month = t;
         for (int k = 0; k < MONEYS; k++) {
-            if (t < ruleStart) {
+            if (replays(t)) {
                 double real = historical(k, t);
                 if (Double.isFinite(real)) rate[k] = shadow[k] = real;
                 target[k] = inflation[k] = Double.NaN;

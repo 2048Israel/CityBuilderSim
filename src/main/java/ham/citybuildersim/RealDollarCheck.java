@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  *
  * What this has to prove:
  *   1. THE DOLLAR IS THE US'S (the full file): on Random and on Historical, 37 months of a city, the world's price level equals the US's price level
- *      over its January 2000 level, computed from Nations' Januaries, to 1e-12 every month; the headline rate is this year's pace; the ring's realised
+ *      over its first January's level (the calendar's), computed from Nations' Januaries, to 1e-12 every month; the headline rate is this year's pace; the ring's realised
  *      inflation is the level over the level a year ago; on Historical the Januaries equal the file's US CPI over 2000's; a pinned world holds; a
  *      saved and loaded city follows the path again.
  *   2. NO FILE, THE WALK (the literals): a city on the literals has the walk, its level the bare WorldEconomy's over the same months, to the bit.
@@ -112,7 +112,7 @@ public class RealDollarCheck {
 
     /* ----------------------------------------------------------------- 1 */
 
-    /** The US's price level in month t over its January 2000 level, computed here from Nations' Januaries, log-linear between them. */
+    /** The US's price level in month t over its first January's level, computed here from Nations' Januaries, log-linear between them. */
     static double usLevel(Nations nations, int usa, int t) {
         int year = Nations.FIRST_YEAR + t / 12;
         double f = (t % 12) / 12.0;
@@ -182,7 +182,7 @@ public class RealDollarCheck {
                             && same(bw.getInflation(), w.getInflation()), () -> "month " + g.getMonth());
                 }
             }
-            tally(path + ": the world's price level is the US's over its January 2000 level, from Nations' Januaries, every month (1e-12)", level);
+            tally(path + ": the world's price level is the US's over its first January's level, from Nations' Januaries, every month (1e-12)", level);
             tally(path + ": ...it is on the path in every month, with the moneys built before the level was struck", onPath);
             tally(path + ": ...the headline rate is this year's pace, P_US(y+1) over P_US(y), less one", pace);
             tally(path + ": ...the realised inflation is the level over the level a year ago", ring);
@@ -322,7 +322,7 @@ public class RealDollarCheck {
         double reer = town.realEffectiveRate();
         out.printf("   a town after 30 months: the D$ at %.4f, the index %.4f, the US$'s prices %.4f; with Germany, Japan and the US as partners (.5, .25, .25) the real effective rate is %.3f, the US$ alone's %.3f%n",
                 rate, index, level, reer, aloneWas);
-        close("...given a finished year's trade with Germany, Japan and the US, the getter weighs each partner's money (the one its nation uses now, against its rate in January 2000) and prices", reer, want, 1e-9 * want);
+        close("...given a finished year's trade with Germany, Japan and the US, the getter weighs each partner's money (the one its nation uses now, against its rate in the first January) and prices", reer, want, 1e-9 * want);
         assertTrue("...which is not the US$ alone's figure: the partners' moneys and prices move it", Math.abs(reer - aloneWas) > 1e-6 && reer > 0 && Double.isFinite(reer));
     }
 

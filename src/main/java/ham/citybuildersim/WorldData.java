@@ -24,7 +24,9 @@ import java.util.zip.DataFormatException;
  * the areas no nation holds, their borders (an owner a 15" cell, and the
  * lines), the base year's trade by pair and good with the solve that made it,
  * the paths from 2000 to 2100, the freight between the nations' nodes and the
- * monthly exchange rates, with the file's identity.
+ * monthly exchange rates, with the file's identity. Since EP1 the paths, the
+ * prices and the rates are read as if they began in the calendar's first year,
+ * 1900: see THE STAND-IN CENTURY below.
  *
  * WHY. The nations' world (spec-nations 3.3, batch WN0) needs a country's
  * borders, trade, population, output, money and distance in the game, and WN0
@@ -43,12 +45,13 @@ import java.util.zip.DataFormatException;
  * lower. A nation, an area or an owner is numbered 1..N for the nations in the
  * order of their iso3 codes and N+1..N+A for the areas (0 is no one); a money
  * or a good 1..M and 1..G in its layer's row order. A month is numbered from
- * 2000-01 (month 0) to 2025-12 (month 311), a year is its calendar year. So
+ * January of FIRST_YEAR (month 0; the file itself counts from 2000-01, which is
+ * month 1,200 here) to 2025-12 (month 1,511), a year is its calendar year. So
  * nation n's figure is at index n - 1 in make[], use[] and in every array a
  * Flows or a Freight holds, and Freight's N x N tables are indexed
  * (seller - 1) * N + (buyer - 1), which at(seller, buyer) computes.
  *
- * THE PRICE PATHS are a good's real price, a ratio to 2025's, from 2000 to 2025 (priceSeries(), price(), priceMark()).
+ * THE PRICE PATHS are a good's real price, a ratio to 2025's, from FIRST_YEAR to 2025 (priceSeries(), price(), priceMark()); the file's own are 2000's on.
  *
  * MARKS say where a figure came from: MARK_PUBLISHED (3) a published figure,
  * MARK_PROJECTED (2) a published projection, MARK_ESTIMATE (1) the game's
@@ -61,6 +64,9 @@ import java.util.zip.DataFormatException;
  *
  * THE IDENTITY (identity()) is the file's own name (its meta's name row:
  * "world-1", or "world-1-fixture"), a colon and the file's SHA-256.
+ *
+ * THE STAND-IN CENTURY (EP1): the file begins in 2000 and the calendar in 1900, so the reader supplies the years between. The banner of that name
+ * below says how, and standInYears() how many.
  */
 public final class WorldData implements AutoCloseable {
 
@@ -106,8 +112,17 @@ public final class WorldData implements AutoCloseable {
     /** The inflated owner tiles kept, 64 of 57,600 bytes: a screen or a scan reads the same few tiles over and over. */
     public static final int CACHE_TILES = 64;
 
-    /** The year month 0 is in: months are numbered from January of it. */
-    public static final int FIRST_YEAR = 2000;
+    /** The year month 0 is in, as this reads the file: the calendar's first year (EP1; it was 2000, the file's own first); months are numbered from January of it. */
+    public static final int FIRST_YEAR = CityCalendar.EPOCH_YEAR;
+
+    /** The year the file's own figures begin in: its paths and prices run from it, and FORMAT.txt numbers its months from January of it (world-1.bin; EP1b rebuilds the file from 1900). */
+    public static final int FILE_FIRST_YEAR = 2000;
+
+    /** The file's month 0, 2000-01, in the numbers this reads: the months the stand-in century has before it. */
+    private static final int FILE_MONTH_ZERO = (FILE_FIRST_YEAR - FIRST_YEAR) * 12;
+
+    /** The paths' series that are nominal money, which the stand-in carries back on the US price level; every other series is real and is held. */
+    private static final List<String> NOMINAL_SERIES = List.of("cpi", "gdp_usd");
 
     /** A lines layer's coordinate is stored in these units a degree. */
     public static final int LINE_UNITS = 100_000;
@@ -307,10 +322,10 @@ public final class WorldData implements AutoCloseable {
     private int nationCount;
     private List<Money> moneys;
     private Map<String, Integer> numberOfMoney;
-    private int firstMonth, months;
+    private int firstMonth, months, standInMonths;
     private double[] rates;
     private byte[] rateMarks;
-    private int pathNations, pathFirstYear, pathYears;
+    private int pathNations, pathFirstYear, pathYears, standInYears;
     private List<String> pathSeries, pathUnits;
     private double[][] pathValues;
     private byte[][] pathMarks;
@@ -320,7 +335,7 @@ public final class WorldData implements AutoCloseable {
     private List<Flows> trades;
     private Freight freight;
     private List<Border> borders;
-    private int priceFirstYear, priceYears;
+    private int priceFirstYear, priceYears, priceStandInYears;
     private List<String> priceSeries;
     private double[][] priceValues;
     private byte[][] priceMarks;
@@ -555,15 +570,83 @@ public final class WorldData implements AutoCloseable {
         return s.equals("-") ? null : s;
     }
 
-    /** The number of month yyyy-mm counted from 2000-01 (FIRST_YEAR); month is 1 to 12. */
+    /** The number of month yyyy-mm counted from January of FIRST_YEAR (the calendar's first year, month 0); month is 1 to 12. The file's own 2000-01 is monthNumber(FILE_FIRST_YEAR, 1). */
     public static int monthNumber(int year, int month) {
         return (year - FIRST_YEAR) * 12 + (month - 1);
     }
 
-    /** A month's label, "yyyy-mm". */
+    /** A month's label, "yyyy-mm", the month counted from January of FIRST_YEAR. */
     public static String monthLabel(int month) {
         int year = FIRST_YEAR + Math.floorDiv(month, 12);
         return String.format("%04d-%02d", year, Math.floorMod(month, 12) + 1);
+    }
+
+    /* =====================================================================
+       THE STAND-IN CENTURY (EP1, 2026-10-31)
+
+       Jerus, 2026-10-30: the game starts in January 1900 with today's tech. The
+       calendar's first year is 1900 (CityCalendar.EPOCH_YEAR) and this file's is
+       2000: its paths run 2000 to 2100, its prices 2000 to 2025, its rates
+       2000-01 to 2025-12 and each nation's money history from 2000-01. A city
+       founded in 1900 asks this reader for 1900 and gets a refusal, and the
+       nations built on it stop at their first guard (Game.getNations() would
+       swallow it, and the city would play on without a world).
+
+       So the READER SUPPLIES THE CENTURY the file lacks, once, as it reads, and
+       every reader downstream sees a world that begins in FIRST_YEAR and needs no
+       case of its own. The rule (spec-1900-start, calls 3 and 4 (a), and call
+       5's hold-quantities way, until EP1b replays the real century):
+         - a path series before its first figure holds that figure, per nation:
+           people, gdp_2015usd, gdp_ppp and rate (real, or a rate a money holds);
+           the nominal two, cpi and gdp_usd, follow the US price level instead,
+           that figure times PriceLevel.usCpi(year) over usCpi(its year), so that
+           purchasing-power parity holds before the data (every nation's prices
+           follow the US's and its money holds its rate);
+         - a good's real price holds its first figure (each good at its real
+           ratio of 2000);
+         - a money's monthly rate holds its first month's, and a nation's money
+           at month 0 is the money it had in 2000-01 (the first entry of its
+           history covers the lead);
+         - every figure made is MARK_ESTIMATE, MARK_NONE where it is NaN: a row
+           with no figure at all stays NaN in the lead;
+         - only the years BEFORE the file's first are added. A hole inside the
+           file (its first figure later than 2000) stays NaN, for the reader of
+           the layer (Nations.filled joins the stand-in to the first figure);
+         - the file's own figures read as they did, at the same calendar year
+           and month: pathValue("people", n, 2015) is the same number.
+       standInYears(), priceStandInYears() and standInMonths() say how much was
+       made (0 for a file that reaches FIRST_YEAR itself).
+
+       WHY. Rebuilding the file from 1900 is EP1b's (new paths from the long
+       series, a new file name and release); until it lands the game must still
+       start in 1900, and the one stand-in here carries it. The licence batch
+       (LC3) re-bakes the file for what it may ship, and the stand-in goes with
+       the 1900 file it replaces.
+       ===================================================================== */
+
+    /**
+     * Rows of figures with the stand-in century put in front: out holds rows of (lead + count), each row the lead and then the file's count, in that
+     * order. The lead holds the row's first non-NaN figure (marked MARK_ESTIMATE) or, for a nominal row, that figure carried back on the US price
+     * level, times PriceLevel.usCpi(year) over usCpi(the figure's year); the lead years are fileFirstYear - lead on. A row with no figure stays NaN
+     * (MARK_NONE). The file's own figures and marks are copied as they are.
+     */
+    private static void pad(double[] in, byte[] inMarks, int rows, int count, int lead, int fileFirstYear, boolean nominal, double[] out, byte[] outMarks) {
+        int width = count + lead;
+        for (int r = 0; r < rows; r++) {
+            int first = -1;
+            for (int i = 0; i < count && first < 0; i++) if (!Double.isNaN(in[r * count + i])) first = i;
+            for (int i = 0; i < lead; i++) {
+                double v = Double.NaN;
+                if (first >= 0) {
+                    v = in[r * count + first];
+                    if (nominal) v *= PriceLevel.usCpi(fileFirstYear - lead + i) / PriceLevel.usCpi(fileFirstYear + first);
+                }
+                out[r * width + i] = v;
+                outMarks[r * width + i] = (byte) (Double.isNaN(v) ? MARK_NONE : MARK_ESTIMATE);
+            }
+            System.arraycopy(in, r * count, out, r * width + lead, count);
+            System.arraycopy(inMarks, r * count, outMarks, r * width + lead, count);
+        }
     }
 
     /** A text layer's lines, the first (the column names) apart: header, rows. */
@@ -667,7 +750,9 @@ public final class WorldData implements AutoCloseable {
                     int colon = entry.lastIndexOf(':');
                     if (colon < 0 || entry.length() < colon + 8) throw new IOException("world data: nation " + f[cIso3] + "'s money history entry " + entry);
                     String from = entry.substring(colon + 1);
-                    months.add(monthNumber(Integer.parseInt(from.substring(0, 4)), Integer.parseInt(from.substring(5, 7))));
+                    int month = monthNumber(Integer.parseInt(from.substring(0, 4)), Integer.parseInt(from.substring(5, 7)));
+                    // The stand-in century: the money in use when the file begins was in use before it, so the first entry covers the lead from month 0.
+                    months.add(months.isEmpty() && month == FILE_MONTH_ZERO ? 0 : month);
                     codes.add(entry.substring(0, colon));
                 }
             }
@@ -704,7 +789,7 @@ public final class WorldData implements AutoCloseable {
         return n == null ? 0 : n;
     }
 
-    /** The code of the money a nation uses in a month (month 0 is 2000-01): the latest entry of its history from that month or before; null for an area, or before the first entry. */
+    /** The code of the money a nation uses in a month (month 0 is January of FIRST_YEAR): the latest entry of its history from that month or before, the first entry covering the stand-in century from month 0; null for an area, or before the first entry. */
     public String moneyAt(int nation, int month) {
         Nation n = nation(nation);
         String found = null;
@@ -719,8 +804,8 @@ public final class WorldData implements AutoCloseable {
     private void readMoneys() throws IOException, DataFormatException {
         ByteBuffer b = binary(MONEYS);
         int m = b.getInt();
-        firstMonth = b.getInt();
-        months = b.getInt();
+        int fileFirst = b.getInt() + FILE_MONTH_ZERO;   // the file's first month, in this reader's numbering
+        int fileMonths = b.getInt();
         List<Money> list = new ArrayList<>();
         Map<String, Integer> byCode = new HashMap<>();
         for (int i = 0; i < m; i++) {
@@ -728,11 +813,17 @@ public final class WorldData implements AutoCloseable {
             list.add(new Money(i + 1, code, name));
             byCode.put(code, i + 1);
         }
-        rates = new double[m * months];
-        for (int i = 0; i < rates.length; i++) rates[i] = b.getDouble();
-        rateMarks = new byte[m * months];
-        b.get(rateMarks);
+        double[] raw = new double[m * fileMonths];
+        for (int i = 0; i < raw.length; i++) raw[i] = b.getDouble();
+        byte[] rawMarks = new byte[m * fileMonths];
+        b.get(rawMarks);
         done(MONEYS, b);
+        standInMonths = Math.max(0, fileFirst);
+        firstMonth = fileFirst - standInMonths;
+        months = fileMonths + standInMonths;
+        rates = new double[m * months];
+        rateMarks = new byte[m * months];
+        pad(raw, rawMarks, m, fileMonths, standInMonths, 0, false, rates, rateMarks);
         moneys = Collections.unmodifiableList(list);
         numberOfMoney = byCode;
     }
@@ -746,11 +837,14 @@ public final class WorldData implements AutoCloseable {
         return n == null ? 0 : n;
     }
 
-    /** The first month the rates run from (0, 2000-01). */
+    /** The first month the rates run from (0, January of FIRST_YEAR). */
     public int firstMonth() { return firstMonth; }
 
-    /** How many months the rates run (312). */
+    /** How many months the rates run, the stand-in century's and the file's (1,512 for the full file: 1900-01 to 2025-12). */
     public int months() { return months; }
+
+    /** How many of the rates' first months the stand-in century made, not the file (1,200 for the full file; 0 for a file that reaches FIRST_YEAR itself). */
+    public int standInMonths() { return standInMonths; }
 
     /** A money's average rate in a month, its units a US dollar; NaN in a month no nation used it. */
     public double rate(int money, int month) { return rates[rateIndex(money, month)]; }
@@ -774,19 +868,25 @@ public final class WorldData implements AutoCloseable {
     private void readPaths() throws IOException, DataFormatException {
         ByteBuffer b = binary(PATHS);
         pathNations = b.getInt();
-        pathFirstYear = b.getInt();
-        pathYears = b.getInt();
+        int fileFirst = b.getInt();
+        int fileYears = b.getInt();
         int s = b.getInt();
         List<String> names = new ArrayList<>(), units = new ArrayList<>();
         for (int i = 0; i < s; i++) {
             names.add(utf(b));
             units.add(utf(b));
         }
-        pathValues = new double[s][pathNations * pathYears];
-        for (double[] series : pathValues) for (int i = 0; i < series.length; i++) series[i] = b.getDouble();
-        pathMarks = new byte[s][pathNations * pathYears];
-        for (byte[] series : pathMarks) b.get(series);
+        double[][] raw = new double[s][pathNations * fileYears];
+        for (double[] series : raw) for (int i = 0; i < series.length; i++) series[i] = b.getDouble();
+        byte[][] rawMarks = new byte[s][pathNations * fileYears];
+        for (byte[] series : rawMarks) b.get(series);
         done(PATHS, b);
+        standInYears = Math.max(0, fileFirst - FIRST_YEAR);
+        pathFirstYear = fileFirst - standInYears;
+        pathYears = fileYears + standInYears;
+        pathValues = new double[s][pathNations * pathYears];
+        pathMarks = new byte[s][pathNations * pathYears];
+        for (int k = 0; k < s; k++) pad(raw[k], rawMarks[k], pathNations, fileYears, standInYears, fileFirst, NOMINAL_SERIES.contains(names.get(k)), pathValues[k], pathMarks[k]);
         pathSeries = Collections.unmodifiableList(names);
         pathUnits = Collections.unmodifiableList(units);
     }
@@ -797,11 +897,14 @@ public final class WorldData implements AutoCloseable {
     /** A series' unit, as the file names it. */
     public String pathUnit(String series) { return pathUnits.get(seriesIndex(series)); }
 
-    /** The first year of the paths (2000). */
+    /** The first year of the paths: FIRST_YEAR (1900), or the file's own if it begins earlier. */
     public int pathFirstYear() { return pathFirstYear; }
 
-    /** How many years the paths run (101: 2000 to 2100). */
+    /** How many years the paths run (201: 1900 to 2100, the stand-in century's 100 and the file's 101). */
     public int pathYears() { return pathYears; }
+
+    /** How many of the paths' first years the stand-in century made, not the file (100 for the full file, which begins in FILE_FIRST_YEAR; 0 for a file that reaches FIRST_YEAR itself). */
+    public int standInYears() { return standInYears; }
 
     /** The nations the paths hold (the N; the areas have none). */
     public int pathNations() { return pathNations; }
@@ -1026,26 +1129,35 @@ public final class WorldData implements AutoCloseable {
     private void readPrices() throws IOException, DataFormatException {
         ByteBuffer b = binary(PRICES);
         int g = b.getInt();
-        priceFirstYear = b.getInt();
-        priceYears = b.getInt();
+        int fileFirst = b.getInt();
+        int fileYears = b.getInt();
         if (g != goods.size()) throw new IOException("world data: the prices layer holds " + g + " goods, and the goods layer " + goods.size());
         List<String> names = new ArrayList<>();
-        priceValues = new double[g][priceYears];
+        double[][] raw = new double[g][fileYears];
         for (int i = 0; i < g; i++) {
             names.add(utf(b));
-            for (int y = 0; y < priceYears; y++) priceValues[i][y] = b.getDouble();
+            for (int y = 0; y < fileYears; y++) raw[i][y] = b.getDouble();
         }
-        priceMarks = new byte[g][priceYears];
-        for (byte[] marks : priceMarks) b.get(marks);
+        byte[][] rawMarks = new byte[g][fileYears];
+        for (byte[] marks : rawMarks) b.get(marks);
         done(PRICES, b);
+        priceStandInYears = Math.max(0, fileFirst - FIRST_YEAR);
+        priceFirstYear = fileFirst - priceStandInYears;
+        priceYears = fileYears + priceStandInYears;
+        priceValues = new double[g][priceYears];
+        priceMarks = new byte[g][priceYears];
+        for (int i = 0; i < g; i++) pad(raw[i], rawMarks[i], 1, fileYears, priceStandInYears, fileFirst, false, priceValues[i], priceMarks[i]);   // a real ratio: held
         priceSeries = Collections.unmodifiableList(names);
     }
 
-    /** The first year of the price paths (2000). */
+    /** The first year of the price paths: FIRST_YEAR (1900), or the file's own if it begins earlier. */
     public int priceFirstYear() { return priceFirstYear; }
 
-    /** How many years the price paths run (26: 2000 to 2025). */
+    /** How many years the price paths run (126: 1900 to 2025, the stand-in century's 100 and the file's 26). */
     public int priceYears() { return priceYears; }
+
+    /** How many of the price paths' first years the stand-in century made, not the file (100 for the full file; 0 for a file that reaches FIRST_YEAR itself). */
+    public int priceStandInYears() { return priceStandInYears; }
 
     /** The Pink Sheet series a good's price follows (its column title; a proxy's too), the good numbered 1..G. */
     public String priceSeries(int good) {

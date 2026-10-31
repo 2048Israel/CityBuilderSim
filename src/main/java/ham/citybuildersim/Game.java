@@ -1172,7 +1172,9 @@ public class Game {
             try (WorldData data = WorldData.open(file)) {
                 nations = new Nations(data, founding.getPath(), founding.getPathSeed());
             } catch (IOException | IllegalArgumentException e) {
-                System.out.println("The world file " + file + " would not open: " + e.getMessage());
+                // EP1: the file begins in 2000 and the city in 1900; the reader supplies the years between (WorldData), so this is a file that is not whole, or not this build's. Said plainly, since nothing else shows it.
+                System.out.println("The world file " + file + " would not open: " + e.getMessage()
+                        + ". The city plays on without nations: no world market, no map dots, the goods at their literals.");
             }
         }
         return nations;
@@ -1441,7 +1443,7 @@ public class Game {
             in HistorySave (policyUSD ... policyCHF).
 
        A moneys object behind the month - a load of a save that had none, a file
-       that came late - is caught up from January 2000 with no terms of trade,
+       that came late - is caught up from the first January (Nations.FIRST_YEAR) with no terms of trade,
        and a line says so; the policy rates behind it are stepped to it month by
        month, as they are in a load.
        ===================================================================== */
@@ -1492,7 +1494,7 @@ public class Game {
         }
     }
 
-    /** The eight central banks' policy rates over these moneys, standing in January 2000; null, and a line, if they will not build (the city then reads the constant world rate). */
+    /** The eight central banks' policy rates over these moneys, standing in the first January (Nations.FIRST_YEAR); null, and a line, if they will not build (the city then reads the constant world rate). */
     private PolicyRates buildPolicyRates(WorldMoneys moneys) {
         if (moneys == null) return null;
         try {
@@ -1525,7 +1527,7 @@ public class Game {
     /**
      * Steps the moneys to the month the city is in (strikeTheWorldMarket(), after the January solve): each month in turn, handing the market's
      * terms of trade in the January it solved and null in every other month. The founding's solve is in February (the city's first month is
-     * January 2000, its clock turns before the first month runs) while the moneys stand in January 2000: its terms of trade are only recorded, as
+     * January of Nations.FIRST_YEAR, its clock turns before the first month runs) while the moneys stand in that January: its terms of trade are only recorded, as
      * last year's for the next January's change. A moneys behind by more than a month is caught up with no terms of trade and a line says so. In
      * a January it solved, the city's own terms of trade go to the D$ as well.
      */
@@ -1755,8 +1757,8 @@ public class Game {
     }
 
     /**
-     * A load's half of the moneys (restoreWorldMarket()): the saved state put back where it fits this world file, else the moneys stand at January
-     * 2000 and are caught up to the city's month with no terms of trade, a line saying so; a state saved in an earlier month is stepped on to this one.
+     * A load's half of the moneys (restoreWorldMarket()): the saved state put back where it fits this world file, else the moneys stand at the first
+     * January (Nations.FIRST_YEAR) and are caught up to the city's month with no terms of trade, a line saying so; a state saved in an earlier month is stepped on to this one.
      */
     private void restoreWorldMoneys(DataSave loaded) {
         WorldMoneys moneys = worldMoneys;
@@ -1768,18 +1770,18 @@ public class Game {
                 moneys.restore(saved);
                 restored = true;
             } catch (IllegalArgumentException e) {
-                System.out.println("The saved world moneys would not restore on this world file (" + e.getMessage() + "): they start again from January 2000.");
+                System.out.println("The saved world moneys would not restore on this world file (" + e.getMessage() + "): they start again from January " + Nations.FIRST_YEAR + ".");
             }
         }
         int target = WorldMoneys.monthIndex(month);
         if (moneys.month() >= target) return;
-        if (!restored && saved == null) System.out.println("The save has no world moneys: they start from January 2000 and catch up to the city's month with no terms of trade.");
+        if (!restored && saved == null) System.out.println("The save has no world moneys: they start from January " + Nations.FIRST_YEAR + " and catch up to the city's month with no terms of trade.");
         while (moneys.month() < target) moneys.step(moneys.month() + 1, null);
     }
 
     /**
      * A load's half of the policy rates (restoreWorldMarket(), after the moneys): the saved state put back where it fits, else the rates are rebuilt by
-     * stepping from January 2000 to the city's month, a line saying so; a state saved in an earlier month is stepped on to this one. Then the US's
+     * stepping from the first January (Nations.FIRST_YEAR) to the city's month, a line saying so; a state saved in an earlier month is stepped on to this one. Then the US's
      * rate is handed to the city, before anything reads it.
      */
     private void restorePolicyRates(DataSave loaded) {
@@ -1795,10 +1797,10 @@ public class Game {
                 rates.restore(saved);
                 restored = true;
             } catch (IllegalArgumentException e) {
-                System.out.println("The saved policy rates would not restore (" + e.getMessage() + "): they are rebuilt from January 2000.");
+                System.out.println("The saved policy rates would not restore (" + e.getMessage() + "): they are rebuilt from January " + Nations.FIRST_YEAR + ".");
             }
         } else {
-            System.out.println("The save has no policy rates: they are rebuilt from January 2000 to the city's month.");
+            System.out.println("The save has no policy rates: they are rebuilt from January " + Nations.FIRST_YEAR + " to the city's month.");
         }
         if (!restored) {
             rates = buildPolicyRates(worldMoneys);
@@ -1839,7 +1841,7 @@ public class Game {
     /**
      * The D$'s real effective rate, 100 at founding (RealDollar.realEffectiveRate): the weights are the city's trade with each nation over the last
      * finished year, else the year to date, else the US alone. Each partner's money is the one its nation uses now, against that money's rate in
-     * January 2000; the US's prices are the in-game US$'s own (the world's level, shock and all), a partner's its nation's on the path. With no
+     * the first January (Nations.FIRST_YEAR); the US's prices are the in-game US$'s own (the world's level, shock and all), a partner's its nation's on the path. With no
      * world's moneys it is the D$ against the US$ alone, the US$'s prices the world's level.
      */
     public double realEffectiveRate() {

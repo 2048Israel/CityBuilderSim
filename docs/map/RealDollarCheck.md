@@ -12,7 +12,7 @@
 > 
 > What this has to prove:
 >   1. THE DOLLAR IS THE US'S (the full file): on Random and on Historical, 37 months of a city, the world's price level equals the US's price level
->      over its January 2000 level, computed from Nations' Januaries, to 1e-12 every month; the headline rate is this year's pace; the ring's realised
+>      over its first January's level (the calendar's), computed from Nations' Januaries, to 1e-12 every month; the headline rate is this year's pace; the ring's realised
 >      inflation is the level over the level a year ago; on Historical the Januaries equal the file's US CPI over 2000's; a pinned world holds; a
 >      saved and loaded city follows the path again.
 >   2. NO FILE, THE WALK (the literals): a city on the literals has the walk, its level the bare WorldEconomy's over the same months, to the bit.
@@ -73,7 +73,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 116 | 7 | `static double usLevel(Nations nations, int usa, int t)` | The US's price level in month t over its January 2000 level, computed here from Nations' Januaries, log-linear between them. |
+| 116 | 7 | `static double usLevel(Nations nations, int usa, int t)` | The US's price level in month t over its first January's level, computed here from Nations' Januaries, log-linear between them. |
 | 125 | 4 | `static double usPace(Nations nations, int usa, int t)` | The US's inflation in the year of month t: January over January, less one. |
 | 130 | 73 | `static void theDollarIsTheUs()` |  |
 
