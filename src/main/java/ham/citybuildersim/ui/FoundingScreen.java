@@ -134,7 +134,9 @@ public final class FoundingScreen {
 
     /* ------------------------------------------------ the choices, between redraws */
 
-    private String cityName = Founding.DEFAULT_CITY_NAME;
+    /** The name as the field reads, mirrored from `name`, which knows whether a place or the player wrote it (FN1). */
+    private String cityName = "";
+    private final FoundingName name = new FoundingName();
     private boolean ownCurrency;
     private String typedName = "", typedCode = "";
     private Founding.Preset preset = Founding.Preset.STANDARD;
@@ -184,7 +186,8 @@ public final class FoundingScreen {
 
     /** From the main menu: a fresh page on the defaults, whatever was typed last time. */
     void show() {
-        cityName = Founding.DEFAULT_CITY_NAME;
+        name.reset();
+        cityName = name.text();
         ownCurrency = false;
         typedName = "";
         typedCode = "";
@@ -268,7 +271,7 @@ public final class FoundingScreen {
         nameField.setStyle("-fx-font-size: 18px; -fx-background-color: " + Palette.FIELD + ";"
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-background-radius: 8; -fx-border-radius: 8;"
                 + " -fx-padding: 0 14 0 14; -fx-text-fill: " + Palette.TEXT_HEAD + ";");
-        nameField.textProperty().addListener((o, was, now) -> { cityName = now; refresh(); });
+        nameField.textProperty().addListener((o, was, now) -> { name.edited(now); cityName = name.text(); refresh(); });
         nameField.setTooltip(new Tooltip(String.format("Up to %d characters. It names the window, the save"
                 + " slot and - unless you name it yourself - the city's money.", Founding.MAX_CITY_NAME_LENGTH)));
 
@@ -579,9 +582,14 @@ public final class FoundingScreen {
         return EarthSite.search(earthData.reader(), searchText, EarthSite.SEARCH_HITS);
     }
 
-    /** A place picked from the search: the spot, the view on it, the search cleared, the card measured. */
+    /** A place picked from the search: the spot, the view on it, the search cleared, the card measured, and (FN1) the city named for it unless the player has named it. */
     private void pickPlace(EarthData.Place p) {
         spotPlace = p.name().trim();
+        if (name.placePicked(spotPlace)) {
+            cityName = name.text();
+            if (nameField != null) nameField.setText(cityName);
+            refresh();
+        }
         searchText = "";
         if (searchField != null) searchField.setText("");
         pick(p.lat(), p.lon(), true);
