@@ -627,7 +627,7 @@ public class Game {
          * the treasury simply opens with the founding's cash in it. Whatever
          * vault was chosen is bought the same way, an empty one not at all.
          */
-        foreign.buyReserves(foreign.toLocal(founding.getReserveUsd()));
+        foreign.buyReserves(foreign.toLocal(founding.getReserveUsd()), "USD");   // dollars, whatever the mix (WN4)
         // ...an endowment, not a purchase the market saw: the rate forgets it (XR1; ForeignAccounts.forgetDealing()).
         foreign.forgetDealing();
         // ...and the record of it, which nothing changes after this line.
@@ -1329,6 +1329,8 @@ public class Game {
         }
         // ...AND THE WORLD'S MONEYS TO THE MONTH, on the January's terms of trade where it solved (WN4).
         stepTheWorldMoneys(market, solved, year);
+        // ...AND THE EIGHT'S CROSS RATES TO THE VAULT, before anything buys or sells (WN4, THE VAULT IN EIGHT).
+        handTheMoneysToTheVault();
         PartnerTrade last = partnerTrade;
         economyManager.getMarkets().setWorldBand(market, last::monthExportUnits, last::monthImportUnits);
     }
@@ -1506,6 +1508,86 @@ public class Game {
             double change = cityExportPriceChange(year);
             if (Double.isFinite(change)) foreign.stepTermsOfTrade(change);
         }
+    }
+
+    /**
+     * THE MONEYS TO THE VAULT (WN4, right after the step, before anything buys or sells): the eight's US$ per unit - 1 / rate(code), NaN
+     * for a money with no rate this month - and the city's trade by money, for the reserve mix MATCH_TRADE. The vault revalues across the
+     * moneys on the first call (ForeignAccounts.setMoneyRates()). With no moneys, nothing is handed and the vault is US$ only.
+     */
+    private void handTheMoneysToTheVault() {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null) return;
+        double[] usdPerUnit = new double[ForeignAccounts.MONEYS];
+        for (int k = 0; k < usdPerUnit.length; k++) {
+            double r = moneys.rate(WorldMoneys.EIGHT.get(k));
+            usdPerUnit[k] = r > 0 && Double.isFinite(r) ? 1 / r : Double.NaN;
+        }
+        foreign.setMoneyRates(usdPerUnit);
+        foreign.setTradeShares(tradeSharesByMoney(moneys));
+    }
+
+    /**
+     * The city's trade by money (MATCH_TRADE): each partner nation's exports plus imports with the city over the last finished year
+     * (PartnerTrade's history), else the year to date, else none - all US$ - mapped to the eight by tradeSharesByMoney().
+     */
+    private double[] tradeSharesByMoney(WorldMoneys moneys) {
+        PartnerTrade trade = partnerTrade;
+        Nations beyond = nations;
+        if (trade == null || beyond == null) return new double[ForeignAccounts.MONEYS];
+        double[] weight = new double[beyond.count() + 1];
+        double total = 0;
+        List<PartnerTrade.Table> history = trade.history();
+        if (!history.isEmpty()) {
+            for (PartnerTrade.Cell cell : history.get(history.size() - 1).cells()) {
+                if (cell.nation() < 1 || cell.nation() > beyond.count()) continue;
+                double both = cell.valueOut() + cell.valueIn();
+                if (!(both > 0)) continue;
+                weight[cell.nation()] += both;
+                total += both;
+            }
+        }
+        if (!(total > 0)) {
+            PartnerTrade.Snapshot year = trade.snapshot();
+            if (year != null && year.yearExportValue() != null && year.yearImportValue() != null) {
+                for (int i = 0; i < year.yearExportValue().length && i < beyond.count(); i++) {
+                    double both = year.yearExportValue()[i] + year.yearImportValue()[i];
+                    if (both > 0) weight[i + 1] = both;
+                }
+            }
+        }
+        return tradeSharesByMoney(moneys, beyond, Nations.yearOf(month), weight);
+    }
+
+    /**
+     * The eight's shares of a trade given by nation (weight[n] for nation n, 1-based, index 0 unused), summing to 1 - or all zero with no
+     * weight: each nation's money mapped to the eight by eightOf().
+     */
+    static double[] tradeSharesByMoney(WorldMoneys moneys, Nations beyond, int year, double[] weight) {
+        double[] shares = new double[ForeignAccounts.MONEYS];
+        double total = 0;
+        for (int nation = 1; nation < weight.length && nation <= beyond.count(); nation++) {
+            if (!(weight[nation] > 0)) continue;
+            shares[eightOf(moneys, beyond.year(nation, year).money())] += weight[nation];
+            total += weight[nation];
+        }
+        if (total > 0) for (int k = 0; k < shares.length; k++) shares[k] /= total;
+        return shares;
+    }
+
+    /**
+     * Which of the eight a money stands in for in the city's trade: itself if it is one of them; else the money it is pegged to or uses,
+     * followed through the chain (WorldMoneys.pegAnchor) if that is one of them; else the US$ (about 40% of world trade is invoiced in
+     * dollars, far more than the US's share [R24]). A loop of pegs ends on the US$ too.
+     */
+    static int eightOf(WorldMoneys moneys, String code) {
+        String at = code;
+        for (int hops = 0; at != null && hops < 16; hops++) {
+            int k = ForeignAccounts.moneyIndex(at);
+            if (k >= 0) return k;
+            at = moneys.pegAnchor(at);
+        }
+        return 0;
     }
 
     /**
@@ -4514,14 +4596,23 @@ public class Game {
      *
      * @return what was actually bought, which is nothing the city cannot pay for
      */
-    public double buyForeignCurrency(double amount) {
+    public double buyForeignCurrency(double amount) { return buyForeignCurrency(amount, null); }
+
+    /**
+     * ...into one money of the eight (the Reserves page's money picker; WN4, THE VAULT IN EIGHT); null goes in by the reserve mix, as the
+     * one-argument purchase does. The logs name the money.
+     */
+    public double buyForeignCurrency(double amount, String code) {
         double spend = Math.max(0, Math.min(amount, cash));
         if (spend <= 0) return 0;
         treasuryPays(TreasuryLine.RESERVE_PURCHASES, spend);
         treasuryJournal.record("Bought reserves", -spend);
-        foreign.buyReserves(spend);
-        decisions.record(DecisionLog.CURRENCY, "Bought reserves for " + DecisionLog.money(spend));
-        GameLog.note(String.format("The city bought $%,.0fk of foreign currency.", spend));
+        foreign.buyReserves(spend, code);
+        int k = ForeignAccounts.moneyIndex(code);
+        String what = k < 0 ? null : ForeignAccounts.MONEY_PLURAL[k];
+        decisions.record(DecisionLog.CURRENCY, what != null ? "Bought " + what + " for " + DecisionLog.money(spend)
+                : "Bought reserves for " + DecisionLog.money(spend) + foreign.getReserveMix().inWords);
+        GameLog.note(String.format("The city bought $%,.0fk of %s.", spend, what != null ? what : "foreign currency"));
         return spend;
     }
 
@@ -4536,13 +4627,21 @@ public class Game {
      * sale is also dealing the next reprice feels, the interventions' move:
      * ForeignAccounts, THE FLOAT.)
      */
-    public double sellForeignCurrency(double amount) {
-        double sold = foreign.sellReserves(Math.max(0, amount));
+    public double sellForeignCurrency(double amount) { return sellForeignCurrency(amount, null); }
+
+    /**
+     * ...out of one money of the eight (WN4, THE VAULT IN EIGHT): the clamp is what that money alone holds, and no other gives up
+     * anything; null sells from the largest holding, as the one-argument sale does. The logs name the money.
+     */
+    public double sellForeignCurrency(double amount, String code) {
+        double sold = foreign.sellReserves(Math.max(0, amount), code);
         if (sold <= 0) return 0;
         cash += sold;
         treasuryJournal.record("Sold reserves", sold);
-        decisions.record(DecisionLog.CURRENCY, "Sold reserves for " + DecisionLog.money(sold));
-        GameLog.note(String.format("The city sold $%,.0fk of its reserves.", sold));
+        int k = ForeignAccounts.moneyIndex(code);
+        String what = k < 0 ? null : ForeignAccounts.MONEY_PLURAL[k];
+        decisions.record(DecisionLog.CURRENCY, (what != null ? "Sold " + what : "Sold reserves") + " for " + DecisionLog.money(sold));
+        GameLog.note(String.format("The city sold $%,.0fk of its %s.", sold, what != null ? what : "reserves"));
         return sold;
     }
 

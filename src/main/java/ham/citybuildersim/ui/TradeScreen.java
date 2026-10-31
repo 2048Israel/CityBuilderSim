@@ -137,6 +137,9 @@ final class TradeScreen {
     boolean tradeBuying = true;
     double tradeExchange = 0;
 
+    /** ...and in which money (WN4): a code of the eight, or null for the reserve mix when buying and the largest holding when selling. Kept as tradeExchange is, so a redraw on the clock leaves it. */
+    String tradeMoney = null;
+
     /** Where the page is to be scrolled to once it is drawn - a card's key - or null for its top. */
     private String scrollTarget;
 
@@ -307,7 +310,7 @@ final class TradeScreen {
 
     /** The exchange card, buying or selling - an ask the other way cleared: the cover alert's "Buy reserves". */
     void openExchange(boolean buying) {
-        if (buying != tradeBuying) tradeExchange = 0;
+        if (buying != tradeBuying) { tradeExchange = 0; tradeMoney = null; }
         tradeBuying = buying;
         open(RESERVES, EXCHANGE_CARD);
     }
@@ -3136,6 +3139,18 @@ final class TradeScreen {
                     : "The currency rose and the same dollars fetch less at home. Nothing was spent and nothing left the "
                       + "vault; sold today, this is what they would raise."));
         }
+        // ...AND THE MONEYS MOVING AGAINST EACH OTHER (WN4, THE VAULT IN EIGHT): the US$ the vault gained or lost because the eight moved, and the
+        // holding that moved it most. None on a vault that is all US$.
+        double cross = fx.getLastVaultCrossUsd();
+        if (Math.abs(cross) > .005) {
+            ForeignAccounts.CrossDriver driver = fx.getLastVaultCrossDriver();
+            String who = driver == null ? "" : String.format(": %s %s %.1f%% against the dollar", ForeignAccounts.MONEY_NAME[driver.index()],
+                    driver.move() < 0 ? "fell" : "rose", Math.abs(driver.move()) * 100);
+            out.add(new Moved("the moneys moved it by " + (cross < 0 ? "−" : "+") + usd(Math.abs(cross)) + who, Palette.TEXT_LABEL,
+                    "The vault keeps a balance in each of the eight moneys, and the dollar value of each moves when it moves against the "
+                            + "dollar. Nobody was paid anything and nothing left the vault: it is not cash until a balance is sold, "
+                            + "and a sale is at that day's rate. A vault that is all dollars has none of this."));
+        }
         if (fx.getDefenceUsdLifetime() > 0) {
             out.add(new Moved(fx.getDefenceUsd() > 0
                     ? "the central bank sold " + usd(fx.getDefenceUsd()) + " defending the currency"
@@ -3193,13 +3208,100 @@ final class TradeScreen {
 
     /** What a press on the exchange's button says (pure: the probe reads it): GO with the amount; CHOOSE with nothing asked yet - a press asks the smallest step and prices it, and never trades. */
     Press exchangePress() {
+        int money = ForeignAccounts.moneyIndex(tradeMoney);
+        String plural = money < 0 ? null : ForeignAccounts.MONEY_PLURAL[money];
         if (tradeExchange <= 0) {
-            return new Press(Look.CHOOSE, tradeBuying ? "Buy foreign money" : "Sell foreign money", "choose how much above");
+            return new Press(Look.CHOOSE, plural != null ? (tradeBuying ? "Buy " : "Sell ") + plural
+                    : tradeBuying ? "Buy foreign money" : "Sell foreign money", "choose how much above");
         }
-        return new Press(Look.GO, tradeBuying ? "Buy " + d(tradeExchange) + " of foreign money"
-                : "Sell " + d(tradeExchange) + " of the vault", tradeBuying
+        return new Press(Look.GO, tradeBuying ? "Buy " + d(tradeExchange) + " of " + (plural != null ? plural : "foreign money")
+                : "Sell " + d(tradeExchange) + " of " + (plural != null ? plural : "the vault"), tradeBuying
                 ? "cash out of the treasury, " + usd(ui.game.getForeignAccounts().toUsd(tradeExchange)) + " into the vault"
+                        + (plural != null ? ", as " + plural : "")
                 : usd(ui.game.getForeignAccounts().toUsd(tradeExchange)) + " out of the vault, cash into the treasury");
+    }
+
+    /** The eight's names on the exchange's chips, and the mark each money's amounts carry (WN4), in WorldMoneys.EIGHT's order. */
+    static final String[] MONEY_CHIP = {"US$", "Euro", "Yen", "Pound", "Yuan", "Canadian $", "Australian $", "Franc"};
+    static final String[] MONEY_MARK = {"US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF "};
+
+    /** A balance of one of the eight in its own money, abbreviated and marked: "€3.4M". */
+    static String ownMoney(int k, double thousands) { return marked(MONEY_MARK[k], money(thousands)); }
+
+    /**
+     * THE MONEY PICKER (WN4, under the toggle): "By the mix" when buying and "The largest" when selling, then the eight that have a rate
+     * this month (just the US$ with no world file). The chosen one is what a press deals in (tradeMoney, null for the first chip).
+     */
+    FlowPane moneyPicker(ForeignAccounts fx) {
+        String first = tradeBuying ? "By the mix" : "The largest";
+        List<String> names = new ArrayList<>();
+        names.add(first);
+        for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (fx.hasRate(k)) names.add(MONEY_CHIP[k]);
+        int now = ForeignAccounts.moneyIndex(tradeMoney);
+        FlowPane strip = chipStrip(names.toArray(new String[0]), now < 0 ? first : MONEY_CHIP[now], Palette.SIZE_LABEL, pick -> {
+            tradeMoney = null;
+            for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (MONEY_CHIP[k].equals(pick)) tradeMoney = WorldMoneys.EIGHT.get(k);
+            showForeignMenu();
+        });
+        strip.setAlignment(Pos.CENTER_LEFT);
+        return strip;
+    }
+
+    /**
+     * THE RESERVE MIX (WN4, D20): where a purchase of the treasury's, the strong edge's or a peg's goes - All US$ (the default), Match our
+     * trade, The world's mix, or Choose - read from and written to ForeignAccounts; under Choose eight rows of the money, its share and
+     * two small buttons, the model keeping the shares at 100%; and one compact line of what the vault holds in each money. Empty where
+     * no money but the dollar has a rate and the vault holds nothing else: there is nothing to mix.
+     */
+    VBox reserveMix(ForeignAccounts fx) {
+        boolean others = false;
+        for (int k = 1; k < ForeignAccounts.MONEYS; k++) others |= fx.hasRate(k) || fx.getHolding(k) > 0;
+        VBox box = new VBox(6);
+        if (!others) return box;
+        box.getChildren().add(words("WHERE A PURCHASE GOES", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        ForeignAccounts.Mix[] mixes = ForeignAccounts.Mix.values();
+        String[] names = new String[mixes.length];
+        for (int i = 0; i < names.length; i++) names[i] = mixes[i].words;
+        FlowPane strip = chipStrip(names, fx.getReserveMix().words, Palette.SIZE_LABEL, pick -> {
+            for (ForeignAccounts.Mix m : mixes) if (m.words.equals(pick)) fx.setReserveMix(m);
+            showForeignMenu();
+        });
+        strip.setAlignment(Pos.CENTER_LEFT);
+        box.getChildren().add(strip);
+        if (fx.getReserveMix() == ForeignAccounts.Mix.CHOSEN) {
+            double[] shares = fx.getChosenShares();
+            for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+                final int money = k;
+                Label name = words(ForeignAccounts.MONEY_PLURAL[k].substring(0, 1).toUpperCase() + ForeignAccounts.MONEY_PLURAL[k].substring(1)
+                        + (fx.hasRate(k) ? "" : " (no rate yet)"), Palette.SIZE_LABEL, fx.hasRate(k) ? Palette.TEXT_LABEL : Palette.TEXT_MUTED);
+                HBox.setHgrow(name, Priority.ALWAYS);
+                name.setMaxWidth(Double.MAX_VALUE);
+                HBox row = new HBox(Palette.GAP, name, figure(String.format("%.0f%%", shares[k] * 100), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
+                        stepChip("−5", () -> {
+                            fx.shiftChosen(money, -.05);
+                            showForeignMenu();
+                        }, true),
+                        stepChip("+5", () -> {
+                            fx.shiftChosen(money, .05);
+                            showForeignMenu();
+                        }, false));
+                row.setAlignment(Pos.CENTER_LEFT);
+                box.getChildren().add(row);
+            }
+        }
+        StringBuilder held = new StringBuilder();
+        boolean beyondTheDollar = false;
+        for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+            if (!(fx.getHolding(k) > 0)) continue;
+            if (held.length() > 0) held.append(" · ");
+            held.append(ownMoney(k, fx.getHolding(k)));
+            if (k > 0) {
+                held.append(" (").append(usd(fx.getHoldingUsd(k))).append(")");
+                beyondTheDollar = true;
+            }
+        }
+        if (beyondTheDollar) box.getChildren().add(line("held: " + held, null));
+        return box;
     }
 
     /** The exchange's "to N months" steps (pure, D12): buying and short, each cover line the cash can reach, as {months, local money}; the shares, all of it and clear are the card's own. */
@@ -3227,7 +3329,7 @@ final class TradeScreen {
         FlowPane toggle = chipStrip(new String[] {"Buy — cash into the vault", "Sell — the vault into cash"},
                 tradeBuying ? "Buy — cash into the vault" : "Sell — the vault into cash", Palette.SIZE_LABEL, pick -> {
                     boolean nowBuying = pick.startsWith("Buy");
-                    if (nowBuying != tradeBuying) tradeExchange = 0;
+                    if (nowBuying != tradeBuying) { tradeExchange = 0; tradeMoney = null; }
                     tradeBuying = nowBuying;
                     showForeignMenu();
                 });
@@ -3248,11 +3350,23 @@ final class TradeScreen {
                     fx.getBoughtThisMonth() > 0 ? chip("bought " + d(fx.getBoughtThisMonth()) + " this month", Palette.MONEY) : null,
                     fx.getSoldThisMonth() > 0 ? chip("sold " + d(fx.getSoldThisMonth()) + " this month", Palette.MONEY) : null));
         }
-        double ceiling = tradeBuying ? Math.max(0, ui.game.getCash()) : fx.sellableReserves();
+        // THE MONEY AND THE MIX (WN4): a money that has lost its rate is no longer the one dealt in.
+        int money = ForeignAccounts.moneyIndex(tradeMoney);
+        if (money >= 0 && !fx.hasRate(money)) {
+            tradeMoney = null;
+            money = -1;
+        }
+        c.getChildren().add(moneyPicker(fx));
+        VBox mixBox = reserveMix(fx);
+        if (!mixBox.getChildren().isEmpty()) c.getChildren().add(mixBox);
+        double ceiling = tradeBuying ? Math.max(0, ui.game.getCash())
+                : money < 0 ? fx.sellableReserves() : fx.sellableReserves(tradeMoney);
         tradeExchange = Math.max(0, Math.min(tradeExchange, ceiling));
-        c.getChildren().add(cardLine(tradeBuying ? "the treasury holds" : "the vault holds", dFull(ceiling), null));
+        c.getChildren().add(cardLine(tradeBuying ? "the treasury holds"
+                : money < 0 ? "the vault holds" : "the vault holds in " + ForeignAccounts.MONEY_PLURAL[money], dFull(ceiling), null));
         if (ceiling <= 0) {
-            c.getChildren().add(line(tradeBuying ? "There is no cash to buy with." : "There is nothing in the vault to sell.",
+            c.getChildren().add(line(tradeBuying ? "There is no cash to buy with." : money < 0 ? "There is nothing in the vault to sell."
+                            : "The vault holds no " + ForeignAccounts.MONEY_PLURAL[money] + " to sell.",
                     tradeBuying
                             ? "The treasury is empty. Buying reserves is spending money the city does not have."
                             : "You cannot sell what you do not hold. A city that needs foreign money and has none has to "
@@ -3296,8 +3410,8 @@ final class TradeScreen {
                 showForeignMenu();
                 return;
             }
-            if (tradeBuying) ui.game.buyForeignCurrency(tradeExchange);
-            else             ui.game.sellForeignCurrency(tradeExchange);
+            if (tradeBuying) ui.game.buyForeignCurrency(tradeExchange, tradeMoney);
+            else             ui.game.sellForeignCurrency(tradeExchange, tradeMoney);
             tradeExchange = 0;
             showForeignMenu();
         });
@@ -3316,6 +3430,12 @@ final class TradeScreen {
                 cardLine("import cover", imports ? coverMonths(coverNow) + "  →  " + coverMonths(coverAfter) : "nothing to cover",
                         imports ? coverTone(ForeignAccounts.coverLevel(coverAfter)) : Palette.TEXT_SPENT),
                 cardLine("in " + Currency.FOREIGN_CODE, usdFull(fx.toUsd(tradeExchange)) + " at " + perUsd(fx.getRate()), null));
+        if (money >= 0 && fx.getMoneyUsd(money) > 0) {
+            // A named money: its own balance, in its own units, before and after.
+            double ownChange = fx.toUsd(tradeExchange) / fx.getMoneyUsd(money);
+            after.getChildren().add(2, cardLine("of which " + ForeignAccounts.MONEY_PLURAL[money], ownMoney(money, fx.getHolding(money)) + "  →  "
+                    + ownMoney(money, Math.max(0, fx.getHolding(money) + sign * ownChange)), null));
+        }
         if (imports) {
             after.getChildren().add(bulletBar(Math.min(COVER_SCALE, coverAfter), ForeignAccounts.THIN_COVER, Palette.MONEY, 0,
                     String.format("the cover after it, against the %.0f-month line", ForeignAccounts.THIN_COVER)));

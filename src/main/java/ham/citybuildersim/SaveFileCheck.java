@@ -3577,6 +3577,13 @@ public class SaveFileCheck {
                 city.buildStack(template(city, "Convenience Store"), 2, true);
                 city.buildStack(template(city, "Water Treatment Plant"), 1, true);
                 for (int m = 0; m < 14; m++) {
+                    // WN4: from the tenth month the vault holds euros and pounds beside its dollars, on a chosen mix, so the vault's slots (105-141) carry something and the eight have moved against each other under it.
+                    if (m == 9) {
+                        city.buyForeignCurrency(40_000, "EUR");
+                        city.buyForeignCurrency(25_000, "GBP");
+                        city.getForeignAccounts().setReserveMix(ForeignAccounts.Mix.CHOSEN);
+                        city.getForeignAccounts().setChosenShares(new double[] {.5, .3, 0, .2, 0, 0, 0, 0});
+                    }
                     city.simulateMonths(1);
                     PartnerTrade seen = city.partnerTradeForTest();
                     if (seen == null) continue;
@@ -3620,6 +3627,13 @@ public class SaveFileCheck {
             assertTrue("the save writes the moneys' state (worldMoneys), as many numbers as WorldMoneys.toSaveArray() gives (" + savedMoneys.length + ")",
                     json.has("worldMoneys") && json.getAsJsonArray("worldMoneys").size() == savedMoneys.length);
             assertTrue("...and the foreign accounts' array runs to slot 104, the world's (95-104)", savedFx.length >= 105);
+            // WN4, the vault in eight (slots 105-141): euros and pounds beside the dollars, the mix, the chosen shares, the eight's rates and the month's cross move.
+            ForeignAccounts savedAccounts = city.getForeignAccounts();
+            assertTrue("...and to slot 141, the vault's (105-141): " + savedFx.length + " slots", savedFx.length == 142);
+            assertTrue("fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22",
+                    savedAccounts.getHolding(1) > 0 && savedAccounts.getHolding(3) > 0 && savedAccounts.getHolding(0) > 0 && savedAccounts.getReserveMix() == ForeignAccounts.Mix.CHOSEN
+                            && savedAccounts.getLastVaultCrossUsd() != 0 && savedFx[22] == savedAccounts.getReservesUsd() && savedFx[105 + 1] == savedAccounts.getHolding(1)
+                            && savedFx[113 + 1] > 0 && savedFx[121] == ForeignAccounts.Mix.CHOSEN.ordinal() && savedFx[138] == savedAccounts.getLastVaultCrossUsd());
             com.google.gson.JsonObject hist = com.google.gson.JsonParser.parseString(Files.readString(files.historyFile(1))).getAsJsonObject();
             assertTrue("...and the history writes each finished year's table by partner and good (1)",
                     hist.has("tradeByPartner") && hist.getAsJsonArray("tradeByPartner").size() == 1
@@ -3646,6 +3660,17 @@ public class SaveFileCheck {
                     backMoneys != null && backMoneys.month() == savedMonth && java.util.Arrays.equals(backMoneys.toSaveArray(), savedMoneys));
             assertTrue("...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit",
                     java.util.Arrays.equals(loaded.getForeignAccounts().toSaveArray(), savedFx));
+            ForeignAccounts backAccounts = loaded.getForeignAccounts();
+            boolean vaultBack = backAccounts.getReserveMix() == savedAccounts.getReserveMix() && Double.compare(backAccounts.getReservesUsd(), savedAccounts.getReservesUsd()) == 0
+                    && Double.compare(backAccounts.getLastVaultCrossUsd(), savedAccounts.getLastVaultCrossUsd()) == 0
+                    && java.util.Arrays.equals(backAccounts.getChosenShares(), savedAccounts.getChosenShares())
+                    && java.util.Arrays.equals(backAccounts.getTradeShares(), savedAccounts.getTradeShares())
+                    && java.util.Objects.equals(backAccounts.getLastVaultCrossDriver(), savedAccounts.getLastVaultCrossDriver());
+            for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+                vaultBack &= Double.compare(backAccounts.getHolding(k), savedAccounts.getHolding(k)) == 0 && backAccounts.hasRate(k) == savedAccounts.hasRate(k)
+                        && Double.compare(backAccounts.getMoneyUsd(k), savedAccounts.getMoneyUsd(k)) == 0;
+            }
+            assertTrue("...and the vault in eight as it was: the eight balances and their rates, the mix, the chosen and the trade shares, the month's cross move and its driver", vaultBack);
             assertEquals("...the trade by partner, the month and the year to date, as it was", gson.toJson(backRecord.toState()), gson.toJson(record.toState()));
             assertEquals("...the finished years in the history", gson.toJson(backRecord.history()), gson.toJson(record.history()));
             PartnerTrade.Snapshot backSnap = loaded.getPartnerTrade();

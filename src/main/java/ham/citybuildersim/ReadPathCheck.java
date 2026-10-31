@@ -2128,6 +2128,12 @@ public class ReadPathCheck {
                 g.buildStack(template(g, "Convenience Store"), 2, true);
                 g.buildStack(template(g, "Water Treatment Plant"), 1, true);
                 g.simulateMonths(14);
+                // WN4: the vault in euros and pounds beside its dollars, on the world's mix, and a month under it, so the vault's readers read something.
+                g.buyForeignCurrency(40_000, "EUR");
+                g.buyForeignCurrency(25_000, "GBP");
+                g.getForeignAccounts().setReserveMix(ForeignAccounts.Mix.WORLD_MIX);
+                g.buyForeignCurrency(10_000);
+                g.simulateMonths(1);
             } finally {
                 System.setOut(out);
             }
@@ -2196,6 +2202,13 @@ public class ReadPathCheck {
             g.getHistorySave().aligned(HistorySave.WORLD_CYCLE);
             g.getHistorySave().aligned(HistorySave.worldRateKey("EUR"));
         }
+        // WN4, the vault in eight: everything the Reserves page reads of it.
+        ForeignAccounts vault = g.getForeignAccounts();
+        vault.getReserveMix(); vault.getChosenShares(); vault.getTradeShares(); vault.mixShares(); vault.getLastVaultCrossUsd(); vault.getLastVaultCrossDriver();
+        for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+            vault.getHolding(k); vault.getHoldingUsd(k); vault.getMoneyUsd(k); vault.hasRate(k);
+            vault.sellableReserves(WorldMoneys.EIGHT.get(k));
+        }
         TradeLanes.Feed feed = g.getTradeFeed();
         feed.month(); feed.exportsByNation(); feed.importsByNation(); feed.standInLat(); feed.standInLon(); feed.yearToDate(1); feed.nameOf(1);
         g.partnerTradeForTest().toState();
@@ -2248,6 +2261,27 @@ public class ReadPathCheck {
         double worldSlots = 0;
         for (int i = 95; i < fxSlots.length && i <= 104; i++) worldSlots += (i - 94) * fxSlots[i];
         into.put("world.fx.slots", worldSlots);
+        // WN4, the vault in eight: its slots (105-141) and the readers the Reserves page uses.
+        double vaultSlots = 0;
+        for (int i = 105; i < fxSlots.length && i <= 141; i++) vaultSlots += (i - 104) * fxSlots[i];
+        into.put("world.fx.vaultSlots", vaultSlots);
+        into.put("world.fx.vaultSlotCount", (double) fxSlots.length);
+        double held = 0, heldUsd = 0, rates = 0;
+        for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+            held += (k + 1) * fx.getHolding(k);
+            heldUsd += (k + 1) * fx.getHoldingUsd(k);
+            rates += (k + 1) * (fx.hasRate(k) ? fx.getMoneyUsd(k) : -1);
+        }
+        into.put("world.fx.holdings", held);
+        into.put("world.fx.holdingsUsd", heldUsd);
+        into.put("world.fx.moneyRates", rates);
+        into.put("world.fx.vault", fx.getReservesUsd());
+        into.put("world.fx.mix", (double) fx.getReserveMix().ordinal());
+        into.put("world.fx.cross", fx.getLastVaultCrossUsd());
+        into.put("world.fx.crossDriver", fx.getLastVaultCrossDriver() == null ? -1 : fx.getLastVaultCrossDriver().index() + fx.getLastVaultCrossDriver().move());
+        double shares = 0;
+        for (int k = 0; k < ForeignAccounts.MONEYS; k++) shares += (k + 1) * (fx.mixShares()[k] + 3 * fx.getChosenShares()[k] + 5 * fx.getTradeShares()[k]);
+        into.put("world.fx.shares", shares);
         into.put("world.fx.moveWorld", fx.getMoveWorld());
         into.put("world.fx.level", fx.getWorldLevel());
         into.put("world.fx.terms", fx.getTermsOfTradeReached());
