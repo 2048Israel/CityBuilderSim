@@ -4400,8 +4400,10 @@ final class MapView {
         }
         Game g = ui.game;
         // The D$ a US$ is the foreign accounts' rate (Markets.getExchangeRate() is that times the world's price level).
+        // WN4: the money's rate this month where the city has the world's moneys, else the file's year.
+        WorldMoneys moneys = g.getWorldMoneys();
         NationsMap.Card c = nm.card(ns, nationShown, Nations.yearOf(g.getMonth()), globe.cityLat(), globe.cityLon(), g.getForeignAccounts().getRate(),
-                tradeFeed().yearToDate(nationShown));
+                tradeFeed().yearToDate(nationShown), moneys == null ? Double.NaN : moneys.rateOfNation(nationShown));
         nationKey = nationCardKey();
         Label name = new Label(c.name());
         name.setStyle(Palette.strong(15, Palette.TEXT));

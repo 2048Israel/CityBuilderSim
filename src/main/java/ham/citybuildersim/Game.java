@@ -316,6 +316,7 @@ public class Game {
         worldMarket = null;
         worldMarketTried = false;
         partnerTrade = null;
+        worldMoneys = null;
         populationManager = new PopulationManager();
         servicesManager = new ServicesManager(buildingManager);
         // ...a Gravel Road's repairs rise with the traffic on the streets (FR7 2.2): read live off the road network, never kept.
@@ -1229,6 +1230,7 @@ public class Game {
         onLiterals = true;
         worldMarket = null;
         partnerTrade = null;
+        worldMoneys = null;
         getMarkets().clearWorldPrices();
     }
 
@@ -1276,7 +1278,8 @@ public class Game {
         try {
             Nations beyond = getNations();
             if (beyond == null) return null;
-            WorldMarket made = new WorldMarket(WorldMarket.Base.load(file), beyond);
+            WorldMarket.Base base = WorldMarket.Base.load(file);
+            WorldMarket made = new WorldMarket(base, beyond);
             boolean berth = hasBerth();
             double lat = founding.getEarthLat(), lon = founding.getEarthLon();
             double standLat = Double.NaN, standLon = Double.NaN;
@@ -1293,10 +1296,12 @@ public class Game {
             trade.setPlace(standLat, standLon, names);
             partnerTrade = trade;
             worldMarket = made;
+            worldMoneys = buildWorldMoneys(file, beyond, base, made.nationCount());
         } catch (IOException | RuntimeException e) {
             System.out.println("The world market could not be built from " + file + " (" + e + "): the city plays on the goods' literals.");
             worldMarket = null;
             partnerTrade = null;
+            worldMoneys = null;
         }
         return worldMarket;
     }
@@ -1311,7 +1316,8 @@ public class Game {
         // The sea leg first: a solve reads the city's site as it stands.
         market.setBerth(hasBerth());
         int year = Nations.yearOf(month);
-        if (market.solvedYear() != year) {
+        boolean solved = market.solvedYear() != year;
+        if (solved) {
             market.solveYear(year);
             int passes = 0, goods = 0;
             for (Good g : Good.values()) {
@@ -1321,6 +1327,8 @@ public class Game {
             }
             System.out.printf("The world market solved %d in %.1f ms (%d sweeps over %d goods).%n", year, market.lastSolveMillis(), passes, goods);
         }
+        // ...AND THE WORLD'S MONEYS TO THE MONTH, on the January's terms of trade where it solved (WN4).
+        stepTheWorldMoneys(market, solved, year);
         PartnerTrade last = partnerTrade;
         economyManager.getMarkets().setWorldBand(market, last::monthExportUnits, last::monthImportUnits);
     }
@@ -1377,6 +1385,210 @@ public class Game {
         } else if (!partnerTrade.restore(loaded.getPartnerTrade())) {
             System.out.println("The saved trade by partner would not restore on this world file: it starts again.");
         }
+        restoreWorldMoneys(loaded);
+    }
+
+    /* =====================================================================
+       THE WORLD'S MONEYS IN THE MONTH (WN4, 2026-10-30; docs/studies/spec-exchange-rates.md 3.5 and 3.7)
+
+       WorldMoneys is the world's ~150 moneys against the US$, a month at a
+       time: a purchasing-power path, the dollar cycle, the risk-off, the terms
+       of trade from the January solve, each money's own swing, the pegs held
+       and broken. It lives with the market (the same file, the same nations,
+       the same commodity shares) and is stepped where the market is struck,
+       strikeTheWorldMarket(), to the month the city is in. Three things come
+       of it:
+
+         1. THE D$ FEELS THE WORLD. Right before the month's reprice the dollar
+            cycle, the risk-off level and the hot money held are handed to the
+            ForeignAccounts (setWorld), and in a January the city's own terms of
+            trade, from its exports by good over the year that finished and the
+            change in each good's world price (stepTermsOfTrade): ForeignAccounts,
+            THE WORLD REACHES THE D$. With no world file none of it runs and the
+            D$ is what it was, to the bit.
+         2. THE LOG says when money ran to safety abroad and when a world peg
+            broke (noteTheWorldMoneys, after the reprice).
+         3. THE SAVE AND THE HISTORY carry it: DataSave.worldMoneys is its state,
+            and HistorySave keeps the eight majors' rates, the cycle and the
+            risk-off a month each, for the dollar's chart (WN6).
+
+       A moneys object behind the month - a load of a save that had none, a file
+       that came late - is caught up from January 2000 with no terms of trade,
+       and a line says so.
+       ===================================================================== */
+
+    /** The world's moneys against the US$, built with the market (null where it is null) and stepped in the month; not saved itself: DataSave.worldMoneys is its state. */
+    private transient volatile WorldMoneys worldMoneys;
+
+    /** What the month's step found, for the log after the reprice: whether a risk-off began, the yen's, the franc's and the Australian dollar's moves against the US$ in it, and the lines of the world pegs that broke. */
+    private transient boolean worldRiskOffStarted;
+    private transient double[] worldRiskOffMoves = new double[3];
+    private transient List<String> worldPegBreaks = new ArrayList<>();
+
+    /** The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. */
+    private static final String[] RISK_OFF_NAMED = {"JPY", "CHF", "AUD"};
+
+    /** The world's moneys of this city, or null where there is no world file or the market was not built (the D$ then feels no world). A screen reads figures, not the step. */
+    public WorldMoneys getWorldMoneys() { return worldMoneys; }
+
+    /** Whether the world's moneys are kept from the D$ in this city (quietTheWorldForTheD()). */
+    private transient boolean worldQuietForTheD;
+
+    /**
+     * The D$ of this city is not reached by the world: it is handed zeros and no terms of trade, so it moves to the bit as it did before the world's
+     * moneys (WN4), while the moneys are built, stepped, saved and charted as ever. For a harness whose premise is not the world - a played city a screen's
+     * check reads the growth of, whose growth the D$'s swings would otherwise change - and only there: every other harness city feels the world where
+     * the file is named. Call it before the first month or the load; it holds for the rest of the city's life (a new founding too).
+     */
+    void quietTheWorldForTheD() { worldQuietForTheD = true; }
+
+    /** The moneys over the world file and the nations of this founding's path, with each nation's commodity share of exports from the market's base; null, and a line, if they will not build. */
+    private WorldMoneys buildWorldMoneys(Path file, Nations beyond, WorldMarket.Base base, int nationCount) {
+        try (WorldData data = WorldData.open(file)) {
+            double[] share = new double[nationCount];
+            for (int i = 0; i < nationCount; i++) share[i] = base.commodityShare(i + 1);
+            return new WorldMoneys(data, beyond, share);
+        } catch (IOException | RuntimeException e) {
+            System.out.println("The world's moneys could not be built from " + file + " (" + e + "): the D$ feels no world.");
+            return null;
+        }
+    }
+
+    /** A money's value against the US$ in a month, a fraction: its rate before over its rate after, less one (a rate is units to the dollar, so a falling rate is a rising money). 0 for one with no rate either side. */
+    private static double valueMove(double before, double after) {
+        return before > 0 && after > 0 && Double.isFinite(before) && Double.isFinite(after) ? before / after - 1 : 0;
+    }
+
+    /**
+     * Steps the moneys to the month the city is in (strikeTheWorldMarket(), after the January solve): each month in turn, handing the market's
+     * terms of trade in the January it solved and null in every other month. The founding's solve is in February (the city's first month is
+     * January 2000, its clock turns before the first month runs) while the moneys stand in January 2000: its terms of trade are only recorded, as
+     * last year's for the next January's change. A moneys behind by more than a month is caught up with no terms of trade and a line says so. In
+     * a January it solved, the city's own terms of trade go to the D$ as well.
+     */
+    private void stepTheWorldMoneys(WorldMarket market, boolean solved, int year) {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null) return;
+        int target = WorldMoneys.monthIndex(month);
+        if (moneys.month() > target) {
+            System.out.printf("The world's moneys stand in month %d, ahead of the city's %d: not stepped.%n", moneys.month(), target);
+            return;
+        }
+        boolean january = CityCalendar.monthOfYear(month) == 1;
+        double[] terms = solved ? market.lnTermsOfTrade() : null;
+        if (terms != null && !january) {
+            moneys.recordTermsOfTrade(terms);
+            terms = null;
+        }
+        if (target - moneys.month() > 1) {
+            System.out.printf("The world's moneys were %d months behind the city (month %d of %d): caught up with no terms of trade.%n",
+                    target - moneys.month() - 1, moneys.month(), target);
+            terms = null;
+        }
+        while (moneys.month() < target - 1) moneys.step(moneys.month() + 1, null);
+        List<String> codes = moneys.codes();
+        double[] before = new double[codes.size()];
+        for (int k = 0; k < before.length; k++) before[k] = moneys.rate(codes.get(k));
+        if (moneys.month() < target) moneys.step(target, terms);
+        // What this month's step found, kept for the log after the reprice.
+        worldRiskOffStarted = moneys.riskOffStarted();
+        for (int k = 0; k < RISK_OFF_NAMED.length; k++) {
+            int at = codes.indexOf(RISK_OFF_NAMED[k]);
+            worldRiskOffMoves[k] = at < 0 ? 0 : valueMove(before[at], moneys.rate(RISK_OFF_NAMED[k]));
+        }
+        worldPegBreaks.clear();
+        for (String broken : moneys.breaksThisMonth()) {
+            int at = codes.indexOf(broken);
+            worldPegBreaks.add(String.format("The %s peg to the %s broke: %+.1f%% against the US$.", broken, moneys.pegAnchor(broken),
+                    100 * valueMove(at < 0 ? Double.NaN : before[at], moneys.rate(broken))));
+        }
+        if (solved && january && !worldQuietForTheD) {
+            double change = cityExportPriceChange(year);
+            if (Double.isFinite(change)) foreign.stepTermsOfTrade(change);
+        }
+    }
+
+    /**
+     * The city's export-weighted change in ln world prices over the year that has turned (WN4, the D$'s terms of trade): for each good, its share of
+     * the value the city sold abroad in the last finished year (PartnerTrade's history, the last table, exports by good) times ln(the good's price
+     * this year over last year's, the nations' path: Nations.goodPrice), summed. NaN, and nothing for the D$, with no finished year, no exports in it
+     * or no goods in the file.
+     */
+    private double cityExportPriceChange(int year) {
+        PartnerTrade trade = partnerTrade;
+        Nations beyond = nations;
+        if (trade == null || beyond == null || beyond.goodCount() < 1) return Double.NaN;
+        List<PartnerTrade.Table> history = trade.history();
+        if (history.isEmpty()) return Double.NaN;
+        double[] byGood = new double[beyond.goodCount() + 1];
+        double total = 0;
+        for (PartnerTrade.Cell cell : history.get(history.size() - 1).cells()) {
+            if (!(cell.valueOut() > 0)) continue;
+            int g = goodNumber(beyond, cell.good());
+            if (g < 1) continue;
+            byGood[g] += cell.valueOut();
+            total += cell.valueOut();
+        }
+        if (!(total > 0)) return Double.NaN;
+        double change = 0;
+        for (int g = 1; g < byGood.length; g++) {
+            if (!(byGood[g] > 0)) continue;
+            double now = beyond.goodPrice(g, year), then = beyond.goodPrice(g, year - 1);
+            if (now > 0 && then > 0) change += byGood[g] / total * Math.log(now / then);
+        }
+        return change;
+    }
+
+    /** The number the file gives a good (1..goodCount(): its key is the Good constant's name), 0 for one the file does not price. */
+    private static int goodNumber(Nations beyond, Good good) {
+        for (int g = 1; g <= beyond.goodCount(); g++) if (beyond.goodKey(g).equals(good.name())) return g;
+        return 0;
+    }
+
+    /**
+     * What the world is this month, handed to the D$ right before its reprice: the moneys' dollar cycle and risk-off level and the hot money held;
+     * zeros with no moneys, and then the D$ is what it was.
+     */
+    private void handTheWorldToTheD() {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null || worldQuietForTheD) foreign.setWorld(0, 0, 0);
+        else foreign.setWorld(moneys.cycle(), moneys.riskOff(), hotMoney.getStock());
+    }
+
+    /** The log's lines about the world, after the reprice: money running to safety abroad (with where the D$ went in it) and the world pegs that broke. */
+    private void noteTheWorldMoneys(double rateBeforeReprice) {
+        if (worldMoneys == null) return;
+        if (worldRiskOffStarted) {
+            GameLog.note(String.format("Money ran to safety abroad this month: the yen %+.1f%%, the franc %+.1f%%, the Australian dollar %+.1f%% against the US$, and the D$ %+.1f%%.",
+                    100 * worldRiskOffMoves[0], 100 * worldRiskOffMoves[1], 100 * worldRiskOffMoves[2],
+                    100 * valueMove(rateBeforeReprice, foreign.getRate())));
+            worldRiskOffStarted = false;
+        }
+        for (String line : worldPegBreaks) GameLog.note(line);
+        worldPegBreaks.clear();
+    }
+
+    /**
+     * A load's half of the moneys (restoreWorldMarket()): the saved state put back where it fits this world file, else the moneys stand at January
+     * 2000 and are caught up to the city's month with no terms of trade, a line saying so; a state saved in an earlier month is stepped on to this one.
+     */
+    private void restoreWorldMoneys(DataSave loaded) {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null) return;
+        double[] saved = loaded.getWorldMoneys();
+        boolean restored = false;
+        if (saved != null) {
+            try {
+                moneys.restore(saved);
+                restored = true;
+            } catch (IllegalArgumentException e) {
+                System.out.println("The saved world moneys would not restore on this world file (" + e.getMessage() + "): they start again from January 2000.");
+            }
+        }
+        int target = WorldMoneys.monthIndex(month);
+        if (moneys.month() >= target) return;
+        if (!restored && saved == null) System.out.println("The save has no world moneys: they start from January 2000 and catch up to the city's month with no terms of trade.");
+        while (moneys.month() < target) moneys.step(moneys.month() + 1, null);
     }
 
     /** The seed of the world this city stands on (0.7.56): chosen at founding, or derived from an older save. */
@@ -11802,7 +12014,10 @@ public class Game {
         foreign.setRealRateDifferential(realRateDifferential());
         // The rate follows parity's trend, the real gap's level, the balance, the cover,
         // the market and the interventions felt (ForeignAccounts, THE FLOAT), and since
-        // XR2 the regime holds it where it says (THE REGIMES).
+        // XR2 the regime holds it where it says (THE REGIMES). Since WN4 the world reaches it too: the
+        // dollar cycle, the risk-off and the terms of trade, handed here (ForeignAccounts, THE WORLD
+        // REACHES THE D$); zeros with no world.
+        handTheWorldToTheD();
         double rateBeforeReprice = foreign.getRate();
         foreign.repriceCurrency();
         /*
@@ -11817,6 +12032,8 @@ public class Game {
                     foreign.getLastBreakCause().words, rateBeforeReprice, foreign.getRate(),
                     100 * (foreign.getRate() / rateBeforeReprice - 1)));
         }
+        // ...AND THE WORLD'S NEWS (WN4): money that ran to safety abroad, a world peg that broke.
+        noteTheWorldMoneys(rateBeforeReprice);
         /*
          * ...and what the vault's dollars fetched, if the reprice defended the
          * currency: the central bank's equity line, booked here, after the
@@ -14563,6 +14780,9 @@ public class Game {
             dataSave.setWorldMarket(null, null, null);
             dataSave.setPartnerTrade(null);
         }
+        // ...and the world's moneys (WN4): the month they stand in, the cycle, the risk-off and every money's state; none without a market.
+        WorldMoneys savedMoneys = worldMoneys;
+        dataSave.setWorldMoneys(savedMarket != null && savedMoneys != null ? savedMoneys.toSaveArray() : null);
 
         // Charged during the month rather than derived from state, so nothing
         // can recompute it on load. Without this the freshly loaded city showed

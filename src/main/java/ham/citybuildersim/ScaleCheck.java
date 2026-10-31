@@ -1414,7 +1414,8 @@ public class ScaleCheck {
             // still owed for the edge's dollars (84), the edge's dollars the month bought, their price and the lifetime
             // (86-88).
             for (int i = 31; i < Math.min(45, a.size()); i++) money.add(i);
-            money.addAll(List.of(68, 70, 84, 86, 87, 88));
+            // WN4's slots 95-104 are the world's levels in logs, the terms of trade's pieces and a count, but for the hot money handed this month (97): local money.
+            money.addAll(List.of(68, 70, 84, 86, 87, 88, 97));
             for (int i = 0; i < a.size(); i++) if (money.contains(i)) a.set(i, times(a.get(i), k));
         }
         // The unemployment's people (FR2, 2026-10-18; the batch's notes): its claimant cohorts, those off EI, the unhoused, the

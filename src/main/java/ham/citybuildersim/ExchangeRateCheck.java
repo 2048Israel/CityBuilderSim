@@ -84,6 +84,27 @@ import java.io.PrintStream;
  *      live through it: a city whose rate is pinned at its guard keeps every
  *      figure finite, the audit closing, a save and a load; and a currency
  *      driven past its guard holds it exactly with every move finite.
+ *  10. NO WORLD, MAIN'S RATE (WN4). A currency handed zeros (setWorld(0, 0, 0))
+ *      reprices bit for bit as one never handed anything: 120 months of a
+ *      deficit, parity drifting and a seeded market, the rate, the fair level,
+ *      every move and the save the same to the bit.
+ *  11. THE DOLLAR CYCLE. Market quiet, gate one: a cycle stepped by 0.05 moves
+ *      the rate by exactly that in logs and getMoveWorld() says it; a city
+ *      under OPEN_ENOUGH feels gate() of it, one that trades next to nothing
+ *      none.
+ *  12. THE RISK-OFF LOADING IS THE TRAITS'. An empty vault and a deficit read
+ *      RISK_OFF_BASE; HAVEN_COVER months and a surplus read RISK_OFF_BASE -
+ *      HAVEN_PULL - SURPLUS_PULL (negative: the D$ rises in a risk-off); hot
+ *      money or debt of a tenth of a year's GDP adds EXPOSURE_WEIGHT x 0.1;
+ *      the clamps hold; the exposed D$ falls and the haven's rises by it.
+ *  13. THE TERMS OF TRADE. stepTermsOfTrade(-0.1) in a January moves the rate
+ *      by TOT_PASS x 0.1 / TOT_MONTHS in each of TOT_MONTHS reprices and not
+ *      the one after; a step before the last was reached brings the rest at
+ *      once.
+ *  14. THE MOVES ADD UP. With a world on (a swinging cycle, two risk-offs,
+ *      hot money, a January's terms of trade) the seven lines and the hold sum
+ *      to the month's move to 1e-12 under Lean, Float, Band and Peg, and the
+ *      world's line is gate() times the change in the world's level.
  *
  * Numbering is the running order. Money is in thousands, as everywhere.
  *
@@ -159,6 +180,11 @@ public class ExchangeRateCheck {
         aSaveMidSwing();
         inARealCity();
         theGameSurvivesTheSpiral();
+        noWorldIsMains();
+        theCycleMovesTheRate();
+        theLoadingIsTheTraits();
+        theTermsOfTrade();
+        theMovesAddUp();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -859,8 +885,9 @@ public class ExchangeRateCheck {
             LongPlaytest.run(g, 1);
             if (g.getMonth() == was || !(before > 0)) return;
             double move = Math.log(fx.getRate() / before);
+            // ...and the world's line (WN4), the sixth beside the five: a city on the world file feels the world.
             double six = fx.getMoveTrend() + fx.getMoveGap() + fx.getMoveBalance() + fx.getMoveCover() + fx.getMoveIntervention()
-                    + fx.getMoveMarket();
+                    + fx.getMoveWorld() + fx.getMoveMarket();
             worstAdd = Math.max(worstAdd, Math.abs(six - move));
             months++;
             if (g.getMonth() >= 60) { fromMonth60++; sum += move; sum2 += move * move; }
@@ -960,7 +987,7 @@ public class ExchangeRateCheck {
                 t.months - t.gateShut, t.months, fx.getOpenness());
         assertTrue("fixture: the city played its " + target + " months", g.getMonth() >= target && t.months >= target - 10);
         assertTrue("fixture: the market took a draw every month it was not pinned", fx.getMarketDraws() >= g.getMonth() - 3 && fx.isMarketSeeded());
-        close("the six moves add to the month's move, every month", t.worstAdd, 0, 1e-12);
+        close("the six moves (and the world's line, where the city has the world) add to the month's move, every month", t.worstAdd, 0, 1e-12);
         assertTrue("the volatility a year is a float's: between 3% and 20% (today's rule: 1.2%)", vol >= .03 && vol <= .20);
         assertTrue("the longest run one way is under 36 months (today's: 78)", t.longest < 36);
         // The mechanics fire, and the playtest counts what the harness counts.
@@ -1101,5 +1128,314 @@ public class ExchangeRateCheck {
         assertTrue("...and the next month on each leaves both at the guard with the same moves",
                 bare.getRate() == bare.getMaxRate() && restored.getRate() == restored.getMaxRate()
                         && Double.compare(bare.getLastMove(), restored.getLastMove()) == 0 && Double.isFinite(bare.getLastMove()));
+    }
+
+    /* =====================================================================
+       10-14. THE WORLD REACHES THE D$ (WN4, 2026-10-30; ForeignAccounts, THE WORLD REACHES THE D$)
+       ===================================================================== */
+
+    /** One month of this trade against this output, repriced: the world, if any, was handed before. */
+    static void monthOf(ForeignAccounts fx, double trade, double gdp) {
+        fx.startMonth();
+        fx.takeMonth(CurrencyCheck.month(trade, trade, 0, 0), gdp);
+        fx.repriceCurrency();
+    }
+
+    /** A currency settled on balanced trade, its market quiet and its fundamentals still: sixty months repriced with no world, so a month of nothing moves nothing. */
+    static ForeignAccounts settledStill(double trade, double gdp) {
+        ForeignAccounts fx = still(trade, trade, gdp, 0);
+        for (int m = 0; m < 60; m++) monthOf(fx, trade, gdp);
+        return fx;
+    }
+
+    /** The rate's move this month in logs, the world handed before it. */
+    static double lnMove(ForeignAccounts fx, double trade, double gdp) {
+        return lnMove(fx, trade, trade, gdp);
+    }
+
+    /** ...on this trade each way. */
+    static double lnMove(ForeignAccounts fx, double exports, double imports, double gdp) {
+        double before = Math.log(fx.getRate());
+        fx.startMonth();
+        fx.takeMonth(CurrencyCheck.month(exports, imports, 0, 0), gdp);
+        fx.repriceCurrency();
+        return Math.log(fx.getRate()) - before;
+    }
+
+    /** Both the same double down to its bits (a -0.0 is not a 0.0). */
+    static boolean bits(double a, double b) { return Double.doubleToLongBits(a) == Double.doubleToLongBits(b); }
+
+    /* ================= 10. no world, main's rate ================= */
+
+    static void noWorldIsMains() {
+        out.println("\n--- 10. no world, main's rate: a currency handed zeros reprices bit for bit as one never handed anything ---");
+
+        // A deficit, parity drifting weaker, the market seeded, the vault leaning in the falls: every piece of the rule at work.
+        ForeignAccounts never = still(.9 * TRADE, TRADE, GDP, SEED), zeros = still(.9 * TRADE, TRADE, GDP, SEED);
+        int rateDiffers = 0, fairDiffers = 0, movesDiffer = 0, worldMoved = 0, defended = 0;
+        for (int t = 1; t <= 120; t++) {
+            for (ForeignAccounts fx : new ForeignAccounts[] { never, zeros }) {
+                fx.startMonth();
+                fx.takeMonth(CurrencyCheck.month(.9 * TRADE, TRADE, 0, 0), GDP);
+                fx.setParity(1 + .004 * t, 1.0, .02, .02);
+                if (fx == zeros) fx.setWorld(0, 0, 0);
+                fx.repriceCurrency();
+            }
+            if (!bits(never.getRate(), zeros.getRate())) rateDiffers++;
+            if (!bits(never.getFairLevel(), zeros.getFairLevel())) fairDiffers++;
+            double[] a = { never.getMoveTrend(), never.getMoveGap(), never.getMoveBalance(), never.getMoveCover(), never.getMoveIntervention(),
+                    never.getMoveMarket(), never.getMoveHeld(), never.getLastMove(), never.getLastWouldBeMove() };
+            double[] b = { zeros.getMoveTrend(), zeros.getMoveGap(), zeros.getMoveBalance(), zeros.getMoveCover(), zeros.getMoveIntervention(),
+                    zeros.getMoveMarket(), zeros.getMoveHeld(), zeros.getLastMove(), zeros.getLastWouldBeMove() };
+            for (int k = 0; k < a.length; k++) {
+                if (!bits(a[k], b[k])) {
+                    movesDiffer++;
+                    break;
+                }
+            }
+            if (never.getMoveWorld() != 0 || zeros.getMoveWorld() != 0 || zeros.getWorldLevel() != 0) worldMoved++;
+            if (never.getDefenceUsd() > 0) defended++;
+        }
+        out.printf("   120 months of a deficit, parity drifting and a seeded market: the vault sold in %d; the two rates end %.9f and %.9f%n",
+                defended, never.getRate(), zeros.getRate());
+        assertTrue("fixture: the rule was at work: the vault defended the D$ in many of the months (" + defended + ") and the market took draws",
+                defended > 10 && never.getMarketDraws() == 120 && never.isMarketSeeded());
+        assertTrue("the rate is the same to the bit, every month of 120", rateDiffers == 0);
+        assertTrue("...so is the fair level", fairDiffers == 0);
+        assertTrue("...so is every move (the six, the hold, the month's, and the fall the vault leans against)", movesDiffer == 0);
+        assertTrue("...and the world's line and level read exactly nothing", worldMoved == 0);
+        double[] a = never.toSaveArray(), b = zeros.toSaveArray();
+        boolean slots = a.length == b.length;
+        for (int k = 0; slots && k < a.length; k++) slots &= bits(a[k], b[k]);
+        assertTrue("...and the two saves are the same numbers, slot for slot (" + a.length + " slots)", slots);
+    }
+
+    /* ================= 11. the cycle ================= */
+
+    static void theCycleMovesTheRate() {
+        out.println("\n--- 11. the dollar cycle moves the rate one for one, and the gate weighs it ---");
+
+        ForeignAccounts fx = settledStill(TRADE, GDP);
+        assertTrue("fixture: the market is quiet, the gate is open, and a month of nothing moves nothing",
+                !fx.isMarketSeeded() && Math.abs(fx.gate() - 1) < 1e-12 && Math.abs(lnMove(fx, TRADE, GDP)) < 1e-12);
+        fx.setWorld(.05, 0, 0);
+        double move = lnMove(fx, TRADE, GDP);
+        close("a cycle stepped by 0.05 moves the rate by exactly that in logs (the dollar strong, the D$ weaker)", move, .05, 1e-12);
+        close("...and getMoveWorld() says it", fx.getMoveWorld(), .05, 1e-12);
+        close("...the market's line, the remainder, is nothing", fx.getMoveMarket(), 0, 1e-12);
+        close("...the month's move is the world's", fx.getLastMove(), .05, 1e-12);
+        close("...and the world's level is the cycle (the risk-off is nothing)", fx.getWorldLevel(), .05, 1e-12);
+        close("held there, the next month moves nothing", lnMove(fx, TRADE, GDP), 0, 1e-12);
+        close("...the world's line with it", fx.getMoveWorld(), 0, 1e-12);
+        fx.setWorld(-.03, 0, 0);
+        close("the cycle falling to -0.03 moves the rate by the 0.08 it fell (the dollar weak, the D$ dearer)", lnMove(fx, TRADE, GDP), -.08, 1e-12);
+
+        // GATED: a city under OPEN_ENOUGH feels part of it, one that trades next to nothing none.
+        ForeignAccounts half = settledStill(GDP / 40, GDP);
+        close("fixture: a twentieth of GDP in trade each way is half of OPEN_ENOUGH", half.getOpenness(), ForeignAccounts.OPEN_ENOUGH / 2, 1e-12);
+        assertTrue("fixture: ...the gate is a half, the city under OPEN_ENOUGH", Math.abs(half.gate() - .5) < 1e-12 && half.getOpenness() < ForeignAccounts.OPEN_ENOUGH);
+        assertTrue("fixture: it too moves nothing with no world", Math.abs(lnMove(half, GDP / 40, GDP)) < 1e-12);
+        half.setWorld(.05, 0, 0);
+        close("the same 0.05 moves it by gate() of it", lnMove(half, GDP / 40, GDP), half.gate() * .05, 1e-12);
+        close("...getMoveWorld() is the gated change", half.getMoveWorld(), half.gate() * .05, 1e-12);
+        close("...the world's level itself is ungated", half.getWorldLevel(), .05, 1e-12);
+
+        ForeignAccounts thin = settledStill(20, 100);
+        assertTrue("fixture: a city that trades under MIN_TRADE a month, open or not, has a gate of nothing",
+                thin.gate() == 0 && thin.monthlyExports() + thin.monthlyImports() <= ForeignAccounts.MIN_TRADE);
+        thin.setWorld(.05, 0, 0);
+        close("a city that trades next to nothing feels none of the cycle", lnMove(thin, 20, 100), 0, 1e-12);
+        close("...getMoveWorld() is nothing", thin.getMoveWorld(), 0, 1e-12);
+    }
+
+    /* ================= 12. the risk-off loading ================= */
+
+    /** A currency settled on trade of this much exports and imports with a vault of this many months of the imports, the purchase forgotten as a deal. */
+    static ForeignAccounts withCover(double exports, double imports, double months) {
+        ForeignAccounts fx = CurrencyCheck.settled(exports, imports, GDP);
+        if (months > 0) fx.buyReserves(months * fx.monthlyImports());
+        fx.forgetDealing();
+        return fx;
+    }
+
+    static void theLoadingIsTheTraits() {
+        out.println("\n--- 12. the risk-off loading is the city's traits': a deficit and an empty vault, a deep vault and a surplus, hot money and debt ---");
+
+        assertTrue("with no GDP yet the loading is RISK_OFF_BASE", new ForeignAccounts().riskOffLoading() == ForeignAccounts.RISK_OFF_BASE);
+
+        ForeignAccounts deficit = withCover(.45 * GDP, .55 * GDP, 0);
+        assertTrue("fixture: a deficit year and an empty vault",
+                deficit.monthlyCurrentAccount() + deficit.monthlyFinancialAccount() < 0 && deficit.importCover() == 0 && deficit.getGdpTrailing() > 0);
+        close("an empty vault and a deficit read RISK_OFF_BASE", deficit.riskOffLoading(), ForeignAccounts.RISK_OFF_BASE, 1e-12);
+
+        ForeignAccounts haven = withCover(.55 * GDP, .45 * GDP, ForeignAccounts.HAVEN_COVER);
+        close("fixture: a vault of HAVEN_COVER months of imports", haven.importCover(), ForeignAccounts.HAVEN_COVER, 1e-12);
+        assertTrue("fixture: ...and a year in surplus", haven.monthlyCurrentAccount() + haven.monthlyFinancialAccount() > 0);
+        double havenLoading = ForeignAccounts.RISK_OFF_BASE - ForeignAccounts.HAVEN_PULL - ForeignAccounts.SURPLUS_PULL;
+        close("HAVEN_COVER months and a surplus read RISK_OFF_BASE - HAVEN_PULL - SURPLUS_PULL", haven.riskOffLoading(), havenLoading, 1e-12);
+        assertTrue("...which is negative: the D$ rises in a risk-off, as the Swiss franc does (" + String.format("%.3f", havenLoading) + ")", haven.riskOffLoading() < 0);
+        close("...and is the Swiss franc's own loading (WorldMoneys.FRANC)", haven.riskOffLoading(), WorldMoneys.FRANC.riskOff(), 1e-12);
+
+        ForeignAccounts deeper = withCover(.55 * GDP, .45 * GDP, 3 * ForeignAccounts.HAVEN_COVER);
+        close("a vault past HAVEN_COVER pulls no further", deeper.riskOffLoading(), havenLoading, 1e-12);
+        ForeignAccounts halfVault = withCover(.45 * GDP, .55 * GDP, ForeignAccounts.HAVEN_COVER / 2);
+        close("half of HAVEN_COVER, in deficit, takes half of HAVEN_PULL off", halfVault.riskOffLoading(), ForeignAccounts.RISK_OFF_BASE - ForeignAccounts.HAVEN_PULL / 2, 1e-12);
+        ForeignAccounts empty = withCover(.55 * GDP, .45 * GDP, 0);
+        close("a surplus alone, the vault empty, takes SURPLUS_PULL off", empty.riskOffLoading(), ForeignAccounts.RISK_OFF_BASE - ForeignAccounts.SURPLUS_PULL, 1e-12);
+
+        // Hot money and debt abroad, as a share of a year's output.
+        double year = 12 * deficit.getGdpTrailing();
+        deficit.setWorld(0, 0, .1 * year);
+        close("hot money of a tenth of a year's GDP adds EXPOSURE_WEIGHT x 0.1", deficit.riskOffLoading(),
+                ForeignAccounts.RISK_OFF_BASE + ForeignAccounts.EXPOSURE_WEIGHT * .1, 1e-12);
+        deficit.setWorld(0, 0, 0);
+        deficit.takeForeignDebt(.1 * year / deficit.getRate(), deficit.getRate());
+        close("debt abroad of a tenth of a year's GDP adds the same", deficit.riskOffLoading(),
+                ForeignAccounts.RISK_OFF_BASE + ForeignAccounts.EXPOSURE_WEIGHT * .1, 1e-12);
+        deficit.setWorld(0, 0, .1 * year);
+        close("...and both add both", deficit.riskOffLoading(), ForeignAccounts.RISK_OFF_BASE + ForeignAccounts.EXPOSURE_WEIGHT * .2, 1e-12);
+        close("fixture: a fifth of a year's GDP of them adds ten points (the dial's sentence)", ForeignAccounts.EXPOSURE_WEIGHT * .2, .10, 1e-12);
+
+        // The clamps.
+        deficit.setWorld(0, 0, 1_000 * year);
+        assertTrue("an exposure past all reason is held at RISK_OFF_LOADING_MAX, exactly", deficit.riskOffLoading() == ForeignAccounts.RISK_OFF_LOADING_MAX);
+        double lowest = Double.MAX_VALUE, highest = -Double.MAX_VALUE;
+        for (double months : new double[] { 0, 1, 3, ForeignAccounts.HAVEN_COVER, 50 }) {
+            for (boolean surplus : new boolean[] { false, true }) {
+                for (double exposure : new double[] { 0, .05, .5, 5, 500 }) {
+                    ForeignAccounts fx = withCover(surplus ? .55 * GDP : .45 * GDP, surplus ? .45 * GDP : .55 * GDP, months);
+                    fx.setWorld(0, 0, exposure * 12 * fx.getGdpTrailing());
+                    lowest = Math.min(lowest, fx.riskOffLoading());
+                    highest = Math.max(highest, fx.riskOffLoading());
+                }
+            }
+        }
+        out.printf("   across vaults of 0 to 50 months, surplus or deficit, exposure of 0 to 500 years' GDP: the loading runs %.3f to %.3f (the bounds %.2f and %.2f)%n",
+                lowest, highest, ForeignAccounts.RISK_OFF_LOADING_MIN, ForeignAccounts.RISK_OFF_LOADING_MAX);
+        assertTrue("every combination of traits stays inside [RISK_OFF_LOADING_MIN, RISK_OFF_LOADING_MAX]",
+                lowest >= ForeignAccounts.RISK_OFF_LOADING_MIN && highest <= ForeignAccounts.RISK_OFF_LOADING_MAX);
+        assertTrue("...the lowest the traits give (a deep vault and a surplus: -0.05) is above the yen's, so the lower clamp is a bound and not a level they reach; the highest is the upper clamp",
+                Math.abs(lowest - havenLoading) < 1e-12 && lowest > ForeignAccounts.RISK_OFF_LOADING_MIN && highest == ForeignAccounts.RISK_OFF_LOADING_MAX);
+
+        // What it does to the rate: the exposed D$ falls in a risk-off by its loading, and the haven rises.
+        ForeignAccounts exposed = withCover(.45 * GDP, .55 * GDP, 0), safe = withCover(.55 * GDP, .45 * GDP, ForeignAccounts.HAVEN_COVER);
+        for (int m = 0; m < 60; m++) {
+            lnMove(exposed, .45 * GDP, .55 * GDP, GDP);
+            lnMove(safe, .55 * GDP, .45 * GDP, GDP);
+        }
+        double riskOff = 1.0;
+        double loadingExposed = exposed.riskOffLoading(), loadingSafe = safe.riskOffLoading();
+        close("fixture: the exposed city (a deficit, an empty vault) is at the base", loadingExposed, ForeignAccounts.RISK_OFF_BASE, 1e-9);
+        double coverSafe = safe.importCover();
+        out.printf("   the haven city's vault after 60 months at the surplus's rate: %.3f months of imports at today's rate (it was %.0f)%n", coverSafe, ForeignAccounts.HAVEN_COVER);
+        close("fixture: the haven city's loading is the base less its cover's pull (the cover as it stands) and the surplus's",
+                loadingSafe, ForeignAccounts.RISK_OFF_BASE - ForeignAccounts.HAVEN_PULL * Math.min(coverSafe / ForeignAccounts.HAVEN_COVER, 1)
+                        - ForeignAccounts.SURPLUS_PULL, 1e-12);
+        assertTrue("fixture: ...and it is negative, a haven (" + String.format("%.4f", loadingSafe) + ")", loadingSafe < 0);
+        double quietExposed = lnMove(exposed, .45 * GDP, .55 * GDP, GDP);
+        assertTrue("fixture: with no risk-off the settled exposed D$ stands still (" + String.format("%.2e", quietExposed) + ")", Math.abs(quietExposed) < 1e-9);
+        exposed.setWorld(0, riskOff, 0);
+        close("a risk-off of size one moves that D$ by its loading, weaker", lnMove(exposed, .45 * GDP, .55 * GDP, GDP), loadingExposed * riskOff, 1e-9);
+        close("...getMoveWorld() is that, getWorldLoading() the loading it was weighed at", exposed.getMoveWorld(), exposed.getWorldLoading() * riskOff, 1e-12);
+        safe.setWorld(0, riskOff, 0);
+        double safeMove = lnMove(safe, .55 * GDP, .45 * GDP, GDP);
+        close("the same risk-off moves the haven city's D$ by its negative loading", safeMove, loadingSafe * riskOff, 1e-9);
+        assertTrue("...a fall in the rate: it rises, as the Swiss franc does (" + String.format("%+.4f", safeMove) + ")", safeMove < 0);
+        exposed.setWorld(0, riskOff * .5, 0);
+        close("a risk-off fading to half its size takes half the loading back", lnMove(exposed, .45 * GDP, .55 * GDP, GDP), loadingExposed * riskOff * .5 - loadingExposed * riskOff, 1e-9);
+    }
+
+    /* ================= 13. the terms of trade ================= */
+
+    static void theTermsOfTrade() {
+        out.println("\n--- 13. the terms of trade reach the rate a third in each of the year's first months ---");
+
+        ForeignAccounts fx = settledStill(TRADE, GDP);
+        final double pass = WorldMoneys.TOT_PASS, piece = pass * .1 / WorldMoneys.TOT_MONTHS;
+        fx.stepTermsOfTrade(-0.1);
+        close("fixture: the step is held back, not reached at once", fx.getTermsOfTradeReached(), 0, 0);
+        StringBuilder said = new StringBuilder();
+        double sumFirst = 0;
+        boolean eachRight = true;
+        for (int m = 1; m <= WorldMoneys.TOT_MONTHS + 1; m++) {
+            double move = lnMove(fx, TRADE, GDP);
+            double expected = m <= WorldMoneys.TOT_MONTHS ? piece : 0;
+            eachRight &= Math.abs(move - expected) <= 1e-12 && Math.abs(fx.getMoveWorld() - expected) <= 1e-12;
+            if (m <= WorldMoneys.TOT_MONTHS) sumFirst += move;
+            said.append(String.format(" %+.5f", move));
+        }
+        out.println("   exports 10% cheaper over the year; the rate's moves in the next " + (WorldMoneys.TOT_MONTHS + 1) + " reprices:" + said
+                + " (TOT_PASS x 0.1 / TOT_MONTHS = " + String.format("%.5f", piece) + ")");
+        assertTrue("stepTermsOfTrade(-0.1) moves the rate by TOT_PASS x 0.1 / TOT_MONTHS in each of TOT_MONTHS reprices and not the one after", eachRight);
+        close("...the whole of it is TOT_PASS x 0.1, weaker (cheaper exports, a cheaper D$)", sumFirst, pass * .1, 1e-12);
+        close("...and the term reached is that", fx.getTermsOfTradeReached(), pass * .1, 1e-12);
+
+        fx.stepTermsOfTrade(.2);
+        double sum = 0;
+        for (int m = 1; m <= WorldMoneys.TOT_MONTHS; m++) sum += lnMove(fx, TRADE, GDP);
+        close("the next January's exports 20% dearer move it the other way by TOT_PASS x 0.2", sum, -pass * .2, 1e-12);
+        close("...and the term reached is the two years' together", fx.getTermsOfTradeReached(), pass * .1 - pass * .2, 1e-12);
+
+        // A step that arrives before the last was reached: what was left comes with the next reprice, at once.
+        ForeignAccounts early = settledStill(TRADE, GDP);
+        early.stepTermsOfTrade(-0.1);
+        double first = lnMove(early, TRADE, GDP);
+        early.stepTermsOfTrade(0);
+        double rest = lnMove(early, TRADE, GDP);
+        close("a step that comes before the last was reached has what was left reach at once: the first piece and the rest make the whole", first + rest, pass * .1, 1e-12);
+        close("...the rest being the pieces not yet reached", rest, piece * (WorldMoneys.TOT_MONTHS - 1), 1e-12);
+        early.stepTermsOfTrade(Double.NaN);
+        close("a change that is no number is no news", lnMove(early, TRADE, GDP), 0, 1e-12);
+
+        // Gated like the rest.
+        ForeignAccounts half = settledStill(GDP / 40, GDP);
+        half.stepTermsOfTrade(-0.1);
+        close("the terms of trade are gated: a city at half of OPEN_ENOUGH feels half of the first piece", lnMove(half, GDP / 40, GDP), half.gate() * piece, 1e-12);
+    }
+
+    /* ================= 14. the moves add up ================= */
+
+    /** The world a section plays month t: the cycle swinging, a risk-off in two spells, hot money coming and going, a January's terms of trade. */
+    static void world(ForeignAccounts fx, int t) {
+        double cycle = .06 * Math.sin(t / 7.0);
+        double riskOff = t >= 30 && t < 36 ? 1.2 * Math.pow(.5, (t - 30) / 3.0) : t >= 80 && t < 84 ? .8 * Math.pow(.5, (t - 80) / 3.0) : 0;
+        fx.setWorld(cycle, riskOff, 400 * Math.max(0, Math.sin(t / 11.0)));
+        if (t % 12 == 1) fx.stepTermsOfTrade(.08 * Math.cos(t / 5.0));
+    }
+
+    static void theMovesAddUp() {
+        out.println("\n--- 14. the moves add up: the lines and the hold sum to the month's move with the world on ---");
+
+        for (ForeignAccounts.Regime regime : ForeignAccounts.Regime.values()) {
+            ForeignAccounts fx = still(.9 * TRADE, TRADE, GDP, SEED);
+            fx.setRegime(regime);
+            double worst = 0, worstLast = 0, worstWorld = 0, contribBefore = 0;
+            int worldMonths = 0, heldMonths = 0, breaks = 0;
+            for (int t = 1; t <= 120; t++) {
+                double before = Math.log(fx.getRate());
+                fx.startMonth();
+                fx.takeMonth(CurrencyCheck.month(.9 * TRADE, TRADE, 0, 0), GDP);
+                fx.setParity(1 + .004 * t, 1.0, .02, .02);
+                world(fx, t);
+                fx.repriceCurrency();
+                double move = Math.log(fx.getRate()) - before;
+                double sum = fx.getMoveTrend() + fx.getMoveGap() + fx.getMoveBalance() + fx.getMoveCover() + fx.getMoveIntervention()
+                        + fx.getMoveWorld() + fx.getMoveMarket() + fx.getMoveHeld();
+                worst = Math.max(worst, Math.abs(sum - move));
+                worstLast = Math.max(worstLast, Math.abs(fx.getLastMove() - move));
+                double contrib = fx.gate() * fx.getWorldLevel();
+                worstWorld = Math.max(worstWorld, Math.abs(fx.getMoveWorld() - (contrib - contribBefore)));
+                contribBefore = contrib;
+                if (Math.abs(fx.getMoveWorld()) > 1e-6) worldMonths++;
+                if (Math.abs(fx.getMoveHeld()) > 1e-6) heldMonths++;
+                if (fx.brokeThisMonth()) breaks++;
+            }
+            out.printf("   %-5s 120 months with the world on: the worst gap between the lines' sum and the month's move %.2e (getLastMove(): %.2e); the world moved the rate in %d months, the hold in %d, a peg broke %d times%n",
+                    regime, worst, worstLast, worldMonths, heldMonths, breaks);
+            assertTrue("fixture: under " + regime + " the world moved the rate in many of the months (" + worldMonths + ")", worldMonths > 60);
+            assertTrue("under " + regime + " the seven lines and the hold sum to the month's move to 1e-12, every month of 120", worst < 1e-12);
+            assertTrue("...getLastMove() is that move too", worstLast < 1e-12);
+            assertTrue("...and the world's line is gate() times the change in the world's level, every month", worstWorld < 1e-12);
+        }
     }
 }

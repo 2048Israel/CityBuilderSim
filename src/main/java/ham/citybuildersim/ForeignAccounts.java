@@ -548,9 +548,9 @@ public class ForeignAccounts {
     /** What the interventions still felt put on the rate, in logs, positive weaker: the treasury's purchases and the defence's sales, fading by half in INTERVENTION_HALF_LIFE months. */
     public double getInterventionFelt() { return interventionFelt; }
 
-    /** Where the fundamentals put the D$ now, local money per US dollar: the trend and gate() of the real gap's, the balance's and the cover's levels reached - the rate without the market and the interventions. Pure. */
+    /** Where the fundamentals put the D$ now, local money per US dollar: the trend and gate() of the real gap's, the balance's and the cover's levels reached and the world's (WN4: the dollar cycle, the risk-off and the terms of trade) - the rate without the market and the interventions. Pure. */
     public double getFairLevel() {
-        return Math.exp(trendLog() + gate() * (gapReached + balanceReached + coverReached));
+        return Math.exp(trendLog() + gate() * (gapReached + balanceReached + coverReached + worldReached));
     }
 
     /** How far the rate sits from the fundamentals' level: positive is weaker than it. Pure. */
@@ -569,16 +569,18 @@ public class ForeignAccounts {
     public double getMoveCover() { return moves[3]; }
     /** ...from interventions, the treasury's and the defence's. */
     public double getMoveIntervention() { return moves[4]; }
-    /** ...from the market: what is left of the shadow rate's move once the five are taken, so the six and the hold always add to the month's move, through a pin or a guard. Under Lean and Float the shadow is the rate. */
+    /** ...from the market: what is left of the shadow rate's move once the five and the world's are taken, so the seven and the hold always add to the month's move, through a pin or a guard. Under Lean and Float the shadow is the rate. */
     public double getMoveMarket() { return moves[5]; }
+    /** ...from the world (WN4): the dollar's own swing against every money, money running to safety, and the prices of what the city sells abroad - gate() times the change in the world's level (THE WORLD REACHES THE D$). Exactly 0 where no world is handed. */
+    public double getMoveWorld() { return moveWorld; }
     /** ...from the hold (XR2): the part of the move the vault's hold of a peg or a band's edge made, and in a month a peg gave way the peg giving way. 0 under Lean and Float. */
     public double getMoveHeld() { return moves[6]; }
 
-    /** Last month's move in the rate, in logs, positive weaker: the seven moves added. */
+    /** Last month's move in the rate, in logs, positive weaker: the seven moves added (the six and the hold, and the world's). */
     public double getLastMove() {
         double sum = 0;
         for (double m : moves) sum += m;
-        return sum;
+        return sum + moveWorld;
     }
 
     /** The month's fall before the defence leaned on it: the move of the market and the fundamentals alone, parity's trend and the interventions left out - positive is a fall the vault, if it holds dollars, sells against (repriceCurrency(), step 7). */
@@ -631,6 +633,119 @@ public class ForeignAccounts {
         z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
         return z ^ (z >>> 31);
     }
+
+    /* ================ THE WORLD REACHES THE D$ (WN4, 2026-10-30; XR3 folded in) ================
+     *
+     * Once the nations' moneys move month by month (WorldMoneys; docs/studies/
+     * spec-exchange-rates.md, 3.5 and 3.7), the D$ against the US$ carries what
+     * they carry, as one more level beside the fundamentals and gated with them
+     * (a city that hardly trades has no market price to move):
+     *
+     *   world = cycle + riskOffLoading() x riskOff + terms of trade reached
+     *   ln rate = trend + g x (gap + balance + cover + market + world) + felt
+     *
+     *   cycle         the dollar's, with a loading of 1: when the dollar rises
+     *                 against everything it rises against the D$.
+     *   risk-off      money runs to safety about once in eight years; the D$'s
+     *                 loading is its traits' (riskOffLoading()): a small open
+     *                 money +10% weaker, less with a deep vault and a surplus,
+     *                 more with hot money and debt abroad. A city with six months
+     *                 of cover and a surplus is a haven and rises, as the Swiss
+     *                 franc does. A fall is a fall: the vault leans against it
+     *                 and a peg feels it as pressure, with nothing special here.
+     *   terms of trade  the city's own, from its exports by good (Game's THE
+     *                 WORLD MONEYS IN THE MONTH hands the January's export-weighted
+     *                 change in ln world prices): dearer exports, a dearer D$,
+     *                 by TOT_PASS, a third in each of the year's first TOT_MONTHS
+     *                 reprices.
+     *
+     * WHERE THERE IS NO WORLD every figure here is zero and the D$ is main's, to
+     * the bit. Saved: slots 95-104. THE SLOTS AFTER 104 ARE THE VAULT'S (WN4
+     * slice C): this section's end is 104, a round number, so they begin at 105.
+     */
+
+    /** A small open money's loading on the risk-off: +10% weaker in a risk-off of size one (the study's 3.5; the Swiss franc's and the yen's are the other way, WorldMoneys.FRANC and YEN). */
+    public static final double RISK_OFF_BASE = .10;
+
+    /** The months of import cover at which the vault's pull on the loading is whole: six, twice THIN_COVER (est.). */
+    public static final double HAVEN_COVER = 6;
+
+    /** The most a deep vault takes off the loading (est.: with a surplus, six months of cover turns a small open money into a haven). */
+    public static final double HAVEN_PULL = .10;
+
+    /** What a year in surplus (the current plus financial account over the trailing year) takes off the loading (est.): six months of cover and a surplus read -0.05, the Swiss franc's. */
+    public static final double SURPLUS_PULL = .05;
+
+    /** How much hot money and debt abroad add to the loading, per year's GDP of them (est.: a fifth of a year's GDP adds ten points). */
+    public static final double EXPOSURE_WEIGHT = .5;
+
+    /** The least the loading can be: the yen's, the most a haven rises (WorldMoneys.YEN). */
+    public static final double RISK_OFF_LOADING_MIN = -.08;
+
+    /** The most the loading can be (est.: the emerging floats' is .20). */
+    public static final double RISK_OFF_LOADING_MAX = .30;
+
+    /** What the world is this month, handed before the reprice (setWorld()): the dollar cycle, the risk-off level, and the hot money held, local money. Saved. */
+    private double worldCycle, worldRiskOff, worldHotMoney;
+    /** The city's own terms of trade reached (a log, positive weaker), the piece each of the next totLeft reprices adds, and how many of them are left. Saved. */
+    private double totReached, totStep;
+    private int totLeft;
+    /** The world's level as the last reprice struck it (cycle, the loading x risk-off, terms of trade; a log, positive weaker, ungated), gate() of it as last month's contribution, and the move it made this month. Saved. */
+    private double worldReached, lastWorldContrib, moveWorld;
+    /** The risk-off loading the last reprice used. Saved. */
+    private double worldLoading;
+
+    /**
+     * What the world is this month: handed before repriceCurrency(), by Game, from the world's moneys. The dollar cycle and the risk-off level are
+     * logs as WorldMoneys has them (positive: the dollar is strong, money runs to safety); hotMoneyLocal is the hot money held here, local money.
+     * Zeros (or never called) is no world, and the D$ is then exactly what it was without one. A figure that is no number reads 0.
+     */
+    public void setWorld(double cycle, double riskOff, double hotMoneyLocal) {
+        worldCycle = Double.isFinite(cycle) ? cycle : 0;
+        worldRiskOff = Double.isFinite(riskOff) ? riskOff : 0;
+        worldHotMoney = Double.isFinite(hotMoneyLocal) ? Math.max(0, hotMoneyLocal) : 0;
+    }
+
+    /**
+     * The city's terms of trade in a January: exportPriceChange is its export-weighted change in ln world prices over the year (Game's, from
+     * PartnerTrade's exports by good and the nations' good prices). Dearer exports make a dearer D$, a lower rate: the step is minus TOT_PASS
+     * times it, reached a third in each of the next TOT_MONTHS reprices (WorldMoneys' rule for a nation's money). What a step before it had not
+     * yet reached comes at once, so no news is lost; a change that is no number is no news.
+     */
+    public void stepTermsOfTrade(double exportPriceChange) {
+        if (!Double.isFinite(exportPriceChange)) return;
+        totReached += totStep * totLeft;
+        totStep = -WorldMoneys.TOT_PASS * exportPriceChange / WorldMoneys.TOT_MONTHS;
+        totLeft = WorldMoneys.TOT_MONTHS;
+    }
+
+    /**
+     * The D$'s loading on the risk-off from the city's traits now: RISK_OFF_BASE, less HAVEN_PULL for a vault of up to HAVEN_COVER months of imports,
+     * less SURPLUS_PULL for a trailing year in surplus (current plus financial account), plus EXPOSURE_WEIGHT of the hot money and debt abroad as a
+     * share of a year's GDP; at most RISK_OFF_LOADING_MAX and at least RISK_OFF_LOADING_MIN. RISK_OFF_BASE while there is no GDP yet. Pure.
+     */
+    public double riskOffLoading() {
+        if (!(gdpTrailing > 0)) return RISK_OFF_BASE;
+        double loading = RISK_OFF_BASE - HAVEN_PULL * Math.min(importCover() / HAVEN_COVER, 1)
+                - (currentTrailing + financialTrailing > 0 ? SURPLUS_PULL : 0)
+                + EXPOSURE_WEIGHT * (worldHotMoney + foreignDebt) / (12 * gdpTrailing);
+        return Math.max(RISK_OFF_LOADING_MIN, Math.min(RISK_OFF_LOADING_MAX, loading));
+    }
+
+    /** The dollar cycle as last handed, a log. */
+    public double getWorldCycle() { return worldCycle; }
+
+    /** The risk-off level as last handed. */
+    public double getWorldRiskOff() { return worldRiskOff; }
+
+    /** The risk-off loading the last reprice used (riskOffLoading() as it stood then). */
+    public double getWorldLoading() { return worldLoading; }
+
+    /** The city's own terms of trade reached, a log, positive weaker. */
+    public double getTermsOfTradeReached() { return totReached; }
+
+    /** The world's level as the last reprice struck it, in logs, positive weaker, before the gate. */
+    public double getWorldLevel() { return worldReached; }
 
     /* ==================== A RESERVE DEFENDS A CURRENCY ====================
      *
@@ -766,6 +881,7 @@ public class ForeignAccounts {
             edgeBoughtUsd = edgeBoughtLocal = 0;
             brokeThisMonth = false;
             java.util.Arrays.fill(moves, 0);
+            moveWorld = 0;
             lastWouldBeMove = 0;
             dealtSinceReprice = 0;   // ...and a pinned month's dealing is the promise's, not the market's
             return;
@@ -824,10 +940,22 @@ public class ForeignAccounts {
         if (annual > 0) interventionFelt += INTERVENTION_IMPACT * dealtSinceReprice / annual;
         dealtSinceReprice = 0;
 
+        // 5b. THE WORLD (WN4, THE WORLD REACHES THE D$): the terms of trade reach
+        // their term a piece a month, and the world's level is the dollar cycle, the
+        // risk-off at the loading this city's traits give it, and that term. All
+        // zero where no world was handed, and then nothing below moves by a bit.
+        if (totLeft > 0) {
+            totReached += totStep;
+            totLeft--;
+        }
+        worldLoading = riskOffLoading();
+        double world = worldCycle + worldLoading * worldRiskOff + totReached;
+        worldReached = world;
+
         // 6. THE MONTH'S LOG RATE.
         double g = gate();
         double fundamentals = gapReached + balanceReached + coverReached + market;
-        double x = trendLevel + g * fundamentals + interventionFelt + breakFelt;
+        double x = trendLevel + g * (fundamentals + world) + interventionFelt + breakFelt;
 
         /*
          * 7. LEAN AGAINST A FALL (A RESERVE DEFENDS A CURRENCY): the fall the
@@ -877,7 +1005,7 @@ public class ForeignAccounts {
             lastAbsorption = defenceUsd > 0 && deficitUsd > 0 ? defenceUsd / deficitUsd : 0;
             if (defenceLocal > 0) {
                 interventionFelt -= INTERVENTION_IMPACT * defenceLocal / annual;
-                x = trendLevel + g * fundamentals + interventionFelt + breakFelt;
+                x = trendLevel + g * (fundamentals + world) + interventionFelt + breakFelt;
             }
 
             // 8. THE RATE, inside the numerical guards.
@@ -963,11 +1091,12 @@ public class ForeignAccounts {
         }
 
         // 9. THE MONTH'S MOVES BY FORCE, from the contributions: the market's
-        // line is what is left of the SHADOW's move, so the six add to it, and
-        // the seventh is the hold (what a peg or an edge made of the rate beside
-        // the shadow, and in a break month the peg giving way): all seven add to
-        // the month's move. Under Lean and Float the shadow is the rate, and the
-        // seventh is exactly nothing.
+        // line is what is left of the SHADOW's move, so the six (the world's,
+        // WN4, is the sixth beside the five, and the market the remainder) add to
+        // it, and the hold (what a peg or an edge made of the rate beside the
+        // shadow, and in a break month the peg giving way) is the last: all of
+        // them add to the month's move. Under Lean and Float the shadow is the
+        // rate, and the hold is exactly nothing; with no world the world's line is.
         double[] c = { trendLevel, g * gapReached, g * balanceReached, g * coverReached, interventionFelt };
         double sum = 0;
         for (int k = 0; k < 5; k++) {
@@ -975,7 +1104,10 @@ public class ForeignAccounts {
             sum += moves[k];
             lastContrib[k] = c[k];
         }
-        moves[5] = Math.log(shadow) - prevShadowLog - sum;
+        double worldContrib = g * world;
+        moveWorld = worldContrib - lastWorldContrib;
+        lastWorldContrib = worldContrib;
+        moves[5] = Math.log(shadow) - prevShadowLog - sum - moveWorld;
         moves[6] = (Math.log(rate) - prevLog) - (Math.log(shadow) - prevShadowLog);
         lastShadowLog = Math.log(shadow);
         heldLastMonth = (regime == Regime.BAND || regime == Regime.PEG) && rate != shadow;
@@ -2249,7 +2381,23 @@ public class ForeignAccounts {
                 edgeBoughtUsd, edgeBoughtLocal, edgeBoughtUsdLifetime,
                 breaks, lastBreakCause.ordinal(), lastBreakJump, lastBreakShadow,
                 brokeThisMonth ? 1 : 0,
-                moves[6] };
+                moves[6],
+                /*
+                 * ...AND THE WORLD, slots 95-104 (WN4; THE WORLD REACHES THE D$):
+                 * the dollar cycle, the risk-off and the hot money Game handed
+                 * for the month, the terms of trade reached with the piece each
+                 * of the reprices still to come adds and how many are left, the
+                 * world's level as the last reprice struck it, last month's
+                 * contribution (this month's move is the change from it), the
+                 * move it made, and the loading the risk-off was weighed at.
+                 * Each is a level or a flow the month cannot restrike from the
+                 * state it ended in. THE SLOTS AFTER 104 ARE THE VAULT'S (slice
+                 * C): 105 on. An older save has no world, and the D$ is as it was.
+                 */
+                worldCycle, worldRiskOff, worldHotMoney,
+                totReached, totStep, totLeft,
+                worldReached, lastWorldContrib, moveWorld,
+                worldLoading };
     }
 
     public void restore(double[] saved) {
@@ -2388,6 +2536,20 @@ public class ForeignAccounts {
             brokeThisMonth = saved[93] > .5;
             moves[6] = saved[94];
         }
+        // The world (WN4, slots 95-104); a save from before it has no world handed, nothing
+        // reached and nothing moved by it, which is what the D$ was.
+        if (saved.length > 104) {
+            worldCycle = saved[95];
+            worldRiskOff = saved[96];
+            worldHotMoney = Math.max(0, saved[97]);
+            totReached = saved[98];
+            totStep = saved[99];
+            totLeft = Math.max(0, Math.min(WorldMoneys.TOT_MONTHS, (int) Math.round(saved[100])));
+            worldReached = saved[101];
+            lastWorldContrib = saved[102];
+            moveWorld = saved[103];
+            worldLoading = saved[104];
+        }
     }
 
     /** A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. */
@@ -2453,6 +2615,11 @@ public class ForeignAccounts {
         java.util.Arrays.fill(moves, 0);
         lastWouldBeMove = 0;
         dealtSinceReprice = 0;
+        // ...and the world (WN4): none handed, nothing reached, nothing moved by it.
+        worldCycle = worldRiskOff = worldHotMoney = 0;
+        totReached = totStep = 0;
+        totLeft = 0;
+        worldReached = lastWorldContrib = moveWorld = worldLoading = 0;
         // ...and the regimes (XR2): Lean, who pays the central bank, no band, no
         // peg, nothing owed, nothing held, nothing broken.
         regime = Regime.LEAN;
@@ -2548,6 +2715,7 @@ public class ForeignAccounts {
         // log of a ratio and stays.
         trendLevel += Math.log(scale);
         lastContrib[0] += Math.log(scale);
+        worldHotMoney *= scale;   // (WN4) local money; the world's level is a log against the US$ and stays
         gdpTrailing *= scale;
         // The regimes (XR2): every rate and local figure moves like the rate; the
         // shadow's log shifts by the log of the scale, as the trend's does, so

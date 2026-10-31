@@ -501,6 +501,26 @@ public class HistorySave {
     private Map<String, List<Double>> sectorNetIncome = new LinkedHashMap<>();
     private Map<String, List<Double>> sectorWorkers = new LinkedHashMap<>();
 
+    /* ------------------- the world's moneys (WN4, 2026-10-30) -------------------
+
+       The seven majors that are not the US dollar - the euro, the yen, the pound,
+       the yuan, the Canadian and Australian dollars and the Swiss franc, the
+       vault's eight but one (WorldMoneys.EIGHT) - each money's units to the US
+       dollar (fx + the code: fxEUR), and the dollar cycle and the risk-off level
+       (worldCycle, worldRiskOff; logs, positive: the dollar strong, money run to
+       safety), a point a month, so the dollar's chart (WN6) has them. A city with
+       no world file keeps none of them, and one whose moneys came late has them
+       from that month: aligned() pads the front with "we were not counting". They
+       are the world's rates and not money of the city's, so a reform leaves them.
+       ------------------------------------------------------------------ */
+    private Map<String, List<Double>> worldMoney = new LinkedHashMap<>();
+
+    /** The series of a major's units to the US dollar: "fxEUR". */
+    public static String worldRateKey(String code) { return "fx" + code; }
+
+    /** The dollar cycle's series and the risk-off's. */
+    public static final String WORLD_CYCLE = "worldCycle", WORLD_RISK_OFF = "worldRiskOff";
+
     /* ------------------- the trade by partner (WN3, 2026-10-28) -------------------
 
        Each finished calendar year's table of the city's trade with the world's
@@ -692,6 +712,15 @@ public class HistorySave {
         currentAccount.add(round2(abroad.currentAccount()));
         exportsAbroad.add(round2(abroad.getExports()));
         importsAbroad.add(round2(abroad.tradeImports()));
+        // ...and the world's moneys, where the city has them (WN4): the seven majors against the US dollar, the cycle and the risk-off.
+        WorldMoneys moneys = game.getWorldMoneys();
+        if (moneys != null) {
+            for (String code : WorldMoneys.EIGHT) {
+                if (!code.equals(Nations.DOLLAR)) worldMoney.computeIfAbsent(worldRateKey(code), k -> new ArrayList<>()).add(round4(moneys.rate(code)));
+            }
+            worldMoney.computeIfAbsent(WORLD_CYCLE, k -> new ArrayList<>()).add(round6(moneys.cycle()));
+            worldMoney.computeIfAbsent(WORLD_RISK_OFF, k -> new ArrayList<>()).add(round6(moneys.riskOff()));
+        }
 
         /* --------------------- money and credit --------------------- */
         priceIndex.add(round4(game.getPriceIndex().getIndex()));
@@ -1197,6 +1226,8 @@ public class HistorySave {
 
         sectorNetIncome = copyMap(loaded.sectorNetIncome);
         sectorWorkers = copyMap(loaded.sectorWorkers);
+
+        worldMoney = copyMap(loaded.worldMoney);
 
         // The trade by partner (WN3): each year's table rebuilt, so a table read by Gson (a list it made) is the immutable one the model keeps.
         tradeByPartner = new ArrayList<>();
@@ -1726,6 +1757,8 @@ public class HistorySave {
         if (sectorWorkers != null) {
             for (Map.Entry<String, List<Double>> e : sectorWorkers.entrySet()) map.put(workersKey(e.getKey()), e.getValue());
         }
+        // ...and the world's moneys, where the city has had them (WN4).
+        if (worldMoney != null) map.putAll(worldMoney);
         return map;
     }
 

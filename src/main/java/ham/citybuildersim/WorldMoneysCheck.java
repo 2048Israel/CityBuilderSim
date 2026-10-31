@@ -45,6 +45,9 @@ import java.util.stream.IntStream;
  *   8. PARITY: with every other term quiet, a float's ln rate moves by the change in ln(P_anchor / P_US), and its constant is the mean
  *      real gap of the file's years.
  *   9. WHAT IT COSTS: the median month's step, printed and bounded.
+ *  10. IN A CITY (the full file only): a trading town on the file runs 24 months with its moneys in the city's month every one and the D$
+ *      moved by the world; saved after 13 and reloaded, it continues the moneys and the D$ to the bit to month 24; the history keeps the
+ *      seven majors' rates, the cycle and the risk-off; a city on the literals has no moneys.
  *
  * Every fixture causes its condition: a quiet WorldMoneys has no term but the one the section adds, a peg is given by a regime, a risk-off is
  * forced, and the statistics are counted over enough seeded paths that a wrong dial would show.
@@ -180,6 +183,7 @@ public class WorldMoneysCheck {
                 sections(all, pass, pass, null);
                 theFullOnly(all, pass);
             }
+            theCity();
         }
         out.printf("%nWorldMoneysCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -1036,5 +1040,165 @@ public class WorldMoneysCheck {
         for (String b : boards) there.see(w.isBoard(b) && w.pegHeld(b), () -> b + " is not a held board in the file");
         tally("the file's currency boards " + Arrays.toString(boards) + " are pegs held from the start and boards", there);
         out.println("  " + pass.pegs.length + " moneys are pegged or tied from January 2000 on Random (the full file's regimes)");
+    }
+
+    /* =====================================================================
+       10. IN A CITY - the moneys in the month, the D$ and the save (Game's THE WORLD'S MONEYS IN THE MONTH)
+       ===================================================================== */
+
+    /** The game's narration sent nowhere. */
+    static final PrintStream quiet = new PrintStream(java.io.OutputStream.nullOutputStream());
+
+    /** Runs a piece of work with the game's narration sent nowhere. */
+    static void quietly(Runnable work) {
+        PrintStream was = System.out;
+        System.setOut(quiet);
+        try { work.run(); } finally { System.setOut(was); }
+    }
+
+    /** One month of a city, the narration sent nowhere. */
+    static void play(Game city) { quietly(() -> city.simulateMonths(1)); }
+
+    /** A trading town on the default founding, as ExchangeRateCheck builds it (its own copy: that one is tied to its harness's streams), on a scratch folder. */
+    static Game town(String label) {
+        Game city = new Game(GameFiles.scratch(label), Founding.defaults());
+        quietly(() -> {
+            city.run();
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            city.getLandManager().setOwnedSqFt(30_000_000);
+            city.buildStack(ForeignCheck.template(city, "House"), 500, false);
+            city.buildStack(ForeignCheck.template(city, "Convenience Store"), 8, false);
+            city.buildStack(ForeignCheck.template(city, "Small Grocery Store"), 3, false);
+            city.buildStack(ForeignCheck.template(city, "Construction Depot"), 4, false);
+            city.buildStack(ForeignCheck.template(city, "Coal Power Plant"), 1, false);
+            city.buildStack(ForeignCheck.template(city, "Water Treatment Plant"), 1, false);
+            city.buildStack(ForeignCheck.template(city, "Industrial Bakery"), 2, false);
+        });
+        return city;
+    }
+
+    /** Two arrays the same to the bit. */
+    static boolean sameArray(double[] a, double[] b) { return a != null && b != null && Arrays.equals(a, b); }
+
+    static void theCity() {
+        out.println("--- 10. in a city: the moneys stand in the city's month, the D$ feels them, and a save continues both ---");
+        Path file = WorldData.locate();
+        if (file == null) {
+            out.println("  world-1.bin not named (-D" + WorldData.PROPERTY + "=<path>) nor at " + WorldData.DATA_FILE + ": the city's section did not run");
+            return;
+        }
+        Game g = town("world-moneys-city");
+        assertTrue("fixture: a city that has not played a month has no moneys yet; the first month builds them with the market", g.getWorldMoneys() == null);
+        final int saveAt = 13, last = 24;
+        Game back = null;
+        int notInStep = 0, moved = 0, backBehind = 0, moneysDiffer = 0, rateDiffers = 0, slotsDiffer = 0, loadedMonths = 0;
+        double widest = 0;
+        for (int m = 1; m <= last; m++) {
+            play(g);
+            WorldMoneys w = g.getWorldMoneys();
+            if (w == null || w.month() != WorldMoneys.monthIndex(g.getMonth())) notInStep++;
+            ForeignAccounts fx = g.getForeignAccounts();
+            if (fx.getMoveWorld() != 0) moved++;
+            if (w != null) widest = Math.max(widest, Math.abs(w.cycle()));
+            if (m == saveAt) {
+                assertTrue("saved after " + m + " months, to its scratch folder", g.saveGame(2, "the moneys").ok);
+                back = new Game(g.getGameFiles());
+                Game loading = back;
+                quietly(() -> loading.loadGameSave(2));
+                WorldMoneys b = back.getWorldMoneys();
+                assertTrue("the loaded city has the moneys, in the month it was saved in, and the very same state to the bit",
+                        back.getLoadFailure() == null && b != null && b.month() == w.month() && sameArray(b.toSaveArray(), w.toSaveArray()));
+                assertTrue("...and the D$ with its world as it was (slots 95-104 and every other)", sameArray(back.getForeignAccounts().toSaveArray(), fx.toSaveArray()));
+            } else if (m > saveAt) {
+                play(back);
+                WorldMoneys b = back.getWorldMoneys();
+                loadedMonths++;
+                if (b == null || b.month() != w.month()) backBehind++;
+                else if (!sameArray(b.toSaveArray(), w.toSaveArray())) moneysDiffer++;
+                ForeignAccounts bfx = back.getForeignAccounts();
+                if (Double.compare(bfx.getRate(), fx.getRate()) != 0) rateDiffers++;
+                if (!sameArray(bfx.toSaveArray(), fx.toSaveArray())) slotsDiffer++;
+            }
+        }
+        WorldMoneys w = g.getWorldMoneys();
+        ForeignAccounts fx = g.getForeignAccounts();
+        out.printf("  %d months: the moneys stand in month %d (the city's %d); the world moved the D$ in %d months (the cycle ran to %.3f); the D$ ends at %.4f, its world level %+.4f, its terms of trade %+.4f%n",
+                last, w.month(), g.getMonth(), moved, widest, fx.getRate(), fx.getWorldLevel(), fx.getTermsOfTradeReached());
+        assertTrue("the moneys' month is the city's every month of " + last + " (WorldMoneys.monthIndex(month))", notInStep == 0);
+        assertTrue("the world moved the D$ in most of the months (" + moved + " of " + last + ")", moved >= last - 4);
+        assertTrue("the loaded city plays " + loadedMonths + " more months with its moneys in the city's month every one", loadedMonths == last - saveAt && backBehind == 0);
+        assertTrue("...its moneys the saved city's to the bit, every month", moneysDiffer == 0);
+        assertTrue("...its D$ the saved city's to the bit, every month: the rate", rateDiffers == 0);
+        assertTrue("...and every slot of the foreign accounts", slotsDiffer == 0);
+
+        // The city's own terms of trade: from its exports by good in the year that finished, in the January that turned it.
+        PartnerTrade trade = g.partnerTradeForTest();
+        boolean sold = trade != null && !trade.history().isEmpty() && trade.history().get(0).cells().stream().anyMatch(c -> c.valueOut() > 0);
+        if (sold) {
+            assertTrue("the town sold abroad in its first year, so the January that followed stepped its terms of trade into the D$ (" + String.format("%+.5f", fx.getTermsOfTradeReached()) + ")",
+                    fx.getTermsOfTradeReached() != 0);
+        } else {
+            out.println("  finding: the town sold nothing abroad in its first year, so its terms of trade are nothing (" + fx.getTermsOfTradeReached() + ")");
+            assertTrue("a town that sold nothing abroad has no terms of trade to step", fx.getTermsOfTradeReached() == 0);
+        }
+
+        // The history: the seven majors, the cycle and the risk-off, a point a month.
+        HistorySave history = g.getHistorySave();
+        boolean series = true;
+        for (String code : WorldMoneys.EIGHT) {
+            if (code.equals(Nations.DOLLAR)) continue;
+            double[] rates = history.aligned(HistorySave.worldRateKey(code));
+            series &= rates.length == history.months() && Math.abs(rates[rates.length - 1] - w.rate(code)) <= 5e-5 * Math.max(1, w.rate(code));
+        }
+        double[] cycle = history.aligned(HistorySave.WORLD_CYCLE), riskOff = history.aligned(HistorySave.WORLD_RISK_OFF);
+        series &= cycle.length == history.months() && Math.abs(cycle[cycle.length - 1] - w.cycle()) <= 1e-6 && riskOff.length == history.months()
+                && Math.abs(riskOff[riskOff.length - 1] - w.riskOff()) <= 1e-6;
+        assertTrue("the history keeps the seven majors' rates, the cycle and the risk-off, a point a month, the last the moneys' own", series);
+        assertTrue("...and every one of them has a rule in the year book", YearBook.unruled(history).isEmpty());
+
+        // The terms of trade from the city's own exports by good: a finished year's table given to a town that sold nothing, the January after
+        // steps the D$ by minus TOT_PASS times the export-weighted change in ln world prices (Game.cityExportPriceChange), a third in the first reprice.
+        Game seller = town("world-moneys-exporter");
+        for (int m = 1; m <= 11; m++) play(seller);
+        Nations beyond = seller.getNations();
+        java.util.List<PartnerTrade.Cell> cells = new ArrayList<>();
+        double[] values = { 7_000, 3_000 };
+        int[] numbers = new int[2];
+        int found = 0;
+        for (int gi = 1; gi <= beyond.goodCount() && found < 2; gi++) {
+            Good good = null;
+            for (Good candidate : Good.values()) if (candidate.name().equals(beyond.goodKey(gi))) good = candidate;
+            if (good == null) continue;
+            cells.add(new PartnerTrade.Cell(good, 1, 100, 0, values[found], 0));
+            numbers[found++] = gi;
+        }
+        assertTrue("fixture: two goods the file prices are goods of the game", found == 2);
+        seller.partnerTradeForTest().restoreHistory(List.of(new PartnerTrade.Table(Nations.FIRST_YEAR, cells)));
+        double expected = 0;
+        for (int k = 0; k < 2; k++) expected += values[k] / (values[0] + values[1]) * Math.log(beyond.goodPrice(numbers[k], Nations.FIRST_YEAR + 1) / beyond.goodPrice(numbers[k], Nations.FIRST_YEAR));
+        assertTrue("fixture: it is January 2001's turn next, and the two goods' prices moved over the year (" + String.format("%+.5f", expected) + ")",
+                CityCalendar.monthOfYear(seller.getMonth() + 1) == 1 && Math.abs(expected) > 1e-6);
+        play(seller);
+        double piece = -WorldMoneys.TOT_PASS * expected / WorldMoneys.TOT_MONTHS;
+        out.printf("  exports of 70%% and 30%% in two goods whose prices changed %+.5f over 2001: the D$'s terms of trade after the January reprice %+.6f (a third of %+.6f)%n",
+                expected, seller.getForeignAccounts().getTermsOfTradeReached(), -WorldMoneys.TOT_PASS * expected);
+        assertTrue("the January steps the D$ by minus TOT_PASS times the export-weighted change in ln prices: a third of it in that month's reprice",
+                Math.abs(seller.getForeignAccounts().getTermsOfTradeReached() - piece) < 1e-12);
+        play(seller);
+        play(seller);
+        assertTrue("...and all of it after TOT_MONTHS reprices, and no more after",
+                Math.abs(seller.getForeignAccounts().getTermsOfTradeReached() - WorldMoneys.TOT_MONTHS * piece) < 1e-12);
+        play(seller);
+        assertTrue("...held there the month after", Math.abs(seller.getForeignAccounts().getTermsOfTradeReached() - WorldMoneys.TOT_MONTHS * piece) < 1e-12);
+
+        // No world, no moneys: a city on the goods' literals has none, and its D$ is not touched by one.
+        Game plain = town("world-moneys-literals");
+        plain.playOnLiterals();
+        boolean none = true;
+        for (int m = 1; m <= 6; m++) {
+            play(plain);
+            none &= plain.getWorldMoneys() == null && plain.getForeignAccounts().getMoveWorld() == 0 && plain.getForeignAccounts().getWorldLevel() == 0;
+        }
+        assertTrue("a city that plays on the literals has no moneys, and its D$ has no world, six months on", none);
     }
 }

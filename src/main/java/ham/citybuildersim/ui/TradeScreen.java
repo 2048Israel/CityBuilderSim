@@ -2459,11 +2459,18 @@ final class TradeScreen {
                 new Force("The real rate", fx.getMoveGap(), false, false, REAL_RATE_INFO, realRateSentence()),
                 new Force("The balance", fx.getMoveBalance(), false, false, BALANCE_INFO, balanceSentence()),
                 new Force("The vault's cover", fx.getMoveCover(), false, false, COVER_FORCE_INFO, coverSentence()),
-                new Force("Interventions", fx.getMoveIntervention(), false, false, INTERVENTION_INFO, interventionSentence()),
-                new Force("The market", fx.getMoveMarket(), false, false, MARKET_INFO, marketSentence())));
+                new Force("Interventions", fx.getMoveIntervention(), false, false, INTERVENTION_INFO, interventionSentence())));
+        // The world (WN4): the dollar's cycle, money running to safety and the prices of what the city sells abroad, a row in a city that has the world's moneys.
+        if (showsWorld(fx)) rows.add(new Force("The world", fx.getMoveWorld(), false, false, WORLD_FORCE_INFO, worldSentence()));
+        rows.add(new Force("The market", fx.getMoveMarket(), false, false, MARKET_INFO, marketSentence()));
         if (showsHold(fx)) rows.add(new Force("The hold", fx.getMoveHeld(), false, false, HOLD_INFO, holdSentence()));
         rows.add(new Force("The month's move", fx.getLastMove(), true, false, null, totalSentence()));
         return rows;
+    }
+
+    /** Whether THE WORLD is a row: the city has the world's moneys, or the world moved the rate last month (a pure read of the foreign accounts and the game). */
+    boolean showsWorld(ForeignAccounts fx) {
+        return ui.game.getWorldMoneys() != null || fx.getMoveWorld() != 0 || fx.getWorldLevel() != 0;
     }
 
     /** Whether THE HOLD is a row: the regime is a band or a peg, or the hold moved the rate last month (a peg that broke, a regime since left). */
@@ -2585,6 +2592,23 @@ final class TradeScreen {
         return Character.toUpperCase(said.charAt(0)) + said.substring(1) + "." + (still ? " " + fading : "");
     }
 
+    /**
+     * THE WORLD (WN4; pure): the dollar's own swing against every money, money running to safety, and the prices of what the city sells abroad, each
+     * as what it has the currency standing at now (gated by the city's trade, as the market is); in a panic, what the city's traits make of it.
+     */
+    String worldSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        String d = sym();
+        double g = fx.gate(), loading = fx.getWorldLoading(), risk = fx.getWorldRiskOff();
+        String text = "The dollar's cycle " + heldWords(g * fx.getWorldCycle(), "the " + d)
+                + ", money running to safety " + heldWords(g * loading * risk, "the " + d)
+                + ", and the prices of what the city sells abroad " + heldWords(g * fx.getTermsOfTradeReached(), "the " + d) + ".";
+        if (risk > .005 && loading < 0) text += " The city is a haven: a deep vault and a surplus make the " + d + " rise when money runs to safety.";
+        else if (risk > .005) text += " Money is running to safety, and by the city's traits the " + d + " loads " + String.format("%.0f%%", loading * 100) + " weaker on a full one.";
+        if (g < .9995) text += " They reach the rate in part, " + String.format("%.0f%%", g * 100) + ", as the market does.";
+        return text;
+    }
+
     /** THE MARKET (pure): the currency's own swing, what is left of the month's move, where it stands and how fast it fades. */
     String marketSentence() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
@@ -2592,7 +2616,7 @@ final class TradeScreen {
         String stands = Math.abs(swing) < .0005 ? "stands at nothing now"
                 : "has the " + sym() + " " + share1(Math.abs(swing)) + (swing > 0 ? " cheaper" : " dearer")
                   + " than the fundamentals put it";
-        return "The " + sym() + "'s own swing: what is left of the month's move once the other five are taken. It " + stands
+        return "The " + sym() + "'s own swing: what is left of the month's move once the others are taken. It " + stands
                 + ", and fades by half in about " + String.format("%.1f", ForeignAccounts.MARKET_HALF_LIFE / 12) + " years.";
     }
 
@@ -2633,12 +2657,12 @@ final class TradeScreen {
 
     /** THE HOLD's (i): what it is, why the six do not stand on their own under it, and what it is outside a band and a peg. */
     static final String HOLD_INFO = "The part of the month's move the vault's hold made: under a peg the rate stays at the "
-            + "peg, and under a band it stops at the edge, away from where the float's rule - the other six forces - would "
-            + "have put it. So this line undoes what they added, and all seven still add to the month's move. In a month a "
+            + "peg, and under a band it stops at the edge, away from where the float's rule - the other forces - would "
+            + "have put it. So this line undoes what they added, and all of them still add to the month's move. In a month a "
             + "peg gave way it is the peg letting go of the rate it had held. Exactly nothing under Lean and Float, and "
             + "while a band's rate is inside it. Policy › Money › The currency is where it is set.";
 
-    /** THE MONTH'S MOVE (pure): where US$1 stood and where it stands, which the six (and the hold, when it is a row) add up to. */
+    /** THE MONTH'S MOVE (pure): where US$1 stood and where it stands, which the forces (and the hold, when it is a row) add up to. */
     String totalSentence() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         double now = fx.getRate(), move = fx.getLastMove(), before = now / Math.exp(move);
@@ -2646,17 +2670,18 @@ final class TradeScreen {
             return Currency.FOREIGN_SYMBOL + "1 stayed at " + sym() + fxRate(now) + ": nothing to add up.";
         }
         return Currency.FOREIGN_SYMBOL + "1 went from " + sym() + fxRate(before) + " to " + sym() + fxRate(now)
-                + (showsHold(fx) ? ". The six and the hold add up to it." : ". The six add up to it.");
+                + (showsHold(fx) ? ". The forces and the hold add up to it." : ". The forces add up to it.");
     }
 
-    /** The forces card's (i): the six parts and what each is, and under a band or a peg the seventh. */
-    static final String FORCES_INFO = "Six parts add to the month's move, in log points of the rate. Parity's trend: the "
+    /** The forces card's (i): the parts and what each is, the world's among them, and under a band or a peg the hold. */
+    static final String FORCES_INFO = "These parts add to the month's move, in log points of the rate. Parity's trend: the "
             + "city's prices against the world's, followed one for one. The real rate: a real rate over the world's holds the "
             + "currency dearer, building over a year or two. The balance: a deficit year after year cheapens it. The "
             + "vault's cover: an empty vault costs it a discount. Interventions: dollars the treasury or the central bank "
-            + "buys or sells. The market: the currency's own swing, which most of a real float's month is. Under a band "
-            + "or a peg a seventh joins them, the hold: the vault keeping the rate where it is set, away from where the "
-            + "six would take it. Weaker is to the right.";
+            + "buys or sells. The world: the dollar's own swing against every money, money running to safety and the "
+            + "prices of what the city sells abroad. The market: the currency's own swing, which most of a real float's "
+            + "month is. Under a band or a peg the hold joins them: the vault keeping the rate where it is set, away from "
+            + "where the others would take it. Weaker is to the right.";
 
     /** ...and each force's own (i): what it is, and the dials behind it. */
     static final String TREND_INFO = "The city's price level against the world's, on the basket with rent held to a third "
@@ -2678,6 +2703,17 @@ final class TradeScreen {
             + "sells make it dearer, at the real size: %.0f%% for each 1%% of a year's output, fading by half in %.0f "
             + "months. The central bank sells dollars into a fall, and that lifts the currency the same way.",
             ForeignAccounts.INTERVENTION_IMPACT, ForeignAccounts.INTERVENTION_HALF_LIFE);
+    static final String WORLD_FORCE_INFO = String.format("The dollar's own swing against every money, money running to safety, and the "
+            + "prices of what the city sells abroad. The dollar's cycle moves the currency one for one: when the dollar rises "
+            + "against everything it rises against this one. About once in eight years money runs to safety for a few months; "
+            + "the currency's move in one is its traits': %.0f%% weaker for a small open money, less with a deep vault "
+            + "(up to %.0f points at %.0f months of imports) and a surplus (%.0f points), more with hot money and debt abroad "
+            + "(%.0f points for a fifth of a year's output). A city with six months of cover and a surplus is a haven and "
+            + "rises, as the Swiss franc does. What the city sells abroad matters by %.0f%% of the change in its price "
+            + "over the year, a third in each of the year's first %d months: a city that sells lumber cheapens when lumber "
+            + "does. Gated by the city's trade, as the market is.",
+            ForeignAccounts.RISK_OFF_BASE * 100, ForeignAccounts.HAVEN_PULL * 100, ForeignAccounts.HAVEN_COVER,
+            ForeignAccounts.SURPLUS_PULL * 100, ForeignAccounts.EXPOSURE_WEIGHT * 20, WorldMoneys.TOT_PASS * 100, WorldMoneys.TOT_MONTHS);
     static final String MARKET_INFO = String.format("The currency's own swing, drawn from the city's seed so the same seed "
             + "gives the same path: about %.1f%% of fresh news a month, fading by half in %.1f years.",
             ForeignAccounts.MARKET_SIGMA * 100, ForeignAccounts.MARKET_HALF_LIFE / 12);

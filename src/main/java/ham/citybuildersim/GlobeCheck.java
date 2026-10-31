@@ -2849,10 +2849,16 @@ public class GlobeCheck {
 
     /** Whether a card's "Its money" row is right: the US dollar in its words, else the money, its rate a US$ and what one of it is worth in game dollars, the two figures' product the game dollar's price within their roundings. */
     static boolean moneyRowOk(String row, Nations.Year y) {
+        return moneyRowOk(row, y, y.rateToUsd());
+    }
+
+    /** ...and (WN4) the rate it shows is the one the card was handed: this month's from the world's moneys where there is one (NationsMap.card()'s last argument), else the year's from the file - the same source the card reads, printed as the card prints it. */
+    static boolean moneyRowOk(String row, Nations.Year y, double rateShown) {
         if (Nations.DOLLAR.equals(y.money())) return row.equals("the US dollar · US$1 = D$1.16");
         if (!row.startsWith(y.money() + " ") || !row.contains(" a US$ · " + y.money() + " 1 = D$")) return false;
-        double rate = Double.parseDouble(row.substring(y.money().length() + 1, row.indexOf(" a US$")).replace(",", "")), worth = Double.parseDouble(row.substring(row.lastIndexOf("D$") + 2).replace(",", ""));
-        return Math.abs(worth * rate / D_PER_USD - 1) <= 0.012;
+        String printed = row.substring(y.money().length() + 1, row.indexOf(" a US$"));
+        double rate = Double.parseDouble(printed.replace(",", "")), worth = Double.parseDouble(row.substring(row.lastIndexOf("D$") + 2).replace(",", ""));
+        return printed.equals(NationsMap.sig3(rateShown)) && Math.abs(worth * rate / D_PER_USD - 1) <= 0.012;
     }
 
     static void cards(String scope, NationsMap map, Nations nations, int lastYear) {
@@ -2906,6 +2912,18 @@ public class GlobeCheck {
         check(scope + ": the ranks are rankings - \"Nth of " + count + "\" in ordinal words, between 1 and " + count + ", the count of nations strictly larger one less, the largest 1st", badRank == 0 && badRanking == 0 && firsts == 3);
         check(scope + ": \"This year\" is the growth with its sign and the prices, each to a decimal, and a dash in the first year", badYear == 0);
         check(scope + ": \"Its money\" is the money, its rate a US$ and the game dollar's worth of one of it, the US dollar's in its own words", badMoney == 0);
+        // WN4: with the month's rate handed, the card shows that and not the year's; handed nothing (NaN), the year's.
+        int badMonth = 0, monthRead = 0;
+        for (int i = 1; i <= count; i++) {
+            Nations.Year y = nations.year(i, YEAR);
+            if (Nations.DOLLAR.equals(y.money()) || !(y.rateToUsd() > 0) || Double.isInfinite(y.rateToUsd())) continue;
+            double month = y.rateToUsd() * 1.37;
+            String shown = map.card(nations, i, YEAR, CITIES[0][0], CITIES[0][1], D_PER_USD, null, month).rows().get(4).value();
+            String year = map.card(nations, i, YEAR, CITIES[0][0], CITIES[0][1], D_PER_USD, null, Double.NaN).rows().get(4).value();
+            monthRead++;
+            if (!moneyRowOk(shown, y, month) || !moneyRowOk(year, y) || shown.equals(year)) badMonth++;
+        }
+        check(scope + ": \"Its money\" shows this month's rate where the card is handed one (" + monthRead + " moneys, 1.37 times the year's), the year's from the file where it is handed none", monthRead > 0 && badMonth == 0);
         int usaN = map.numberOf("USA"), canN = map.numberOf("CAN");
         String usaMoney = map.card(nations, usaN, YEAR, CITIES[0][0], CITIES[0][1], Double.NaN).rows().get(4).value(), canMoney = map.card(nations, canN, YEAR, CITIES[0][0], CITIES[0][1], 0).rows().get(4).value();
         check(scope + ": with no price for the game dollar the money row says the money and its rate only (" + usaMoney + "; " + canMoney + ")", usaMoney.equals("the US dollar") && canMoney.matches("CAD [\\d.]+ a US\\$"));

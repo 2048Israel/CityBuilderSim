@@ -217,6 +217,14 @@ public class DataSave implements Cloneable {
     private double[] worldScales;
     private PartnerTrade.State partnerTrade;
 
+    /**
+     * The world's moneys (WN4, 2026-10-30; WorldMoneys, Game's THE WORLD'S MONEYS IN THE MONTH), when the city has a world market: the month they
+     * stand in, the dollar cycle, the risk-off and each money's rate, swing, terms of trade and peg (WorldMoneys.toSaveArray()), which a load puts
+     * back (WorldMoneys.restore()) so the dollar and the pegs continue the path they were on. Absent on a city with no world file and on a save from
+     * before it, which starts them from January 2000 and catches them up with no terms of trade. No format bump: a missing key reads none.
+     */
+    private double[] worldMoneys;
+
     /*
      * The property tax the city CHARGED this month, rather than a figure
      * derived from its state.
@@ -1153,6 +1161,12 @@ public class DataSave implements Cloneable {
 
     /** The saved supply scales; null with no market. */
     public double[] getWorldScales() { return worldScales; }
+
+    /** The world's moneys' state (WN4), copied; null for none. */
+    public void setWorldMoneys(double[] state) { this.worldMoneys = state == null ? null : state.clone(); }
+
+    /** The saved world moneys (WorldMoneys.toSaveArray()); null on a save with none (older, or no world file). */
+    public double[] getWorldMoneys() { return worldMoneys; }
 
     /** The city's trade by partner (WN3), the producer's fresh state. */
     public void setPartnerTrade(PartnerTrade.State state) { this.partnerTrade = state; }
