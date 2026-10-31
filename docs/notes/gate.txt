@@ -1,11 +1,14 @@
-# gate of Merge batch/LB1: rankings: the measures file - 196 nations and about 60 city regions, 70 measures each with its mark, source and licence, GDP at current, constant 2015 and PPP dollars; made by WN0's pipeline (`tools/world/`), its reader and check (Jerus, 2026-10-21, the leaderboard refresh), 0.8.80
+# gate of Merge batch/WN4: nations: each nation's money and rate, the vault in eight moneys and its reserve mix, revaluation; and the real US$ at constant 2015 dollars, the foreign inflation slider gone (D29, Jerus 2026-10-21); the moneys' rates on the exchange-rate study's rule - their PPP paths, the dollar cycle, risk-offs, terms of trade from the January solve, their own swing, pegs held and broken (XR3 folded in, Jerus 2026-10-21, ★10), 0.8.81
 # date: 2026-10-31
 # earth-2.bin: named
-# suite: 156 harnesses run in 1661s: 154 passed, 2 failed
-# timing: 13 harnesses run in 436s: 11 passed, 2 failed; its red lines were judged side by side with main's, below
+# suite: 159 harnesses run in 1593s: 157 passed, 2 failed
+# timing: 13 harnesses run in 430s: 10 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 28.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 23.2 ms, batch 23.9 ms (+2.9%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 26.4 ms, batch 25.6 ms (-2.8%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.36 ms, batch 4.04 ms (-7.5%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
 PassThroughCheck | exit 1
 PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
 PassThroughCheck | 1 FAILED

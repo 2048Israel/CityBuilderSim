@@ -313,6 +313,8 @@ public final class WorldMarket {
         private final WorldData owners;
         /** How many goods calibrated, and how many were one-sided, fell back to the class median, or have no side. */
         final int[] fits = new int[Fit.values().length];
+        /** Each nation's commodity share of exports (commodityShare), worked on first use. */
+        private double[] commodity;
 
         /** Reads the file and keeps it open (the host lookups need it); one Base per file path, size and time, for the process. */
         public static synchronized Base load(Path file) throws IOException {
@@ -454,6 +456,28 @@ public final class WorldMarket {
         public double referenceCeiling(Good g) {
             int gi = indexOf[g.ordinal()];
             return gi < 0 ? Double.NaN : traded[gi].refCeiling;
+        }
+
+        /**
+         * The share of a nation's base-year exports, by value, that are goods of the class "bulk" (the file's goods layer: bulk, processed, made): what a
+         * commodity currency's terms of trade pass into its money (WN4; spec-exchange-rates 3.7). A nation's exports of a good are what it makes less what
+         * it sells to itself (make - ownX, the pairs' sX summed by seller); one with no exports in the modelled goods has 0. Worked once and kept.
+         */
+        public synchronized double commodityShare(int nation) {
+            if (nation < 1 || nation > n) throw new IllegalArgumentException("world market: no nation numbered " + nation);
+            if (commodity == null) {
+                double[] bulk = new double[n], all = new double[n];
+                for (Traded t : traded) {
+                    for (int i = 0; i < n; i++) {
+                        double x = Math.max(0, t.make[i] - t.ownX[i]);
+                        all[i] += x;
+                        if ("bulk".equals(t.goodClass)) bulk[i] += x;
+                    }
+                }
+                commodity = new double[n];
+                for (int i = 0; i < n; i++) commodity[i] = all[i] > 0 ? bulk[i] / all[i] : 0;
+            }
+            return commodity[nation - 1];
         }
 
         /** The time the Base took to build, milliseconds. */
@@ -1485,6 +1509,51 @@ public final class WorldMarket {
 
     /** Every modelled good's supply scale, in the same order. */
     public double[] savedScales() { return year < 0 ? new double[0] : lambda.clone(); }
+
+    /**
+     * Each nation's terms of trade in the year solved, in logs against the base year (index nation - 1; WN4, spec-exchange-rates 3.7): the log of its
+     * export price index over its import price index. A nation's exports weight each good's mill price over the base year's (phat, which is exactly
+     * those ratios) by its base-year exports of the good (make - ownX of the Traded arrays: what it makes less what it sells to itself); its imports
+     * weight each good's world price ratio, the export-value-weighted mean of the makers' ratios, by its base-year imports of it (use - ownX). The
+     * pairs' own flows (sX by seller, bMaker by buyer) would add up to the same; the whole-nation arrays are what the calibration keeps, and need no
+     * walk of the pairs. A nation with no exports or no imports in the modelled goods has 0; so has every nation before a year is solved (every price
+     * is still the base year's).
+     */
+    public double[] lnTermsOfTrade() {
+        double[] expValue = new double[n], expSum = new double[n], impValue = new double[n], impSum = new double[n];
+        for (int gi = 0; gi < goodCount; gi++) {
+            Traded t = base.traded[gi];
+            double worldSum = 0, worldWeight = 0, makeSum = 0, makeWeight = 0;
+            for (int i = 0; i < n; i++) {
+                double p = phat[gi * n + i];
+                double x = Math.max(0, t.make[i] - t.ownX[i]);
+                if (x > 0 && p > 0) {
+                    worldSum += x * p;
+                    worldWeight += x;
+                    expValue[i] += x * p;
+                    expSum[i] += x;
+                }
+                if (t.make[i] > 0 && p > 0) {
+                    makeSum += t.make[i] * p;
+                    makeWeight += t.make[i];
+                }
+            }
+            double world = worldWeight > 0 ? worldSum / worldWeight : makeWeight > 0 ? makeSum / makeWeight : 1;
+            for (int i = 0; i < n; i++) {
+                double m = Math.max(0, t.use[i] - t.ownX[i]);
+                if (m > 0) {
+                    impValue[i] += m * world;
+                    impSum[i] += m;
+                }
+            }
+        }
+        double[] ln = new double[n];
+        for (int i = 0; i < n; i++) {
+            if (!(expSum[i] > 0) || !(impSum[i] > 0)) continue;
+            ln[i] = log((expValue[i] / expSum[i]) / (impValue[i] / impSum[i]));
+        }
+        return ln;
+    }
 
     /**
      * Restores a solved year from what the save kept, deriving everything without solving: the bands and allocations are bit for bit what the solve

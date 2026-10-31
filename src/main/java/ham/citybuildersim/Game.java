@@ -316,6 +316,7 @@ public class Game {
         worldMarket = null;
         worldMarketTried = false;
         partnerTrade = null;
+        worldMoneys = null;
         populationManager = new PopulationManager();
         servicesManager = new ServicesManager(buildingManager);
         // ...a Gravel Road's repairs rise with the traffic on the streets (FR7 2.2): read live off the road network, never kept.
@@ -626,7 +627,7 @@ public class Game {
          * the treasury simply opens with the founding's cash in it. Whatever
          * vault was chosen is bought the same way, an empty one not at all.
          */
-        foreign.buyReserves(foreign.toLocal(founding.getReserveUsd()));
+        foreign.buyReserves(foreign.toLocal(founding.getReserveUsd()), "USD");   // dollars, whatever the mix (WN4)
         // ...an endowment, not a purchase the market saw: the rate forgets it (XR1; ForeignAccounts.forgetDealing()).
         foreign.forgetDealing();
         // ...and the record of it, which nothing changes after this line.
@@ -1229,6 +1230,8 @@ public class Game {
         onLiterals = true;
         worldMarket = null;
         partnerTrade = null;
+        worldMoneys = null;
+        world.followMoneys(null);
         getMarkets().clearWorldPrices();
     }
 
@@ -1276,7 +1279,8 @@ public class Game {
         try {
             Nations beyond = getNations();
             if (beyond == null) return null;
-            WorldMarket made = new WorldMarket(WorldMarket.Base.load(file), beyond);
+            WorldMarket.Base base = WorldMarket.Base.load(file);
+            WorldMarket made = new WorldMarket(base, beyond);
             boolean berth = hasBerth();
             double lat = founding.getEarthLat(), lon = founding.getEarthLon();
             double standLat = Double.NaN, standLon = Double.NaN;
@@ -1293,10 +1297,15 @@ public class Game {
             trade.setPlace(standLat, standLon, names);
             partnerTrade = trade;
             worldMarket = made;
+            worldMoneys = buildWorldMoneys(file, beyond, base, made.nationCount());
+            // ...and the US$'s prices follow the US's path where the nations' moneys stand (WN4, D29); the walk where they would not build.
+            world.followMoneys(worldMoneys);
         } catch (IOException | RuntimeException e) {
             System.out.println("The world market could not be built from " + file + " (" + e + "): the city plays on the goods' literals.");
             worldMarket = null;
             partnerTrade = null;
+            worldMoneys = null;
+            world.followMoneys(null);
         }
         return worldMarket;
     }
@@ -1311,7 +1320,8 @@ public class Game {
         // The sea leg first: a solve reads the city's site as it stands.
         market.setBerth(hasBerth());
         int year = Nations.yearOf(month);
-        if (market.solvedYear() != year) {
+        boolean solved = market.solvedYear() != year;
+        if (solved) {
             market.solveYear(year);
             int passes = 0, goods = 0;
             for (Good g : Good.values()) {
@@ -1321,6 +1331,10 @@ public class Game {
             }
             System.out.printf("The world market solved %d in %.1f ms (%d sweeps over %d goods).%n", year, market.lastSolveMillis(), passes, goods);
         }
+        // ...AND THE WORLD'S MONEYS TO THE MONTH, on the January's terms of trade where it solved (WN4).
+        stepTheWorldMoneys(market, solved, year);
+        // ...AND THE EIGHT'S CROSS RATES TO THE VAULT, before anything buys or sells (WN4, THE VAULT IN EIGHT).
+        handTheMoneysToTheVault();
         PartnerTrade last = partnerTrade;
         economyManager.getMarkets().setWorldBand(market, last::monthExportUnits, last::monthImportUnits);
     }
@@ -1377,6 +1391,356 @@ public class Game {
         } else if (!partnerTrade.restore(loaded.getPartnerTrade())) {
             System.out.println("The saved trade by partner would not restore on this world file: it starts again.");
         }
+        restoreWorldMoneys(loaded);
+    }
+
+    /* =====================================================================
+       THE WORLD'S MONEYS IN THE MONTH (WN4, 2026-10-30; docs/studies/spec-exchange-rates.md 3.5 and 3.7)
+
+       WorldMoneys is the world's ~150 moneys against the US$, a month at a
+       time: a purchasing-power path, the dollar cycle, the risk-off, the terms
+       of trade from the January solve, each money's own swing, the pegs held
+       and broken. It lives with the market (the same file, the same nations,
+       the same commodity shares) and is stepped where the market is struck,
+       strikeTheWorldMarket(), to the month the city is in. Three things come
+       of it:
+
+         1. THE D$ FEELS THE WORLD. Right before the month's reprice the dollar
+            cycle, the risk-off level and the hot money held are handed to the
+            ForeignAccounts (setWorld), and in a January the city's own terms of
+            trade, from its exports by good over the year that finished and the
+            change in each good's world price (stepTermsOfTrade): ForeignAccounts,
+            THE WORLD REACHES THE D$. With no world file none of it runs and the
+            D$ is what it was, to the bit.
+         2. THE LOG says when money ran to safety abroad and when a world peg
+            broke (noteTheWorldMoneys, after the reprice).
+         3. THE SAVE AND THE HISTORY carry it: DataSave.worldMoneys is its state,
+            and HistorySave keeps the eight majors' rates, the cycle and the
+            risk-off a month each, for the dollar's chart (WN6).
+
+       A moneys object behind the month - a load of a save that had none, a file
+       that came late - is caught up from January 2000 with no terms of trade,
+       and a line says so.
+       ===================================================================== */
+
+    /** The world's moneys against the US$, built with the market (null where it is null) and stepped in the month; not saved itself: DataSave.worldMoneys is its state. */
+    private transient volatile WorldMoneys worldMoneys;
+
+    /** What the month's step found, for the log after the reprice: whether a risk-off began, the yen's, the franc's and the Australian dollar's moves against the US$ in it, and the lines of the world pegs that broke. */
+    private transient boolean worldRiskOffStarted;
+    private transient double[] worldRiskOffMoves = new double[3];
+    private transient List<String> worldPegBreaks = new ArrayList<>();
+
+    /** The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. */
+    private static final String[] RISK_OFF_NAMED = {"JPY", "CHF", "AUD"};
+
+    /** The world's moneys of this city, or null where there is no world file or the market was not built (the D$ then feels no world). A screen reads figures, not the step. */
+    public WorldMoneys getWorldMoneys() { return worldMoneys; }
+
+    /** Whether the world's moneys are kept from the D$ in this city (quietTheWorldForTheD()). */
+    private transient boolean worldQuietForTheD;
+
+    /**
+     * The D$ of this city is not reached by the world: it is handed zeros and no terms of trade, so it moves to the bit as it did before the world's
+     * moneys (WN4), while the moneys are built, stepped, saved and charted as ever. For a harness whose premise is not the world - a played city a screen's
+     * check reads the growth of, whose growth the D$'s swings would otherwise change - and only there: every other harness city feels the world where
+     * the file is named. Call it before the first month or the load; it holds for the rest of the city's life (a new founding too).
+     */
+    void quietTheWorldForTheD() { worldQuietForTheD = true; }
+
+    /** The moneys over the world file and the nations of this founding's path, with each nation's commodity share of exports from the market's base; null, and a line, if they will not build. */
+    private WorldMoneys buildWorldMoneys(Path file, Nations beyond, WorldMarket.Base base, int nationCount) {
+        try (WorldData data = WorldData.open(file)) {
+            double[] share = new double[nationCount];
+            for (int i = 0; i < nationCount; i++) share[i] = base.commodityShare(i + 1);
+            return new WorldMoneys(data, beyond, share);
+        } catch (IOException | RuntimeException e) {
+            System.out.println("The world's moneys could not be built from " + file + " (" + e + "): the D$ feels no world.");
+            return null;
+        }
+    }
+
+    /** A money's value against the US$ in a month, a fraction: its rate before over its rate after, less one (a rate is units to the dollar, so a falling rate is a rising money). 0 for one with no rate either side. */
+    private static double valueMove(double before, double after) {
+        return before > 0 && after > 0 && Double.isFinite(before) && Double.isFinite(after) ? before / after - 1 : 0;
+    }
+
+    /**
+     * Steps the moneys to the month the city is in (strikeTheWorldMarket(), after the January solve): each month in turn, handing the market's
+     * terms of trade in the January it solved and null in every other month. The founding's solve is in February (the city's first month is
+     * January 2000, its clock turns before the first month runs) while the moneys stand in January 2000: its terms of trade are only recorded, as
+     * last year's for the next January's change. A moneys behind by more than a month is caught up with no terms of trade and a line says so. In
+     * a January it solved, the city's own terms of trade go to the D$ as well.
+     */
+    private void stepTheWorldMoneys(WorldMarket market, boolean solved, int year) {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null) return;
+        int target = WorldMoneys.monthIndex(month);
+        if (moneys.month() > target) {
+            System.out.printf("The world's moneys stand in month %d, ahead of the city's %d: not stepped.%n", moneys.month(), target);
+            return;
+        }
+        boolean january = CityCalendar.monthOfYear(month) == 1;
+        double[] terms = solved ? market.lnTermsOfTrade() : null;
+        if (terms != null && !january) {
+            moneys.recordTermsOfTrade(terms);
+            terms = null;
+        }
+        if (target - moneys.month() > 1) {
+            System.out.printf("The world's moneys were %d months behind the city (month %d of %d): caught up with no terms of trade.%n",
+                    target - moneys.month() - 1, moneys.month(), target);
+            terms = null;
+        }
+        while (moneys.month() < target - 1) moneys.step(moneys.month() + 1, null);
+        List<String> codes = moneys.codes();
+        double[] before = new double[codes.size()];
+        for (int k = 0; k < before.length; k++) before[k] = moneys.rate(codes.get(k));
+        if (moneys.month() < target) moneys.step(target, terms);
+        // What this month's step found, kept for the log after the reprice.
+        worldRiskOffStarted = moneys.riskOffStarted();
+        for (int k = 0; k < RISK_OFF_NAMED.length; k++) {
+            int at = codes.indexOf(RISK_OFF_NAMED[k]);
+            worldRiskOffMoves[k] = at < 0 ? 0 : valueMove(before[at], moneys.rate(RISK_OFF_NAMED[k]));
+        }
+        worldPegBreaks.clear();
+        for (String broken : moneys.breaksThisMonth()) {
+            int at = codes.indexOf(broken);
+            worldPegBreaks.add(String.format("The %s peg to the %s broke: %+.1f%% against the US$.", broken, moneys.pegAnchor(broken),
+                    100 * valueMove(at < 0 ? Double.NaN : before[at], moneys.rate(broken))));
+        }
+        if (solved && january && !worldQuietForTheD) {
+            double level = cityExportPriceLevel(year);
+            if (Double.isFinite(level)) foreign.stepTermsOfTrade(level);
+        }
+    }
+
+    /**
+     * THE MONEYS TO THE VAULT (WN4, right after the step, before anything buys or sells): the eight's US$ per unit - 1 / rate(code), NaN
+     * for a money with no rate this month - and the city's trade by money, for the reserve mix MATCH_TRADE. The vault revalues across the
+     * moneys on the first call (ForeignAccounts.setMoneyRates()). With no moneys, nothing is handed and the vault is US$ only.
+     */
+    private void handTheMoneysToTheVault() {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null) return;
+        double[] usdPerUnit = new double[ForeignAccounts.MONEYS];
+        for (int k = 0; k < usdPerUnit.length; k++) {
+            double r = moneys.rate(WorldMoneys.EIGHT.get(k));
+            usdPerUnit[k] = r > 0 && Double.isFinite(r) ? 1 / r : Double.NaN;
+        }
+        foreign.setMoneyRates(usdPerUnit);
+        foreign.setTradeShares(tradeSharesByMoney(moneys));
+    }
+
+    /**
+     * The city's trade by money (MATCH_TRADE): each partner nation's exports plus imports with the city over the last finished year
+     * (PartnerTrade's history), else the year to date, else none - all US$ - mapped to the eight by tradeSharesByMoney().
+     */
+    private double[] tradeSharesByMoney(WorldMoneys moneys) {
+        double[] weight = tradeByNation();
+        if (weight == null) return new double[ForeignAccounts.MONEYS];
+        return tradeSharesByMoney(moneys, nations, Nations.yearOf(month), weight);
+    }
+
+    /**
+     * The city's trade with each nation: exports plus imports over the last finished year (PartnerTrade's history), else the year to date, else
+     * nothing (all zero); weight[n] for nation n, 1-based, index 0 unused, in thousands of the city's money. Null with no trade record or no
+     * nations. The MATCH_TRADE shares are made of it (tradeSharesByMoney()) and so are the real effective rate's weights (D29).
+     */
+    private double[] tradeByNation() {
+        PartnerTrade trade = partnerTrade;
+        Nations beyond = nations;
+        if (trade == null || beyond == null) return null;
+        double[] weight = new double[beyond.count() + 1];
+        double total = 0;
+        List<PartnerTrade.Table> history = trade.history();
+        if (!history.isEmpty()) {
+            for (PartnerTrade.Cell cell : history.get(history.size() - 1).cells()) {
+                if (cell.nation() < 1 || cell.nation() > beyond.count()) continue;
+                double both = cell.valueOut() + cell.valueIn();
+                if (!(both > 0)) continue;
+                weight[cell.nation()] += both;
+                total += both;
+            }
+        }
+        if (!(total > 0)) {
+            PartnerTrade.Snapshot year = trade.snapshot();
+            if (year != null && year.yearExportValue() != null && year.yearImportValue() != null) {
+                for (int i = 0; i < year.yearExportValue().length && i < beyond.count(); i++) {
+                    double both = year.yearExportValue()[i] + year.yearImportValue()[i];
+                    if (both > 0) weight[i + 1] = both;
+                }
+            }
+        }
+        return weight;
+    }
+
+    /**
+     * The eight's shares of a trade given by nation (weight[n] for nation n, 1-based, index 0 unused), summing to 1 - or all zero with no
+     * weight: each nation's money mapped to the eight by eightOf().
+     */
+    static double[] tradeSharesByMoney(WorldMoneys moneys, Nations beyond, int year, double[] weight) {
+        double[] shares = new double[ForeignAccounts.MONEYS];
+        double total = 0;
+        for (int nation = 1; nation < weight.length && nation <= beyond.count(); nation++) {
+            if (!(weight[nation] > 0)) continue;
+            shares[eightOf(moneys, beyond.year(nation, year).money())] += weight[nation];
+            total += weight[nation];
+        }
+        if (total > 0) for (int k = 0; k < shares.length; k++) shares[k] /= total;
+        return shares;
+    }
+
+    /**
+     * Which of the eight a money stands in for in the city's trade: itself if it is one of them; else the money it is pegged to or uses,
+     * followed through the chain (WorldMoneys.pegAnchor) if that is one of them; else the US$ (about 40% of world trade is invoiced in
+     * dollars, far more than the US's share [R24]). A loop of pegs ends on the US$ too.
+     */
+    static int eightOf(WorldMoneys moneys, String code) {
+        String at = code;
+        for (int hops = 0; at != null && hops < 16; hops++) {
+            int k = ForeignAccounts.moneyIndex(at);
+            if (k >= 0) return k;
+            at = moneys.pegAnchor(at);
+        }
+        return 0;
+    }
+
+    /**
+     * The city's export-weighted ln world price of what it sells, each good against its normal (WN4, the D$'s terms of trade): for each good, its
+     * share of the value the city sold abroad in the last finished year (PartnerTrade's history, the last table, exports by good) times ln(the
+     * good's price this year, the nations' path: Nations.goodPrice, a ratio to 2025's, which is 1 and what the path reverts to), summed. A level,
+     * not the year's change (ForeignAccounts, THE WORLD REACHES THE D$, says why). NaN, and nothing for the D$, with no finished year, no exports
+     * in it or no goods in the file.
+     */
+    private double cityExportPriceLevel(int year) {
+        PartnerTrade trade = partnerTrade;
+        Nations beyond = nations;
+        if (trade == null || beyond == null || beyond.goodCount() < 1) return Double.NaN;
+        List<PartnerTrade.Table> history = trade.history();
+        if (history.isEmpty()) return Double.NaN;
+        double[] byGood = new double[beyond.goodCount() + 1];
+        double total = 0;
+        for (PartnerTrade.Cell cell : history.get(history.size() - 1).cells()) {
+            if (!(cell.valueOut() > 0)) continue;
+            int g = goodNumber(beyond, cell.good());
+            if (g < 1) continue;
+            byGood[g] += cell.valueOut();
+            total += cell.valueOut();
+        }
+        if (!(total > 0)) return Double.NaN;
+        double change = 0;
+        for (int g = 1; g < byGood.length; g++) {
+            if (!(byGood[g] > 0)) continue;
+            double now = beyond.goodPrice(g, year);
+            if (now > 0) change += byGood[g] / total * Math.log(now);
+        }
+        return change;
+    }
+
+    /** The number the file gives a good (1..goodCount(): its key is the Good constant's name), 0 for one the file does not price. */
+    private static int goodNumber(Nations beyond, Good good) {
+        for (int g = 1; g <= beyond.goodCount(); g++) if (beyond.goodKey(g).equals(good.name())) return g;
+        return 0;
+    }
+
+    /**
+     * What the world is this month, handed to the D$ right before its reprice: the moneys' dollar cycle and risk-off level and the hot money held;
+     * zeros with no moneys, and then the D$ is what it was.
+     */
+    private void handTheWorldToTheD() {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null || worldQuietForTheD) foreign.setWorld(0, 0, 0);
+        else foreign.setWorld(moneys.cycle(), moneys.riskOff(), hotMoney.getStock() + debtManager.getForeignPrincipalUsd() * foreign.getRate());
+    }
+
+    /** The log's lines about the world, after the reprice: money running to safety abroad (with where the D$ went in it) and the world pegs that broke. */
+    private void noteTheWorldMoneys(double rateBeforeReprice) {
+        if (worldMoneys == null) return;
+        if (worldRiskOffStarted) {
+            GameLog.note(String.format("Money ran to safety abroad this month: the yen %+.1f%%, the franc %+.1f%%, the Australian dollar %+.1f%% against the US$, and the D$ %+.1f%%.",
+                    100 * worldRiskOffMoves[0], 100 * worldRiskOffMoves[1], 100 * worldRiskOffMoves[2],
+                    100 * valueMove(rateBeforeReprice, foreign.getRate())));
+            worldRiskOffStarted = false;
+        }
+        for (String line : worldPegBreaks) GameLog.note(line);
+        worldPegBreaks.clear();
+    }
+
+    /**
+     * A load's half of the moneys (restoreWorldMarket()): the saved state put back where it fits this world file, else the moneys stand at January
+     * 2000 and are caught up to the city's month with no terms of trade, a line saying so; a state saved in an earlier month is stepped on to this one.
+     */
+    private void restoreWorldMoneys(DataSave loaded) {
+        WorldMoneys moneys = worldMoneys;
+        if (moneys == null) return;
+        double[] saved = loaded.getWorldMoneys();
+        boolean restored = false;
+        if (saved != null) {
+            try {
+                moneys.restore(saved);
+                restored = true;
+            } catch (IllegalArgumentException e) {
+                System.out.println("The saved world moneys would not restore on this world file (" + e.getMessage() + "): they start again from January 2000.");
+            }
+        }
+        int target = WorldMoneys.monthIndex(month);
+        if (moneys.month() >= target) return;
+        if (!restored && saved == null) System.out.println("The save has no world moneys: they start from January 2000 and catch up to the city's month with no terms of trade.");
+        while (moneys.month() < target) moneys.step(moneys.month() + 1, null);
+    }
+
+    /* =====================================================================
+       THE REAL US DOLLAR (WN4, D29; RealDollar, docs/studies/spec-exchange-rates.md 3.9)
+
+       Two US dollars: the in-game one, whose prices follow the US's path
+       (WorldEconomy), and the real one, constant 2015 dollars, which a
+       founding game dollar counts as one of. Three figures for comparison,
+       and NOTHING IN THE MODEL READS THEM (WN6 shows them): the D$ per real
+       US$, the city's GDP in real US$, and the real effective rate. All in
+       the city's money of today - the founding's rate is OPENING_RATE
+       through Denomination.money(), so a currency reform changes none of
+       them. A city founds at ForeignAccounts.OPENING_RATE (1.00), whatever
+       the rule then does to its D$.
+       ===================================================================== */
+
+    /** What a real 2015 US$ costs in D$ now: the rate (D$ per US$) times the US$'s price level since founding (RealDollar.dollarsPer2015Usd); the rate at founding. */
+    public double dollarsPer2015Usd() {
+        return RealDollar.dollarsPer2015Usd(foreign.getRate(), world.getPriceLevel());
+    }
+
+    /**
+     * The last finished month's GDP in real 2015 US$: the month's GDP over the city's price index (YearBook.realGdp's division) over the founding's
+     * rate in today's money (RealDollar.realGdp2015Usd).
+     */
+    public double realGdp2015Usd() {
+        return RealDollar.realGdp2015Usd(economyManager.getNationalAccounts().getGdp(), priceIndex.getIndex(),
+                denomination.money(ForeignAccounts.OPENING_RATE));
+    }
+
+    /**
+     * The D$'s real effective rate, 100 at founding (RealDollar.realEffectiveRate): the weights are the city's trade with each nation over the last
+     * finished year, else the year to date, else the US alone. Each partner's money is the one its nation uses now, against that money's rate in
+     * January 2000; the US's prices are the in-game US$'s own (the world's level, shock and all), a partner's its nation's on the path. With no
+     * world's moneys it is the D$ against the US$ alone, the US$'s prices the world's level.
+     */
+    public double realEffectiveRate() {
+        double foundingRate = denomination.money(ForeignAccounts.OPENING_RATE);
+        double us = world.getPriceLevel();
+        WorldMoneys moneys = worldMoneys;
+        double[] weight = tradeByNation();
+        List<RealDollar.Partner> partners = new ArrayList<>();
+        if (moneys != null && weight != null) {
+            int t = moneys.month();
+            for (int nation = 1; nation < weight.length; nation++) {
+                if (!(weight[nation] > 0)) continue;
+                String code = nations.year(nation, Nations.FIRST_YEAR + t / 12).money();
+                double prices = nation == moneys.usNation() ? us : moneys.priceLevel(nation, t);
+                RealDollar.Partner partner = new RealDollar.Partner(weight[nation], moneys.rate(code), moneys.rateAtStart(code), prices);
+                if (partner.usable()) partners.add(partner);
+            }
+        }
+        return RealDollar.realEffectiveRate(foreign.getRate(), foundingRate, priceIndex.getIndex(),
+                partners.isEmpty() ? RealDollar.usAlone(us) : partners);
     }
 
     /** The seed of the world this city stands on (0.7.56): chosen at founding, or derived from an older save. */
@@ -4302,14 +4666,23 @@ public class Game {
      *
      * @return what was actually bought, which is nothing the city cannot pay for
      */
-    public double buyForeignCurrency(double amount) {
+    public double buyForeignCurrency(double amount) { return buyForeignCurrency(amount, null); }
+
+    /**
+     * ...into one money of the eight (the Reserves page's money picker; WN4, THE VAULT IN EIGHT); null goes in by the reserve mix, as the
+     * one-argument purchase does. The logs name the money.
+     */
+    public double buyForeignCurrency(double amount, String code) {
         double spend = Math.max(0, Math.min(amount, cash));
         if (spend <= 0) return 0;
         treasuryPays(TreasuryLine.RESERVE_PURCHASES, spend);
         treasuryJournal.record("Bought reserves", -spend);
-        foreign.buyReserves(spend);
-        decisions.record(DecisionLog.CURRENCY, "Bought reserves for " + DecisionLog.money(spend));
-        GameLog.note(String.format("The city bought $%,.0fk of foreign currency.", spend));
+        foreign.buyReserves(spend, code);
+        int k = ForeignAccounts.moneyIndex(code);
+        String what = k < 0 ? null : ForeignAccounts.MONEY_PLURAL[k];
+        decisions.record(DecisionLog.CURRENCY, what != null ? "Bought " + what + " for " + DecisionLog.money(spend)
+                : "Bought reserves for " + DecisionLog.money(spend) + foreign.getReserveMix().inWords);
+        GameLog.note(String.format("The city bought $%,.0fk of %s.", spend, what != null ? what : "foreign currency"));
         return spend;
     }
 
@@ -4324,13 +4697,21 @@ public class Game {
      * sale is also dealing the next reprice feels, the interventions' move:
      * ForeignAccounts, THE FLOAT.)
      */
-    public double sellForeignCurrency(double amount) {
-        double sold = foreign.sellReserves(Math.max(0, amount));
+    public double sellForeignCurrency(double amount) { return sellForeignCurrency(amount, null); }
+
+    /**
+     * ...out of one money of the eight (WN4, THE VAULT IN EIGHT): the clamp is what that money alone holds, and no other gives up
+     * anything; null sells from the largest holding, as the one-argument sale does. The logs name the money.
+     */
+    public double sellForeignCurrency(double amount, String code) {
+        double sold = foreign.sellReserves(Math.max(0, amount), code);
         if (sold <= 0) return 0;
         cash += sold;
         treasuryJournal.record("Sold reserves", sold);
-        decisions.record(DecisionLog.CURRENCY, "Sold reserves for " + DecisionLog.money(sold));
-        GameLog.note(String.format("The city sold $%,.0fk of its reserves.", sold));
+        int k = ForeignAccounts.moneyIndex(code);
+        String what = k < 0 ? null : ForeignAccounts.MONEY_PLURAL[k];
+        decisions.record(DecisionLog.CURRENCY, (what != null ? "Sold " + what : "Sold reserves") + " for " + DecisionLog.money(sold));
+        GameLog.note(String.format("The city sold $%,.0fk of its %s.", sold, what != null ? what : "reserves"));
         return sold;
     }
 
@@ -11802,7 +12183,10 @@ public class Game {
         foreign.setRealRateDifferential(realRateDifferential());
         // The rate follows parity's trend, the real gap's level, the balance, the cover,
         // the market and the interventions felt (ForeignAccounts, THE FLOAT), and since
-        // XR2 the regime holds it where it says (THE REGIMES).
+        // XR2 the regime holds it where it says (THE REGIMES). Since WN4 the world reaches it too: the
+        // dollar cycle, the risk-off and the terms of trade, handed here (ForeignAccounts, THE WORLD
+        // REACHES THE D$); zeros with no world.
+        handTheWorldToTheD();
         double rateBeforeReprice = foreign.getRate();
         foreign.repriceCurrency();
         /*
@@ -11817,6 +12201,8 @@ public class Game {
                     foreign.getLastBreakCause().words, rateBeforeReprice, foreign.getRate(),
                     100 * (foreign.getRate() / rateBeforeReprice - 1)));
         }
+        // ...AND THE WORLD'S NEWS (WN4): money that ran to safety abroad, a world peg that broke.
+        noteTheWorldMoneys(rateBeforeReprice);
         /*
          * ...and what the vault's dollars fetched, if the reprice defended the
          * currency: the central bank's equity line, booked here, after the
@@ -12028,7 +12414,14 @@ public class Game {
          * EconomyManager, THE D$ THE GOODS ARE STRUCK AT. Under XR1's float a
          * D$ struck one for one let the city's prices chase their own currency
          * without end.
+         *
+         * ...AND THE DOLLAR'S PRICES ARE THE US'S WHERE THE CITY HAS THE NATIONS
+         * (WN4, D29): the world's moneys are built first, so the level this
+         * advances to is the US's on its path (WorldEconomy, THE US DOLLAR ON
+         * THE US'S PATH); with no world file it is the walk it always was.
+         * Idempotent, and the first month's is the only one that builds.
          */
+        ensureWorldMarket();
         world.advanceMonth(month);
         economyManager.strikeExchangeRate(foreign.getRate(), world.getPriceLevel());
         // ...AND THE WORLD'S BAND BEHIND IT (WN3): the January solve when the year has turned, then every good's floor and ceiling from last month's trade; before any market clears.
@@ -14563,6 +14956,9 @@ public class Game {
             dataSave.setWorldMarket(null, null, null);
             dataSave.setPartnerTrade(null);
         }
+        // ...and the world's moneys (WN4): the month they stand in, the cycle, the risk-off and every money's state; none without a market.
+        WorldMoneys savedMoneys = worldMoneys;
+        dataSave.setWorldMoneys(savedMarket != null && savedMoneys != null ? savedMoneys.toSaveArray() : null);
 
         // Charged during the month rather than derived from state, so nothing
         // can recompute it on load. Without this the freshly loaded city showed

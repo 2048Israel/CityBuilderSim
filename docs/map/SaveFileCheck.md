@@ -1,4 +1,4 @@
-# SaveFileCheck.java - 3,713 lines · 17 methods · 2 constants · harnesses
+# SaveFileCheck.java - 3,775 lines · 17 methods · 2 constants · harnesses
 
 `ham/citybuildersim/SaveFileCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -16,7 +16,7 @@
 > tested on the machine it is running on - which is precisely the machine where
 > a mistake in the other two branches would never show up.
 
-**Uses:** [Game](Game.md) (131), [GameFiles](GameFiles.md) (65), [CityLand](CityLand.md) (40), [Founding](Founding.md) (36), [GameVersion](GameVersion.md) (36), [DataSave](DataSave.md) (29), [Sectors](Sectors.md) (26), [Nations](Nations.md) (17), [OrderBook](OrderBook.md) (14), [Equity](Equity.md) (13), [Bank](Bank.md) (13), [World](World.md) (13), [OldMetal](OldMetal.md) (12), [CareType](CareType.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (11), [Good](Good.md) (11), [Ports](Ports.md) (11), [Exchange](Exchange.md) (11), [Oil](Oil.md) (10), [Household](Household.md) (10), [TreasuryFund](TreasuryFund.md) (10), [EarthSite](EarthSite.md) (10), [Sector](Sector.md) (8), [MoneyAudit](MoneyAudit.md) (8), [Trade](Trade.md) (7), [LandParcel](LandParcel.md) (7), [LandmassCheck](LandmassCheck.md) (7), [LandManager](LandManager.md) (6), [BuildingManager](BuildingManager.md) (6), [EconomyManager](EconomyManager.md) (6)... and 58 more
+**Uses:** [Game](Game.md) (133), [GameFiles](GameFiles.md) (65), [CityLand](CityLand.md) (40), [Founding](Founding.md) (36), [GameVersion](GameVersion.md) (36), [DataSave](DataSave.md) (29), [Sectors](Sectors.md) (26), [Nations](Nations.md) (17), [OrderBook](OrderBook.md) (14), [Equity](Equity.md) (13), [Bank](Bank.md) (13), [World](World.md) (13), [OldMetal](OldMetal.md) (12), [CareType](CareType.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (11), [Good](Good.md) (11), [Ports](Ports.md) (11), [Exchange](Exchange.md) (11), [Oil](Oil.md) (10), [Household](Household.md) (10), [TreasuryFund](TreasuryFund.md) (10), [EarthSite](EarthSite.md) (10), [Sector](Sector.md) (8), [MoneyAudit](MoneyAudit.md) (8), [Trade](Trade.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [LandParcel](LandParcel.md) (7), [LandmassCheck](LandmassCheck.md) (7), [LandManager](LandManager.md) (6), [BuildingManager](BuildingManager.md) (6)... and 59 more
 
 **Used by (10):** [BridgeCheck](BridgeCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConversionCheck](ConversionCheck.md), [LandCheck](LandCheck.md), [LandmassCheck](LandmassCheck.md), [OilCheck](OilCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md)
 
@@ -62,7 +62,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 3688 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
+| 26 | 3750 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
 | 33 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 38 | 10 | `static void assertEquals(String label, Object actual, Object expected)` |  |
 | 50 | 9 | `static void same(String label, double actual, double expected)` | Two readings of one month, which must not differ at all. |
@@ -77,7 +77,7 @@
 | 3509 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
 | 3529 | 10 | `static boolean refusedAtTheFloor(GameFiles files, int slot, Game loaded, byte[] before)` | Whether a load of `slot` from `files` into `loaded` was refused at the floor (0.7.120, batch I3): the save's format below GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming the build that saved it ... |
 | 3541 | 9 | `static java.util.Map<String, byte[]> folderBytes(Path dir) throws IOException` | Every file under a folder and its bytes, by its path within it - to say nothing in it moved. |
-| 3558 | 138 | `static void worldMarketCrossesASave(Path root) throws IOException` | THE WORLD MARKET CROSSES A SAVE (WN3, format 48; Game, THE WORLD MARKET). |
-| 3698 | 6 | `static String printedMonths(Game city, int months)` | The narration of some months of a city, as text. |
-| 3706 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
+| 3558 | 200 | `static void worldMarketCrossesASave(Path root) throws IOException` | THE WORLD MARKET CROSSES A SAVE (WN3, format 48; Game, THE WORLD MARKET). |
+| 3760 | 6 | `static String printedMonths(Game city, int months)` | The narration of some months of a city, as text. |
+| 3768 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
 

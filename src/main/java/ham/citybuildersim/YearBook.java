@@ -256,6 +256,12 @@ public final class YearBook {
         rate(m, "landUse", "land allocated over land owned");
         rate(m, "hunger", "share of the city short of a basket a month, struck at the top of the month on the last sale (recorded since 0.7.45)");
         rate(m, "hungerPricedOut", "of the hunger, the share who could not afford a basket at the price - the rest the shelves left short (recorded since 0.7.45)");
+        // The world's moneys (WN4): kept only by a city with a world file, a rate and not money of the city's.
+        for (String code : WorldMoneys.EIGHT) {
+            if (!code.equals(Nations.DOLLAR)) rate(m, HistorySave.worldRateKey(code), "units of " + code + " to the US dollar, HIGHER is a weaker " + code + " (recorded since WN4, with a world file)");
+        }
+        rate(m, HistorySave.WORLD_CYCLE, "the dollar's cycle against the world's moneys, a log, positive when the dollar is strong (recorded since WN4, with a world file)");
+        rate(m, HistorySave.WORLD_RISK_OFF, "the risk-off level, a log: 0 in calm, positive while money runs to safety, fading by half in three months (recorded since WN4, with a world file)");
         return m;
     }
 

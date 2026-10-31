@@ -3577,6 +3577,13 @@ public class SaveFileCheck {
                 city.buildStack(template(city, "Convenience Store"), 2, true);
                 city.buildStack(template(city, "Water Treatment Plant"), 1, true);
                 for (int m = 0; m < 14; m++) {
+                    // WN4: from the tenth month the vault holds euros and pounds beside its dollars, on a chosen mix, so the vault's slots (105-141) carry something and the eight have moved against each other under it.
+                    if (m == 9) {
+                        city.buyForeignCurrency(40_000, "EUR");
+                        city.buyForeignCurrency(25_000, "GBP");
+                        city.getForeignAccounts().setReserveMix(ForeignAccounts.Mix.CHOSEN);
+                        city.getForeignAccounts().setChosenShares(new double[] {.5, .3, 0, .2, 0, 0, 0, 0});
+                    }
                     city.simulateMonths(1);
                     PartnerTrade seen = city.partnerTradeForTest();
                     if (seen == null) continue;
@@ -3610,6 +3617,23 @@ public class SaveFileCheck {
             assertTrue("the save writes the market's year, its prices and scales, and the trade by partner",
                     json.has("worldYear") && json.get("worldYear").getAsInt() == market.solvedYear() && json.has("worldPrices") && json.has("worldScales")
                             && json.has("partnerTrade") && json.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT);
+            // WN4: the world's moneys ride beside the market (DataSave.worldMoneys), and the D$'s world rides its slots 95-104.
+            WorldMoneys moneys = city.getWorldMoneys();
+            assertTrue("fixture: the city built the world's moneys with the market, in the city's month", moneys != null && moneys.month() == WorldMoneys.monthIndex(city.getMonth()));
+            if (moneys == null) return;
+            double[] savedMoneys = moneys.toSaveArray(), savedFx = city.getForeignAccounts().toSaveArray();
+            final int savedMonth = moneys.month();
+            final double savedCycle = moneys.cycle(), savedRiskOff = moneys.riskOff();
+            assertTrue("the save writes the moneys' state (worldMoneys), as many numbers as WorldMoneys.toSaveArray() gives (" + savedMoneys.length + ")",
+                    json.has("worldMoneys") && json.getAsJsonArray("worldMoneys").size() == savedMoneys.length);
+            assertTrue("...and the foreign accounts' array runs to slot 104, the world's (95-104)", savedFx.length >= 105);
+            // WN4, the vault in eight (slots 105-141): euros and pounds beside the dollars, the mix, the chosen shares, the eight's rates and the month's cross move.
+            ForeignAccounts savedAccounts = city.getForeignAccounts();
+            assertTrue("...and to slot 141, the vault's (105-141): " + savedFx.length + " slots", savedFx.length == 142);
+            assertTrue("fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22",
+                    savedAccounts.getHolding(1) > 0 && savedAccounts.getHolding(3) > 0 && savedAccounts.getHolding(0) > 0 && savedAccounts.getReserveMix() == ForeignAccounts.Mix.CHOSEN
+                            && savedAccounts.getLastVaultCrossUsd() != 0 && savedFx[22] == savedAccounts.getReservesUsd() && savedFx[105 + 1] == savedAccounts.getHolding(1)
+                            && savedFx[113 + 1] > 0 && savedFx[121] == ForeignAccounts.Mix.CHOSEN.ordinal() && savedFx[138] == savedAccounts.getLastVaultCrossUsd());
             com.google.gson.JsonObject hist = com.google.gson.JsonParser.parseString(Files.readString(files.historyFile(1))).getAsJsonObject();
             assertTrue("...and the history writes each finished year's table by partner and good (1)",
                     hist.has("tradeByPartner") && hist.getAsJsonArray("tradeByPartner").size() == 1
@@ -3631,6 +3655,22 @@ public class SaveFileCheck {
             }
             assertTrue("...restored and not solved again: no sweeps in the loaded market (" + sweeps + "), the saving city's solve had " + solvedSweeps,
                     sweeps == 0 && solvedSweeps > 0);
+            WorldMoneys backMoneys = loaded.getWorldMoneys();
+            assertTrue("a load restores the world's moneys in the month they were saved in, the very same state to the bit",
+                    backMoneys != null && backMoneys.month() == savedMonth && java.util.Arrays.equals(backMoneys.toSaveArray(), savedMoneys));
+            assertTrue("...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit",
+                    java.util.Arrays.equals(loaded.getForeignAccounts().toSaveArray(), savedFx));
+            ForeignAccounts backAccounts = loaded.getForeignAccounts();
+            boolean vaultBack = backAccounts.getReserveMix() == savedAccounts.getReserveMix() && Double.compare(backAccounts.getReservesUsd(), savedAccounts.getReservesUsd()) == 0
+                    && Double.compare(backAccounts.getLastVaultCrossUsd(), savedAccounts.getLastVaultCrossUsd()) == 0
+                    && java.util.Arrays.equals(backAccounts.getChosenShares(), savedAccounts.getChosenShares())
+                    && java.util.Arrays.equals(backAccounts.getTradeShares(), savedAccounts.getTradeShares())
+                    && java.util.Objects.equals(backAccounts.getLastVaultCrossDriver(), savedAccounts.getLastVaultCrossDriver());
+            for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+                vaultBack &= Double.compare(backAccounts.getHolding(k), savedAccounts.getHolding(k)) == 0 && backAccounts.hasRate(k) == savedAccounts.hasRate(k)
+                        && Double.compare(backAccounts.getMoneyUsd(k), savedAccounts.getMoneyUsd(k)) == 0;
+            }
+            assertTrue("...and the vault in eight as it was: the eight balances and their rates, the mix, the chosen and the trade shares, the month's cross move and its driver", vaultBack);
             assertEquals("...the trade by partner, the month and the year to date, as it was", gson.toJson(backRecord.toState()), gson.toJson(record.toState()));
             assertEquals("...the finished years in the history", gson.toJson(backRecord.history()), gson.toJson(record.history()));
             PartnerTrade.Snapshot backSnap = loaded.getPartnerTrade();
@@ -3652,6 +3692,11 @@ public class SaveFileCheck {
             String logLive = printedMonths(city, 1), logLoaded = printedMonths(loaded, 1);
             assertTrue("a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve",
                     !logLive.contains("The world market solved") && !logLoaded.contains("The world market solved"));
+            assertTrue("the month after runs the same in both: the moneys, the D$'s rate and its world's line to the bit",
+                    java.util.Arrays.equals(loaded.getWorldMoneys().toSaveArray(), city.getWorldMoneys().toSaveArray())
+                            && Double.compare(loaded.getForeignAccounts().getRate(), city.getForeignAccounts().getRate()) == 0
+                            && Double.compare(loaded.getForeignAccounts().getMoveWorld(), city.getForeignAccounts().getMoveWorld()) == 0
+                            && loaded.getWorldMoneys().month() == WorldMoneys.monthIndex(loaded.getMonth()));
             assertTrue("the month after runs the same in both: the cash to the cent and the trade by partner",
                     Math.abs(city.getCash() - loaded.getCash()) < 1e-6 && java.util.Arrays.equals(city.getPartnerTrade().exportsByNation(), loaded.getPartnerTrade().exportsByNation())
                             && java.util.Arrays.equals(city.getPartnerTrade().importsByNation(), loaded.getPartnerTrade().importsByNation())
@@ -3669,6 +3714,20 @@ public class SaveFileCheck {
                     GameVersion.isNoLongerReadable(47) && !GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT) && files.readHeader(2).isNoLongerReadable()
                             && refusedAtTheFloor(files, 2, refused, olderBytes));
 
+            // A save with no moneys (an older one): they start from January 2000 and are caught up to the city's month, with no terms of trade.
+            // The cycle and the risk-off are pure functions of the seed and the month, so they are the saved ones'.
+            com.google.gson.JsonObject noMoneys = json.deepCopy();
+            noMoneys.remove("worldMoneys");
+            Files.writeString(files.saveFile(3), gson.toJson(noMoneys));
+            Files.copy(files.historyFile(1), files.historyFile(3), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            Game caught = new Game(files);
+            quietly(() -> caught.loadGameSave(3));
+            WorldMoneys cm = caught.getWorldMoneys();
+            assertTrue("a save with no world moneys loads, and they are caught up from January 2000 to the saved month (" + (cm == null ? "none" : cm.month()) + ")",
+                    caught.getLoadFailure() == null && cm != null && cm.month() == savedMonth);
+            assertTrue("...with the very cycle and risk-off the saved city had: they are a function of the seed and the month",
+                    cm != null && Double.compare(cm.cycle(), savedCycle) == 0 && Double.compare(cm.riskOff(), savedRiskOff) == 0);
+
             // No world file: none of the new keys, and the markets on the goods' literals.
             System.clearProperty(WorldData.PROPERTY);
             GameFiles bare = new GameFiles(root.resolve("wm-none"), root.resolve("no-legacy"));
@@ -3681,11 +3740,14 @@ public class SaveFileCheck {
             });
             assertTrue("fixture: with no world file the city has no market and no partner record", plain.getWorldMarket() == null && plain.getPartnerTrade() == null
                     && plain.getTradeFeed() == TradeLanes.Feed.NONE);
+            assertTrue("...no moneys either, and its D$ has no world (WN4)", plain.getWorldMoneys() == null && plain.getForeignAccounts().getMoveWorld() == 0
+                    && plain.getForeignAccounts().getWorldLevel() == 0);
             assertTrue("saved", quietlyGet(() -> plain.saveGame(1, "plain")).ok);
             String plainText = Files.readString(bare.saveFile(1));
             assertTrue("...and its save writes none of the new keys, in the markets or beside them",
                     !plainText.contains("worldYear") && !plainText.contains("worldPrices") && !plainText.contains("worldScales")
-                            && !plainText.contains("partnerTrade") && !plainText.contains("worldImport") && !plainText.contains("worldExport"));
+                            && !plainText.contains("partnerTrade") && !plainText.contains("worldImport") && !plainText.contains("worldExport")
+                            && !plainText.contains("worldMoneys"));
             boolean literal = true;
             for (Good g : Good.values()) literal &= !plain.getMarkets().get(g).hasWorldPrices();
             assertTrue("...every market on the goods' literals", literal);

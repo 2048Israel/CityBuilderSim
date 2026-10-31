@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.81 — WN4, the world's moneys, the vault in eight and the real US$ — 2026-10-31, ready, see docs/queue/WN4-notes.md
+Every money of the world moves against the US$ each month on the exchange-rate study's rule (XR3 folded in): its PPP path,
+the dollar cycle, risk-offs about once in eight years (the yen and the franc rise, the Australian dollar and the emerging
+floats fall), terms of trade from the January solve, its own swing; pegs hold, soft ones break by the D$'s own rule, and
+Historical replays the real monthly rates to 2025. The D$ feels the world: the cycle, a risk-off by its traits (a deep vault
+and a surplus make it a haven), the prices of what the city sells. The vault keeps a balance in each of the eight moneys,
+filled by a reserve mix (all US$ by default) and revalued as they move, with a money picker on Trade › The reserves. The
+in-game US$ inflates on the US's path and the founding screen's dollar chips are gone (D29); the real 2015 US$ waits for
+WN6's screens. SAVE_FORMAT and its floor 49: a save of format 48 or older is refused, as it would load wrongly (its dollar
+would jump to the US's path in its first month). Ensemble 24 of 26 (main 23): R3 passes now; A2 and S1 red as on main.
+
 ### 0.8.80 — LB1, Rankings: the measures file — 2026-10-31, ready, see docs/queue/LB1-notes.md
 The real world's latest figures for the Rankings' Real world 2025 board, baked into the resources: `world-2025.json`
 holds 196 nations and 62 city regions on the study's 70 measures, each figure with its year, its mark (● published,

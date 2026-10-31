@@ -864,6 +864,14 @@ public class ReadPathCheck {
         g.getForeignAccounts().getMoveCover();
         g.getForeignAccounts().getMoveIntervention();
         g.getForeignAccounts().getMoveMarket();
+        // ...and the world's (WN4): its line among the forces, the cycle, the risk-off and the loading the card names, the terms of trade reached
+        g.getForeignAccounts().getMoveWorld();
+        g.getForeignAccounts().getWorldCycle();
+        g.getForeignAccounts().getWorldRiskOff();
+        g.getForeignAccounts().getWorldLoading();
+        g.getForeignAccounts().getWorldLevel();
+        g.getForeignAccounts().getTermsOfTradeReached();
+        g.getForeignAccounts().riskOffLoading();
         g.getForeignAccounts().getLastMove();
         g.getForeignAccounts().getLastAbsorption();
         g.getForeignAccounts().getLastRevaluation();
@@ -1125,7 +1133,6 @@ public class ReadPathCheck {
         for (Founding.Preset p : Founding.Preset.values()) {
             if (p != Founding.Preset.CUSTOM) g.whatItBuys(p.cash(), p.reserveUsd());
         }
-        for (double m : WorldEconomy.FOUNDING_CHOICES) WorldEconomy.settledLevelAt(m);
         g.getDenomination().name(money);
         g.getDenomination().describeUnit(money);
 
@@ -2120,6 +2127,12 @@ public class ReadPathCheck {
                 g.buildStack(template(g, "Convenience Store"), 2, true);
                 g.buildStack(template(g, "Water Treatment Plant"), 1, true);
                 g.simulateMonths(14);
+                // WN4: the vault in euros and pounds beside its dollars, on the world's mix, and a month under it, so the vault's readers read something.
+                g.buyForeignCurrency(40_000, "EUR");
+                g.buyForeignCurrency(25_000, "GBP");
+                g.getForeignAccounts().setReserveMix(ForeignAccounts.Mix.WORLD_MIX);
+                g.buyForeignCurrency(10_000);
+                g.simulateMonths(1);
             } finally {
                 System.setOut(out);
             }
@@ -2175,6 +2188,26 @@ public class ReadPathCheck {
         PartnerTrade.Snapshot s = g.getPartnerTrade();
         s.monthTotal(); s.nations(); s.history(); s.yearCells(); s.exportsByNation(); s.importsByNation();
         for (int nation = 1; nation <= s.nations(); nation++) { s.yearToDate(nation); s.nameOf(nation); }
+        // WN4: everything a screen reads of the world's moneys (the nation card's rate, the dollar's chart's series) and of the D$'s world.
+        WorldMoneys moneys = g.getWorldMoneys();
+        if (moneys != null) {
+            moneys.month(); moneys.ruling(); moneys.cycle(); moneys.riskOff(); moneys.riskOffStarted(); moneys.breaksThisMonth(); moneys.codes();
+            for (String code : moneys.codes()) {
+                moneys.rate(code); moneys.shadow(code); moneys.ppp(code); moneys.swing(code); moneys.totReached(code); moneys.pegHeld(code);
+                moneys.pegAnchor(code); moneys.pegGap(code); moneys.kind(code); moneys.ruled(code);
+            }
+            moneys.cross("EUR", "JPY");
+            for (int nation = 1; nation <= m.nationCount(); nation++) { moneys.rateOfNation(nation); moneys.commodityShare(nation); }
+            g.getHistorySave().aligned(HistorySave.WORLD_CYCLE);
+            g.getHistorySave().aligned(HistorySave.worldRateKey("EUR"));
+        }
+        // WN4, the vault in eight: everything the Reserves page reads of it.
+        ForeignAccounts vault = g.getForeignAccounts();
+        vault.getReserveMix(); vault.getChosenShares(); vault.getTradeShares(); vault.mixShares(); vault.getLastVaultCrossUsd(); vault.getLastVaultCrossDriver();
+        for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+            vault.getHolding(k); vault.getHoldingUsd(k); vault.getMoneyUsd(k); vault.hasRate(k);
+            vault.sellableReserves(WorldMoneys.EIGHT.get(k));
+        }
         TradeLanes.Feed feed = g.getTradeFeed();
         feed.month(); feed.exportsByNation(); feed.importsByNation(); feed.standInLat(); feed.standInLon(); feed.yearToDate(1); feed.nameOf(1);
         g.partnerTradeForTest().toState();
@@ -2211,6 +2244,47 @@ public class ReadPathCheck {
         double sc = 0;
         for (int i = 0; i < scales.length; i++) sc += (i + 1) * scales[i];
         into.put("world.scalesWeighted", sc);
+        // WN4: the world's moneys (their whole saved state, weighted) and what the D$ carries of them (slots 95-104 and the readers the card uses).
+        WorldMoneys moneys = g.getWorldMoneys();
+        if (moneys != null) {
+            double[] state = moneys.toSaveArray();
+            double stateSum = 0;
+            for (int i = 0; i < state.length; i++) stateSum += (i + 1) * state[i];
+            into.put("world.moneys.month", (double) moneys.month());
+            into.put("world.moneys.state", stateSum);
+            into.put("world.moneys.cycle", moneys.cycle());
+            into.put("world.moneys.riskOff", moneys.riskOff());
+        }
+        ForeignAccounts fx = g.getForeignAccounts();
+        double[] fxSlots = fx.toSaveArray();
+        double worldSlots = 0;
+        for (int i = 95; i < fxSlots.length && i <= 104; i++) worldSlots += (i - 94) * fxSlots[i];
+        into.put("world.fx.slots", worldSlots);
+        // WN4, the vault in eight: its slots (105-141) and the readers the Reserves page uses.
+        double vaultSlots = 0;
+        for (int i = 105; i < fxSlots.length && i <= 141; i++) vaultSlots += (i - 104) * fxSlots[i];
+        into.put("world.fx.vaultSlots", vaultSlots);
+        into.put("world.fx.vaultSlotCount", (double) fxSlots.length);
+        double held = 0, heldUsd = 0, rates = 0;
+        for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
+            held += (k + 1) * fx.getHolding(k);
+            heldUsd += (k + 1) * fx.getHoldingUsd(k);
+            rates += (k + 1) * (fx.hasRate(k) ? fx.getMoneyUsd(k) : -1);
+        }
+        into.put("world.fx.holdings", held);
+        into.put("world.fx.holdingsUsd", heldUsd);
+        into.put("world.fx.moneyRates", rates);
+        into.put("world.fx.vault", fx.getReservesUsd());
+        into.put("world.fx.mix", (double) fx.getReserveMix().ordinal());
+        into.put("world.fx.cross", fx.getLastVaultCrossUsd());
+        into.put("world.fx.crossDriver", fx.getLastVaultCrossDriver() == null ? -1 : fx.getLastVaultCrossDriver().index() + fx.getLastVaultCrossDriver().move());
+        double shares = 0;
+        for (int k = 0; k < ForeignAccounts.MONEYS; k++) shares += (k + 1) * (fx.mixShares()[k] + 3 * fx.getChosenShares()[k] + 5 * fx.getTradeShares()[k]);
+        into.put("world.fx.shares", shares);
+        into.put("world.fx.moveWorld", fx.getMoveWorld());
+        into.put("world.fx.level", fx.getWorldLevel());
+        into.put("world.fx.terms", fx.getTermsOfTradeReached());
+        into.put("world.fx.loading", fx.riskOffLoading());
         PartnerTrade.Snapshot s = g.getPartnerTrade();
         double ex = 0, im = 0, yex = 0, yim = 0, tn = 0;
         for (int i = 0; i < s.nations(); i++) {

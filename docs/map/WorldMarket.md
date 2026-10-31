@@ -1,4 +1,4 @@
-# WorldMarket.java - 1,696 lines · 93 methods · 28 constants · model
+# WorldMarket.java - 1,765 lines · 95 methods · 28 constants · model
 
 `ham/citybuildersim/WorldMarket.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -45,7 +45,7 @@
 
 **Uses:** [Good](Good.md) (22), [WorldData](WorldData.md) (15), [Nations](Nations.md) (12), [World](World.md) (3), [Freight](Freight.md) (1)
 
-**Used by (6):** [Game](Game.md), [Markets](Markets.md), [PartnerTrade](PartnerTrade.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldMarketCheck](WorldMarketCheck.md)
+**Used by (7):** [Game](Game.md), [Markets](Markets.md), [PartnerTrade](PartnerTrade.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 
@@ -56,20 +56,20 @@
 | 151 | A TRADED GOOD - the base year's pairs, in two layouts, and the good's calibration |
 | 274 | THE LEGS - the city's freight to the nations, from where it stands |
 | 284 | THE BASE - the file's, immutable, once a process |
-| 411 | · what a caller reads |
-| 465 | · places |
-| 564 | · the calibration |
-| 697 | THE YEAR'S INPUTS - growth and the price path, from the nations |
-| 733 | THE SOLVE - one good's January, the nations alone |
-| 953 | THE MARKET - one city's site, solved year and band |
-| 1109 | · where the city stands |
-| 1150 | · the January solve |
-| 1211 | · what a solved year implies: prices, demand, supply, and then at the site the sorted sides |
-| 1367 | · the city's month: the fills and the band |
-| 1445 | · reads for the wiring and the screens |
-| 1481 | · the save |
-| 1508 | FOR THE CHECK - what a harness reads that the game does not |
-| 1661 | SORTING - indices by a key, stable, no boxing |
+| 413 | · what a caller reads |
+| 489 | · places |
+| 588 | · the calibration |
+| 721 | THE YEAR'S INPUTS - growth and the price path, from the nations |
+| 757 | THE SOLVE - one good's January, the nations alone |
+| 977 | THE MARKET - one city's site, solved year and band |
+| 1133 | · where the city stands |
+| 1174 | · the January solve |
+| 1235 | · what a solved year implies: prices, demand, supply, and then at the site the sorted sides |
+| 1391 | · the city's month: the fills and the band |
+| 1469 | · reads for the wiring and the screens |
+| 1505 | · the save |
+| 1577 | FOR THE CHECK - what a harness reads that the game does not |
+| 1730 | SORTING - indices by a key, stable, no boxing |
 
 ## Enum constants
 
@@ -109,9 +109,9 @@
 | 130 | `WorldMarket.PHI_FALLBACK` | `1` | The freight scale a world with no good that calibrates stands on (est.: the file's reference freight as it is). |
 | 295 | `WorldMarket.Base.LOADED` | `new HashMap<>()` |  |
 | 296 | `WorldMarket.Base.OF` | `new IdentityHashMap<>()` |  |
-| 695 | `WorldMarket.STAND_IN` | `0x57A4D1` | Draws a stand-in's nation (Nations.scramble's "what"). |
-| 963 | `WorldMarket.SOLVES` | `new LinkedHashMap<>(16,.75f, true) { @ Override protected boolean removeEldes...` |  |
-| 1390 | `WorldMarket.SCARCITY_MULTIPLE` | `4` | Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill has no level (infinity), and a market's strike needs a finite ceiling. |
+| 719 | `WorldMarket.STAND_IN` | `0x57A4D1` | Draws a stand-in's nation (Nations.scramble's "what"). |
+| 987 | `WorldMarket.SOLVES` | `new LinkedHashMap<>(16,.75f, true) { @ Override protected boolean removeEldes...` |  |
+| 1414 | `WorldMarket.SCARCITY_MULTIPLE` | `4` | Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill has no level (infinity), and a market's strike needs a finite ceiling. |
 
 ## Fields (state)
 
@@ -144,45 +144,46 @@
 | 312 | `final long buildMillis` |  |
 | 313 | `private final WorldData owners` |  |
 | 315 | `final int[] fits` | How many goods calibrated, and how many were one-sided, fell back to the class median, or have no side. |
-| 739 | `final double[] u, a, phi, h, x, g, lnMake` |  |
-| 740 | `final Accel accel` |  |
-| 742 | `double worst, levelError` | The worst clearing error and the level error at the last pass, for the log. |
-| 856 | `final int m` |  |
-| 857 | `final double[][] dF, dG` |  |
-| 858 | `final double[] fPrev, gPrev, f, gamma, atb` |  |
-| 859 | `final double[][] ata` |  |
-| 860 | `int cols, next` |  |
-| 861 | `boolean have` |  |
-| 976 | `final int len` |  |
-| 977 | `final double[] net, slope, cap` |  |
-| 978 | `private final int[] joinEvent` |  |
-| 979 | `private final double[] evLam, evT, evSm, evSmn, evSc` |  |
-| 1055 | `double[] buyerPrice` |  |
-| 1056 | `double slope` |  |
-| 1057 | `int ns, nb` |  |
-| 1058 | `int[] sNation, sBuyer, bNation` |  |
-| 1059 | `Levels sell, buy` |  |
-| 1068 | `private final Base base` |  |
-| 1069 | `private final Nations nations` |  |
-| 1070 | `private final int n, goodCount` |  |
-| 1071 | `private final int[] priceIdx` |  |
-| 1072 | `private final Work work` |  |
-| 1073 | `private double[] phat, lambda, gHat` |  |
-| 1074 | `private int[] passes` |  |
-| 1075 | `private int year` |  |
-| 1076 | `private long solveNanos` |  |
-| 1077 | `private double[][] price, demand, supply, elastic, aSolved, phiSolved` |  |
-| 1078 | `private Fill[] fills` |  |
-| 1079 | `private boolean fillsFresh` |  |
-| 1081 | `private double siteLat` |  |
-| 1082 | `private boolean berth` |  |
-| 1083 | `private Legs legs` |  |
+| 317 | `private double[] commodity` | Each nation's commodity share of exports (commodityShare), worked on first use. |
+| 763 | `final double[] u, a, phi, h, x, g, lnMake` |  |
+| 764 | `final Accel accel` |  |
+| 766 | `double worst, levelError` | The worst clearing error and the level error at the last pass, for the log. |
+| 880 | `final int m` |  |
+| 881 | `final double[][] dF, dG` |  |
+| 882 | `final double[] fPrev, gPrev, f, gamma, atb` |  |
+| 883 | `final double[][] ata` |  |
+| 884 | `int cols, next` |  |
+| 885 | `boolean have` |  |
+| 1000 | `final int len` |  |
+| 1001 | `final double[] net, slope, cap` |  |
+| 1002 | `private final int[] joinEvent` |  |
+| 1003 | `private final double[] evLam, evT, evSm, evSmn, evSc` |  |
+| 1079 | `double[] buyerPrice` |  |
+| 1080 | `double slope` |  |
+| 1081 | `int ns, nb` |  |
+| 1082 | `int[] sNation, sBuyer, bNation` |  |
+| 1083 | `Levels sell, buy` |  |
+| 1092 | `private final Base base` |  |
+| 1093 | `private final Nations nations` |  |
+| 1094 | `private final int n, goodCount` |  |
+| 1095 | `private final int[] priceIdx` |  |
+| 1096 | `private final Work work` |  |
+| 1097 | `private double[] phat, lambda, gHat` |  |
+| 1098 | `private int[] passes` |  |
+| 1099 | `private int year` |  |
+| 1100 | `private long solveNanos` |  |
+| 1101 | `private double[][] price, demand, supply, elastic, aSolved, phiSolved` |  |
+| 1102 | `private Fill[] fills` |  |
+| 1103 | `private boolean fillsFresh` |  |
+| 1105 | `private double siteLat` |  |
+| 1106 | `private boolean berth` |  |
+| 1107 | `private Legs legs` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 1640 | **type** `public final class WorldMarket` | The world market: each traded good's price in each of the 196 nations on a smooth spatial equilibrium (a CES gravity model), solved once a year, and the band the city sees in it - the import ceiling it pays and the ex... |
+| 57 | 1709 | **type** `public final class WorldMarket` | The world market: each traded good's price in each of the 196 nations on a smooth spatial equilibrium (a CES gravity model), solved once a year, and the band the city sees in it - the import ceiling it pays and the ex... |
 
 ### THE DIALS - each with its source: (est.) is the game's estimate (lines 59-143)
 
@@ -211,161 +212,163 @@
 |---:|---:|---|---|
 | 282 | 1 | **type** `record Legs(int host, boolean berth, double[] fc, double[] fp)` | What a site's freight comes to: its host nation (1-based), whether it has a berth, fc[j] the US$ a tonne from the city to nation j (the cheapest way in), and fp[k * n + j] the nations' freight in the city's view, min(... |
 
-### THE BASE - the file's, immutable, once a process (lines 284-696)
+### THE BASE - the file's, immutable, once a process (lines 284-720)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 294 | 399 | **type** `public static final class Base` | What the file is to the market, copied into arrays: the nations and their nodes, the freight in US$ a tonne, every traded good's pairs and its calibration. |
-| 318 | 11 | `public static synchronized Base load(Path file) throws IOException` _(in WorldMarket.Base)_ | Reads the file and keeps it open (the host lookups need it); one Base per file path, size and time, for the process. |
-| 331 | 10 | `public static Base of(WorldData data)` _(in WorldMarket.Base)_ | A Base from an open file, one per file object for the process. |
-| 342 | 60 | `private Base(WorldData data, long t0)` _(in WorldMarket.Base)_ |  |
-| 403 | 7 | `private static double dial(WorldData data, String name, double fallback)` _(in WorldMarket.Base)_ |  |
-| 414 | 1 | `public int nationCount()` _(in WorldMarket.Base)_ | How many nations there are (the file's N). |
-| 417 | 5 | `public List<Good> goods()` _(in WorldMarket.Base)_ | The goods the market models, in the file's order. |
-| 424 | 4 | `public boolean trades(Good g)` _(in WorldMarket.Base)_ | Whether the file has this good, traded, scaled, and the city has a side of it to trade. |
-| 430 | 4 | `public Fit fit(Good g)` _(in WorldMarket.Base)_ | How a good's scales were set. |
-| 436 | 4 | `public double sigma(Good g)` _(in WorldMarket.Base)_ | A good's price scale: thousands of world dollars a game unit for a dollar a tonne; NaN for a good the market does not model. |
-| 442 | 4 | `public double phi(Good g)` _(in WorldMarket.Base)_ | A good's freight scale: the multiple of the file's reference freight the city's view of it uses. |
-| 448 | 4 | `public double referenceFloor(Good g)` _(in WorldMarket.Base)_ | The reference city's floor, 2025, Historical, in the game's money: the literal export price for a good that calibrated. |
-| 454 | 4 | `public double referenceCeiling(Good g)` _(in WorldMarket.Base)_ | The reference city's ceiling likewise. |
-| 460 | 1 | `public long buildMillis()` _(in WorldMarket.Base)_ | The time the Base took to build, milliseconds. |
-| 463 | 1 | `public int referenceHost()` _(in WorldMarket.Base)_ | The nation the reference city (Halifax) stands in, 1-based. |
-| 468 | 7 | `double gc(double lat1, double lon1, double lat2, double lon2)` _(in WorldMarket.Base)_ | The great circle distance in km between two points. |
-| 477 | 12 | `int nearest(double la, double lo)` _(in WorldMarket.Base)_ | The nation whose node is nearest a point, 1-based. |
-| 491 | 11 | `public int hostOf(double la, double lo)` _(in WorldMarket.Base)_ | The host of a site: the owner of the point when that is a nation, the nation that sells an area's land when it is one, else the nation with the nearest node (1-based). |
-| 507 | 17 | `public int standIn(long groundSeed)` _(in WorldMarket.Base)_ | A generated world's stand-in (D23): a coastal nation drawn by the seed, weighted by its output in the base year, which is where the world's trade is (a uniform draw lands on a remote island one time in five). |
-| 526 | 37 | `Legs legs(double la, double lo, boolean berth, int host)` _(in WorldMarket.Base)_ | The legs of a site at (la, lo) in a host nation, with or without a berth (see Legs). |
-| 571 | 65 | `private void calibrate(WorldData data)` _(in WorldMarket.Base)_ | Sets every good's (sigma, phi): the reference city (Halifax, no berth) in REFERENCE_YEAR on the Historical path, trading nothing, sees floor = the literal export price and ceiling = the literal import price. |
-| 638 | 22 | `double[] referenceBand(Traded t, double[] p, double rho)` _(in WorldMarket.Base)_ | The reference city's {floor, ceiling} in US$ a tonne at freight scale rho, for prices p (makers' mill prices): the best netback and the cheapest landed cost, with nothing traded. |
-| 662 | 18 | `private double findRho(Traded t, double[] p, double target)` _(in WorldMarket.Base)_ | The freight scale at which the reference city's ceiling over its floor is target, or NaN when none in RHO_MIN..RHO_MAX does. |
-| 681 | 4 | `private double ratio(Traded t, double[] p, double rho)` _(in WorldMarket.Base)_ |  |
-| 686 | 6 | `private static double median(List<Double> values)` _(in WorldMarket.Base)_ |  |
+| 294 | 423 | **type** `public static final class Base` | What the file is to the market, copied into arrays: the nations and their nodes, the freight in US$ a tonne, every traded good's pairs and its calibration. |
+| 320 | 11 | `public static synchronized Base load(Path file) throws IOException` _(in WorldMarket.Base)_ | Reads the file and keeps it open (the host lookups need it); one Base per file path, size and time, for the process. |
+| 333 | 10 | `public static Base of(WorldData data)` _(in WorldMarket.Base)_ | A Base from an open file, one per file object for the process. |
+| 344 | 60 | `private Base(WorldData data, long t0)` _(in WorldMarket.Base)_ |  |
+| 405 | 7 | `private static double dial(WorldData data, String name, double fallback)` _(in WorldMarket.Base)_ |  |
+| 416 | 1 | `public int nationCount()` _(in WorldMarket.Base)_ | How many nations there are (the file's N). |
+| 419 | 5 | `public List<Good> goods()` _(in WorldMarket.Base)_ | The goods the market models, in the file's order. |
+| 426 | 4 | `public boolean trades(Good g)` _(in WorldMarket.Base)_ | Whether the file has this good, traded, scaled, and the city has a side of it to trade. |
+| 432 | 4 | `public Fit fit(Good g)` _(in WorldMarket.Base)_ | How a good's scales were set. |
+| 438 | 4 | `public double sigma(Good g)` _(in WorldMarket.Base)_ | A good's price scale: thousands of world dollars a game unit for a dollar a tonne; NaN for a good the market does not model. |
+| 444 | 4 | `public double phi(Good g)` _(in WorldMarket.Base)_ | A good's freight scale: the multiple of the file's reference freight the city's view of it uses. |
+| 450 | 4 | `public double referenceFloor(Good g)` _(in WorldMarket.Base)_ | The reference city's floor, 2025, Historical, in the game's money: the literal export price for a good that calibrated. |
+| 456 | 4 | `public double referenceCeiling(Good g)` _(in WorldMarket.Base)_ | The reference city's ceiling likewise. |
+| 466 | 16 | `public synchronized double commodityShare(int nation)` _(in WorldMarket.Base)_ | The share of a nation's base-year exports, by value, that are goods of the class "bulk" (the file's goods layer: bulk, processed, made): what a commodity currency's terms of trade pass into its money (WN4; spec-exchan... |
+| 484 | 1 | `public long buildMillis()` _(in WorldMarket.Base)_ | The time the Base took to build, milliseconds. |
+| 487 | 1 | `public int referenceHost()` _(in WorldMarket.Base)_ | The nation the reference city (Halifax) stands in, 1-based. |
+| 492 | 7 | `double gc(double lat1, double lon1, double lat2, double lon2)` _(in WorldMarket.Base)_ | The great circle distance in km between two points. |
+| 501 | 12 | `int nearest(double la, double lo)` _(in WorldMarket.Base)_ | The nation whose node is nearest a point, 1-based. |
+| 515 | 11 | `public int hostOf(double la, double lo)` _(in WorldMarket.Base)_ | The host of a site: the owner of the point when that is a nation, the nation that sells an area's land when it is one, else the nation with the nearest node (1-based). |
+| 531 | 17 | `public int standIn(long groundSeed)` _(in WorldMarket.Base)_ | A generated world's stand-in (D23): a coastal nation drawn by the seed, weighted by its output in the base year, which is where the world's trade is (a uniform draw lands on a remote island one time in five). |
+| 550 | 37 | `Legs legs(double la, double lo, boolean berth, int host)` _(in WorldMarket.Base)_ | The legs of a site at (la, lo) in a host nation, with or without a berth (see Legs). |
+| 595 | 65 | `private void calibrate(WorldData data)` _(in WorldMarket.Base)_ | Sets every good's (sigma, phi): the reference city (Halifax, no berth) in REFERENCE_YEAR on the Historical path, trading nothing, sees floor = the literal export price and ceiling = the literal import price. |
+| 662 | 22 | `double[] referenceBand(Traded t, double[] p, double rho)` _(in WorldMarket.Base)_ | The reference city's {floor, ceiling} in US$ a tonne at freight scale rho, for prices p (makers' mill prices): the best netback and the cheapest landed cost, with nothing traded. |
+| 686 | 18 | `private double findRho(Traded t, double[] p, double target)` _(in WorldMarket.Base)_ | The freight scale at which the reference city's ceiling over its floor is target, or NaN when none in RHO_MIN..RHO_MAX does. |
+| 705 | 4 | `private double ratio(Traded t, double[] p, double rho)` _(in WorldMarket.Base)_ |  |
+| 710 | 6 | `private static double median(List<Double> values)` _(in WorldMarket.Base)_ |  |
 
-### THE YEAR'S INPUTS - growth and the price path, from the nations (lines 697-732)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 702 | 8 | `static double[] growth(Nations nations, int year, int baseYear, int n)` | Each nation's output in a year over its output in the base year; 1 where either is no number above 0. |
-| 712 | 12 | `static int[] priceIndices(Nations nations, Traded[] traded)` | For each modelled good, its number in the nations' price layer (1-based), 0 where it has none. |
-| 726 | 6 | `static double level(Nations nations, int priceIdx, int year, int baseYear)` | The mean mill price's target in a year over the base year's: the good's real price path, 1 where it has none. |
-
-### THE SOLVE - one good's January, the nations alone (lines 733-952)
+### THE YEAR'S INPUTS - growth and the price path, from the nations (lines 721-756)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 738 | 17 | **type** `static final class Work` | One solve's scratch, sized for n nations: reused across goods, never kept. |
-| 744 | 10 | `Work(int n)` _(in WorldMarket.Work)_ |  |
-| 773 | 76 | `static int solve(Traded t, double[] gHat, double[] carve, boolean pin, double level, double tol, double[] phat, double[] lam, i...` | One good's solve, in place: phat[0..n) is each nation's mill price over the base year's and lam[lamAt] the world's supply scale, both the start and the answer. |
-| 855 | 97 | **type** `static final class Accel` | Anderson acceleration of a fixed-point iteration x -> g(x): it keeps the last few steps and moves x to the point their linear model says has no residual (the least-squares combination of the last differences), which t... |
-| 863 | 10 | `Accel(int maxDim)` _(in WorldMarket.Accel)_ |  |
-| 874 | 5 | `void reset()` _(in WorldMarket.Accel)_ |  |
-| 881 | 43 | `void mix(double[] x, double[] g, int dim)` _(in WorldMarket.Accel)_ | Replaces x with the next iterate, given g = G(x). |
-| 926 | 25 | `private boolean cholesky(int n)` _(in WorldMarket.Accel)_ | Solves ata gamma = atb for the first n unknowns by Cholesky; false if the matrix is not positive definite. |
+| 726 | 8 | `static double[] growth(Nations nations, int year, int baseYear, int n)` | Each nation's output in a year over its output in the base year; 1 where either is no number above 0. |
+| 736 | 12 | `static int[] priceIndices(Nations nations, Traded[] traded)` | For each modelled good, its number in the nations' price layer (1-based), 0 where it has none. |
+| 750 | 6 | `static double level(Nations nations, int priceIdx, int year, int baseYear)` | The mean mill price's target in a year over the base year's: the good's real price path, 1 where it has none. |
 
-### THE MARKET - one city's site, solved year and band (lines 953-1108)
+### THE SOLVE - one good's January, the nations alone (lines 757-976)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 958 | 1 | **type** `private record Solved(double[] prices, double[] scales, int[] passes)` | A solved year kept for the next city on the same world: the answer and how many sweeps each good took. |
-| 961 | 1 | **type** `private record SolveKey(Base base, Nations.Path path, long seed, int year, int warmYear, long start)` | What a solve is a function of: the file, the path and seed, the year, and the state it started from (its year and a fingerprint of its bits; -1 and 0 for cold). |
-| 975 | 74 | **type** `static final class Levels` | A water-filling with caps: sinks sorted by netback, best first, each with a slope (tonnes a year per US$ a tonne its netback may fall) and a cap (the most tonnes a year it takes). |
-| 981 | 40 | `Levels(double[] net, double[] slope, double[] cap, int len)` _(in WorldMarket.Levels)_ |  |
-| 1023 | 1 | `double capacity()` _(in WorldMarket.Levels)_ | The most the sinks take together, tonnes a year. |
-| 1026 | 13 | `double level(double x)` _(in WorldMarket.Levels)_ | The level at which the sinks take x tonnes a year: the best netback for 0, -infinity past the caps. |
-| 1041 | 4 | `double take(int k, double lam)` _(in WorldMarket.Levels)_ | What sink k takes at a level, tonnes a year. |
-| 1047 | 1 | `double joinAt(int k)` _(in WorldMarket.Levels)_ | The tonnes a year at which sink k joins the fill. |
-| 1054 | 7 | **type** `private static final class Fill` | The city's freight sides of one good at its site. |
-| 1063 | 1 | **type** `record Resolved(double step, double realised, double price, int served, int passes)` | The result of a re-solve (see resolve): the month's step and the nations' answer with the city's tonnes delivered, and the price they were sold at (the served buyers' landed price before the sale, tonne-weighted), in ... |
-| 1066 | 1 | **type** `public record Allocation(double[] exportUnitsTo, double[] importUnitsFrom)` | Who took this month's exports and who sold this month's imports, by nation (index nation - 1), in game units. |
-| 1086 | 22 | `public WorldMarket(Base base, Nations nations)` | A market on a Base for a world's nations, standing at the reference city (Halifax, no berth) until it is told where. |
+| 762 | 17 | **type** `static final class Work` | One solve's scratch, sized for n nations: reused across goods, never kept. |
+| 768 | 10 | `Work(int n)` _(in WorldMarket.Work)_ |  |
+| 797 | 76 | `static int solve(Traded t, double[] gHat, double[] carve, boolean pin, double level, double tol, double[] phat, double[] lam, i...` | One good's solve, in place: phat[0..n) is each nation's mill price over the base year's and lam[lamAt] the world's supply scale, both the start and the answer. |
+| 879 | 97 | **type** `static final class Accel` | Anderson acceleration of a fixed-point iteration x -> g(x): it keeps the last few steps and moves x to the point their linear model says has no residual (the least-squares combination of the last differences), which t... |
+| 887 | 10 | `Accel(int maxDim)` _(in WorldMarket.Accel)_ |  |
+| 898 | 5 | `void reset()` _(in WorldMarket.Accel)_ |  |
+| 905 | 43 | `void mix(double[] x, double[] g, int dim)` _(in WorldMarket.Accel)_ | Replaces x with the next iterate, given g = G(x). |
+| 950 | 25 | `private boolean cholesky(int n)` _(in WorldMarket.Accel)_ | Solves ata gamma = atb for the first n unknowns by Cholesky; false if the matrix is not positive definite. |
 
-### where the city stands (lines 1109-1149)
+### THE MARKET - one city's site, solved year and band (lines 977-1132)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1112 | 8 | `public void setSite(double lat, double lon, boolean berth)` | Puts the city at a point (an Earth city), with or without a berth: its host is the owner of the point. |
-| 1122 | 9 | `public void setStandIn(long groundSeed, boolean berth)` | Puts the city where a generated world's ground seed says (D23): a coastal nation drawn by its output, at its node, that nation its host. |
-| 1133 | 7 | `public void setBerth(boolean berth)` | Gives the city a berth, or takes it away; the legs are worked out again only if that changes it. |
-| 1142 | 1 | `public int standIn(long groundSeed)` | The nation a generated world's ground seed stands the city in (D23; see Base.standIn): the one setStandIn uses, 1-based. |
-| 1145 | 1 | `public int host()` | The nation the city stands in, 1-based. |
-| 1148 | 1 | `public boolean berth()` | Whether the city has a berth. |
+| 982 | 1 | **type** `private record Solved(double[] prices, double[] scales, int[] passes)` | A solved year kept for the next city on the same world: the answer and how many sweeps each good took. |
+| 985 | 1 | **type** `private record SolveKey(Base base, Nations.Path path, long seed, int year, int warmYear, long start)` | What a solve is a function of: the file, the path and seed, the year, and the state it started from (its year and a fingerprint of its bits; -1 and 0 for cold). |
+| 999 | 74 | **type** `static final class Levels` | A water-filling with caps: sinks sorted by netback, best first, each with a slope (tonnes a year per US$ a tonne its netback may fall) and a cap (the most tonnes a year it takes). |
+| 1005 | 40 | `Levels(double[] net, double[] slope, double[] cap, int len)` _(in WorldMarket.Levels)_ |  |
+| 1047 | 1 | `double capacity()` _(in WorldMarket.Levels)_ | The most the sinks take together, tonnes a year. |
+| 1050 | 13 | `double level(double x)` _(in WorldMarket.Levels)_ | The level at which the sinks take x tonnes a year: the best netback for 0, -infinity past the caps. |
+| 1065 | 4 | `double take(int k, double lam)` _(in WorldMarket.Levels)_ | What sink k takes at a level, tonnes a year. |
+| 1071 | 1 | `double joinAt(int k)` _(in WorldMarket.Levels)_ | The tonnes a year at which sink k joins the fill. |
+| 1078 | 7 | **type** `private static final class Fill` | The city's freight sides of one good at its site. |
+| 1087 | 1 | **type** `record Resolved(double step, double realised, double price, int served, int passes)` | The result of a re-solve (see resolve): the month's step and the nations' answer with the city's tonnes delivered, and the price they were sold at (the served buyers' landed price before the sale, tonne-weighted), in ... |
+| 1090 | 1 | **type** `public record Allocation(double[] exportUnitsTo, double[] importUnitsFrom)` | Who took this month's exports and who sold this month's imports, by nation (index nation - 1), in game units. |
+| 1110 | 22 | `public WorldMarket(Base base, Nations nations)` | A market on a Base for a world's nations, standing at the reference city (Halifax, no berth) until it is told where. |
 
-### the January solve (lines 1150-1210)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1157 | 34 | `public void solveYear(int year)` | Solves every good for a year, from the last year solved (or from p-hat = 1 and lambda = 1 for the first), and reads the band structures at the site. |
-| 1193 | 1 | `public int solvedYear()` | The year solved, -1 before the first. |
-| 1196 | 1 | `public double lastSolveMillis()` | The time the last solveYear took, milliseconds (the cache's answer included). |
-| 1199 | 4 | `public int passes(Good g)` | The sweeps a good's last solve took (0 for a good the market does not model or from the cache's answer's own count). |
-| 1204 | 6 | `private static long fingerprint(double[] a, double[] b)` |  |
-
-### what a solved year implies: prices, demand, supply, and then at the site the sorted sides (lines 1211-1366)
+### where the city stands (lines 1133-1173)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1213 | 45 | `private void deriveSolution()` |  |
-| 1259 | 5 | `private void refill()` |  |
-| 1266 | 15 | `private double pairShare(int gi, Traded t, int k, int j)` | The share a supplier k has of buyer j's composite in the solved state (its flow over the buyer's spending on the nations), 0 where the file keeps no pair. |
-| 1283 | 83 | `private Fill fill(int gi, double[] p, double[] d, double[] s)` | One good's sorted sides at the site, for mill prices p, demand d and supply s (tonnes a year). |
+| 1136 | 8 | `public void setSite(double lat, double lon, boolean berth)` | Puts the city at a point (an Earth city), with or without a berth: its host is the owner of the point. |
+| 1146 | 9 | `public void setStandIn(long groundSeed, boolean berth)` | Puts the city where a generated world's ground seed says (D23): a coastal nation drawn by its output, at its node, that nation its host. |
+| 1157 | 7 | `public void setBerth(boolean berth)` | Gives the city a berth, or takes it away; the legs are worked out again only if that changes it. |
+| 1166 | 1 | `public int standIn(long groundSeed)` | The nation a generated world's ground seed stands the city in (D23; see Base.standIn): the one setStandIn uses, 1-based. |
+| 1169 | 1 | `public int host()` | The nation the city stands in, 1-based. |
+| 1172 | 1 | `public boolean berth()` | Whether the city has a berth. |
 
-### the city's month: the fills and the band (lines 1367-1444)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1374 | 11 | `double[] model(int gi, double x, double m)` | A good's floor and ceiling in US$ a tonne for x tonnes a year sold and m bought: the fills, less the world's answer within the year (x - m over the world's slope). |
-| 1396 | 8 | `public double[] band(Good g, double exportUnitsLastMonth, double importUnitsLastMonth)` | The band for a good in the game's money, thousands of world dollars a game unit: {floor, ceiling}, from last month's exports and imports in game units. |
-| 1411 | 28 | `public Allocation allocate(Good g, double exportUnits, double importUnits)` | Who took this month's exports and who sold this month's imports, from the same fills at those volumes: the tonnes a binding supplier's sink takes are its slope times what its best buyer's netback leaves over the fill'... |
-| 1440 | 4 | `private static void scale(double[] a, double sum, double total)` |  |
-
-### reads for the wiring and the screens (lines 1445-1480)
+### the January solve (lines 1174-1234)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1448 | 1 | `public boolean trades(Good g)` | Whether the market models this good and the city has a side of it. |
-| 1451 | 1 | `public int nationCount()` | How many nations there are. |
-| 1454 | 1 | `public String iso3(int nation)` | A nation's ISO code, 1-based. |
-| 1457 | 1 | `public String name(int nation)` | A nation's name. |
-| 1460 | 1 | `public double nodeLat(int nation)` | The latitude of a nation's node. |
-| 1463 | 1 | `public double nodeLon(int nation)` | The longitude of a nation's node. |
-| 1466 | 5 | `public double millPrice(Good g, int nation)` | A nation's mill price for a good in the game's money (sigma times the model's), NaN for a nation that makes none or a good not modelled. |
-| 1473 | 7 | `public double buyerPrice(Good g, int nation)` | What the cheapest landed seller asks a nation's buyers for a good, in the game's money; NaN where none reaches. |
+| 1181 | 34 | `public void solveYear(int year)` | Solves every good for a year, from the last year solved (or from p-hat = 1 and lambda = 1 for the first), and reads the band structures at the site. |
+| 1217 | 1 | `public int solvedYear()` | The year solved, -1 before the first. |
+| 1220 | 1 | `public double lastSolveMillis()` | The time the last solveYear took, milliseconds (the cache's answer included). |
+| 1223 | 4 | `public int passes(Good g)` | The sweeps a good's last solve took (0 for a good the market does not model or from the cache's answer's own count). |
+| 1228 | 6 | `private static long fingerprint(double[] a, double[] b)` |  |
 
-### the save (lines 1481-1507)
+### what a solved year implies: prices, demand, supply, and then at the site the sorted sides (lines 1235-1390)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1484 | 1 | `public double[] savedPrices()` | Every modelled good's mill prices over the base year's, dense, good-major (goods x nations): what the save keeps of the solve. |
-| 1487 | 1 | `public double[] savedScales()` | Every modelled good's supply scale, in the same order. |
-| 1493 | 14 | `public boolean restore(int year, double[] prices, double[] scales)` | Restores a solved year from what the save kept, deriving everything without solving: the bands and allocations are bit for bit what the solve gave. |
+| 1237 | 45 | `private void deriveSolution()` |  |
+| 1283 | 5 | `private void refill()` |  |
+| 1290 | 15 | `private double pairShare(int gi, Traded t, int k, int j)` | The share a supplier k has of buyer j's composite in the solved state (its flow over the buyer's spending on the nations), 0 where the file keeps no pair. |
+| 1307 | 83 | `private Fill fill(int gi, double[] p, double[] d, double[] s)` | One good's sorted sides at the site, for mill prices p, demand d and supply s (tonnes a year). |
 
-### FOR THE CHECK - what a harness reads that the game does not (lines 1508-1660)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1512 | 1 | `Base base()` |  |
-| 1515 | 1 | `int indexOf(Good g)` | A good's index among the modelled, -1 if none. |
-| 1518 | 1 | `double[] phat(int gi)` | A good's mill prices over the base year's, as solved. |
-| 1520 | 1 | `double lambda(int gi)` |  |
-| 1522 | 1 | `double[] gHat()` |  |
-| 1525 | 1 | `double levelTarget(int gi)` | The mean mill price's target for a good this year. |
-| 1528 | 1 | `double demand(int gi, int nation)` | A nation's use of a good this year (1-based), tonnes a year. |
-| 1531 | 5 | `double worldUse(int gi)` | The world's use of a good this year, tonnes a year. |
-| 1538 | 5 | `double[] extremes(int gi)` | A good's city-side figures: {first netback, cheapest landed cost, the world's slope}, US$ a tonne and tonnes a year per US$ a tonne. |
-| 1545 | 11 | `double[][] sellers(int gi, double x)` | The sinks the fill at x tonnes a year serves, in the order they join: rows of {the best buyer's nation (1-based), tonnes a year, its netback before the sale, the level at the end of the fill (-infinity past every cap)... |
-| 1558 | 7 | `double[][] sellSide(int gi)` | A good's sinks at the site by netback, best first: {the best buyer's nation (1-based), slope (tonnes a year per US$ a tonne), its netback US$ a tonne, the binding supplier's nation, cap tonnes a year}. |
-| 1567 | 7 | `double[][] buySide(int gi)` | A good's makers at the site by landed cost, cheapest first: {nation (1-based), slope, landed cost US$ a tonne, cap tonnes a year}. |
-| 1576 | 5 | `double[] capacities(int gi)` | What all a good's sinks take together at the site, and all its sellers sell: {tonnes a year, tonnes a year}. |
-| 1583 | 5 | `static void forgetSolves()` | Forgets the solved years every market shares, so the next solve is a fresh one (a harness proves a solve repeats itself, not that the cache does). |
-| 1590 | 12 | `double servedPrice(int gi, double x)` | The landed price at the buyers the fill at x tonnes a year serves, before the sale, weighted by the tonnes; the best buyer's where it sells nothing. |
-| 1604 | 6 | `double joinsAt(int gi, int nation)` | The tonnes a year of sales at which the fill reaches a nation's buyers (1-based; it reaches them through the best buyer of their binding supplier), or NaN if it never does. |
-| 1617 | 43 | `Resolved resolve(int gi, double x)` | The check's re-solve of the month's step: the fill at x tonnes a year sold, then the nations' solve again with the tonnes the fill delivers taken out of their buyers' demand (their spending on the nations' goods P-hat... |
-
-### SORTING - indices by a key, stable, no boxing (lines 1661-1696)
+### the city's month: the fills and the band (lines 1391-1468)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1666 | 3 | `static void sortBy(int[] idx, int len, double[] key, boolean descending)` | Sorts idx[0..len) by key[idx], descending or ascending; equal keys keep the order they were given in. |
-| 1670 | 22 | `private static void mergeSort(int[] a, int[] tmp, int lo, int hi, double[] key, boolean desc)` |  |
-| 1693 | 3 | `private static boolean before(double[] key, int x, int y, boolean desc)` |  |
+| 1398 | 11 | `double[] model(int gi, double x, double m)` | A good's floor and ceiling in US$ a tonne for x tonnes a year sold and m bought: the fills, less the world's answer within the year (x - m over the world's slope). |
+| 1420 | 8 | `public double[] band(Good g, double exportUnitsLastMonth, double importUnitsLastMonth)` | The band for a good in the game's money, thousands of world dollars a game unit: {floor, ceiling}, from last month's exports and imports in game units. |
+| 1435 | 28 | `public Allocation allocate(Good g, double exportUnits, double importUnits)` | Who took this month's exports and who sold this month's imports, from the same fills at those volumes: the tonnes a binding supplier's sink takes are its slope times what its best buyer's netback leaves over the fill'... |
+| 1464 | 4 | `private static void scale(double[] a, double sum, double total)` |  |
+
+### reads for the wiring and the screens (lines 1469-1504)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1472 | 1 | `public boolean trades(Good g)` | Whether the market models this good and the city has a side of it. |
+| 1475 | 1 | `public int nationCount()` | How many nations there are. |
+| 1478 | 1 | `public String iso3(int nation)` | A nation's ISO code, 1-based. |
+| 1481 | 1 | `public String name(int nation)` | A nation's name. |
+| 1484 | 1 | `public double nodeLat(int nation)` | The latitude of a nation's node. |
+| 1487 | 1 | `public double nodeLon(int nation)` | The longitude of a nation's node. |
+| 1490 | 5 | `public double millPrice(Good g, int nation)` | A nation's mill price for a good in the game's money (sigma times the model's), NaN for a nation that makes none or a good not modelled. |
+| 1497 | 7 | `public double buyerPrice(Good g, int nation)` | What the cheapest landed seller asks a nation's buyers for a good, in the game's money; NaN where none reaches. |
+
+### the save (lines 1505-1576)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1508 | 1 | `public double[] savedPrices()` | Every modelled good's mill prices over the base year's, dense, good-major (goods x nations): what the save keeps of the solve. |
+| 1511 | 1 | `public double[] savedScales()` | Every modelled good's supply scale, in the same order. |
+| 1522 | 35 | `public double[] lnTermsOfTrade()` | Each nation's terms of trade in the year solved, in logs against the base year (index nation - 1; WN4, spec-exchange-rates 3.7): the log of its export price index over its import price index. |
+| 1562 | 14 | `public boolean restore(int year, double[] prices, double[] scales)` | Restores a solved year from what the save kept, deriving everything without solving: the bands and allocations are bit for bit what the solve gave. |
+
+### FOR THE CHECK - what a harness reads that the game does not (lines 1577-1729)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1581 | 1 | `Base base()` |  |
+| 1584 | 1 | `int indexOf(Good g)` | A good's index among the modelled, -1 if none. |
+| 1587 | 1 | `double[] phat(int gi)` | A good's mill prices over the base year's, as solved. |
+| 1589 | 1 | `double lambda(int gi)` |  |
+| 1591 | 1 | `double[] gHat()` |  |
+| 1594 | 1 | `double levelTarget(int gi)` | The mean mill price's target for a good this year. |
+| 1597 | 1 | `double demand(int gi, int nation)` | A nation's use of a good this year (1-based), tonnes a year. |
+| 1600 | 5 | `double worldUse(int gi)` | The world's use of a good this year, tonnes a year. |
+| 1607 | 5 | `double[] extremes(int gi)` | A good's city-side figures: {first netback, cheapest landed cost, the world's slope}, US$ a tonne and tonnes a year per US$ a tonne. |
+| 1614 | 11 | `double[][] sellers(int gi, double x)` | The sinks the fill at x tonnes a year serves, in the order they join: rows of {the best buyer's nation (1-based), tonnes a year, its netback before the sale, the level at the end of the fill (-infinity past every cap)... |
+| 1627 | 7 | `double[][] sellSide(int gi)` | A good's sinks at the site by netback, best first: {the best buyer's nation (1-based), slope (tonnes a year per US$ a tonne), its netback US$ a tonne, the binding supplier's nation, cap tonnes a year}. |
+| 1636 | 7 | `double[][] buySide(int gi)` | A good's makers at the site by landed cost, cheapest first: {nation (1-based), slope, landed cost US$ a tonne, cap tonnes a year}. |
+| 1645 | 5 | `double[] capacities(int gi)` | What all a good's sinks take together at the site, and all its sellers sell: {tonnes a year, tonnes a year}. |
+| 1652 | 5 | `static void forgetSolves()` | Forgets the solved years every market shares, so the next solve is a fresh one (a harness proves a solve repeats itself, not that the cache does). |
+| 1659 | 12 | `double servedPrice(int gi, double x)` | The landed price at the buyers the fill at x tonnes a year serves, before the sale, weighted by the tonnes; the best buyer's where it sells nothing. |
+| 1673 | 6 | `double joinsAt(int gi, int nation)` | The tonnes a year of sales at which the fill reaches a nation's buyers (1-based; it reaches them through the best buyer of their binding supplier), or NaN if it never does. |
+| 1686 | 43 | `Resolved resolve(int gi, double x)` | The check's re-solve of the month's step: the fill at x tonnes a year sold, then the nations' solve again with the tonnes the fill delivers taken out of their buyers' demand (their spending on the nations' goods P-hat... |
+
+### SORTING - indices by a key, stable, no boxing (lines 1730-1765)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1735 | 3 | `static void sortBy(int[] idx, int len, double[] key, boolean descending)` | Sorts idx[0..len) by key[idx], descending or ascending; equal keys keep the order they were given in. |
+| 1739 | 22 | `private static void mergeSort(int[] a, int[] tmp, int lo, int hi, double[] key, boolean desc)` |  |
+| 1762 | 3 | `private static boolean before(double[] key, int x, int y, boolean desc)` |  |
 

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * The nations beyond the city, each on the world's path: its year - output,
@@ -223,6 +224,9 @@ public final class Nations {
     private final Series[] people, output, cpi, rate;
     private final int[] outLast, cpiLast, rateLast;
     private final Map<String, Integer> anchor = new LinkedHashMap<>();
+    /** WN4: every money the path can name, sorted by code, and for a code that is no later money its anchor (0-based): the nation of largest 2025 output that was ever on it. */
+    private final String[] pathMoneys;
+    private final Map<String, Integer> historyAnchor = new HashMap<>();
     private final String[] goodKey;
     private final Series[] price;
     private final int[] priceLast;
@@ -338,6 +342,26 @@ public final class Nations {
             }
             decided.addAll(anchor.keySet());
         }
+        // WN4: the moneys a path can use (Random: each nation's money of 2000 and its later one; Historical: every money of its history and its 2025 one),
+        // and the anchor of one that is no later money. Read by WorldMoneys; nothing above is changed by it.
+        TreeSet<String> usable = new TreeSet<>();
+        for (int i = 0; i < n; i++) {
+            Set<String> mine = new HashSet<>();
+            mine.add(moneyLater[i]);
+            mine.add(moneyDec[i][0]);
+            if (historical) {
+                mine.addAll(Arrays.asList(moneyDec[i]));
+                mine.addAll(Arrays.asList(file.nation(i + 1).moneyCodes()));
+            }
+            mine.remove(null);
+            usable.addAll(mine);
+            for (String code : mine) {
+                if (anchor.containsKey(code)) continue;
+                Integer a = historyAnchor.get(code);
+                if (a == null || size[i] > size[a]) historyAnchor.put(code, i);
+            }
+        }
+        pathMoneys = usable.toArray(new String[0]);
         int goods = file.hasPrices() ? file.goodCount() : 0;
         if (goods > 0 && file.priceFirstYear() != FIRST_YEAR) throw new IllegalArgumentException("nations: the prices begin in " + file.priceFirstYear());
         goodKey = new String[goods];
@@ -452,6 +476,25 @@ public final class Nations {
 
     /** A nation's region, the World Bank's (the file's; East Asia & Pacific for the one it gives none). */
     String region(int nation) { return regionName[check(nation)]; }
+
+    /** A nation's regime in the file (or the harness's): "float", "peg:CODE" or "uses:CODE". */
+    String regime(int nation) { return regime[check(nation)]; }
+
+    /** Whether any nation is on this money after the history (Historical: in 2025, Random: from 2001): the later moneys, the ones a path goes on ruling. */
+    boolean usedAfterHistory(String code) { return anchor.containsKey(code); }
+
+    /** Every money the path can name, sorted by code (WN4): Random's are each nation's money of 2000 and its later one, Historical's every money of the file's history and the 2025 one. */
+    String[] pathMoneys() { return pathMoneys.clone(); }
+
+    /**
+     * The nation whose price level is a money's, 1-based, 0 for a code the path cannot name: a later money's anchor (the largest 2025 output using it, not
+     * a uses: nation), else, for a money of the history only (the lira, the drachma), the nation of largest 2025 output that was ever on it.
+     */
+    int anchorNation(String code) {
+        Integer a = anchor.get(code);
+        if (a == null) a = historyAnchor.get(code);
+        return a == null ? 0 : a + 1;
+    }
 
     /** A good's yearly price swing, one standard deviation of its file's log change 2001-2025, never under MIN_PRICE_SWING. */
     double priceSwing(int good) { return swing[checkGood(good)]; }
