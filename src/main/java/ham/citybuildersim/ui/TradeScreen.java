@@ -2948,6 +2948,10 @@ final class TradeScreen {
         if (Math.abs(fx.getLastVaultRevaluation()) > .005) {
             c.getChildren().add(cardLine("the currency moved it this month by", signedFull(fx.getLastVaultRevaluation()), null));
         }
+        // XR4: the balances earn their central banks' rates; the yield, struck on the dollars the earning balances were worth.
+        if (Math.abs(fx.getVaultInterestUsd()) > .005) {
+            c.getChildren().add(cardLine("earning, a year on average", ratePct(fx.getVaultYield()), null));
+        }
         c.getChildren().add(doorPill("The reserves", Icons.SAFE, Palette.MONEY, () -> open(RESERVES)));
         return c;
     }
@@ -3118,7 +3122,28 @@ final class TradeScreen {
             c.getChildren().add(cardLine("sudden stops since founding", String.valueOf(hot.getStopsSuffered()), null));
         }
         if (hot.getPeakStock() > 0) c.getChildren().add(cardLine("the most that was ever here", dFull(hot.getPeakStock()), null));
+        c.getChildren().addAll(riskOffLines(hot));
         return c;
+    }
+
+    /**
+     * ...and what the risk-offs did to it (XR4; pure): when one has ever sent the hot money or the carry home, a line of the local money it took, the
+     * months counted, and this month's share of it where this month was one. None for a city no risk-off has touched.
+     */
+    List<Node> riskOffLines(CapitalFlows hot) {
+        List<Node> out = new ArrayList<>();
+        double lifetime = hot.getRiskOffDepartedLifetime() + hot.getCarryRiskRepaidLifetime();
+        if (!(lifetime > 0)) return out;
+        double month = hot.getRiskOffDeparted() + hot.getCarryRiskRepaid();
+        int months = hot.getRiskOffMonths();
+        out.add(cardLine("risk-offs sent " + dFull(lifetime) + " home", months + (months == 1 ? " month" : " months")
+                + (month > 0 ? " · " + dFull(month) + " this month" : ""), month > 0 ? Palette.WARN : null,
+                String.format("When the world runs for the exit the money that came for the rate leaves with it: %.0f%% of the "
+                        + "parked money a month at a risk-off of size one, and %.0f%% of the carry trade's borrowing repaid, scaled "
+                        + "by how deep the risk-off is as it fades. These are the sums, in local money, since founding, over the "
+                        + "%d %s a risk-off was felt.", CapitalFlows.RISK_OFF_HOT_UNWIND * 100, CapitalFlows.RISK_OFF_CARRY_UNWIND * 100,
+                        months, months == 1 ? "month" : "months")));
+        return out;
     }
 
     /** One of WHAT ELSE MOVED THE VAULT's chips, worked out without drawing it (pure): its words, its colour, its (i). */
@@ -3152,6 +3177,25 @@ final class TradeScreen {
                     "The vault keeps a balance in each of the eight moneys, and the dollar value of each moves when it moves against the "
                             + "dollar. Nobody was paid anything and nothing left the vault: it is not cash until a balance is sold, "
                             + "and a sale is at that day's rate. A vault that is all dollars has none of this."));
+        }
+        // ...AND WHAT THE BALANCES EARNED (XR4, THE VAULT EARNS ITS MONEYS' RATES): each at its central bank's policy rate, kept in the vault in that
+        // money, and the money that earned (or lost) most. None in a month nothing was earned: a vault that is empty, or a city with no world file.
+        double interest = fx.getVaultInterestUsd();
+        if (Math.abs(interest) > .005) {
+            int driver = fx.getVaultInterestDriver();
+            PolicyRates policy = ui.game.getPolicyRates();
+            String who = driver < 0 ? "" : policy == null || !Double.isFinite(policy.rate(driver))
+                    ? ": " + ForeignAccounts.MONEY_NAME[driver] + (fx.getVaultInterestDriverUsd() < 0 ? " cost it most" : " earned most")
+                    : String.format(": %s %s most, at %s", ForeignAccounts.MONEY_NAME[driver],
+                            fx.getVaultInterestDriverUsd() < 0 ? "cost it" : "earned", ratePct(policy.rate(driver)));
+            out.add(new Moved("the vault " + (interest < 0 ? "paid " : "earned ") + usd(Math.abs(interest)) + " in interest this month" + who,
+                    Palette.TEXT_LABEL,
+                    String.format("The vault keeps a balance in each of the eight moneys, and each balance earns its central bank's "
+                            + "policy rate - the Fed's on the dollars, the ECB's on the euros, and so on - a twelfth of it a month. The "
+                            + "interest stays in the vault, in that money: no %s is made for it, and it reaches the city only when the "
+                            + "vault sells. The vault's yield this month is %s a year, the interest over what the earning balances were "
+                            + "worth; %s has been earned since founding. A bank whose rate is below nothing takes from its balance "
+                            + "instead.", sym(), ratePct(fx.getVaultYield()), usdFull(fx.getVaultInterestUsdLifetime()))));
         }
         if (fx.getDefenceUsdLifetime() > 0) {
             out.add(new Moved(fx.getDefenceUsd() > 0
@@ -3192,9 +3236,9 @@ final class TradeScreen {
 
     VBox movedCard() {
         VBox c = card(cardHead(Icons.SAFE, Palette.MONEY, "WHAT ELSE MOVED THE VAULT", "The treasury's purchases and "
-                + "sales are the exchange, below. Besides them three things move the vault: the currency, which revalues "
-                + "its dollars; the central bank, which sells them defending a currency pushed down; and the land office, "
-                + "when land is paid for out of it.", null));
+                + "sales are the exchange, below. Besides them four things move the vault: the currency, which revalues "
+                + "its dollars; the interest its balances earn; the central bank, which sells them defending a currency pushed down; "
+                + "and the land office, when land is paid for out of it.", null));
         List<Moved> all = moved();
         if (all.isEmpty()) {
             c.getChildren().add(line("Nothing else moved it this month.", null));

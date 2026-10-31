@@ -1142,17 +1142,17 @@ final class PolicyScreen {
     VBox moneyCard() {
         DebtManager market = ui.game.getDebtManager();
         PriceIndex px = ui.game.getPriceIndex();
-        double dial = market.getPolicyRate(), city = market.getRate(), world = DebtManager.WORLD_BASE_RATE;
+        double dial = market.getPolicyRate(), city = market.getRate(), world = market.worldRate();
         double rule = px.hasRate() ? market.advisedPolicyRate(px.inflation()) : Double.NaN;
         double top = Math.max(.03, 1.25 * Math.max(Math.max(dial, city), Math.max(world, Double.isFinite(rule) ? rule : 0)));
         List<Tick> ticks = new ArrayList<>();
-        ticks.add(new Tick(world, Palette.TEXT_SPENT, 2, null, "the world's rate " + pct2(world)));
+        ticks.add(new Tick(world, Palette.TEXT_SPENT, 2, null, worldsRate() + " " + pct2(world)));
         ticks.add(new Tick(city, Palette.TEXT_LABEL, 2, null, "the city borrows at " + pct2(city)));
         if (Double.isFinite(rule)) ticks.add(new Tick(rule, Palette.TEXT_MUTED, 2, null, "the rule says " + pct2(rule)));
         ticks.add(new Tick(dial, Palette.MONEY, 3, null, "the dial " + pct2(dial)));
         VBox picture = new VBox(3, segmentBar(List.of(), top, ticks, 0, 6),
                 muted("dial " + pct2(dial) + (Double.isFinite(rule) ? " · rule " + pct2(rule) : "")
-                        + " · city " + pct2(city) + " · world " + pct2(world)));
+                        + " · city " + pct2(city) + " · " + worldName() + " " + pct2(world)));
         // ...and the anchor (0.7.45): what people expect, and how far they trust the bank.
         String anchor = "expect " + rate1(ui.game.getExpectedInflation()) + " · trust " + trust(ui.game.getCredibility());
         String line = px.hasRate()
@@ -2537,7 +2537,7 @@ final class PolicyScreen {
     static final String REAL_INFO = "The currency follows this one: a dial under the inflation people expect is a "
             + "real rate the world is paid to leave, and it pushes the currency down however high "
             + "the number on the dial is. The dial less the inflation people expect, against the world's rate less "
-            + "its own inflation.";
+            + "its own inflation - the world's rate being the US's policy rate, the Federal Reserve's, where the city has the world file.";
 
     /** The dial's own real rate (0.7.45): REAL_INFO's first half, for the dial alone. */
     static final String REAL_DIAL_INFO = "The dial less the inflation people expect: what saving at the dial earns "
@@ -2556,9 +2556,9 @@ final class PolicyScreen {
                 ? "the ghosts: at the staged dial, from next month" : "every rate in the city on one scale")));
         page.getChildren().add(card(rateLine(rate, want, moved), row(
                 rateCell("OVER THE WORLD", points(market.overTheWorld()), moved
-                        ? "→ " + points(market.overTheWorldAt(want)) + " at the staged dial" : "the city's rate less the world's " + pct2(DebtManager.WORLD_BASE_RATE), OVER_INFO),
+                        ? "→ " + points(market.overTheWorldAt(want)) + " at the staged dial" : "the city's rate less " + (hasUsRate() ? "the US's " : "the world's ") + pct2(market.worldRate()), OVER_INFO),
                 rateCell("REAL, AGAINST THE WORLD", points(ui.game.realRateDifferential()),
-                        "the dial less expected inflation, against the world's", REAL_INFO),
+                        "the dial less expected inflation, against " + (hasUsRate() ? "the US's rate less the US's inflation" : "the world's"), REAL_INFO),
                 rateCell("REAL, THE DIAL", points(ui.game.realPolicyRate()),
                         "the dial less the " + pct2(ui.game.getExpectedInflation()) + " people expect", REAL_DIAL_INFO))));
 
@@ -2659,8 +2659,8 @@ final class PolicyScreen {
                 "What the city itself borrows at: its short-end rate"));
         out.add(new RateMark(bank.prime(rate), "prime " + pct2(bank.prime(rate)), Palette.BUSINESS, false,
                 "What a good credit pays the bank to borrow: prime"));
-        out.add(new RateMark(DebtManager.WORLD_BASE_RATE, "world " + pct2(DebtManager.WORLD_BASE_RATE), Palette.TEXT_SPENT, false,
-                "The world's own rate"));
+        out.add(new RateMark(market.worldRate(), worldName() + " " + pct2(market.worldRate()), Palette.TEXT_SPENT, false,
+                hasUsRate() ? "The US's policy rate: the Federal Reserve's, the world's price of money" : "The world's own rate"));
         if (moved) {
             out.add(new RateMark(want, "dial → " + pct2(want), Palette.ACCENT, true, "The dial as staged"));
             out.add(new RateMark(bank.depositRateAt(want), "savers → " + ratePct(bank.depositRateAt(want)), Palette.ACCENT, true,
@@ -2768,7 +2768,7 @@ final class PolicyScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         double tied = market.tiedRate(fx.currencyGap());
         boolean ruleSetsSpread = market.isAutopilot() && market.getAim() != DebtManager.Aim.INFLATION;
-        double spread = ruleSetsSpread ? tied - DebtManager.WORLD_BASE_RATE : market.getPegSpread();
+        double spread = ruleSetsSpread ? tied - market.worldRate() : market.getPegSpread();
         boolean ruleHasIt = market.isAutopilot();
         HBox hand = new HBox(8, words(ruleHasIt
                         ? "In the rule's hand: aiming at " + market.getAim().words.toLowerCase() + "."
@@ -3903,7 +3903,7 @@ final class PolicyScreen {
     String aimSays(DebtManager.Aim a) {
         return switch (a) {
             case INFLATION -> "The Taylor rule, as before: the Fed's and the ECB's way.";
-            case CURRENCY -> "The dial holds the band or the peg: the US's rate, " + pct2(DebtManager.WORLD_BASE_RATE)
+            case CURRENCY -> "The dial holds the band or the peg: the US's rate, " + pct2(ui.game.getDebtManager().worldRate())
                     + ", plus " + pointsOf(DebtManager.CURRENCY_WEIGHT) + " for each 1% the " + sym() + " sits past its target.";
             case MIX -> "The inflation rule plus that: " + pointsOf(DebtManager.CURRENCY_WEIGHT)
                     + " for each 1% the " + sym() + " sits past its target.";
@@ -3918,8 +3918,26 @@ final class PolicyScreen {
                 + "target (the peg, or the band's centre) - an open-economy Taylor rule, as small open economies run. A "
                 + "mix: the inflation rule plus that. Under a peg the dial is tied to the US's rate whatever is chosen: "
                 + "only the spread is the aim's. The aim acts only with the autopilot on; a float has no target for the "
-                + "currency to aim at, so there the dial follows inflation whatever is chosen. The US's rate stands for "
-                + "a figure of the world's own, " + pct2(DebtManager.WORLD_BASE_RATE) + ", until the US has a rate of its own.";
+                + "currency to aim at, so there the dial follows inflation whatever is chosen. " + usRateInfo();
+    }
+
+    /** Whether the city has the world file's policy rates (XR4), so the US's rate is the Federal Reserve's; false, and the US's rate is the world's own constant (pure). */
+    boolean hasUsRate() { return ui.game.getPolicyRates() != null; }
+
+    /** What the world's rate is called beside the dial: the US's where it is the Federal Reserve's, the world's where it is the constant (pure). */
+    String worldsRate() { return hasUsRate() ? "the US's rate" : "the world's rate"; }
+
+    /** ...and as a short word on the rate line: "US" or "world" (pure). */
+    String worldName() { return hasUsRate() ? "US" : "world"; }
+
+    /** What the US's rate is this month, in words (pure): the Federal Reserve's policy rate, this month's figure, or the world's own constant for a city with no world file. */
+    String usRateInfo() {
+        double us = ui.game.getDebtManager().worldRate();
+        return hasUsRate()
+                ? "The US's rate is the Federal Reserve's policy rate, this month's figure: " + pct2(us) + ". A city with no world file "
+                  + "reads " + pct2(DebtManager.WORLD_BASE_RATE) + " instead."
+                : "The US's rate here is a figure of the world's own, " + pct2(us) + ": this city has no world file, and without one "
+                  + "the US has no rate of its own. With the file it is the Federal Reserve's policy rate, this month's figure.";
     }
 
     /** What each aim would set the dial to now, under the regime in force (pure): a rate; null for a rule that reads inflation before there is a year of prices to read. */
@@ -3984,9 +4002,10 @@ final class PolicyScreen {
     /* ----- THE DIAL UNDER A PEG ----- */
 
     /** THE DIAL UNDER A PEG's (i): the tie, the spread, and the trinity. */
-    static String pegDialInfo() {
-        return "Under a peg the dial is tied to the US's rate: the policy rate is the US's, " + pct2(DebtManager.WORLD_BASE_RATE)
-                + " until the US has a rate of its own, plus a spread. The spread is yours to set - up against money "
+    String pegDialInfo() {
+        return "Under a peg the dial is tied to the US's rate: the policy rate is the US's, " + pct2(ui.game.getDebtManager().worldRate())
+                + (hasUsRate() ? " this month (the Federal Reserve's)" : " (this city has no world file, so a figure of the world's own)")
+                + ", plus a spread. The spread is yours to set - up against money "
                 + "leaving, down against money arriving - or, with the autopilot aiming at the currency or a mix, the "
                 + "rule's: " + plain(DebtManager.CURRENCY_WEIGHT) + " times the gap of the shadow rate from the peg. Hong "
                 + "Kong's rate follows the US's by this working. A free dial, an open border and a fixed rate cannot all "
@@ -3994,8 +4013,8 @@ final class PolicyScreen {
     }
 
     /** The tied dial in words: "2.50% = the US's 2.00% + the spread 0.50%", or with the joiners "plus" and "less" (pure). */
-    static String tiedWords(double dial, double spread, String plus, String minus) {
-        return pct2(dial) + " = the US's " + pct2(DebtManager.WORLD_BASE_RATE) + (spread < 0 ? minus : plus)
+    String tiedWords(double dial, double spread, String plus, String minus) {
+        return pct2(dial) + " = the US's " + pct2(ui.game.getDebtManager().worldRate()) + (spread < 0 ? minus : plus)
                 + "the spread " + pct2(Math.abs(spread));
     }
 
@@ -4009,7 +4028,7 @@ final class PolicyScreen {
         DebtManager market = ui.game.getDebtManager();
         double gap = fx.currencyGap(), tied = market.tiedRate(gap);
         boolean ruleHas = market.isAutopilot() && market.getAim() != DebtManager.Aim.INFLATION;
-        double spread = ruleHas ? tied - DebtManager.WORLD_BASE_RATE : market.getPegSpread();
+        double spread = ruleHas ? tied - market.worldRate() : market.getPegSpread();
         VBox c = card(cardHead(Icons.BANK, Palette.MONEY, "THE DIAL UNDER A PEG", pegDialInfo(), null),
                 words(tiedWords(tied, spread, " + ", " − "), Palette.SIZE_HEADING + 3, Palette.TEXT_HEAD));
         if (Math.abs(market.getPolicyRate() - tied) > 1e-9) {
@@ -4023,8 +4042,8 @@ final class PolicyScreen {
         } else {
             double want = staged(XR_SPREAD, spread);
             c.getChildren().add(cardLine("The spread over the US's rate", points(want) + (isStaged(XR_SPREAD) ? " · staged" : ""), null));
-            c.getChildren().add(stepper(XR_SPREAD, spread, SPREAD_STEP, DebtManager.MIN_POLICY_RATE - DebtManager.WORLD_BASE_RATE,
-                    DebtManager.MAX_POLICY_RATE - DebtManager.WORLD_BASE_RATE,
+            c.getChildren().add(stepper(XR_SPREAD, spread, SPREAD_STEP, DebtManager.MIN_POLICY_RATE - market.worldRate(),
+                    DebtManager.MAX_POLICY_RATE - market.worldRate(),
                     pointsOf(SPREAD_STEP * 100), pointsOf(SPREAD_STEP * 100)));
             c.getChildren().add(muted("Raise it against money leaving, lower it against money arriving."));
             c.getChildren().addAll(currencyFoot("Set the spread to " + points(want), () -> market.setPegSpread(want), XR_SPREAD));

@@ -4401,9 +4401,10 @@ final class MapView {
         Game g = ui.game;
         // The D$ a US$ is the foreign accounts' rate (Markets.getExchangeRate() is that times the world's price level).
         // WN4: the money's rate this month where the city has the world's moneys, else the file's year.
+        // XR4: ...and the policy rate of its central bank where the money is one of the eight and the city has the policy rates (a row, else none).
         WorldMoneys moneys = g.getWorldMoneys();
         NationsMap.Card c = nm.card(ns, nationShown, Nations.yearOf(g.getMonth()), globe.cityLat(), globe.cityLon(), g.getForeignAccounts().getRate(),
-                tradeFeed().yearToDate(nationShown), moneys == null ? Double.NaN : moneys.rateOfNation(nationShown));
+                tradeFeed().yearToDate(nationShown), moneys == null ? Double.NaN : moneys.rateOfNation(nationShown), g.getPolicyRates());
         nationKey = nationCardKey();
         Label name = new Label(c.name());
         name.setStyle(Palette.strong(15, Palette.TEXT));
