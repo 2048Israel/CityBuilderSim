@@ -47,7 +47,7 @@
 
 **Uses:** [GameFiles](GameFiles.md) (1), [GameVersion](GameVersion.md) (1)
 
-**Used by (10):** [AutoBuilder](AutoBuilder.md), [CityBuilderSim](CityBuilderSim.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [GameFiles](GameFiles.md), [GamePrefs](GamePrefs.md), [PolicyScreen](PolicyScreen.md), [RobustnessCheck](RobustnessCheck.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md)
+**Used by (11):** [AutoBuilder](AutoBuilder.md), [CityBuilderSim](CityBuilderSim.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [GameFiles](GameFiles.md), [GamePrefs](GamePrefs.md), [PolicyScreen](PolicyScreen.md), [RobustnessCheck](RobustnessCheck.md), [SavedCities](SavedCities.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md)
 
 ## Constants
 

@@ -551,7 +551,7 @@ public class HistoryCheck {
         // ...nor 0.7.35's parity beside the rate, nor XR1's fair level and market swing.
         for (String added : new String[]{"policyRate", "bankPrime", "bankDepositRate", "bankFees",
                 "bankCapitalRatio", "bankCapitalTarget", "bankAllowance", "bankProvisions",
-                "bankDividends", "bankReturnOnEquity", "fxParity", "fxFair", "fxMarket"}) {
+                "bankDividends", "bankReturnOnEquity", "fxParity", "fxFair", "fxMarket", "usPrices"}) {
             before077 = dropSeries(before077, added);
         }
         StringBuilder premiums = new StringBuilder("\"bankPremium\":[");
@@ -572,7 +572,13 @@ public class HistoryCheck {
         assertTrue("...and the bank's prices are empty, not absent",
                 was.seriesByName().get("bankPrime") != null
                         && was.seriesByName().get("bankPrime").isEmpty());
+        assertTrue("...and so is LB3's price level of the game dollar (usPrices), empty and not absent",
+                was.seriesByName().get("usPrices") != null && was.seriesByName().get("usPrices").isEmpty());
         quietly(() -> old076.simulateMonths(2));
+        assertTrue("...and usPrices fills from the end as the others do, at the world's own level, drawn as not recorded before",
+                old076.getHistorySave().seriesByName().get("usPrices").size() == 2
+                        && Double.isNaN(old076.getHistorySave().aligned("usPrices")[0])
+                        && old076.getHistorySave().aligned("usPrices")[old076.getHistorySave().months() - 1] == old076.getWorldEconomy().getPriceLevel());
         assertTrue("...and fill from the end once the city plays on",
                 old076.getHistorySave().seriesByName().get("bankPrime").size() == 2
                         && !Double.isNaN(old076.getHistorySave().aligned("bankPrime")

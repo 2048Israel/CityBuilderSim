@@ -40,7 +40,7 @@
 > earlier wording of this very comment was a second match, and survived only
 > because it happened to carry no equals sign.
 
-**Used by (19):** [BridgeCheck](BridgeCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
+**Used by (20):** [BridgeCheck](BridgeCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [RankingsCheck](RankingsCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
 
 ## Constants
 

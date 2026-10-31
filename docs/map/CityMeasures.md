@@ -1,4 +1,4 @@
-# CityMeasures.java - 389 lines · 19 methods · 6 constants · model
+# CityMeasures.java - 468 lines · 23 methods · 8 constants · model
 
 `ham/citybuildersim/CityMeasures.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -62,56 +62,63 @@
 > WHERE A RULE OF THE BRIEF DID NOT FIT WHAT THE SERIES IS, and the book's own
 > definition was taken: unemployment is YearBook.unemploymentTail, the people out
 > of work over the LABOUR force (workforce less students and prisoners), not over
-> ... (15 more lines in the source)
+> ... (21 more lines in the source)
 
-**Uses:** [AgeBand](AgeBand.md) (12), [HistorySave](HistorySave.md) (3), [YearBook](YearBook.md) (2), [Crime](Crime.md) (1)
+**Uses:** [AgeBand](AgeBand.md) (12), [HistorySave](HistorySave.md) (7), [YearBook](YearBook.md) (4), [Crime](Crime.md) (1)
 
-**Used by (3):** [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md)
+**Used by (4):** [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [SavedCities](SavedCities.md)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 88 | `CityMeasures.THOUSANDS` | `1_000` | The model counts money in thousands (ui/Money): this turns a money series' figure into whole units of the city's money. |
-| 91 | `CityMeasures.YEAR` | `12` | The months in a year: the window F(s) sums, and the distance inflation and population growth look back. |
-| 94 | `CityMeasures.GROWTH_MONTHS` | `2 * YEAR` | Months the real growth of a year over the year before needs: two years. |
-| 97 | `CityMeasures.DECADE` | `10, DECADE_MONTHS = DECADE * YEAR + YEAR` | Years the long growth compounds over, and the months it needs monthly: that decade, and the year after it (growth_10y's 12 months ending 120 back, and the last 12). |
-| 100 | `CityMeasures.LEVERAGE_CEILING` | `10` | The ceiling the bank's leverage ratio is recorded at (HistorySave: clamped at ten, which is also what a city with no book reads); a city at it has no ratio to rank. |
-| 264 | `CityMeasures.BAND_DEATHS` | `{ "deathsBabies", "deathsChildren", "deathsTeens", "deathsAdults", "deathsSen...` | The six bands' deaths, in AgeBand order, by the series that carry them. |
+| 97 | `CityMeasures.THOUSANDS` | `1_000` | The model counts money in thousands (ui/Money): this turns a money series' figure into whole units of the city's money. |
+| 100 | `CityMeasures.YEAR` | `12` | The months in a year: the window F(s) sums, and the distance inflation and population growth look back. |
+| 103 | `CityMeasures.GROWTH_MONTHS` | `2 * YEAR` | Months the real growth of a year over the year before needs: two years. |
+| 106 | `CityMeasures.DECADE` | `10, DECADE_MONTHS = DECADE * YEAR + YEAR` | Years the long growth compounds over, and the months it needs monthly: that decade, and the year after it (growth_10y's 12 months ending 120 back, and the last 12). |
+| 109 | `CityMeasures.LEVERAGE_CEILING` | `10` | The ceiling the bank's leverage ratio is recorded at (HistorySave: clamped at ten, which is also what a city with no book reads); a city at it has no ratio to rank. |
+| 121 | `CityMeasures.Extras.UNKNOWN` | `new Extras(Double.NaN, null)` | Nothing the history lacks is known (LB3, a saved city at an earlier month, whose land and bands the save keeps only as they stood at its last save): no area, no bands and no wage floor in today's money, so the measure... |
+| 143 | `CityMeasures.SERIES` | `Set.of("arrivals", "bankLent", "bankLeverageRatio", "bankPrime", "births", "c...` | Every history series of() and at() read, and the YearBook definitions they lean on read through the same Reading (LB3): a cache of a saved city's history (SavedCities) keeps only these, and the figures it makes are th... |
+| 324 | `CityMeasures.BAND_DEATHS` | `{ "deathsBabies", "deathsChildren", "deathsTeens", "deathsAdults", "deathsSen...` | The six bands' deaths, in AgeBand order, by the series that carry them. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 318 | `final HistorySave h` |  |
-| 319 | `final int monthly, window` |  |
-| 320 | `final double scale` |  |
+| 379 | `final HistorySave h` |  |
+| 380 | `final Map<String, List<? extends Number>> by` |  |
+| 381 | `final int end, monthly, window` |  |
+| 382 | `final double scale` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 83 | 307 | **type** `public final class CityMeasures` | The city's figure for each of the Rankings' 70 measures (spec-leaderboards 6, "Where the game's side comes from"), worked out of its HistorySave and the few figures a history does not keep. |
-| 85 | 1 | `private CityMeasures()` |  |
-| 103 | 9 | **type** `public record Extras(double areaKm2, double[] bandPeople, double cashMinimumWage)` | What the history does not keep: read live by Rankings.City.of(Game), from a save's header in LB3. |
-| 105 | 1 | `public Extras(double areaKm2, double[] bandPeople)` _(in CityMeasures.Extras)_ | Extras without the wage floor in today's money: the minimum wage is then the history's floor lifted by the price index. |
-| 108 | 3 | `double people(AgeBand band)` _(in CityMeasures.Extras)_ | The people of a band, NaN where the extras do not know. |
-| 121 | 1 | **type** `public record Figure(double value, double real, String how)` | A figure in the measure's own unit, its value at founding's prices where the measure has a constant series (gdp, gdp_pp, hh_spend_pp; NaN otherwise), and a few words for the drawer on how it is made. |
-| 124 | 108 | `public static Map<String, Figure> of(HistorySave h, Extras x)` | Every measure the city has a figure for at the history's last month, in the file's order; a measure it has none for is absent, never 0. |
-| 234 | 4 | `private static void put(Map<String, Figure> out, String key, double value, double real, String how)` | Adds a figure when it is a number a city can have: finite, and a real value finite or NaN. |
-| 240 | 4 | `private static boolean positive(double...v)` | Whether every number is a finite one over nothing: a growth's two sums need both over 0. |
-| 246 | 3 | `private static double share(double part, double gdp)` | 100 x part over the year of output; NaN where output is not over 0, so the measure is absent. |
-| 251 | 11 | `private static double reservesMonths(Reading r)` | The vault in months of imports: the last month's reservesUsd over a month's imports in US dollars, the window's months each at that month's rate. |
-| 271 | 5 | `private static double bandDeaths(Reading r)` | F of the six bands' deaths added: a year of the city's dead. |
-| 278 | 13 | `private static double lifeExpectancy(Reading r, Extras x)` | Life expectancy at birth from the six bands' last year of deaths over the people now in them; NaN under a year lived, or with a band empty. |
-| 298 | 13 | `static double lifeTable(double[] hazard)` | A period life table over the six bands (spec-leaderboards 6): hazard[b] is a year's chance of dying, as a rate, in band b. |
-| 317 | 72 | **type** `private static final class Reading` | A history read the way the rules above say: the series a month at a time, in the entries that are months. |
-| 322 | 6 | `Reading(HistorySave h)` _(in CityMeasures.Reading)_ |  |
-| 330 | 4 | `double[] tail(String series, int n)` _(in CityMeasures.Reading)_ | The last n months of a series, or null when the history holds fewer than n as months. |
-| 336 | 7 | `double flow(String series)` _(in CityMeasures.Reading)_ | F(s): the series summed over the window and scaled to a year; NaN where a month in it was not counted. |
-| 345 | 10 | `double flowDeflated(String series)` _(in CityMeasures.Reading)_ | The window's series each month over that month's price index, summed and scaled to a year: output at founding's prices. |
-| 357 | 10 | `double sumReal(String series, int months, int from, int to)` _(in CityMeasures.Reading)_ | The last `months` months of a series each over that month's price index, summed over entries from (inclusive) to to (exclusive), counted from the oldest of them. |
-| 369 | 4 | `double last(String series)` _(in CityMeasures.Reading)_ | L(s): the series' last month. |
-| 375 | 4 | `double ago(String series, int k)` _(in CityMeasures.Reading)_ | back(s, k): the series k months before the last. |
-| 381 | 7 | `double mean(String series)` _(in CityMeasures.Reading)_ | The mean of the window, for a series that is already a rate a year. |
+| 92 | 377 | **type** `public final class CityMeasures` | The city's figure for each of the Rankings' 70 measures (spec-leaderboards 6, "Where the game's side comes from"), worked out of its HistorySave and the few figures a history does not keep. |
+| 94 | 1 | `private CityMeasures()` |  |
+| 112 | 16 | **type** `public record Extras(double areaKm2, double[] bandPeople, double cashMinimumWage)` | What the history does not keep: read live by Rankings.City.of(Game), from a save's header in LB3. |
+| 114 | 1 | `public Extras(double areaKm2, double[] bandPeople)` _(in CityMeasures.Extras)_ | Extras without the wage floor in today's money: the minimum wage is then the history's floor lifted by the price index. |
+| 124 | 3 | `double people(AgeBand band)` _(in CityMeasures.Extras)_ | The people of a band, NaN where the extras do not know. |
+| 137 | 1 | **type** `public record Figure(double value, double real, String how)` | A figure in the measure's own unit, its value at founding's prices where the measure has a constant series (gdp, gdp_pp, hh_spend_pp; NaN otherwise), and a few words for the drawer on how it is made. |
+| 151 | 3 | `public static Map<String, Figure> of(HistorySave h, Extras x)` | Every measure the city has a figure for at the history's last month, in the file's order; a measure it has none for is absent, never 0. |
+| 160 | 5 | `public static Map<String, Figure> at(HistorySave h, Extras x, int month)` | Every measure the city has a figure for as of the end of game month `month` (LB3), the history's entries after it ignored; of() is this at the history's last month. |
+| 167 | 9 | `static int entriesTo(HistorySave h, int month)` | How many of the axis's entries run to the one that is `month`, or -1 when no entry that is a month of its own (not a folded year) is that month. |
+| 178 | 4 | `public static double valueAt(HistorySave h, String series, int month)` | A series' value at `month`, NaN when the history does not hold that month as a month or has not recorded the series there. |
+| 183 | 109 | `private static Map<String, Figure> figures(HistorySave h, Extras x, int end)` |  |
+| 294 | 4 | `private static void put(Map<String, Figure> out, String key, double value, double real, String how)` | Adds a figure when it is a number a city can have: finite, and a real value finite or NaN. |
+| 300 | 4 | `private static boolean positive(double...v)` | Whether every number is a finite one over nothing: a growth's two sums need both over 0. |
+| 306 | 3 | `private static double share(double part, double gdp)` | 100 x part over the year of output; NaN where output is not over 0, so the measure is absent. |
+| 311 | 11 | `private static double reservesMonths(Reading r)` | The vault in months of imports: the last month's reservesUsd over a month's imports in US dollars, the window's months each at that month's rate. |
+| 331 | 5 | `private static double bandDeaths(Reading r)` | F of the six bands' deaths added: a year of the city's dead. |
+| 338 | 13 | `private static double lifeExpectancy(Reading r, Extras x)` | Life expectancy at birth from the six bands' last year of deaths over the people now in them; NaN under a year lived, or with a band empty. |
+| 358 | 13 | `static double lifeTable(double[] hazard)` | A period life table over the six bands (spec-leaderboards 6): hazard[b] is a year's chance of dying, as a rate, in band b. |
+| 378 | 90 | **type** `private static final class Reading` | A history read the way the rules above say: the series a month at a time, in the entries that are months. |
+| 384 | 8 | `Reading(HistorySave h, int end)` _(in CityMeasures.Reading)_ |  |
+| 398 | 15 | `double[] tail(String series, int n)` _(in CityMeasures.Reading)_ | The last n months of a series up to end, or null when the history holds fewer than n as months. |
+| 415 | 7 | `double flow(String series)` _(in CityMeasures.Reading)_ | F(s): the series summed over the window and scaled to a year; NaN where a month in it was not counted. |
+| 424 | 10 | `double flowDeflated(String series)` _(in CityMeasures.Reading)_ | The window's series each month over that month's price index, summed and scaled to a year: output at founding's prices. |
+| 436 | 10 | `double sumReal(String series, int months, int from, int to)` _(in CityMeasures.Reading)_ | The last `months` months of a series each over that month's price index, summed over entries from (inclusive) to to (exclusive), counted from the oldest of them. |
+| 448 | 4 | `double last(String series)` _(in CityMeasures.Reading)_ | L(s): the series' last month. |
+| 454 | 4 | `double ago(String series, int k)` _(in CityMeasures.Reading)_ | back(s, k): the series k months before the last. |
+| 460 | 7 | `double mean(String series)` _(in CityMeasures.Reading)_ | The mean of the window, for a series that is already a rate a year. |
 

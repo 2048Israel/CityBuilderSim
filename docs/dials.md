@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,921 constants in 460 files.**
+**4,929 constants in 461 files.**
 
-## model (2460 constants)
+## model (2467 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -555,12 +555,14 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 88 | `CityMeasures.THOUSANDS` | `1_000` | The model counts money in thousands (ui/Money): this turns a money series' figure into whole units of the city's money. |
-| 91 | `CityMeasures.YEAR` | `12` | The months in a year: the window F(s) sums, and the distance inflation and population growth look back. |
-| 94 | `CityMeasures.GROWTH_MONTHS` | `2 * YEAR` | Months the real growth of a year over the year before needs: two years. |
-| 97 | `CityMeasures.DECADE` | `10, DECADE_MONTHS = DECADE * YEAR + YEAR` | Years the long growth compounds over, and the months it needs monthly: that decade, and the year after it (growth_10y's 12 months ending 120 back, and the last 12). |
-| 100 | `CityMeasures.LEVERAGE_CEILING` | `10` | The ceiling the bank's leverage ratio is recorded at (HistorySave: clamped at ten, which is also what a city with no book reads); a city at it has no ratio to rank. |
-| 264 | `CityMeasures.BAND_DEATHS` | `{ "deathsBabies", "deathsChildren", "deathsTeens", "deathsAdults", "deathsSeniors", "de...` | The six bands' deaths, in AgeBand order, by the series that carry them. |
+| 97 | `CityMeasures.THOUSANDS` | `1_000` | The model counts money in thousands (ui/Money): this turns a money series' figure into whole units of the city's money. |
+| 100 | `CityMeasures.YEAR` | `12` | The months in a year: the window F(s) sums, and the distance inflation and population growth look back. |
+| 103 | `CityMeasures.GROWTH_MONTHS` | `2 * YEAR` | Months the real growth of a year over the year before needs: two years. |
+| 106 | `CityMeasures.DECADE` | `10, DECADE_MONTHS = DECADE * YEAR + YEAR` | Years the long growth compounds over, and the months it needs monthly: that decade, and the year after it (growth_10y's 12 months ending 120 back, and the last 12). |
+| 109 | `CityMeasures.LEVERAGE_CEILING` | `10` | The ceiling the bank's leverage ratio is recorded at (HistorySave: clamped at ten, which is also what a city with no book reads); a city at it has no ratio to rank. |
+| 121 | `CityMeasures.Extras.UNKNOWN` | `new Extras(Double.NaN, null)` | Nothing the history lacks is known (LB3, a saved city at an earlier month, whose land and bands the save keeps only as they stood at its last save): no area, no bands and no wage floor in today's m... |
+| 143 | `CityMeasures.SERIES` | `Set.of("arrivals", "bankLent", "bankLeverageRatio", "bankPrime", "births", "careCoverag...` | Every history series of() and at() read, and the YearBook definitions they lean on read through the same Reading (LB3): a cache of a saved city's history (SavedCities) keeps only these, and the fig... |
+| 324 | `CityMeasures.BAND_DEATHS` | `{ "deathsBabies", "deathsChildren", "deathsTeens", "deathsAdults", "deathsSeniors", "de...` | The six bands' deaths, in AgeBand order, by the series that carry them. |
 
 ### CityNeeds.java ([map](map/CityNeeds.md))
 
@@ -1611,9 +1613,9 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 87 | `HistorySave.MONTHLY_KEPT` | `6_000` | Months kept a month to an entry, the newest: five hundred years (0.7.55). |
-| 522 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
-| 1006 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
-| 1028 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5). |
+| 533 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
+| 1018 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
+| 1040 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5). |
 
 ### Household.java ([map](map/Household.md))
 
@@ -2392,15 +2394,17 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 56 | `Rankings.Settings.OPENING` | `new Settings(Board.REAL_2025, Money.REAL_USD, Prices.PER_YEAR, Convert.MARKET)` | What the tab opens on (D9, spec-leaderboards 9): Real world 2025, real US$, per year, this month's rate. |
-| 116 | `Rankings.BASE_YEAR` | `2015` | The year the real dollar is struck at: US$ of 2015 (D29: "later the start date will move back anyways"). |
-| 119 | `Rankings.REAL_YEAR` | `2025` | The real world's year: the board Real world 2025. |
-| 122 | `Rankings.PLACE_CITY` | `"city"` | The id the drawer takes for the active city. |
-| 125 | `Rankings.SOURCE_CITY` | `"city", SOURCE_WORLD = "world-1"` | A row's source: the active city's own figure, and a nation of the game's world file (a source id of world-2025.json's meta). |
-| 128 | `Rankings.RULE_REGION` | `"region-output"` | The rule a city region's Your-world figure is an estimate by: its share of its nation's path (a rule id of the file's meta). |
-| 131 | `Rankings.YOUR_SIZE_FACTOR` | `10` | The places Your size keeps: those within this factor of the city's people, either way. |
-| 134 | `Rankings.AROUND_TOP` | `3, AROUND_EITHER_SIDE = 6, AROUND_OFF = 10` | Around you: the rows from the top, and either side of the city; the rows from the top when the city is off the board. |
-| 137 | `Rankings.CONSTANT_SERIES` | `Set.of("gdp", "gdp_pp", "hh_spend_pp")` | The money measures with a series at constant prices (gdp, gdp per person, household spending per person); the rest show this month's rate under Constant. |
+| 57 | `Rankings.Settings.OPENING` | `new Settings(Board.REAL_2025, Money.REAL_USD, Prices.PER_YEAR, Convert.MARKET)` | What the tab opens on (D9, spec-leaderboards 9): Real world 2025, real US$, per year, this month's rate. |
+| 132 | `Rankings.BASE_YEAR` | `2015` | The year the real dollar is struck at: US$ of 2015 (D29: "later the start date will move back anyways"). |
+| 135 | `Rankings.REAL_YEAR` | `2025` | The real world's year: the board Real world 2025. |
+| 138 | `Rankings.PLACE_CITY` | `"city"` | The id the drawer takes for the active city. |
+| 141 | `Rankings.SOURCE_CITY` | `"city", SOURCE_WORLD = "world-1", SOURCE_SAVE = "save"` | A row's source: the active city's own figure, a nation of the game's world file (a source id of world-2025.json's meta), and a saved city's figure. |
+| 144 | `Rankings.SAVED_PREFIX` | `"saved:"` | What a saved city's row id starts with, then its slot: the id the drawer is asked for. |
+| 147 | `Rankings.RULE_REGION` | `"region-output"` | The rule a city region's Your-world figure is an estimate by: its share of its nation's path (a rule id of the file's meta). |
+| 150 | `Rankings.YOUR_SIZE_FACTOR` | `10` | The places Your size keeps: those within this factor of the city's people, either way. |
+| 153 | `Rankings.AROUND_TOP` | `3, AROUND_EITHER_SIDE = 6, AROUND_OFF = 10` | Around you: the rows from the top, and either side of the city; the rows from the top when the city is off the board. |
+| 156 | `Rankings.TIE` | `1e-9` | Two figures within this fraction of each other are one figure and share a rank: a city saved before and after a reform by 100 differs in its last digits only (LB3). |
+| 159 | `Rankings.CONSTANT_SERIES` | `Set.of("gdp", "gdp_pp", "hh_spend_pp")` | The money measures with a series at constant prices (gdp, gdp per person, household spending per person); the rest show this month's rate under Constant. |
 
 ### RefineryView.java ([map](map/RefineryView.md))
 
@@ -2493,6 +2497,14 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 36 | `SaveWriter.CLOCK_MS` | `25` | The most the month that autosaves may hold the clock, in milliseconds: the fill of the save and the snapshot of the history. |
 | 39 | `SaveWriter.FLOOR_SECONDS` | `30` | The least real time, in seconds, between two autosaves (Jerus, 2026-10-22: "At most every 30 s"); a month due inside it waits for the next due month past it. |
 | 112 | `SaveWriter.SHARED` | `new SaveWriter()` | The one writer every city in the JVM shares: what shared() hands out. |
+
+### SavedCities.java ([map](map/SavedCities.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 34 | `SavedCities.FIRST_SLOT` | `1` | The first slot read: slot 0 is the autosave, a copy of a numbered city, and is left out. |
+| 37 | `SavedCities.KEPT` | `keptSeries()` | The history series a slot keeps: what the measures read, and the three that make the pivot (fxRate and fxParity are among the first). |
+| 71 | `SavedCities.NONE` | `new SavedCities(List.of(), 0)` | The snapshot before any slot was read: no cities, nothing left out. |
 
 ### SeaLanes.java ([map](map/SeaLanes.md))
 
@@ -3280,21 +3292,21 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 69 | `YearBook.MONTHS_A_YEAR` | `12` |  |
 | 70 | `YearBook.MONTHS_A_DECADE` | `120` |  |
 | 101 | `YearBook.MONEY` | `"{the city's money}"` | Where a note names the city's money. |
-| 291 | `YearBook.RULES` | `rules()` |  |
-| 292 | `YearBook.PREFIXES` | `prefixRules()` |  |
-| 572 | `YearBook.GDP_PARTS` | `{ "consumption", "investment", "government", "netExports" }` | GDP's four parts, as HistorySave names them (0.7.6): C, I, G and NX, in the order they stack. |
-| 1160 | `YearBook.EPISODE_MIN_MONTHS` | `3` | A run shorter than this many months is noise, and is not named - or shaded on the chart. |
-| 1163 | `YearBook.EPISODE_JOIN_MONTHS` | `6` | Two runs with fewer months of relief than this between them are one episode. |
-| 1166 | `YearBook.DEPRESSION_MONTHS` | `24` | A recession this many months long, or longer, is called a depression. |
-| 1178 | `YearBook.FINANCIAL_EQUITY` | `0` | The bank's equity under this, in thousands, is a financial crisis: the bank has failed. |
-| 1181 | `YearBook.RECESSION_GROWTH` | `0` | Real output over a rolling year against the year before, as a fraction, under this is a recession: under zero, a fall. |
-| 1184 | `YearBook.CURRENCY_MOVE` | `2` | The exchange rate past this multiple of itself a year before is a currency crisis: the currency halved. |
-| 1187 | `YearBook.INFLATION_EPISODE` | `.25` | Prices rising faster than this a year is an inflation. |
-| 1190 | `YearBook.DEFLATION_EPISODE` | `-.10` | Prices falling faster than this a year (a negative rate) is a deflation. |
-| 1193 | `YearBook.EPIDEMIC_OUTBREAK` | `Health.OUTBREAK_FLOOR` | An epidemic is named while an outbreak runs - more of the workforce off sick than its care explains - not while a city short of care is as sick as it always is (A8). |
-| 1196 | `YearBook.TREASURY_CASH` | `0` | The treasury's cash under this, in thousands, is a treasury crisis: it is overdrawn. |
-| 1199 | `YearBook.SLUMP_UNEMPLOYMENT` | `.20` | More of the labour force out of work than this is a slump. |
-| 1376 | `YearBook.CHRONIC_MONTHS` | `120` | An episode still running after this many months is chronic: City History lists it after the others that are running, and leads with it only when it runs alone (0.7.37). |
+| 292 | `YearBook.RULES` | `rules()` |  |
+| 293 | `YearBook.PREFIXES` | `prefixRules()` |  |
+| 578 | `YearBook.GDP_PARTS` | `{ "consumption", "investment", "government", "netExports" }` | GDP's four parts, as HistorySave names them (0.7.6): C, I, G and NX, in the order they stack. |
+| 1166 | `YearBook.EPISODE_MIN_MONTHS` | `3` | A run shorter than this many months is noise, and is not named - or shaded on the chart. |
+| 1169 | `YearBook.EPISODE_JOIN_MONTHS` | `6` | Two runs with fewer months of relief than this between them are one episode. |
+| 1172 | `YearBook.DEPRESSION_MONTHS` | `24` | A recession this many months long, or longer, is called a depression. |
+| 1184 | `YearBook.FINANCIAL_EQUITY` | `0` | The bank's equity under this, in thousands, is a financial crisis: the bank has failed. |
+| 1187 | `YearBook.RECESSION_GROWTH` | `0` | Real output over a rolling year against the year before, as a fraction, under this is a recession: under zero, a fall. |
+| 1190 | `YearBook.CURRENCY_MOVE` | `2` | The exchange rate past this multiple of itself a year before is a currency crisis: the currency halved. |
+| 1193 | `YearBook.INFLATION_EPISODE` | `.25` | Prices rising faster than this a year is an inflation. |
+| 1196 | `YearBook.DEFLATION_EPISODE` | `-.10` | Prices falling faster than this a year (a negative rate) is a deflation. |
+| 1199 | `YearBook.EPIDEMIC_OUTBREAK` | `Health.OUTBREAK_FLOOR` | An epidemic is named while an outbreak runs - more of the workforce off sick than its care explains - not while a city short of care is as sick as it always is (A8). |
+| 1202 | `YearBook.TREASURY_CASH` | `0` | The treasury's cash under this, in thousands, is a treasury crisis: it is overdrawn. |
+| 1205 | `YearBook.SLUMP_UNEMPLOYMENT` | `.20` | More of the labour force out of work than this is a slump. |
+| 1382 | `YearBook.CHRONIC_MONTHS` | `120` | An episode still running after this many months is chronic: City History lists it after the others that are running, and leads with it only when it runs alone (0.7.37). |
 
 ### YieldCurve.java ([map](map/YieldCurve.md))
 
@@ -4784,7 +4796,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 718 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 974 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1248 constants)
+## harnesses (1249 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6182,14 +6194,15 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 69 | `RankingsCheck.out` | `System.out` | Where the harness prints: the console. |
-| 72 | `RankingsCheck.SEED` | `7_001` | The seed of the nations' paths. |
-| 75 | `RankingsCheck.LIVE_MONTH` | `40` | The month the live city is played to: over the two years real growth needs. |
-| 78 | `RankingsCheck.TOLERANCE` | `1e-9` | How near two figures that should be one are: relative to the larger, with 1e-9 a floor. |
-| 81 | `RankingsCheck.YEAR_HISTORY` | `2012, YEAR_RULE = 2050` | The years Your world is read at: one inside the world file's history, one the game's rule makes. |
-| 84 | `RankingsCheck.MONEY` | `List.of("gdp", "gdp_pp", "hh_spend_pp", "avg_wage", "min_wage")` | The money measures of the file, and the ones Your world ranks of them. |
-| 87 | `RankingsCheck.ABSENT` | `Set.of("participation", "tertiary", "yield_10y", "debt_foreign", "interest_revenue", "c...` | The measures the brief leaves absent from the city, each for a reason CityMeasures' javadoc gives. |
-| 91 | `RankingsCheck.CORE` | `List.of("gdp", "gdp_pp", "growth_real", "hh_spend_pp", "investment", "gov_spend", "expo...` | What a city of a few years has: every one of these is in its figures. |
+| 99 | `RankingsCheck.out` | `System.out` | Where the harness prints: the console. |
+| 102 | `RankingsCheck.SEED` | `7_001` | The seed of the nations' paths. |
+| 105 | `RankingsCheck.LIVE_MONTH` | `40` | The month the live city is played to: over the two years real growth needs. |
+| 108 | `RankingsCheck.TOLERANCE` | `1e-9` | How near two figures that should be one are: relative to the larger, with 1e-9 a floor. |
+| 111 | `RankingsCheck.YEAR_HISTORY` | `2012, YEAR_RULE = 2050` | The years Your world is read at: one inside the world file's history, one the game's rule makes. |
+| 114 | `RankingsCheck.MONEY` | `List.of("gdp", "gdp_pp", "hh_spend_pp", "avg_wage", "min_wage")` | The money measures of the file, and the ones Your world ranks of them. |
+| 117 | `RankingsCheck.ABSENT` | `Set.of("participation", "tertiary", "yield_10y", "debt_foreign", "interest_revenue", "c...` | The measures the brief leaves absent from the city, each for a reason CityMeasures' javadoc gives. |
+| 121 | `RankingsCheck.CORE` | `List.of("gdp", "gdp_pp", "growth_real", "hh_spend_pp", "investment", "gov_spend", "expo...` | What a city of a few years has: every one of these is in its figures. |
+| 895 | `RankingsCheck.LB3_FACTOR` | `100` |  |
 
 ### RealDollarCheck.java ([map](map/RealDollarCheck.md))
 

@@ -238,6 +238,7 @@ public final class YearBook {
         rate(m, "fxShadow", MONEY + " per US dollar where the float's rule put the rate, whatever the regime held it at - the rate itself under Lean and Float (recorded since XR2)");
         rate(m, "fxCover", "the vault's cover in months of imports, at most 99 (recorded since XR2)");
         rate(m, "priceIndex", "the basket against its base month, 1.000 at the base - struck again every ten years since 0.7.43 and chained, so the level runs on unbroken");
+        rate(m, "usPrices", "the game dollar's price level since founding, 1.000 at founding - the US prices, which a reform does not touch (recorded since LB3)");
         rate(m, "expectedInflation", "what the city expected inflation to be, a fraction a year - the target weighted by credibility, recent inflation by the rest (recorded since 0.7.42)");
         rate(m, "credibility", "how far the city believed the central bank, " + Expectations.KMIN + " to " + Expectations.KMAX
                 + " - the weight expected inflation puts on the target (recorded since 0.7.42)");
@@ -384,7 +385,7 @@ public final class YearBook {
     }
 
     /** labourForce() off the three series, whole or a tail of them alike (UP2): one definition. */
-    private static double[] labourForce(double[] workforce, double[] students, double[] prisoners) {
+    static double[] labourForce(double[] workforce, double[] students, double[] prisoners) {
         double[] out = new double[workforce.length];
         for (int i = 0; i < out.length; i++) {
             out[i] = workforce[i]
@@ -405,9 +406,11 @@ public final class YearBook {
      * simultaneously short of workers AND carrying unemployment.
      */
     public static double[] filledPosts(HistorySave h) {
-        double[] force = labourForce(h);
-        double[] jobs  = h.aligned("jobs");
-        double[] pool  = h.aligned("outOfWork");
+        return filledPosts(labourForce(h), h.aligned("jobs"), h.aligned("outOfWork"));
+    }
+
+    /** filledPosts() off the labour force, the posts and the pool, whole or a stretch of them alike (LB3, CityMeasures at a month): one definition. */
+    static double[] filledPosts(double[] force, double[] jobs, double[] pool) {
         double[] out = new double[force.length];
         for (int i = 0; i < out.length; i++) {
             out[i] = Double.isNaN(pool[i])
@@ -433,7 +436,7 @@ public final class YearBook {
     }
 
     /** unemployment() off the labour force, the posts and the pool, whole or a tail of them alike (UP2): one definition. */
-    private static double[] unemployment(double[] force, double[] jobs, double[] pool) {
+    static double[] unemployment(double[] force, double[] jobs, double[] pool) {
         double[] out = new double[force.length];
         for (int i = 0; i < out.length; i++) {
             double whoIsOut = Double.isNaN(pool[i]) ? Math.max(0, force[i] - jobs[i]) : pool[i];
@@ -452,8 +455,11 @@ public final class YearBook {
      * out once the universities filled.
      */
     public static double[] averageWage(HistorySave h) {
-        double[] bill   = h.aligned("totalWage");
-        double[] filled = filledPosts(h);
+        return averageWage(h.aligned("totalWage"), filledPosts(h));
+    }
+
+    /** averageWage() off the wage bill and the posts filled, whole or a stretch of them alike (LB3, CityMeasures at a month): one definition. */
+    static double[] averageWage(double[] bill, double[] filled) {
         double[] out = new double[bill.length];
         for (int i = 0; i < out.length; i++) {
             out[i] = filled[i] > 0 ? bill[i] / filled[i] : Double.NaN;
