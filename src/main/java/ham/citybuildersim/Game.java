@@ -2894,6 +2894,9 @@ public class Game {
        ======================================================================= */
     private void runPrivateInvestment(){
 
+        // This month's refusals for want of workers start from none (LD1; consider() notes them as the sectors plan).
+        wantedPosts.beginMonth();
+
         businessInvestment.recordMonth(populationManager.getPopulation());
 
         // This month's answer, not last month's. Cleared here rather than in
@@ -2995,6 +2998,51 @@ public class Game {
                         sectorInvestor(sector.key()), STATIONS_SLOT);
             }
         }
+        // ...and the month's refusals for want of workers priced into next month's wage (LD1).
+        settleWantedPosts();
+    }
+
+    /**
+     * A planner was refused by the staffing gate (LD1; Decision.heldForStaff): sorts the hold for WantedPosts.
+     * Jerus: "if the reason is not enough workers and the business can... then it raises its wage?" So a hold the
+     * gate would not have put on but for the builders' laid-off crews (Sector.staffingWithCrewsSpare(); IC1's, not a
+     * shortage a wage answers) asks nothing; a building that would not carry its interest even at today's wage
+     * (consider()'s own test at prime) asks nothing; the rest ask for the posts of the bands they are short in, with
+     * how far those wages could rise and the building still carry its interest.
+     */
+    void noteStaffingHold(Sector.Staffing held) {
+        Sector owner = held.owner();
+        BuildingsTemplate t = held.template();
+        if (owner == null || t == null) return;
+        int n = Math.max(1, held.count());
+        Sector.Staffing free = owner.staffingWithCrewsSpare(t, n);
+        if (free.passes()) {
+            wantedPosts.heldForCrews();
+            return;
+        }
+        double earns = businessInvestment.estimatedMonthlyProfit(owner.key(), t) * n;
+        double cost = businessInvestment.getCostOf(t, n);
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        double margin = earns - businessInvestment.interestHurdle(cost,
+                credit.getPrimeRate() + credit.getRecordSurcharge(owner.key()));
+        double[] wanted = free.wanted(), spare = free.spare();
+        double[] rates = economyManager.getWageRates();
+        double shortBill = 0;
+        for (JobType job : JobType.values()) {
+            int b = WageBand.of(job).ordinal();
+            if (b < wanted.length && wanted[b] > Math.max(0, spare[b])) {
+                shortBill += t.getJobs(job) * n * rates[job.ordinal()];
+            }
+        }
+        WantedPosts.Ask a = WantedPosts.askOf(owner.key(), t.getName(), wanted, spare, margin, shortBill);
+        if (a == null) wantedPosts.heldUnpaid(); else wantedPosts.ask(a);
+    }
+
+    /** The month's asks settled into the posts per band next month's wage is priced on (LD1; WantedPosts.settle()). */
+    void settleWantedPosts() {
+        double[] premium = new double[WageBand.values().length];
+        for (WageBand band : WageBand.values()) premium[band.ordinal()] = labourMarket.bandPremium(band);
+        wantedPosts.settle(populationManager.staffablePostsByBand(), populationManager.supplyByBand(), premium);
     }
 
     /** Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. */
@@ -5616,6 +5664,7 @@ public class Game {
                 : (decision == null ? "?" : decision.sector);
 
         if (decision == null || !decision.build) {
+            if (decision != null && decision.heldForStaff != null) noteStaffingHold(decision.heldForStaff);
             if (decision != null && decision.landBlocked) {
                 blockOnLand(decision.sector, decision.reason);
             }
@@ -13477,6 +13526,12 @@ public class Game {
     private LabourMarket labourMarket = new LabourMarket();
 
     /**
+     * The posts the staffing gate refused for want of workers that the wage is priced on as if they were offered
+     * (LD1): see WantedPosts, and noteStaffingHold(), settleWantedPosts() and repriceLabour() below.
+     */
+    private final WantedPosts wantedPosts = new WantedPosts();
+
+    /**
      * The schools. See Education - the other half of the labour market, and the
      * only thing in the game that can make a skilled worker rather than hire one.
      */
@@ -14927,6 +14982,7 @@ public class Game {
     }
 
     public LabourMarket getLabourMarket() { return labourMarket; }
+    public WantedPosts getWantedPosts() { return wantedPosts; }
     public Education getEducation() { return education; }
 
     /**
@@ -14944,6 +15000,22 @@ public class Game {
      * not. That is the pressure that will make a medical school worth building.
      */
     public void repriceLabour() {
+        if (wantedPosts.any()) {
+            // The refused posts (LD1): the market prices a band as if the posts the staffing gate would not let a
+            // business open were offered, so the wage rises at its own pace and to its own cap, and the workers the
+            // fill gives the band are those it would have with the posts there. The gate's own test
+            // (Sector.staffing()) and Migration's opportunity still read only the posts that exist.
+            double[] posts = populationManager.staffablePostsByBand();
+            double[] latent = wantedPosts.latent();
+            for (int b = 0; b < posts.length && b < latent.length; b++) posts[b] += latent[b];
+            labourMarket.advanceMonth(
+                    posts,
+                    populationManager.supplyByBand(posts),
+                    populationManager.getJobs(),
+                    populationManager.getLicensedHeads());
+            populationManager.takeWagesFrom(labourMarket);
+            return;
+        }
         labourMarket.advanceMonth(
                 // STAFFABLE, not raw. A band is priced on the work its own
                 // members can take; the posts only a licence holder can fill
@@ -15476,6 +15548,7 @@ public class Game {
         dataSave.setHealth(health.getState());
         dataSave.setHealthcare(healthcare.getState());
         dataSave.setLabour(labourMarket.state());
+        dataSave.setWantedPosts(wantedPosts.state());
         dataSave.setSkilledWorkforce(populationManager.getSkilledHeads());
         dataSave.setLicences(populationManager.getLicensedHeads());
         dataSave.setEducation(education.getState());
@@ -19519,6 +19592,7 @@ public class Game {
             healthcare.restore(restoredFlows.getHealthcare());
 
             labourMarket.restore(restoredFlows.getLabour());
+            wantedPosts.restore(restoredFlows.getWantedPosts());
             populationManager.restoreLicensed(restoredFlows.getLicences());
             education.restore(restoredFlows.getEducation());
             // The students in flight are out of the supply, on the load path

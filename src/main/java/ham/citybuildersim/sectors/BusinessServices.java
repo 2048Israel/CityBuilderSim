@@ -191,7 +191,7 @@ public final class BusinessServices extends Sector {
                         Math.ceil(shortBy), licenceLabel(wanted)));
             }
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
             }
             return BusinessInvestment.Decision.no(sector,
                     "the wage bill is above what the world pays for the work");
