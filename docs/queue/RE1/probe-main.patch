@@ -1,0 +1,33 @@
+--- a/tools/ensemble/Ensemble.java
++++ b/tools/ensemble/Ensemble.java
+@@ -250,6 +250,13 @@
+     static boolean stuck;
+     static long started;
+ 
++    static final int PROBE_FROM = Integer.getInteger("probe.from", 0), PROBE_TO = Integer.getInteger("probe.to", 1 << 30);
++    static final java.io.PrintStream PROBE = openProbe();
++    static java.io.PrintStream openProbe() {
++        String f = System.getProperty("probe.file");
++        try { return f == null ? null : new java.io.PrintStream(new java.io.FileOutputStream(f), false, "UTF-8"); }
++        catch (java.io.IOException e) { throw new RuntimeException(e); }
++    }
+     static void run(Game g, int months) {
+         for (int i = 0; i < months && !stuck && g.getMonth() < endMonth; i++) step(g);
+     }
+@@ -268,6 +275,16 @@
+             if (!namesBefore.contains(n)) names.append(names.length() > 0 ? " | " : "").append(n);
+         }
+         write(columns(g, ph, Adapter.findingCount() - flagsBefore, names.toString()));
++        if (PROBE != null && g.getMonth() >= PROBE_FROM && g.getMonth() <= PROBE_TO) {
++            for (java.util.Map.Entry<String, String> e : g.getLastInvestments().entrySet())
++                PROBE.println(g.getMonth() + "	" + e.getKey() + "	" + e.getValue());
++            ham.citybuildersim.SectorBooks.SectorMonth b = g.getSectorBooks().get(g.getSectors().realEstate());
++            if (b != null) PROBE.println(g.getMonth() + "	BOOKS	" + String.format(java.util.Locale.ROOT,
++                    "rev %.0f pay %.0f opinc %.0f int %.0f ptax %.0f pre %.0f net %.0f cash %.0f div %.0f borrowed %.0f repaid %.0f raised %.0f maint %.0f",
++                    b.revenue(), b.payroll(), b.operatingIncome(), b.interest(), b.propertyTax(), b.preTaxIncome(), b.netIncome(),
++                    b.cash(), b.dividendsPaid(), b.borrowed(), b.repaid(), b.equityRaised(), b.maintenance()));
++            PROBE.flush();
++        }
+         if (g.getMonth() % 120 == 0) {
+             real.printf("  %s seed %d month %d pop %.0f index %.4f rate %.2f%% (%.0fs)%n", policy,
+                     seed, g.getMonth(), Adapter.num(g, "getPopulationManager.getPopulation"),

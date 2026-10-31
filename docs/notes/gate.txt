@@ -1,18 +1,8 @@
-# gate of Merge batch/FL1: a works making a flow good stops running at a loss: WN3's order rule extended past stockable goods, so a works never buys an input to make an output it can only sell at a loss (SlopeCheck's Rod Mill, cathode in at 347 and rod out at 314, GDP negative m834-m1837; LandmassCheck's Rotterdam m962-m968); settles WN3-F, beside HD2, built on WN3 (Jerus, 2026-10-30: "Ship, fix next (Recommended)"), 0.8.77
+# gate of Merge batch/RE1: real Estate's stall found at its cause, a small study first (Jerus, 2026-10-29: "sure queue the small thing to find cause"): HD1's posts (2 DIPLOMA posts a Studio and Low-Rise, homes before workers, the payroll in the rent floor; fec704a7) stall the ensemble's seed 4 near 25,000 people from m1,100 (44,157 at the end against main's 249,634); seed 4 under AUTO2 is the fixture, one run per candidate switched off alone; the posts go back in as their own batch once the cause is known (Jerus, 2026-10-28: "gotta add workers to real estate"), 0.8.77
 # date: 2026-10-30
 # earth-2.bin: named
-# suite: 154 harnesses run in 1962s: 152 passed, 2 failed
-# timing: 13 harnesses run in 546s: 9 passed, 4 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 35.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 41.2 ms, batch 38.0 ms (-7.7%), budget 25 ms: within 15% of main's]
-# timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 8.1 ms, batch 6.51 ms (-19.7%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 28.1 ms, batch 25.9 ms (-7.7%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 2 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 8.26 ms, batch 7.6 ms (-8.0%), budget 8 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite: 154 harnesses run in 2253s: 152 passed, 2 failed
+# timing: 13 harnesses run in 430s: 12 passed, 1 failed
 PassThroughCheck | exit 1
 PassThroughCheck | ...and so does the price index (mean gap 0.74% against 0.51%)            FAIL
 PassThroughCheck | 1 FAILED

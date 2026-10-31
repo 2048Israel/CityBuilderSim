@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### RE1 — Real Estate's stall found at its cause — 2026-10-30, ready, no tag (study), see docs/queue/RE1-notes.md
+On HD1's own tree, seed 4 reproduced exactly (44,157 at the end). The posts' payroll, 9% of the landlords' rent, took a
+margin that the property-tax step had squeezed into a loss from m1,000. The loss emptied their till, and with no till they
+could neither put 15% down nor pass the lender's cover without it. No home came after m1,057, and the staffing gate held
+six to eight sectors, so the town sat at 25,000 for 900 months. Migrants were never priced out: the affordability pull stayed
+at 1.00. One switch at a time, forked at m960: with the wages off the town reaches 98,855 at m1,800, and with the posts off
+139,090. The floor, the latent demand, the gate and the down payment alone leave it stalled. On 0.8.77 the posts stall
+no seed (16 AUTO2 seeds past 40,000 by m1,208), so RE2 puts them back as built and watches for the trap. The model is
+main's: no ensemble.
+
 ### 0.8.77 — FL1, a works making a flow good stops running at a loss — 2026-10-30, ready (Jerus: "Ship, fix next (Recommended)"; FL1-R on "Fix first"), see docs/queue/FL1-notes.md
 A works that makes a flow good - rod, wire and cable, pig iron, steel, pellets - no longer buys its inputs for exports
 that sell under them. WN3's order rule held a works' inputs to what its month would make only for goods that keep, so
