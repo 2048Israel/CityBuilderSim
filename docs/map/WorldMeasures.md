@@ -18,7 +18,7 @@
 > a number nobody published. What the file must keep to is WorldMeasuresCheck's,
 > not this reader's; the format is tools/world/FORMAT-2025.txt.
 
-**Used by (1):** [WorldMeasuresCheck](WorldMeasuresCheck.md)
+**Used by (4):** [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [WorldMeasuresCheck](WorldMeasuresCheck.md)
 
 ## Sections
 

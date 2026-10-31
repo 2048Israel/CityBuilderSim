@@ -423,14 +423,32 @@ adds its line here, not in `CLAUDE.md`.
                                    with its year, mark and source (an estimate with its rule), the sources'
                                    licences, the two city boundaries and the CPI-U of 2015-2025 that turns a
                                    real US$ into a 2015 one. A figure the file lacks is absent (null, NaN),
-                                   never 0; the format is tools/world/FORMAT-2025.txt. LB2's Real
-                                   world 2025 board will read it; the game fetches nothing
+                                   never 0; the format is tools/world/FORMAT-2025.txt. Rankings' Real
+                                   world 2025 board reads it (LB2); the game fetches nothing
         WorldMeasuresCheck.java    WorldMeasures held to FORMAT-2025.txt: problems() is the file's rules in
                                    one method (every nation of world-1.bin once, a missing figure absent and
                                    never 0, every mark, source and rule resolving, a licence on every source,
                                    a region's shares under 1, the 2015-over-2025 ratio the CPI-U's to the
                                    last bit), the real file has none and a copy of it changed in one place
                                    has exactly that one, and the money figures agree with each other (LB1)
+        CityMeasures.java          the city's figure for 51 of the Rankings' 70 measures (batch LB2,
+                                   2026-10-31; spec-leaderboards 6): a pure function of a HistorySave and
+                                   three figures it does not keep (the land, the age bands, the wage floor),
+                                   money in whole units of the city's money (the model's thousands times
+                                   THOUSANDS), a flow a year, each absent measure's reason in the javadoc;
+                                   the life table is here. LB3 runs it on a saved city's history file
+        Rankings.java              the Rankings board as the screen draws it (batch LB2; spec-leaderboards
+                                   3, 4, 9): one pivot into US$ of 2015, then the display in the money
+                                   picked (D1, D29), at this month's rate, constant 2015 or PPP (D14); Real
+                                   world 2025 from WorldMeasures, Your world from Nations at the city's year
+                                   on D15's ten with the city regions by share; ties share a rank, lower is
+                                   better ranks ascending, no row for no figure; the lock, the sentence and
+                                   the drawer. Pure; ui/RankingsScreen paints it
+        RankingsCheck.java         Rankings and CityMeasures held to the study's identities: the city's own
+                                   figure comes back in its own money, Money never reorders a board, real
+                                   US$ is game US$ at founding, Constant holds a steady real figure, Your
+                                   world's rows are Nations', the real rows' pivot, ties, lower-is-better,
+                                   no figure no row, the city's figures against the history's own readers (LB2)
         PartnerTrade.java          the city's trade by partner (batch WN3; spec-nations 6 and 8): the
                                    month's and the year's trade with each nation and by good, split from the
                                    month's own fills by WorldMarket.allocate() (Game, tallyThePartners()),

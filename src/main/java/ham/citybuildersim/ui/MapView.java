@@ -4463,7 +4463,13 @@ final class MapView {
         nationBox.setMinWidth(NATION_CARD_W);
         nationBox.setPrefWidth(NATION_CARD_W);
         nationBox.setMaxWidth(NATION_CARD_W);
-        nationBox.getChildren().setAll(head, distance, grid);
+        // The card's door to the Rankings tab (LB2; spec-leaderboards 9): the map is put away first, without drawing the office it left, and the tab opens on this nation.
+        final String iso3 = ns.iso3(nationShown);
+        Label allMeasures = door("All its measures", Palette.MONEY, () -> {
+            collapse(false);
+            ui.rankingsScreen.openOn(iso3);
+        });
+        nationBox.getChildren().setAll(head, distance, grid, allMeasures);
         nationBox.setVisible(true);
         nationBox.applyCss();
         nationBox.autosize();
