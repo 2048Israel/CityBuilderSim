@@ -346,6 +346,10 @@ public class Game {
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
+        businessInvestment.setDeepWaterPrice((t, n, factor) -> {   // and a floating platform's deep-water works (DW1)
+            DeepWater works = deepWaterAt(t, n, 0, factor);
+            return works == null ? 0 : works.cost();
+        });
 
         // Every sector gets a handle on the city, for the few hooks that need
         // more than the buildings and the markets - the mines and the ground.
@@ -1816,7 +1820,7 @@ public class Game {
         List<ham.citybuildersim.sectors.Oil.Platform> ps = oil.platformsNow();
         List<ham.citybuildersim.sectors.Oil.Pipeline> ls = oil.pipelinesNow();
         if (ps.isEmpty() && ls.isEmpty()) return CityMap.AtSea.NONE;
-        List<LandManager.SeaField> fields = oil.shallowFields();
+        List<LandManager.SeaField> fields = oil.platformFields();
         int[] slots = ham.citybuildersim.sectors.Oil.slotsOf(ps, fields, oil.slotsEach());
         java.util.Map<Long, Integer> used = new java.util.HashMap<>();
         java.util.Map<Long, double[]> first = new java.util.HashMap<>();
@@ -5143,6 +5147,10 @@ public class Game {
             String why = String.format("%d well(s) past their life: under %.0f barrels a day after %d months",
                     worn, ham.citybuildersim.sectors.Oil.WORN_OUT_BARRELS_A_DAY,
                     ham.citybuildersim.sectors.Oil.lifeMonths(kind));
+            // ...a deep platform's wells sooner (DW1, the deep wells decline faster): said only where one stands.
+            if (!land && wells.deepPlatformsStanding() > 0) {
+                why += String.format(" (%d in deep water)", ham.citybuildersim.sectors.Oil.lifeMonths(kind, true));
+            }
             int gone = retire(new BusinessInvestment.Decision(wells.key(), well, worn, why, true),
                     sectorInvestor(wells.key()), false);
             wellsWornOut += gone;
@@ -7094,6 +7102,15 @@ public class Game {
          */
         public final double bridgeLengthM, bridgePoints, bridgeCost;
 
+        /**
+         * The deep-water works of a floating platform or its well (DW1; Game.deepWater()): the depth of the sea the order's
+         * first unit stands in, metres (every unit of the order is priced at it); the construction points of the premium
+         * over a jacket's price, owed by the order's site before its first unit finishes, as a pad's and a span's are; and
+         * their money before the builders' tax, which is in the sticker and so grossed up in the total. All 0 for every
+         * quote but a platform's or a platform well's in a sea deeper than Oil.PLATFORM_MAX_DEPTH_M.
+         */
+        public final double deepWaterDepthM, deepWaterPoints, deepWaterCost;
+
         BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
@@ -7142,6 +7159,24 @@ public class Game {
                    double prepSqFt, double prepPoints, double prepCost,
                    double worksSqFt, double worksPoints, double worksCost, double[] worksMix,
                    double bridgeLengthM, double bridgePoints, double bridgeCost) {
+            this(quantity, sticker, materialsNeeded, materialsInStock, boughtIn, plantPrice, materialsPrice,
+                    landNeeded, landFree, months, buildersRate, plantRate, bitumen, refinersRate,
+                    prepSqFt, prepPoints, prepCost, worksSqFt, worksPoints, worksCost, worksMix,
+                    bridgeLengthM, bridgePoints, bridgeCost, 0, 0, 0);
+        }
+
+        /** ...with the deep-water works of a floating platform or its well (DW1): the sticker already holds deepWaterCost, the money for deepWaterPoints. */
+        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+                   Markets.Draw boughtIn, double plantPrice, double materialsPrice,
+                   double landNeeded, double landFree, double months,
+                   double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
+                   double prepSqFt, double prepPoints, double prepCost,
+                   double worksSqFt, double worksPoints, double worksCost, double[] worksMix,
+                   double bridgeLengthM, double bridgePoints, double bridgeCost,
+                   double deepWaterDepthM, double deepWaterPoints, double deepWaterCost) {
+            this.deepWaterDepthM = deepWaterDepthM;
+            this.deepWaterPoints = deepWaterPoints;
+            this.deepWaterCost = deepWaterCost;
             this.bridgeLengthM = bridgeLengthM;
             this.bridgePoints = bridgePoints;
             this.bridgeCost = bridgeCost;
@@ -7394,6 +7429,10 @@ public class Game {
         BridgeSpan span = bridgeWorksFor(selected, quantity);
         double bridgePoints = span == null ? 0 : span.points(), bridgeCost = span == null ? 0 : span.cost();
         if (bridgeCost > 0) sticker += bridgeCost;
+        // ...and a floating platform's, or its well's, deep-water works (DW1), at the depth the first of the order stands in.
+        DeepWater deep = deepWater(selected, quantity);
+        double deepPoints = deep == null ? 0 : deep.points(), deepCost = deep == null ? 0 : deep.cost();
+        if (deepCost > 0) sticker += deepCost;
         return new BuildQuote(
                 quantity,
                 sticker,
@@ -7409,8 +7448,8 @@ public class Game {
                 // quoteMonths() exactly with no order set and no rush, and with
                 // one, where the order would land in it (quoteCityMonths()) -
                 // the foothill's preparation owed on its site too (ET2),
-                // and a run's works on the slopes (ET4), and a bridge's span (ET6).
-                quoteCityMonths(selected, quantity, prepPoints + worksPoints + bridgePoints),
+                // and a run's works on the slopes (ET4), and a bridge's span (ET6), and deep water's (DW1).
+                quoteCityMonths(selected, quantity, prepPoints + worksPoints + bridgePoints + deepPoints),
                 buildersSalesRate(),
                 plantSalesRate(),
                 bitumen,
@@ -7418,7 +7457,8 @@ public class Game {
                 prepSqFt, prepPoints, prepCost,
                 need == null ? 0 : need.sqFt(), worksPoints, worksCost,
                 need == null ? new double[4] : need.mix(),
-                span == null ? 0 : span.lengthM(), bridgePoints, bridgeCost);
+                span == null ? 0 : span.lengthM(), bridgePoints, bridgeCost,
+                deep == null ? 0 : deep.depthM(), deepPoints, deepCost);
     }
 
     /**
@@ -8635,6 +8675,8 @@ public class Game {
                 }
                 // ...and a long bridge's span, owed the same way (ET6).
                 if (quote.bridgePoints > 0) buildingManager.addPreparation(selected, quote.bridgePoints);
+                // ...and a floating platform's, or its well's, deep-water works (DW1).
+                if (quote.deepWaterPoints > 0) buildingManager.addPreparation(selected, quote.deepWaterPoints);
                 double fromYard = deliverYardToSites(selected, totalMaterialsRequired);
                 // ...and a paved road's bitumen, bought by the builders with the
                 // yard's material and billed in the quote (0.7.83; drawBitumen()).
@@ -8669,6 +8711,7 @@ public class Game {
                 if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
                 if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
                 if (quote.bridgePoints > 0) billedPoints += quote.bridgePoints;
+                if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
                 getSectors().construction().bill(totalCost, billedPoints);
             }
 
@@ -8856,7 +8899,7 @@ public class Game {
      * The resource whose sites a building stands on (0.7.62): iron for an
      * Iron Mine, oil for an Oil Well; null for anything else. The map's rule
      * (BuildingVisual.of()). Since 0.7.91 an offshore platform's jacket, too,
-     * stands on oil: a shallow sea field's. Since 0.7.110 (batch I1) read off
+     * stands on oil: a sea field's (a floating platform's past 150 m, DW1). Since 0.7.110 (batch I1) read off
      * the template's site (BuildingsTemplate.site()), which buildings.json
      * declares for the four that stand on sites: a template without one is
      * not a mine. To 0.7.109 it was a MINING template's, the resource whose
@@ -8988,7 +9031,7 @@ public class Game {
      * AT SEA (0.7.91, batch O10; spec-oil 2.7): a platform's well the slots
      * of the platforms standing (sectors.Oil.slotsStanding()), at most the
      * sea's sites less those the land wells past the dry ones stand on; a
-     * platform's jacket the jackets the shallow sea fields the city owns
+     * platform's jacket the platforms the sea fields the city owns
      * could still take (sectors.Oil.platformRoom()).
      */
     public int sitesFor(BuildingsTemplate template) {
@@ -9228,6 +9271,37 @@ public class Game {
         return new BridgeSpan(r.lengthM(), usd, points, points * buildingManager.nonMaterialCost(t) / t.getConstructionPoints());
     }
 
+    /* ===== DEEP WATER'S WORKS (DW1, 2026-10-31; sectors.Oil's DEEP WATER) =====
+
+       An Offshore Platform stands in any sea down to Oil.FLOATING_MAX_DEPTH_M, a fixed jacket to Oil.PLATFORM_MAX_DEPTH_M and
+       a floating platform past it, and what it and its wells cost follows the depth they stand in (Oil.platformCostFactor(),
+       wellCostFactor(): the NEMS curve). The jacket's own price is the template's; the premium over it is a works on the
+       order as a bridge's span is: construction points owed on the order's site before its first unit finishes, billed with
+       the order, their money at the builders' price a point today in the sticker, taxed with the work, and in the investors'
+       reckoning (BusinessInvestment.getCostOf(), through setDeepWaterPrice()). Every unit of an order is priced at the depth
+       the first stands in (Oil.depthOfNext()): one order, one price. */
+
+    /** What the deep-water works of an order are: the sea the first unit stands in (metres), the price factor against a jacket's, the construction points of the premium, and their money before the builders' tax at the builders' price a point today. */
+    public record DeepWater(double depthM, double factor, double points, double cost) { }
+
+    /**
+     * The deep-water works of an order of these: (factor - 1) times the template's construction points for each unit,
+     * their money at the builders' price a point today (the template's non-material cost over its points, so it keeps up
+     * with wages as a span's does). Null for what is no platform or platform well, a sea a jacket stands in (factor 1), a
+     * city with no Oil sector and a template with no points to price it on. Reads.
+     */
+    public DeepWater deepWater(BuildingsTemplate t, int quantity) {
+        ham.citybuildersim.sectors.Oil oil = getSectors() == null ? null : getSectors().oil();
+        if (oil == null || t == null || !(t.isPlatform() || t.isPlatformWell()) || quantity < 1) return null;
+        return deepWaterAt(t, quantity, oil.depthOfNext(t), oil.deepWaterFactor(t));
+    }
+
+    private DeepWater deepWaterAt(BuildingsTemplate t, int quantity, double depthM, double factor) {
+        if (t == null || !(factor > 1) || t.getConstructionPoints() <= 0 || quantity < 1) return null;
+        double points = (factor - 1) * t.getConstructionPoints() * (double) quantity;
+        return new DeepWater(depthM, factor, points, points * buildingManager.nonMaterialCost(t) / t.getConstructionPoints());
+    }
+
     /** The city's long bridges (ET6): each one built or building, where it runs and whether it stands. */
     public Bridges getBridges() { return landManager.getBridges(); }
 
@@ -9460,6 +9534,8 @@ public class Game {
             buildingManager.addPreparation(template, quote.worksPoints);
             noteRunWorks(quote);
         }
+        // ...and a floating platform's, or its well's, deep-water works (DW1); in the quote too. A business builds platforms.
+        if (quote.deepWaterPoints > 0) buildingManager.addPreparation(template, quote.deepWaterPoints);
         double fromYard = deliverYardToSites(template, quote.materialsNeeded);
         // ...and a paved road's bitumen, should a business ever order one (0.7.83; drawBitumen()).
         drawBitumen(quote.bitumenNeeded);
@@ -9480,6 +9556,7 @@ public class Game {
         double billedPoints = template.getConstructionPoints() * (double) quantity;
         if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
         if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
+        if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
         getSectors().construction().bill(totalCost - landPrice, billedPoints);
 
         return true;

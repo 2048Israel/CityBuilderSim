@@ -1122,9 +1122,10 @@ final class BuildScreen {
                 // A long bridge (ET6): what it links once it stands; its crossing is on the card's own line.
                 return "links the landmass it reaches to the city's linked ground · its price is its two landings, the span is billed per order";
             case SLOTS:
-                // An offshore platform (0.7.91): the city's shallow sea sites, the slots standing, the wells in them.
+                // An offshore platform (0.7.91): the city's sea sites it may stand on (a floating platform past the jacket's depth, DW1), the slots standing, the wells in them.
                 if (d.length < 3) return "";
-                return "on a field 150 m deep at most · the city's shallow sea sites " + formatter.format(d[0]) + ", "
+                return "on a field " + formatter.format(Math.round(ham.citybuildersim.sectors.Oil.FLOATING_MAX_DEPTH_M))
+                        + " m deep at most · the city's sea sites a platform takes " + formatter.format(d[0]) + ", "
                         + formatter.format(d[1]) + " slotted, " + formatter.format(d[2]) + " wells lifting";
             case PIPE:
                 // A kilometre of crude pipeline (0.7.91): the kilometres standing, the fields piped, the shuttle's tonnes.
@@ -1781,6 +1782,12 @@ final class BuildScreen {
         return "Span of " + BridgeView.lengthWords(q.bridgeLengthM) + ": " + pointsWords(q.bridgePoints) + " points of builders' work, " + money(q.bridgeCost);
     }
 
+    /** The quote's line for a floating platform's or its well's deep-water works (DW1; Game.BuildQuote's deepWaterDepthM, deepWaterPoints and deepWaterCost): "Deep water, 656 m down: 40K points of builders' work, $199M" (a platform at 12.07 times a jacket's price). null for every order but one standing in a sea deeper than a jacket's. */
+    static String deepWaterWords(Game.BuildQuote q) {
+        if (q == null || !(q.deepWaterPoints > 0)) return null;
+        return "Deep water, " + formatter.format(Math.round(q.deepWaterDepthM)) + " m down: " + pointsWords(q.deepWaterPoints) + " points of builders' work, " + money(q.deepWaterCost);
+    }
+
     /** A hydro station's river (HY1): "stands on a river with a drop: 2 of 3 free · the best site 60 m wide, 30 m of head", red when there is none. */
     static String[] hydroWords(BuildCard.Hydro h) {
         if (h.sites() == 0) {
@@ -1962,11 +1969,13 @@ final class BuildScreen {
                 String prep = prepWords(v.quote());
                 String works = worksWords(v.quote());
                 String span = bridgeSpanWords(v.quote());
+                String deep = deepWaterWords(v.quote());
                 quoted.setText(money(v.quote().total) + " with " + money(v.quote().salesTax)
                         + " sales tax, back to the treasury as it is built  ·  " + said[0]
                         + (prep == null ? "" : "\n" + prep)
                         + (works == null ? "" : "\n" + works)
-                        + (span == null ? "" : "\n" + span));
+                        + (span == null ? "" : "\n" + span)
+                        + (deep == null ? "" : "\n" + deep));
                 quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, said[1]));
             }
             refreshOrderBar();
@@ -4340,9 +4349,22 @@ final class BuildScreen {
         }
         // ...the oil at sea (0.7.91): a platform's jacket and a kilometre of pipeline (sectors.Oil, THE OIL AT SEA).
         if (t.isPlatform()) {
-            out.add(String.format("A steel jacket on a shallow oil field the city owns in the sea, %.0f m deep at most, with"
-                    + " slots for %d wells - one a sea site of the field. It lifts nothing itself: its Platform Wells do.",
-                    ham.citybuildersim.sectors.Oil.PLATFORM_MAX_DEPTH_M, t.platformSlots()));
+            ham.citybuildersim.sectors.Oil oil = ui.game.getSectors().oil();
+            out.add(String.format("A fixed steel jacket on an oil field the city owns in the sea to %.0f m deep, a floating platform"
+                    + " (an FPSO: a floating production, storage and offloading ship, moored over the field) past it to %.0f m,"
+                    + " with slots for %d wells - one a sea site of the field. It lifts nothing itself: its Platform Wells do."
+                    + " The deeper it floats the more it costs, and so do its wells and its upkeep a month.",
+                    ham.citybuildersim.sectors.Oil.PLATFORM_MAX_DEPTH_M, ham.citybuildersim.sectors.Oil.FLOATING_MAX_DEPTH_M,
+                    t.platformSlots()));
+            double next = oil == null ? 0 : oil.depthOfNext(t);
+            if (next > 0) {
+                int slots = oil.slotsEach();
+                out.add(ham.citybuildersim.sectors.Oil.isFloating(next)
+                        ? String.format("The next stands in %,.0f m: %.1f times a jacket's price, its wells %.1f times, its upkeep %.1f times.",
+                                next, ham.citybuildersim.sectors.Oil.platformCostFactor(next, slots),
+                                ham.citybuildersim.sectors.Oil.wellCostFactor(next), ham.citybuildersim.sectors.Oil.upkeepFactor(next, slots))
+                        : String.format("The next stands in %,.0f m: a fixed jacket, at the template's price.", next));
+            }
             out.add("Its crude goes ashore by shuttle tanker at the boundary's freight a tonne, paid abroad, until a"
                     + " Crude Pipeline from its field stands.");
             return out;
@@ -4402,6 +4424,12 @@ final class BuildScreen {
                 // ...a platform's well (0.7.91): at sea, in a platform's slot.
                 out.add("Stands in a free slot on an Offshore Platform, one a sea site of its field - cash alone will not"
                         + " put one up. Its crude goes ashore by shuttle tanker, or by a field's pipe once one stands.");
+                ham.citybuildersim.sectors.Oil oil = ui.game.getSectors().oil();
+                double next = oil == null ? 0 : oil.depthOfNext(t);
+                if (ham.citybuildersim.sectors.Oil.isFloating(next)) {
+                    out.add(String.format("The next stands in %,.0f m of water: %.1f times the price of one at %.0f m.",
+                            next, ham.citybuildersim.sectors.Oil.wellCostFactor(next), ham.citybuildersim.sectors.Oil.PLATFORM_MAX_DEPTH_M));
+                }
             } else if (Game.siteOf(t) != null) {
                 // ...a coal field's mine says its type (0.7.126): a coking mine's coal is raw until a plant washes it.
                 Resource r = Game.siteOf(t);
@@ -5114,7 +5142,7 @@ final class BuildScreen {
 
     /**
      * ...and for the oil at sea (0.7.91; pure, as above): an Offshore
-     * Platform with no shallow sea field to take it, or a Platform Well with
+     * Platform with no sea field to take it (Oil.FLOATING_MAX_DEPTH_M deep at most, DW1), or a Platform Well with
      * no free slot - `owned` is Game.sitesFor()'s, the platforms the fields
      * could still take or the slots standing; `left` the offshore pool's
      * tonnes (0.7.93).
@@ -5122,14 +5150,14 @@ final class BuildScreen {
     static String[] noDepositAtSea(boolean platform, String building, int quantity, int owned, int committed, double left) {
         return new String[] {
             "NO OIL DEPOSIT",
-            platform ? quantity + " x " + building + " needs a shallow sea field with room."
+            platform ? quantity + " x " + building + " needs a sea field with room."
                      : quantity + " x " + building + " needs " + (committed + quantity) + " platform slot(s).",
             platform ? "The city's sea fields could take " + owned + " more, " + committed + " on site."
                      : "The platforms standing hold " + owned + ", " + committed + " spoken for.",
-            platform ? "A platform stands on an oil field in the sea, 150 m deep"
+            platform ? "A platform stands on an oil field in the sea, " + String.format("%,.0f", ham.citybuildersim.sectors.Oil.FLOATING_MAX_DEPTH_M) + " m deep"
                      : "A platform's well stands in one of its slots, one a sea",
             platform ? "at most, its wells one a sea site. Sites are the world's"
-                     : "site of its field: an Offshore Platform on a shallow sea",
+                     : "site of its field: an Offshore Platform on a sea",
             platform ? "oil fields, sold whole: an offer holds every field in it."
                      : "field the city owns brings its slots with it.",
             String.format("Oil still under the sea: %,.0f tonnes", left),

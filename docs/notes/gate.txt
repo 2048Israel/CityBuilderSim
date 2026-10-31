@@ -1,14 +1,8 @@
-# gate of Merge batch/LC1: every data source the game ships allows commercial use: the rankings' file, the world and Earth files' sources, and EP0's series for EP1, audited licence by licence (LB1-U; Jerus, 2026-10-31: "this game will be for commercial use, so only use sources for the rankings that allow that"); running now, 0.8.85
+# gate of Merge batch/DW1: offshore platforms in deep water: past 150 m a floating platform, to about 3,000 m, its build, running and well costs rising with depth from real deepwater figures, the screens saying so (Jerus, 2026-10-31: "offshore oil platforms cant build on deep oceans... so uh", then "Allow deep, costlier (Recommended)"); running now, 0.8.86
 # date: 2026-10-31
 # earth-2.bin: named
-# suite: 161 harnesses run in 2017s: 159 passed, 2 failed
-# timing: 13 harnesses run in 450s: 10 passed, 3 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.6 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 31.1 ms, batch 24.6 ms (-20.9%), budget 25 ms: within 15% of main's]
-# timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 20.8 ms, batch 19.2 ms (-7.7%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite: 161 harnesses run in 1599s: 159 passed, 2 failed
+# timing: 13 harnesses run in 404s: 12 passed, 1 failed
 PassThroughCheck | exit 1
 PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
 PassThroughCheck | 1 FAILED

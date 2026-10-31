@@ -41,8 +41,8 @@ import java.util.Map;
  * and has one post, not three.
  *
  * SINCE 0.7.91 (batch O10; docs/studies/spec-oil.md 2.7, 2.11) THE SEA'S OIL IS
- * LIFTED TOO: an Offshore Platform stands on a shallow sea field the city
- * owns, its Platform Wells lift in its slots, shuttle tankers take their
+ * LIFTED TOO: an Offshore Platform stands on a sea field the city
+ * owns (a fixed jacket to 150 m, since DW1 a floating platform past it, DEEP WATER below), its Platform Wells lift in its slots, shuttle tankers take their
  * crude ashore at the boundary's freight, and a Crude Pipeline replaces
  * them where the freight it saves over the field's life repays it (THE OIL
  * AT SEA, below). The planner weighs the three kinds after the land well.
@@ -149,6 +149,12 @@ public final class Oil extends Sector {
     /** ...and then keeps 91.5% of it a year: it loses 8.5% a year, the IEA's shallow-offshore rate [W6][W16]. */
     public static final double PLATFORM_KEEPS_A_YEAR = .915;
 
+    /** A platform well on a field in deep water keeps 89.7% of its lift a year past its plateau: it loses 10.3% a year, the IEA's observed post-peak decline of conventional deep and ultra-deep offshore fields, Table 1 [W6] (DW1; the plateau is the shallow platform's, the report gives none apart by depth). */
+    public static final double DEEP_KEEPS_A_YEAR = .897;
+
+    /** The depth from which a platform's wells decline at DEEP_KEEPS_A_YEAR: 450 m, the IEA's line between shallow water (under 450 m) and deepwater (450 to 1,500 m; ultra-deepwater below), its footnote 2 [W6] (DW1). */
+    public static final double DEEP_DECLINE_FROM_M = 450;
+
     /** A well's nameplate is a hundred barrels a day (BuildingManager, FUEL: 415 t a month at 7.33 barrels a tonne). */
     public static final double NAMEPLATE_BARRELS_A_DAY = 100;
 
@@ -165,29 +171,42 @@ public final class Oil extends Sector {
      * The share of its nameplate a well of `kind` lifts at `age` months (pure):
      * a land well LAND_KEEPS_A_YEAR to the power of its years; a platform well
      * 1 through its plateau and PLATFORM_KEEPS_A_YEAR to the power of its
-     * years past it. StrictMath, as World's arithmetic, so a well declines the
-     * same on every machine. An age under nothing is read as nothing.
+     * years past it - DEEP_KEEPS_A_YEAR for a platform whose field declines
+     * deep (DW1, declinesDeep()). StrictMath, as World's arithmetic, so a well
+     * declines the same on every machine. An age under nothing is read as
+     * nothing.
      */
-    public static double profile(WellKind kind, int age) {
+    public static double profile(WellKind kind, int age, boolean deep) {
         int a = Math.max(0, age);
         if (kind == WellKind.PLATFORM) {
             return a < PLATFORM_PLATEAU_MONTHS ? 1
-                    : StrictMath.pow(PLATFORM_KEEPS_A_YEAR, (a - PLATFORM_PLATEAU_MONTHS) / 12.0);
+                    : StrictMath.pow(deep ? DEEP_KEEPS_A_YEAR : PLATFORM_KEEPS_A_YEAR, (a - PLATFORM_PLATEAU_MONTHS) / 12.0);
         }
         return StrictMath.pow(LAND_KEEPS_A_YEAR, a / 12.0);
     }
 
-    /** The age, in months, from which a well of `kind` lifts under WORN_OUT_SHARE of its nameplate: 263 on land, 348 on a platform. */
-    public static int lifeMonths(WellKind kind) {
-        return kind == WellKind.PLATFORM ? PLATFORM_LIFE : LAND_LIFE;
+    /** ...a shallow platform's, or a land well's: profile(kind, age, false). */
+    public static double profile(WellKind kind, int age) {
+        return profile(kind, age, false);
     }
 
-    /** Each kind's life in months, worked out once from its profile (firstWornOut()). */
-    private static final int LAND_LIFE = firstWornOut(WellKind.LAND), PLATFORM_LIFE = firstWornOut(WellKind.PLATFORM);
+    /** The age, in months, from which a well of `kind` lifts under WORN_OUT_SHARE of its nameplate: 263 on land, 348 on a platform. */
+    public static int lifeMonths(WellKind kind) {
+        return lifeMonths(kind, false);
+    }
 
-    private static int firstWornOut(WellKind kind) {
+    /** ...and a platform well on a field that declines deep (DW1): the first age at which DEEP_KEEPS_A_YEAR leaves it under WORN_OUT_SHARE, 291; a land well's as ever. */
+    public static int lifeMonths(WellKind kind, boolean deep) {
+        return kind != WellKind.PLATFORM ? LAND_LIFE : deep ? DEEP_LIFE : PLATFORM_LIFE;
+    }
+
+    /** Each kind's life in months, worked out once from its profile (firstWornOut()): a land well's, a shallow platform's, a deep one's. */
+    private static final int LAND_LIFE = firstWornOut(WellKind.LAND, false), PLATFORM_LIFE = firstWornOut(WellKind.PLATFORM, false),
+            DEEP_LIFE = firstWornOut(WellKind.PLATFORM, true);
+
+    private static int firstWornOut(WellKind kind, boolean deep) {
         int age = 0;
-        while (!(profile(kind, age) < WORN_OUT_SHARE)) age++;
+        while (!(profile(kind, age, deep) < WORN_OUT_SHARE)) age++;
         return age;
     }
 
@@ -299,9 +318,10 @@ public final class Oil extends Sector {
         vintagesStamp++;
     }
 
-    /** The lift's cache: the month, the wells standing (land, and platform in slots) and the vintages' stamp it was summed for. */
+    /** The lift's cache: the month, the wells standing (land, and platform in slots), the vintages' stamp and the platforms (platformsNow()) it was summed for. */
     private int liftMonth = Integer.MIN_VALUE, liftStanding = -1, liftAtSea = -1;
     private long liftStamp = -1;
+    private List<Platform> liftPlatforms;
     private double liftCached, liftAtSeaCached;
 
     /**
@@ -310,7 +330,9 @@ public final class Oil extends Sector {
      * profile at its age, oldest first - cached on the month, the wells
      * standing and the vintages. Every other good, and a sector with no city,
      * the template's nameplate. Since 0.7.91 the platform wells in slots too,
-     * each at its own template's nameplate (THE OIL AT SEA).
+     * each at its own template's nameplate (THE OIL AT SEA); since DW1 those
+     * dealt to a platform on a deep field at the deep rate (THE DEEP WELLS
+     * DECLINE FASTER, under DEEP WATER).
      */
     @Override
     public double getCapacity(Good g) {
@@ -326,24 +348,46 @@ public final class Oil extends Sector {
         return liftAtSeaCached;
     }
 
-    /** Sums the month's lift into the cache, if the month, the wells or the vintages moved. */
+    /**
+     * Sums the month's lift into the cache, if the month, the wells, the vintages or the platforms moved. With no
+     * platform on a deep field it is the sum there has always been, vintage by vintage, to the bit; with one, the
+     * platform vintages are dealt to the platforms and each piece lifts at its platform's decline (DW1).
+     */
     private void strikeLift() {
         int month = monthNow(), standing = landWellsStanding(), atSea = platformWellsInSlots();
-        if (month == liftMonth && standing == liftStanding && atSea == liftAtSea && vintagesStamp == liftStamp) return;
+        List<Platform> ps = atSea > 0 ? platformsNow() : List.of();
+        if (month == liftMonth && standing == liftStanding && atSea == liftAtSea && vintagesStamp == liftStamp && ps == liftPlatforms) return;
         double each = wellNameplate(), eachAtSea = platformWellNameplate(), lift = 0, sea = 0;
-        for (Vintage v : vintagesFor(standing, atSea, month)) {
-            if (v.kind() == WellKind.PLATFORM) {
-                double part = v.count() * eachAtSea * profile(v.kind(), month - v.month());
-                lift += part;
-                sea += part;
-            } else {
-                lift += v.count() * each * profile(v.kind(), month - v.month());
+        List<Vintage> now = vintagesFor(standing, atSea, month);
+        boolean[] deep = deepFlags(ps);
+        if (deep == null) {
+            for (Vintage v : now) {
+                if (v.kind() == WellKind.PLATFORM) {
+                    double part = v.count() * eachAtSea * profile(v.kind(), month - v.month());
+                    lift += part;
+                    sea += part;
+                } else {
+                    lift += v.count() * each * profile(v.kind(), month - v.month());
+                }
+            }
+        } else {
+            for (Vintage v : now) {
+                if (v.kind() != WellKind.PLATFORM) lift += v.count() * each * profile(v.kind(), month - v.month());
+            }
+            List<List<Vintage>> dealt = deal(now, ps);
+            for (int i = 0; i < dealt.size(); i++) {
+                for (Vintage v : dealt.get(i)) {
+                    double part = v.count() * eachAtSea * profile(WellKind.PLATFORM, month - v.month(), deep[i]);
+                    lift += part;
+                    sea += part;
+                }
             }
         }
         liftMonth = month;
         liftStanding = standing;
         liftAtSea = atSea;
         liftStamp = vintagesStamp;
+        liftPlatforms = ps;
         liftCached = lift;
         liftAtSeaCached = sea;
     }
@@ -355,18 +399,30 @@ public final class Oil extends Sector {
 
     /** The wells standing that are worn out this month: past their kind's life (lifeMonths()), under ten barrels a day. */
     public int wornOut() {
-        int n = 0, month = monthNow();
-        for (Vintage v : vintagesNow()) {
-            if (month - v.month() >= lifeMonths(v.kind())) n += v.count();
-        }
-        return n;
+        return wornOutOf(null);
     }
 
-    /** ...of one kind (0.7.91): the land wells at 263 months, the platform wells at 348. */
+    /** ...of one kind (0.7.91): the land wells at 263 months, the platform wells at 348 - or, on a platform whose field declines deep, at the deep life (DW1). */
     public int wornOut(WellKind kind) {
+        return wornOutOf(kind);
+    }
+
+    /** The wells of `kind` (both, for null) past their life: the platform wells each at the life of the platform they are dealt to, when one stands on a deep field (DW1), else every vintage at its kind's. */
+    private int wornOutOf(WellKind kind) {
         int n = 0, month = monthNow();
-        for (Vintage v : vintagesNow()) {
-            if (v.kind() == kind && month - v.month() >= lifeMonths(v.kind())) n += v.count();
+        List<Vintage> now = vintagesNow();
+        List<Platform> ps = platformsNow();
+        boolean[] deep = deepFlags(ps);
+        for (Vintage v : now) {
+            if (kind != null && v.kind() != kind) continue;
+            if (deep != null && v.kind() == WellKind.PLATFORM) continue;
+            if (month - v.month() >= lifeMonths(v.kind())) n += v.count();
+        }
+        if (deep != null && kind != WellKind.LAND) {
+            List<List<Vintage>> dealt = deal(now, ps);
+            for (int i = 0; i < dealt.size(); i++) {
+                for (Vintage v : dealt.get(i)) if (month - v.month() >= lifeMonths(WellKind.PLATFORM, deep[i])) n += v.count();
+            }
         }
         return n;
     }
@@ -378,11 +434,12 @@ public final class Oil extends Sector {
         return null;
     }
 
-    /** The month's loose ends (Markets.clearMonth()'s last step): the shuttle tankers paid for the month's crude ashore (0.7.91), the platforms and pipelines struck to what stood, and the vintages struck to the wells that stood this month. */
+    /** The month's loose ends (Markets.clearMonth()'s last step): the shuttle tankers paid for the month's crude ashore (0.7.91), the floating platforms' deep-water upkeep (DW1), the platforms and pipelines struck to what stood, and the vintages struck to the wells that stood this month. */
     @Override
     public void endOfMonth(Game game) {
         if (game == null) return;
         payShuttle();
+        payDeepWaterUpkeep();
         strikeOffshore();
         strikeVintages();
     }
@@ -470,7 +527,7 @@ public final class Oil extends Sector {
      * THE THREE KINDS AT SEA (0.7.91, batch O10; spec-oil 2.7, 2.11): when
      * no land well is ordered, a platform well into a free slot, then a
      * field's crude pipeline where the rule says it pays, then a platform's
-     * jacket on the shallow field with the most sea sites free (planAtSea()).
+     * jacket on the field freeField() picks (planAtSea()).
      * When nothing at sea is ordered the land's decision stands, its words
      * and its "no land" with it (★: the sea's refusal is the Oil page's,
      * atSeaWord()).
@@ -634,15 +691,16 @@ public final class Oil extends Sector {
        is built from the research's per-well figures (Jerus: "yes").
 
        THE JACKET. An Offshore Platform stands on a field the city owns whose
-       centre lies in the sea no deeper than PLATFORM_MAX_DEPTH_M
-       (LandManager.seaFields(), World.depthAt()), with slots for its
+       centre lies in the sea no deeper than FLOATING_MAX_DEPTH_M (since DW1,
+       DEEP WATER below; a fixed jacket to PLATFORM_MAX_DEPTH_M, a floating
+       platform past it) (LandManager.seaFields(), World.depthAt()), with slots for its
        template's wells - min(12, the field's sea sites its other platforms
        have not slotted). The record (platforms) keeps each standing jacket's
        field by its world cell and index, the wells in its slots and the
        month it opened, read against the jackets standing like the vintages:
-       a new one stands on the shallow field with the most sea sites free,
-       the nearest the founding site on a tie (freeField()), one gone is the
-       newest. Wells are dealt to the slots oldest platform first; a well
+       a new one stands on the fixed field (or, with none, the shallowest
+       floating one) with the most sea sites free, the nearest the founding
+       site on a tie (freeField()), one gone is the newest. Wells are dealt to the slots oldest platform first; a well
        past every slot stands idle.
 
        THE WELLS. A Platform Well lifts its template's 415 t a month on the
@@ -671,8 +729,7 @@ public final class Oil extends Sector {
        both).
 
        THE PLANNER, after the land well: a platform well into a free slot,
-       then a field's pipe that pays, then a jacket on the field with the most
-       sea sites free, judged as a package with min(12, those sites) wells by
+       then a field's pipe that pays, then a jacket on freeField(), judged as a package with min(12, those sites) wells by
        the investors' interest test (estimatedMonthlyProfit(): the jacket's
        share of the package's earnings by cost, as a crude unit's is). Since
        0.7.113 each kind is asked that test on its whole cost before the
@@ -692,7 +749,7 @@ public final class Oil extends Sector {
        carry the month's crude the offshore pool gave.
        ===================================================================== */
 
-    /** The deepest sea a platform's jacket stands in, in metres: 150, the fixed platform's limit (the research's 3.2; spec-oil 2.7). */
+    /** The deepest sea a fixed steel jacket stands in, in metres: 150, the fixed platform's limit (the research's 3.2; spec-oil 2.7) - since DW1 where the jacket ends and the floating platform begins (isFloating()). */
     public static final double PLATFORM_MAX_DEPTH_M = 150;
 
     /** A pipe's working life, in months: 480, 40 years (the research's 4.5, est.) - what the pipeline rule counts the field's months to at most. */
@@ -785,27 +842,40 @@ public final class Oil extends Sector {
         return game == null ? new long[] { 0, 0 } : new long[] { game.getCityLand().siteX(), game.getCityLand().siteY() };
     }
 
-    /** The oil fields the city owns in the sea no deeper than PLATFORM_MAX_DEPTH_M at their centre, in LandManager.seaFields()'s order: what a jacket stands on. */
-    public List<LandManager.SeaField> shallowFields() {
+    /** The oil fields the city owns in the sea no deeper than FLOATING_MAX_DEPTH_M at their centre, in LandManager.seaFields()'s order: what a platform stands on (a fixed jacket to PLATFORM_MAX_DEPTH_M, a floating platform past it; was shallowFields() until DW1). */
+    public List<LandManager.SeaField> platformFields() {
         if (game == null) return List.of();
         List<LandManager.SeaField> out = new ArrayList<>();
-        for (LandManager.SeaField f : game.getLandManager().seaFields(Resource.OIL)) if (canTakePlatform(f)) out.add(f);
+        for (LandManager.SeaField f : platformFieldsForTest != null ? platformFieldsForTest : game.getLandManager().seaFields(Resource.OIL)) {
+            if (canTakePlatform(f)) out.add(f);
+        }
         return out;
     }
 
+    /** A fixture's sea fields, read in place of the land office's (WellCheck 14, DW1: a field moved deep); null reads the ground again. Not saved. */
+    private List<LandManager.SeaField> platformFieldsForTest;
+
+    /** Hands platformFields() the fields to filter instead of LandManager.seaFields() (a fixture's deep field); null clears it. */
+    public void setPlatformFieldsForTest(List<LandManager.SeaField> given) {
+        platformFieldsForTest = given == null ? null : List.copyOf(given);
+        offshoreStamp++;
+    }
+
     /**
-     * Whether a jacket may stand on a sea field (pure): in the sea,
-     * PLATFORM_MAX_DEPTH_M deep or less at its centre (the sea's real depth
-     * on Earth, World.depthAt()), with a site the city owns. Not the shallow
-     * sea: World.SHALLOW is sea no deeper than 30 m, a ground class that a
-     * bridge may cross, and this is the depth a platform stands in - named
+     * Whether a platform may stand on a sea field (pure): in the sea,
+     * FLOATING_MAX_DEPTH_M deep or less at its centre (the sea's real depth
+     * on Earth, World.depthAt()), with a site the city owns - a fixed jacket
+     * to PLATFORM_MAX_DEPTH_M, a floating platform past it (isFloating(); the
+     * limit was PLATFORM_MAX_DEPTH_M until DW1). Not the shallow sea:
+     * World.SHALLOW is sea no deeper than 30 m, a ground class that a bridge
+     * may cross, and this is the depth a platform stands in - named
      * isShallow() until ET1, when the two names would have been confused.
      */
     public static boolean canTakePlatform(LandManager.SeaField f) {
-        return f != null && f.depth() > 0 && f.depth() <= PLATFORM_MAX_DEPTH_M && f.sites() > 0;
+        return f != null && f.depth() > 0 && f.depth() <= FLOATING_MAX_DEPTH_M && f.sites() > 0;
     }
 
-    /** A field's sites in the list, by its cell and index; 0 when the city owns none of it (or it is not a shallow sea field). */
+    /** A field's sites in the list, by its cell and index; 0 when the city owns none of it (or it is not a platform's sea field). */
     static int sitesOf(List<LandManager.SeaField> fields, int cell, int index) {
         for (LandManager.SeaField f : fields) if (f.field().cell() == cell && f.field().index() == index) return f.sites();
         return 0;
@@ -850,7 +920,11 @@ public final class Oil extends Sector {
         return free;
     }
 
-    /** The field a new jacket stands on (pure): the one with the most sea sites free, the nearest (x, y) on a tie, then the first listed; -1 for none free. */
+    /**
+     * The field a new platform stands on (pure): a fixed field (isFloating() false) before a floating one, among the
+     * floating the shallowest (DW1: the cheaper platform first), then the one with the most sea sites free, the nearest
+     * (x, y) on a tie, then the first listed; -1 for none free. A list with no floating field picks as it always did.
+     */
     public static int freeField(List<Platform> ps, List<LandManager.SeaField> fields, int slotsEach, long x, long y) {
         int[] free = freeSites(ps, fields, slotsEach);
         int best = -1;
@@ -859,10 +933,18 @@ public final class Oil extends Sector {
             if (free[f] <= 0) continue;
             Deposit d = fields.get(f).field();
             double far = Math.hypot(d.x() - x, d.y() - y);
-            if (best < 0 || free[f] > free[best] || (free[f] == free[best] && far < bestFar)) {
-                best = f;
-                bestFar = far;
+            if (best >= 0) {
+                boolean floats = isFloating(fields.get(f).depth()), bestFloats = isFloating(fields.get(best).depth());
+                if (floats != bestFloats) {
+                    if (floats) continue;
+                } else if (floats && fields.get(f).depth() != fields.get(best).depth()) {
+                    if (fields.get(f).depth() > fields.get(best).depth()) continue;
+                } else if (!(free[f] > free[best] || (free[f] == free[best] && far < bestFar))) {
+                    continue;
+                }
             }
+            best = f;
+            bestFar = far;
         }
         return best;
     }
@@ -904,7 +986,7 @@ public final class Oil extends Sector {
         int jackets = jacketsStanding();
         if (jackets <= 0 && platforms.isEmpty()) return List.of();
         int month = monthNow(), wells = platformWellsStanding();
-        List<LandManager.SeaField> fields = shallowFields();
+        List<LandManager.SeaField> fields = platformFields();
         if (month == pvMonth && jackets == pvJackets && wells == pvWells && offshoreStamp == pvStamp && sameFields(fields)) return pvCached;
         long[] at = site();
         pvCached = List.copyOf(platformView(platforms, jackets, wells, month, fields, slotsEach(), at[0], at[1]));
@@ -923,7 +1005,7 @@ public final class Oil extends Sector {
         List<Platform> ps = platformsNow();
         if (ps.isEmpty()) return 0;
         int n = 0;
-        for (int s : slotsOf(ps, shallowFields(), slotsEach())) n += s;
+        for (int s : slotsOf(ps, platformFields(), slotsEach())) n += s;
         return n;
     }
 
@@ -935,11 +1017,11 @@ public final class Oil extends Sector {
         return n;
     }
 
-    /** How many more jackets the shallow fields the city owns could take: each field's sea sites no standing platform has slotted, a jacket to every slotsEach of them or part. */
+    /** How many more platforms the fields the city owns could take (platformFields()): each field's sea sites no standing platform has slotted, a jacket to every slotsEach of them or part. */
     public int platformRoom() {
         int each = slotsEach();
         if (each <= 0) return 0;
-        List<LandManager.SeaField> fields = shallowFields();
+        List<LandManager.SeaField> fields = platformFields();
         if (fields.isEmpty()) return 0;
         int n = 0;
         for (int free : freeSites(platformsNow(), fields, each)) n += (free + each - 1) / each;
@@ -967,6 +1049,294 @@ public final class Oil extends Sector {
             offshoreStamp++;
         }
         pipeFor = null;
+    }
+
+    /* =====================================================================
+       DEEP WATER (DW1, 2026-10-31; Jerus: "offshore oil platforms cant build
+       on deep oceans... so uh" - his pick, "Allow deep, costlier")
+
+       Until DW1 an Offshore Platform stood only on a sea field whose centre
+       is PLATFORM_MAX_DEPTH_M deep or less, the limit of the fixed steel
+       jacket, and the deep fields of the real Earth were left in the ground.
+       Past it the platform is FLOATING: an FPSO, a floating production,
+       storage and offloading ship, moored over the field, which reaches the
+       deepest production there is (FLOATING_MAX_DEPTH_M) and offloads to
+       shuttle tankers - how the game carries platform crude ashore already.
+
+       ONE TEMPLATE, NUMBERS THAT FOLLOW THE DEPTH. No second building: the
+       Offshore Platform and the Platform Well of buildings.json stand at any
+       depth a field allows, and what they cost follows the depth of the field
+       each would stand in - the jacket's price (platformCostFactor()), the
+       wells' (wellCostFactor()) and the platform's upkeep a month
+       (upkeepFactor()), each exactly 1 at PLATFORM_MAX_DEPTH_M or less, so the
+       shallow game is the old one to the bit.
+
+       THE CURVE is the US Energy Information Administration's own: the NEMS
+       Oil and Gas Supply Module's Offshore Supply Submodule [W13], public
+       domain, whose equations take the water depth in FEET and give 2003
+       dollars. The game uses only RATIOS of them, so the dollar year and
+       NEMS's later uniform multipliers cancel. The platform is eq 3-7 (fixed)
+       against eq 3-10 (a floating production system, a semi-submersible or
+       converted tanker); a well is the rig's well, eq 3-4 (jack-up) for the
+       fixed platform against eqs 3-5 and 3-6 (semi-submersible and drillship,
+       the cheaper of the two) past it - the rig equations carry the rigs' day
+       rates by water depth; the upkeep is eq 3-15. The game has no drilling
+       depth, so every well is priced at WELL_DRILLING_DEPTH_FT below the sea
+       floor. The deepest sea is the Turritella FPSO at Shell's Stones field,
+       9,560 ft, the world's water-depth record for a production facility
+       (BOEM, OCS Report BOEM 2021-005, Deepwater Gulf of Mexico 2019 [W34]).
+
+       WHAT IT COSTS IN THE GAME. A floating platform's price and its wells'
+       premium over the jacket's is built as a works on the order, as a
+       bridge's span is (Game.deepWater(), ET6's way): construction points owed
+       on the order's site, billed with the order, in the quote and in the
+       investors' reckoning (BusinessInvestment.getCostOf()), at the depth the
+       next one of its kind would stand in (depthOfNext()); every unit of an
+       order is priced at the first's depth. The upkeep is a service bought
+       from the world's offshore fleet as the shuttle tankers are (supply
+       boats, helicopters, the moorings' and risers' upkeep): a month, each
+       standing floating platform pays (upkeepFactor() - 1) times the jacket's
+       own running cost, booked as "Deep-water upkeep" (payDeepWaterUpkeep()).
+       ===================================================================== */
+
+    /** The deepest sea a platform stands in, in metres: 2,914, the Turritella FPSO at Shell's Stones field, 9,560 ft, the world's water-depth record for a production facility (BOEM, OCS Report BOEM 2021-005, Deepwater Gulf of Mexico 2019 [W34]). */
+    public static final double FLOATING_MAX_DEPTH_M = 2914;
+
+    /** The drilling depth below the sea floor every well is priced at, in feet: 10,000 (the game has no drilling depth; at it NEMS's development-well equation gives about the Platform Well's price at PLATFORM_MAX_DEPTH_M). */
+    public static final double WELL_DRILLING_DEPTH_FT = 10_000;
+
+    /** The metre in feet's terms: NEMS takes water depth in feet [W13]. */
+    private static final double METRES_PER_FOOT = 0.3048;
+
+    /** The Oil sector's input line for the supply boats, helicopters and moorings' upkeep of the floating platforms, bought from the world. */
+    public static final String DEEP_WATER_UPKEEP = "Deep-water upkeep";
+
+    /** Whether a platform in this sea is a floating one (pure): past PLATFORM_MAX_DEPTH_M, where the fixed jacket ends. */
+    public static boolean isFloating(double depthM) { return depthM > PLATFORM_MAX_DEPTH_M; }
+
+    /* ----- the deep wells decline faster (DW1) -----
+
+       A platform in deep water costs more, and its wells run down faster. The
+       IEA's observed post-peak decline of conventional oil fields, the source
+       of the shallow platform well's [W6], is 8.5% a year for shallow offshore
+       and 10.3% a year for deep and ultra-deep offshore (Table 1; "The
+       Implications of Oil and Gas Field Decline Rates", 2025, CC BY 4.0); its
+       footnote 2 puts shallow water under 450 m, deepwater at 450 to 1,500 m
+       and ultra-deepwater below. So a platform well dealt to a platform on a
+       field DEEP_DECLINE_FROM_M deep or more (declinesDeep()) keeps
+       DEEP_KEEPS_A_YEAR a year past its plateau, not PLATFORM_KEEPS_A_YEAR,
+       and is worn out at its own life (lifeMonths(PLATFORM, true)). The report
+       gives no plateau apart by depth, so the plateau is the shallow one's.
+
+       WELLS ARE DEALT, NOT BOUND. A well is not tied to a platform in this
+       model: the platform vintages are dealt to the platforms each month,
+       oldest vintages to the oldest platform, each platform its wells in
+       slots (deal(); the Oil page deals them so too), so a platform well
+       lifts and ages at the decline of the platform it is dealt to. With no
+       platform on a deep field the lift and the retirements are read as they
+       always were, to the bit (deepFlags() is null). The known approximation:
+       a retirement (Game.retireWornOutWells(), wornOut(PLATFORM)) drops the
+       oldest wells, which sit on the oldest platform, whichever platform's
+       wells wore out, and the rest are dealt again. */
+
+    /** Whether a platform in this sea declines at the deep rate (pure): DEEP_DECLINE_FROM_M deep or more. */
+    public static boolean declinesDeep(double depthM) { return depthM >= DEEP_DECLINE_FROM_M; }
+
+    /** Each platform's decline, in the list's order (pure): true where its field, in `fields`, declines deep; false for a platform on no field the city owns. */
+    public static boolean[] deepPlatforms(List<Platform> ps, List<LandManager.SeaField> fields) {
+        boolean[] out = new boolean[ps.size()];
+        for (int i = 0; i < out.length; i++) out[i] = declinesDeep(depthOf(fields, ps.get(i).cell(), ps.get(i).index()));
+        return out;
+    }
+
+    /** The platforms standing on a field that declines deep (declinesDeep()): what the retirements' words name the deep life for. */
+    public int deepPlatformsStanding() {
+        boolean[] flags = deepFlags(platformsNow());
+        if (flags == null) return 0;
+        int n = 0;
+        for (boolean f : flags) if (f) n++;
+        return n;
+    }
+
+    /** The platforms standing's decline (deepPlatforms()), or null when none declines deep: the lift and the retirements then read as they always did. */
+    private boolean[] deepFlags(List<Platform> ps) {
+        if (ps.isEmpty()) return null;
+        boolean[] flags = deepPlatforms(ps, platformFields());
+        for (boolean f : flags) if (f) return flags;
+        return null;
+    }
+
+    /** The platform vintages dealt to the platforms, oldest to the oldest, each platform its wells in slots (pure); the land vintages are none of theirs. */
+    public static List<List<Vintage>> deal(List<Vintage> vintages, List<Platform> platforms) {
+        List<List<Vintage>> out = new ArrayList<>();
+        List<int[]> left = new ArrayList<>();
+        List<Vintage> sea = new ArrayList<>();
+        for (Vintage v : vintages) {
+            if (v.kind() != WellKind.PLATFORM) continue;
+            sea.add(v);
+            left.add(new int[] { v.count() });
+        }
+        int at = 0;
+        for (Platform p : platforms) {
+            List<Vintage> mine = new ArrayList<>();
+            int want = Math.max(0, p.wells());
+            while (want > 0 && at < sea.size()) {
+                int take = Math.min(want, left.get(at)[0]);
+                if (take > 0) mine.add(new Vintage(sea.get(at).month(), take, WellKind.PLATFORM));
+                want -= take;
+                left.get(at)[0] -= take;
+                if (left.get(at)[0] == 0) at++;
+            }
+            out.add(mine);
+        }
+        return out;
+    }
+
+    private static double feet(double metres) { return metres / METRES_PER_FOOT; }
+
+    /** A fixed platform's cost, 2003 dollars (pure): slots SLT, water depth WD feet, NEMS eq 3-7 [W13] - 2,000,000 + 9,000 SLT + 1,500 WD SLT + 40 WD^2. */
+    public static double nemsFixedPlatform(int slots, double wdFt) {
+        return 2_000_000 + 9_000.0 * slots + 1_500.0 * wdFt * slots + 40.0 * wdFt * wdFt;
+    }
+
+    /** A floating production system's cost, 2003 dollars (pure): a semi-submersible or converted tanker, NEMS eq 3-10 [W13] - (SLT + 20) (7,500,000 + 250 (WD - 1,000)). */
+    public static double nemsFloatingSystem(int slots, double wdFt) {
+        return (slots + 20) * (7_500_000 + 250.0 * (wdFt - 1_000));
+    }
+
+    /** A well drilled from a jack-up rig, 2003 dollars (pure): NEMS eq 3-4 [W13] - 2,000,000 + 5.0e-9 WD DD^3, DD the drilling depth in feet. */
+    public static double nemsJackUpWell(double wdFt, double ddFt) {
+        return 2_000_000 + 5.0e-9 * wdFt * ddFt * ddFt * ddFt;
+    }
+
+    /** A well drilled from a semi-submersible rig, 2003 dollars (pure): NEMS eq 3-5 [W13] - 2,500,000 + 400 WD + 200 (WD + DD) + 2.0e-5 WD DD^2. */
+    public static double nemsSemiWell(double wdFt, double ddFt) {
+        return 2_500_000 + 400.0 * wdFt + 200.0 * (wdFt + ddFt) + 2.0e-5 * wdFt * ddFt * ddFt;
+    }
+
+    /** A well drilled from a drillship, 2003 dollars (pure): NEMS eq 3-6 [W13] - 7,500,000 + 1.0e-5 WD DD^2. */
+    public static double nemsDrillshipWell(double wdFt, double ddFt) {
+        return 7_500_000 + 1.0e-5 * wdFt * ddFt * ddFt;
+    }
+
+    /** A floater's well (pure): the cheaper of the semi-submersible's and the drillship's (eqs 3-5, 3-6; they cross near 571 m, so the curve is continuous and rises). */
+    public static double nemsFloaterWell(double wdFt, double ddFt) {
+        return Math.min(nemsSemiWell(wdFt, ddFt), nemsDrillshipWell(wdFt, ddFt));
+    }
+
+    /** A platform's operating cost a year, 2003 dollars (pure): NEMS eq 3-15 [W13] - 1,265,000 + 135,000 SLT + 0.0588 SLT WD^2. */
+    public static double nemsPlatformOpex(int slots, double wdFt) {
+        return 1_265_000 + 135_000.0 * slots + 0.0588 * slots * wdFt * wdFt;
+    }
+
+    /** What a platform of `slots` slots costs in this sea against a jacket's price (pure): 1 at PLATFORM_MAX_DEPTH_M or less, else the floating production system's (eq 3-10) over the fixed platform's (eq 3-7) at PLATFORM_MAX_DEPTH_M. */
+    public static double platformCostFactor(double depthM, int slots) {
+        if (!isFloating(depthM)) return 1;
+        return nemsFloatingSystem(slots, feet(depthM)) / nemsFixedPlatform(slots, feet(PLATFORM_MAX_DEPTH_M));
+    }
+
+    /** What a platform's well costs in this sea against a well at PLATFORM_MAX_DEPTH_M (pure): 1 at PLATFORM_MAX_DEPTH_M or less, else the floater's well (eqs 3-5, 3-6) over the jack-up's (eq 3-4) at PLATFORM_MAX_DEPTH_M, both at WELL_DRILLING_DEPTH_FT. */
+    public static double wellCostFactor(double depthM) {
+        if (!isFloating(depthM)) return 1;
+        return nemsFloaterWell(feet(depthM), WELL_DRILLING_DEPTH_FT) / nemsJackUpWell(feet(PLATFORM_MAX_DEPTH_M), WELL_DRILLING_DEPTH_FT);
+    }
+
+    /** What a platform of `slots` slots costs to run in this sea against the jacket's (pure): 1 at PLATFORM_MAX_DEPTH_M or less, else NEMS eq 3-15 at the depth over the same at PLATFORM_MAX_DEPTH_M. */
+    public static double upkeepFactor(double depthM, int slots) {
+        if (!isFloating(depthM)) return 1;
+        return nemsPlatformOpex(slots, feet(depthM)) / nemsPlatformOpex(slots, feet(PLATFORM_MAX_DEPTH_M));
+    }
+
+    /** A field's depth in the list, by its cell and index; 0 when the city owns none of it (or it is not a platform's sea field). */
+    static double depthOf(List<LandManager.SeaField> fields, int cell, int index) {
+        for (LandManager.SeaField f : fields) if (f.field().cell() == cell && f.field().index() == index) return f.depth();
+        return 0;
+    }
+
+    /**
+     * The depth, in metres, the next unit of an order of this template would stand in (DW1): the jacket the depth of
+     * the field the next jacket stands on (freeField(), read against the jackets standing and on site as
+     * platformView() reads them); a platform well the depth of the field of the standing platform whose slot the next
+     * committed well fills (slots dealt oldest platform first, as the wells are). 0 for anything else, and for none
+     * (no field free, no slot free).
+     */
+    public double depthOfNext(BuildingsTemplate t) {
+        if (t == null || game == null || !(t.isPlatform() || t.isPlatformWell())) return 0;
+        List<LandManager.SeaField> fields = platformFields();
+        if (fields.isEmpty()) return 0;
+        int each = slotsEach();
+        if (t.isPlatform()) {
+            long[] at = site();
+            List<Platform> ps = platformView(platforms, jacketsStanding() + jacketsOnSite(), 0, monthNow(), fields, each, at[0], at[1]);
+            int f = freeField(ps, fields, each, at[0], at[1]);
+            return f < 0 ? 0 : fields.get(f).depth();
+        }
+        List<Platform> ps = platformsNow();
+        int[] slots = slotsOf(ps, fields, each);
+        int next = platformWellsCommitted();
+        for (int i = 0; i < ps.size(); i++) {
+            if (next < slots[i]) return depthOf(fields, ps.get(i).cell(), ps.get(i).index());
+            next -= slots[i];
+        }
+        return 0;
+    }
+
+    /** How many times a jacket's price (or a well at PLATFORM_MAX_DEPTH_M) the next unit of an order of this template costs (DW1): the jacket's platformCostFactor(), the platform well's wellCostFactor(), both at depthOfNext(); 1 for anything else. */
+    public double deepWaterFactor(BuildingsTemplate t) {
+        if (t == null || !(t.isPlatform() || t.isPlatformWell())) return 1;
+        double depth = depthOfNext(t);
+        return t.isPlatform() ? platformCostFactor(depth, slotsEach()) : wellCostFactor(depth);
+    }
+
+    /** The platforms standing on a floating field (isFloating()): those whose field is deeper than PLATFORM_MAX_DEPTH_M and the city still owns. */
+    public int floatingPlatforms() {
+        List<Platform> ps = platformsNow();
+        if (ps.isEmpty()) return 0;
+        List<LandManager.SeaField> fields = platformFields();
+        int n = 0;
+        for (Platform p : ps) if (p.cell() >= 0 && isFloating(depthOf(fields, p.cell(), p.index()))) n++;
+        return n;
+    }
+
+    /**
+     * What the floating platforms standing cost a month over a jacket's running cost (DW1): for each standing platform
+     * on a floating field, (upkeepFactor(its field's depth, slotsEach()) - 1) times the jacket's running cost a month
+     * (BusinessInvestment.runningCostOf(): wages, power and water off its template). 0 with none, or no jacket template.
+     */
+    public double deepWaterUpkeepNow() {
+        BuildingsTemplate jacket = platformTemplate();
+        if (jacket == null || game == null) return 0;
+        List<Platform> ps = platformsNow();
+        if (ps.isEmpty()) return 0;
+        List<LandManager.SeaField> fields = platformFields();
+        double running = 0, sum = 0;
+        for (Platform p : ps) {
+            if (p.cell() < 0) continue;
+            double depth = depthOf(fields, p.cell(), p.index());
+            if (!isFloating(depth)) continue;
+            if (running == 0) running = game.getBusinessInvestment().runningCostOf(jacket);
+            sum += (upkeepFactor(depth, slotsEach()) - 1) * running;
+        }
+        return sum;
+    }
+
+    /** The month's deep-water upkeep bill (payDeepWaterUpkeep()); not saved - the statement carries the bill, as the shuttle's does. */
+    private double deepWaterBill;
+
+    public double getDeepWaterBill() { return deepWaterBill; }
+
+    /**
+     * Pays the floating platforms' upkeep for the month (endOfMonth(), after payShuttle()): deepWaterUpkeepNow(), booked
+     * as a service bought from the world (Sector.bookImportedService(), DEEP_WATER_UPKEEP) - the supply boats,
+     * helicopters, and the moorings' and risers' upkeep, from the world's offshore fleet as the shuttle tankers are.
+     * Nothing with no floating platform.
+     */
+    public void payDeepWaterUpkeep() {
+        deepWaterBill = 0;
+        double bill = deepWaterUpkeepNow();
+        if (!(bill > 0)) return;
+        deepWaterBill = bill;
+        bookImportedService(DEEP_WATER_UPKEEP, bill);
     }
 
     /* ----- the pipelines ----- */
@@ -1064,7 +1434,7 @@ public final class Oil extends Sector {
         int inSlots = platformWellsInSlots();
         if (inSlots <= 0 || pipeKmStanding() <= 0) return 0;
         long[] at = site();
-        java.util.Set<Long> piped = pipedFields(pipelinesNow(), pipeKmStanding(), shallowFields(), at[0], at[1]);
+        java.util.Set<Long> piped = pipedFields(pipelinesNow(), pipeKmStanding(), platformFields(), at[0], at[1]);
         int n = 0;
         for (Platform p : platformsNow()) if (piped.contains(((long) p.cell() << 32) | (p.index() & 0xffffffffL))) n += p.wells();
         return n / (double) inSlots;
@@ -1178,7 +1548,7 @@ public final class Oil extends Sector {
     public PipeCase bestPipe(BusinessInvestment plans) {
         PipeCase best = null;
         double bestRatio = 0;
-        for (LandManager.SeaField f : shallowFields()) {
+        for (LandManager.SeaField f : platformFields()) {
             boolean platformed = false;
             for (Platform p : platformsNow()) platformed |= p.cell() == f.field().cell() && p.index() == f.field().index();
             if (!platformed) continue;
@@ -1198,19 +1568,26 @@ public final class Oil extends Sector {
     /** A platform's jacket weighed with its wells (spec-oil 2.7): its field, the wells it is judged with, the package's earnings a month and its cost. */
     public record JacketCase(LandManager.SeaField field, int wells, double earns, double cost) { }
 
-    /** ...on freeField(): min(slotsEach, its free sea sites) wells at a platform well's earnings, less the jacket's running and standing costs; null with no field free or no templates. */
+    /**
+     * ...on freeField(): min(slotsEach, its free sea sites) wells at a platform well's earnings, less the jacket's
+     * running (times upkeepFactor() at the field's depth, DW1) and standing costs; null with no field free or no
+     * templates. Its cost is the jacket's and the n wells' priced at that field's depth (BusinessInvestment.getCostOfAt():
+     * the deep-water premium of a floating platform, DW1), not at the slot the next standing well fills.
+     */
     public JacketCase jacketCase(BusinessInvestment plans) {
         BuildingsTemplate jacket = platformTemplate(), well = platformWell();
         if (jacket == null || well == null || plans == null || game == null) return null;
-        List<LandManager.SeaField> fields = shallowFields();
+        List<LandManager.SeaField> fields = platformFields();
         if (fields.isEmpty()) return null;
         List<Platform> ps = platformsNow();
         long[] at = site();
         int f = freeField(ps, fields, slotsEach(), at[0], at[1]);
         if (f < 0) return null;
         int n = Math.min(slotsEach(), freeSites(ps, fields, slotsEach())[f]);
-        double earns = n * estimatedMonthlyProfit(well, plans) - plans.runningCostOf(jacket) - plans.standingCostOf(this, jacket);
-        double cost = plans.getCostOf(jacket, 1) + plans.getCostOf(well, n);
+        double depth = fields.get(f).depth();
+        double earns = n * estimatedMonthlyProfit(well, plans) - plans.runningCostOf(jacket) * upkeepFactor(depth, slotsEach())
+                - plans.standingCostOf(this, jacket);
+        double cost = plans.getCostOfAt(jacket, 1, platformCostFactor(depth, slotsEach())) + plans.getCostOfAt(well, n, wellCostFactor(depth));
         return new JacketCase(fields.get(f), n, earns, cost);
     }
 
@@ -1239,7 +1616,7 @@ public final class Oil extends Sector {
         if (t.isPlatform()) {
             JacketCase c = jacketCase(plans);
             if (c == null || !(c.cost() > 0)) return super.estimatedMonthlyProfit(t, plans);
-            return c.earns() * plans.getCostOf(t, 1) / c.cost();
+            return c.earns() * plans.getCostOfAt(t, 1, platformCostFactor(c.field().depth(), slotsEach())) / c.cost();
         }
         PipeCase c = pipeFor != null ? pipeCaseOf(pipeFor, plans) : bestPipe(plans);
         if (c == null || c.km() <= 0) return super.estimatedMonthlyProfit(t, plans);
@@ -1248,7 +1625,7 @@ public final class Oil extends Sector {
 
     /** The pipe case of the field a record names, or null when the city holds it no longer. */
     private PipeCase pipeCaseOf(Platform at, BusinessInvestment plans) {
-        for (LandManager.SeaField f : shallowFields()) {
+        for (LandManager.SeaField f : platformFields()) {
             if (f.field().cell() == at.cell() && f.field().index() == at.index()) return pipeCase(f, plans);
         }
         return null;
@@ -1288,7 +1665,7 @@ public final class Oil extends Sector {
                     String.format("a %d km pipe ashore saves the shuttle tankers' freight on %,.0f t a month", pipe.km(), pipe.tonnes()), true);
         }
 
-        // 3. A jacket on the shallow field with the most sea sites free, judged with its wells - on the package's whole cost (0.7.113).
+        // 3. A platform on freeField() (fixed before floating, DW1), judged with its wells - on the package's whole cost (0.7.113), at that field's depth.
         BuildingsTemplate jacket = platformTemplate();
         JacketCase c = jacketCase(plans);
         if (jacket != null && c != null && game.hasDepositFor(jacket, 1)) {
@@ -1296,8 +1673,8 @@ public final class Oil extends Sector {
             if (!staffing.passes()) return BusinessInvestment.Decision.no(sector, staffing.why(jacket.getName()));
             if (game.carriesItsWholeCost(sector, c.earns(), c.cost())) {
                 return new BusinessInvestment.Decision(sector, jacket, 1,
-                        String.format("a shallow sea field with %d site(s) free, %.0f m deep: a platform and %d well(s)",
-                                c.field().sites(), c.field().depth(), c.wells()), true);
+                        String.format("a sea field with %d site(s) free, %.0f m deep: a %splatform and %d well(s)",
+                                c.field().sites(), c.field().depth(), isFloating(c.field().depth()) ? "floating " : "", c.wells()), true);
             }
             return BusinessInvestment.Decision.no(sector, c.earns() > 0
                     ? "a platform and its wells would not carry the interest on their whole cost"
@@ -1329,26 +1706,31 @@ public final class Oil extends Sector {
         if (landWells < dry && land.getOilLeftOnGround() > 0) {
             lines.add(Line.note("There is oil under this city that no well is lifting."));
         }
-        List<LandManager.SeaField> shallow = shallowFields();
+        List<LandManager.SeaField> shallow = platformFields();
         if (dry < land.getOilSites()) {
             lines.add(Line.note(shallow.isEmpty() ? "A land well stands only on dry ground, not on the sites at sea."
                     : "A land well stands only on dry ground; the sites at sea take a platform's wells."));
         }
-        // The oil at sea (0.7.91): only where the city owns a shallow sea field or stands a platform - or, since 0.7.93,
+        // The oil at sea (0.7.91): only where the city owns a sea field a platform stands in or stands a platform - or, since 0.7.93,
         // owns oil under the sea, the offshore pool.
         double underSea = land.getOilOwnedAtSea() > 0 ? land.getOilLeftAtSea() : -1;
         if (shallow.isEmpty() && jacketsStanding() <= 0 && pipeKmStanding() <= 0 && underSea < 0) return lines;
         int sites = 0;
         for (LandManager.SeaField s : shallow) sites += s.sites();
         lines.add(Line.head("At sea"));
-        lines.add(Line.of("Sea sites, 150 m or less", f.count(sites)));
+        lines.add(Line.of("Sea sites a platform takes", f.count(sites)));
         lines.add(Line.of("Crude under the sea", f.count(Math.max(0, underSea)) + " t"));
         lines.add(Line.of("Platforms", f.count(jacketsStanding()) + ", " + f.count(slotsStanding()) + " slots"));
+        if (floatingPlatforms() > 0) lines.add(Line.of("Floating platforms", f.count(floatingPlatforms())));
         lines.add(Line.of("Platform wells", f.count(platformWellsInSlots()) + " in slots",
                 platformWellsInSlots() < slotsStanding() ? Line.Tone.WARN : Line.Tone.GOOD));
         if (platformWellsInSlots() > 0) lines.add(Line.of("Lifting at sea a month", f.count(getCapacityAtSea()) + " t"));
         Double shuttle = statement() == null ? null : statement().otherInputs.get(SHUTTLE_TANKERS);
         lines.add(Line.of("Shuttle tankers last month", f.amount(shuttle == null ? 0 : shuttle)));
+        if (floatingPlatforms() > 0) {
+            Double upkeep = statement() == null ? null : statement().otherInputs.get(DEEP_WATER_UPKEEP);
+            lines.add(Line.of("Deep-water upkeep last month", f.amount(upkeep == null ? 0 : upkeep)));
+        }
         if (pipeKmStanding() > 0) {
             long[] at = site();
             int whole = pipedFields(pipelinesNow(), pipeKmStanding(), shallow, at[0], at[1]).size();

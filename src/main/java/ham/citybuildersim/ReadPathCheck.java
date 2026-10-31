@@ -1483,7 +1483,7 @@ public class ReadPathCheck {
         BuildingsTemplate jacketT = g.getBuildingManager().getTemplateByName("Offshore Platform");
         BuildingsTemplate seaWellT = g.getBuildingManager().getTemplateByName("Platform Well");
         BuildingsTemplate pipeT = g.getBuildingManager().getTemplateByName("Crude Pipeline");
-        wellsR.platforms(); wellsR.pipelines(); wellsR.platformsNow(); wellsR.pipelinesNow(); wellsR.shallowFields();
+        wellsR.platforms(); wellsR.pipelines(); wellsR.platformsNow(); wellsR.pipelinesNow(); wellsR.platformFields();
         wellsR.slotsStanding(); wellsR.platformWellsInSlots(); wellsR.platformRoom(); wellsR.jacketsStanding();
         wellsR.jacketsOnSite(); wellsR.platformWellsStanding(); wellsR.platformWellsCommitted(); wellsR.pipeKmStanding();
         wellsR.pipeKmCommitted(); wellsR.pipedShare(); wellsR.getCapacityAtSea(); wellsR.shuttleFreightPerTonne();

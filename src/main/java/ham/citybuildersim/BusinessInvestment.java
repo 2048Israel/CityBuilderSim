@@ -852,7 +852,7 @@ public class BusinessInvestment {
             }
 
             double monthlyIncome = sector.estimatedMonthlyProfit(t, this);
-            double cost = totalCostOf(t, 1);
+            double cost = getCostOf(t, 1);
             if (cost <= 0 || monthlyIncome <= 0) continue;
 
             double score = monthlyIncome / cost;
@@ -1231,13 +1231,15 @@ public class BusinessInvestment {
      * What the owner pays up front and finances: the tax a business claims
      * back comes back as the work is billed, after the loan is written.
      * A highway's or a railway's cuts, viaducts and tunnels on the city's slopes (ET4) are among the builders'
-     * work, taxed with it, as the quote has them (runWorksCost).
+     * work, taxed with it, as the quote has them (runWorksCost). A floating platform's, and its wells', deep-water works
+     * (DW1) are too, at `deepFactor` times a jacket's price (1 and no works at a depth a jacket stands in).
      */
-    private double totalCostOf(BuildingsTemplate t, int quantity) {
+    private double totalCostOf(BuildingsTemplate t, int quantity, double deepFactor) {
         double stock = buildingManager.getConstructionMaterials();
         double required = t.getConstructionMaterials() * (double) quantity;
         double shortfall = Math.max(required - stock, 0);
         double works = Game.isRun(t) ? runWorksCost.applyAsDouble(t, quantity) : 0;
+        if (deepFactor > 1) works += deepWaterPrice.moneyBeforeTax(t, quantity, deepFactor);
         return economyManager.withBuildersTax(buildingManager.nonMaterialCost(t) * quantity
                         + shortfall * buildingManager.getConstructionMaterialPrice() + works)
                 + groundCostOf(t, quantity);
@@ -1270,7 +1272,41 @@ public class BusinessInvestment {
     }
 
     public double getCostOf(BuildingsTemplate t, int quantity) {
-        return totalCostOf(t, quantity);
+        return totalCostOf(t, quantity, deepWaterFactorOf(t));
+    }
+
+    /**
+     * What the deep-water works of an order of `quantity` of a platform or its well cost the builders' customer before
+     * the builders' tax at `factor` times a jacket's price (DW1; Game.deepWater(), wired by Game): the quote's own
+     * arithmetic, so what a business reckons is what the quote charges.
+     */
+    @FunctionalInterface
+    public interface DeepWaterPrice {
+        double moneyBeforeTax(BuildingsTemplate t, int quantity, double factor);
+    }
+
+    private DeepWaterPrice deepWaterPrice = (t, n, f) -> 0;
+
+    /** Hands in the price of a floating platform's deep-water works (Game.deepWater()); null clears it. */
+    public void setDeepWaterPrice(DeepWaterPrice price) {
+        this.deepWaterPrice = price == null ? (t, n, f) -> 0 : price;
+    }
+
+    /** How many times a jacket's price the next unit of an order of this costs at sea (DW1; sectors.Oil.deepWaterFactor()): 1 for every template but an Offshore Platform and its well, and for those in a sea a jacket stands in. */
+    private double deepWaterFactorOf(BuildingsTemplate t) {
+        if (t == null || !(t.isPlatform() || t.isPlatformWell())) return 1;
+        Sectors sectors = economyManager.getSectors();
+        ham.citybuildersim.sectors.Oil oil = sectors == null ? null : sectors.oil();
+        return oil == null ? 1 : oil.deepWaterFactor(t);
+    }
+
+    /**
+     * getCostOf() with the deep-water works priced at `deepFactor` times a jacket's price rather than at the depth of the
+     * next unit (DW1): the Oil planner judges a platform and its wells together, on the field it would stand them in.
+     * getCostOf() exactly at 1.
+     */
+    public double getCostOfAt(BuildingsTemplate t, int quantity, double deepFactor) {
+        return totalCostOf(t, quantity, deepFactor);
     }
 
     /**

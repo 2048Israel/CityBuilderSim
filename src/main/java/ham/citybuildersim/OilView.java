@@ -184,6 +184,7 @@ public final class OilView {
      * @param pipeKm       kilometres of pipe standing
      * @param pipesWhole   fields whose whole pipe stands
      * @param shuttle      what the shuttle tankers cost last month (the statement's "Shuttle tankers")
+     * @param deepWater    ...and the floating platforms' deep-water upkeep (the statement's "Deep-water upkeep", DW1)
      * @param groundLeft   tonnes left in the ground pool
      * @param seaLeft      ...and in the offshore pool
      * @param groundFields oil fields the city owns on dry ground
@@ -210,7 +211,7 @@ public final class OilView {
      * @param refinery     the refinery's picture's month, which the units and products are read off
      */
     public record View(boolean counted, int month, double rate, int landWells, int platformWells, List<Platform> platforms,
-                       int pipeKm, int pipesWhole, double shuttle, double groundLeft, double seaLeft, int groundFields,
+                       int pipeKm, int pipesWhole, double shuttle, double deepWater, double groundLeft, double seaLeft, int groundFields,
                        int seaFields, int shallowSites, int drilledYear, int wearYear, int landOnSite, int jacketsOnSite,
                        int seaWellsOnSite, List<Series> series,
                        double crudeImported, double crudeImportBill, double refinersCrude, double soldAbroad,
@@ -266,12 +267,13 @@ public final class OilView {
         /* ----- the wells ----- */
         List<Vintage> vintages = oil.vintagesNow();
         List<Oil.Platform> standing = oil.platformsNow();
-        List<LandManager.SeaField> shallow = oil.shallowFields();
+        List<LandManager.SeaField> shallow = oil.platformFields();
         int[] slots = Oil.slotsOf(standing, shallow, oil.slotsEach());
-        List<List<Vintage>> dealt = deal(vintages, standing);
+        List<List<Vintage>> dealt = Oil.deal(vintages, standing);
+        boolean[] deep = Oil.deepPlatforms(standing, shallow);
         double landEach = oil.wellNameplate(), seaEach = oil.platformWellNameplate();
         double groundLeft = land.getOilLeftOnGround(), seaLeft = land.getOilLeftAtSea();
-        double[][] ahead = forecast(landOf(vintages), dealt, landEach, seaEach, groundLeft, seaLeft, rate, month, FORECAST_YEARS);
+        double[][] ahead = forecast(landOf(vintages), dealt, deep, landEach, seaEach, groundLeft, seaLeft, rate, month, FORECAST_YEARS);
 
         // The month's lift: the ground pool's the land wells', the offshore pool's shared by each platform's nameplate.
         double ground = counted ? Math.max(0, oil.getLiftedOnGround()) : Double.NaN;
@@ -279,7 +281,7 @@ public final class OilView {
         double[] asks = new double[dealt.size()];
         double askAll = 0;
         for (int i = 0; i < asks.length; i++) {
-            asks[i] = ask(dealt.get(i), seaEach, WellKind.PLATFORM, month);
+            asks[i] = ask(dealt.get(i), seaEach, WellKind.PLATFORM, deep[i], month);
             askAll += asks[i];
         }
         long[] site = { game.getCityLand().siteX(), game.getCityLand().siteY() };
@@ -320,6 +322,7 @@ public final class OilView {
         int whole = oil.pipeKmStanding() <= 0 ? 0
                 : Oil.pipedFields(oil.pipelinesNow(), oil.pipeKmStanding(), shallow, site[0], site[1]).size();
         Double shuttle = oil.statement() == null ? null : oil.statement().otherInputs.get(Oil.SHUTTLE_TANKERS);
+        Double deepWater = oil.statement() == null ? null : oil.statement().otherInputs.get(Oil.DEEP_WATER_UPKEEP);
 
         /* ----- crude's month, and the products' across the edge ----- */
         double crudeIn = 0, crudeBill = 0, refiners = 0, crudeOut = 0, toRefiners = 0, toReserve = 0;
@@ -392,7 +395,8 @@ public final class OilView {
                 res.getSoldHomeTonnes() + res.getSoldAbroadTonnes(), res.getSettledBought(), res.getSettledSold());
 
         return new View(counted, month, rate, oil.landWellsStanding(), oil.platformWellsInSlots(),
-                Collections.unmodifiableList(platforms), oil.pipeKmStanding(), whole, shuttle == null ? 0 : shuttle, groundLeft,
+                Collections.unmodifiableList(platforms), oil.pipeKmStanding(), whole, shuttle == null ? 0 : shuttle,
+                deepWater == null ? 0 : deepWater, groundLeft,
                 seaLeft, fields[0], fields[1], shallowSites, drilled, wear,
                 Math.max(0, game.landWellsCommitted() - oil.landWellsStanding()), oil.jacketsOnSite(),
                 Math.max(0, oil.platformWellsCommitted() - oil.platformWellsStanding()), Collections.unmodifiableList(series),
@@ -456,8 +460,10 @@ public final class OilView {
        - the land wells the ground pool, the platform wells the offshore pool
        (LandManager's THE TWO OIL POOLS), the pool shared by the platforms'
        asks when it runs short. The platform wells are dealt to the platforms
-       as Oil.platformView() deals them, oldest vintage to the oldest
-       platform, and stay with it (★ O12-2). A year's figure is its twelve
+       as Oil.platformView() deals them (Oil.deal()), oldest vintage to the
+       oldest platform, and stay with it (★ O12-2), each declining at the
+       rate of its platform's field: the deep rate from DEEP_DECLINE_FROM_M
+       (DW1, Oil.deepPlatforms()). A year's figure is its twelve
        months' mean, from the month after this one. Nothing is drilled, no
        platform is built, the rate does not move: "if nothing new is built"
        (mockup 2).
@@ -470,39 +476,18 @@ public final class OilView {
         return out;
     }
 
-    /** The platform vintages dealt to the platforms, oldest to the oldest, each platform its wells in slots (pure). */
-    public static List<List<Vintage>> deal(List<Vintage> vintages, List<Oil.Platform> platforms) {
-        List<List<Vintage>> out = new ArrayList<>();
-        List<int[]> left = new ArrayList<>();
-        List<Vintage> sea = new ArrayList<>();
-        for (Vintage v : vintages) {
-            if (v.kind() != WellKind.PLATFORM) continue;
-            sea.add(v);
-            left.add(new int[] { v.count() });
-        }
-        int at = 0;
-        for (Oil.Platform p : platforms) {
-            List<Vintage> mine = new ArrayList<>();
-            int want = Math.max(0, p.wells());
-            while (want > 0 && at < sea.size()) {
-                int take = Math.min(want, left.get(at)[0]);
-                if (take > 0) mine.add(new Vintage(sea.get(at).month(), take, WellKind.PLATFORM));
-                want -= take;
-                left.get(at)[0] -= take;
-                if (left.get(at)[0] == 0) at++;
-            }
-            out.add(mine);
-        }
-        return out;
-    }
-
     /** What `vintages` of `kind` ask in `month` at nameplate (pure): each one's wells x `each` x its profile at its age, nothing once worn out. */
     public static double ask(List<Vintage> vintages, double each, WellKind kind, int month) {
+        return ask(vintages, each, kind, false, month);
+    }
+
+    /** ...for platform wells dealt to a platform whose field declines `deep` (DW1): the deep profile and the deep life. */
+    public static double ask(List<Vintage> vintages, double each, WellKind kind, boolean deep, int month) {
         double a = 0;
         for (Vintage v : vintages) {
             int age = month - v.month();
-            if (age >= Oil.lifeMonths(kind)) continue;
-            a += v.count() * each * Oil.profile(kind, age);
+            if (age >= Oil.lifeMonths(kind, deep)) continue;
+            a += v.count() * each * Oil.profile(kind, age, deep);
         }
         return a;
     }
@@ -514,6 +499,12 @@ public final class OilView {
      */
     public static double[][] forecast(List<Vintage> land, List<List<Vintage>> platforms, double landEach, double seaEach,
                                       double groundLeft, double seaLeft, double rate, int month, int years) {
+        return forecast(land, platforms, new boolean[platforms.size()], landEach, seaEach, groundLeft, seaLeft, rate, month, years);
+    }
+
+    /** ...with each platform's decline (DW1): `deep[i]` true where platform i stands on a field that declines deep (Oil.deepPlatforms()). */
+    public static double[][] forecast(List<Vintage> land, List<List<Vintage>> platforms, boolean[] deep, double landEach, double seaEach,
+                                      double groundLeft, double seaLeft, double rate, int month, int years) {
         double[][] out = new double[1 + platforms.size()][years];
         double ground = Math.max(0, groundLeft), sea = Math.max(0, seaLeft);
         double[] asks = new double[platforms.size()];
@@ -524,7 +515,7 @@ public final class OilView {
             out[0][y] += l / MONTHS_A_YEAR;
             double all = 0;
             for (int i = 0; i < asks.length; i++) {
-                asks[i] = ask(platforms.get(i), seaEach, WellKind.PLATFORM, t) * rate;
+                asks[i] = ask(platforms.get(i), seaEach, WellKind.PLATFORM, deep[i], t) * rate;
                 all += asks[i];
             }
             double lifted = Math.min(all, sea);
@@ -938,25 +929,26 @@ public final class OilView {
         return out;
     }
 
-    /** A platform's phase, by its oldest well: "plateau, year 2 of 3", "−8.5% a year", "no well yet". */
+    /** A platform's phase, by its oldest well: "plateau, year 2 of 3", "−8.5% a year" ("−10.3% a year" on a deep field, DW1), "no well yet". */
     static String phaseWords(Platform p) {
         if (p.oldest() < 0) return "no well yet";
         int plateau = Oil.PLATFORM_PLATEAU_MONTHS;
         if (p.oldest() < plateau) {
             return String.format("plateau, year %d of %d", p.oldest() / MONTHS_A_YEAR + 1, plateau / MONTHS_A_YEAR);
         }
-        return declineWords();
+        return declineWords(Oil.declinesDeep(p.depth()));
     }
 
-    /** A platform well's decline past its plateau: "−8.5% a year" (Oil.PLATFORM_KEEPS_A_YEAR). */
-    static String declineWords() {
-        return String.format("−%.1f%% a year", (1 - Oil.PLATFORM_KEEPS_A_YEAR) * 100);
+    /** A platform well's decline past its plateau: "−8.5% a year" (Oil.PLATFORM_KEEPS_A_YEAR), "−10.3% a year" on a deep field (Oil.DEEP_KEEPS_A_YEAR). */
+    static String declineWords(boolean deep) {
+        return String.format("−%.1f%% a year", (1 - (deep ? Oil.DEEP_KEEPS_A_YEAR : Oil.PLATFORM_KEEPS_A_YEAR)) * 100);
     }
 
     static String phaseTip(Platform p) {
         if (p.oldest() < 0) return "No well stands in its slots yet.";
+        double keeps = Oil.declinesDeep(p.depth()) ? Oil.DEEP_KEEPS_A_YEAR : Oil.PLATFORM_KEEPS_A_YEAR;
         return String.format("A platform well holds its lift for %d years, then loses %.1f%% a year; its oldest is %d months old.",
-                Oil.PLATFORM_PLATEAU_MONTHS / MONTHS_A_YEAR, (1 - Oil.PLATFORM_KEEPS_A_YEAR) * 100, p.oldest());
+                Oil.PLATFORM_PLATEAU_MONTHS / MONTHS_A_YEAR, (1 - keeps) * 100, p.oldest());
     }
 
     /** The platforms' card under its lines: the offshore pool, how the crude comes ashore, and what is on site. */
@@ -967,6 +959,13 @@ public final class OilView {
             f.add(new Fact("pipelines ashore", String.format("%,d whole · %,d km", v.pipesWhole(), v.pipeKm()), FACT));
         } else if (!v.platforms().isEmpty()) {
             f.add(new Fact("shuttle tankers, last month", money(v.shuttle()), FACT));
+        }
+        // ...the floating platforms (DW1): those standing past a jacket's depth, and the upkeep they cost last month.
+        int floating = 0;
+        for (Platform p : v.platforms()) if (Oil.isFloating(p.depth())) floating++;
+        if (floating > 0) {
+            f.add(new Fact("floating platforms", countWords(floating, "platform"), FACT));
+            f.add(new Fact("deep-water upkeep, last month", money(v.deepWater()), FACT));
         }
         if (v.jacketsOnSite() > 0 || v.seaWellsOnSite() > 0) {
             f.add(new Fact("on site", (v.jacketsOnSite() > 0 ? countWords(v.jacketsOnSite(), "platform") : "")
@@ -980,7 +979,7 @@ public final class OilView {
     public static String noPlatformWords(View v) {
         if (v.seaFields() == 0) return "The city owns no oil field in the sea.";
         if (v.shallowSites() == 0) return "The city's sea oil lies deeper than a platform stands ("
-                + String.format("%.0f m", Oil.PLATFORM_MAX_DEPTH_M) + ").";
+                + String.format("%,.0f m", Oil.FLOATING_MAX_DEPTH_M) + ").";
         return "None stands yet: " + String.format("%,d", v.shallowSites()) + " sea sites a platform may take.";
     }
 
