@@ -1505,8 +1505,8 @@ public class Game {
                     100 * valueMove(at < 0 ? Double.NaN : before[at], moneys.rate(broken))));
         }
         if (solved && january && !worldQuietForTheD) {
-            double change = cityExportPriceChange(year);
-            if (Double.isFinite(change)) foreign.stepTermsOfTrade(change);
+            double level = cityExportPriceLevel(year);
+            if (Double.isFinite(level)) foreign.stepTermsOfTrade(level);
         }
     }
 
@@ -1591,12 +1591,13 @@ public class Game {
     }
 
     /**
-     * The city's export-weighted change in ln world prices over the year that has turned (WN4, the D$'s terms of trade): for each good, its share of
-     * the value the city sold abroad in the last finished year (PartnerTrade's history, the last table, exports by good) times ln(the good's price
-     * this year over last year's, the nations' path: Nations.goodPrice), summed. NaN, and nothing for the D$, with no finished year, no exports in it
-     * or no goods in the file.
+     * The city's export-weighted ln world price of what it sells, each good against its normal (WN4, the D$'s terms of trade): for each good, its
+     * share of the value the city sold abroad in the last finished year (PartnerTrade's history, the last table, exports by good) times ln(the
+     * good's price this year, the nations' path: Nations.goodPrice, a ratio to 2025's, which is 1 and what the path reverts to), summed. A level,
+     * not the year's change (ForeignAccounts, THE WORLD REACHES THE D$, says why). NaN, and nothing for the D$, with no finished year, no exports
+     * in it or no goods in the file.
      */
-    private double cityExportPriceChange(int year) {
+    private double cityExportPriceLevel(int year) {
         PartnerTrade trade = partnerTrade;
         Nations beyond = nations;
         if (trade == null || beyond == null || beyond.goodCount() < 1) return Double.NaN;
@@ -1615,8 +1616,8 @@ public class Game {
         double change = 0;
         for (int g = 1; g < byGood.length; g++) {
             if (!(byGood[g] > 0)) continue;
-            double now = beyond.goodPrice(g, year), then = beyond.goodPrice(g, year - 1);
-            if (now > 0 && then > 0) change += byGood[g] / total * Math.log(now / then);
+            double now = beyond.goodPrice(g, year);
+            if (now > 0) change += byGood[g] / total * Math.log(now);
         }
         return change;
     }

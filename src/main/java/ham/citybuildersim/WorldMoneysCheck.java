@@ -1157,7 +1157,7 @@ public class WorldMoneysCheck {
         assertTrue("...and every one of them has a rule in the year book", YearBook.unruled(history).isEmpty());
 
         // The terms of trade from the city's own exports by good: a finished year's table given to a town that sold nothing, the January after
-        // steps the D$ by minus TOT_PASS times the export-weighted change in ln world prices (Game.cityExportPriceChange), a third in the first reprice.
+        // steps the D$ by minus TOT_PASS times the export-weighted ln of those goods' world prices against their normal (Game.cityExportPriceLevel: a level, not the change), a third in the first reprice.
         Game seller = town("world-moneys-exporter");
         for (int m = 1; m <= 11; m++) play(seller);
         Nations beyond = seller.getNations();
@@ -1175,14 +1175,14 @@ public class WorldMoneysCheck {
         assertTrue("fixture: two goods the file prices are goods of the game", found == 2);
         seller.partnerTradeForTest().restoreHistory(List.of(new PartnerTrade.Table(Nations.FIRST_YEAR, cells)));
         double expected = 0;
-        for (int k = 0; k < 2; k++) expected += values[k] / (values[0] + values[1]) * Math.log(beyond.goodPrice(numbers[k], Nations.FIRST_YEAR + 1) / beyond.goodPrice(numbers[k], Nations.FIRST_YEAR));
-        assertTrue("fixture: it is January 2001's turn next, and the two goods' prices moved over the year (" + String.format("%+.5f", expected) + ")",
+        for (int k = 0; k < 2; k++) expected += values[k] / (values[0] + values[1]) * Math.log(beyond.goodPrice(numbers[k], Nations.FIRST_YEAR + 1));
+        assertTrue("fixture: it is January 2001's turn next, and the two goods' prices in 2001 are off their normal (" + String.format("%+.5f", expected) + ")",
                 CityCalendar.monthOfYear(seller.getMonth() + 1) == 1 && Math.abs(expected) > 1e-6);
         play(seller);
         double piece = -WorldMoneys.TOT_PASS * expected / WorldMoneys.TOT_MONTHS;
-        out.printf("  exports of 70%% and 30%% in two goods whose prices changed %+.5f over 2001: the D$'s terms of trade after the January reprice %+.6f (a third of %+.6f)%n",
+        out.printf("  exports of 70%% and 30%% in two goods whose prices sit %+.5f (ln, export-weighted) off their normal in 2001: the D$'s terms of trade after the January reprice %+.6f (a third of %+.6f)%n",
                 expected, seller.getForeignAccounts().getTermsOfTradeReached(), -WorldMoneys.TOT_PASS * expected);
-        assertTrue("the January steps the D$ by minus TOT_PASS times the export-weighted change in ln prices: a third of it in that month's reprice",
+        assertTrue("the January steps the D$ by minus TOT_PASS times the export-weighted ln of their prices against normal: a third of it in that month's reprice",
                 Math.abs(seller.getForeignAccounts().getTermsOfTradeReached() - piece) < 1e-12);
         play(seller);
         play(seller);

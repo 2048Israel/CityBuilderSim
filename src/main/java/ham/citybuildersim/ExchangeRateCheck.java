@@ -97,10 +97,12 @@ import java.io.PrintStream;
  *      HAVEN_PULL - SURPLUS_PULL (negative: the D$ rises in a risk-off); hot
  *      money or debt of a tenth of a year's GDP adds EXPOSURE_WEIGHT x 0.1;
  *      the clamps hold; the exposed D$ falls and the haven's rises by it.
- *  13. THE TERMS OF TRADE. stepTermsOfTrade(-0.1) in a January moves the rate
- *      by TOT_PASS x 0.1 / TOT_MONTHS in each of TOT_MONTHS reprices and not
- *      the one after; a step before the last was reached brings the rest at
- *      once.
+ *  13. THE TERMS OF TRADE, A LEVEL. stepTermsOfTrade(-0.1) in a January (what
+ *      the city sells 10% under its normal price) moves the rate by TOT_PASS x
+ *      0.1 / TOT_MONTHS in each of TOT_MONTHS reprices and not the one after;
+ *      the next January's level takes the term to its own level, not on top;
+ *      the same level again moves nothing; a January before the last was
+ *      reached brings the rest at once and heads for the new level.
  *  14. THE MOVES ADD UP. With a world on (a swinging cycle, two risk-offs,
  *      hot money, a January's terms of trade) the seven lines and the hold sum
  *      to the month's move to 1e-12 under Lean, Float, Band and Peg, and the
@@ -1373,19 +1375,26 @@ public class ExchangeRateCheck {
         fx.stepTermsOfTrade(.2);
         double sum = 0;
         for (int m = 1; m <= WorldMoneys.TOT_MONTHS; m++) sum += lnMove(fx, TRADE, GDP);
-        close("the next January's exports 20% dearer move it the other way by TOT_PASS x 0.2", sum, -pass * .2, 1e-12);
-        close("...and the term reached is the two years' together", fx.getTermsOfTradeReached(), pass * .1 - pass * .2, 1e-12);
+        close("the next January's exports 20% over their normal move it from TOT_PASS x 0.1 to -TOT_PASS x 0.2: a move of -TOT_PASS x 0.3", sum, -pass * .3, 1e-12);
+        close("...and the term reached is that January's level alone, not the two years' added", fx.getTermsOfTradeReached(), -pass * .2, 1e-12);
+        fx.stepTermsOfTrade(.2);
+        double again = 0;
+        for (int m = 1; m <= WorldMoneys.TOT_MONTHS + 1; m++) again += Math.abs(lnMove(fx, TRADE, GDP));
+        close("the same level the January after moves nothing: a level of reverting prices does not ratchet", again, 0, 1e-12);
 
-        // A step that arrives before the last was reached: what was left comes with the next reprice, at once.
+        // A January that arrives before the last was reached: what was left comes at once, and the term heads for the new level from there.
         ForeignAccounts early = settledStill(TRADE, GDP);
         early.stepTermsOfTrade(-0.1);
         double first = lnMove(early, TRADE, GDP);
         early.stepTermsOfTrade(0);
-        double rest = lnMove(early, TRADE, GDP);
-        close("a step that comes before the last was reached has what was left reach at once: the first piece and the rest make the whole", first + rest, pass * .1, 1e-12);
-        close("...the rest being the pieces not yet reached", rest, piece * (WorldMoneys.TOT_MONTHS - 1), 1e-12);
+        double next = lnMove(early, TRADE, GDP);
+        close("a January before the last was reached brings the rest at once, less a third of the way back to the new level 0",
+                next, piece * (WorldMoneys.TOT_MONTHS - 1) - pass * .1 / WorldMoneys.TOT_MONTHS, 1e-12);
+        for (int m = 2; m <= WorldMoneys.TOT_MONTHS; m++) lnMove(early, TRADE, GDP);
+        close("...and TOT_MONTHS reprices after it the term is at the new level", early.getTermsOfTradeReached(), 0, 1e-12);
+        assertTrue("fixture: the first piece was TOT_PASS x 0.1 / TOT_MONTHS", Math.abs(first - piece) <= 1e-12);
         early.stepTermsOfTrade(Double.NaN);
-        close("a change that is no number is no news", lnMove(early, TRADE, GDP), 0, 1e-12);
+        close("a level that is no number is no news", lnMove(early, TRADE, GDP), 0, 1e-12);
 
         // Gated like the rest.
         ForeignAccounts half = settledStill(GDP / 40, GDP);

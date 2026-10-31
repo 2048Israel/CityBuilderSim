@@ -654,10 +654,19 @@ public class ForeignAccounts {
      *                 franc does. A fall is a fall: the vault leans against it
      *                 and a peg feels it as pressure, with nothing special here.
      *   terms of trade  the city's own, from its exports by good (Game's THE
-     *                 WORLD MONEYS IN THE MONTH hands the January's export-weighted
-     *                 change in ln world prices): dearer exports, a dearer D$,
-     *                 by TOT_PASS, a third in each of the year's first TOT_MONTHS
-     *                 reprices.
+     *                 WORLD MONEYS IN THE MONTH hands, each January, the
+     *                 export-weighted ln of the world prices of what it sells
+     *                 against their normal, 2025's): dearer exports, a dearer D$,
+     *                 by TOT_PASS, the level reached a third in each of the
+     *                 year's first TOT_MONTHS reprices. A LEVEL, NOT A SUM OF
+     *                 CHANGES: summed, a change weighted by the year before's
+     *                 export values (which hold that year's prices) is biased,
+     *                 because the prices revert - a good that was dear has a big
+     *                 weight and then falls - and on the playtest's city the sum
+     *                 only climbed, +0.09 to +0.69 in a century, the D$ weaker
+     *                 every January and prices +8.7% a year against main's 3.7%
+     *                 (WN4's review, 2026-10-31). A level of reverting prices
+     *                 reverts, and is bounded by them.
      *
      * WHERE THERE IS NO WORLD every figure here is zero and the D$ is main's, to
      * the bit. Saved: slots 95-104. THE SLOTS AFTER 104 ARE THE VAULT'S (WN4
@@ -707,15 +716,16 @@ public class ForeignAccounts {
     }
 
     /**
-     * The city's terms of trade in a January: exportPriceChange is its export-weighted change in ln world prices over the year (Game's, from
-     * PartnerTrade's exports by good and the nations' good prices). Dearer exports make a dearer D$, a lower rate: the step is minus TOT_PASS
-     * times it, reached a third in each of the next TOT_MONTHS reprices (WorldMoneys' rule for a nation's money). What a step before it had not
-     * yet reached comes at once, so no news is lost; a change that is no number is no news.
+     * The city's terms of trade in a January: exportPriceLevel is the export-weighted ln of the world prices of what it sells, each against its
+     * normal (Game's, from PartnerTrade's exports by good over the year that finished and the nations' good prices this year, 1 being 2025's).
+     * Dearer exports make a dearer D$, a lower rate: the term's level is minus TOT_PASS times it, reached a third in each of the next TOT_MONTHS
+     * reprices (WorldMoneys' pace for a nation's money). What the last January had not yet reached comes at once, so no news is lost; a level
+     * that is no number is no news. A level, not a sum of changes: see THE WORLD REACHES THE D$.
      */
-    public void stepTermsOfTrade(double exportPriceChange) {
-        if (!Double.isFinite(exportPriceChange)) return;
+    public void stepTermsOfTrade(double exportPriceLevel) {
+        if (!Double.isFinite(exportPriceLevel)) return;
         totReached += totStep * totLeft;
-        totStep = -WorldMoneys.TOT_PASS * exportPriceChange / WorldMoneys.TOT_MONTHS;
+        totStep = (-WorldMoneys.TOT_PASS * exportPriceLevel - totReached) / WorldMoneys.TOT_MONTHS;
         totLeft = WorldMoneys.TOT_MONTHS;
     }
 
