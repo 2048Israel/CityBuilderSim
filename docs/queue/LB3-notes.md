@@ -179,3 +179,13 @@ only while the Rankings tab is the screen; the model's one monthly addition is `
 `recordMonth`. So nothing was made lazier: there is no monthly work outside the tab to move. The gate's figures were
 taken while the PC ran other batches; if its paired rounds go red again on these two lines, a third pairing on a
 quiet PC is the test, and the budget and the harness's premise stay as they are.
+
+## 11. After LC1 (2026-10-31)
+
+LC1 (0.8.85) took 17 measures whose figures are third parties' out of the real board (a `none:` source each), so
+inflation ranks only the player's cities, and section 16's fixture, which named inflation among its eight, went red at
+the gate. Its measures are now the file's: every sourced measure with real figures on Real world 2025 (38 of 70; the
+city has a figure in some December for 25), the premise unmoved (a rank from 1 to the places ranked, each point the
+board's own rank); "starts when it has one" takes the first published measure the city lacks in its first December
+(growth_real); and one line holds that a measure LC1 took out (inflation) ranks the city and its saved cities alone,
+its rank line the city alone each December. Merged with main (the conflicts only in the generated docs).

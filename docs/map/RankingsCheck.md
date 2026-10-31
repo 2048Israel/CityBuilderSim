@@ -1,4 +1,4 @@
-# RankingsCheck.java - 1,436 lines · 44 methods · 9 constants · harnesses
+# RankingsCheck.java - 1,459 lines · 44 methods · 9 constants · harnesses
 
 `ham/citybuildersim/RankingsCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > 
 > ... (3 more lines in the source)
 
-**Uses:** [Rankings](Rankings.md) (226), [CityMeasures](CityMeasures.md) (105), [Money](Money.md) (66), [WorldMeasures](WorldMeasures.md) (60), [Nations](Nations.md) (37), [HistorySave](HistorySave.md) (22), [SavedCities](SavedCities.md) (16), [GameFiles](GameFiles.md) (13), [AgeBand](AgeBand.md) (11), [WorldData](WorldData.md) (9), [Game](Game.md) (9), [CityCalendar](CityCalendar.md) (8), [WorldMeasuresCheck](WorldMeasuresCheck.md) (6), [LongPlaytest](LongPlaytest.md) (4), [WorldDataCheck](WorldDataCheck.md) (3), [GameVersion](GameVersion.md) (3), [YearBook](YearBook.md) (2), [LandManager](LandManager.md) (2), [ForeignAccounts](ForeignAccounts.md) (1)
+**Uses:** [Rankings](Rankings.md) (233), [CityMeasures](CityMeasures.md) (105), [Money](Money.md) (66), [WorldMeasures](WorldMeasures.md) (62), [Nations](Nations.md) (37), [HistorySave](HistorySave.md) (22), [SavedCities](SavedCities.md) (16), [GameFiles](GameFiles.md) (13), [AgeBand](AgeBand.md) (11), [WorldData](WorldData.md) (9), [Game](Game.md) (9), [CityCalendar](CityCalendar.md) (8), [WorldMeasuresCheck](WorldMeasuresCheck.md) (6), [LongPlaytest](LongPlaytest.md) (4), [WorldDataCheck](WorldDataCheck.md) (3), [GameVersion](GameVersion.md) (3), [YearBook](YearBook.md) (2), [LandManager](LandManager.md) (2), [ForeignAccounts](ForeignAccounts.md) (1)
 
 ## Sections
 
@@ -87,8 +87,8 @@
 | 1181 | 14. A REFORM LEAVES EVERY RANK |
 | 1229 | 15. AT YOUR AGE EQUALS THE HISTORY FILE'S MONTH |
 | 1278 | 16. THE RANK LINE |
-| 1337 | 17. THE SLIM HISTORY EQUALS THE FULL ONE |
-| 1395 | 18. CITYMEASURES.AT |
+| 1360 | 17. THE SLIM HISTORY EQUALS THE FULL ONE |
+| 1418 | 18. CITYMEASURES.AT |
 
 ## Constants
 
@@ -124,7 +124,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 95 | 1342 | **type** `public class RankingsCheck` | The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9): Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading of ... |
+| 95 | 1365 | **type** `public class RankingsCheck` | The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9): Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading of ... |
 | 128 | 4 | `static void check(String label, boolean ok)` | Prints a label and OK or FAIL; the exit code is the count of FAILs. |
 | 134 | 12 | **type** `static final class Tally` | A check over many things, that says how many there were and the first that was wrong. |
 | 138 | 7 | `void see(boolean ok, Supplier<String> what)` _(in RankingsCheck.Tally)_ |  |
@@ -249,21 +249,21 @@
 |---:|---:|---|---|
 | 1233 | 44 | `static void theAge(WorldMeasures wm, Nations nations, Saves f) throws IOException` |  |
 
-### 16. THE RANK LINE (lines 1278-1336)
+### 16. THE RANK LINE (lines 1278-1359)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1282 | 54 | `static void theRankLine(WorldMeasures wm, Nations nations, Saves f)` |  |
+| 1282 | 77 | `static void theRankLine(WorldMeasures wm, Nations nations, Saves f)` |  |
 
-### 17. THE SLIM HISTORY EQUALS THE FULL ONE (lines 1337-1394)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1341 | 53 | `static void theSlimHistory(Saves f) throws IOException` |  |
-
-### 18. CITYMEASURES.AT (lines 1395-1436)
+### 17. THE SLIM HISTORY EQUALS THE FULL ONE (lines 1360-1417)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1399 | 37 | `static void theMonth(Rankings.City live, Saves f)` |  |
+| 1364 | 53 | `static void theSlimHistory(Saves f) throws IOException` |  |
+
+### 18. CITYMEASURES.AT (lines 1418-1459)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1422 | 37 | `static void theMonth(Rankings.City live, Saves f)` |  |
 

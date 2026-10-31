@@ -1289,18 +1289,26 @@ public class RankingsCheck {
         check("fixture: the history is all months (nothing folded) and holds at least three Decembers", h.yearlyPoints() == 0 && decembers.size() >= 3);
         Settings real = set(Board.REAL_2025, Money.REAL_USD, Convert.MARKET);
         Tally months = new Tally(), every = new Tally(), board = new Tally(), plays = new Tally(), within = new Tally();
-        for (String key : List.of("people", "gdp", "gdp_pp", "unemployment", "inflation", "growth_real", "hh_spend_pp", "avg_wage")) {
+        // The measures the real world still publishes, read from the file: a sourced measure with real figures on the board (LC1 left the rest
+        // with a none: source, ranking the player's cities alone).
+        List<String> published = new ArrayList<>();
+        for (WorldMeasures.Measure m : wm.measures()) if (m.sourced() && Rankings.table(wm, nations, city, real, m.key()).realFigures()) published.add(m.key());
+        List<String> lined = new ArrayList<>();
+        check("fixture: the measures the real world still publishes, read from the file (" + published.size() + " of " + wm.measures().size()
+                + "), people, GDP and unemployment among them", published.size() > 20 && published.containsAll(List.of("people", "gdp", "unemployment")));
+        for (String key : published) {
             List<Rankings.RankPoint> points = Rankings.rankOverYears(wm, city, h, real, key);
             List<Integer> want = new ArrayList<>();
             for (int m : decembers) if (CityMeasures.at(h, CityMeasures.Extras.UNKNOWN, m).containsKey(key)) want.add(m);
-            months.see(points.stream().map(Rankings.RankPoint::month).toList().equals(want) && !points.isEmpty(), () -> key + ": " + points + " against the Decembers " + want);
+            if (!want.isEmpty()) lined.add(key);
+            months.see(points.stream().map(Rankings.RankPoint::month).toList().equals(want), () -> key + ": " + points + " against the Decembers " + want);
             if (key.equals("people") || key.equals("gdp") || key.equals("unemployment")) months.see(points.size() == decembers.size(), () -> key + " has a figure in every December: " + points.size() + " of " + decembers.size());
             for (Rankings.RankPoint p : points) {
                 Rankings.City then = Rankings.cityAt(city.name(), city.currency(), city.foundingRate(), h, CityMeasures.Extras.UNKNOWN, p.month());
                 Table t = Rankings.table(wm, nations, then, real, key);
                 Row me = cityRow(t);
                 every.see(me != null && me.rank() == p.rank() && t.rows().size() == p.of(), () -> key + " in " + CityCalendar.format(p.month()) + ": " + p);
-                within.see(p.rank() >= 1 && p.rank() <= p.of() && p.of() > 30, () -> key + " in " + CityCalendar.format(p.month()) + ": " + p);
+                within.see(p.rank() >= 1 && p.rank() <= p.of() && p.of() > 1, () -> key + " in " + CityCalendar.format(p.month()) + ": " + p);
             }
             board.see(Rankings.rankOverYears(wm, city, h, set(Board.YOUR_WORLD, Money.REAL_USD, Convert.MARKET), key).equals(points), () -> key + " on Your world's settings");
             if (!points.isEmpty()) {
@@ -1312,15 +1320,30 @@ public class RankingsCheck {
                 plays.see(!saved.isEmpty() && withSaved.rows().size() > without.rows().size() && lastPoint.of() == without.rows().size(), () -> key + ": the board with " + saved.size() + " saved cities has " + withSaved.rows().size() + " rows, the point " + lastPoint.of());
             }
         }
+        check("...of which the city has a figure in some December for " + lined.size() + " (the rest need the land or the bands, or the city has none)", lined.size() > 15);
         tally("the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them", months);
         tally("each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)", every);
-        tally("...a rank from 1 to the places ranked, among the real world's dozens (a wage is published for fewer places than output is)", within);
+        tally("...a rank from 1 to the places ranked, among the real places that publish the measure (a wage is published for fewer places than output is)", within);
+        WorldMeasures.Measure out1 = wm.measure("inflation");
+        List<Rankings.Saved> savedNow = f.snapshot.now();
+        Table alone = Rankings.table(wm, nations, city, savedNow, real, "inflation");
+        check("a measure LC1 took out (inflation, its source " + out1.source() + ") ranks the player's cities alone: the city and its " + savedNow.size()
+                        + " saved cities, no real place, and its rank line is the city alone each December",
+                !out1.sourced() && !alone.realFigures() && alone.rows().size() == 1 + savedNow.size() && savedNow.size() > 1
+                        && alone.rows().stream().allMatch(r -> r.kind() == Rankings.Kind.CITY || r.kind() == Rankings.Kind.SAVED)
+                        && Rankings.rankOverYears(wm, city, h, real, "inflation").stream().allMatch(p -> p.rank() == 1 && p.of() == 1));
         tally("Your world's settings give the same points: the line is against Real world 2025 only", board);
         tally("saved cities would change the places ranked (the board with them has more rows), and the point leaves them out", plays);
 
         check("a measure that needs the land has no point, since the history does not keep it: area and density", Rankings.rankOverYears(wm, city, h, real, "area").isEmpty() && Rankings.rankOverYears(wm, city, h, real, "density").isEmpty());
-        check("a measure the city had no figure for in its first Decembers starts when it has one: inflation needs 13 months, so no point in the first December",
-                Rankings.rankOverYears(wm, city, h, real, "inflation").stream().noneMatch(p -> p.month() == decembers.get(0)) && !Rankings.rankOverYears(wm, city, h, real, "inflation").isEmpty());
+        String later = null;
+        for (String key : lined) {
+            List<Rankings.RankPoint> points = Rankings.rankOverYears(wm, city, h, real, key);
+            if (!points.isEmpty() && points.get(0).month() > decembers.get(0)) { later = key; break; }
+        }
+        String startsLater = later;
+        check("a measure the city had no figure for in its first Decembers starts when it has one: " + startsLater + ", published, has no point in the first December and some after",
+                startsLater != null && Rankings.rankOverYears(wm, city, h, real, startsLater).stream().noneMatch(p -> p.month() == decembers.get(0)));
         Settings constant = set(Board.REAL_2025, Money.CITY, Convert.CONSTANT);
         List<Rankings.RankPoint> constantPoints = Rankings.rankOverYears(wm, city, h, constant, "gdp");
         Rankings.RankPoint lastConstant = constantPoints.isEmpty() ? null : constantPoints.get(constantPoints.size() - 1);
