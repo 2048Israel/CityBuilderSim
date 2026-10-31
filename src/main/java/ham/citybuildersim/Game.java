@@ -1587,6 +1587,20 @@ public class Game {
         }
         foreign.setMoneyRates(usdPerUnit);
         foreign.setTradeShares(tradeSharesByMoney(moneys));
+        // ...AND WHAT THE VAULT EARNS (XR4, THE VAULT EARNS): each balance at its central bank's rate, kept in the vault, once a month, after the
+        // cross rates and before anything buys or sells. A load does not come this way (it restores the saved month), so a month is earned once.
+        PolicyRates rates = policyRates;
+        if (rates != null && !worldQuietForTheD) {
+            double[] annual = new double[ForeignAccounts.MONEYS];
+            for (int k = 0; k < annual.length; k++) annual[k] = rates.rate(k);
+            foreign.earnVaultInterest(annual);
+        }
+    }
+
+    /** The risk-off level the carry and the hot money are told this month (XR4): the moneys' own, 0 with no moneys or a world quieted for the D$. */
+    private double worldRiskOffLevel() {
+        WorldMoneys moneys = worldMoneys;
+        return moneys == null || worldQuietForTheD ? 0 : moneys.riskOff();
     }
 
     /**
@@ -1719,6 +1733,12 @@ public class Game {
                     100 * worldRiskOffMoves[0], 100 * worldRiskOffMoves[1], 100 * worldRiskOffMoves[2],
                     100 * valueMove(rateBeforeReprice, foreign.getRate())));
             worldRiskOffStarted = false;
+        }
+        // ...and the money that ran home in it (XR4): the hot money that left and the carry that was repaid, this month's, while the risk-off is felt (the figures are in thousands, so a cent is 1e-5).
+        double ranHome = hotMoney.getRiskOffDeparted(), repaid = hotMoney.getCarryRiskRepaid();
+        if ((ranHome > 1e-5 || repaid > 1e-5) && worldRiskOffLevel() >= CapitalFlows.RISK_OFF_FELT) {
+            String here = getCurrency().qualifiedSymbol();
+            GameLog.note(String.format("Money ran home: %s%,.1fM of hot money left and %s%,.1fM of the carry was repaid.", here, ranHome / 1000, here, repaid / 1000));
         }
         for (String line : worldPegBreaks) GameLog.note(line);
         worldPegBreaks.clear();
@@ -12005,6 +12025,8 @@ public class Game {
            the two agree on what money costs before anybody's credit is priced.
            ================================================================= */
         double carryRate = bank.carryRate(debtManager.getPolicyRate());
+        // The risk-off the world is in (XR4): handed once here, it holds for the hot money's month below as well.
+        hotMoney.setRiskOff(worldRiskOffLevel());
         double carryMoved = hotMoney.carryTakeMonth(
                 carryRate,
                 debtManager.worldRate(),

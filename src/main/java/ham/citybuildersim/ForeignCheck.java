@@ -248,8 +248,9 @@ public class ForeignCheck {
         CentralBank books = city.getCentralBank();
         out.printf("   the defence sold US$%,.0fk of the founders' US$%,.0fk over the fifteen years%n",
                 fx.getDefenceUsdLifetime(), Game.FOUNDING_RESERVE_USD);
+        // XR4: the vault earns each bank's rate and keeps it (ForeignAccounts, THE VAULT EARNS): the interest is the one booked term more, in US$ and not a purchase.
         close("a city that never intervened holds its founders' dollars, less the defence's",
-                fx.getReservesUsd(), Game.FOUNDING_RESERVE_USD - fx.getDefenceUsdLifetime(), 1e-6);
+                fx.getReservesUsd(), Game.FOUNDING_RESERVE_USD + fx.getVaultInterestUsdLifetime() - fx.getDefenceUsdLifetime(), 1e-6);
         close("...and its record is the day-one purchase, less what the defence fetched",
                 fx.getLifetimeIntervention(),
                 Game.FOUNDING_RESERVE_USD * ForeignAccounts.OPENING_RATE - books.vaultSpent(), 1e-6);
@@ -1089,10 +1090,12 @@ public class ForeignCheck {
         ForeignAccounts cfx = city.getForeignAccounts();
         assertTrue("fixture: the treasury bought dollars and the currency fell",
                 bought > 0 && rateAfter > rateBefore);
+        // XR4: the month's dollars are what they were and the interest the vault earned that month (booked in US$, not a flow the audit sees).
+        double dollarsAfter = dollarsBefore + cfx.getVaultInterestUsd();
         close("a month the currency falls in leaves the dollars alone",
-                cfx.getReservesUsd(), dollarsBefore, 1e-9);
+                cfx.getReservesUsd(), dollarsAfter, 1e-9);
         close("...and books dollars times the move as its revaluation",
-                cfx.getLastVaultRevaluation(), dollarsBefore * (rateAfter - rateBefore), 1e-6);
+                cfx.getLastVaultRevaluation(), dollarsAfter * (rateAfter - rateBefore), 1e-6);
         assertTrue("...and none of it appeared in the audit as money moving",
                 Math.abs(city.getLastMoneyAudit().relative()) < 1e-9);
 

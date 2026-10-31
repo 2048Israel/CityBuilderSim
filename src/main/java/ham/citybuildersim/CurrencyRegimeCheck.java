@@ -781,7 +781,7 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: the month had hot money arrive, depart and leave on doubt (" + String.format("%,.1fk, %,.1fk, %,.1fk",
                 doubting.getArrived(), doubting.getDeparted(), doubting.getDoubtDeparted()) + ")",
                 doubting.getArrived() > 0 && doubting.getDeparted() > 0 && doubting.getDoubtDeparted() > 0);
-        assertTrue("the saved array is 19 slots long: XR2's 16 and the month's three", saved.length == SAVE_SLOTS);
+        assertTrue("the saved array is 24 slots long: XR2's 16, the month's three and XR4's five (what ran home in a risk-off)", saved.length == SAVE_SLOTS);
         assertTrue("...slots 16, 17 and 18 are the month's arrived, departed and doubtDeparted", saved[SLOT_ARRIVED] == doubting.getArrived()
                 && saved[SLOT_DEPARTED] == doubting.getDeparted() && saved[SLOT_DOUBT_DEPARTED] == doubting.getDoubtDeparted());
         CapitalFlows back = restored(doubting);
@@ -869,16 +869,17 @@ public class CurrencyRegimeCheck {
             play(g, 1);
             double departed = hot.getDoubtDeparted(), left = hot.getStock();
             out.printf("   hot money US$%,.0fk at the month's top, the doubt %.2f%%: %,.1fk left on doubt, %,.0fk remain%n", stockBefore, shareStruck * 100, departed, left);
+            // XR4: a risk-off in force sends home its share of what the doubt left, so the stock the doubt took its share of is what remains and what the risk-off took.
             assertTrue("the month's doubt departure is the stock times the share the last reprice struck (the share of the stock after its own move)",
-                    departed > 0 && Math.abs(departed / (left + departed) - shareStruck) <= 1e-9);
+                    departed > 0 && Math.abs(departed / (left + departed + hot.getRiskOffDeparted()) - shareStruck) <= 1e-9);
             assertTrue("...it is inside what departed that month, and the lifetime rose by it", hot.getDeparted() >= departed - 1e-9
                     && Math.abs(hot.getDoubtDepartedLifetime() - lifetimeBefore - departed) <= 1e-9);
             assertTrue("...and the audit closes (residual " + String.format("%.4f", g.getLastMoneyAudit().residual) + ")", ExchangeRateCheck.auditCloses(g));
         }
     }
 
-    /** Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is. */
-    static final int SLOT_DOUBT_LIFETIME = 15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 19;
+    /** Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). */
+    static final int SLOT_DOUBT_LIFETIME = 15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24;
 
     static CapitalFlows restored(CapitalFlows f) {
         CapitalFlows back = new CapitalFlows();

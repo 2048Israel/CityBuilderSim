@@ -2188,6 +2188,14 @@ public class SaveFileCheck {
                         && Double.compare(hotBack.getDeparted(), hotLive.getDeparted()) == 0
                         && Double.compare(hotBack.getDoubtDeparted(), hotLive.getDoubtDeparted()) == 0
                         && Double.compare(hotBack.getDoubtDepartedLifetime(), hotLive.getDoubtDepartedLifetime()) == 0);
+        // XR4: what ran home in a risk-off rides the array after them (slots 19-23); a calm month reads 0 on both sides, InterestAbroadCheck's section 8 causes a risk-off and asserts them to the bit.
+        assertTrue("...and what ran home in a risk-off, the hot money's and the carry's, the month's and since founding, and the months it did, as they were",
+                Double.compare(hotBack.getRiskOffDeparted(), hotLive.getRiskOffDeparted()) == 0
+                        && Double.compare(hotBack.getRiskOffDepartedLifetime(), hotLive.getRiskOffDepartedLifetime()) == 0
+                        && Double.compare(hotBack.getCarryRiskRepaid(), hotLive.getCarryRiskRepaid()) == 0
+                        && Double.compare(hotBack.getCarryRiskRepaidLifetime(), hotLive.getCarryRiskRepaidLifetime()) == 0
+                        && hotBack.getRiskOffMonths() == hotLive.getRiskOffMonths()
+                        && java.util.Arrays.equals(hotBack.toSaveArray(), hotLive.toSaveArray()));
 
         /*
          * ...AND EACH CELL'S INCOME AFTER ITS FIXED BILLS (A4, 0.7.46): struck
@@ -3661,11 +3669,15 @@ public class SaveFileCheck {
             assertTrue("...and the foreign accounts' array runs to slot 104, the world's (95-104)", savedFx.length >= 105);
             // WN4, the vault in eight (slots 105-141): euros and pounds beside the dollars, the mix, the chosen shares, the eight's rates and the month's cross move.
             ForeignAccounts savedAccounts = city.getForeignAccounts();
-            assertTrue("...and to slot 141, the vault's (105-141): " + savedFx.length + " slots", savedFx.length == 142);
+            assertTrue("...and to slot 146, the vault's (105-141) and what it earned (142-146, XR4): " + savedFx.length + " slots", savedFx.length == 147);
             assertTrue("fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22",
                     savedAccounts.getHolding(1) > 0 && savedAccounts.getHolding(3) > 0 && savedAccounts.getHolding(0) > 0 && savedAccounts.getReserveMix() == ForeignAccounts.Mix.CHOSEN
                             && savedAccounts.getLastVaultCrossUsd() != 0 && savedFx[22] == savedAccounts.getReservesUsd() && savedFx[105 + 1] == savedAccounts.getHolding(1)
                             && savedFx[113 + 1] > 0 && savedFx[121] == ForeignAccounts.Mix.CHOSEN.ordinal() && savedFx[138] == savedAccounts.getLastVaultCrossUsd());
+            assertTrue("fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$ " + savedFx[142] + ", the lifetime " + savedFx[143] + ")",
+                    savedAccounts.getVaultInterestUsd() > 0 && savedFx[142] == savedAccounts.getVaultInterestUsd() && savedFx[143] == savedAccounts.getVaultInterestUsdLifetime()
+                            && savedFx[143] >= savedFx[142] && savedFx[144] == savedAccounts.getVaultInterestDriver() && savedFx[145] == savedAccounts.getVaultInterestDriverUsd()
+                            && savedAccounts.getVaultYield() > 0);
             com.google.gson.JsonObject hist = com.google.gson.JsonParser.parseString(Files.readString(files.historyFile(1))).getAsJsonObject();
             assertTrue("...and the history writes each finished year's table by partner and good (1)",
                     hist.has("tradeByPartner") && hist.getAsJsonArray("tradeByPartner").size() == 1
@@ -3709,12 +3721,17 @@ public class SaveFileCheck {
                     && Double.compare(backAccounts.getLastVaultCrossUsd(), savedAccounts.getLastVaultCrossUsd()) == 0
                     && java.util.Arrays.equals(backAccounts.getChosenShares(), savedAccounts.getChosenShares())
                     && java.util.Arrays.equals(backAccounts.getTradeShares(), savedAccounts.getTradeShares())
-                    && java.util.Objects.equals(backAccounts.getLastVaultCrossDriver(), savedAccounts.getLastVaultCrossDriver());
+                    && java.util.Objects.equals(backAccounts.getLastVaultCrossDriver(), savedAccounts.getLastVaultCrossDriver())
+                    && Double.compare(backAccounts.getVaultInterestUsd(), savedAccounts.getVaultInterestUsd()) == 0
+                    && Double.compare(backAccounts.getVaultInterestUsdLifetime(), savedAccounts.getVaultInterestUsdLifetime()) == 0
+                    && backAccounts.getVaultInterestDriver() == savedAccounts.getVaultInterestDriver()
+                    && Double.compare(backAccounts.getVaultInterestDriverUsd(), savedAccounts.getVaultInterestDriverUsd()) == 0
+                    && Double.compare(backAccounts.getVaultYield(), savedAccounts.getVaultYield()) == 0;
             for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
                 vaultBack &= Double.compare(backAccounts.getHolding(k), savedAccounts.getHolding(k)) == 0 && backAccounts.hasRate(k) == savedAccounts.hasRate(k)
                         && Double.compare(backAccounts.getMoneyUsd(k), savedAccounts.getMoneyUsd(k)) == 0;
             }
-            assertTrue("...and the vault in eight as it was: the eight balances and their rates, the mix, the chosen and the trade shares, the month's cross move and its driver", vaultBack);
+            assertTrue("...and the vault in eight as it was: the eight balances and their rates, the mix, the chosen and the trade shares, the month's cross move and its driver, and what it earned (the month's, the lifetime, the driver, the yield)", vaultBack);
             assertEquals("...the trade by partner, the month and the year to date, as it was", gson.toJson(backRecord.toState()), gson.toJson(record.toState()));
             assertEquals("...the finished years in the history", gson.toJson(backRecord.history()), gson.toJson(record.history()));
             PartnerTrade.Snapshot backSnap = loaded.getPartnerTrade();

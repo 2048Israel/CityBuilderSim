@@ -46,8 +46,8 @@ public class VaultMoneysCheck {
     /** The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. */
     static final double[] R = {1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12};
 
-    /** The length of the foreign accounts' array: slots 0 to 141. */
-    static final int SLOTS = 142;
+    /** The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them). */
+    static final int SLOTS = 147;
 
     static final ForeignAccounts.Mix ALL_USD = ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE,
             WORLD_MIX = ForeignAccounts.Mix.WORLD_MIX, CHOSEN = ForeignAccounts.Mix.CHOSEN;
@@ -597,7 +597,7 @@ public class VaultMoneysCheck {
         a.revalueVault();
 
         double[] saved = a.toSaveArray();
-        assertTrue("the array runs to slot 141 (" + saved.length + " slots)", saved.length == SLOTS);
+        assertTrue("the array runs to slot 146, the vault's (105-141) and what it earned (142-146) (" + saved.length + " slots)", saved.length == SLOTS);
         same("slot 22 is still the vault's dollars, the total", saved[22], a.getReservesUsd());
         same("...and slot 19 its worth at home", saved[19], a.getReserves());
         boolean eight = true;

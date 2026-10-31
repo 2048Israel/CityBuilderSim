@@ -1020,6 +1020,12 @@ public class ReadPathCheck {
         g.getCapitalFlows().netFlow();
         g.getCapitalFlows().getDoubtDeparted();
         g.getCapitalFlows().getDoubtDepartedLifetime();
+        // ...and XR4's: what ran home in a risk-off (the hot money's and the carry's, the month's and since founding) and the months it did
+        g.getCapitalFlows().getRiskOffDeparted();
+        g.getCapitalFlows().getRiskOffDepartedLifetime();
+        g.getCapitalFlows().getCarryRiskRepaid();
+        g.getCapitalFlows().getCarryRiskRepaidLifetime();
+        g.getCapitalFlows().getRiskOffMonths();
         g.getCapitalFlows().toSaveArray();
         g.getCentralBank().getDollarsBought();
         g.getCentralBank().getDollarsBoughtLifetime();
@@ -2233,6 +2239,8 @@ public class ReadPathCheck {
         // WN4, the vault in eight: everything the Reserves page reads of it.
         ForeignAccounts vault = g.getForeignAccounts();
         vault.getReserveMix(); vault.getChosenShares(); vault.getTradeShares(); vault.mixShares(); vault.getLastVaultCrossUsd(); vault.getLastVaultCrossDriver();
+        // ...and what the vault earned (XR4): the month's and since founding, in US$ and at home, the money that earned most, the yield
+        vault.getVaultInterestUsd(); vault.getVaultInterestUsdLifetime(); vault.getVaultInterest(); vault.getVaultInterestDriver(); vault.getVaultInterestDriverUsd(); vault.getVaultYield();
         for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
             vault.getHolding(k); vault.getHoldingUsd(k); vault.getMoneyUsd(k); vault.hasRate(k);
             vault.sellableReserves(WorldMoneys.EIGHT.get(k));
@@ -2305,6 +2313,12 @@ public class ReadPathCheck {
         for (int i = 105; i < fxSlots.length && i <= 141; i++) vaultSlots += (i - 104) * fxSlots[i];
         into.put("world.fx.vaultSlots", vaultSlots);
         into.put("world.fx.vaultSlotCount", (double) fxSlots.length);
+        // XR4, what the vault earned (slots 142-146) and what ran home in a risk-off (CapitalFlows' slots 19-23): the readers the Reserves page and the Policy tab use.
+        into.put("world.fx.interest", fx.getVaultInterestUsd() + 3 * fx.getVaultInterestUsdLifetime() + 5 * fx.getVaultInterestDriver() + 7 * fx.getVaultInterestDriverUsd()
+                + 11 * fx.getVaultYield() + 13 * fx.getVaultInterest());
+        CapitalFlows hotRun = g.getCapitalFlows();
+        into.put("world.hot.riskOff", hotRun.getRiskOffDeparted() + 3 * hotRun.getRiskOffDepartedLifetime() + 5 * hotRun.getCarryRiskRepaid()
+                + 7 * hotRun.getCarryRiskRepaidLifetime() + 11 * hotRun.getRiskOffMonths());
         double held = 0, heldUsd = 0, rates = 0;
         for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
             held += (k + 1) * fx.getHolding(k);

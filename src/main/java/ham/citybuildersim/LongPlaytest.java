@@ -6826,6 +6826,10 @@ public class LongPlaytest {
                 fx.importCover() == Double.MAX_VALUE ? "inf"
                         : String.format("%.1f", fx.importCover()),
                 g.getCurrency().qualifiedSymbol(), fx.monthlyImports());
+        // XR4: how often the two mechanics fired in this run - the vault's interest (kept in the vault, in US$) and the money a risk-off sent home.
+        out.printf("  interest abroad (XR4): the vault earned US$%,.0fk since founding (US$%,.0fk this month, a %.2f%% yield); risk-offs unwound hot money or the carry in %d month(s): $%,.0fk of hot money and $%,.0fk of the carry%n",
+                fx.getVaultInterestUsdLifetime(), fx.getVaultInterestUsd(), fx.getVaultYield() * 100,
+                hot.getRiskOffMonths(), hot.getRiskOffDepartedLifetime(), hot.getCarryRiskRepaidLifetime());
         OutwardInvestment abroad = g.getOutwardInvestment();
         out.printf("  abroad, the sectors' own: US$%,.0fk (%s at today's rate), %.0f%% of their wealth wanted"
                 + " on a %.2f-point spread; sent $%,.0fk, brought home $%,.0fk, earned $%,.0fk since founding; peak US$%,.0fk%n",

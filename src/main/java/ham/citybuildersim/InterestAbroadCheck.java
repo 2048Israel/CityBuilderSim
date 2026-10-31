@@ -34,6 +34,20 @@ import java.util.function.Supplier;
  *   5. NO WORLD, THE CONSTANT: a bare DebtManager, a city on the literals and a city quieted for the D$ all read WORLD_BASE_RATE.
  *   6. THE SAVE: toSaveArray/restore continues bit for bit on both paths, a save that is not this one's is refused and changes nothing, nothing in the
  *      save is a number that is none, and a city saved and loaded has the same eight rates, the same price of money and the same history.
+ *   7. THE VAULT EARNS EACH MONEY'S RATE TO THE CENT (no world file needed): a ForeignAccounts with balances in three moneys earns balance x rate / 12
+ *      in each one's own units on a positive, a zero and a negative rate, and keeps it; the month's US$ is their sum at the month's cross rates and
+ *      the cross move is the same before and after; a negative rate never takes a balance below zero; a money with no rate this month, or a bank
+ *      whose rate is no number, earns nothing; a month it is not called reads 0 (the lifetime kept); the month's, the lifetime, the driver and the
+ *      yield ride the array at slots 142-146 and an older array reads nothing earned.
+ *   8. A RISK-OFF UNWINDS THE HOT MONEY AND THE CARRY BY THEIR STOCKS (no world file needed): settled to a stock, a month of a risk-off at size 1
+ *      sends home RISK_OFF_HOT_UNWIND of the stock the ordinary month left, inside the month's departures; twice the stock unwinds twice as much,
+ *      half the level half; a level past 1 / the dial takes the whole stock and no more; level 0 (or no number, or below zero) is the untouched twin
+ *      to the bit; the carry the same with RISK_OFF_CARRY_UNWIND, inside the month's repaid and the change returned; the months are counted once
+ *      though both books are in one; the save, reset and a reform carry the lot.
+ *   9. IN A CITY: the vault's interest each month is the sum over the eight of the balance before x that bank's rate / 12 at the month's cross
+ *      rates, to the cent; a forced risk-off in a city that holds hot money sends some home the month it starts, the audit sees it cross the edge
+ *      and closes, the log says so; a city quieted for the D$ earns nothing and unwinds nothing though its own moneys are in a risk-off; a save
+ *      carries the lot and the loaded city does not earn the saved month twice.
  *
  * Every fixture causes its condition: a Historical moneys for the table's replay, a Random one for the rule from month 1, a town for the city's
  * reading, and a table with one line wrong for each refusal.
@@ -89,6 +103,11 @@ public class InterestAbroadCheck {
 
     static boolean same(double a, double b) { return Double.doubleToLongBits(a) == Double.doubleToLongBits(b); }
 
+    /** Two figures that should be one to the bit. */
+    static void exact(String label, double got, double wanted) {
+        assertTrue(String.format("%s: %.17g against %.17g", label, got, wanted), same(got, wanted));
+    }
+
     /** The month index of a calendar month: months since January 2000. */
     static int at(int year, int month) { return (year - Nations.FIRST_YEAR) * 12 + month - 1; }
 
@@ -100,7 +119,7 @@ public class InterestAbroadCheck {
         String named = System.getProperty(WorldData.PROPERTY);
         if (fullPath == null) {
             if (named != null && !named.isBlank()) assertTrue("the file -D" + WorldData.PROPERTY + " names is there (" + named + ")", false);
-            else out.println("world-1.bin not named (-D" + WorldData.PROPERTY + "=<path>) nor at " + WorldData.DATA_FILE + ": sections 2 to 6 did not run");
+            else out.println("world-1.bin not named (-D" + WorldData.PROPERTY + "=<path>) nor at " + WorldData.DATA_FILE + ": sections 2 to 6 and 9 did not run");
         } else {
             out.println("reading " + fullPath.toAbsolutePath());
             try (WorldData data = WorldData.open(fullPath)) {
@@ -115,6 +134,10 @@ public class InterestAbroadCheck {
             }
             theSaveOfTheCity();
         }
+        // Sections 7 and 8 need no world file: a ForeignAccounts and a CapitalFlows, told what a city would hand them.
+        theVaultEarns();
+        theUnwind();
+        if (fullPath != null) inACity();
         out.printf("%nInterestAbroadCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -659,5 +682,445 @@ public class InterestAbroadCheck {
         assertTrue("...and the history keeps the eight policy rates the same in both",
                 Arrays.equals(g.getHistorySave().aligned(HistorySave.policyRateKey("USD")), back.getHistorySave().aligned(HistorySave.policyRateKey("USD")))
                         && Arrays.equals(g.getHistorySave().aligned(HistorySave.policyRateKey("CHF")), back.getHistorySave().aligned(HistorySave.policyRateKey("CHF"))));
+    }
+
+    /* =====================================================================
+       7. THE VAULT EARNS (ForeignAccounts, no world file needed)
+       ===================================================================== */
+
+    /** The cross rates the section hands: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. */
+    static final double[] CROSS = {1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12};
+
+    /** A vault holding US$50, 100 euros and 10,000 yen at CROSS (bought at a rate of 2), the month booked: the fixture the earning is asked of. */
+    static ForeignAccounts threeMoneys() {
+        ForeignAccounts fx = new ForeignAccounts();
+        fx.pinRate(2.0);
+        fx.revalueVault();
+        fx.setMoneyRates(CROSS);
+        fx.buyReserves(50 * 2.0, "USD");
+        fx.buyReserves(100 * CROSS[1] * 2.0, "EUR");
+        fx.buyReserves(10_000 * CROSS[2] * 2.0, "JPY");
+        fx.revalueVault();
+        return fx;
+    }
+
+    /** The eight rates a section hands: the dollar's 4.8%, the euro's nothing, the yen's -0.1%, and the rest at 1%. */
+    static double[] mixedRates() {
+        double[] r = new double[WorldMoneys.EIGHT.size()];
+        Arrays.fill(r, .01);
+        r[0] = .048;
+        r[1] = 0;
+        r[2] = -.001;
+        return r;
+    }
+
+    static void theVaultEarns() {
+        out.println("--- 7. the vault earns each money's rate to the cent: balance x rate / 12 in its own units, kept in the vault ---");
+        ForeignAccounts fx = threeMoneys();
+        close("fixture: US$50, 100 euros and 10,000 yen are worth US$" + (50 + 110 + 70) + " at the month's cross rates", fx.getReservesUsd(), 50 + 110 + 70, 1e-9);
+        assertTrue("fixture: the three balances are in their own units and nothing has been earned yet", Math.abs(fx.getHolding(0) - 50) <= 1e-9 && Math.abs(fx.getHolding(1) - 100) <= 1e-9
+                && Math.abs(fx.getHolding(2) - 10_000) <= 1e-6 && fx.getVaultInterestUsd() == 0 && fx.getVaultInterestUsdLifetime() == 0 && fx.getVaultInterestDriver() == -1
+                && fx.getVaultYield() == 0);
+
+        // A new month, the euro moved: the cross move is struck first, and the interest changes nothing in it.
+        double[] moved = CROSS.clone();
+        moved[1] = 1.00;
+        fx.setMoneyRates(moved);
+        double crossBefore = fx.getLastVaultCrossUsd();
+        close("fixture: the euro fell to 1.00, a cross move of -10 under 100 euros", crossBefore, -10, 1e-12);
+        double usdBefore = fx.getHolding(0), eurBefore = fx.getHolding(1), jpyBefore = fx.getHolding(2);
+        double[] rates = mixedRates();
+        fx.earnVaultInterest(rates);
+        close("the dollars grow by balance x rate / 12 (4.8%): US$50 earns 0.2", fx.getHolding(0), usdBefore + usdBefore * .048 / 12, 1e-12);
+        exact("a zero rate adds nothing: the euros are exactly what they were", fx.getHolding(1), eurBefore);
+        close("a negative rate takes from the balance (-0.1% on 10,000 yen is -0.8333 yen)", fx.getHolding(2), jpyBefore + jpyBefore * -.001 / 12, 1e-9);
+        double wanted = usdBefore * .048 / 12 * moved[0] + eurBefore * 0 * moved[1] + jpyBefore * -.001 / 12 * moved[2];
+        close("the month's US$ is the sum of the three at the month's cross rates", fx.getVaultInterestUsd(), wanted, 1e-12);
+        close("...and so is the lifetime, after one month", fx.getVaultInterestUsdLifetime(), wanted, 1e-12);
+        double base = usdBefore + eurBefore * moved[1] + jpyBefore * moved[2];
+        close("...the vault is worth that much more in US$", fx.getReservesUsd(), base + wanted, 1e-9);
+        exact("the cross move is the same before and after the interest", fx.getLastVaultCrossUsd(), crossBefore);
+        assertTrue("the money that earned most (by US$, signed) is the dollar, at +0.2", fx.getVaultInterestDriver() == 0 && Math.abs(fx.getVaultInterestDriverUsd() - usdBefore * .048 / 12) <= 1e-12);
+        close("the vault's yield is the interest times twelve over the US$ it was earned on (US$" + String.format("%.2f", base) + ")", fx.getVaultYield(), 12 * wanted / base, 1e-12);
+        close("the interest at home is the US$ at this month's rate (2)", fx.getVaultInterest(), wanted * fx.getRate(), 1e-12);
+
+        // The booked revaluation reads the grown vault as it would one that bought: the dollars at the rate's move plus the cross move at the last rate.
+        fx.pinRate(2.5);
+        fx.revalueVault();
+        close("revalueVault() books V1 (r1 - r0) + cross x r0, with the interest in V1 as a purchase would be", fx.getLastVaultRevaluation(),
+                fx.getReservesUsd() * (2.5 - 2.0) + crossBefore * 2.0, 1e-9);
+
+        // A negative rate never takes a balance below zero.
+        ForeignAccounts deep = threeMoneys();
+        deep.setMoneyRates(CROSS);
+        double[] crash = new double[WorldMoneys.EIGHT.size()];
+        crash[2] = -50;
+        double yenBefore = deep.getHolding(2);
+        deep.earnVaultInterest(crash);
+        exact("a rate of -5000% takes the yen to zero and no further", deep.getHolding(2), 0);
+        close("...the interest is minus what they were worth (" + String.format("%,.0f", yenBefore) + " yen)", deep.getVaultInterestUsd(), -yenBefore * CROSS[2], 1e-12);
+        assertTrue("...and the dollars and euros, on a rate of nothing, are untouched", deep.getHolding(0) == threeMoneys().getHolding(0) && deep.getHolding(1) == threeMoneys().getHolding(1));
+
+        // A money with no rate this month earns nothing, whatever its bank pays; one whose policy rate is no number the same.
+        ForeignAccounts blind = threeMoneys();
+        double[] noYen = CROSS.clone();
+        noYen[2] = Double.NaN;
+        blind.setMoneyRates(noYen);
+        assertTrue("fixture: the yen has no rate this month, the euro has", !blind.hasRate(2) && blind.hasRate(1));
+        double[] pays = new double[WorldMoneys.EIGHT.size()];
+        Arrays.fill(pays, .06);
+        double yen = blind.getHolding(2), euros = blind.getHolding(1);
+        blind.earnVaultInterest(pays);
+        exact("the yen, with no rate to value them at, earn nothing at 6%", blind.getHolding(2), yen);
+        close("...the euros earn their half a percent a month", blind.getHolding(1), euros * (1 + .06 / 12), 1e-12);
+        ForeignAccounts nan = threeMoneys();
+        nan.setMoneyRates(CROSS);
+        double[] gap = new double[WorldMoneys.EIGHT.size()];
+        Arrays.fill(gap, .06);
+        gap[1] = Double.NaN;
+        double eurs = nan.getHolding(1);
+        nan.earnVaultInterest(gap);
+        exact("a bank whose rate is no number pays nothing: the euros are as they were", nan.getHolding(1), eurs);
+        ForeignAccounts none = threeMoneys();
+        none.setMoneyRates(CROSS);
+        none.earnVaultInterest(null);
+        assertTrue("earnVaultInterest(null) is a month with nothing earned", none.getVaultInterestUsd() == 0 && none.getHolding(0) == threeMoneys().getHolding(0) && none.getVaultInterestDriver() == -1);
+
+        // A month it is not called reads 0, the lifetime kept: the next hand of the rates starts the month from nothing.
+        double life = fx.getVaultInterestUsdLifetime();
+        fx.setMoneyRates(moved);
+        assertTrue("a month the world did not hand it reads 0 (the next month's rates start it from nothing), with no driver and no yield",
+                fx.getVaultInterestUsd() == 0 && fx.getVaultInterestDriver() == -1 && fx.getVaultYield() == 0 && fx.getVaultInterestDriverUsd() == 0);
+        exact("...and the lifetime is kept", fx.getVaultInterestUsdLifetime(), life);
+        fx.earnVaultInterest(rates);
+        assertTrue("the month after earns again on the grown balances, and the lifetime is the sum of the two",
+                fx.getVaultInterestUsd() > 0 && Math.abs(fx.getVaultInterestUsdLifetime() - (life + fx.getVaultInterestUsd())) <= 1e-12);
+
+        // The save: the month's and the lifetime ride the array at slots 142 to 146; a save without them reads nothing earned.
+        double[] saved = fx.toSaveArray();
+        assertTrue("the array runs to slot 146 (" + saved.length + " slots)", saved.length == 147);
+        assertTrue("slots 142-146 are the month's interest, the lifetime, the driver, its US$ and the base the yield is struck on",
+                same(saved[142], fx.getVaultInterestUsd()) && same(saved[143], fx.getVaultInterestUsdLifetime()) && saved[144] == fx.getVaultInterestDriver()
+                        && same(saved[145], fx.getVaultInterestDriverUsd()) && saved[146] > 0);
+        ForeignAccounts back = new ForeignAccounts();
+        back.restore(saved);
+        assertTrue("restored, every slot reads back to the bit", Arrays.equals(back.toSaveArray(), saved));
+        assertTrue("...the month's interest, the lifetime, the driver and the yield as they were", same(back.getVaultInterestUsd(), fx.getVaultInterestUsd())
+                && same(back.getVaultInterestUsdLifetime(), fx.getVaultInterestUsdLifetime()) && back.getVaultInterestDriver() == fx.getVaultInterestDriver()
+                && same(back.getVaultInterestDriverUsd(), fx.getVaultInterestDriverUsd()) && same(back.getVaultYield(), fx.getVaultYield()));
+        ForeignAccounts older = new ForeignAccounts();
+        older.restore(Arrays.copyOf(saved, 142));
+        assertTrue("a save from before it (142 slots) reads nothing earned, and the balances it has", older.getVaultInterestUsd() == 0 && older.getVaultInterestUsdLifetime() == 0
+                && older.getVaultInterestDriver() == -1 && older.getVaultYield() == 0 && same(older.getHolding(1), fx.getHolding(1)));
+        double[] bad = saved.clone();
+        bad[142] = Double.NaN;
+        bad[144] = 99;
+        ForeignAccounts garbled = new ForeignAccounts();
+        garbled.restore(bad);
+        assertTrue("a slot that is no number reads 0, and a driver that is none of the eight reads -1", garbled.getVaultInterestUsd() == 0 && garbled.getVaultInterestDriver() == -1
+                && garbled.getVaultInterestDriverUsd() == 0);
+        back.reset();
+        assertTrue("reset() clears the month's and the lifetime", back.getVaultInterestUsd() == 0 && back.getVaultInterestUsdLifetime() == 0 && back.getVaultInterestDriver() == -1);
+
+        // A redenomination leaves the US$ figures alone and moves the one at home with the rate.
+        ForeignAccounts reform = new ForeignAccounts();
+        reform.restore(saved);
+        double usdMonth = reform.getVaultInterestUsd(), atHome = reform.getVaultInterest();
+        reform.redenominate(.01);
+        exact("a redenomination leaves the month's US$ alone", reform.getVaultInterestUsd(), usdMonth);
+        exact("...and the lifetime", reform.getVaultInterestUsdLifetime(), fx.getVaultInterestUsdLifetime());
+        close("...while the interest at home moves with the rate, a hundredth", reform.getVaultInterest(), atHome * .01, 1e-12);
+    }
+
+    /* =====================================================================
+       8. A RISK-OFF UNWINDS THE HOT MONEY AND THE CARRY BY THEIR STOCKS (CapitalFlows)
+       ===================================================================== */
+
+    /** One month of hot money at a city paying 9% against a 2% world with a point of risk, GDP as given, a risk-off at this level. */
+    static void hotMonth(CapitalFlows f, int m, double gdp, double level) {
+        f.setRiskOff(level);
+        f.setMonth(m);
+        f.takeMonth(.02, .09, DebtManager.WORLD_BASE_RATE, .01, gdp, 1e9, 0, false, false, m);
+    }
+
+    /** Hot money settled to its target (a hundred and twenty months of calm). */
+    static CapitalFlows hotSettled(double gdp) {
+        CapitalFlows f = new CapitalFlows();
+        for (int m = 1; m <= 120; m++) hotMonth(f, m, gdp, 0);
+        return f;
+    }
+
+    /** A carry book settled to its target (a city paying 0.5% against a 2% world, a billion of headroom). */
+    static CapitalFlows carrySettled(double headroom) {
+        CapitalFlows f = new CapitalFlows();
+        for (int m = 1; m <= 240; m++) {
+            f.setRiskOff(0);
+            f.carryTakeMonth(.005, DebtManager.WORLD_BASE_RATE, 0, headroom);
+        }
+        return f;
+    }
+
+    /** What a risk-off of this level sends home from a settled hot money at 10,000 GDP. */
+    static double riskOffAt(double level) {
+        CapitalFlows f = hotSettled(10_000);
+        hotMonth(f, 121, 10_000, level);
+        return f.getRiskOffDeparted();
+    }
+
+    static void theUnwind() {
+        out.println("--- 8. a risk-off unwinds the hot money and the carry by their stocks: the dial's share of what is there, scaled by the level ---");
+        // THE HOT MONEY.
+        CapitalFlows twin = hotSettled(10_000), hit = hotSettled(10_000);
+        assertTrue("fixture: the hot money has settled on a real stock, and the twin is the same to the bit", hit.getStock() > 1000 && Arrays.equals(twin.toSaveArray(), hit.toSaveArray()));
+        double stockBefore = hit.getStock();
+        double tol = 1e-9 * stockBefore;
+        hotMonth(twin, 121, 10_000, 0);
+        hotMonth(hit, 121, 10_000, 1);
+        double share = Math.min(1, CapitalFlows.RISK_OFF_HOT_UNWIND);
+        close("a risk-off of size 1 sends home the dial's share (" + CapitalFlows.RISK_OFF_HOT_UNWIND + ") of the stock the ordinary month left", hit.getRiskOffDeparted(), twin.getStock() * share, tol);
+        close("...and the stock is what it left, less that", hit.getStock(), twin.getStock() - hit.getRiskOffDeparted(), tol);
+        close("...inside the month's departures, on top of the twin's", hit.getDeparted(), twin.getDeparted() + hit.getRiskOffDeparted(), tol);
+        close("...and the lifetime's, the arrivals untouched", hit.getLifetimeDeparted(), twin.getLifetimeDeparted() + hit.getRiskOffDeparted(), tol);
+        close("...the arrivals are the twin's", hit.getArrived(), twin.getArrived(), tol);
+        assertTrue("the twin, at level 0, sent nothing home", twin.getRiskOffDeparted() == 0 && twin.getRiskOffDepartedLifetime() == 0 && twin.getRiskOffMonths() == 0);
+        assertTrue("...and the month is counted, once, with the lifetime the month's", hit.getRiskOffMonths() == 1 && hit.getRiskOffDepartedLifetime() == hit.getRiskOffDeparted());
+
+        // Twice the stock unwinds twice as much; half the level, half.
+        CapitalFlows big = hotSettled(20_000);
+        hotMonth(big, 121, 20_000, 1);
+        close("twice the stock (twice the GDP) unwinds twice as much", big.getRiskOffDeparted(), 2 * hit.getRiskOffDeparted(), tol);
+        CapitalFlows half = hotSettled(10_000);
+        hotMonth(half, 121, 10_000, .5);
+        close("half the level (a risk-off that has faded by half) unwinds half as much of the stock", half.getRiskOffDeparted(), hit.getRiskOffDeparted() / 2, tol);
+        assertTrue("...and a larger one more: the level 1.5 takes more than the level 1", riskOffAt(1.5) > riskOffAt(1));
+
+        // A level past 1 / the dial caps the share at the whole stock.
+        double wholeAt = 1 / CapitalFlows.RISK_OFF_HOT_UNWIND;
+        CapitalFlows all = hotSettled(10_000), past = hotSettled(10_000);
+        hotMonth(all, 121, 10_000, wholeAt);
+        hotMonth(past, 121, 10_000, wholeAt * 3);
+        exact("at a level of 1 / the dial the whole stock runs home", all.getStock(), 0);
+        assertTrue("...and a level three times that takes no more than the whole of it (the share is capped at 1): the same, and the stock is zero",
+                past.getStock() == 0 && Math.abs(past.getRiskOffDeparted() - all.getRiskOffDeparted()) <= tol);
+
+        // Level 0, a level that is no number and a negative one are the untouched twin, to the bit.
+        CapitalFlows plain = hotSettled(10_000), junk = hotSettled(10_000);
+        for (int m = 121; m <= 126; m++) {
+            hotMonth(plain, m, 10_000, 0);
+            hotMonth(junk, m, 10_000, m % 3 == 0 ? Double.NaN : m % 3 == 1 ? -1 : Double.NEGATIVE_INFINITY);
+        }
+        assertTrue("a level of 0, of NaN or below zero changes nothing: every slot of the array is the untouched twin's, to the bit", Arrays.equals(plain.toSaveArray(), junk.toSaveArray()));
+
+        // The count of months, once a month though the carry and the hot money are both in it.
+        CapitalFlows counted = hotSettled(10_000);
+        double lifetime = 0;
+        for (int m = 121; m <= 126; m++) {
+            counted.setRiskOff(m <= 123 ? 1 : 0);
+            counted.carryTakeMonth(.005, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+            counted.setMonth(m);
+            counted.takeMonth(.02, .09, DebtManager.WORLD_BASE_RATE, .01, 10_000, 1e9, 0, false, false, m);
+            lifetime += counted.getRiskOffDeparted();
+        }
+        CapitalFlows tail = hotSettled(10_000);
+        hotMonth(tail, 121, 10_000, CapitalFlows.RISK_OFF_FELT / 5);
+        CapitalFlows calmTwin = hotSettled(10_000);
+        hotMonth(calmTwin, 121, 10_000, 0);
+        assertTrue("the tail of an old risk-off (a fifth of RISK_OFF_FELT) moves nothing and counts no month: the calm twin, to the bit",
+                tail.getRiskOffDeparted() == 0 && tail.getRiskOffMonths() == 0 && Arrays.equals(tail.toSaveArray(), calmTwin.toSaveArray()));
+        assertTrue("three months of risk-off, each unwinding hot money and the carry, are three months, not six (" + counted.getRiskOffMonths() + ")", counted.getRiskOffMonths() == 3);
+        close("...the lifetime of what ran home is the sum of the months", counted.getRiskOffDepartedLifetime(), lifetime, tol);
+
+        // THE CARRY.
+        CapitalFlows cTwin = carrySettled(1e9), cHit = carrySettled(1e9);
+        double book = cHit.getCarryStock();
+        double ctol = 1e-9 * book;
+        assertTrue("fixture: the carry has settled on a book, and the twin is the same to the bit", book > 1000 && Arrays.equals(cTwin.toSaveArray(), cHit.toSaveArray()));
+        cTwin.setRiskOff(0);
+        double twinChange = cTwin.carryTakeMonth(.005, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        cHit.setRiskOff(1);
+        double hitChange = cHit.carryTakeMonth(.005, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        double cShare = Math.min(1, CapitalFlows.RISK_OFF_CARRY_UNWIND);
+        close("a risk-off of size 1 repays the dial's share (" + CapitalFlows.RISK_OFF_CARRY_UNWIND + ") of the book the ordinary month left", cHit.getCarryRiskRepaid(), cTwin.getCarryStock() * cShare, ctol);
+        close("...the book is what it left, less that", cHit.getCarryStock(), cTwin.getCarryStock() - cHit.getCarryRiskRepaid(), ctol);
+        close("...inside the month's repaid, on top of the twin's", cHit.getCarryRepaid(), cTwin.getCarryRepaid() + cHit.getCarryRiskRepaid(), ctol);
+        close("...and the change the month returns says so", hitChange, twinChange - cHit.getCarryRiskRepaid(), ctol);
+        assertTrue("...the twin repaid none of it on the risk-off's account, and the lifetime is the month's", cTwin.getCarryRiskRepaid() == 0 && cHit.getCarryRiskRepaidLifetime() == cHit.getCarryRiskRepaid()
+                && cHit.getRiskOffMonths() == 1);
+        CapitalFlows cAll = carrySettled(1e9);
+        cAll.setRiskOff(3 / CapitalFlows.RISK_OFF_CARRY_UNWIND);
+        cAll.carryTakeMonth(.005, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        exact("a level past 1 / the dial repays the whole book, no more", cAll.getCarryStock(), 0);
+
+        // The save: the month's, the lifetimes and the count ride the array; an older array reads nothing; the level is not saved; a reform scales them.
+        double[] saved = hit.toSaveArray();
+        CapitalFlows read = new CapitalFlows();
+        read.restore(saved);
+        assertTrue("saved and restored, the hot money's month, its lifetime and the count read back to the bit", same(read.getRiskOffDeparted(), hit.getRiskOffDeparted())
+                && same(read.getRiskOffDepartedLifetime(), hit.getRiskOffDepartedLifetime()) && read.getRiskOffMonths() == hit.getRiskOffMonths() && Arrays.equals(read.toSaveArray(), saved));
+        double[] carrySaved = cHit.toSaveArray();
+        CapitalFlows carryRead = new CapitalFlows();
+        carryRead.restore(carrySaved);
+        assertTrue("...and the carry's", same(carryRead.getCarryRiskRepaid(), cHit.getCarryRiskRepaid()) && same(carryRead.getCarryRiskRepaidLifetime(), cHit.getCarryRiskRepaidLifetime()));
+        CapitalFlows older = new CapitalFlows();
+        older.restore(Arrays.copyOf(saved, 19));
+        assertTrue("an array from before it (19 slots) reads nothing unwound, and the stock it has", older.getRiskOffDeparted() == 0 && older.getRiskOffDepartedLifetime() == 0
+                && older.getCarryRiskRepaid() == 0 && older.getRiskOffMonths() == 0 && same(older.getStock(), hit.getStock()));
+        CapitalFlows cleared = new CapitalFlows();
+        cleared.restore(saved);
+        cleared.reset();
+        assertTrue("reset() clears them", cleared.getRiskOffDeparted() == 0 && cleared.getRiskOffDepartedLifetime() == 0 && cleared.getCarryRiskRepaid() == 0
+                && cleared.getCarryRiskRepaidLifetime() == 0 && cleared.getRiskOffMonths() == 0);
+        CapitalFlows reform = new CapitalFlows();
+        reform.restore(saved);
+        reform.redenominate(.01);
+        close("a reform scales what ran home (a hundredth) and not the months", reform.getRiskOffDeparted(), hit.getRiskOffDeparted() * .01, 1e-12);
+        assertTrue("...the lifetime too, the count left alone", Math.abs(reform.getRiskOffDepartedLifetime() - hit.getRiskOffDepartedLifetime() * .01) <= 1e-12
+                && reform.getRiskOffMonths() == hit.getRiskOffMonths());
+    }
+
+    /* =====================================================================
+       9. IN A CITY: THE VAULT EARNS, MONEY RUNS HOME, THE AUDIT CLOSES
+       ===================================================================== */
+
+    /** The dial the hot-money city is put at: well over the US's rate in any year, so the spread is there. */
+    static final double HOT_DIAL = .15;
+
+    /** A town with banks to take hot money into, as CapitalFlowCheck's city has them. */
+    static Game hotTown(String label, boolean quietForTheD) {
+        Game city = town(label, quietForTheD, false);
+        quietly(() -> {
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            city.buildStack(ForeignCheck.template(city, "Commercial Bank"), 3, false);
+            city.buildStack(ForeignCheck.template(city, "Paved Road"), 30, false);
+        });
+        return city;
+    }
+
+    /** One month of a city with what it printed captured. */
+    static String playCaptured(Game city) {
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        PrintStream was = System.out;
+        System.setOut(new PrintStream(bytes, true, java.nio.charset.StandardCharsets.UTF_8));
+        try {
+            city.simulateMonths(1);
+        } finally {
+            System.setOut(was);
+        }
+        return bytes.toString(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    static void inACity() {
+        out.println("--- 9. in a city: the vault earns each bank's rate every month, a risk-off sends hot money home, and the month's money audit closes ---");
+        Game g = hotTown("interest-abroad-earn", false);
+        ForeignAccounts fx = g.getForeignAccounts();
+        DebtManager dm = g.getDebtManager();
+        // The condition: hot money comes for a city paying well over the world, with the dial in the player's hand.
+        dm.setAutopilot(false);
+        dm.setPolicyRate(HOT_DIAL);
+        for (int m = 1; m <= 2; m++) play(g);
+        fx.setReserveMix(ForeignAccounts.Mix.WORLD_MIX);
+        double spend = g.getCash() / 10;
+        g.buyForeignCurrency(spend);
+        int held = 0;
+        for (int k = 0; k < ForeignAccounts.MONEYS; k++) if (fx.getHolding(k) > 0) held++;
+        assertTrue("fixture: a purchase by the world's mix puts a balance in each of the eight (" + held + ")", held == ForeignAccounts.MONEYS);
+
+        int months = 24, earned = 0, positive = 0;
+        double worst = 0, lifetime = fx.getVaultInterestUsdLifetime(), yield = 0;
+        Tally each = new Tally();
+        for (int m = 1; m <= months; m++) {
+            double[] before = new double[ForeignAccounts.MONEYS];
+            for (int k = 0; k < before.length; k++) before[k] = fx.getHolding(k);
+            play(g);
+            PolicyRates p = g.getPolicyRates();
+            double expected = 0, base = 0;
+            for (int k = 0; k < before.length; k++) {
+                expected += before[k] * p.rate(k) / 12 * fx.getMoneyUsd(k);
+                base += before[k] * fx.getMoneyUsd(k);
+            }
+            final double want = expected;
+            final int month = m;
+            each.see(Math.abs(fx.getVaultInterestUsd() - want) <= 1e-9 * Math.max(1, Math.abs(want)), () -> "month " + month + ": the vault earned " + fx.getVaultInterestUsd() + ", the eight rates say " + want);
+            if (fx.getVaultInterestUsd() != 0) earned++;
+            if (fx.getVaultInterestUsd() > 0) positive++;
+            lifetime += fx.getVaultInterestUsd();
+            yield = base > 0 ? 12 * expected / base : 0;
+            worst = Math.max(worst, Math.abs(g.getLastMoneyAudit().relative()));
+        }
+        tally("the vault's interest each month is the sum over the eight of the balance before x that bank's rate / 12 at the month's cross rates, " + months + " months", each);
+        assertTrue("...it earned in every one (" + earned + " of " + months + ", " + positive + " of them a gain) and the lifetime is their sum",
+                earned == months && Math.abs(fx.getVaultInterestUsdLifetime() - lifetime) <= 1e-9 * Math.abs(lifetime));
+        close("...the yield is the interest times twelve over the US$ it was earned on", fx.getVaultYield(), yield, 1e-9);
+        assertTrue("...and the audit closed every month of it (worst residual " + String.format("%.2e", worst) + ")", worst < 1e-9);
+
+        CapitalFlows hot = g.getCapitalFlows();
+        double stockNow = hot.getStock();
+        out.printf("   after %d months at a %.0f%% dial: hot money D$%,.0fk here (target D$%,.0fk, a %.2f-point spread), the carry D$%,.0fk, the world's risk-off %.2f%n", months + 2,
+                HOT_DIAL * 100, stockNow, hot.getTarget(), hot.getSpread() * 100, hot.getCarryStock(), g.getWorldMoneys().riskOff());
+        assertTrue("fixture: the city holds hot money to unwind (D$" + String.format("%,.0fk", stockNow) + ") and the world is calm", stockNow > 1000 && g.getWorldMoneys().riskOff() < .5);
+
+        // A risk-off of size one starts at the next step.
+        g.getWorldMoneys().forceRiskOff(1);
+        String log = playCaptured(g);
+        double level = g.getWorldMoneys().riskOff(), ranHome = hot.getRiskOffDeparted();
+        assertTrue("the world is in a risk-off of at least the size forced (" + String.format("%.2f", level) + ")", level >= 1 - 1e-9 && g.getWorldMoneys().riskOffStarted());
+        assertTrue("the hot money's risk-off departure the month is over zero (D$" + String.format("%,.1fk", ranHome) + ")", ranHome > 0);
+        close("...the share of the stock it took is the dial times the level (capped at the whole): " + CapitalFlows.RISK_OFF_HOT_UNWIND + " x " + String.format("%.2f", level),
+                ranHome / (hot.getStock() + ranHome), Math.min(1, CapitalFlows.RISK_OFF_HOT_UNWIND * level), 1e-9);
+        assertTrue("...inside the month's departures", hot.getDeparted() >= ranHome - 1e-9);
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        assertTrue("...the audit saw it cross the edge (financial out D$" + String.format("%,.1fk", audit.financialOut) + ") and the month closed (residual " + String.format("%.2e", audit.relative()) + ")",
+                audit.financialOut >= ranHome - 1e-6 && Math.abs(audit.relative()) < 1e-9);
+        close("...the bank's foreign deposits are the stock that is left", g.getBank().getForeignDeposits(), hot.getStock(), 1e-9);
+        assertTrue("...and the log says money ran home", log.contains("Money ran home:") && log.contains("of hot money left"));
+        assertTrue("the risk-off is counted, with the lifetime", hot.getRiskOffMonths() >= 1 && hot.getRiskOffDepartedLifetime() >= ranHome);
+        // The months after, the risk-off fades by half in three months and takes less; the audit still closes.
+        double levelAfter = 0, worstAfter = 0;
+        for (int m = 1; m <= 4; m++) {
+            play(g);
+            worstAfter = Math.max(worstAfter, Math.abs(g.getLastMoneyAudit().relative()));
+            if (m == 1) levelAfter = g.getWorldMoneys().riskOff();
+        }
+        assertTrue("the month after the level has faded (" + String.format("%.2f", levelAfter) + " from " + String.format("%.2f", level) + ")", levelAfter < level);
+        assertTrue("...four more months, and every one's audit closed (worst " + String.format("%.2e", worstAfter) + ")", worstAfter < 1e-9);
+
+        // A city quieted for the D$ earns nothing and unwinds nothing, though its own moneys are in a risk-off and it holds hot money.
+        Game q = hotTown("interest-abroad-quiet-earn", true);
+        DebtManager qdm = q.getDebtManager();
+        qdm.setAutopilot(false);
+        qdm.setPolicyRate(HOT_DIAL);
+        for (int m = 1; m <= months; m++) play(q);
+        q.getWorldMoneys().forceRiskOff(1);
+        play(q);
+        CapitalFlows qHot = q.getCapitalFlows();
+        assertTrue("fixture: the quieted city holds hot money (D$" + String.format("%,.0fk", qHot.getStock()) + ") and its own moneys are in a risk-off (" + String.format("%.2f", q.getWorldMoneys().riskOff()) + ")",
+                qHot.getStock() > 1000 && q.getWorldMoneys().riskOff() >= 1 - 1e-9);
+        ForeignAccounts qFx = q.getForeignAccounts();
+        assertTrue("the quieted city's vault earned nothing, month or lifetime", qFx.getVaultInterestUsd() == 0 && qFx.getVaultInterestUsdLifetime() == 0 && qFx.getVaultYield() == 0);
+        assertTrue("...and the risk-off unwound none of its hot money or its carry", qHot.getRiskOffDeparted() == 0 && qHot.getRiskOffDepartedLifetime() == 0 && qHot.getCarryRiskRepaidLifetime() == 0
+                && qHot.getRiskOffMonths() == 0);
+
+        // A city on the literals has no policy rates and nothing to earn.
+        Game lit = town("interest-abroad-literal-earn", false, true);
+        for (int m = 1; m <= 3; m++) play(lit);
+        assertTrue("a city on the literals (no world, no policy rates) earns nothing and unwinds nothing",
+                lit.getForeignAccounts().getVaultInterestUsd() == 0 && lit.getForeignAccounts().getVaultInterestUsdLifetime() == 0 && lit.getCapitalFlows().getRiskOffMonths() == 0);
+
+        // A save carries the lot: the loaded city continues bit for bit and does not earn the saved month twice.
+        double[] savedFx = fx.toSaveArray(), savedHot = hot.toSaveArray();
+        assertTrue("saved, to its scratch folder", g.saveGame(2, "earned").ok);
+        Game back = new Game(g.getGameFiles());
+        quietly(() -> back.loadGameSave(2));
+        assertTrue("the loaded city has the vault's balances and what it earned, to the bit, so the saved month is not earned a second time", back.getLoadFailure() == null
+                && Arrays.equals(back.getForeignAccounts().toSaveArray(), savedFx));
+        assertTrue("...and the hot money's unwinding as it was", Arrays.equals(back.getCapitalFlows().toSaveArray(), savedHot));
+        for (int m = 1; m <= 3; m++) {
+            play(g);
+            play(back);
+        }
+        assertTrue("both play three months more and stand in the same state, the vault and the hot money to the bit",
+                Arrays.equals(g.getForeignAccounts().toSaveArray(), back.getForeignAccounts().toSaveArray()) && Arrays.equals(g.getCapitalFlows().toSaveArray(), back.getCapitalFlows().toSaveArray()));
+        out.printf("   the vault earned US$%,.0fk over %d months (a %.2f%% yield now); %d risk-off month(s) sent D$%,.0fk of hot money home%n", g.getForeignAccounts().getVaultInterestUsdLifetime(),
+                months + 8, g.getForeignAccounts().getVaultYield() * 100, g.getCapitalFlows().getRiskOffMonths(), g.getCapitalFlows().getRiskOffDepartedLifetime());
     }
 }
