@@ -1,6 +1,6 @@
 # RobustnessCheck.java - 432 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/RobustnessCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RobustnessCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > What the game does when something is already broken.
 > 

@@ -1,6 +1,6 @@
 # ChildcareCheck.java - 553 lines · 20 methods · 4 constants · harnesses
 
-`ham/citybuildersim/ChildcareCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChildcareCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Childcare resized (0.7.71, batch N2): the three childcare centres, the
 > build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS

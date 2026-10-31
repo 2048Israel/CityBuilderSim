@@ -1,6 +1,6 @@
 # Notice.java - 119 lines · 17 methods · 0 constants · model
 
-`ham/citybuildersim/Notice.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Notice.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > One thing the city needs told about, and whether anybody has looked at it.
 > 

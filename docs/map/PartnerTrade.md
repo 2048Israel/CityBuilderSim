@@ -1,6 +1,6 @@
 # PartnerTrade.java - 398 lines · 28 methods · 1 constants · model
 
-`ham/citybuildersim/PartnerTrade.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PartnerTrade.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The city's trade by partner: what it sold to each nation and bought of each this month and so far this year, by good, and every finished year's
 > table (batch WN3; docs/studies/spec-nations.md 6 and 8).
@@ -29,7 +29,7 @@
 
 **Uses:** [Good](Good.md) (12), [TradeLanes](TradeLanes.md) (3), [WorldMarket](WorldMarket.md) (1), [Nations](Nations.md) (1)
 
-**Used by (5):** [DataSave](DataSave.md), [Game](Game.md), [HistorySave](HistorySave.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (8):** [DataSave](DataSave.md), [Game](Game.md), [HistorySave](HistorySave.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 

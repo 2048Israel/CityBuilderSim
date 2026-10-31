@@ -1,6 +1,6 @@
 # ZoningCheck.java - 606 lines · 17 methods · 3 constants · harnesses
 
-`ham/citybuildersim/ZoningCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ZoningCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and
 > LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury,

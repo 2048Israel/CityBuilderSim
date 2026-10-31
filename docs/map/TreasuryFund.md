@@ -1,6 +1,6 @@
 # TreasuryFund.java - 1,107 lines · 151 methods · 13 constants · model
 
-`ham/citybuildersim/TreasuryFund.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryFund.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The city's fund: the government's holding of its own city's companies and their bonds, bought on the order book by a rule and by the player's hand, and the bank it took over in a rescue (0.7.14).
 > 

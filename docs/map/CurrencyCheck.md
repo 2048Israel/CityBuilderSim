@@ -1,6 +1,6 @@
 # CurrencyCheck.java - 939 lines · 22 methods · 6 constants · harnesses
 
-`ham/citybuildersim/CurrencyCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CurrencyCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Proves the currency under a central bank (0.7.2): the rate answers to the
 > real rate, the vault is spent defending it, and the dial and the carry
@@ -66,7 +66,7 @@
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (52), [ForeignCheck](ForeignCheck.md) (9), [DebtManager](DebtManager.md) (8), [Game](Game.md) (8), [CentralBank](CentralBank.md) (6), [CapitalFlows](CapitalFlows.md) (5), [MoneyAudit](MoneyAudit.md) (3), [GameFiles](GameFiles.md) (3), [PriceIndex](PriceIndex.md) (3), [TempDirs](TempDirs.md) (2), [Founding](Founding.md) (1)
 
-**Used by (4):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [ForeignCheck](ForeignCheck.md)
+**Used by (5):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [ForeignCheck](ForeignCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
 ## Sections
 

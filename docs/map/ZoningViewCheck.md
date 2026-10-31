@@ -1,6 +1,6 @@
 # ZoningViewCheck.java - 730 lines · 26 methods · 3 constants · harnesses
 
-`ham/citybuildersim/ZoningViewCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ZoningViewCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning's figures (0.7.109, batch Z2): ZoningView, and the words
 > zoning puts on the screens it does not own - NEEDS YOU's GROUND row, the

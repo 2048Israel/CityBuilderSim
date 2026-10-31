@@ -1,6 +1,6 @@
 # StreetCurves.java - 152 lines · 8 methods · 4 constants · model
 
-`ham/citybuildersim/StreetCurves.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StreetCurves.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > A street's smooth line from the plots it is laid on, and the plots that line's band reaches: pure - plots in, points in plots out, no plan and no screen.
 > 

@@ -1,6 +1,6 @@
-# GlobeCheck.java - 3,391 lines · 108 methods · 78 constants · harnesses
+# GlobeCheck.java - 3,409 lines · 109 methods · 78 constants · harnesses
 
-`ham/citybuildersim/GlobeCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GlobeCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's three cameras, and the planet's picture with a frame drawn from it - on screen since 0.7.135 (batch E9), which MapCheck 13 holds.
 > 
@@ -64,7 +64,7 @@
 >      from its change rates along four offsets, and response() what it reads
 > ... (119 more lines in the source)
 
-**Uses:** [GlobeFrame](GlobeFrame.md) (266), [NationsMap](NationsMap.md) (155), [World](World.md) (142), [TradeLanes](TradeLanes.md) (91), [GlobePicture](GlobePicture.md) (52), [EarthData](EarthData.md) (45), [MapFrame](MapFrame.md) (38), [MapTiles](MapTiles.md) (31), [EarthTerrainCheck](EarthTerrainCheck.md) (30), [EarthTerrain](EarthTerrain.md) (28), [MapCheck](MapCheck.md) (28), [EarthProj](EarthProj.md) (26), [WorldData](WorldData.md) (25), [Nations](Nations.md) (21), [Timing](Timing.md) (10), [TileRaster](TileRaster.md) (8), [EarthCheck](EarthCheck.md) (5), [WorldDataCheck](WorldDataCheck.md) (5)
+**Uses:** [GlobeFrame](GlobeFrame.md) (266), [NationsMap](NationsMap.md) (156), [World](World.md) (142), [TradeLanes](TradeLanes.md) (91), [GlobePicture](GlobePicture.md) (52), [EarthData](EarthData.md) (45), [MapFrame](MapFrame.md) (38), [MapTiles](MapTiles.md) (31), [EarthTerrainCheck](EarthTerrainCheck.md) (30), [EarthTerrain](EarthTerrain.md) (28), [MapCheck](MapCheck.md) (28), [EarthProj](EarthProj.md) (26), [WorldData](WorldData.md) (25), [Nations](Nations.md) (24), [Timing](Timing.md) (10), [TileRaster](TileRaster.md) (8), [EarthCheck](EarthCheck.md) (5), [WorldDataCheck](WorldDataCheck.md) (5)
 
 **Used by (1):** [EarthTerrainCheck](EarthTerrainCheck.md)
 
@@ -89,7 +89,7 @@
 | 2676 | · 10. the dots and labels |
 | 2759 | · 11. the hit test |
 | 2836 | · 12. the card |
-| 2941 | 13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4) |
+| 2959 | 13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4) |
 
 ## Constants
 
@@ -171,8 +171,8 @@
 | 2469 | `GlobeCheck.VIEWS` | `{ { 0, 0, 0 }, { 50, - 30, 10 }, { 50, 10, 3 }, { CITIES [ 0 ] [ 0 ], CITIES ...` | The views of 9 and 10, {lat, lon, km a pixel} (0: the whole planet facing the city), and their names: the planet, the North Atlantic, Europe and the GROUND tier at the city. |
 | 2470 | `GlobeCheck.VIEW_NAMES` | `{ "the whole planet", "the North Atlantic at 10 km a pixel", "Europe at 3 km ...` |  |
 | 2840 | `GlobeCheck.RANK` | `Pattern.compile("(\\d+)(st\|nd\|rd\|th) of(\\d+)")` |  |
-| 2946 | `GlobeCheck.EUROPE` | `{ { 54.0, - 2.0 }, { 53.4, - 8.0 }, { 64.9, - 18.6 }, { 60.5, 8.5 }, { 46.6, ...` | Twelve partners of a Halifax city, {lat, lon}: the ten nodes of Europe that are partners at 1,000 sold and 500 bought, Poland at 100 and 100 (under MIN_LANE) and Sweden at 200 and 100 (at it). |
-| 2950 | `GlobeCheck.TRADE_ROUNDS` | `31, TRADE_WARM = 300` | The rounds a trade timing takes the median of (31), after as many as it takes to warm the JIT (300). |
+| 2964 | `GlobeCheck.EUROPE` | `{ { 54.0, - 2.0 }, { 53.4, - 8.0 }, { 64.9, - 18.6 }, { 60.5, 8.5 }, { 46.6, ...` | Twelve partners of a Halifax city, {lat, lon}: the ten nodes of Europe that are partners at 1,000 sold and 500 bought, Poland at 100 and 100 (under MIN_LANE) and Sweden at 200 and 100 (at it). |
+| 2968 | `GlobeCheck.TRADE_ROUNDS` | `31, TRADE_WARM = 300` | The rounds a trade timing takes the median of (31), after as many as it takes to warm the JIT (300). |
 
 ## Fields (state)
 
@@ -193,7 +193,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 201 | 3191 | **type** `public class GlobeCheck` | The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's t... |
+| 201 | 3209 | **type** `public class GlobeCheck` | The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's t... |
 | 261 | 4 | `static void check(String label, boolean ok)` |  |
 | 269 | 35 | `public static void main(String[] args) throws Exception` |  |
 
@@ -368,34 +368,35 @@
 | 2773 | 47 | `static void fixtureHits(NationsMap map, Nations nations, byte[] expect)` |  |
 | 2821 | 14 | `static void fullHits(NationsMap map, Nations nations)` |  |
 
-### 12. the card (lines 2836-2940)
+### 12. the card (lines 2836-2958)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 2838 | 1 | `static String markWords(int mark)` |  |
 | 2843 | 6 | `static boolean yearRowOk(String row, Nations nations, int nation, int year)` | Whether a card's "This year" row is right for a nation and year: a dash in the first year, else the growth with its sign and the prices, each to a decimal and within the rounding of the figure. |
-| 2851 | 6 | `static boolean moneyRowOk(String row, Nations.Year y)` | Whether a card's "Its money" row is right: the US dollar in its words, else the money, its rate a US$ and what one of it is worth in game dollars, the two figures' product the game dollar's price within their roundings. |
-| 2858 | 82 | `static void cards(String scope, NationsMap map, Nations nations, int lastYear)` |  |
+| 2851 | 3 | `static boolean moneyRowOk(String row, Nations.Year y)` | Whether a card's "Its money" row is right: the US dollar in its words, else the money, its rate a US$ and what one of it is worth in game dollars, the two figures' product the game dollar's price within their roundings. |
+| 2856 | 7 | `static boolean moneyRowOk(String row, Nations.Year y, double rateShown)` | ...and (WN4) the rate it shows is the one the card was handed: this month's from the world's moneys where there is one (NationsMap.card()'s last argument), else the year's from the file - the same source the card read... |
+| 2864 | 94 | `static void cards(String scope, NationsMap map, Nations nations, int lastYear)` |  |
 
-### 13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4) (lines 2941-3391)
+### 13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4) (lines 2959-3409)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2953 | 4 | `static double angleBetween(double[] a, double[] b)` | The angle between two unit vectors, radians, from the chord (exact for two that are the same place, where an arc cosine reads 1.5e-8). |
-| 2959 | 1 | `static double[] vertexOf(TradeLanes t, int vertex)` | A vertex of the lanes as a unit vector. |
-| 2962 | 5 | `static double lengthOf(TradeLanes t, int edge)` | An edge's length along its vertices, radians. |
-| 2969 | 5 | `static double medianOf(double[] v)` | The median of figures. |
-| 2976 | 11 | `static double[][] everywhere(int n, long seed)` | n partners all over the planet, seeded, each over MIN_LANE both ways: {lat}, {lon}, {sold}, {bought}. |
-| 2989 | 11 | `static double[][] europe()` | The twelve partners of EUROPE: {lat}, {lon}, {sold}, {bought}, the ten at 1,000 and 500, Poland at 100 and 100, Sweden at 200 and 100. |
-| 3001 | 10 | `static void tradeRoutes()` |  |
-| 3012 | 100 | `static void lanesShare()` |  |
-| 3114 | 9 | `static boolean widthsRise(double ref)` | Whether widthPx() never falls as the money grows, over a thousand steps. |
-| 3124 | 31 | `static void lanesCached()` |  |
-| 3156 | 25 | `static void lanesCulled()` |  |
-| 3182 | 44 | `static void lanesDrawn()` |  |
-| 3227 | 30 | `static void lanesTimed(String scope, double[][] a)` |  |
-| 3259 | 6 | `static double[] destination(double lat, double lon, double bearingDeg, double d)` | The place d radians from (lat, lon) on a bearing, degrees: {lat, lon}. |
-| 3266 | 87 | `static void arrowsAtTheEdge()` |  |
-| 3355 | 13 | `static void fullLanes(NationsMap map)` | The lanes of the full file's real nodes, 196 partners all over MIN_LANE, timed as the random ones are. |
-| 3370 | 21 | `static void tradeCard(String scope, NationsMap map, Nations nations)` | The card's trade rows (13): with the year's trade, three more rows in the card's own words and formats; without, the five alone and no word of "coming". |
+| 2971 | 4 | `static double angleBetween(double[] a, double[] b)` | The angle between two unit vectors, radians, from the chord (exact for two that are the same place, where an arc cosine reads 1.5e-8). |
+| 2977 | 1 | `static double[] vertexOf(TradeLanes t, int vertex)` | A vertex of the lanes as a unit vector. |
+| 2980 | 5 | `static double lengthOf(TradeLanes t, int edge)` | An edge's length along its vertices, radians. |
+| 2987 | 5 | `static double medianOf(double[] v)` | The median of figures. |
+| 2994 | 11 | `static double[][] everywhere(int n, long seed)` | n partners all over the planet, seeded, each over MIN_LANE both ways: {lat}, {lon}, {sold}, {bought}. |
+| 3007 | 11 | `static double[][] europe()` | The twelve partners of EUROPE: {lat}, {lon}, {sold}, {bought}, the ten at 1,000 and 500, Poland at 100 and 100, Sweden at 200 and 100. |
+| 3019 | 10 | `static void tradeRoutes()` |  |
+| 3030 | 100 | `static void lanesShare()` |  |
+| 3132 | 9 | `static boolean widthsRise(double ref)` | Whether widthPx() never falls as the money grows, over a thousand steps. |
+| 3142 | 31 | `static void lanesCached()` |  |
+| 3174 | 25 | `static void lanesCulled()` |  |
+| 3200 | 44 | `static void lanesDrawn()` |  |
+| 3245 | 30 | `static void lanesTimed(String scope, double[][] a)` |  |
+| 3277 | 6 | `static double[] destination(double lat, double lon, double bearingDeg, double d)` | The place d radians from (lat, lon) on a bearing, degrees: {lat, lon}. |
+| 3284 | 87 | `static void arrowsAtTheEdge()` |  |
+| 3373 | 13 | `static void fullLanes(NationsMap map)` | The lanes of the full file's real nodes, 196 partners all over MIN_LANE, timed as the random ones are. |
+| 3388 | 21 | `static void tradeCard(String scope, NationsMap map, Nations nations)` | The card's trade rows (13): with the year's trade, three more rows in the card's own words and formats; without, the five alone and no word of "coming". |
 

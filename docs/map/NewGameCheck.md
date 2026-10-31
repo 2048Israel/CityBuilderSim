@@ -1,6 +1,6 @@
-# NewGameCheck.java - 1,298 lines · 16 methods · 5 constants · harnesses
+# NewGameCheck.java - 1,303 lines · 16 methods · 5 constants · harnesses
 
-`ham/citybuildersim/NewGameCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NewGameCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Does "Start New Game" actually start a new game?
 > 
@@ -48,7 +48,7 @@
 > and over two years reads the parity and the rate a city never reformed
 > reads.
 
-**Uses:** [Game](Game.md) (150), [Founding](Founding.md) (134), [Currency](Currency.md) (40), [WorldEconomy](WorldEconomy.md) (27), [World](World.md) (13), [GameFiles](GameFiles.md) (7), [Rollover](Rollover.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [DebtQuote](DebtQuote.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [EarthData](EarthData.md) (2), [EarthCheck](EarthCheck.md) (2), [Denomination](Denomination.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1), [GoodsMarket](GoodsMarket.md) (1), [CityLand](CityLand.md) (1), [Landmasses](Landmasses.md) (1), [TempDirs](TempDirs.md) (1), [TaxPolicy](TaxPolicy.md) (1)... and 5 more
+**Uses:** [Game](Game.md) (150), [Founding](Founding.md) (135), [Currency](Currency.md) (40), [WorldEconomy](WorldEconomy.md) (26), [World](World.md) (13), [GameFiles](GameFiles.md) (7), [Rollover](Rollover.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [DebtQuote](DebtQuote.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [EarthData](EarthData.md) (2), [EarthCheck](EarthCheck.md) (2), [Denomination](Denomination.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1), [GoodsMarket](GoodsMarket.md) (1), [CityLand](CityLand.md) (1), [Landmasses](Landmasses.md) (1), [TempDirs](TempDirs.md) (1), [TaxPolicy](TaxPolicy.md) (1)... and 5 more
 
 **Used by (1):** [ReadPathCheck](ReadPathCheck.md)
 
@@ -72,21 +72,21 @@
 | 715 | · · 8 |
 | 770 | · · 9 |
 | 787 | · · 10 |
-| 813 | · · 11 |
-| 985 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
-| 1053 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
-| 1153 | 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 |
-| 1253 | 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) |
+| 818 | · · 11 |
+| 990 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
+| 1058 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
+| 1158 | 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 |
+| 1258 | 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 263 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
-| 1239 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 1240 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
-| 1266 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
-| 1268 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
+| 1244 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 1245 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 1271 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
+| 1273 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
 
 ## Fields (state)
 
@@ -98,46 +98,46 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 1244 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
+| 55 | 1249 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
 | 59 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 64 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 72 | 189 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
 | 265 | 218 | `public static void main(String[] args) throws Exception` |  |
 
-### 6-11. FOUNDING A CITY (0.7.10) (lines 484-984)
+### 6-11. FOUNDING A CITY (0.7.10) (lines 484-989)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 517 | 444 | `static void founding(GameFiles files) throws Exception` |  |
-| 963 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
-| 969 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
-| 979 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
+| 517 | 449 | `static void founding(GameFiles files) throws Exception` |  |
+| 968 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
+| 974 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
+| 984 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
 
-### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 985-1052)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1002 | 50 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
-
-### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 1053-1152)
+### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 990-1057)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1070 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
+| 1007 | 50 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
 
-### 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 (lines 1153-1252)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1172 | 59 | `static void theRealEarth(GameFiles files) throws Exception` |  |
-| 1232 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 1243 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
-| 1248 | 4 | `static void quietly(Runnable work)` |  |
-
-### 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) (lines 1253-1298)
+### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 1058-1157)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1270 | 20 | `static void aNewCityAfterAReform(GameFiles files)` |  |
-| 1291 | 7 | `static void cleanUp(Path root)` |  |
+| 1075 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
+
+### 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 (lines 1158-1257)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1177 | 59 | `static void theRealEarth(GameFiles files) throws Exception` |  |
+| 1237 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 1248 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
+| 1253 | 4 | `static void quietly(Runnable work)` |  |
+
+### 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) (lines 1258-1303)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1275 | 20 | `static void aNewCityAfterAReform(GameFiles files)` |  |
+| 1296 | 7 | `static void cleanUp(Path root)` |  |
 

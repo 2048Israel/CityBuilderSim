@@ -1,6 +1,6 @@
 # BridgeView.java - 98 lines · 11 methods · 0 constants · model
 
-`ham/citybuildersim/BridgeView.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeView.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > What the build card says of a long bridge's crossing: the refusal of a survey in its own words, and the pieces of the
 > line a surveyed crossing gets. A pure model of what a screen draws; the money and the points are formatted by the screen.

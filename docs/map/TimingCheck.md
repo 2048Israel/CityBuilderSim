@@ -1,6 +1,6 @@
 # TimingCheck.java - 733 lines · 30 methods · 8 constants · harnesses
 
-`ham/citybuildersim/TimingCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TimingCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the suite moves.
 > 

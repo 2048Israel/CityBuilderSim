@@ -1,6 +1,6 @@
 # ShortSellingCheck.java - 941 lines · 44 methods · 6 constants · harnesses
 
-`ham/citybuildersim/ShortSellingCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ShortSellingCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that
 > causes it, not on a city that happens to show it.

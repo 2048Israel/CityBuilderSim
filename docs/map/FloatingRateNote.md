@@ -1,6 +1,6 @@
 # FloatingRateNote.java - 218 lines · 20 methods · 2 constants · model
 
-`ham/citybuildersim/FloatingRateNote.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FloatingRateNote.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > A floating-rate note: a coupon every month on the whole face, the month's
 > policy rate plus a margin fixed at the sale, and the face at the end - at 2

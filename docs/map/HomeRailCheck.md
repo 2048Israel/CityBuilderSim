@@ -1,6 +1,6 @@
 # HomeRailCheck.java - 909 lines · 28 methods · 5 constants · harnesses
 
-`ham/citybuildersim/HomeRailCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HomeRailCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The railway's carriage of the city's own bulk, and the port yard, held to FR6's
 > brief: a bulk tonne bought at home rides a siding at the city leg's rate on

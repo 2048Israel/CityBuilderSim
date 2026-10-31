@@ -1,6 +1,6 @@
 # CurrencyRegimeCheck.java - 1,638 lines · 45 methods · 7 constants · harnesses
 
-`ham/citybuildersim/CurrencyRegimeCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CurrencyRegimeCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > Proves the D$'s four regimes - Float, Lean against falls (the default), Band
 > and Peg to the US$ - hold the currency where they say and cost what they
@@ -65,6 +65,8 @@
 > ... (46 more lines in the source)
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (119), [Game](Game.md) (43), [DebtManager](DebtManager.md) (32), [CapitalFlows](CapitalFlows.md) (29), [CurrencyCheck](CurrencyCheck.md) (11), [Expectations](Expectations.md) (11), [ExchangeRateCheck](ExchangeRateCheck.md) (11), [Founding](Founding.md) (9), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
+
+**Used by (1):** [VaultMoneysCheck](VaultMoneysCheck.md)
 
 ## Sections
 

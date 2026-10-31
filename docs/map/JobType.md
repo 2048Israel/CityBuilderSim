@@ -1,6 +1,6 @@
 # JobType.java - 20 lines · 0 methods · 0 constants · model
 
-`ham/citybuildersim/JobType.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/JobType.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 

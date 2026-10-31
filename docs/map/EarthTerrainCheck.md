@@ -1,6 +1,6 @@
 # EarthTerrainCheck.java - 2,524 lines · 60 methods · 50 constants · harnesses
 
-`ham/citybuildersim/EarthTerrainCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthTerrainCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world - and since 0.7.117 (batch E3) its deposits on the Earth's geology (Geology), and since 0.7.127 (batch E7) its ice and desert.
 > 

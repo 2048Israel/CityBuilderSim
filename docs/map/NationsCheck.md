@@ -1,6 +1,6 @@
 # NationsCheck.java - 649 lines · 22 methods · 10 constants · harnesses
 
-`ham/citybuildersim/NationsCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NationsCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The nations beyond the city and the path they are on (batch WN1; the
 > project's spec-nations.md 7): Nations' year - output, people, prices and the

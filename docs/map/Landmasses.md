@@ -1,6 +1,6 @@
 # Landmasses.java - 1,238 lines · 99 methods · 11 constants · model
 
-`ham/citybuildersim/Landmasses.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Landmasses.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The city's ground counted by landmass, and which landmasses the city's buildings may stand on: its books by landmass
 > (each landmass's owned dry ground by relief and forest, its shore, the holding it was first owned by), the linked set

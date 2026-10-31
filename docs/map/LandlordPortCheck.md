@@ -1,6 +1,6 @@
 # LandlordPortCheck.java - 739 lines · 29 methods · 2 constants · harnesses
 
-`ham/citybuildersim/LandlordPortCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandlordPortCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds
 > and keeps the sea terminals and Freight's Ports division works them.

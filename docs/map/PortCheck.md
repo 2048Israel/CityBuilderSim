@@ -1,6 +1,6 @@
 # PortCheck.java - 1,185 lines · 23 methods · 10 constants · harnesses
 
-`ham/citybuildersim/PortCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PortCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md
 > 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5).
