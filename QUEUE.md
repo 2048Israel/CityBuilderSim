@@ -28,7 +28,6 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | EP1 | The game starts in 1900, before research: the calendar's epoch to 1900 and Historical's history from 1900 (the world's series, the moneys on gold and Bretton Woods, the policy rates), today's tech kept until R0-R5; today's real economy at 1900's price level (Jerus: "1900 price level") (Jerus, 2026-10-30: "move the start date and history to 1900 once you finish all these batches youve scheduled, like a pre research batch") | [EP1](docs/queue/EP1.md) |
-| ST1 | Why ScaleCheck's town stalls since HD2, a study before the test changes (HD2-S; Jerus, 2026-10-31: "Study the stall first"); after KP1 | [ST1](docs/queue/ST1.md) |
 | LD1 | A business short of workers bids the wage up: the posts the staffing gate refused join the band's shortage, so the wage rises until migrants come, only as far as the building would still earn its return (Jerus, 2026-10-31: "if the reason is not enough workers and the business can... then it raises its wage"); after ST1 | [LD1](docs/queue/LD1.md) |
 | WN5 | Nations: land bought from the nation it lies in, at its land price, in its money; offers split at a border | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN6 | Nations: the screens - Trade > Partners, the reserves in eight, the nation's page; the manual; real GDP and a comparison rate in real 2015 US$ (D29) | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
@@ -64,6 +63,7 @@ stuff".
 | LC2 | The Rankings' measures back from sources that allow commercial use: inflation (ILOSTAT's CPI, else the Bank's GDP deflator), child deaths (WPP 2024), private credit (the BIS), public finance, the current account and health spending (the OECD, members only), each read into docs/studies/licences.md first | [LC1 notes §5](docs/queue/LC1-notes.md) |
 | CR1 | A Credits page from the title screen: both attribution files in full and the fonts' notice (IBM Plex, SIL Open Font License 1.1) | [LC1 notes §5](docs/queue/LC1-notes.md) |
 | IC1 | The builders' idle crews free for other work: while Construction stands idle at its core crew, its laid-off posts are spare for the staffing gate (`Sector.staffing()`), not spoken for (XS1: seed 11 held 1,300 months at 20,000 by 3,187 such posts, 8-11 sectors at the gate; the rule from m0 on the 16 AUTO2 seeds: none stalls, seed 11 296,345, but four pass 40,000 50-170 months later and the median ends 329,143 against 347,140). Recommended (a), a time limit (b) if the slow seeds need it; after LD1, on its gate; the suite and the ensemble, seed 11, RE1's seed 4 and FoundingYardCheck 6 watched; the trace moves | [XS1-notes §5](docs/queue/XS1-notes.md) |
+| ST2 | ScaleCheck section 6's growing town after LD1 and IC1: rescan its town on their model and move FREE_FIXTURE_MONTHS to a month that holds every assertion, or else a town of its own plan; the premise unmoved (ST1: the town grew only on a treasury-paid public-works boom; HD2-S) | [ST2](docs/queue/ST2.md) |
 
 ## Pending
 

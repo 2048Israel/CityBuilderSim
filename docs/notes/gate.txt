@@ -1,11 +1,8 @@
-# gate of Merge batch/CD8: the city borrows in any of the eight moneys: bills and bonds in euros, yen and the rest, each priced on its money's curve from XR4's policy rates, sold to the world, with its books, buyback and revaluation as dollar paper has them, and its choice on Borrow (Jerus, 2026-10-23), 0.8.90
+# gate of Merge batch/ST1: why ScaleCheck's town stalls since HD2, a study before the test changes (HD2-S; Jerus, 2026-10-31: "Study the stall first"); after KP1, 0.8.90
 # date: 2026-10-31
 # earth-2.bin: named
-# suite: 163 harnesses run in 1542s: 160 passed, 3 failed
-# timing: 13 harnesses run in 414s: 11 passed, 2 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.06 ms, batch 4.51 ms (+11.0%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite: 163 harnesses run in 1571s: 160 passed, 3 failed
+# timing: 13 harnesses run in 427s: 12 passed, 1 failed
 PassThroughCheck | exit 1
 PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
 PassThroughCheck | 1 FAILED
