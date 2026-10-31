@@ -1,0 +1,55 @@
+diff --git a/tools/ensemble/Ensemble.java b/tools/ensemble/Ensemble.java
+index 17efa968..c0b2584a 100644
+--- a/tools/ensemble/Ensemble.java
++++ b/tools/ensemble/Ensemble.java
+@@ -254,6 +254,19 @@ public class Ensemble {
+         for (int i = 0; i < months && !stuck && g.getMonth() < endMonth; i++) step(g);
+     }
+ 
++    static final int PROBE_FROM = Integer.getInteger("probe.from", 0), PROBE_TO = Integer.getInteger("probe.to", 1 << 30);
++    static final PrintStream PROBE = openProbe();
++    static PrintStream openProbe() {
++        String f = System.getProperty("probe.file");
++        try { return f == null ? null : new PrintStream(new java.io.FileOutputStream(f), false, "UTF-8"); }
++        catch (java.io.IOException e) { throw new RuntimeException(e); }
++    }
++    static String probeAdvise(Game g) {
++        String a = LongPlaytest.advise(g);
++        if (PROBE != null && g.getMonth() >= PROBE_FROM && g.getMonth() <= PROBE_TO) { PROBE.println(g.getMonth() + "\tADVICE\t" + a); PROBE.flush(); }
++        return a;
++    }
++
+     static void step(Game g) {
+         int before = g.getMonth();
+         String ph = phase(policy, before);
+@@ -268,6 +281,21 @@ public class Ensemble {
+             if (!namesBefore.contains(n)) names.append(names.length() > 0 ? " | " : "").append(n);
+         }
+         write(columns(g, ph, Adapter.findingCount() - flagsBefore, names.toString()));
++        if (PROBE != null && g.getMonth() >= PROBE_FROM && g.getMonth() <= PROBE_TO) {
++            for (Map.Entry<String, String> e : g.getLastInvestments().entrySet())
++                PROBE.println(g.getMonth() + "\t" + e.getKey() + "\t" + e.getValue());
++            PopulationManager pm = g.getPopulationManager();
++            double[] posts = pm.staffablePostsByBand(), own = pm.workforceByBand();
++            double[] supply = posts == null ? null : pm.supplyByBand(posts);
++            StringBuilder sb = new StringBuilder();
++            sb.append(String.format(Locale.ROOT, "withheld %d unemployed %d workforce %d jobs %d |", g.getBuildingManager().getPostsWithheld(),
++                    pm.getUnemployed(), pm.getWorkforce(), pm.getTotalJobs()));
++            for (int b = 0; posts != null && b < posts.length; b++)
++                sb.append(String.format(Locale.ROOT, " %s own %.0f posts %.0f supply %.0f spare %.0f;", WageBand.values()[b], own[b], posts[b], supply[b], supply[b] - posts[b]));
++            for (JobType job : JobType.values()) { long w = g.getBuildingManager().getPostsWithheld(job); if (w > 0) sb.append(" withheld-" + job + " " + w); }
++            PROBE.println(g.getMonth() + "\tSTAFF\t" + sb);
++            PROBE.flush();
++        }
+         if (g.getMonth() % 120 == 0) {
+             real.printf("  %s seed %d month %d pop %.0f index %.4f rate %.2f%% (%.0fs)%n", policy,
+                     seed, g.getMonth(), Adapter.num(g, "getPopulationManager.getPopulation"),
+@@ -387,7 +415,7 @@ public class Ensemble {
+                 LongPlaytest.ensureSchools(g);
+ 
+                 for (int move = 0; move < LongPlaytest.movesPerLook(); move++) {
+-                    if (LongPlaytest.advise(g) == null) break;
++                    if (probeAdvise(g) == null) break;
+                     run(g, 1);
+                 }
+                 run(g, 2);

@@ -1,0 +1,161 @@
+diff --git a/src/main/java/ham/citybuildersim/EconomyManager.java b/src/main/java/ham/citybuildersim/EconomyManager.java
+index 52547bb2..a72546f4 100644
+--- a/src/main/java/ham/citybuildersim/EconomyManager.java
++++ b/src/main/java/ham/citybuildersim/EconomyManager.java
+@@ -1603,7 +1603,7 @@ public class EconomyManager {
+          * share of a truck, and a market with a demand of 3e-17 trucks and no supply strikes at its ceiling and not in the middle of its band:
+          * the price of trucks doubled in the one city and not the other, and the twins parted from that month.
+          */
+-        if (Math.abs(budget) <= BUDGET_NOISE * (Math.abs(atSettle) + Math.abs(raised))) budget = 0;
++        if (!XS1.off("noise") && Math.abs(budget) <= BUDGET_NOISE * (Math.abs(atSettle) + Math.abs(raised))) budget = 0;
+         if (!Double.isFinite(budget)) return Double.POSITIVE_INFINITY;
+         /*
+          * ...AND WHAT ITS SUPPLIERS WILL WAIT FOR (0.7.44), a buyer with a
+diff --git a/src/main/java/ham/citybuildersim/Game.java b/src/main/java/ham/citybuildersim/Game.java
+index 0dbe299c..3d91a4c7 100644
+--- a/src/main/java/ham/citybuildersim/Game.java
++++ b/src/main/java/ham/citybuildersim/Game.java
+@@ -1327,6 +1327,15 @@ public class Game {
+      * has turned, and the band of every good from last month's trade. With no market, nothing.
+      */
+     private void strikeTheWorldMarket() {
++        // XS1 study: the month for the switches, and the world quieted wholesale from the arming month.
++        XS1.month = month;
++        if (XS1.off("quiet") && !worldQuietForTheD) quietTheWorldForTheD();
++        // XS1 control (nudge): the smoothed inflation the expectations read moved by a millionth, once, at the arming month - no money moves.
++        if (XS1.once("nudge")) {
++            double[] s = expectations.toSaveArray();
++            s[1] += 1e-6;
++            expectations.restore(s);
++        }
+         WorldMarket market = ensureWorldMarket();
+         if (market == null) return;
+         // The sea leg first: a solve reads the city's site as it stands.
+@@ -1510,7 +1519,7 @@ public class Game {
+      */
+     private void handTheUsRate() {
+         PolicyRates rates = policyRates;
+-        debtManager.setWorldRate(rates == null || worldQuietForTheD ? DebtManager.WORLD_BASE_RATE : rates.usRate());
++        debtManager.setWorldRate(rates == null || worldQuietForTheD || XS1.off("usrate") ? DebtManager.WORLD_BASE_RATE : rates.usRate());
+     }
+ 
+     /** A money's value against the US$ in a month, a fraction: its rate before over its rate after, less one (a rate is units to the dollar, so a falling rate is a rising money). 0 for one with no rate either side. */
+@@ -1594,7 +1603,7 @@ public class Game {
+         // ...AND WHAT THE VAULT EARNS (XR4, THE VAULT EARNS): each balance at its central bank's rate, kept in the vault, once a month, after the
+         // cross rates and before anything buys or sells. A load does not come this way (it restores the saved month), so a month is earned once.
+         PolicyRates rates = policyRates;
+-        if (rates != null && !worldQuietForTheD) {
++        if (rates != null && !worldQuietForTheD && !XS1.off("vault")) {
+             double[] annual = new double[ForeignAccounts.MONEYS];
+             for (int k = 0; k < annual.length; k++) annual[k] = rates.rate(k);
+             foreign.earnVaultInterest(annual);
+@@ -1604,7 +1613,7 @@ public class Game {
+     /** The risk-off level the carry and the hot money are told this month (XR4): the moneys' own, 0 with no moneys or a world quieted for the D$. */
+     private double worldRiskOffLevel() {
+         WorldMoneys moneys = worldMoneys;
+-        return moneys == null || worldQuietForTheD ? 0 : moneys.riskOff();
++        return moneys == null || worldQuietForTheD || XS1.off("unwind") || XS1.off("riskoff") ? 0 : moneys.riskOff();
+     }
+ 
+     /**
+@@ -1726,7 +1735,7 @@ public class Game {
+     private void handTheWorldToTheD() {
+         WorldMoneys moneys = worldMoneys;
+         if (moneys == null || worldQuietForTheD) foreign.setWorld(0, 0, 0);
+-        else foreign.setWorld(moneys.cycle(), moneys.riskOff(), hotMoney.getStock() + debtManager.getForeignPrincipalUsd() * foreign.getRate());
++        else foreign.setWorld(moneys.cycle(), XS1.off("riskoff") ? 0 : moneys.riskOff(), hotMoney.getStock() + debtManager.getForeignPrincipalUsd() * foreign.getRate());
+     }
+ 
+     /** The log's lines about the world, after the reprice: money running to safety abroad (with where the D$ went in it) and the world pegs that broke. */
+@@ -2367,7 +2376,8 @@ public class Game {
+      * working untouched.
+      */
+     public double protectedConstructionCapacity(){
+-        return isAutoSubsidised(getSectors().construction())
++        // XS1 study switch (protect): the builders' subsidy no longer keeps every depot from the spare-capacity rule.
++        return isAutoSubsidised(getSectors().construction()) && !XS1.off("protect")
+                 ? buildingManager.getTotalConstructionCapacity()
+                 : 0;
+     }
+diff --git a/src/main/java/ham/citybuildersim/Sector.java b/src/main/java/ham/citybuildersim/Sector.java
+index ac99b5fa..efe192ac 100644
+--- a/src/main/java/ham/citybuildersim/Sector.java
++++ b/src/main/java/ham/citybuildersim/Sector.java
+@@ -429,7 +429,11 @@ public abstract class Sector {
+         // work comes, so they are not spare for a new building. See
+         // BuildingManager.getPostsWithheld().
+         BuildingManager bm = game.getBuildingManager();
+-        if (bm != null && bm.getPostsWithheld() > 0) {
++        // XS1 study switch (withheld): the builders' laid-off crews are spare for a new building, not spoken for.
++        // XS1 candidate (idlefree): ...only while the builders have site work queued; an idle builder's laid-off crews are spare.
++        boolean idleBuilders = XS1.off("idlefree") && game.getSectors() != null && game.getSectors().construction() != null
++                && game.getSectors().construction().getPostsOfferedShare() <= ham.citybuildersim.sectors.Construction.IDLE_PAYROLL_FLOOR + 1e-9;
++        if (bm != null && bm.getPostsWithheld() > 0 && !XS1.off("withheld") && !idleBuilders) {
+             posts = posts.clone();
+             for (JobType job : JobType.values()) posts[WageBand.of(job).ordinal()] += bm.getPostsWithheld(job);
+         }
+diff --git a/src/main/java/ham/citybuildersim/XS1.java b/src/main/java/ham/citybuildersim/XS1.java
+new file mode 100644
+index 00000000..fee4eb49
+--- /dev/null
++++ b/src/main/java/ham/citybuildersim/XS1.java
+@@ -0,0 +1,45 @@
++package ham.citybuildersim;
++
++import java.util.HashSet;
++import java.util.Set;
++
++/**
++ * XS1's study switches (never shipped): each is OFF unless named in -Dxs1.off=a,b and the month has reached -Dxs1.from.
++ * Game sets {@link #month} at the top of each month (strikeTheWorldMarket()), so a run forks from an identical path.
++ * With xs1.off unset every switch is inert and the run is byte-identical to an unswitched one.
++ *
++ * Keys: unwind (the risk-off's unwind of the hot money and the carry), vault (the vault's interest), usrate (the constant 2%
++ * for the US's rate), riskoff (no risk-off reaches the city: the unwind and the D$'s own risk-off term), quiet (the world
++ * quieted for the D$ wholesale, Game.quietTheWorldForTheD()), noise (EconomyManager.BUDGET_NOISE at 0).
++ */
++public final class XS1 {
++
++    private XS1() { }
++
++    /** The game's month, set by Game at the top of each month. */
++    public static volatile int month;
++
++    private static final Set<String> KEYS = parse(System.getProperty("xs1.off", ""));
++    private static final int FROM = Integer.getInteger("xs1.from", 0);
++
++    private static Set<String> parse(String list) {
++        Set<String> out = new HashSet<>();
++        for (String k : list.split(",")) {
++            String t = k.trim();
++            if (!t.isEmpty()) out.add(t);
++        }
++        return out;
++    }
++
++    /** Whether this switch is armed: named in xs1.off, and the month has reached xs1.from. */
++    public static boolean off(String key) {
++        return !KEYS.isEmpty() && month >= FROM && KEYS.contains(key);
++    }
++
++    private static final Set<String> FIRED = new HashSet<>();
++
++    /** True the first time off(key) is (the control "nudge": a one-off change of no money, to see how far the path is chaos). */
++    public static boolean once(String key) {
++        return off(key) && FIRED.add(key);
++    }
++}
+diff --git a/src/main/java/ham/citybuildersim/sectors/RealEstate.java b/src/main/java/ham/citybuildersim/sectors/RealEstate.java
+index 5ddab747..3f4e9c23 100644
+--- a/src/main/java/ham/citybuildersim/sectors/RealEstate.java
++++ b/src/main/java/ham/citybuildersim/sectors/RealEstate.java
+@@ -510,7 +510,8 @@ public final class RealEstate extends Sector {
+         // Every post, the builders' laid-off crews included (0.7.17): a post
+         // laid off for want of work is a job that comes back with the work -
+         // see BuildingManager.getPostsWithheld().
+-        long totalJobs = game.getPopulationManager().getTotalJobs() + buildings.getPostsWithheld();
++        // XS1 study switch (rewithheld): the landlords count the posts offered, not the laid-off crews.
++        long totalJobs = game.getPopulationManager().getTotalJobs() + (ham.citybuildersim.XS1.off("rewithheld") ? 0 : buildings.getPostsWithheld());
+         long housingCapacity = game.getHouseholdCapacity();
+ 
+         /*
