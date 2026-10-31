@@ -1567,6 +1567,9 @@ public class ForeignAccounts {
     /** ...and what a purchase of it is ("euros"), for a button's words. */
     public static final String[] MONEY_PLURAL = {"US dollars", "euros", "yen", "pounds", "yuan", "Canadian dollars", "Australian dollars", "Swiss francs"};
 
+    /** ...and the mark a figure in it is written with ("€"), in the eight's order: the same marks the trade screen prints (CD8: the decision log names the money a piece is sold in by it). */
+    public static final String[] MONEY_MARK = {"US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF "};
+
     /** Which of the eight a code is, or -1 for a code that is none of them (or null). */
     public static int moneyIndex(String code) { return code == null ? -1 : WorldMoneys.EIGHT.indexOf(code); }
 

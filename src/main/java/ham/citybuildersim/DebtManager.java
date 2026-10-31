@@ -674,6 +674,23 @@ public class DebtManager {
         return book(new LongTermBond(faceValue, months, monthStarted, rate, foreign));
     }
 
+    /**
+     * A bill written in a money of the eight (CD8): {@code money} null is paper at home, "USD" the dollar bill the boolean form books, another
+     * code the same bill in that money. The piece is told its money BEFORE it is booked, so book() gives it that money's rate and not the US$'s.
+     */
+    public Debt addShortTermTBill(double faceValue, int months, int monthStarted, String money) {
+        ShortTermTBill bill = new ShortTermTBill(faceValue, months, monthStarted, money != null);
+        bill.setMoney(money);
+        return book(bill);
+    }
+
+    /** ...and a bond written in a money of the eight (CD8), as addShortTermTBill(face, months, start, money) books a bill. */
+    public Debt addLongTermBond(double faceValue, int months, int monthStarted, double rate, String money) {
+        LongTermBond bond = new LongTermBond(faceValue, months, monthStarted, rate, money != null);
+        bond.setMoney(money);
+        return book(bond);
+    }
+
     /** A bond sold callable (CD4): the right to call it whole at 100 from the game month firstCallMonth on, its coupon the caller's, option included. */
     public Debt addCallableBond(double faceValue, int months, int monthStarted, double rate, int firstCallMonth) {
         return book(LongTermBond.callable(faceValue, months, monthStarted, rate, firstCallMonth));
@@ -708,7 +725,7 @@ public class DebtManager {
      * that only shows up when somebody wonders why devaluation did nothing.
      */
     private Debt book(Debt paper) {
-        paper.setExchangeRate(exchangeRate);
+        paper.setExchangeRate(rateFor(paper));
         debts.add(paper);
         return paper;
     }
@@ -717,7 +734,127 @@ public class DebtManager {
        THE RATE THE FOREIGN PAPER IS VALUED AT
        ======================================================================= */
 
+    /** Local money per US$: the rate the D$ stands at, which US$ paper is valued at as it always was. */
     private double exchangeRate = 1.0;
+
+    /*
+       THE OTHER SEVEN MONEYS (CD8, 2026-10-23; Jerus: the city can sell its paper in any of the eight): the city's foreign paper is written in
+       any of WorldMoneys.EIGHT, each piece valued in local money at the D$'s rate to the US$ times its money's US$ per unit (rateOf()). Game hands
+       the two figures it cannot know (setMoneyUsd(), setMoneyRates()): neither is saved, both are handed again at the founding, each month and at
+       a load. A money not handed has no rate, so none is offered (offers()) and its paper is not valued: the US$ needs neither, and its
+       paths keep their old expressions (exchangeRate, worldRate), to the bit.
+    */
+
+    /** US$ per unit of each of the eight as Game last handed them, EIGHT's order: the US$'s is 1, a money never handed is NaN. */
+    private final double[] moneyUsd = newMoneyUsd();
+
+    /** Each money's world rate (its central bank's policy rate), a fraction a year, EIGHT's order; WORLD_BASE_RATE until handed. Index 0 is unused: the US$'s is worldRate(). */
+    private final double[] moneyRate = newMoneyRates();
+
+    /** Whether each of the eight has a rate THIS month, so a new piece can be sold in it; the US$'s always does. */
+    private final boolean[] offered = newOffered();
+
+    private static double[] newMoneyUsd() {
+        double[] u = new double[ForeignAccounts.MONEYS];
+        java.util.Arrays.fill(u, Double.NaN);
+        u[0] = 1;
+        return u;
+    }
+
+    private static double[] newMoneyRates() {
+        double[] r = new double[ForeignAccounts.MONEYS];
+        java.util.Arrays.fill(r, WORLD_BASE_RATE);
+        return r;
+    }
+
+    private static boolean[] newOffered() {
+        boolean[] o = new boolean[ForeignAccounts.MONEYS];
+        o[0] = true;
+        return o;
+    }
+
+    /** The index of a code in WorldMoneys.EIGHT; 0 for the US$ and for null (paper at home reads as the D$'s own US$ figures), -1 for a code that is none of the eight. */
+    private static int moneyAt(String code) {
+        return code == null ? 0 : WorldMoneys.EIGHT.indexOf(code);
+    }
+
+    /**
+     * Hands the eight's US$ per unit, in WorldMoneys.EIGHT's order (Game does, each month right after the moneys step and at a load): for a
+     * money other than the US$, a finite rate above zero is taken and the money is offered; a NaN or a rate not above zero means no rate this
+     * month - it is not offered, and the last good rate is kept (paper already on the books is still valued at it). Null changes nothing.
+     * NOT told to the pieces: they learn their new rate at the month's close (revalueForeign()), so the cross's move is a booked exchange gain.
+     */
+    public void setMoneyUsd(double[] usdPerUnit) {
+        if (usdPerUnit == null) return;
+        for (int k = 1; k < ForeignAccounts.MONEYS && k < usdPerUnit.length; k++) {
+            double now = usdPerUnit[k];
+            if (now > 0 && Double.isFinite(now)) {
+                moneyUsd[k] = now;
+                offered[k] = true;
+            } else {
+                offered[k] = false;
+            }
+        }
+    }
+
+    /** Hands each of the eight's world rate - its central bank's policy rate - as a fraction a year, from index 1 (the US$'s stays on setWorldRate()); a rate that is no number reads WORLD_BASE_RATE. Null changes nothing. */
+    public void setMoneyRates(double[] annual) {
+        if (annual == null) return;
+        for (int k = 1; k < ForeignAccounts.MONEYS && k < annual.length; k++) {
+            moneyRate[k] = Double.isFinite(annual[k]) ? annual[k] : WORLD_BASE_RATE;
+        }
+    }
+
+    /** Whether a new piece can be sold in this money now: the US$ always, another of the eight when it has a rate this month, anything else never. */
+    public boolean offers(String code) {
+        int k = code == null ? -1 : WorldMoneys.EIGHT.indexOf(code);
+        return k >= 0 && offered[k];
+    }
+
+    /** The world's price of money in this money: the US$'s (worldRate()) for the US$ and for null, the money's central bank's policy rate (handed) for another; WORLD_BASE_RATE for a code that is none of the eight. */
+    public double worldRate(String code) {
+        int k = moneyAt(code);
+        if (k == 0) return worldRate();
+        return k < 0 ? WORLD_BASE_RATE : moneyRate[k];
+    }
+
+    /** US$ per unit of this money as last handed: 1 for the US$ and for null, NaN for a money never handed or a code that is none of the eight. */
+    public double usdPer(String code) {
+        int k = moneyAt(code);
+        return k < 0 ? Double.NaN : moneyUsd[k];
+    }
+
+    /** Local money per unit of this money: the D$'s rate to the US$ (getExchangeRate()) for the US$, exactly, and that times its US$ per unit for another; NaN for a money never handed. */
+    public double rateOf(String code) {
+        int k = moneyAt(code);
+        if (k == 0) return exchangeRate;
+        return k < 0 ? Double.NaN : exchangeRate * moneyUsd[k];
+    }
+
+    /** The rate a piece is valued at: its own money's (rateOf()) for foreign paper, the D$'s for paper at home. */
+    private double rateFor(Debt d) { return rateFor(d, exchangeRate); }
+
+    /**
+     * ...the same with the D$'s rate to the US$ given (revalueForeign() asks for the rate a move would leave it at): the D$'s rate itself for a
+     * dollar piece and for paper at home, to the bit; that times the money's US$ per unit for another. A money with no rate handed keeps the
+     * piece's last rate rather than be poisoned by a NaN.
+     */
+    private double rateFor(Debt d, double usdRate) {
+        if (!d.isForeign()) return usdRate;
+        int k = moneyAt(d.getMoney());
+        if (k == 0) return usdRate;
+        double u = k < 0 ? Double.NaN : moneyUsd[k];
+        return u > 0 && Double.isFinite(u) ? usdRate * u : d.getExchangeRate();
+    }
+
+    /** US$ per unit of a foreign piece's money (1 for a dollar piece); a money with no rate handed reads from the piece's own last rate. */
+    private double usdPerPiece(Debt d) {
+        String code = d.getMoney();
+        if (code == null || "USD".equals(code)) return 1;
+        double u = usdPer(code);
+        if (u > 0 && Double.isFinite(u)) return u;
+        return exchangeRate > 0 && d.getExchangeRate() > 0 ? d.getExchangeRate() / exchangeRate : 1;
+    }
 
     /**
      * Pushed down to every instrument, from the month tick AND from the load
@@ -732,7 +869,7 @@ public class DebtManager {
     public void setExchangeRate(double rate) {
         if (rate <= 0) return;
         this.exchangeRate = rate;
-        for (Debt d : debts) d.setExchangeRate(rate);
+        for (Debt d : debts) d.setExchangeRate(rateFor(d));
     }
 
     public double getExchangeRate() { return exchangeRate; }
@@ -740,12 +877,15 @@ public class DebtManager {
     /**
      * THE MONTH'S EXCHANGE GAIN ON THE CITY'S FOREIGN-CURRENCY PAPER (CD7):
      * tells every piece the rate (setExchangeRate()) and returns what the move
-     * did to the local value of what the city carries in dollars, a gain
+     * did to the local value of what the city carries in foreign money, a gain
      * positive - the local money rose, the debt costs fewer of it.
      *
-     * For each dollar piece, its carrying value in its own money times the
+     * For each foreign piece, its carrying value in its own money times the
      * rate it was last valued at less the rate now, summed: the rule
-     * ForeignAccounts.revalueVault() values the vault by. Per piece, at the
+     * ForeignAccounts.revalueVault() values the vault by. A piece in another
+     * money than the US$ is valued at the D$'s rate times that money's US$ per
+     * unit (CD8, rateOf()): its own rate now, so the move of the cross against
+     * the US$ is in the line as the D$'s own is, one sum. Per piece, at the
      * piece's OWN last rate and not the manager's, because a piece sold between
      * two presses (Game.handleForeignLogic()) learned the rate of the day it
      * was booked, and what it has moved since is the move from there; at the
@@ -760,7 +900,7 @@ public class DebtManager {
         if (!(rate > 0)) return 0;
         double gain = 0;
         for (Debt d : debts) {
-            if (d.isForeign()) gain += d.carryingInCurrency() * (d.getExchangeRate() - rate);
+            if (d.isForeign()) gain += d.carryingInCurrency() * (d.getExchangeRate() - rateFor(d, rate));
         }
         setExchangeRate(rate);
         return gain;
@@ -773,11 +913,27 @@ public class DebtManager {
         return total;
     }
 
-    /** ...and in the dollars it is actually owed in, which do not move. */
+    /**
+     * ...and in US$, at the month's cross rates: a dollar piece's principal in the dollars it is actually owed in, which do not move, and a
+     * piece in another money its own-money principal times that money's US$ per unit (CD8; it moves with the cross).
+     */
     public double getForeignPrincipalUsd() {
         double total = 0;
-        for (Debt d : debts) if (d.isForeign()) total += d.principalInCurrency();
+        for (Debt d : debts) if (d.isForeign()) total += d.principalInCurrency() * usdPerPiece(d);
         return total;
+    }
+
+    /** What the city owes in one money of the eight (CD8), in that money's own units: the principal of every foreign piece written in it. 0 for none. */
+    public double getForeignPrincipalIn(String code) {
+        double total = 0;
+        for (Debt d : debts) if (d.isForeign() && d.getMoney().equals(code)) total += d.principalInCurrency();
+        return total;
+    }
+
+    /** Whether any foreign piece on the books is written in this money (CD8). */
+    public boolean hasForeignDebtIn(String code) {
+        for (Debt d : debts) if (d.isForeign() && d.getMoney().equals(code)) return true;
+        return false;
     }
 
     /** What it owes at home. */
@@ -787,10 +943,10 @@ public class DebtManager {
         return total;
     }
 
-    /** Next month's USD coupon bill, in dollars. */
+    /** Next month's coupon bill on the foreign paper, in US$ at the month's cross rates (a dollar piece's in dollars as it is owed; CD8: another money's coupon times its US$ per unit). */
     public double getForeignCouponUsd() {
         double total = 0;
-        for (Debt d : debts) if (d.isForeign()) total += d.couponInCurrency();
+        for (Debt d : debts) if (d.isForeign()) total += d.couponInCurrency() * usdPerPiece(d);
         return total;
     }
 
@@ -992,6 +1148,14 @@ public class DebtManager {
     }
 
     /**
+     * ...in a money of the eight (CD8): that money's world rate (its central bank's policy rate, worldRate(code)) plus the city's country premium,
+     * which stays ONE figure for the city - its local foreign principal and service over every money it owes in. The US$'s is foreignRate(), to the bit.
+     */
+    public double foreignRate(String code) {
+        return worldRate(code) + countryPremium();
+    }
+
+    /**
      * THE WORLD'S CURVE (0.7.2): what the world charges this city for dollar
      * paper of this many months - the foreign rate, plus the SAME term
      * premium table the city's own curve carries (termPremium()). One curve
@@ -1013,19 +1177,37 @@ public class DebtManager {
         return foreignRate() + termPremium(months);
     }
 
+    /** ...in a money of the eight (CD8): its foreignRate(code) plus the same term premium table - the one shape for every money. The US$'s is foreignCurveRate(months). */
+    public double foreignCurveRate(String code, int months) {
+        return foreignRate(code) + termPremium(months);
+    }
+
     /**
      * ...quoted with the proposed bond priced in.
      *
      * @param extraUsd face of the bond being contemplated, in dollars
      */
     public double quoteForeignRate(double extraUsd) {
-        return worldRate()
-                + countryPremiumAt(getForeignPrincipal() + Math.max(0, extraUsd) * exchangeRate);
+        return quoteForeignRate("USD", extraUsd);
     }
 
     /** ...and at a maturity, on the world's curve (0.7.2): the quote plus the term premium for those months. */
     public double quoteForeignRate(double extraUsd, int months) {
         return quoteForeignRate(extraUsd) + termPremium(months);
+    }
+
+    /**
+     * ...in a money of the eight (CD8), the proposed face in that money's own units, priced into the premium in local money at its rate
+     * (rateOf()). The US$'s is quoteForeignRate(extraUsd), through this, to the bit.
+     */
+    public double quoteForeignRate(String code, double extraOwn) {
+        return worldRate(code)
+                + countryPremiumAt(getForeignPrincipal() + Math.max(0, extraOwn) * rateOf(code));
+    }
+
+    /** ...and at a maturity, on that money's curve: the quote plus the term premium for those months. */
+    public double quoteForeignRate(String code, double extraOwn, int months) {
+        return quoteForeignRate(code, extraOwn) + termPremium(months);
     }
 
     /**
@@ -1050,13 +1232,13 @@ public class DebtManager {
      */
     public double quoteForeignRate(Debt proposed, int months) {
         if (proposed == null) return foreignCurveRate(months);
-        proposed.setExchangeRate(exchangeRate);
+        proposed.setExchangeRate(rateFor(proposed));
         double owed = getForeignPrincipal() + proposed.getOustandingPrincipal();
         double service = nextYearService();
         double[] flows = proposed.remainingCashFlows();
         for (int i = 0; i < Math.min(12, flows.length); i++) service += flows[i];
         double risk = SOLVENCY_WEIGHT * solvencyStressAt(owed) + SERVICE_WEIGHT * serviceStressAt(service);
-        return worldRate() + Math.min(MAX_COUNTRY_PREMIUM, MAX_COUNTRY_PREMIUM * risk + defaultScar)
+        return worldRate(proposed.getMoney()) + Math.min(MAX_COUNTRY_PREMIUM, MAX_COUNTRY_PREMIUM * risk + defaultScar)
                 + termPremium(months);
     }
 
@@ -1548,13 +1730,14 @@ public class DebtManager {
         return total;
     }
 
-    /** ...of the dollar paper alone, in the dollars it is owed in (0.7.40): the first `months` of each foreign piece's own schedule - Finances' ask abroad. */
+    /** ...of the foreign paper alone, in US$ at the month's cross rates (0.7.40; a dollar piece's in the dollars it is owed in, another money's in its own units times its US$ per unit, CD8): the first `months` of each foreign piece's own schedule - Finances' ask abroad. */
     public double dueAbroadWithinUsd(int months) {
         double total = 0;
         for (Debt d : debts) {
             if (!d.isForeign()) continue;
             double[] flows = d.scheduleOwed();
-            for (int i = 0; i < Math.min(months, flows.length); i++) total += flows[i];
+            double usd = usdPerPiece(d);
+            for (int i = 0; i < Math.min(months, flows.length); i++) total += flows[i] * usd;
         }
         return total;
     }
@@ -2112,7 +2295,7 @@ public class DebtManager {
         // Its own schedule - except a floater's and a linker's, which the market prices on the dial and
         // the index it expects (CD5, pricingFlows()).
         double[] flows = pricingFlows(paper);
-        if (paper.isForeign()) return worldCurveAt(foreignRate()).pv(flows);
+        if (paper.isForeign()) return worldCurveAt(foreignRate(paper.getMoney())).pv(flows);
         YieldCurve curve = curve();
         if (paper instanceof LongTermBond bond && bond.isCallable()) return callableValue(bond, curve, flows);
         return curve.pv(flows);
@@ -2344,6 +2527,11 @@ public class DebtManager {
         return worldCurveAt(foreignRate()).factor(months);
     }
 
+    /** ...in a money of the eight (CD8): on worldCurveAt(foreignRate(code)), that money's level. The US$'s is foreignFactor(months). */
+    public double foreignFactor(String code, int months) {
+        return worldCurveAt(foreignRate(code)).factor(months);
+    }
+
     /** The yield to maturity of a piece on the price a buyback pays: a RESULT of marketValue(), not the rate it was priced at (CD1). */
     public double yieldOf(Debt paper) {
         // A floater's and a linker's yield is the IRR of the payments the market expects at the price it
@@ -2378,7 +2566,7 @@ public class DebtManager {
     public double valueOfAPoint(Debt paper) {
         if (paper == null || paper.getRemainingMonths() <= 0) return 0;
         double[] flows = pricingFlows(paper);
-        YieldCurve curve = paper.isForeign() ? worldCurveAt(foreignRate()) : curve();
+        YieldCurve curve = paper.isForeign() ? worldCurveAt(foreignRate(paper.getMoney())) : curve();
         double[] shifted = flows;
         if (paper instanceof FloatingRateNote note) {
             // The dial a point up lifts the coupon of every month after the next, which was fixed at the last reset.
@@ -2444,7 +2632,7 @@ public class DebtManager {
         row[0] = month;
         row[1] = getPolicyRate();
         YieldCurve curve = curve();
-        // foreignCurveRate(m) is the world's short rate plus the term premium: the short rate (the country premium,
+        // The world's curve kept is the US$'s alone (CD8): the other moneys' are not recorded. foreignCurveRate(m) is the world's short rate plus the term premium: the short rate (the country premium,
         // which reads the whole dollar book) struck once for the ten tenors, the same figure to the bit.
         double world = foreignRate();
         for (int i = 0; i < CURVE_TENORS.length; i++) {
@@ -2471,7 +2659,7 @@ public class DebtManager {
         return row == null ? null : java.util.Arrays.copyOfRange(row, 2, 2 + CURVE_TENORS.length);
     }
 
-    /** ...and the world's, at the same tenors (foreignCurveRate()); null likewise. */
+    /** ...and the world's, at the same tenors (foreignCurveRate()); null likewise. The curve book is the US$'s curve alone (CD8): the other moneys' curves are not kept. */
     public double[] worldCurveMonthsAgo(int months) {
         double[] row = curveRowAgo(months);
         return row == null ? null : java.util.Arrays.copyOfRange(row, 2 + CURVE_TENORS.length, CURVE_ROW);
