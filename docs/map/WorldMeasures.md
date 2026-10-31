@@ -1,6 +1,6 @@
 # WorldMeasures.java - 388 lines · 46 methods · 1 constants · model
 
-`ham/citybuildersim/WorldMeasures.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMeasures.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > The Rankings' real-world figures: world-2025.json's 196 nations and city
 > regions, the 70 measures each is ranked on, every place's latest figure of
@@ -67,7 +67,7 @@
 |---:|---:|---|---|
 | 35 | 354 | **type** `public final class WorldMeasures` | The Rankings' real-world figures: world-2025.json's 196 nations and city regions, the 70 measures each is ranked on, every place's latest figure of each with its year, its mark (published, a published projection, the ... |
 | 41 | 1 | **type** `public record Figure(double value, int year, int mark, String source, String rule)` | A figure: its value in the measure's unit, the year it is of, its mark (3 published, 2 a published projection, 1 the game's estimate), the source it was read or made from, and the rule that made it (null unless the ma... |
-| 44 | 1 | **type** `public enum Arrow` | Which way is better on a measure: more (UP), less (DOWN), or neither, so that it is shown but not ranked (NONE). |
+| 44 | 1 | **type** `public enum Arrow` | Which way is better on a measure: more (UP), less (DOWN, ranked ascending), or neither (NONE: ranked largest first, with no verdict colour; spec-leaderboards 6). |
 | 49 | 11 | **type** `public record Measure(String key, String group, String name, String unit, Arrow arrow, boolean money, Strin...` | A measure of the board: its key (the key of every place's figure), its group, name and unit, the arrow, whether it is in US$ and follows the Money toggle, its scope ("N" nations, "NC" nations and city regions, "Y" onl... |
 | 52 | 1 | `public boolean forRegions()` _(in WorldMeasures.Measure)_ | Whether city regions carry it as well as nations. |
 | 55 | 1 | `public boolean yoursOnly()` _(in WorldMeasures.Measure)_ | Whether only the player's cities are ranked on it: no real place has a figure. |
