@@ -1573,7 +1573,7 @@ public class LongPlaytest {
                 fa.getInterventionFelt() * 100, fa.gate(), fa.getOpenness(),
                 fa.monthlyCurrentAccount(), fa.monthlyFinancialAccount(),
                 tills, oi.totalUsd(), oi.totalLocalValue(), oi.getTargetShare() * 100,
-                g.getBank().depositRate() * 100, DebtManager.WORLD_BASE_RATE * 100,
+                g.getBank().depositRate() * 100, g.getDebtManager().worldRate() * 100,
                 g.getPopulationManager().getPopulation(), g.getEconomyManager().getMonthGdp());
             Exchange ex = g.getExchange();
             out.printf("   desk: sold abroad %,.0f bought abroad %,.0f (emigrants %,.0f) | buybacks to hh %,.0f abroad %,.0f | dividends hh %,.0f abroad %,.0f | sent abroad %,.0f home %,.0f | hh saved %,.0f abroad US$%,.0f (sent %,.0f home %,.0f) divs %,.0f sold %,.0f | securities %,.0f%n",

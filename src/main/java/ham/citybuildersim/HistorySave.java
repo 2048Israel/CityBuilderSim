@@ -511,8 +511,9 @@ public class HistorySave {
        vault's eight but one (WorldMoneys.EIGHT) - each money's units to the US
        dollar (fx + the code: fxEUR), and the dollar cycle and the risk-off level
        (worldCycle, worldRiskOff; logs, positive: the dollar strong, money run to
-       safety), a point a month, so the dollar's chart (WN6) has them. A city with
-       no world file keeps none of them, and one whose moneys came late has them
+       safety), a point a month, so the dollar's chart (WN6) has them. And the eight
+       central banks' policy rates, the dollar's too (policy + the code: policyUSD,
+       XR4; fractions a year, PolicyRates). A city with no world file keeps none of them, and one whose moneys came late has them
        from that month: aligned() pads the front with "we were not counting". They
        are the world's rates and not money of the city's, so a reform leaves them.
        ------------------------------------------------------------------ */
@@ -520,6 +521,9 @@ public class HistorySave {
 
     /** The series of a major's units to the US dollar: "fxEUR". */
     public static String worldRateKey(String code) { return "fx" + code; }
+
+    /** The series of a central bank's policy rate, a fraction a year (XR4): "policyUSD", for each of the eight, the dollar's too. */
+    public static String policyRateKey(String code) { return "policy" + code; }
 
     /** The dollar cycle's series and the risk-off's. */
     public static final String WORLD_CYCLE = "worldCycle", WORLD_RISK_OFF = "worldRiskOff";
@@ -724,6 +728,11 @@ public class HistorySave {
             }
             worldMoney.computeIfAbsent(WORLD_CYCLE, k -> new ArrayList<>()).add(round6(moneys.cycle()));
             worldMoney.computeIfAbsent(WORLD_RISK_OFF, k -> new ArrayList<>()).add(round6(moneys.riskOff()));
+            // ...and the eight central banks' policy rates (XR4), fractions a year, the dollar's too.
+            PolicyRates rates = game.getPolicyRates();
+            if (rates != null) {
+                for (String code : WorldMoneys.EIGHT) worldMoney.computeIfAbsent(policyRateKey(code), k -> new ArrayList<>()).add(round6(rates.rate(code)));
+            }
         }
 
         /* --------------------- money and credit --------------------- */

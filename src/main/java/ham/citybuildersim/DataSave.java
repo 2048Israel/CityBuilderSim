@@ -225,6 +225,14 @@ public class DataSave implements Cloneable {
      */
     private double[] worldMoneys;
 
+    /**
+     * The eight central banks' policy rates (XR4, 2026-10-31; PolicyRates, Game's THE WORLD'S MONEYS IN THE MONTH), when the city has a world market: the
+     * month they stand in and each bank's rate, shadow, target and inflation read (PolicyRates.toSaveArray()), which a load puts back
+     * (PolicyRates.restore()) so the US's rate, and the city's price of money with it, continues the path it was on. Absent on a city with no world
+     * file and on a save from before it, which rebuilds them by stepping from January 2000. No format bump: a missing key reads none.
+     */
+    private double[] policyRates;
+
     /*
      * The property tax the city CHARGED this month, rather than a figure
      * derived from its state.
@@ -1167,6 +1175,12 @@ public class DataSave implements Cloneable {
 
     /** The saved world moneys (WorldMoneys.toSaveArray()); null on a save with none (older, or no world file). */
     public double[] getWorldMoneys() { return worldMoneys; }
+
+    /** The eight central banks' policy rates' state (XR4), copied; null for none. */
+    public void setPolicyRates(double[] state) { this.policyRates = state == null ? null : state.clone(); }
+
+    /** The saved policy rates (PolicyRates.toSaveArray()); null on a save with none (older, or no world file). */
+    public double[] getPolicyRates() { return policyRates; }
 
     /** The city's trade by partner (WN3), the producer's fresh state. */
     public void setPartnerTrade(PartnerTrade.State state) { this.partnerTrade = state; }

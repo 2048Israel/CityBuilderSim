@@ -2219,6 +2219,17 @@ public class ReadPathCheck {
             g.getHistorySave().aligned(HistorySave.WORLD_CYCLE);
             g.getHistorySave().aligned(HistorySave.worldRateKey("EUR"));
         }
+        // XR4: everything a screen reads of the eight central banks' policy rates, the history's series of them and the city's price of money.
+        PolicyRates policy = g.getPolicyRates();
+        if (policy != null) {
+            policy.month(); policy.ruleStart(); policy.ruling(); policy.usRate(); policy.toSaveArray();
+            for (String code : WorldMoneys.EIGHT) {
+                policy.rate(code); policy.shadow(code); policy.target(code); policy.inflation(code);
+                g.getHistorySave().aligned(HistorySave.policyRateKey(code));
+            }
+            for (int k = 0; k < WorldMoneys.EIGHT.size(); k++) policy.rate(k);
+        }
+        g.getDebtManager().worldRate();
         // WN4, the vault in eight: everything the Reserves page reads of it.
         ForeignAccounts vault = g.getForeignAccounts();
         vault.getReserveMix(); vault.getChosenShares(); vault.getTradeShares(); vault.mixShares(); vault.getLastVaultCrossUsd(); vault.getLastVaultCrossDriver();
@@ -2273,6 +2284,17 @@ public class ReadPathCheck {
             into.put("world.moneys.cycle", moneys.cycle());
             into.put("world.moneys.riskOff", moneys.riskOff());
         }
+        // XR4: the policy rates (their whole saved state, weighted), the US's and the price of money the city pays by.
+        PolicyRates policy = g.getPolicyRates();
+        if (policy != null) {
+            double[] state = policy.toSaveArray();
+            double stateSum = 0;
+            for (int i = 0; i < state.length; i++) stateSum += (i + 1) * state[i];
+            into.put("world.policy.month", (double) policy.month());
+            into.put("world.policy.state", stateSum);
+            into.put("world.policy.us", policy.usRate());
+        }
+        into.put("world.policy.worldRate", g.getDebtManager().worldRate());
         ForeignAccounts fx = g.getForeignAccounts();
         double[] fxSlots = fx.toSaveArray();
         double worldSlots = 0;

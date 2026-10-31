@@ -120,6 +120,10 @@ public class BondCheck {
     static Game city(Path root, String name, int months) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
+        // The world this fixture is written against: the constant world rate (XR4). Under the US's rate (3.25% at m25 on the
+        // default path) the sectors' idle cash goes abroad and Construction borrows, so 7c's sector owing nothing is gone: a fact
+        // of the world, not of the bond market's rule. Quieted as MapCheck's played city is (WN4), its premise unmoved.
+        g.quietTheWorldForTheD();
         quietly(() -> {
             g.run();
             // The treasury this fixture is written against: the Wealthy preset's.

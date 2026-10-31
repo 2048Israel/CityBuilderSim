@@ -138,7 +138,9 @@ public class DebtManager {
        SPREAD over it is the city's to set, up against money leaving, down
        against money arriving - or the currency aim sets it.
 
-       WORLD_BASE_RATE STANDS FOR THE US'S RATE until XR4 gives the US one.
+       THE US'S POLICY RATE IS HANDED EACH MONTH (PolicyRates, XR4): worldRate()
+       is the world's price of money where the city has the world file, and
+       WORLD_BASE_RATE stands where it has none.
        The gap each of these reads is ForeignAccounts.currencyGap(): the D$'s
        shadow past its target (the peg, the band's centre), a share, positive
        weaker; Lean and Float have no target, so the aim has nothing to read
@@ -171,10 +173,10 @@ public class DebtManager {
 
     public double getPegSpread() { return pegSpread; }
 
-    /** Sets the spread, inside what keeps the tied rate on the dial (MIN_POLICY_RATE to MAX_POLICY_RATE over WORLD_BASE_RATE). */
+    /** Sets the spread, inside what keeps the tied rate on the dial (MIN_POLICY_RATE to MAX_POLICY_RATE over worldRate()). */
     public void setPegSpread(double spread) {
         double next = Double.isFinite(spread)
-                ? Math.max(MIN_POLICY_RATE - WORLD_BASE_RATE, Math.min(MAX_POLICY_RATE - WORLD_BASE_RATE, spread))
+                ? Math.max(MIN_POLICY_RATE - worldRate(), Math.min(MAX_POLICY_RATE - worldRate(), spread))
                 : 0;
         if (DecisionLog.moved(pegSpread, next)) {
             decided(DecisionLog.CENTRAL_BANK, "Spread over the US rate to " + DecisionLog.pct2(next));
@@ -184,7 +186,7 @@ public class DebtManager {
 
     /** The dial that holds the currency alone: the US's rate plus CURRENCY_WEIGHT for each unit of gap (the D$ past its target, a share, positive weaker), inside the dial's bounds. Pure. */
     public double currencyRate(double gap) {
-        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, WORLD_BASE_RATE + CURRENCY_WEIGHT * gap));
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, worldRate() + CURRENCY_WEIGHT * gap));
     }
 
     /** The inflation rule's dial plus CURRENCY_WEIGHT for each unit of gap: the mix of the two aims, inside the dial's bounds. Pure. */
@@ -196,7 +198,7 @@ public class DebtManager {
     /** The dial under a peg (star 5): the US's rate plus the spread - the player's, or with the autopilot aiming at the currency (or a mix) the one the gap asks - inside the dial's bounds. Pure. */
     public double tiedRate(double gap) {
         double spread = autopilot && aim != Aim.INFLATION ? CURRENCY_WEIGHT * gap : pegSpread;
-        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, WORLD_BASE_RATE + spread));
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, worldRate() + spread));
     }
 
     /**
@@ -825,8 +827,22 @@ public class DebtManager {
        it falls out of measuring the right two things against each other.
        ======================================================================= */
 
-    /** The world's price of money. Deliberately below the city's own floor. */
+    /**
+     * The world's price of money where the city has no world file (and where its world is quieted for the D$): 2%, deliberately below the city's own
+     * floor. Where it has the file the US's policy rate stands for it (worldRate(), PolicyRates, XR4). The equity's required return stays on this
+     * constant (Bank, Game's equity offers and the exchange): a share's required return is a long-run figure, and the policy rate's swings would
+     * whipsaw share prices.
+     */
     public static final double WORLD_BASE_RATE = .02;
+
+    /** The world's price of money now: WORLD_BASE_RATE until Game hands the US's policy rate (setWorldRate). Handed each month and at a load; not saved. */
+    private double worldRate = WORLD_BASE_RATE;
+
+    /** The world's price of money: the US's policy rate where the city has the world file (PolicyRates, XR4), else WORLD_BASE_RATE. */
+    public double worldRate() { return worldRate; }
+
+    /** Hands the world's price of money (Game does, each month and at a load): the US's policy rate; WORLD_BASE_RATE for a rate that is no number. */
+    public void setWorldRate(double rate) { worldRate = Double.isFinite(rate) ? rate : WORLD_BASE_RATE; }
 
     /** What the world adds on top of that, at the city's very worst. */
     public static final double MAX_COUNTRY_PREMIUM = .16;
@@ -972,7 +988,7 @@ public class DebtManager {
 
     /** The all-in annual rate on a new USD bond: the short end of the world's curve (foreignCurveRate()). */
     public double foreignRate() {
-        return WORLD_BASE_RATE + countryPremium();
+        return worldRate() + countryPremium();
     }
 
     /**
@@ -1003,7 +1019,7 @@ public class DebtManager {
      * @param extraUsd face of the bond being contemplated, in dollars
      */
     public double quoteForeignRate(double extraUsd) {
-        return WORLD_BASE_RATE
+        return worldRate()
                 + countryPremiumAt(getForeignPrincipal() + Math.max(0, extraUsd) * exchangeRate);
     }
 
@@ -1040,7 +1056,7 @@ public class DebtManager {
         double[] flows = proposed.remainingCashFlows();
         for (int i = 0; i < Math.min(12, flows.length); i++) service += flows[i];
         double risk = SOLVENCY_WEIGHT * solvencyStressAt(owed) + SERVICE_WEIGHT * serviceStressAt(service);
-        return WORLD_BASE_RATE + Math.min(MAX_COUNTRY_PREMIUM, MAX_COUNTRY_PREMIUM * risk + defaultScar)
+        return worldRate() + Math.min(MAX_COUNTRY_PREMIUM, MAX_COUNTRY_PREMIUM * risk + defaultScar)
                 + termPremium(months);
     }
 
@@ -2733,11 +2749,11 @@ public class DebtManager {
         return MAX_SPREAD_PER_MEASURE > 0 ? revenueSpread() / MAX_SPREAD_PER_MEASURE : 0;
     }
 
-    /** What the city's own rate is over the world's (0.7.36): the short end against WORLD_BASE_RATE - the difference hot money follows. */
-    public double overTheWorld() { return currentRate - WORLD_BASE_RATE; }
+    /** What the city's own rate is over the world's (0.7.36): the short end against worldRate() - the difference hot money follows. */
+    public double overTheWorld() { return currentRate - worldRate(); }
 
     /** ...at a policy rate of the caller's: rateAtPolicy() against the world's. Pure. */
-    public double overTheWorldAt(double policy) { return rateAtPolicy(policy) - WORLD_BASE_RATE; }
+    public double overTheWorldAt(double policy) { return rateAtPolicy(policy) - worldRate(); }
 
     /** The most either measure can add on its own. */
     public static double maxSpreadPerMeasure() { return MAX_SPREAD_PER_MEASURE; }

@@ -317,6 +317,7 @@ public class Game {
         worldMarketTried = false;
         partnerTrade = null;
         worldMoneys = null;
+        policyRates = null;
         populationManager = new PopulationManager();
         servicesManager = new ServicesManager(buildingManager);
         // ...a Gravel Road's repairs rise with the traffic on the streets (FR7 2.2): read live off the road network, never kept.
@@ -1231,6 +1232,8 @@ public class Game {
         worldMarket = null;
         partnerTrade = null;
         worldMoneys = null;
+        policyRates = null;
+        handTheUsRate();
         world.followMoneys(null);
         getMarkets().clearWorldPrices();
     }
@@ -1298,6 +1301,9 @@ public class Game {
             partnerTrade = trade;
             worldMarket = made;
             worldMoneys = buildWorldMoneys(file, beyond, base, made.nationCount());
+            // ...and the eight banks' policy rates over them (XR4), the US's handed to the city at once: the price of money it is founded in.
+            policyRates = buildPolicyRates(worldMoneys);
+            handTheUsRate();
             // ...and the US$'s prices follow the US's path where the nations' moneys stand (WN4, D29); the walk where they would not build.
             world.followMoneys(worldMoneys);
         } catch (IOException | RuntimeException e) {
@@ -1305,6 +1311,8 @@ public class Game {
             worldMarket = null;
             partnerTrade = null;
             worldMoneys = null;
+            policyRates = null;
+            handTheUsRate();
             world.followMoneys(null);
         }
         return worldMarket;
@@ -1335,6 +1343,8 @@ public class Game {
         stepTheWorldMoneys(market, solved, year);
         // ...AND THE EIGHT'S CROSS RATES TO THE VAULT, before anything buys or sells (WN4, THE VAULT IN EIGHT).
         handTheMoneysToTheVault();
+        // ...AND THE US'S POLICY RATE TO THE CITY, the world's price of money for everything that reads it (XR4).
+        handTheUsRate();
         PartnerTrade last = partnerTrade;
         economyManager.getMarkets().setWorldBand(market, last::monthExportUnits, last::monthImportUnits);
     }
@@ -1392,6 +1402,7 @@ public class Game {
             System.out.println("The saved trade by partner would not restore on this world file: it starts again.");
         }
         restoreWorldMoneys(loaded);
+        restorePolicyRates(loaded);
     }
 
     /* =====================================================================
@@ -1402,7 +1413,7 @@ public class Game {
        of trade from the January solve, each money's own swing, the pegs held
        and broken. It lives with the market (the same file, the same nations,
        the same commodity shares) and is stepped where the market is struck,
-       strikeTheWorldMarket(), to the month the city is in. Three things come
+       strikeTheWorldMarket(), to the month the city is in. Four things come
        of it:
 
          1. THE D$ FEELS THE WORLD. Right before the month's reprice the dollar
@@ -1417,10 +1428,18 @@ public class Game {
          3. THE SAVE AND THE HISTORY carry it: DataSave.worldMoneys is its state,
             and HistorySave keeps the eight majors' rates, the cycle and the
             risk-off a month each, for the dollar's chart (WN6).
+         4. THE US'S RATE (XR4): PolicyRates holds the eight central banks'
+            policy rates over the same moneys, stepped with them, and the US's is
+            handed to the DebtManager each month and at a load (handTheUsRate():
+            worldRate(), the world's price of money, which was a constant 2%).
+            With no world file, or a world quieted for the D$, it is the
+            constant still. Saved as DataSave.policyRates and kept a month each
+            in HistorySave (policyUSD ... policyCHF).
 
        A moneys object behind the month - a load of a save that had none, a file
        that came late - is caught up from January 2000 with no terms of trade,
-       and a line says so.
+       and a line says so; the policy rates behind it are stepped to it month by
+       month, as they are in a load.
        ===================================================================== */
 
     /** The world's moneys against the US$, built with the market (null where it is null) and stepped in the month; not saved itself: DataSave.worldMoneys is its state. */
@@ -1437,6 +1456,12 @@ public class Game {
     /** The world's moneys of this city, or null where there is no world file or the market was not built (the D$ then feels no world). A screen reads figures, not the step. */
     public WorldMoneys getWorldMoneys() { return worldMoneys; }
 
+    /** The eight central banks' policy rates over the world's moneys (XR4), built with them and stepped in the month; not saved itself: DataSave.policyRates is its state. */
+    private transient volatile PolicyRates policyRates;
+
+    /** The policy rates of the eight central banks, or null where the world's moneys are null. A screen reads figures, not the step. */
+    public PolicyRates getPolicyRates() { return policyRates; }
+
     /** Whether the world's moneys are kept from the D$ in this city (quietTheWorldForTheD()). */
     private transient boolean worldQuietForTheD;
 
@@ -1446,7 +1471,10 @@ public class Game {
      * check reads the growth of, whose growth the D$'s swings would otherwise change - and only there: every other harness city feels the world where
      * the file is named. Call it before the first month or the load; it holds for the rest of the city's life (a new founding too).
      */
-    void quietTheWorldForTheD() { worldQuietForTheD = true; }
+    void quietTheWorldForTheD() {
+        worldQuietForTheD = true;
+        handTheUsRate();
+    }
 
     /** The moneys over the world file and the nations of this founding's path, with each nation's commodity share of exports from the market's base; null, and a line, if they will not build. */
     private WorldMoneys buildWorldMoneys(Path file, Nations beyond, WorldMarket.Base base, int nationCount) {
@@ -1458,6 +1486,27 @@ public class Game {
             System.out.println("The world's moneys could not be built from " + file + " (" + e + "): the D$ feels no world.");
             return null;
         }
+    }
+
+    /** The eight central banks' policy rates over these moneys, standing in January 2000; null, and a line, if they will not build (the city then reads the constant world rate). */
+    private PolicyRates buildPolicyRates(WorldMoneys moneys) {
+        if (moneys == null) return null;
+        try {
+            return new PolicyRates(moneys);
+        } catch (RuntimeException e) {
+            System.out.println("The policy rates could not be built (" + e + "): the world's price of money stays the constant.");
+            return null;
+        }
+    }
+
+    /**
+     * THE US'S RATE TO THE CITY (XR4): the US's policy rate is the world's price of money to the DebtManager (worldRate()); the constant
+     * (DebtManager.WORLD_BASE_RATE) where there are no policy rates, or where the city's world is quieted for the D$ - such a city's money markets
+     * feel no world either. Handed each month right after the step, at the founding and at a load, before anything reads it.
+     */
+    private void handTheUsRate() {
+        PolicyRates rates = policyRates;
+        debtManager.setWorldRate(rates == null || worldQuietForTheD ? DebtManager.WORLD_BASE_RATE : rates.usRate());
     }
 
     /** A money's value against the US$ in a month, a fraction: its rate before over its rate after, less one (a rate is units to the dollar, so a falling rate is a rising money). 0 for one with no rate either side. */
@@ -1496,6 +1545,8 @@ public class Game {
         double[] before = new double[codes.size()];
         for (int k = 0; k < before.length; k++) before[k] = moneys.rate(codes.get(k));
         if (moneys.month() < target) moneys.step(target, terms);
+        // ...and the policy rates to the same month, each month in turn (a rates object behind is caught up as the moneys are).
+        stepThePolicyRates(target);
         // What this month's step found, kept for the log after the reprice.
         worldRiskOffStarted = moneys.riskOffStarted();
         for (int k = 0; k < RISK_OFF_NAMED.length; k++) {
@@ -1512,6 +1563,13 @@ public class Game {
             double level = cityExportPriceLevel(year);
             if (Double.isFinite(level)) foreign.stepTermsOfTrade(level);
         }
+    }
+
+    /** Steps the eight banks' policy rates, each month in turn, to month index target (WorldMoneys.monthIndex); none ahead of it are stepped back. */
+    private void stepThePolicyRates(int target) {
+        PolicyRates rates = policyRates;
+        if (rates == null) return;
+        while (rates.month() < target) rates.step(rates.month() + 1);
     }
 
     /**
@@ -1687,6 +1745,37 @@ public class Game {
         if (moneys.month() >= target) return;
         if (!restored && saved == null) System.out.println("The save has no world moneys: they start from January 2000 and catch up to the city's month with no terms of trade.");
         while (moneys.month() < target) moneys.step(moneys.month() + 1, null);
+    }
+
+    /**
+     * A load's half of the policy rates (restoreWorldMarket(), after the moneys): the saved state put back where it fits, else the rates are rebuilt by
+     * stepping from January 2000 to the city's month, a line saying so; a state saved in an earlier month is stepped on to this one. Then the US's
+     * rate is handed to the city, before anything reads it.
+     */
+    private void restorePolicyRates(DataSave loaded) {
+        PolicyRates rates = policyRates;
+        if (rates == null) {
+            handTheUsRate();
+            return;
+        }
+        double[] saved = loaded.getPolicyRates();
+        boolean restored = false;
+        if (saved != null) {
+            try {
+                rates.restore(saved);
+                restored = true;
+            } catch (IllegalArgumentException e) {
+                System.out.println("The saved policy rates would not restore (" + e.getMessage() + "): they are rebuilt from January 2000.");
+            }
+        } else {
+            System.out.println("The save has no policy rates: they are rebuilt from January 2000 to the city's month.");
+        }
+        if (!restored) {
+            rates = buildPolicyRates(worldMoneys);
+            policyRates = rates;
+        }
+        if (rates != null) stepThePolicyRates(WorldMoneys.monthIndex(month));
+        handTheUsRate();
     }
 
     /* =====================================================================
@@ -9901,7 +9990,7 @@ public class Game {
             double r = Math.exp(-1.0 / YieldCurve.DRIFT_MONTHS);
             extra *= (1 - Math.pow(r, months)) / (months * (1 - r));
         }
-        return new Auction.Bidders(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
+        return new Auction.Bidders(bank.depositRate(), debtManager.worldRate(),
                 debtManager.countryPremium(), spare, firmsIdle, firmsHeld, worldHeld, hotMoney.isStopped(),
                 economyManager.getMonthGdp(), bankRoom, extra);
     }
@@ -10672,9 +10761,10 @@ public class Game {
     /**
      * The city's real rate against the world's, on today's figures (0.7.2):
      * the dial less the city's inflation - expected, since 0.7.42 (below) -
-     * less the world's base rate less the
-     * world's realised inflation - the one definition the month hands the
-     * currency (nextMonth(), before the reprice) and the monetary page reads.
+     * less the world's rate (the US's policy rate where the city has the world
+     * file, XR4: debtManager.worldRate()) less the world's realised inflation - the
+     * one definition the month hands the currency (nextMonth(), before the
+     * reprice) and the monetary page reads.
      *
      * EX ANTE SINCE 0.7.42: the city's side is the dial less EXPECTED
      * inflation (Expectations), the real rate a lender actually prices; the
@@ -10684,7 +10774,7 @@ public class Game {
      */
     public double realRateDifferential() {
         return (debtManager.getPolicyRate() - expectations.getExpectedInflation())
-                - (DebtManager.WORLD_BASE_RATE - world.realisedInflation());
+                - (debtManager.worldRate() - world.realisedInflation());
     }
 
     /**
@@ -11675,7 +11765,7 @@ public class Game {
          * autopilot's aim picks the rule: Inflation as before, the Currency (the
          * US's rate plus the gap's quarter point), or a Mix (the inflation rule
          * plus it). Under Lean and Float it is today's line: the inflation rule.
-         * WORLD_BASE_RATE stands for the US's rate until XR4.
+         * The US's rate is debtManager.worldRate() (PolicyRates, XR4); WORLD_BASE_RATE where the city has no world file.
          */
         ForeignAccounts.Regime fxRegime = foreign.getRegime();
         if (fxRegime == ForeignAccounts.Regime.PEG) {
@@ -11917,7 +12007,7 @@ public class Game {
         double carryRate = bank.carryRate(debtManager.getPolicyRate());
         double carryMoved = hotMoney.carryTakeMonth(
                 carryRate,
-                DebtManager.WORLD_BASE_RATE,
+                debtManager.worldRate(),
                 debtManager.countryPremium(),
                 bank.headroom());
 
@@ -12062,11 +12152,11 @@ public class Game {
         // lines below, so paper bought at this month's settle is read at its own yield and not at the
         // short rate it was struck at while they held none (CD2, slice 4).
         outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());
-        outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
+        outward.takeMonth(bank.depositRate(), debtManager.worldRate(),
                 foreign.getRate(), economyManager);
         // ...and the households, by the same rule, with what the owners were
         // just paid. See HouseholdBalance.investAbroad().
-        householdBalance.investAbroad(bank.depositRate(), DebtManager.WORLD_BASE_RATE, foreign.getRate());
+        householdBalance.investAbroad(bank.depositRate(), debtManager.worldRate(), foreign.getRate());
         // ...and the city's paper, when the spread that brought them in has
         // gone (0.7.1): home to the bank's desk, a little a month.
         householdBalance.sellPaperForSpread(debtManager.householdBookYield(), bank.depositRate());
@@ -12134,7 +12224,7 @@ public class Game {
                 // The city's rate: there is no strain premium in it to take
                 // back off since 0.7.7 (it was getRateBeforeStrain(), 0.7.2).
                 debtManager.getRate(),
-                DebtManager.WORLD_BASE_RATE,
+                debtManager.worldRate(),
                 debtManager.countryPremium(),
                 economyManager.getMonthGdp(),
                 foreign.getReserves(),
@@ -12575,7 +12665,7 @@ public class Game {
         chargeFreight();
 
         // ...and the coupon on the dollars its businesses hold abroad, struck as a line of their profit and kept abroad: the profit tax and the dividend see it, the till pays them (HD1, 2026-10-29; HD2, 2026-10-30).
-        outward.payCoupons(DebtManager.WORLD_BASE_RATE, foreign.getRate(), economyManager);
+        outward.payCoupons(debtManager.worldRate(), foreign.getRate(), economyManager);
 
         /*
          * THE MONTH'S BUILDING WORK, AS THE STATEMENT WILL CARRY IT. The work
@@ -14193,7 +14283,7 @@ public class Game {
         @Override public double curve(int months)   { return debtManager.curveRate(months); }
         @Override public double policyRate()        { return debtManager.getPolicyRate(); }
         @Override public double depositRate()       { return bank.depositRate(); }
-        @Override public double worldRate()         { return DebtManager.WORLD_BASE_RATE; }
+        @Override public double worldRate()         { return debtManager.worldRate(); }
         @Override public double countryPremium()    { return debtManager.countryPremium(); }
         @Override public double monthlyGdp()        { return economyManager.getMonthGdp(); }
         @Override public double localPerUsd()       { return foreign.getRate(); }
@@ -15006,6 +15096,9 @@ public class Game {
         // ...and the world's moneys (WN4): the month they stand in, the cycle, the risk-off and every money's state; none without a market.
         WorldMoneys savedMoneys = worldMoneys;
         dataSave.setWorldMoneys(savedMarket != null && savedMoneys != null ? savedMoneys.toSaveArray() : null);
+        // ...and the eight central banks' policy rates (XR4): beside the moneys they ride on, none without them.
+        PolicyRates savedRates = policyRates;
+        dataSave.setPolicyRates(savedMarket != null && savedMoneys != null && savedRates != null ? savedRates.toSaveArray() : null);
 
         // Charged during the month rather than derived from state, so nothing
         // can recompute it on load. Without this the freshly loaded city showed
@@ -15900,7 +15993,7 @@ public class Game {
         for (int i = 0; i < settling.size(); i++) {
             Debt d = settling.get(i);
             weights[i] = d.allotFirmsCash() > 0
-                    ? outward.allotmentWeights(d.getIssueYield(), bank.depositRate(), DebtManager.WORLD_BASE_RATE, economyManager)
+                    ? outward.allotmentWeights(d.getIssueYield(), bank.depositRate(), debtManager.worldRate(), economyManager)
                     : new double[keys.length];
             for (int k = 0; k < keys.length; k++) asked[k] += d.allotFirmsCash() * weights[i][k];
         }
@@ -18846,6 +18939,13 @@ public class Game {
             ports.restore(loaded.getPortMonth());
             // The world market (WN3): after the buildings (the berth) and the founding (the site): restored as saved, not solved again.
             restoreWorldMarket(loaded);
+            // ...and the peg spread again, now that the US's rate is handed: its bounds stand over the US's rate (DebtManager.setPegSpread()), and the first
+            // restore, before the market, had the constant's. Not a decision of the player's: held out of the log.
+            if (loaded.getPegSpread() != debtManager.getPegSpread()) {
+                decisions.hold();
+                try { debtManager.setPegSpread(loaded.getPegSpread()); }
+                finally { decisions.release(); }
+            }
 
             /*
              * Land, after the buildings, because the allocation is derived from
