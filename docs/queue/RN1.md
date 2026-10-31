@@ -1,8 +1,10 @@
 # RN1 - rent in a glut under a held high rate (proposed by EN1, 2026-10-20)
 
-Not queued: it waits on Jerus's EN1-C ★2, because the rent it would change
-is his rule. If he picks it, its row goes on the end of `QUEUE.md`. A model
-batch: the playtest's trace moves, so it runs the ensemble.
+Queued 2026-10-31 on Jerus's "Take all (Recommended)" over EN1-C: ★2, R3,
+the recommended way (this batch, the floor giving way in a glut), and ★1,
+S1 restated as "the currency's and no more" (item 5 below), since this batch
+runs the ensemble anyway. A model batch: the playtest's trace moves, so it
+runs the ensemble.
 
 ## The finding (EN1's R3)
 
@@ -42,7 +44,7 @@ that is losing its people. Either the floor gives way in a glut (this
 batch), or R3 is retired and the landlords' carry is the model's own cost
 channel (EN1-C ★2's other answer).
 
-## What to do, if he picks it
+## What to do
 
 1. **Why the interest triples.** The landlords' mortgages are fixed for ten
    years (`rentBreakEven()`'s javadoc, 0.7.11), so their interest should
@@ -65,10 +67,16 @@ channel (EN1-C ★2's other answer).
    that loses its people, whose rent target does not rise while its
    pressure is under one. Count how often the glut's branch fires in the
    default playtest.
+5. **S1 restated (EN1-C ★1).** In `tools/ensemble/score.py`, S1 reads the
+   excess inflation of a held 0% against its AUTO2 twin as at most the
+   currency's extra fall plus the anchor's tolerance, in every seed, without
+   the spell guard (EN1-notes §3: it passes by 0.13-0.85 points on 0.8.9);
+   the old reading kept as info rows. The premise is restated by his word,
+   not moved to let a change through.
 
 ## Done when
 
-R3 green on the ensemble against the newest `docs/ensemble/<version>.md`,
+R3 and the restated S1 green on the ensemble against the newest `docs/ensemble/<version>.md`,
 with no new red; the suite green but what was already red; HousingCheck
 restated by his word; the trace's move explained in the notes, and the
 run's score committed as `docs/ensemble/<version>.md`.

@@ -33,6 +33,14 @@ re-timing (the bank's later accretion makes up for it), never money.
 4. **The save**: the new fields are the line's. An older save would read them missing, and the
    bank's discount wrongly: bump `SAVE_FORMAT` and raise `OLDEST_LOADABLE_FORMAT` (CLAUDE.md).
 
+5. **The fixture BK1 left (BK1-C).** A short `CentralBankCheck` section:
+   the central bank's par alone rolled into a benchmark line the households
+   hold part of (`Game.rollCentralBankAtIssue()`'s add-on into a reopened
+   line, which no harness drives; section 19 reaches only fresh pieces),
+   asserting the movement and the split whole. Settled here 2026-10-31, the
+   recommended way ("in the next check batch") on Jerus's "Take all
+   (Recommended)": BK2 is the batch that touches that add-on.
+
 ## Scope and checks
 
 `Debt`, `DebtManager`, `Game`'s paper trades, `Bank` only where the cause row goes. The bank's

@@ -16,7 +16,12 @@ m731) left the treasury too poor for it.
    this town at its founding: switched off from m0, the town grows steadily
    from 4,705 people at m200 to 34,105 at m900. If LD1 and IC1 free the
    founding, a window may hold.
-2. **If a month holds every assertion,** `FREE_FIXTURE_MONTHS` moves to it.
+2. **If a month holds every assertion,** `FREE_FIXTURE_MONTHS` moves to it,
+   found by the harness's own scan rather than picked by hand, so the next
+   batch that moves the trace does not leave it red (EM1-S, settled
+   2026-10-31 the recommended way on Jerus's "Take all (Recommended)": EM1
+   moved the month 807 to 1,124, where every assertion held in five months
+   of nine; the copy's companies matched to the city's is the other way).
 3. **If none holds,** section 6 gets a town of its own plan: a founding and a
    scripted list of builds that grows it without the advisor's treasury-paid
    civic builds. The plan should grow the town for at least the copies'

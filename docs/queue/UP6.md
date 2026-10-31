@@ -23,7 +23,16 @@ No model change; the trace does not move.
    slots 1-9 except when the player saves there; a second Save while one is in
    flight waits for it. Load's menu keeps its wait on the writer.
 
+4. **A history that could not be written is told** (LB3-S, from LB3's gate
+   review; main's, not LB3's; settled 2026-10-31 the recommended way, on
+   Jerus's "Take all (Recommended)"). `SaveWriter.Job.write` prints the
+   history's failure and reports the save's result alone, so a slot can hold
+   a new save beside an old history while the game says "Saved". The job
+   returns both, and the player is told "Saved, but its history could not
+   be written: <reason>" (the autosave's as a notice), the .bak kept.
+
 Done when SaveFileCheck (or UP1's section 7) holds a fixture for each: a short
 skip followed by a close leaves the skip's last month on disk; a close
 autosaves; a player's Save returns at once and its file is complete when the
-line clears. Harness cities through `GameFiles.scratch`, never a real slot.
+line clears; a history whose write fails (SaveSlotCheck 7d's held file)
+says so beside the save's result. Harness cities through `GameFiles.scratch`, never a real slot.
