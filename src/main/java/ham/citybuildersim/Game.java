@@ -1650,7 +1650,7 @@ public class Game {
     private void handTheWorldToTheD() {
         WorldMoneys moneys = worldMoneys;
         if (moneys == null || worldQuietForTheD) foreign.setWorld(0, 0, 0);
-        else foreign.setWorld(moneys.cycle(), moneys.riskOff(), hotMoney.getStock());
+        else foreign.setWorld(moneys.cycle(), moneys.riskOff(), hotMoney.getStock() + debtManager.getForeignPrincipalUsd() * foreign.getRate());
     }
 
     /** The log's lines about the world, after the reprice: money running to safety abroad (with where the D$ went in it) and the world pegs that broke. */

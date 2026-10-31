@@ -694,8 +694,8 @@ public class ForeignAccounts {
     /** The most the loading can be (est.: the emerging floats' is .20). */
     public static final double RISK_OFF_LOADING_MAX = .30;
 
-    /** What the world is this month, handed before the reprice (setWorld()): the dollar cycle, the risk-off level, and the hot money held, local money. Saved. */
-    private double worldCycle, worldRiskOff, worldHotMoney;
+    /** What the world is this month, handed before the reprice (setWorld()): the dollar cycle, the risk-off level, and the city's exposure (the hot money held and the debt abroad), local money. Saved. */
+    private double worldCycle, worldRiskOff, worldExposure;
     /** The city's own terms of trade reached (a log, positive weaker), the piece each of the next totLeft reprices adds, and how many of them are left. Saved. */
     private double totReached, totStep;
     private int totLeft;
@@ -706,13 +706,15 @@ public class ForeignAccounts {
 
     /**
      * What the world is this month: handed before repriceCurrency(), by Game, from the world's moneys. The dollar cycle and the risk-off level are
-     * logs as WorldMoneys has them (positive: the dollar is strong, money runs to safety); hotMoneyLocal is the hot money held here, local money.
-     * Zeros (or never called) is no world, and the D$ is then exactly what it was without one. A figure that is no number reads 0.
+     * logs as WorldMoneys has them (positive: the dollar is strong, money runs to safety); exposureLocal is the hot money held here and the city's
+     * debt abroad, local money. Handed, not read off getForeignDebt(): that is struck after the reprice and not saved, so a reloaded city would
+     * reprice its first month on no debt (ReloadCheck, WN4: the loading 0.11 reloaded against 0.30 live). Zeros (or never called) is no world,
+     * and the D$ is then exactly what it was without one. A figure that is no number reads 0.
      */
-    public void setWorld(double cycle, double riskOff, double hotMoneyLocal) {
+    public void setWorld(double cycle, double riskOff, double exposureLocal) {
         worldCycle = Double.isFinite(cycle) ? cycle : 0;
         worldRiskOff = Double.isFinite(riskOff) ? riskOff : 0;
-        worldHotMoney = Double.isFinite(hotMoneyLocal) ? Math.max(0, hotMoneyLocal) : 0;
+        worldExposure = Double.isFinite(exposureLocal) ? Math.max(0, exposureLocal) : 0;
     }
 
     /**
@@ -738,7 +740,7 @@ public class ForeignAccounts {
         if (!(gdpTrailing > 0)) return RISK_OFF_BASE;
         double loading = RISK_OFF_BASE - HAVEN_PULL * Math.min(importCover() / HAVEN_COVER, 1)
                 - (currentTrailing + financialTrailing > 0 ? SURPLUS_PULL : 0)
-                + EXPOSURE_WEIGHT * (worldHotMoney + foreignDebt) / (12 * gdpTrailing);
+                + EXPOSURE_WEIGHT * worldExposure / (12 * gdpTrailing);
         return Math.max(RISK_OFF_LOADING_MIN, Math.min(RISK_OFF_LOADING_MAX, loading));
     }
 
@@ -2717,7 +2719,7 @@ public class ForeignAccounts {
                  * state it ended in. An older save has no world, and the D$ is
                  * as it was.
                  */
-                worldCycle, worldRiskOff, worldHotMoney,
+                worldCycle, worldRiskOff, worldExposure,
                 totReached, totStep, totLeft,
                 worldReached, lastWorldContrib, moveWorld,
                 worldLoading,
@@ -2885,7 +2887,7 @@ public class ForeignAccounts {
         if (saved.length > 104) {
             worldCycle = saved[95];
             worldRiskOff = saved[96];
-            worldHotMoney = Math.max(0, saved[97]);
+            worldExposure = Math.max(0, saved[97]);
             totReached = saved[98];
             totStep = saved[99];
             totLeft = Math.max(0, Math.min(WorldMoneys.TOT_MONTHS, (int) Math.round(saved[100])));
@@ -2991,7 +2993,7 @@ public class ForeignAccounts {
         lastWouldBeMove = 0;
         dealtSinceReprice = 0;
         // ...and the world (WN4): none handed, nothing reached, nothing moved by it.
-        worldCycle = worldRiskOff = worldHotMoney = 0;
+        worldCycle = worldRiskOff = worldExposure = 0;
         totReached = totStep = 0;
         totLeft = 0;
         worldReached = lastWorldContrib = moveWorld = worldLoading = 0;
@@ -3090,7 +3092,7 @@ public class ForeignAccounts {
         // log of a ratio and stays.
         trendLevel += Math.log(scale);
         lastContrib[0] += Math.log(scale);
-        worldHotMoney *= scale;   // (WN4) local money; the world's level is a log against the US$ and stays
+        worldExposure *= scale;   // (WN4) local money; the world's level is a log against the US$ and stays
         gdpTrailing *= scale;
         // The regimes (XR2): every rate and local figure moves like the rate; the
         // shadow's log shifts by the log of the scale, as the trend's does, so

@@ -1288,14 +1288,13 @@ public class ExchangeRateCheck {
         // Hot money and debt abroad, as a share of a year's output.
         double year = 12 * deficit.getGdpTrailing();
         deficit.setWorld(0, 0, .1 * year);
-        close("hot money of a tenth of a year's GDP adds EXPOSURE_WEIGHT x 0.1", deficit.riskOffLoading(),
+        close("hot money (or debt abroad: Game hands the two together) of a tenth of a year's GDP adds EXPOSURE_WEIGHT x 0.1", deficit.riskOffLoading(),
                 ForeignAccounts.RISK_OFF_BASE + ForeignAccounts.EXPOSURE_WEIGHT * .1, 1e-12);
-        deficit.setWorld(0, 0, 0);
         deficit.takeForeignDebt(.1 * year / deficit.getRate(), deficit.getRate());
-        close("debt abroad of a tenth of a year's GDP adds the same", deficit.riskOffLoading(),
-                ForeignAccounts.RISK_OFF_BASE + ForeignAccounts.EXPOSURE_WEIGHT * .1, 1e-12);
-        deficit.setWorld(0, 0, .1 * year);
-        close("...and both add both", deficit.riskOffLoading(), ForeignAccounts.RISK_OFF_BASE + ForeignAccounts.EXPOSURE_WEIGHT * .2, 1e-12);
+        close("debt struck on the accounts after a reprice adds nothing by itself: the loading reads what Game hands, which a reloaded city has too",
+                deficit.riskOffLoading(), ForeignAccounts.RISK_OFF_BASE + ForeignAccounts.EXPOSURE_WEIGHT * .1, 1e-12);
+        deficit.setWorld(0, 0, .2 * year);
+        close("...and a fifth of a year's GDP of the two adds twice", deficit.riskOffLoading(), ForeignAccounts.RISK_OFF_BASE + ForeignAccounts.EXPOSURE_WEIGHT * .2, 1e-12);
         close("fixture: a fifth of a year's GDP of them adds ten points (the dial's sentence)", ForeignAccounts.EXPOSURE_WEIGHT * .2, .10, 1e-12);
 
         // The clamps.

@@ -1506,6 +1506,16 @@ public class ForeignCheck {
         g.getEconomyManager().setExchangeRate(rate);
         g.getLandManager().setOwnedSqFt(30_000_000);
         /*
+         * ...AND THE WORLD'S PRICES HELD STILL (WN4, 2026-10-31). The premise
+         * below - the same programme costs the same in the world's money - is
+         * a world whose prices do not move while the two cities buy it, and
+         * the weaker city buys it later. The dollar's level was a walk pulled
+         * to a flat trend, so a year's lag cost about nothing; since WN4 the
+         * dollar is the US's, inflating about 2% a year on its path, and the
+         * lag read 1.14. Pinned, the comparison is the rate's again.
+         */
+        g.getWorldEconomy().pin();
+        /*
          * THE NINTH SECTOR SITS THIS ONE OUT (2026-09-13), because the whole
          * instrument below rests on the import side being a FIXED PROGRAMME -
          * a power plant, a water plant and forty roads, about $900M of

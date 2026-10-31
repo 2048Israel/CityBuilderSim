@@ -44,7 +44,7 @@ import java.util.stream.IntStream;
  *   7. CROSS RATES go through the dollar; the dollar's rate is 1 always.
  *   8. PARITY: with every other term quiet, a float's ln rate moves by the change in ln(P_anchor / P_US), and its constant is the mean
  *      real gap of the file's years.
- *   9. WHAT IT COSTS: the median month's step, printed and bounded.
+ *   9. WHAT IT COSTS: the median month's step, printed (a finding: a harness judges a time only through Timing, and the timing harnesses are the gate's).
  *  10. IN A CITY (the full file only): a trading town on the file runs 24 months with its moneys in the city's month every one and the D$
  *      moved by the world; saved after 13 and reloaded, it continues the moneys and the D$ to the bit to month 24; the history keeps the
  *      seven majors' rates, the cycle and the risk-off; a city on the literals has no moneys.
@@ -79,8 +79,6 @@ public class WorldMoneysCheck {
     /** Two logs or two rates that should be one differ by less than this (the rates are exp of sums of a few logs). */
     static final double EXACT = 1e-12;
 
-    /** The generous bound on the median month's step, milliseconds (the study measured about 10 microseconds; the gate's timing is not this harness's). */
-    static final double STEP_BOUND_MS = 2;
 
     /** Pegs the fixture is given: the yuan on the dollar, the peso on the yuan (a chain); and the loop of the two. */
     static final Map<String, String> FIXTURE_PEGS = Map.of("CHN", "peg:USD", "COL", "peg:CNY");
@@ -1015,7 +1013,6 @@ public class WorldMoneysCheck {
         double median = sorted[sorted.length / 2] / 1e3, p90 = sorted[sorted.length * 9 / 10] / 1e3;
         WorldMoneys w = sc.moneys(Nations.Path.RANDOM, BASE_SEED, null);
         out.printf("  finding: %d moneys, a month's step: median %.1f us, 90th percentile %.1f us, worst %.1f us (the study's prototype: about 10 us a month)%n", w.codes().size(), median, p90, sorted[sorted.length - 1] / 1e3);
-        assertTrue(String.format("the median month's step is under %.0f ms (a generous bound: the gate's timing is not this harness's)", STEP_BOUND_MS), median / 1e3 < STEP_BOUND_MS);
     }
 
     /* =====================================================================
