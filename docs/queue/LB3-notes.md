@@ -78,7 +78,7 @@ history series recorded at the month's end, so the default playtest's trace cann
 
 ## 5. The harness, `RankingsCheck`
 
-LB2's eleven sections and seven new (12-18), 212 checks, about 6 s, on scratch saves only (`GameFiles.scratch`):
+LB2's eleven sections and seven new (12-18), 213 checks, about 6 s, on scratch saves only (`GameFiles.scratch`):
 LB2's played city saved, played on a year and saved, reformed by 100 and saved again, plus fixtures for an older
 build's save (its format set below `OLDEST_LOADABLE_FORMAT`), a damaged one and one with no history. (12) reading the
 slots: slot 0 left out, the four kinds left off and counted, every file's bytes and time unchanged by a read, a second
@@ -110,7 +110,15 @@ usPrices empty and fills from the end.
 
 ## 7. Checks
 
-(at the end)
+With both data files named as the gate names them (2026-10-31): `./batch-check.sh --pick` **exit 3** (18 harnesses;
+nothing red but ScaleCheck, main's recorded red; its "review needed" read: saves, HistorySave's new series, no format
+bump because an older history reads it empty and its months are absent, never wrong; threading, the screen's one
+worker, §4). The full suite **exit 3**: nothing red but main's recorded reds (PassThroughCheck, ScaleCheck,
+`docs/notes/gate.txt`), one timing figure SOFT and not counted (SaveSlotCheck, beside lane A). Maps regenerated, Stale
+0 firm. RankingsCheck green, 213 checks. UiProbe (`24 2`, soft): Rankings drawn, first build 81 ms, no exception. No
+ensemble: the trace cannot move (a history series recorded at the month's end; nothing in the month reads the board).
+Jerus's real save folder was read for the formats only and is unchanged. **One in, one out** does not bind: no script,
+check machinery or rule a session reads changed.
 
 ## 8. Seams and follow-ups
 
