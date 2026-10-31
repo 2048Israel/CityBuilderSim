@@ -44,7 +44,7 @@ stuff".
 | R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | KP1 | Screens kept: History (its charts kept with their window, zoom and crosshair; rows keyed); and People's count-up only at 1x-10x, the figure set at once above (Jerus, 2026-10-23, on UP4's ★2 "Queue KP1-KP7", ★1 "Default order is fine", ★4 "Count up at 1x-10x only") | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
-| KP2 | Screens kept: Land, Services and Infrastructure, and the controls' rule (sliders and fields on a kept page) | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
+| KP2 | Screens kept: Land, Services and Infrastructure, and the controls' rule (sliders and fields on a kept page); and KP1's hover kept: a kept row, door, strip cell or pin name under a still pointer loses its hover look at each month's draw (HistoryScreen `rowGoes`, Pieces `limitCell`, `door`, `chartCardHead`: the draw resets the style and no mouse-entered comes), so the style is chosen from `isHover()` where it is set (KP1's gate review, 2026-10-31) | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
 | KP3 | Screens kept: Build and the construction page (after KP2) | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
 | KP4 | Screens kept: Sectors, the list and a business's five pages | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
 | KP5 | Screens kept: Bank, Finances and the fund | [study §7](docs/studies/spec-screens-in-place.md#7-the-batches) |
