@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-10-30 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-31 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**156 harness files, 16,879 labelled assertions.** AllChecks runs 156 of them.
+**156 harness files, 16,899 labelled assertions.** AllChecks runs 156 of them.
 
 ## Which harnesses read which class
 
@@ -106,6 +106,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
 | [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [FoundingName](map/FoundingName.md) | NewGameCheck |
 | [FoundingScreen](map/FoundingScreen.md) | **none** |
 | [Freight](map/Freight.md) | BuildCardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck, TruckRouteCheck, WorldDataCheck |
 | [FreightView](map/FreightView.md) | FreightViewCheck, TradeBandCheck |
@@ -15129,7 +15130,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L633 what Random counts across all the nations (full)**
   - L647 some nation-years fell more than 5% and not all of them: the share is between 1% and 20%
 
-## NewGameCheck.java - 145 labelled assertions
+## NewGameCheck.java - 165 labelled assertions
 
 > Does "Start New Game" actually start a new game?
 > 
@@ -15145,171 +15146,193 @@ _(this harness does not label its checks through a helper - it prints its findin
 > of construction cash, $15,402k of business debt, 1,868 units of the previous
 > ...
 
-- **L270 1. what a city that never existed looks like**
-  - L278 it has no people
-  - L279 it has its starting cash
-  - L280 ...and the founders' dollars in the vault
-  - L282 ...bought on day one, at the opening rate
-  - L285 it is at month 1
-- **L287 2. live in one, hard**
-  - L358 the used city really is used
-  - L361 ...and its vault is not the founders' any more
-  - L363 ...and it paid for land out of it, and pays that way still
-  - L367 ...and its landlords owe insured mortgages, and have paid the city premiums on them
-- **L371 3. start a new one**
-- **L392 4. and it is actually playable**
-  - L396 the building catalogue is loaded
-  - L400 houses can be ordered
-  - L406 and so can shops
-  - L411 months pass
-  - L412 and people move in
-  - L415 its history starts from this city, not the last one
-- **L418 5. a new game after a LOAD, too**
-  - L428 saved
-  - L432 loaded
-  - L437 ...with the vault it was saved with, not a new city's
-  - L460 starting a new game does not delete the save it left
-- **L463 6-11. FOUNDING A CITY (0.7.10)**
-- **L466 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13)**
-- **L469 13. THE GROUND IT STANDS ON (0.7.56)**
-- **L472 14. THE REAL EARTH (0.7.121)**
-- **L475 15. A NEW CITY AFTER A REFORMED ONE (FX4)**
-- **L519 6**
-  - L523 the defaults are the two constants
-  - L525 ...in the default world, Danzik, its money named after it
-  - L529 the Standard preset is the constants
-  - L533 ...and Lean and Wealthy are their own constants
-  - L540 a city founded on the defaults opens with exactly them
-  - L545 ...named Danzik, in money named after it
-  - L560 fixture:
-  - L583 each preset and a custom founding opens with exactly its treasury and vault
-  - L584 ...the vault bought at the opening rate, booked as the purchase it is
-  - L585 ...an Insane one lives it without borrowing, overdrawn for the central bank's advance
-  - L586 ...and lives its first month with the audit closed
-  - L603 a city at the
-  - L605 ...and runs two years, every month audited
-  - L628 an Insane city places nothing before it borrows
-  - L629 ...borrows the village's invoice on the build screen's bond and places ten houses and a shop
-  - L631 ...and runs two years, every month audited
-  - L635 newGame() with a founding - the menu's door - founds exactly it
-  - L646 an empty treasury is not a custom city: refused at the door
-  - L648 ...but nothing at all is the Insane preset, the one founding under the bounds
-  - L650 ...as is one under the floor or over the ceiling
-  - L653 ...and a vault below nothing or over its ceiling
-  - L657 ...and a city with no name, or a name too long for the title
-- **L662 7**
-  - L675 fixture: Arden, in its crown, founded and lived in
-  - L677 saved
-  - L679 the city's name comes back
-  - L680 ...and its money, whole: name, plural, code and both symbols
-  - L682 ...and the treasury and vault it was founded with, not what it has now
-  - L685 ...and the world it was founded into, which the world's own save carries
-  - L687 the slot list names the city
-  - L698 fixture: the save carried all eight of the founding's keys
-  - L702 fixture: the stripped save loads
-  - L703 a save from before 0.7.10 loads as Danzik
-  - L704 ...in the Danzik dollar, every city's before: Danzik dollars, DZD, $ and D$
-  - L708 ...founded with D$2.5B and US$1B, the Wealthy preset's
-  - L710 ...and otherwise the city it was: its own cash and vault
-  - L713 ...and the slot list says Danzik too
-- **L715 8**
-  - L719 Arden gives the Arden dollar, the Arden dollars
-  - L721 ...A$ beside a US dollar and $ alone, ARD
-  - L740 the edges: accents, other scripts, stops, short names and the world's code
-  - L745 the world's code is never derived
-  - L748 typed by hand: its name, an s for the plural, and the code upper-cased
-  - L750 ...written $ alone and its initial and $ beside a US dollar
-  - L753 ...a name that ends in s is its own plural
-  - L754 the world's code is never accepted, in any case
-  - L757 ...nor a code that is not exactly three letters A to Z
-  - L761 ...nor a name with no letter in it
-  - L763 a founding in the world's money is no founding
-  - L766 the foreign money stays the US dollar, US$, USD
-- **L770 9**
-  - L775 a city founded on the defaults beside Arden is Danzik, in its own money
-  - L777 ...and Arden is still Arden, in its crown, with its own founding
-  - L781 Start New Game on Arden's own object founds Danzik on the defaults, nothing of Arden's
-  - L784 ...and after loading Arden: its name, its money and its world all left behind
-- **L787 10**
-  - L798 founding at each of the screen's worlds sets the world's mean
-  - L799 ...and back-casts its first year at that mean
-  - L800 ...and the default is among them
-  - L809 a new city after a
-- **L813 11**
-  - L838 fixture: a new city places the founding village
-  - L839 ...and is charged for it exactly what whatItBuys() says
-  - L844 ...and quoted for each first work exactly what it says, the yard spent
-  - L849 (a) the Standard treasury pays for the village and at least one of the first works
-  - L866 (b) ...and not the others as well: after any one of them, the rest need a bond
-  - L881 (c) fixture: a year on, the water plant is more than its treasury holds
-  - L884 (c) the page's gap is the plant's invoice less the treasury
-  - L886 (c) the page's bond is at one of the five maturities
-  - L893 (c) the page's note is still quoted: six months, covering the gap
-  - L907 (c) a Standard city short of the water plant is quoted the bond
-  - L910 ...whose cash covers the gap
-  - L911 ...by no more than one issue granule plus the fees
-  - L936 ...and so at every maturity and size, not this one alone: a short quote is asserted short, and any other covers its
-  - L942 (c) a new city borrowing for it gets it: the bond issues
-  - L944 ...and lands exactly the cash it was quoted
-  - L946 ...on the books as a term bond of BUILD_BOND_YEARS, at the face quoted
-  - L949 ...and the plant is ordered
-  - L958 ...and built
-  - L959 ...and every month of it the audit closed
-- **L1003 12. the dial and the rollover a player founds with**
-  - L1007 \"Found with defaults\": the dial is the autopilot's
-  - L1008 ...and the treasury rolls what falls due in the same structure
-  - L1013 the founding screen's own city, likewise
-  - L1017 a city built bare keeps the hand on the dial and rolls nothing, for its builder to state
-  - L1021 fixture: a month played on the autopilot
-  - L1023 fixture: the player's hand takes the dial
-  - L1024 saved
-  - L1027 a save with the hand on the dial reloads with the hand on it
-  - L1034 saved
-  - L1036 ...one on the autopilot reloads on it
-  - L1037 ...and its rollover as it was set
-  - L1041 fixture: the save carried both keys
-  - L1047 fixture: the older save loads
-  - L1048 a save from before either key loads with the hand on the dial
-  - L1050 ...and rolls nothing, as it was played
-- **L1071 13. the ground a city stands on**
-  - L1082 the defaults, every preset and a custom city: the default world
-  - L1084 ...and a city founded on the defaults stands on it
-  - L1090 fixture: a founding on world
-  - L1093 a city founded on another world stands on it
-  - L1095 ...and its World is that seed's, the one every asker shares
-  - L1098 ...and its land is on it: a centre round that world's founding site (0.7.57)
-  - L1101 ...while the founding's other choices are as they were
-  - L1105 saved
-  - L1108 the save carries the seed
-  - L1110 ...and the city it loads stands on the same world
-  - L1120 fixture: the save without the seed loads
-  - L1121 a save from before 0.7.56 reads the seed its name, treasury, ground and month make
-  - L1123 ...the same one on every load
-  - L1124 saved
-  - L1125 ...and its next save keeps it
-  - L1127 a save one month on derives another: the month is in it
-  - L1132 Start New Game after a city on world
-  - L1142 the dice rolls 1 to ROLLED_SEED_MAX (
-  - L1143 a typed seed is a whole number: 4127, 1,234, -5
-  - L1147 ...and nothing else: a word, a fraction, nothing, past a long
-- **L1173 14. the real Earth**
-  - L1181 the defaults and every preset stand on a generated world: no spot, no data
-  - L1184 onEarth() puts a founding on the Earth round a spot, the game's data, its seed and choices kept
-  - L1190 fixture: EarthCheck's fixture is beside the classes
-  - L1196 fixture: Rotterdam's spot on the fixture has no problem
-  - L1199 a city founded on the Earth stands on it: its World the key's, its land the snap's site
-  - L1202 ...its record the spot and the data
-  - L1205 saved
-  - L1207 the save carries the kind, the spot and the data
-  - L1211 ...and the city it loads stands on the same Earth
-  - L1216 a spot in the sea is a problem, in the founding card's words
-  - L1224 ...which the game will not found, the city on screen left as it was
-  - L1228 Start New Game after an Earth city founds on the default generated world
-- **L1271 15. a new city after a reformed one founds at the founding unit (FX4)**
-  - L1276 the fixture: the first city is reformed, its unit no longer 1
-  - L1279 the new city founds at the founding unit
-  - L1285 ...and reads the parity a city never reformed reads
-  - L1287 ...and its rate is not pulled away from that city's
+- **L274 1. what a city that never existed looks like**
+  - L282 it has no people
+  - L283 it has its starting cash
+  - L284 ...and the founders' dollars in the vault
+  - L286 ...bought on day one, at the opening rate
+  - L289 it is at month 1
+- **L291 2. live in one, hard**
+  - L362 the used city really is used
+  - L365 ...and its vault is not the founders' any more
+  - L367 ...and it paid for land out of it, and pays that way still
+  - L371 ...and its landlords owe insured mortgages, and have paid the city premiums on them
+- **L375 3. start a new one**
+- **L396 4. and it is actually playable**
+  - L400 the building catalogue is loaded
+  - L404 houses can be ordered
+  - L410 and so can shops
+  - L415 months pass
+  - L416 and people move in
+  - L419 its history starts from this city, not the last one
+- **L422 5. a new game after a LOAD, too**
+  - L432 saved
+  - L436 loaded
+  - L441 ...with the vault it was saved with, not a new city's
+  - L464 starting a new game does not delete the save it left
+- **L467 6-11. FOUNDING A CITY (0.7.10)**
+- **L470 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13)**
+- **L473 13. THE GROUND IT STANDS ON (0.7.56)**
+- **L476 14. THE REAL EARTH (0.7.121)**
+- **L479 15. A NEW CITY AFTER A REFORMED ONE (FX4)**
+- **L482 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1)**
+- **L526 6**
+  - L530 the defaults are the two constants
+  - L532 ...in the default world, Danzik, its money named after it
+  - L536 the Standard preset is the constants
+  - L540 ...and Lean and Wealthy are their own constants
+  - L547 a city founded on the defaults opens with exactly them
+  - L552 ...named Danzik, in money named after it
+  - L567 fixture:
+  - L590 each preset and a custom founding opens with exactly its treasury and vault
+  - L591 ...the vault bought at the opening rate, booked as the purchase it is
+  - L592 ...an Insane one lives it without borrowing, overdrawn for the central bank's advance
+  - L593 ...and lives its first month with the audit closed
+  - L610 a city at the
+  - L612 ...and runs two years, every month audited
+  - L635 an Insane city places nothing before it borrows
+  - L636 ...borrows the village's invoice on the build screen's bond and places ten houses and a shop
+  - L638 ...and runs two years, every month audited
+  - L642 newGame() with a founding - the menu's door - founds exactly it
+  - L653 an empty treasury is not a custom city: refused at the door
+  - L655 ...but nothing at all is the Insane preset, the one founding under the bounds
+  - L657 ...as is one under the floor or over the ceiling
+  - L660 ...and a vault below nothing or over its ceiling
+  - L664 ...and a city with no name, or a name too long for the title
+- **L669 7**
+  - L682 fixture: Arden, in its crown, founded and lived in
+  - L684 saved
+  - L686 the city's name comes back
+  - L687 ...and its money, whole: name, plural, code and both symbols
+  - L689 ...and the treasury and vault it was founded with, not what it has now
+  - L692 ...and the world it was founded into, which the world's own save carries
+  - L694 the slot list names the city
+  - L705 fixture: the save carried all eight of the founding's keys
+  - L709 fixture: the stripped save loads
+  - L710 a save from before 0.7.10 loads as Danzik
+  - L711 ...in the Danzik dollar, every city's before: Danzik dollars, DZD, $ and D$
+  - L715 ...founded with D$2.5B and US$1B, the Wealthy preset's
+  - L717 ...and otherwise the city it was: its own cash and vault
+  - L720 ...and the slot list says Danzik too
+- **L722 8**
+  - L726 Arden gives the Arden dollar, the Arden dollars
+  - L728 ...A$ beside a US dollar and $ alone, ARD
+  - L747 the edges: accents, other scripts, stops, short names and the world's code
+  - L752 the world's code is never derived
+  - L755 typed by hand: its name, an s for the plural, and the code upper-cased
+  - L757 ...written $ alone and its initial and $ beside a US dollar
+  - L760 ...a name that ends in s is its own plural
+  - L761 the world's code is never accepted, in any case
+  - L764 ...nor a code that is not exactly three letters A to Z
+  - L768 ...nor a name with no letter in it
+  - L770 a founding in the world's money is no founding
+  - L773 the foreign money stays the US dollar, US$, USD
+- **L777 9**
+  - L782 a city founded on the defaults beside Arden is Danzik, in its own money
+  - L784 ...and Arden is still Arden, in its crown, with its own founding
+  - L788 Start New Game on Arden's own object founds Danzik on the defaults, nothing of Arden's
+  - L791 ...and after loading Arden: its name, its money and its world all left behind
+- **L794 10**
+  - L805 founding at each of the screen's worlds sets the world's mean
+  - L806 ...and back-casts its first year at that mean
+  - L807 ...and the default is among them
+  - L816 a new city after a
+- **L820 11**
+  - L845 fixture: a new city places the founding village
+  - L846 ...and is charged for it exactly what whatItBuys() says
+  - L851 ...and quoted for each first work exactly what it says, the yard spent
+  - L856 (a) the Standard treasury pays for the village and at least one of the first works
+  - L873 (b) ...and not the others as well: after any one of them, the rest need a bond
+  - L888 (c) fixture: a year on, the water plant is more than its treasury holds
+  - L891 (c) the page's gap is the plant's invoice less the treasury
+  - L893 (c) the page's bond is at one of the five maturities
+  - L900 (c) the page's note is still quoted: six months, covering the gap
+  - L914 (c) a Standard city short of the water plant is quoted the bond
+  - L917 ...whose cash covers the gap
+  - L918 ...by no more than one issue granule plus the fees
+  - L943 ...and so at every maturity and size, not this one alone: a short quote is asserted short, and any other covers its
+  - L949 (c) a new city borrowing for it gets it: the bond issues
+  - L951 ...and lands exactly the cash it was quoted
+  - L953 ...on the books as a term bond of BUILD_BOND_YEARS, at the face quoted
+  - L956 ...and the plant is ordered
+  - L965 ...and built
+  - L966 ...and every month of it the audit closed
+- **L1010 12. the dial and the rollover a player founds with**
+  - L1014 \"Found with defaults\": the dial is the autopilot's
+  - L1015 ...and the treasury rolls what falls due in the same structure
+  - L1020 the founding screen's own city, likewise
+  - L1024 a city built bare keeps the hand on the dial and rolls nothing, for its builder to state
+  - L1028 fixture: a month played on the autopilot
+  - L1030 fixture: the player's hand takes the dial
+  - L1031 saved
+  - L1034 a save with the hand on the dial reloads with the hand on it
+  - L1041 saved
+  - L1043 ...one on the autopilot reloads on it
+  - L1044 ...and its rollover as it was set
+  - L1048 fixture: the save carried both keys
+  - L1054 fixture: the older save loads
+  - L1055 a save from before either key loads with the hand on the dial
+  - L1057 ...and rolls nothing, as it was played
+- **L1078 13. the ground a city stands on**
+  - L1089 the defaults, every preset and a custom city: the default world
+  - L1091 ...and a city founded on the defaults stands on it
+  - L1097 fixture: a founding on world
+  - L1100 a city founded on another world stands on it
+  - L1102 ...and its World is that seed's, the one every asker shares
+  - L1105 ...and its land is on it: a centre round that world's founding site (0.7.57)
+  - L1108 ...while the founding's other choices are as they were
+  - L1112 saved
+  - L1115 the save carries the seed
+  - L1117 ...and the city it loads stands on the same world
+  - L1127 fixture: the save without the seed loads
+  - L1128 a save from before 0.7.56 reads the seed its name, treasury, ground and month make
+  - L1130 ...the same one on every load
+  - L1131 saved
+  - L1132 ...and its next save keeps it
+  - L1134 a save one month on derives another: the month is in it
+  - L1139 Start New Game after a city on world
+  - L1149 the dice rolls 1 to ROLLED_SEED_MAX (
+  - L1150 a typed seed is a whole number: 4127, 1,234, -5
+  - L1154 ...and nothing else: a word, a fraction, nothing, past a long
+- **L1180 14. the real Earth**
+  - L1188 the defaults and every preset stand on a generated world: no spot, no data
+  - L1191 onEarth() puts a founding on the Earth round a spot, the game's data, its seed and choices kept
+  - L1197 fixture: EarthCheck's fixture is beside the classes
+  - L1203 fixture: Rotterdam's spot on the fixture has no problem
+  - L1206 a city founded on the Earth stands on it: its World the key's, its land the snap's site
+  - L1209 ...its record the spot and the data
+  - L1212 saved
+  - L1214 the save carries the kind, the spot and the data
+  - L1218 ...and the city it loads stands on the same Earth
+  - L1223 a spot in the sea is a problem, in the founding card's words
+  - L1231 ...which the game will not found, the city on screen left as it was
+  - L1235 Start New Game after an Earth city founds on the default generated world
+- **L1278 15. a new city after a reformed one founds at the founding unit (FX4)**
+  - L1283 the fixture: the first city is reformed, its unit no longer 1
+  - L1286 the new city founds at the founding unit
+  - L1292 ...and reads the parity a city never reformed reads
+  - L1294 ...and its rate is not pulled away from that city's
+- **L1307 16. the name on the Found-a-city page: blank, a place searched, or the player's own (FN1)**
+  - L1309 the page opens blank, not on
+  - L1311 ...and a blank name is the model's refusal, so the start button waits with its hint
+  - L1315 a place picked from the search names the blank city
+  - L1317 ...and the city then founds, its money named after the place
+  - L1320 the field echoing the name the search set is not the player's edit
+  - L1321 the next place searched replaces a name the search filled
+  - L1324 a player who changes the name the search filled owns it
+  - L1325 ...and a place searched afterwards leaves it alone
+  - L1329 a name typed before any search is the player's
+  - L1330 ...and a place searched leaves it, however many are
+  - L1332 the player clearing the field leaves it nobody's
+  - L1333 ...so the next place searched fills it again
+  - L1335 spaces alone are not a name the player wrote
+  - L1339 the page opening afresh blanks a typed name too, and the next place fills it
+  - L1344 a place's name longer than a city may have is cut to fit, and passes the model's check
+  - L1347 a place with no name that will do leaves the city blank
+  - L1353 fixture: EarthCheck's fixture is beside the classes
+  - L1358 fixture: the search finds Rotterdam
+  - L1361 a place the Earth search found names the city with its own name, trimmed
+  - L1373 ...and every place's name in a sample of
 
 ## OilCheck.java - 214 labelled assertions
 

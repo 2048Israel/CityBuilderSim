@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.79 — FN1, the Found-a-city name starts blank — 2026-10-30, ready, see docs/queue/FN1-notes.md
+Jerus: "remove the default name of danzik, have it just blank, or if you search for a city, its that city name (unless
+someone already typed something, then it doesnt change the city name)". The Found-a-city page's name field opens blank
+with its prompt, "Name the city", showing, at the first open and at every reopening from the main menu, not on Danzik.
+A place picked from the Earth search (a hit clicked, or Enter in the search) names the city with that place's name,
+cut to 24 characters, while the player has not written a name; the next place searched replaces a name the search
+filled, a name the player typed (or changed from the search's) stays, and a field the player clears is filled by the
+next place again. Found with the field blank waits: it is the model's refusal, "Name the city.", under the greyed
+button, as it was for any cleared field. The rule is `FoundingName`, outside the screen (NewGameCheck 16). Danzik stays
+in the model: `Founding.DEFAULT_CITY_NAME`, old saves, the harnesses. A screen change: no save, no money, the trace is main's.
+
 ### 0.8.78 — EM2, a share quoted at the middle of its book, and short selling — 2026-10-30, ready (two of main's reds with moved figures named for the gate), see docs/queue/EM2-notes.md
 A share's price is its quote: the middle of the best bid and ask, the last trade held inside the one side that stands, the
 last trade with neither, fair value before the first; every reader of the price reads it, and a quote set by a book that
