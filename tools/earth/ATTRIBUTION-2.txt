@@ -1,11 +1,11 @@
 earth-2: the Earth data of CityBuilderSim
 
 earth-2.bin is derived from the data sets below. Their licences allow this use; their credits follow,
-each in the form its publisher asks for. The game shows the same text on its Credits page.
+each in the form its publisher asks for. It ships beside the exe as data/earth-2-ATTRIBUTION.txt.
 
 GEBCO 2026 Grid (ice-surface elevation) and Type Identifier (TID) grid (GEBCO_2026)
   Credit:  GEBCO Bathymetric Compilation Group 2026 (2026). The GEBCO_2026 Grid - a continuous terrain model for oceans and land at 15 arc-second intervals. NERC EDS British Oceanographic Data Centre NOC. doi:10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa
-  Licence: Public domain; may be copied, published, adapted and commercially exploited; the source must be acknowledged; no official status or endorsement may be implied; not for navigation (GEBCO, "Terms of use for the GEBCO Grid and derived information products")
+  Licence: Public domain; may be copied, published, adapted and commercially exploited; the source must be acknowledged; no official status or endorsement may be implied; not for navigation (GEBCO, "Terms of use for the GEBCO Grid and derived information products"); the copy read, at CEDA, is under the Open Government Licence v3.0: contains public sector information licensed under the Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
   Used for: which 15" cells are ocean (TID != 0; grown by one cell, it tells sea from inland water); the coast where WorldCover has no tile; Antarctica south of 60 S (elevation >= 0, read by range); the sea's depth (1') and its shallow share (15"); the slope of the ground where NASADEM does not reach (north of 61 N, south of 56 S), as an estimate from its 15" slope; which sea a short crossing may span (the landmasses)
   Source:  https://dap.ceda.ac.uk/bodc/gebco/global/gebco_2026/type_identifier_grid/netcdf/gebco_2026_tid.zip, https://dap.ceda.ac.uk/bodc/gebco/global/gebco_2026/ice_surface_elevation/netcdf/GEBCO_2026.nc
 

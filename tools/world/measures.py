@@ -70,9 +70,14 @@ def read_cpi_u(sources):
     years = [str(y) for y in range(WINDOW_FIRST, WINDOW_LAST + 1)]
     assert all(y in out for y in years), 'the BLS files lack a year of the window: ' + str(sorted(out))
     return {y: out[y] for y in years}
-# Bulgaria's lev is a currency board at this many to the euro; the WDI gives Bulgaria's PPP factor in euros (the
-# GDP at PPP over the GDP at market rates says so in every year) and the OECD its minimum wage in euros, while the WDI's
-# exchange rate is in levs.
+# The rate a wage in local money is divided by: the World Bank's GDP in local money over its GDP in US$, the rate the
+# Bank converts the year's output at (LC1: the WDI's own exchange rate, PA.NUS.FCRF, is the IMF's figure, which a sold
+# game may not ship).
+WAGE_RATE = 'wdi:NY.GDP.MKTP.CN/NY.GDP.MKTP.CD'
+# The money the WDI's local-money series are in where it is not the nation's money in world-1.bin: Bulgaria's output is
+# in euros for every year (its GDP in local money over its GDP in US$ is 0.92 in 2024, a euro's rate, not a lev's
+# 1.81), as is the OECD's minimum wage for it; its average wage is in levs, a currency board at BGN_PER_EUR.
+WDI_LCU = {'BGR': 'EUR'}
 BGN_PER_EUR = 1.95583
 # Whether the OECD's FUA GDP (USD_PPP) is read as constant prices, so a region's real growth is its latest year over
 # the year before: the dataflow's metadata does not say, but the US areas' implied national total falls 2.2% in 2020
@@ -115,15 +120,15 @@ NOTE_ADDITIONS = {
                    'year before; the OECD\'s metadata does not say the series is at constant prices, but the US areas\' '
                    'implied national total falls 2.2% in 2020 and rises 5.8% in 2021, tracking the WDI\'s real growth '
                    '(-2.1, 6.2) and not the nominal (about -0.9, +10.7)',
-    'min_wage': 'Bulgaria\'s, which the OECD gives in euros, is converted to levs at the peg first',
-    'price_level': 'Bulgaria\'s PPP factor, which the WDI gives in euros, is converted to levs at the peg first',
-    'fx_vs_parity': 'Bulgaria\'s PPP factor, which the WDI gives in euros, is converted to levs at the peg first',
+    'min_wage': 'Bulgaria\'s, which the OECD gives in euros, is over the WDI\'s euro rate: the WDI gives Bulgaria\'s '
+                'output in euros',
 }
 
 # The sources a figure can name: id, name and version, url, licence (MEASURES-SOURCES.txt in the sources folder).
 SOURCE_ROWS = {
-    'wdi': ('World Bank, World Development Indicators, last updated 2026-10-08 (49 series; every series\' own metadata '
-            'gives License_Type CC BY-4.0, checked 2026-10-30)',
+    'wdi': ('World Bank, World Development Indicators, last updated 2026-10-08 (29 series, each the World Bank\'s own or '
+            'from a body whose terms allow commercial use: the UN\'s WPP, the ILO, the FAO, the IEA; every series\' own '
+            'metadata gives License_Type CC BY-4.0, checked 2026-10-31, docs/studies/licences.md)',
             'https://api.worldbank.org/v2/country/all/indicator/', 'CC BY 4.0', DOWNLOADED),
     'oecd': ('OECD data, credit to the OECD per dataset: Earnings (average and minimum wages), Financial market '
              '(long-term interest rates), Social Expenditure (public old-age pensions), National Accounts at a '
@@ -244,8 +249,6 @@ class Wdi:
         if code not in self.cache:
             raw = econ_paths_sources.wdi(code, self.sources)
             self.cache[code] = {iso: ys for iso, ys in raw.items() if iso in common.NATIONS}
-            if code == 'PA.NUS.PPP' and 'BGR' in self.cache[code]:      # euros to levs, as the exchange rate is
-                self.cache[code]['BGR'] = {y: v * BGN_PER_EUR for y, v in self.cache[code]['BGR'].items()}
         return self.cache[code]
 
     def values(self, spec):
@@ -373,7 +376,7 @@ class Folder:
         ncol, tcol, vcol = filters['nation'], filters['time'], filters['value']
         mul = float(filters.get('mul', 1))
         div = filters.get('div')
-        divs = self.wdi.get(div.split(':', 1)[1]) if div else None
+        divs = self.wdi.values(div) if div else None
         out = {}
         seen = {}
         skipped = 0
@@ -387,11 +390,12 @@ class Folder:
             if divs is not None:
                 if iso not in divs or y not in divs[iso] or divs[iso][y] == 0:
                     continue
-                if div == 'wdi:PA.NUS.FCRF' and r.get('UNIT_MEASURE') != self.world.money(iso):
-                    if (r.get('UNIT_MEASURE'), self.world.money(iso)) == ('EUR', 'BGN'):
-                        v *= BGN_PER_EUR
+                unit, lcu = r.get('UNIT_MEASURE'), WDI_LCU.get(iso, self.world.money(iso))
+                if div == WAGE_RATE and unit != lcu:
+                    if (unit, lcu) == ('BGN', 'EUR'):
+                        v /= BGN_PER_EUR            # levs to euros at the peg, the rate's money
                     else:
-                        skipped += 1                # a wage in a money the nation does not use
+                        skipped += 1                # a wage in another money than the rate's
                         continue
                 v = v / divs[iso][y]
             mark = 2 if r.get('OBS_STATUS') == 'F' else 3

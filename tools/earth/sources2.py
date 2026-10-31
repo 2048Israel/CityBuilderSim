@@ -1,8 +1,9 @@
 # earth-2's credits: earth-1's sources (sources.py) with GEBCO's wider use and its own requested credit, and the
 # heights the slope comes from (NEW_SOURCES). sources() is the list bake2.py puts in earth-2.bin's meta; main() writes
 # tools/earth/ATTRIBUTION-2.txt from it, shipped beside earth-2.bin
-# (the Credits page's text). Every licence below was read from its publisher's own text on 2026-10-12 (the study's
-# section 1 quotes each).   python3 -I sources2.py
+# (data/earth-2-ATTRIBUTION.txt in the exe's folder; a Credits page in the game is CR1). Every licence below was read
+# from its publisher's own text on 2026-10-12 (the study's section 1 quotes each) and again on 2026-10-31 (LC1,
+# docs/studies/licences.md).   python3 -I sources2.py
 import sys, os, copy
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sources as S1
@@ -44,7 +45,9 @@ def sources():
             s['credit'] = GEBCO_2['credit']; s['gives'] += '; ' + GEBCO_2['gives_more']
             s['licence'] = ('Public domain; may be copied, published, adapted and commercially exploited; the source must be '
                             'acknowledged; no official status or endorsement may be implied; not for navigation (GEBCO, '
-                            '"Terms of use for the GEBCO Grid and derived information products")')
+                            '"Terms of use for the GEBCO Grid and derived information products"); the copy read, at CEDA, is '
+                            'under the Open Government Licence v3.0: contains public sector information licensed under the '
+                            'Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)')
         if s['key'] == 'grwl':
             s['gives'] += '; rivers wider than 1,020 m cut the landmasses (earth-2\'s landmass layer)'
         if s['key'] == 'hydrolakes':
@@ -56,7 +59,7 @@ def main():
     srcs = sources()
     lines = ['earth-2: the Earth data of CityBuilderSim', '',
              'earth-2.bin is derived from the data sets below. Their licences allow this use; their credits follow,',
-             'each in the form its publisher asks for. The game shows the same text on its Credits page.', '']
+             'each in the form its publisher asks for. It ships beside the exe as data/earth-2-ATTRIBUTION.txt.', '']
     for s in srcs:
         lines += [s['name'] + ' (' + s['version'] + ')', '  Credit:  ' + s['credit'], '  Licence: ' + s['licence'],
                   '  Used for: ' + s['gives'], '  Source:  ' + ', '.join(s['urls']), '']
@@ -68,7 +71,7 @@ def main():
     lines += ['  - North of 61 N and south of 56 S, and in any tile NASADEM has no heights for, the slope is an estimate',
               '    from GEBCO 2026\'s 15" grid (the layer slope.est marks those tiles).']
     lines += ['', 'No borders are drawn; place names are for search only.', '']
-    with open(os.path.join(HERE, 'ATTRIBUTION-2.txt'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(HERE, 'ATTRIBUTION-2.txt'), 'w', encoding='utf-8', newline='\n') as f:   # LF, as the repository stores it
         f.write('\n'.join(lines))
     print('wrote ATTRIBUTION-2.txt')
 

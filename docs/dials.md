@@ -1444,7 +1444,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.8.84"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.8.85"` | Bump on release. |
 | 8237 | `GameVersion.SAVE_FORMAT` | `49` | The save shape. |
 | 8282 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `49` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8290 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
