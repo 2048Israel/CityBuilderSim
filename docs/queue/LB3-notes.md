@@ -132,3 +132,23 @@ check machinery or rule a session reads changed.
   slot a city came from, and Game is lane A's tonight. Recommended: mark a slot whose founding (name and world seed)
   is the city in play's as "this city, as saved", and leave it out at your age.
 - **KP1** (History kept in place) is next in lane B; nothing here touches HistoryScreen; `HistoryScreen.tip` is reused.
+
+## 9. Sent back from the gate, and mended (2026-10-31)
+
+The stranger's review ran the board's read beside a save on this PC: `SavedCities` held a slot's history open through
+its whole parse (seconds for 20-26 MB on a low-priority thread), and `GameFiles.swapIn`'s move over an open file fails
+on Windows (`AccessDeniedException`); `SaveWriter` only prints a history failure, so the slot kept its new save beside
+its old history and the game said "Saved". Mended, by Opus (no slice: each piece a few lines):
+- **The history is read whole, then parsed** (`Files.readString`, as `Game.loadHistory` and `readHeader` do): the
+  handle is closed before the parse begins. Nothing else the worker opens is held across a parse.
+- **`GameFiles.swapIn` waits for a held file**: a move refused as `AccessDeniedException`, or a plain
+  `FileSystemException` (a sharing violation), is tried again `SWAP_RETRIES` (10) times `SWAP_RETRY_MS` (50 ms) apart,
+  half a second, which also covers an antivirus scan and the indexer; anything else, or past the last try, is reported
+  as before. **SaveSlotCheck 7d** causes it: a reader holds the file and a plain move over it fails (the fixture, on
+  Windows); a write whose handle is let go after 100 ms lands, having waited (132 ms); one held past every retry fails,
+  says so and leaves the file whole; the next lands. Elsewhere a file can be replaced while open, and 7d says so.
+- **One odd slot stays in its slot**: `SavedCities.readSafely` marks a slot whose header or history will not decode (or
+  runs the heap out) DAMAGED and reads the rest; before, one throw hid every saved city.
+- **A read asked for during a read is queued** (`RankingsScreen.readAgain`), not dropped: a slot saved meanwhile is read.
+- Not mended here, each a Pending row with its recommendation: the memory a read takes (LB3-R) and `SaveWriter`'s
+  silent history failure, which is main's (LB3-S).

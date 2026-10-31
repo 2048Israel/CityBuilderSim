@@ -4,7 +4,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 461 files, 506,370 lines, 21,714 methods, 4,933 constants. `GameVersion.VERSION` is "0.8.82", `SAVE_FORMAT` 49.
+**The tree:** 461 files, 506,507 lines, 21,717 methods, 4,936 constants. `GameVersion.VERSION` is "0.8.82", `SAVE_FORMAT` 49.
 
 ## model (217 files)
 
@@ -91,7 +91,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FundLedger.java](FundLedger.md) | 766 | 92 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 10 |
 | [FundView.java](FundView.md) | 873 | 39 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 5 |
 | [Game.java](Game.md) | 19,917 | 863 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 224 |
-| [GameFiles.java](GameFiles.md) | 469 | 40 | Where the game keeps its files, and how it writes them. | 144 |
+| [GameFiles.java](GameFiles.md) | 503 | 41 | Where the game keeps its files, and how it writes them. | 144 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 249 | 27 | How the player likes the window, kept between runs. | 4 |
 | [GameVersion.java](GameVersion.md) | 8,342 | 6 | What build this is, and what shape its saves are. | 20 |
@@ -173,7 +173,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [SaveCopy.java](SaveCopy.md) | 54 | 5 | The small copies a save's snapshot is made of: a list or map copied, with each element copied too where the elements can change. | 9 |
 | [SaveHeader.java](SaveHeader.md) | 102 | 18 | Just enough of a save to label it on the slot list. | 8 |
 | [SaveWriter.java](SaveWriter.md) | 253 | 17 | The one thread saves are written on, for the whole JVM: it takes a finished snapshot of a city and turns it into the save, the map and the history ... | 3 |
-| [SavedCities.java](SavedCities.md) | 239 | 18 | The player's other saved cities as the Rankings board reads them (spec-leaderboards 5, LB3): slots 1 to GameFiles.SLOT_COUNT of a GameFiles, read o... | 2 |
+| [SavedCities.java](SavedCities.md) | 256 | 19 | The player's other saved cities as the Rankings board reads them (spec-leaderboards 5, LB3): slots 1 to GameFiles.SLOT_COUNT of a GameFiles, read o... | 2 |
 | [SeaLanes.java](SeaLanes.md) | 210 | 15 | The sea lanes a map draws: every leg of every terminal's route once - a leg that many routes share, once - indexed by the district cells it reaches... | 4 |
 | [SeaRoutes.java](SeaRoutes.md) | 898 | 41 | Each sea terminal's route out to the world: found once on a grid of the sea at 480 m, pulled straight, sailed from the terminal's quay out to the o... | 4 |
 | [Sector.java](Sector.md) | 3,553 | 249 | One business in the city, and the template every sector extends. | 135 |
@@ -293,7 +293,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PeopleScreen.java](PeopleScreen.md) | 4,563 | 156 | The People tab and its second page, Household money. | 3 |
 | [Pieces.java](Pieces.md) | 5,558 | 241 | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals ba... | 18 |
 | [PolicyScreen.java](PolicyScreen.md) | 5,336 | 270 | The Policy tab: every number the city sets for itself - the taxes, the wage floor, the price of money and the promises - each a dial with what it w... | 10 |
-| [RankingsScreen.java](RankingsScreen.md) | 1,557 | 73 | The Rankings tab: the active city on a board of the real world's nations and city regions (or of the nations of its own world), measure by measure,... | 1 |
+| [RankingsScreen.java](RankingsScreen.md) | 1,567 | 73 | The Rankings tab: the active city on a board of the real world's nations and city regions (or of the nations of its own world), measure by measure,... | 1 |
 | [SectorScreen.java](SectorScreen.md) | 6,371 | 247 | The sector economy: every business in the city as a card, and each one's five pages - what goes in and what comes out, the income statement with la... | 7 |
 | [ServicesScreen.java](ServicesScreen.md) | 3,167 | 125 | The services tab: the four systems the city runs for its people - health, education, utilities and safety - each opening on an Overview whose one p... | 4 |
 | [Statement.java](Statement.md) | 482 | 23 | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages and the bank... | 28 |
@@ -440,7 +440,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RobustnessCheck.java](RobustnessCheck.md) | 432 | 5 | What the game does when something is already broken. | 0 |
 | [RunWorksCheck.java](RunWorksCheck.md) | 1,303 | 40 | Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a highway's or a railway line's groun... | 1 |
 | [SaveFileCheck.java](SaveFileCheck.md) | 3,775 | 17 | Verifies where saves go and how they are written. | 10 |
-| [SaveSlotCheck.java](SaveSlotCheck.md) | 1,415 | 42 | Verifies the slot system: ten saves plus an autosave, the version stamp, and the labels the menu is drawn from. | 0 |
+| [SaveSlotCheck.java](SaveSlotCheck.md) | 1,491 | 43 | Verifies the slot system: ten saves plus an autosave, the version stamp, and the labels the menu is drawn from. | 0 |
 | [ScaleCheck.java](ScaleCheck.md) | 1,928 | 55 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 1 |
 | [SectorBooksCheck.java](SectorBooksCheck.md) | 349 | 5 | Plays a city and audits every sector's statements, every month. | 1 |
 | [SectorFlowCheck.java](SectorFlowCheck.md) | 308 | 11 | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held t... | 0 |

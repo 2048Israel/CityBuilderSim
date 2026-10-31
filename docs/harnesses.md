@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**160 harness files, 17,414 labelled assertions.** AllChecks runs 160 of them.
+**160 harness files, 17,422 labelled assertions.** AllChecks runs 160 of them.
 
 ## Which harnesses read which class
 
@@ -19170,7 +19170,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3747 ...and its save writes none of the new keys, in the markets or beside them
   - L3753 ...every market on the goods' literals
 
-## SaveSlotCheck.java - 150 labelled assertions
+## SaveSlotCheck.java - 158 labelled assertions
 
 > Verifies the slot system: ten saves plus an autosave, the version stamp, and
 > the labels the menu is drawn from.
@@ -19186,174 +19186,184 @@ _(this harness does not label its checks through a helper - it prints its findin
 > history ended at N - 1, and a city loaded from it never ran N. Each of the
 > ...
 
-- **L94 1. eleven distinct files**
-  - L102 22 distinct paths, no two slots sharing
-  - L104 the autosave is named for what it is
-  - L109 slot 2 sorts before slot 10
-  - L113 slot 0 is valid
-  - L114 slot 10 is valid
-  - L115 slot 11 is not
-  - L116 slot -1 is not
-- **L118 2. empty means empty**
-  - L128 and an empty slot has no header
-- **L130 3. three cities that do not touch**
-  - L138 saved to slot 1
-  - L146 saved to slot 7
-  - L151 saved to slot 10
-  - L153 slot 1 exists
-  - L154 slot 7 exists
-  - L155 slot 10 exists
-  - L156 slot 4 is still empty
-  - L157 slot 2 is too, for now
-  - L164 slot 1 still holds the month it was saved at
-  - L166 slot 7 holds its own
-  - L167 and slot 10 is later still
-  - L169 slot 1's population is its own
-- **L171 4. names**
-  - L174 the name was kept
-  - L175 ...and reported as present
-  - L176 an unnamed slot says so
-  - L188 re-saving keeps the existing name
-- **L191 5. the version stamp**
-  - L194 the build that wrote it
-  - L195 the save format
-  - L196 and when
-  - L197 this build is not from the future
-  - L200 a save from a newer build is recognised
-  - L202 an older one is not - those still load
-  - L211 the header sees it
-  - L215 and the load path refuses it
-  - L216 with nothing loaded
-- **L218 6. each slot round-trips into its own city**
-  - L223 slot 1 loads the early city
-  - L224 ...with its own population
-  - L226 ...and no failure
-  - L230 slot 10 loads a later city
-  - L233 loading one slot does not touch another
-- **L236 7. the autosave**
-  - L252 nothing autosaved yet
-  - L253 twelve months to go
-  - L260 still nothing at month
-  - L262 one month to go
-  - L265 the twelfth month writes it
-  - L267 and the counter starts again
-  - L271 it says it is an autosave
-  - L273 ...and holds the month it fired at
-  - L280 a multi-month skip autosaves on the way in
-- **L291 7b. the autosave holds a whole month (0.7.52)**
-- **L305 7c. the autosave off the clock (UP1, 2026-10-22)**
-- **L308 8. histories are per slot**
-  - L311 slot 1 has a history
-  - L312 slot 10 has its own
-  - L313 ...and they are different files
-  - L315 ...with different contents
-- **L369 the autosave off the clock: two snapshots share nothing a month could change**
-  - L371 fixture: the grown city has a map (the save carries its stamp)
-  - L377 fixture: both jobs carry the city map's bytes
-  - L384 fixture: the walk reaches the save's lists and books, and the history's series
-  - L386 every class in the save is one the walk can see into
-  - L387 ...and in the history
-  - L388 the save: no mutable object is in both snapshots
-  - L389 the history: no mutable object is in both snapshots
-  - L394 the walk sees sharing: a snapshot shares
-  - L398 ...a snapshot of a snapshot shares all but the two objects it makes: itself and its buildings array (
-  - L403 ...and the history walked twice shares every one of its
-  - L413 ...and one list held by both saves is named by its field
-  - L419 the save holds what the bond market writes
-  - L421 ...what the exchange writes
-  - L423 ...what the construction control writes
-  - L425 ...what the fund writes
-  - L427 ...what the inbox holds (
-  - L430 ...what the build log holds (
-- **L464 the setters that copy, on states filled in every field**
-  - L471 the construction control's state (setConstructionControl)
-  - L475 the bond market's state, its bonds and books (setBondMarket)
-  - L479 the exchange's state, its books (setExchangeState)
-  - L483 the fund's state, its resolutions, orders and ledger (setFund)
-  - L487 the bank's preferred blocks (setBankPreferred)
-  - L491 the inbox's notices (setNotices)
-  - L495 the build log's entries (setBuilds)
-  - L500 the licensed heads (setLicences)
-  - L501 the skilled heads (setSkilledWorkforce)
-  - L504 the automatic builder's log, as its toState() copies it
-  - L511 the landmasses' placements, built fresh by toState() (DataSave.setLandmasses)
-  - L512 ...and two states of one table share nothing: each save is its own
-  - L523 the long bridges, built fresh by toState() (DataSave.setBridges)
-  - L524 ...and two states of one list share nothing: each save is its own
-  - L528 a state held uncopied is caught: all
-  - L531 every field of every class above was given a value (
-  - L544 ...and writes what the source writes
-- **L761 the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS**
-  - L768 fixture: the city's own history (
-  - L769 fixture: ...and has folded no year
-  - L774 fixture: the history holds MONTHLY_KEPT months
-  - L783 fixture: the old way saved
-  - L816 every due month, warm-ups too, wrote one autosave named for its month
-- **L832 the autosave off the clock: written behind the months, the same files as the old way**
-  - L839 the old way saved slot 3 from the live objects
-  - L850 fixture: three months ran while the snapshot waited
-  - L851 fixture: and they changed the city (cash
-  - L852 fixture: the writer was held: the autosave on disk is still the one before
-  - L853 fixture: ...and nothing was written meanwhile
-  - L857 released, the writer wrote the one snapshot
-  - L858 ...named as it was asked
-  - L861 both saves read back as whole JSON
-  - L873 the save: all
-  - L875 ...and the two trees are equal
-  - L882 ...and the same tree
-  - L884 the city map exists beside both
-  - L885 ...and is the same bytes
-  - L890 the autosave loads with no failure
-  - L891 ...at the month it was asked at, not three on
-  - L892 ...with the cash it was asked at
-  - L893 ...and the history it was asked at
-- **L904 the autosave off the clock: back to back, one at a time, always whole**
-  - L915 held, two autosaves asked for write once
-  - L916 ...and the file holds the second
-  - L924 not held, two autosaves asked for write once or twice (
-  - L925 ...and the file holds the second
-  - L926 ...and the writer never wrote two at once, in the whole run
-- **L938 the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it**
-  - L950 fixture: the autosave on disk (month
-  - L957 fixture: the held autosave is not on disk yet
-  - L962 a load straight after an autosave returns after the writer was released
-  - L963 ...and loads that autosave: its month
-  - L964 ...its name
-  - L965 ...with no failure
-  - L971 fixture: the held autosave is not on disk yet
-  - L976 a numbered save returns after the writer was released
-  - L977 ...slot 4 is saved
-  - L978 ...and the held autosave is on disk
-  - L991 a skip returns after the writer was released
-  - L992 ...the held autosave and the skip's own were both written (without the wait the skip's replaces the held)
-  - L994 ...and the file holds the skip's
-  - L1004 Quit returns after the writer was released
-  - L1005 ...and its autosave is on disk
-  - L1006 ...at the city's month
-- **L1017 the autosave off the clock: a write that fails is reported, and the next one writes**
-  - L1024 fixture: the autosave's .tmp is a folder with a file in it
-  - L1039 the failed write is the last save result, not ok
-  - L1040 ...naming the autosave file
-  - L1041 ...and the calling thread said \"Autosave failed:\"
-  - L1042 the autosave on disk is still the one before
-  - L1050 fixture: the obstacle is gone
-  - L1054 with the obstacle gone, the next autosave writes
-  - L1055 ...and the file holds it
-- **L1069 the autosave off the clock: the floor of real time**
-  - L1087 fixture: each of the
-  - L1088 with the clock still,
-  - L1089 ...each due month started its counter again, at
-  - L1094 one second short of the floor, the next due month writes nothing
-  - L1095 ...and its counter starts again
-  - L1100 one second past the floor, the next due month writes exactly one
-  - L1101 ...at its month
-  - L1102 ...named for it
-  - L1122 fixture: the five due months came inside one floor of real time
-  - L1124 on the real clock,
-  - L1127 ...the first due month's, month
-  - L1394 ...and its history ends at it
-  - L1404 ...two months on, its history ends at the city's
-  - L1405 ...with no month missing (
+- **L97 1. eleven distinct files**
+  - L105 22 distinct paths, no two slots sharing
+  - L107 the autosave is named for what it is
+  - L112 slot 2 sorts before slot 10
+  - L116 slot 0 is valid
+  - L117 slot 10 is valid
+  - L118 slot 11 is not
+  - L119 slot -1 is not
+- **L121 2. empty means empty**
+  - L131 and an empty slot has no header
+- **L133 3. three cities that do not touch**
+  - L141 saved to slot 1
+  - L149 saved to slot 7
+  - L154 saved to slot 10
+  - L156 slot 1 exists
+  - L157 slot 7 exists
+  - L158 slot 10 exists
+  - L159 slot 4 is still empty
+  - L160 slot 2 is too, for now
+  - L167 slot 1 still holds the month it was saved at
+  - L169 slot 7 holds its own
+  - L170 and slot 10 is later still
+  - L172 slot 1's population is its own
+- **L174 4. names**
+  - L177 the name was kept
+  - L178 ...and reported as present
+  - L179 an unnamed slot says so
+  - L191 re-saving keeps the existing name
+- **L194 5. the version stamp**
+  - L197 the build that wrote it
+  - L198 the save format
+  - L199 and when
+  - L200 this build is not from the future
+  - L203 a save from a newer build is recognised
+  - L205 an older one is not - those still load
+  - L214 the header sees it
+  - L218 and the load path refuses it
+  - L219 with nothing loaded
+- **L221 6. each slot round-trips into its own city**
+  - L226 slot 1 loads the early city
+  - L227 ...with its own population
+  - L229 ...and no failure
+  - L233 slot 10 loads a later city
+  - L236 loading one slot does not touch another
+- **L239 7. the autosave**
+  - L255 nothing autosaved yet
+  - L256 twelve months to go
+  - L263 still nothing at month
+  - L265 one month to go
+  - L268 the twelfth month writes it
+  - L270 and the counter starts again
+  - L274 it says it is an autosave
+  - L276 ...and holds the month it fired at
+  - L283 a multi-month skip autosaves on the way in
+- **L294 7b. the autosave holds a whole month (0.7.52)**
+- **L308 7c. the autosave off the clock (UP1, 2026-10-22)**
+- **L311 7d. a file held open while a write swaps over it (LB3)**
+- **L314 8. histories are per slot**
+  - L317 slot 1 has a history
+  - L318 slot 10 has its own
+  - L319 ...and they are different files
+  - L321 ...with different contents
+- **L376 7d. a file held open while a write swaps over it: the write waits for it**
+  - L400 fixture: on Windows a reader holding the file open makes a plain move over it fail
+  - L401 fixture: the hold (
+  - L419 a write over a file let go after
+  - L420 ...after waiting for it: no sooner than the handle was let go
+  - L421 ...with the .tmp gone and the file before it in the .bak
+  - L427 a write over a file held past every retry fails, and says so (
+  - L428 ...leaving the file whole as it was, and no .tmp
+  - L430 ...and once it is let go the next write lands
+- **L445 the autosave off the clock: two snapshots share nothing a month could change**
+  - L447 fixture: the grown city has a map (the save carries its stamp)
+  - L453 fixture: both jobs carry the city map's bytes
+  - L460 fixture: the walk reaches the save's lists and books, and the history's series
+  - L462 every class in the save is one the walk can see into
+  - L463 ...and in the history
+  - L464 the save: no mutable object is in both snapshots
+  - L465 the history: no mutable object is in both snapshots
+  - L470 the walk sees sharing: a snapshot shares
+  - L474 ...a snapshot of a snapshot shares all but the two objects it makes: itself and its buildings array (
+  - L479 ...and the history walked twice shares every one of its
+  - L489 ...and one list held by both saves is named by its field
+  - L495 the save holds what the bond market writes
+  - L497 ...what the exchange writes
+  - L499 ...what the construction control writes
+  - L501 ...what the fund writes
+  - L503 ...what the inbox holds (
+  - L506 ...what the build log holds (
+- **L540 the setters that copy, on states filled in every field**
+  - L547 the construction control's state (setConstructionControl)
+  - L551 the bond market's state, its bonds and books (setBondMarket)
+  - L555 the exchange's state, its books (setExchangeState)
+  - L559 the fund's state, its resolutions, orders and ledger (setFund)
+  - L563 the bank's preferred blocks (setBankPreferred)
+  - L567 the inbox's notices (setNotices)
+  - L571 the build log's entries (setBuilds)
+  - L576 the licensed heads (setLicences)
+  - L577 the skilled heads (setSkilledWorkforce)
+  - L580 the automatic builder's log, as its toState() copies it
+  - L587 the landmasses' placements, built fresh by toState() (DataSave.setLandmasses)
+  - L588 ...and two states of one table share nothing: each save is its own
+  - L599 the long bridges, built fresh by toState() (DataSave.setBridges)
+  - L600 ...and two states of one list share nothing: each save is its own
+  - L604 a state held uncopied is caught: all
+  - L607 every field of every class above was given a value (
+  - L620 ...and writes what the source writes
+- **L837 the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS**
+  - L844 fixture: the city's own history (
+  - L845 fixture: ...and has folded no year
+  - L850 fixture: the history holds MONTHLY_KEPT months
+  - L859 fixture: the old way saved
+  - L892 every due month, warm-ups too, wrote one autosave named for its month
+- **L908 the autosave off the clock: written behind the months, the same files as the old way**
+  - L915 the old way saved slot 3 from the live objects
+  - L926 fixture: three months ran while the snapshot waited
+  - L927 fixture: and they changed the city (cash
+  - L928 fixture: the writer was held: the autosave on disk is still the one before
+  - L929 fixture: ...and nothing was written meanwhile
+  - L933 released, the writer wrote the one snapshot
+  - L934 ...named as it was asked
+  - L937 both saves read back as whole JSON
+  - L949 the save: all
+  - L951 ...and the two trees are equal
+  - L958 ...and the same tree
+  - L960 the city map exists beside both
+  - L961 ...and is the same bytes
+  - L966 the autosave loads with no failure
+  - L967 ...at the month it was asked at, not three on
+  - L968 ...with the cash it was asked at
+  - L969 ...and the history it was asked at
+- **L980 the autosave off the clock: back to back, one at a time, always whole**
+  - L991 held, two autosaves asked for write once
+  - L992 ...and the file holds the second
+  - L1000 not held, two autosaves asked for write once or twice (
+  - L1001 ...and the file holds the second
+  - L1002 ...and the writer never wrote two at once, in the whole run
+- **L1014 the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it**
+  - L1026 fixture: the autosave on disk (month
+  - L1033 fixture: the held autosave is not on disk yet
+  - L1038 a load straight after an autosave returns after the writer was released
+  - L1039 ...and loads that autosave: its month
+  - L1040 ...its name
+  - L1041 ...with no failure
+  - L1047 fixture: the held autosave is not on disk yet
+  - L1052 a numbered save returns after the writer was released
+  - L1053 ...slot 4 is saved
+  - L1054 ...and the held autosave is on disk
+  - L1067 a skip returns after the writer was released
+  - L1068 ...the held autosave and the skip's own were both written (without the wait the skip's replaces the held)
+  - L1070 ...and the file holds the skip's
+  - L1080 Quit returns after the writer was released
+  - L1081 ...and its autosave is on disk
+  - L1082 ...at the city's month
+- **L1093 the autosave off the clock: a write that fails is reported, and the next one writes**
+  - L1100 fixture: the autosave's .tmp is a folder with a file in it
+  - L1115 the failed write is the last save result, not ok
+  - L1116 ...naming the autosave file
+  - L1117 ...and the calling thread said \"Autosave failed:\"
+  - L1118 the autosave on disk is still the one before
+  - L1126 fixture: the obstacle is gone
+  - L1130 with the obstacle gone, the next autosave writes
+  - L1131 ...and the file holds it
+- **L1145 the autosave off the clock: the floor of real time**
+  - L1163 fixture: each of the
+  - L1164 with the clock still,
+  - L1165 ...each due month started its counter again, at
+  - L1170 one second short of the floor, the next due month writes nothing
+  - L1171 ...and its counter starts again
+  - L1176 one second past the floor, the next due month writes exactly one
+  - L1177 ...at its month
+  - L1178 ...named for it
+  - L1198 fixture: the five due months came inside one floor of real time
+  - L1200 on the real clock,
+  - L1203 ...the first due month's, month
+  - L1470 ...and its history ends at it
+  - L1480 ...two months on, its history ends at the city's
+  - L1481 ...with no month missing (
 
 ## ScaleCheck.java - 86 labelled assertions
 

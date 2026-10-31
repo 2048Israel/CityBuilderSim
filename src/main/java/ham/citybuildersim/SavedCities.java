@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import com.google.gson.Gson;
 import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -100,7 +99,7 @@ public final class SavedCities {
                 continue;
             }
             if (stamp.saveSize() >= 0) read++;
-            next.add(readSlot(files, slot, stamp));
+            next.add(readSafely(files, slot, stamp));
         }
         return new SavedCities(next, read);
     }
@@ -135,7 +134,24 @@ public final class SavedCities {
         }
     }
 
-    /** One slot: the header through GameFiles.readHeader, then the history file as Game.loadHistory reads it (Gson, through a Reader), cut to the kept series. */
+    /**
+     * One slot, and whatever goes wrong in it stays in it (LB3's gate review): a slot whose header or history will not decode, or that runs the heap
+     * out, is DAMAGED and logged, and the other slots are read as before, so one odd file never hides every saved city.
+     */
+    private static Entry readSafely(GameFiles files, int slot, Stamp stamp) {
+        try {
+            return readSlot(files, slot, stamp);
+        } catch (RuntimeException | OutOfMemoryError e) {
+            GameLog.note("Could not read " + GameFiles.slotLabel(slot) + " for the Rankings board: " + e);
+            return left(slot, stamp, Why.DAMAGED);
+        }
+    }
+
+    /**
+     * One slot: the header through GameFiles.readHeader, then the history file read WHOLE (Files.readString, as Game.loadHistory does) and only
+     * then parsed, cut to the kept series. Whole first, because a handle held open through a parse of seconds stops the game swapping a new history
+     * in over the file on Windows (LB3's gate review: the slot kept its old history beside the new save); readHeader reads its file whole too.
+     */
     private static Entry readSlot(GameFiles files, int slot, Stamp stamp) {
         if (stamp.saveSize() < 0) return new Entry(slot, stamp, null, null);
         SaveHeader header = files.readHeader(slot);
@@ -144,8 +160,9 @@ public final class SavedCities {
         if (header.isNoLongerReadable()) return left(slot, stamp, Why.OLDER_BUILD);
         if (stamp.historySize() < 0) return left(slot, stamp, Why.NO_HISTORY);
         HistorySave slim;
-        try (Reader in = Files.newBufferedReader(files.historyFile(slot))) {
-            HistorySave loaded = new Gson().fromJson(in, HistorySave.class);
+        try {
+            String json = Files.readString(files.historyFile(slot));
+            HistorySave loaded = new Gson().fromJson(json, HistorySave.class);
             slim = loaded == null ? null : loaded.slim(KEPT);
         } catch (IOException | RuntimeException e) {
             GameLog.note("Could not read the history of " + GameFiles.slotLabel(slot) + " (" + files.historyFile(slot) + "): " + e);

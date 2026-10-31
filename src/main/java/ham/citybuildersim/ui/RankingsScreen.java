@@ -139,7 +139,8 @@ final class RankingsScreen {
 
          - SavedCities.refresh(files) runs on WORKER, one daemon thread, once
            per ENTRY to the tab (the screen shown before clearMenu is not this
-           one) and once for openSaved(). One read in flight at a time. The
+           one) and once for openSaved(). One read in flight at a time, and
+           one asked for meanwhile runs when it is back (readAgain). The
            worker is handed the GameFiles and the last snapshot and hands back a
            snapshot; it touches no node, no Game and none of this screen's state.
          - The snapshot comes back through the volatile `saved` and
@@ -166,6 +167,8 @@ final class RankingsScreen {
     private volatile SavedCities saved;
     /** A read is on WORKER (the FX thread's flag: set when it is handed over, cleared when its answer arrives). */
     private boolean reading;
+    /** A read was asked for while one was on WORKER (an entry, Compare): it starts when that one's answer arrives, so a slot saved meanwhile is not missed. */
+    private boolean readAgain;
     /** Your cities at: the saved cities as they were when the active city was as old as it is now (D3), else as last saved. */
     private boolean atAge;
 
@@ -182,9 +185,12 @@ final class RankingsScreen {
     private List<Rankings.RankPoint> overYears = List.of();
     private String overKey = "";
 
-    /** Starts a read of the saved cities on WORKER unless one is in flight; the answer redraws the tab if it is still on screen. */
+    /** Starts a read of the saved cities on WORKER, or, with one in flight, queues one more for when it is back; the answer redraws the tab if it is still on screen. */
     private void readSaved() {
-        if (reading) return;
+        if (reading) {
+            readAgain = true;
+            return;
+        }
         reading = true;
         GameFiles files = ui.game.getGameFiles();
         SavedCities was = saved;
@@ -205,6 +211,10 @@ final class RankingsScreen {
     private void arrived(SavedCities answer, boolean hadOne) {
         reading = false;
         saved = answer;
+        if (readAgain) {
+            readAgain = false;
+            readSaved();
+        }
         if (hadOne && answer.reads() == 0) return;
         if (ui.isShowing("showRankingsMenu")) showRankingsMenu();
     }

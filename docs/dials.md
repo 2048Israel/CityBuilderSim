@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,933 constants in 461 files.**
+**4,936 constants in 461 files.**
 
-## model (2467 constants)
+## model (2469 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1415,13 +1415,15 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 54 | `GameFiles.APP_NAME` | `"CityBuilderSim"` |  |
-| 56 | `GameFiles.SAVE_FILE` | `"save.json"` |  |
-| 57 | `GameFiles.HISTORY_FILE` | `"history.json"` |  |
-| 71 | `GameFiles.SLOT_COUNT` | `10` |  |
-| 72 | `GameFiles.AUTOSAVE_SLOT` | `0` |  |
-| 73 | `GameFiles.SAVES_FOLDER` | `"saves"` |  |
-| 76 | `GameFiles.LEGACY_FOLDER` | `"YourGame"` | The folder the game used before this class existed. |
+| 56 | `GameFiles.APP_NAME` | `"CityBuilderSim"` |  |
+| 58 | `GameFiles.SAVE_FILE` | `"save.json"` |  |
+| 59 | `GameFiles.HISTORY_FILE` | `"history.json"` |  |
+| 73 | `GameFiles.SLOT_COUNT` | `10` |  |
+| 74 | `GameFiles.AUTOSAVE_SLOT` | `0` |  |
+| 75 | `GameFiles.SAVES_FOLDER` | `"saves"` |  |
+| 78 | `GameFiles.LEGACY_FOLDER` | `"YourGame"` | The folder the game used before this class existed. |
+| 440 | `GameFiles.SWAP_RETRIES` | `10` | Times a swap is tried again when Windows refuses it because another handle has the file open: a reader, an antivirus scan, the indexer (LB3's gate review). |
+| 443 | `GameFiles.SWAP_RETRY_MS` | `50` | The wait before each of those tries, in milliseconds: the ten cover half a second, long enough for a reader or a scan to let go, short enough that a write that cannot land says so. |
 
 ### GameLog.java ([map](map/GameLog.md))
 
@@ -2502,9 +2504,9 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 34 | `SavedCities.FIRST_SLOT` | `1` | The first slot read: slot 0 is the autosave, a copy of a numbered city, and is left out. |
-| 37 | `SavedCities.KEPT` | `keptSeries()` | The history series a slot keeps: what the measures read, and the three that make the pivot (fxRate and fxParity are among the first). |
-| 71 | `SavedCities.NONE` | `new SavedCities(List.of(), 0)` | The snapshot before any slot was read: no cities, nothing left out. |
+| 33 | `SavedCities.FIRST_SLOT` | `1` | The first slot read: slot 0 is the autosave, a copy of a numbered city, and is left out. |
+| 36 | `SavedCities.KEPT` | `keptSeries()` | The history series a slot keeps: what the measures read, and the three that make the pivot (fxRate and fxParity are among the first). |
+| 70 | `SavedCities.NONE` | `new SavedCities(List.of(), 0)` | The snapshot before any slot was read: no cities, nothing left out. |
 
 ### SeaLanes.java ([map](map/SeaLanes.md))
 
@@ -4465,19 +4467,19 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 74 | `RankingsScreen.OPENS_ON` | `"gdp"` | The measure the tab opens on (D9): GDP. |
 | 77 | `RankingsScreen.PINNED_AT_FIRST` | `List.of("gdp", "gdp_pp", "growth_real", "people", "unemployment", "inflation")` | The measures pinned the first time the tab opens: the six a player most often asks of a city. |
 | 80 | `RankingsScreen.GROUPS` | `Map.of("economy", "Economy", "work", "Work & pay", "prices", "Prices & money", "public"...` | The ten groups of the file, by their key, as the spec's table names them (spec-leaderboards 6). |
-| 158 | `RankingsScreen.WORKER` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "rankings-saved-citie...` | The one thread the saved cities are read on, away from the screen; it dies with the window. |
-| 288 | `RankingsScreen.FRAME_CHROME` | `210` | The frame's height before it is laid out, for the scroller's first guess at what is left of the stage. |
-| 291 | `RankingsScreen.STAGE_REST` | `36` | What the stage keeps under the scroller once the frame is laid out: City History's. |
-| 294 | `RankingsScreen.FIRST_WIDTH` | `1100, MEASURES_W = 250, CARD_W = 400, TABLE_MIN = 560, COLUMN_GAP = 16` | The page's width before the scroller says it, and the widths of the columns. |
-| 770 | `RankingsScreen.RANK_W` | `40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 16, BAR_H = 6` |  |
-| 999 | `RankingsScreen.ROW_H` | `24, PAD = 8, SPACE = 6` |  |
-| 1002 | `RankingsScreen.TILE_ROWS` | `40` | Rows to a canvas: 40 of 24 pixels is under a thousand, well inside any texture. |
-| 1007 | `RankingsScreen.Entry.GAP` | `new Entry(null, "", "", false, "", "", "", "", Double.NaN, "")` |  |
-| 1014 | `RankingsScreen.RowsPicture.TEXT` | `Color.web(Palette.TEXT), HEAD = Color.web(Palette.TEXT_HEAD), BODY = Color.web(Palette....` |  |
-| 1020 | `RankingsScreen.RowsPicture.RULER` | `new javafx.scene.text.Text()` | Measures a string against a column; one node, on the FX thread, where the drawing is. |
-| 1200 | `RankingsScreen.D_NAME` | `128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60` | The drawer's columns: the measure, the real figure and its mark and source, Your world's figure and its mark. |
-| 1358 | `RankingsScreen.RankLine.H` | `76, SIDE = 36, TOP = 12, BOTTOM = 18, YEAR_GAP = 40` |  |
-| 1360 | `RankingsScreen.RankLine.LINE` | `Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(Palette.TEX...` |  |
+| 159 | `RankingsScreen.WORKER` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "rankings-saved-citie...` | The one thread the saved cities are read on, away from the screen; it dies with the window. |
+| 298 | `RankingsScreen.FRAME_CHROME` | `210` | The frame's height before it is laid out, for the scroller's first guess at what is left of the stage. |
+| 301 | `RankingsScreen.STAGE_REST` | `36` | What the stage keeps under the scroller once the frame is laid out: City History's. |
+| 304 | `RankingsScreen.FIRST_WIDTH` | `1100, MEASURES_W = 250, CARD_W = 400, TABLE_MIN = 560, COLUMN_GAP = 16` | The page's width before the scroller says it, and the widths of the columns. |
+| 780 | `RankingsScreen.RANK_W` | `40, KIND_W = 16, OF_W = 84, ASOF_W = 54, VALUE_W = 80, BAR_W = 52, MARK_W = 16, BAR_H = 6` |  |
+| 1009 | `RankingsScreen.ROW_H` | `24, PAD = 8, SPACE = 6` |  |
+| 1012 | `RankingsScreen.TILE_ROWS` | `40` | Rows to a canvas: 40 of 24 pixels is under a thousand, well inside any texture. |
+| 1017 | `RankingsScreen.Entry.GAP` | `new Entry(null, "", "", false, "", "", "", "", Double.NaN, "")` |  |
+| 1024 | `RankingsScreen.RowsPicture.TEXT` | `Color.web(Palette.TEXT), HEAD = Color.web(Palette.TEXT_HEAD), BODY = Color.web(Palette....` |  |
+| 1030 | `RankingsScreen.RowsPicture.RULER` | `new javafx.scene.text.Text()` | Measures a string against a column; one node, on the FX thread, where the drawing is. |
+| 1210 | `RankingsScreen.D_NAME` | `128, D_REAL = 66, D_MARK = 12, D_SOURCE = 66, D_YOURS = 60` | The drawer's columns: the measure, the real figure and its mark and source, Your world's figure and its mark. |
+| 1368 | `RankingsScreen.RankLine.H` | `76, SIDE = 36, TOP = 12, BOTTOM = 18, YEAR_GAP = 40` |  |
+| 1370 | `RankingsScreen.RankLine.LINE` | `Color.web(Palette.MONEY), FLOOR = Color.web(Palette.EDGE), RANK = Color.web(Palette.TEX...` |  |
 
 ### SectorScreen.java ([map](map/SectorScreen.md))
 
@@ -4800,7 +4802,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 718 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 974 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1249 constants)
+## harnesses (1250 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6309,8 +6311,9 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 348 | `SaveSlotCheck.GROWN_MONTHS` | `180` | How many months 7c grows its city: long enough that the lists and books a city reaches by itself hold something - the inbox is empty at month 124 of this fixture and has a notice by 183, the bonds'... |
-| 670 | `SaveSlotCheck.SILENT` | `new PrintStream(OutputStream.nullOutputStream())` | The stream the model's per-month printing goes to while 7c steps months: each month prints some forty lines, and nobody reads them here. |
+| 354 | `SaveSlotCheck.GROWN_MONTHS` | `180` | How many months 7c grows its city: long enough that the lists and books a city reaches by itself hold something - the inbox is empty at month 124 of this fixture and has a notice by 183, the bonds'... |
+| 365 | `SaveSlotCheck.HOLD_MS` | `100` | How long 7d holds the file open before letting go: well inside the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS). |
+| 746 | `SaveSlotCheck.SILENT` | `new PrintStream(OutputStream.nullOutputStream())` | The stream the model's per-month printing goes to while 7c steps months: each month prints some forty lines, and nobody reads them here. |
 
 ### ScaleCheck.java ([map](map/ScaleCheck.md))
 
