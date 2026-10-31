@@ -39,7 +39,7 @@
 > Windows: the write waits for the handle (GameFiles.SWAP_RETRIES) and lands, one
 > held past every retry fails whole and says so, and the next lands.
 
-**Uses:** [GameFiles](GameFiles.md) (67), [Game](Game.md) (52), [LongPlaytest](LongPlaytest.md) (30), [SaveWriter](SaveWriter.md) (20), [GameVersion](GameVersion.md) (8), [SaveHeader](SaveHeader.md) (6), [Bridges](Bridges.md) (6), [HistorySave](HistorySave.md) (6), [TempDirs](TempDirs.md) (5), [DataSave](DataSave.md) (4), [Notice](Notice.md) (4), [TreasuryFund](TreasuryFund.md) (4), [AutoBuilder](AutoBuilder.md) (4), [Landmasses](Landmasses.md) (4), [Bank](Bank.md) (3), [BuildLog](BuildLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [ConstructionControl](ConstructionControl.md) (2), [BondMarket](BondMarket.md) (2), [Exchange](Exchange.md) (2), [Timing](Timing.md) (2), [SaveCopy](SaveCopy.md) (1), [BridgeWorks](BridgeWorks.md) (1)
+**Uses:** [GameFiles](GameFiles.md) (68), [Game](Game.md) (52), [LongPlaytest](LongPlaytest.md) (30), [SaveWriter](SaveWriter.md) (20), [GameVersion](GameVersion.md) (8), [SaveHeader](SaveHeader.md) (6), [Bridges](Bridges.md) (6), [HistorySave](HistorySave.md) (6), [TempDirs](TempDirs.md) (5), [DataSave](DataSave.md) (4), [Notice](Notice.md) (4), [TreasuryFund](TreasuryFund.md) (4), [AutoBuilder](AutoBuilder.md) (4), [Landmasses](Landmasses.md) (4), [Bank](Bank.md) (3), [BuildLog](BuildLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [ConstructionControl](ConstructionControl.md) (2), [BondMarket](BondMarket.md) (2), [Exchange](Exchange.md) (2), [Timing](Timing.md) (2), [SaveCopy](SaveCopy.md) (1), [BridgeWorks](BridgeWorks.md) (1)
 
 ## Sections
 
@@ -64,7 +64,7 @@
 | line | constant | value | says |
 |---:|---|---|---|
 | 354 | `SaveSlotCheck.GROWN_MONTHS` | `180` | How many months 7c grows its city: long enough that the lists and books a city reaches by itself hold something - the inbox is empty at month 124 of this fixture and has a notice by 183, the bonds' books have orders f... |
-| 365 | `SaveSlotCheck.HOLD_MS` | `100` | How long 7d holds the file open before letting go: well inside the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS). |
+| 357 | `SaveSlotCheck.HOLD_MS` | `GameFiles.SWAP_RETRIES * GameFiles.SWAP_RETRY_MS / 5` | How long 7d holds the file open before letting go: a fifth of the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS), well inside them. |
 | 746 | `SaveSlotCheck.SILENT` | `new PrintStream(OutputStream.nullOutputStream())` | The stream the model's per-month printing goes to while 7c steps months: each month prints some forty lines, and nobody reads them here. |
 
 ## Fields (state)
@@ -94,8 +94,8 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 375 | 58 | `static void heldOpen() throws Exception` | 7d (LB3's gate review, 2026-10-31): a write's swap over a file another handle has open. |
-| 434 | 96 | `static void offTheClock() throws Exception` |  |
+| 367 | 58 | `static void heldOpen() throws Exception` | 7d (LB3's gate review, 2026-10-31): a write's swap over a file another handle has open. |
+| 434 | 96 | `static void offTheClock() throws Exception` | 7c: grows the city and runs the subsections on it. |
 | 539 | 72 | `static void copiesOnFilledStates()` | 7c.1b: the setters that copy, on states the grown city cannot reach (a bank rescue's preferred, the fund's resolutions and orders, a site on overtime): each is given an object with every field filled, and what the sav... |
 | 613 | 9 | `static void copiesOf(String label, Object source, Object held)` | `held` writes the JSON `source` does and shares no mutable object with it; `source` has something in it to share. |
 | 631 | 66 | **type** `static final class Filler` | An instance of a model class with every Gson-visible field set to a value that is not its default: a number, a string, the last constant of an enum, two elements in each array, list and map, a nested model object fill... |

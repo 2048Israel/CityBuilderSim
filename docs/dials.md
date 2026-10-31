@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,936 constants in 461 files.**
+**4,937 constants in 461 files.**
 
-## model (2469 constants)
+## model (2470 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1424,6 +1424,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 78 | `GameFiles.LEGACY_FOLDER` | `"YourGame"` | The folder the game used before this class existed. |
 | 440 | `GameFiles.SWAP_RETRIES` | `10` | Times a swap is tried again when Windows refuses it because another handle has the file open: a reader, an antivirus scan, the indexer (LB3's gate review). |
 | 443 | `GameFiles.SWAP_RETRY_MS` | `50` | The wait before each of those tries, in milliseconds: the ten cover half a second, long enough for a reader or a scan to let go, short enough that a write that cannot land says so. |
+| 446 | `GameFiles.WAITED` | `new java.util.concurrent.atomic.AtomicInteger()` | Swaps refused at first that landed on a later try, since the program started; each is in the log too (SaveSlotCheck 7d counts them). |
 
 ### GameLog.java ([map](map/GameLog.md))
 
@@ -6312,7 +6313,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 354 | `SaveSlotCheck.GROWN_MONTHS` | `180` | How many months 7c grows its city: long enough that the lists and books a city reaches by itself hold something - the inbox is empty at month 124 of this fixture and has a notice by 183, the bonds'... |
-| 365 | `SaveSlotCheck.HOLD_MS` | `100` | How long 7d holds the file open before letting go: well inside the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS). |
+| 357 | `SaveSlotCheck.HOLD_MS` | `GameFiles.SWAP_RETRIES * GameFiles.SWAP_RETRY_MS / 5` | How long 7d holds the file open before letting go: a fifth of the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS), well inside them. |
 | 746 | `SaveSlotCheck.SILENT` | `new PrintStream(OutputStream.nullOutputStream())` | The stream the model's per-month printing goes to while 7c steps months: each month prints some forty lines, and nobody reads them here. |
 
 ### ScaleCheck.java ([map](map/ScaleCheck.md))

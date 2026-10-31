@@ -144,9 +144,12 @@ its old history and the game said "Saved". Mended, by Opus (no slice: each piece
 - **`GameFiles.swapIn` waits for a held file**: a move refused as `AccessDeniedException`, or a plain
   `FileSystemException` (a sharing violation), is tried again `SWAP_RETRIES` (10) times `SWAP_RETRY_MS` (50 ms) apart,
   half a second, which also covers an antivirus scan and the indexer; anything else, or past the last try, is reported
-  as before. **SaveSlotCheck 7d** causes it: a reader holds the file and a plain move over it fails (the fixture, on
-  Windows); a write whose handle is let go after 100 ms lands, having waited (132 ms); one held past every retry fails,
-  says so and leaves the file whole; the next lands. Elsewhere a file can be replaced while open, and 7d says so.
+  as before; a swap that waited and landed is counted (`GameFiles.swapsThatWaited`) and logged ("Wrote
+  slot-04-history.json on its try 3: another program had it open, and let go."). **SaveSlotCheck 7d** causes it: a
+  reader holds the file and a plain move over it fails (the fixture, on Windows); a write whose handle is let go after a
+  fifth of the retries (100 ms) lands, its swap counted as one that waited; one held past every retry fails, says so,
+  leaves the file whole and is not counted; the next lands. It asserts no time against a dial (TimingCheck's rule: the
+  first draft's two did, and went red there). Elsewhere a file can be replaced while open, and 7d says so.
 - **One odd slot stays in its slot**: `SavedCities.readSafely` marks a slot whose header or history will not decode (or
   runs the heap out) DAMAGED and reads the rest; before, one throw hid every saved city.
 - **A read asked for during a read is queued** (`RankingsScreen.readAgain`), not dropped: a slot saved meanwhile is read.

@@ -1,4 +1,4 @@
-# GameFiles.java - 503 lines · 41 methods · 9 constants · model
+# GameFiles.java - 516 lines · 42 methods · 10 constants · model
 
 `ham/citybuildersim/GameFiles.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -68,6 +68,7 @@
 | 78 | `GameFiles.LEGACY_FOLDER` | `"YourGame"` | The folder the game used before this class existed. |
 | 440 | `GameFiles.SWAP_RETRIES` | `10` | Times a swap is tried again when Windows refuses it because another handle has the file open: a reader, an antivirus scan, the indexer (LB3's gate review). |
 | 443 | `GameFiles.SWAP_RETRY_MS` | `50` | The wait before each of those tries, in milliseconds: the ten cover half a second, long enough for a reader or a scan to let go, short enough that a write that cannot land says so. |
+| 446 | `GameFiles.WAITED` | `new java.util.concurrent.atomic.AtomicInteger()` | Swaps refused at first that landed on a later try, since the program started; each is in the log too (SaveSlotCheck 7d counts them). |
 
 ## Fields (state)
 
@@ -83,7 +84,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 450 | **type** `public final class GameFiles` | Where the game keeps its files, and how it writes them. |
+| 54 | 463 | **type** `public final class GameFiles` | Where the game keeps its files, and how it writes them. |
 
 ### slots (lines 61-112)
 
@@ -134,7 +135,7 @@
 | 329 | 3 | `public boolean slotIsUnreadable(int slot)` | True when a slot holds a file the game cannot make sense of. |
 | 334 | 4 | `public boolean slotIsLoadable(int slot)` | Loadable: something is there, and it can be read. |
 
-### writing (lines 339-503)
+### writing (lines 339-516)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -149,7 +150,8 @@
 | 406 | 3 | **type** `public interface Body` | What a streamed write puts in the file, written to {@code out} (which the caller closes). |
 | 407 | 1 | `void writeTo(java.io.Writer out) throws IOException` _(in GameFiles.Body)_ |  |
 | 419 | 19 | `public Result write(Path file, Body body)` | The same, streamed (UP1, 2026-10-22): the body writes straight into the .tmp through a buffered UTF-8 writer instead of being built whole as a String first - a 13 MB history was a String of 13 MB on the FX thread, and... |
-| 457 | 24 | `private static Result swapIn(Path file, Path tmp) throws IOException` | The tail both writes share: the existing file copied to .bak, then the finished .tmp moved over it. |
-| 483 | 12 | `private static void moveOver(Path tmp, Path file) throws IOException` | The finished .tmp moved over the file, atomically where the filesystem can. |
-| 496 | 7 | `private static void deleteQuietly(Path path)` |  |
+| 449 | 3 | `static int swapsThatWaited()` | How many swaps had to wait for a file another handle held open, and landed. |
+| 465 | 29 | `private static Result swapIn(Path file, Path tmp) throws IOException` | The tail both writes share: the existing file copied to .bak, then the finished .tmp moved over it. |
+| 496 | 12 | `private static void moveOver(Path tmp, Path file) throws IOException` | The finished .tmp moved over the file, atomically where the filesystem can. |
+| 509 | 7 | `private static void deleteQuietly(Path path)` |  |
 

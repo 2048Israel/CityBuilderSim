@@ -442,6 +442,14 @@ public final class GameFiles {
     /** The wait before each of those tries, in milliseconds: the ten cover half a second, long enough for a reader or a scan to let go, short enough that a write that cannot land says so. */
     static final long SWAP_RETRY_MS = 50;
 
+    /** Swaps refused at first that landed on a later try, since the program started; each is in the log too (SaveSlotCheck 7d counts them). */
+    private static final java.util.concurrent.atomic.AtomicInteger WAITED = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** How many swaps had to wait for a file another handle held open, and landed. */
+    static int swapsThatWaited() {
+        return WAITED.get();
+    }
+
     /**
      * The tail both writes share: the existing file copied to .bak, then the
      * finished .tmp moved over it. The rule is stated once, here.
@@ -464,6 +472,11 @@ public final class GameFiles {
         for (int tried = 0; ; tried++) {
             try {
                 moveOver(tmp, file);
+                if (tried > 0) {
+                    WAITED.incrementAndGet();
+                    System.out.println("Wrote " + file.getFileName() + " on its try " + (tried + 1)
+                            + ": another program had it open, and let go.");
+                }
                 return Result.succeeded(file);
             } catch (FileSystemException e) {
                 // A missing .tmp, or any other failure that waiting cannot mend, is reported at once.

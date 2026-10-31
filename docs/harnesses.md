@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**160 harness files, 17,422 labelled assertions.** AllChecks runs 160 of them.
+**160 harness files, 17,421 labelled assertions.** AllChecks runs 160 of them.
 
 ## Which harnesses read which class
 
@@ -19170,7 +19170,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3747 ...and its save writes none of the new keys, in the markets or beside them
   - L3753 ...every market on the goods' literals
 
-## SaveSlotCheck.java - 158 labelled assertions
+## SaveSlotCheck.java - 157 labelled assertions
 
 > Verifies the slot system: ten saves plus an autosave, the version stamp, and
 > the labels the menu is drawn from.
@@ -19248,15 +19248,14 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L318 slot 10 has its own
   - L319 ...and they are different files
   - L321 ...with different contents
-- **L376 7d. a file held open while a write swaps over it: the write waits for it**
-  - L400 fixture: on Windows a reader holding the file open makes a plain move over it fail
-  - L401 fixture: the hold (
-  - L419 a write over a file let go after
-  - L420 ...after waiting for it: no sooner than the handle was let go
-  - L421 ...with the .tmp gone and the file before it in the .bak
-  - L427 a write over a file held past every retry fails, and says so (
-  - L428 ...leaving the file whole as it was, and no .tmp
-  - L430 ...and once it is let go the next write lands
+- **L368 7d. a file held open while a write swaps over it: the write waits for it**
+  - L392 fixture: on Windows a reader holding the file open makes a plain move over it fail
+  - L410 a write over a file let go after
+  - L411 ...after waiting for it: its swap was refused and landed on a later try (GameFiles.swapsThatWaited)
+  - L412 ...with the .tmp gone and the file before it in the .bak
+  - L418 a write over a file held past every retry fails, and says so (
+  - L419 ...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed
+  - L422 ...and once it is let go the next write lands
 - **L445 the autosave off the clock: two snapshots share nothing a month could change**
   - L447 fixture: the grown city has a map (the save carries its stamp)
   - L453 fixture: both jobs carry the city map's bytes

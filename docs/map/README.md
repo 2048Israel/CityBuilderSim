@@ -4,7 +4,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 461 files, 506,507 lines, 21,717 methods, 4,936 constants. `GameVersion.VERSION` is "0.8.82", `SAVE_FORMAT` 49.
+**The tree:** 461 files, 506,520 lines, 21,718 methods, 4,937 constants. `GameVersion.VERSION` is "0.8.82", `SAVE_FORMAT` 49.
 
 ## model (217 files)
 
@@ -91,7 +91,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FundLedger.java](FundLedger.md) | 766 | 92 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 10 |
 | [FundView.java](FundView.md) | 873 | 39 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 5 |
 | [Game.java](Game.md) | 19,917 | 863 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 224 |
-| [GameFiles.java](GameFiles.md) | 503 | 41 | Where the game keeps its files, and how it writes them. | 144 |
+| [GameFiles.java](GameFiles.md) | 516 | 42 | Where the game keeps its files, and how it writes them. | 144 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 249 | 27 | How the player likes the window, kept between runs. | 4 |
 | [GameVersion.java](GameVersion.md) | 8,342 | 6 | What build this is, and what shape its saves are. | 20 |

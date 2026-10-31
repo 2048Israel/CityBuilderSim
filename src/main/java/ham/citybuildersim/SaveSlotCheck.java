@@ -353,8 +353,8 @@ public class SaveSlotCheck {
      */
     static final int GROWN_MONTHS = 180;
 
-    /** How long 7d holds the file open before letting go: well inside the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS). */
-    static final long HOLD_MS = 100;
+    /** How long 7d holds the file open before letting go: a fifth of the swap's retries (GameFiles.SWAP_RETRIES times SWAP_RETRY_MS), well inside them. */
+    static final long HOLD_MS = GameFiles.SWAP_RETRIES * GameFiles.SWAP_RETRY_MS / 5;
 
     /**
      * 7d (LB3's gate review, 2026-10-31): a write's swap over a file another handle has open. On Windows the move is
@@ -390,9 +390,8 @@ public class SaveSlotCheck {
             return;
         }
         assertTrue("fixture: on Windows a reader holding the file open makes a plain move over it fail", refused);
-        assertTrue("fixture: the hold (" + HOLD_MS + " ms) is inside the retries (" + GameFiles.SWAP_RETRIES * GameFiles.SWAP_RETRY_MS + " ms)",
-                HOLD_MS < GameFiles.SWAP_RETRIES * GameFiles.SWAP_RETRY_MS / 2);
         Files.deleteIfExists(probe);
+        int waitedBefore = GameFiles.swapsThatWaited();
 
         java.io.Reader held = Files.newBufferedReader(target);
         Thread release = new Thread(() -> {
@@ -409,7 +408,7 @@ public class SaveSlotCheck {
         long took = (System.nanoTime() - from) / 1_000_000;
         release.join();
         assertTrue("a write over a file let go after " + HOLD_MS + " ms lands (" + took + " ms)", waited.ok && Files.readString(target).equals("new"));
-        assertTrue("...after waiting for it: no sooner than the handle was let go", took >= HOLD_MS * 9 / 10);
+        assertTrue("...after waiting for it: its swap was refused and landed on a later try (GameFiles.swapsThatWaited)", GameFiles.swapsThatWaited() == waitedBefore + 1);
         assertTrue("...with the .tmp gone and the file before it in the .bak", !Files.exists(tmp) && Files.readString(bak).equals("old"));
 
         GameFiles.Result refusedWrite;
@@ -417,7 +416,8 @@ public class SaveSlotCheck {
             refusedWrite = files.write(target, out -> out.write("newer"));
         }
         assertTrue("a write over a file held past every retry fails, and says so (" + refusedWrite.error + ")", !refusedWrite.ok && refusedWrite.error != null);
-        assertTrue("...leaving the file whole as it was, and no .tmp", Files.readString(target).equals("new") && !Files.exists(tmp));
+        assertTrue("...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed",
+                Files.readString(target).equals("new") && !Files.exists(tmp) && GameFiles.swapsThatWaited() == waitedBefore + 1);
         GameFiles.Result after = files.write(target, out -> out.write("newest"));
         assertTrue("...and once it is let go the next write lands", after.ok && Files.readString(target).equals("newest"));
         cleanUp(root);
