@@ -73,6 +73,7 @@ public class UserInterface extends Application {
     final TradeScreen      tradeScreen      = new TradeScreen(this);
     final PolicyScreen     policyScreen     = new PolicyScreen(this);
     final HistoryScreen    historyScreen    = new HistoryScreen(this);
+    final RankingsScreen   rankingsScreen   = new RankingsScreen(this);   // the Rankings tab (LB2), after History
     final SummaryScreen    summaryScreen    = new SummaryScreen(this);   // the left panel's content, not a tab
     final FoundingScreen   foundingScreen   = new FoundingScreen(this);  // New city's screen (0.7.10; Start New Game's until 0.7.21)
     final ConstructionScreen constructionScreen = new ConstructionScreen(this);  // the construction page (0.7.22), the Build tab's
@@ -153,6 +154,9 @@ public class UserInterface extends Application {
        THE RECORD under their old titles; THE GOODS ROW became PRICES THIS
        MONTH: its sections run THE HISTORY SCREEN ... PRICES THIS MONTH
        (0.7.37) (12).
+       RankingsScreen was written in LB2 (2026-10-31) and took nothing from
+       here: its sections run THE RANKINGS TAB (LB2): THE STATE ... THE
+       CARD AND THE DRAWER (9).
 
        What stayed is in the sections below. The figures, the statement rows,
        the shared pieces and the lever pieces went to Money, Statement, Pieces
@@ -5462,7 +5466,7 @@ public class UserInterface extends Application {
                 return Palette.PEOPLE;
             case "sector": case "trade":
                 return Palette.BUSINESS;
-            case "government": case "finances": case "bank": case "policy": case "reports":
+            case "government": case "finances": case "bank": case "policy": case "reports": case "rankings":
                 return Palette.MONEY;
             default:
                 return null;
@@ -5573,6 +5577,8 @@ public class UserInterface extends Application {
             new Tab("trade",      Icons.TRADE,      "Trade",       "Trade & the world",  tradeScreen::showForeignMenu),
             new Tab("policy",     Icons.POLICY,     "Policy",      "Policy",             policyScreen::showPolicyMenu),
             new Tab("reports",    Icons.REPORTS,    "History",     "City History",       historyScreen::showHistoryMenu),
+            // Jerus, D5 of spec-leaderboards (2026-10-21): "Rail tab after History", Lucide's trophy, in money blue (LB2).
+            new Tab("rankings",   Icons.TROPHY,     "Rankings",    "Rankings",           rankingsScreen::showRankingsMenu),
         };
     }
 
@@ -5638,6 +5644,8 @@ public class UserInterface extends Application {
                 return "policy";
             case "showHistoryMenu":
                 return "reports";
+            case "showRankingsMenu":
+                return "rankings";
             default:
                 return "";
         }

@@ -161,7 +161,9 @@ public final class UiProbe {
             Map.entry("Build", 99.0), Map.entry("Land", 57.0), Map.entry("People", FRAME_P95_MS),
             Map.entry("Services", 37.0), Map.entry("Infra", 43.0), Map.entry("Sectors", 65.0),
             Map.entry("Govt", 36.0), Map.entry("Finances", 32.0), Map.entry("Bank", 42.0),
-            Map.entry("Trade", 20.0), Map.entry("Policy", 32.0), Map.entry("History", 60.0));
+            Map.entry("Trade", 20.0), Map.entry("Policy", 32.0), Map.entry("History", 60.0),
+            // Rankings (LB2) is held to History's figure: a page of a few hundred rows, a head that stays and a body that scrolls, as History's is.
+            Map.entry("Rankings", 60.0));
 
     /** The month from which FRAME_P95 is asserted: the city it was measured on. */
     static final int FRAME_P95_FROM = 4000;
@@ -219,7 +221,7 @@ public final class UiProbe {
 
     private record Screen(String name, Runnable show) { }
 
-    /** The twelve rail screens, in rail order. */
+    /** The thirteen rail screens, in rail order. */
     private static List<Screen> screens() {
         return List.of(
                 new Screen("Build", ui.buildScreen::showBuildMenu),
@@ -233,7 +235,8 @@ public final class UiProbe {
                 new Screen("Bank", ui.bankScreen::showBankMenu),
                 new Screen("Trade", ui.tradeScreen::showForeignMenu),
                 new Screen("Policy", ui.policyScreen::showPolicyMenu),
-                new Screen("History", ui.historyScreen::showHistoryMenu));
+                new Screen("History", ui.historyScreen::showHistoryMenu),
+                new Screen("Rankings", ui.rankingsScreen::showRankingsMenu));
     }
 
     private static Field field(String name) throws Exception {
