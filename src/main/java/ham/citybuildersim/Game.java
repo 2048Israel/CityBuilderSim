@@ -14086,6 +14086,8 @@ public class Game {
      * last tick - the figure the Government tab calls the balance - and
      * never recomputed here: NationalAccounts.getBalance() mid-tick is a
      * month mixed from two, which is exactly why the bridge carries its own.
+     * The surplus-share grant reads its CASH part, getTreasuryCashSurplus()
+     * (SG1): the balance less the lines no cash moved on.
      */
 
     /** The month's grant bill under the city's basis and amount. */
@@ -14100,7 +14102,7 @@ public class Game {
         // money constant; at the price index from 0.7.19.
         return TaxPolicy.grantBill(basis, amount,
                 families.getSeekers(FamilyModel.Seeker.STUDENT), unskilledWage(),
-                expectations.getExpectedLevel(), treasurySurplus, education.studentBodyTuition());
+                expectations.getExpectedLevel(), getTreasuryCashSurplus(), education.studentBodyTuition());
     }
 
     /** What that comes to per student - the bill over this month's students, or nothing with none. */
@@ -14124,7 +14126,7 @@ public class Game {
         double base;
         switch (basis) {
             case FIXED:         base = expectations.getExpectedLevel(); break;   // a real amount (0.7.19), at the expected level (0.7.42)
-            case SURPLUS_SHARE: base = students > 0 ? Math.max(0, treasurySurplus) / students : 0; break;
+            case SURPLUS_SHARE: base = students > 0 ? Math.max(0, getTreasuryCashSurplus()) / students : 0; break;
             case TUITION_SHARE: base = students > 0 ? education.studentBodyTuition() / students : 0; break;
             default:            base = unskilledWage(); break;
         }
@@ -16629,6 +16631,17 @@ public class Game {
 
     /** What the balance charged or booked that the cash did not (CD3, CD7): the discount amortised, less the gain on paper retired and the exchange gain on the foreign debt. */
     public double getTreasuryNotCash() { return treasuryNotCash; }
+
+    /**
+     * The part of last month's surplus that moved cash (SG1): the balance and the bridge's not-cash row, which
+     * is the bridge's own identity (surplus + not cash + raised - repaid + the rest = the cash's change). The
+     * surplus-share student grant is a share of this and not of getTreasurySurplus(), because the balance holds
+     * the exchange gain on the dollar debt (CD7) and the gain on paper retired below its book (CD3), which the
+     * budget books and no cash moves on: a D$ that strengthened against a large dollar debt paid its paper gain
+     * out the next month as cash grants, and a loss never took the grant below nothing. One sum, the bridge's,
+     * so a non-cash line added to it later is taken out of the grant too.
+     */
+    public double getTreasuryCashSurplus() { return treasurySurplus + treasuryNotCash; }
 
     /** What the balance actually did, which is the figure a player watches. */
     public double getTreasuryChange() { return treasuryClosing - treasuryOpening; }
