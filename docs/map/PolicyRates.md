@@ -25,7 +25,7 @@
 
 **Uses:** [WorldMoneys](WorldMoneys.md) (10), [Nations](Nations.md) (1)
 
-**Used by (8):** [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [NationsMap](NationsMap.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md)
+**Used by (9):** [DebtMoneysCheck](DebtMoneysCheck.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [NationsMap](NationsMap.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

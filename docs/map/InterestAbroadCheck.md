@@ -50,6 +50,8 @@
 
 **Uses:** [PolicyRates](PolicyRates.md) (87), [CapitalFlows](CapitalFlows.md) (39), [DebtManager](DebtManager.md) (36), [WorldMoneys](WorldMoneys.md) (35), [ForeignAccounts](ForeignAccounts.md) (22), [Game](Game.md) (19), [Nations](Nations.md) (16), [WorldData](WorldData.md) (11), [World](World.md) (10), [ForeignCheck](ForeignCheck.md) (9), [HistorySave](HistorySave.md) (6), [Founding](Founding.md) (3), [WorldMarket](WorldMarket.md) (2), [Equity](Equity.md) (2), [GameFiles](GameFiles.md) (1), [Bank](Bank.md) (1), [YearBook](YearBook.md) (1), [MoneyAudit](MoneyAudit.md) (1)
 
+**Used by (1):** [DebtMoneysCheck](DebtMoneysCheck.md)
+
 ## Sections
 
 | line | section |

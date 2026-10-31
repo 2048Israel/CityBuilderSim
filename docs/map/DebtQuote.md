@@ -50,7 +50,7 @@
 
 **Uses:** [Auction](Auction.md) (2)
 
-**Used by (21):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CallCheck](CallCheck.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [RestructureCheck](RestructureCheck.md)
+**Used by (22):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CallCheck](CallCheck.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [RestructureCheck](RestructureCheck.md)
 
 ## Constants
 
