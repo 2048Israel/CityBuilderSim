@@ -29,7 +29,7 @@
 
 **Uses:** [Good](Good.md) (12), [TradeLanes](TradeLanes.md) (3), [WorldMarket](WorldMarket.md) (1), [Nations](Nations.md) (1)
 
-**Used by (5):** [DataSave](DataSave.md), [Game](Game.md), [HistorySave](HistorySave.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (8):** [DataSave](DataSave.md), [Game](Game.md), [HistorySave](HistorySave.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 

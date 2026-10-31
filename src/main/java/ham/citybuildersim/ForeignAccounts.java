@@ -56,7 +56,7 @@ package ham.citybuildersim;
  * currency (A DEFENCE THAT SPENDS, at repriceCurrency()), and since 0.7.6
  * the land office paid out of it when the player says so
  * (spendReservesOnLand()); it cannot go below zero, and it is KEPT IN DOLLARS -
- * reservesUsd - so everything local about it, what it is worth, what can be
+ * the US$ value of its eight balances (getReservesUsd(), THE VAULT IN EIGHT) - so everything local about it, what it is worth, what can be
  * sold, the import cover and the net position, is those dollars at today's
  * rate. When the currency moves the dollars stay put, and the move in their
  * local value is booked beside the vault as a revaluation (revalueVault()),
@@ -355,7 +355,7 @@ public class ForeignAccounts {
      * short.
      */
     public double absorption() {
-        if (reservesUsd <= 0) return 0;
+        if (getReservesUsd() <= 0) return 0;
         double cover = importCover();
         if (cover == Double.MAX_VALUE) return MAX_ABSORPTION;
         return MAX_ABSORPTION * Math.max(0, Math.min(1, cover / COMFORTABLE_COVER));
@@ -548,9 +548,9 @@ public class ForeignAccounts {
     /** What the interventions still felt put on the rate, in logs, positive weaker: the treasury's purchases and the defence's sales, fading by half in INTERVENTION_HALF_LIFE months. */
     public double getInterventionFelt() { return interventionFelt; }
 
-    /** Where the fundamentals put the D$ now, local money per US dollar: the trend and gate() of the real gap's, the balance's and the cover's levels reached - the rate without the market and the interventions. Pure. */
+    /** Where the fundamentals put the D$ now, local money per US dollar: the trend and gate() of the real gap's, the balance's and the cover's levels reached and the world's (WN4: the dollar cycle, the risk-off and the terms of trade) - the rate without the market and the interventions. Pure. */
     public double getFairLevel() {
-        return Math.exp(trendLog() + gate() * (gapReached + balanceReached + coverReached));
+        return Math.exp(trendLog() + gate() * (gapReached + balanceReached + coverReached + worldReached));
     }
 
     /** How far the rate sits from the fundamentals' level: positive is weaker than it. Pure. */
@@ -569,16 +569,18 @@ public class ForeignAccounts {
     public double getMoveCover() { return moves[3]; }
     /** ...from interventions, the treasury's and the defence's. */
     public double getMoveIntervention() { return moves[4]; }
-    /** ...from the market: what is left of the shadow rate's move once the five are taken, so the six and the hold always add to the month's move, through a pin or a guard. Under Lean and Float the shadow is the rate. */
+    /** ...from the market: what is left of the shadow rate's move once the five and the world's are taken, so the seven and the hold always add to the month's move, through a pin or a guard. Under Lean and Float the shadow is the rate. */
     public double getMoveMarket() { return moves[5]; }
+    /** ...from the world (WN4): the dollar's own swing against every money, money running to safety, and the prices of what the city sells abroad - gate() times the change in the world's level (THE WORLD REACHES THE D$). Exactly 0 where no world is handed. */
+    public double getMoveWorld() { return moveWorld; }
     /** ...from the hold (XR2): the part of the move the vault's hold of a peg or a band's edge made, and in a month a peg gave way the peg giving way. 0 under Lean and Float. */
     public double getMoveHeld() { return moves[6]; }
 
-    /** Last month's move in the rate, in logs, positive weaker: the seven moves added. */
+    /** Last month's move in the rate, in logs, positive weaker: the seven moves added (the six and the hold, and the world's). */
     public double getLastMove() {
         double sum = 0;
         for (double m : moves) sum += m;
-        return sum;
+        return sum + moveWorld;
     }
 
     /** The month's fall before the defence leaned on it: the move of the market and the fundamentals alone, parity's trend and the interventions left out - positive is a fall the vault, if it holds dollars, sells against (repriceCurrency(), step 7). */
@@ -632,6 +634,131 @@ public class ForeignAccounts {
         return z ^ (z >>> 31);
     }
 
+    /* ================ THE WORLD REACHES THE D$ (WN4, 2026-10-30; XR3 folded in) ================
+     *
+     * Once the nations' moneys move month by month (WorldMoneys; docs/studies/
+     * spec-exchange-rates.md, 3.5 and 3.7), the D$ against the US$ carries what
+     * they carry, as one more level beside the fundamentals and gated with them
+     * (a city that hardly trades has no market price to move):
+     *
+     *   world = cycle + riskOffLoading() x riskOff + terms of trade reached
+     *   ln rate = trend + g x (gap + balance + cover + market + world) + felt
+     *
+     *   cycle         the dollar's, with a loading of 1: when the dollar rises
+     *                 against everything it rises against the D$.
+     *   risk-off      money runs to safety about once in eight years; the D$'s
+     *                 loading is its traits' (riskOffLoading()): a small open
+     *                 money +10% weaker, less with a deep vault and a surplus,
+     *                 more with hot money and debt abroad. A city with six months
+     *                 of cover and a surplus is a haven and rises, as the Swiss
+     *                 franc does. A fall is a fall: the vault leans against it
+     *                 and a peg feels it as pressure, with nothing special here.
+     *   terms of trade  the city's own, from its exports by good (Game's THE
+     *                 WORLD MONEYS IN THE MONTH hands, each January, the
+     *                 export-weighted ln of the world prices of what it sells
+     *                 against their normal, 2025's): dearer exports, a dearer D$,
+     *                 by TOT_PASS, the level reached a third in each of the
+     *                 year's first TOT_MONTHS reprices. A LEVEL, NOT A SUM OF
+     *                 CHANGES: summed, a change weighted by the year before's
+     *                 export values (which hold that year's prices) is biased,
+     *                 because the prices revert - a good that was dear has a big
+     *                 weight and then falls - and on the playtest's city the sum
+     *                 only climbed, +0.09 to +0.69 in a century, the D$ weaker
+     *                 every January and prices +8.7% a year against main's 3.7%
+     *                 (WN4's review, 2026-10-31). A level of reverting prices
+     *                 reverts, and is bounded by them.
+     *
+     * WHERE THERE IS NO WORLD every figure here is zero and the D$ is main's, to
+     * the bit. Saved: slots 95-104. THE SLOTS AFTER 104 ARE THE VAULT'S (WN4
+     * slice C, THE VAULT IN EIGHT): 105 to 141.
+     */
+
+    /** A small open money's loading on the risk-off: +10% weaker in a risk-off of size one (the study's 3.5; the Swiss franc's and the yen's are the other way, WorldMoneys.FRANC and YEN). */
+    public static final double RISK_OFF_BASE = .10;
+
+    /** The months of import cover at which the vault's pull on the loading is whole: six, twice THIN_COVER (est.). */
+    public static final double HAVEN_COVER = 6;
+
+    /** The most a deep vault takes off the loading (est.: with a surplus, six months of cover turns a small open money into a haven). */
+    public static final double HAVEN_PULL = .10;
+
+    /** What a year in surplus (the current plus financial account over the trailing year) takes off the loading (est.): six months of cover and a surplus read -0.05, the Swiss franc's. */
+    public static final double SURPLUS_PULL = .05;
+
+    /** How much hot money and debt abroad add to the loading, per year's GDP of them (est.: a fifth of a year's GDP adds ten points). */
+    public static final double EXPOSURE_WEIGHT = .5;
+
+    /** The least the loading can be: the yen's, the most a haven rises (WorldMoneys.YEN). */
+    public static final double RISK_OFF_LOADING_MIN = -.08;
+
+    /** The most the loading can be (est.: the emerging floats' is .20). */
+    public static final double RISK_OFF_LOADING_MAX = .30;
+
+    /** What the world is this month, handed before the reprice (setWorld()): the dollar cycle, the risk-off level, and the city's exposure (the hot money held and the debt abroad), local money. Saved. */
+    private double worldCycle, worldRiskOff, worldExposure;
+    /** The city's own terms of trade reached (a log, positive weaker), the piece each of the next totLeft reprices adds, and how many of them are left. Saved. */
+    private double totReached, totStep;
+    private int totLeft;
+    /** The world's level as the last reprice struck it (cycle, the loading x risk-off, terms of trade; a log, positive weaker, ungated), gate() of it as last month's contribution, and the move it made this month. Saved. */
+    private double worldReached, lastWorldContrib, moveWorld;
+    /** The risk-off loading the last reprice used. Saved. */
+    private double worldLoading;
+
+    /**
+     * What the world is this month: handed before repriceCurrency(), by Game, from the world's moneys. The dollar cycle and the risk-off level are
+     * logs as WorldMoneys has them (positive: the dollar is strong, money runs to safety); exposureLocal is the hot money held here and the city's
+     * debt abroad, local money. Handed, not read off getForeignDebt(): that is struck after the reprice and not saved, so a reloaded city would
+     * reprice its first month on no debt (ReloadCheck, WN4: the loading 0.11 reloaded against 0.30 live). Zeros (or never called) is no world,
+     * and the D$ is then exactly what it was without one. A figure that is no number reads 0.
+     */
+    public void setWorld(double cycle, double riskOff, double exposureLocal) {
+        worldCycle = Double.isFinite(cycle) ? cycle : 0;
+        worldRiskOff = Double.isFinite(riskOff) ? riskOff : 0;
+        worldExposure = Double.isFinite(exposureLocal) ? Math.max(0, exposureLocal) : 0;
+    }
+
+    /**
+     * The city's terms of trade in a January: exportPriceLevel is the export-weighted ln of the world prices of what it sells, each against its
+     * normal (Game's, from PartnerTrade's exports by good over the year that finished and the nations' good prices this year, 1 being 2025's).
+     * Dearer exports make a dearer D$, a lower rate: the term's level is minus TOT_PASS times it, reached a third in each of the next TOT_MONTHS
+     * reprices (WorldMoneys' pace for a nation's money). What the last January had not yet reached comes at once, so no news is lost; a level
+     * that is no number is no news. A level, not a sum of changes: see THE WORLD REACHES THE D$.
+     */
+    public void stepTermsOfTrade(double exportPriceLevel) {
+        if (!Double.isFinite(exportPriceLevel)) return;
+        totReached += totStep * totLeft;
+        totStep = (-WorldMoneys.TOT_PASS * exportPriceLevel - totReached) / WorldMoneys.TOT_MONTHS;
+        totLeft = WorldMoneys.TOT_MONTHS;
+    }
+
+    /**
+     * The D$'s loading on the risk-off from the city's traits now: RISK_OFF_BASE, less HAVEN_PULL for a vault of up to HAVEN_COVER months of imports,
+     * less SURPLUS_PULL for a trailing year in surplus (current plus financial account), plus EXPOSURE_WEIGHT of the hot money and debt abroad as a
+     * share of a year's GDP; at most RISK_OFF_LOADING_MAX and at least RISK_OFF_LOADING_MIN. RISK_OFF_BASE while there is no GDP yet. Pure.
+     */
+    public double riskOffLoading() {
+        if (!(gdpTrailing > 0)) return RISK_OFF_BASE;
+        double loading = RISK_OFF_BASE - HAVEN_PULL * Math.min(importCover() / HAVEN_COVER, 1)
+                - (currentTrailing + financialTrailing > 0 ? SURPLUS_PULL : 0)
+                + EXPOSURE_WEIGHT * worldExposure / (12 * gdpTrailing);
+        return Math.max(RISK_OFF_LOADING_MIN, Math.min(RISK_OFF_LOADING_MAX, loading));
+    }
+
+    /** The dollar cycle as last handed, a log. */
+    public double getWorldCycle() { return worldCycle; }
+
+    /** The risk-off level as last handed. */
+    public double getWorldRiskOff() { return worldRiskOff; }
+
+    /** The risk-off loading the last reprice used (riskOffLoading() as it stood then). */
+    public double getWorldLoading() { return worldLoading; }
+
+    /** The city's own terms of trade reached, a log, positive weaker. */
+    public double getTermsOfTradeReached() { return totReached; }
+
+    /** The world's level as the last reprice struck it, in logs, positive weaker, before the gate. */
+    public double getWorldLevel() { return worldReached; }
+
     /* ==================== A RESERVE DEFENDS A CURRENCY ====================
      *
      * Jerus, 2026-09-21: "a reserve defends a currency; it does not hold one
@@ -684,8 +811,9 @@ public class ForeignAccounts {
 
     /** The most the central bank sells against a month's deficit: the vault's capacity times the deficit, at most the vault; nothing on a month with no deficit. What it does sell is what takes back absorption() of the month's fall (repriceCurrency(), step 7). */
     private double dollarsFor(double deficitUsd) {
-        if (!(deficitUsd > 0) || !(reservesUsd > 0)) return 0;
-        return Math.min(absorption() * deficitUsd, reservesUsd);
+        double held = getReservesUsd();
+        if (!(deficitUsd > 0) || !(held > 0)) return 0;
+        return Math.min(absorption() * deficitUsd, held);
     }
 
     /**
@@ -697,7 +825,7 @@ public class ForeignAccounts {
         if (!(usd > 0) || rate <= 0) { defenceUsd = defenceLocal = 0; return; }
         defenceUsd = usd;
         defenceLocal = usd * rate;
-        reservesUsd = usd >= reservesUsd ? 0 : reservesUsd - usd;
+        vaultRemove(usd);
         defenceUsdLifetime += usd;
         lifetimeIntervention -= defenceLocal;
     }
@@ -766,6 +894,7 @@ public class ForeignAccounts {
             edgeBoughtUsd = edgeBoughtLocal = 0;
             brokeThisMonth = false;
             java.util.Arrays.fill(moves, 0);
+            moveWorld = 0;
             lastWouldBeMove = 0;
             dealtSinceReprice = 0;   // ...and a pinned month's dealing is the promise's, not the market's
             return;
@@ -824,10 +953,22 @@ public class ForeignAccounts {
         if (annual > 0) interventionFelt += INTERVENTION_IMPACT * dealtSinceReprice / annual;
         dealtSinceReprice = 0;
 
+        // 5b. THE WORLD (WN4, THE WORLD REACHES THE D$): the terms of trade reach
+        // their term a piece a month, and the world's level is the dollar cycle, the
+        // risk-off at the loading this city's traits give it, and that term. All
+        // zero where no world was handed, and then nothing below moves by a bit.
+        if (totLeft > 0) {
+            totReached += totStep;
+            totLeft--;
+        }
+        worldLoading = riskOffLoading();
+        double world = worldCycle + worldLoading * worldRiskOff + totReached;
+        worldReached = world;
+
         // 6. THE MONTH'S LOG RATE.
         double g = gate();
         double fundamentals = gapReached + balanceReached + coverReached + market;
-        double x = trendLevel + g * fundamentals + interventionFelt + breakFelt;
+        double x = trendLevel + g * (fundamentals + world) + interventionFelt + breakFelt;
 
         /*
          * 7. LEAN AGAINST A FALL (A RESERVE DEFENDS A CURRENCY): the fall the
@@ -877,7 +1018,7 @@ public class ForeignAccounts {
             lastAbsorption = defenceUsd > 0 && deficitUsd > 0 ? defenceUsd / deficitUsd : 0;
             if (defenceLocal > 0) {
                 interventionFelt -= INTERVENTION_IMPACT * defenceLocal / annual;
-                x = trendLevel + g * fundamentals + interventionFelt + breakFelt;
+                x = trendLevel + g * (fundamentals + world) + interventionFelt + breakFelt;
             }
 
             // 8. THE RATE, inside the numerical guards.
@@ -904,7 +1045,7 @@ public class ForeignAccounts {
                 // rate is held at the edge - unless paying it would take the vault under
                 // its floor, when the band gives way for the month (the regime stays).
                 double need = Math.max(0, -balanceUsd);
-                if (reservesUsd - need < vaultFloorUsd()) {
+                if (getReservesUsd() - need < vaultFloorUsd()) {
                     rate = shadow;
                 } else {
                     sellToDefend(need);
@@ -935,7 +1076,7 @@ public class ForeignAccounts {
                 if (u < h) cause = BreakCause.DOUBT;
             }
             // (b) THE VAULT: paying the month's deficit at the peg would take it under its floor.
-            if (cause == BreakCause.NONE && balanceUsd < 0 && reservesUsd + balanceUsd < vaultFloorUsd()) {
+            if (cause == BreakCause.NONE && balanceUsd < 0 && getReservesUsd() + balanceUsd < vaultFloorUsd()) {
                 cause = BreakCause.VAULT;
             }
             lastHazard = h;
@@ -963,11 +1104,12 @@ public class ForeignAccounts {
         }
 
         // 9. THE MONTH'S MOVES BY FORCE, from the contributions: the market's
-        // line is what is left of the SHADOW's move, so the six add to it, and
-        // the seventh is the hold (what a peg or an edge made of the rate beside
-        // the shadow, and in a break month the peg giving way): all seven add to
-        // the month's move. Under Lean and Float the shadow is the rate, and the
-        // seventh is exactly nothing.
+        // line is what is left of the SHADOW's move, so the six (the world's,
+        // WN4, is the sixth beside the five, and the market the remainder) add to
+        // it, and the hold (what a peg or an edge made of the rate beside the
+        // shadow, and in a break month the peg giving way) is the last: all of
+        // them add to the month's move. Under Lean and Float the shadow is the
+        // rate, and the hold is exactly nothing; with no world the world's line is.
         double[] c = { trendLevel, g * gapReached, g * balanceReached, g * coverReached, interventionFelt };
         double sum = 0;
         for (int k = 0; k < 5; k++) {
@@ -975,7 +1117,10 @@ public class ForeignAccounts {
             sum += moves[k];
             lastContrib[k] = c[k];
         }
-        moves[5] = Math.log(shadow) - prevShadowLog - sum;
+        double worldContrib = g * world;
+        moveWorld = worldContrib - lastWorldContrib;
+        lastWorldContrib = worldContrib;
+        moves[5] = Math.log(shadow) - prevShadowLog - sum - moveWorld;
         moves[6] = (Math.log(rate) - prevLog) - (Math.log(shadow) - prevShadowLog);
         lastShadowLog = Math.log(shadow);
         heldLastMonth = (regime == Regime.BAND || regime == Regime.PEG) && rate != shadow;
@@ -1234,7 +1379,7 @@ public class ForeignAccounts {
     /** How many months the vault lasts at the last reprice's sales, to its floor, under a peg or a band that sold; infinity when it sold nothing. Pure. */
     public double monthsToFloor() {
         if ((regime == Regime.PEG || regime == Regime.BAND) && defenceUsd > 0) {
-            return (reservesUsd - vaultFloorUsd()) / defenceUsd;
+            return (getReservesUsd() - vaultFloorUsd()) / defenceUsd;
         }
         return Double.POSITIVE_INFINITY;
     }
@@ -1261,7 +1406,7 @@ public class ForeignAccounts {
      */
     private void edgeBuy(double usd) {
         if (!(usd > 0) || !(rate > 0)) return;
-        reservesUsd += usd;
+        vaultAdd(usd);
         edgeBoughtUsd = usd;
         edgeBoughtLocal = usd * rate;
         edgeOwedLocal += edgeBoughtLocal;
@@ -1371,7 +1516,292 @@ public class ForeignAccounts {
        today's rate, and the move from one rate to the next is booked as a
        revaluation line beside the vault (revalueVault()), in the debt's shape.
        ======================================================================= */
-    private double reservesUsd;
+
+    /* =======================================================================
+       THE VAULT IN EIGHT (WN4, 2026-10-30; spec-nations 5.2-5.4)
+
+       Jerus, D6: "Own prices, vault in 8". The vault is no longer one figure:
+       it keeps a BALANCE IN EACH OF THE EIGHT MONEYS the IMF's COFER names
+       (WorldMoneys.EIGHT: the US$, euro, yen, pound, yuan, the Canadian and
+       Australian dollars and the Swiss franc), each in its own units, and
+       the one US$ figure the vault was kept in since 2026-09-21 became their SUM at
+       the day's cross rates: getReservesUsd(). Every reader of the vault (the
+       cover, the defence, the floor, the screens) goes on reading that sum.
+
+       WHAT GOES IN, by the RESERVE MIX (D20, taken on Jerus's "do rec"): ALL_USD
+       by default, so a city that never touches it plays exactly as before
+       (every site's arithmetic on the US$ balance is what it was on the one
+       field, to the bit); MATCH_TRADE, the city's trade by money; WORLD_MIX,
+       COFER's shares; CHOSEN, eight shares the player sets. Every dollar that
+       comes in goes in by the mix - the treasury's purchases, the strong edge's
+       and a peg's buys - but the founders' dollars, which are dollars (Game
+       names the US$). A money with no rate this month takes no share and its
+       share goes to the US$.
+
+       WHAT COMES OUT leaves the LARGEST holding first, by US$ worth, then the
+       next: the defence, a band's or a peg's sales, the treasury's sales and
+       the land office. Only the player's own sale can name a money
+       (sellReserves(local, code)).
+
+       THE CROSS RATES come from Game at the top of the month, right after the
+       moneys step (setMoneyRates()), before anything buys or sells; handing them
+       REVALUES THE VAULT ACROSS THE MONEYS: crossUsd gains native x (new - old)
+       for each, the US$ the vault gained or lost because the eight moved
+       against each other. At the month's end revalueVault() books the whole
+       month's move in local money exactly - the dollars at the rate's move, plus
+       the cross move at the rate the vault was last valued at - and the screens
+       read the cross move and the money that made it (getLastVaultCrossUsd(),
+       getLastVaultCrossDriver()). A purchase in the month is at the month's
+       rates and adds nothing to it.
+       ======================================================================= */
+
+    /** The share of the world's reserves each of the eight holds, IMF COFER 2026Q2 [R23], in WorldMoneys.EIGHT's order, normalised when used: the US$ 56.7%, euro 20.6%, yen 5.0%, pound 4.5%, yuan 2.1%, Canadian dollar 2.7%, Australian dollar 2.1%, franc 0.2% (est.: the study gives the four small ones together as about 9.5%). */
+    public static final double[] COFER_SHARES = {.567, .206, .050, .045, .021, .027, .021, .002};
+
+    /** How many moneys the vault keeps a balance in. */
+    public static final int MONEYS = 8;
+
+    /** The money's name as a sentence has it ("the euro"), in WorldMoneys.EIGHT's order. */
+    public static final String[] MONEY_NAME = {"the US dollar", "the euro", "the yen", "the pound", "the yuan", "the Canadian dollar", "the Australian dollar", "the Swiss franc"};
+
+    /** ...and what a purchase of it is ("euros"), for a button's words. */
+    public static final String[] MONEY_PLURAL = {"US dollars", "euros", "yen", "pounds", "yuan", "Canadian dollars", "Australian dollars", "Swiss francs"};
+
+    /** Which of the eight a code is, or -1 for a code that is none of them (or null). */
+    public static int moneyIndex(String code) { return code == null ? -1 : WorldMoneys.EIGHT.indexOf(code); }
+
+    /** Where a dollar that comes into the vault goes: ALL_USD, today's behaviour and the default; MATCH_TRADE, the city's trade by money; WORLD_MIX, COFER's shares; CHOSEN, the player's eight. */
+    public enum Mix {
+        ALL_USD("All US$", ""), MATCH_TRADE("Match our trade", " in our trade's moneys"), WORLD_MIX("The world's mix", " in the world's mix"),
+        CHOSEN("Choose", " in the chosen mix");
+        /** The chip's words, and what a decision's line adds when a purchase went in by it ("" for the default). */
+        public final String words, inWords;
+        Mix(String words, String inWords) {
+            this.words = words;
+            this.inWords = inWords;
+        }
+    }
+
+    /** What the vault holds of each money, in that money's own units. */
+    private final double[] vault = new double[MONEYS];
+    /** US$ to the unit of each, as Game handed them (1 for the US$, 0 until handed), and whether this month has a rate for it. */
+    private final double[] usdPer = new double[MONEYS];
+    private final boolean[] rated = new boolean[MONEYS];
+    private Mix mix = Mix.ALL_USD;
+    /** The player's eight shares under CHOSEN, and the city's trade by money under MATCH_TRADE (Game hands it once a month): each sums to 1, the trade's to 0 when there is none. */
+    private final double[] chosen = new double[MONEYS];
+    private final double[] tradeShares = new double[MONEYS];
+    /** The month's move of the vault across the moneys in US$, whether revalueVault() has booked it, and the money that moved it most (its index, its move against the US$ as a fraction, the US$ it moved). */
+    private double crossUsd;
+    private boolean crossBooked = true;
+    private int crossDriver = -1;
+    private double crossDriverMove, crossDriverUsd;
+
+    {
+        usdPer[0] = 1;
+        rated[0] = true;
+        chosen[0] = 1;
+    }
+
+    /** What the vault holds of one money, in its own units; 0 for an index that is none of the eight. */
+    public double getHolding(int k) { return k < 0 || k >= MONEYS ? 0 : vault[k]; }
+
+    /** ...and what that is in US$ at the day's cross rate (the last one handed for a money that has none this month). */
+    public double getHoldingUsd(int k) {
+        if (k < 0 || k >= MONEYS || vault[k] == 0) return 0;
+        return vault[k] * usdPer[k];
+    }
+
+    /**
+     * The reserve position in dollars - the stock itself: the eight balances at the day's cross rates, summed. The one figure every reader
+     * of the vault goes on reading.
+     *
+     * Since 2026-09-21 this is the figure the vault is KEPT in, not a translation of it: the money is foreign, so its own unit is the one
+     * that does not move when the currency does. See THE VAULT IS HELD IN DOLLARS, in the banner TWO NUMBERS THAT WERE ONE NUMBER, and
+     * THE VAULT IN EIGHT.
+     */
+    public double getReservesUsd() {
+        double total = vault[0];
+        for (int k = 1; k < MONEYS; k++) total += getHoldingUsd(k);
+        return total;
+    }
+
+    /** US$ to the unit of a money as Game last handed it; NaN for one it has not been handed (and for an index that is none of the eight). */
+    public double getMoneyUsd(int k) { return k < 0 || k >= MONEYS || !(usdPer[k] > 0) ? Double.NaN : usdPer[k]; }
+
+    /** Whether the money has a rate this month, so a purchase can go into it: always the US$; the others once Game has handed a rate (a loaded city's are the rates it was saved with). */
+    public boolean hasRate(int k) { return k >= 0 && k < MONEYS && rated[k]; }
+
+    /** Hands the eight's US$ per unit, in WorldMoneys.EIGHT's order (the US$'s entry is read as 1): the top of the month, right after the moneys step. A NaN or a rate that is not above zero leaves the money without a rate this month. Revalues the vault across the moneys (crossUsd). */
+    public void setMoneyRates(double[] usdPerUnit) {
+        if (usdPerUnit == null) return;
+        if (crossBooked) {
+            crossUsd = 0;
+            crossDriver = -1;
+            crossDriverMove = crossDriverUsd = 0;
+            crossBooked = false;
+        }
+        for (int k = 1; k < MONEYS && k < usdPerUnit.length; k++) {
+            double now = usdPerUnit[k];
+            if (!(now > 0) || !Double.isFinite(now)) {
+                rated[k] = false;
+                continue;
+            }
+            double was = usdPer[k];
+            if (was > 0 && vault[k] != 0) {
+                double move = vault[k] * (now - was);
+                crossUsd += move;
+                if (Math.abs(move) > crossDriverUsd) {
+                    crossDriver = k;
+                    crossDriverMove = now / was - 1;
+                    crossDriverUsd = Math.abs(move);
+                }
+            }
+            usdPer[k] = now;
+            rated[k] = true;
+        }
+    }
+
+    /** The mix a dollar coming into the vault goes in by. */
+    public Mix getReserveMix() { return mix; }
+
+    public void setReserveMix(Mix to) { mix = to == null ? Mix.ALL_USD : to; }
+
+    /** The player's eight shares under CHOSEN (a copy; sums to 1). */
+    public double[] getChosenShares() { return chosen.clone(); }
+
+    /** Sets the eight shares under CHOSEN, normalised to sum to 1: a negative or NaN share reads 0, and all zero means all US$. */
+    public void setChosenShares(double[] shares) { normaliseInto(chosen, shares, true); }
+
+    /** Moves one money's chosen share by this many points (0.05 is five): the rest give or take it in proportion; with nothing else held, the freed points go to the US$ (to the euro when it is the US$ that was moved). */
+    public void shiftChosen(int k, double points) {
+        if (k < 0 || k >= MONEYS || !Double.isFinite(points) || points == 0) return;
+        double was = chosen[k], now = Math.max(0, Math.min(1, was + points));
+        if (now == was) return;
+        double others = 1 - was;
+        double[] next = new double[MONEYS];
+        next[k] = now;
+        if (others > 1e-12) {
+            double scale = (1 - now) / others;
+            for (int j = 0; j < MONEYS; j++) if (j != k) next[j] = chosen[j] * scale;
+        } else {
+            next[k == 0 ? 1 : 0] = 1 - now;
+        }
+        setChosenShares(next);
+    }
+
+    /** The city's trade by money, the eight's shares Game handed (a copy; sums to 1, or all 0 where the city has traded nothing). */
+    public double[] getTradeShares() { return tradeShares.clone(); }
+
+    /** Game's once a month, right after the moneys step: the city's trade by money under MATCH_TRADE, normalised; all zero reads all US$. */
+    public void setTradeShares(double[] shares) { normaliseInto(tradeShares, shares, false); }
+
+    /** Fills a share array from a source: finite positive entries kept, the rest 0, scaled to sum to 1; with none, all zero - or the US$ alone for the player's. */
+    private static void normaliseInto(double[] into, double[] source, boolean usdIfNone) {
+        double sum = 0;
+        for (int k = 0; k < MONEYS; k++) {
+            double v = source != null && k < source.length && Double.isFinite(source[k]) && source[k] > 0 ? source[k] : 0;
+            into[k] = v;
+            sum += v;
+        }
+        if (sum > 0) {
+            // Shares already at 100% (to rounding) are left as they are, so a save restored and normalised again reads back to the bit.
+            if (Math.abs(sum - 1) > 1e-12) for (int k = 0; k < MONEYS; k++) into[k] /= sum;
+        } else if (usdIfNone) {
+            into[0] = 1;
+        }
+    }
+
+    /** The shares a dollar coming in is split by now (sums to 1): the mix's, less the moneys with no rate this month, whose share goes to the US$; all US$ when nothing is left. A new array. */
+    public double[] mixShares() {
+        double[] w = new double[MONEYS];
+        switch (mix) {
+            case MATCH_TRADE -> System.arraycopy(tradeShares, 0, w, 0, MONEYS);
+            case WORLD_MIX -> System.arraycopy(COFER_SHARES, 0, w, 0, MONEYS);
+            case CHOSEN -> System.arraycopy(chosen, 0, w, 0, MONEYS);
+            default -> w[0] = 1;
+        }
+        for (int k = 1; k < MONEYS; k++) {
+            if (rated[k]) continue;
+            w[0] += w[k];
+            w[k] = 0;
+        }
+        double sum = 0;
+        for (double v : w) sum += v;
+        if (!(sum > 0)) {
+            java.util.Arrays.fill(w, 0);
+            w[0] = 1;
+            return w;
+        }
+        for (int k = 0; k < MONEYS; k++) w[k] /= sum;
+        return w;
+    }
+
+    /** Puts these dollars into the vault by the mix. All US$ is the old vault's "+=", to the bit. */
+    private void vaultAdd(double usd) {
+        if (mix == Mix.ALL_USD) {
+            vault[0] += usd;
+            return;
+        }
+        double[] share = mixShares();
+        for (int k = 0; k < MONEYS; k++) if (share[k] > 0) vault[k] += usd * share[k] / usdPer[k];
+    }
+
+    /** Puts these dollars into one money's balance; a code that is none of the eight goes by the mix, and a money with no rate this month goes to the US$. */
+    private void vaultAddInto(double usd, String code) {
+        int k = moneyIndex(code);
+        if (k < 0) {
+            vaultAdd(usd);
+            return;
+        }
+        if (!rated[k]) k = 0;
+        vault[k] += usd / usdPer[k];
+    }
+
+    /**
+     * Takes these dollars out of the vault from the largest holding by US$ worth, then the next (a tie leaves the one earlier in the eight's
+     * order first). A sum that is the whole vault or more empties it exactly, as the old field's did.
+     */
+    private void vaultRemove(double usd) {
+        if (usd >= getReservesUsd()) {
+            java.util.Arrays.fill(vault, 0);
+            return;
+        }
+        double left = usd;
+        boolean[] drained = new boolean[MONEYS];
+        while (left > 0) {
+            int at = -1;
+            double most = 0;
+            for (int k = 0; k < MONEYS; k++) {
+                double worth = drained[k] ? 0 : getHoldingUsd(k);
+                if (worth > most) {
+                    most = worth;
+                    at = k;
+                }
+            }
+            if (at < 0) return;
+            if (left >= most) {
+                vault[at] = 0;
+                left -= most;
+                drained[at] = true;
+            } else {
+                vault[at] = Math.max(0, vault[at] - left / usdPer[at]);
+                left = 0;
+            }
+        }
+    }
+
+    /** The month's move of the vault across the moneys, in US$: what it gained or lost because the eight moved against each other (the cross rates handed at the top of the month; a purchase after them adds nothing). Kept past revalueVault() until the next month's rates are handed. */
+    public double getLastVaultCrossUsd() { return crossUsd; }
+
+    /** The money that moved it most, and how far it moved against the US$ in the month: a fraction of the US$ a unit costs, so -0.091 is a euro down 9.1% against the dollar. */
+    public record CrossDriver(String code, int index, double move) { }
+
+    /** ...or null when nothing moved it. */
+    public CrossDriver getLastVaultCrossDriver() {
+        return crossDriver < 1 || crossDriver >= MONEYS || crossUsd == 0 ? null
+                : new CrossDriver(WorldMoneys.EIGHT.get(crossDriver), crossDriver, crossDriverMove);
+    }
 
     /**
      * THE RECORD. Every month's balance of payments, added up since founding.
@@ -1441,7 +1871,7 @@ public class ForeignAccounts {
     public double importCover() {
         // An empty vault is no cover - never negative cover, and not endless
         // cover on a city with no import bill yet.
-        if (reservesUsd <= 0) return 0;
+        if (getReservesUsd() <= 0) return 0;
         if (importsTrailing <= 0) return Double.MAX_VALUE;
         /*
          * The vault at TODAY's rate over the import bill in today's money, so
@@ -1450,7 +1880,7 @@ public class ForeignAccounts {
          * be the vault at the price paid over today's bill, and fell exactly
          * as fast as the currency did.
          */
-        return reservesUsd * rate / importsTrailing;
+        return getReservesUsd() * rate / importsTrailing;
     }
 
     /** The trailing monthly import bill the cover is measured against. */
@@ -1597,16 +2027,6 @@ public class ForeignAccounts {
     public double getLifetimeRevaluation() { return lifetimeRevaluation; }
 
     /**
-     * The reserve position in dollars - the stock itself.
-     *
-     * Since 2026-09-21 this is the figure the vault is KEPT in, not a
-     * translation of it: the money is foreign, so its own unit is the one that
-     * does not move when the currency does. See THE VAULT IS HELD IN DOLLARS,
-     * in the banner TWO NUMBERS THAT WERE ONE NUMBER.
-     */
-    public double getReservesUsd() { return reservesUsd; }
-
-    /**
      * Claims abroad less what is owed abroad: the city's net position.
      *
      * The figure a country is actually judged on. A city with deep reserves and
@@ -1642,7 +2062,7 @@ public class ForeignAccounts {
      * What the treasury holds in foreign money, and could spend today - in
      * local money, at today's rate. The dollars are getReservesUsd().
      */
-    public double getReserves() { return reservesUsd * rate; }
+    public double getReserves() { return getReservesUsd() * rate; }
 
     /** Every month's balance of payments since founding, added up. */
     public double getCumulativeBalance() { return cumulativeBalance; }
@@ -1731,9 +2151,15 @@ public class ForeignAccounts {
      * two bookkeeping figures stay in local money, because the local cash is
      * what crossed the audit's edge and what the treasury gave up for them.
      */
-    public void buyReserves(double localAmount) {
+    public void buyReserves(double localAmount) { buyReserves(localAmount, null); }
+
+    /**
+     * ...into one money of the eight, the player's named purchase (WN4, THE VAULT IN EIGHT): a code that is none of them, or null, goes by
+     * the mix; a money with no rate this month, to the US$. The founders' dollars are bought into "USD", whatever the mix.
+     */
+    public void buyReserves(double localAmount, String code) {
         if (localAmount <= 0 || rate <= 0) return;
-        reservesUsd += localAmount / rate;
+        vaultAddInto(localAmount / rate, code);
         boughtThisMonth += localAmount;
         dealtSinceReprice += localAmount;
         lifetimeIntervention += localAmount;
@@ -1766,7 +2192,25 @@ public class ForeignAccounts {
         double held = sellableReserves();
         double sold = Math.max(0, Math.min(localAmount, held));
         if (sold <= 0 || rate <= 0) return 0;
-        reservesUsd = sold >= held ? 0 : Math.max(0, reservesUsd - sold / rate);
+        if (sold >= held) java.util.Arrays.fill(vault, 0);
+        else vaultRemove(sold / rate);
+        soldThisMonth += sold;
+        dealtSinceReprice -= sold;
+        lifetimeIntervention -= sold;
+        return sold;
+    }
+
+    /**
+     * ...out of one money of the eight, the player's named sale (WN4, THE VAULT IN EIGHT): the clamp is what that money alone holds at
+     * today's rate, and no other money gives up anything. A code that is none of the eight sells from the largest, as sellReserves(local) does.
+     */
+    public double sellReserves(double localAmount, String code) {
+        int k = moneyIndex(code);
+        if (k < 0) return sellReserves(localAmount);
+        double held = sellableReserves(code);
+        double sold = Math.max(0, Math.min(localAmount, held));
+        if (sold <= 0 || rate <= 0) return 0;
+        vault[k] = sold >= held ? 0 : Math.max(0, vault[k] - sold / rate / usdPer[k]);
         soldThisMonth += sold;
         dealtSinceReprice -= sold;
         lifetimeIntervention -= sold;
@@ -1775,6 +2219,9 @@ public class ForeignAccounts {
 
     /** The most the treasury could sell right now, in local money at today's rate. */
     public double sellableReserves() { return Math.max(0, getReserves()); }
+
+    /** ...of one money of the eight alone (0 for a code that is none of them). */
+    public double sellableReserves(String code) { return Math.max(0, getHoldingUsd(moneyIndex(code)) * rate); }
 
     /* ================== THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) ==================
 
@@ -1802,7 +2249,7 @@ public class ForeignAccounts {
        purchase leaves the dollars in the vault, where absorption() can see
        them. ForeignCheck asserts both halves.
 
-       FROM THE VAULT: the dollars leave reservesUsd and no local money moves
+       FROM THE VAULT: the dollars leave the vault and no local money moves
        - spendReservesOnLand(), a capital transaction like the defence's
        (sellToDefend()): the vault falls, lifetimeIntervention falls by their
        local price as a sale's would (the vault is still "what the treasury
@@ -1855,9 +2302,10 @@ public class ForeignAccounts {
      *         whatever this falls short of
      */
     public double spendReservesOnLand(double usd) {
-        if (!(usd > 0) || !Double.isFinite(usd) || reservesUsd <= 0 || rate <= 0) return 0;
-        double spent = Math.min(usd, reservesUsd);
-        reservesUsd = spent >= reservesUsd ? 0 : reservesUsd - spent;
+        double held = getReservesUsd();
+        if (!(usd > 0) || !Double.isFinite(usd) || held <= 0 || rate <= 0) return 0;
+        double spent = Math.min(usd, held);
+        vaultRemove(spent);
         lifetimeIntervention -= spent * rate;
         landUsdOpen += spent;
         landVaultUsdOpen += spent;
@@ -1915,10 +2363,19 @@ public class ForeignAccounts {
     private double lastVaultRate = OPENING_RATE;
     private double lastVaultRevaluation;
 
-    /** Values the vault at today's rate. Called once a month, after the reprice. */
+    /**
+     * Values the vault at today's rate. Called once a month, after the reprice.
+     *
+     * THE WHOLE MONTH'S MOVE IN LOCAL MONEY, exactly (WN4): the vault's dollars at the rate's move, plus the cross move the eight made
+     * against each other (the US$ the vault gained or lost, booked at the rate the vault was last valued at) - V1 r1 - (V1 - cross) r0.
+     * The cross term is added only when there is one to book, so an all-US$ vault's figure is the old one to the bit.
+     */
     public void revalueVault() {
         if (rate <= 0) return;
-        lastVaultRevaluation = reservesUsd * (rate - lastVaultRate);
+        double moved = getReservesUsd() * (rate - lastVaultRate);
+        if (!crossBooked && crossUsd != 0) moved += crossUsd * lastVaultRate;
+        crossBooked = true;
+        lastVaultRevaluation = moved;
         lastVaultRate = rate;
     }
 
@@ -2131,7 +2588,7 @@ public class ForeignAccounts {
                  * from slot 19 at the rate it was saved at (slot 3), which is
                  * the only rate it has: the same dollars it held that day.
                  */
-                reservesUsd,
+                getReservesUsd(),
                 /*
                  * ...AND WHAT THE CURRENCY DID TO IT THIS MONTH, slot 23. A
                  * flow, and the Exchange page shows it beside the vault, so a
@@ -2249,7 +2706,44 @@ public class ForeignAccounts {
                 edgeBoughtUsd, edgeBoughtLocal, edgeBoughtUsdLifetime,
                 breaks, lastBreakCause.ordinal(), lastBreakJump, lastBreakShadow,
                 brokeThisMonth ? 1 : 0,
-                moves[6] };
+                moves[6],
+                /*
+                 * ...AND THE WORLD, slots 95-104 (WN4; THE WORLD REACHES THE D$):
+                 * the dollar cycle, the risk-off and the hot money Game handed
+                 * for the month, the terms of trade reached with the piece each
+                 * of the reprices still to come adds and how many are left, the
+                 * world's level as the last reprice struck it, last month's
+                 * contribution (this month's move is the change from it), the
+                 * move it made, and the loading the risk-off was weighed at.
+                 * Each is a level or a flow the month cannot restrike from the
+                 * state it ended in. An older save has no world, and the D$ is
+                 * as it was.
+                 */
+                worldCycle, worldRiskOff, worldExposure,
+                totReached, totStep, totLeft,
+                worldReached, lastWorldContrib, moveWorld,
+                worldLoading,
+                /*
+                 * ...AND THE VAULT IN EIGHT, slots 105-141 (WN4, THE VAULT IN
+                 * EIGHT): the balance in each of the eight in its own units
+                 * (105-112), the US$ to the unit of each as Game last handed it,
+                 * 0 for a money never handed (113-120), the reserve mix's ordinal
+                 * (121), the player's eight chosen shares (122-129) and the city's
+                 * trade by money Game handed (130-137), the month's cross move in
+                 * US$ (138), whether revalueVault() still has it to book (139: 1
+                 * is yes), and the money that moved it most as an index, -1 for
+                 * none (140), with its move against the US$ (141). Slot 22 stays
+                 * the total, so an older build reads the same vault; a save that
+                 * has none of these reads it as all US$, as it was. The cross
+                 * move is a flow the month cannot restrike from the state it ended
+                 * in, and the balances are the stock.
+                 */
+                vault[0], vault[1], vault[2], vault[3], vault[4], vault[5], vault[6], vault[7],
+                usdPer[0], usdPer[1], usdPer[2], usdPer[3], usdPer[4], usdPer[5], usdPer[6], usdPer[7],
+                mix.ordinal(),
+                chosen[0], chosen[1], chosen[2], chosen[3], chosen[4], chosen[5], chosen[6], chosen[7],
+                tradeShares[0], tradeShares[1], tradeShares[2], tradeShares[3], tradeShares[4], tradeShares[5], tradeShares[6], tradeShares[7],
+                crossUsd, crossBooked ? 0 : 1, crossDriver, crossDriverMove };
     }
 
     public void restore(double[] saved) {
@@ -2301,8 +2795,8 @@ public class ForeignAccounts {
          * it was saved at (slot 3) - the only rate it has, and the one those
          * dollars were worth that day. Before slot 19 there was no vault.
          */
-        if (saved.length > 22)      reservesUsd = Math.max(0, saved[22]);
-        else if (saved.length > 19) reservesUsd = Math.max(0, saved[19]) / rate;
+        if (saved.length > 22)      vault[0] = Math.max(0, saved[22]);
+        else if (saved.length > 19) vault[0] = Math.max(0, saved[19]) / rate;
         lastVaultRate = rate;
         if (saved.length > 23) lastVaultRevaluation = saved[23];
         if (saved.length > 24) lastRevaluation = saved[24];
@@ -2388,6 +2882,38 @@ public class ForeignAccounts {
             brokeThisMonth = saved[93] > .5;
             moves[6] = saved[94];
         }
+        // The world (WN4, slots 95-104); a save from before it has no world handed, nothing
+        // reached and nothing moved by it, which is what the D$ was.
+        if (saved.length > 104) {
+            worldCycle = saved[95];
+            worldRiskOff = saved[96];
+            worldExposure = Math.max(0, saved[97]);
+            totReached = saved[98];
+            totStep = saved[99];
+            totLeft = Math.max(0, Math.min(WorldMoneys.TOT_MONTHS, (int) Math.round(saved[100])));
+            worldReached = saved[101];
+            lastWorldContrib = saved[102];
+            moveWorld = saved[103];
+            worldLoading = saved[104];
+        }
+        // The vault in eight (WN4, slots 105-141); a save from before it has the one US$ balance of slot 22, all US$, as it was.
+        if (saved.length > 141) {
+            for (int k = 0; k < MONEYS; k++) {
+                double rateK = saved[113 + k];
+                usdPer[k] = k == 0 ? 1 : Double.isFinite(rateK) && rateK > 0 ? rateK : 0;
+                rated[k] = usdPer[k] > 0;
+                // A balance in a money with no rate to value it at cannot be kept: it reads empty.
+                vault[k] = rated[k] && Double.isFinite(saved[105 + k]) ? Math.max(0, saved[105 + k]) : 0;
+            }
+            mix = Mix.values()[ordinalOr(saved[121], Mix.values().length, Mix.ALL_USD.ordinal())];
+            setChosenShares(java.util.Arrays.copyOfRange(saved, 122, 130));
+            setTradeShares(java.util.Arrays.copyOfRange(saved, 130, 138));
+            crossUsd = Double.isFinite(saved[138]) ? saved[138] : 0;
+            crossBooked = !(saved[139] > .5);
+            crossDriver = ordinalOr(saved[140], MONEYS, -1);
+            crossDriverMove = crossDriver > 0 && Double.isFinite(saved[141]) ? saved[141] : 0;
+            crossDriverUsd = 0;
+        }
     }
 
     /** A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. */
@@ -2399,7 +2925,20 @@ public class ForeignAccounts {
     public void reset() {
         rate = OPENING_RATE;
         pinned = false;
-        reservesUsd = 0;
+        // The vault in eight (WN4): empty, all US$ (the default mix), no money but the dollar rated, nothing moved across the moneys.
+        java.util.Arrays.fill(vault, 0);
+        java.util.Arrays.fill(usdPer, 0);
+        java.util.Arrays.fill(rated, false);
+        usdPer[0] = 1;
+        rated[0] = true;
+        mix = Mix.ALL_USD;
+        java.util.Arrays.fill(chosen, 0);
+        chosen[0] = 1;
+        java.util.Arrays.fill(tradeShares, 0);
+        crossUsd = 0;
+        crossBooked = true;
+        crossDriver = -1;
+        crossDriverMove = crossDriverUsd = 0;
         lastVaultRate = OPENING_RATE;
         lastVaultRevaluation = 0;
         cumulativeBalance = 0;
@@ -2453,6 +2992,11 @@ public class ForeignAccounts {
         java.util.Arrays.fill(moves, 0);
         lastWouldBeMove = 0;
         dealtSinceReprice = 0;
+        // ...and the world (WN4): none handed, nothing reached, nothing moved by it.
+        worldCycle = worldRiskOff = worldExposure = 0;
+        totReached = totStep = 0;
+        totLeft = 0;
+        worldReached = lastWorldContrib = moveWorld = worldLoading = 0;
         // ...and the regimes (XR2): Lean, who pays the central bank, no band, no
         // peg, nothing owed, nothing held, nothing broken.
         regime = Regime.LEAN;
@@ -2548,6 +3092,7 @@ public class ForeignAccounts {
         // log of a ratio and stays.
         trendLevel += Math.log(scale);
         lastContrib[0] += Math.log(scale);
+        worldExposure *= scale;   // (WN4) local money; the world's level is a log against the US$ and stays
         gdpTrailing *= scale;
         // The regimes (XR2): every rate and local figure moves like the rate; the
         // shadow's log shifts by the log of the scale, as the trend's does, so

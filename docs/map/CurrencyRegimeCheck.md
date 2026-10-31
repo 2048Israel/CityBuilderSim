@@ -66,6 +66,8 @@
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (119), [Game](Game.md) (43), [DebtManager](DebtManager.md) (32), [CapitalFlows](CapitalFlows.md) (29), [CurrencyCheck](CurrencyCheck.md) (11), [Expectations](Expectations.md) (11), [ExchangeRateCheck](ExchangeRateCheck.md) (11), [Founding](Founding.md) (9), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
 
+**Used by (1):** [VaultMoneysCheck](VaultMoneysCheck.md)
+
 ## Sections
 
 | line | section |

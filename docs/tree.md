@@ -465,6 +465,29 @@ adds its line here, not in `CLAUDE.md`.
                                    trade rows (NationsMap.card) and a generated world's partners as
                                    arrows at the edge (Arrows); Feed is what ui/MapView is given. Tested
                                    by GlobeCheck 13 and 14, beside NationsMap (WN2) which cuts its borders
+        WorldMoneys.java           the world's moneys against the US$, a month at a time (batch WN4;
+                                   docs/studies/spec-exchange-rates.md 3.7, XR3 folded in): each money's
+                                   PPP path, the dollar cycle, the risk-off, its nation's terms of trade from
+                                   the January solve, its own swing; pegs held and soft ones broken by
+                                   ForeignAccounts.hazard(); Historical the file's monthly rates to 2025;
+                                   every draw a pure function of (seed, money, month); saved
+                                   (DataSave.worldMoneys). Game's THE WORLD'S MONEYS IN THE MONTH steps it
+                                   with the market and hands the D$ its world (ForeignAccounts, THE WORLD
+                                   REACHES THE D$), the vault its cross rates (THE VAULT IN EIGHT) and the
+                                   dollar the US's price path (WorldEconomy, THE US DOLLAR ON THE US'S PATH)
+        WorldMoneysCheck.java      WorldMoneys held to its dials and the file: one seed one path and a
+                                   reload continues it, Historical the file to the month, each swing's sd
+                                   and persistence over 1,000 paths, pegs and breaks against the hazard,
+                                   a risk-off by its loadings, the terms of trade a third a month, cross
+                                   rates, parity, and a city on the file in step and reloaded (WN4)
+        VaultMoneysCheck.java      the vault in eight (WN4): all US$ the old vault to the bit at every site,
+                                   a buy by the mix, a sale from the largest, the cross revaluation, the
+                                   trade mix's mapping through the pegs, the save
+        RealDollar.java            the real US$ of 2015 (WN4, D29; spec-exchange-rates 3.9): the D$ per 2015
+                                   US$, real GDP in 2015 US$ and the real effective rate, pure functions
+                                   behind Game's three getters; nothing in the model reads them (WN6 shows)
+        RealDollarCheck.java       the dollar on the US's path to 1e-12, the walk with no world file, the
+                                   import shock, and RealDollar's three figures on fixtures (WN4)
         GlobeFrame.java, GlobePicture.java
                                    the Earth's map as a globe, its model half (0.7.132, batch E8;
                                    docs/studies/spec-globe.md 3): the view - its centre in latitude and

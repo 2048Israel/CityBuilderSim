@@ -513,7 +513,7 @@ public class WoodProductsCheck {
                 saw != null && logs != null && saw.produced > 0 && logs.bid > saw.produced
                         && same(saw.soldLocal, saw.produced) && saw.exported == 0 && same(logs.boughtLocal, saw.produced)
                         && same(logs.imported, logs.bid - logs.boughtLocal) && logs.imported > 0,
-                saw == null || logs == null ? "none" : String.format("cut %,.1f m3, sold at home %,.1f; the mill bid %,.1f, bought %,.1f at home"
+                saw == null || logs == null ? "none" : String.format("cut %,.4f m3, sold at home %,.1f; the mill bid %,.1f, bought %,.1f at home"
                         + " and %,.1f abroad", saw.produced, saw.soldLocal, logs.bid, logs.boughtLocal, logs.imported));
         report("...and the camp's pulpwood, nobody here buying it without a panel or pulp mill, all shipped",
                 pulpwood != null && pulpwood.produced > 0 && pulpwood.soldLocal == 0 && same(pulpwood.exported, pulpwood.produced),
@@ -522,19 +522,21 @@ public class WoodProductsCheck {
         quietly(() -> g.simulateMonths(1));
         saw = fo.outputRow(Good.SAWLOGS);
         logs = wp.inputRow(Good.SAWLOGS);
+        // "None" to the cent, not to the bit (WN4, 2026-10-31): with the world's prices on the US's path the mill's bid less what it bought at home
+        // left 2.3e-13 m3 to import, D$1e-14k abroad - dust of a subtraction, judged by same() as every other figure here.
         report("with a Harvesting Operation beside the camp, cutting more sawlogs than the mill takes: the mill imports none, its whole bid"
                         + " bought at home, and the rest of the logs ship",
-                saw != null && logs != null && saw.produced > logs.bid && logs.bid > 0 && logs.imported == 0 && same(logs.boughtLocal, logs.bid)
+                saw != null && logs != null && saw.produced > logs.bid && logs.bid > 0 && same(logs.bid - logs.imported, logs.bid) && same(logs.boughtLocal, logs.bid)
                         && same(saw.soldLocal, logs.bid) && same(saw.exported, saw.produced - saw.soldLocal),
-                saw == null || logs == null ? "none" : String.format("cut %,.1f m3; the mill bid %,.1f, bought %,.1f at home, %,.1f abroad;"
-                        + " %,.1f shipped", saw.produced, logs.bid, logs.boughtLocal, logs.imported, saw.exported));
+                saw == null || logs == null ? "none" : String.format("cut %,.4f m3, sold at home %,.4f; the mill bid %,.4f, bought %,.4f at home, %.3e abroad;"
+                        + " %,.4f shipped", saw.produced, saw.soldLocal, logs.bid, logs.boughtLocal, logs.imported, saw.exported));
         quietly(() -> g.simulateMonths(1));
         Sector.Split bought = wp.statement().bought.get(Good.SAWLOGS), sold = fo.statement().sold.get(Good.SAWLOGS);
         report("...on the books (struck at the next month's top): Wood Products bought its sawlogs at home and none abroad, Forestry sold at"
                         + " home and abroad",
-                bought != null && bought.atHome > 0 && bought.abroad == 0 && sold != null && sold.atHome > 0 && sold.abroad > 0,
-                bought == null || sold == null ? "none" : String.format("bought D$%,.1fk at home; sold D$%,.1fk at home, D$%,.1fk abroad",
-                        bought.atHome, sold.atHome, sold.abroad));
+                bought != null && bought.atHome > 0 && same(bought.atHome + bought.abroad, bought.atHome) && sold != null && sold.atHome > 0 && sold.abroad > 0,
+                bought == null || sold == null ? "none" : String.format("bought D$%,.1fk at home, D$%.3ek abroad; sold D$%,.1fk at home, D$%,.1fk abroad",
+                        bought.atHome, bought.abroad, sold.atHome, sold.abroad));
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         report("the month's money audit closes", audit != null && audit.relative() < 1e-4,
                 audit == null ? "none" : String.format("residual %.3g of what moved", audit.relative()));

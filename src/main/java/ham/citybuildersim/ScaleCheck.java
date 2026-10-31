@@ -1414,7 +1414,13 @@ public class ScaleCheck {
             // still owed for the edge's dollars (84), the edge's dollars the month bought, their price and the lifetime
             // (86-88).
             for (int i = 31; i < Math.min(45, a.size()); i++) money.add(i);
-            money.addAll(List.of(68, 70, 84, 86, 87, 88));
+            // WN4's slots 95-104 are the world's levels in logs, the terms of trade's pieces and a count, but for the exposure handed this month (97,
+            // the hot money and the debt abroad): local money. Its vault in eight (105-141) holds the eight balances (105-112, each money's own units)
+            // and the month's cross move (138, US$), money K times over as slot 22's dollars are - the restore reads the vault from 105-112 now, and a
+            // copy that scaled 22 alone opened with its city's vault (ScaleCheck's savings line, WN4's suite) - and the eight's rates, the mix, the
+            // shares, a flag, the driver's index and its move, which a copy keeps as they are.
+            money.addAll(List.of(68, 70, 84, 86, 87, 88, 97, 138));
+            for (int i = 105; i <= 112; i++) money.add(i);
             for (int i = 0; i < a.size(); i++) if (money.contains(i)) a.set(i, times(a.get(i), k));
         }
         // The unemployment's people (FR2, 2026-10-18; the batch's notes): its claimant cohorts, those off EI, the unhoused, the

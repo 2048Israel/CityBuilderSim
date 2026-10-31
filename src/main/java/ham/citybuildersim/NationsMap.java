@@ -841,6 +841,15 @@ public final class NationsMap {
      * alone: no row says it is coming.
      */
     public Card card(Nations nations, int nation, int year, double cityLat, double cityLon, double dollarsAUsd, TradeLanes.YearToDate trade) {
+        return card(nations, nation, year, cityLat, cityLon, dollarsAUsd, trade, Double.NaN);
+    }
+
+    /**
+     * The same, with the money's rate this month (WN4: WorldMoneys.rateOfNation(), units a US$): when it is a number above 0 the Its money row shows it
+     * and the game dollar's worth of one of it from it, else the year's rate from the file, as before. The caller hands it only where the card's year is
+     * the moneys' year, which is every card a city draws.
+     */
+    public Card card(Nations nations, int nation, int year, double cityLat, double cityLon, double dollarsAUsd, TradeLanes.YearToDate trade, double monthRate) {
         Table t = table(nations, year);
         Nations.Year y = nations.year(nation, year);
         int i = nation - 1;
@@ -851,7 +860,7 @@ public final class NationsMap {
         rows.add(new Row("GDP a head", "US$" + sig3(y.outputPerHead()) + markWords(Math.min(y.outputMark(), y.peopleMark())), ordinal(t.rankHead[i]) + of));
         double growth = Math.expm1(nations.growth(nation, year)), prices = y.inflation();
         rows.add(new Row("This year", Double.isNaN(growth) && Double.isNaN(prices) ? "-" : percent(growth, true) + " real · " + percent(prices, false) + " prices", ""));
-        rows.add(new Row("Its money", moneyWords(y, dollarsAUsd), ""));
+        rows.add(new Row("Its money", moneyWords(y, dollarsAUsd, monthRate), ""));
         if (trade != null && (trade.exports() > 0 || trade.imports() > 0)) {
             rows.add(new Row(BUYS_WORDS, city(trade.exports()), ""));
             rows.add(new Row(SELLS_WORDS, city(trade.imports()), ""));
@@ -867,12 +876,16 @@ public final class NationsMap {
         return String.format(Locale.US, signed ? "%+.1f%%" : "%.1f%%", pct == 0 ? 0.0 : pct);
     }
 
-    /** "CAD 1.37 a US$ . CAD 1 = D$0.86", the second part only if the game dollar's price is known; for the dollar itself "the US dollar . US$1 = D$1.16". */
-    private static String moneyWords(Nations.Year y, double dollarsAUsd) {
+    /**
+     * "CAD 1.37 a US$ . CAD 1 = D$0.86", the second part only if the game dollar's price is known; for the dollar itself "the US dollar . US$1 = D$1.16".
+     * The rate is monthRate (this month's, WN4) where that is a number above 0, else the year's from the file.
+     */
+    private static String moneyWords(Nations.Year y, double dollarsAUsd, double monthRate) {
         boolean known = dollarsAUsd > 0 && !Double.isInfinite(dollarsAUsd);
         if (Nations.DOLLAR.equals(y.money())) return "the US dollar" + (known ? " · US$1 = D$" + sig3(dollarsAUsd) : "");
-        if (!(y.rateToUsd() > 0) || Double.isInfinite(y.rateToUsd())) return y.money() == null ? "-" : y.money();
-        return y.money() + " " + sig3(y.rateToUsd()) + " a US$" + (known ? " · " + y.money() + " 1 = D$" + sig3(dollarsAUsd / y.rateToUsd()) : "");
+        double rate = monthRate > 0 && !Double.isInfinite(monthRate) ? monthRate : y.rateToUsd();
+        if (!(rate > 0) || Double.isInfinite(rate)) return y.money() == null ? "-" : y.money();
+        return y.money() + " " + sig3(rate) + " a US$" + (known ? " · " + y.money() + " 1 = D$" + sig3(dollarsAUsd / rate) : "");
     }
 
     private static String markWords(int mark) {

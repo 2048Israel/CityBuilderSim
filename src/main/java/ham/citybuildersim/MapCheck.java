@@ -554,6 +554,8 @@ public class MapCheck {
         // On MiningCheck.IRON_SEED's world (0.7.99): its site has an iron field a kilometre out, as the default world's had; the
         // default world's nearest lies twelve kilometres out since the deposits are fewer and bigger.
         Game g = new Game(files, LongPlaytest.founding().withWorldSeed(MiningCheck.IRON_SEED));
+        // WN4: the map's checks read this city's growth (the stamp's view, the land layer's redraws); the D$ the world now swings would grow it another city.
+        g.quietTheWorldForTheD();
         PrintStream real = System.out, was = LongPlaytest.out;
         LongPlaytest.out = QUIET;
         System.setOut(QUIET);
