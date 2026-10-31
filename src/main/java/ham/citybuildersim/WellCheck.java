@@ -49,8 +49,9 @@ import java.util.List;
  *   7. A WELL HAS ONE POST, a diploma's (the research's Q13: 0.2-0.4 workers a
  *      well [W12]; three until 0.7.84).
  *
- *   8. A PLATFORM STANDS ON A SHALLOW SEA FIELD, its wells in its slots: a
- *      field in the sea PLATFORM_MAX_DEPTH_M deep or less; slots at most 12
+ *   8. A PLATFORM STANDS ON A SEA FIELD, its wells in its slots: a field in
+ *      the sea FLOATING_MAX_DEPTH_M deep or less (a fixed jacket to
+ *      PLATFORM_MAX_DEPTH_M, a floating platform past it, DW1); slots at most 12
  *      and at most the field's sea sites; a platform's well only in a free
  *      slot, a land well only on a dry site - the two kept apart; the
  *      platform profile's lift, to the bit; W conserved; a platform well
@@ -84,6 +85,21 @@ import java.util.List;
  *      their deposit and the other's let through; the Oil page shows both;
  *      the two E's cross a save, and a save from before them charges its one
  *      pool to the ground, floored at the ground's tonnes, none to the sea.
+ *
+ *  14. DEEP WATER (DW1; Jerus: "Allow deep, costlier"): past
+ *      PLATFORM_MAX_DEPTH_M a platform floats, down to FLOATING_MAX_DEPTH_M,
+ *      and what the platform costs, what its wells cost and what it costs to
+ *      keep follow the depth of the field it stands on - each factor exactly
+ *      1 at PLATFORM_MAX_DEPTH_M and under, above 1 and rising with the depth
+ *      past it, the ratio of NEMS's own functions [W13]; on a city holding a
+ *      deep field the quote of a platform and of its wells carries the
+ *      deep-water points and money (the sticker, the total and the months
+ *      rise by them, the order owes the points, the investors reckon the
+ *      same cost), the planner's package pays the premium and the upkeep, a
+ *      month's "Deep-water upkeep" is the floating platforms' (upkeepFactor() -
+ *      1) times the jacket's running cost, booked as the imported service and
+ *      the audit closing; a fixed field is taken before a floating one, the
+ *      shallower of two floating ones first.
  *
  * Every fixture CAUSES its condition: the town is handed its oil by fiat
  * (LandManager.restoreSites(), as MiningCheck hands a city its ore), its
@@ -198,6 +214,7 @@ public class WellCheck {
         }
         thePlanner();
         theTwoPools();
+        deepWater();
 
         for (GameFiles f : FILES.values()) LongPlaytest.cleanUp(f.getDirectory().getParent());
         out.println();
@@ -574,16 +591,22 @@ public class WellCheck {
     /* ============================ 8. A PLATFORM ============================ */
 
     static Game aPlatform() {
-        out.println("\n--- 8. a platform stands on a shallow sea field, its wells in its slots; the land's on dry ground ---");
-        assertTrue("a platform stands in sea PLATFORM_MAX_DEPTH_M deep or less: 150 m, the fixed platform's limit (the research's 3.2)",
-                Oil.PLATFORM_MAX_DEPTH_M == 150);
+        out.println("\n--- 8. a platform stands on a sea field, its wells in its slots; the land's on dry ground ---");
+        assertTrue("a fixed jacket stands in sea PLATFORM_MAX_DEPTH_M deep or less: 150 m, the fixed platform's limit (the research's 3.2);"
+                        + " past it the platform floats, to FLOATING_MAX_DEPTH_M: 2,914 m, the deepest production there is (BOEM 2021-005)",
+                Oil.PLATFORM_MAX_DEPTH_M == 150 && Oil.FLOATING_MAX_DEPTH_M == 2914 && !Oil.isFloating(Oil.PLATFORM_MAX_DEPTH_M)
+                        && Oil.isFloating(Oil.PLATFORM_MAX_DEPTH_M + 0.5));
         Deposit d = seaField();
         if (d == null) {
             report("fixture: SEA_OIL_SEED's nearest oil field is in the sea", false, "none");
             return null;
         }
-        assertTrue("...the rule, pure: a field in the sea at 150 m takes one, at 150.5 m or on land or with no site owned none",
-                Oil.canTakePlatform(new LandManager.SeaField(d, 8, 150)) && !Oil.canTakePlatform(new LandManager.SeaField(d, 8, 150.5))
+        assertTrue("...the rule, pure: a field in the sea at 150 m takes a fixed jacket, at 150.5 m a floating platform, at"
+                        + " FLOATING_MAX_DEPTH_M still one, deeper none - and none on land or with no site owned",
+                Oil.canTakePlatform(new LandManager.SeaField(d, 8, Oil.PLATFORM_MAX_DEPTH_M))
+                        && Oil.canTakePlatform(new LandManager.SeaField(d, 8, Oil.PLATFORM_MAX_DEPTH_M + 0.5))
+                        && Oil.canTakePlatform(new LandManager.SeaField(d, 8, Oil.FLOATING_MAX_DEPTH_M))
+                        && !Oil.canTakePlatform(new LandManager.SeaField(d, 8, Oil.FLOATING_MAX_DEPTH_M + 0.5))
                         && !Oil.canTakePlatform(new LandManager.SeaField(d, 8, 0)) && !Oil.canTakePlatform(new LandManager.SeaField(d, 0, 40)));
         // The slots, pure: a 16-site field takes a jacket of 12 and one of 4, a third none; a field the city does not own none.
         LandManager.SeaField big = new LandManager.SeaField(d, 16, 60);
@@ -608,7 +631,7 @@ public class WellCheck {
         Oil wells = g.getSectors().oil();
         BuildingsTemplate jacket = template(g, "Offshore Platform"), seaWell = template(g, "Platform Well"),
                 landWell = template(g, "Oil Well");
-        List<LandManager.SeaField> shallow = wells.shallowFields();
+        List<LandManager.SeaField> shallow = wells.platformFields();
         World w = World.of(OilCheck.SEA_OIL_SEED);
         report("fixture: the town owns the sea field, a shallow one - its sites all the sea's, its depth the world's",
                 shallow.size() == 1 && shallow.get(0).field().equals(d) && shallow.get(0).sites() == d.sites()
@@ -784,7 +807,7 @@ public class WellCheck {
                         && Oil.pipelinePays(edge / bigField + standing / bigField, standing, bigField, Oil.PIPE_LIFE_MONTHS, cost)
                                 == (((edge / bigField + standing / bigField) - standing / bigField) * bigField * Oil.PIPE_LIFE_MONTHS >= cost * Oil.PIPE_PAYBACK));
         Oil.PipeCase c = null;
-        for (LandManager.SeaField f : wells.shallowFields()) c = wells.pipeCase(f, plans);
+        for (LandManager.SeaField f : wells.platformFields()) c = wells.pipeCase(f, plans);
         Oil.PipeCase cc = c;
         report("...weighed on the town's field: its cost, freight and tonnes the rule's, and the provisos - the refiners not losing"
                         + " money, its first platform on its plateau",
@@ -1129,5 +1152,246 @@ public class WellCheck {
                         && !wells.mayRetire(landWell) && seaRefused == Game.BuildResult.NO_DEPOSIT && !g.hasDepositFor(jacket, 1)
                         && g.remainingFor(landWell) == land.getOilLeftOnGround() && land.getOilLeftOnGround() > 0,
                 seaRefused + (seaSpare == null ? "; none" : String.format("; %,.1f against %,.1f", seaSpare[0], seaSpare[1])));
+    }
+
+    /* ============================ 14. DEEP WATER (DW1) ============================ */
+
+    /** Feet to the metre as NEMS takes the water depth [W13]: the conversion the curve's ratios are read at. */
+    static final double FEET_PER_METRE = 1 / 0.3048;
+
+    /** A field the check makes of `d`: the same place, another number in its cell and `sites` sites - another field to the platforms' records. */
+    static Deposit anotherField(Deposit d, int index, int sites) {
+        return new Deposit(d.kind(), d.cell(), index, d.x(), d.y(), sites, d.amount(), d.geology());
+    }
+
+    static void deepWater() {
+        out.println("\n--- 14. deep water: a platform floats past a jacket's depth, and its price, its wells' and its upkeep follow the sea (DW1) ---");
+        double jacketM = Oil.PLATFORM_MAX_DEPTH_M, floatM = Oil.FLOATING_MAX_DEPTH_M, deepM = jacketM * 4;
+        int slots = 12;
+        double dd = Oil.WELL_DRILLING_DEPTH_FT, jacketFt = jacketM * FEET_PER_METRE;
+
+        // The curve, pure: exactly 1 at a jacket's depth and under, above 1 past it, rising to the deepest sea, NEMS's own ratios.
+        boolean ones = true;
+        for (double m : new double[] { 0.5, 30, jacketM / 2, jacketM }) {
+            ones &= Oil.platformCostFactor(m, slots) == 1 && Oil.wellCostFactor(m) == 1 && Oil.upkeepFactor(m, slots) == 1 && !Oil.isFloating(m);
+        }
+        assertTrue("every factor is exactly 1 at PLATFORM_MAX_DEPTH_M and under: the price, the wells' and the upkeep of the shallow game", ones);
+        double just = jacketM + 0.5;
+        report("...and above 1 the moment the platform floats, past it: the price, the wells' and the upkeep",
+                Oil.isFloating(just) && Oil.platformCostFactor(just, slots) > 1 && Oil.wellCostFactor(just) > 1 && Oil.upkeepFactor(just, slots) > 1,
+                String.format("%.3f, %.3f, %.4f at %.1f m", Oil.platformCostFactor(just, slots), Oil.wellCostFactor(just), Oil.upkeepFactor(just, slots), just));
+        int steps = 40;
+        boolean pRises = true, wRises = true, uRises = true, ratios = true, cheaper = true;
+        double lastP = 1, lastW = 1, lastU = 1;
+        for (int i = 0; i <= steps; i++) {
+            double m = just + i * (floatM - just) / steps, ft = m * FEET_PER_METRE;
+            double p = Oil.platformCostFactor(m, slots), w = Oil.wellCostFactor(m), u = Oil.upkeepFactor(m, slots);
+            pRises &= p > lastP;
+            wRises &= w > lastW;
+            uRises &= u > lastU;
+            lastP = p;
+            lastW = w;
+            lastU = u;
+            ratios &= close(p, Oil.nemsFloatingSystem(slots, ft) / Oil.nemsFixedPlatform(slots, jacketFt))
+                    && close(w, Oil.nemsFloaterWell(ft, dd) / Oil.nemsJackUpWell(jacketFt, dd))
+                    && close(u, Oil.nemsPlatformOpex(slots, ft) / Oil.nemsPlatformOpex(slots, jacketFt));
+            cheaper &= Oil.nemsFloaterWell(ft, dd) == Math.min(Oil.nemsSemiWell(ft, dd), Oil.nemsDrillshipWell(ft, dd));
+        }
+        report("each factor rises with the depth over a ladder of " + (steps + 1) + " seas from just past a jacket's to the deepest",
+                pRises && wRises && uRises, String.format("%.2f, %.2f, %.2f at %,.0f m", lastP, lastW, lastU, floatM));
+        report("...each the ratio of NEMS's own functions [W13]: the floating production system (eq 3-10) over the fixed platform (eq 3-7),"
+                        + " the floater's well (eqs 3-5, 3-6) over the jack-up's (eq 3-4) at the drilling depth, the platform's opex (eq 3-15)",
+                ratios, "to a billionth");
+        double semiJust = Oil.nemsSemiWell(just * FEET_PER_METRE, dd), shipJust = Oil.nemsDrillshipWell(just * FEET_PER_METRE, dd);
+        double semiDeep = Oil.nemsSemiWell(floatM * FEET_PER_METRE, dd), shipDeep = Oil.nemsDrillshipWell(floatM * FEET_PER_METRE, dd);
+        report("...the floater's well is the cheaper rig's - the semi-submersible's just past a jacket's, the drillship's in the deepest sea",
+                cheaper && semiJust < shipJust && shipDeep < semiDeep, String.format("%,.0f vs %,.0f, then %,.0f vs %,.0f", semiJust, shipJust, semiDeep, shipDeep));
+        report("...and at 12 slots the curve is the EIA's: 200 m 11.49, 1.39 and 1.04 times; 2,900 m 14.92, 3.81 and 21.85 times (to three places)",
+                Math.abs(Oil.platformCostFactor(200, slots) - 11.487) < 0.0006 && Math.abs(Oil.wellCostFactor(200) - 1.391) < 0.0006
+                        && Math.abs(Oil.upkeepFactor(200, slots) - 1.043) < 0.0006
+                        && Math.abs(Oil.platformCostFactor(2900, slots) - 14.918) < 0.0006 && Math.abs(Oil.wellCostFactor(2900) - 3.814) < 0.0006
+                        && Math.abs(Oil.upkeepFactor(2900, slots) - 21.846) < 0.0006,
+                String.format("%.3f, %.3f, %.3f at 200 m; %.3f, %.3f, %.3f at 2,900 m", Oil.platformCostFactor(200, slots), Oil.wellCostFactor(200),
+                        Oil.upkeepFactor(200, slots), Oil.platformCostFactor(2900, slots), Oil.wellCostFactor(2900), Oil.upkeepFactor(2900, slots)));
+
+        // Which field a new platform stands on, pure: a fixed one before a floating one, the shallower of two floating ones.
+        Deposit d = seaField();
+        if (d == null) {
+            report("fixture: SEA_OIL_SEED's nearest oil field is in the sea", false, "none");
+            return;
+        }
+        long x = d.x(), y = d.y();
+        LandManager.SeaField fixedFew = new LandManager.SeaField(anotherField(d, 101, 2), 2, jacketM / 2);
+        LandManager.SeaField floatMany = new LandManager.SeaField(anotherField(d, 102, 16), 16, deepM);
+        LandManager.SeaField floatShallow = new LandManager.SeaField(anotherField(d, 103, 4), 4, deepM / 2);
+        LandManager.SeaField floatSame = new LandManager.SeaField(anotherField(d, 104, 8), 8, deepM);
+        LandManager.SeaField fixedMany = new LandManager.SeaField(anotherField(d, 105, 12), 12, jacketM);
+        assertTrue("a fixed field is taken before a floating one, though it has fewer sea sites free and is listed after it",
+                Oil.freeField(List.of(), List.of(floatMany, fixedFew), slots, x, y) == 1);
+        assertTrue("...a fixed field full, a floating one: the platform stands where there is room",
+                Oil.freeField(List.of(new Oil.Platform(d.cell(), 101, 0, 1)), List.of(floatMany, fixedFew), slots, x, y) == 0);
+        assertTrue("...the shallower of two floating fields first, though it has fewer sea sites free",
+                Oil.freeField(List.of(), List.of(floatMany, floatShallow), slots, x, y) == 1
+                        && Oil.freeField(List.of(), List.of(floatShallow, floatMany), slots, x, y) == 0);
+        assertTrue("...two floating fields at one depth by the old rule, the most sea sites free",
+                Oil.freeField(List.of(), List.of(floatMany, floatSame), slots, x, y) == 0
+                        && Oil.freeField(List.of(), List.of(floatSame, floatMany), slots, x, y) == 1);
+        assertTrue("...a list with no floating field picks as it always did: the most sites free, and none for none",
+                Oil.freeField(List.of(), List.of(fixedFew, fixedMany), slots, x, y) == 1 && Oil.freeField(List.of(), List.of(), slots, x, y) == -1);
+
+        // A city holding a deep field: the town of section 8, its sea field moved deep by the fixture (Oil.setPlatformFieldsForTest()).
+        Game g = seaTown("wellcheck-deep");
+        if (g == null) {
+            report("fixture: the town buys the ground over the sea field", false, "could not");
+            return;
+        }
+        Oil wells = g.getSectors().oil();
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BuildingManager bm = g.getBuildingManager();
+        EconomyManager em = g.getEconomyManager();
+        BuildingsTemplate jacket = template(g, "Offshore Platform"), seaWell = template(g, "Platform Well");
+        Game.BuildQuote shallowQ = g.quoteBuild(jacket, 1);
+        double shallowCost = plans.getCostOf(jacket, 1);
+        Oil.JacketCase shallowCase = wells.jacketCase(plans);
+        report("fixture: the town's own sea field is a jacket's - no deep-water works on a quote, the investors' price the template's to the bit",
+                shallowQ.deepWaterPoints == 0 && shallowQ.deepWaterCost == 0 && shallowQ.deepWaterDepthM == 0 && g.deepWater(jacket, 1) == null
+                        && plans.getCostOfAt(jacket, 1, 1) == shallowCost && wells.floatingPlatforms() == 0 && wells.deepWaterUpkeepNow() == 0
+                        && shallowCase != null && wells.depthOfNext(jacket) == wells.platformFields().get(0).depth(),
+                String.format("field %.1f m deep", wells.platformFields().get(0).depth()));
+        wells.setPlatformFieldsForTest(List.of(new LandManager.SeaField(d, d.sites(), deepM)));
+        double pf = Oil.platformCostFactor(deepM, slots), wf = Oil.wellCostFactor(deepM), uf = Oil.upkeepFactor(deepM, slots);
+        report("with the field moved to " + (int) deepM + " m: a platform may stand on it, and the next one stands in its depth at its factor;"
+                        + " no slot yet for a well, so no depth and no factor",
+                wells.platformFields().size() == 1 && g.sitesFor(jacket) == 1 && Oil.isFloating(deepM) && wells.depthOfNext(jacket) == deepM
+                        && wells.deepWaterFactor(jacket) == pf && wells.depthOfNext(seaWell) == 0 && wells.deepWaterFactor(seaWell) == 1,
+                String.format("%.3f times at %.0f m", wells.deepWaterFactor(jacket), wells.depthOfNext(jacket)));
+
+        // The quote of the jacket.
+        Game.BuildQuote q = g.quoteBuild(jacket, 1);
+        double nmc = bm.nonMaterialCost(jacket);
+        int points = jacket.getConstructionPoints();
+        report("the jacket's quote carries the deep-water works: (factor - 1) x the template's construction points, at the depth it stands in",
+                q.deepWaterDepthM == deepM && close(q.deepWaterPoints, (pf - 1) * points) && q.deepWaterPoints > 0,
+                String.format("%,.0f points at %.0f m", q.deepWaterPoints, q.deepWaterDepthM));
+        report("...their money at the builders' price a point today: the points x the template's non-material cost over its points",
+                close(q.deepWaterCost, q.deepWaterPoints * nmc / points) && q.deepWaterCost > 0, String.format("$%,.1fk", q.deepWaterCost));
+        report("...in the sticker, taxed with the work, and so in the total, which rises by it with the builders' tax",
+                close(q.sticker, shallowQ.sticker + q.deepWaterCost) && close(q.total - shallowQ.total, em.withBuildersTax(q.deepWaterCost))
+                        && q.total > shallowQ.total,
+                String.format("%,.1f against %,.1f", q.total, shallowQ.total));
+        report("...in the months too: the order owes the points, and the builders take longer", !Double.isNaN(q.months) && q.months > shallowQ.months,
+                String.format("%.1f against %.1f months", q.months, shallowQ.months));
+        Game.DeepWater works = g.deepWater(jacket, 1), works2 = g.deepWater(jacket, 2);
+        report("Game.deepWater() says the same; an order of two is twice the points and the money, every unit at the first's depth",
+                works != null && works.depthM() == deepM && works.factor() == pf && close(works.points(), q.deepWaterPoints)
+                        && close(works.cost(), q.deepWaterCost) && works2 != null && works2.depthM() == deepM
+                        && close(works2.points(), 2 * works.points()) && close(works2.cost(), 2 * works.cost()),
+                works == null ? "none" : String.format("%.3f times at %.0f m", works.factor(), works.depthM()));
+        report("the investors reckon the same cost: BusinessInvestment.getCostOf() rises over the template's price by the works with the"
+                        + " builders' tax, as the quote's total does",
+                plans.getCostOfAt(jacket, 1, 1) == shallowCost && close(plans.getCostOf(jacket, 1) - shallowCost, em.withBuildersTax(q.deepWaterCost)),
+                String.format("$%,.1fk more", plans.getCostOf(jacket, 1) - shallowCost));
+
+        // The planner: the package at the depth it would stand in, its earnings carrying the upkeep.
+        Oil.JacketCase c = wells.jacketCase(plans);
+        double wellsPremium = (wf - 1) * bm.nonMaterialCost(seaWell) * (c == null ? 0 : c.wells());
+        double running = plans.runningCostOf(jacket);
+        report("the planner judges the package at the depth it would stand in: the jacket's premium and its n wells' on that field in its cost,"
+                        + " with the builders' tax",
+                c != null && shallowCase != null && c.field().depth() == deepM && c.wells() == shallowCase.wells()
+                        && close(c.cost() - shallowCase.cost(), em.withBuildersTax(q.deepWaterCost + wellsPremium)),
+                c == null ? "none" : String.format("%d wells: $%,.0fk against $%,.0fk", c.wells(), c.cost(), shallowCase.cost()));
+        report("...its earnings carry the upkeep: less by the jacket's running cost x (upkeepFactor() - 1), a month",
+                c != null && close(shallowCase.earns() - c.earns(), running * (uf - 1)),
+                c == null ? "none" : String.format("%,.2f a month against %,.2f", c.earns(), shallowCase.earns()));
+        report("...and the jacket's own share of the package, by cost, is what the investors are asked",
+                c != null && close(wells.estimatedMonthlyProfit(jacket, plans), c.earns() * plans.getCostOf(jacket, 1) / c.cost()), "");
+        BusinessInvestment.Decision decision = quietlyGet(() -> wells.plan(plans, g));
+        boolean carries = c != null && g.carriesItsWholeCost(Sectors.OIL, c.earns(), c.cost());
+        boolean staffs = wells.staffing(jacket).passes();
+        report("...ordered only while the package carries the interest on its whole cost, in the words of a floating platform at its depth",
+                decision.build ? decision.template == jacket && carries && staffs && decision.reason.contains("floating platform")
+                        && decision.reason.contains(String.format("%.0f m", deepM))
+                        : !(carries && staffs) && wells.atSeaWord() != null,
+                (decision.build ? "ordered: " : "held: " + wells.atSeaWord() + "; ") + decision.reason);
+
+        // The order: the cash the quote says, the points owed on its site; the builders finish it.
+        double cash0 = g.getCash();
+        Game.BuildResult placed = quietlyGet(() -> g.buildStack(jacket, 1, false));
+        BuildingsStacks stack = bm.getStack(jacket);
+        report("the order is placed and owes the deep-water points on its site with the template's own: the progress is below nothing by the quote's points",
+                placed == Game.BuildResult.SUCCESS && stack != null
+                        && close(-stack.getConstructionProgress(), q.prepPoints + q.worksPoints + q.bridgePoints + q.deepWaterPoints),
+                stack == null ? "no stack" : String.format("%,.1f owed of the quote's %,.1f", -stack.getConstructionProgress(), q.deepWaterPoints));
+        report("...and costs the quote's total", close(cash0 - g.getCash(), q.total), String.format("%,.1f against %,.1f", cash0 - g.getCash(), q.total));
+        int months = 0;
+        while (wells.jacketsStanding() < 1 && months < 240) {
+            quietly(() -> g.simulateMonths(1));
+            months++;
+        }
+        report("the builders finish it: the platform stands, floating on the deep field, counted among the floating platforms",
+                wells.jacketsStanding() == 1 && wells.floatingPlatforms() == 1 && wells.platformsNow().size() == 1
+                        && wells.platformsNow().get(0).cell() == d.cell() && wells.platformsNow().get(0).index() == d.index(),
+                months + " months (" + String.format("%,.0f points", points + q.deepWaterPoints) + ")");
+
+        // Its wells: the next in a slot of a platform at that depth.
+        Game.BuildQuote qw = g.quoteBuild(seaWell, 2);
+        int wellPoints = seaWell.getConstructionPoints();
+        report("the platform's wells are quoted at its depth, every well of the order at the first's: (factor - 1) x the points x the number",
+                wells.depthOfNext(seaWell) == deepM && wells.deepWaterFactor(seaWell) == wf && qw.deepWaterDepthM == deepM
+                        && close(qw.deepWaterPoints, (wf - 1) * wellPoints * 2)
+                        && close(qw.deepWaterCost, qw.deepWaterPoints * bm.nonMaterialCost(seaWell) / wellPoints),
+                String.format("%.3f times at %.0f m, %,.0f points", wf, qw.deepWaterDepthM, qw.deepWaterPoints));
+        report("...the investors reckon the same: two wells cost over the template's price by the works with the builders' tax",
+                close(plans.getCostOf(seaWell, 2) - plans.getCostOfAt(seaWell, 2, 1), em.withBuildersTax(qw.deepWaterCost)), "");
+        Game.BuildResult wellsPlaced = quietlyGet(() -> g.buildStack(seaWell, 2, false));
+        BuildingsStacks wellStack = bm.getStack(seaWell);
+        report("...two ordered owe the points on their site",
+                wellsPlaced == Game.BuildResult.SUCCESS && wellStack != null
+                        && close(-wellStack.getConstructionProgress(), qw.prepPoints + qw.worksPoints + qw.deepWaterPoints),
+                wellStack == null ? "no stack" : String.format("%,.1f owed", -wellStack.getConstructionProgress()));
+        int left = wells.slotsStanding() - wells.platformWellsCommitted();
+        Game.BuildResult rest = quietlyGet(() -> g.buildStack(seaWell, left, true));
+        report("...with every slot committed there is no next well: no depth, no factor, no works on a quote",
+                rest == Game.BuildResult.SUCCESS && wells.depthOfNext(seaWell) == 0 && wells.deepWaterFactor(seaWell) == 1 && g.deepWater(seaWell, 1) == null,
+                "slots " + wells.slotsStanding() + ", committed " + wells.platformWellsCommitted());
+
+        // The upkeep: each floating platform's (upkeepFactor() - 1) x the jacket's running cost, a service bought from the world.
+        double expected = (uf - 1) * plans.runningCostOf(jacket);
+        report("a floating platform's upkeep a month is (upkeepFactor() - 1) x the jacket's running cost, wages, power and water off its template",
+                wells.deepWaterUpkeepNow() > 0 && close(wells.deepWaterUpkeepNow(), expected), String.format("%,.2f a month, %.2f times", expected, uf));
+        quietly(() -> g.simulateMonths(1));
+        double booked = wells.getDeepWaterBill();
+        report("a month books the bill at that month's wages: the formula within a percent of the month before's (wages move a fraction of a percent a month)",
+                booked > 0 && Math.abs(booked - expected) <= 0.01 * expected, String.format("%.4f booked, %.4f the month before", booked, expected));
+        // ...the statement is struck a month behind the books (the shuttle's the same), so the next month carries the bill booked.
+        quietly(() -> g.simulateMonths(1));
+        Sector.Statement st = wells.statement();
+        Double named = st.otherInputs.get(Oil.DEEP_WATER_UPKEEP);
+        report("...as a service bought from the world: the Oil sector's \"Deep-water upkeep\" on its input line at that bill, and in its imports",
+                named != null && close(named, booked) && st.imports >= named * (1 - 1e-12) && st.inputs >= named * (1 - 1e-12),
+                String.format("%.6f named, %.6f imports", named == null ? 0 : named, st.imports));
+        report("...and the audit closes", g.getLastMoneyAudit().relative() < 1e-10, String.format("%.2e", g.getLastMoneyAudit().relative()));
+        List<Sector.Line> lines = wells.ownLines(g);
+        report("the Oil page counts the sea sites a platform takes, the floating platforms and last month's upkeep",
+                "1".equals(lineValue(lines, "Floating platforms")) && lineValue(lines, "Deep-water upkeep last month") != null
+                        && lineValue(lines, "Sea sites a platform takes") != null,
+                lineValue(lines, "Floating platforms") + ", " + lineValue(lines, "Deep-water upkeep last month"));
+
+        // The same platform on the field's real, shallow depth is a fixed jacket again: nothing floats, nothing is booked.
+        wells.setPlatformFieldsForTest(null);
+        quietly(() -> g.simulateMonths(2));
+        report("on the field's real depth the same platform is a fixed jacket: no floating platform, no upkeep named or booked, no line on the page",
+                wells.floatingPlatforms() == 0 && wells.deepWaterUpkeepNow() == 0 && wells.getDeepWaterBill() == 0
+                        && wells.statement().otherInputs.get(Oil.DEEP_WATER_UPKEEP) == null
+                        && lineValue(wells.ownLines(g), "Floating platforms") == null,
+                wells.floatingPlatforms() + " floating");
+
+        // Deeper than any production there is: no platform.
+        wells.setPlatformFieldsForTest(List.of(new LandManager.SeaField(d, d.sites(), floatM + 0.5)));
+        report("a field deeper than FLOATING_MAX_DEPTH_M takes no platform: no platform field, no room, a jacket refused for its deposit",
+                wells.platformFields().isEmpty() && wells.platformRoom() == 0 && !g.hasDepositFor(jacket, 1) && g.sitesFor(jacket) == 0,
+                wells.platformFields().size() + " field(s)");
+        wells.setPlatformFieldsForTest(null);
     }
 }

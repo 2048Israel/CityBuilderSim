@@ -251,6 +251,8 @@ Capital uses §1.3's cost per b/d. Power uses its kWh per barrel. Staff are 10�
 
 **Deep water: leave it out.** Real deepwater sits 150–450 km out [W1][W31], off any city's map. It could come back as an off-map "frontier" field if wanted.
 
+*DW1 (2026-10-31, Jerus: "Allow deep, costlier"): a sea field past 150 m takes a floating platform (an FPSO) down to 2,914 m, the Turritella FPSO's record at Shell's Stones field [W34]; its price, its wells' and its upkeep follow the depth by the ratios of the NEMS offshore cost equations [W13] (eq. 3-4 to 3-7, 3-10, 3-15). See `docs/queue/DW1-notes.md` and `sectors/Oil.java`, DEEP WATER.*
+
 ### 3.3 On the map
 
 - **Where it sits:** on the city's own sea blocks over an offshore oil field. Shallow fields lie on the shelf, 20–100 km out in reality [W14][W15]. The map draws only what the city has, so the platform is drawn on its owned sea.
@@ -498,6 +500,7 @@ All four use the brief's palette and type: stage `#0b1118`, IBM Plex Sans and Mo
 31. SBM Offshore, Liza Unity: https://sbmoffshore.com/newsroom/sbm-offshore-completes-us114-billion-financing-liza-unity
 32. 33 CFR 147.15, safety zones: https://www.law.cornell.edu/cfr/text/33/147.15
 33. UNCLOS, article 60: https://www.un.org/depts/los/convention_agreements/texts/unclos/part5.htm
+34. BOEM, Deepwater Gulf of Mexico 2019, OCS Report BOEM 2021-005 (a US government work, public domain): https://www.boem.gov/sites/default/files/documents/about-boem/Deepwater-Gulf-of-Mexico-Report-2019.pdf
 
 **Ports [P]**
 1. Indian Ports Association, Haldia OT-2 feasibility (2016): https://environmentclearance.nic.in/writereaddata/modification/Amendment/Attach_file/010720162OM72HCSrevFeasibilityReportOT2.pdf

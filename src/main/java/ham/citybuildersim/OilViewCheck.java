@@ -271,7 +271,7 @@ public class OilViewCheck {
                 v.landWells() == oil.landWellsStanding() && v.platformWells() == oil.platformWellsInSlots()
                         && v.platforms().size() == oil.platformsNow().size() && v.pipeKm() == oil.pipeKmStanding(),
                 v.landWells() + " land, " + v.platformWells() + " at sea on " + v.platforms().size());
-        LandManager.SeaField field = oil.shallowFields().get(0);
+        LandManager.SeaField field = oil.platformFields().get(0);
         OilView.Platform p = v.platforms().get(0);
         report("...each platform its field's depth and distance (Oil.lengthKm()), its wells and slots, its name",
                 p.name().equals("Platform A") && p.depth() == field.depth() && p.wells() == oil.platformsNow().get(0).wells()

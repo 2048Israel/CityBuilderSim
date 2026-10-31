@@ -184,6 +184,7 @@ public final class OilView {
      * @param pipeKm       kilometres of pipe standing
      * @param pipesWhole   fields whose whole pipe stands
      * @param shuttle      what the shuttle tankers cost last month (the statement's "Shuttle tankers")
+     * @param deepWater    ...and the floating platforms' deep-water upkeep (the statement's "Deep-water upkeep", DW1)
      * @param groundLeft   tonnes left in the ground pool
      * @param seaLeft      ...and in the offshore pool
      * @param groundFields oil fields the city owns on dry ground
@@ -210,7 +211,7 @@ public final class OilView {
      * @param refinery     the refinery's picture's month, which the units and products are read off
      */
     public record View(boolean counted, int month, double rate, int landWells, int platformWells, List<Platform> platforms,
-                       int pipeKm, int pipesWhole, double shuttle, double groundLeft, double seaLeft, int groundFields,
+                       int pipeKm, int pipesWhole, double shuttle, double deepWater, double groundLeft, double seaLeft, int groundFields,
                        int seaFields, int shallowSites, int drilledYear, int wearYear, int landOnSite, int jacketsOnSite,
                        int seaWellsOnSite, List<Series> series,
                        double crudeImported, double crudeImportBill, double refinersCrude, double soldAbroad,
@@ -266,7 +267,7 @@ public final class OilView {
         /* ----- the wells ----- */
         List<Vintage> vintages = oil.vintagesNow();
         List<Oil.Platform> standing = oil.platformsNow();
-        List<LandManager.SeaField> shallow = oil.shallowFields();
+        List<LandManager.SeaField> shallow = oil.platformFields();
         int[] slots = Oil.slotsOf(standing, shallow, oil.slotsEach());
         List<List<Vintage>> dealt = deal(vintages, standing);
         double landEach = oil.wellNameplate(), seaEach = oil.platformWellNameplate();
@@ -320,6 +321,7 @@ public final class OilView {
         int whole = oil.pipeKmStanding() <= 0 ? 0
                 : Oil.pipedFields(oil.pipelinesNow(), oil.pipeKmStanding(), shallow, site[0], site[1]).size();
         Double shuttle = oil.statement() == null ? null : oil.statement().otherInputs.get(Oil.SHUTTLE_TANKERS);
+        Double deepWater = oil.statement() == null ? null : oil.statement().otherInputs.get(Oil.DEEP_WATER_UPKEEP);
 
         /* ----- crude's month, and the products' across the edge ----- */
         double crudeIn = 0, crudeBill = 0, refiners = 0, crudeOut = 0, toRefiners = 0, toReserve = 0;
@@ -392,7 +394,8 @@ public final class OilView {
                 res.getSoldHomeTonnes() + res.getSoldAbroadTonnes(), res.getSettledBought(), res.getSettledSold());
 
         return new View(counted, month, rate, oil.landWellsStanding(), oil.platformWellsInSlots(),
-                Collections.unmodifiableList(platforms), oil.pipeKmStanding(), whole, shuttle == null ? 0 : shuttle, groundLeft,
+                Collections.unmodifiableList(platforms), oil.pipeKmStanding(), whole, shuttle == null ? 0 : shuttle,
+                deepWater == null ? 0 : deepWater, groundLeft,
                 seaLeft, fields[0], fields[1], shallowSites, drilled, wear,
                 Math.max(0, game.landWellsCommitted() - oil.landWellsStanding()), oil.jacketsOnSite(),
                 Math.max(0, oil.platformWellsCommitted() - oil.platformWellsStanding()), Collections.unmodifiableList(series),
@@ -968,6 +971,13 @@ public final class OilView {
         } else if (!v.platforms().isEmpty()) {
             f.add(new Fact("shuttle tankers, last month", money(v.shuttle()), FACT));
         }
+        // ...the floating platforms (DW1): those standing past a jacket's depth, and the upkeep they cost last month.
+        int floating = 0;
+        for (Platform p : v.platforms()) if (Oil.isFloating(p.depth())) floating++;
+        if (floating > 0) {
+            f.add(new Fact("floating platforms", countWords(floating, "platform"), FACT));
+            f.add(new Fact("deep-water upkeep, last month", money(v.deepWater()), FACT));
+        }
         if (v.jacketsOnSite() > 0 || v.seaWellsOnSite() > 0) {
             f.add(new Fact("on site", (v.jacketsOnSite() > 0 ? countWords(v.jacketsOnSite(), "platform") : "")
                     + (v.jacketsOnSite() > 0 && v.seaWellsOnSite() > 0 ? " · " : "")
@@ -980,7 +990,7 @@ public final class OilView {
     public static String noPlatformWords(View v) {
         if (v.seaFields() == 0) return "The city owns no oil field in the sea.";
         if (v.shallowSites() == 0) return "The city's sea oil lies deeper than a platform stands ("
-                + String.format("%.0f m", Oil.PLATFORM_MAX_DEPTH_M) + ").";
+                + String.format("%,.0f m", Oil.FLOATING_MAX_DEPTH_M) + ").";
         return "None stands yet: " + String.format("%,d", v.shallowSites()) + " sea sites a platform may take.";
     }
 

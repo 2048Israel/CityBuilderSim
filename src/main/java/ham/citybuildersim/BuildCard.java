@@ -645,13 +645,13 @@ public final class BuildCard {
                 break;
             }
             case SLOTS: {
-                // An offshore platform (0.7.91): its wells' slots, and the city's shallow sea sites - owned, slotted by the
+                // An offshore platform (0.7.91): its wells' slots, and the city's sea sites a platform takes - owned, slotted by the
                 // platforms standing - and the wells in their slots (sectors.Oil, THE OIL AT SEA).
-                verb = "holds up to "; words = " wells on a shallow sea field"; figure = unit = t.platformSlots();
+                verb = "holds up to "; words = " wells on a sea field"; figure = unit = t.platformSlots();
                 per = perTag = "well's slot";
                 ham.citybuildersim.sectors.Oil wells = game.getSectors().oil();
                 int sites = 0;
-                for (LandManager.SeaField s : wells.shallowFields()) sites += s.sites();
+                for (LandManager.SeaField s : wells.platformFields()) sites += s.sites();
                 detail = new double[] { sites, wells.slotsStanding(), wells.platformWellsInSlots() };
                 break;
             }
@@ -664,7 +664,7 @@ public final class BuildCard {
                 long[] at = { game.getCityLand().siteX(), game.getCityLand().siteY() };
                 detail = new double[] { wells.pipeKmStanding(),
                         ham.citybuildersim.sectors.Oil.pipedFields(wells.pipelinesNow(), wells.pipeKmStanding(),
-                                wells.shallowFields(), at[0], at[1]).size(),
+                                wells.platformFields(), at[0], at[1]).size(),
                         wells.getShuttleTonnes() };
                 break;
             }

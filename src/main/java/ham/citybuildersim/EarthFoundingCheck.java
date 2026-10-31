@@ -69,8 +69,10 @@ import java.util.Map;
  *      where it is the depth layer's code at the plot's centre, decoded, at
  *      least a metre; on the full file the study's spots - the North Sea off
  *      Rotterdam 40 and 80 km out, where a platform stands, and the sea off
- *      Valparaiso 20 km out, where none can - read the layer's depth, on the
- *      side of Oil.PLATFORM_MAX_DEPTH_M the sea is on.
+ *      Valparaiso 20 and 40 km out, where a floating platform stands at deep
+ *      water's cost (DW1; until then none could) - read the layer's depth, on
+ *      the side of Oil.PLATFORM_MAX_DEPTH_M the sea is on, no deeper than
+ *      Oil.FLOATING_MAX_DEPTH_M, and Oil.platformCostFactor() above 1 there.
  *   6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA: Rotterdam's founded through
  *      the game stands on its Earth world, its land the snap's; it buys the
  *      ground to an oil field in the sea, the field's sites the sea's, its
@@ -538,8 +540,16 @@ public class EarthFoundingCheck {
         double max = ham.citybuildersim.sectors.Oil.PLATFORM_MAX_DEPTH_M;
         report("the full file: the North Sea off Rotterdam, 40 and 80 km out, is the layer's depth and a platform stands in it (the study: 27 and 34 m, E4's rule gave 69 and 150)",
                 rot[0] > 0 && rot[1] > 0 && rot[0] <= max && rot[1] <= max && rot[0] < 69 && rot[1] < 150, String.format("%.0f m and %.0f m", rot[0], rot[1]));
-        report("...the sea off Valparaiso, 20 and 40 km out, is hundreds of metres: no platform stands (the study: 656 and 2,369 m, E4's rule gave 44 and 91)",
-                valpo > max && valpo40 > max && valpo > 200 && valpo40 > valpo, String.format("%.0f m and %.0f m", valpo, valpo40));
+        double floating = ham.citybuildersim.sectors.Oil.FLOATING_MAX_DEPTH_M;
+        int slots = 12;   // the Offshore Platform template's wells (buildings.json)
+        report("...the sea off Valparaiso, 20 and 40 km out, is hundreds of metres: a floating platform stands in it, at deep water's cost"
+                        + " (the study: 656 and 2,369 m, E4's rule gave 44 and 91; until DW1 no platform stood)",
+                valpo > max && valpo40 > max && valpo <= floating && valpo40 <= floating && valpo > 200 && valpo40 > valpo
+                        && ham.citybuildersim.sectors.Oil.isFloating(valpo) && ham.citybuildersim.sectors.Oil.isFloating(valpo40)
+                        && ham.citybuildersim.sectors.Oil.platformCostFactor(valpo, slots) > 1
+                        && ham.citybuildersim.sectors.Oil.platformCostFactor(valpo40, slots) > ham.citybuildersim.sectors.Oil.platformCostFactor(valpo, slots),
+                String.format("%.0f m and %.0f m, %.1f and %.1f times a jacket's price", valpo, valpo40,
+                        ham.citybuildersim.sectors.Oil.platformCostFactor(valpo, slots), ham.citybuildersim.sectors.Oil.platformCostFactor(valpo40, slots)));
     }
 
     /** The depth layer's metres at a plot's centre, at least SEA_LEAST_DEPTH_M: what depthAt() must give, read by another road (the raw code at the plot's latitude and longitude). */

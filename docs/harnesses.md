@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**161 harness files, 17,419 labelled assertions.** AllChecks runs 161 of them.
+**161 harness files, 17,458 labelled assertions.** AllChecks runs 161 of them.
 
 ## Which harnesses read which class
 
@@ -37,7 +37,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [BuildingType](map/BuildingType.md) | BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
-| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LandmassCheck, LongPlaytest, RefineryCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck |
+| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LandmassCheck, LongPlaytest, RefineryCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck |
@@ -90,7 +90,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandmassCheck, MapCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck, ScaleCheck |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
@@ -6345,66 +6345,66 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L118 the fixture**
-  - L120 EarthCheck's fixture and its expected figures are beside the classes (
-  - L132 fixture: the windows Rotterdam, Perth and Paris
-- **L150 1. the data, or why not**
-  - L152 a reader made available is available (the fixture's), and an identity nothing holds is not
-  - L155 the words for a missing file say it is not here and where it goes
-  - L158 ...and how it gets there: in a copy of the repository the script, which Play CityBuilderSim.bat runs; in the built game its zip
-  - L164 ...for a file that is not this build's, the file, this build's identity and what replaces it: the script, or the zip
-  - L170 ...and a save on this build's Earth without it, the same ways to it, then load the city again
-  - L172 ...for a save on other data, both identities and the build that opens it
-  - L175 ...for a save that does not say where, that it does not
-  - L176 ...and nothing for a save whose data is here
-  - L177 an identity reads as a person reads it: its name and the hash's first eight
-  - L182 the file -Dcbs.earth names is there
-  - L187 no file named nor at
-  - L192 the game's Earth is here, the file named, EARTH_2
-- **L201 2. the card is the plots': the site, the ground within 5 km, the province and the nearest iron**
-- **L320 2b. the card's relief, shallow water and landmass on the real Earth (ET1, D21)**
-  - L328 Medellin: mostly hills - flat under 60% of its dry ground, foothill over 30%, steep and very steep over 3% (the mockup: 42 / 45 / 12)
-  - L332 ...its words fold very steep into steep and keep the order flat, foothill, steep
-  - L333 ...inland: no shallow water and no sea within 5 km, said so
-  - L337 ...its landmass is the data's at the site, with the data's own name and area, the Americas' (over ten million km2)
-  - L341 Halifax: shallow water within a kilometre, and the sea within 5 km is well over a metre deep - 10 m or more, the harbour's and the Atlantic's (the mockup: 19 m)
-  - L344 ...its words say how far the shallow water is and how deep the sea is
-  - L346 ...on the same landmass as Medellin's, the Americas'
-  - L347 Prince Edward Island: a landmass of its own - not Halifax's, a few thousand km2 (the study: 5,611 and the island's real 5,660)
-  - L351 ...its words name the data's place and area, whole km2
-  - L355 Valparaiso: the sea within 5 km runs deep - well past Halifax's, over 50 m, said in the card's words
-  - L362 Tengboche
-  - L364 Tengboche, in the Himalaya: very steep ground is a number of its own on the card, and its words fold it into steep (most of its ground)
-  - L369 Rotterdam: flat - all but a hair of its dry ground flat, on Afro-Eurasia (landmass 1, over seventy million km2)
-- **L387 3. a spot in the sea, or on ice, is refused; a desert, or no water near, is warned of**
-  - L392 fixture: a spot in the North Sea - the card has no site, and says so
-  - L395 ...the founding's problem() says the same
-  - L407 ...and the game will not found it
-  - L410 fixture: Paris is neither ice nor desert, and has the Seine: no warning
-  - L416 the full file: the middle of Greenland's sheet is refused, on ice
-  - L419 ...the Sahara is foundable, warned that it is a desert and has no water near
-  - L422 ...and a spot by the sea with no river or lake within 5 km is warned it drinks the sea
-  - L426 ...and the middle of the Atlantic is refused
-- **L433 4. search, and the spot the seed picks**
-  - L435 fixture: the fixture carries the data's places whole
-  - L444 a place's own name, in capitals, finds a place of that name first (
-  - L451 fixture: a name with accents is found by its plain spelling and without them
-  - L464 the hits are ranked whole, begun, a word begun, within, each group in the data's order, at most SEARCH_HITS
-  - L465 ...and nothing typed finds nothing
-  - L475 Random spot: the same seed picks the same place, and it passes the site test
-  - L476 ...and eight seeds pick more than one place
-- **L483 5. the sea's depth on Earth: the depth layer's, at least a metre (ET1, D17)**
-  - L507 fixture: west of Rotterdam's site, nothing where the plot is not the sea's, and at sea the depth layer's code at the plot's centre, decoded, at least a metre
-  - L524 ...a sea plot is never shallower than SEA_LEAST_DEPTH_M, and where the layer reads none under it, it is exactly that
-  - L528 ...and the elevation field's shelf, which Earth has none of, is still refused
-  - L539 the full file: the North Sea off Rotterdam, 40 and 80 km out, is the layer's depth and a platform stands in it (the study: 27 and 34 m, E4's rule gave 69 and...
-  - L541 ...the sea off Valparaiso, 20 and 40 km out, is hundreds of metres: no platform stands (the study: 656 and 2,369 m, E4's rule gave 44 and 91)
-- **L568 6. an Earth city founded, played, and drilling at sea**
-  - L571 fixture: Rotterdam's spot is a founding with no problem, on Earth
-  - L590 the game founds it: its World the Earth's of that key, its land the snap's site, two months played
-  - L612 fixture: an oil field in the North Sea near the site, shallow enough for a platform
-  - L645 the city buys the ground to it: its sites the sea's, the field on the sea's list at World's depth
-  - L670 a platform and its wells stand on it, the city plays two months more, the investors planning at sea, and the oil's page
+- **L120 the fixture**
+  - L122 EarthCheck's fixture and its expected figures are beside the classes (
+  - L134 fixture: the windows Rotterdam, Perth and Paris
+- **L152 1. the data, or why not**
+  - L154 a reader made available is available (the fixture's), and an identity nothing holds is not
+  - L157 the words for a missing file say it is not here and where it goes
+  - L160 ...and how it gets there: in a copy of the repository the script, which Play CityBuilderSim.bat runs; in the built game its zip
+  - L166 ...for a file that is not this build's, the file, this build's identity and what replaces it: the script, or the zip
+  - L172 ...and a save on this build's Earth without it, the same ways to it, then load the city again
+  - L174 ...for a save on other data, both identities and the build that opens it
+  - L177 ...for a save that does not say where, that it does not
+  - L178 ...and nothing for a save whose data is here
+  - L179 an identity reads as a person reads it: its name and the hash's first eight
+  - L184 the file -Dcbs.earth names is there
+  - L189 no file named nor at
+  - L194 the game's Earth is here, the file named, EARTH_2
+- **L203 2. the card is the plots': the site, the ground within 5 km, the province and the nearest iron**
+- **L322 2b. the card's relief, shallow water and landmass on the real Earth (ET1, D21)**
+  - L330 Medellin: mostly hills - flat under 60% of its dry ground, foothill over 30%, steep and very steep over 3% (the mockup: 42 / 45 / 12)
+  - L334 ...its words fold very steep into steep and keep the order flat, foothill, steep
+  - L335 ...inland: no shallow water and no sea within 5 km, said so
+  - L339 ...its landmass is the data's at the site, with the data's own name and area, the Americas' (over ten million km2)
+  - L343 Halifax: shallow water within a kilometre, and the sea within 5 km is well over a metre deep - 10 m or more, the harbour's and the Atlantic's (the mockup: 19 m)
+  - L346 ...its words say how far the shallow water is and how deep the sea is
+  - L348 ...on the same landmass as Medellin's, the Americas'
+  - L349 Prince Edward Island: a landmass of its own - not Halifax's, a few thousand km2 (the study: 5,611 and the island's real 5,660)
+  - L353 ...its words name the data's place and area, whole km2
+  - L357 Valparaiso: the sea within 5 km runs deep - well past Halifax's, over 50 m, said in the card's words
+  - L364 Tengboche
+  - L366 Tengboche, in the Himalaya: very steep ground is a number of its own on the card, and its words fold it into steep (most of its ground)
+  - L371 Rotterdam: flat - all but a hair of its dry ground flat, on Afro-Eurasia (landmass 1, over seventy million km2)
+- **L389 3. a spot in the sea, or on ice, is refused; a desert, or no water near, is warned of**
+  - L394 fixture: a spot in the North Sea - the card has no site, and says so
+  - L397 ...the founding's problem() says the same
+  - L409 ...and the game will not found it
+  - L412 fixture: Paris is neither ice nor desert, and has the Seine: no warning
+  - L418 the full file: the middle of Greenland's sheet is refused, on ice
+  - L421 ...the Sahara is foundable, warned that it is a desert and has no water near
+  - L424 ...and a spot by the sea with no river or lake within 5 km is warned it drinks the sea
+  - L428 ...and the middle of the Atlantic is refused
+- **L435 4. search, and the spot the seed picks**
+  - L437 fixture: the fixture carries the data's places whole
+  - L446 a place's own name, in capitals, finds a place of that name first (
+  - L453 fixture: a name with accents is found by its plain spelling and without them
+  - L466 the hits are ranked whole, begun, a word begun, within, each group in the data's order, at most SEARCH_HITS
+  - L467 ...and nothing typed finds nothing
+  - L477 Random spot: the same seed picks the same place, and it passes the site test
+  - L478 ...and eight seeds pick more than one place
+- **L485 5. the sea's depth on Earth: the depth layer's, at least a metre (ET1, D17)**
+  - L509 fixture: west of Rotterdam's site, nothing where the plot is not the sea's, and at sea the depth layer's code at the plot's centre, decoded, at least a metre
+  - L526 ...a sea plot is never shallower than SEA_LEAST_DEPTH_M, and where the layer reads none under it, it is exactly that
+  - L530 ...and the elevation field's shelf, which Earth has none of, is still refused
+  - L541 the full file: the North Sea off Rotterdam, 40 and 80 km out, is the layer's depth and a platform stands in it (the study: 27 and 34 m, E4's rule gave 69 and...
+  - L545 ...the sea off Valparaiso, 20 and 40 km out, is hundreds of metres: a floating platform stands in it, at deep water's cost
+- **L578 6. an Earth city founded, played, and drilling at sea**
+  - L581 fixture: Rotterdam's spot is a founding with no problem, on Earth
+  - L600 the game founds it: its World the Earth's of that key, its land the snap's site, two months played
+  - L622 fixture: an oil field in the North Sea near the site, shallow enough for a platform
+  - L655 the city buys the ground to it: its sites the sea's, the field on the sea's list at World's depth
+  - L680 a platform and its wells stand on it, the city plays two months more, the investors planning at sea, and the oil's page
 
 ## EarthTerrainCheck.java - 92 labelled assertions
 
@@ -21350,7 +21350,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L493 a city with no fresh plants is given no rights
   - L526 A FORMAT-30 SAVE IS REFUSED (0.7.120): below the floor, in P7's words, nothing of it applied, its file as it was
 
-## WellCheck.java - 95 labelled assertions
+## WellCheck.java - 134 labelled assertions
 
 > The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's
 > WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil
@@ -21366,114 +21366,154 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L215 1. the profiles, to the bit**
-  - L216 a land well loses 10% of its lift a year, a platform well 8.5% after a plateau of three years (the research's
-  - L226 a land well's profile is LAND_KEEPS_A_YEAR to the power of its age in years, every month of fifty years, to
-  - L228 ...all of its nameplate the month it opens, nine tenths a year on, and nine tenths of the year before every year
-  - L230 a platform well's is 1 through PLATFORM_PLATEAU_MONTHS, then PLATFORM_KEEPS_A_YEAR to the power of its years
-  - L233 ...and an age under nothing reads as nothing
-- **L240 2. a well is worn out under ten barrels a day: at 263 months on land, 348 on a platform**
-  - L242 worn out is WORN_OUT_BARRELS_A_DAY of a well's NAMEPLATE_BARRELS_A_DAY, ten of a hundred: 41.5 t of 415
-  - L246 a land well's life is 263 months: at 262 it lifts ten barrels a day or more, at 263 less
-  - L251 ...a platform well's 348: its plateau and 26 years past it
-- **L261 3. a town's lift is its vintages', to the bit**
-  - L275 fixture: the town is handed six dry oil sites and plenty of oil, and stands two wells
-  - L278 ...read before a month is played: two wells new this month, the vintages struck holding none (a read moves
-  - L290 wells stood between two months open the first month played, and are struck so once a month
-  - L297 a new well lifts all of its nameplate the month it opens: two more add 830 t to the lift, to the bit
-  - L306 two batches, two vintages, oldest first
-  - L308 the nameplate is each vintage's wells x 415 t x its profile at its age, summed oldest first, to the bit
-  - L312 ...the nameplate each month was struck on, every month of the eighteen
-  - L314 ...and the wells lift it at their operating rate, the ground permitting
-  - L318 the lift is cached on the month: read twice, the same, and the vintages unmoved
-  - L320 ...a well's part of the shrinking rules' measure is the average well's lift
-  - L322 the world's oil is unowned + the town's remaining + its extracted, to the tonne, every month
-- **L329 4. a worn-out well is retired, oldest first, and its site refilled**
-  - L358 fixture: four wells on four dry sites, two of them 262 months old: none worn out yet - and hands to staff another
-  - L368 a month on, the two at 263 months are retired by the month's retirements, oldest first: the two younger stand
-  - L381 the sector's one-well-a-month rule drills the freed sites again, one at a time
-  - L390 ...each new well a vintage of its own month, lifting its whole nameplate when it opened
-  - L392 ...and the world's oil is conserved, to the tonne
-- **L399 5. dry and sea sites are kept apart: a land well stands only on a dry one**
-  - L402 fixture: the world's nearest oil field to its site is in the sea
-  - L418 fixture: the town buys the ground over it, and all its oil sites are the sea's
-  - L421 a land well's sites are the dry ones (Game.sitesFor()); an Iron Mine's all its iron's
-  - L425 an Oil Well on a sea site is refused for its deposit, on the card as at the order
-  - L429 ...and the investors drill no land well: the word names the deposit and the dry ground
-  - L438 with two dry sites beside the sea's, two wells stand and a third is refused
-  - L454 wells standing past the dry sites, on the sea's, are kept: six months on, both stand and lift, and no land well
-  - L459 ...an order is still refused for its deposit
-  - L460 ...and the world's oil is conserved, to the tonne
-- **L466 6. the vintages cross a save, and a save from before them reads every well new**
-  - L475 the vintages and the lift cross a save, to the bit
-  - L483 ...and a month on, the city and its reload strike the same vintages and lift the same crude, to the bit
-  - L496 ...saved as the Oil sector's extras, vintages.<month opened>.<kind>, the count the value
-  - L505 a save from before 0.7.84 has none: every well it stands is read new, its whole nameplate
-  - L511 ...and struck as opened the first month the city plays
-  - L514 ...the audit closing
-- **L520 7. a well has one post**
-  - L531 the Oil Well has one post, a diploma's, in buildings.json and its built-in twin (the research's Q13; three
-- **L577 8. a platform stands on a shallow sea field, its wells in its slots; the land's on dry ground**
-  - L578 a platform stands in sea PLATFORM_MAX_DEPTH_M deep or less: 150 m, the fixed platform's limit (the research's 3.2)
-  - L582 fixture: SEA_OIL_SEED's nearest oil field is in the sea
-  - L585 ...the rule, pure: a field in the sea at 150 m takes one, at 150.5 m or on land or with no site owned none
-  - L593 slots are at most 12 a jacket and at most the field's sea sites: a 16-site field holds 12 and 4, then none
-  - L598 ...two jackets read anew stand on it, its wells dealt oldest first: 15 wells, 12 and 3
-  - L604 fixture: the town buys the ground over the sea field
-  - L613 fixture: the town owns the sea field, a shallow one - its sites all the sea's, its depth the world's
-  - L619 with no platform: room for one jacket (its
-  - L624 ...a platform well is refused for its deposit, on the order and the card
-  - L630 a jacket stands on it; a second is refused for its deposit - the field's
-  - L639 a well to every slot stands, the next is refused; a land well is refused too - dry and sea sites kept apart
-  - L652 the wells in its slots lift on the platform's profile, struck as a vintage of their own, its nameplate to the bit
-  - L661 ...forty months old, four months past its plateau:
-  - L664 ...and the world's oil is conserved, to the tonne
-  - L675 two platform wells at 348 months are retired by the month's retirements, the younger kept
-  - L694 ...and the planner drills the freed slots again, one at a time
-- **L702 9. the shuttle tankers: platform crude sold at home pays the boundary's freight; abroad, none**
-  - L707 fixture: no buyer at home - every tonne the platform lifts is shipped abroad, and the shuttle tankers are paid
-  - L732 with the city's reserve filling, the crude ashore is the offshore pool's share of the month's lift sold at home -
-  - L737 ...each part what left its pool: the platforms' the offshore pool's E, the land wells' the ground's, the two the
-  - L742 ...at CRUDE's band freight a tonne, baseFreight x freightFactor x the rate, to the bit
-  - L753 ...booked as a service bought from the world: the Oil sector's \"Shuttle tankers\" on its input line, in its imports
-  - L756 ...and the audit closes
-- **L763 10. the pipeline: it pays on a big field and not on a small one; a whole pipe ends the shuttle**
-  - L769 a field's pipe is the straight line from it to the founding site, in whole kilometres rounded up
-  - L774 the rule (freight less repairs and tax a tonne) x tonnes x min(months, 480) >= 1.25 x cost: a full platform's
-  - L781 ...its months capped at the pipe's 480, and on land - no freight saved - never
-  - L789 ...weighed on the town's field: its cost, freight and tonnes the rule's, and the provisos - the refiners not losing
-  - L803 a pipe the player lays goes to the platform's field with none, its kilometres the record's
-  - L812 ...whole, it carries the field's crude: the shuttle tankers carry none of it while the crude is sold at home
-- **L820 11. the platforms and pipelines cross a save; a save from before them reads them anew**
-  - L834 the platforms, the pipelines and the lift cross a save, to the bit
-  - L842 ...and a month on, the city and its reload strike the same and lift the same, to the bit
-  - L857 ...saved as the Oil sector's extras, platforms.<place>.<cell>.<index>.<month> its wells, pipelines.<...> its km
-  - L867 a save without them reads the jacket standing anew on its field, its wells in its slots, the pipe on its field -
-- **L880 12. the planner weighs the sea after the land: a jacket as a package, then its wells**
-  - L883 fixture: the town buys the ground over the sea field
-  - L892 the investors' test on a jacket is its package's: its share by cost of the jacket and min(12, sites) wells' earnings
-  - L901 with no dry site and the sea field free, the land says no and the planner weighs a jacket on it: ordered while
-  - L907 ...held, a package that earns but would not carry it is held in the whole cost's words
-  - L919 ...with a jacket standing and its slots free, a platform well into one, while one carries the interest on its
-  - L932 once the oil is worked out, the jacket with no well is decommissioned, and with none left the pipe
-- **L967 13. the city's crude is two pools: the land wells lift the ground's, the platform wells the sea's (0.7.93)**
-  - L970 fixture: the town buys the ground over the sea field
-  - L982 the offshore pool is the sea field's tonnes, the ground pool the rest - the centre's by fiat - and the two the city's
-  - L997 fixture: a jacket on the field with a well in all but one slot, a land well on one of the two dry sites
-  - L1015 every month each pool gives its own wells' crude: the land well's what left the ground pool, the platforms' what
-  - L1018 the ground pool worked out, the land well lifts nothing while the platform wells lift on from the sea's
-  - L1022 ...and the world's oil is conserved, to the tonne, every month
-  - L1027 a land well is refused for its deposit with a dry site free - its pool worked out - on the order and the card
-  - L1031 ...while a platform well into the free slot is let through, the offshore pool its own: the card's tonnes the sea's
-  - L1036 ...and the land's word says the oil on dry ground is worked out, a deposit's word (ORE)
-  - L1044 the land well over the worked-out pool is the spare - the platforms' lift the demand, the whole the capacity - and
-  - L1053 the Oil page shows both pools: the ground's in \"Crude in the ground\", the sea's in the At sea lines'
-  - L1066 the map greys each pool apart: the centre's ground oil worked out, the sea field's holding its pool's left, the
-  - L1077 the two pools' E cross a save, to the bit
-  - L1085 ...saved in SAVE_FORMAT 35 and since: the depletion's oil the ground pool's E, oilDepletionAtSea the sea's
-  - L1109 a save from before the pools (format 34) is refused since 0.7.120, below the floor: in P7's words, nothing of it
-  - L1120 the offshore pool's last 100 t: the platforms lift those and no more, the land well its month from the ground's
-  - L1126 ...the sea worked out: the platform wells the spare and the land well kept, a platform well refused for its deposit
+- **L232 1. the profiles, to the bit**
+  - L233 a land well loses 10% of its lift a year, a platform well 8.5% after a plateau of three years (the research's
+  - L243 a land well's profile is LAND_KEEPS_A_YEAR to the power of its age in years, every month of fifty years, to
+  - L245 ...all of its nameplate the month it opens, nine tenths a year on, and nine tenths of the year before every year
+  - L247 a platform well's is 1 through PLATFORM_PLATEAU_MONTHS, then PLATFORM_KEEPS_A_YEAR to the power of its years
+  - L250 ...and an age under nothing reads as nothing
+- **L257 2. a well is worn out under ten barrels a day: at 263 months on land, 348 on a platform**
+  - L259 worn out is WORN_OUT_BARRELS_A_DAY of a well's NAMEPLATE_BARRELS_A_DAY, ten of a hundred: 41.5 t of 415
+  - L263 a land well's life is 263 months: at 262 it lifts ten barrels a day or more, at 263 less
+  - L268 ...a platform well's 348: its plateau and 26 years past it
+- **L278 3. a town's lift is its vintages', to the bit**
+  - L292 fixture: the town is handed six dry oil sites and plenty of oil, and stands two wells
+  - L295 ...read before a month is played: two wells new this month, the vintages struck holding none (a read moves
+  - L307 wells stood between two months open the first month played, and are struck so once a month
+  - L314 a new well lifts all of its nameplate the month it opens: two more add 830 t to the lift, to the bit
+  - L323 two batches, two vintages, oldest first
+  - L325 the nameplate is each vintage's wells x 415 t x its profile at its age, summed oldest first, to the bit
+  - L329 ...the nameplate each month was struck on, every month of the eighteen
+  - L331 ...and the wells lift it at their operating rate, the ground permitting
+  - L335 the lift is cached on the month: read twice, the same, and the vintages unmoved
+  - L337 ...a well's part of the shrinking rules' measure is the average well's lift
+  - L339 the world's oil is unowned + the town's remaining + its extracted, to the tonne, every month
+- **L346 4. a worn-out well is retired, oldest first, and its site refilled**
+  - L375 fixture: four wells on four dry sites, two of them 262 months old: none worn out yet - and hands to staff another
+  - L385 a month on, the two at 263 months are retired by the month's retirements, oldest first: the two younger stand
+  - L398 the sector's one-well-a-month rule drills the freed sites again, one at a time
+  - L407 ...each new well a vintage of its own month, lifting its whole nameplate when it opened
+  - L409 ...and the world's oil is conserved, to the tonne
+- **L416 5. dry and sea sites are kept apart: a land well stands only on a dry one**
+  - L419 fixture: the world's nearest oil field to its site is in the sea
+  - L435 fixture: the town buys the ground over it, and all its oil sites are the sea's
+  - L438 a land well's sites are the dry ones (Game.sitesFor()); an Iron Mine's all its iron's
+  - L442 an Oil Well on a sea site is refused for its deposit, on the card as at the order
+  - L446 ...and the investors drill no land well: the word names the deposit and the dry ground
+  - L455 with two dry sites beside the sea's, two wells stand and a third is refused
+  - L471 wells standing past the dry sites, on the sea's, are kept: six months on, both stand and lift, and no land well
+  - L476 ...an order is still refused for its deposit
+  - L477 ...and the world's oil is conserved, to the tonne
+- **L483 6. the vintages cross a save, and a save from before them reads every well new**
+  - L492 the vintages and the lift cross a save, to the bit
+  - L500 ...and a month on, the city and its reload strike the same vintages and lift the same crude, to the bit
+  - L513 ...saved as the Oil sector's extras, vintages.<month opened>.<kind>, the count the value
+  - L522 a save from before 0.7.84 has none: every well it stands is read new, its whole nameplate
+  - L528 ...and struck as opened the first month the city plays
+  - L531 ...the audit closing
+- **L537 7. a well has one post**
+  - L548 the Oil Well has one post, a diploma's, in buildings.json and its built-in twin (the research's Q13; three
+- **L594 8. a platform stands on a sea field, its wells in its slots; the land's on dry ground**
+  - L595 a fixed jacket stands in sea PLATFORM_MAX_DEPTH_M deep or less: 150 m, the fixed platform's limit (the research's 3.2);
+  - L601 fixture: SEA_OIL_SEED's nearest oil field is in the sea
+  - L604 ...the rule, pure: a field in the sea at 150 m takes a fixed jacket, at 150.5 m a floating platform, at
+  - L616 slots are at most 12 a jacket and at most the field's sea sites: a 16-site field holds 12 and 4, then none
+  - L621 ...two jackets read anew stand on it, its wells dealt oldest first: 15 wells, 12 and 3
+  - L627 fixture: the town buys the ground over the sea field
+  - L636 fixture: the town owns the sea field, a shallow one - its sites all the sea's, its depth the world's
+  - L642 with no platform: room for one jacket (its
+  - L647 ...a platform well is refused for its deposit, on the order and the card
+  - L653 a jacket stands on it; a second is refused for its deposit - the field's
+  - L662 a well to every slot stands, the next is refused; a land well is refused too - dry and sea sites kept apart
+  - L675 the wells in its slots lift on the platform's profile, struck as a vintage of their own, its nameplate to the bit
+  - L684 ...forty months old, four months past its plateau:
+  - L687 ...and the world's oil is conserved, to the tonne
+  - L698 two platform wells at 348 months are retired by the month's retirements, the younger kept
+  - L717 ...and the planner drills the freed slots again, one at a time
+- **L725 9. the shuttle tankers: platform crude sold at home pays the boundary's freight; abroad, none**
+  - L730 fixture: no buyer at home - every tonne the platform lifts is shipped abroad, and the shuttle tankers are paid
+  - L755 with the city's reserve filling, the crude ashore is the offshore pool's share of the month's lift sold at home -
+  - L760 ...each part what left its pool: the platforms' the offshore pool's E, the land wells' the ground's, the two the
+  - L765 ...at CRUDE's band freight a tonne, baseFreight x freightFactor x the rate, to the bit
+  - L776 ...booked as a service bought from the world: the Oil sector's \"Shuttle tankers\" on its input line, in its imports
+  - L779 ...and the audit closes
+- **L786 10. the pipeline: it pays on a big field and not on a small one; a whole pipe ends the shuttle**
+  - L792 a field's pipe is the straight line from it to the founding site, in whole kilometres rounded up
+  - L797 the rule (freight less repairs and tax a tonne) x tonnes x min(months, 480) >= 1.25 x cost: a full platform's
+  - L804 ...its months capped at the pipe's 480, and on land - no freight saved - never
+  - L812 ...weighed on the town's field: its cost, freight and tonnes the rule's, and the provisos - the refiners not losing
+  - L826 a pipe the player lays goes to the platform's field with none, its kilometres the record's
+  - L835 ...whole, it carries the field's crude: the shuttle tankers carry none of it while the crude is sold at home
+- **L843 11. the platforms and pipelines cross a save; a save from before them reads them anew**
+  - L857 the platforms, the pipelines and the lift cross a save, to the bit
+  - L865 ...and a month on, the city and its reload strike the same and lift the same, to the bit
+  - L880 ...saved as the Oil sector's extras, platforms.<place>.<cell>.<index>.<month> its wells, pipelines.<...> its km
+  - L890 a save without them reads the jacket standing anew on its field, its wells in its slots, the pipe on its field -
+- **L903 12. the planner weighs the sea after the land: a jacket as a package, then its wells**
+  - L906 fixture: the town buys the ground over the sea field
+  - L915 the investors' test on a jacket is its package's: its share by cost of the jacket and min(12, sites) wells' earnings
+  - L924 with no dry site and the sea field free, the land says no and the planner weighs a jacket on it: ordered while
+  - L930 ...held, a package that earns but would not carry it is held in the whole cost's words
+  - L942 ...with a jacket standing and its slots free, a platform well into one, while one carries the interest on its
+  - L955 once the oil is worked out, the jacket with no well is decommissioned, and with none left the pipe
+- **L990 13. the city's crude is two pools: the land wells lift the ground's, the platform wells the sea's (0.7.93)**
+  - L993 fixture: the town buys the ground over the sea field
+  - L1005 the offshore pool is the sea field's tonnes, the ground pool the rest - the centre's by fiat - and the two the city's
+  - L1020 fixture: a jacket on the field with a well in all but one slot, a land well on one of the two dry sites
+  - L1038 every month each pool gives its own wells' crude: the land well's what left the ground pool, the platforms' what
+  - L1041 the ground pool worked out, the land well lifts nothing while the platform wells lift on from the sea's
+  - L1045 ...and the world's oil is conserved, to the tonne, every month
+  - L1050 a land well is refused for its deposit with a dry site free - its pool worked out - on the order and the card
+  - L1054 ...while a platform well into the free slot is let through, the offshore pool its own: the card's tonnes the sea's
+  - L1059 ...and the land's word says the oil on dry ground is worked out, a deposit's word (ORE)
+  - L1067 the land well over the worked-out pool is the spare - the platforms' lift the demand, the whole the capacity - and
+  - L1076 the Oil page shows both pools: the ground's in \"Crude in the ground\", the sea's in the At sea lines'
+  - L1089 the map greys each pool apart: the centre's ground oil worked out, the sea field's holding its pool's left, the
+  - L1100 the two pools' E cross a save, to the bit
+  - L1108 ...saved in SAVE_FORMAT 35 and since: the depletion's oil the ground pool's E, oilDepletionAtSea the sea's
+  - L1132 a save from before the pools (format 34) is refused since 0.7.120, below the floor: in P7's words, nothing of it
+  - L1143 the offshore pool's last 100 t: the platforms lift those and no more, the land well its month from the ground's
+  - L1149 ...the sea worked out: the platform wells the spare and the land well kept, a platform well refused for its deposit
+- **L1168 14. deep water: a platform floats past a jacket's depth, and its price, its wells' and its upkeep follow the sea (DW1)**
+  - L1178 every factor is exactly 1 at PLATFORM_MAX_DEPTH_M and under: the price, the wells' and the upkeep of the shallow game
+  - L1180 ...and above 1 the moment the platform floats, past it: the price, the wells' and the upkeep
+  - L1200 each factor rises with the depth over a ladder of
+  - L1202 ...each the ratio of NEMS's own functions [W13]: the floating production system (eq 3-10) over the fixed platform (eq 3-7),
+  - L1207 ...the floater's well is the cheaper rig's - the semi-submersible's just past a jacket's, the drillship's in the deepest sea
+  - L1209 ...and at 12 slots the curve is the EIA's: 200 m 11.49, 1.39 and 1.04 times; 2,900 m 14.92, 3.81 and 21.85 times (to three places)
+  - L1220 fixture: SEA_OIL_SEED's nearest oil field is in the sea
+  - L1229 a fixed field is taken before a floating one, though it has fewer sea sites free and is listed after it
+  - L1231 ...a fixed field full, a floating one: the platform stands where there is room
+  - L1233 ...the shallower of two floating fields first, though it has fewer sea sites free
+  - L1236 ...two floating fields at one depth by the old rule, the most sea sites free
+  - L1239 ...a list with no floating field picks as it always did: the most sites free, and none for none
+  - L1245 fixture: the town buys the ground over the sea field
+  - L1256 fixture: the town's own sea field is a jacket's - no deep-water works on a quote, the investors' price the template's to the bit
+  - L1263 with the field moved to
+  - L1273 the jacket's quote carries the deep-water works: (factor - 1) x the template's construction points, at the depth it stands in
+  - L1276 ...their money at the builders' price a point today: the points x the template's non-material cost over its points
+  - L1278 ...in the sticker, taxed with the work, and so in the total, which rises by it with the builders' tax
+  - L1282 ...in the months too: the order owes the points, and the builders take longer
+  - L1285 Game.deepWater() says the same; an order of two is twice the points and the money, every unit at the first's depth
+  - L1290 the investors reckon the same cost: BusinessInvestment.getCostOf() rises over the template's price by the works with the
+  - L1299 the planner judges the package at the depth it would stand in: the jacket's premium and its n wells' on that field in its cost,
+  - L1304 ...its earnings carry the upkeep: less by the jacket's running cost x (upkeepFactor() - 1), a month
+  - L1307 ...and the jacket's own share of the package, by cost, is what the investors are asked
+  - L1312 ...ordered only while the package carries the interest on its whole cost, in the words of a floating platform at its depth
+  - L1322 the order is placed and owes the deep-water points on its site with the template's own: the progress is below nothing by the quote's points
+  - L1326 ...and costs the quote's total
+  - L1332 the builders finish it: the platform stands, floating on the deep field, counted among the floating platforms
+  - L1340 the platform's wells are quoted at its depth, every well of the order at the first's: (factor - 1) x the points x the number
+  - L1345 ...the investors reckon the same: two wells cost over the template's price by the works with the builders' tax
+  - L1349 ...two ordered owe the points on their site
+  - L1355 ...with every slot committed there is no next well: no depth, no factor, no works on a quote
+  - L1361 a floating platform's upkeep a month is (upkeepFactor() - 1) x the jacket's running cost, wages, power and water off its template
+  - L1365 a month books the bill at that month's wages: the formula within a percent of the month before's (wages move a fraction of a percent a month)
+  - L1371 ...as a service bought from the world: the Oil sector's \"Deep-water upkeep\" on its input line at that bill, and in its imports
+  - L1374 ...and the audit closes
+  - L1376 the Oil page counts the sea sites a platform takes, the floating platforms and last month's upkeep
+  - L1384 on the field's real depth the same platform is a fixed jacket: no floating platform, no upkeep named or booked, no line on the page
+  - L1392 a field deeper than FLOATING_MAX_DEPTH_M takes no platform: no platform field, no room, a jacket refused for its deposit
 
 ## WoodProductsCheck.java - 37 labelled assertions
 
