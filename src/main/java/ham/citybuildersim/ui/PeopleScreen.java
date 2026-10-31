@@ -169,7 +169,8 @@ final class PeopleScreen {
     void showPopulationInfoMenu() {
         // The count-up is for a page being watched as the month turns, as the clock's is: arriving, nothing moves.
         if (!"showPopulationInfoMenu".equals(ui.currentScreen)) shownMonth = -1;
-        boolean landed = shownMonth >= 0 && shownMonth != ui.game.getMonth();
+        // ...and not at a clock too fast to follow (UserInterface.COUNT_UP_TOP): the figures are set at once.
+        boolean landed = shownMonth >= 0 && shownMonth != ui.game.getMonth() && ui.countsUp();
         // Kept (study UP4): the page is drawn over last time's nodes on a redraw, each card in a scope of its own.
         ui.keepMenu("showPopulationInfoMenu", () -> showPopulationInfoMenu(), pool, () -> drawPage(landed));
         shownMonth = ui.game.getMonth();

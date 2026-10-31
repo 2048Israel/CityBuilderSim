@@ -1053,7 +1053,9 @@ final class SectorScreen {
                 new javafx.animation.KeyFrame(Duration.millis(COUNT_MILLIS),
                         new javafx.animation.KeyValue(value, to, javafx.animation.Interpolator.EASE_OUT)));
         count.setOnFinished(e -> label.setText(words.apply(to)));
-        count.play();
+        // On a kept page (City History's, KP1) the label is handed back each month, and the last count on it is stopped first.
+        if (Kept.drawing()) Kept.play(label, count);
+        else count.play();
     }
 
     /** A ring (Pieces.ring()) whose arc sweeps up from nothing over SWEEP_MILLIS - there is no last month's rate to sweep from (0.7.30). */

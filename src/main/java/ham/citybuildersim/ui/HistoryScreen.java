@@ -158,6 +158,15 @@ final class HistoryScreen {
     /** The game month this page was last drawn at; -1 before its first draw. */
     private int drawnMonth = -1;
 
+    /** The page's kept nodes (Kept; study UP4, KP1): the page is drawn over them on each redraw. */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** A new city or a load: no month has just landed, and nothing of the last city's page is kept. */
+    void forget() {
+        pool.forget();
+        drawnMonth = -1;
+    }
+
     /**
      * The month each named episode was first listed, by kind and first
      * month (0.7.37): an episode the list did not have at the previous draw
@@ -720,11 +729,6 @@ final class HistoryScreen {
         // a click on it - rather than arrived at: only then do figures count on.
         boolean here = ui.isShowing("showHistoryMenu");
 
-        ui.clearMenu("showHistoryMenu", () -> showHistoryMenu());
-        named.clear();
-        chartTop = null;
-        hardTimesTop = null;
-
         HistorySave h = ui.game.getHistorySave();
 
         /* =====================================================================
@@ -750,78 +754,17 @@ final class HistoryScreen {
             historyPicked.addAll(java.util.Arrays.asList(PRESETS[0].keys()));
         }
 
-        if (h.months() < 2) {
-            VBox frame = new VBox(Palette.GAP, pageHead("City History", Palette.MONEY, null, null, LEAD_INFO),
-                    alert("Nothing to draw yet", "The city has lived " + h.months() + " month"
-                            + (h.months() == 1 ? "" : "s") + ". A line needs two points."));
-            frame.setMaxWidth(PAGE_WIDE);
-            frame.setFillWidth(true);
-            frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
-            ui.rootMenu.getChildren().add(frame);
-            return;
-        }
-
+        boolean drawn = h.months() >= 2;
         int month = ui.game.getMonth();
-        boolean fresh = here && drawnMonth >= 0 && month != drawnMonth;
-        drawnMonth = month;
+        // ...and a month that lands while the clock runs too fast to follow (UserInterface.COUNT_UP_TOP)
+        // sets its figures at once: the count-up would never finish before the next month's.
+        boolean fresh = drawn && here && drawnMonth >= 0 && month != drawnMonth && ui.countsUp();
+        if (drawn) drawnMonth = month;
 
-        // The window is told the history's ends first: the strip, the small
-        // charts and the readings below all read it.
-        List<Integer> axis = h.getMonth();
-        chartWindow.setData(axis.get(0), axis.get(axis.size() - 1));
-
-        // Read once a draw and handed to every part that names them (ChartModel,
-        // off YearBook and the DecisionLog): the recession bands shade every
-        // chart, the episodes and the flags run under the big one, and the
-        // strip and the hard times list them. A decision made before the
-        // history's first month - the founding month's - is on that first
-        // month (ChartModel.onAxis(), the spec's B4).
-        List<YearBook.Band> bands = ChartModel.bands(h);
-        List<YearBook.Episode> episodes = ChartModel.episodes(h);
-        List<ChartModel.Flag> flags = ChartModel.onAxis(ChartModel.flags(ui.game.getDecisions()), axis.get(0));
-        noteEpisodes(episodes, month);
-
-        VBox body = widePage();
-        TimeChart big = bigChart(h, bands, episodes, flags);
-        body.getChildren().add(pins(h, bands, fresh));
-        HBox controls = chartControls(h);
-        chartTop = controls;
-        body.getChildren().add(controls);
-        if (chartFull) {
-            Label away = new Label("The chart is open over the whole window. Esc brings it back here.");
-            away.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED) + " -fx-padding: 8 0 8 0;");
-            body.getChildren().add(away);
-            refreshFullScreen();
-        } else {
-            body.getChildren().add(big);
-            // Real GDP alone, in layers (0.7.6): the key under the chart, as it always had.
-            if (bigInLayers()) body.getChildren().add(layersKey(gdpStack(h, traceFor(LAYERED).unit()).layers(), pageWidth));
-        }
-        // Nothing picked, no section: the chart's own empty words say what to do (the spec's R3).
-        if (!historyPicked.isEmpty()) body.getChildren().add(readings(h, fresh));
-        body.getChildren().add(hardTimes(h, episodes, flags));
-        body.getChildren().add(historyPickerRows());
-        body.getChildren().add(prices());
-
-        VBox frame = new VBox(Palette.GAP, head());
-        HBox written = bookCard();
-        if (written != null) frame.getChildren().add(written);
-        frame.getChildren().add(strip(h, episodes, flags));
-
-        /*
-         * KEPT FROM THE BOTTOM, AND THE THING PRESSED HELD STILL.
-         *
-         * From the bottom because the readings above the picker grow a card
-         * per line picked, and the picker is what the player is pressing - see
-         * keptScrollerFromBottom. That covers a month's redraw. A click can
-         * now also change what is BELOW the pointer - a group opening, a fold,
-         * a preset or "clear all" above readings that change length - so the
-         * chip that was pressed is found again in the new page and put back
-         * where it was on the screen (holdInPlace), after the memory has had
-         * its go. Since 0.7.37 the head and the strip stay put over it, as
-         * every redrawn screen's frame does, and only the page scrolls.
-         */
-        frameOver(frame, body);
+        // Kept (study UP4, KP1): the page is drawn over last time's nodes on a redraw, so the charts stay
+        // in the scene and keep their window, zoom and crosshair across months.
+        ui.keepMenu("showHistoryMenu", () -> showHistoryMenu(), pool, () -> drawPage(fresh));
+        if (!drawn) return;
 
         if (pressed != null) {
             holdInPlace(named.get(pressed), pressedAt);
@@ -843,6 +786,99 @@ final class HistoryScreen {
             scrollTarget = null;
             javafx.application.Platform.runLater(() -> scrollTo(TO_CHART.equals(target) ? chartTop : hardTimesTop));
         }
+    }
+
+    /**
+     * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from
+     * the pool, and what KeptBench runs kept and built new for KeptCheck. `fresh`: a month landed
+     * while the page was watched, and the pins and the readings count on and the range bars' dots slide.
+     */
+    void drawPage(boolean fresh) {
+        named.clear();
+        chartTop = null;
+        hardTimesTop = null;
+
+        HistorySave h = ui.game.getHistorySave();
+        if (h.months() < 2) {
+            Kept.scope("empty", () -> {
+                VBox frame = Kept.column(Palette.GAP, pageHead("City History", Palette.MONEY, null, null, LEAD_INFO),
+                        alert("Nothing to draw yet", "The city has lived " + h.months() + " month"
+                                + (h.months() == 1 ? "" : "s") + ". A line needs two points."));
+                frame.setMaxWidth(PAGE_WIDE);
+                frame.setFillWidth(true);
+                frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+                ui.setPage(frame);
+            });
+            return;
+        }
+
+        int month = ui.game.getMonth();
+
+        // The window is told the history's ends first: the strip, the small
+        // charts and the readings below all read it.
+        List<Integer> axis = h.getMonth();
+        chartWindow.setData(axis.get(0), axis.get(axis.size() - 1));
+
+        // Read once a draw and handed to every part that names them (ChartModel,
+        // off YearBook and the DecisionLog): the recession bands shade every
+        // chart, the episodes and the flags run under the big one, and the
+        // strip and the hard times list them. A decision made before the
+        // history's first month - the founding month's - is on that first
+        // month (ChartModel.onAxis(), the spec's B4).
+        List<YearBook.Band> bands = ChartModel.bands(h);
+        List<YearBook.Episode> episodes = ChartModel.episodes(h);
+        List<ChartModel.Flag> flags = ChartModel.onAxis(ChartModel.flags(ui.game.getDecisions()), axis.get(0));
+        noteEpisodes(episodes, month);
+
+        // Kept: each part is a scope of its own, so a part that comes and goes (the readings, the layers
+        // key, the book card) does not slide the rest onto its neighbours' nodes. The two charts are the
+        // screen's own, made once, and are only added to the boxes that hold them.
+        VBox body = widePage();
+        TimeChart big = bigChart(h, bands, episodes, flags);
+        body.getChildren().add(Kept.scope("pins", () -> pins(h, bands, fresh)));
+        HBox controls = Kept.scope("controls", () -> chartControls(h));
+        chartTop = controls;
+        body.getChildren().add(controls);
+        if (chartFull) {
+            body.getChildren().add(Kept.scope("away", () -> {
+                Label away = Kept.label("The chart is open over the whole window. Esc brings it back here.");
+                away.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED) + " -fx-padding: 8 0 8 0;");
+                return away;
+            }));
+            refreshFullScreen();
+        } else {
+            body.getChildren().add(big);
+            // Real GDP alone, in layers (0.7.6): the key under the chart, as it always had.
+            if (bigInLayers()) {
+                body.getChildren().add(Kept.scope("layers key",
+                        () -> layersKey(gdpStack(h, traceFor(LAYERED).unit()).layers(), pageWidth)));
+            }
+        }
+        // Nothing picked, no section: the chart's own empty words say what to do (the spec's R3).
+        if (!historyPicked.isEmpty()) body.getChildren().add(Kept.scope("readings", () -> readings(h, fresh)));
+        body.getChildren().add(Kept.scope("hard times", () -> hardTimes(h, episodes, flags)));
+        body.getChildren().add(Kept.scope("picker", this::historyPickerRows));
+        body.getChildren().add(Kept.scope("prices", this::prices));
+
+        VBox frame = Kept.column(Palette.GAP, Kept.scope("head", this::head));
+        HBox written = Kept.scope("book", this::bookCard);
+        if (written != null) frame.getChildren().add(written);
+        frame.getChildren().add(Kept.scope("strip", () -> strip(h, episodes, flags)));
+
+        /*
+         * KEPT FROM THE BOTTOM, AND THE THING PRESSED HELD STILL.
+         *
+         * From the bottom because the readings above the picker grow a card
+         * per line picked, and the picker is what the player is pressing - see
+         * keptScrollerFromBottom. That covers a month's redraw. A click can
+         * now also change what is BELOW the pointer - a group opening, a fold,
+         * a preset or "clear all" above readings that change length - so the
+         * chip that was pressed is found again in the new page and put back
+         * where it was on the screen (holdInPlace), after the memory has had
+         * its go. Since 0.7.37 the head and the strip stay put over it, as
+         * every redrawn screen's frame does, and only the page scrolls.
+         */
+        frameOver(frame, body);
     }
 
     /** The frame's height before it is laid out, for the scroller's first guess at what is left of the stage. */
@@ -876,22 +912,38 @@ final class HistoryScreen {
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
         frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+        // Kept (KP1): scrolled() hands back the scroller and its content the last draw made, so what is
+        // bound to them is bound once - to the frame and the body they read - and again only if those
+        // are not the ones it was bound to, never added on top month after month.
         javafx.scene.control.ScrollPane scroller = ui.scrolled(body, FRAME_CHROME, true);
-        scroller.prefHeightProperty().unbind();
-        scroller.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.max(260, ui.menuScroller.getHeight()
-                        - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
-                ui.menuScroller.heightProperty(), frame.heightProperty()));
-        body.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> given(scroller.getViewportBounds().getWidth()),
-                scroller.viewportBoundsProperty()));
+        if (scroller.getProperties().get(BOUND_TO_FRAME) != frame) {
+            scroller.prefHeightProperty().unbind();
+            scroller.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.max(260, ui.menuScroller.getHeight()
+                            - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
+                    ui.menuScroller.heightProperty(), frame.heightProperty()));
+            scroller.getProperties().put(BOUND_TO_FRAME, frame);
+        }
+        if (body.getProperties().get(BOUND_TO_SCROLLER) != scroller) {
+            body.prefWidthProperty().unbind();
+            body.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> given(scroller.getViewportBounds().getWidth()),
+                    scroller.viewportBoundsProperty()));
+            body.getProperties().put(BOUND_TO_SCROLLER, scroller);
+        }
         // The page's inside width: widePage()'s 18 a side off what it is given - the viewport (0.7.40).
-        scroller.viewportBoundsProperty().addListener((o, was, now) -> {
-            if (now != null && now.getWidth() > 0) follow(given(now.getWidth()) - 36);
-        });
-        ui.rootMenu.getChildren().addAll(frame, scroller);
+        if (scroller.getProperties().put(FOLLOWS_VIEWPORT, Boolean.TRUE) == null) {
+            scroller.viewportBoundsProperty().addListener((o, was, now) -> {
+                if (now != null && now.getWidth() > 0) follow(given(now.getWidth()) - 36);
+            });
+        }
+        ui.setPage(frame, scroller);
         page = scroller;
     }
+
+    /** Keys in a kept scroller's and body's properties for what is bound to them: the frame the scroller's height reads, the scroller the body's width reads, the viewport listener. */
+    private static final String BOUND_TO_FRAME = "history.frame", BOUND_TO_SCROLLER = "history.scroller",
+            FOLLOWS_VIEWPORT = "history.follows";
 
     /** The page's width for a viewport this wide: all of it, from 320 up to PAGE_WIDE. */
     static double given(double viewport) {
@@ -968,7 +1020,7 @@ final class HistoryScreen {
                 new Press(Look.GO, "Write the year book", null), this::writeTheBooks);
         write.setMinWidth(Region.USE_PREF_SIZE);
         javafx.scene.Node about = infoButton(YEAR_BOOK_INFO, false);
-        HBox right = new HBox(6, write, about);
+        HBox right = Kept.row(6, write, about);
         right.setAlignment(Pos.CENTER_RIGHT);
         right.setMinWidth(Region.USE_PREF_SIZE);
         return pageHead("City History", Palette.MONEY, null, null, LEAD_INFO, right);
@@ -1028,46 +1080,60 @@ final class HistoryScreen {
      */
     HBox bookCard() {
         if (bookExportSaid == null) return null;
-        VBox lines = new VBox(2);
+        // Kept: each line is a scope of its own, so a line more or fewer shifts no other onto its node.
+        VBox lines = Kept.column(2);
         if (bookFolder != null) {
-            Label where = new Label("Written to " + bookFolder);
-            where.setWrapText(true);
-            where.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
-            lines.getChildren().add(where);
+            lines.getChildren().add(Kept.scope("folder", () -> {
+                Label where = Kept.label("Written to " + bookFolder);
+                where.setWrapText(true);
+                where.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
+                return where;
+            }));
         }
-        for (String files : bookFiles) {
-            Label l = new Label(files);
-            l.setWrapText(true);
-            l.setStyle(Palette.figureRegular(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-            lines.getChildren().add(l);
+        for (int i = 0; i < bookFiles.size(); i++) {
+            String files = bookFiles.get(i);
+            lines.getChildren().add(Kept.scope("files:" + i, () -> {
+                Label l = Kept.label(files);
+                l.setWrapText(true);
+                l.setStyle(Palette.figureRegular(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+                return l;
+            }));
         }
-        for (String failed : bookFailed) {
-            Label l = new Label(failed);
-            l.setWrapText(true);
-            l.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD));
-            lines.getChildren().add(l);
+        for (int i = 0; i < bookFailed.size(); i++) {
+            String failed = bookFailed.get(i);
+            lines.getChildren().add(Kept.scope("failed:" + i, () -> {
+                Label l = Kept.label(failed);
+                l.setWrapText(true);
+                l.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD));
+                return l;
+            }));
         }
         if (lines.getChildren().isEmpty()) {
-            Label l = new Label(bookExportSaid);
-            l.setWrapText(true);
-            l.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
-            lines.getChildren().add(l);
+            lines.getChildren().add(Kept.scope("said", () -> {
+                Label l = Kept.label(bookExportSaid);
+                l.setWrapText(true);
+                l.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
+                return l;
+            }));
         }
         HBox.setHgrow(lines, Priority.ALWAYS);
         lines.setMinWidth(0);
         lines.setMaxWidth(Double.MAX_VALUE);
-        Label close = new Label("×");
-        close.setStyle(Palette.strong(Palette.SIZE_HEADING + 4, Palette.TEXT_LABEL) + " -fx-cursor: hand; -fx-padding: 0 4 0 4;");
-        close.setMinWidth(Region.USE_PREF_SIZE);
-        tip(close, "Puts this away.");
-        close.setOnMouseClicked(e -> {
-            bookExportSaid = null;
-            bookFolder = null;
-            bookFiles.clear();
-            bookFailed.clear();
-            showHistoryMenu();
+        Label close = Kept.scope("close", () -> {
+            Label x = Kept.label("×");
+            x.setStyle(Palette.strong(Palette.SIZE_HEADING + 4, Palette.TEXT_LABEL) + " -fx-cursor: hand; -fx-padding: 0 4 0 4;");
+            x.setMinWidth(Region.USE_PREF_SIZE);
+            tip(x, "Puts this away.");
+            x.setOnMouseClicked(e -> {
+                bookExportSaid = null;
+                bookFolder = null;
+                bookFiles.clear();
+                bookFailed.clear();
+                showHistoryMenu();
+            });
+            return x;
         });
-        HBox card = new HBox(12, icon(Icons.REPORTS, Palette.MONEY, 16), lines, close);
+        HBox card = Kept.row(12, icon(Icons.REPORTS, Palette.MONEY, 16), lines, close);
         card.setAlignment(Pos.TOP_LEFT);
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle(Palette.block(Palette.RAISED, Palette.EDGE) + " -fx-padding: 8 12 8 12;");
@@ -1142,20 +1208,23 @@ final class HistoryScreen {
         VBox[] drawn = new VBox[cells.size()];
         for (int i = 0; i < cells.size(); i++) {
             Cell c = cells.get(i);
-            Runnable go = null;
-            if (c.where() != null) {
-                go = "RUNNING NOW".equals(c.label()) && !running.isEmpty()
-                        ? () -> moveChartTo(running.get(0))
-                        : () -> scrollTo(hardTimesTop);
-            }
-            VBox cell = limitCell(c.label(), c.value(), c.note(), c.tone(), c.where(), go);
-            // A name is the figure here (RUNNING NOW): it wraps inside the cell rather than end in "...".
-            if (cell.getChildren().get(1) instanceof Label figure) {
-                figure.setWrapText(true);
-                figure.setMaxWidth(LIMIT_CELL - 28);
-            }
-            if (c.isNew()) cell.getChildren().add(tag("new", c.tone()));
-            drawn[i] = cell;
+            // Kept: a cell is a scope of its own, by its label, so the one that gains a "new" tag keeps its nodes.
+            drawn[i] = Kept.scope(c.label(), () -> {
+                Runnable go = null;
+                if (c.where() != null) {
+                    go = "RUNNING NOW".equals(c.label()) && !running.isEmpty()
+                            ? () -> moveChartTo(running.get(0))
+                            : () -> scrollTo(hardTimesTop);
+                }
+                VBox cell = limitCell(c.label(), c.value(), c.note(), c.tone(), c.where(), go);
+                // A name is the figure here (RUNNING NOW): it wraps inside the cell rather than end in "...".
+                if (cell.getChildren().get(1) instanceof Label figure) {
+                    figure.setWrapText(true);
+                    figure.setMaxWidth(LIMIT_CELL - 28);
+                }
+                if (c.isNew()) cell.getChildren().add(Kept.scope("new", () -> tag("new", c.tone())));
+                return cell;
+            });
         }
         return vitalsBar(drawn);
     }
@@ -1228,7 +1297,15 @@ final class HistoryScreen {
 
     /** A chip that is on or off, which is most of the controls on this screen. */
     Label pickChip(String text, boolean on, Runnable act) {
-        Label chip = new Label(text);
+        return pickChip(text, null, on, act);
+    }
+
+    /**
+     * ...with a graphic: set where the label is made, so a kept chip handed its own icon again is not
+     * stripped of it and given it back (that takes the icon off the scene and puts it on).
+     */
+    Label pickChip(String text, javafx.scene.Node graphic, boolean on, Runnable act) {
+        Label chip = Kept.label(text, graphic);
         chip.setStyle("-fx-padding: 4 10 4 10; -fx-cursor: hand;"
                 + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
                 + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
@@ -1261,7 +1338,12 @@ final class HistoryScreen {
      * is what spends the press - a chip whose act does nothing is stillChip().
      */
     Label chip(String name, String text, boolean on, Runnable act) {
-        Label chip = pickChip(text, on, act);
+        return chip(name, text, null, on, act);
+    }
+
+    /** ...with a graphic (the picker's group heads' icons). */
+    Label chip(String name, String text, javafx.scene.Node graphic, boolean on, Runnable act) {
+        Label chip = pickChip(text, graphic, on, act);
         named.put(name, chip);
         chip.setOnMouseClicked(e -> {
             pressed = name;
@@ -1273,16 +1355,26 @@ final class HistoryScreen {
 
     /** A chip that only says something: lit or not, no act, and why on hover. */
     Label stillChip(String text, boolean on, String why) {
-        Label chip = pickChip(text, on, () -> { });
+        return stillChip(text, null, on, why);
+    }
+
+    /** ...with a graphic. */
+    Label stillChip(String text, javafx.scene.Node graphic, boolean on, String why) {
+        Label chip = pickChip(text, graphic, on, () -> { });
         chip.setStyle(chip.getStyle() + " -fx-cursor: default;");
         tip(chip, why);
         return chip;
     }
 
+    /** A tooltip on a node: on a kept node (inside a draw) the one it has, its words set; else a new one (Kept.tip). */
     static void tip(javafx.scene.Node node, String text) {
-        Tooltip tip = new Tooltip(text);
-        tip.setShowDelay(Duration.millis(200));
-        Tooltip.install(node, tip);
+        Kept.tip(node, text, 200);
+    }
+
+    /** A figure on a kept label that is not counting on this draw has no count-up left running from the last. */
+    private static void stopCounting(javafx.scene.Node figure) {
+        javafx.animation.Animation running = Kept.animationOf(figure);
+        if (running != null) running.stop();
     }
 
     /**
@@ -1436,7 +1528,9 @@ final class HistoryScreen {
      */
     GridPane pins(HistorySave h, List<YearBook.Band> bands, boolean fresh) {
         GridPane row = equalColumns(2, 10);
-        VBox left = pinCard(h, true, bands, fresh), right = pinCard(h, false, bands, fresh);
+        // Kept: a card a scope, by its side.
+        VBox left = Kept.scope("left", () -> pinCard(h, true, bands, fresh)),
+             right = Kept.scope("right", () -> pinCard(h, false, bands, fresh));
         for (VBox card : new VBox[] {left, right}) {
             GridPane.setFillHeight(card, true);
             card.setMaxHeight(Double.MAX_VALUE);
@@ -1496,22 +1590,25 @@ final class HistoryScreen {
 
         // Jerus: "pinnable defaults, but not fixed" - so a pin can be taken
         // off, and taking it off puts the default back.
-        Label unpin = null;
+        // Kept: what a card shows only sometimes (the unpin and layers chips, the empty frame, the key) is a scope of its own.
         String back = unpinned(left);
-        if (!back.equals(key)) {
-            unpin = chip(left ? "unpin:left" : "unpin:right", "unpin", false,
+        Label unpin = back.equals(key) ? null : Kept.scope("unpin", () -> {
+            Label u = chip(left ? "unpin:left" : "unpin:right", "unpin", false,
                     () -> { unpin(left); showHistoryMenu(); });
-            tip(unpin, "Puts " + traceFor(back).label() + " back here.");
-        }
+            tip(u, "Puts " + traceFor(back).label() + " back here.");
+            return u;
+        });
         // Real GDP can be drawn in layers (0.7.6), whichever side it is pinned to.
         boolean layered = LAYERED.equals(key) && gdpLayers;
-        Label layers = LAYERED.equals(key) ? layersChip(left ? "left" : "right") : null;
+        Label layers = LAYERED.equals(key) ? Kept.scope("layers", () -> layersChip(left ? "left" : "right")) : null;
 
-        Pieces.CardHead head = chartCardHead(p.label(), p.figure(), p.move(), () -> openOn(key), layers, unpin);
+        Pieces.CardHead head = Kept.scope("head",
+                () -> chartCardHead(p.label(), p.figure(), p.move(), () -> openOn(key), layers, unpin));
         tip(head.name, "Draws " + p.label() + " on the big chart, over the last ten years.");
         if (p.moveTip() != null) tip(head.change, p.moveTip());
         if (!p.recorded()) head.figure.setStyle(Palette.figure(Palette.SIZE_LEAD, Palette.TEXT_SPENT));
         String was = (left ? "pin:left:" : "pin:right:") + key;
+        stopCounting(head.figure);
         if (fresh && p.recorded() && shownBefore.containsKey(was)) {
             SectorScreen.countUp(head.figure, shownBefore.get(was), p.last(), v -> shown(t.unit(), v));
         }
@@ -1528,15 +1625,18 @@ final class HistoryScreen {
          */
         VBox card;
         if (never) {
-            Label none = new Label(t.label().endsWith("(yr)")
-                    ? "from the end of the first year" : "nothing recorded yet");
-            none.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_SPENT));
-            StackPane empty = new StackPane(none);
-            empty.setMinHeight(SMALL_CHART + 26);
-            empty.setPrefHeight(SMALL_CHART + 26);
-            empty.setMaxWidth(Double.MAX_VALUE);
-            empty.setStyle(Palette.block(Palette.FIELD));
-            card = new VBox(6, head, empty);
+            StackPane empty = Kept.scope("empty", () -> {
+                Label none = Kept.label(t.label().endsWith("(yr)")
+                        ? "from the end of the first year" : "nothing recorded yet");
+                none.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_SPENT));
+                StackPane frame = Kept.stack(none);
+                frame.setMinHeight(SMALL_CHART + 26);
+                frame.setPrefHeight(SMALL_CHART + 26);
+                frame.setMaxWidth(Double.MAX_VALUE);
+                frame.setStyle(Palette.block(Palette.FIELD));
+                return frame;
+            });
+            card = Kept.column(6, head, empty);
         } else {
             // The line in its area's colour (0.7.23; it was the accent for every
             // line), over the big chart's window, with its years under it.
@@ -1554,8 +1654,8 @@ final class HistoryScreen {
                     t.label().endsWith("(yr)") ? "from the end of the first year" : "nothing recorded yet");
             chart.setYearly(h.yearlyPoints());
             chart.setSize(wide, SMALL_CHART);
-            card = new VBox(6, head, chart);
-            if (layered) card.getChildren().add(layersKey(stack.layers(), wide));
+            card = Kept.column(6, head, chart);
+            if (layered) card.getChildren().add(Kept.scope("layers key", () -> layersKey(stack.layers(), wide)));
         }
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle(Palette.block(Palette.RAISED, Palette.EDGE) + " -fx-padding: 10 12 10 12;");
@@ -1644,11 +1744,11 @@ final class HistoryScreen {
         for (int p = 0; p < 3 && !any; p++) {
             for (double v : layers[p]) if (!Double.isNaN(v)) { any = true; break; }
         }
-        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(10, 2);
+        javafx.scene.layout.FlowPane key = Kept.flow(10, 2);
         key.setPrefWrapLength(wide);
         for (int p = 0; p < 3; p++) key.getChildren().add(keySwatch(Palette.GDP_LAYERS[p], LAYER_NAMES[p]));
         key.getChildren().add(keySwatch(LAYERED_LINE, "real GDP, the line"));
-        Label says = new Label(any
+        Label says = Kept.label(any
                 ? "The line is GDP; the gap to the stack is net exports, negative below it."
                 : "The layers start a year after this city began keeping them.");
         // Why, on the tooltip (0.7.37): the cause is not the page's to explain in a line.
@@ -1657,7 +1757,7 @@ final class HistoryScreen {
         says.setWrapText(true);
         says.setMaxWidth(wide);
         says.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        VBox box = new VBox(2, key, says);
+        VBox box = Kept.column(2, key, says);
         box.setMaxWidth(wide);
         box.setStyle("-fx-padding: 2 4 4 4;");
         return box;
@@ -1679,7 +1779,7 @@ final class HistoryScreen {
      */
     HBox chartControls(HistorySave h) {
 
-        javafx.scene.layout.FlowPane presets = new javafx.scene.layout.FlowPane(6, 6);
+        javafx.scene.layout.FlowPane presets = Kept.flow(6, 6);
         presets.setPrefWrapLength(pageWidth - CONTROLS);
         presets.setMaxWidth(pageWidth - CONTROLS);
         presetFlow = presets;
@@ -1719,13 +1819,13 @@ final class HistoryScreen {
             log.setStyle(log.getStyle() + " " + Palette.fill(Palette.TEXT_FAINT));
         }
 
-        HBox right = new HBox(6, clear, log);
+        HBox right = Kept.row(6, clear, log);
         right.setAlignment(Pos.TOP_RIGHT);
         right.setMinWidth(Region.USE_PREF_SIZE);
 
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP, presets, gap, right);
+        HBox row = Kept.row(Palette.GAP, presets, gap, right);
         row.setMaxWidth(Double.MAX_VALUE);
         row.setStyle("-fx-padding: 4 0 0 0;");
         return row;
@@ -2178,7 +2278,7 @@ final class HistoryScreen {
 
     /** The section: its head, the cards three across, and the line that says when two lines share a colour. */
     VBox readings(HistorySave h, boolean fresh) {
-        VBox box = new VBox(8);
+        VBox box = Kept.column(8);
         box.getChildren().add(sectionHead("WHAT EACH LINE DID", null, hint("over the chart's view")));
         GridPane grid = equalColumns(3, 10);
         // On two axes, each card says which one its line is read against.
@@ -2188,7 +2288,9 @@ final class HistoryScreen {
         for (String key : historyPicked) {
             String side = units.size() != 2 ? null
                     : units.indexOf(traceFor(key).unit()) == 0 ? "left axis" : "right axis";
-            VBox card = readingCard(h, key, bigInLayers() ? LAYERED_LINE : colours[k], side, fresh);
+            String colour = bigInLayers() ? LAYERED_LINE : colours[k];
+            // Kept: a card a scope, by its line's key, so a line picked or put away moves no other card's nodes.
+            VBox card = Kept.scope("card:" + key, () -> readingCard(h, key, colour, side, fresh));
             GridPane.setFillHeight(card, true);
             card.setMaxHeight(Double.MAX_VALUE);
             grid.add(card, k % 3, k / 3);
@@ -2196,10 +2298,11 @@ final class HistoryScreen {
         }
         box.getChildren().add(grid);
         if (historyPicked.size() > Palette.LINE_COLOURS) {
-            box.getChildren().add(infoLine(String.format("%d colours: two lines share one", Palette.LINE_COLOURS),
+            box.getChildren().add(Kept.scope("colours", () -> infoLine(
+                    String.format("%d colours: two lines share one", Palette.LINE_COLOURS),
                     String.format("There are more lines than colours, so two of them share one. %d is as many "
                             + "as a chart can tell apart, and more than anybody reads at once.", Palette.LINE_COLOURS),
-                    false, Palette.SIZE_LABEL, Palette.TEXT_MUTED, pageWidth));
+                    false, Palette.SIZE_LABEL, Palette.TEXT_MUTED, pageWidth)));
         }
         return box;
     }
@@ -2215,52 +2318,63 @@ final class HistoryScreen {
         Reading r = reading(h, key, axis);
         Trace t = traceFor(key);
 
-        Region swatch = new Region();
+        // Kept: what a card shows only sometimes (the axis, the layers chip, the range bar) is a scope of its own.
+        Region swatch = Kept.region();
         swatch.setMinSize(9, 9);
         swatch.setPrefSize(9, 9);
         swatch.setMaxSize(9, 9);
         swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
-        Label name = new Label(r.label());
+        Label name = Kept.label(r.label());
         name.setWrapText(true);
         name.setMinWidth(40);
         name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
-        HBox top = new HBox(6, swatch, name);
+        HBox top = Kept.row(6, swatch, name);
         top.setAlignment(Pos.CENTER_LEFT);
         if (axis != null) {
-            Label side = new Label(axis);
-            side.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            side.setMinWidth(Region.USE_PREF_SIZE);
-            top.getChildren().add(side);
+            top.getChildren().add(Kept.scope("axis", () -> {
+                Label side = Kept.label(axis);
+                side.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                side.setMinWidth(Region.USE_PREF_SIZE);
+                return side;
+            }));
         }
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         top.getChildren().add(gap);
         // Real GDP picked alone can go into layers on the big chart (0.7.6).
-        if (LAYERED.equals(key) && historyPicked.size() == 1) top.getChildren().add(layersChip("reading"));
+        if (LAYERED.equals(key) && historyPicked.size() == 1) {
+            top.getChildren().add(Kept.scope("layers", () -> layersChip("reading")));
+        }
         // Jerus: "pinnable defaults, but not fixed" - any line here can go up
         // onto a small chart, and one already there says so.
         boolean up = key.equals(pinned(true)) || key.equals(pinned(false));
-        Label pin = up
-                ? stillChip("pinned", true, "Already on a small chart above.")
-                : chip("pin:" + key, "pin", false, () -> { pin(key); showHistoryMenu(); });
-        if (!up) tip(pin, "Puts this line on a small chart above, in place of the older of the two.");
-        pin.setMinWidth(Region.USE_PREF_SIZE);
-        top.getChildren().add(pin);
+        top.getChildren().add(Kept.scope("pin", () -> {
+            Label pin = up
+                    ? stillChip("pinned", true, "Already on a small chart above.")
+                    : chip("pin:" + key, "pin", false, () -> { pin(key); showHistoryMenu(); });
+            if (!up) tip(pin, "Puts this line on a small chart above, in place of the older of the two.");
+            pin.setMinWidth(Region.USE_PREF_SIZE);
+            return pin;
+        }));
 
-        Label latest = new Label(r.latest());
+        Label latest = Kept.label(r.latest());
         latest.setStyle(Palette.figure(Palette.SIZE_TITLE, r.never() ? Palette.TEXT_SPENT : Palette.TEXT_HEAD));
         latest.setMinWidth(Region.USE_PREF_SIZE);
-        Label move = new Label(r.move());
+        Label move = Kept.label(r.move());
         move.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_BODY));
         move.setMinWidth(Region.USE_PREF_SIZE);
-        HBox figures = new HBox(10, latest, move);
+        HBox figures = Kept.row(10, latest, move);
         figures.setAlignment(Pos.BASELINE_LEFT);
 
-        VBox card = new VBox(5, top, figures);
+        VBox card = Kept.column(5, top, figures);
         String was = "card:" + key;
+        stopCounting(latest);
         if (!r.never()) {
-            Pieces.RangeBar bar = rangeBar(r.lo(), r.hi(), r.first(), r.last(), colour, 380);
-            if (r.rangeTip() != null) tip(bar, r.rangeTip());
+            Pieces.RangeBar bar = Kept.scope("bar", () -> {
+                Pieces.RangeBar b = rangeBar(r.lo(), r.hi(), r.first(), r.last(), colour, 380);
+                if (r.rangeTip() != null) tip(b, r.rangeTip());
+                return b;
+            });
             card.getChildren().add(bar);
             if (fresh && shownBefore.containsKey(was)) {
                 double before = shownBefore.get(was);
@@ -2269,7 +2383,7 @@ final class HistoryScreen {
             }
             shownBefore.put(was, r.last());
         }
-        Label caption = new Label(r.caption());
+        Label caption = Kept.label(r.caption());
         caption.setWrapText(true);
         caption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         card.getChildren().add(caption);
@@ -2347,7 +2461,10 @@ final class HistoryScreen {
      */
     VBox historyPickerRows() {
 
-        TextField find = new TextField(historyFilter);
+        // Kept: the box is the one the last draw made, its text set only where it differs (a set marks it
+        // edited, and moves the caret), and its listeners added once.
+        TextField find = Kept.of(TextField.class, TextField::new);
+        if (!java.util.Objects.equals(find.getText(), historyFilter)) find.setText(historyFilter);
         find.setPromptText("type to find a line");
         find.setMinWidth(260);
         find.setPrefWidth(260);
@@ -2360,31 +2477,40 @@ final class HistoryScreen {
         // (space, the arrows, P) on this page without the player touching it.
         find.setFocusTraversable(false);
 
-        VBox groups = new VBox(2);
+        VBox groups = Kept.column(2);
         groups.setMaxWidth(Double.MAX_VALUE);
+        pickerGroups = groups;
         fillPicker(groups);
 
         // Refilled IN PLACE as the box is typed in, not by redrawing the page:
         // a redraw makes a new box, and the key after next would go to
         // whatever had the focus instead. The box itself is held where it was
         // while the groups under it open and close.
-        find.textProperty().addListener((o, was, now) -> {
-            double wasAt = find.localToScene(0, 0).getY();
-            historyFilter = now == null ? "" : now;
-            fillPicker(groups);
-            holdInPlace(find, wasAt);
-        });
+        if (Kept.isNew(find)) {
+            find.textProperty().addListener((o, was, now) -> {
+                String typed = now == null ? "" : now;
+                // The page setting the box to what it already says (a kept draw) is not a key typed.
+                if (typed.equals(historyFilter)) return;
+                double wasAt = find.localToScene(0, 0).getY();
+                historyFilter = typed;
+                fillPicker(pickerGroups);
+                holdInPlace(find, wasAt);
+            });
+        }
         // Enter hands the keys back to the page, so the window's shortcuts work again.
         find.setOnAction(e -> { if (page != null) page.requestFocus(); });
         filterField = find;
 
         Label drawn = hint(historyPicked.size() + " drawn · " + TRACES.length + " lines");
-        HBox right = new HBox(10, drawn, find);
+        HBox right = Kept.row(10, drawn, find);
         right.setAlignment(Pos.CENTER_RIGHT);
-        VBox all = new VBox(4, sectionHead("PICK WHAT TO DRAW", AXES_INFO, right), groups);
+        VBox all = Kept.column(4, sectionHead("PICK WHAT TO DRAW", AXES_INFO, right), groups);
         all.setMaxWidth(Double.MAX_VALUE);
         return all;
     }
+
+    /** The picker's groups box, the one the last draw made, so the filter box's listener (added once) refills the right one. */
+    private VBox pickerGroups;
 
     /** The groups, as the filter and the player have left them. */
     void fillPicker(VBox groups) {
@@ -2407,55 +2533,61 @@ final class HistoryScreen {
                 if (!finding || t.label().toLowerCase(java.util.Locale.ROOT).contains(find)) matching.add(t);
             }
             if (matching.isEmpty()) continue;
-
-            boolean open = finding || groupOpen.getOrDefault(group, picked > 0);
-            String heading = (open ? "\u25BE  " : "\u25B8  ") + group;
-            // While a filter is typed every match is open, so the heading has nothing to toggle.
-            Label head = finding
-                    ? stillChip(heading, true, "Open while the box above has something in it.")
-                    : chip("group:" + group, heading, open, () -> {
-                        groupOpen.put(group, !open);
-                        showHistoryMenu();
-                    });
-            // The heading in its area's colour (0.7.23), as the rail and the lines are.
-            head.setStyle(head.getStyle() + " -fx-text-fill: " + groupArea(group) + ";");
-            // ...with its icon (0.7.37).
-            head.setGraphic(icon(groupIcon(group), groupArea(group), 12));
-            head.setGraphicTextGap(6);
-            Label count = new Label(picked + " of " + traces.size() + " picked");
-            count.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                    picked > 0 ? Palette.TEXT_MUTED : Palette.TEXT_FAINT));
-            HBox header = new HBox(Palette.GAP, head, count);
-            header.setAlignment(Pos.CENTER_LEFT);
-            header.setStyle("-fx-padding: 6 0 2 0;");
-            groups.getChildren().add(header);
-
-            if (!open) continue;
-            javafx.scene.layout.FlowPane row = new javafx.scene.layout.FlowPane(5, 5);
-            row.setPrefWrapLength(pageWidth - 14);
-            row.setMaxWidth(Double.MAX_VALUE);
-            row.setStyle("-fx-padding: 2 0 6 14;");
-            String[] colours = pickedColours();
-            List<String> order = new ArrayList<>(historyPicked);
-            for (Trace t : matching) {
-                Label c = chip("line:" + t.key(), t.label(), historyPicked.contains(t.key()),
-                        () -> {
-                            if (!historyPicked.remove(t.key())) historyPicked.add(t.key());
-                            // stays open under the pointer, even when its last line goes
-                            groupOpen.put(group, true);
-                            showHistoryMenu();
-                        });
-                // A picked line is underlined in the colour it is drawn in (0.7.23).
-                int at = order.indexOf(t.key());
-                if (at >= 0) c.setStyle(c.getStyle() + " -fx-border-color: " + colours[at] + ";");
-                row.getChildren().add(c);
-            }
-            groups.getChildren().add(row);
+            // Kept: a group a scope, by its name, so one opening or closing moves no other group's nodes.
+            int pickedHere = picked;
+            Kept.scope("group:" + group, () -> pickerGroup(groups, group, traces.size(), pickedHere, matching, finding));
         }
 
         if (groups.getChildren().isEmpty()) {
-            groups.getChildren().add(sentence("No line is called that.", Palette.TEXT_MUTED));
+            groups.getChildren().add(Kept.scope("none", () -> sentence("No line is called that.", Palette.TEXT_MUTED)));
         }
+    }
+
+    /** One group of the picker: its heading and how many of its lines are picked, and - open - its chips. */
+    private void pickerGroup(VBox groups, String group, int size, int picked, List<Trace> matching, boolean finding) {
+        boolean open = finding || groupOpen.getOrDefault(group, picked > 0);
+        String heading = (open ? "\u25BE  " : "\u25B8  ") + group;
+        // ...with its icon (0.7.37).
+        javafx.scene.Node mark = icon(groupIcon(group), groupArea(group), 12);
+        // While a filter is typed every match is open, so the heading has nothing to toggle.
+        Label head = finding
+                ? stillChip(heading, mark, true, "Open while the box above has something in it.")
+                : chip("group:" + group, heading, mark, open, () -> {
+                    groupOpen.put(group, !open);
+                    showHistoryMenu();
+                });
+        // The heading in its area's colour (0.7.23), as the rail and the lines are.
+        head.setStyle(head.getStyle() + " -fx-text-fill: " + groupArea(group) + ";");
+        head.setGraphicTextGap(6);
+        Label count = Kept.label(picked + " of " + size + " picked");
+        count.setStyle(Palette.words(Palette.SIZE_CAPTION,
+                picked > 0 ? Palette.TEXT_MUTED : Palette.TEXT_FAINT));
+        HBox header = Kept.row(Palette.GAP, head, count);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setStyle("-fx-padding: 6 0 2 0;");
+        groups.getChildren().add(header);
+
+        if (!open) return;
+        javafx.scene.layout.FlowPane row = Kept.flow(5, 5);
+        row.setPrefWrapLength(pageWidth - 14);
+        row.setMaxWidth(Double.MAX_VALUE);
+        row.setStyle("-fx-padding: 2 0 6 14;");
+        String[] colours = pickedColours();
+        List<String> order = new ArrayList<>(historyPicked);
+        for (Trace t : matching) {
+            Label c = chip("line:" + t.key(), t.label(), historyPicked.contains(t.key()),
+                    () -> {
+                        if (!historyPicked.remove(t.key())) historyPicked.add(t.key());
+                        // stays open under the pointer, even when its last line goes
+                        groupOpen.put(group, true);
+                        showHistoryMenu();
+                    });
+            // A picked line is underlined in the colour it is drawn in (0.7.23).
+            int at = order.indexOf(t.key());
+            if (at >= 0) c.setStyle(c.getStyle() + " -fx-border-color: " + colours[at] + ";");
+            row.getChildren().add(c);
+        }
+        groups.getChildren().add(row);
     }
 
     /** PICK WHAT TO DRAW's (i): how the lines share axes. */
@@ -2739,44 +2871,60 @@ final class HistoryScreen {
     VBox hardTimes(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags) {
         List<Integer> axis = h.getMonth();
         int last = axis.get(axis.size() - 1);
-        VBox box = new VBox(8);
+        VBox box = Kept.column(8);
         HBox head = sectionHead("HARD TIMES AND YOUR DECISIONS", hardTimesInfo(), hint("click one to see it on the chart"));
         hardTimesTop = head;
         box.getChildren().add(head);
 
+        // Kept: each column a scope, and each row in it a scope of its own, keyed by what it shows, so a
+        // row that appears or goes slides no other onto its nodes.
         // Left: the hard times touching the window.
         List<YearBook.Episode> shown = hardTimesInView(episodes, last);
-        VBox left = new VBox(4, columnHead("Hard times in view", shown.size()));
-        for (int i = 0; i < shown.size() && i < HARD_TIMES_SHOWN; i++) left.getChildren().add(episodeRow(shown.get(i), last));
-        if (shown.size() > HARD_TIMES_SHOWN) {
-            left.getChildren().add(door("+" + (shown.size() - HARD_TIMES_SHOWN) + " more in view", Palette.ACCENT, () -> {
-                folds.add("hard times");
-                scrollTarget = TO_HARD_TIMES;
-                showHistoryMenu();
-            }));
-        }
-        if (shown.isEmpty()) {
-            left.getChildren().add(quiet("no named trouble in " + viewWords()));
-            if (!chartWindow.showsAll()) left.getChildren().add(showAll());
-        }
+        VBox left = Kept.scope("left", () -> {
+            VBox col = Kept.column(4, columnHead("Hard times in view", shown.size()));
+            for (int i = 0; i < shown.size() && i < HARD_TIMES_SHOWN; i++) {
+                YearBook.Episode e = shown.get(i);
+                col.getChildren().add(Kept.scope(episodeKey(e), () -> episodeRow(e, last)));
+            }
+            if (shown.size() > HARD_TIMES_SHOWN) {
+                col.getChildren().add(Kept.scope("more", () -> door("+" + (shown.size() - HARD_TIMES_SHOWN) + " more in view",
+                        Palette.ACCENT, () -> {
+                            folds.add("hard times");
+                            scrollTarget = TO_HARD_TIMES;
+                            showHistoryMenu();
+                        })));
+            }
+            if (shown.isEmpty()) {
+                col.getChildren().add(Kept.scope("none", () -> quiet("no named trouble in " + viewWords())));
+                if (!chartWindow.showsAll()) col.getChildren().add(Kept.scope("all", this::showAll));
+            }
+            return col;
+        });
 
         // Right: the decisions inside it.
         DecisionLog log = ui.game.getDecisions();
         List<DecisionLog.Entry> decided = decisionsInView(flags, chartWindow.firstMonthShown(), chartWindow.lastMonthShown());
-        VBox right = new VBox(4, columnHead("Your decisions in view", decided.size()));
-        for (int i = 0; i < decided.size() && i < DECISIONS_SHOWN; i++) right.getChildren().add(decisionRow(decided.get(i)));
-        if (decided.size() > DECISIONS_SHOWN) {
-            right.getChildren().add(door("+" + (decided.size() - DECISIONS_SHOWN) + " more", Palette.ACCENT, () -> {
-                folds.add("hard times");
-                scrollTarget = TO_HARD_TIMES;
-                showHistoryMenu();
-            }));
-        }
-        if (decided.isEmpty()) {
-            right.getChildren().add(quiet("no decisions in " + viewWords()
-                    + (log.size() == 0 ? "" : String.format(" · %,d since founding", log.size()))));
-            if (!chartWindow.showsAll() && log.size() > 0) right.getChildren().add(showAll());
-        }
+        VBox right = Kept.scope("right", () -> {
+            VBox col = Kept.column(4, columnHead("Your decisions in view", decided.size()));
+            for (int i = 0; i < decided.size() && i < DECISIONS_SHOWN; i++) {
+                DecisionLog.Entry d = decided.get(i);
+                col.getChildren().add(Kept.scope(decisionKey(d), () -> decisionRow(d)));
+            }
+            if (decided.size() > DECISIONS_SHOWN) {
+                col.getChildren().add(Kept.scope("more", () -> door("+" + (decided.size() - DECISIONS_SHOWN) + " more",
+                        Palette.ACCENT, () -> {
+                            folds.add("hard times");
+                            scrollTarget = TO_HARD_TIMES;
+                            showHistoryMenu();
+                        })));
+            }
+            if (decided.isEmpty()) {
+                col.getChildren().add(Kept.scope("none", () -> quiet("no decisions in " + viewWords()
+                        + (log.size() == 0 ? "" : String.format(" · %,d since founding", log.size())))));
+                if (!chartWindow.showsAll() && log.size() > 0) col.getChildren().add(Kept.scope("all", this::showAll));
+            }
+            return col;
+        });
 
         GridPane columns = equalColumns(2, 10);
         for (VBox col : new VBox[] {left, right}) {
@@ -2788,18 +2936,24 @@ final class HistoryScreen {
         columns.add(left, 0, 0);
         columns.add(right, 1, 0);
         box.getChildren().add(columns);
-        box.getChildren().add(fold("hard times", String.format("every named one since founding (%,d), by kind", episodes.size()),
-                () -> byKind(h, episodes, flags)));
+        box.getChildren().add(Kept.scope("fold", () -> fold("hard times",
+                String.format("every named one since founding (%,d), by kind", episodes.size()),
+                () -> byKind(h, episodes, flags))));
         return box;
+    }
+
+    /** A decision's name for its scope: its month, kind and words, which do not change as the log grows (an Entry has no equality of its own). */
+    static String decisionKey(DecisionLog.Entry d) {
+        return d.month() + ":" + d.kind() + ":" + d.label();
     }
 
     /** A column's head: its words, and how many. */
     HBox columnHead(String words, int count) {
-        Label l = new Label(words);
+        Label l = Kept.label(words);
         l.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        Label n = new Label(count == 0 ? "none" : String.format("%,d", count));
+        Label n = Kept.label(count == 0 ? "none" : String.format("%,d", count));
         n.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        HBox row = new HBox(8, l, n);
+        HBox row = Kept.row(8, l, n);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 0 0 4 0;");
         return row;
@@ -2807,7 +2961,7 @@ final class HistoryScreen {
 
     /** A quiet line: an empty list's words. */
     static Label quiet(String text) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setWrapText(true);
         l.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         return l;
@@ -2838,26 +2992,26 @@ final class HistoryScreen {
      */
     HBox episodeRow(YearBook.Episode e, int lastMonth) {
         String colour = TimeChart.episodeColour(e.kind());
-        Label name = new Label(e.name());
+        Label name = Kept.label(e.name());
         name.setWrapText(true);
         name.setMinWidth(60);
         name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
-        HBox line = new HBox(6, tag(e.kind(), colour), name);
-        if (isNew(e)) line.getChildren().add(tag("new", colour));
-        Region gap = new Region();
+        HBox line = Kept.row(6, tag(e.kind(), colour), name);
+        if (isNew(e)) line.getChildren().add(Kept.scope("new", () -> tag("new", colour)));
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        Label span = new Label(spanWords(e, lastMonth));
+        Label span = Kept.label(spanWords(e, lastMonth));
         span.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         span.setMinWidth(Region.USE_PREF_SIZE);
         line.getChildren().addAll(gap, span);
         line.setAlignment(Pos.CENTER_LEFT);
-        Label worst = new Label(worstLine(e));
+        Label worst = Kept.label(worstLine(e));
         worst.setWrapText(true);
         worst.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        VBox words = new VBox(1, line, worst);
+        VBox words = Kept.column(1, line, worst);
         HBox.setHgrow(words, Priority.ALWAYS);
         words.setMinWidth(0);
-        HBox row = new HBox(8, icon(Icons.ofEpisode(e.kind()), colour, 14), words);
+        HBox row = Kept.row(8, icon(Icons.ofEpisode(e.kind()), colour, 14), words);
         row.setAlignment(Pos.TOP_LEFT);
         rowGoes(row, "Moves the chart to " + e.name() + ", a year either side.", () -> moveChartTo(e));
         return row;
@@ -2866,16 +3020,16 @@ final class HistoryScreen {
     /** One decision: its icon in its flag's area colour, its month, its words - wrapping, never cut; "this month" when it is. */
     HBox decisionRow(DecisionLog.Entry d) {
         String colour = TimeChart.flagColour(d.kind());
-        Label when = new Label(CityCalendar.formatShort(d.month()));
+        Label when = Kept.label(CityCalendar.formatShort(d.month()));
         when.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         when.setMinWidth(Region.USE_PREF_SIZE);
-        Label what = new Label(d.label());
+        Label what = Kept.label(d.label());
         what.setWrapText(true);
         what.setMinWidth(60);
         what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
         HBox.setHgrow(what, Priority.ALWAYS);
-        HBox row = new HBox(8, icon(Icons.ofDecision(d.kind()), colour, 13), when, what);
-        if (d.month() == ui.game.getMonth()) row.getChildren().add(tag("this month", colour));
+        HBox row = Kept.row(8, icon(Icons.ofDecision(d.kind()), colour, 13), when, what);
+        if (d.month() == ui.game.getMonth()) row.getChildren().add(Kept.scope("now", () -> tag("this month", colour)));
         row.setAlignment(Pos.CENTER_LEFT);
         rowGoes(row, "Moves the chart to " + CityCalendar.formatShort(d.month()) + ", five years either side.",
                 () -> moveChartTo(d.month() - 60, d.month() + 60));
@@ -3060,13 +3214,14 @@ final class HistoryScreen {
 
     /** The section: its head with the (i), the line of counts, and every good behind "details". */
     VBox prices() {
-        VBox box = new VBox(8);
+        VBox box = Kept.column(8);
         box.getChildren().add(sectionHead("PRICES THIS MONTH", GOODS_INFO, null));
-        Label summary = new Label(priceSummary());
+        Label summary = Kept.label(priceSummary());
         summary.setWrapText(true);
         summary.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
         box.getChildren().add(summary);
-        box.getChildren().add(fold("goods", "every good's price this month (" + Good.values().length + ")", this::goodsRows));
+        box.getChildren().add(Kept.scope("fold",
+                () -> fold("goods", "every good's price this month (" + Good.values().length + ")", this::goodsRows)));
         return box;
     }
 
@@ -3115,10 +3270,10 @@ final class HistoryScreen {
      * (TradeScreen's B14).
      */
     javafx.scene.Node goodsRows() {
-        VBox box = new VBox(10);
+        VBox box = Kept.column(10);
         if (!ui.game.getForeignAccounts().isMonthCounted()) {
-            box.getChildren().add(quiet("Not counted yet: the railway's freight on each good is struck when the month "
-                    + "turns, so these bands may step a month on."));
+            box.getChildren().add(Kept.scope("uncounted", () -> quiet("Not counted yet: the railway's freight on each good is struck when the month "
+                    + "turns, so these bands may step a month on.")));
         }
         List<ScaleRow> both = new ArrayList<>(), oneSide = new ArrayList<>(), sellers = new ArrayList<>();
         for (GoodLine l : goodLines()) {

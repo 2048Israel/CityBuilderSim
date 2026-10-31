@@ -1170,7 +1170,7 @@ public final class Pieces {
      * (the building pink).
      */
     public static Label tag(String text, String colour) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle("-fx-font-size: 9.5px; -fx-text-fill: " + colour + "; -fx-padding: 1 7 1 7;"
                 + " -fx-border-color: " + colour + "; -fx-border-radius: 9; -fx-background-radius: 9;"
                 + " -fx-background-color: " + colour + "1f;");
@@ -2604,13 +2604,14 @@ public final class Pieces {
      * inside a clickable card opens itself and not the card.
      */
     public static Label door(String text, String colour, Runnable go) {
-        Label l = new Label(text + " ›");
+        Label l = Kept.label(text + " ›");
         String rest = Palette.words(Palette.SIZE_LABEL, colour) + " -fx-cursor: hand;";
         l.setStyle(rest);
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setOnMouseEntered(e -> l.setStyle(rest + " -fx-underline: true;"));
         l.setOnMouseExited(e -> l.setStyle(rest));
-        l.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, e -> {
+        // Set, not added: a kept door is handed back with none (Kept), and the click is this draw's.
+        l.setOnMouseClicked(e -> {
             e.consume();
             go.run();
         });
@@ -2683,10 +2684,10 @@ public final class Pieces {
     public static VBox details(String key, String caption, java.util.Set<String> open, Runnable redraw,
                                java.util.function.Supplier<javafx.scene.Node> body) {
         boolean shown = open.contains(key);
-        Label toggle = new Label((shown ? "details ▾  " : "details ▸  ") + caption);
+        Label toggle = Kept.label((shown ? "details ▾  " : "details ▸  ") + caption);
         toggle.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
         toggle.setWrapText(true);
-        VBox box = new VBox(4, toggle);
+        VBox box = Kept.column(4, toggle);
         if (shown) {
             javafx.scene.Node inside = body.get();
             if (inside != null) box.getChildren().add(inside);
@@ -4309,7 +4310,10 @@ public final class Pieces {
 
     /** An action button: a Press in its look, and what a press does. */
     public static ActionButton actionButton(String svg, String accent, double tall, Press press, Runnable go) {
-        return new ActionButton(svg, accent, tall, press, go);
+        // Kept (KP1): inside a draw, the button the last draw made, told again what it is and says; else new.
+        ActionButton button = Kept.of(ActionButton.class, () -> new ActionButton(svg, accent, tall, press, go));
+        if (!Kept.isNew(button)) button.retell(svg, accent, tall, press, go);
+        return button;
     }
 
     /**
@@ -4319,8 +4323,8 @@ public final class Pieces {
      * it without a redraw.
      */
     public static final class ActionButton extends javafx.scene.layout.StackPane {
-        private final String svg, accent;
-        private final double tall;
+        private String svg, accent;
+        private double tall;
         private final HBox row = new HBox(8);
         private final Label main = new Label(), sub = new Label();
         private Press press;
@@ -4353,6 +4357,23 @@ public final class Pieces {
                 if (e.getButton() != javafx.scene.input.MouseButton.PRIMARY || e.getClickCount() > 1) return;
                 if (this.go != null) this.go.run();
             });
+            show(press);
+        }
+
+        /**
+         * A kept button (KP1) handed back for another draw: told what it is for and what a press does, and
+         * said again. Kept's hand-back took its hand cursor (code set it, in the constructor), so it is
+         * given back; its hover and click listeners were added once, and read this button's fields.
+         */
+        void retell(String svg, String accent, double tall, Press press, Runnable go) {
+            this.svg = svg;
+            this.accent = accent;
+            if (this.tall != tall) {
+                this.tall = tall;
+                requestLayout();
+            }
+            this.go = go;
+            setCursor(javafx.scene.Cursor.HAND);
             show(press);
         }
 
@@ -4408,7 +4429,9 @@ public final class Pieces {
             main.setStyle("-fx-font-family: " + Fonts.sans() + "; -fx-font-weight: bold; -fx-font-size: 13px;"
                     + " -fx-text-fill: " + ink + ";");
             sub.setStyle(Palette.words(Palette.SIZE_CAPTION, faint));
-            row.getChildren().set(0, icon(svg, ink, 16));
+            // A kept button is handed back its own icon: put in only when it is not the one there (a set of the same node takes it off the scene).
+            javafx.scene.Node mark = icon(svg, ink, 16);
+            if (row.getChildren().get(0) != mark) row.getChildren().set(0, mark);
         }
 
         @Override protected double computeMinHeight(double width) {
@@ -5297,16 +5320,32 @@ public final class Pieces {
        reading cards under History's big chart.
        ===================================================================== */
 
-    /** A chart card's head (0.7.37): its parts, so a month landing can count the figure up and a click can open the line. */
-    public static final class CardHead extends HBox {
+    /**
+     * A chart card's head (0.7.37): its parts, so a month landing can count the figure up and a click can
+     * open the line. Kept (KP1): a box that stages its children like Kept's own, its three labels the ones
+     * chartCardHead() hands it at each draw.
+     */
+    public static final class CardHead extends HBox implements Kept.Staging {
         /** The line's name, its figure now, and its move over the window. */
-        public final Label name, figure, change;
+        public Label name, figure, change;
+        private javafx.collections.ObservableList<javafx.scene.Node> stage;
 
-        CardHead(Label name, Label figure, Label change) {
+        CardHead() {
             super(8);
-            this.name = name;
-            this.figure = figure;
-            this.change = change;
+        }
+
+        @Override public javafx.collections.ObservableList<javafx.scene.Node> getChildren() {
+            return stage != null ? stage : super.getChildren();
+        }
+
+        @Override public void stage() {
+            stage = javafx.collections.FXCollections.observableArrayList();
+        }
+
+        @Override public void commit() {
+            javafx.collections.ObservableList<javafx.scene.Node> want = stage;
+            stage = null;
+            if (want != null) Kept.set(super.getChildren(), want);
         }
     }
 
@@ -5319,7 +5358,7 @@ public final class Pieces {
      */
     public static CardHead chartCardHead(String name, String figure, String change, Runnable open,
                                          javafx.scene.Node... right) {
-        Label n = new Label(name);
+        Label n = Kept.label(name);
         n.setWrapText(true);
         n.setMinWidth(60);
         String rest = Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
@@ -5330,14 +5369,18 @@ public final class Pieces {
             n.setOnMouseExited(e -> n.setStyle(rest + " -fx-cursor: hand;"));
             n.setOnMouseClicked(e -> open.run());
         }
-        Label f = new Label(figure);
+        Label f = Kept.label(figure);
         f.setStyle(Palette.figure(Palette.SIZE_LEAD, Palette.TEXT_HEAD));
         f.setMinWidth(Region.USE_PREF_SIZE);
-        Label c = new Label(change == null ? "" : change);
+        Label c = Kept.label(change == null ? "" : change);
         c.setStyle(Palette.figure(Palette.SIZE_LABEL + 1, Palette.TEXT_BODY));
         c.setMinWidth(Region.USE_PREF_SIZE);
-        CardHead head = new CardHead(n, f, c);
-        Region gap = new Region();
+        CardHead head = Kept.of(CardHead.class, CardHead::new);
+        head.setSpacing(8);
+        head.name = n;
+        head.figure = f;
+        head.change = c;
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         head.getChildren().addAll(n, f, c, gap);
         for (javafx.scene.Node r : right) if (r != null) head.getChildren().add(r);
@@ -5353,39 +5396,55 @@ public final class Pieces {
      * in its colour where it ended (`last`). A flat line - `lo` equal to `hi`
      * - draws its one dot in the middle and no tick. Pure arithmetic of four
      * figures the caller read off the model; `width` is its preferred width,
-     * and it lays out at whatever it is given.
+     * and it lays out at whatever it is given. Kept (KP1): the bar the last
+     * draw made, told its figures by set().
      */
     public static RangeBar rangeBar(double lo, double hi, double first, double last, String colour, double width) {
-        return new RangeBar(lo, hi, first, last, colour, width);
+        RangeBar bar = Kept.of(RangeBar.class, RangeBar::new);
+        bar.set(lo, hi, first, last, colour, width);
+        return bar;
     }
 
-    /** The bar rangeBar() draws: a Pane that lays its track, its tick and its dot out at whatever width it is given. */
+    /**
+     * The bar rangeBar() draws: a Pane that lays its track, its tick and its dot out at whatever width it
+     * is given. A picture (UP4): it makes its three parts once and is told each month's figures by set(),
+     * which asks for a layout only when a figure the layout reads moved.
+     */
     public static final class RangeBar extends javafx.scene.layout.Pane {
         /** The track's height, the dot's size, the tick's width and height, and the room either end so the dot is never cut. */
         private static final double TRACK = 6, DOT = 10, TICK_W = 5, TICK_H = 14, PAD = 6;
-        private final double lo, hi, first, last;
+        private double lo, hi, first, last;
         private final Region track = new Region(), tick = new Region(), dot = new Region();
         /** Where the dot is drawn, as a share of the track: the end's own, or on its way there (slideFrom()). */
         private final javafx.beans.property.DoubleProperty at = new javafx.beans.property.SimpleDoubleProperty();
 
-        RangeBar(double lo, double hi, double first, double last, String colour, double width) {
+        RangeBar() {
+            track.setStyle("-fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: " + TRACK / 2 + ";");
+            tick.setStyle("-fx-background-color: " + Palette.RAISED + "; -fx-border-color: " + Palette.TEXT_LABEL + ";"
+                    + " -fx-border-width: 1.5; -fx-background-radius: 2; -fx-border-radius: 2;");
+            getChildren().addAll(track, tick, dot);
+            at.addListener((o, was, is) -> requestLayout());
+            setMinSize(60, TICK_H);
+            setMaxSize(Double.MAX_VALUE, TICK_H);
+        }
+
+        /** Told this month's figures: a slide still running is for the figures before them, so it stops and the dot goes to where the line ends. */
+        public void set(double lo, double hi, double first, double last, String colour, double width) {
+            javafx.animation.Animation sliding = Kept.animationOf(this);
+            if (sliding != null) sliding.stop();
+            boolean moved = Double.compare(lo, this.lo) != 0 || Double.compare(hi, this.hi) != 0
+                    || Double.compare(first, this.first) != 0;
             this.lo = lo;
             this.hi = hi;
             this.first = first;
             this.last = last;
-            track.setStyle("-fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: " + TRACK / 2 + ";");
-            tick.setStyle("-fx-background-color: " + Palette.RAISED + "; -fx-border-color: " + Palette.TEXT_LABEL + ";"
-                    + " -fx-border-width: 1.5; -fx-background-radius: 2; -fx-border-radius: 2;");
             dot.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: " + DOT / 2 + ";"
                     + " -fx-border-color: " + Palette.RAISED + "; -fx-border-width: 1.5; -fx-border-radius: " + DOT / 2 + ";");
             tick.setVisible(!flat() && Double.isFinite(first));
             dot.setVisible(Double.isFinite(last));
-            getChildren().addAll(track, tick, dot);
-            at.set(share(last));
-            at.addListener((o, was, is) -> requestLayout());
             setPrefSize(width, TICK_H);
-            setMinSize(60, TICK_H);
-            setMaxSize(Double.MAX_VALUE, TICK_H);
+            at.set(share(last));
+            if (moved) requestLayout();
         }
 
         /** Whether the line never moved over the window: one dot, no tick. */
@@ -5403,8 +5462,9 @@ public final class Pieces {
             double to = share(last);
             if (Math.abs(was - to) < 1e-4) return;
             at.set(Math.max(0, Math.min(1, was)));
-            new javafx.animation.Timeline(new javafx.animation.KeyFrame(Duration.millis(millis),
-                    new javafx.animation.KeyValue(at, to, javafx.animation.Interpolator.EASE_OUT))).play();
+            // Through Kept: the bar is a kept node, and the slide it was last given is stopped first.
+            Kept.play(this, new javafx.animation.Timeline(new javafx.animation.KeyFrame(Duration.millis(millis),
+                    new javafx.animation.KeyValue(at, to, javafx.animation.Interpolator.EASE_OUT))));
         }
 
         @Override protected void layoutChildren() {
