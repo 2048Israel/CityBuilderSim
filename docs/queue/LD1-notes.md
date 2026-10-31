@@ -106,11 +106,18 @@ and Migration's opportunity still read only the posts that exist.
 - **As far as the business can pay** (his "and the business can"). A band's
   refused posts stop at the tightness where the best-paying building that wants
   them would no longer carry its interest: `tightnessAt(premium x payFactor)`.
-- **Never more posts than the band has workers** (`MOST_OF_SUPPLY` = 1). The
-  multiple goes as the root of the tightness, so this adds at most one to it. From
-  the floor's tightness (.49) that is at most 1.74 times the multiple, and less
-  above it: the refused posts can never double a band's wage.
-  `WantedPostsCheck` 4 prints the ratio at six tightnesses.
+- **Never more than the band's own posts again** (`MOST_OF_POSTS` = 1). The
+  posts the wage is priced on are at most doubled. The multiple goes as the
+  root of the tightness, so the bid lifts a band's multiple at most sqrt(2) =
+  1.41 times: one business's wish never doubles a wage. `WantedPostsCheck` 4
+  prints 1.414 at every tightness from the floor up.
+  - It is the band's posts, not its workers, because the gate keeps a plant out
+    of a village on purpose ("it puts the first one in a city of three or four
+    thousand rather than a village", `Sector.MIN_STAFFABLE_TO_ORDER`). A
+    village has few posts, so it bids little.
+  - Capped at the band's workers, as first built, it bid the founding village's
+    unskilled wage to 1.87x by m10 (main: 0.92x), and the young city was 15%
+    smaller at m300 (§4).
 - **It decays by being rebuilt.** Each month's asks replace the last. A building
   the gate lets through, or a sector that stops asking, bids nothing next month,
   and the wage walks back at `ADJUST_RATE`.
@@ -127,79 +134,115 @@ priced beyond the open ones when there are any, and its legend says what
 | | m300 | m600 | m900 | m1,200 | end | past 40,000 | Machine Works' longest wait |
 |---|---|---|---|---|---|---|---|
 | main | 3,520 | 11,550 | 32,015 | 68,998 | 347,140 [68,654-383,997] | m1,066 [881-2,256] | 132 [52-305] |
-| LD1 | 2,990 | 11,511 | 34,536 | 64,793 | 337,851 [296,807-413,295] | m998 [858-1,137] | 35 [21-103] |
+| LD1 | 3,965 | 11,764 | 34,039 | 64,506 | 335,916 [290,726-398,232] | m1,033 [857-1,141] | 40 [24-126] |
 
-Medians, with [least-most].
+Medians, with [least-most]. LD1's figures are its committed model, byte for
+byte (seed 1's run checked against the variant's). With the bid switched off,
+LD1's tree is main's to the byte over 2,400 months (seeds 0 and 4): every
+change below is the bid's.
 
-- **The loop opens.** The Machine Works' longest wait in the first 800 months
-  falls from a median of 132 months to 35. The gate's shortage holds that pay
-  fall from 12,466 to 8,231, and all holds from 43,775 to 33,998. At those holds
-  the college premium is 1.2x or more in 29% of months (10% on main), and 4.1%
-  of arrivals are skilled (2.9%).
-- **The middle city is earlier.** At m900 the median is 8% larger. It passes
-  40,000 about 70 months sooner, and no seed takes longer than m1,137.
-- **Seed 11** passes 40,000 at m917 and ends at 365,728 (main: m2,256 and
-  68,654). That is a changed path, not a cure: its trap is XS1's (§5).
-- **Seed 4** (RE1's): 42,846 at m900 against 36,856, past 40,000 at m876
-  against m979. But it ends at 316,037 against 381,539.
-- **The young city is smaller at m300**: 2,990 against 3,520 at the median. The
-  m300 figures have two humps: a few seeds boom early to about 6,000 and most sit
-  near 3,000. LD1 has nine seeds under 3,000 to main's four. By m600 the median
-  is level.
-- **What drives the young city's dip**, read in seed 1:
-  - a refused Blast Furnace's 648 unskilled posts are priced into a town of
-    2,350;
-  - the unskilled premium goes to 1.16x while the town keeps taking migrants and
-    the jobs do not follow;
-  - its boom comes at m390 against main's m270.
-- **In the first 300 months the bid is mostly unskilled**: 107 refused NONE
-  posts on average, and in 29% of months. COLLEGE averages 13, in 38% of months.
-- **The end of the run is 3% lower at the median.** The least seed ends at
-  296,807 where main's ended at 68,654.
+**The loop opens.**
+- The Machine Works' longest wait in the first 800 months falls from a median
+  of 132 months to 40. Twelve seeds wait under 60; seed 11 waits 82, and seeds 2 and 5
+  120-126.
+- The gate's shortage holds that pay fall from 12,466 to 8,949, and all holds
+  from 43,775 to 31,643.
+- At those holds the college premium is 1.2x or more in 26% of the months
+  (main: 10%), and 4.1% of arrivals are skilled (2.9%).
+- In m0-600, 4.4% of all arrivals are skilled against 3.6%.
 
-## 4. Two readings tried, and not taken
+**The city is earlier.**
+- The median city is 13% larger at m300 and 6% larger at m900.
+- It passes 40,000 33 months sooner at the median, and no seed is later than
+  m1,141.
 
-The same sixteen seeds, each with a diagnostic switch (`docs/queue/LD1/variants.patch`):
+**The end of the run is 3% lower at the median** (335,916 against 347,140).
+Its least seed ends at 290,726, where main's ended at 68,654.
+
+**Seed 11** passes 40,000 at m973 and ends at 293,380 (main: m2,256 and
+68,654). That is a changed path, not a cure: its trap is XS1's (§5).
+
+**Seed 4** (RE1's) runs a little behind main's:
+
+| | m900 | m1,200 | past 40,000 | end |
+|---|---|---|---|---|
+| main | 36,856 | 78,331 | m979 | 381,539 |
+| LD1 | 34,635 | 72,884 | m995 | 346,167 |
+
+**Seed by seed** (population; past 40,000; the Machine Works' longest wait):
+
+| seed | main m300 | LD1 m300 | main m900 | LD1 m900 | main end | LD1 end | main 40k | LD1 40k | main MW | LD1 MW |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 3,042 | 2,773 | 32,901 | 33,084 | 358,645 | 349,562 | m1,083 | m1,072 | 255 | 24 |
+| 1 | 5,971 | 5,398 | 22,570 | 31,744 | 340,223 | 322,939 | m1,087 | m1,079 | 137 | 26 |
+| 2 | 3,900 | 3,917 | 40,870 | 21,292 | 368,877 | 366,014 | m881 | m1,141 | 108 | 120 |
+| 3 | 5,589 | 3,081 | 22,719 | 30,666 | 340,072 | 323,826 | m1,116 | m1,081 | 60 | 35 |
+| 4 | 3,823 | 5,059 | 36,856 | 34,635 | 381,539 | 346,167 | m979 | m995 | 117 | 51 |
+| 5 | 3,935 | 4,013 | 34,832 | 42,109 | 306,964 | 326,540 | m975 | m860 | 112 | 126 |
+| 6 | 3,677 | 6,543 | 36,306 | 36,104 | 368,509 | 315,869 | m979 | m984 | 60 | 51 |
+| 7 | 4,736 | 5,977 | 23,854 | 38,182 | 247,992 | 371,308 | m1,104 | m980 | 128 | 60 |
+| 8 | 2,949 | 6,190 | 31,129 | 40,130 | 331,020 | 321,169 | m1,059 | m884 | 304 | 38 |
+| 9 | 3,271 | 6,807 | 33,571 | 35,547 | 383,997 | 345,292 | m986 | m980 | 192 | 25 |
+| 10 | 2,957 | 3,244 | 29,813 | 43,544 | 362,443 | 398,232 | m1,085 | m857 | 210 | 32 |
+| 11 | 2,936 | 5,354 | 21,976 | 38,542 | 68,654 | 293,380 | m2,256 | m973 | 305 | 82 |
+| 12 | 2,775 | 3,051 | 27,071 | 33,443 | 376,833 | 307,777 | m1,114 | m1,071 | 252 | 26 |
+| 13 | 6,126 | 2,906 | 33,368 | 26,947 | 350,381 | 373,482 | m975 | m1,105 | 52 | 47 |
+| 14 | 3,363 | 2,673 | 30,696 | 31,222 | 343,900 | 372,789 | m1,073 | m1,104 | 91 | 42 |
+| 15 | 3,194 | 3,093 | 35,113 | 31,459 | 342,337 | 290,726 | m975 | m1,134 | 300 | 31 |
+
+**Where the bid lands.**
+- In the first 300 months it is mostly unskilled: 99 refused NONE posts on
+  average, in 27% of months, against 14 COLLEGE posts in 39% of months.
+- After m900 it is college and university alone, in about a fifth of the
+  months.
+- The unskilled bids come from a young town's big plants. Seed 1 at m110: a
+  refused Blast Furnace's 648 unskilled posts, in a town of 2,350.
+
+## 4. Three other readings tried, and not taken
+
+The same sixteen seeds, each with a diagnostic switch
+(`docs/queue/LD1/variants.patch`, on the first build).
 
 | reading | m300 | m600 | m900 | past 40,000 | Machine Works' wait | least end |
 |---|---|---|---|---|---|---|
-| as built: all the posts of a short band | 2,990 | 11,511 | 34,536 | m998 | 35 | 296,807 |
-| only the posts the city could not staff (the shortfall) | 3,092 | 12,066 | 28,950 | m1,090 | 35 | 271,494 |
-| only the skilled bands | 4,027 | 12,732 | 31,446 | m1,066 | 48 | 276,126 |
+| **as built**: the posts of a short band, at most the band's posts again | 3,965 | 11,764 | 34,039 | m1,033 | 40 | 290,726 |
+| at most the band's workers (the first build) | 2,990 | 11,511 | 34,536 | m998 | 35 | 296,807 |
+| only the posts the city could not staff (the shortfall), at most its workers | 3,092 | 12,066 | 28,950 | m1,090 | 35 | 271,494 |
+| only the skilled bands, at most its workers | 4,027 | 12,732 | 31,446 | m1,066 | 48 | 276,126 |
 
-- **The shortfall** prices less than the building would set if it stood. It
-  buys back nothing: m900 and the 40,000 come later than main's.
-- **The skilled bands alone** spare the young city its dip, and gain nothing by
-  m900. They would also leave Jerus's own case out: an Iron Mine is 45 unskilled,
-  12 diploma and 3 college posts.
-
-So the brief's reading stands: the posts as if offered, in every band they are
-short in.
+- **Capped at the band's workers**, it bid a village for plants no wage could
+  staff there. Seed 1's unskilled multiple was 1.87x at m10 (main 0.92x), and
+  the young city was 15% smaller at m300.
+- **The shortfall** prices less than the building would set if it stood, and
+  buys back nothing: its m900 and its 40,000 are later than main's.
+- **The skilled bands alone** spare the young city, gain nothing by m900, and
+  would leave Jerus's own case out: an Iron Mine is 45 unskilled, 12 diploma
+  and 3 college posts.
 
 ## 5. XS1's trap: not counted (as recommended)
 
 A hold the gate puts on only because the builders' laid-off crews are counted
-as spoken for asks nothing. The test is the hold's own building, asked again
+as spoken for asks nothing. The test asks for the hold's own building again,
 with the crews counted spare.
-- On main this is half of all holds (22,133); on LD1, 15,915.
-- The fall is mostly seed 11's path. The trap itself is unchanged: by XS1's
-  test, without its "idle at the core crew", 7,369 trap months on main and
-  7,726 on LD1, seed 11 aside.
+- On main this is half of all holds (22,133); on LD1, 13,354.
+- The fall is mostly seed 11's changed path. The trap itself is barely moved:
+  by XS1's test without its "idle at the core crew", 7,369 trap months on main
+  and 6,540 on LD1, seed 11 aside.
 - Counting those holds would raise wages in a town with thousands jobless and
   leave the gate shut (XS1's notes §6).
 
 IC1 changes the gate itself. LD1 leaves `Sector.staffing()`'s answer exactly as
 it was, so the two stay separable. Once IC1 frees an idle builder's crews,
-the holds they cause leave the gate. This test then sorts only a busy
+the holds those crews cause leave the gate. This test then sorts only a busy
 builder's crews, who are coming back to work.
 
 ## 6. What it does not reach
 
-- **A big city's graduate shortage.** The bank's branch asks 13 college posts of a band of
-  8,000 that stands 30% short at 1.15x for 900 months. That band is held by
-  the curve (`ELASTICITY` .5 makes 1.3x tightness a 1.14x wage) and by the
-  world's ceiling on graduates (`WageBand.arrivalCeiling()`). A building with
-  a fifth of its posts skilled cannot open there. Recorded, not queued.
+- **A big city's graduate shortage.** The bank's branch asks 13 college posts of a band of 8,000
+  that stands 30% short at 1.15x for 900 months. That band is held by the curve
+  (`ELASTICITY` .5 makes 1.3x tightness a 1.14x wage) and by the world's
+  ceiling on graduates (`WageBand.arrivalCeiling()`). A building with a fifth
+  of its posts skilled cannot open there. Recorded, not queued.
 - **How many come.** Migration's target is posts and homes, with an
   affordability pull: a wage decides who arrives, and how many only through
   affordability. So the bid works where the city is already taking migrants
