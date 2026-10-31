@@ -742,6 +742,10 @@ adds its line here, not in `CLAUDE.md`.
         MarketCheck.java           the efficient market (EM1), each case on a fixture that causes it: one value for a share, one
                                    yardstick, two shares alike but for price, the buyback finding its sellers, a share earning
                                    less than dollars abroad sold, a quiet market, the save
+        DebtExchangeCheck.java     the exchange gain (loss) on the foreign-currency debt (batch CD7): each dollar piece's carrying
+                                   value times the D$'s move from the rate it was last valued at, booked at the reprice below the
+                                   operating lines, taken out of the bridge as not cash and out of the cash rules, saved and
+                                   reloaded; the D$ made to fall and rise 10% by ForeignAccounts.pinRate() before the press
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones;
                                    since SP1 three at a time (PARALLEL), each JVM under -Xmx HEAP_MB

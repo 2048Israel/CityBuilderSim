@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.83 — CD7, the city's foreign debt revalued — 2026-10-31, ready, see docs/queue/CD7-notes.md
+The city's dollar paper now books what the D$ does to it (Jerus, 2026-10-23: "both as you said, but queud right with
+the WN batches"): at each month's reprice, every dollar piece's carrying value in US$ times the move from the rate it
+was last valued at, WN4's rule for the vault, as an "Exchange gain (loss) on foreign debt" in the budget's result below
+the operating lines. It moves no cash: the treasury bridge takes it out again, the EARNED steps name it, and the
+rollover's netting and the fund's pay-in and floor leave it out (★). The book shows each dollar line's D$ move since
+it was sold, green or red, in D$ and as a % of what it is carried at, with the total and the month's line; the
+Government and Fund tabs show the line. Saved: a government slot, the history's debtExchange series and each sale's
+rate. DebtExchangeCheck (new) pins the D$ 10% weaker, then back. The suite has only main's known reds; the trace moved,
+and the ensemble scores 24 of 26, every figure as 0.8.81's.
+
 ### 0.8.82 — LB2, Rankings: the board — 2026-10-31, ready, see docs/queue/LB2-notes.md
 A Rankings tab on the rail after History (Lucide's trophy, in money blue; Jerus, D5): the city ranked measure by measure
 among the real world's 196 nations and 62 city regions (Real world 2025, LB1's file), or among the nations of its own

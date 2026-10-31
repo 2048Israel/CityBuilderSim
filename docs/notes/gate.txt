@@ -1,15 +1,11 @@
-# gate of Merge batch/LB2: rankings: the board - the Rankings rail tab after History, Real world 2025 and Your world (the game's nations, ten measures), real US$ with a founding dollar counted as a 2015 one, this month's rate (default), constant 2015 or PPP, GDP's full list first, the marks and the (i) (Jerus, 2026-10-21: D1, D5-D16), 0.8.82
+# gate of Merge batch/CD7: the city's foreign debt revalued: the exchange gain or loss on its foreign-currency paper as the D$ moves, booked in the budget and the treasury bridge and shown on the book, on WN4's revaluation (Jerus, 2026-10-23: "both as you said, but queud right with the WN batches"), 0.8.83
 # date: 2026-10-31
 # earth-2.bin: named
-# suite: 160 harnesses run in 1603s: 158 passed, 2 failed
-# timing: 13 harnesses run in 454s: 10 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 161 harnesses run in 1628s: 159 passed, 2 failed
+# timing: 13 harnesses run in 463s: 11 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 25.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 32.7 ms, batch 31.0 ms (-5.2%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.0 ms, batch 30.4 ms (+12.9%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 7 ms, batch 4.65 ms (-33.6%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 20.9 ms, batch 23.2 ms (+10.9%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 2 FAILED   [the harness's own count of the timing reds above]
 PassThroughCheck | exit 1
 PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
 PassThroughCheck | 1 FAILED

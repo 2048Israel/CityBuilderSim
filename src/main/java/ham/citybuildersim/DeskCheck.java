@@ -753,7 +753,7 @@ public class DeskCheck {
 
     /** What a sale holds, for comparing a piece with itself before and after. */
     static String saleText(Debt.Sale s) {
-        return s.getMonth() + "|" + s.getFace() + "|" + s.getProceeds() + "|" + s.getYield() + "|" + s.getHow();
+        return s.getMonth() + "|" + s.getFace() + "|" + s.getProceeds() + "|" + s.getYield() + "|" + s.getHow() + "|" + s.getRate();
     }
 
     static java.util.List<String> salesText(Debt d) {

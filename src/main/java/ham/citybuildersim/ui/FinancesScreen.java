@@ -2836,6 +2836,14 @@ final class FinancesScreen {
             + "auction pays every holder who asks more than fair (the households and the businesses do, CD4); the "
             + "figure beside it is what that auction itself would book.";
 
+    /** The (i) beside the D$'s move since a dollar piece was sold, on the desk's card and a line's page (CD7): what the figure and its colours mean. */
+    static final String EXCHANGE_INFO = "Dollar paper is owed in US$, and what it costs in D$ moves with the exchange "
+            + "rate. Green is a gain: the D$ has risen since the piece was sold, so the same dollars cost fewer D$. Red "
+            + "is a loss: the D$ has fallen and they cost more. The share is of what the line is carried at, so −10% is "
+            + "a D$ that has lost a tenth against the US$ since the sale. The budget books the move month by month as "
+            + "the exchange gain (loss) on foreign debt; no cash moves until a coupon or the principal is paid, and "
+            + "that is paid at that month's rate.";
+
     /** THE DESK's (i): the two readings under the table. */
     static final String DESK_INFO = "If closed now: the carrying value less the worth, in D$ and as a share of the "
             + "carrying value, green for a gain and red for a loss, with Close it now beside it. A gain is what the "
@@ -2979,25 +2987,43 @@ final class FinancesScreen {
             by[2][k] = desk.worthOf(kind);
             present[k] = by[0][k] > 0 || by[1][k] > 0 || by[2][k] > 0;
         }
-        return card(caption("AT FACE, CARRIED, AND WORTH TODAY", DESK_BARS_INFO),
+        VBox card = card(caption("AT FACE, CARRIED, AND WORTH TODAY", DESK_BARS_INFO),
                 muted("one scale · each bar by kind · the dashed line is the book's worth"),
                 new DeskBars(by, desk.worth(), this::d), keyRow(kindKey(present).toArray(new Node[0])),
                 gainLine("Carried less worth · what closing the book at fair would book", gainOf(desk.ifClosedNow(), desk.ifClosedNowShare()), GAIN_INFO),
                 cardLine("Face less worth · what the market's price saves against what is owed", signedD(desk.vsFace()), null));
+        // CD7: with dollar paper in the book, the D$'s move since the sales, and what the budget booked of it this month.
+        if (holdsDollars(desk)) {
+            card.getChildren().addAll(
+                    gainLine("The D$'s move since the dollar paper was sold", gainOf(desk.exchangeSinceSold(), desk.exchangeShare()), EXCHANGE_INFO),
+                    cardLine("...this month, in the budget's result", signedD(ui.game.getEconomyManager().getNationalAccounts().getDebtExchangeGain()), null));
+        }
+        return card;
+    }
+
+    /** CD7: whether the book holds any dollar paper (a foreign line): the desk's exchange column and the card's exchange lines show only then. */
+    static boolean holdsDollars(BookDesk desk) {
+        for (BookDesk.Line l : desk.lines()) if (l.debt().isForeign()) return true;
+        return false;
     }
 
     /** EVERY LINE: the desk, a row a line by when it falls due; a click on a row opens the line's page, and the ladder's columns and NEXT DUE scroll to its row. */
     VBox deskCard(BookDesk desk) {
-        final int cols = 12;
+        // CD7: a book that holds dollar paper has a thirteenth column, the D$'s move since each dollar line was sold, third in
+        // the row beside the gain it adds to; a book of home paper is the twelve columns it was, to the pixel.
+        final boolean dollars = holdsDollars(desk);
+        final int cols = dollars ? 13 : 12;
         // If closed now stands second, beside the line it is about: at a narrow window the table scrolls across, and the gain and the
         // door that closes it are the first things in view (Jerus, 2026-10-23).
-        GridPane t = grid(new double[] {210, CLOSE_CELL, 58, 84, 64, 44, 58, 60, 60, 58, 48, 80}, rightAfterFirst(cols));
+        GridPane t = grid(dollars ? new double[] {210, CLOSE_CELL, EXCHANGE_CELL, 58, 84, 64, 44, 58, 60, 60, 58, 48, 80}
+                : new double[] {210, CLOSE_CELL, 58, 84, 64, 44, 58, 60, 60, 58, 48, 80}, rightAfterFirst(cols));
         t.setHgap(4);
         t.setVgap(0);
         // The first column takes what a wide window leaves; a narrow one scrolls the table across (acrossWhenNarrow()).
         t.getColumnConstraints().get(0).setMaxWidth(Double.MAX_VALUE);
         t.getColumnConstraints().get(0).setHgrow(Priority.ALWAYS);
-        gridHead(t, "Line", "If closed now", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
+        if (dollars) gridHead(t, "Line", "If closed now", "D$'s move since sold", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
+        else gridHead(t, "Line", "If closed now", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
         // The headings are words, in the words' face: the figures' face is wider than a heading's column.
         for (Node head : t.getChildren()) {
             if (!(head instanceof Label h)) continue;
@@ -3023,6 +3049,9 @@ final class FinancesScreen {
             cells.add(lineCell(l));
             // What closing it now would book, green or red, with the door that closes it beside it (Jerus, 2026-10-23).
             cells.add(closeCell(l));
+            // CD7: the D$'s move since it was sold on a dollar line, green or red; a home line has none.
+            if (dollars) cells.add(debt.isForeign() ? gainFigure(gainOf(l.exchangeSinceSold(), l.exchangeShare()), Palette.SIZE_CAPTION)
+                    : gridCell("—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true));
             cells.add(gridCell(d(l.face()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true));
             cells.add(gridCell(lineCoupon(l), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
             cells.add(stacked(pct2(l.bookedRate()), linker ? "real" : null));
@@ -3065,9 +3094,20 @@ final class FinancesScreen {
         t.add(rule, 0, row++);
         String[] foot = {"The book", "", d(desk.face()), d(desk.coupon()) + " a month", "", "", "", d(desk.worth()), d(desk.carried()),
                 signedD(desk.vsFace()), "", ""};
+        if (dollars) {
+            // CD7: the exchange column's place in the foot (third), the others one to the right.
+            String[] shifted = new String[cols];
+            shifted[0] = foot[0];
+            shifted[1] = foot[1];
+            shifted[2] = "";
+            System.arraycopy(foot, 2, shifted, 3, foot.length - 2);
+            foot = shifted;
+        }
         for (int c = 0; c < cols; c++) {
             // The book's own gain or loss, green or red like each line's (Jerus, 2026-10-23), on the right edge of its column.
             Label cell = c == 1 ? gainFigure(gainOf(desk.ifClosedNow(), desk.ifClosedNowShare()), Palette.SIZE_BODY)
+                    // CD7: ...and the D$'s move on the dollar lines, over what they are carried at.
+                    : dollars && c == 2 ? gainFigure(gainOf(desk.exchangeSinceSold(), desk.exchangeShare()), Palette.SIZE_BODY)
                     : foot[c].isEmpty() ? null : gridCell(foot[c], Palette.TEXT_HEAD, Palette.SIZE_CAPTION, c > 0);
             if (cell == null) continue;
             // The total stands under the gains, not under the doors beside them.
@@ -3086,6 +3126,9 @@ final class FinancesScreen {
 
     /** The width of the desk's If closed now column (CD6): the gain or loss, and the Close it now button beside it. */
     static final double CLOSE_CELL = 206;
+
+    /** The width of the desk's exchange column (CD7), shown only when the book holds dollar paper: "−D$725.3M · −10.0%" at the caption's size, and its heading on two lines. */
+    static final double EXCHANGE_CELL = 128;
 
     /** The width of the gain or loss in that cell: "−D$725.3M · −100.0%" at the figure's size. */
     private static final double CLOSE_FIGURE = 134;
@@ -3464,6 +3507,14 @@ final class FinancesScreen {
                 cardLine("Carried · what the books hold it at", d(l.carried()), null),
                 gainLine("Carried less worth · what the books would show at fair", gainOf(l.ifClosedNow(), l.ifClosedNowShare()), GAIN_INFO),
                 cardLine("Against its face of " + d(l.face()), againstWords, null, PREMIUM_INFO));
+        // CD7: a dollar line's own exchange, since it was sold - the D$'s move on what is carried - and the rates it spans.
+        if (debt.isForeign()) {
+            close.getChildren().add(gainLine("The D$'s move since it was sold · on what is carried",
+                    gainOf(l.exchangeSinceSold(), l.exchangeShare()), EXCHANGE_INFO));
+            if (debt.soldAtRate() > 0) {
+                close.getChildren().add(cardLine("Sold with the D$ at", perUsd(debt.soldAtRate()) + ", now " + perUsd(debt.getExchangeRate()), null));
+            }
+        }
         if (taken) {
             close.getChildren().addAll(
                     cardLine("All of it on offer, " + d(whole.takenFace()) + ", at the reverse auction now", d(whole.paid()), null),

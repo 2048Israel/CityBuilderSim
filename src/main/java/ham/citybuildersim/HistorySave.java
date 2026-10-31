@@ -98,6 +98,9 @@ public class HistorySave {
     /** The gain (loss) on debt retired, monthly (CD4, CD3's ★5): the surplus carries it and spending does not, so a year's
      *  spending is revenue less the surplus PLUS this - without it the year netted a buyback's gain into spending. */
     private List<Double> retiredGain = new ArrayList<>();
+    /** The exchange gain (loss) on the city's foreign-currency debt, monthly (CD7): the surplus carries it and spending does not,
+     *  and no cash moved on it, so the rollover's netting and the fund's pay-in read the surplus LESS this (Game.surplusOverLastYear()). */
+    private List<Double> debtExchange = new ArrayList<>();
 
     /* --------------------------- people --------------------------- */
     private List<Long> jobs = new ArrayList<>();
@@ -673,6 +676,7 @@ public class HistorySave {
         revenue.add(round2(accounts.getTotalRevenue()));
         surplus.add(round2(accounts.getBalance()));
         retiredGain.add(round2(accounts.getRetiredGain()));
+        debtExchange.add(round2(accounts.getDebtExchangeGain()));
 
         jobs.add(people.getTotalJobs());
         workforce.add(people.getWorkforce());
@@ -1106,6 +1110,7 @@ public class HistorySave {
         revenue = copy(loaded.revenue);
         surplus = copy(loaded.surplus);
         retiredGain = copy(loaded.retiredGain);
+        debtExchange = copy(loaded.debtExchange);
 
         jobs = copy(loaded.jobs);
         workforce = copy(loaded.workforce);
@@ -1608,6 +1613,7 @@ public class HistorySave {
         map.put("revenue", revenue);
         map.put("surplus", surplus);
         map.put("retiredGain", retiredGain);
+        map.put("debtExchange", debtExchange);
         map.put("jobs", jobs);
         map.put("workforce", workforce);
         map.put("outOfWork", outOfWork);
@@ -1798,7 +1804,7 @@ public class HistorySave {
      * sick rate are the same numbers in any currency - and so are headcounts.
      */
     public void redenominate(double scale) {
-        scaleAll(scale, cash, gdp, debt, revenue, surplus, retiredGain,
+        scaleAll(scale, cash, gdp, debt, revenue, surplus, retiredGain, debtExchange,
                 totalWage, minimumWage, schoolBill,
                 foodPrice, materialsPrice, orePrice);
         // NOT landPrice, since 0.7.6: it is the world's dollar price of ground,

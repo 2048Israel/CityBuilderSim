@@ -1,4 +1,4 @@
-# FundScreen.java - 2,448 lines · 99 methods · 23 constants · interface
+# FundScreen.java - 2,453 lines · 99 methods · 23 constants · interface
 
 `ham/citybuildersim/ui/FundScreen.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -67,7 +67,7 @@
 | 1919 | · · this security's orders: waiting, and on the book |
 | 2061 | ACTIVITY - what has the fund done, and what was done to it? |
 | 2144 | RULES & CASH - how does it run, and how do I move money? |
-| 2207 | · THE WITHDRAWAL (0.7.48, C2) |
+| 2212 | · THE WITHDRAWAL (0.7.48, C2) |
 
 ## Constants
 
@@ -92,10 +92,10 @@
 | 1412 | `FundScreen.SEARCH_INFO` | `"Every company listed on the exchange, every business's bond still outstandin...` | Search's (i): the spec's D1. |
 | 1820 | `FundScreen.TICKET_INFO` | `"An order goes on the book at the next month's step, after every other partic...` | THE ORDER TICKET's (i). |
 | 2066 | `FundScreen.GROUPS` | `{ "All", FundView.TRADES, FundView.INCOME, FundView.MONEY, FundView.EVENTS }` | Activity's chips: every row, or one group of them (FundView.groupOf()). |
-| 2210 | `FundScreen.WITHDRAWAL_LADDER` | `520` | The withdrawal's ladder: the card runs the page's width, the dial at the left and what it would do beside it. |
-| 2228 | `FundScreen.WITHDRAWAL_CAVEAT` | `"next month's on the fund as it stands - its prices and what the book takes w...` | The withdrawal's caveat, under what it would do. |
-| 2230 | `FundScreen.WITHDRAWAL_CAVEAT_INFO` | `"Next month's withdrawal is struck on what the fund is worth at the top of " ...` | ...and the sentence behind it, its (i). |
-| 2338 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "...` | The rescue book's (i). |
+| 2215 | `FundScreen.WITHDRAWAL_LADDER` | `520` | The withdrawal's ladder: the card runs the page's width, the dial at the left and what it would do beside it. |
+| 2233 | `FundScreen.WITHDRAWAL_CAVEAT` | `"next month's on the fund as it stands - its prices and what the book takes w...` | The withdrawal's caveat, under what it would do. |
+| 2235 | `FundScreen.WITHDRAWAL_CAVEAT_INFO` | `"Next month's withdrawal is struck on what the fund is worth at the top of " ...` | ...and the sentence behind it, its (i). |
+| 2343 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "...` | The rescue book's (i). |
 
 ## Fields (state)
 
@@ -130,7 +130,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 2375 | **type** `final class FundScreen` | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with its average cost and P&L - a Search of the shares and bonds it can buy, ... |
+| 74 | 2380 | **type** `final class FundScreen` | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with its average cost and P&L - a Search of the shares and bonds it can buy, ... |
 | 80 | 4 | `FundScreen(UserInterface ui, FinancesScreen fin)` |  |
 
 ### THE PAGES (lines 85-118)
@@ -293,30 +293,30 @@
 | 2068 | 43 | `void activityPage(VBox page)` |  |
 | 2113 | 30 | `HBox actRow(Game g, Act a, boolean dated)` | One line of the record: what, by whom, units, money, realized, and "›" to its security; a grouped line opens. |
 
-### RULES & CASH - how does it run, and how do I move money? (lines 2144-2206)
+### RULES & CASH - how does it run, and how do I move money? (lines 2144-2211)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 2152 | 14 | `void rulesPage(VBox page)` |  |
 | 2168 | 6 | `static String dialInfo()` | The dial's (i). |
-| 2176 | 30 | `VBox dialCard(Game g)` | THE DIAL: its share of the year's surplus, the steps, and what it reads against. |
+| 2176 | 35 | `VBox dialCard(Game g)` | THE DIAL: its share of the year's surplus, the steps, and what it reads against. |
 
-### THE WITHDRAWAL (0.7.48, C2) (lines 2207-2448)
+### THE WITHDRAWAL (0.7.48, C2) (lines 2212-2453)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2213 | 13 | `static String withdrawalInfo()` | The withdrawal's (i). |
-| 2240 | 12 | `static String withdrawalWords(double rate)` | The withdrawal's status line (pure: the probe reads it): nothing at 0, Norway's rule at the default, and otherwise the year it makes - twelve times the rate, the rule's own arithmetic - and how soon, earning nothing, ... |
-| 2254 | 3 | `static String withdrawalShare(double rate)` | The withdrawal in a few words, as the page's head reads it: "0.25% of its worth a month". |
-| 2266 | 14 | `static java.util.function.DoubleFunction<List<Pieces.Effect>> withdrawalEffects(Game g)` | What the withdrawal would do at any value of its thumb (pure: the probe reads them), each PolicyPreview.fundWithdrawalAt() against the dial in force: next month's to the treasury, what its cash pays of it, the rest - ... |
-| 2282 | 13 | `VBox withdrawalCard(Game g)` | THE WITHDRAWAL (0.7.48, C2): the dial on a Levers card, as the fare's on Infrastructure - its reading, its status, the ladder, what it would do, and its Apply once staged. |
-| 2297 | 8 | `static String transferInfo(TreasuryFund fund)` | The transfer's (i): the withdrawal dial in force, read. |
-| 2307 | 29 | `VBox transferCard(Game g)` | TO THE TREASURY: last month's, paid and not, this year's, next month's, and what came in. |
-| 2343 | 15 | `VBox rescueBookCard(Game g)` | THE RESCUE BOOK: the city's stake in its bank as a ring, the book's lines, and the preferred's terms (0.7.39). |
-| 2360 | 15 | `static List<String> rescueTerms(Game g)` | The preferred's terms and its warrants', a line each (0.7.39). |
-| 2377 | 30 | `VBox moveCard(Game g)` | PAY IN, DRAW OUT: the amount and its steps (FinancesScreen.fundAsk), and the two moves. |
-| 2409 | 5 | `static Press payInPress(Game g, double ask)` | PAY IN's press: choose, nothing in the treasury, or what it would move. |
-| 2416 | 5 | `static Press drawOutPress(Game g, double ask)` | DRAW OUT's press: only the fund's free cash - not what the player's buys hold - can be drawn. |
-| 2423 | 9 | `static String capRule()` | THE RULE's sentence on the cap. |
-| 2434 | 14 | `VBox ruleCard(Game g)` | THE RULE: the shares against the aim, the cap in words, and the treasury's rescue setting. |
+| 2218 | 13 | `static String withdrawalInfo()` | The withdrawal's (i). |
+| 2245 | 12 | `static String withdrawalWords(double rate)` | The withdrawal's status line (pure: the probe reads it): nothing at 0, Norway's rule at the default, and otherwise the year it makes - twelve times the rate, the rule's own arithmetic - and how soon, earning nothing, ... |
+| 2259 | 3 | `static String withdrawalShare(double rate)` | The withdrawal in a few words, as the page's head reads it: "0.25% of its worth a month". |
+| 2271 | 14 | `static java.util.function.DoubleFunction<List<Pieces.Effect>> withdrawalEffects(Game g)` | What the withdrawal would do at any value of its thumb (pure: the probe reads them), each PolicyPreview.fundWithdrawalAt() against the dial in force: next month's to the treasury, what its cash pays of it, the rest - ... |
+| 2287 | 13 | `VBox withdrawalCard(Game g)` | THE WITHDRAWAL (0.7.48, C2): the dial on a Levers card, as the fare's on Infrastructure - its reading, its status, the ladder, what it would do, and its Apply once staged. |
+| 2302 | 8 | `static String transferInfo(TreasuryFund fund)` | The transfer's (i): the withdrawal dial in force, read. |
+| 2312 | 29 | `VBox transferCard(Game g)` | TO THE TREASURY: last month's, paid and not, this year's, next month's, and what came in. |
+| 2348 | 15 | `VBox rescueBookCard(Game g)` | THE RESCUE BOOK: the city's stake in its bank as a ring, the book's lines, and the preferred's terms (0.7.39). |
+| 2365 | 15 | `static List<String> rescueTerms(Game g)` | The preferred's terms and its warrants', a line each (0.7.39). |
+| 2382 | 30 | `VBox moveCard(Game g)` | PAY IN, DRAW OUT: the amount and its steps (FinancesScreen.fundAsk), and the two moves. |
+| 2414 | 5 | `static Press payInPress(Game g, double ask)` | PAY IN's press: choose, nothing in the treasury, or what it would move. |
+| 2421 | 5 | `static Press drawOutPress(Game g, double ask)` | DRAW OUT's press: only the fund's free cash - not what the player's buys hold - can be drawn. |
+| 2428 | 9 | `static String capRule()` | THE RULE's sentence on the cap. |
+| 2439 | 14 | `VBox ruleCard(Game g)` | THE RULE: the shares against the aim, the cap in words, and the treasury's rescue setting. |
 
