@@ -150,11 +150,11 @@ names them since FL1 (the world market changes the town):
 
 | both files named | main (0.8.77 with the counter) | EM2 |
 |---|---:|---:|
-| company-months a last trade stood over 10x the best bid, the bank apart | 271 (Retail 90, longest 55; Real Estate 59, longest 21) | 532 (Real Estate 179, longest 150) |
+| company-months a last trade stood over 10x the best bid, the bank apart | 271 (Retail 90, longest 55; Real Estate 59, longest 21) | 567 (Real Estate 179, longest 150) |
 | ...the price read stood over 10x fair value, the bank apart | 3,095 (Retail 738, Freight 477) | none |
-| people at m4,000 | 543,040 | 595,439 |
-| P/E low/median/high, m4000 | 16.1 / 22.2 / 27.7 | 16.2 / 20.1 / 21.7 |
-| turnover, m4000 | 3.0% | 3.2% |
+| people at m4,000 | 543,040 | 602,692 |
+| P/E low/median/high, m4000 | 16.1 / 22.2 / 27.7 | 16.8 / 19.9 / 20.7 |
+| turnover, m4000 | 3.0% | 3.3% |
 
 **A last trade can stand longer now, and the price no longer reads it.**
 With the world market, EM2 has more months in which the last trade stands
@@ -173,10 +173,12 @@ as FL1's. A2 and S1 fail as on 0.8.77 (A2 12 months [3 to 23] against 11
 [9 to 14]; S1's longest spell 35 months against 24); R2, which failed on
 FL1 (+0.32 points), passes; R3 fails - the HIGH rate's inflation over its
 twin, median -1.50% but 6 seeds over +1 point (FL1 2, WN3 5; the band's
-study, WN3-R, pending). AUTO2's median 320,481 against 317,518; T1 16 of 16
-at m1,052. Run first without the files (23 of 25 against 0.8.76, the same
-two failing), and once more on the merged tip without them: identical to
-the digit, since FL1's rule binds only on the world's band.
+study, WN3-R, pending). AUTO2's median 315,900 against 317,518; T1 16 of 16
+at m1,082. That is the final model, the dust floor (section 8) in it; the
+run before it, without the floor, scored the same three (AUTO2 320,481).
+Run first without the files (23 of 25 against 0.8.76, the same two failing
+as HD2's), and once more on the merged tip without them: identical to the
+digit, since FL1's rule binds only on the world's band.
 
 ## 5. HD2-S: ScaleCheck's growing town - no month, and no town by its own plan either
 
