@@ -176,6 +176,8 @@ rem  sources' credits go with it, as their licences ask.
 mkdir "dist\%APPNAME%\data"
 copy /y "data\earth-2.bin" "dist\%APPNAME%\data\" >nul
 copy /y "tools\earth\ATTRIBUTION-2.txt" "dist\%APPNAME%\data\earth-2-ATTRIBUTION.txt" >nul
+rem  The Rankings' figures (world-2025.json) and the world fixture are in the jar: their credits go too (LC1).
+copy /y "tools\world\ATTRIBUTION.txt" "dist\%APPNAME%\data\world-ATTRIBUTION.txt" >nul
 if not exist "dist\%APPNAME%\data\earth-2.bin" (
     echo.
     echo   Could not copy data\earth-2.bin into dist\%APPNAME%\data - stopping
@@ -184,7 +186,7 @@ if not exist "dist\%APPNAME%\data\earth-2.bin" (
     pause
     exit /b 1
 )
-echo  Copied data\earth-2.bin next to the exe, with its credits.
+echo  Copied data\earth-2.bin next to the exe, with its credits and the world's.
 
 rem ------------------------------- the zip -------------------------------
 rem  What goes up as the release: the whole folder under its own name, as
