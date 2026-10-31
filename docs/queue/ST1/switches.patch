@@ -1,0 +1,150 @@
+diff --git a/src/main/java/ham/citybuildersim/Game.java b/src/main/java/ham/citybuildersim/Game.java
+index 0dbe299c..d8de12f3 100644
+--- a/src/main/java/ham/citybuildersim/Game.java
++++ b/src/main/java/ham/citybuildersim/Game.java
+@@ -13221,6 +13221,9 @@ public class Game {
+         double safetyOut   = economyManager.getSafetyBill();
+         // ...and transit's wages and upkeep (0.7.49, B9), struck at 6d and paid by nobody until now.
+         double transitOut  = economyManager.getTransitBill();
++        // ST1 study switch (upkeep): the treasury pays nothing for care, schools, safety and transit running costs. (upkeepsafety): safety alone.
++        if (ST1.off("upkeep")) { careOut = 0; schoolsOut = 0; safetyOut = 0; transitOut = 0; }
++        if (ST1.off("upkeepsafety")) safetyOut = 0;
+         double tempCash = cash + taxIn - (interestOut + pensionsOut
+                 + careOut + schoolsOut + safetyOut + transitOut);
+         // The utility books what its customers were charged - see
+diff --git a/src/main/java/ham/citybuildersim/LongPlaytest.java b/src/main/java/ham/citybuildersim/LongPlaytest.java
+index 3275bf6e..ed5a8dd3 100644
+--- a/src/main/java/ham/citybuildersim/LongPlaytest.java
++++ b/src/main/java/ham/citybuildersim/LongPlaytest.java
+@@ -3360,6 +3360,8 @@ public class LongPlaytest {
+                 for (String police : new String[] {"Police Station", "Police Headquarters"}) {
+                     BuildingsTemplate t = template(g, police);
+                     if (t == null || crime.getCoverage() >= 1) continue;
++                    // ST1 study switch (police): the advisor never proposes a police station or headquarters; the next best move is taken.
++                    if (ST1.off("police")) continue;
+                     double after = Crime.coverageOf(crime.getOfficers() + t.getCapacity(),
+                             crime.getPopulation());
+                     double saved = crimeCost * (1 - crime.crimesAt(after) / crime.getCrimes());
+diff --git a/src/main/java/ham/citybuildersim/MoneyAudit.java b/src/main/java/ham/citybuildersim/MoneyAudit.java
+index d014c005..e4f1d1b1 100644
+--- a/src/main/java/ham/citybuildersim/MoneyAudit.java
++++ b/src/main/java/ham/citybuildersim/MoneyAudit.java
+@@ -1096,7 +1096,8 @@ public final class MoneyAudit {
+         out += debit.apply("- bank CarryLent",
+                 g.getBank().getCarryLent(), Scope.FINANCIAL);
+         out += debit.apply("- sectors InvestedAbroad", g.getOutwardInvestment().getInvestedAbroadThisMonth(), Scope.FINANCIAL);
+-        out += debit.apply("- sectors ForeignInterestReinvested", g.getOutwardInvestment().getInterestThisMonth(), Scope.FINANCIAL);
++        // ST1 study switch (keep): the coupon went into the till, so nothing was reinvested abroad.
++        out += debit.apply("- sectors ForeignInterestReinvested", ST1.off("keep") ? 0 : g.getOutwardInvestment().getInterestThisMonth(), Scope.FINANCIAL);
+         // ...and the world's supplier credit repaid (0.7.44). See the credit's note.
+         for (Sector s : sectors.all()) {
+             SupplierCredit trade = s.supplierCredit();
+diff --git a/src/main/java/ham/citybuildersim/OutwardInvestment.java b/src/main/java/ham/citybuildersim/OutwardInvestment.java
+index 7fbe996a..ecd126f6 100644
+--- a/src/main/java/ham/citybuildersim/OutwardInvestment.java
++++ b/src/main/java/ham/citybuildersim/OutwardInvestment.java
+@@ -220,13 +220,17 @@ public class OutwardInvestment {
+         for (String sector : Sectors.KEYS) {
+             double held = usd.getOrDefault(sector, 0.0);
+             double earnedUsd = held * Math.max(0, worldRate) / 12;
++            // ST1 study switch (coupon): the dollars abroad earn no coupon at all.
++            if (ST1.off("coupon")) earnedUsd = 0;
+             double local = rate > 0 ? earnedUsd * rate : 0;
+             interest.put(sector, local);
+             lifetimeInterest += local;
+             // ...kept where it was earned: the dollars held grow by it, only when there is some (a sector with none is untouched).
+-            if (rate > 0 && earnedUsd > 0) usd.put(sector, held + earnedUsd);
++            // ST1 study switch (keep): HD1's way - the coupon is paid into the till (Sector.bank()) and the dollars held do not grow by it.
++            if (rate > 0 && earnedUsd > 0 && !ST1.off("keep")) usd.put(sector, held + earnedUsd);
+             Sector s = economy.getSectors().byKey(sector);
+-            if (s != null) s.setForeignIncome(local);
++            // ST1 study switch (taxed): the coupon is left out of the statement's pre-tax income (no business tax, no dividend on it); the dollars still grew by it above (main's way before HD2).
++            if (s != null) s.setForeignIncome(ST1.off("taxed") ? 0 : local);
+         }
+     }
+ 
+diff --git a/src/main/java/ham/citybuildersim/ST1.java b/src/main/java/ham/citybuildersim/ST1.java
+new file mode 100644
+index 00000000..76bf6b75
+--- /dev/null
++++ b/src/main/java/ham/citybuildersim/ST1.java
+@@ -0,0 +1,41 @@
++package ham.citybuildersim;
++
++import java.util.HashSet;
++import java.util.Set;
++
++/**
++ * ST1's study switches (never shipped): each is OFF unless named in -Dst1.off=a,b and the month has reached -Dst1.from.
++ * The probe (docs/queue/ST1/ST1Probe.java) sets {@link #month} to the city's completed months before every action it takes, so a
++ * run forks from an identical path. With st1.off unset every switch is inert and the run is byte-identical to an unswitched one.
++ *
++ * Keys: keep (the coupon on the businesses' dollars abroad paid into the till and the dollars not grown, HD1's way), taxed (the
++ * coupon out of the pre-tax income, the dollars still grow by it: main's way before HD2), coupon (no coupon at all), police (the
++ * advisor never proposes a police station or headquarters), upkeep (the treasury pays no running costs for care, schools, safety
++ * and transit), upkeepsafety (...for safety alone), gate (Sector.MIN_STAFFABLE_TO_ORDER read as 0 in Staffing.passes()), gateall
++ * (Staffing.passes() always true), idle (XS1's idlefree: the builders' laid-off crews are spare while they have no site work),
++ * withheld (the builders' laid-off crews are always spare, XS1's withheld).
++ */
++public final class ST1 {
++
++    private ST1() { }
++
++    /** The city's completed months, set by the probe before each action. */
++    public static volatile int month;
++
++    private static final Set<String> KEYS = parse(System.getProperty("st1.off", ""));
++    private static final int FROM = Integer.getInteger("st1.from", 0);
++
++    private static Set<String> parse(String list) {
++        Set<String> out = new HashSet<>();
++        for (String k : list.split(",")) {
++            String t = k.trim();
++            if (!t.isEmpty()) out.add(t);
++        }
++        return out;
++    }
++
++    /** Whether this switch is armed: named in st1.off, and the month has reached st1.from. */
++    public static boolean off(String key) {
++        return !KEYS.isEmpty() && month >= FROM && KEYS.contains(key);
++    }
++}
+diff --git a/src/main/java/ham/citybuildersim/Sector.java b/src/main/java/ham/citybuildersim/Sector.java
+index ac99b5fa..37f1c30c 100644
+--- a/src/main/java/ham/citybuildersim/Sector.java
++++ b/src/main/java/ham/citybuildersim/Sector.java
+@@ -370,7 +370,9 @@ public abstract class Sector {
+          * can fill. "The 20% it allows can't be jobs nobody can fill."
+          */
+         public boolean passes() {
+-            return unfillable == null && share >= MIN_STAFFABLE_TO_ORDER;
++            // ST1 study switch (gateall): the gate never refuses. ST1 study switch (gate): MIN_STAFFABLE_TO_ORDER is read as 0 (a band nobody can fill still refuses).
++            if (ST1.off("gateall")) return true;
++            return unfillable == null && share >= (ST1.off("gate") ? 0 : MIN_STAFFABLE_TO_ORDER);
+         }
+ 
+         /** Why not, as the advisor's hold reason, for a building of this name. */
+@@ -429,7 +431,11 @@ public abstract class Sector {
+         // work comes, so they are not spare for a new building. See
+         // BuildingManager.getPostsWithheld().
+         BuildingManager bm = game.getBuildingManager();
+-        if (bm != null && bm.getPostsWithheld() > 0) {
++        // ST1 study switch (withheld): the builders' laid-off crews are spare for a new building, not spoken for.
++        // ST1 study switch (idle): ...only while the builders have no site work queued (XS1's idlefree): an idle builder's laid-off crews are spare.
++        boolean idleBuilders = ST1.off("idle") && game.getSectors() != null && game.getSectors().construction() != null
++                && game.getSectors().construction().getPostsOfferedShare() <= ham.citybuildersim.sectors.Construction.IDLE_PAYROLL_FLOOR + 1e-9;
++        if (bm != null && bm.getPostsWithheld() > 0 && !ST1.off("withheld") && !idleBuilders) {
+             posts = posts.clone();
+             for (JobType job : JobType.values()) posts[WageBand.of(job).ordinal()] += bm.getPostsWithheld(job);
+         }
+@@ -2168,7 +2174,8 @@ public abstract class Sector {
+         // credited back on a building is cash back on the building.
+         cash += s.netIncome + s.paidEarlier;
+         // ...the coupon on its dollars abroad is in the profit and stays abroad (HD2): payCoupons() grew the dollars by it, so the till pays its tax and receives none of it.
+-        if (s.foreignIncome != 0) cash -= s.foreignIncome;
++        // ST1 study switch (keep): the coupon stays in the till (HD1's way); payCoupons() did not grow the dollars by it.
++        if (s.foreignIncome != 0 && !ST1.off("keep")) cash -= s.foreignIncome;
+         if (s.capitalTaxCredit != 0) cash += s.capitalTaxCredit;
+         // ...and what its borrowing cost it up front was paid when it borrowed (0.7.102): a cost now, no cash now.
+         if (s.borrowingCosts != 0) cash += s.borrowingCosts;
