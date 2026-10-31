@@ -135,6 +135,8 @@ With both data files named as the gate names them (2026-10-31): `./batch-check.s
 its "review needed - threading: ui/UserInterface.java" read: the edit there is a field, a tab and two switch cases, and
 the screen reads the game on the FX thread as every screen does); the full suite **exit 3**, nothing red but main's
 recorded reds (PassThroughCheck, ScaleCheck: `docs/notes/gate.txt`), one timing figure SOFT and not counted
-(SaveSlotCheck, side by side with lane A); maps regenerated; Stale 0 firm. RankingsCheck green: 130 checks. UiProbe (`24 2`): no exception, the Rankings line above. **One in, one
+(SaveSlotCheck, side by side with lane A); maps regenerated; Stale 0 firm. RankingsCheck green: 130 checks. WN4
+(0.8.81) then reached main and was merged in (two one-line conflicts: AllChecks' list, README's count, 159); on the
+merged tree `--pick` **exit 0** again, one timing figure SOFT (MapCheck). UiProbe (`24 2`): no exception, the Rankings line above. **One in, one
 out** does not bind: no script, check machinery or rule a session reads changed (CLAUDE.md's one edit is a count, 35
 to 36 files of the interface, which Stale asks for).
