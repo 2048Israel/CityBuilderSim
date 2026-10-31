@@ -32,7 +32,7 @@ stuff".
 | LD1 | A business short of workers bids the wage up: the posts the staffing gate refused join the band's shortage, so the wage rises until migrants come, only as far as the building would still earn its return (Jerus, 2026-10-31: "if the reason is not enough workers and the business can... then it raises its wage"); after ST1 | [LD1](docs/queue/LD1.md) |
 | WN5 | Nations: land bought from the nation it lies in, at its land price, in its money; offers split at a border | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN6 | Nations: the screens - Trade > Partners, the reserves in eight, the nation's page; the manual; real GDP and a comparison rate in real 2015 US$ (D29) | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
-| WN7 | Nations: ships and trains to their partners, each on its partner's bearing | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
+| WN7 | Nations: ships and trains to their partners, each on its partner's bearing; the last of the nations line, it ships as 0.9.0 (`./ship.sh --version 0.9.0`; Jerus, 2026-10-31: "with the last WN its 0.9.0") | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | R0 | Research: the 1900 economy and the calendar from 1900 | [research-1900](docs/studies/research-1900.md), [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R0b | Research: causes of death in Health - typhoid, summer diarrhoea, outbreaks, TB, home births, pneumonia, the 1918 influenza | [research-1900 §2.7](docs/studies/research-1900.md#27-health) |
 | R0c | Research: the 1900 mechanics - horses on farms and road freight, lamp oil and heat as goods, steam recipes | [research-1900 §4](docs/studies/research-1900.md#4-new-mechanics-a-1900-city-needs) |
