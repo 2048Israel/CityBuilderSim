@@ -36,6 +36,11 @@ import java.nio.file.Path;
  *      struck; the two errors cancelled and the residual stayed $0.00 for
  *      years. A carry trade that does not reach the financial account is that
  *      bug again, and section 5 is the assertion that would have caught it.
+ *
+ *   5. DOES MONEY RUNNING HOME REPAY IT? (XR4, section 6) In a risk-off the
+ *      borrowers buy the city's money back: the dial's share of the book is
+ *      repaid on top of the ordinary month, inside the month's repaid and the
+ *      change returned, and a book told a level of 0 is the old book to the bit.
  */
 public class CarryTradeCheck {
 
@@ -287,6 +292,80 @@ public class CarryTradeCheck {
                 alone.balanceTarget() < 0);
         assertTrue("money borrowed and taken out offsets a surplus",
                 financed.balanceTarget() > alone.balanceTarget());
+
+        /* ================= 6. a risk-off sends it home (XR4) ================= */
+        out.println("\n--- and money running home repays it by its stock (XR4) ---");
+
+        /*
+         * THE UNWIND IS THE BOOK'S SHARE, not a rate's. A settled book, a twin
+         * the same to the bit, and a month of a risk-off of size one on one of
+         * them: the dial's share of what the ordinary month left is repaid on
+         * top, inside the month's repaid and the change the month returns.
+         */
+        CapitalFlows calmBook = settle(.005, 0, 1e9, 240);
+        CapitalFlows runBook = settle(.005, 0, 1e9, 240);
+        double settledBook = runBook.getCarryStock();
+        assertTrue("fixture: a settled book, and a twin the same to the bit",
+                settledBook > 1000 && java.util.Arrays.equals(calmBook.toSaveArray(), runBook.toSaveArray()));
+        double tolerance = 1e-9 * settledBook;
+        calmBook.setRiskOff(0);
+        double calmChange = calmBook.carryTakeMonth(.005, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        runBook.setRiskOff(1);
+        double runChange = runBook.carryTakeMonth(.005, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        close("a risk-off of size 1 repays the dial's share of the book the ordinary month left",
+                runBook.getCarryRiskRepaid(), calmBook.getCarryStock() * Math.min(1, CapitalFlows.RISK_OFF_CARRY_UNWIND), tolerance);
+        close("...the book is what it left less that", runBook.getCarryStock(),
+                calmBook.getCarryStock() - runBook.getCarryRiskRepaid(), tolerance);
+        close("...the month's repaid is the twin's and that", runBook.getCarryRepaid(),
+                calmBook.getCarryRepaid() + runBook.getCarryRiskRepaid(), tolerance);
+        close("...and the change the month returns says so", runChange, calmChange - runBook.getCarryRiskRepaid(), tolerance);
+        close("...the lifetime repaid has it too", runBook.getLifetimeCarryRepaid(),
+                calmBook.getLifetimeCarryRepaid() + runBook.getCarryRiskRepaid(), tolerance);
+        assertTrue("the twin at level 0 repaid none of it on a risk-off's account", calmBook.getCarryRiskRepaid() == 0 && calmBook.getRiskOffMonths() == 0);
+
+        /* AND AT LEVEL 0 IT IS THE OLD BOOK, to the bit, through a spread that opens, closes and opens. */
+        CapitalFlows oldBook = new CapitalFlows();
+        CapitalFlows toldBook = new CapitalFlows();
+        double[] lending = {.005, .005, .005, .03, .05, .05, .005, .005};
+        double sameChange = 0, toldChange = 0;
+        for (int m = 0; m < 120; m++) {
+            double rate = lending[m % lending.length];
+            sameChange += oldBook.carryTakeMonth(rate, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+            toldBook.setRiskOff(0);
+            toldChange += toldBook.carryTakeMonth(rate, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        }
+        assertTrue("a book told a risk-off level of 0 every month is the book never told, to the bit, in its changes and every slot of its array",
+                Double.doubleToLongBits(sameChange) == Double.doubleToLongBits(toldChange)
+                        && java.util.Arrays.equals(oldBook.toSaveArray(), toldBook.toSaveArray()));
+
+        /* ON TOP OF THE ORDINARY REPAY: a spread that has closed repays its speed's share, and the risk-off the dial's share of what is left. */
+        CapitalFlows closing = settle(.005, 0, 1e9, 240);
+        CapitalFlows closingTwin = settle(.005, 0, 1e9, 240);
+        double before = closing.getCarryStock();
+        closingTwin.carryTakeMonth(.05, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        closing.setRiskOff(1);
+        double closingChange = closing.carryTakeMonth(.05, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        double ordinary = before * CapitalFlows.CARRY_REPAY_SPEED;
+        double riskRepaid = (before - ordinary) * CapitalFlows.RISK_OFF_CARRY_UNWIND;
+        close("a closed spread repays its speed's share of the book (the twin's month)", closingTwin.getCarryRepaid(), ordinary, 1e-9 * before);
+        close("...and a risk-off in that month repays the dial's share of what is left on top", closing.getCarryRiskRepaid(), riskRepaid, 1e-9 * before);
+        close("...the book falls by both, and the change returned is both", closing.getCarryStock(), before - ordinary - riskRepaid, 1e-9 * before);
+        close("...(the change)", closingChange, -(ordinary + riskRepaid), 1e-9 * before);
+
+        /* A level past 1 / the dial repays the whole book and no more; an empty book has nothing to repay and is not counted. */
+        CapitalFlows whole = settle(.005, 0, 1e9, 240);
+        whole.setRiskOff(10);
+        double wholeChange = whole.carryTakeMonth(.005, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        assertTrue("a level of 10 repays the whole book and no more (what the month borrowed too, then): it is empty, and the change is minus the book",
+                whole.getCarryStock() == 0 && Math.abs(wholeChange + settledBook) <= tolerance
+                        && Math.abs(whole.getCarryRiskRepaid() - (settledBook + whole.getCarryBorrowed())) <= tolerance);
+        CapitalFlows empty = new CapitalFlows();
+        empty.setRiskOff(1);
+        double emptyChange = empty.carryTakeMonth(.05, DebtManager.WORLD_BASE_RATE, 0, 1e9);
+        assertTrue("a risk-off with no book to repay repays nothing and counts no month", empty.getCarryRiskRepaid() == 0 && emptyChange == 0 && empty.getRiskOffMonths() == 0);
+        CapitalFlows reread = new CapitalFlows();
+        reread.restore(runBook.toSaveArray());
+        close("what was repaid in a risk-off survives being written down", reread.getCarryRiskRepaidLifetime(), runBook.getCarryRiskRepaidLifetime(), 1e-9);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

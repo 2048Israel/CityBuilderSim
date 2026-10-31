@@ -139,6 +139,10 @@ public class PolicyPreviewCheck {
     static Game city(Path root) {
         GameFiles files = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy"));
         Game g = new Game(files);
+        // XR4: the world's price of money is held too, at the constant: under the US's rate (5.5% at the founding) the town's bank
+        // makes no profit by month 61 and its pool has no claimant, so sections 6 and 7 had nothing to preview. The world quieted
+        // for the D$, as BondCheck's and MapCheck's played cities are; the previews are the fixture's subject, not the world.
+        g.quietTheWorldForTheD();
         quietly(() -> {
             g.run();
             // AN1 (2026-10-22): the D$ is held (see above); the reload twin of section 5 runs no month, so no side of it floats.

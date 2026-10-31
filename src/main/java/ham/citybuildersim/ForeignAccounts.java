@@ -670,7 +670,7 @@ public class ForeignAccounts {
      *
      * WHERE THERE IS NO WORLD every figure here is zero and the D$ is main's, to
      * the bit. Saved: slots 95-104. THE SLOTS AFTER 104 ARE THE VAULT'S (WN4
-     * slice C, THE VAULT IN EIGHT): 105 to 141.
+     * slice C, THE VAULT IN EIGHT): 105 to 141, and 142 to 146 what it earned (XR4, THE VAULT EARNS).
      */
 
     /** A small open money's loading on the risk-off: +10% weaker in a risk-off of size one (the study's 3.5; the Swiss franc's and the yen's are the other way, WorldMoneys.FRANC and YEN). */
@@ -1640,6 +1640,8 @@ public class ForeignAccounts {
             crossDriver = -1;
             crossDriverMove = crossDriverUsd = 0;
             crossBooked = false;
+            // ...and a new month's interest starts from nothing: a month the world does not hand it (earnVaultInterest()) reads 0.
+            clearInterest();
         }
         for (int k = 1; k < MONEYS && k < usdPerUnit.length; k++) {
             double now = usdPerUnit[k];
@@ -1802,6 +1804,83 @@ public class ForeignAccounts {
         return crossDriver < 1 || crossDriver >= MONEYS || crossUsd == 0 ? null
                 : new CrossDriver(WorldMoneys.EIGHT.get(crossDriver), crossDriver, crossDriverMove);
     }
+
+    /* -----------------------------------------------------------------------
+       THE VAULT EARNS (XR4, 2026-10-31; spec-exchange-rates 3.8)
+
+       Jerus, calls 9 and 11: the vault earns each money's rate, as Canada's
+       Exchange Fund Account earns for its government - the central bank study
+       said "the vault earns nothing", and a reserve manager's balance in the
+       euro earns what the euro's central bank pays, in euros.
+
+       THE INTEREST STAYS IN THE VAULT (the call taken, recommended): it is
+       reinvested in the money that paid it, compounding month on month, as a
+       reserve manager reinvests its coupons, and it reaches the city only when
+       the vault sells, as every other dollar of it does. So no D$ is made for
+       it, no audit pool moves, it is not on the balance of payments' current
+       account (it never meets the D$ market) - and the central bank's equity
+       reads it because it reads the vault whole. It is booked at the month's
+       cross rates, so it adds nothing to the month's cross move, as a purchase
+       at the month's rates adds nothing; the month's revaluation then reads the
+       grown vault, as it reads one that bought.
+       ----------------------------------------------------------------------- */
+
+    /** What the vault earned this month and since founding, in US$ at the month's cross rates (negative where a bank's rate was below zero). */
+    private double interestUsd, interestUsdLifetime;
+    /** The money that earned (or lost) the most this month by US$ (an index, -1 for none) and the US$ it did so, signed. */
+    private int interestDriver = -1;
+    private double interestDriverUsd;
+    /** The US$ the vault had in the moneys that earned this month, before the interest: what the month's yield is struck on. */
+    private double interestBaseUsd;
+
+    /**
+     * The month's interest on the vault's eight balances, each at its central bank's rate (annual, a fraction; WorldMoneys.EIGHT's order):
+     * balance x rate / 12 in the money's own units, kept in the vault. A negative rate takes from its balance, never below zero; a money with
+     * no rate this month (hasRate()) or no finite policy rate earns nothing. Game hands it once a month, right after setMoneyRates() and before
+     * anything buys or sells. A call replaces the month's figures; a month it is not called (no world) reads 0 from the next setMoneyRates().
+     */
+    public void earnVaultInterest(double[] annualRates) {
+        clearInterest();
+        if (annualRates == null) return;
+        for (int k = 0; k < MONEYS; k++) {
+            if (!rated[k] || k >= annualRates.length || !Double.isFinite(annualRates[k]) || !(vault[k] > 0)) continue;
+            double before = vault[k] * usdPer[k];
+            double earned = Math.max(-vault[k], vault[k] * annualRates[k] / 12);
+            interestBaseUsd += before;
+            if (earned == 0) continue;
+            vault[k] += earned;
+            double usd = earned * usdPer[k];
+            interestUsd += usd;
+            if (Math.abs(usd) > Math.abs(interestDriverUsd)) {
+                interestDriver = k;
+                interestDriverUsd = usd;
+            }
+        }
+        interestUsdLifetime += interestUsd;
+    }
+
+    private void clearInterest() {
+        interestUsd = interestDriverUsd = interestBaseUsd = 0;
+        interestDriver = -1;
+    }
+
+    /** What the vault earned this month, in US$ at the month's cross rates (0 in a month the world did not hand it). Negative where the banks' rates were below zero. */
+    public double getVaultInterestUsd() { return interestUsd; }
+
+    /** ...and since founding. */
+    public double getVaultInterestUsdLifetime() { return interestUsdLifetime; }
+
+    /** The month's interest in local money, at this month's rate as getReserves() converts. */
+    public double getVaultInterest() { return interestUsd * rate; }
+
+    /** The money that earned (or lost) the most this month by US$, as an index into WorldMoneys.EIGHT; -1 where nothing was earned. */
+    public int getVaultInterestDriver() { return interestDriver; }
+
+    /** ...and the US$ it earned, signed (0 where there is no driver). */
+    public double getVaultInterestDriverUsd() { return interestDriverUsd; }
+
+    /** The vault's US$-weighted mean rate this month, a fraction a year: the month's interest times twelve over the US$ the earning balances were worth; 0 for an empty vault or a month nothing was earned. */
+    public double getVaultYield() { return interestBaseUsd > 0 ? 12 * interestUsd / interestBaseUsd : 0; }
 
     /**
      * THE RECORD. Every month's balance of payments, added up since founding.
@@ -2743,7 +2822,19 @@ public class ForeignAccounts {
                 mix.ordinal(),
                 chosen[0], chosen[1], chosen[2], chosen[3], chosen[4], chosen[5], chosen[6], chosen[7],
                 tradeShares[0], tradeShares[1], tradeShares[2], tradeShares[3], tradeShares[4], tradeShares[5], tradeShares[6], tradeShares[7],
-                crossUsd, crossBooked ? 0 : 1, crossDriver, crossDriverMove };
+                crossUsd, crossBooked ? 0 : 1, crossDriver, crossDriverMove,
+                /*
+                 * ...AND WHAT THE VAULT EARNED, slots 142-146 (XR4, THE VAULT
+                 * EARNS): the month's interest in US$ (142), since founding
+                 * (143), the money that earned most as an index, -1 for none
+                 * (144), the US$ it earned (145) and the US$ the earning
+                 * balances were worth before it, which the month's yield is
+                 * struck on (146). The balances are slots 105-112, interest
+                 * included; these are the flow the month cannot restrike from
+                 * the state it ended in, and a screen reads them the month after.
+                 * A save that has none of them reads nothing earned.
+                 */
+                interestUsd, interestUsdLifetime, interestDriver, interestDriverUsd, interestBaseUsd };
     }
 
     public void restore(double[] saved) {
@@ -2914,6 +3005,14 @@ public class ForeignAccounts {
             crossDriverMove = crossDriver > 0 && Double.isFinite(saved[141]) ? saved[141] : 0;
             crossDriverUsd = 0;
         }
+        // What the vault earned (XR4, slots 142-146); a save from before it has earned nothing.
+        if (saved.length > 146) {
+            interestUsd = Double.isFinite(saved[142]) ? saved[142] : 0;
+            interestUsdLifetime = Double.isFinite(saved[143]) ? saved[143] : 0;
+            interestDriver = ordinalOr(saved[144], MONEYS, -1);
+            interestDriverUsd = interestDriver >= 0 && Double.isFinite(saved[145]) ? saved[145] : 0;
+            interestBaseUsd = Double.isFinite(saved[146]) ? Math.max(0, saved[146]) : 0;
+        }
     }
 
     /** A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. */
@@ -2939,6 +3038,9 @@ public class ForeignAccounts {
         crossBooked = true;
         crossDriver = -1;
         crossDriverMove = crossDriverUsd = 0;
+        // ...and nothing earned (XR4).
+        clearInterest();
+        interestUsdLifetime = 0;
         lastVaultRate = OPENING_RATE;
         lastVaultRevaluation = 0;
         cumulativeBalance = 0;
@@ -3076,7 +3178,7 @@ public class ForeignAccounts {
         lifetimeIntervention *= scale;
 
         lastRevaluation *= scale;
-        lastVaultRevaluation *= scale;
+        lastVaultRevaluation *= scale;   // (the vault's interest is US$, and stays like the vault's dollars; its local figure is read at the rate)
         lastValuation   *= scale;
         repudiated      *= scale;
         boughtThisMonth *= scale;

@@ -850,6 +850,20 @@ public final class NationsMap {
      * the moneys' year, which is every card a city draws.
      */
     public Card card(Nations nations, int nation, int year, double cityLat, double cityLon, double dollarsAUsd, TradeLanes.YearToDate trade, double monthRate) {
+        return card(nations, nation, year, cityLat, cityLon, dollarsAUsd, trade, monthRate, null);
+    }
+
+    /** The label of the policy rate's row (XR4): the rate of the central bank of the nation's money, where that money is one of the eight. */
+    public static final String POLICY_WORDS = "Policy rate";
+
+    /**
+     * The same, with the eight central banks' policy rates this month (XR4: Game.getPolicyRates()): when the nation's money is one of the eight
+     * (WorldMoneys.EIGHT: the euro for each nation on the euro, the US dollar for each on the dollar) and its bank has a rate, a POLICY_WORDS row
+     * follows "Its money" with that rate to two places a year. No row for a nation on any other money, for a nation with no money, or with no policy
+     * rates (null: a city with no world file). The caller hands them only where the card's year is the moneys' year, as monthRate's.
+     */
+    public Card card(Nations nations, int nation, int year, double cityLat, double cityLon, double dollarsAUsd, TradeLanes.YearToDate trade, double monthRate,
+            PolicyRates policy) {
         Table t = table(nations, year);
         Nations.Year y = nations.year(nation, year);
         int i = nation - 1;
@@ -861,12 +875,21 @@ public final class NationsMap {
         double growth = Math.expm1(nations.growth(nation, year)), prices = y.inflation();
         rows.add(new Row("This year", Double.isNaN(growth) && Double.isNaN(prices) ? "-" : percent(growth, true) + " real · " + percent(prices, false) + " prices", ""));
         rows.add(new Row("Its money", moneyWords(y, dollarsAUsd, monthRate), ""));
+        double policyRate = policy == null || y.money() == null ? Double.NaN : policy.rate(y.money());
+        if (Double.isFinite(policyRate)) rows.add(new Row(POLICY_WORDS, policyWords(policyRate), ""));
         if (trade != null && (trade.exports() > 0 || trade.imports() > 0)) {
             rows.add(new Row(BUYS_WORDS, city(trade.exports()), ""));
             rows.add(new Row(SELLS_WORDS, city(trade.imports()), ""));
             rows.add(new Row(HAUL_WORDS, haulWords(trade.tonnesOut(), trade.tonnesIn()), ""));
         }
         return new Card(nations.name(nation), region[nation] == null ? "" : region[nation], distanceWords(nation, cityLat, cityLon), List.copyOf(rows));
+    }
+
+    /** A policy rate as the card writes it: a percent to two places, the quarter-points the banks move in, with a true minus: "4.25%", "-0.10%", "0.00%". "-" for NaN. */
+    public static String policyWords(double rate) {
+        if (Double.isNaN(rate)) return "-";
+        double pct = Math.round(rate * 10_000) / 100.0;
+        return String.format(Locale.US, "%.2f%%", pct == 0 ? 0.0 : pct);
     }
 
     /** A share as a percent to one decimal ("-" for NaN), with a sign if asked: "+1.6%". A rounded zero has no minus. */

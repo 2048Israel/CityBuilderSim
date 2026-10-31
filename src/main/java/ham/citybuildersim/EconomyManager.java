@@ -1530,6 +1530,9 @@ public class EconomyManager {
     public void setOutwardInvestment(OutwardInvestment outward) { this.outward = outward; }
     public OutwardInvestment getOutwardInvestment() { return outward; }
 
+    /** The share of its terms (what the settle leaves it, what it could raise) under which a purchase budget is arithmetic noise and reads nothing (est.: a double carries sixteen digits, and a budget is the sum of two figures of the order of its costs). */
+    public static final double BUDGET_NOISE = 1e-12;
+
     /**
      * WHAT A SECTOR CAN PAY FOR AS THE MARKETS CLEAR (0.7.12 round 6) - see
      * Sector, BUY ONLY WHAT IT CAN PAY FOR.
@@ -1592,6 +1595,15 @@ public class EconomyManager {
         double raised = Math.max(0, getForeignAssets(k)) + Math.max(0, getBondAssets(k))
                 + businessDebtManager.workingCapitalLine(k, atSettle, due);
         double budget = atSettle + raised;
+        /*
+         * ...A DIFFERENCE UNDER THE NOISE OF ITS TERMS IS NOTHING (XR4, found by DenominationCheck's decade). A sector in default whose only bill is
+         * its interest has it covered exactly by the interest reserve its lender allows (the line is that interest grossed up for the fee, less the
+         * fee), so the budget is the sum of two equal figures of opposite sign: exactly nothing in one unit of money and an ulp of the bill in
+         * another - 7e-15 D$ in the city whose twin, reformed, read 0. That dust is no budget, but it funds a share of the orders, a share of a
+         * share of a truck, and a market with a demand of 3e-17 trucks and no supply strikes at its ceiling and not in the middle of its band:
+         * the price of trucks doubled in the one city and not the other, and the twins parted from that month.
+         */
+        if (Math.abs(budget) <= BUDGET_NOISE * (Math.abs(atSettle) + Math.abs(raised))) budget = 0;
         if (!Double.isFinite(budget)) return Double.POSITIVE_INFINITY;
         /*
          * ...AND WHAT ITS SUPPLIERS WILL WAIT FOR (0.7.44), a buyer with a

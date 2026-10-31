@@ -75,7 +75,7 @@ import java.util.List;
  *      surplus, inside the rate is the float's and nothing is dealt; the centre
  *      crawls at the slope; a vault under the floor lets the band give way.
  *   7. UNDER A PEG THE DIAL IS THE US'S RATE PLUS THE SPREAD; THE AIM. In a
- *      city: pegged, the policy rate is WORLD_BASE_RATE plus the spread, with
+ *      city: pegged, the policy rate is the US's rate (worldRate()) plus the spread, with
  *      the autopilot off or aiming at inflation; aiming at the currency it is
  *      the gap's; a band and the currency aim, a mix; Lean with any aim the
  *      inflation rule.
@@ -781,7 +781,7 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: the month had hot money arrive, depart and leave on doubt (" + String.format("%,.1fk, %,.1fk, %,.1fk",
                 doubting.getArrived(), doubting.getDeparted(), doubting.getDoubtDeparted()) + ")",
                 doubting.getArrived() > 0 && doubting.getDeparted() > 0 && doubting.getDoubtDeparted() > 0);
-        assertTrue("the saved array is 19 slots long: XR2's 16 and the month's three", saved.length == SAVE_SLOTS);
+        assertTrue("the saved array is 24 slots long: XR2's 16, the month's three and XR4's five (what ran home in a risk-off)", saved.length == SAVE_SLOTS);
         assertTrue("...slots 16, 17 and 18 are the month's arrived, departed and doubtDeparted", saved[SLOT_ARRIVED] == doubting.getArrived()
                 && saved[SLOT_DEPARTED] == doubting.getDeparted() && saved[SLOT_DOUBT_DEPARTED] == doubting.getDoubtDeparted());
         CapitalFlows back = restored(doubting);
@@ -869,16 +869,17 @@ public class CurrencyRegimeCheck {
             play(g, 1);
             double departed = hot.getDoubtDeparted(), left = hot.getStock();
             out.printf("   hot money US$%,.0fk at the month's top, the doubt %.2f%%: %,.1fk left on doubt, %,.0fk remain%n", stockBefore, shareStruck * 100, departed, left);
+            // XR4: a risk-off in force sends home its share of what the doubt left, so the stock the doubt took its share of is what remains and what the risk-off took.
             assertTrue("the month's doubt departure is the stock times the share the last reprice struck (the share of the stock after its own move)",
-                    departed > 0 && Math.abs(departed / (left + departed) - shareStruck) <= 1e-9);
+                    departed > 0 && Math.abs(departed / (left + departed + hot.getRiskOffDeparted()) - shareStruck) <= 1e-9);
             assertTrue("...it is inside what departed that month, and the lifetime rose by it", hot.getDeparted() >= departed - 1e-9
                     && Math.abs(hot.getDoubtDepartedLifetime() - lifetimeBefore - departed) <= 1e-9);
             assertTrue("...and the audit closes (residual " + String.format("%.4f", g.getLastMoneyAudit().residual) + ")", ExchangeRateCheck.auditCloses(g));
         }
     }
 
-    /** Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is. */
-    static final int SLOT_DOUBT_LIFETIME = 15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 19;
+    /** Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). */
+    static final int SLOT_DOUBT_LIFETIME = 15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24;
 
     static CapitalFlows restored(CapitalFlows f) {
         CapitalFlows back = new CapitalFlows();
@@ -1014,16 +1015,16 @@ public class CurrencyRegimeCheck {
         quietly(() -> dm.setAutopilot(false));
         pegWithGap(g, .06);
         assertTrue("fixture: pegged, the autopilot off, a gap of the D$ past the peg", fx.getRegime() == PEG && !dm.isAutopilot() && fx.currencyGap() > .05);
-        same("a peg, the autopilot off: the policy rate is WORLD_BASE_RATE plus the spread", dialAfter(g), DebtManager.WORLD_BASE_RATE + spread);
+        same("a peg, the autopilot off: the policy rate is the US's rate (worldRate()) plus the spread", dialAfter(g), dm.worldRate() + spread);
 
         // ...the autopilot on, aiming at inflation: the same, whatever the inflation rule would say.
         quietly(() -> { dm.setAutopilot(true); dm.setAim(DebtManager.Aim.INFLATION); });
         pegWithGap(g, .06);
         double rule = dm.advisedPolicyRate(g.getPriceIndex().inflation());
-        assertTrue("fixture: the inflation rule would set a different rate (" + String.format("%.4f against %.4f", rule, DebtManager.WORLD_BASE_RATE + spread) + ")",
-                Math.abs(rule - (DebtManager.WORLD_BASE_RATE + spread)) > 1e-4);
+        assertTrue("fixture: the inflation rule would set a different rate (" + String.format("%.4f against %.4f", rule, dm.worldRate() + spread) + ")",
+                Math.abs(rule - (dm.worldRate() + spread)) > 1e-4);
         double gapBefore = fx.currencyGap();
-        same("a peg, the autopilot on, aiming at inflation: still WORLD_BASE_RATE plus the spread", dialAfter(g), DebtManager.WORLD_BASE_RATE + spread);
+        same("a peg, the autopilot on, aiming at inflation: still the US's rate plus the spread", dialAfter(g), dm.worldRate() + spread);
         assertTrue("fixture: the gap the aim ignored was not nothing (" + String.format("%.4f", gapBefore) + ")", gapBefore > .05);
 
         // ...aiming at the currency: the gap's spread, the player's own set aside.
@@ -1031,16 +1032,16 @@ public class CurrencyRegimeCheck {
         pegWithGap(g, .06);
         double gap = fx.currencyGap();
         double expected = dm.tiedRate(gap);
-        double bare = Math.max(DebtManager.MIN_POLICY_RATE, Math.min(DebtManager.MAX_POLICY_RATE, DebtManager.WORLD_BASE_RATE + DebtManager.CURRENCY_WEIGHT * gap));
+        double bare = Math.max(DebtManager.MIN_POLICY_RATE, Math.min(DebtManager.MAX_POLICY_RATE, dm.worldRate() + DebtManager.CURRENCY_WEIGHT * gap));
         assertTrue("fixture: the gap is " + String.format("%.4f", gap) + " and the dial it asks is inside its bounds, over the world's rate",
-                gap > .05 && expected > DebtManager.MIN_POLICY_RATE && expected < DebtManager.MAX_POLICY_RATE && expected > DebtManager.WORLD_BASE_RATE);
+                gap > .05 && expected > DebtManager.MIN_POLICY_RATE && expected < DebtManager.MAX_POLICY_RATE && expected > dm.worldRate());
         same("a peg, the autopilot aiming at the currency: the policy rate is tiedRate(currencyGap())", dialAfter(g), expected);
-        close("...and that is WORLD_BASE_RATE plus CURRENCY_WEIGHT of the gap, inside the dial's bounds", expected, bare, 1e-15);
+        close("...and that is the US's rate plus CURRENCY_WEIGHT of the gap, inside the dial's bounds", expected, bare, 1e-15);
 
         // ...but with the autopilot off the aim means nothing: the spread is the player's.
         quietly(() -> dm.setAutopilot(false));
         pegWithGap(g, .06);
-        same("a peg, the autopilot off whatever the aim: the player's spread still", dialAfter(g), DebtManager.WORLD_BASE_RATE + spread);
+        same("a peg, the autopilot off whatever the aim: the player's spread still", dialAfter(g), dm.worldRate() + spread);
         quietly(() -> dm.setAutopilot(true));
 
         // A band: the aim picks the rule.
@@ -1049,7 +1050,7 @@ public class CurrencyRegimeCheck {
         gap = fx.currencyGap();
         expected = dm.currencyRate(gap);
         assertTrue("fixture: a band, the shadow " + String.format("%.4f", gap) + " past its centre, the autopilot aiming at the currency",
-                fx.getRegime() == BAND && gap > .04 && expected > DebtManager.WORLD_BASE_RATE);
+                fx.getRegime() == BAND && gap > .04 && expected > dm.worldRate());
         same("a band, the autopilot aiming at the currency: currencyRate(gap)", dialAfter(g), expected);
 
         quietly(() -> dm.setAim(DebtManager.Aim.MIX));

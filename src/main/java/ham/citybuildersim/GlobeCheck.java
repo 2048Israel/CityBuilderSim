@@ -169,7 +169,10 @@ import java.util.zip.CRC32;
  *  12. THE CARD: GDP, People, GDP a head, This year and Its money, each figure
  *      written by usd() and people() with its mark, the ranks rankings in
  *      ordinal words, the money row for the US dollar and another money, the
- *      hover's words; on the fixture and the full file.
+ *      hover's words; on the fixture and the full file. XR4: with the eight
+ *      central banks' policy rates handed, a Policy rate row follows Its money
+ *      for each nation whose money is one of the eight (the euro's for every
+ *      nation on the euro) and for no other; on the full file.
  *  13. THE CITY'S TRADE AS LANES (WN3, slice C; spec-nations 8, board 1):
  *      TradeLanes builds, once when a month's figures change, a tree of
  *      great-circle lanes from the city with the partners over MIN_LANE: a
@@ -2534,6 +2537,7 @@ public class GlobeCheck {
             dotsAndLabels(map, full, nations);
             fullHits(map, nations);
             cards("the full file", map, nations, 2025);
+            policyRow(map, nations, full);
             tradeCard("the full file", map, nations);
             fullLanes(map);
         }
@@ -2955,6 +2959,66 @@ public class GlobeCheck {
                 && hover.get(2).equals(String.format(Locale.US, "%,d km from the city", km)) && hover.get(3).equals(NationsMap.CLICK_FOR_CARD) && card.distance().equals(hover.get(2))
                 && card.region().equals("Europe & Central Asia"));
     }
+
+    /**
+     * 12, XR4: the card's Policy rate row. The eight central banks' rates over the full file's moneys, stepped a year so the rates are a month's and not
+     * the first; handed to every nation's card, a nation whose money is one of the eight (WorldMoneys.EIGHT) has the row right after Its money with the
+     * bank's rate as the card writes it, and every other nation has none; the euro's rate is the same figure on every nation on the euro; and a card
+     * handed no policy rates has the rows it had.
+     */
+    static void policyRow(NationsMap map, Nations nations, WorldData full) {
+        out.println("--- 12. the card: the policy rate row (XR4) ---");
+        WorldMarket.Base base = WorldMarket.Base.of(full);
+        double[] shares = new double[full.nationCount()];
+        for (int i = 1; i <= shares.length; i++) shares[i - 1] = base.commodityShare(i);
+        WorldMoneys moneys = new WorldMoneys(full, new Nations(full, Nations.Path.HISTORICAL, Nations.DEFAULT_SEED), shares);
+        PolicyRates policy = new PolicyRates(moneys);
+        for (int t = 1; t <= 12; t++) {
+            moneys.step(t, null);
+            policy.step(t);
+        }
+        int count = nations.count(), with = 0, without = 0, wrongRow = 0, wrongPlace = 0, euros = 0, badBare = 0;
+        String euroRow = null;
+        boolean euroSame = true;
+        for (int i = 1; i <= count; i++) {
+            String money = nations.year(i, YEAR).money();
+            NationsMap.Card c = map.card(nations, i, YEAR, CITIES[0][0], CITIES[0][1], D_PER_USD, null, Double.NaN, policy);
+            NationsMap.Card bare = map.card(nations, i, YEAR, CITIES[0][0], CITIES[0][1], D_PER_USD, null, Double.NaN, null);
+            boolean of8 = money != null && WorldMoneys.EIGHT.contains(money);
+            List<NationsMap.Row> rows = c.rows();
+            if (bare.rows().size() != 5) badBare++;
+            if (!of8) {
+                without++;
+                if (rows.size() != 5) wrongRow++;
+                continue;
+            }
+            with++;
+            if (rows.size() != 6) {
+                wrongRow++;
+                continue;
+            }
+            if (!rows.get(4).label().equals("Its money") || !rows.get(5).label().equals(NationsMap.POLICY_WORDS)) wrongPlace++;
+            if (!rows.get(5).value().equals(NationsMap.policyWords(policy.rate(money))) || !rows.get(5).rank().isEmpty()) wrongRow++;
+            if (money.equals("EUR")) {
+                euros++;
+                if (euroRow == null) euroRow = rows.get(5).value();
+                else if (!euroRow.equals(rows.get(5).value())) euroSame = false;
+            }
+        }
+        out.printf("      %d nations on one of the eight moneys carry the row, %d others do not; %d on the euro%n", with, without, euros);
+        check("a nation on one of the eight moneys has a \"" + NationsMap.POLICY_WORDS + "\" row after \"Its money\" (" + with + " nations), one on any other money has none (" + without + ")",
+                with > 0 && without > 0 && wrongRow == 0 && wrongPlace == 0);
+        check("...and a card handed no policy rates is the five rows it was (" + badBare + " that are not)", badBare == 0);
+        check("...the euro's rate is the one figure on every nation on the euro (" + euros + " of them, " + euroRow + ") and the dollar's the Fed's (" + policy.usRate() + ")",
+                euros > 1 && euroSame && euroRow != null && euroRow.equals(NationsMap.policyWords(policy.rate("EUR")))
+                        && map.card(nations, map.numberOf("USA"), YEAR, CITIES[0][0], CITIES[0][1], D_PER_USD, null, Double.NaN, policy).rows().get(5).value()
+                                .equals(NationsMap.policyWords(policy.usRate())));
+        check("the policy rate is written to two places, the quarter-points the banks move in, with a true minus and no minus on a rounded zero: "
+                        + NationsMap.policyWords(.0425) + " " + NationsMap.policyWords(-.001) + " " + NationsMap.policyWords(0) + " " + NationsMap.policyWords(-1e-9) + " " + NationsMap.policyWords(Double.NaN),
+                NationsMap.policyWords(.0425).equals("4.25%") && NationsMap.policyWords(-.001).equals("-0.10%") && NationsMap.policyWords(0).equals("0.00%")
+                        && NationsMap.policyWords(-1e-9).equals("0.00%") && NationsMap.policyWords(Double.NaN).equals("-"));
+    }
+
 
     /* =====================================================================
        13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4)

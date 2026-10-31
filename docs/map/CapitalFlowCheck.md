@@ -30,7 +30,7 @@
 >      and the dividend and receives none of it - while the rate moving the
 >      dollars is a revaluation, no income.
 
-**Uses:** [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (14), [Game](Game.md) (12), [SectorStatements](SectorStatements.md) (10), [SectorBooks](SectorBooks.md) (6), [Bank](Bank.md) (4), [GameFiles](GameFiles.md) (4), [Sectors](Sectors.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [Sector](Sector.md) (4), [Equity](Equity.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [MoneyAudit](MoneyAudit.md) (3), [TempDirs](TempDirs.md) (2), [Statement](Statement.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (12), [Game](Game.md) (12), [SectorStatements](SectorStatements.md) (10), [SectorBooks](SectorBooks.md) (6), [Bank](Bank.md) (4), [GameFiles](GameFiles.md) (4), [Sectors](Sectors.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [Sector](Sector.md) (4), [Equity](Equity.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [MoneyAudit](MoneyAudit.md) (3), [TempDirs](TempDirs.md) (2), [Statement](Statement.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 ## Sections
 

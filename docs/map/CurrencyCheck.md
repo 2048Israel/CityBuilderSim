@@ -1,4 +1,4 @@
-# CurrencyCheck.java - 939 lines · 22 methods · 6 constants · harnesses
+# CurrencyCheck.java - 941 lines · 22 methods · 6 constants · harnesses
 
 `ham/citybuildersim/CurrencyCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >   5. THE STOPS ARE GONE: the dial takes 60%; the autopilot sets a rule's
 > ... (12 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (52), [ForeignCheck](ForeignCheck.md) (9), [DebtManager](DebtManager.md) (8), [Game](Game.md) (8), [CentralBank](CentralBank.md) (6), [CapitalFlows](CapitalFlows.md) (5), [MoneyAudit](MoneyAudit.md) (3), [GameFiles](GameFiles.md) (3), [PriceIndex](PriceIndex.md) (3), [TempDirs](TempDirs.md) (2), [Founding](Founding.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (52), [ForeignCheck](ForeignCheck.md) (9), [Game](Game.md) (8), [DebtManager](DebtManager.md) (7), [CentralBank](CentralBank.md) (6), [CapitalFlows](CapitalFlows.md) (5), [MoneyAudit](MoneyAudit.md) (3), [GameFiles](GameFiles.md) (3), [PriceIndex](PriceIndex.md) (3), [TempDirs](TempDirs.md) (2), [Founding](Founding.md) (1)
 
 **Used by (5):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [ForeignCheck](ForeignCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
@@ -76,8 +76,8 @@
 | 232 | 2. inflation moves the rate with parity's trend, and no further |
 | 274 | 3. the defence spends |
 | 495 | 4. the dollars it sells are capital, not money destroyed |
-| 738 | 5. the stops are gone |
-| 812 | 6. the currency's guards are a billion either way |
+| 740 | 5. the stops are gone |
+| 814 | 6. the currency's guards are a billion either way |
 
 ## Constants
 
@@ -88,7 +88,7 @@
 | 111 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
 | 114 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
 | 127 | `CurrencyCheck.TRADING_MONTHS` | `24 + 12` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, and a year more for the trailing figures to settle. |
-| 698 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
+| 700 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
 
 ## Fields (state)
 
@@ -97,13 +97,13 @@
 | 85 | `static int fails` |  |
 | 86 | `static PrintStream out` |  |
 | 87 | `static PrintStream quiet` |  |
-| 699 | `final double m0, equity, notVault, remittance, loss` |  |
+| 701 | `final double m0, equity, notVault, remittance, loss` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 83 | 857 | **type** `public class CurrencyCheck` | Proves the currency under a central bank (0.7.2): the rate answers to the real rate, the vault is spent defending it, and the dial and the carry appetite have lost their stops. |
+| 83 | 859 | **type** `public class CurrencyCheck` | Proves the currency under a central bank (0.7.2): the rate answers to the real rate, the vault is spent defending it, and the dial and the carry appetite have lost their stops. |
 | 89 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 94 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 117 | 8 | `static MoneyAudit.Result month(double exports, double imports, double capitalIn, double capitalOut)` | A synthetic month: the trade and the financial account are all takeMonth() reads. |
@@ -134,27 +134,27 @@
 | 320 | 7 | `static double firstFall(ForeignAccounts fx, double gap)` | The fall the FIRST reprice of a fixture from defended() makes, from its figures alone (the rate at 1.00, nothing repriced before, the market quiet, parity at 1): the gated gap, balance and cover levels reached in one ... |
 | 328 | 166 | `static void defence()` |  |
 
-### 4. the dollars it sells are capital, not money destroyed (lines 495-737)
+### 4. the dollars it sells are capital, not money destroyed (lines 495-739)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 496 | 195 | `static void capital() throws Exception` |  |
-| 697 | 40 | **type** `static final class Before` | The central bank and the vault as a month opened, and the five claims section 4 holds each month against them. |
-| 701 | 7 | `Before(CentralBank cb)` _(in CurrencyCheck.Before)_ |  |
-| 709 | 27 | `void monthHeld(Game city, String named)` _(in CurrencyCheck.Before)_ |  |
+| 496 | 197 | `static void capital() throws Exception` |  |
+| 699 | 40 | **type** `static final class Before` | The central bank and the vault as a month opened, and the five claims section 4 holds each month against them. |
+| 703 | 7 | `Before(CentralBank cb)` _(in CurrencyCheck.Before)_ |  |
+| 711 | 27 | `void monthHeld(Game city, String named)` _(in CurrencyCheck.Before)_ |  |
 
-### 5. the stops are gone (lines 738-811)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 739 | 72 | `static void uncapped() throws Exception` |  |
-
-### 6. the currency's guards are a billion either way (lines 812-939)
+### 5. the stops are gone (lines 740-813)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 815 | 7 | `static ForeignAccounts at(double rate)` | A settled currency, trade in balance and the vault empty, put at this rate the way a save would put it. |
-| 824 | 3 | `static void month(ForeignAccounts fx, double parityLevel, double realGap)` | One month of it: the same balanced trade, the city's price level at this (so parity at it, in founding money), and this real gap, repriced. |
-| 829 | 6 | `static void month(ForeignAccounts fx, double parityLevel, double realGap, double unit)` | ...in a unit this many of the founding's: the trade and the output are money, and a reform divides them. |
-| 836 | 103 | `static void unguarded()` |  |
+| 741 | 72 | `static void uncapped() throws Exception` |  |
+
+### 6. the currency's guards are a billion either way (lines 814-941)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 817 | 7 | `static ForeignAccounts at(double rate)` | A settled currency, trade in balance and the vault empty, put at this rate the way a save would put it. |
+| 826 | 3 | `static void month(ForeignAccounts fx, double parityLevel, double realGap)` | One month of it: the same balanced trade, the city's price level at this (so parity at it, in founding money), and this real gap, repriced. |
+| 831 | 6 | `static void month(ForeignAccounts fx, double parityLevel, double realGap, double unit)` | ...in a unit this many of the founding's: the trade and the output are money, and a reform divides them. |
+| 838 | 103 | `static void unguarded()` |  |
 

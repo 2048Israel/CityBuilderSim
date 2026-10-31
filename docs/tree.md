@@ -488,6 +488,16 @@ adds its line here, not in `CLAUDE.md`.
                                    behind Game's three getters; nothing in the model reads them (WN6 shows)
         RealDollarCheck.java       the dollar on the US's path to 1e-12, the walk with no world file, the
                                    import shock, and RealDollar's three figures on fixtures (WN4)
+        PolicyRates.java           the eight central banks' policy rates (batch XR4; spec-exchange-rates
+                                   3.8): Historical replays the real 2000-2025 rates of
+                                   resources/policy-rates.tsv, then a Taylor rule on each anchor's inflation
+                                   in quarter-point steps (Random from February 2000); saved
+                                   (DataSave.policyRates). The US's is DebtManager.worldRate(), the world's
+                                   price of money, handed by Game with the moneys' step
+        InterestAbroadCheck.java   the table, the replay and the rule, the city reading the US's rate, no
+                                   world the constant, the save, the vault earning each money's rate to the
+                                   cent, and a risk-off unwinding the hot money and the carry by their
+                                   stocks with the audit closing (XR4)
         GlobeFrame.java, GlobePicture.java
                                    the Earth's map as a globe, its model half (0.7.132, batch E8;
                                    docs/studies/spec-globe.md 3): the view - its centre in latitude and

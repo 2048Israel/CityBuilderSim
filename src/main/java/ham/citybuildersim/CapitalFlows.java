@@ -489,6 +489,19 @@ public class CapitalFlows {
         } else {
             doubtDeparted = 0;
         }
+        /*
+         * ...AND THE MONEY THAT RUNS HOME IN A RISK-OFF (XR4, THE RISK-OFF UNWINDS THEM): a share of the stock that grows with the risk-off's
+         * level (Game hands it, setRiskOff()), departed like the doubt's, taken from the same stock after it. Nothing here under RISK_OFF_FELT.
+         */
+        if (riskOff >= RISK_OFF_FELT && stock > 0) {
+            riskOffDeparted = stock * Math.min(1, RISK_OFF_HOT_UNWIND * riskOff);
+            departed += riskOffDeparted;
+            stock -= riskOffDeparted;
+            riskOffDepartedLifetime += riskOffDeparted;
+            if (riskOffDeparted > 0) countTheRiskOffMonth();
+        } else {
+            riskOffDeparted = 0;
+        }
         lifetimeArrived += arrived;
         lifetimeDeparted += departed;
         doubtDepartedLifetime += doubtDeparted;
@@ -569,6 +582,19 @@ public class CapitalFlows {
             carryRepaid += carryStock;
             carryStock = 0;
         }
+        /*
+         * ...AND THE BOOK THAT IS REPAID IN A RISK-OFF (XR4): money running home unwinds the carry by its stock, on top of the ordinary
+         * repay and inside it (carryRepaid, and the change returned). Nothing here under RISK_OFF_FELT.
+         */
+        if (riskOff >= RISK_OFF_FELT && carryStock > 0) {
+            carryRiskRepaid = carryStock * Math.min(1, RISK_OFF_CARRY_UNWIND * riskOff);
+            carryRepaid += carryRiskRepaid;
+            carryStock -= carryRiskRepaid;
+            carryRiskRepaidLifetime += carryRiskRepaid;
+            if (carryRiskRepaid > 0) countTheRiskOffMonth();
+        } else {
+            carryRiskRepaid = 0;
+        }
         lifetimeCarryBorrowed += carryBorrowed;
         lifetimeCarryRepaid   += carryRepaid;
         if (carryStock > peakCarryStock) peakCarryStock = carryStock;
@@ -629,6 +655,75 @@ public class CapitalFlows {
     /** ...and since founding. */
     public double getDoubtDepartedLifetime() { return doubtDepartedLifetime; }
 
+    /* =====================================================================
+       THE RISK-OFF UNWINDS THEM (XR4, 2026-10-31; spec-exchange-rates 3.8)
+
+       "Up the stairs, down the elevator" (the study's R13). Hot money comes in
+       by the spread, slowly (ARRIVAL_SPEED); when money runs home it leaves
+       by the STOCK, fast, and a city that drew a lot of it with a high rate
+       falls harder than one that drew a little. The same for the carry: the
+       borrowers who sold the city's money for dollars buy it back and repay.
+
+       The risk-off is WorldMoneys.riskOff(): 0 in calm, the size of the last
+       one (0.5 to 1.5 at its start), fading by half in three months. Game
+       hands it as the month's level (setRiskOff()) before the carry's month
+       and the hot money's, and it holds for both. The share that runs is the
+       dial times the level, so a risk-off at its start takes more than the
+       same one three months on, and the departures sum to a decline that
+       tracks the shock - not a cliff on the first day and nothing after.
+
+       WHAT LEAVES is departed like the doubt's money: Game moves it out of
+       the bank's deposits and the audit sees it cross the edge. The carry's
+       is repaid like the ordinary repay: the bank's book falls and the
+       borrowers' dollars come home. No new rule: the same two pipes, a
+       different reason to open them.
+       ===================================================================== */
+
+    /** The share of the hot money's stock that runs home in a month of a risk-off of size one, scaled by the risk-off's level as it fades: a size-one risk-off takes about a fifth of the stock over the year after it, a size-1.5 one about three tenths (est.: a sudden stop reverses a fraction of the foreign money in a country, not the most of it, and in this game the stock can reach three quarters of a year's output at a dial of 25%). */
+    public static final double RISK_OFF_HOT_UNWIND = .05;
+
+    /** The share of the carry book repaid in a month of a risk-off of size one, scaled by the level (est.: the yen carry of July 2024, at a risk-off smaller than one, was mostly gone in six weeks). */
+    public static final double RISK_OFF_CARRY_UNWIND = .50;
+
+    /**
+     * The risk-off level under which money no longer runs home, nor is a month of one counted (getRiskOffMonths()) or logged (est.: WorldMoneys.riskOff()
+     * fades by half in three months and never reaches 0, so a size-one risk-off is under this after about thirteen months; a calm month is then the
+     * month it was before XR4, to the bit).
+     */
+    public static final double RISK_OFF_FELT = .05;
+
+    /** The month's risk-off level, as Game handed it. Transient: handed every month before the carry's month and the hot money's. */
+    private double riskOff;
+    /** What ran home in a risk-off this month (inside getDeparted()) and since founding; the carry's repaid on it (inside getCarryRepaid()) and since founding; the months a risk-off unwound anything. All saved. */
+    private double riskOffDeparted, riskOffDepartedLifetime;
+    private double carryRiskRepaid, carryRiskRepaidLifetime;
+    private int riskOffMonths;
+    /** Whether this month's unwinding has been counted in riskOffMonths already (the carry's month and the hot money's are both in it). Transient: setRiskOff() starts the month. */
+    private boolean riskOffCounted;
+
+    /** Told the month's risk-off level (WorldMoneys.riskOff()) before the carry's month and the hot money's; a negative or non-finite level reads 0. Not saved; Game sets it every month, which also starts the month's count. */
+    public void setRiskOff(double level) {
+        riskOff = Double.isFinite(level) ? Math.max(0, level) : 0;
+        riskOffCounted = false;
+    }
+
+    private void countTheRiskOffMonth() {
+        if (riskOffCounted) return;
+        riskOffCounted = true;
+        riskOffMonths++;
+    }
+
+    /** What ran home in a risk-off this month, inside getDeparted(). */
+    public double getRiskOffDeparted()         { return riskOffDeparted; }
+    /** ...and since founding. */
+    public double getRiskOffDepartedLifetime() { return riskOffDepartedLifetime; }
+    /** What of the carry was repaid in a risk-off this month, inside getCarryRepaid(). */
+    public double getCarryRiskRepaid()         { return carryRiskRepaid; }
+    /** ...and since founding. */
+    public double getCarryRiskRepaidLifetime() { return carryRiskRepaidLifetime; }
+    /** The months, since founding, in which a risk-off of at least RISK_OFF_FELT unwound any of the hot money or the carry (a month that unwound both counts once; setRiskOff() starts each month). */
+    public int getRiskOffMonths()              { return riskOffMonths; }
+
     /** The month's flow, positive when money is coming in. */
     public double netFlow() { return arrived - departed; }
 
@@ -668,7 +763,9 @@ public class CapitalFlows {
                 // XR2: what has left on doubt since founding.
                 doubtDepartedLifetime,
                 // FX8: the month's flows, which a screen reads the month after and nothing can rebuild.
-                arrived, departed, doubtDeparted };
+                arrived, departed, doubtDeparted,
+                // XR4: what ran home in a risk-off (the month's and since founding), the carry's, and the months it did.
+                riskOffDeparted, riskOffDepartedLifetime, carryRiskRepaid, carryRiskRepaidLifetime, riskOffMonths };
     }
 
     public void restore(double[] saved) {
@@ -700,6 +797,13 @@ public class CapitalFlows {
             departed = Math.max(0, saved[17]);
             doubtDeparted = Math.max(0, saved[18]);
         }
+        if (saved.length > 23) {
+            riskOffDeparted = Math.max(0, saved[19]);
+            riskOffDepartedLifetime = Math.max(0, saved[20]);
+            carryRiskRepaid = Math.max(0, saved[21]);
+            carryRiskRepaidLifetime = Math.max(0, saved[22]);
+            riskOffMonths = Math.max(0, (int) Math.round(saved[23]));
+        }
     }
 
     /**
@@ -725,6 +829,10 @@ public class CapitalFlows {
         peakCarryStock = peakCarrySpread = 0;
         paper = lifetimePaperBought = lifetimePaperSold = 0;
         doubt = doubtDeparted = doubtDepartedLifetime = 0;
+        riskOff = riskOffDeparted = riskOffDepartedLifetime = 0;
+        carryRiskRepaid = carryRiskRepaidLifetime = 0;
+        riskOffMonths = 0;
+        riskOffCounted = false;
     }
 
     /** Hot money, in the new unit. The spread is a rate and does not move. */
@@ -752,6 +860,10 @@ public class CapitalFlows {
         lifetimePaperSold *= scale;
         doubtDeparted *= scale;
         doubtDepartedLifetime *= scale;
+        riskOffDeparted *= scale;
+        riskOffDepartedLifetime *= scale;
+        carryRiskRepaid *= scale;
+        carryRiskRepaidLifetime *= scale;
     }
 
 }

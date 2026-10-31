@@ -161,7 +161,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         double policyRate();
         /** What the bank pays savers. */
         double depositRate();
-        /** What the world pays (DebtManager.WORLD_BASE_RATE). */
+        /** What the world pays (DebtManager.worldRate(): the US's policy rate where the city has the world file, XR4). */
         double worldRate();
         /** What the world charges this city for its risk (DebtManager.countryPremium()). */
         double countryPremium();

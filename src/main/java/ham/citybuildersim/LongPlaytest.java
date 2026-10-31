@@ -1573,7 +1573,7 @@ public class LongPlaytest {
                 fa.getInterventionFelt() * 100, fa.gate(), fa.getOpenness(),
                 fa.monthlyCurrentAccount(), fa.monthlyFinancialAccount(),
                 tills, oi.totalUsd(), oi.totalLocalValue(), oi.getTargetShare() * 100,
-                g.getBank().depositRate() * 100, DebtManager.WORLD_BASE_RATE * 100,
+                g.getBank().depositRate() * 100, g.getDebtManager().worldRate() * 100,
                 g.getPopulationManager().getPopulation(), g.getEconomyManager().getMonthGdp());
             Exchange ex = g.getExchange();
             out.printf("   desk: sold abroad %,.0f bought abroad %,.0f (emigrants %,.0f) | buybacks to hh %,.0f abroad %,.0f | dividends hh %,.0f abroad %,.0f | sent abroad %,.0f home %,.0f | hh saved %,.0f abroad US$%,.0f (sent %,.0f home %,.0f) divs %,.0f sold %,.0f | securities %,.0f%n",
@@ -6826,6 +6826,10 @@ public class LongPlaytest {
                 fx.importCover() == Double.MAX_VALUE ? "inf"
                         : String.format("%.1f", fx.importCover()),
                 g.getCurrency().qualifiedSymbol(), fx.monthlyImports());
+        // XR4: how often the two mechanics fired in this run - the vault's interest (kept in the vault, in US$) and the money a risk-off sent home.
+        out.printf("  interest abroad (XR4): the vault earned US$%,.0fk since founding (US$%,.0fk this month, a %.2f%% yield); risk-offs unwound hot money or the carry in %d month(s): $%,.0fk of hot money and $%,.0fk of the carry%n",
+                fx.getVaultInterestUsdLifetime(), fx.getVaultInterestUsd(), fx.getVaultYield() * 100,
+                hot.getRiskOffMonths(), hot.getRiskOffDepartedLifetime(), hot.getCarryRiskRepaidLifetime());
         OutwardInvestment abroad = g.getOutwardInvestment();
         out.printf("  abroad, the sectors' own: US$%,.0fk (%s at today's rate), %.0f%% of their wealth wanted"
                 + " on a %.2f-point spread; sent $%,.0fk, brought home $%,.0fk, earned $%,.0fk since founding; peak US$%,.0fk%n",

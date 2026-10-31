@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.88 — XR4, exchange rates: interest abroad — 2026-10-31, ready, see docs/queue/XR4-notes.md
+The eight central banks of the vault's moneys have policy rates (Jerus, 2026-10-21, ★9 and ★11): on Historical their
+real monthly rates of 2000-2025, then a Taylor rule on each nation's inflation in quarter-point steps; on Random the
+rule from February 2000. The US's is the world's price of money where the city has the world file: the real rate gap,
+the hot money, the carry, the dollar curve, the peg's tie and the world's bids read it in place of the constant 2%
+(the equity's required return keeps the constant). The vault earns each money's rate and keeps it; in a risk-off the
+hot money and the carry unwind by their stocks. Policy names the US's rate, Trade shows the vault's interest and what
+risk-offs sent home, a nation's card its policy rate. InterestAbroadCheck (new). The suite: main's reds and
+LongPlaytest's two map findings at m4,000 (XR4-M); the trace moved, and the ensemble scores 22 of 26 against 24 (A3
+and R3 newly red; AUTO2 seed 11 held near 20,000 people for 1,300 months, XR4-S).
+
 ### 0.8.87 — LB3, Rankings: your saved cities — 2026-10-31, ready, see docs/queue/LB3-notes.md
 The other slots (1-10, the autosave left out) rank beside the city on the Rankings board, read and never written
 (`SavedCities`): each its own world, pivoted by its own rate, parity and US prices in the units of its last save, so a

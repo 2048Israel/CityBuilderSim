@@ -588,8 +588,9 @@ public class CurrencyCheck {
             was = new Before(cb);
             System.setOut(quiet);
             try { city.simulateMonths(1); } finally { System.setOut(out); }
+            // XR4: the world's rate is the US's policy rate, handed each month (DebtManager.worldRate()); the constant only where there is no world.
             double handed = (dial.getPolicyRate() - cityInflation)
-                    - (DebtManager.WORLD_BASE_RATE - city.getWorldEconomy().realisedInflation());
+                    - (dial.worldRate() - city.getWorldEconomy().realisedInflation());
             worstWiring = Math.max(worstWiring, Math.abs(fx.getRealRateDifferential() - handed));
             if (fx.getDefenceUsd() > 0) { defendedAt = city.getMonth(); played++; break; }
         }
@@ -620,13 +621,14 @@ public class CurrencyCheck {
         out.printf("   the lean sold US$%,.2fk; its own arithmetic (the least of the need, the cap and the vault) gives US$%,.2fk%n", sold, lean);
         close("the sale is what takes back the vault's capacity of the month's new fall, at most that capacity times the month's own deficit and at most the vault",
                 sold, lean, 1e-9 * Math.max(1, sold));
-        close("...the vault fell by exactly it", vaultBefore - fx.getReservesUsd(), sold, 1e-9 * Math.max(1, sold));
+        // XR4: the vault also earned its interest that month (kept in the vault, in US$): the month's one booked term beside the sale.
+        close("...the vault fell by exactly it", vaultBefore + fx.getVaultInterestUsd() - fx.getReservesUsd(), sold, 1e-9 * Math.max(1, sold));
         close("...and it fetched the dollars at the month's rate", fetched, sold * rateBefore, 1e-9 * Math.max(1, fetched));
         close("the central bank booked it the month it was sold", cb.getDefendedThisMonth(), fetched, 1e-9);
         close("...as spent defending the currency since founding", cb.vaultSpent(), fetched, 1e-9);
         close("equity fell by it: its move, less the rest of the sheet's, less the revaluation",
                 (cb.equity() - was.equity) - ((cb.equity() - cb.getVault()) - was.notVault)
-                        - fx.getLastVaultRevaluation(), -fetched, 1e-6 * Math.max(1, fetched));
+                        - fx.getLastVaultRevaluation() - fx.getVaultInterestUsd() * rateBefore, -fetched, 1e-6 * Math.max(1, fetched));
         was.monthHeld(city, "the month it was sold");
 
         /*

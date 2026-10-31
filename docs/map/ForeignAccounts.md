@@ -1,4 +1,4 @@
-# ForeignAccounts.java - 3,108 lines · 199 methods · 46 constants · model
+# ForeignAccounts.java - 3,210 lines · 207 methods · 46 constants · model
 
 `ham/citybuildersim/ForeignAccounts.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -66,7 +66,7 @@
 
 **Uses:** [WorldMoneys](WorldMoneys.md) (6), [MoneyAudit](MoneyAudit.md) (2)
 
-**Used by (42):** [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CityBasket](CityBasket.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DeskCheck](DeskCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Founding](Founding.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMarket](LandMarket.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OutwardInvestment](OutwardInvestment.md), [PassThroughCheck](PassThroughCheck.md), [PolicyScreen](PolicyScreen.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md)
+**Used by (43):** [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CityBasket](CityBasket.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DeskCheck](DeskCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Founding](Founding.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMarket](LandMarket.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OutwardInvestment](OutwardInvestment.md), [PassThroughCheck](PassThroughCheck.md), [PolicyScreen](PolicyScreen.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 
@@ -84,13 +84,14 @@
 | 1465 | · the position |
 | 1467 | TWO NUMBERS THAT WERE ONE NUMBER |
 | 1520 | THE VAULT IN EIGHT (WN4, 2026-10-30; spec-nations 5.2-5.4) |
-| 1977 | · reading |
-| 1979 | WHAT THE CITY OWES ABROAD |
-| 2101 | BUYING AND SELLING THE RESERVE |
-| 2226 | THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) |
-| 2343 | · what the currency did to the vault |
-| 2431 | WHAT THE TRADE TAB READS (0.7.35) |
-| 2520 | · carrying |
+| 1808 | · THE VAULT EARNS (XR4, 2026-10-31; spec-exchange-rates 3.8) |
+| 2056 | · reading |
+| 2058 | WHAT THE CITY OWES ABROAD |
+| 2180 | BUYING AND SELLING THE RESERVE |
+| 2305 | THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) |
+| 2422 | · what the currency did to the vault |
+| 2510 | WHAT THE TRADE TAB READS (0.7.35) |
+| 2599 | · carrying |
 
 ## Enum constants
 
@@ -156,10 +157,10 @@
 | 1562 | `ForeignAccounts.MONEYS` | `8` | How many moneys the vault keeps a balance in. |
 | 1565 | `ForeignAccounts.MONEY_NAME` | `{ "the US dollar", "the euro", "the yen", "the pound", "the yuan", "the Canad...` | The money's name as a sentence has it ("the euro"), in WorldMoneys.EIGHT's order. |
 | 1568 | `ForeignAccounts.MONEY_PLURAL` | `{ "US dollars", "euros", "yen", "pounds", "yuan", "Canadian dollars", "Austra...` | ...and what a purchase of it is ("euros"), for a button's words. |
-| 1860 | `ForeignAccounts.COVER_WINDOW` | `12` | How many months the trailing figures are averaged over: the import bill the cover is measured against, and the balances the float reads. |
-| 2475 | `ForeignAccounts.PARITY_WATCH` | `.25` | How far from parity, either side, the rate reads as a watch - amber on the Trade tab, the drawer's THE CURRENCY row and the header's rate line, which until 0.7.35 judged one rate three ways (the spec's B9): the drawer... |
-| 2478 | `ForeignAccounts.PARITY_FAR` | `.50` | ...and how far reads as far: red on all four. |
-| 2494 | `ForeignAccounts.THIN_COVER` | `3` | Months of import cover under which the world prices a currency for a crisis rather than on its trade balance - the Trade tab's red line and its alert, three months by the usual rule of thumb - and since XR1 the cover ... |
+| 1939 | `ForeignAccounts.COVER_WINDOW` | `12` | How many months the trailing figures are averaged over: the import bill the cover is measured against, and the balances the float reads. |
+| 2554 | `ForeignAccounts.PARITY_WATCH` | `.25` | How far from parity, either side, the rate reads as a watch - amber on the Trade tab, the drawer's THE CURRENCY row and the header's rate line, which until 0.7.35 judged one rate three ways (the spec's B9): the drawer... |
+| 2557 | `ForeignAccounts.PARITY_FAR` | `.50` | ...and how far reads as far: red on all four. |
+| 2573 | `ForeignAccounts.THIN_COVER` | `3` | Months of import cover under which the world prices a currency for a crisis rather than on its trade balance - the Trade tab's red line and its alert, three months by the usual rule of thumb - and since XR1 the cover ... |
 
 ## Fields (state)
 
@@ -231,42 +232,46 @@
 | 1596 | `private boolean crossBooked` |  |
 | 1597 | `private int crossDriver` |  |
 | 1598 | `private double crossDriverMove, crossDriverUsd` |  |
-| 1816 | `private double cumulativeBalance` | THE RECORD. |
-| 1817 | `private double forgiven` |  |
-| 1820 | `private double exportsTrailing` | Trailing means, for anything the rate is decided on. |
-| 1821 | `private double currentTrailing` |  |
-| 1828 | `private double financialTrailing` | The financial account, trailing, and the gross of it - what crossed in either direction - so the rate can be struck on the OVERALL balance, and gate() can tell a city that trades from one that does not. |
-| 1829 | `private double financialGrossTrailing` |  |
-| 1843 | `private double lifetimeExports` | SINCE FOUNDING. |
-| 1844 | `private double lifetimeImports` |  |
-| 1845 | `private double lifetimeInterest` |  |
-| 1846 | `private double lifetimeFinancial` |  |
-| 1847 | `private double importsTrailing` |  |
-| 1848 | `private int monthsOfHistory` |  |
-| 1910 | `private double openness` | How much of the economy actually crosses the border. |
-| 2002 | `private double foreignDebt` | local value of USD paper outstanding |
-| 2003 | `private double foreignDebtUsd` | local value of USD paper outstanding |
-| 2004 | `private double lastDebtRate` | ...and in the dollars it is owed in |
-| 2005 | `private double lastRevaluation` |  |
-| 2006 | `private double lifetimeRevaluation` |  |
-| 2096 | `private double repudiated` |  |
-| 2115 | `private double boughtThisMonth` |  |
-| 2116 | `private double soldThisMonth` |  |
-| 2268 | `private double landUsdOpen, landVaultUsdOpen` | The month in progress: dollars paid for land, and the part of them that came out of the vault. |
-| 2275 | `private double landLocalOpen, landVaultLocalOpen` | ...and their local price on the day, all of it and the vault's part: the part of the budget's land line bought abroad (the rest of that line is plots bought back from businesses, in local money), and the part of it no... |
-| 2277 | `private double landUsd, landVaultUsd, landLocal, landVaultLocal` | The month struck - what the screens show between two presses. |
-| 2279 | `private double landUsdLifetime, landVaultUsdLifetime` | ...and since founding (slots 33-34). |
-| 2363 | `private double lastVaultRate` |  |
-| 2364 | `private double lastVaultRevaluation` |  |
-| 2422 | `private double lifetimeIntervention` | What has been bought into the vault less what has been taken out of it, since founding, in the local money each cost or fetched: the treasury's purchases and sales, the defence's sales (0.7.2), the land office's dolla... |
-| 2429 | `private double lastValuation` |  |
-| 2460 | `private boolean monthCounted` | Whether the month's flows are the month's: false only after a founding or a load of an older save. |
+| 1829 | `private double interestUsd, interestUsdLifetime` | What the vault earned this month and since founding, in US$ at the month's cross rates (negative where a bank's rate was below zero). |
+| 1831 | `private int interestDriver` | The money that earned (or lost) the most this month by US$ (an index, -1 for none) and the US$ it did so, signed. |
+| 1832 | `private double interestDriverUsd` |  |
+| 1834 | `private double interestBaseUsd` | The US$ the vault had in the moneys that earned this month, before the interest: what the month's yield is struck on. |
+| 1895 | `private double cumulativeBalance` | THE RECORD. |
+| 1896 | `private double forgiven` |  |
+| 1899 | `private double exportsTrailing` | Trailing means, for anything the rate is decided on. |
+| 1900 | `private double currentTrailing` |  |
+| 1907 | `private double financialTrailing` | The financial account, trailing, and the gross of it - what crossed in either direction - so the rate can be struck on the OVERALL balance, and gate() can tell a city that trades from one that does not. |
+| 1908 | `private double financialGrossTrailing` |  |
+| 1922 | `private double lifetimeExports` | SINCE FOUNDING. |
+| 1923 | `private double lifetimeImports` |  |
+| 1924 | `private double lifetimeInterest` |  |
+| 1925 | `private double lifetimeFinancial` |  |
+| 1926 | `private double importsTrailing` |  |
+| 1927 | `private int monthsOfHistory` |  |
+| 1989 | `private double openness` | How much of the economy actually crosses the border. |
+| 2081 | `private double foreignDebt` | local value of USD paper outstanding |
+| 2082 | `private double foreignDebtUsd` | local value of USD paper outstanding |
+| 2083 | `private double lastDebtRate` | ...and in the dollars it is owed in |
+| 2084 | `private double lastRevaluation` |  |
+| 2085 | `private double lifetimeRevaluation` |  |
+| 2175 | `private double repudiated` |  |
+| 2194 | `private double boughtThisMonth` |  |
+| 2195 | `private double soldThisMonth` |  |
+| 2347 | `private double landUsdOpen, landVaultUsdOpen` | The month in progress: dollars paid for land, and the part of them that came out of the vault. |
+| 2354 | `private double landLocalOpen, landVaultLocalOpen` | ...and their local price on the day, all of it and the vault's part: the part of the budget's land line bought abroad (the rest of that line is plots bought back from businesses, in local money), and the part of it no... |
+| 2356 | `private double landUsd, landVaultUsd, landLocal, landVaultLocal` | The month struck - what the screens show between two presses. |
+| 2358 | `private double landUsdLifetime, landVaultUsdLifetime` | ...and since founding (slots 33-34). |
+| 2442 | `private double lastVaultRate` |  |
+| 2443 | `private double lastVaultRevaluation` |  |
+| 2501 | `private double lifetimeIntervention` | What has been bought into the vault less what has been taken out of it, since founding, in the local money each cost or fetched: the treasury's purchases and sales, the defence's sales (0.7.2), the land office's dolla... |
+| 2508 | `private double lastValuation` |  |
+| 2539 | `private boolean monthCounted` | Whether the month's flows are the month's: false only after a founding or a load of an older save. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 96 | 3013 | **type** `public class ForeignAccounts` | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. |
+| 96 | 3115 | **type** `public class ForeignAccounts` | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. |
 
 ### the rate (lines 98-109)
 
@@ -416,7 +421,7 @@
 
 ### TWO NUMBERS THAT WERE ONE NUMBER (lines 1467-1519)
 
-### THE VAULT IN EIGHT (WN4, 2026-10-30; spec-nations 5.2-5.4) (lines 1520-1976)
+### THE VAULT IN EIGHT (WN4, 2026-10-30; spec-nations 5.2-5.4) (lines 1520-1807)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -429,122 +434,135 @@
 | 1623 | 5 | `public double getReservesUsd()` | The reserve position in dollars - the stock itself: the eight balances at the day's cross rates, summed. |
 | 1630 | 1 | `public double getMoneyUsd(int k)` | US$ to the unit of a money as Game last handed it; NaN for one it has not been handed (and for an index that is none of the eight). |
 | 1633 | 1 | `public boolean hasRate(int k)` | Whether the money has a rate this month, so a purchase can go into it: always the US$; the others once Game has handed a rate (a loaded city's are the rates it was saved with). |
-| 1636 | 28 | `public void setMoneyRates(double[] usdPerUnit)` | Hands the eight's US$ per unit, in WorldMoneys.EIGHT's order (the US$'s entry is read as 1): the top of the month, right after the moneys step. |
-| 1666 | 1 | `public Mix getReserveMix()` | The mix a dollar coming into the vault goes in by. |
-| 1668 | 1 | `public void setReserveMix(Mix to)` |  |
-| 1671 | 1 | `public double[] getChosenShares()` | The player's eight shares under CHOSEN (a copy; sums to 1). |
-| 1674 | 1 | `public void setChosenShares(double[] shares)` | Sets the eight shares under CHOSEN, normalised to sum to 1: a negative or NaN share reads 0, and all zero means all US$. |
-| 1677 | 15 | `public void shiftChosen(int k, double points)` | Moves one money's chosen share by this many points (0.05 is five): the rest give or take it in proportion; with nothing else held, the freed points go to the US$ (to the euro when it is the US$ that was moved). |
-| 1694 | 1 | `public double[] getTradeShares()` | The city's trade by money, the eight's shares Game handed (a copy; sums to 1, or all 0 where the city has traded nothing). |
-| 1697 | 1 | `public void setTradeShares(double[] shares)` | Game's once a month, right after the moneys step: the city's trade by money under MATCH_TRADE, normalised; all zero reads all US$. |
-| 1700 | 14 | `private static void normaliseInto(double[] into, double[] source, boolean usdIfNone)` | Fills a share array from a source: finite positive entries kept, the rest 0, scaled to sum to 1; with none, all zero - or the US$ alone for the player's. |
-| 1716 | 23 | `public double[] mixShares()` | The shares a dollar coming in is split by now (sums to 1): the mix's, less the moneys with no rate this month, whose share goes to the US$; all US$ when nothing is left. |
-| 1741 | 8 | `private void vaultAdd(double usd)` | Puts these dollars into the vault by the mix. |
-| 1751 | 9 | `private void vaultAddInto(double usd, String code)` | Puts these dollars into one money's balance; a code that is none of the eight goes by the mix, and a money with no rate this month goes to the US$. |
-| 1765 | 28 | `private void vaultRemove(double usd)` | Takes these dollars out of the vault from the largest holding by US$ worth, then the next (a tie leaves the one earlier in the eight's order first). |
-| 1795 | 1 | `public double getLastVaultCrossUsd()` | The month's move of the vault across the moneys, in US$: what it gained or lost because the eight moved against each other (the cross rates handed at the top of the month; a purchase after them adds nothing). |
-| 1798 | 1 | **type** `public record CrossDriver(String code, int index, double move)` | The money that moved it most, and how far it moved against the US$ in the month: a fraction of the US$ a unit costs, so -0.091 is a euro down 9.1% against the dollar. |
-| 1801 | 4 | `public CrossDriver getLastVaultCrossDriver()` | ...or null when nothing moved it. |
-| 1871 | 14 | `public double importCover()` | Months of imports the reserve would cover. |
-| 1887 | 1 | `public double monthlyImports()` | The trailing monthly import bill the cover is measured against. |
-| 1890 | 1 | `public double monthlyExports()` | ...and the trailing figures the rate is decided on. |
-| 1891 | 1 | `public double monthlyCurrentAccount()` |  |
-| 1893 | 1 | `public double monthlyFinancialAccount()` | The financial account, trailing: positive is money coming in. |
-| 1912 | 1 | `public double getOpenness()` |  |
-| 1914 | 3 | `public void takeMonth(MoneyAudit.Result month)` |  |
-| 1928 | 48 | `public void takeMonth(MoneyAudit.Result month, double monthlyGdp)` | Takes the month off the audit that has just been struck. |
+| 1636 | 30 | `public void setMoneyRates(double[] usdPerUnit)` | Hands the eight's US$ per unit, in WorldMoneys.EIGHT's order (the US$'s entry is read as 1): the top of the month, right after the moneys step. |
+| 1668 | 1 | `public Mix getReserveMix()` | The mix a dollar coming into the vault goes in by. |
+| 1670 | 1 | `public void setReserveMix(Mix to)` |  |
+| 1673 | 1 | `public double[] getChosenShares()` | The player's eight shares under CHOSEN (a copy; sums to 1). |
+| 1676 | 1 | `public void setChosenShares(double[] shares)` | Sets the eight shares under CHOSEN, normalised to sum to 1: a negative or NaN share reads 0, and all zero means all US$. |
+| 1679 | 15 | `public void shiftChosen(int k, double points)` | Moves one money's chosen share by this many points (0.05 is five): the rest give or take it in proportion; with nothing else held, the freed points go to the US$ (to the euro when it is the US$ that was moved). |
+| 1696 | 1 | `public double[] getTradeShares()` | The city's trade by money, the eight's shares Game handed (a copy; sums to 1, or all 0 where the city has traded nothing). |
+| 1699 | 1 | `public void setTradeShares(double[] shares)` | Game's once a month, right after the moneys step: the city's trade by money under MATCH_TRADE, normalised; all zero reads all US$. |
+| 1702 | 14 | `private static void normaliseInto(double[] into, double[] source, boolean usdIfNone)` | Fills a share array from a source: finite positive entries kept, the rest 0, scaled to sum to 1; with none, all zero - or the US$ alone for the player's. |
+| 1718 | 23 | `public double[] mixShares()` | The shares a dollar coming in is split by now (sums to 1): the mix's, less the moneys with no rate this month, whose share goes to the US$; all US$ when nothing is left. |
+| 1743 | 8 | `private void vaultAdd(double usd)` | Puts these dollars into the vault by the mix. |
+| 1753 | 9 | `private void vaultAddInto(double usd, String code)` | Puts these dollars into one money's balance; a code that is none of the eight goes by the mix, and a money with no rate this month goes to the US$. |
+| 1767 | 28 | `private void vaultRemove(double usd)` | Takes these dollars out of the vault from the largest holding by US$ worth, then the next (a tie leaves the one earlier in the eight's order first). |
+| 1797 | 1 | `public double getLastVaultCrossUsd()` | The month's move of the vault across the moneys, in US$: what it gained or lost because the eight moved against each other (the cross rates handed at the top of the month; a purchase after them adds nothing). |
+| 1800 | 1 | **type** `public record CrossDriver(String code, int index, double move)` | The money that moved it most, and how far it moved against the US$ in the month: a fraction of the US$ a unit costs, so -0.091 is a euro down 9.1% against the dollar. |
+| 1803 | 4 | `public CrossDriver getLastVaultCrossDriver()` | ...or null when nothing moved it. |
 
-### reading (lines 1977-1978)
-
-### WHAT THE CITY OWES ABROAD (lines 1979-2100)
+### THE VAULT EARNS (XR4, 2026-10-31; spec-exchange-rates 3.8) (lines 1808-2055)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2012 | 8 | `public void takeForeignDebt(double usdOutstanding, double rateNow)` |  |
-| 2022 | 1 | `public double getForeignDebt()` | What the city owes abroad, in local money at today's rate. |
-| 2023 | 1 | `public double getForeignDebtUsd()` |  |
-| 2026 | 1 | `public double getLastRevaluation()` | What the currency did to that debt this month. |
-| 2027 | 1 | `public double getLifetimeRevaluation()` |  |
-| 2037 | 1 | `public double netForeignPosition()` | Claims abroad less what is owed abroad: the city's net position. |
-| 2040 | 1 | `public double getExports()` | Goods and services sold abroad. |
-| 2043 | 1 | `public double tradeImports()` | Goods bought abroad, interest excluded. |
-| 2046 | 1 | `public double getForeignInterest()` | Interest paid to foreign creditors. |
-| 2049 | 1 | `public double tradeBalance()` | Exports less imports. |
-| 2052 | 1 | `public double currentAccount()` | ...less what was paid to foreign lenders. |
-| 2054 | 1 | `public double getFinancialIn()` |  |
-| 2055 | 1 | `public double getFinancialOut()` |  |
-| 2056 | 1 | `public double financialAccount()` |  |
-| 2059 | 1 | `public double balance()` | The month's change in the city's foreign position. |
-| 2065 | 1 | `public double getReserves()` | What the treasury holds in foreign money, and could spend today - in local money, at today's rate. |
-| 2068 | 1 | `public double getCumulativeBalance()` | Every month's balance of payments since founding, added up. |
-| 2078 | 1 | `public boolean inDeficit()` | Whether the city owes the world more than it holds there. |
-| 2081 | 1 | `public double getForgiven()` | Claims the world has written off, cumulatively. |
-| 2090 | 5 | `public void forgiveDebt(double localAmount)` | Debt the city refused to pay, and its creditors will not see again. |
-| 2099 | 1 | `public double getRepudiated()` | What the city has walked away from, since founding. |
+| 1842 | 19 | `public void earnVaultInterest(double[] annualRates)` | The month's interest on the vault's eight balances, each at its central bank's rate (annual, a fraction; WorldMoneys.EIGHT's order): balance x rate / 12 in the money's own units, kept in the vault. |
+| 1862 | 4 | `private void clearInterest()` |  |
+| 1868 | 1 | `public double getVaultInterestUsd()` | What the vault earned this month, in US$ at the month's cross rates (0 in a month the world did not hand it). |
+| 1871 | 1 | `public double getVaultInterestUsdLifetime()` | ...and since founding. |
+| 1874 | 1 | `public double getVaultInterest()` | The month's interest in local money, at this month's rate as getReserves() converts. |
+| 1877 | 1 | `public int getVaultInterestDriver()` | The money that earned (or lost) the most this month by US$, as an index into WorldMoneys.EIGHT; -1 where nothing was earned. |
+| 1880 | 1 | `public double getVaultInterestDriverUsd()` | ...and the US$ it earned, signed (0 where there is no driver). |
+| 1883 | 1 | `public double getVaultYield()` | The vault's US$-weighted mean rate this month, a fraction a year: the month's interest times twelve over the US$ the earning balances were worth; 0 for an empty vault or a month nothing was earned. |
+| 1950 | 14 | `public double importCover()` | Months of imports the reserve would cover. |
+| 1966 | 1 | `public double monthlyImports()` | The trailing monthly import bill the cover is measured against. |
+| 1969 | 1 | `public double monthlyExports()` | ...and the trailing figures the rate is decided on. |
+| 1970 | 1 | `public double monthlyCurrentAccount()` |  |
+| 1972 | 1 | `public double monthlyFinancialAccount()` | The financial account, trailing: positive is money coming in. |
+| 1991 | 1 | `public double getOpenness()` |  |
+| 1993 | 3 | `public void takeMonth(MoneyAudit.Result month)` |  |
+| 2007 | 48 | `public void takeMonth(MoneyAudit.Result month, double monthlyGdp)` | Takes the month off the audit that has just been struck. |
 
-### BUYING AND SELLING THE RESERVE (lines 2101-2225)
+### reading (lines 2056-2057)
+
+### WHAT THE CITY OWES ABROAD (lines 2058-2179)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2125 | 4 | `public void startMonth()` | Clears the month's intervention. |
-| 2136 | 1 | `public void forgetDealing()` | Forgets what has been dealt since the last reprice: the founders' dollars (Game.buildWorld()), an endowment the market never saw bought, and a fixture's vault, set up as a holding rather than a purchase under test. |
-| 2139 | 1 | `public double getDealtSinceReprice()` | What the treasury has dealt since the last reprice, local money, a purchase of dollars positive: what the next reprice feels (THE FLOAT, step 5). |
-| 2154 | 1 | `public void buyReserves(double localAmount)` | Local currency spent buying foreign money. |
-| 2160 | 7 | `public void buyReserves(double localAmount, String code)` | ...into one money of the eight, the player's named purchase (WN4, THE VAULT IN EIGHT): a code that is none of them, or null, goes by the mix; a money with no rate this month, to the US$. |
-| 2191 | 11 | `public double sellReserves(double localAmount)` | Foreign money sold for local currency. |
-| 2207 | 12 | `public double sellReserves(double localAmount, String code)` | ...out of one money of the eight, the player's named sale (WN4, THE VAULT IN EIGHT): the clamp is what that money alone holds at today's rate, and no other money gives up anything. |
-| 2221 | 1 | `public double sellableReserves()` | The most the treasury could sell right now, in local money at today's rate. |
-| 2224 | 1 | `public double sellableReserves(String code)` | ...of one money of the eight alone (0 for a code that is none of them). |
+| 2091 | 8 | `public void takeForeignDebt(double usdOutstanding, double rateNow)` |  |
+| 2101 | 1 | `public double getForeignDebt()` | What the city owes abroad, in local money at today's rate. |
+| 2102 | 1 | `public double getForeignDebtUsd()` |  |
+| 2105 | 1 | `public double getLastRevaluation()` | What the currency did to that debt this month. |
+| 2106 | 1 | `public double getLifetimeRevaluation()` |  |
+| 2116 | 1 | `public double netForeignPosition()` | Claims abroad less what is owed abroad: the city's net position. |
+| 2119 | 1 | `public double getExports()` | Goods and services sold abroad. |
+| 2122 | 1 | `public double tradeImports()` | Goods bought abroad, interest excluded. |
+| 2125 | 1 | `public double getForeignInterest()` | Interest paid to foreign creditors. |
+| 2128 | 1 | `public double tradeBalance()` | Exports less imports. |
+| 2131 | 1 | `public double currentAccount()` | ...less what was paid to foreign lenders. |
+| 2133 | 1 | `public double getFinancialIn()` |  |
+| 2134 | 1 | `public double getFinancialOut()` |  |
+| 2135 | 1 | `public double financialAccount()` |  |
+| 2138 | 1 | `public double balance()` | The month's change in the city's foreign position. |
+| 2144 | 1 | `public double getReserves()` | What the treasury holds in foreign money, and could spend today - in local money, at today's rate. |
+| 2147 | 1 | `public double getCumulativeBalance()` | Every month's balance of payments since founding, added up. |
+| 2157 | 1 | `public boolean inDeficit()` | Whether the city owes the world more than it holds there. |
+| 2160 | 1 | `public double getForgiven()` | Claims the world has written off, cumulatively. |
+| 2169 | 5 | `public void forgiveDebt(double localAmount)` | Debt the city refused to pay, and its creditors will not see again. |
+| 2178 | 1 | `public double getRepudiated()` | What the city has walked away from, since founding. |
 
-### THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) (lines 2226-2342)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2289 | 7 | `public double buyAndSpendDollarsForLand(double usd)` | Buys exactly these dollars at today's rate and pays them to the land's seller, in one movement: the vault is untouched, and nothing a reserve purchase would leave behind is left (see THE LAND OFFICE IS PAID IN DOLLARS). |
-| 2304 | 14 | `public double spendReservesOnLand(double usd)` | Pays the land's seller out of the vault: at most what it holds, and everything it holds empties it exactly. |
-| 2320 | 7 | `public void strikeLandMonth()` | Strikes the land's month where the government's books strike its local cost. |
-| 2329 | 1 | `public double getLandUsdThisMonth()` | Dollars paid for land in the month last struck, both ways. |
-| 2331 | 1 | `public double getLandUsdFromVaultThisMonth()` | ...of which out of the vault. |
-| 2333 | 1 | `public double getLandLocalThisMonth()` | What the month's land from abroad cost in local money on the day, both ways - the budget's land line less the buybacks. |
-| 2335 | 1 | `public double getLandLocalFromVaultThisMonth()` | ...and the vault's part of it - the part of the budget's land line no cash paid. |
-| 2337 | 1 | `public double getLandUsdLifetime()` | Dollars paid for land since founding, both ways. |
-| 2339 | 1 | `public double getLandUsdFromVaultLifetime()` | ...of which out of the vault. |
-| 2341 | 1 | `public double getLandUsdPending()` | Dollars paid for land since the last strike - the month in progress. |
-
-### what the currency did to the vault (lines 2343-2430)
+### BUYING AND SELLING THE RESERVE (lines 2180-2304)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2373 | 8 | `public void revalueVault()` | Values the vault at today's rate. |
-| 2383 | 1 | `public double getLastVaultRevaluation()` | What the currency did to the vault this month, in local money. |
-| 2385 | 1 | `public double getBoughtThisMonth()` |  |
-| 2386 | 1 | `public double getSoldThisMonth()` |  |
-| 2388 | 1 | `public double getLifetimeExports()` |  |
-| 2389 | 1 | `public double getLifetimeImports()` |  |
-| 2390 | 1 | `public double getLifetimeInterest()` |  |
-| 2391 | 1 | `public double getLifetimeFinancial()` |  |
-| 2403 | 3 | `public double balanceFromFlows()` | The cumulative balance, rebuilt from the flows that made it. |
-| 2424 | 1 | `public double getLifetimeIntervention()` |  |
-| 2427 | 1 | `public double valuationChange()` | This month's part of that. |
+| 2204 | 4 | `public void startMonth()` | Clears the month's intervention. |
+| 2215 | 1 | `public void forgetDealing()` | Forgets what has been dealt since the last reprice: the founders' dollars (Game.buildWorld()), an endowment the market never saw bought, and a fixture's vault, set up as a holding rather than a purchase under test. |
+| 2218 | 1 | `public double getDealtSinceReprice()` | What the treasury has dealt since the last reprice, local money, a purchase of dollars positive: what the next reprice feels (THE FLOAT, step 5). |
+| 2233 | 1 | `public void buyReserves(double localAmount)` | Local currency spent buying foreign money. |
+| 2239 | 7 | `public void buyReserves(double localAmount, String code)` | ...into one money of the eight, the player's named purchase (WN4, THE VAULT IN EIGHT): a code that is none of them, or null, goes by the mix; a money with no rate this month, to the US$. |
+| 2270 | 11 | `public double sellReserves(double localAmount)` | Foreign money sold for local currency. |
+| 2286 | 12 | `public double sellReserves(double localAmount, String code)` | ...out of one money of the eight, the player's named sale (WN4, THE VAULT IN EIGHT): the clamp is what that money alone holds at today's rate, and no other money gives up anything. |
+| 2300 | 1 | `public double sellableReserves()` | The most the treasury could sell right now, in local money at today's rate. |
+| 2303 | 1 | `public double sellableReserves(String code)` | ...of one money of the eight alone (0 for a code that is none of them). |
 
-### WHAT THE TRADE TAB READS (0.7.35) (lines 2431-2519)
+### THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) (lines 2305-2421)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2463 | 1 | `public boolean isMonthCounted()` | True once the month's flows are the month's - a month taken since the founding, or a load of a save that carried them - and not nothing. |
-| 2466 | 1 | `public double getLifetimeTradeBalance()` | Exports less imports since founding: the record on trade alone, without the income or the capital. |
-| 2481 | 5 | `public static int parityLevel(double deviation)` | The verdict on a deviation from parity (deviationFromParity()), either side: 0 near, 1 at PARITY_WATCH or more, 2 at PARITY_FAR or more. |
-| 2497 | 4 | `public static int coverLevel(double months)` | The verdict on months of cover: 2 under THIN_COVER, 1 under COMFORTABLE_COVER, 0 at or over it. |
-| 2508 | 6 | `public double coverWith(double localChange)` | The cover the vault would give with this much local money's worth of dollars bought into it at today's rate (negative: sold out of it) - the Exchange card's "what it would do". |
-| 2516 | 3 | `public double toCover(double months)` | What it would cost in local money, at today's rate, to bring the vault up to this many months of the trailing import bill; nothing when it is there already. |
+| 2368 | 7 | `public double buyAndSpendDollarsForLand(double usd)` | Buys exactly these dollars at today's rate and pays them to the land's seller, in one movement: the vault is untouched, and nothing a reserve purchase would leave behind is left (see THE LAND OFFICE IS PAID IN DOLLARS). |
+| 2383 | 14 | `public double spendReservesOnLand(double usd)` | Pays the land's seller out of the vault: at most what it holds, and everything it holds empties it exactly. |
+| 2399 | 7 | `public void strikeLandMonth()` | Strikes the land's month where the government's books strike its local cost. |
+| 2408 | 1 | `public double getLandUsdThisMonth()` | Dollars paid for land in the month last struck, both ways. |
+| 2410 | 1 | `public double getLandUsdFromVaultThisMonth()` | ...of which out of the vault. |
+| 2412 | 1 | `public double getLandLocalThisMonth()` | What the month's land from abroad cost in local money on the day, both ways - the budget's land line less the buybacks. |
+| 2414 | 1 | `public double getLandLocalFromVaultThisMonth()` | ...and the vault's part of it - the part of the budget's land line no cash paid. |
+| 2416 | 1 | `public double getLandUsdLifetime()` | Dollars paid for land since founding, both ways. |
+| 2418 | 1 | `public double getLandUsdFromVaultLifetime()` | ...of which out of the vault. |
+| 2420 | 1 | `public double getLandUsdPending()` | Dollars paid for land since the last strike - the month in progress. |
 
-### carrying (lines 2520-3108)
+### what the currency did to the vault (lines 2422-2509)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2532 | 216 | `public double[] toSaveArray()` | A STOCK, so it is saved. |
-| 2749 | 169 | `public void restore(double[] saved)` |  |
-| 2920 | 4 | `private static int ordinalOr(double saved, int length, int fallback)` | A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. |
-| 2925 | 93 | `public void reset()` |  |
-| 3045 | 62 | `public void redenominate(double scale)` | Every figure in the city's foreign accounts, in the new unit. |
+| 2452 | 8 | `public void revalueVault()` | Values the vault at today's rate. |
+| 2462 | 1 | `public double getLastVaultRevaluation()` | What the currency did to the vault this month, in local money. |
+| 2464 | 1 | `public double getBoughtThisMonth()` |  |
+| 2465 | 1 | `public double getSoldThisMonth()` |  |
+| 2467 | 1 | `public double getLifetimeExports()` |  |
+| 2468 | 1 | `public double getLifetimeImports()` |  |
+| 2469 | 1 | `public double getLifetimeInterest()` |  |
+| 2470 | 1 | `public double getLifetimeFinancial()` |  |
+| 2482 | 3 | `public double balanceFromFlows()` | The cumulative balance, rebuilt from the flows that made it. |
+| 2503 | 1 | `public double getLifetimeIntervention()` |  |
+| 2506 | 1 | `public double valuationChange()` | This month's part of that. |
+
+### WHAT THE TRADE TAB READS (0.7.35) (lines 2510-2598)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2542 | 1 | `public boolean isMonthCounted()` | True once the month's flows are the month's - a month taken since the founding, or a load of a save that carried them - and not nothing. |
+| 2545 | 1 | `public double getLifetimeTradeBalance()` | Exports less imports since founding: the record on trade alone, without the income or the capital. |
+| 2560 | 5 | `public static int parityLevel(double deviation)` | The verdict on a deviation from parity (deviationFromParity()), either side: 0 near, 1 at PARITY_WATCH or more, 2 at PARITY_FAR or more. |
+| 2576 | 4 | `public static int coverLevel(double months)` | The verdict on months of cover: 2 under THIN_COVER, 1 under COMFORTABLE_COVER, 0 at or over it. |
+| 2587 | 6 | `public double coverWith(double localChange)` | The cover the vault would give with this much local money's worth of dollars bought into it at today's rate (negative: sold out of it) - the Exchange card's "what it would do". |
+| 2595 | 3 | `public double toCover(double months)` | What it would cost in local money, at today's rate, to bring the vault up to this many months of the trailing import bill; nothing when it is there already. |
+
+### carrying (lines 2599-3210)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2611 | 228 | `public double[] toSaveArray()` | A STOCK, so it is saved. |
+| 2840 | 177 | `public void restore(double[] saved)` |  |
+| 3019 | 4 | `private static int ordinalOr(double saved, int length, int fallback)` | A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. |
+| 3024 | 96 | `public void reset()` |  |
+| 3147 | 62 | `public void redenominate(double scale)` | Every figure in the city's foreign accounts, in the new unit. |
 

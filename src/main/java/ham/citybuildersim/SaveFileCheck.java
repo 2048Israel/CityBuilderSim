@@ -2188,6 +2188,14 @@ public class SaveFileCheck {
                         && Double.compare(hotBack.getDeparted(), hotLive.getDeparted()) == 0
                         && Double.compare(hotBack.getDoubtDeparted(), hotLive.getDoubtDeparted()) == 0
                         && Double.compare(hotBack.getDoubtDepartedLifetime(), hotLive.getDoubtDepartedLifetime()) == 0);
+        // XR4: what ran home in a risk-off rides the array after them (slots 19-23); a calm month reads 0 on both sides, InterestAbroadCheck's section 8 causes a risk-off and asserts them to the bit.
+        assertTrue("...and what ran home in a risk-off, the hot money's and the carry's, the month's and since founding, and the months it did, as they were",
+                Double.compare(hotBack.getRiskOffDeparted(), hotLive.getRiskOffDeparted()) == 0
+                        && Double.compare(hotBack.getRiskOffDepartedLifetime(), hotLive.getRiskOffDepartedLifetime()) == 0
+                        && Double.compare(hotBack.getCarryRiskRepaid(), hotLive.getCarryRiskRepaid()) == 0
+                        && Double.compare(hotBack.getCarryRiskRepaidLifetime(), hotLive.getCarryRiskRepaidLifetime()) == 0
+                        && hotBack.getRiskOffMonths() == hotLive.getRiskOffMonths()
+                        && java.util.Arrays.equals(hotBack.toSaveArray(), hotLive.toSaveArray()));
 
         /*
          * ...AND EACH CELL'S INCOME AFTER ITS FIXED BILLS (A4, 0.7.46): struck
@@ -3648,18 +3656,38 @@ public class SaveFileCheck {
             final double savedCycle = moneys.cycle(), savedRiskOff = moneys.riskOff();
             assertTrue("the save writes the moneys' state (worldMoneys), as many numbers as WorldMoneys.toSaveArray() gives (" + savedMoneys.length + ")",
                     json.has("worldMoneys") && json.getAsJsonArray("worldMoneys").size() == savedMoneys.length);
+            // XR4: the eight central banks' policy rates ride beside the moneys (DataSave.policyRates), and the US's is the city's price of money.
+            PolicyRates policy = city.getPolicyRates();
+            assertTrue("fixture: the city built the policy rates with the moneys, in the city's month", policy != null && policy.month() == savedMonth);
+            if (policy == null) return;
+            double[] savedPolicy = policy.toSaveArray();
+            final double savedWorldRate = city.getDebtManager().worldRate();
+            assertTrue("the save writes the policy rates' state (policyRates), as many numbers as PolicyRates.toSaveArray() gives (" + savedPolicy.length + ")",
+                    json.has("policyRates") && json.getAsJsonArray("policyRates").size() == savedPolicy.length);
+            assertTrue("fixture: the city's price of money is the US's policy rate (" + savedWorldRate + "), not the constant " + DebtManager.WORLD_BASE_RATE,
+                    Double.compare(savedWorldRate, policy.usRate()) == 0 && savedWorldRate != DebtManager.WORLD_BASE_RATE);
             assertTrue("...and the foreign accounts' array runs to slot 104, the world's (95-104)", savedFx.length >= 105);
             // WN4, the vault in eight (slots 105-141): euros and pounds beside the dollars, the mix, the chosen shares, the eight's rates and the month's cross move.
             ForeignAccounts savedAccounts = city.getForeignAccounts();
-            assertTrue("...and to slot 141, the vault's (105-141): " + savedFx.length + " slots", savedFx.length == 142);
+            assertTrue("...and to slot 146, the vault's (105-141) and what it earned (142-146, XR4): " + savedFx.length + " slots", savedFx.length == 147);
             assertTrue("fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22",
                     savedAccounts.getHolding(1) > 0 && savedAccounts.getHolding(3) > 0 && savedAccounts.getHolding(0) > 0 && savedAccounts.getReserveMix() == ForeignAccounts.Mix.CHOSEN
                             && savedAccounts.getLastVaultCrossUsd() != 0 && savedFx[22] == savedAccounts.getReservesUsd() && savedFx[105 + 1] == savedAccounts.getHolding(1)
                             && savedFx[113 + 1] > 0 && savedFx[121] == ForeignAccounts.Mix.CHOSEN.ordinal() && savedFx[138] == savedAccounts.getLastVaultCrossUsd());
+            assertTrue("fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$ " + savedFx[142] + ", the lifetime " + savedFx[143] + ")",
+                    savedAccounts.getVaultInterestUsd() > 0 && savedFx[142] == savedAccounts.getVaultInterestUsd() && savedFx[143] == savedAccounts.getVaultInterestUsdLifetime()
+                            && savedFx[143] >= savedFx[142] && savedFx[144] == savedAccounts.getVaultInterestDriver() && savedFx[145] == savedAccounts.getVaultInterestDriverUsd()
+                            && savedAccounts.getVaultYield() > 0);
             com.google.gson.JsonObject hist = com.google.gson.JsonParser.parseString(Files.readString(files.historyFile(1))).getAsJsonObject();
             assertTrue("...and the history writes each finished year's table by partner and good (1)",
                     hist.has("tradeByPartner") && hist.getAsJsonArray("tradeByPartner").size() == 1
                             && hist.getAsJsonArray("tradeByPartner").get(0).getAsJsonObject().get("year").getAsInt() == Nations.FIRST_YEAR);
+            com.google.gson.JsonObject historyMoney = hist.has("worldMoney") ? hist.getAsJsonObject("worldMoney") : new com.google.gson.JsonObject();
+            boolean policySeries = true;
+            for (String code : WorldMoneys.EIGHT) {
+                policySeries &= historyMoney.has(HistorySave.policyRateKey(code)) && historyMoney.getAsJsonArray(HistorySave.policyRateKey(code)).size() == historyMoney.getAsJsonArray(HistorySave.worldRateKey("EUR")).size();
+            }
+            assertTrue("...and the history writes the eight policy rates (policyUSD ... policyCHF) a month each, as many points as the euro's series", policySeries);
 
             Game loaded = new Game(files);
             quietly(() -> loaded.loadGameSave(1));
@@ -3682,17 +3710,28 @@ public class SaveFileCheck {
                     backMoneys != null && backMoneys.month() == savedMonth && java.util.Arrays.equals(backMoneys.toSaveArray(), savedMoneys));
             assertTrue("...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit",
                     java.util.Arrays.equals(loaded.getForeignAccounts().toSaveArray(), savedFx));
+            PolicyRates backPolicy = loaded.getPolicyRates();
+            assertTrue("a load restores the policy rates in the month they were saved in, to the bit, and hands the city the US's rate as it was",
+                    backPolicy != null && backPolicy.month() == savedMonth && java.util.Arrays.equals(backPolicy.toSaveArray(), savedPolicy)
+                            && Double.compare(loaded.getDebtManager().worldRate(), savedWorldRate) == 0);
+            assertTrue("...and the history's policy series as they were",
+                    java.util.Arrays.equals(loaded.getHistorySave().aligned(HistorySave.policyRateKey("USD")), city.getHistorySave().aligned(HistorySave.policyRateKey("USD"))));
             ForeignAccounts backAccounts = loaded.getForeignAccounts();
             boolean vaultBack = backAccounts.getReserveMix() == savedAccounts.getReserveMix() && Double.compare(backAccounts.getReservesUsd(), savedAccounts.getReservesUsd()) == 0
                     && Double.compare(backAccounts.getLastVaultCrossUsd(), savedAccounts.getLastVaultCrossUsd()) == 0
                     && java.util.Arrays.equals(backAccounts.getChosenShares(), savedAccounts.getChosenShares())
                     && java.util.Arrays.equals(backAccounts.getTradeShares(), savedAccounts.getTradeShares())
-                    && java.util.Objects.equals(backAccounts.getLastVaultCrossDriver(), savedAccounts.getLastVaultCrossDriver());
+                    && java.util.Objects.equals(backAccounts.getLastVaultCrossDriver(), savedAccounts.getLastVaultCrossDriver())
+                    && Double.compare(backAccounts.getVaultInterestUsd(), savedAccounts.getVaultInterestUsd()) == 0
+                    && Double.compare(backAccounts.getVaultInterestUsdLifetime(), savedAccounts.getVaultInterestUsdLifetime()) == 0
+                    && backAccounts.getVaultInterestDriver() == savedAccounts.getVaultInterestDriver()
+                    && Double.compare(backAccounts.getVaultInterestDriverUsd(), savedAccounts.getVaultInterestDriverUsd()) == 0
+                    && Double.compare(backAccounts.getVaultYield(), savedAccounts.getVaultYield()) == 0;
             for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
                 vaultBack &= Double.compare(backAccounts.getHolding(k), savedAccounts.getHolding(k)) == 0 && backAccounts.hasRate(k) == savedAccounts.hasRate(k)
                         && Double.compare(backAccounts.getMoneyUsd(k), savedAccounts.getMoneyUsd(k)) == 0;
             }
-            assertTrue("...and the vault in eight as it was: the eight balances and their rates, the mix, the chosen and the trade shares, the month's cross move and its driver", vaultBack);
+            assertTrue("...and the vault in eight as it was: the eight balances and their rates, the mix, the chosen and the trade shares, the month's cross move and its driver, and what it earned (the month's, the lifetime, the driver, the yield)", vaultBack);
             assertEquals("...the trade by partner, the month and the year to date, as it was", gson.toJson(backRecord.toState()), gson.toJson(record.toState()));
             assertEquals("...the finished years in the history", gson.toJson(backRecord.history()), gson.toJson(record.history()));
             PartnerTrade.Snapshot backSnap = loaded.getPartnerTrade();
@@ -3719,6 +3758,10 @@ public class SaveFileCheck {
                             && Double.compare(loaded.getForeignAccounts().getRate(), city.getForeignAccounts().getRate()) == 0
                             && Double.compare(loaded.getForeignAccounts().getMoveWorld(), city.getForeignAccounts().getMoveWorld()) == 0
                             && loaded.getWorldMoneys().month() == WorldMoneys.monthIndex(loaded.getMonth()));
+            assertTrue("...and the policy rates and the city's price of money to the bit (the US's rate " + loaded.getDebtManager().worldRate() + ")",
+                    java.util.Arrays.equals(loaded.getPolicyRates().toSaveArray(), city.getPolicyRates().toSaveArray())
+                            && Double.compare(loaded.getDebtManager().worldRate(), city.getDebtManager().worldRate()) == 0
+                            && loaded.getPolicyRates().month() == WorldMoneys.monthIndex(loaded.getMonth()));
             assertTrue("the month after runs the same in both: the cash to the cent and the trade by partner",
                     Math.abs(city.getCash() - loaded.getCash()) < 1e-6 && java.util.Arrays.equals(city.getPartnerTrade().exportsByNation(), loaded.getPartnerTrade().exportsByNation())
                             && java.util.Arrays.equals(city.getPartnerTrade().importsByNation(), loaded.getPartnerTrade().importsByNation())
@@ -3749,6 +3792,17 @@ public class SaveFileCheck {
                     caught.getLoadFailure() == null && cm != null && cm.month() == savedMonth);
             assertTrue("...with the very cycle and risk-off the saved city had: they are a function of the seed and the month",
                     cm != null && Double.compare(cm.cycle(), savedCycle) == 0 && Double.compare(cm.riskOff(), savedRiskOff) == 0);
+            // A save with no policy rates (an older one): the load rebuilds them by stepping from January 2000 to the saved month, which is the saved state to the bit.
+            com.google.gson.JsonObject noPolicy = json.deepCopy();
+            noPolicy.remove("policyRates");
+            Files.writeString(files.saveFile(4), gson.toJson(noPolicy));
+            Files.copy(files.historyFile(1), files.historyFile(4), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            Game rebuilt = new Game(files);
+            quietly(() -> rebuilt.loadGameSave(4));
+            assertTrue("a save with no policy rates loads, and they are rebuilt from January 2000 to the saved month: the very state the saved city had, to the bit (a function of the moneys' path), and the US's rate handed",
+                    rebuilt.getLoadFailure() == null && rebuilt.getPolicyRates() != null && rebuilt.getPolicyRates().month() == savedMonth
+                            && java.util.Arrays.equals(rebuilt.getPolicyRates().toSaveArray(), savedPolicy)
+                            && Double.compare(rebuilt.getDebtManager().worldRate(), savedWorldRate) == 0);
 
             // No world file: none of the new keys, and the markets on the goods' literals.
             System.clearProperty(WorldData.PROPERTY);
@@ -3769,7 +3823,9 @@ public class SaveFileCheck {
             assertTrue("...and its save writes none of the new keys, in the markets or beside them",
                     !plainText.contains("worldYear") && !plainText.contains("worldPrices") && !plainText.contains("worldScales")
                             && !plainText.contains("partnerTrade") && !plainText.contains("worldImport") && !plainText.contains("worldExport")
-                            && !plainText.contains("worldMoneys"));
+                            && !plainText.contains("worldMoneys") && !plainText.contains("policyRates"));
+            assertTrue("...no policy rates, and its price of money is the constant (XR4)",
+                    plain.getPolicyRates() == null && plain.getDebtManager().worldRate() == DebtManager.WORLD_BASE_RATE);
             boolean literal = true;
             for (Good g : Good.values()) literal &= !plain.getMarkets().get(g).hasWorldPrices();
             assertTrue("...every market on the goods' literals", literal);

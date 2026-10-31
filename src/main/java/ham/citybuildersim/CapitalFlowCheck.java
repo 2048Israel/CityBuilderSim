@@ -549,7 +549,7 @@ public class CapitalFlowCheck {
                 earner, heldUsd, monthRate, coupon, heldStatement.preTaxIncome, plainStatement.preTaxIncome, taxRate * 100);
 
         close("the coupon is the dollars held x the world's rate / 12, at the month's rate",
-                coupon, heldUsd * DebtManager.WORLD_BASE_RATE / 12 * monthRate, 1e-9);
+                coupon, heldUsd * heldCity.getDebtManager().worldRate() / 12 * monthRate, 1e-9);
         assertTrue("fixture: the till covered the month's dividend, so no dollars were called home",
                 heldMonth.openingCash() >= heldMonth.dividendsPaid());
         close("fixture: both twins bought back the same shares, so none were called home for it",
@@ -642,7 +642,7 @@ public class CapitalFlowCheck {
         close("what it holds abroad, revalued, is the dollars held x the rate's move",
                 SectorStatements.abroadRevalued(heldNext, heldMonth), usdBefore * (rateNow - rateBefore), 1e-6);
         close("...and the month's coupon is struck on the dollars it began with, at the new rate",
-                couponNext, usdBefore * DebtManager.WORLD_BASE_RATE / 12 * rateNow, 1e-9);
+                couponNext, usdBefore * heldCity.getDebtManager().worldRate() / 12 * rateNow, 1e-9);
         close("...the revaluation is not in the profit: it differs from its twin's by the coupon alone",
                 heldSector.statement().preTaxIncome - plainSector.statement().preTaxIncome, couponNext, 1e-9);
 

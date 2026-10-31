@@ -36,7 +36,7 @@
 
 **Uses:** [WorldData](WorldData.md) (14), [World](World.md) (4), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (23):** [DataSave](DataSave.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [PartnerTrade](PartnerTrade.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
+**Used by (25):** [DataSave](DataSave.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [PartnerTrade](PartnerTrade.md), [PolicyRates](PolicyRates.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 

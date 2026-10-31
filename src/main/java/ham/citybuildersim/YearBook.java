@@ -262,6 +262,10 @@ public final class YearBook {
         for (String code : WorldMoneys.EIGHT) {
             if (!code.equals(Nations.DOLLAR)) rate(m, HistorySave.worldRateKey(code), "units of " + code + " to the US dollar, HIGHER is a weaker " + code + " (recorded since WN4, with a world file)");
         }
+        // ...and the eight central banks' policy rates (XR4), the dollar's too: a rate, and not money of the city's.
+        for (String code : WorldMoneys.EIGHT) {
+            rate(m, HistorySave.policyRateKey(code), "the policy rate of the " + code + " central bank, a fraction a year (recorded since XR4, with a world file)");
+        }
         rate(m, HistorySave.WORLD_CYCLE, "the dollar's cycle against the world's moneys, a log, positive when the dollar is strong (recorded since WN4, with a world file)");
         rate(m, HistorySave.WORLD_RISK_OFF, "the risk-off level, a log: 0 in calm, positive while money runs to safety, fading by half in three months (recorded since WN4, with a world file)");
         return m;
