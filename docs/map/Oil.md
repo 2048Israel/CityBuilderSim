@@ -1,4 +1,4 @@
-# Oil.java - 1,733 lines · 116 methods · 20 constants · sectors
+# Oil.java - 1,742 lines · 117 methods · 20 constants · sectors
 
 `ham/citybuildersim/sectors/Oil.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -49,10 +49,10 @@
 | 683 | THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7 and 2.11, |
 | 1054 | DEEP WATER (DW1, 2026-10-31; Jerus: "offshore oil platforms cant build |
 | 1117 | · the deep wells decline faster (DW1) |
-| 1333 | · the pipelines |
-| 1434 | · the shuttle tankers |
-| 1479 | · the pipeline rule |
-| 1557 | · the planner's three kinds at sea |
+| 1342 | · the pipelines |
+| 1443 | · the shuttle tankers |
+| 1488 | · the pipeline rule |
+| 1566 | · the planner's three kinds at sea |
 
 ## Enum constants
 
@@ -107,14 +107,14 @@
 | 980 | `private long pvStamp` |  |
 | 981 | `private Object pvFields` |  |
 | 982 | `private List<Platform> pvCached` |  |
-| 1315 | `private double deepWaterBill` | The month's deep-water upkeep bill (payDeepWaterUpkeep()); not saved - the statement carries the bill, as the shuttle's does. |
-| 1443 | `private double shuttleTonnes, shuttleBill` | The month's shuttle tankers: tonnes brought ashore and what they cost (payShuttle()); not saved - the statement carries the bill. |
+| 1324 | `private double deepWaterBill` | The month's deep-water upkeep bill (payDeepWaterUpkeep()); not saved - the statement carries the bill, as the shuttle's does. |
+| 1452 | `private double shuttleTonnes, shuttleBill` | The month's shuttle tankers: tonnes brought ashore and what they cost (payShuttle()); not saved - the statement carries the bill. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1676 | **type** `public final class Oil extends Sector` | Oil wells. |
+| 58 | 1685 | **type** `public final class Oil extends Sector` | Oil wells. |
 | 60 | 7 | `public Oil()` |  |
 | 76 | 13 | `protected double groundLimit(Good g, double asked)` | The ground, not the well, decides what comes up - since 0.7.93 each kind's own pool (LandManager's THE TWO OIL POOLS): the platform wells' part of the month's ask, their nameplate (getCapacityAtSea()) at the month's r... |
 | 93 | 1 | `public double getLiftedOnGround()` |  |
@@ -208,73 +208,74 @@
 |---:|---:|---|---|
 | 1115 | 1 | `public static boolean isFloating(double depthM)` | Whether a platform in this sea is a floating one (pure): past PLATFORM_MAX_DEPTH_M, where the fixed jacket ends. |
 
-### the deep wells decline faster (DW1) (lines 1117-1332)
+### the deep wells decline faster (DW1) (lines 1117-1341)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1143 | 1 | `public static boolean declinesDeep(double depthM)` | Whether a platform in this sea declines at the deep rate (pure): DEEP_DECLINE_FROM_M deep or more. |
 | 1146 | 5 | `public static boolean[] deepPlatforms(List<Platform> ps, List<LandManager.SeaField> fields)` | Each platform's decline, in the list's order (pure): true where its field, in `fields`, declines deep; false for a platform on no field the city owns. |
-| 1153 | 6 | `private boolean[] deepFlags(List<Platform> ps)` | The platforms standing's decline (deepPlatforms()), or null when none declines deep: the lift and the retirements then read as they always did. |
-| 1161 | 24 | `public static List<List<Vintage>> deal(List<Vintage> vintages, List<Platform> platforms)` | The platform vintages dealt to the platforms, oldest to the oldest, each platform its wells in slots (pure); the land vintages are none of theirs. |
-| 1186 | 1 | `private static double feet(double metres)` |  |
-| 1189 | 3 | `public static double nemsFixedPlatform(int slots, double wdFt)` | A fixed platform's cost, 2003 dollars (pure): slots SLT, water depth WD feet, NEMS eq 3-7 [W13] - 2,000,000 + 9,000 SLT + 1,500 WD SLT + 40 WD^2. |
-| 1194 | 3 | `public static double nemsFloatingSystem(int slots, double wdFt)` | A floating production system's cost, 2003 dollars (pure): a semi-submersible or converted tanker, NEMS eq 3-10 [W13] - (SLT + 20) (7,500,000 + 250 (WD - 1,000)). |
-| 1199 | 3 | `public static double nemsJackUpWell(double wdFt, double ddFt)` | A well drilled from a jack-up rig, 2003 dollars (pure): NEMS eq 3-4 [W13] - 2,000,000 + 5.0e-9 WD DD^3, DD the drilling depth in feet. |
-| 1204 | 3 | `public static double nemsSemiWell(double wdFt, double ddFt)` | A well drilled from a semi-submersible rig, 2003 dollars (pure): NEMS eq 3-5 [W13] - 2,500,000 + 400 WD + 200 (WD + DD) + 2.0e-5 WD DD^2. |
-| 1209 | 3 | `public static double nemsDrillshipWell(double wdFt, double ddFt)` | A well drilled from a drillship, 2003 dollars (pure): NEMS eq 3-6 [W13] - 7,500,000 + 1.0e-5 WD DD^2. |
-| 1214 | 3 | `public static double nemsFloaterWell(double wdFt, double ddFt)` | A floater's well (pure): the cheaper of the semi-submersible's and the drillship's (eqs 3-5, 3-6; they cross near 571 m, so the curve is continuous and rises). |
-| 1219 | 3 | `public static double nemsPlatformOpex(int slots, double wdFt)` | A platform's operating cost a year, 2003 dollars (pure): NEMS eq 3-15 [W13] - 1,265,000 + 135,000 SLT + 0.0588 SLT WD^2. |
-| 1224 | 4 | `public static double platformCostFactor(double depthM, int slots)` | What a platform of `slots` slots costs in this sea against a jacket's price (pure): 1 at PLATFORM_MAX_DEPTH_M or less, else the floating production system's (eq 3-10) over the fixed platform's (eq 3-7) at PLATFORM_MAX... |
-| 1230 | 4 | `public static double wellCostFactor(double depthM)` | What a platform's well costs in this sea against a well at PLATFORM_MAX_DEPTH_M (pure): 1 at PLATFORM_MAX_DEPTH_M or less, else the floater's well (eqs 3-5, 3-6) over the jack-up's (eq 3-4) at PLATFORM_MAX_DEPTH_M, bo... |
-| 1236 | 4 | `public static double upkeepFactor(double depthM, int slots)` | What a platform of `slots` slots costs to run in this sea against the jacket's (pure): 1 at PLATFORM_MAX_DEPTH_M or less, else NEMS eq 3-15 at the depth over the same at PLATFORM_MAX_DEPTH_M. |
-| 1242 | 4 | `static double depthOf(List<LandManager.SeaField> fields, int cell, int index)` | A field's depth in the list, by its cell and index; 0 when the city owns none of it (or it is not a platform's sea field). |
-| 1254 | 20 | `public double depthOfNext(BuildingsTemplate t)` | The depth, in metres, the next unit of an order of this template would stand in (DW1): the jacket the depth of the field the next jacket stands on (freeField(), read against the jackets standing and on site as platfor... |
-| 1276 | 5 | `public double deepWaterFactor(BuildingsTemplate t)` | How many times a jacket's price (or a well at PLATFORM_MAX_DEPTH_M) the next unit of an order of this template costs (DW1): the jacket's platformCostFactor(), the platform well's wellCostFactor(), both at depthOfNext(... |
-| 1283 | 8 | `public int floatingPlatforms()` | The platforms standing on a floating field (isFloating()): those whose field is deeper than PLATFORM_MAX_DEPTH_M and the city still owns. |
-| 1297 | 16 | `public double deepWaterUpkeepNow()` | What the floating platforms standing cost a month over a jacket's running cost (DW1): for each standing platform on a floating field, (upkeepFactor(its field's depth, slotsEach()) - 1) times the jacket's running cost ... |
-| 1317 | 1 | `public double getDeepWaterBill()` |  |
-| 1325 | 7 | `public void payDeepWaterUpkeep()` | Pays the floating platforms' upkeep for the month (endOfMonth(), after payShuttle()): deepWaterUpkeepNow(), booked as a service bought from the world (Sector.bookImportedService(), DEEP_WATER_UPKEEP) - the supply boat... |
+| 1153 | 7 | `public int deepPlatformsStanding()` | The platforms standing on a field that declines deep (declinesDeep()): what the retirements' words name the deep life for. |
+| 1162 | 6 | `private boolean[] deepFlags(List<Platform> ps)` | The platforms standing's decline (deepPlatforms()), or null when none declines deep: the lift and the retirements then read as they always did. |
+| 1170 | 24 | `public static List<List<Vintage>> deal(List<Vintage> vintages, List<Platform> platforms)` | The platform vintages dealt to the platforms, oldest to the oldest, each platform its wells in slots (pure); the land vintages are none of theirs. |
+| 1195 | 1 | `private static double feet(double metres)` |  |
+| 1198 | 3 | `public static double nemsFixedPlatform(int slots, double wdFt)` | A fixed platform's cost, 2003 dollars (pure): slots SLT, water depth WD feet, NEMS eq 3-7 [W13] - 2,000,000 + 9,000 SLT + 1,500 WD SLT + 40 WD^2. |
+| 1203 | 3 | `public static double nemsFloatingSystem(int slots, double wdFt)` | A floating production system's cost, 2003 dollars (pure): a semi-submersible or converted tanker, NEMS eq 3-10 [W13] - (SLT + 20) (7,500,000 + 250 (WD - 1,000)). |
+| 1208 | 3 | `public static double nemsJackUpWell(double wdFt, double ddFt)` | A well drilled from a jack-up rig, 2003 dollars (pure): NEMS eq 3-4 [W13] - 2,000,000 + 5.0e-9 WD DD^3, DD the drilling depth in feet. |
+| 1213 | 3 | `public static double nemsSemiWell(double wdFt, double ddFt)` | A well drilled from a semi-submersible rig, 2003 dollars (pure): NEMS eq 3-5 [W13] - 2,500,000 + 400 WD + 200 (WD + DD) + 2.0e-5 WD DD^2. |
+| 1218 | 3 | `public static double nemsDrillshipWell(double wdFt, double ddFt)` | A well drilled from a drillship, 2003 dollars (pure): NEMS eq 3-6 [W13] - 7,500,000 + 1.0e-5 WD DD^2. |
+| 1223 | 3 | `public static double nemsFloaterWell(double wdFt, double ddFt)` | A floater's well (pure): the cheaper of the semi-submersible's and the drillship's (eqs 3-5, 3-6; they cross near 571 m, so the curve is continuous and rises). |
+| 1228 | 3 | `public static double nemsPlatformOpex(int slots, double wdFt)` | A platform's operating cost a year, 2003 dollars (pure): NEMS eq 3-15 [W13] - 1,265,000 + 135,000 SLT + 0.0588 SLT WD^2. |
+| 1233 | 4 | `public static double platformCostFactor(double depthM, int slots)` | What a platform of `slots` slots costs in this sea against a jacket's price (pure): 1 at PLATFORM_MAX_DEPTH_M or less, else the floating production system's (eq 3-10) over the fixed platform's (eq 3-7) at PLATFORM_MAX... |
+| 1239 | 4 | `public static double wellCostFactor(double depthM)` | What a platform's well costs in this sea against a well at PLATFORM_MAX_DEPTH_M (pure): 1 at PLATFORM_MAX_DEPTH_M or less, else the floater's well (eqs 3-5, 3-6) over the jack-up's (eq 3-4) at PLATFORM_MAX_DEPTH_M, bo... |
+| 1245 | 4 | `public static double upkeepFactor(double depthM, int slots)` | What a platform of `slots` slots costs to run in this sea against the jacket's (pure): 1 at PLATFORM_MAX_DEPTH_M or less, else NEMS eq 3-15 at the depth over the same at PLATFORM_MAX_DEPTH_M. |
+| 1251 | 4 | `static double depthOf(List<LandManager.SeaField> fields, int cell, int index)` | A field's depth in the list, by its cell and index; 0 when the city owns none of it (or it is not a platform's sea field). |
+| 1263 | 20 | `public double depthOfNext(BuildingsTemplate t)` | The depth, in metres, the next unit of an order of this template would stand in (DW1): the jacket the depth of the field the next jacket stands on (freeField(), read against the jackets standing and on site as platfor... |
+| 1285 | 5 | `public double deepWaterFactor(BuildingsTemplate t)` | How many times a jacket's price (or a well at PLATFORM_MAX_DEPTH_M) the next unit of an order of this template costs (DW1): the jacket's platformCostFactor(), the platform well's wellCostFactor(), both at depthOfNext(... |
+| 1292 | 8 | `public int floatingPlatforms()` | The platforms standing on a floating field (isFloating()): those whose field is deeper than PLATFORM_MAX_DEPTH_M and the city still owns. |
+| 1306 | 16 | `public double deepWaterUpkeepNow()` | What the floating platforms standing cost a month over a jacket's running cost (DW1): for each standing platform on a floating field, (upkeepFactor(its field's depth, slotsEach()) - 1) times the jacket's running cost ... |
+| 1326 | 1 | `public double getDeepWaterBill()` |  |
+| 1334 | 7 | `public void payDeepWaterUpkeep()` | Pays the floating platforms' upkeep for the month (endOfMonth(), after payShuttle()): deepWaterUpkeepNow(), booked as a service bought from the world (Sector.bookImportedService(), DEEP_WATER_UPKEEP) - the supply boat... |
 
-### the pipelines (lines 1333-1433)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1336 | 4 | `public static int lengthKm(Deposit field, long x, long y)` | A field's pipe, in whole kilometres: the straight line from its centre to (x, y), rounded up - at least one. |
-| 1342 | 1 | `public int pipeKmStanding()` | The kilometres of pipe standing, finished. |
-| 1345 | 4 | `public int pipeKmCommitted()` | ...and standing and on site: what the records hold. |
-| 1357 | 41 | `public static List<Pipeline> pipelineView(List<Pipeline> kept, int km, Platform wanted, List<Platform> ps, int month)` | The pipelines read against `km` kilometres committed (pure): those past them taken from the newest record; kilometres past the records go to `wanted`'s field (this month's order), else to the first platform field in `... |
-| 1400 | 5 | `public List<Pipeline> pipelinesNow()` | The pipelines this month, read against the kilometres committed (pipelineView()). |
-| 1411 | 11 | `public static java.util.Set<Long> pipedFields(List<Pipeline> ls, int kmStanding, List<LandManager.SeaField> fields, long x, lon...` | The fields whose whole pipe stands (pure): the kilometres standing dealt to the records oldest first, each field's pipe whole when its kilometres reach its length (lengthKm()). |
-| 1424 | 9 | `public double pipedShare()` | The share of the platform wells in slots whose field's whole pipe stands: the share of the crude at sea the shuttle tankers do not carry. |
-
-### the shuttle tankers (lines 1434-1478)
+### the pipelines (lines 1342-1442)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1437 | 4 | `public double shuttleFreightPerTonne()` | What a tonne of crude costs to bring ashore by shuttle tanker this month: CRUDE's band freight, baseFreight x freightFactor x the rate (spec-oil 2.7). |
-| 1445 | 1 | `public double getShuttleTonnes()` |  |
-| 1446 | 1 | `public double getShuttleBill()` |  |
-| 1457 | 14 | `public void payShuttle()` | Pays the shuttle tankers for the month's crude brought ashore (endOfMonth(), after the crude's market cleared): the sea's share of what was sold at home - since 0.7.93 the offshore pool's part of the month's lift (get... |
-| 1473 | 5 | `public double homeShareLastMonth()` | Last month's share of the wells' crude sold at home, by its money at home and abroad (the statement's): 0 with none sold. |
+| 1345 | 4 | `public static int lengthKm(Deposit field, long x, long y)` | A field's pipe, in whole kilometres: the straight line from its centre to (x, y), rounded up - at least one. |
+| 1351 | 1 | `public int pipeKmStanding()` | The kilometres of pipe standing, finished. |
+| 1354 | 4 | `public int pipeKmCommitted()` | ...and standing and on site: what the records hold. |
+| 1366 | 41 | `public static List<Pipeline> pipelineView(List<Pipeline> kept, int km, Platform wanted, List<Platform> ps, int month)` | The pipelines read against `km` kilometres committed (pure): those past them taken from the newest record; kilometres past the records go to `wanted`'s field (this month's order), else to the first platform field in `... |
+| 1409 | 5 | `public List<Pipeline> pipelinesNow()` | The pipelines this month, read against the kilometres committed (pipelineView()). |
+| 1420 | 11 | `public static java.util.Set<Long> pipedFields(List<Pipeline> ls, int kmStanding, List<LandManager.SeaField> fields, long x, lon...` | The fields whose whole pipe stands (pure): the kilometres standing dealt to the records oldest first, each field's pipe whole when its kilometres reach its length (lengthKm()). |
+| 1433 | 9 | `public double pipedShare()` | The share of the platform wells in slots whose field's whole pipe stands: the share of the crude at sea the shuttle tankers do not carry. |
 
-### the pipeline rule (lines 1479-1556)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1487 | 6 | `public static boolean pipelinePays(double freightPerTonne, double standingPerMonth, double tonnesPerMonth, double monthsLeft, d...` | The pipeline rule (pure; spec-oil 2.11): (the freight a tonne the pipe saves less its repairs and property tax a tonne) x the tonnes a month it carries x min(the months the oil lasts, PIPE_LIFE_MONTHS) is at least PIP... |
-| 1504 | 2 | **type** `public record PipeCase(Deposit field, int km, double cost, double freight, double standing, double tonnes, ...` | A field's pipe weighed (spec-oil 2.11): its kilometres still to order, their cost, the freight a tonne it saves (the shuttle's at sea; none on land), its repairs and tax a month, the tonnes a month it would carry (the... |
-| 1508 | 29 | `public PipeCase pipeCase(LandManager.SeaField f, BusinessInvestment plans)` | ...for a field the city owns a platform on; null with no pipeline template, or the field's whole pipe ordered. |
-| 1539 | 17 | `public PipeCase bestPipe(BusinessInvestment plans)` | The field whose pipe pays best, by its life's saving over its cost; null for none. |
-
-### the planner's three kinds at sea (lines 1557-1733)
+### the shuttle tankers (lines 1443-1487)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1560 | 1 | **type** `public record JacketCase(LandManager.SeaField field, int wells, double earns, double cost)` | A platform's jacket weighed with its wells (spec-oil 2.7): its field, the wells it is judged with, the package's earnings a month and its cost. |
-| 1568 | 16 | `public JacketCase jacketCase(BusinessInvestment plans)` | ...on freeField(): min(slotsEach, its free sea sites) wells at a platform well's earnings, less the jacket's running (times upkeepFactor() at the field's depth, DW1) and standing costs; null with no field free or no t... |
-| 1586 | 8 | `private double shuttleOnOneMore(BuildingsTemplate well, BusinessInvestment plans)` | The platform crude's shuttle freight a month on one more well's crude sold at home: its nameplate at the plants' rate, as much of it as the house forecast leaves room for at home (BusinessInvestment.estimatedMakerProf... |
-| 1604 | 12 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more building of the wells' would clear a month (0.7.91): a platform well the house's maker estimate less the shuttle tankers on its crude sold at home; a jacket its share by cost of its package's (jacketCase... |
-| 1618 | 6 | `private PipeCase pipeCaseOf(Platform at, BusinessInvestment plans)` | The pipe case of the field a record names, or null when the city holds it no longer. |
-| 1626 | 50 | `private BusinessInvestment.Decision planAtSea(BusinessInvestment plans, Game game)` | The order at sea, or null when there is nothing at sea to weigh (THE OIL AT SEA, the planner). |
-| 1678 | 55 | `public List<Line> ownLines(Game game)` |  |
+| 1446 | 4 | `public double shuttleFreightPerTonne()` | What a tonne of crude costs to bring ashore by shuttle tanker this month: CRUDE's band freight, baseFreight x freightFactor x the rate (spec-oil 2.7). |
+| 1454 | 1 | `public double getShuttleTonnes()` |  |
+| 1455 | 1 | `public double getShuttleBill()` |  |
+| 1466 | 14 | `public void payShuttle()` | Pays the shuttle tankers for the month's crude brought ashore (endOfMonth(), after the crude's market cleared): the sea's share of what was sold at home - since 0.7.93 the offshore pool's part of the month's lift (get... |
+| 1482 | 5 | `public double homeShareLastMonth()` | Last month's share of the wells' crude sold at home, by its money at home and abroad (the statement's): 0 with none sold. |
+
+### the pipeline rule (lines 1488-1565)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1496 | 6 | `public static boolean pipelinePays(double freightPerTonne, double standingPerMonth, double tonnesPerMonth, double monthsLeft, d...` | The pipeline rule (pure; spec-oil 2.11): (the freight a tonne the pipe saves less its repairs and property tax a tonne) x the tonnes a month it carries x min(the months the oil lasts, PIPE_LIFE_MONTHS) is at least PIP... |
+| 1513 | 2 | **type** `public record PipeCase(Deposit field, int km, double cost, double freight, double standing, double tonnes, ...` | A field's pipe weighed (spec-oil 2.11): its kilometres still to order, their cost, the freight a tonne it saves (the shuttle's at sea; none on land), its repairs and tax a month, the tonnes a month it would carry (the... |
+| 1517 | 29 | `public PipeCase pipeCase(LandManager.SeaField f, BusinessInvestment plans)` | ...for a field the city owns a platform on; null with no pipeline template, or the field's whole pipe ordered. |
+| 1548 | 17 | `public PipeCase bestPipe(BusinessInvestment plans)` | The field whose pipe pays best, by its life's saving over its cost; null for none. |
+
+### the planner's three kinds at sea (lines 1566-1742)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1569 | 1 | **type** `public record JacketCase(LandManager.SeaField field, int wells, double earns, double cost)` | A platform's jacket weighed with its wells (spec-oil 2.7): its field, the wells it is judged with, the package's earnings a month and its cost. |
+| 1577 | 16 | `public JacketCase jacketCase(BusinessInvestment plans)` | ...on freeField(): min(slotsEach, its free sea sites) wells at a platform well's earnings, less the jacket's running (times upkeepFactor() at the field's depth, DW1) and standing costs; null with no field free or no t... |
+| 1595 | 8 | `private double shuttleOnOneMore(BuildingsTemplate well, BusinessInvestment plans)` | The platform crude's shuttle freight a month on one more well's crude sold at home: its nameplate at the plants' rate, as much of it as the house forecast leaves room for at home (BusinessInvestment.estimatedMakerProf... |
+| 1613 | 12 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more building of the wells' would clear a month (0.7.91): a platform well the house's maker estimate less the shuttle tankers on its crude sold at home; a jacket its share by cost of its package's (jacketCase... |
+| 1627 | 6 | `private PipeCase pipeCaseOf(Platform at, BusinessInvestment plans)` | The pipe case of the field a record names, or null when the city holds it no longer. |
+| 1635 | 50 | `private BusinessInvestment.Decision planAtSea(BusinessInvestment plans, Game game)` | The order at sea, or null when there is nothing at sea to weigh (THE OIL AT SEA, the planner). |
+| 1687 | 55 | `public List<Line> ownLines(Game game)` |  |
 
