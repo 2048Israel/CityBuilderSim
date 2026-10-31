@@ -26,9 +26,9 @@ and the equipment.
 - **The tech stays today's** (his words): today's buildings, recipes and
   equipment, until R0-R5 bring 1900's.
 
-## The call: the price level (★, his to confirm)
+## The call: the price level (settled)
 
-Recommended: **today's real economy, priced at 1900's level.** Every nominal
+Jerus, 2026-10-30, on the recommendation: "1900 price level". So: **today's real economy, priced at 1900's level.** Every nominal
 anchor (the world's prices, the founding wages, the building costs, the
 opening money) is scaled by one factor, the price index's 1900/2025 ratio
 (roughly 1/30 to 1/40 for the US$; the study names the source and the
@@ -38,8 +38,6 @@ figure).
   to 40 times today's (the currency reform trims the digits, not the story).
 - The real side (a quarter of today's real wages, a tenth of the income per
   head) is R0's, because that is what the research changes.
-- The other ways: today's prices as they are (the calendar alone, the
-  simplest), or 1900's real prices now (R0's research pulled forward).
 
 ## Checks
 
