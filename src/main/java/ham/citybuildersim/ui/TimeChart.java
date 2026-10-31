@@ -184,17 +184,26 @@ final class TimeChart extends VBox {
 
     /* ------------------------------ its nodes ------------------------------ */
 
-    private final Canvas plot = new Canvas();
+    /** Not private: KeptBench fires the pointer's moves on it (KeptCheck's crosshair). */
+    final Canvas plot = new Canvas();
     private final Canvas strip = new Canvas();
     private final Pane over = new Pane();
     private final VBox card = new VBox(2);
-    private final FlowPane legend = new FlowPane(6, 6);
-    private final HBox ranges = new HBox(2);
+    /** Not private: KeptBench puts the kept chips back after a page is built new. */
+    final FlowPane legend = new FlowPane(6, 6);
+    final HBox ranges = new HBox(2);
     private final HBox lead = new HBox(10);
     private final Label fullButton = new Label();
     private final Label spanSays = new Label();
     private final Label hint = new Label();
     private final HBox toolbar;
+    /**
+     * The legend's chips and the range buttons, kept from one setData() to the next (study UP4, KP1):
+     * a chip under the pointer is not made again every month, so it keeps its hover and its tooltip.
+     * The chart's own pool, not the page's: the chart outlives the page's draws. Not final: KeptBench swaps it
+     * for an empty one to build a page new.
+     */
+    Kept.Pool chipPool = new Kept.Pool();
 
     /* ------------------------------ geometry ------------------------------ */
 
@@ -353,10 +362,10 @@ final class TimeChart extends VBox {
         // A pinned card on something that is no longer drawn goes with it.
         if (pinned instanceof YearBook.Band b && !this.bands.contains(b)) pinned = sameBand(b);
         if (pinned instanceof YearBook.Episode ep && !this.episodes.contains(ep)) pinned = null;
-        if (main) {
+        if (main) Kept.draw(chipPool, () -> {
             buildLegend();
             buildRanges();
-        }
+        });
         layoutCanvases();
     }
 
@@ -413,6 +422,9 @@ final class TimeChart extends VBox {
 
     /** The plot's height as the chart was last given it (setSize), for the harness that checks a fit. */
     double plotHeight() { return plotH; }
+
+    /** Whether the pointer's crosshair is on the plot (what KeptCheck reads after a month is redrawn over the chart). */
+    boolean hovering() { return !Double.isNaN(hoverX); }
 
     /** How many rows the laid-out legend holds: the distinct layoutY of its visible chips (0 with none). */
     int legendRows() {
@@ -482,40 +494,51 @@ final class TimeChart extends VBox {
        THE LEGEND AND THE RANGES
        ===================================================================== */
 
+    /**
+     * The legend, a chip a line (KP1: kept). Each chip is a scope keyed by its line, so a line picked
+     * or unpicked does not slide the others onto its neighbours' nodes; a draw of the chart's own pool.
+     */
     private void buildLegend() {
-        legend.getChildren().clear();
+        List<javafx.scene.Node> chips = new ArrayList<>();
         for (Line l : lines) {
-            boolean on = !hidden.contains(l.key());
-            Region bar = new Region();
-            bar.setMinSize(12, 3);
-            bar.setPrefSize(12, 3);
-            bar.setMaxSize(12, 3);
-            bar.setStyle("-fx-background-color: " + (on ? l.colour() : Palette.TEXT_SPENT) + "; -fx-background-radius: 2;");
-            Label chip = new Label(l.label() + (l.unitWords() == null || l.unitWords().isEmpty() ? "" : "  " + l.unitWords()));
-            chip.setGraphic(bar);
-            chip.setGraphicTextGap(6);
-            chip.setStyle(Palette.words(Palette.SIZE_LABEL, on ? Palette.TEXT : Palette.TEXT_SPENT)
-                    + " -fx-padding: 3 9 3 8; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 1;"
-                    + " -fx-border-color: " + (on ? l.colour() : Palette.EDGE) + "; -fx-cursor: hand;");
-            HistoryScreen.tip(chip, (on ? "Hides" : "Shows") + " this line; the axes fit what is shown.");
-            chip.setOnMouseClicked(guarded(e -> {
-                if (!hidden.remove(l.key())) hidden.add(l.key());
-                buildLegend();
-                draw();
+            chips.add(Kept.scope(l.key(), () -> {
+                boolean on = !hidden.contains(l.key());
+                Region bar = Kept.region();
+                bar.setMinSize(12, 3);
+                bar.setPrefSize(12, 3);
+                bar.setMaxSize(12, 3);
+                bar.setStyle("-fx-background-color: " + (on ? l.colour() : Palette.TEXT_SPENT) + "; -fx-background-radius: 2;");
+                Label chip = Kept.label(l.label() + (l.unitWords() == null || l.unitWords().isEmpty() ? "" : "  " + l.unitWords()), bar);
+                chip.setGraphicTextGap(6);
+                chip.setStyle(Palette.words(Palette.SIZE_LABEL, on ? Palette.TEXT : Palette.TEXT_SPENT)
+                        + " -fx-padding: 3 9 3 8; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 1;"
+                        + " -fx-border-color: " + (on ? l.colour() : Palette.EDGE) + "; -fx-cursor: hand;");
+                HistoryScreen.tip(chip, (on ? "Hides" : "Shows") + " this line; the axes fit what is shown.");
+                chip.setOnMouseClicked(guarded(e -> {
+                    if (!hidden.remove(l.key())) hidden.add(l.key());
+                    // Both, as setData() draws them: a draw lets go of what it does not ask for, the range buttons too.
+                    Kept.draw(chipPool, () -> {
+                        buildLegend();
+                        buildRanges();
+                    });
+                    draw();
+                }));
+                return chip;
             }));
-            legend.getChildren().add(chip);
         }
+        Kept.set(legend.getChildren(), chips);
     }
 
     private void buildRanges() {
-        ranges.getChildren().clear();
+        List<javafx.scene.Node> buttons = new ArrayList<>();
         for (int i = 0; i < ChartModel.RANGE_NAMES.length; i++) {
             int months = i < ChartModel.RANGES.length ? ChartModel.RANGES[i] : ChartModel.ALL;
-            Label r = new Label(ChartModel.RANGE_NAMES[i]);
+            Label r = Kept.label(ChartModel.RANGE_NAMES[i]);
             r.setUserData(months);
             r.setOnMouseClicked(guarded(e -> { window.showRange(months); moved(true); }));
-            ranges.getChildren().add(r);
+            buttons.add(r);
         }
+        Kept.set(ranges.getChildren(), buttons);
         paintRanges();
     }
 
