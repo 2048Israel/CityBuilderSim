@@ -160,3 +160,22 @@ its old history and the game said "Saved". Mended, by Opus (no slice: each piece
   waited; then `--pick` exit 3 (19 harnesses; GameFiles, 127 readers, left to the gate's suite, LongPlaytest picked in
   its place). Merged with main (CD7, 0.8.83; the conflicts only in the generated docs, main's taken and regenerated):
   `--pick` exit 3, 20 harnesses, nothing red but ScaleCheck, main's recorded red; one timing figure SOFT (MapCheck).
+
+## 10. Sent back on KeptCheck's timing, and not reproduced (2026-10-31)
+
+The gate judged two KeptCheck figures the batch's in three paired rounds: the kept month 13.0 ms against main's 6.53
+(`KEPT_MONTH_MS` 12), the whole kept chrome 10.1 against 7.73 (`KEPT_ALL_CHROME_MS` 8). Measured again here as the gate
+does it, `./batch-check.sh --timing KeptCheck` in a worktree of main and in the branch by turns, the first side
+alternating, eight rounds (four a side; XR4 and DW1 working beside it):
+
+| median of four | main | LB3 |
+|---|---|---|
+| the kept month | 7.1 ms (5.8 to 9.5) | 5.5 ms (5.2 to 7.2) |
+| the whole kept chrome | 6.05 ms (4.8 to 7.1) | 4.8 ms (4.5 to 5.5) |
+
+LB3 is within 15% of main's on both, and under it. The code agrees: the People page and the chrome call nothing LB3
+changed; the slots are read, `at()` worked out and `rankOverYears` drawn only inside `showRankingsMenu()`, which runs
+only while the Rankings tab is the screen; the model's one monthly addition is `usPrices`, one `add` in
+`recordMonth`. So nothing was made lazier: there is no monthly work outside the tab to move. The gate's figures were
+taken while the PC ran other batches; if its paired rounds go red again on these two lines, a third pairing on a
+quiet PC is the test, and the budget and the harness's premise stay as they are.
