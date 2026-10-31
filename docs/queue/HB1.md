@@ -52,3 +52,6 @@ So HB1 is narrowed and widened by one point each:
   This narrows "side by side" above.
 - **Ships berth alongside the quay**, not near it.
 The quay's stock, the port rail and the crane are HB2's, after this batch.
+If HB1 draws anything new (the harbour's joined quay, a ship at its berth),
+it draws it from the detail level HB2's brief names (the zoom where the scale
+bar reads 500 m, Jerus 2026-10-31), and below that as the map draws now.
