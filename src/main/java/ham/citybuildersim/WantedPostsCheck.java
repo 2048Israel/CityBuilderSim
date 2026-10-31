@@ -18,7 +18,8 @@ import java.nio.file.Path;
  *   2. ONLY THE BANDS IT IS SHORT IN ask for posts, and a building that would not carry its interest asks for none.
  *   3. THE MARKET PRICES IT: the band's multiple is struck on the posts that exist plus the refused ones, and the wage
  *      walks ADJUST_RATE of the way, while the gate's own test still reads only the posts that exist.
- *   4. NEVER MORE THAN THE BAND HAS WORKERS: the refused posts cannot double a band's wage.
+ *   4. NEVER MORE THAN THE BAND'S OWN POSTS AGAIN: the refused posts lift a band's multiple at most sqrt(2) times,
+ *      never twice, and a band with few posts - a village's - bids little.
  *   5. ONLY AS FAR AS THE BUSINESS CAN PAY: the best-paying building that wants the posts is how far they count.
  *   6. THE BUILDERS' LAID-OFF CREWS ARE NOT A SHORTAGE: a hold the gate would not have put on but for them asks nothing.
  *   7. IT DECAYS: no hold, no latent posts, and the wage walks back.
@@ -354,34 +355,47 @@ public class WantedPostsCheck {
         assertTrue("the posts that exist are not moved by pricing the refused ones", postsUnmoved);
         close("the gate's own test still reads only the posts that exist: the same share as before", man3.staffing(mw3).share, gateShare, 0);
 
-        /* ============ 4. never more than the band has workers ============ */
-        out.println("\n--- never more than the band has workers ---");
+        /* ============ 4. never more than the band's own posts again ============ */
+        out.println("\n--- never more than the band's own posts again ---");
 
         double supply = 1_000;
-        boolean cappedEverywhere = true, underTwiceEverywhere = true;
+        boolean cappedEverywhere = true, underRootTwoEverywhere = true;
+        double rootCap = Math.sqrt(1 + WantedPosts.MOST_OF_POSTS);
         double floorTightness = LabourMarket.tightnessAt(LabourMarket.MIN_MULTIPLE);
-        double[] tightnesses = { 0, floorTightness / 2, floorTightness, 1, 2, LabourMarket.tightnessAt(LabourMarket.MAX_MULTIPLE) / 2 };
+        double[] tightnesses = { floorTightness / 2, floorTightness, 1, 2, LabourMarket.tightnessAt(LabourMarket.MAX_MULTIPLE) / 2 };
         for (double tightness : tightnesses) {
             WantedPosts wp = new WantedPosts();
             wp.beginMonth();
             wp.ask(new WantedPosts.Ask("s", "b", new double[] { 50 * supply, 50 * supply, 50 * supply, 50 * supply }, Double.POSITIVE_INFINITY));
             double[] posts = { tightness * supply, tightness * supply, tightness * supply, tightness * supply };
             wp.settle(posts, new double[] { supply, supply, supply, supply }, new double[] { 1, 1, 1, 1 });
-            cappedEverywhere &= wp.getLatent(WageBand.COLLEGE) == WantedPosts.MOST_OF_SUPPLY * supply;
+            cappedEverywhere &= wp.getLatent(WageBand.COLLEGE) == WantedPosts.MOST_OF_POSTS * posts[COLLEGE];
             double without_ = LabourMarket.multipleAt(posts[COLLEGE] / supply);
             double with_ = LabourMarket.multipleAt((posts[COLLEGE] + wp.getLatent(WageBand.COLLEGE)) / supply);
-            underTwiceEverywhere &= with_ < 2 * without_;
-            out.printf("   posts at %.2f of the band's workers: multiple %.3f, %.3f with asks far past its workers (x%.2f)%n",
+            underRootTwoEverywhere &= with_ <= rootCap * without_ * (1 + 1e-12);
+            out.printf("   posts at %.2f of the band's workers: multiple %.3f, %.3f with asks far past its posts (x%.3f)%n",
                     tightness, without_, with_, with_ / without_);
         }
-        assertTrue("asks far larger than the band count as MOST_OF_SUPPLY of its workers, whatever its tightness", cappedEverywhere);
-        assertTrue("...so the band's multiple with them is under twice its multiple without, from the floor's tightness up", underTwiceEverywhere);
-        WantedPosts tiny = new WantedPosts();
-        tiny.beginMonth();
-        tiny.ask(new WantedPosts.Ask("s", "b", new double[] { 5, 5, 5, 5 }, Double.POSITIVE_INFINITY));
-        tiny.settle(new double[] { 0, 0, 0, 0 }, new double[] { 0, 0, 0, 0 }, new double[] { 1, 1, 1, 1 });
-        assertTrue("a band with no workers is counted as having one, as the market counts it: no more than that",
-                tiny.getLatent(WageBand.NONE) == WantedPosts.MOST_OF_SUPPLY * 1);
+        assertTrue("asks far larger than the band count as MOST_OF_POSTS of the posts it has, whatever its tightness", cappedEverywhere);
+        assertTrue(String.format("...so the band's multiple with them is at most sqrt(1 + MOST_OF_POSTS) = %.3f times its multiple without:"
+                + " never twice", rootCap), underRootTwoEverywhere && rootCap < 2);
+        WantedPosts none = new WantedPosts();
+        none.beginMonth();
+        none.ask(new WantedPosts.Ask("s", "b", new double[] { 5, 5, 5, 5 }, Double.POSITIVE_INFINITY));
+        none.settle(new double[] { 0, 0, 0, 0 }, new double[] { 70, 70, 70, 70 }, new double[] { 1, 1, 1, 1 });
+        assertTrue("a band with no posts that exist bids nothing for refused ones", none.getTotal() == 0 && !none.any());
+        // A village: seventy workers in a band holding twenty posts, and a plant of three hundred refused there (the gate's
+        // reason for being, Sector.MIN_STAFFABLE_TO_ORDER). With the plant's posts priced in full the band would read
+        // past full; held to its own posts it reads under, and the wage barely moves.
+        double villageWorkers = 70, villagePosts = 20, plant = 300;
+        WantedPosts village = new WantedPosts();
+        village.beginMonth();
+        village.ask(new WantedPosts.Ask("s", "b", new double[] { plant, 0, 0, 0 }, Double.POSITIVE_INFINITY));
+        village.settle(new double[] { villagePosts, 0, 0, 0 }, new double[] { villageWorkers, 1, 1, 1 }, new double[] { 1, 1, 1, 1 });
+        close("a village's refused plant counts for no more posts than the band has", village.getLatent(WageBand.NONE),
+                WantedPosts.MOST_OF_POSTS * villagePosts, 0);
+        assertTrue("...so the band it bids on still reads under full, where the plant's posts in full would read far past it",
+                (villagePosts + village.getLatent(WageBand.NONE)) / villageWorkers < 1 && (villagePosts + plant) / villageWorkers > 1);
 
         /* ============ 5. only as far as the business can pay ============ */
         out.println("\n--- only as far as the business can pay ---");
@@ -399,8 +413,8 @@ public class WantedPostsCheck {
         double expectedRoom = LabourMarket.tightnessAt(premium5 * smallFactor) * supply - supply;
         close("an ask that could pay little stops where the tightness at its wage puts it",
                 few.getLatent(WageBand.COLLEGE), expectedRoom, 1e-12);
-        assertTrue("...short of what it asked for and of the band's workers",
-                few.getLatent(WageBand.COLLEGE) < 800 && few.getLatent(WageBand.COLLEGE) < WantedPosts.MOST_OF_SUPPLY * supply);
+        assertTrue("...short of what it asked for and of the band's posts",
+                few.getLatent(WageBand.COLLEGE) < 800 && few.getLatent(WageBand.COLLEGE) < WantedPosts.MOST_OF_POSTS * existingPosts[COLLEGE]);
         WantedPosts more = new WantedPosts();
         more.beginMonth();
         more.ask(new WantedPosts.Ask("s", "b", heldPosts, smallFactor + .10));
@@ -629,7 +643,7 @@ public class WantedPostsCheck {
             counted &= w.getHolds() == w.getCrewsHolds() + w.getUnpaidHolds() + w.getAsked();
             latentFromAsks &= !w.any() || w.getAsked() > 0;
             // The month's real asks, settled resettled against the state the month ends in (the live latent was settled a
-            // moment earlier, against a population that has since moved a little): never past the band's workers.
+            // moment earlier, against a population that has since moved a little): never past the band's own posts again.
             WantedPosts resettled = new WantedPosts();
             resettled.beginMonth();
             for (WantedPosts.Ask a : w.asks()) resettled.ask(a);
@@ -638,7 +652,7 @@ public class WantedPostsCheck {
             for (WageBand band : WageBand.values()) premiums[band.ordinal()] = played.getLabourMarket().bandPremium(band);
             resettled.settle(people.staffablePostsByBand(), people.supplyByBand(), premiums);
             for (int b = 0; b < premiums.length; b++) {
-                withinWorkers &= resettled.latent()[b] <= WantedPosts.MOST_OF_SUPPLY * Math.max(people.supplyByBand()[b], 1);
+                withinWorkers &= resettled.latent()[b] <= WantedPosts.MOST_OF_POSTS * Math.max(people.staffablePostsByBand()[b], 0);
             }
         }
         out.printf("   %d months: %,d staffing holds noted - %,d asked for their posts, %,d for the builders' crews, %,d unpaid%n",
@@ -646,11 +660,11 @@ public class WantedPostsCheck {
         assertTrue("the planners' holds are noted as the months play, and some ask", holds > 0 && asked > 0);
         assertTrue("...each sorted one way: the month's holds are its crews', its unpaid and its asks", counted);
         assertTrue("...a band is priced on refused posts only in a month that had an ask", latentFromAsks);
-        assertTrue("...and the month's real asks never settle to more refused posts than the band has workers", withinWorkers);
+        assertTrue("...and the month's real asks never settle to more refused posts than the band has posts", withinWorkers);
 
         out.println();
         if (fails == 0) {
-            out.println("The posts the gate refused are priced into their band's wage, as far as the business can pay and never past the band's workers.");
+            out.println("The posts the gate refused are priced into their band's wage, as far as the business can pay and never past the band's own posts again.");
         } else {
             out.println(fails + " check(s) failed.");
             System.exit(1);

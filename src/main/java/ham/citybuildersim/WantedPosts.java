@@ -34,12 +34,16 @@ import java.util.List;
 public final class WantedPosts {
 
     /**
-     * The most of a band's own workers its refused posts may count as. The multiple goes as the root of the
-     * tightness (LabourMarket.ELASTICITY, .5), so posts as many as the band has workers add at most one to its
-     * tightness; from the floor's tightness (MIN_MULTIPLE .7, tightness .49) that is a multiple at most
-     * sqrt(1.49 / .49) = 1.74 times as high: the refused posts can never double a band's wage.
+     * The most a band's refused posts may count as, as a share of the posts it has that exist. At one, the posts the
+     * wage is priced on are at most doubled; the multiple goes as the root of the tightness (LabourMarket.ELASTICITY,
+     * .5), so the refused posts lift a band's multiple at most sqrt(2) = 1.41 times what its own posts set: one
+     * business's wish never doubles a wage. And on the band's posts rather than its workers, because the gate holds a
+     * plant out of a village on purpose (Sector.MIN_STAFFABLE_TO_ORDER: "it puts the first one in a city of three or
+     * four thousand rather than a village"): a village has few posts, so it bids little for a plant no wage could
+     * staff there. Measured (LD1's notes 4): capped at the band's workers instead, the founding village's unskilled
+     * wage was bid to 1.87x by month 10 against main's 0.92x, and the median young city was 15% smaller at m300.
      */
-    public static final double MOST_OF_SUPPLY = 1.0;
+    public static final double MOST_OF_POSTS = 1.0;
 
     /**
      * One refused building's ask: its sector and building, the posts it lacks workers for per band (only in the bands
@@ -110,7 +114,7 @@ public final class WantedPosts {
      * Turns the month's asks into the posts per band the wage is priced on, replacing last month's. For each band the
      * asked posts are summed, then held to the most the best-paying building that wants them could still pay (the
      * tightness at today's premium times its payFactor, less the posts that exist: Jerus's "and the business can"),
-     * and never more than MOST_OF_SUPPLY of the band's own workers.
+     * and never more than MOST_OF_POSTS of the posts the band has.
      *
      * @param posts   the band's posts that exist (PopulationManager.staffablePostsByBand())
      * @param supply  the band's workers (PopulationManager.supplyByBand())
@@ -130,7 +134,7 @@ public final class WantedPosts {
                 if (Double.isNaN(reach)) reach = 0;
                 room = Math.max(room, LabourMarket.tightnessAt(Math.min(LabourMarket.MAX_MULTIPLE, reach)) * workers - now);
             }
-            if (asked > 0) latent[b] = Math.max(0, Math.min(asked, Math.min(MOST_OF_SUPPLY * workers, room)));
+            if (asked > 0) latent[b] = Math.max(0, Math.min(asked, Math.min(MOST_OF_POSTS * Math.max(now, 0), room)));
         }
     }
 

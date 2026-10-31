@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**164 harness files, 17,999 labelled assertions.** AllChecks runs 164 of them.
+**164 harness files, 18,000 labelled assertions.** AllChecks runs 164 of them.
 
 ## Which harnesses read which class
 
@@ -21719,7 +21719,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L735 fixture: the vault held seven moneys through the month, and they moved against each other
   - L736 the month's revaluation in local money is the dollars at the rate's move plus the cross move at the last rate
 
-## WantedPostsCheck.java - 92 labelled assertions
+## WantedPostsCheck.java - 93 labelled assertions
 
 > The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). Not part of the game.
 > 
@@ -21735,108 +21735,109 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   3. THE MARKET PRICES IT: the band's multiple is struck on the posts that exist plus the refused ones, and the wage
 > ...
 
-- **L206 1. the gate's hold carries its building**
-  - L215 fixture: the gate refuses it, under MIN_STAFFABLE_TO_ORDER, with no band nobody can fill
-  - L223 fixture: it is short in the college and university bands and in no other
-  - L224 the hold names the sector that asked
-  - L225 ...the building
-  - L226 ...and how many of it
-  - L229 ...its posts are the building's, band by band
-  - L237 ...and its spare workers are each band's supply less its posts
-  - L239 ...handed out as copies: changing one does not change the hold
-  - L240 an order of three is asked of as three buildings' posts
-  - L245 with one more spare graduate than that the same building passes: the fixture stands just under the gate's dial
-  - L251 with the building's college and university posts spare it passes the gate
-  - L253 ...and a planner that is not held carries no hold
-  - L266 fixture: with unskilled hands alone the gate refuses every works the sector has
-  - L269 the planner holds, building nothing
-  - L270 ...with the hold on the Decision, for the works the city could staff most of
-  - L273 ...and its reason is the hold's own words, as before
-  - L275 a decision that is not a staffing hold carries none: refused
-  - L277 ...refused for ground
-  - L278 ...an order
-  - L279 unstaffed() is a hold: nothing built, no ground blamed, the hold carried
-- **L284 2. only the bands it is short in**
-  - L288 a building that carries its interest asks
-  - L295 ...for the posts it has in the bands it is short in, and none in the others
-  - L296 ...able to pay up to its margin over the bill of the posts it lacks, on top of today's wage
-  - L298 ...naming the sector and the building
-  - L299 one that would not carry its interest at today's wage (margin zero) asks nothing
-  - L301 ...nor one under it
-  - L302 short bills nothing to raise (the posts it lacks cost nothing), the wage is no limit
-  - L305 a band overdrawn by posts that exist (negative spare) counts as short, one with exactly enough does not
-- **L308 3. the market prices it**
-  - L317 fixture: the Machine Works carries its interest at prime, so it asks
-  - L318 the hold was counted as an ask, not a crews' hold or an unpaid one
-  - L323 the refused posts are in the two bands it is short in and no other
-  - L325 ...no more than it asked for
-  - L332 the college band's multiple is the market's own on the posts that exist plus the refused ones
-  - L334 ...which is the curve's at the tightness it was struck on
-  - L336 ...above what the same month gives with none
-  - L338 ...and the university band's too
-  - L339 the wage moved ADJUST_RATE of the way toward the new target
-  - L341 ...up from where it stood
-  - L344 ...every
-  - L347 the unskilled and diploma bands are priced as they were
-  - L354 the posts that exist are not moved by pricing the refused ones
-  - L355 the gate's own test still reads only the posts that exist: the same share as before
-- **L357 4. never more than the band has workers**
-  - L377 asks far larger than the band count as MOST_OF_SUPPLY of its workers, whatever its tightness
-  - L378 ...so the band's multiple with them is under twice its multiple without, from the floor's tightness up
-  - L383 a band with no workers is counted as having one, as the market counts it: no more than that
-- **L386 5. only as far as the business can pay**
-  - L400 an ask that could pay little stops where the tightness at its wage puts it
-  - L402 ...short of what it asked for and of the band's workers
-  - L408 one that could pay more counts for more
-  - L415 two asks together count as far as the best-paying of them could pay (200 asked)
-  - L421 ...and one that could pay anything counts for all it asked (100)
-  - L426 a band already priced past what the business could pay has no room: the ask counts for nothing
-  - L439 fixture: the posts the Machine Works lacks hands for have a bill
-  - L443 fixture: at that prime the margin is a twentieth of the bill it lacks
-  - L447 a hold that pays a little asks, with a pay factor just over one
-  - L456 the college band counts the refused posts only as far as that wage lets the tightness go
-  - L458 ...which is less than the building lacks
-  - L462 fixture: at a dearer prime the Machine Works no longer carries its interest
-  - L465 a hold that would not carry its interest is counted unpaid and asks nothing
-  - L468 ...so no band is priced on posts that were refused
-- **L470 6. the builders' laid-off crews are not a shortage**
-  - L484 fixture: with every post offered nothing is withheld and the Machine Works passes
-  - L499 with the builders' crews counted spoken for, the gate refuses the Machine Works
-  - L500 with the crews counted spare the same building passes: it was the crews
-  - L501 ...and the crews-spare test is the one with none of the withheld posts in it: the share the city had before
-  - L504 (and with the crews called back, the plain test says the same)
-  - L507 it is asked of for any number of the building
-  - L511 a hold the crews alone caused is counted so
-  - L512 ...and asks nothing: no ask, no unpaid hold
-  - L514 ...so no band is priced on it
-  - L519 fixture: with the crews back and no graduate it is the hands that are short
-  - L523 a hold the crews did not cause is no crews' hold: it asks
-- **L525 7. it decays**
-  - L533 fixture: the wage is up on the refused posts
-  - L539 with no hold the month after, the latent posts are zero
-  - L541 ...the target falls back to the market's on the posts that exist
-  - L543 ...and the wage walks back ADJUST_RATE of the gap
-  - L545 ...down from where the refused posts took it
-  - L556 the same hold two months running prices the same posts, not twice the posts
-- **L558 8. it brings the band's migrants**
-  - L567 fixture: without the refused posts the college band pays the going rate or under it
-  - L568 with them it pays over it
-  - L569 without the refused posts the college wage draws no migrant
-  - L570 with them it does
-  - L571 ...and Migration reads the premium, not the posts: the band's migrants are the wage's
-- **L573 9. the save**
-  - L581 fixture: the city has latent posts to save
-  - L591 the save was written and read back
-  - L596 the latent posts come back from the save to the bit
-  - L606 ...and both cities price the next month alike, to the bit
-  - L607 ...which is a month priced on the refused posts: the wage is up on both
-  - L611 a save with no wanted posts (an older one) reads as none
-  - L613 ...and one of a wrong length too
-- **L615 10. the month's planning notes its holds**
-  - L646 the planners' holds are noted as the months play, and some ask
-  - L647 ...each sorted one way: the month's holds are its crews', its unpaid and its asks
-  - L648 ...a band is priced on refused posts only in a month that had an ask
-  - L649 ...and the month's real asks never settle to more refused posts than the band has workers
+- **L207 1. the gate's hold carries its building**
+  - L216 fixture: the gate refuses it, under MIN_STAFFABLE_TO_ORDER, with no band nobody can fill
+  - L224 fixture: it is short in the college and university bands and in no other
+  - L225 the hold names the sector that asked
+  - L226 ...the building
+  - L227 ...and how many of it
+  - L230 ...its posts are the building's, band by band
+  - L238 ...and its spare workers are each band's supply less its posts
+  - L240 ...handed out as copies: changing one does not change the hold
+  - L241 an order of three is asked of as three buildings' posts
+  - L246 with one more spare graduate than that the same building passes: the fixture stands just under the gate's dial
+  - L252 with the building's college and university posts spare it passes the gate
+  - L254 ...and a planner that is not held carries no hold
+  - L267 fixture: with unskilled hands alone the gate refuses every works the sector has
+  - L270 the planner holds, building nothing
+  - L271 ...with the hold on the Decision, for the works the city could staff most of
+  - L274 ...and its reason is the hold's own words, as before
+  - L276 a decision that is not a staffing hold carries none: refused
+  - L278 ...refused for ground
+  - L279 ...an order
+  - L280 unstaffed() is a hold: nothing built, no ground blamed, the hold carried
+- **L285 2. only the bands it is short in**
+  - L289 a building that carries its interest asks
+  - L296 ...for the posts it has in the bands it is short in, and none in the others
+  - L297 ...able to pay up to its margin over the bill of the posts it lacks, on top of today's wage
+  - L299 ...naming the sector and the building
+  - L300 one that would not carry its interest at today's wage (margin zero) asks nothing
+  - L302 ...nor one under it
+  - L303 short bills nothing to raise (the posts it lacks cost nothing), the wage is no limit
+  - L306 a band overdrawn by posts that exist (negative spare) counts as short, one with exactly enough does not
+- **L309 3. the market prices it**
+  - L318 fixture: the Machine Works carries its interest at prime, so it asks
+  - L319 the hold was counted as an ask, not a crews' hold or an unpaid one
+  - L324 the refused posts are in the two bands it is short in and no other
+  - L326 ...no more than it asked for
+  - L333 the college band's multiple is the market's own on the posts that exist plus the refused ones
+  - L335 ...which is the curve's at the tightness it was struck on
+  - L337 ...above what the same month gives with none
+  - L339 ...and the university band's too
+  - L340 the wage moved ADJUST_RATE of the way toward the new target
+  - L342 ...up from where it stood
+  - L345 ...every
+  - L348 the unskilled and diploma bands are priced as they were
+  - L355 the posts that exist are not moved by pricing the refused ones
+  - L356 the gate's own test still reads only the posts that exist: the same share as before
+- **L358 4. never more than the band's own posts again**
+  - L379 asks far larger than the band count as MOST_OF_POSTS of the posts it has, whatever its tightness
+  - L386 a band with no posts that exist bids nothing for refused ones
+  - L395 a village's refused plant counts for no more posts than the band has
+  - L397 ...so the band it bids on still reads under full, where the plant's posts in full would read far past it
+- **L400 5. only as far as the business can pay**
+  - L414 an ask that could pay little stops where the tightness at its wage puts it
+  - L416 ...short of what it asked for and of the band's posts
+  - L422 one that could pay more counts for more
+  - L429 two asks together count as far as the best-paying of them could pay (200 asked)
+  - L435 ...and one that could pay anything counts for all it asked (100)
+  - L440 a band already priced past what the business could pay has no room: the ask counts for nothing
+  - L453 fixture: the posts the Machine Works lacks hands for have a bill
+  - L457 fixture: at that prime the margin is a twentieth of the bill it lacks
+  - L461 a hold that pays a little asks, with a pay factor just over one
+  - L470 the college band counts the refused posts only as far as that wage lets the tightness go
+  - L472 ...which is less than the building lacks
+  - L476 fixture: at a dearer prime the Machine Works no longer carries its interest
+  - L479 a hold that would not carry its interest is counted unpaid and asks nothing
+  - L482 ...so no band is priced on posts that were refused
+- **L484 6. the builders' laid-off crews are not a shortage**
+  - L498 fixture: with every post offered nothing is withheld and the Machine Works passes
+  - L513 with the builders' crews counted spoken for, the gate refuses the Machine Works
+  - L514 with the crews counted spare the same building passes: it was the crews
+  - L515 ...and the crews-spare test is the one with none of the withheld posts in it: the share the city had before
+  - L518 (and with the crews called back, the plain test says the same)
+  - L521 it is asked of for any number of the building
+  - L525 a hold the crews alone caused is counted so
+  - L526 ...and asks nothing: no ask, no unpaid hold
+  - L528 ...so no band is priced on it
+  - L533 fixture: with the crews back and no graduate it is the hands that are short
+  - L537 a hold the crews did not cause is no crews' hold: it asks
+- **L539 7. it decays**
+  - L547 fixture: the wage is up on the refused posts
+  - L553 with no hold the month after, the latent posts are zero
+  - L555 ...the target falls back to the market's on the posts that exist
+  - L557 ...and the wage walks back ADJUST_RATE of the gap
+  - L559 ...down from where the refused posts took it
+  - L570 the same hold two months running prices the same posts, not twice the posts
+- **L572 8. it brings the band's migrants**
+  - L581 fixture: without the refused posts the college band pays the going rate or under it
+  - L582 with them it pays over it
+  - L583 without the refused posts the college wage draws no migrant
+  - L584 with them it does
+  - L585 ...and Migration reads the premium, not the posts: the band's migrants are the wage's
+- **L587 9. the save**
+  - L595 fixture: the city has latent posts to save
+  - L605 the save was written and read back
+  - L610 the latent posts come back from the save to the bit
+  - L620 ...and both cities price the next month alike, to the bit
+  - L621 ...which is a month priced on the refused posts: the wage is up on both
+  - L625 a save with no wanted posts (an older one) reads as none
+  - L627 ...and one of a wrong length too
+- **L629 10. the month's planning notes its holds**
+  - L660 the planners' holds are noted as the months play, and some ask
+  - L661 ...each sorted one way: the month's holds are its crews', its unpaid and its asks
+  - L662 ...a band is priced on refused posts only in a month that had an ask
+  - L663 ...and the month's real asks never settle to more refused posts than the band has posts
 
 ## WaterCheck.java - 107 labelled assertions
 

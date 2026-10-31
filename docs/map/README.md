@@ -4,7 +4,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 467 files, 514,068 lines, 22,099 methods, 5,001 constants. `GameVersion.VERSION` is "0.8.90", `SAVE_FORMAT` 49.
+**The tree:** 467 files, 514,086 lines, 22,099 methods, 5,001 constants. `GameVersion.VERSION` is "0.8.90", `SAVE_FORMAT` 49.
 
 ## model (219 files)
 
@@ -217,7 +217,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Unemployment.java](Unemployment.md) | 607 | 40 | The people out of work: how many, who they were, what Employment Insurance pays them, and who has lost their home. | 12 |
 | [UtilitiesHandler.java](UtilitiesHandler.md) | 731 | 70 | sections: WATER SUPPLY, THE FRESH WATER LIMIT (0.7.59, batch J2; spec-land 2.3 and star 7)... | 24 |
 | [WageBand.java](WageBand.md) | 170 | 7 | The four education bands the wage tax is set by. | 31 |
-| [WantedPosts.java](WantedPosts.md) | 160 | 17 | The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of them the labour market prices as i... | 3 |
+| [WantedPosts.java](WantedPosts.md) | 164 | 17 | The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of them the labour market prices as i... | 3 |
 | [WorkingHousehold.java](WorkingHousehold.md) | 50 | 7 | A household with an earner in it, at one pay tier. | 5 |
 | [World.java](World.md) | 2,162 | 120 | The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and ri... | 98 |
 | [WorldData.java](WorldData.md) | 1,067 | 105 | The reader of world-1.bin, the nations' world as data: the 196 nations and the areas no nation holds, their borders (an owner a 15" cell, and the l... | 19 |
@@ -464,7 +464,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TruckRouteCheck.java](TruckRouteCheck.md) | 1,355 | 50 | Proves the trucks' routes (0.8.8, batch FR5, slice B; docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the map lets a truck driv... | 0 |
 | [VanCheck.java](VanCheck.md) | 476 | 5 | The vans: what a sector needs, what it costs it, and what happens while it waits for them. | 0 |
 | [VaultMoneysCheck.java](VaultMoneysCheck.md) | 741 | 18 | The vault in eight moneys (batch WN4, slice C; spec-nations 5.2-5.4): ForeignAccounts keeps a balance in each of the eight the IMF's COFER names, t... | 0 |
-| [WantedPostsCheck.java](WantedPostsCheck.md) | 659 | 21 | The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). | 0 |
+| [WantedPostsCheck.java](WantedPostsCheck.md) | 673 | 21 | The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). | 0 |
 | [WaterCheck.java](WaterCheck.md) | 529 | 10 | Sanity harness for water production, demand, throttling and billing - and, since 0.7.59, the fresh water limit and the desalination plant (sections... | 0 |
 | [WellCheck.java](WellCheck.md) | 1,576 | 30 | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spe... | 2 |
 | [WoodProductsCheck.java](WoodProductsCheck.md) | 642 | 16 | Wood Products, checked (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.2, 2.3, 2.7, 2.8, 2.12, 4 and 5's I10 row; the study's - material... | 0 |

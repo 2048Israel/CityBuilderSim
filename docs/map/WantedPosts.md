@@ -1,4 +1,4 @@
-# WantedPosts.java - 160 lines · 17 methods · 1 constants · model
+# WantedPosts.java - 164 lines · 17 methods · 1 constants · model
 
 `ham/citybuildersim/WantedPosts.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -35,38 +35,38 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 42 | `WantedPosts.MOST_OF_SUPPLY` | `1.0` | The most of a band's own workers its refused posts may count as. |
+| 46 | `WantedPosts.MOST_OF_POSTS` | `1.0` | The most a band's refused posts may count as, as a share of the posts it has that exist. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 74 | `private final List<Ask> asks` |  |
-| 75 | `private int crewsHolds, unpaidHolds` |  |
-| 76 | `private final double[] latent` |  |
+| 78 | `private final List<Ask> asks` |  |
+| 79 | `private int crewsHolds, unpaidHolds` |  |
+| 80 | `private final double[] latent` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 127 | **type** `public final class WantedPosts` | The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of them the labour market prices as if they were offered (LD1). |
-| 49 | 5 | **type** `public record Ask(String sector, String building, double[] posts, double payFactor)` | One refused building's ask: its sector and building, the posts it lacks workers for per band (only in the bands it is short in), and how far the wage of those posts could rise, as a factor on today's, and the building... |
-| 50 | 3 | `{ ... }` _(in WantedPosts.Ask)_ |  |
-| 62 | 11 | `public static Ask askOf(String sector, String building, double[] wanted, double[] spare, double margin, double shortBill)` | The ask a refused building makes, or null when it would not carry its interest even at today's wage ({@code margin} is what it earns over the interest hurdle). |
-| 79 | 5 | `public void beginMonth()` | The month's start: last month's asks and counts cleared (the latent posts stay until settle() replaces them). |
-| 86 | 1 | `public void heldForCrews()` | A hold the gate put on for the builders' laid-off crews: IC1's, no shortage the wage answers. |
-| 89 | 1 | `public void heldUnpaid()` | A hold for want of workers on a building that would not carry its interest at today's wage: no ask. |
-| 92 | 3 | `public void ask(Ask a)` | A hold for want of workers on a building that would pay: it asks for its posts. |
-| 97 | 1 | `public int getHolds()` | Every staffing hold this month, whatever came of it. |
-| 99 | 1 | `public int getCrewsHolds()` |  |
-| 101 | 1 | `public int getUnpaidHolds()` |  |
-| 104 | 1 | `public int getAsked()` | The holds that asked. |
-| 107 | 1 | `public List<Ask> asks()` | This month's asks. |
-| 119 | 17 | `public void settle(double[] posts, double[] supply, double[] premium)` | Turns the month's asks into the posts per band the wage is priced on, replacing last month's. |
-| 138 | 1 | `public double[] latent()` | The posts per band the wage is priced on beyond those that exist (a copy). |
-| 140 | 1 | `public double getLatent(WageBand band)` |  |
-| 142 | 5 | `public double getTotal()` |  |
-| 149 | 1 | `public boolean any()` | Whether any band is priced on refused posts. |
-| 152 | 1 | `public double[] state()` | The latent posts as saved: they are priced next month, and cannot be rebuilt from the state this month ends in. |
-| 155 | 5 | `public void restore(double[] saved)` | Puts the saved latent posts back; null or a wrong length leaves none. |
+| 34 | 131 | **type** `public final class WantedPosts` | The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of them the labour market prices as if they were offered (LD1). |
+| 53 | 5 | **type** `public record Ask(String sector, String building, double[] posts, double payFactor)` | One refused building's ask: its sector and building, the posts it lacks workers for per band (only in the bands it is short in), and how far the wage of those posts could rise, as a factor on today's, and the building... |
+| 54 | 3 | `{ ... }` _(in WantedPosts.Ask)_ |  |
+| 66 | 11 | `public static Ask askOf(String sector, String building, double[] wanted, double[] spare, double margin, double shortBill)` | The ask a refused building makes, or null when it would not carry its interest even at today's wage ({@code margin} is what it earns over the interest hurdle). |
+| 83 | 5 | `public void beginMonth()` | The month's start: last month's asks and counts cleared (the latent posts stay until settle() replaces them). |
+| 90 | 1 | `public void heldForCrews()` | A hold the gate put on for the builders' laid-off crews: IC1's, no shortage the wage answers. |
+| 93 | 1 | `public void heldUnpaid()` | A hold for want of workers on a building that would not carry its interest at today's wage: no ask. |
+| 96 | 3 | `public void ask(Ask a)` | A hold for want of workers on a building that would pay: it asks for its posts. |
+| 101 | 1 | `public int getHolds()` | Every staffing hold this month, whatever came of it. |
+| 103 | 1 | `public int getCrewsHolds()` |  |
+| 105 | 1 | `public int getUnpaidHolds()` |  |
+| 108 | 1 | `public int getAsked()` | The holds that asked. |
+| 111 | 1 | `public List<Ask> asks()` | This month's asks. |
+| 123 | 17 | `public void settle(double[] posts, double[] supply, double[] premium)` | Turns the month's asks into the posts per band the wage is priced on, replacing last month's. |
+| 142 | 1 | `public double[] latent()` | The posts per band the wage is priced on beyond those that exist (a copy). |
+| 144 | 1 | `public double getLatent(WageBand band)` |  |
+| 146 | 5 | `public double getTotal()` |  |
+| 153 | 1 | `public boolean any()` | Whether any band is priced on refused posts. |
+| 156 | 1 | `public double[] state()` | The latent posts as saved: they are priced next month, and cannot be rebuilt from the state this month ends in. |
+| 159 | 5 | `public void restore(double[] saved)` | Puts the saved latent posts back; null or a wrong length leaves none. |
 

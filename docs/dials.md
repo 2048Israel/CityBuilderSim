@@ -3092,7 +3092,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 42 | `WantedPosts.MOST_OF_SUPPLY` | `1.0` | The most of a band's own workers its refused posts may count as. |
+| 46 | `WantedPosts.MOST_OF_POSTS` | `1.0` | The most a band's refused posts may count as, as a share of the posts it has that exist. |
 
 ### World.java ([map](map/World.md))
 
@@ -6548,10 +6548,10 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 82 | `WantedPostsCheck.MACHINE_WORKS` | `"Machine Works"` |  |
-| 86 | `WantedPostsCheck.WORKFORCE` | `5_000` | The hands the fixture's city has: its workforce, and how many of them have a diploma, a college degree and a university degree. |
-| 87 | `WantedPostsCheck.DIPLOMA_HEADS` | `2_000, COLLEGE_HEADS = 200, UNIVERSITY_HEADS = 20` |  |
-| 178 | `WantedPostsCheck.COLLEGE` | `WageBand.COLLEGE.ordinal(), UNIVERSITY = WageBand.UNIVERSITY.ordinal()` |  |
+| 83 | `WantedPostsCheck.MACHINE_WORKS` | `"Machine Works"` |  |
+| 87 | `WantedPostsCheck.WORKFORCE` | `5_000` | The hands the fixture's city has: its workforce, and how many of them have a diploma, a college degree and a university degree. |
+| 88 | `WantedPostsCheck.DIPLOMA_HEADS` | `2_000, COLLEGE_HEADS = 200, UNIVERSITY_HEADS = 20` |  |
+| 179 | `WantedPostsCheck.COLLEGE` | `WageBand.COLLEGE.ordinal(), UNIVERSITY = WageBand.UNIVERSITY.ordinal()` |  |
 
 ### WellCheck.java ([map](map/WellCheck.md))
 
