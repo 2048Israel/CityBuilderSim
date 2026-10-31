@@ -4437,6 +4437,23 @@ public class Game {
     }
 
     /**
+     * CD7: the exchange gain (loss) on the foreign debt that {@link #surplusThisYearSoFar()} leaves out, over the same
+     * months (this calendar year's closed ones, in the months the surplus is recorded), a gain positive: what the
+     * Fund tab says under the surplus so far, so a player who sees the budget's surplus above it knows why the two
+     * differ. The history's "debtExchange" series; a read.
+     */
+    public double debtExchangeThisYearSoFar() {
+        double[] surplus = historySave.aligned("surplus");
+        double[] exchange = historySave.aligned("debtExchange");
+        int k = CityCalendar.monthOfYear(month);
+        double sum = 0;
+        for (int i = Math.max(0, surplus.length - k); i < surplus.length; i++) {
+            if (!Double.isNaN(surplus[i])) sum += exchangeFromEnd(exchange, surplus.length, i);
+        }
+        return sum;
+    }
+
+    /**
      * WHAT THE ROLLOVER LEAVES FOR THE FUND, now: the dial's share of this
      * calendar year's surplus so far (TreasuryFund.reservedFor()) - nothing
      * once this year's pay-in is made, and nothing at a dial of 0.

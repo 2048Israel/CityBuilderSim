@@ -17490,49 +17490,49 @@ _(this harness does not label its checks through a helper - it prints its findin
 >                              reloaded city collected $0 where the live one
 > ...
 
-- **L1554 a city with money moving in every sector**
-  - L1640 fixture: the businesses owe bonds, and orders rest on their books
-  - L1642 fixture: the city's fund holds shares and bonds
-  - L1651 every sector is actually trading
-- **L1657 the FIRST read, which is the hard one**
-  - L1713 one pass over the screens moved nothing
-  - L1730 the live sale figure IS the one in the ledger
-- **L1734 read it, and read it again**
-  - L1763 reading the city fifty times changed nothing
-- **L1765 and the specific one item 7 was about**
-  - L1821 every one of the thirteen pantries fell by what sold and rose by what arrived
-  - L1828 ...and the statement never sold more than was in stock
-  - L1830 ...and the shelf never goes negative
-- **L1833 the tax the city takes is the tax it shows**
-  - L1841 business tax collected == business tax printed
-  - L1845 ...and it is the companies taxed separately, not netted
-- **L1850 a rate change reaches the treasury at once**
-  - L1880 doubling the rate moves the very next month's commercial tax
-- **L1883 the build advice's reads, after a load (0.7.51)**
-  - L1974 fixture: the city holds hills by hand - the centre,
-  - L1983 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
-  - L1993 fixture: the city has suggestions to compare
-  - L1994 every one of them the same after a load, to the bit
-  - L1995 ...the high schools' leavers a number, not NaN
-  - L1997 the land on the world is the same after a load: its centre, its blocks and purchases
-  - L1999 ...its offers, field for field
-  - L2001 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
-  - L2015 the save carries the three keys of the ground by relief, and they are what the load read
-  - L2027 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
-  - L2030 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
-  - L2035 the saved file reads:
-  - L2037 ...and what was taken out of its ground
-  - L2039 ...and out of its offshore pool (0.7.93)
-  - L2041 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
-- **L2056 and a city on the real Earth: reading its world fifty times**
-  - L2058 fixture: EarthCheck's fixture is beside the classes
-  - L2084 fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links
-  - L2090 fixture: a plot of the North Sea west of it
-  - L2117 reading an Earth city's world fifty times changed nothing (
-- **L2128 the world market and the trade by partner: reading them changes nothing (WN3)**
-  - L2130 fixture: the twelve-nation world file is beside the classes
-  - L2156 fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn
-  - L2176 reading the world market and the trade by partner fifty times changed nothing (
+- **L1556 a city with money moving in every sector**
+  - L1642 fixture: the businesses owe bonds, and orders rest on their books
+  - L1644 fixture: the city's fund holds shares and bonds
+  - L1653 every sector is actually trading
+- **L1659 the FIRST read, which is the hard one**
+  - L1715 one pass over the screens moved nothing
+  - L1732 the live sale figure IS the one in the ledger
+- **L1736 read it, and read it again**
+  - L1765 reading the city fifty times changed nothing
+- **L1767 and the specific one item 7 was about**
+  - L1823 every one of the thirteen pantries fell by what sold and rose by what arrived
+  - L1830 ...and the statement never sold more than was in stock
+  - L1832 ...and the shelf never goes negative
+- **L1835 the tax the city takes is the tax it shows**
+  - L1843 business tax collected == business tax printed
+  - L1847 ...and it is the companies taxed separately, not netted
+- **L1852 a rate change reaches the treasury at once**
+  - L1882 doubling the rate moves the very next month's commercial tax
+- **L1885 the build advice's reads, after a load (0.7.51)**
+  - L1976 fixture: the city holds hills by hand - the centre,
+  - L1985 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
+  - L1995 fixture: the city has suggestions to compare
+  - L1996 every one of them the same after a load, to the bit
+  - L1997 ...the high schools' leavers a number, not NaN
+  - L1999 the land on the world is the same after a load: its centre, its blocks and purchases
+  - L2001 ...its offers, field for field
+  - L2003 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
+  - L2017 the save carries the three keys of the ground by relief, and they are what the load read
+  - L2029 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
+  - L2032 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
+  - L2037 the saved file reads:
+  - L2039 ...and what was taken out of its ground
+  - L2041 ...and out of its offshore pool (0.7.93)
+  - L2043 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
+- **L2058 and a city on the real Earth: reading its world fifty times**
+  - L2060 fixture: EarthCheck's fixture is beside the classes
+  - L2086 fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links
+  - L2092 fixture: a plot of the North Sea west of it
+  - L2119 reading an Earth city's world fifty times changed nothing (
+- **L2130 the world market and the trade by partner: reading them changes nothing (WN3)**
+  - L2132 fixture: the twelve-nation world file is beside the classes
+  - L2158 fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn
+  - L2178 reading the world market and the trade by partner fifty times changed nothing (
 
 ## RealDollarCheck.java - 45 labelled assertions
 

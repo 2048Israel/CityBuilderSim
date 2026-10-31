@@ -668,6 +668,8 @@ public class ReadPathCheck {
         g.fundSharesValue(); g.fundMarketSharesValue(); g.fundRescueSharesValue(); g.fundBondsValue();
         g.fundPreferredValue(); g.fundWarrantsValue(); g.fundRescueValue(); g.fundValue(); g.fundEquityShare();
         g.fundTransferDue(); g.getFundDial(); g.getRescueMode(); g.monthOfSpending(); g.surplusThisYearSoFar();
+        // ...and CD7's: the exchange gain on the foreign debt that surplus leaves out, the line the fund page writes under it
+        g.debtExchangeThisYearSoFar();
         g.getFundWithdrawal();
         g.fundReservation();
         // ...and 0.7.15's skip report on the central bank's advances, as the skip's screen reads it.

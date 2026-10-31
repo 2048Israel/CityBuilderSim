@@ -4,7 +4,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 457 files, 502,562 lines, 21,538 methods, 4,887 constants. `GameVersion.VERSION` is "0.8.81", `SAVE_FORMAT` 49.
+**The tree:** 457 files, 502,704 lines, 21,543 methods, 4,892 constants. `GameVersion.VERSION` is "0.8.81", `SAVE_FORMAT` 49.
 
 ## model (214 files)
 
@@ -89,7 +89,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FuelSplit.java](FuelSplit.md) | 229 | 8 | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; ... | 2 |
 | [FundLedger.java](FundLedger.md) | 766 | 92 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 10 |
 | [FundView.java](FundView.md) | 873 | 39 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 5 |
-| [Game.java](Game.md) | 19,955 | 864 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 222 |
+| [Game.java](Game.md) | 19,972 | 865 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 222 |
 | [GameFiles.java](GameFiles.md) | 469 | 40 | Where the game keeps its files, and how it writes them. | 142 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 10 |
 | [GamePrefs.java](GamePrefs.md) | 249 | 27 | How the player likes the window, kept between runs. | 4 |
@@ -271,10 +271,10 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ChartFitBench.java](ChartFitBench.md) | 130 | 3 | The full-screen chart on a scene of its own - no stage, no window - laid out at a window's size with some lines picked, for ChartFitCheck (FW10): t... | 1 |
 | [CityBuilderSim.java](CityBuilderSim.md) | 55 | 2 | The way in. | 0 |
 | [ConstructionScreen.java](ConstructionScreen.md) | 1,122 | 39 | The construction page (0.7.22): the builders' gauge, every site with its order, its crews, its time and its money and the player's hand on it - pri... | 1 |
-| [FinancesScreen.java](FinancesScreen.md) | 6,386 | 254 | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece an... | 7 |
+| [FinancesScreen.java](FinancesScreen.md) | 6,437 | 255 | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece an... | 7 |
 | [FoundingScreen.java](FoundingScreen.md) | 1,423 | 61 | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. | 2 |
-| [FundScreen.java](FundScreen.md) | 2,448 | 99 | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with it... | 2 |
-| [GovernmentScreen.java](GovernmentScreen.md) | 2,457 | 105 | The government tab: where the city's money came from and went, the road from what it EARNED through the budget's SURPLUS to what the cash BANKED, w... | 2 |
+| [FundScreen.java](FundScreen.md) | 2,453 | 99 | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with it... | 2 |
+| [GovernmentScreen.java](GovernmentScreen.md) | 2,524 | 108 | The government tab: where the city's money came from and went, the road from what it EARNED through the budget's SURPLUS to what the cash BANKED, w... | 2 |
 | [HistoryScreen.java](HistoryScreen.md) | 3,166 | 113 | City History: the city as a shape over time. | 11 |
 | [Icons.java](Icons.md) | 541 | 6 | The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one per category, and the few the frame draws (the money block, the "Needs... | 18 |
 | [InfrastructureScreen.java](InfrastructureScreen.md) | 1,982 | 73 | The infrastructure tab: the roads, the trams, the freight and the ports - four pages under the five figures the whole tab is about, each page led b... | 1 |
@@ -425,7 +425,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RailCheck.java](RailCheck.md) | 747 | 8 | The railway: what it charges, who pays it, and what it does to the band. | 1 |
 | [RailDepotCheck.java](RailDepotCheck.md) | 519 | 14 | The railway's stations: the Rail Depot, and the rules that put a station first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.m... | 1 |
 | [RailDrawCheck.java](RailDrawCheck.md) | 1,909 | 80 | Proves that the railway is drawn as rail, not as a cased road band (0.8.1, batch FR0; docs/studies/spec-freight-and-infrastructure.md 4.3, D15, D18). | 0 |
-| [ReadPathCheck.java](ReadPathCheck.md) | 2,339 | 18 | Reading the city must not change the city. | 1 |
+| [ReadPathCheck.java](ReadPathCheck.md) | 2,341 | 18 | Reading the city must not change the city. | 1 |
 | [RealDollarCheck.java](RealDollarCheck.md) | 408 | 17 | The two US dollars (batch WN4, D29; spec-nations 10 item 29, spec-exchange-rates 3.9): the in-game US$ inflating on the US's path, and the real US$... | 0 |
 | [RefineryCheck.java](RefineryCheck.md) | 1,527 | 35 | The refinery's units and the flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread... | 0 |
 | [RefineryViewCheck.java](RefineryViewCheck.md) | 632 | 23 | The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads ... | 1 |

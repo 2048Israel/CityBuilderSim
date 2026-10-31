@@ -1,4 +1,4 @@
-# FinancesScreen.java - 6,386 lines · 254 methods · 107 constants · interface
+# FinancesScreen.java - 6,437 lines · 255 methods · 109 constants · interface
 
 `ham/citybuildersim/ui/FinancesScreen.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -35,7 +35,7 @@
 > THE DEBT RESULT - what an issue booked, shown after it - came here from
 > the build cards on 2026-09-18, because it is this tab's.
 
-**Uses:** [Palette](Palette.md) (732), [DebtManager](DebtManager.md) (73), [CityCalendar](CityCalendar.md) (47), [Auction](Auction.md) (40), [Debt](Debt.md) (34), [Game](Game.md) (31), [CityNeeds](CityNeeds.md) (26), [Rollover](Rollover.md) (19), [Buyback](Buyback.md) (18), [Icons](Icons.md) (17), [BookDesk](BookDesk.md) (15), [CallTree](CallTree.md) (14), [CorporateBond](CorporateBond.md) (14), [OrderBook](OrderBook.md) (14), [LongTermBond](LongTermBond.md) (10), [HistoryScreen](HistoryScreen.md) (10), [DebtQuote](DebtQuote.md) (10), [BondMarket](BondMarket.md) (9), [Bank](Bank.md) (9), [FloatingRateNote](FloatingRateNote.md) (8), [Ladder](Ladder.md) (8), [TimeChart](TimeChart.md) (8), [FundScreen](FundScreen.md) (7), [InflationLinkedBond](InflationLinkedBond.md) (7), [CentralBank](CentralBank.md) (7), [TreasuryFund](TreasuryFund.md) (6), [YieldCurve](YieldCurve.md) (6), [ChartModel](ChartModel.md) (5), [ForeignAccounts](ForeignAccounts.md) (5), [CapChips](CapChips.md) (4)... and 17 more
+**Uses:** [Palette](Palette.md) (736), [DebtManager](DebtManager.md) (73), [CityCalendar](CityCalendar.md) (47), [Auction](Auction.md) (40), [Debt](Debt.md) (34), [Game](Game.md) (31), [CityNeeds](CityNeeds.md) (26), [Rollover](Rollover.md) (19), [Buyback](Buyback.md) (18), [Icons](Icons.md) (17), [BookDesk](BookDesk.md) (17), [CallTree](CallTree.md) (14), [CorporateBond](CorporateBond.md) (14), [OrderBook](OrderBook.md) (14), [LongTermBond](LongTermBond.md) (10), [HistoryScreen](HistoryScreen.md) (10), [DebtQuote](DebtQuote.md) (10), [BondMarket](BondMarket.md) (9), [Bank](Bank.md) (9), [FloatingRateNote](FloatingRateNote.md) (8), [Ladder](Ladder.md) (8), [TimeChart](TimeChart.md) (8), [FundScreen](FundScreen.md) (7), [InflationLinkedBond](InflationLinkedBond.md) (7), [CentralBank](CentralBank.md) (7), [TreasuryFund](TreasuryFund.md) (6), [YieldCurve](YieldCurve.md) (6), [ChartModel](ChartModel.md) (5), [ForeignAccounts](ForeignAccounts.md) (5), [CapChips](CapChips.md) (4)... and 17 more
 
 **Used by (7):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CapChips](CapChips.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
@@ -61,17 +61,17 @@
 | 2183 | YOUR RATE, TAKEN APART (0.7.32; the curve first since CD6, 2026-10-23) |
 | 2695 | THE BOOK (0.7.32; a desk since CD6, 2026-10-23) |
 | 2767 | · the books (CD3) |
-| 3265 | · a line's page (CD6, board 2) |
-| 3617 | · the desk's pictures (CD6) |
-| 3970 | CLOSE IT NOW (CD4, 2026-10-23) |
-| 4541 | BORROW (0.7.32) |
-| 4844 | · the highest yield (CD2) |
-| 4855 | · the ask, typed (0.7.40) |
-| 5376 | · the auction, shown (CD2) |
-| 5783 | MONEY (0.7.0; redrawn 0.7.32) |
-| 5953 | THE BOND MARKET (0.7.12; redrawn 0.7.32) |
-| 6279 | THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) |
-| 6293 | THE DEBT RESULT |
+| 3308 | · a line's page (CD6, board 2) |
+| 3668 | · the desk's pictures (CD6) |
+| 4021 | CLOSE IT NOW (CD4, 2026-10-23) |
+| 4592 | BORROW (0.7.32) |
+| 4895 | · the highest yield (CD2) |
+| 4906 | · the ask, typed (0.7.40) |
+| 5427 | · the auction, shown (CD2) |
+| 5834 | MONEY (0.7.0; redrawn 0.7.32) |
+| 6004 | THE BOND MARKET (0.7.12; redrawn 0.7.32) |
+| 6330 | THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) |
+| 6344 | THE DEBT RESULT |
 
 ## Constants
 
@@ -140,50 +140,52 @@
 | 2816 | `FinancesScreen.DESK_CURVE_INFO` | `"Today's zero curve is the line: what the city pays to borrow for each term.E...` | THE CURVE card's (i) (CD6, board 1): what the dots are and what is left off. |
 | 2823 | `FinancesScreen.DESK_BARS_INFO` | `"Carried is what the books say the city owes: what it raised, plus the discou...` | THE THREE BARS' (i): the board's paragraph. |
 | 2832 | `FinancesScreen.GAIN_INFO` | `"Green is a gain and red a loss.It is what the books carry the line at less w...` | The (i) beside a gain or a loss on a line's page (CD6, Jerus 2026-10-23): what the colours mean. |
-| 2840 | `FinancesScreen.DESK_INFO` | `"If closed now: the carrying value less the worth, in D$ and as a share of th...` | THE DESK's (i): the two readings under the table. |
-| 2920 | `FinancesScreen.BOOK_KIND_NAMES` | `{ "bills", "amortizing bonds", "bonds", "floating-rate notes", "inflation-lin...` | The kinds of paper as the desk names them, in DebtManager.BOOK_KINDS' order. |
-| 3088 | `FinancesScreen.CLOSE_CELL` | `206` | The width of the desk's If closed now column (CD6): the gain or loss, and the Close it now button beside it. |
-| 3091 | `FinancesScreen.CLOSE_FIGURE` | `134` | The width of the gain or loss in that cell: "−D$725.3M · −100.0%" at the figure's size. |
-| 3094 | `FinancesScreen.CLOSE_BUTTON` | `66, CLOSE_GAP = 6` | The Close it now button's width, and the gap between it and the figure. |
-| 3292 | `FinancesScreen.LINE_PRICE_INFO` | `"The price is the market's: what the line's remaining payments are worth on "...` | THE PRICE card's (i): board 2, note A. |
-| 3299 | `FinancesScreen.LINE_CLOSE_INFO` | `"Worth is what closing the line would cost at its fair price; a buyback pays ...` | IF YOU CLOSED IT TODAY's (i): board 2, note B. |
-| 3308 | `FinancesScreen.LINE_BOOKS_INFO` | `"The books in full: what the line is carried at when the month opens, the " +...` | THE NEXT SIX MONTHS' (i): board 2, note C. |
-| 3315 | `FinancesScreen.LINE_SALES_INFO` | `"Each sale into the line: when, how much face, what it raised, the price it "...` | ITS SALES, AND ITS RISK's (i). |
-| 3321 | `FinancesScreen.LINE_PAGE` | `"A line"` | The name of a line's page, under The book: no chip's, open while its line is on the books (lineOpenNow()). |
-| 3510 | `FinancesScreen.THREE_NARROW` | `1000` | The width under which a line's page stacks its three cards (CD6): the books' table, then the other two side by side. |
-| 3741 | `FinancesScreen.DeskCurve.H` | `232, LEFT = 46, RIGHT = 14, TOP = 12, FOOT = 26` |  |
-| 3836 | `FinancesScreen.DeskBars.H` | `158, LEFT = 84, RIGHT = 76, TOP = 26, ROW = 42, BAR = 26` |  |
-| 3837 | `FinancesScreen.DeskBars.ROWS` | `{ "at face", "carried", "worth today" }` |  |
-| 3889 | `FinancesScreen.PathChart.H` | `212, LEFT = 40, RIGHT = 16, TOP = 14, FOOT = 26` |  |
-| 4011 | `FinancesScreen.CLOSE_INFO` | `"Closing a piece early is a reverse auction, not one price.Name the face you ...` | THE TICKET's (i): the spec's 6.2. |
-| 4020 | `FinancesScreen.OFFERS_INFO` | `"Each bar is one slice a holder offers: its length is the slice's face, the n...` | THE OFFERS' (i). |
-| 4026 | `FinancesScreen.COMPARE_INFO` | `"One buyback, read three ways.Against carrying value is the figure the books ...` | THE THREE COMPARISONS' (i): the spec's 6.3. |
-| 4034 | `FinancesScreen.CALL_INFO` | `"From its first call date the city can pay every holder 100 for each 100 of f...` | THE CALL's (i): the spec's 6.4 and D22 to D24. |
-| 4418 | `FinancesScreen.BuybackLadder.LEFT` | `74, FACE_ROOM = 76, MARKS = 134, TOP = 26, FOOT = 10, FIRST_W = 720, LEAST_W ...` | The margins, in pixels: the prices at the left; at the right the room for a slice's face (FACE_ROOM) and for the marks' names (MARKS). |
-| 4583 | `FinancesScreen.TERMS_INFO` | `"Each column is today's fair yield for this paper at that term: what the curv...` | The terms' (i): the spec's T55, on the auction's fair yield (CD2). |
-| 4593 | `FinancesScreen.CAP_INFO` | `"The most the city will pay to sell this: fair plus a point, a yield you name...` | THE HIGHEST YIELD's (i): the spec's 4.1 and 4.3 in two sentences. |
-| 4601 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " ...` | The ask's (i): the spec's T56. |
-| 4605 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here - at home the auction itself, r...` | The quote's empty state: the spec's T57. |
-| 4610 | `FinancesScreen.PROCEEDS_INFO` | `"A bill's ask is the cash it should raise, and its face is the lot that bring...` | Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). |
-| 4616 | `FinancesScreen.BUYERS_INFO` | `"Each bidder bids by the rule it follows elsewhere in the game.The households...` | Who bids: the spec's T61 and 4.2 (CD2). |
-| 4626 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "d...` | Where the dollars go: the spec's T62. |
-| 4798 | `FinancesScreen.CALLABLE_SALE_INFO` | `"A bond of ten years or more can be sold callable: from its first call date "...` | The CALLABLE switch's (i) (CD4, spec-city-debt.md 2.6 and D22 to D24). |
-| 4858 | `FinancesScreen.ASK_TYPED_INFO` | `"Type an amount in dollars: digits, with or without commas, a decimal " + "po...` | HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. |
-| 4866 | `FinancesScreen.ASK_WORDS` | `java.util.regex.Pattern.compile("(?:[A-Za-z]{0,3}\\$)?\\s*((?:\\d{1,3}(?:,\\d...` | A typed amount: an optional mark, digits (grouped by commas or not), an optional fraction, an optional unit. |
-| 5379 | `FinancesScreen.STOP_INFO` | `"The one yield at which the bids first cover the issue - never under fair, ne...` | STOPS AT's (i): the stop and the tail (the spec's 4.3). |
-| 5384 | `FinancesScreen.COVER_INFO` | `"What was bid up to your highest yield, each bidder counted at most the issue...` | BIDS' (i): the cover. |
-| 5548 | `FinancesScreen.AuctionChart.WHO_COLOURS` | `{ Palette.PEOPLE, Palette.BUSINESS, Palette.ORE, Palette.MONEY }` | The bidders' colours in Auction.Fill's order, as the holders' bar has them. |
-| 5550 | `FinancesScreen.AuctionChart.WHO` | `{ "households", "the firms", "the world", "the bank" }` | ...and their names, in the same order. |
-| 5552 | `FinancesScreen.AuctionChart.H` | `240, LEFT = 62, RIGHT = 16, TOP = 16, FOOT = 26, FIRST_W = 720, LEAST_W = 420` | Its height and its margins, in pixels; the width it is first drawn at, and the least it is drawn at. |
-| 5554 | `FinancesScreen.AuctionChart.SAMPLES` | `60` | How many yields the bids are read at across the axis. |
-| 5742 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate an...` | The default page's (i). |
-| 5883 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's...` | M2's (i): the spec's T69. |
-| 5973 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no ...` | No bond outstanding: the spec's T70. |
-| 5978 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has ...` | The prices' (i): the spec's T71. |
-| 5983 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when ...` | The order books' (i): the spec's T74. |
-| 5991 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
-| 5993 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY...` | ...and their colours on it. |
-| 6150 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since ...` | A bond's book's (i): the spec's T75, T77 and T78. |
+| 2840 | `FinancesScreen.EXCHANGE_INFO` | `"Dollar paper is owed in US$, and what it costs in D$ moves with the exchange...` | The (i) beside the D$'s move since a dollar piece was sold, on the desk's card and a line's page (CD7): what the figure and its colours mean. |
+| 2848 | `FinancesScreen.DESK_INFO` | `"If closed now: the carrying value less the worth, in D$ and as a share of th...` | THE DESK's (i): the two readings under the table. |
+| 2928 | `FinancesScreen.BOOK_KIND_NAMES` | `{ "bills", "amortizing bonds", "bonds", "floating-rate notes", "inflation-lin...` | The kinds of paper as the desk names them, in DebtManager.BOOK_KINDS' order. |
+| 3128 | `FinancesScreen.CLOSE_CELL` | `206` | The width of the desk's If closed now column (CD6): the gain or loss, and the Close it now button beside it. |
+| 3131 | `FinancesScreen.EXCHANGE_CELL` | `128` | The width of the desk's exchange column (CD7), shown only when the book holds dollar paper: "−D$725.3M · −10.0%" at the caption's size, and its heading on two lines. |
+| 3134 | `FinancesScreen.CLOSE_FIGURE` | `134` | The width of the gain or loss in that cell: "−D$725.3M · −100.0%" at the figure's size. |
+| 3137 | `FinancesScreen.CLOSE_BUTTON` | `66, CLOSE_GAP = 6` | The Close it now button's width, and the gap between it and the figure. |
+| 3335 | `FinancesScreen.LINE_PRICE_INFO` | `"The price is the market's: what the line's remaining payments are worth on "...` | THE PRICE card's (i): board 2, note A. |
+| 3342 | `FinancesScreen.LINE_CLOSE_INFO` | `"Worth is what closing the line would cost at its fair price; a buyback pays ...` | IF YOU CLOSED IT TODAY's (i): board 2, note B. |
+| 3351 | `FinancesScreen.LINE_BOOKS_INFO` | `"The books in full: what the line is carried at when the month opens, the " +...` | THE NEXT SIX MONTHS' (i): board 2, note C. |
+| 3358 | `FinancesScreen.LINE_SALES_INFO` | `"Each sale into the line: when, how much face, what it raised, the price it "...` | ITS SALES, AND ITS RISK's (i). |
+| 3364 | `FinancesScreen.LINE_PAGE` | `"A line"` | The name of a line's page, under The book: no chip's, open while its line is on the books (lineOpenNow()). |
+| 3561 | `FinancesScreen.THREE_NARROW` | `1000` | The width under which a line's page stacks its three cards (CD6): the books' table, then the other two side by side. |
+| 3792 | `FinancesScreen.DeskCurve.H` | `232, LEFT = 46, RIGHT = 14, TOP = 12, FOOT = 26` |  |
+| 3887 | `FinancesScreen.DeskBars.H` | `158, LEFT = 84, RIGHT = 76, TOP = 26, ROW = 42, BAR = 26` |  |
+| 3888 | `FinancesScreen.DeskBars.ROWS` | `{ "at face", "carried", "worth today" }` |  |
+| 3940 | `FinancesScreen.PathChart.H` | `212, LEFT = 40, RIGHT = 16, TOP = 14, FOOT = 26` |  |
+| 4062 | `FinancesScreen.CLOSE_INFO` | `"Closing a piece early is a reverse auction, not one price.Name the face you ...` | THE TICKET's (i): the spec's 6.2. |
+| 4071 | `FinancesScreen.OFFERS_INFO` | `"Each bar is one slice a holder offers: its length is the slice's face, the n...` | THE OFFERS' (i). |
+| 4077 | `FinancesScreen.COMPARE_INFO` | `"One buyback, read three ways.Against carrying value is the figure the books ...` | THE THREE COMPARISONS' (i): the spec's 6.3. |
+| 4085 | `FinancesScreen.CALL_INFO` | `"From its first call date the city can pay every holder 100 for each 100 of f...` | THE CALL's (i): the spec's 6.4 and D22 to D24. |
+| 4469 | `FinancesScreen.BuybackLadder.LEFT` | `74, FACE_ROOM = 76, MARKS = 134, TOP = 26, FOOT = 10, FIRST_W = 720, LEAST_W ...` | The margins, in pixels: the prices at the left; at the right the room for a slice's face (FACE_ROOM) and for the marks' names (MARKS). |
+| 4634 | `FinancesScreen.TERMS_INFO` | `"Each column is today's fair yield for this paper at that term: what the curv...` | The terms' (i): the spec's T55, on the auction's fair yield (CD2). |
+| 4644 | `FinancesScreen.CAP_INFO` | `"The most the city will pay to sell this: fair plus a point, a yield you name...` | THE HIGHEST YIELD's (i): the spec's 4.1 and 4.3 in two sentences. |
+| 4652 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " ...` | The ask's (i): the spec's T56. |
+| 4656 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here - at home the auction itself, r...` | The quote's empty state: the spec's T57. |
+| 4661 | `FinancesScreen.PROCEEDS_INFO` | `"A bill's ask is the cash it should raise, and its face is the lot that bring...` | Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). |
+| 4667 | `FinancesScreen.BUYERS_INFO` | `"Each bidder bids by the rule it follows elsewhere in the game.The households...` | Who bids: the spec's T61 and 4.2 (CD2). |
+| 4677 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "d...` | Where the dollars go: the spec's T62. |
+| 4849 | `FinancesScreen.CALLABLE_SALE_INFO` | `"A bond of ten years or more can be sold callable: from its first call date "...` | The CALLABLE switch's (i) (CD4, spec-city-debt.md 2.6 and D22 to D24). |
+| 4909 | `FinancesScreen.ASK_TYPED_INFO` | `"Type an amount in dollars: digits, with or without commas, a decimal " + "po...` | HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. |
+| 4917 | `FinancesScreen.ASK_WORDS` | `java.util.regex.Pattern.compile("(?:[A-Za-z]{0,3}\\$)?\\s*((?:\\d{1,3}(?:,\\d...` | A typed amount: an optional mark, digits (grouped by commas or not), an optional fraction, an optional unit. |
+| 5430 | `FinancesScreen.STOP_INFO` | `"The one yield at which the bids first cover the issue - never under fair, ne...` | STOPS AT's (i): the stop and the tail (the spec's 4.3). |
+| 5435 | `FinancesScreen.COVER_INFO` | `"What was bid up to your highest yield, each bidder counted at most the issue...` | BIDS' (i): the cover. |
+| 5599 | `FinancesScreen.AuctionChart.WHO_COLOURS` | `{ Palette.PEOPLE, Palette.BUSINESS, Palette.ORE, Palette.MONEY }` | The bidders' colours in Auction.Fill's order, as the holders' bar has them. |
+| 5601 | `FinancesScreen.AuctionChart.WHO` | `{ "households", "the firms", "the world", "the bank" }` | ...and their names, in the same order. |
+| 5603 | `FinancesScreen.AuctionChart.H` | `240, LEFT = 62, RIGHT = 16, TOP = 16, FOOT = 26, FIRST_W = 720, LEAST_W = 420` | Its height and its margins, in pixels; the width it is first drawn at, and the least it is drawn at. |
+| 5605 | `FinancesScreen.AuctionChart.SAMPLES` | `60` | How many yields the bids are read at across the axis. |
+| 5793 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate an...` | The default page's (i). |
+| 5934 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's...` | M2's (i): the spec's T69. |
+| 6024 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no ...` | No bond outstanding: the spec's T70. |
+| 6029 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has ...` | The prices' (i): the spec's T71. |
+| 6034 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when ...` | The order books' (i): the spec's T74. |
+| 6042 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
+| 6044 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY...` | ...and their colours on it. |
+| 6201 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since ...` | A bond's book's (i): the spec's T75, T77 and T78. |
 
 ## Fields (state)
 
@@ -219,35 +221,35 @@
 | 2430 | `private final List<Series> series` |  |
 | 2431 | `private final List<Dot> dots` |  |
 | 2432 | `private final double height` |  |
-| 3324 | `private Debt lineOpen` | The line a line's page is open on (CD6), by identity; null while none has been. |
-| 3327 | `private boolean closeFromLine` | Whether Close it now was opened from the line's page, so its back door returns there. |
-| 3624 | `private final double first` |  |
-| 3625 | `private double drawnAt` |  |
-| 3743 | `private final int[] tenors` |  |
-| 3744 | `private final double[] zero` |  |
-| 3745 | `private final List<Dot> dots` |  |
-| 3839 | `private final double[][] byKind` |  |
-| 3840 | `private final double worth` |  |
-| 3841 | `private final java.util.function.DoubleFunction<String> money` |  |
-| 3891 | `private final double[] price, carried` |  |
-| 3892 | `private final int firstMonth` |  |
-| 4420 | `private final Buyback.Result q` |  |
-| 4421 | `private final double maxPer100` |  |
-| 4422 | `private final java.util.function.DoubleFunction<String> money` |  |
-| 4424 | `private final double row` | A row's pitch, and the width it is drawn at now (0 before the first). |
-| 4425 | `private double drawnAt` |  |
-| 5556 | `private final Auction.Result r` |  |
-| 5557 | `private final Auction.Bidders bidders` |  |
-| 5558 | `private final java.util.function.DoubleFunction<String> money` |  |
-| 5560 | `private double drawnAt` | The width it is drawn at now; 0 before the first. |
-| 6147 | `int bookBondId` | The bond whose book is open, by its number; the largest one when it has gone. |
-| 6291 | `double fundAsk` | What the player's hand is asking to pay into the fund or draw out of it, on Rules & cash (FundScreen.moveCard()). |
+| 3367 | `private Debt lineOpen` | The line a line's page is open on (CD6), by identity; null while none has been. |
+| 3370 | `private boolean closeFromLine` | Whether Close it now was opened from the line's page, so its back door returns there. |
+| 3675 | `private final double first` |  |
+| 3676 | `private double drawnAt` |  |
+| 3794 | `private final int[] tenors` |  |
+| 3795 | `private final double[] zero` |  |
+| 3796 | `private final List<Dot> dots` |  |
+| 3890 | `private final double[][] byKind` |  |
+| 3891 | `private final double worth` |  |
+| 3892 | `private final java.util.function.DoubleFunction<String> money` |  |
+| 3942 | `private final double[] price, carried` |  |
+| 3943 | `private final int firstMonth` |  |
+| 4471 | `private final Buyback.Result q` |  |
+| 4472 | `private final double maxPer100` |  |
+| 4473 | `private final java.util.function.DoubleFunction<String> money` |  |
+| 4475 | `private final double row` | A row's pitch, and the width it is drawn at now (0 before the first). |
+| 4476 | `private double drawnAt` |  |
+| 5607 | `private final Auction.Result r` |  |
+| 5608 | `private final Auction.Bidders bidders` |  |
+| 5609 | `private final java.util.function.DoubleFunction<String> money` |  |
+| 5611 | `private double drawnAt` | The width it is drawn at now; 0 before the first. |
+| 6198 | `int bookBondId` | The bond whose book is open, by its number; the largest one when it has gone. |
+| 6342 | `double fundAsk` | What the player's hand is asking to pay into the fund or draw out of it, on Rules & cash (FundScreen.moveCard()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 6329 | **type** `final class FinancesScreen` | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece and what it would cost to retire, borrowing at home and abroad, the mone... |
+| 58 | 6380 | **type** `final class FinancesScreen` | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece and what it would cost to retire, borrowing at home and abroad, the mone... |
 | 63 | 7 | `FinancesScreen(UserInterface ui)` |  |
 
 ### FINANCES (lines 74-241)
@@ -463,197 +465,198 @@
 |---:|---:|---|---|
 | 2749 | 12 | `String bookInfo()` | The book's (i): the spec's T32 and T34. |
 
-### the books (CD3) (lines 2767-3264)
+### the books (CD3) (lines 2767-3307)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2857 | 29 | `void bookPage(VBox page)` | THE BOOK, AS A DESK (CD6, spec-city-debt.md section 7, board 1): the book's six figures, where each line sits on today's curve, the book at face, carried and worth in bars, and every line a row by when it falls due - ... |
-| 2892 | 17 | `static GridPane figureStrip(String[][] cells)` | Figures in the strip's look (CD6): a label, a figure and a note in each of equal columns on the strip's ground, a hairline between. |
-| 2911 | 7 | `static String bookKindColour(String type)` | A kind's colour on the desk (CD6): the ladder's three for the bills, the amortizing bonds and the bonds, and a floater's and a linker's of their own, which the ladder folds into the bonds. |
-| 2923 | 4 | `static int bookKindOf(String type)` | A type's place in DebtManager.BOOK_KINDS; a type that is none of them is a term loan's (the manager's own reading). |
-| 2929 | 7 | `static List<Node> kindKey(boolean[] present)` | The kinds a key names: a swatch for each kind that is in `present`, in the kinds' colours. |
-| 2938 | 31 | `VBox deskCurveCard(BookDesk desk, DebtManager ledger)` | WHERE EACH LINE SITS ON THE CURVE: today's zero curve at DebtManager.CURVE_TENORS, a dot a line at (months left, yield). |
-| 2971 | 17 | `VBox deskBarsCard(BookDesk desk)` | AT FACE, CARRIED, AND WORTH TODAY: three bars on one scale, each stacked by kind, and what the book is worth across all three. |
-| 2990 | 96 | `VBox deskCard(BookDesk desk)` | EVERY LINE: the desk, a row a line by when it falls due; a click on a row opens the line's page, and the ladder's columns and NEXT DUE scroll to its row. |
-| 3103 | 18 | `Node closeCell(BookDesk.Line l)` | The desk's If closed now cell (CD6, Jerus 2026-10-23: "make it juicy to buyback"): what closing the line now would book - bold, in D$ and as a share of the carrying value, green for a gain and red for a loss - and, ri... |
-| 3127 | 16 | `static Node acrossWhenNarrow(javafx.scene.layout.Region table)` | A table that scrolls across when the window is narrower than it, and fills the card when it is wider. |
-| 3145 | 27 | `Node lineCell(BookDesk.Line l)` | The desk's first cell: the kind's tag, the line's name and, muted under them, its term, when it was sold, what it has left, and whether it was reopened or can be called. |
-| 3174 | 8 | `static String lineCoupon(BookDesk.Line l)` | A line's coupon in words (CD6): a bill "discount", a floater "policy + 18 bp", a linker "1⅝% real", anything else its coupon in eighths. |
-| 3184 | 9 | `static Node stacked(String figure, String under)` | A table figure with a muted word under it, right-aligned: "3.84%" over "real". |
-| 3195 | 8 | `static List<Segment> holderParts(BookDesk.Line l)` | A line's holders as shares of its face, in the holders bar's colours: the households, the bank, the central bank, the businesses and the world. |
-| 3209 | 9 | `static String couponWords(double coupon)` | A coupon in eighths of a point, the way a bond is quoted: 0.035 is "3½%", 0.04125 "4⅛%", 0.00125 "⅛%". |
-| 3229 | 22 | `static String pieceName(Debt debt)` | A piece's name in words (CD2): a bond at home is its line, "3½% Jan 2211" - its coupon in eighths and the month and year it falls due, as a treasury names a line -; a bill "6-month bill"; an amortizing bond "20-year a... |
-| 3253 | 11 | `Node holdersBar(Debt debt)` | Who holds a piece, one bar (the card's, and the Close it now page's): the households, the bank, the central bank, the businesses and the world; "held abroad" for a dollar piece. |
+| 2865 | 29 | `void bookPage(VBox page)` | THE BOOK, AS A DESK (CD6, spec-city-debt.md section 7, board 1): the book's six figures, where each line sits on today's curve, the book at face, carried and worth in bars, and every line a row by when it falls due - ... |
+| 2900 | 17 | `static GridPane figureStrip(String[][] cells)` | Figures in the strip's look (CD6): a label, a figure and a note in each of equal columns on the strip's ground, a hairline between. |
+| 2919 | 7 | `static String bookKindColour(String type)` | A kind's colour on the desk (CD6): the ladder's three for the bills, the amortizing bonds and the bonds, and a floater's and a linker's of their own, which the ladder folds into the bonds. |
+| 2931 | 4 | `static int bookKindOf(String type)` | A type's place in DebtManager.BOOK_KINDS; a type that is none of them is a term loan's (the manager's own reading). |
+| 2937 | 7 | `static List<Node> kindKey(boolean[] present)` | The kinds a key names: a swatch for each kind that is in `present`, in the kinds' colours. |
+| 2946 | 31 | `VBox deskCurveCard(BookDesk desk, DebtManager ledger)` | WHERE EACH LINE SITS ON THE CURVE: today's zero curve at DebtManager.CURVE_TENORS, a dot a line at (months left, yield). |
+| 2979 | 24 | `VBox deskBarsCard(BookDesk desk)` | AT FACE, CARRIED, AND WORTH TODAY: three bars on one scale, each stacked by kind, and what the book is worth across all three. |
+| 3005 | 4 | `static boolean holdsDollars(BookDesk desk)` | CD7: whether the book holds any dollar paper (a foreign line): the desk's exchange column and the card's exchange lines show only then. |
+| 3011 | 115 | `VBox deskCard(BookDesk desk)` | EVERY LINE: the desk, a row a line by when it falls due; a click on a row opens the line's page, and the ladder's columns and NEXT DUE scroll to its row. |
+| 3146 | 18 | `Node closeCell(BookDesk.Line l)` | The desk's If closed now cell (CD6, Jerus 2026-10-23: "make it juicy to buyback"): what closing the line now would book - bold, in D$ and as a share of the carrying value, green for a gain and red for a loss - and, ri... |
+| 3170 | 16 | `static Node acrossWhenNarrow(javafx.scene.layout.Region table)` | A table that scrolls across when the window is narrower than it, and fills the card when it is wider. |
+| 3188 | 27 | `Node lineCell(BookDesk.Line l)` | The desk's first cell: the kind's tag, the line's name and, muted under them, its term, when it was sold, what it has left, and whether it was reopened or can be called. |
+| 3217 | 8 | `static String lineCoupon(BookDesk.Line l)` | A line's coupon in words (CD6): a bill "discount", a floater "policy + 18 bp", a linker "1⅝% real", anything else its coupon in eighths. |
+| 3227 | 9 | `static Node stacked(String figure, String under)` | A table figure with a muted word under it, right-aligned: "3.84%" over "real". |
+| 3238 | 8 | `static List<Segment> holderParts(BookDesk.Line l)` | A line's holders as shares of its face, in the holders bar's colours: the households, the bank, the central bank, the businesses and the world. |
+| 3252 | 9 | `static String couponWords(double coupon)` | A coupon in eighths of a point, the way a bond is quoted: 0.035 is "3½%", 0.04125 "4⅛%", 0.00125 "⅛%". |
+| 3272 | 22 | `static String pieceName(Debt debt)` | A piece's name in words (CD2): a bond at home is its line, "3½% Jan 2211" - its coupon in eighths and the month and year it falls due, as a treasury names a line -; a bill "6-month bill"; an amortizing bond "20-year a... |
+| 3296 | 11 | `Node holdersBar(Debt debt)` | Who holds a piece, one bar (the card's, and the Close it now page's): the households, the bank, the central bank, the businesses and the world; "held abroad" for a dollar piece. |
 
-### a line's page (CD6, board 2) (lines 3265-3616)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3330 | 4 | `boolean lineOpenNow()` | True while a line's page is open on a line that is still on the books; else the book is drawn in its place. |
-| 3336 | 5 | `void openLine(Debt debt)` | A desk row's, or NEXT DUE's, door: the page of this line. |
-| 3343 | 10 | `static String kindNoun(Debt debt)` | A line named by its term and kind: "10-year bond", "6-month bill", "2-year floating-rate note", "5-year bond in dollars". |
-| 3359 | 14 | `String honestSentence(Debt debt, Buyback.Result q)` | THE HONEST LINE's sentence (CD6, spec-city-debt.md 6.3), for a buyback of this quote: what it stops a month of coupon and what the price paid, borrowed again at today's rate for the months the line has left, would cos... |
-| 3375 | 133 | `void linePage(VBox page)` | A line's page (CD6, board 2): see the banner above. |
-| 3513 | 5 | `static void arrangeThree(VBox books, VBox holders, VBox sales, boolean narrow)` | The three cards of a line's page on a grid of twelve columns: 6, 3 and 3 across, or, narrow, the first over the other two. |
-| 3520 | 34 | `VBox booksCard(Debt debt, int month, BookDesk.Line l)` | THE NEXT SIX MONTHS ON THE BOOKS: Debt.booksAhead(6) - opening, interest, coupon, amortised, repaid (only when any is) and closing. |
-| 3556 | 23 | `VBox holdersCard(Debt debt, BookDesk.Line l)` | WHO HOLDS IT: the holders bar and a line a holder with its face and its share. |
-| 3581 | 8 | `static HBox holderLine(String who, String colour, String text)` | One holder's line: its swatch and name at the left, its face and its share at the right. |
-| 3591 | 25 | `VBox salesCard(Debt debt, BookDesk.Line l)` | ITS SALES, AND ITS RISK: each sale as it was made, then its duration and the value of a point. |
-
-### the desk's pictures (CD6) (lines 3617-3969)
+### a line's page (CD6, board 2) (lines 3308-3667)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3623 | 107 | **type** `abstract static class Drawn extends javafx.scene.layout.Pane` | A picture that draws itself again at whatever width it is given and a fixed height (BuybackLadder's way): the desk's curve and bars and a line's price path sit in half a page, at 900 px or at 1,480. |
-| 3627 | 6 | `Drawn(double least, double first, double height)` _(in FinancesScreen.Drawn)_ |  |
-| 3635 | 1 | `abstract void draw(double w)` _(in FinancesScreen.Drawn)_ | Everything in the picture, drawn at this width: the children have been cleared. |
-| 3638 | 5 | `final void drawFirst()` _(in FinancesScreen.Drawn)_ | The first drawing, at the width the picture asks for; a subclass calls it once its figures are set. |
-| 3644 | 9 | `protected void layoutChildren()` _(in FinancesScreen.Drawn)_ |  |
-| 3655 | 13 | `final Label put(String text, double x, double y, double width, Pos align, String style)` _(in FinancesScreen.Drawn)_ | Words at a place, their top left at (x, y); in a box `width` wide, aligned, when width is above nothing. |
-| 3670 | 1 | `static String wordsIn(String tone)` _(in FinancesScreen.Drawn)_ | The caption's words in a tone. |
-| 3673 | 1 | `static String figureIn(String tone)` _(in FinancesScreen.Drawn)_ | A figure's, in a tone. |
-| 3676 | 8 | `final javafx.scene.shape.Line stroke(double x1, double y1, double x2, double y2, String colour, double width, double...dash)` _(in FinancesScreen.Drawn)_ | A straight stroke. |
-| 3686 | 5 | `static Tooltip tip(String text)` _(in FinancesScreen.Drawn)_ | A tooltip that shows at once. |
-| 3693 | 3 | `static String tenorName(int months)` _(in FinancesScreen.Drawn)_ | A tenor as the axis writes it: "3m", "1y". |
-| 3701 | 16 | `final void tenorAxis(int[] tenors, java.util.function.DoubleUnaryOperator x, double plotB)` _(in FinancesScreen.Drawn)_ | The tenors' axis along `plotB` (CD6): every tenor has its tick, and the labels claim room round ones first (a year, five, ten, thirty...), none within 26 px of another. |
-| 3719 | 10 | `static double niceStep(double span, int ticks, double...steps)` _(in FinancesScreen.Drawn)_ | A round number to put the axis's steps on: the smallest of these that fits the span into `ticks` steps or fewer. |
-| 3737 | 93 | **type** `static final class DeskCurve extends Drawn` | WHERE EACH LINE SITS ON THE CURVE (CD6, board 1): today's zero curve at the tenors, months across (to the square root, as the board draws it, so the short end has room) and the yield up; each line a dot at (months lef... |
-| 3739 | 1 | **type** `record Dot(double months, double yield, String colour, boolean hollow, String tip, String name)` _(in FinancesScreen.DeskCurve)_ | One line on the curve: its months left, its yield, its colour, whether it is dollar paper (hollow), what its tooltip says, and its name beside the dot (null: none). |
-| 3747 | 7 | `DeskCurve(int[] tenors, double[] zero, List<Dot> dots)` _(in FinancesScreen.DeskCurve)_ |  |
-| 3755 | 6 | `private static boolean overlaps(double[] box, List<double[]> taken)` _(in FinancesScreen.DeskCurve)_ |  |
-| 3762 | 67 | `void draw(double w)` _(in FinancesScreen.DeskCurve)_ |  |
-| 3835 | 47 | **type** `static final class DeskBars extends Drawn` | AT FACE, CARRIED, AND WORTH TODAY (CD6, board 1): three bars on one scale, each stacked by kind in the kinds' colours with its total at its end, and what the book is worth marked across all three as a dashed line. |
-| 3843 | 7 | `DeskBars(double[][] byKind, double worth, java.util.function.DoubleFunction<String> money)` _(in FinancesScreen.DeskBars)_ |  |
-| 3851 | 30 | `void draw(double w)` _(in FinancesScreen.DeskBars)_ |  |
-| 3888 | 81 | **type** `static final class PathChart extends Drawn` | ITS PRICE SINCE IT WAS SOLD (CD6, board 2): the price per 100 of face a month, in the money blue, and what the line is carried at per 100, muted and dashed, against a horizontal at 100, the axis in years. |
-| 3894 | 7 | `PathChart(double[] price, double[] carried, int firstMonth)` _(in FinancesScreen.PathChart)_ |  |
-| 3903 | 4 | `private static boolean ticked(int month, int step)` _(in FinancesScreen.PathChart)_ | Whether a month carries a tick of this step: January's of the years it counts in, or the months it counts in. |
-| 3908 | 49 | `void draw(double w)` _(in FinancesScreen.PathChart)_ |  |
-| 3958 | 10 | `private void polyline(double[] values, java.util.function.IntToDoubleFunction x, java.util.function.DoubleUnaryOperator y, Stri...` _(in FinancesScreen.PathChart)_ |  |
+| 3373 | 4 | `boolean lineOpenNow()` | True while a line's page is open on a line that is still on the books; else the book is drawn in its place. |
+| 3379 | 5 | `void openLine(Debt debt)` | A desk row's, or NEXT DUE's, door: the page of this line. |
+| 3386 | 10 | `static String kindNoun(Debt debt)` | A line named by its term and kind: "10-year bond", "6-month bill", "2-year floating-rate note", "5-year bond in dollars". |
+| 3402 | 14 | `String honestSentence(Debt debt, Buyback.Result q)` | THE HONEST LINE's sentence (CD6, spec-city-debt.md 6.3), for a buyback of this quote: what it stops a month of coupon and what the price paid, borrowed again at today's rate for the months the line has left, would cos... |
+| 3418 | 141 | `void linePage(VBox page)` | A line's page (CD6, board 2): see the banner above. |
+| 3564 | 5 | `static void arrangeThree(VBox books, VBox holders, VBox sales, boolean narrow)` | The three cards of a line's page on a grid of twelve columns: 6, 3 and 3 across, or, narrow, the first over the other two. |
+| 3571 | 34 | `VBox booksCard(Debt debt, int month, BookDesk.Line l)` | THE NEXT SIX MONTHS ON THE BOOKS: Debt.booksAhead(6) - opening, interest, coupon, amortised, repaid (only when any is) and closing. |
+| 3607 | 23 | `VBox holdersCard(Debt debt, BookDesk.Line l)` | WHO HOLDS IT: the holders bar and a line a holder with its face and its share. |
+| 3632 | 8 | `static HBox holderLine(String who, String colour, String text)` | One holder's line: its swatch and name at the left, its face and its share at the right. |
+| 3642 | 25 | `VBox salesCard(Debt debt, BookDesk.Line l)` | ITS SALES, AND ITS RISK: each sale as it was made, then its duration and the value of a point. |
 
-### CLOSE IT NOW (CD4, 2026-10-23) (lines 3970-4540)
+### the desk's pictures (CD6) (lines 3668-4020)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4040 | 8 | `static String holderColour(Buyback.Holder holder)` | The colour a holder has on the Close it now page: the same as on the card's holders bar. |
-| 4050 | 8 | `static String holderName(Buyback.Holder holder)` | ...and its name. |
-| 4060 | 9 | `static double perHundredFromWords(String typed)` | A most-to-pay typed: dollars for each 100 of face, "98.5" (a comma may stand for the point); NaN when it is not a number above nothing and under a thousand. |
-| 4071 | 4 | `static String termWords(int months)` | A term of this many months in words, as the honest line names the rate: "6-month", "10-year", "7.5-year". |
-| 4077 | 4 | `boolean closeOpen()` | True while the Close it now page is open on a piece that is still on the books. |
-| 4083 | 8 | `void openClose(Debt debt)` | The card's Close it now: the page opened on this piece, its boxes empty (everything on offer, no limit). |
-| 4093 | 7 | `private void setCloseBox(int which, String text)` | One of the two boxes set to this, or emptied, and the page drawn on it. |
-| 4108 | 26 | `private javafx.scene.control.TextField closeBox(int which, String prompt)` | One of the Close it now page's boxes (1 the face, 2 the most to pay): the house's search box, its text kept on the screen as it is typed so a month's redraw puts it back, and the focus with it. |
-| 4136 | 3 | `static String boxAmount(double thousands)` | A face as a box takes it back: whole dollars with commas ("1,250,000,000"), so a chip that fills the box says it exactly. |
-| 4145 | 21 | `String closeWhyNot(Buyback.Result q, Debt debt, double offerable, double asked, double typedMax)` | Why a ticket takes nothing, in a sentence (null when it takes something): nothing on offer, nothing asked, a sale not yet settled that can only go whole, or a limit under the cheapest offer. |
-| 4168 | 173 | `void closePage(VBox page)` | The Close it now page (CD4): one piece's ticket, its offers, the three comparisons and the journal, the honest line and, on a callable line, the call. |
-| 4343 | 8 | `HBox takenLine(String who, String colour, double face, double paid)` | One holder's line on the ticket: its swatch and name, what was taken from it, and what it is paid. |
-| 4358 | 46 | `VBox callCard(LongTermBond bond)` | THE CALL (spec-city-debt.md 6.4, D22 to D24), on a callable line's page: from when it can be called, what it costs, the gain or loss against carrying value (carrying less the face), what it saves in present value and ... |
-| 4416 | 124 | **type** `static final class BuybackLadder extends javafx.scene.layout.Pane` | The reverse auction's offers, drawn (board 3): a row a slice, the cheapest first, the price for each 100 at the left and the slice's face after its bar; a colour a holder, the slice outlined and faintly filled as a gh... |
-| 4427 | 12 | `BuybackLadder(Buyback.Result q, double maxPer100, java.util.function.DoubleFunction<String> money)` _(in FinancesScreen.BuybackLadder)_ |  |
-| 4440 | 5 | `protected void layoutChildren()` _(in FinancesScreen.BuybackLadder)_ |  |
-| 4447 | 69 | `private void draw(double w)` _(in FinancesScreen.BuybackLadder)_ | The ladder at a width: everything in it, drawn again from the quote. |
-| 4518 | 7 | `private void horizontal(double y, double right, String colour)` _(in FinancesScreen.BuybackLadder)_ | A dashed horizontal line across the plot at a height, in a colour. |
-| 4527 | 12 | `private void label(String text, double x, double y, javafx.geometry.Pos align, double wide, String colour)` _(in FinancesScreen.BuybackLadder)_ | A label: `x` is where the text starts, ends or centres by `align`, in a box `wide` pixels across (AuctionChart's). |
+| 3674 | 107 | **type** `abstract static class Drawn extends javafx.scene.layout.Pane` | A picture that draws itself again at whatever width it is given and a fixed height (BuybackLadder's way): the desk's curve and bars and a line's price path sit in half a page, at 900 px or at 1,480. |
+| 3678 | 6 | `Drawn(double least, double first, double height)` _(in FinancesScreen.Drawn)_ |  |
+| 3686 | 1 | `abstract void draw(double w)` _(in FinancesScreen.Drawn)_ | Everything in the picture, drawn at this width: the children have been cleared. |
+| 3689 | 5 | `final void drawFirst()` _(in FinancesScreen.Drawn)_ | The first drawing, at the width the picture asks for; a subclass calls it once its figures are set. |
+| 3695 | 9 | `protected void layoutChildren()` _(in FinancesScreen.Drawn)_ |  |
+| 3706 | 13 | `final Label put(String text, double x, double y, double width, Pos align, String style)` _(in FinancesScreen.Drawn)_ | Words at a place, their top left at (x, y); in a box `width` wide, aligned, when width is above nothing. |
+| 3721 | 1 | `static String wordsIn(String tone)` _(in FinancesScreen.Drawn)_ | The caption's words in a tone. |
+| 3724 | 1 | `static String figureIn(String tone)` _(in FinancesScreen.Drawn)_ | A figure's, in a tone. |
+| 3727 | 8 | `final javafx.scene.shape.Line stroke(double x1, double y1, double x2, double y2, String colour, double width, double...dash)` _(in FinancesScreen.Drawn)_ | A straight stroke. |
+| 3737 | 5 | `static Tooltip tip(String text)` _(in FinancesScreen.Drawn)_ | A tooltip that shows at once. |
+| 3744 | 3 | `static String tenorName(int months)` _(in FinancesScreen.Drawn)_ | A tenor as the axis writes it: "3m", "1y". |
+| 3752 | 16 | `final void tenorAxis(int[] tenors, java.util.function.DoubleUnaryOperator x, double plotB)` _(in FinancesScreen.Drawn)_ | The tenors' axis along `plotB` (CD6): every tenor has its tick, and the labels claim room round ones first (a year, five, ten, thirty...), none within 26 px of another. |
+| 3770 | 10 | `static double niceStep(double span, int ticks, double...steps)` _(in FinancesScreen.Drawn)_ | A round number to put the axis's steps on: the smallest of these that fits the span into `ticks` steps or fewer. |
+| 3788 | 93 | **type** `static final class DeskCurve extends Drawn` | WHERE EACH LINE SITS ON THE CURVE (CD6, board 1): today's zero curve at the tenors, months across (to the square root, as the board draws it, so the short end has room) and the yield up; each line a dot at (months lef... |
+| 3790 | 1 | **type** `record Dot(double months, double yield, String colour, boolean hollow, String tip, String name)` _(in FinancesScreen.DeskCurve)_ | One line on the curve: its months left, its yield, its colour, whether it is dollar paper (hollow), what its tooltip says, and its name beside the dot (null: none). |
+| 3798 | 7 | `DeskCurve(int[] tenors, double[] zero, List<Dot> dots)` _(in FinancesScreen.DeskCurve)_ |  |
+| 3806 | 6 | `private static boolean overlaps(double[] box, List<double[]> taken)` _(in FinancesScreen.DeskCurve)_ |  |
+| 3813 | 67 | `void draw(double w)` _(in FinancesScreen.DeskCurve)_ |  |
+| 3886 | 47 | **type** `static final class DeskBars extends Drawn` | AT FACE, CARRIED, AND WORTH TODAY (CD6, board 1): three bars on one scale, each stacked by kind in the kinds' colours with its total at its end, and what the book is worth marked across all three as a dashed line. |
+| 3894 | 7 | `DeskBars(double[][] byKind, double worth, java.util.function.DoubleFunction<String> money)` _(in FinancesScreen.DeskBars)_ |  |
+| 3902 | 30 | `void draw(double w)` _(in FinancesScreen.DeskBars)_ |  |
+| 3939 | 81 | **type** `static final class PathChart extends Drawn` | ITS PRICE SINCE IT WAS SOLD (CD6, board 2): the price per 100 of face a month, in the money blue, and what the line is carried at per 100, muted and dashed, against a horizontal at 100, the axis in years. |
+| 3945 | 7 | `PathChart(double[] price, double[] carried, int firstMonth)` _(in FinancesScreen.PathChart)_ |  |
+| 3954 | 4 | `private static boolean ticked(int month, int step)` _(in FinancesScreen.PathChart)_ | Whether a month carries a tick of this step: January's of the years it counts in, or the months it counts in. |
+| 3959 | 49 | `void draw(double w)` _(in FinancesScreen.PathChart)_ |  |
+| 4009 | 10 | `private void polyline(double[] values, java.util.function.IntToDoubleFunction x, java.util.function.DoubleUnaryOperator y, Stri...` _(in FinancesScreen.PathChart)_ |  |
 
-### BORROW (0.7.32) (lines 4541-4843)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4630 | 57 | `void borrowPage(VBox page, boolean foreign)` |  |
-| 4694 | 68 | `VBox askCard(Instrument kit, boolean foreign, DebtQuote quote, double fair)` | THE ASK: the kinds as tiles, the terms as columns of today's fair yield (chips abroad), how much, and at home the highest yield the city will take. |
-| 4769 | 27 | `String lineNote(Instrument kit)` | What the term's line is, in a sentence, under the columns (the board's bw-line): a bond sold into the line it reopens, or opening a new one; a bill, an amortizing bond, a floater or a linker is always its own. |
-| 4808 | 3 | `boolean callableOffered(Instrument kit, boolean foreign)` | True when the Borrow page's bond may be sold callable (CD4): a bond at home of ten years or more. |
-| 4813 | 3 | `boolean callableAsked(Instrument kit, boolean foreign)` | True when the switch is on and the paper may be callable: the quote, the booking and the line note all read this. |
-| 4824 | 13 | `VBox callableSwitch(DebtQuote quote)` | The CALLABLE switch (CD4), beside the bond's term: two chips, off by default, kept across the clock's redraw in borrowCallable. |
-| 4839 | 4 | `HBox callableLine()` | A callable sale's line on the auction card (CD4): from when it can be called and what the call adds to the coupon. |
-
-### the highest yield (CD2) (lines 4844-4854)
+### CLOSE IT NOW (CD4, 2026-10-23) (lines 4021-4591)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4851 | 3 | `List<Node> capControls(double fair)` | THE HIGHEST YIELD: fair + a point (the default), a yield the player types in per cent, or Fill it - the cap chips (CapChips), bound to the Borrow page's own cap. |
+| 4091 | 8 | `static String holderColour(Buyback.Holder holder)` | The colour a holder has on the Close it now page: the same as on the card's holders bar. |
+| 4101 | 8 | `static String holderName(Buyback.Holder holder)` | ...and its name. |
+| 4111 | 9 | `static double perHundredFromWords(String typed)` | A most-to-pay typed: dollars for each 100 of face, "98.5" (a comma may stand for the point); NaN when it is not a number above nothing and under a thousand. |
+| 4122 | 4 | `static String termWords(int months)` | A term of this many months in words, as the honest line names the rate: "6-month", "10-year", "7.5-year". |
+| 4128 | 4 | `boolean closeOpen()` | True while the Close it now page is open on a piece that is still on the books. |
+| 4134 | 8 | `void openClose(Debt debt)` | The card's Close it now: the page opened on this piece, its boxes empty (everything on offer, no limit). |
+| 4144 | 7 | `private void setCloseBox(int which, String text)` | One of the two boxes set to this, or emptied, and the page drawn on it. |
+| 4159 | 26 | `private javafx.scene.control.TextField closeBox(int which, String prompt)` | One of the Close it now page's boxes (1 the face, 2 the most to pay): the house's search box, its text kept on the screen as it is typed so a month's redraw puts it back, and the focus with it. |
+| 4187 | 3 | `static String boxAmount(double thousands)` | A face as a box takes it back: whole dollars with commas ("1,250,000,000"), so a chip that fills the box says it exactly. |
+| 4196 | 21 | `String closeWhyNot(Buyback.Result q, Debt debt, double offerable, double asked, double typedMax)` | Why a ticket takes nothing, in a sentence (null when it takes something): nothing on offer, nothing asked, a sale not yet settled that can only go whole, or a limit under the cheapest offer. |
+| 4219 | 173 | `void closePage(VBox page)` | The Close it now page (CD4): one piece's ticket, its offers, the three comparisons and the journal, the honest line and, on a callable line, the call. |
+| 4394 | 8 | `HBox takenLine(String who, String colour, double face, double paid)` | One holder's line on the ticket: its swatch and name, what was taken from it, and what it is paid. |
+| 4409 | 46 | `VBox callCard(LongTermBond bond)` | THE CALL (spec-city-debt.md 6.4, D22 to D24), on a callable line's page: from when it can be called, what it costs, the gain or loss against carrying value (carrying less the face), what it saves in present value and ... |
+| 4467 | 124 | **type** `static final class BuybackLadder extends javafx.scene.layout.Pane` | The reverse auction's offers, drawn (board 3): a row a slice, the cheapest first, the price for each 100 at the left and the slice's face after its bar; a colour a holder, the slice outlined and faintly filled as a gh... |
+| 4478 | 12 | `BuybackLadder(Buyback.Result q, double maxPer100, java.util.function.DoubleFunction<String> money)` _(in FinancesScreen.BuybackLadder)_ |  |
+| 4491 | 5 | `protected void layoutChildren()` _(in FinancesScreen.BuybackLadder)_ |  |
+| 4498 | 69 | `private void draw(double w)` _(in FinancesScreen.BuybackLadder)_ | The ladder at a width: everything in it, drawn again from the quote. |
+| 4569 | 7 | `private void horizontal(double y, double right, String colour)` _(in FinancesScreen.BuybackLadder)_ | A dashed horizontal line across the plot at a height, in a colour. |
+| 4578 | 12 | `private void label(String text, double x, double y, javafx.geometry.Pos align, double wide, String colour)` _(in FinancesScreen.BuybackLadder)_ | A label: `x` is where the text starts, ends or centres by `align`, in a box `wide` pixels across (AuctionChart's). |
 
-### the ask, typed (0.7.40) (lines 4855-5375)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4870 | 14 | `static double askFromWords(String typed)` | The ask a typed amount sets, in the model's thousands (Money.toDollars()'s unit), by ASK_TYPED_INFO's rules; NaN when it is not an amount. |
-| 4886 | 4 | `static String askRefusal(String typed)` | What the box says under itself when an entry cannot be read. |
-| 4892 | 6 | `String[] askShown(double ask, boolean foreign)` | The ask written in full and short: {"D$2,500,000,000,000", "D$2.5T"} - the second null when it would say the same; nothing asked, {"nothing asked for yet", null}. |
-| 4900 | 6 | `static double[] askSteps(double ask, double lot)` | The ± steps for an ask: one unit of its leading digit and a tenth of that - D$1B and D$100M at D$3.4B - never under a lot; at nothing, one lot. |
-| 4908 | 4 | `double askBase()` | What a step or a scale starts from: what is typed and not yet set, when it reads as an amount, else the ask. |
-| 4914 | 7 | `void setAsk(double ask)` | The ask set by a step, a preset or clear: what was typed and the refusal go, and the page is drawn on it. |
-| 4923 | 1 | **type** `record AskPreset(String name, double ask)` | One preset of the ask: what it is called, and the model's figure it sets. |
-| 4937 | 16 | `List<AskPreset> askPresets(Instrument kit, boolean foreign)` | The ask's presets, every figure a model getter's, each offered only when it is something: at home, the minimum issue (at least a lot, as "the minimum" always set it), what falls due in the next twelve months (DebtMana... |
-| 4961 | 27 | `Node askBox(boolean foreign)` | The box the ask is typed in (0.7.40), the house's search box: what is typed and not yet set lives through a month's redraw, and the focus with it. |
-| 4996 | 25 | `private void commitAsk(javafx.scene.control.TextField box, boolean enter)` | What is in the box, set as the ask - or, when it cannot be read, said under the box with the ask left as it was. |
-| 5023 | 3 | `static String abroadLine(Instrument kit)` | A kind's tile line abroad: dollar paper is the world's, at its price, not an auction's (spec-city-debt.md 2.7). |
-| 5028 | 7 | `static String abroadBlurb(Instrument kit)` | ...and its (i): what dollar paper is. |
-| 5041 | 27 | `VBox instrumentTile(Instrument kit, boolean on, boolean foreign)` | One instrument as a tile: its swatch-tinted icon, its name and (i), the range it is issued over, its line; picked, its ground and edge lit. |
-| 5078 | 63 | `Node termColumns(Instrument kit, DebtQuote quote)` | The terms at home as columns of today's fair yield (DebtManager. |
-| 5143 | 7 | `static String fairWord(Instrument kit)` | What the term columns' fair figure is called, by kind (CD5): a yield for a bill and the bonds, a margin for a floater, a real coupon for a linker. |
-| 5152 | 21 | `Node termChips(Instrument kit)` | The terms abroad as chips, each with the world's rate for it in its tooltip. |
-| 5175 | 10 | `String quoteName(Instrument kit, boolean foreign)` | What the quoted paper is called on its card: "10-year bond", "6-month bill", "20-year amortizing bond", "5-year floating-rate note", "30-year inflation-linked bond", "... |
-| 5191 | 42 | `VBox quoteCard(Instrument kit, DebtQuote quote, boolean foreign)` | THE QUOTE: the offer card on exactly the terms the button books. |
-| 5243 | 88 | `VBox auctionQuote(Instrument kit, DebtQuote quote, Auction.Result sale)` | THE QUOTE at home (CD2): the offer card of a sale at auction, in the land office's shape - the paper's name and (i), what the sale settles at, the face, the cash, the monthly cost and the cost all in, when it falls du... |
-| 5333 | 7 | `static String monthlyWords(Instrument kit)` | What the monthly cost is read at (CD5): a floater's at today's dial, a linker's at today's index; nothing to add for the rest. |
-| 5342 | 7 | `static String totalWords(Instrument kit)` | The cost of the credit's label (CD5): a floater's is at today's dial, a linker's before any indexation; the rest, all in. |
-| 5355 | 14 | `String settlesAt(Instrument kit, Auction.Result r)` | What a sale settles at, in a line: a bill's yield and its price for 100; a bond's coupon, line and yield; the amortizing bond's one coupon; a floater's margin over the policy rate, reset monthly, and the coupon it mak... |
-| 5371 | 4 | `static String tailTone(Auction.Result r)` | The tail's colour: none is good, some is amber, the highest yield reached is red. |
-
-### the auction, shown (CD2) (lines 5376-5782)
+### BORROW (0.7.32) (lines 4592-4894)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5394 | 65 | `VBox auctionCard(Instrument kit, Auction.Result r, DebtQuote quote)` | THE AUCTION: the four bids against yield with the issue, fair and the highest yield drawn (AuctionChart), then the result line by line, and the bank's room. |
-| 5461 | 3 | `HBox fillLine(String who, double face, double sold)` | One bidder's fill: its face, and its share of what was sold. |
-| 5471 | 24 | `Node shortCard(Auction.Result r)` | THE RED CARD (the spec's section 7, board 4): a sale the bids would not cover. |
-| 5502 | 30 | `List<Node> bankRoomRows(Auction.Result r)` | THE BANK'S ROOM, under the auction (what WHO BUYS IT's bar was, before CD2): its book, risk-weighted, against its room, with what the bank takes of this sale as a ghost; or why it bids nothing - failed, or no room. |
-| 5546 | 170 | **type** `static final class AuctionChart extends javafx.scene.layout.Pane` | The four bids against yield, drawn (board 4): the households, the firms, the world and the bank stacked from the foot, so the top edge is the four summed, over a yield axis from fair less a fifth of a point to the hig... |
-| 5562 | 9 | `AuctionChart(Auction.Result r, Auction.Bidders bidders, java.util.function.DoubleFunction<String> money)` _(in FinancesScreen.AuctionChart)_ |  |
-| 5572 | 5 | `protected void layoutChildren()` _(in FinancesScreen.AuctionChart)_ |  |
-| 5579 | 109 | `private void draw(double w)` _(in FinancesScreen.AuctionChart)_ | The chart at a width: everything in it, drawn again from the sale. |
-| 5690 | 7 | `private void vertical(double x, String colour, double from, double to)` _(in FinancesScreen.AuctionChart)_ | A dashed vertical line at x, in a colour, between two heights. |
-| 5703 | 12 | `private void label(String text, double x, double y, javafx.geometry.Pos align, double wide, String colour)` _(in FinancesScreen.AuctionChart)_ | A label of the chart's: `x` is where the text starts, ends or centres by `align`, in a box `wide` pixels across (a Pane gives its children their preferred size, so the box is the alignment's room). |
-| 5718 | 10 | `VBox dollarsCard()` | AND THE DOLLARS: convert and spend, or hold as reserves (the spec's W8). |
-| 5730 | 10 | `HBox foreignDoor()` | The door marked do not open, outlined in red. |
-| 5752 | 30 | `void showForeignDefaultMenu()` | Asking twice, with the bill written out: "Finances › Default abroad" (0.7.32, the spec's D14), two equal cards in the same type, "Keep paying" first. |
+| 4681 | 57 | `void borrowPage(VBox page, boolean foreign)` |  |
+| 4745 | 68 | `VBox askCard(Instrument kit, boolean foreign, DebtQuote quote, double fair)` | THE ASK: the kinds as tiles, the terms as columns of today's fair yield (chips abroad), how much, and at home the highest yield the city will take. |
+| 4820 | 27 | `String lineNote(Instrument kit)` | What the term's line is, in a sentence, under the columns (the board's bw-line): a bond sold into the line it reopens, or opening a new one; a bill, an amortizing bond, a floater or a linker is always its own. |
+| 4859 | 3 | `boolean callableOffered(Instrument kit, boolean foreign)` | True when the Borrow page's bond may be sold callable (CD4): a bond at home of ten years or more. |
+| 4864 | 3 | `boolean callableAsked(Instrument kit, boolean foreign)` | True when the switch is on and the paper may be callable: the quote, the booking and the line note all read this. |
+| 4875 | 13 | `VBox callableSwitch(DebtQuote quote)` | The CALLABLE switch (CD4), beside the bond's term: two chips, off by default, kept across the clock's redraw in borrowCallable. |
+| 4890 | 4 | `HBox callableLine()` | A callable sale's line on the auction card (CD4): from when it can be called and what the call adds to the coupon. |
 
-### MONEY (0.7.0; redrawn 0.7.32) (lines 5783-5952)
+### the highest yield (CD2) (lines 4895-4905)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5798 | 16 | `String moneyInfo()` | The page's (i): the old page's two sentences, the spec's T64 to T66. |
-| 5815 | 15 | `void moneyPage(VBox page)` |  |
-| 5832 | 15 | `String centralBookInfo(CentralBank cb)` | The book's (i): the spec's T67 and T68. |
-| 5849 | 32 | `VBox centralBookCard(CentralBank cb)` | THE CENTRAL BANK'S BOOK: what it holds against what it owes, one scale; its equity on the owing side, or a shortfall red on the holding side. |
-| 5888 | 17 | `VBox publicCard(CentralBank cb)` | WHAT THE PUBLIC HOLDS: M2 as a bar of its parts, and M0 beside it. |
-| 5907 | 28 | `VBox thisMonthCard(CentralBank cb)` | THIS MONTH: the money made and the money destroyed, each a bar of its parts on one scale, and what M0 moved by. |
-| 5937 | 15 | `VBox smallChart(String title, HistorySave h, String[] keys, String[] names, String[] colours)` | History's money series as a small chart without the controls, on the last ten years (ChartModel.DEFAULT_RANGE) or the whole history while it is younger - TimeChart, as Government's Output draws it. |
+| 4902 | 3 | `List<Node> capControls(double fair)` | THE HIGHEST YIELD: fair + a point (the default), a yield the player types in per cent, or Fill it - the cap chips (CapChips), bound to the Borrow page's own cap. |
 
-### THE BOND MARKET (0.7.12; redrawn 0.7.32) (lines 5953-6278)
+### the ask, typed (0.7.40) (lines 4906-5426)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5968 | 3 | `static String per100(double price)` | A bond's price, per 100 of face. |
-| 5996 | 14 | `Node holdersBar(double[] held, double band, boolean key)` | A holders bar over five amounts, each keyed when `key` is set. |
-| 6011 | 32 | `void bondMarketPage(VBox page)` |  |
-| 6045 | 24 | `VBox issuerCard(BondMarket.Issuer is)` | One issuer as a card: its sector's icon, its face, its bonds and their coupons, its nearest maturity, its holders; a click opens its largest bond's book. |
-| 6071 | 25 | `VBox bondMonthCard(BondMarket market)` | THIS MONTH on the bond market: sold, coupons, repaid, written off, and the last issue. |
-| 6098 | 14 | `VBox orderBooksCard(BondMarket market)` | THE ORDER BOOKS, last month: offered for sale, how much of it sold, and how many sellers waited. |
-| 6114 | 31 | `Node bondGrids(BondMarket market)` | The old page's two tables, in the fold: every bond with its price and yield, and who holds each. |
-| 6155 | 46 | `void bondBookPage(VBox page)` |  |
-| 6203 | 17 | `Node depthChart(OrderBook book, CorporateBond b, int month)` | The book's depth: a row a price level, the asks over the bids, best nearest the middle; bids drawn leftward, asks rightward, face as length. |
-| 6222 | 28 | `Node depthRow(OrderBook.Level l, boolean bid, double most, CorporateBond b, int month)` | One price level of the depth chart. |
-| 6252 | 26 | `Node levelGrids(OrderBook book, CorporateBond b, int month)` | The old page's bid and ask tables, in the fold. |
+| 4921 | 14 | `static double askFromWords(String typed)` | The ask a typed amount sets, in the model's thousands (Money.toDollars()'s unit), by ASK_TYPED_INFO's rules; NaN when it is not an amount. |
+| 4937 | 4 | `static String askRefusal(String typed)` | What the box says under itself when an entry cannot be read. |
+| 4943 | 6 | `String[] askShown(double ask, boolean foreign)` | The ask written in full and short: {"D$2,500,000,000,000", "D$2.5T"} - the second null when it would say the same; nothing asked, {"nothing asked for yet", null}. |
+| 4951 | 6 | `static double[] askSteps(double ask, double lot)` | The ± steps for an ask: one unit of its leading digit and a tenth of that - D$1B and D$100M at D$3.4B - never under a lot; at nothing, one lot. |
+| 4959 | 4 | `double askBase()` | What a step or a scale starts from: what is typed and not yet set, when it reads as an amount, else the ask. |
+| 4965 | 7 | `void setAsk(double ask)` | The ask set by a step, a preset or clear: what was typed and the refusal go, and the page is drawn on it. |
+| 4974 | 1 | **type** `record AskPreset(String name, double ask)` | One preset of the ask: what it is called, and the model's figure it sets. |
+| 4988 | 16 | `List<AskPreset> askPresets(Instrument kit, boolean foreign)` | The ask's presets, every figure a model getter's, each offered only when it is something: at home, the minimum issue (at least a lot, as "the minimum" always set it), what falls due in the next twelve months (DebtMana... |
+| 5012 | 27 | `Node askBox(boolean foreign)` | The box the ask is typed in (0.7.40), the house's search box: what is typed and not yet set lives through a month's redraw, and the focus with it. |
+| 5047 | 25 | `private void commitAsk(javafx.scene.control.TextField box, boolean enter)` | What is in the box, set as the ask - or, when it cannot be read, said under the box with the ask left as it was. |
+| 5074 | 3 | `static String abroadLine(Instrument kit)` | A kind's tile line abroad: dollar paper is the world's, at its price, not an auction's (spec-city-debt.md 2.7). |
+| 5079 | 7 | `static String abroadBlurb(Instrument kit)` | ...and its (i): what dollar paper is. |
+| 5092 | 27 | `VBox instrumentTile(Instrument kit, boolean on, boolean foreign)` | One instrument as a tile: its swatch-tinted icon, its name and (i), the range it is issued over, its line; picked, its ground and edge lit. |
+| 5129 | 63 | `Node termColumns(Instrument kit, DebtQuote quote)` | The terms at home as columns of today's fair yield (DebtManager. |
+| 5194 | 7 | `static String fairWord(Instrument kit)` | What the term columns' fair figure is called, by kind (CD5): a yield for a bill and the bonds, a margin for a floater, a real coupon for a linker. |
+| 5203 | 21 | `Node termChips(Instrument kit)` | The terms abroad as chips, each with the world's rate for it in its tooltip. |
+| 5226 | 10 | `String quoteName(Instrument kit, boolean foreign)` | What the quoted paper is called on its card: "10-year bond", "6-month bill", "20-year amortizing bond", "5-year floating-rate note", "30-year inflation-linked bond", "... |
+| 5242 | 42 | `VBox quoteCard(Instrument kit, DebtQuote quote, boolean foreign)` | THE QUOTE: the offer card on exactly the terms the button books. |
+| 5294 | 88 | `VBox auctionQuote(Instrument kit, DebtQuote quote, Auction.Result sale)` | THE QUOTE at home (CD2): the offer card of a sale at auction, in the land office's shape - the paper's name and (i), what the sale settles at, the face, the cash, the monthly cost and the cost all in, when it falls du... |
+| 5384 | 7 | `static String monthlyWords(Instrument kit)` | What the monthly cost is read at (CD5): a floater's at today's dial, a linker's at today's index; nothing to add for the rest. |
+| 5393 | 7 | `static String totalWords(Instrument kit)` | The cost of the credit's label (CD5): a floater's is at today's dial, a linker's before any indexation; the rest, all in. |
+| 5406 | 14 | `String settlesAt(Instrument kit, Auction.Result r)` | What a sale settles at, in a line: a bill's yield and its price for 100; a bond's coupon, line and yield; the amortizing bond's one coupon; a floater's margin over the policy rate, reset monthly, and the coupon it mak... |
+| 5422 | 4 | `static String tailTone(Auction.Result r)` | The tail's colour: none is good, some is amber, the highest yield reached is red. |
 
-### THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) (lines 6279-6292)
-
-### THE DEBT RESULT (lines 6293-6386)
+### the auction, shown (CD2) (lines 5427-5833)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6312 | 3 | `String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap)` | Books the sale the page quoted, at the highest yield it was quoted at (CD2): the handler struck on the same city at the same cap. |
-| 6317 | 11 | `String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap, boolean callable)` | ...a bond sold callable if the quote was (CD4): the handler struck on the same city, at the same cap, with the same option. |
-| 6330 | 56 | `void showDebtResultMenu(DebtQuote quote, boolean foreign, String summary)` | Shows the terms the player just agreed to: the quote booked as a receipt, and the ladder with it on the books; or what the booking said when nothing was booked. |
+| 5445 | 65 | `VBox auctionCard(Instrument kit, Auction.Result r, DebtQuote quote)` | THE AUCTION: the four bids against yield with the issue, fair and the highest yield drawn (AuctionChart), then the result line by line, and the bank's room. |
+| 5512 | 3 | `HBox fillLine(String who, double face, double sold)` | One bidder's fill: its face, and its share of what was sold. |
+| 5522 | 24 | `Node shortCard(Auction.Result r)` | THE RED CARD (the spec's section 7, board 4): a sale the bids would not cover. |
+| 5553 | 30 | `List<Node> bankRoomRows(Auction.Result r)` | THE BANK'S ROOM, under the auction (what WHO BUYS IT's bar was, before CD2): its book, risk-weighted, against its room, with what the bank takes of this sale as a ghost; or why it bids nothing - failed, or no room. |
+| 5597 | 170 | **type** `static final class AuctionChart extends javafx.scene.layout.Pane` | The four bids against yield, drawn (board 4): the households, the firms, the world and the bank stacked from the foot, so the top edge is the four summed, over a yield axis from fair less a fifth of a point to the hig... |
+| 5613 | 9 | `AuctionChart(Auction.Result r, Auction.Bidders bidders, java.util.function.DoubleFunction<String> money)` _(in FinancesScreen.AuctionChart)_ |  |
+| 5623 | 5 | `protected void layoutChildren()` _(in FinancesScreen.AuctionChart)_ |  |
+| 5630 | 109 | `private void draw(double w)` _(in FinancesScreen.AuctionChart)_ | The chart at a width: everything in it, drawn again from the sale. |
+| 5741 | 7 | `private void vertical(double x, String colour, double from, double to)` _(in FinancesScreen.AuctionChart)_ | A dashed vertical line at x, in a colour, between two heights. |
+| 5754 | 12 | `private void label(String text, double x, double y, javafx.geometry.Pos align, double wide, String colour)` _(in FinancesScreen.AuctionChart)_ | A label of the chart's: `x` is where the text starts, ends or centres by `align`, in a box `wide` pixels across (a Pane gives its children their preferred size, so the box is the alignment's room). |
+| 5769 | 10 | `VBox dollarsCard()` | AND THE DOLLARS: convert and spend, or hold as reserves (the spec's W8). |
+| 5781 | 10 | `HBox foreignDoor()` | The door marked do not open, outlined in red. |
+| 5803 | 30 | `void showForeignDefaultMenu()` | Asking twice, with the bill written out: "Finances › Default abroad" (0.7.32, the spec's D14), two equal cards in the same type, "Keep paying" first. |
+
+### MONEY (0.7.0; redrawn 0.7.32) (lines 5834-6003)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5849 | 16 | `String moneyInfo()` | The page's (i): the old page's two sentences, the spec's T64 to T66. |
+| 5866 | 15 | `void moneyPage(VBox page)` |  |
+| 5883 | 15 | `String centralBookInfo(CentralBank cb)` | The book's (i): the spec's T67 and T68. |
+| 5900 | 32 | `VBox centralBookCard(CentralBank cb)` | THE CENTRAL BANK'S BOOK: what it holds against what it owes, one scale; its equity on the owing side, or a shortfall red on the holding side. |
+| 5939 | 17 | `VBox publicCard(CentralBank cb)` | WHAT THE PUBLIC HOLDS: M2 as a bar of its parts, and M0 beside it. |
+| 5958 | 28 | `VBox thisMonthCard(CentralBank cb)` | THIS MONTH: the money made and the money destroyed, each a bar of its parts on one scale, and what M0 moved by. |
+| 5988 | 15 | `VBox smallChart(String title, HistorySave h, String[] keys, String[] names, String[] colours)` | History's money series as a small chart without the controls, on the last ten years (ChartModel.DEFAULT_RANGE) or the whole history while it is younger - TimeChart, as Government's Output draws it. |
+
+### THE BOND MARKET (0.7.12; redrawn 0.7.32) (lines 6004-6329)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6019 | 3 | `static String per100(double price)` | A bond's price, per 100 of face. |
+| 6047 | 14 | `Node holdersBar(double[] held, double band, boolean key)` | A holders bar over five amounts, each keyed when `key` is set. |
+| 6062 | 32 | `void bondMarketPage(VBox page)` |  |
+| 6096 | 24 | `VBox issuerCard(BondMarket.Issuer is)` | One issuer as a card: its sector's icon, its face, its bonds and their coupons, its nearest maturity, its holders; a click opens its largest bond's book. |
+| 6122 | 25 | `VBox bondMonthCard(BondMarket market)` | THIS MONTH on the bond market: sold, coupons, repaid, written off, and the last issue. |
+| 6149 | 14 | `VBox orderBooksCard(BondMarket market)` | THE ORDER BOOKS, last month: offered for sale, how much of it sold, and how many sellers waited. |
+| 6165 | 31 | `Node bondGrids(BondMarket market)` | The old page's two tables, in the fold: every bond with its price and yield, and who holds each. |
+| 6206 | 46 | `void bondBookPage(VBox page)` |  |
+| 6254 | 17 | `Node depthChart(OrderBook book, CorporateBond b, int month)` | The book's depth: a row a price level, the asks over the bids, best nearest the middle; bids drawn leftward, asks rightward, face as length. |
+| 6273 | 28 | `Node depthRow(OrderBook.Level l, boolean bid, double most, CorporateBond b, int month)` | One price level of the depth chart. |
+| 6303 | 26 | `Node levelGrids(OrderBook book, CorporateBond b, int month)` | The old page's bid and ask tables, in the fold. |
+
+### THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) (lines 6330-6343)
+
+### THE DEBT RESULT (lines 6344-6437)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6363 | 3 | `String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap)` | Books the sale the page quoted, at the highest yield it was quoted at (CD2): the handler struck on the same city at the same cap. |
+| 6368 | 11 | `String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap, boolean callable)` | ...a bond sold callable if the quote was (CD4): the handler struck on the same city, at the same cap, with the same option. |
+| 6381 | 56 | `void showDebtResultMenu(DebtQuote quote, boolean foreign, String summary)` | Shows the terms the player just agreed to: the quote booked as a receipt, and the ladder with it on the books; or what the booking said when nothing was booked. |
 
