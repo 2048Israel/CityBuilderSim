@@ -1,0 +1,67 @@
+world-2025.json: the Rankings' measures file, the real world's latest figures (batch LB1; the project's
+spec-leaderboards.md 6-8). Written by tools/world/measures.py, read by ham.citybuildersim.WorldMeasures, checked by
+WorldMeasuresCheck. It lives in the resources (src/main/resources/world/world-2025.json), UTF-8, under 1 MB. The game
+never fetches anything; the file is rebuilt only by running the pipeline.
+
+ONE OBJECT, two members: "meta" and "places".
+
+META
+  name        "world-2025"
+  made        yyyy-mm-dd, the day the file was built
+  year        2025, the board's year: each figure is its place's latest in the window
+  window      [2015, 2025]: a figure older than the window's first year is left out (absent), never carried
+  marks       {"3": {"symbol": "●", "name": "published"}, "2": {"symbol": "◐", "name": "a published projection"},
+               "1": {"symbol": "○", "name": "the game's estimate"}}: world-1.bin's marks, the same numbers
+  us_prices_2015_over_2025   the US's consumer prices of 2015 over 2025's: the CPI-U's annual averages divided,
+               unrounded, so a real 2025 dollar becomes a 2015 dollar by this factor (the Rankings' real US$, D1/D29)
+  cpi_u       {"2015": 237.017, "2025": 321.943, "series": "CUUR0000SA0", "source": "bls"}: the two annual averages
+               the ratio is made from, as the BLS publishes them
+  sources     {id: {"name": ..., "url": ..., "licence": ..., "downloaded": yyyy-mm-dd}}: every source a figure
+               names, each with its licence. Never the IMF's World Economic Outlook (nations 3.3).
+  rules       {id: "one or two sentences"}: how the game made each kind of estimate (mark 1), for the drawer
+  definitions {"oecd": "one sentence", "wup": "one sentence"}: the two city boundaries a region's def names
+  measures    the 70 measures in tools/world/measures.tsv's order, each {"key", "group", "name", "unit",
+               "arrow": "up" | "down" | "none", "money": true when it is in US$ and follows the Money toggle,
+               "scope": "N" (nations) | "NC" (nations and city regions) | "Y" (only the player's cities rank, D10),
+               "w": true for the ten Your world ranks (D15), "source": measures.tsv's spec, "note"}
+  variants    {"gdp.k": {"of": "gdp", "money": "constant 2015 US$", "source": "wdi:NY.GDP.MKTP.KD"},
+               "gdp.ppp": {"of": "gdp", "money": "current international $ (PPP)", "source": "wdi:NY.GDP.MKTP.PP.CD"},
+               "gdp_pp.k": ..., "gdp_pp.ppp": ...}: GDP and GDP per person in the other two moneys (D14)
+  counts      {"nations": 196, "regions": R, "figures": F, "estimates": E}: F every figure in "places", E those
+               marked 1; the (i) prints them
+
+PLACES, an array: the 196 nations in ISO 3166 alpha-3 order, then the city regions in tools/world/regions.tsv's order.
+  id          a nation: its ISO3 (world-1.bin's); a city region: regions.tsv's three-letter id, which is never a
+               nation's ISO3
+  kind        "nation" | "region"
+  name        a nation: world-1.bin's name; a city region: regions.tsv's
+  band        the size band: the number of digits in the place's people less one (Halifax, 4xx,xxx: 5); absent
+               when it has no people figure
+  nation      a city region only: its nation's id
+  def         a city region only: the boundary every figure of it follows, a meta.definitions id: "oecd" (the
+               OECD's functional urban area, a city and its commuting zone, for a city whose share of its nation's
+               GDP the OECD publishes) or "wup" (the UN's urban centre, World Urbanization Prospects 2025)
+  share       a city region only: {"people": FIGURE, "output": FIGURE}, its share of its nation's people and
+               output, each over 0 and under 1
+  f           {measure key or variant key: FIGURE}. A measure with no figure for the place is ABSENT: never 0, never
+               null, never NaN. A "Y" measure, and a measure whose source is "none:", is absent from every place.
+               A city region carries only "NC" measures (and the GDP variants).
+
+A FIGURE is a JSON array: [value, year, mark, source] or [value, year, mark, source, rule].
+  value       a finite number in the measure's unit
+  year        the year the value is of (in the window)
+  mark        3, 2 or 1 (meta.marks)
+  source      a meta.sources id: the source the value was read or made from
+  rule        a meta.rules id: present exactly when mark is 1, saying how the estimate was made
+
+THE RULES the builder writes (ids), and where each applies
+  ppp-market      D13: a nation with no published PPP figure takes its market figure (gdp.ppp, gdp_pp.ppp), mark 1.
+  world-1         a nation with no WDI figure in the window for GDP (each money) or people takes world-1.bin's 2025
+                  path figure (WN0's own fills: the Penn World Table, Maddison, the UN), with world-1's mark; mark 1
+                  carries this rule.
+  share-people    a city region with no published output share takes its share of the nation's people.
+  region-output   a city region's GDP in each money is its output share times its nation's figure of the share's
+                  year: mark 3 where the share is published for a year the nation's figure is published for,
+                  else mark 1 with this rule (the nation's latest figure times a share of another year).
+  derived figures (a ratio of two published figures of one source and year, a ten-year compound rate) keep the
+                  source's mark and need no rule: the measure's "source" spec says how they were made.

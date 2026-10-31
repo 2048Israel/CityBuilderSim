@@ -1,0 +1,63 @@
+id	name	nation	continent	pick	wup	fua
+TYO	Tokyo	JPN	Asia	largest	6030	JPN01F
+DEL	Delhi	IND	Asia	largest	8364	-
+SHA	Shanghai	CHN	Asia	largest	11738	-
+DAC	Dhaka	BGD	Asia	largest	6249	-
+BOM	Mumbai	IND	Asia	largest	7945	-
+BJS	Beijing	CHN	Asia	largest	9020	-
+OSA	Osaka	JPN	Asia	largest	4490	JPN02F
+KHI	Karachi	PAK	Asia	largest	2578	-
+CAI	Cairo	EGY	Africa	largest	4435	-
+LOS	Lagos	NGA	Africa	largest	1265	-
+FIH	Kinshasa	COD	Africa	largest	1854	-
+JNB	Johannesburg	ZAF	Africa	largest	3664	-
+IST	Istanbul	TUR	Europe	largest	2626	-
+MOW	Moscow	RUS	Europe	largest	2485	-
+PAR	Paris	FRA	Europe	largest	2994	FR001F
+LON	London	GBR	Europe	largest	5938	UK001F
+MEX	Mexico City	MEX	North America	largest	5439	MEX01F
+NYC	New York	USA	North America	largest	8354	USA01F
+LAX	Los Angeles	USA	North America	largest	1725	USA02F
+YTO	Toronto	CAN	North America	largest	2925	CAN01F
+SAO	São Paulo	BRA	South America	largest	7303	-
+BUE	Buenos Aires	ARG	South America	largest	4459	-
+RIO	Rio de Janeiro	BRA	South America	largest	7935	-
+SYD	Sydney	AUS	Oceania	largest	2139	AUS01F
+MEL	Melbourne	AUS	Oceania	largest	1634	AUS02F
+SEL	Seoul	KOR	Asia	capital	332	KOR01F
+JKT	Jakarta	IDN	Asia	capital	5590	-
+MNL	Manila	PHL	Asia	capital	2369	-
+BKK	Bangkok	THA	Asia	capital	2286	-
+THR	Tehran	IRN	Asia	capital	5264	-
+RUH	Riyadh	SAU	Asia	capital	2961	-
+BGW	Baghdad	IRQ	Asia	capital	3303	-
+HAN	Hanoi	VNM	Asia	capital	1975	-
+TPE	Taipei	TWN	Asia	capital	12128	-
+KUL	Kuala Lumpur	MYS	Asia	capital	1629	-
+ADD	Addis Ababa	ETH	Africa	capital	6353	-
+NBO	Nairobi	KEN	Africa	capital	2033	-
+LAD	Luanda	AGO	Africa	capital	939	-
+KRT	Khartoum	SDN	Africa	capital	4325	-
+ACC	Accra	GHA	Africa	capital	3336	-
+ALG	Algiers	DZA	Africa	capital	3444	-
+DKR	Dakar	SEN	Africa	capital	33	-
+BOG	Bogotá	COL	South America	capital	3883	COL01F
+LIM	Lima	PER	South America	capital	1987	-
+SCL	Santiago	CHL	South America	capital	2380	CL011F
+CCS	Caracas	VEN	South America	capital	3791	-
+HAV	Havana	CUB	North America	capital	350	-
+WAS	Washington	USA	North America	capital	8123	USA04F
+MAD	Madrid	ESP	Europe	capital	3440	ES001F
+BER	Berlin	DEU	Europe	capital	5576	DE001F
+ROM	Rome	ITA	Europe	capital	4156	IT001F
+IEV	Kyiv	UKR	Europe	capital	2178	-
+YHZ	Halifax	CAN	North America	small	4146	CAN12F
+REK	Reykjavik	ISL	Europe	small	42	IS001F
+HBA	Hobart	AUS	Oceania	small	761	AUS12F
+GWY	Galway	IRL	Europe	small	47	IE004F
+BGO	Bergen	NOR	Europe	small	57	NO002F
+SZG	Salzburg	AUT	Europe	small	397	AT004F
+DUD	Dunedin	NZL	Oceania	small	173	NZL06F
+TAY	Tartu	EST	Europe	small	267	EE002F
+UPP	Uppsala	SWE	Europe	small	1482	SE006F
+WBU	Boulder	USA	North America	small	6089	USA140F
