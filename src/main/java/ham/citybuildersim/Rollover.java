@@ -115,16 +115,17 @@ public final class Rollover {
      * names ("Note", "Serial", "Term": the bill, the amortizing bond and the
      * bond since CD2; "Float" and "Linked": the floating-rate note and the
      * inflation-linked bond since CD5), its term in their units (months for a bill, years for
-     * the rest), whether it is sold abroad in dollars, the
+     * the rest), whether it is sold abroad - and in which of the eight moneys (CD8; "USD" for the dollar
+     * paper of before, null at home) - the
      * cash it must bring in local money, the face its quote gives for that
      * cash as the books stand (in local money at the day's rate, for dollar
      * paper), how many pieces falling due roll into it, and how many of those
      * were dollar paper rolled at home because the window abroad was shut.
      */
-    public record Issue(String type, int term, boolean foreign, double cash, double face,
+    public record Issue(String type, int term, boolean foreign, String money, double cash, double face,
                         int pieces, int atHomeForDollars) {
 
-        /** The paper, in words: "a 20-year bond in dollars", "a 12-month bill". */
+        /** The paper, in words: "a 20-year bond in dollars", "a 20-year bond in euros", "a 12-month bill". */
         public String paper() {
             String what = switch (type) {
                 case "Note"   -> term + "-month bill";
@@ -133,7 +134,8 @@ public final class Rollover {
                 case "Linked" -> term + "-year inflation-linked bond";
                 default       -> term + "-year bond";
             };
-            return "a " + what + (foreign ? " in dollars" : "");
+            int k = ForeignAccounts.moneyIndex(money);
+            return "a " + what + (foreign ? " in " + (k <= 0 ? "dollars" : ForeignAccounts.MONEY_PLURAL[k]) : "");
         }
 
         /** Why it is this paper, in words. */

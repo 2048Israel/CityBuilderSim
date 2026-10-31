@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.90 — CD8, the city borrows in any of the eight moneys — 2026-10-31, ready, see docs/queue/CD8-notes.md
+The city sells bills and bonds abroad in any of the vault's eight moneys, not only US$ (Jerus, 2026-10-23): each on its
+own money's curve - its central bank's policy rate (XR4), the city's one country premium and the term premium - sold to
+the world as dollar paper is. A piece keeps its books in its own money and is read in D$ at the month's rate; its
+coupons and face are paid at that rate, CD7's exchange line moves it by the D$'s move and its money's cross, the buyback
+prices it on its money's curve, a piece falling due rolls into paper in its money, and proceeds held as reserves go into
+the money borrowed (★). Borrow › Abroad picks the money, each one's fair yield beside it and the risk in words; the book
+tags each piece with its money. A money with no rate this month is not offered. DebtMoneysCheck (new). No save key and
+no format bump (the piece's money rides in its saved record). The default playtest's trace is byte-identical to main's,
+so no ensemble; the suite exits 3, main's recorded reds only.
+
 ### XS1 — seed 11's stall under XR4 found at its cause — 2026-10-31, ready, no tag (study), see docs/queue/XS1-notes.md
 No rate of XR4's holds AUTO2 seed 11 at 20,000. The staffing gate's own rule does: an idle builder's laid-off crews count
 as spoken for (0.7.17). After a boom the builders stood idle with 3,187 crews laid off against 3,074 unemployed, so 8 to

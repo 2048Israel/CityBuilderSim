@@ -1511,6 +1511,10 @@ public class Game {
     private void handTheUsRate() {
         PolicyRates rates = policyRates;
         debtManager.setWorldRate(rates == null || worldQuietForTheD ? DebtManager.WORLD_BASE_RATE : rates.usRate());
+        // ...and the other seven banks' (CD8): what the city's paper in each money is priced on, the US$'s staying on the line above.
+        double[] annual = new double[ForeignAccounts.MONEYS];
+        for (int k = 0; k < annual.length; k++) annual[k] = rates == null || worldQuietForTheD ? DebtManager.WORLD_BASE_RATE : rates.rate(k);
+        debtManager.setMoneyRates(annual);
     }
 
     /** A money's value against the US$ in a month, a fraction: its rate before over its rate after, less one (a rate is units to the dollar, so a falling rate is a rising money). 0 for one with no rate either side. */
@@ -1590,6 +1594,8 @@ public class Game {
             usdPerUnit[k] = r > 0 && Double.isFinite(r) ? 1 / r : Double.NaN;
         }
         foreign.setMoneyRates(usdPerUnit);
+        // ...and to the city's debt (CD8): the moneys its paper can be written in this month, and what each piece is valued at.
+        debtManager.setMoneyUsd(usdPerUnit);
         foreign.setTradeShares(tradeSharesByMoney(moneys));
         // ...AND WHAT THE VAULT EARNS (XR4, THE VAULT EARNS): each balance at its central bank's rate, kept in the vault, once a month, after the
         // cross rates and before anything buys or sells. A load does not come this way (it restores the saved month), so a month is earned once.
@@ -10925,30 +10931,44 @@ public class Game {
      * @param requestedUsd what the city wants to raise, in dollars
      */
     public DebtQuote quoteForeign(String type, double requestedUsd, int duration, double rounding) {
+        return quoteForeign(type, "USD", requestedUsd, duration, rounding);
+    }
 
-        double before = debtManager.foreignRate();
+    /**
+     * ...in any money of the eight (CD8, Jerus 2026-10-23): the same quote on THAT money's curve - its central bank's policy rate (the world's
+     * price of money in it, DebtManager.worldRate(code)) plus the city's country premium plus the term premium - and in that money's own units:
+     * {@code requested}, the face, what it raises and the rounding are all in it. Empty when the money has no rate this month
+     * (DebtManager.offers()), as when the window is shut. The US$ is quoteForeign(type, requestedUsd, ...), through this, to the bit.
+     *
+     * The fixed cost of issue (costOfIssuance()) is local money: taken off a US$ quote as the figure it is, as it always was, and converted to the
+     * money's units (at localPer()) off any other.
+     */
+    public DebtQuote quoteForeign(String type, String money, double requested, int duration, double rounding) {
+
+        String code = money == null ? "USD" : money;
+        double before = debtManager.foreignRate(code);
 
         // Dollar floaters and linkers do not exist (CD5, spec-city-debt.md section 2.7): quoted nothing.
         if (isFloatOrLinked(type)) return new DebtQuote(type, duration, 0, before, before, 0, 0, 0, 0, null, 0);
 
         // A dollar bond is held to the same six maturities.
-        if (requestedUsd <= 0 || !debtManager.foreignWindowOpen()
+        if (requested <= 0 || !debtManager.foreignWindowOpen() || !debtManager.offers(code)
                 || ("Term".equals(type) && !LongTermBond.isIssuable(duration))) {
             return new DebtQuote(type, duration, 0, before, before, 0, 0, 0, 0, null, 0);
         }
 
         return switch (type) {
             case "Note" -> {
-                double face = Math.ceil(requestedUsd / rounding) * rounding;
-                YieldCurve world = selfPricedWorldCurve(face, duration, c ->
-                        new ShortTermTBill(face, duration, month, true));
+                double face = Math.ceil(requested / rounding) * rounding;
+                YieldCurve world = selfPricedWorldCurve(code, face, duration, c ->
+                        inMoney(new ShortTermTBill(face, duration, month, true), code));
                 double gross = face * world.factor(duration);
-                double received = Math.round((gross - costOfIssuance(face)) * 100) / 100.0;
-                yield new DebtQuote("Note", duration, requestedUsd, world.zero(duration), before,
+                double received = Math.round((gross - issueCostIn(code, face)) * 100) / 100.0;
+                yield new DebtQuote("Note", duration, requested, world.zero(duration), before,
                         face, received, 0, face - received, null, 0);
             }
             case "Term" -> {
-                double face = Math.ceil(requestedUsd / rounding) * rounding;
+                double face = Math.ceil(requested / rounding) * rounding;
                 // On the world's curve, every payment at its own month's factor
                 // (0.7.2, CD1) - what the buyback reads back for the months it
                 // has left (DebtManager.marketValue()), so a round trip is
@@ -10956,14 +10976,14 @@ public class Game {
                 // at the term, rounded down (CD2); the quote's rate is the
                 // yield the price makes of the schedule, as at home.
                 int n = duration * 12;
-                YieldCurve world = selfPricedWorldCurve(face, n, c ->
-                        new LongTermBond(face, n, month, dollarCoupon(c, n), true));
+                YieldCurve world = selfPricedWorldCurve(code, face, n, c ->
+                        inMoney(new LongTermBond(face, n, month, dollarCoupon(c, n), true), code));
                 double coupon = dollarCoupon(world, n);
                 double gross = face * world.pv(Auction.bulletPer100(coupon, n)) / 100;
                 double rate = new LongTermBond(face, n, month, coupon).getYieldToMaturity(gross);
-                double received = Math.round((gross - costOfIssuance(face)) * 100) / 100.0;
+                double received = Math.round((gross - issueCostIn(code, face)) * 100) / 100.0;
                 double monthly = (face * coupon) / 12;
-                yield new DebtQuote("Term", duration, requestedUsd, rate, before,
+                yield new DebtQuote("Term", duration, requested, rate, before,
                         face, received, monthly,
                         (face - received) + monthly * duration * 12, null, coupon);
             }
@@ -10995,14 +11015,17 @@ public class Game {
      * read the short rate the world will charge with that paper on the
      * books (DebtManager.quoteForeignRate(Debt, months) less the premium
      * for its months), until it stops moving. Returns the curve at the
-     * rate it settled to.
+     * rate it settled to. In any money of the eight (CD8): the face is in
+     * that money's units, the walk starts from its principal-only quote
+     * (DebtManager.quoteForeignRate(code, face, months)) and the shape is
+     * the paper written in it (inMoney()).
      *
      * @param shape the paper as it would be booked, given the curve it is struck on
      */
-    private YieldCurve selfPricedWorldCurve(double face, int months,
+    private YieldCurve selfPricedWorldCurve(String code, double face, int months,
                                             java.util.function.Function<YieldCurve, Debt> shape) {
         double premium = DebtManager.termPremium(months);
-        double level = debtManager.quoteForeignRate(face, months) - premium;
+        double level = debtManager.quoteForeignRate(code, face, months) - premium;
         for (int i = 0; i < FOREIGN_QUOTE_ITERATIONS; i++) {
             double next = debtManager.quoteForeignRate(
                     shape.apply(debtManager.worldCurveAt(level)), months) - premium;
@@ -11015,6 +11038,18 @@ public class Game {
     /** The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. */
     private static final int FOREIGN_QUOTE_ITERATIONS = 50;
 
+    /** A piece not yet booked, told the money it is written in (CD8) so the world's quote prices it at that money's rate: the shape of selfPricedWorldCurve(). */
+    private static Debt inMoney(Debt shape, String code) {
+        shape.setMoney(code);
+        return shape;
+    }
+
+    /** The fixed cost of an issue (costOfIssuance()) in the money the paper is written in: the figure itself for the US$, as a dollar quote has always taken it, and local money over localPer() for another (CD8). */
+    private double issueCostIn(String code, double face) {
+        double fee = costOfIssuance(face);
+        return "USD".equals(code) ? fee : fee / localPer(code);
+    }
+
     /**
      * Books a USD bond on exactly the terms quoted.
      *
@@ -11023,21 +11058,35 @@ public class Game {
      */
     public String handleForeignLogic(String type, double requestedUsd, int duration,
                                      double rounding, boolean holdAsReserves) {
+        return handleForeignLogic(type, "USD", requestedUsd, duration, rounding, holdAsReserves);
+    }
 
+    /**
+     * ...in any money of the eight (CD8): the piece is booked in {@code money} (Debt.getMoney()), opens its books and notes its sale in
+     * that money's units, and what it raised reaches the treasury in local money at that money's rate (localPer()). Refused with a
+     * sentence when the money has no rate this month. Held as reserves, the proceeds are bought back INTO THE MONEY BORROWED - a matched
+     * asset, the debt and the holding in one money - for the US$ too, which was bought by the reserve mix before CD8.
+     */
+    public String handleForeignLogic(String type, String money, double requested, int duration,
+                                     double rounding, boolean holdAsReserves) {
+
+        String code = money == null ? "USD" : money;
+        int k = Math.max(0, ForeignAccounts.moneyIndex(code));
         if (isFloatOrLinked(type)) return NO_DOLLAR_FLOAT_OR_LINKED;
         if (!debtManager.foreignWindowOpen()) {
             return "No lender abroad will take this paper: " + debtManager.foreignWindowReason();
         }
+        if (!debtManager.offers(code)) return noLenderIn(code);
         if ("Term".equals(type) && !LongTermBond.isIssuable(duration)) return LongTermBond.REFUSAL;
 
-        DebtQuote quote = quoteForeign(type, requestedUsd, duration, rounding);
+        DebtQuote quote = quoteForeign(type, code, requested, duration, rounding);
         if (quote.isEmpty()) return "Nothing issued.";
 
         Debt dollarPaper = switch (type) {
             case "Note"   -> debtManager.addShortTermTBill(
-                    quote.faceValue(), duration, month, true);
+                    quote.faceValue(), duration, month, code);
             case "Term"   -> debtManager.addLongTermBond(
-                    quote.faceValue(), duration * 12, month, quote.couponRate(), true);
+                    quote.faceValue(), duration * 12, month, quote.couponRate(), code);
             default -> throw new IllegalArgumentException("No such instrument: " + type);
         };
         // The city's books (CD3) open with what the sale raised, in dollars: markIssued() returns early for
@@ -11062,7 +11111,7 @@ public class Game {
          * inflow on the balance of payments, and either way it never touches
          * bank.lend().
          */
-        double local = quote.cashReceived() * foreign.getRate();
+        double local = quote.cashReceived() * localPer(code);
         this.cash += local;
         foreignDebtRaisedThisMonth += local;
         treasuryRaisedSoFar += local;
@@ -11077,7 +11126,8 @@ public class Game {
         // Held as reserves is part of this one decision, and says so on its line (0.7.23).
         if (holdAsReserves) {
             decisions.hold();
-            try { buyForeignCurrency(local); } finally { decisions.release(); }
+            // ...INTO THE MONEY BORROWED (CD8): a euro bond's proceeds are bought back as euros, the debt and the holding in one money.
+            try { buyForeignCurrency(local, code); } finally { decisions.release(); }
         }
 
         /*
@@ -11095,11 +11145,14 @@ public class Game {
         foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
 
         debtManager.updateInterest();
-        decisions.record(DecisionLog.BORROWING, "Borrowed US" + DecisionLog.money(quote.faceValue()) + " abroad: "
+        // The US$'s words as they were; another money's named with its mark ("€1.2M"), the amount without the $ DecisionLog.money() writes.
+        String face = DecisionLog.money(quote.faceValue());
+        String written = k == 0 ? "US" + face : ForeignAccounts.MONEY_MARK[k] + (face.startsWith("$") ? face.substring(1) : face);
+        decisions.record(DecisionLog.BORROWING, "Borrowed " + written + " abroad: "
                 + ("Note".equals(type) ? duration + "-month note" : duration + "-year term bond")
                 + (holdAsReserves ? ", held as reserves" : ""));
         return (holdAsReserves
-                ? "Issued abroad; the dollars are in reserve.\n"
+                ? "Issued abroad; the " + (k == 0 ? "dollars" : ForeignAccounts.MONEY_PLURAL[k]) + " are in reserve.\n"
                 : "Issued abroad and converted.\n") + quote.summary();
     }
 
@@ -11172,19 +11225,45 @@ public class Game {
      * nothing, and is empty with the window shut.
      */
     public DebtQuote quoteForeignForCash(String type, double cashNeededUsd, int duration, double rounding) {
-        if (!(cashNeededUsd > 0) || !(rounding > 0)) return quoteForeign(type, 0, duration, rounding);
-        return solveForCash(cashNeededUsd, rounding, face -> quoteForeign(type, face, duration, rounding));
+        return quoteForeignForCash(type, "USD", cashNeededUsd, duration, rounding);
+    }
+
+    /** ...in any money of the eight (CD8): the cash needed and the face are in that money's units, the quote on its curve (quoteForeign(type, money, ...)). */
+    public DebtQuote quoteForeignForCash(String type, String money, double cashNeeded, int duration, double rounding) {
+        if (!(cashNeeded > 0) || !(rounding > 0)) return quoteForeign(type, money, 0, duration, rounding);
+        return solveForCash(cashNeeded, rounding, face -> quoteForeign(type, money, face, duration, rounding));
     }
 
     /** Books the dollar paper quoteForeignForCash() quotes, on exactly its terms - the land office's dollar offers. */
     public String handleForeignForCash(String type, double cashNeededUsd, int duration, double rounding,
                                        boolean holdAsReserves) {
-        DebtQuote quote = quoteForeignForCash(type, cashNeededUsd, duration, rounding);
+        return handleForeignForCash(type, "USD", cashNeededUsd, duration, rounding, holdAsReserves);
+    }
+
+    /** ...in any money of the eight (CD8). */
+    public String handleForeignForCash(String type, String money, double cashNeeded, int duration, double rounding,
+                                       boolean holdAsReserves) {
+        DebtQuote quote = quoteForeignForCash(type, money, cashNeeded, duration, rounding);
         if (quote.isEmpty()) {
-            return debtManager.foreignWindowOpen() ? "Nothing issued."
-                    : "No lender abroad will take this paper: " + debtManager.foreignWindowReason();
+            if (!debtManager.foreignWindowOpen()) return "No lender abroad will take this paper: " + debtManager.foreignWindowReason();
+            return debtManager.offers(money == null ? "USD" : money) ? "Nothing issued." : noLenderIn(money);
         }
-        return handleForeignLogic(type, quote.requested(), duration, rounding, holdAsReserves);
+        return handleForeignLogic(type, money, quote.requested(), duration, rounding, holdAsReserves);
+    }
+
+    /** What the treasury is told when it asks to sell paper in a money the world has no rate for this month (CD8). */
+    private static String noLenderIn(String code) {
+        int k = ForeignAccounts.moneyIndex(code);
+        return "No lender abroad will take paper in " + (k < 0 ? code : ForeignAccounts.MONEY_PLURAL[k]) + ": the world has no rate for it this month.";
+    }
+
+    /** The smallest deal worth arranging in one money's own units (CD8): minimumIssueSizeUsd() over its US$ per unit - the US$ figure itself for the US$. A money with no rate reads as the US$'s figure. */
+    public double minimumIssueSizeIn(String money) {
+        double usd = minimumIssueSizeUsd();
+        int k = ForeignAccounts.moneyIndex(money);
+        if (k <= 0) return usd;
+        double per = debtManager.usdPer(money);
+        return per > 0 && Double.isFinite(per) ? usd / per : usd;
     }
 
     /* =======================================================================
@@ -11349,37 +11428,38 @@ public class Game {
         return sum;
     }
 
-    /** What a piece falling due rolls into: the quote functions' instrument, its term in their units, abroad or not, and whether it is dollar paper rolled at home. */
-    private record RollsInto(String type, int term, boolean foreign, boolean atHomeForDollars) { }
+    /** What a piece falling due rolls into: the quote functions' instrument, its term in their units, abroad or not and in which money (null at home), and whether it is foreign paper rolled at home. */
+    private record RollsInto(String type, int term, boolean foreign, String money, boolean atHomeForDollars) { }
 
     private RollsInto rollsInto(Debt paper, Rollover.Mode mode, boolean windowOpen) {
         if (mode == Rollover.Mode.TWELVE_MONTH_BILL) {
-            return new RollsInto("Note", Rollover.BILL_MONTHS, false, false);
+            return new RollsInto("Note", Rollover.BILL_MONTHS, false, null, false);
         }
-        boolean abroad = paper.isForeign() && windowOpen;
-        boolean atHome = paper.isForeign() && !windowOpen;
+        // CD8: a piece rolls into paper in ITS money, while the window is open and the world has a rate for that money; else at home.
+        boolean abroad = paper.isForeign() && windowOpen && debtManager.offers(paper.getMoney());
+        boolean atHome = paper.isForeign() && !abroad;
         // A bill into a bill of the nearest of its terms (CD2: 1, 3, 6, 12).
         if (paper instanceof ShortTermTBill) {
-            return new RollsInto("Note", ShortTermTBill.nearestTerm(Math.max(1, paper.getDuration())), abroad, atHome);
+            return new RollsInto("Note", ShortTermTBill.nearestTerm(Math.max(1, paper.getDuration())), abroad, abroad ? paper.getMoney() : null, atHome);
         }
         int years = Math.max(1, (int) Math.round(paper.getDuration() / 12.0));
         // An amortizing piece into a new amortizing line of the nearest of its
         // years (5 to 30 in fives). There is no dollar serial since CD2: a
         // dollar piece of the kind an older fixture holds rolls at home.
         if (paper instanceof MediumTermBond) {
-            return new RollsInto("Serial", MediumTermBond.nearestYears(years), false, paper.isForeign());
+            return new RollsInto("Serial", MediumTermBond.nearestYears(years), false, null, paper.isForeign());
         }
         // A floater into a floater and a linker into a linker (CD5), at the nearest of their own terms:
         // each piece rolls into its own instrument, term and currency.
         if (paper instanceof FloatingRateNote) {
-            return new RollsInto("Float", FloatingRateNote.nearestYears(years), false, false);
+            return new RollsInto("Float", FloatingRateNote.nearestYears(years), false, null, false);
         }
         if (paper instanceof InflationLinkedBond) {
-            return new RollsInto("Linked", InflationLinkedBond.nearestYears(years), false, false);
+            return new RollsInto("Linked", InflationLinkedBond.nearestYears(years), false, null, false);
         }
         // A bond into the nearest of the six terms - and so into that term's
         // benchmark line, which the sale reopens (quoteLongBondForCash()).
-        return new RollsInto("Term", nearestTermMaturity(years), abroad, atHome);
+        return new RollsInto("Term", nearestTermMaturity(years), abroad, abroad ? paper.getMoney() : null, atHome);
     }
 
     /** The one of LongTermBond.MATURITIES nearest this many years; the shorter on a tie. */
@@ -11445,7 +11525,7 @@ public class Game {
             java.util.Map<RollsInto, double[]> byPaper = new java.util.LinkedHashMap<>();
             for (int i = 0; i < falling.size(); i++) {
                 RollsInto into = rollsInto(falling.get(i), mode, windowOpen);
-                RollsInto key = new RollsInto(into.type(), into.term(), into.foreign(), false);
+                RollsInto key = new RollsInto(into.type(), into.term(), into.foreign(), into.money(), false);
                 double[] sum = byPaper.computeIfAbsent(key, k -> new double[3]);
                 // The piece's market part: what falls due less what the central bank would roll of it.
                 double part = itsRolls > 0 ? owed.get(i) - its.get(i) * (itsRolls / itsDue) : owed.get(i);
@@ -11458,9 +11538,9 @@ public class Game {
                 double[] sum = e.getValue();
                 if (sum[0] < smallest) continue;
                 RollsInto into = e.getKey();
-                double face = localFace(into.foreign(),
-                        rolloverQuote(into.type(), into.term(), into.foreign(), sum[0]));
-                issues.add(new Rollover.Issue(into.type(), into.term(), into.foreign(),
+                double face = localFace(into.foreign(), into.money(),
+                        rolloverQuote(into.type(), into.term(), into.foreign(), into.money(), sum[0]));
+                issues.add(new Rollover.Issue(into.type(), into.term(), into.foreign(), into.money(),
                         sum[0], face, (int) sum[1], (int) sum[2]));
             }
         }
@@ -11502,14 +11582,14 @@ public class Game {
             // Quoted again at the press, each issue after the one before it is
             // on the books: the plan quoted every issue on the books as they
             // stood, and it is this quote that is booked.
-            DebtQuote quote = rolloverQuote(issue.type(), issue.term(), issue.foreign(), issue.cash());
+            DebtQuote quote = rolloverQuote(issue.type(), issue.term(), issue.foreign(), issue.money(), issue.cash());
             double before = cash;
             String booked = issueForRollover(issue, quote);
             double brought = cash - before;
             if (quote != null && quote.auction() != null && !quote.auction().isEmpty()) {
                 sales.add(new RolloverSale(issue, quote, brought));
             }
-            double face = brought > 0 ? localFace(issue.foreign(), quote) : 0;
+            double face = brought > 0 ? localFace(issue.foreign(), issue.money(), quote) : 0;
             if (brought > 0) {
                 raised += brought;
                 faced += face;
@@ -11540,8 +11620,13 @@ public class Game {
      * due is valued at. Books nothing.
      */
     private DebtQuote rolloverQuote(String type, int term, boolean abroad, double cash) {
+        return rolloverQuote(type, term, abroad, abroad ? "USD" : null, cash);
+    }
+
+    /** ...abroad in a money of the eight (CD8): the share in that money's units at the day's rate (localPer()), the quote on its curve. */
+    private DebtQuote rolloverQuote(String type, int term, boolean abroad, String money, double cash) {
         double granule = "Note".equals(type) ? BUILD_NOTE_GRANULE : BUILD_BOND_GRANULE;
-        if (abroad) return quoteForeignForCash(type, cash / foreign.getRate(), term, granule);
+        if (abroad) return quoteForeignForCash(type, money, cash / localPer(money), term, granule);
         // At the rollover's own cap (CD2, D28); dollar paper is not sold at auction and has none.
         Auction.Cap cap = rollover.getCap();
         return switch (type) {
@@ -11622,10 +11707,10 @@ public class Game {
         }
     }
 
-    /** A rollover quote's face in local money: a dollar quote's at the day's rate. */
-    private double localFace(boolean abroad, DebtQuote quote) {
+    /** A rollover quote's face in local money: a foreign quote's at the day's rate for its money (localPer(); the D$'s rate to the US$ for a dollar quote). */
+    private double localFace(boolean abroad, String money, DebtQuote quote) {
         if (quote == null || quote.isEmpty()) return 0;
-        return abroad ? quote.faceValue() * foreign.getRate() : quote.faceValue();
+        return abroad ? quote.faceValue() * localPer(money) : quote.faceValue();
     }
 
     /**
@@ -11642,7 +11727,7 @@ public class Game {
         saleHow = Debt.ROLLOVER;
         try {
             if (issue.foreign()) {
-                return handleForeignLogic(issue.type(), quote.requested(), issue.term(), granule, false);
+                return handleForeignLogic(issue.type(), issue.money(), quote.requested(), issue.term(), granule, false);
             }
             return switch (issue.type()) {
                 case "Note"   -> issueNote(quote);
@@ -15671,6 +15756,31 @@ public class Game {
     }
 
     /**
+     * Local money per unit of one of the eight (CD8): the D$'s rate to the US$ for the US$ - the vault's, the figure every dollar path has always
+     * read - and that times the money's US$ per unit (the vault's cross rate, the debt's own when the vault has none) for another. A money that
+     * is none of the eight, or has no rate anywhere, is read at the D$'s rate alone rather than poison a payment with a NaN.
+     */
+    public double localPer(String money) {
+        int k = ForeignAccounts.moneyIndex(money);
+        if (money == null || k <= 0) return foreign.getRate();
+        double usd = foreign.getMoneyUsd(k);
+        if (usd > 0 && Double.isFinite(usd)) return foreign.getRate() * usd;
+        double fallback = debtManager.rateOf(money);
+        return fallback > 0 && Double.isFinite(fallback) ? fallback : foreign.getRate();
+    }
+
+    /** A slice of principal repaid, in the money it is written in (CD8: the US$ goes through the one-argument form, as it always did). @param own what the contract says, in that money */
+    public void repayForeignPrincipal(double own, String money) {
+        if (money == null || "USD".equals(money)) {
+            repayForeignPrincipal(own);
+            return;
+        }
+        double local = own * localPer(money);
+        treasuryPays(TreasuryLine.FOREIGN_PRINCIPAL, local);
+        foreignPrincipalRepaidThisMonth += local;
+    }
+
+    /**
      * A USD coupon.
      *
      * NOT through InterestExpense(), and it took a $69.50 audit residual to
@@ -15688,6 +15798,17 @@ public class Game {
      */
     public void payForeignInterest(double usd) {
         double local = usd * foreign.getRate();
+        treasuryPays(TreasuryLine.FOREIGN_INTEREST, local);
+        foreignInterestPaidThisMonth += local;
+    }
+
+    /** A coupon, likewise, in the money it is written in (CD8: the US$ goes through the one-argument form, as it always did). @param own what the contract says, in that money */
+    public void payForeignInterest(double own, String money) {
+        if (money == null || "USD".equals(money)) {
+            payForeignInterest(own);
+            return;
+        }
+        double local = own * localPer(money);
         treasuryPays(TreasuryLine.FOREIGN_INTEREST, local);
         foreignInterestPaidThisMonth += local;
     }
@@ -16573,7 +16694,7 @@ public class Game {
             double c = centralBankShareOf(paper, paper.principalDueNextMonth());
             if (!(c > 0)) continue;
             RollsInto into = rollsInto(paper, Rollover.Mode.SAME_STRUCTURE, false);
-            byPaper.merge(new RollsInto(into.type(), into.term(), false, false), c, Double::sum);
+            byPaper.merge(new RollsInto(into.type(), into.term(), false, null, false), c, Double::sum);
             itsDue += c;
         }
         if (!(itsDue > 0)) return;
@@ -17472,7 +17593,7 @@ public class Game {
      */
     public Buyback.HonestLine honestLine(Debt debt, Buyback.Result q) {
         int months = Math.max(1, debt.getRemainingMonths());
-        double rate = debt.isForeign() ? debtManager.foreignCurveRate(months) : debtManager.curveRate(months);
+        double rate = debt.isForeign() ? debtManager.foreignCurveRate(debt.getMoney(), months) : debtManager.curveRate(months);
         double principal = debt.getOustandingPrincipal();
         double stopped = debt.getMonthlyCoupon() * (principal > 0 ? q.takenFace() / principal : 0);
         return new Buyback.HonestLine(months, rate, stopped, q.paid() * rate / 12);
@@ -18641,6 +18762,12 @@ public class Game {
              * rating and the player's next decision to all be wrong, and a
              * whole month of a save-and-reload comparison to disagree.
              */
+            // CD8: a piece in another money than the US$ is valued at the D$'s rate times that money's US$ per unit, so the debt is
+            // handed the vault's restored cross rates first (the rates the city was saved with, not 1.0) - a load books no exchange
+            // move. The policy rates come later (restorePolicyRates() hands them), and the debt is set after both (setDebt()).
+            double[] restoredCrosses = new double[ForeignAccounts.MONEYS];
+            for (int k = 0; k < restoredCrosses.length; k++) restoredCrosses[k] = foreign.getMoneyUsd(k);
+            debtManager.setMoneyUsd(restoredCrosses);
             debtManager.setExchangeRate(foreign.getRate());
             debtManager.setTrade(foreign.monthlyExports(), foreign.importCover());
             debtManager.restoreForeignStanding(loaded.getForeignStanding());

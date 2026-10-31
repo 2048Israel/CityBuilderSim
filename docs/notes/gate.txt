@@ -1,13 +1,10 @@
-# gate of Merge batch/XS1: seed 11's stall under XR4 at its cause: held near 20,000 people m900-m2,200, unemployment 20-25%, inflation -13% to +11% as the hot money swings; one switch at a time (the unwind, the vault's interest, the US's rate, the world quieted), the fix after (Jerus, 2026-10-31: "Ship, study now (Recommended)"); beside CD8, 0.8.89
+# gate of Merge batch/CD8: the city borrows in any of the eight moneys: bills and bonds in euros, yen and the rest, each priced on its money's curve from XR4's policy rates, sold to the world, with its books, buyback and revaluation as dollar paper has them, and its choice on Borrow (Jerus, 2026-10-23), 0.8.90
 # date: 2026-10-31
 # earth-2.bin: named
-# suite: 162 harnesses run in 1812s: 159 passed, 3 failed
-# timing: 13 harnesses run in 436s: 10 passed, 3 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 26.9 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 24.5 ms, batch 24.9 ms (+1.6%), budget 25 ms: within 15% of main's]
-# timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite: 163 harnesses run in 1542s: 160 passed, 3 failed
+# timing: 13 harnesses run in 414s: 11 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.28 ms, batch 4.79 ms (+12.0%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.06 ms, batch 4.51 ms (+11.0%), budget 5 ms: within 15% of main's]
 # timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
 PassThroughCheck | exit 1
 PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL

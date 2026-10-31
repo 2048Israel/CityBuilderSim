@@ -23,7 +23,7 @@
 
 **Uses:** [Nations](Nations.md) (23), [WorldData](WorldData.md) (2), [CityCalendar](CityCalendar.md) (2), [ForeignAccounts](ForeignAccounts.md) (2)
 
-**Used by (16):** [ExchangeRateCheck](ExchangeRateCheck.md), [ForeignAccounts](ForeignAccounts.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapView](MapView.md), [PolicyRates](PolicyRates.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
+**Used by (19):** [DebtManager](DebtManager.md), [DebtMoneysCheck](DebtMoneysCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignAccounts](ForeignAccounts.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapView](MapView.md), [PolicyRates](PolicyRates.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 

@@ -756,6 +756,10 @@ adds its line here, not in `CLAUDE.md`.
                                    value times the D$'s move from the rate it was last valued at, booked at the reprice below the
                                    operating lines, taken out of the bridge as not cash and out of the cash rules, saved and
                                    reloaded; the D$ made to fall and rise 10% by ForeignAccounts.pinRate() before the press
+        DebtMoneysCheck.java       the city's paper in any of the eight moneys (batch CD8): a euro bond and a yen bill each priced
+                                   on its money's curve (its bank's policy rate, the country premium, the term premium), kept in
+                                   its own money and read in D$ at the month's rate, its coupons paid, revalued, bought back,
+                                   rolled and held as reserves in it, over a save and a load; US$ paper as it was, to the bit
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones;
                                    since SP1 three at a time (PARALLEL), each JVM under -Xmx HEAP_MB

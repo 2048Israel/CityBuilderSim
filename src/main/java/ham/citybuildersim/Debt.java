@@ -46,14 +46,14 @@ public abstract class Debt {
 
        HOW IT IS STORED, and this is the part that has to be got right once:
 
-         - a foreign bond holds its face, its principal and its coupon in USD,
+         - a foreign bond holds its face, its principal and its coupon in its own money (the US$, or since CD8 another of the eight),
            because that is what the contract says and it does not change when
            the currency moves
          - every PUBLIC getter returns LOCAL money, converted at the live rate,
            because that is what the city's books, its debt-to-GDP, its credit
            rating and every screen are denominated in
 
-       So `getOustandingPrincipal()` on a USD bond rises when the currency falls,
+       So `getOustandingPrincipal()` on a foreign bond rises when the local money falls,
        everywhere in the game at once, with no call site knowing anything about
        it. That is the whole mechanic.
 
@@ -65,15 +65,28 @@ public abstract class Debt {
        written correctly in nine places and wrong in none.
        ======================================================================= */
 
-    /** True if this paper is written in USD. */
+    /** True if this paper is written in a foreign money (getMoney()): the US$ or, since CD8, another of the eight. */
     protected boolean foreign;
 
-    /** Local currency per USD, as of the last month tick. See DebtManager. */
+    /**
+     * The code of the money a foreign piece is written in (CD8: one of WorldMoneys.EIGHT); null for US$ paper and for paper at home. A US$
+     * piece saves with no such key, exactly as before CD8 - Gson leaves a missing key alone, so an older save's dollar piece reads as US$.
+     * Set only by DebtManager when it books the piece (setMoney()).
+     */
+    protected String money;
+
+    /** Local money per unit of the piece's own money (the US$ for a dollar piece), as of the last month tick. See DebtManager. */
     protected double exchangeRate = 1.0;
 
     public boolean isForeign() { return foreign; }
 
-    /** The rate this paper is currently being valued at. */
+    /** The code of the money this paper is written in: "USD" or another of the eight for foreign paper, null for paper at home (CD8). */
+    public String getMoney() { return foreign ? (money == null ? "USD" : money) : null; }
+
+    /** Told to it by DebtManager when it books the piece, before anything reads it: a code other than "USD" is kept, "USD" and null are stored as null. */
+    void setMoney(String code) { this.money = code == null || "USD".equals(code) ? null : code; }
+
+    /** The rate this paper is currently being valued at: local money per unit of its own money. */
     public double getExchangeRate() { return exchangeRate; }
 
     /**
@@ -87,7 +100,7 @@ public abstract class Debt {
         if (rate > 0) this.exchangeRate = rate;
     }
 
-    /** USD into local money, for foreign paper; the identity for domestic. */
+    /** The paper's own money into local money, for foreign paper; the identity for domestic. */
     protected double inLocal(double own) {
         return foreign ? own * exchangeRate : own;
     }
@@ -957,7 +970,7 @@ public abstract class Debt {
      * @param owed in the paper's own currency
      */
     protected void payPrincipal(Game game, double owed) {
-        if (foreign) game.repayForeignPrincipal(owed);
+        if (foreign) game.repayForeignPrincipal(owed, getMoney());
         else         game.payDomesticPrincipal(this, owed);
     }
 
@@ -966,7 +979,7 @@ public abstract class Debt {
      * see Game.payDomesticCoupon(). @param owed in the paper's own currency
      */
     protected void payCoupon(Game game, double owed) {
-        if (foreign) game.payForeignInterest(owed);
+        if (foreign) game.payForeignInterest(owed, getMoney());
         else         game.payDomesticCoupon(this, owed);
     }
 

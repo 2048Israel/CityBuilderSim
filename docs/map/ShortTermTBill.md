@@ -30,7 +30,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Auction](Auction.md) (1), [Game](Game.md) (1)
 
-**Used by (11):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (12):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Constants
 
