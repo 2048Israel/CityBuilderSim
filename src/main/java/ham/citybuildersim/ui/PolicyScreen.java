@@ -5191,7 +5191,11 @@ final class PolicyScreen {
                         : "; nobody is studying this month.")
                 + " What it does not cover, a student loan does. The unskilled wage it "
                 + "can be a share of is " + moneyFull(ui.game.getUnskilledWage())
-                + " a month; last month's surplus was " + signedTight(ui.game.getTreasurySurplus(), false) + "."
+                + " a month; last month's surplus was " + signedTight(ui.game.getTreasurySurplus(), false)
+                // SG1: a surplus share is a share of the cash part; name it when the paper gains in the balance make them differ.
+                + (Math.abs(ui.game.getTreasuryCashSurplus() - ui.game.getTreasurySurplus()) > .05
+                        ? " (" + signedTight(ui.game.getTreasuryCashSurplus(), false) + " of it cash, which a surplus share is a share of)" : "")
+                + "."
                 + (policy.getGrantBasis() == TaxPolicy.GrantBasis.FIXED
                         ? " A fixed grant is set at founding prices and paid in today's money: founding "
                           + unitPrice(policy.getGrantAmount())

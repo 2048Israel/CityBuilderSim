@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**162 harness files, 17,602 labelled assertions.** AllChecks runs 162 of them.
+**162 harness files, 17,634 labelled assertions.** AllChecks runs 162 of them.
 
 ## Which harnesses read which class
 
@@ -90,14 +90,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandmassCheck, MapCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck, ScaleCheck |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, InterestAbroadCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck |
-| [FamilyModel](map/FamilyModel.md) | CrimeCheck, EducationCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, LongPlaytest, OutsideCheck, PopulationCheck |
+| [FamilyModel](map/FamilyModel.md) | CrimeCheck, DebtExchangeCheck, EducationCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, LongPlaytest, OutsideCheck, PopulationCheck |
 | [FamilyStructure](map/FamilyStructure.md) | BankCheck, BondCheck, CarCheck, ConsumptionCheck, CrimeCheck, EducationCheck, EquityCheck, ExchangeCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InvestCheck, LongPlaytest, MarketCheck, OutsideCheck, PopulationCheck, RestaurantsCheck |
 | [FinancesScreen](map/FinancesScreen.md) | **none** |
 | [FloatingRateNote](map/FloatingRateNote.md) | DeskCheck, FloatLinkCheck |
@@ -170,7 +170,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, LandmassCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
 | [Levers](map/Levers.md) | **none** |
-| [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, CallCheck, CentralBankCheck, CreditCheck, DeskCheck, FloatLinkCheck, FundCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
+| [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DeskCheck, FloatLinkCheck, FundCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
 | [LuxuryRetail](map/LuxuryRetail.md) | **none** |
 | [ManualToMarkdown](map/ManualToMarkdown.md) | **none** |
@@ -270,7 +270,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
-| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, TimingCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
@@ -5719,7 +5719,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L212 ...and this month's dead with no home
   - L215 ...and its running total grew with them
 
-## DebtExchangeCheck.java - 83 labelled assertions
+## DebtExchangeCheck.java - 115 labelled assertions
 
 > The exchange gain (loss) on the city's foreign-currency debt (CD7, spec-city-debt.md section 5): each dollar
 > piece carried in US$ and read in D$ at the rate it was last valued at, so a month in which the D$ moves moves
@@ -5735,99 +5735,133 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L188 1. the fixture**
-  - L196 fixture: the D$ stands at the opening rate, and the debt has been told it by the month's reprice
-  - L205 fixture: a five-year dollar bond was issued abroad, and the city has domestic paper too (a term bond and a bill)
-  - L208 fixture: the dollar bond's books are open (it is carried in dollars) and its sale kept the rate it was made at
-  - L212 fixture: ...the domestic paper is carried at something, so a rule that counted it would book something
-  - L220 a month in which the D$ does not move books no exchange line, month
-- **L227 2. the D$ falls 10%**
-  - L234 premise: the D$ moved by the factor the fixture meant - 10% weaker, a US$ dearer by a ninth - through the month's own reprice
-  - L237 premise: the move is large enough to tell a rule that books it from one that does not
-  - L239 the month's line is the dollar pieces' carrying value in US$ times the change in the rate, to the cent
-  - L240 ...said again as the D$ they were carried at before less the D$ they are carried at now
-  - L241 ...and the D$ falling is a LOSS: below nothing
-  - L242 premise: the domestic paper has been told the same rate, and a rule that counted it would have booked D$
-  - L245 ...and the domestic paper adds nothing: the line is not what counting it too would have booked
-  - L247 the budget's result carries it below the operating lines: balance less (revenue - expenses + gain on debt retired) is the line
-- **L251 3. the bridge foots**
-  - L254 the not-cash row is the discount amortised and the uplift not paid, less the gain on debt retired and less the exchange line
-  - L258 the bridge foots with the line in it: surplus + not cash + raised - repaid + journal + residual is the cash's change
-  - L263 ...and what it leaves over is what a month with no move left over (the line did not slip into it)
-  - L265 premise: had the bridge not taken the line out, the residual would have carried it and missed by more than that
-  - L268 EARNED walks to the budget with the line as a step of its own
-  - L269 ...the step is the line
-  - L275 ...and the walk comes to the budget: what it leaves is a quiet month's dollar coupon at the new D$, and nothing of the line
-  - L277 premise: the line is far larger than that tolerance, so a walk that left it in the residual would have missed
-- **L280 4. MoneyAudit untouched**
-  - L284 the month of the fall closes to the cent as a month with no move does
-  - L287 ...though the line is far larger than the tolerance: had a pool moved on it, the audit would have said so
-- **L290 5. the book after the fall**
-  - L296 the dollar line's exchange share is minus the D$'s fall: -(1 - rate then / rate now)
-  - L297 ...a D$ 10% weaker reads -10% of what the line is carried at
-  - L298 ...and what it has done, in D$, is the carrying value in US$ times the rate then less the rate now
-  - L300 ...the piece says the same, and it remembers the rate it was sold at
-  - L301 ...because a piece sold once has one rate: the mean of its sales' is that one
-  - L307 a domestic line has no exchange: nothing in D$ and nothing as a share, on either of the two
-  - L310 the desk's exchange since the sale is the lines' sums
-  - L311 ...and its share is that over what the dollar lines are carried at
-- **L313 6. the D$ rises back**
-  - L318 the month after a move books nothing again: the strike opened the line at nothing and no reprice moved it
-  - L319 ...and the result is revenue less expenses and the gain on debt retired
-  - L327 fixture: a second dollar bond is sold now, at the D$ the fall left, and keeps that as the rate it was sold at
-  - L335 premise: the D$ moved by the factor the fixture meant - 10% stronger, back to where it was sold - through the month's own reprice
-  - L337 the month's line is each dollar piece's carrying value times the change in the rate it was last valued at
-  - L338 ...said again as the D$ they were carried at before less the D$ they are carried at now
-  - L339 ...and the D$ rising is a GAIN: above nothing
-  - L340 ...the two pieces: the first is carried at its US$ times the fall back, the second likewise, each from the rate it was valued at
-  - L342 the bridge still takes it out as not cash
-  - L346 ...and foots
-  - L348 ...and the audit closes in the month of the rise too
-- **L350 7. the book after the rise**
-  - L355 the first line was sold at the rate the D$ is back to: nothing since
-  - L356 the second was sold at the rate before the rise: a gain of its US$ times the difference of the two
-  - L358 ...as a share of what it is carried at: the D$ having risen 10%, the US$ it owes cost a tenth less, a ninth of what is carried now
-  - L360 the desk's exchange since the sale is the lines' sums
-  - L361 ...its share is that over both dollar lines' carrying value
-- **L364 8. the cash rules leave it out**
-  - L370 the history keeps the line beside the surplus, a month for a month
-  - L376 revenue less the surplus plus the gain on debt retired and the exchange line is the month's expenses, every month (to rounding)
-  - L384 premise: the year the netting reads holds the line, and it is large beside the surplus it would be netted against
-  - L386 the rollover's netting reads the surplus less the line, over the months the city has lived
-  - L388 ...which is not the budget's surplus the history keeps
-  - L395 premise: this calendar year so far holds the moves
-  - L396 the fund's pay-in reads this year's surplus so far less the line
-  - L404 the fund's floor, a month of spending, is the months' expenses recovered from the history: revenue less surplus plus both gains
-  - L406 ...which is not what it would be without the exchange line
-- **L408 9. across a save and a load**
-  - L416 the month's line came back with the government block
-  - L417 premise: the line the save carried is the month of the rise, not nothing
-  - L418 ...and the result with it
-  - L419 ...and the bridge's not-cash row, which took it out
-  - L420 the history's series came back, month for month
-  - L429 each dollar piece came back with the rate it was valued at, and with the rate each sale was made at
-  - L430 ...so the reloaded desk reads the exchange since the sale as the live one
-  - L431 the cash rules read the same reloaded: the rollover's netting
-  - L436 the reloaded city's first month books no move (the load is no revaluation): its line is nothing
-  - L437 ...and the unsaved twin's is nothing too
-  - L439 premise: both cities are at the same D$ and move by the same factor
-  - L440 the next move books the same in the reloaded city as in the twin that was never saved
-  - L441 ...and it is a loss in both, as the same fall was
-- **L443 10. the rule alone**
-  - L453 a rate of nothing is refused: nothing returned
-  - L454 ...a negative one too
-  - L455 ...and one that is no number
-  - L456 ...and no piece was told anything by them
-  - L458 each dollar piece moves from the rate it was last valued at: the first from 1.2, the second from 1.1, the domestic piece not at all
-  - L460 ...and every piece is valued at the new rate afterwards, the manager too
-  - L462 ...a second press at the same rate books nothing
-  - L467 a piece with no sale does not know the rate it was sold at: 0, and nothing since
-  - L473 each sale keeps the rate the piece was valued at when it was made
-  - L475 a piece sold at two rates remembers their mean weighted by what each raised (a sale that raised nothing is not counted)
-  - L478 ...and what the exchange has done to what is still carried since is its US$ times the mean less the rate now
-  - L480 domestic paper has no exchange since the sale, whatever it was sold at
-  - L483 a change of unit scales the rates the sales were made at as it scales the rate the piece is valued at
-  - L501 the account's line reads nothing for a figure that is no number, and what it is told otherwise
+- **L246 1. the fixture**
+  - L254 fixture: the D$ stands at the opening rate, and the debt has been told it by the month's reprice
+  - L263 fixture: a five-year dollar bond was issued abroad, and the city has domestic paper too (a term bond and a bill)
+  - L266 fixture: the dollar bond's books are open (it is carried in dollars) and its sale kept the rate it was made at
+  - L270 fixture: ...the domestic paper is carried at something, so a rule that counted it would book something
+  - L278 a month in which the D$ does not move books no exchange line, month
+- **L285 2. the D$ falls 10%**
+  - L292 premise: the D$ moved by the factor the fixture meant - 10% weaker, a US$ dearer by a ninth - through the month's own reprice
+  - L295 premise: the move is large enough to tell a rule that books it from one that does not
+  - L297 the month's line is the dollar pieces' carrying value in US$ times the change in the rate, to the cent
+  - L298 ...said again as the D$ they were carried at before less the D$ they are carried at now
+  - L299 ...and the D$ falling is a LOSS: below nothing
+  - L300 premise: the domestic paper has been told the same rate, and a rule that counted it would have booked D$
+  - L303 ...and the domestic paper adds nothing: the line is not what counting it too would have booked
+  - L305 the budget's result carries it below the operating lines: balance less (revenue - expenses + gain on debt retired) is the line
+- **L309 3. the bridge foots**
+  - L312 the not-cash row is the discount amortised and the uplift not paid, less the gain on debt retired and less the exchange line
+  - L316 the bridge foots with the line in it: surplus + not cash + raised - repaid + journal + residual is the cash's change
+  - L321 ...and what it leaves over is what a month with no move left over (the line did not slip into it)
+  - L323 premise: had the bridge not taken the line out, the residual would have carried it and missed by more than that
+  - L326 EARNED walks to the budget with the line as a step of its own
+  - L327 ...the step is the line
+  - L333 ...and the walk comes to the budget: what it leaves is a quiet month's dollar coupon at the new D$, and nothing of the line
+  - L335 premise: the line is far larger than that tolerance, so a walk that left it in the residual would have missed
+- **L338 4. MoneyAudit untouched**
+  - L342 the month of the fall closes to the cent as a month with no move does
+  - L345 ...though the line is far larger than the tolerance: had a pool moved on it, the audit would have said so
+- **L348 5. the book after the fall**
+  - L354 the dollar line's exchange share is minus the D$'s fall: -(1 - rate then / rate now)
+  - L355 ...a D$ 10% weaker reads -10% of what the line is carried at
+  - L356 ...and what it has done, in D$, is the carrying value in US$ times the rate then less the rate now
+  - L358 ...the piece says the same, and it remembers the rate it was sold at
+  - L359 ...because a piece sold once has one rate: the mean of its sales' is that one
+  - L365 a domestic line has no exchange: nothing in D$ and nothing as a share, on either of the two
+  - L368 the desk's exchange since the sale is the lines' sums
+  - L369 ...and its share is that over what the dollar lines are carried at
+- **L371 6. the D$ rises back**
+  - L376 the month after a move books nothing again: the strike opened the line at nothing and no reprice moved it
+  - L377 ...and the result is revenue less expenses and the gain on debt retired
+  - L385 fixture: a second dollar bond is sold now, at the D$ the fall left, and keeps that as the rate it was sold at
+  - L393 premise: the D$ moved by the factor the fixture meant - 10% stronger, back to where it was sold - through the month's own reprice
+  - L395 the month's line is each dollar piece's carrying value times the change in the rate it was last valued at
+  - L396 ...said again as the D$ they were carried at before less the D$ they are carried at now
+  - L397 ...and the D$ rising is a GAIN: above nothing
+  - L398 ...the two pieces: the first is carried at its US$ times the fall back, the second likewise, each from the rate it was valued at
+  - L400 the bridge still takes it out as not cash
+  - L404 ...and foots
+  - L406 ...and the audit closes in the month of the rise too
+- **L408 7. the book after the rise**
+  - L413 the first line was sold at the rate the D$ is back to: nothing since
+  - L414 the second was sold at the rate before the rise: a gain of its US$ times the difference of the two
+  - L416 ...as a share of what it is carried at: the D$ having risen 10%, the US$ it owes cost a tenth less, a ninth of what is carried now
+  - L418 the desk's exchange since the sale is the lines' sums
+  - L419 ...its share is that over both dollar lines' carrying value
+- **L422 8. the cash rules leave it out**
+  - L428 the history keeps the line beside the surplus, a month for a month
+  - L434 revenue less the surplus plus the gain on debt retired and the exchange line is the month's expenses, every month (to rounding)
+  - L442 premise: the year the netting reads holds the line, and it is large beside the surplus it would be netted against
+  - L444 the rollover's netting reads the surplus less the line, over the months the city has lived
+  - L446 ...which is not the budget's surplus the history keeps
+  - L453 premise: this calendar year so far holds the moves
+  - L454 the fund's pay-in reads this year's surplus so far less the line
+  - L462 the fund's floor, a month of spending, is the months' expenses recovered from the history: revenue less surplus plus both gains
+  - L464 ...which is not what it would be without the exchange line
+- **L466 9. across a save and a load**
+  - L474 the month's line came back with the government block
+  - L475 premise: the line the save carried is the month of the rise, not nothing
+  - L476 ...and the result with it
+  - L477 ...and the bridge's not-cash row, which took it out
+  - L478 the history's series came back, month for month
+  - L487 each dollar piece came back with the rate it was valued at, and with the rate each sale was made at
+  - L488 ...so the reloaded desk reads the exchange since the sale as the live one
+  - L489 the cash rules read the same reloaded: the rollover's netting
+  - L494 the reloaded city's first month books no move (the load is no revaluation): its line is nothing
+  - L495 ...and the unsaved twin's is nothing too
+  - L497 premise: both cities are at the same D$ and move by the same factor
+  - L498 the next move books the same in the reloaded city as in the twin that was never saved
+  - L499 ...and it is a loss in both, as the same fall was
+- **L501 10. the rule alone**
+  - L511 a rate of nothing is refused: nothing returned
+  - L512 ...a negative one too
+  - L513 ...and one that is no number
+  - L514 ...and no piece was told anything by them
+  - L516 each dollar piece moves from the rate it was last valued at: the first from 1.2, the second from 1.1, the domestic piece not at all
+  - L518 ...and every piece is valued at the new rate afterwards, the manager too
+  - L520 ...a second press at the same rate books nothing
+  - L525 a piece with no sale does not know the rate it was sold at: 0, and nothing since
+  - L531 each sale keeps the rate the piece was valued at when it was made
+  - L533 a piece sold at two rates remembers their mean weighted by what each raised (a sale that raised nothing is not counted)
+  - L536 ...and what the exchange has done to what is still carried since is its US$ times the mean less the rate now
+  - L538 domestic paper has no exchange since the sale, whatever it was sold at
+  - L541 a change of unit scales the rates the sales were made at as it scales the rate the piece is valued at
+- **L544 11. the student grant on a surplus share reads the cash**
+  - L553 fixture: dollar paper is outstanding, as it is in section 1, and the window abroad was open to sell it
+  - L555 fixture: the city's grant is a share of the surplus
+  - L561 fixture: somebody is studying and the city ran a cash surplus, so the grant pays something to tell from nothing
+  - L563 a month in which the D$ does not move has no exchange line in its balance, so the balance is all cash but the discount's amortising
+  - L565 ...and the grant bill struck on it is the share of the cash surplus, to the cent
+  - L571 the month after a quiet one pays the share of that month's cash surplus
+  - L572 premise: the D$ rose 10%, the month booked a gain on the dollar paper, and the city still ran a cash surplus
+  - L574 premise: the gain is large enough to tell a grant on the balance from a grant on the cash
+  - L576 the cash surplus is the balance less the gain, which the treasury never received
+  - L577 the game's cash surplus is the same figure, from the bridge's own not-cash row
+  - L578 ...and the grant bill struck on the month is the share of that, not of the balance the gain is in
+  - L579 ...which is not the share of the balance
+  - L580 the grant is what it is in a month the D$ did not move: the share of revenue less expenses and the discount's amortising, the line nowhere in it
+  - L586 the month after the gain pays the share of that month's cash surplus: the gain is not paid out
+  - L587 ...which is less than a grant on the balance with the gain in it would have been
+  - L588 premise: the D$ fell 10%, the month booked a loss on the dollar paper, and the city still ran a cash surplus
+  - L590 premise: the loss is large enough to take the balance below nothing, where a grant on the balance would pay none
+  - L592 the loss does not take the grant down: the bill struck on the month is the share of the cash surplus
+  - L593 ...which is what it is in a month the D$ did not move
+  - L595 the Schools page's preview of what a student gets is the same pool split over the students
+  - L598 the month after the loss pays the share of that month's cash surplus too
+- **L600 12. ...and a buyback below book**
+  - L609 fixture: the term bond is on the books, a few months old, with somebody studying and the city sharing a cash surplus
+  - L613 the gain the screen quotes is the carrying value less the price paid
+  - L614 premise: the bond is bought back below its book, a gain large enough to tell a grant on the balance from a grant on the cash
+  - L620 the month books the gain, below the operating lines
+  - L621 premise: the city still ran a cash surplus in the month, and the balance holds the gain
+  - L622 the cash surplus is the balance less the gain, which the treasury never received (the price was the cash)
+  - L624 the game's cash surplus is the same figure, from the bridge's own not-cash row
+  - L625 the grant bill struck on the month is the share of that, not of the balance the gain is in
+  - L626 ...which is not the share of the balance
+  - L627 the grant is what it is in a month nothing was bought back: the share of revenue less expenses and the discount's amortising, the gain nowhere in it
+  - L630 the month after pays the share of the cash surplus, as paid
+  - L647 the account's line reads nothing for a figure that is no number, and what it is told otherwise
 
 ## DenominationCheck.java - 52 labelled assertions
 

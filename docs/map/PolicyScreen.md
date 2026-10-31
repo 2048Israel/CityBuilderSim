@@ -1,4 +1,4 @@
-# PolicyScreen.java - 5,355 lines · 274 methods · 94 constants · interface
+# PolicyScreen.java - 5,359 lines · 274 methods · 94 constants · interface
 
 `ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -104,7 +104,7 @@
 | 4448 | PROMISES - food (0.7.45; the UI spec's 2.3 and D6) |
 | 4612 | PROMISES - the clinic's price, and a premium (2026-09-19) |
 | 4809 | PROMISES - the schools: the price of a place, who pays it, and the |
-| 5305 | PROMISES - the standing subsidies |
+| 5309 | PROMISES - the standing subsidies |
 
 ## Constants
 
@@ -201,9 +201,9 @@
 | 4904 | `PolicyScreen.BURDEN_INFO` | `String.format("At %.0f%% of a month's wage nobody enrols at all: a red bar is...` | P49. |
 | 4910 | `PolicyScreen.PRICE_INFO` | `"The founding tuition table times this, before the city's share comes off." +...` | P50. |
 | 4918 | `PolicyScreen.SCHOOL_CAVEAT` | `"Against the courses being taken now, each kind's students at its own " + "pr...` | P51/P52: the schools' preview caveat. |
-| 5269 | `PolicyScreen.LOAN_INFO` | `"Charged on a graduate's balance while they repay it, and on nothing while " ...` | P55. |
-| 5275 | `PolicyScreen.LOAN_CAVEAT` | `"Against the balances the graduates owe today.The instalment itself does " + ...` | P56. |
-| 5320 | `PolicyScreen.SUBSIDY_INFO` | `"A protected sector is topped up to break-even every month it loses money, " ...` | P69. |
+| 5273 | `PolicyScreen.LOAN_INFO` | `"Charged on a graduate's balance while they repay it, and on nothing while " ...` | P55. |
+| 5279 | `PolicyScreen.LOAN_CAVEAT` | `"Against the balances the graduates owe today.The instalment itself does " + ...` | P56. |
+| 5324 | `PolicyScreen.SUBSIDY_INFO` | `"A protected sector is topped up to break-even every month it loses money, " ...` | P69. |
 
 ## Fields (state)
 
@@ -223,7 +223,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 5271 | **type** `final class PolicyScreen` | The Policy tab: every number the city sets for itself - the taxes, the wage floor, the price of money and the promises - each a dial with what it would do beside it, on a hub of four area cards and the levers that are... |
+| 85 | 5275 | **type** `final class PolicyScreen` | The Policy tab: every number the city sets for itself - the taxes, the wage floor, the price of money and the promises - each a dial with what it would do beside it, on a hub of four area cards and the levers that are... |
 | 93 | 4 | `PolicyScreen(UserInterface ui)` |  |
 
 ### POLICY (0.7.36): THE FRAME (lines 98-353)
@@ -660,7 +660,7 @@
 | 4781 | 17 | `VBox healthPremiumCard(EconomyManager em, Healthcare care, TaxPolicy policy)` | WHAT EVERY WAGE PAYS (S-5), its own Apply: raised, and the treasury's share. |
 | 4800 | 8 | `DoubleFunction<List<Effect>> healthPremiumEffects(TaxPolicy policy)` | The health premium's effects at any value of its thumb (pure: the probe reads them). |
 
-### PROMISES - the schools: the price of a place, who pays it, and the (lines 4809-5304)
+### PROMISES - the schools: the price of a place, who pays it, and the (lines 4809-5308)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -685,15 +685,15 @@
 | 5141 | 11 | `VBox schoolsMonthCard(Education schools)` | THE SCHOOLS THIS MONTH (K-2), footing: staff and buildings, less what households paid, is the net cost; the tuition waived beside it in grey, outside the sum (B17, D13). |
 | 5154 | 14 | `VBox everySchoolCard(Lever lever, TaxPolicy policy)` | Every school at once (K-3, registered): its dial ("a price per school" until moved, once the nine have parted), what the courses are billed and households pay, and THE BUDGET. |
 | 5170 | 13 | `DoubleFunction<List<Effect>> everySchoolEffects(TaxPolicy policy)` | Every school's price's effects at any value of its thumb (pure: the probe reads them). |
-| 5185 | 16 | `String grantInfo(TaxPolicy policy)` | P53, with its figures. |
-| 5209 | 41 | `VBox grantCard(TaxPolicy policy)` | What a student is granted (K-5, registered): the basis as chips - a chip stages the basis AND today's grant re-expressed in its unit, so the switch alone changes nothing until the amount moves - and the amount's dial ... |
-| 5252 | 15 | `DoubleFunction<List<Effect>> grantEffects(TaxPolicy policy)` | The grant's amount's effects at any value of its thumb (pure: the probe reads them). |
-| 5280 | 14 | `VBox loanCard(Lever lever, TaxPolicy policy)` | What the loan costs them afterwards (K-6, registered): what is owed and repaid, and a month's interest and THE BUDGET before and after (HouseholdBalance.studentInterestAt()). |
-| 5296 | 8 | `DoubleFunction<List<Effect>> loanEffects(TaxPolicy policy)` | The loan rate's effects at any value of its thumb (pure: the probe reads them). |
+| 5185 | 20 | `String grantInfo(TaxPolicy policy)` | P53, with its figures. |
+| 5213 | 41 | `VBox grantCard(TaxPolicy policy)` | What a student is granted (K-5, registered): the basis as chips - a chip stages the basis AND today's grant re-expressed in its unit, so the switch alone changes nothing until the amount moves - and the amount's dial ... |
+| 5256 | 15 | `DoubleFunction<List<Effect>> grantEffects(TaxPolicy policy)` | The grant's amount's effects at any value of its thumb (pure: the probe reads them). |
+| 5284 | 14 | `VBox loanCard(Lever lever, TaxPolicy policy)` | What the loan costs them afterwards (K-6, registered): what is owed and repaid, and a month's interest and THE BUDGET before and after (HouseholdBalance.studentInterestAt()). |
+| 5300 | 8 | `DoubleFunction<List<Effect>> loanEffects(TaxPolicy policy)` | The loan rate's effects at any value of its thumb (pure: the probe reads them). |
 
-### PROMISES - the standing subsidies (lines 5305-5355)
+### PROMISES - the standing subsidies (lines 5309-5359)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5327 | 28 | `void subsidyPage(VBox page)` |  |
+| 5331 | 28 | `void subsidyPage(VBox page)` |  |
 

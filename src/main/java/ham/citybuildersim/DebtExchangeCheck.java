@@ -40,6 +40,12 @@ import java.util.List;
  *      what an unsaved twin books - nothing at the load, the same in the next move.
  *  10. The rule alone, on a bare ledger: a rate of nothing is refused, each piece moves from its own rate, a
  *      piece sold at two rates remembers their proceeds-weighted mean, and a change of unit scales it.
+ *  11. The student grant on a surplus share is a share of the CASH surplus (SG1), on a city with students, a cash
+ *      surplus and dollar paper: the month the D$ rises 10% its exchange gain is in the balance and not in the grant,
+ *      the month it falls 10% the loss that takes the balance below nothing does not take the grant to nothing, and
+ *      the grant is what a month in which the D$ did not move would pay.
+ *  12. The same for the gain on paper bought back below its book: the balance holds it, the cash does not (the
+ *      price paid was the cash), and the grant is the share of the cash.
  */
 public class DebtExchangeCheck {
 
@@ -52,6 +58,15 @@ public class DebtExchangeCheck {
 
     /** The share of its worth in US$ the D$ keeps in a fall: 0.90 is a D$ 10% weaker; the rise back is the same factor the other way. */
     static final double KEEPS = 0.90;
+
+    /** The share of the surplus the grant is set to in section 11. */
+    static final double SHARE = .5;
+
+    /** The dollar bond section 11 sells, in US$ thousands: large beside the surplus, so its exchange line is. */
+    static final double GRANT_BOND = 60_000;
+
+    /** The domestic bond section 12 sells and buys back, in thousands: large beside the surplus, so its gain is. */
+    static final double BUYBACK_BOND = 100_000;
 
     /** Everything here is in thousands, so a thousandth of a thousandth is plenty (TreasuryCheck.TOLERANCE). */
     static final double TOLERANCE = 1e-6;
@@ -139,6 +154,49 @@ public class DebtExchangeCheck {
         double gain = 0;
         for (int i = 0; i < pieces.size(); i++) gain += pieces.get(i).carryingInCurrency() * ratesBefore[i] - pieces.get(i).getCarryingValue();
         return gain;
+    }
+
+    /**
+     * A city with homes and the schools to fill, as the grant's own harness builds it (EducationCheck), so somebody is
+     * studying; every tax at its ceiling, because the schools' running costs leave it a deficit otherwise and a deficit
+     * pays no grant to tell; the grant a share of the surplus (SHARE); the D$ pinned at the opening rate and two
+     * months pressed, the second of them with the rate pinned, as section 1 does.
+     */
+    static Game schooledCity(String label) {
+        Game g = EducationCheck.city(GameFiles.scratch(label));
+        quietly(() -> EducationCheck.schools(g));
+        TaxPolicy dials = g.getEconomyManager().getTaxPolicy();
+        dials.setIncomeTaxRate(TaxPolicy.MAX_INCOME_TAX);
+        dials.setProfitTaxRate(TaxPolicy.MAX_INCOME_TAX);
+        dials.setSalesTaxRate(TaxPolicy.MAX_INCOME_TAX);
+        dials.setPropertyTaxRate(TaxPolicy.MAX_PROPERTY_TAX);
+        dials.setGrant(TaxPolicy.GrantBasis.SURPLUS_SHARE, SHARE);
+        press(g);
+        g.getForeignAccounts().pinRate(OPENING);
+        press(g);
+        g.getDebtManager().setTrade(10_000_000, 6);   // the window abroad shuts on a city that sells nothing abroad (section 6)
+        return g;
+    }
+
+    /** Presses, the D$ not moving, until somebody is studying and the month closed on a cash surplus to share; returns that month. */
+    static Month untilSharing(Game g) {
+        Month month;
+        int waited = 0;
+        do {
+            month = move(g, 1.0);
+            waited++;
+        } while (waited < 23 && (g.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT) < 1 || cashByRule(g) <= 0));
+        return month;
+    }
+
+    /**
+     * The month's cash surplus by the rule alone: the balance less the lines it books that no cash moves on - the
+     * gain on paper retired and the exchange gain - and plus the discount amortised and the uplift, which it charges
+     * and the treasury never pays. Read off the accounts, not off the bridge's not-cash row the game reads.
+     */
+    static double cashByRule(Game g) {
+        NationalAccounts na = accounts(g);
+        return na.getBalance() - na.getRetiredGain() - na.getDebtExchangeGain() + na.getInterestNotCash() + na.getUpliftNotCash();
     }
 
     /** The journal's or the walk's entry with this label, or null. */
@@ -483,9 +541,97 @@ public class DebtExchangeCheck {
         check("a change of unit scales the rates the sales were made at as it scales the rate the piece is valued at",
                 mixed.getExchangeRate() == now * 100 && mixed.getSales().get(1).getRate() == saleRate * 100 && Math.abs(mixed.soldAtRate() - sold * 100) < 1e-9);
 
+        /* ============ 11. the student grant on a surplus share reads the cash ============ */
+        out.println("\n--- the student grant on a surplus share is a share of the cash surplus: the exchange gain on the dollar debt is not paid out ---");
+
+        Game schooled = schooledCity("debt-exchange-grant");
+        TaxPolicy dials = schooled.getEconomyManager().getTaxPolicy();
+        NationalAccounts gna = accounts(schooled);
+        EconomyManager pay = schooled.getEconomyManager();
+        schooled.getDebtManager().setTrade(10_000_000, 6);   // the window abroad shuts on a city that sells nothing abroad (section 6)
+        String saidG = quote(schooled, "Term", GRANT_BOND, 5);
+        check("fixture: dollar paper is outstanding, as it is in section 1, and the window abroad was open to sell it",
+                saidG.startsWith("Issued abroad") && foreign(schooled).size() == 1);
+        check("fixture: the city's grant is a share of the surplus", dials.getGrantBasis() == TaxPolicy.GrantBasis.SURPLUS_SHARE && dials.getGrantAmount() == SHARE);
+
+        Month still = untilSharing(schooled);
+        double stillCash = cashByRule(schooled);
+        out.printf("   a quiet month: %,.0f students, the balance $%,.2fk, the cash surplus $%,.2fk, a grant bill of $%,.2fk%n",
+                schooled.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT), gna.getBalance(), stillCash, schooled.studentGrantBill());
+        check("fixture: somebody is studying and the city ran a cash surplus, so the grant pays something to tell from nothing",
+                schooled.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT) >= 1 && stillCash > 0 && schooled.studentGrantBill() > 0);
+        check("a month in which the D$ does not move has no exchange line in its balance, so the balance is all cash but the discount's amortising",
+                still.line == 0);
+        near("...and the grant bill struck on it is the share of the cash surplus, to the cent", schooled.studentGrantBill(), SHARE * stillCash, 1e-9);
+
+        Month up = move(schooled, KEEPS);
+        double upBalance = gna.getBalance(), upCash = cashByRule(schooled);
+        double upNoMove = gna.getTotalRevenue() - gna.getTotalExpenses() + gna.getInterestNotCash() + gna.getUpliftNotCash();
+        out.printf("   the D$ rose 10%%: the balance is $%,.2fk, of which D$%,.2fk is the exchange gain; the cash surplus is $%,.2fk%n", upBalance, up.line, upCash);
+        near("the month after a quiet one pays the share of that month's cash surplus", pay.getStudentGrants(), SHARE * stillCash, 1e-9);
+        check("premise: the D$ rose 10%, the month booked a gain on the dollar paper, and the city still ran a cash surplus",
+                Math.abs(up.rateAfter / up.rateBefore - KEEPS) < 1e-12 && up.line > 0 && upCash > 0);
+        check("premise: the gain is large enough to tell a grant on the balance from a grant on the cash",
+                SHARE * upBalance - SHARE * upCash > 1000 * MoneyAudit.tolerance(TOLERANCE, upBalance));
+        near("the cash surplus is the balance less the gain, which the treasury never received", upCash, upBalance - up.line + gna.getInterestNotCash() + gna.getUpliftNotCash() - gna.getRetiredGain(), 1e-9);
+        near("the game's cash surplus is the same figure, from the bridge's own not-cash row", schooled.getTreasuryCashSurplus(), upCash);
+        near("...and the grant bill struck on the month is the share of that, not of the balance the gain is in", schooled.studentGrantBill(), SHARE * upCash, 1e-9);
+        check("...which is not the share of the balance", Math.abs(schooled.studentGrantBill() - SHARE * upBalance) > 1000 * MoneyAudit.tolerance(TOLERANCE, upBalance));
+        near("the grant is what it is in a month the D$ did not move: the share of revenue less expenses and the discount's amortising, the line nowhere in it",
+                schooled.studentGrantBill(), SHARE * upNoMove, 1e-9);
+
+        Month down = move(schooled, 1 / KEEPS);
+        double downBalance = gna.getBalance(), downCash = cashByRule(schooled);
+        out.printf("   the D$ fell 10%%: the balance is $%,.2fk, of which D$%,.2fk is the exchange loss; the cash surplus is $%,.2fk%n", downBalance, down.line, downCash);
+        near("the month after the gain pays the share of that month's cash surplus: the gain is not paid out", pay.getStudentGrants(), SHARE * upCash, 1e-9);
+        check("...which is less than a grant on the balance with the gain in it would have been", pay.getStudentGrants() < SHARE * upBalance - 1000 * MoneyAudit.tolerance(TOLERANCE, upBalance));
+        check("premise: the D$ fell 10%, the month booked a loss on the dollar paper, and the city still ran a cash surplus",
+                Math.abs(down.rateBefore / down.rateAfter - KEEPS) < 1e-12 && down.line < 0 && downCash > 0);
+        check("premise: the loss is large enough to take the balance below nothing, where a grant on the balance would pay none",
+                downBalance < 0);
+        near("the loss does not take the grant down: the bill struck on the month is the share of the cash surplus", schooled.studentGrantBill(), SHARE * downCash, 1e-9);
+        near("...which is what it is in a month the D$ did not move", schooled.studentGrantBill(),
+                SHARE * (gna.getTotalRevenue() - gna.getTotalExpenses() + gna.getInterestNotCash() + gna.getUpliftNotCash()), 1e-9);
+        near("the Schools page's preview of what a student gets is the same pool split over the students", schooled.grantPerStudentUnder(TaxPolicy.GrantBasis.SURPLUS_SHARE, SHARE),
+                schooled.studentGrantBill() / schooled.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT), 1e-9);
+        move(schooled, 1.0);
+        near("the month after the loss pays the share of that month's cash surplus too", pay.getStudentGrants(), SHARE * downCash, 1e-9);
+
+        /* ============ 12. ...and a buyback below book ============ */
+        out.println("\n--- and the same for the gain on paper bought back below its book: the budget books it and the price paid was the cash ---");
+
+        Game bought = schooledCity("debt-exchange-grant-buyback");
+        NationalAccounts bna = accounts(bought);
+        quietly(() -> bought.handleLongBondLogic(BUYBACK_BOND, 5, 1000));
+        Month buyStill = untilSharing(bought);
+        Debt bond = null;
+        for (Debt d : bought.getDebtManager().getDebt()) if (d instanceof LongTermBond) bond = d;
+        check("fixture: the term bond is on the books, a few months old, with somebody studying and the city sharing a cash surplus",
+                bond != null && buyStill.line == 0 && bought.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT) >= 1 && cashByRule(bought) > 0);
+        double buyStillCash = cashByRule(bought);
+        double price = bought.quoteRepurchase(bond), buyGain = bought.repurchaseGain(bond);
+        near("the gain the screen quotes is the carrying value less the price paid", buyGain, bond.getCarryingValue() - price, 1e-9);
+        check("premise: the bond is bought back below its book, a gain large enough to tell a grant on the balance from a grant on the cash",
+                SHARE * buyGain > 1000 * MoneyAudit.tolerance(TOLERANCE, buyStillCash));
+        bought.repurchaseDebt(bond);
+        move(bought, 1.0);
+        double buyBalance = bna.getBalance(), buyCash = cashByRule(bought);
+        out.printf("   a bond bought back below its book: price $%,.2fk, gain $%,.2fk; the balance is $%,.2fk, the cash surplus $%,.2fk%n", price, buyGain, buyBalance, buyCash);
+        near("the month books the gain, below the operating lines", bna.getRetiredGain(), buyGain, 1e-9);
+        check("premise: the city still ran a cash surplus in the month, and the balance holds the gain", buyCash > 0 && buyBalance > buyCash);
+        near("the cash surplus is the balance less the gain, which the treasury never received (the price was the cash)", buyCash,
+                buyBalance - buyGain + bna.getInterestNotCash() + bna.getUpliftNotCash() - bna.getDebtExchangeGain(), 1e-9);
+        near("the game's cash surplus is the same figure, from the bridge's own not-cash row", bought.getTreasuryCashSurplus(), buyCash);
+        near("the grant bill struck on the month is the share of that, not of the balance the gain is in", bought.studentGrantBill(), SHARE * buyCash, 1e-9);
+        check("...which is not the share of the balance", Math.abs(bought.studentGrantBill() - SHARE * buyBalance) > 1000 * MoneyAudit.tolerance(TOLERANCE, buyBalance));
+        near("the grant is what it is in a month nothing was bought back: the share of revenue less expenses and the discount's amortising, the gain nowhere in it",
+                bought.studentGrantBill(), SHARE * (bna.getTotalRevenue() - bna.getTotalExpenses() + bna.getInterestNotCash() + bna.getUpliftNotCash()), 1e-9);
+        move(bought, 1.0);
+        near("the month after pays the share of the cash surplus, as paid", bought.getEconomyManager().getStudentGrants(), SHARE * buyCash, 1e-9);
+
         out.printf("%n(%d assertions)%n", asserted);
         out.println(fails == 0
-                ? "\nThe exchange on the foreign debt is booked at the reprice, taken out of the cash and left out of the cash rules, and it survives a save."
+                ? "\nThe exchange on the foreign debt is booked at the reprice, taken out of the cash and left out of the cash rules and the surplus-share grant, and it survives a save."
                 : "\n" + fails + " FAILED");
         if (fails > 0) System.exit(1);
     }
