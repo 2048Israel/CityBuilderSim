@@ -55,7 +55,7 @@
 |---:|---|---|---|
 | 44 | `VaultMoneysCheck.out` | `System.out` |  |
 | 47 | `VaultMoneysCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
-| 50 | `VaultMoneysCheck.SLOTS` | `142` | The length of the foreign accounts' array: slots 0 to 141. |
+| 50 | `VaultMoneysCheck.SLOTS` | `147` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them). |
 | 52 | `VaultMoneysCheck.ALL_USD` | `ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE, W...` |  |
 
 ## Fields (state)

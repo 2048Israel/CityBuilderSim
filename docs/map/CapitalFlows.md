@@ -1,4 +1,4 @@
-# CapitalFlows.java - 757 lines · 48 methods · 14 constants · model
+# CapitalFlows.java - 869 lines · 55 methods · 17 constants · model
 
 `ham/citybuildersim/CapitalFlows.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -29,7 +29,7 @@
 > holds both. The split is reported, because the player should see which offer
 > is pulling; it is not two flows, because there is one balance sheet.
 
-**Used by (19):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (21):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -45,9 +45,10 @@
 | 386 | · · is anybody panicking |
 | 445 | · · what it is worth |
 | 462 | · · and it moves |
-| 506 | · reading |
-| 508 | · * |
-| 656 | · carrying |
+| 519 | · reading |
+| 521 | · * |
+| 658 | THE RISK-OFF UNWINDS THEM (XR4, 2026-10-31; spec-exchange-rates 3.8) |
+| 751 | · carrying |
 
 ## Constants
 
@@ -67,6 +68,9 @@
 | 321 | `CapitalFlows.CARRY_MAX_SHARE` | `.90` | ...and never quite all of it, because a bank at its limit lends to nobody. |
 | 324 | `CapitalFlows.CARRY_BORROW_SPEED` | `.06` | How fast the book fills, and empties. |
 | 325 | `CapitalFlows.CARRY_REPAY_SPEED` | `.20` |  |
+| 683 | `CapitalFlows.RISK_OFF_HOT_UNWIND` | `.05` | The share of the hot money's stock that runs home in a month of a risk-off of size one, scaled by the risk-off's level as it fades: a size-one risk-off takes about a fifth of the stock over the year after it, a size-1... |
+| 686 | `CapitalFlows.RISK_OFF_CARRY_UNWIND` | `.50` | The share of the carry book repaid in a month of a risk-off of size one, scaled by the level (est.: the yen carry of July 2024, at a risk-off smaller than one, was mostly gone in six weeks). |
+| 693 | `CapitalFlows.RISK_OFF_FELT` | `.05` | The risk-off level under which money no longer runs home, nor is a month of one counted (getRiskOffMonths()) or logged (est.: WorldMoneys.riskOff() fades by half in three months and never reaches 0, so a size-one risk... |
 
 ## Fields (state)
 
@@ -93,15 +97,20 @@
 | 333 | `private double peakCarryStock, peakCarrySpread` |  |
 | 334 | `private double peakStock, peakSpread` |  |
 | 335 | `private int stopsSuffered` |  |
-| 618 | `private double doubt` | The month's break chance as the last reprice left it (ForeignAccounts.getDoubtShare()), the share of the stock that takes itself home on doubt this month. |
-| 620 | `private double doubtDeparted, doubtDepartedLifetime` | What left on doubt this month (inside getDeparted()) and since founding (XR2). |
-| 650 | `private int lastMonth` | Told the month, so isStopped() can be asked outside takeMonth(). |
+| 644 | `private double doubt` | The month's break chance as the last reprice left it (ForeignAccounts.getDoubtShare()), the share of the stock that takes itself home on doubt this month. |
+| 646 | `private double doubtDeparted, doubtDepartedLifetime` | What left on doubt this month (inside getDeparted()) and since founding (XR2). |
+| 696 | `private double riskOff` | The month's risk-off level, as Game handed it. |
+| 698 | `private double riskOffDeparted, riskOffDepartedLifetime` | What ran home in a risk-off this month (inside getDeparted()) and since founding; the carry's repaid on it (inside getCarryRepaid()) and since founding; the months a risk-off unwound anything. |
+| 699 | `private double carryRiskRepaid, carryRiskRepaidLifetime` |  |
+| 700 | `private int riskOffMonths` |  |
+| 702 | `private boolean riskOffCounted` | Whether this month's unwinding has been counted in riskOffMonths already (the carry's month and the hot money's are both in it). |
+| 745 | `private int lastMonth` | Told the month, so isStopped() can be asked outside takeMonth(). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 725 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
+| 33 | 837 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
 
 ### HOW MUCH WANTS TO COME (lines 35-133)
 
@@ -130,59 +139,71 @@
 
 ### the month (lines 337-338)
 
-### WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. (lines 339-505)
+### WHAT THE MONEY WOULD DO AT A DIFFERENT PRICE. (lines 339-518)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 359 | 6 | `public double stockAt(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp)` |  |
-| 378 | 127 | `public void takeMonth(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp, double r...` |  |
+| 378 | 140 | `public void takeMonth(double depositRate, double cityRate, double worldRate, double countryPremium, double monthlyGdp, double r...` |  |
 
-### reading (lines 506-507)
+### reading (lines 519-520)
 
-### * (lines 508-655)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 527 | 51 | `public double carryTakeMonth(double lendingRate, double worldRate, double countryPremium, double headroom)` |  |
-| 580 | 5 | `public double carryInterestOn(double lendingRate)` | What the book earns the bank this month, at the rate they borrowed at. |
-| 586 | 1 | `public double getCarryStock()` |  |
-| 587 | 1 | `public double getCarryTarget()` |  |
-| 588 | 1 | `public double getCarrySpread()` |  |
-| 589 | 1 | `public double getCarryBorrowed()` |  |
-| 590 | 1 | `public double getCarryRepaid()` |  |
-| 591 | 1 | `public double getLifetimeCarryBorrowed()` |  |
-| 592 | 1 | `public double getLifetimeCarryRepaid()` |  |
-| 593 | 1 | `public double getLifetimeCarryInterest()` |  |
-| 594 | 1 | `public double getPeakCarryStock()` |  |
-| 595 | 1 | `public double getPeakCarrySpread()` |  |
-| 598 | 6 | `public double carryTargetAt(double lendingRate, double worldRate, double countryPremium, double headroom)` | What the trade would want at a given spread, for a screen or a forecast. |
-| 606 | 1 | `public double getStock()` | Foreign money currently funding the city, in local money. |
-| 609 | 1 | `public double getTarget()` | What would be here if it had all arrived. |
-| 612 | 1 | `public double getSpread()` | The excess return that is pulling it, net of what the risk costs. |
-| 614 | 1 | `public double getArrived()` |  |
-| 615 | 1 | `public double getDeparted()` |  |
-| 623 | 3 | `public void setDoubt(double share)` | Told the month's doubt before takeMonth(): a share of the stock, 0 to 1. |
-| 628 | 1 | `public double getDoubtDeparted()` | What left on doubt this month, inside getDeparted(). |
-| 630 | 1 | `public double getDoubtDepartedLifetime()` | ...and since founding. |
-| 633 | 1 | `public double netFlow()` | The month's flow, positive when money is coming in. |
-| 636 | 1 | `public double getDepositShare()` | Share of the pull that is the bank's deposit rate rather than the city's paper. |
-| 638 | 1 | `public boolean isStopped()` |  |
-| 639 | 1 | `public String getStopReason()` |  |
-| 640 | 1 | `public int getStopsSuffered()` |  |
-| 643 | 1 | `public double getPeakStock()` | The most that was ever here, and the widest the gap ever got. |
-| 644 | 1 | `public double getPeakSpread()` |  |
-| 646 | 1 | `public double getLifetimeArrived()` |  |
-| 647 | 1 | `public double getLifetimeDeparted()` |  |
-| 651 | 1 | `public void setMonth(int month)` |  |
-| 654 | 1 | `public int stopMonthsLeft()` | Months of the stop still to run, or 0. |
-
-### carrying (lines 656-757)
+### * (lines 521-657)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 658 | 15 | `public double[] toSaveArray()` |  |
-| 674 | 30 | `public void restore(double[] saved)` |  |
-| 710 | 3 | `public void restoreStopReason(String reason)` | The words the stop gave, put back on load (FW6, 2026-10-25): a String, so it cannot ride in the array above, and a city saved during a stop showed a blank reason on the Trade screen's card for the rest of it (PANIC_MO... |
-| 714 | 15 | `public void reset()` |  |
-| 731 | 25 | `public void redenominate(double scale)` | Hot money, in the new unit. |
+| 540 | 64 | `public double carryTakeMonth(double lendingRate, double worldRate, double countryPremium, double headroom)` |  |
+| 606 | 5 | `public double carryInterestOn(double lendingRate)` | What the book earns the bank this month, at the rate they borrowed at. |
+| 612 | 1 | `public double getCarryStock()` |  |
+| 613 | 1 | `public double getCarryTarget()` |  |
+| 614 | 1 | `public double getCarrySpread()` |  |
+| 615 | 1 | `public double getCarryBorrowed()` |  |
+| 616 | 1 | `public double getCarryRepaid()` |  |
+| 617 | 1 | `public double getLifetimeCarryBorrowed()` |  |
+| 618 | 1 | `public double getLifetimeCarryRepaid()` |  |
+| 619 | 1 | `public double getLifetimeCarryInterest()` |  |
+| 620 | 1 | `public double getPeakCarryStock()` |  |
+| 621 | 1 | `public double getPeakCarrySpread()` |  |
+| 624 | 6 | `public double carryTargetAt(double lendingRate, double worldRate, double countryPremium, double headroom)` | What the trade would want at a given spread, for a screen or a forecast. |
+| 632 | 1 | `public double getStock()` | Foreign money currently funding the city, in local money. |
+| 635 | 1 | `public double getTarget()` | What would be here if it had all arrived. |
+| 638 | 1 | `public double getSpread()` | The excess return that is pulling it, net of what the risk costs. |
+| 640 | 1 | `public double getArrived()` |  |
+| 641 | 1 | `public double getDeparted()` |  |
+| 649 | 3 | `public void setDoubt(double share)` | Told the month's doubt before takeMonth(): a share of the stock, 0 to 1. |
+| 654 | 1 | `public double getDoubtDeparted()` | What left on doubt this month, inside getDeparted(). |
+| 656 | 1 | `public double getDoubtDepartedLifetime()` | ...and since founding. |
+
+### THE RISK-OFF UNWINDS THEM (XR4, 2026-10-31; spec-exchange-rates 3.8) (lines 658-750)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 705 | 4 | `public void setRiskOff(double level)` | Told the month's risk-off level (WorldMoneys.riskOff()) before the carry's month and the hot money's; a negative or non-finite level reads 0. |
+| 710 | 5 | `private void countTheRiskOffMonth()` |  |
+| 717 | 1 | `public double getRiskOffDeparted()` | What ran home in a risk-off this month, inside getDeparted(). |
+| 719 | 1 | `public double getRiskOffDepartedLifetime()` | ...and since founding. |
+| 721 | 1 | `public double getCarryRiskRepaid()` | What of the carry was repaid in a risk-off this month, inside getCarryRepaid(). |
+| 723 | 1 | `public double getCarryRiskRepaidLifetime()` | ...and since founding. |
+| 725 | 1 | `public int getRiskOffMonths()` | The months, since founding, in which a risk-off of at least RISK_OFF_FELT unwound any of the hot money or the carry (a month that unwound both counts once; setRiskOff() starts each month). |
+| 728 | 1 | `public double netFlow()` | The month's flow, positive when money is coming in. |
+| 731 | 1 | `public double getDepositShare()` | Share of the pull that is the bank's deposit rate rather than the city's paper. |
+| 733 | 1 | `public boolean isStopped()` |  |
+| 734 | 1 | `public String getStopReason()` |  |
+| 735 | 1 | `public int getStopsSuffered()` |  |
+| 738 | 1 | `public double getPeakStock()` | The most that was ever here, and the widest the gap ever got. |
+| 739 | 1 | `public double getPeakSpread()` |  |
+| 741 | 1 | `public double getLifetimeArrived()` |  |
+| 742 | 1 | `public double getLifetimeDeparted()` |  |
+| 746 | 1 | `public void setMonth(int month)` |  |
+| 749 | 1 | `public int stopMonthsLeft()` | Months of the stop still to run, or 0. |
+
+### carrying (lines 751-869)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 753 | 17 | `public double[] toSaveArray()` |  |
+| 771 | 37 | `public void restore(double[] saved)` |  |
+| 814 | 3 | `public void restoreStopReason(String reason)` | The words the stop gave, put back on load (FW6, 2026-10-25): a String, so it cannot ride in the array above, and a city saved during a stop showed a blank reason on the Trade screen's card for the rest of it (PANIC_MO... |
+| 818 | 19 | `public void reset()` |  |
+| 839 | 29 | `public void redenominate(double scale)` | Hot money, in the new unit. |
 
