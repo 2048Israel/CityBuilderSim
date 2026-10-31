@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### XS1 — seed 11's stall under XR4 found at its cause — 2026-10-31, ready, no tag (study), see docs/queue/XS1-notes.md
+No rate of XR4's holds AUTO2 seed 11 at 20,000. The staffing gate's own rule does: an idle builder's laid-off crews count
+as spoken for (0.7.17). After a boom the builders stood idle with 3,187 crews laid off against 3,074 unemployed, so 8 to
+11 sectors held at "the city could staff 33%" in 314 of 381 months, nothing was ordered and the builders stayed idle.
+One switch at a time, end populations: main 68,654; XR4's unwind off 130,276, vault 351,006, US's rate 298,376, no
+risk-off 363,853; the world quieted 23,327; the gate counting the crews as spare, armed inside the trap, 298,722.
+0.8.87 met the same trap at m1,000 and left it by m1,074; every seed passes through it (122-482 months). IC1 is queued
+to free an idle builder's crews (tested: no seed stalls, median 329,143 against 347,140). No model change.
+
 ### 0.8.89 — KP1, Screens kept: City History — 2026-10-31, ready, see docs/queue/KP1-notes.md
 City History is drawn over last month's nodes instead of rebuilt (study UP4's KP1; Jerus, 2026-10-23: "Queue KP1-KP7"):
 every part and row a scope keyed by what it shows, so a line picked or a hard time begun slides nothing onto its
