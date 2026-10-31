@@ -24,8 +24,9 @@ DEFAULT_SOURCES = 'C:/Users/Jerus/Documents/world-sources'
 # The six WDI files WN0 baked world-1.bin from: never overwritten, whatever --force says.
 WN0_WDI = ['FP.CPI.TOTL', 'NY.GDP.MKTP.CD', 'NY.GDP.MKTP.KD', 'NY.GDP.MKTP.PP.KD', 'PA.NUS.FCRF', 'SP.POP.TOTL']
 
-# WDI series the measures do not name but the builder needs: GDP kept at constant 2015 US$ and at PPP, and the PPP rate.
-WDI_EXTRA = ['NY.GDP.MKTP.KD', 'NY.GDP.MKTP.PP.CD', 'NY.GDP.PCAP.KD', 'NY.GDP.PCAP.PP.CD', 'PA.NUS.PPP']
+# WDI series the measures do not name but the builder needs: GDP kept at constant 2015 US$ and at PPP, and GDP in local
+# money, which over GDP in US$ is the rate the wages are converted at (LC1: never PA.NUS.FCRF, the IMF's figure).
+WDI_EXTRA = ['NY.GDP.MKTP.KD', 'NY.GDP.MKTP.PP.CD', 'NY.GDP.PCAP.KD', 'NY.GDP.PCAP.PP.CD', 'NY.GDP.MKTP.CN']
 
 WDI_URL = ('https://api.worldbank.org/v2/country/all/indicator/%s?format=json&per_page=20000&date=2000:2025')
 

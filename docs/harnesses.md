@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**161 harness files, 17,511 labelled assertions.** AllChecks runs 161 of them.
+**161 harness files, 17,451 labelled assertions.** AllChecks runs 161 of them.
 
 ## Which harnesses read which class
 
@@ -90,14 +90,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandmassCheck, MapCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck, ScaleCheck |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck |
-| [FamilyModel](map/FamilyModel.md) | CrimeCheck, EducationCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, LongPlaytest, OutsideCheck, PopulationCheck |
+| [FamilyModel](map/FamilyModel.md) | CrimeCheck, DebtExchangeCheck, EducationCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, LongPlaytest, OutsideCheck, PopulationCheck |
 | [FamilyStructure](map/FamilyStructure.md) | BankCheck, BondCheck, CarCheck, ConsumptionCheck, CrimeCheck, EducationCheck, EquityCheck, ExchangeCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InvestCheck, LongPlaytest, MarketCheck, OutsideCheck, PopulationCheck, RestaurantsCheck |
 | [FinancesScreen](map/FinancesScreen.md) | **none** |
 | [FloatingRateNote](map/FloatingRateNote.md) | DeskCheck, FloatLinkCheck |
@@ -119,7 +119,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
-| [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RankingsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
+| [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
 | [Gateways](map/Gateways.md) | GatewayCheck |
 | [Geology](map/Geology.md) | CoalMiningCheck, EarthDepositsCheck, EarthTerrainCheck |
 | [GlobeFrame](map/GlobeFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
@@ -161,7 +161,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandClassView](map/LandClassView.md) | LandClassCheck |
 | [LandConversion](map/LandConversion.md) | ConversionCheck, LandCheck, ScaleCheck, WaterCheck |
 | [LandGrid](map/LandGrid.md) | ConversionCheck, GridCheck, HydroCheck, LandCheck, LandmassCheck, MapCheck |
-| [LandManager](map/LandManager.md) | AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RankingsCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [LandManager](map/LandManager.md) | AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, HydroCheck, LandCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck, ZoningViewCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
 | [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
@@ -170,7 +170,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, LandmassCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
 | [Levers](map/Levers.md) | **none** |
-| [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, CallCheck, CentralBankCheck, CreditCheck, DeskCheck, FloatLinkCheck, FundCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
+| [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DeskCheck, FloatLinkCheck, FundCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
 | [LuxuryRetail](map/LuxuryRetail.md) | **none** |
 | [ManualToMarkdown](map/ManualToMarkdown.md) | **none** |
@@ -240,7 +240,6 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SaveDump](map/SaveDump.md) | **none** |
 | [SaveHeader](map/SaveHeader.md) | SaveFileCheck, SaveSlotCheck, ScaleCheck |
 | [SaveWriter](map/SaveWriter.md) | SaveSlotCheck |
-| [SavedCities](map/SavedCities.md) | RankingsCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck |
 | [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, TruckRouteCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
@@ -270,7 +269,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
-| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, TimingCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
@@ -5703,7 +5702,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L212 ...and this month's dead with no home
   - L215 ...and its running total grew with them
 
-## DebtExchangeCheck.java - 83 labelled assertions
+## DebtExchangeCheck.java - 115 labelled assertions
 
 > The exchange gain (loss) on the city's foreign-currency debt (CD7, spec-city-debt.md section 5): each dollar
 > piece carried in US$ and read in D$ at the rate it was last valued at, so a month in which the D$ moves moves
@@ -5719,99 +5718,133 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L188 1. the fixture**
-  - L196 fixture: the D$ stands at the opening rate, and the debt has been told it by the month's reprice
-  - L205 fixture: a five-year dollar bond was issued abroad, and the city has domestic paper too (a term bond and a bill)
-  - L208 fixture: the dollar bond's books are open (it is carried in dollars) and its sale kept the rate it was made at
-  - L212 fixture: ...the domestic paper is carried at something, so a rule that counted it would book something
-  - L220 a month in which the D$ does not move books no exchange line, month
-- **L227 2. the D$ falls 10%**
-  - L234 premise: the D$ moved by the factor the fixture meant - 10% weaker, a US$ dearer by a ninth - through the month's own reprice
-  - L237 premise: the move is large enough to tell a rule that books it from one that does not
-  - L239 the month's line is the dollar pieces' carrying value in US$ times the change in the rate, to the cent
-  - L240 ...said again as the D$ they were carried at before less the D$ they are carried at now
-  - L241 ...and the D$ falling is a LOSS: below nothing
-  - L242 premise: the domestic paper has been told the same rate, and a rule that counted it would have booked D$
-  - L245 ...and the domestic paper adds nothing: the line is not what counting it too would have booked
-  - L247 the budget's result carries it below the operating lines: balance less (revenue - expenses + gain on debt retired) is the line
-- **L251 3. the bridge foots**
-  - L254 the not-cash row is the discount amortised and the uplift not paid, less the gain on debt retired and less the exchange line
-  - L258 the bridge foots with the line in it: surplus + not cash + raised - repaid + journal + residual is the cash's change
-  - L263 ...and what it leaves over is what a month with no move left over (the line did not slip into it)
-  - L265 premise: had the bridge not taken the line out, the residual would have carried it and missed by more than that
-  - L268 EARNED walks to the budget with the line as a step of its own
-  - L269 ...the step is the line
-  - L275 ...and the walk comes to the budget: what it leaves is a quiet month's dollar coupon at the new D$, and nothing of the line
-  - L277 premise: the line is far larger than that tolerance, so a walk that left it in the residual would have missed
-- **L280 4. MoneyAudit untouched**
-  - L284 the month of the fall closes to the cent as a month with no move does
-  - L287 ...though the line is far larger than the tolerance: had a pool moved on it, the audit would have said so
-- **L290 5. the book after the fall**
-  - L296 the dollar line's exchange share is minus the D$'s fall: -(1 - rate then / rate now)
-  - L297 ...a D$ 10% weaker reads -10% of what the line is carried at
-  - L298 ...and what it has done, in D$, is the carrying value in US$ times the rate then less the rate now
-  - L300 ...the piece says the same, and it remembers the rate it was sold at
-  - L301 ...because a piece sold once has one rate: the mean of its sales' is that one
-  - L307 a domestic line has no exchange: nothing in D$ and nothing as a share, on either of the two
-  - L310 the desk's exchange since the sale is the lines' sums
-  - L311 ...and its share is that over what the dollar lines are carried at
-- **L313 6. the D$ rises back**
-  - L318 the month after a move books nothing again: the strike opened the line at nothing and no reprice moved it
-  - L319 ...and the result is revenue less expenses and the gain on debt retired
-  - L327 fixture: a second dollar bond is sold now, at the D$ the fall left, and keeps that as the rate it was sold at
-  - L335 premise: the D$ moved by the factor the fixture meant - 10% stronger, back to where it was sold - through the month's own reprice
-  - L337 the month's line is each dollar piece's carrying value times the change in the rate it was last valued at
-  - L338 ...said again as the D$ they were carried at before less the D$ they are carried at now
-  - L339 ...and the D$ rising is a GAIN: above nothing
-  - L340 ...the two pieces: the first is carried at its US$ times the fall back, the second likewise, each from the rate it was valued at
-  - L342 the bridge still takes it out as not cash
-  - L346 ...and foots
-  - L348 ...and the audit closes in the month of the rise too
-- **L350 7. the book after the rise**
-  - L355 the first line was sold at the rate the D$ is back to: nothing since
-  - L356 the second was sold at the rate before the rise: a gain of its US$ times the difference of the two
-  - L358 ...as a share of what it is carried at: the D$ having risen 10%, the US$ it owes cost a tenth less, a ninth of what is carried now
-  - L360 the desk's exchange since the sale is the lines' sums
-  - L361 ...its share is that over both dollar lines' carrying value
-- **L364 8. the cash rules leave it out**
-  - L370 the history keeps the line beside the surplus, a month for a month
-  - L376 revenue less the surplus plus the gain on debt retired and the exchange line is the month's expenses, every month (to rounding)
-  - L384 premise: the year the netting reads holds the line, and it is large beside the surplus it would be netted against
-  - L386 the rollover's netting reads the surplus less the line, over the months the city has lived
-  - L388 ...which is not the budget's surplus the history keeps
-  - L395 premise: this calendar year so far holds the moves
-  - L396 the fund's pay-in reads this year's surplus so far less the line
-  - L404 the fund's floor, a month of spending, is the months' expenses recovered from the history: revenue less surplus plus both gains
-  - L406 ...which is not what it would be without the exchange line
-- **L408 9. across a save and a load**
-  - L416 the month's line came back with the government block
-  - L417 premise: the line the save carried is the month of the rise, not nothing
-  - L418 ...and the result with it
-  - L419 ...and the bridge's not-cash row, which took it out
-  - L420 the history's series came back, month for month
-  - L429 each dollar piece came back with the rate it was valued at, and with the rate each sale was made at
-  - L430 ...so the reloaded desk reads the exchange since the sale as the live one
-  - L431 the cash rules read the same reloaded: the rollover's netting
-  - L436 the reloaded city's first month books no move (the load is no revaluation): its line is nothing
-  - L437 ...and the unsaved twin's is nothing too
-  - L439 premise: both cities are at the same D$ and move by the same factor
-  - L440 the next move books the same in the reloaded city as in the twin that was never saved
-  - L441 ...and it is a loss in both, as the same fall was
-- **L443 10. the rule alone**
-  - L453 a rate of nothing is refused: nothing returned
-  - L454 ...a negative one too
-  - L455 ...and one that is no number
-  - L456 ...and no piece was told anything by them
-  - L458 each dollar piece moves from the rate it was last valued at: the first from 1.2, the second from 1.1, the domestic piece not at all
-  - L460 ...and every piece is valued at the new rate afterwards, the manager too
-  - L462 ...a second press at the same rate books nothing
-  - L467 a piece with no sale does not know the rate it was sold at: 0, and nothing since
-  - L473 each sale keeps the rate the piece was valued at when it was made
-  - L475 a piece sold at two rates remembers their mean weighted by what each raised (a sale that raised nothing is not counted)
-  - L478 ...and what the exchange has done to what is still carried since is its US$ times the mean less the rate now
-  - L480 domestic paper has no exchange since the sale, whatever it was sold at
-  - L483 a change of unit scales the rates the sales were made at as it scales the rate the piece is valued at
-  - L501 the account's line reads nothing for a figure that is no number, and what it is told otherwise
+- **L246 1. the fixture**
+  - L254 fixture: the D$ stands at the opening rate, and the debt has been told it by the month's reprice
+  - L263 fixture: a five-year dollar bond was issued abroad, and the city has domestic paper too (a term bond and a bill)
+  - L266 fixture: the dollar bond's books are open (it is carried in dollars) and its sale kept the rate it was made at
+  - L270 fixture: ...the domestic paper is carried at something, so a rule that counted it would book something
+  - L278 a month in which the D$ does not move books no exchange line, month
+- **L285 2. the D$ falls 10%**
+  - L292 premise: the D$ moved by the factor the fixture meant - 10% weaker, a US$ dearer by a ninth - through the month's own reprice
+  - L295 premise: the move is large enough to tell a rule that books it from one that does not
+  - L297 the month's line is the dollar pieces' carrying value in US$ times the change in the rate, to the cent
+  - L298 ...said again as the D$ they were carried at before less the D$ they are carried at now
+  - L299 ...and the D$ falling is a LOSS: below nothing
+  - L300 premise: the domestic paper has been told the same rate, and a rule that counted it would have booked D$
+  - L303 ...and the domestic paper adds nothing: the line is not what counting it too would have booked
+  - L305 the budget's result carries it below the operating lines: balance less (revenue - expenses + gain on debt retired) is the line
+- **L309 3. the bridge foots**
+  - L312 the not-cash row is the discount amortised and the uplift not paid, less the gain on debt retired and less the exchange line
+  - L316 the bridge foots with the line in it: surplus + not cash + raised - repaid + journal + residual is the cash's change
+  - L321 ...and what it leaves over is what a month with no move left over (the line did not slip into it)
+  - L323 premise: had the bridge not taken the line out, the residual would have carried it and missed by more than that
+  - L326 EARNED walks to the budget with the line as a step of its own
+  - L327 ...the step is the line
+  - L333 ...and the walk comes to the budget: what it leaves is a quiet month's dollar coupon at the new D$, and nothing of the line
+  - L335 premise: the line is far larger than that tolerance, so a walk that left it in the residual would have missed
+- **L338 4. MoneyAudit untouched**
+  - L342 the month of the fall closes to the cent as a month with no move does
+  - L345 ...though the line is far larger than the tolerance: had a pool moved on it, the audit would have said so
+- **L348 5. the book after the fall**
+  - L354 the dollar line's exchange share is minus the D$'s fall: -(1 - rate then / rate now)
+  - L355 ...a D$ 10% weaker reads -10% of what the line is carried at
+  - L356 ...and what it has done, in D$, is the carrying value in US$ times the rate then less the rate now
+  - L358 ...the piece says the same, and it remembers the rate it was sold at
+  - L359 ...because a piece sold once has one rate: the mean of its sales' is that one
+  - L365 a domestic line has no exchange: nothing in D$ and nothing as a share, on either of the two
+  - L368 the desk's exchange since the sale is the lines' sums
+  - L369 ...and its share is that over what the dollar lines are carried at
+- **L371 6. the D$ rises back**
+  - L376 the month after a move books nothing again: the strike opened the line at nothing and no reprice moved it
+  - L377 ...and the result is revenue less expenses and the gain on debt retired
+  - L385 fixture: a second dollar bond is sold now, at the D$ the fall left, and keeps that as the rate it was sold at
+  - L393 premise: the D$ moved by the factor the fixture meant - 10% stronger, back to where it was sold - through the month's own reprice
+  - L395 the month's line is each dollar piece's carrying value times the change in the rate it was last valued at
+  - L396 ...said again as the D$ they were carried at before less the D$ they are carried at now
+  - L397 ...and the D$ rising is a GAIN: above nothing
+  - L398 ...the two pieces: the first is carried at its US$ times the fall back, the second likewise, each from the rate it was valued at
+  - L400 the bridge still takes it out as not cash
+  - L404 ...and foots
+  - L406 ...and the audit closes in the month of the rise too
+- **L408 7. the book after the rise**
+  - L413 the first line was sold at the rate the D$ is back to: nothing since
+  - L414 the second was sold at the rate before the rise: a gain of its US$ times the difference of the two
+  - L416 ...as a share of what it is carried at: the D$ having risen 10%, the US$ it owes cost a tenth less, a ninth of what is carried now
+  - L418 the desk's exchange since the sale is the lines' sums
+  - L419 ...its share is that over both dollar lines' carrying value
+- **L422 8. the cash rules leave it out**
+  - L428 the history keeps the line beside the surplus, a month for a month
+  - L434 revenue less the surplus plus the gain on debt retired and the exchange line is the month's expenses, every month (to rounding)
+  - L442 premise: the year the netting reads holds the line, and it is large beside the surplus it would be netted against
+  - L444 the rollover's netting reads the surplus less the line, over the months the city has lived
+  - L446 ...which is not the budget's surplus the history keeps
+  - L453 premise: this calendar year so far holds the moves
+  - L454 the fund's pay-in reads this year's surplus so far less the line
+  - L462 the fund's floor, a month of spending, is the months' expenses recovered from the history: revenue less surplus plus both gains
+  - L464 ...which is not what it would be without the exchange line
+- **L466 9. across a save and a load**
+  - L474 the month's line came back with the government block
+  - L475 premise: the line the save carried is the month of the rise, not nothing
+  - L476 ...and the result with it
+  - L477 ...and the bridge's not-cash row, which took it out
+  - L478 the history's series came back, month for month
+  - L487 each dollar piece came back with the rate it was valued at, and with the rate each sale was made at
+  - L488 ...so the reloaded desk reads the exchange since the sale as the live one
+  - L489 the cash rules read the same reloaded: the rollover's netting
+  - L494 the reloaded city's first month books no move (the load is no revaluation): its line is nothing
+  - L495 ...and the unsaved twin's is nothing too
+  - L497 premise: both cities are at the same D$ and move by the same factor
+  - L498 the next move books the same in the reloaded city as in the twin that was never saved
+  - L499 ...and it is a loss in both, as the same fall was
+- **L501 10. the rule alone**
+  - L511 a rate of nothing is refused: nothing returned
+  - L512 ...a negative one too
+  - L513 ...and one that is no number
+  - L514 ...and no piece was told anything by them
+  - L516 each dollar piece moves from the rate it was last valued at: the first from 1.2, the second from 1.1, the domestic piece not at all
+  - L518 ...and every piece is valued at the new rate afterwards, the manager too
+  - L520 ...a second press at the same rate books nothing
+  - L525 a piece with no sale does not know the rate it was sold at: 0, and nothing since
+  - L531 each sale keeps the rate the piece was valued at when it was made
+  - L533 a piece sold at two rates remembers their mean weighted by what each raised (a sale that raised nothing is not counted)
+  - L536 ...and what the exchange has done to what is still carried since is its US$ times the mean less the rate now
+  - L538 domestic paper has no exchange since the sale, whatever it was sold at
+  - L541 a change of unit scales the rates the sales were made at as it scales the rate the piece is valued at
+- **L544 11. the student grant on a surplus share reads the cash**
+  - L553 fixture: dollar paper is outstanding, as it is in section 1, and the window abroad was open to sell it
+  - L555 fixture: the city's grant is a share of the surplus
+  - L561 fixture: somebody is studying and the city ran a cash surplus, so the grant pays something to tell from nothing
+  - L563 a month in which the D$ does not move has no exchange line in its balance, so the balance is all cash but the discount's amortising
+  - L565 ...and the grant bill struck on it is the share of the cash surplus, to the cent
+  - L571 the month after a quiet one pays the share of that month's cash surplus
+  - L572 premise: the D$ rose 10%, the month booked a gain on the dollar paper, and the city still ran a cash surplus
+  - L574 premise: the gain is large enough to tell a grant on the balance from a grant on the cash
+  - L576 the cash surplus is the balance less the gain, which the treasury never received
+  - L577 the game's cash surplus is the same figure, from the bridge's own not-cash row
+  - L578 ...and the grant bill struck on the month is the share of that, not of the balance the gain is in
+  - L579 ...which is not the share of the balance
+  - L580 the grant is what it is in a month the D$ did not move: the share of revenue less expenses and the discount's amortising, the line nowhere in it
+  - L586 the month after the gain pays the share of that month's cash surplus: the gain is not paid out
+  - L587 ...which is less than a grant on the balance with the gain in it would have been
+  - L588 premise: the D$ fell 10%, the month booked a loss on the dollar paper, and the city still ran a cash surplus
+  - L590 premise: the loss is large enough to take the balance below nothing, where a grant on the balance would pay none
+  - L592 the loss does not take the grant down: the bill struck on the month is the share of the cash surplus
+  - L593 ...which is what it is in a month the D$ did not move
+  - L595 the Schools page's preview of what a student gets is the same pool split over the students
+  - L598 the month after the loss pays the share of that month's cash surplus too
+- **L600 12. ...and a buyback below book**
+  - L609 fixture: the term bond is on the books, a few months old, with somebody studying and the city sharing a cash surplus
+  - L613 the gain the screen quotes is the carrying value less the price paid
+  - L614 premise: the bond is bought back below its book, a gain large enough to tell a grant on the balance from a grant on the cash
+  - L620 the month books the gain, below the operating lines
+  - L621 premise: the city still ran a cash surplus in the month, and the balance holds the gain
+  - L622 the cash surplus is the balance less the gain, which the treasury never received (the price was the cash)
+  - L624 the game's cash surplus is the same figure, from the bridge's own not-cash row
+  - L625 the grant bill struck on the month is the share of that, not of the balance the gain is in
+  - L626 ...which is not the share of the balance
+  - L627 the grant is what it is in a month nothing was bought back: the share of revenue less expenses and the discount's amortising, the gain nowhere in it
+  - L630 the month after pays the share of the cash surplus, as paid
+  - L647 the account's line reads nothing for a figure that is no number, and what it is told otherwise
 
 ## DenominationCheck.java - 52 labelled assertions
 
@@ -9929,7 +9962,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1674 ...and the service's scale
   - L1675 ...while its fees move with the money
 
-## HistoryCheck.java - 97 labelled assertions
+## HistoryCheck.java - 95 labelled assertions
 
 > Verifies the graph history: recording, alignment, and the round trip. Not
 > part of the game.
@@ -10028,44 +10061,42 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L569 the old history loads with its axis whole
   - L570 ...the premium it carried is not a series any more
   - L572 ...and the bank's prices are empty, not absent
-  - L575 ...and so is LB3's price level of the game dollar (usPrices), empty and not absent
-  - L578 ...and usPrices fills from the end as the others do, at the world's own level, drawn as not recorded before
-  - L582 ...and fill from the end once the city plays on
-  - L586 ...and so do the bank's capital series (0.7.8), empty until then
-  - L592 ...and so does parity beside the rate (0.7.35), drawn as not recorded before
-  - L598 ...and so do XR1's fair level and market swing, drawn as not recorded before
-- **L608 4. the derived series do not divide by zero**
-- **L615 derived series on a city with nobody in it**
-  - L628 month
-- **L632 5. a new game forgets it**
-  - L636 the axis is empty
-  - L639 
-- **L663 past five hundred years, a year to a point**
-  - L689 the first year folds the month its last month leaves the newest MONTHLY_KEPT
-  - L690 ...so the months kept never fall under MONTHLY_KEPT
-  - L691 ...nor stand more than eleven over it - a year folds as soon as it can
-  - L692 every year wholly older than the months kept is folded, and no other
-  - L693 ...and the months it lived are every month grown
-  - L699 a folded year sits at its last month, holding twelve; every month after is a month
-  - L718 every series folds exactly by its rule - a flow's months added, a level's last, a rate's averaged
-  - L720 ...a series begun inside a folded year folds the months it has
-  - L738 ...and a running total ends on it
-  - L742 a folded year's flow reads a month at a time on the chart: its sum over its months
-  - L744 ...a level reads its year's end
-  - L745 ...a rate its year's average
-  - L747 a pointer by a folded year's point, at its year's end, reads that year
-  - L750 ...and a window across the fold reaches both parts
-  - L752 twelve months back from a folded year is the year before it
-  - L753 ...and from the first month after the fold, the last folded year
-  - L757 the rolling year of real output runs on across the fold, never blank
-  - L759 ...the first month after it the last folded year's eleven months at their average, and its own
-  - L764 the year book's row for a folded year holds its twelve months
-  - L765 ...and its gdp is the year's sum
-  - L766 ...and the book has a row a year: the folded ones and the months after
-  - L771 the folded history saves
-  - L774 ...and loads: the axis, its folded years and every series, as they were
-  - L782 ...and a year on, both have folded the next year alike
-  - L787 a history from before 0.7.55 has no folded years: every entry a month
+  - L576 ...and fill from the end once the city plays on
+  - L580 ...and so do the bank's capital series (0.7.8), empty until then
+  - L586 ...and so does parity beside the rate (0.7.35), drawn as not recorded before
+  - L592 ...and so do XR1's fair level and market swing, drawn as not recorded before
+- **L602 4. the derived series do not divide by zero**
+- **L609 derived series on a city with nobody in it**
+  - L622 month
+- **L626 5. a new game forgets it**
+  - L630 the axis is empty
+  - L633 
+- **L657 past five hundred years, a year to a point**
+  - L683 the first year folds the month its last month leaves the newest MONTHLY_KEPT
+  - L684 ...so the months kept never fall under MONTHLY_KEPT
+  - L685 ...nor stand more than eleven over it - a year folds as soon as it can
+  - L686 every year wholly older than the months kept is folded, and no other
+  - L687 ...and the months it lived are every month grown
+  - L693 a folded year sits at its last month, holding twelve; every month after is a month
+  - L712 every series folds exactly by its rule - a flow's months added, a level's last, a rate's averaged
+  - L714 ...a series begun inside a folded year folds the months it has
+  - L732 ...and a running total ends on it
+  - L736 a folded year's flow reads a month at a time on the chart: its sum over its months
+  - L738 ...a level reads its year's end
+  - L739 ...a rate its year's average
+  - L741 a pointer by a folded year's point, at its year's end, reads that year
+  - L744 ...and a window across the fold reaches both parts
+  - L746 twelve months back from a folded year is the year before it
+  - L747 ...and from the first month after the fold, the last folded year
+  - L751 the rolling year of real output runs on across the fold, never blank
+  - L753 ...the first month after it the last folded year's eleven months at their average, and its own
+  - L758 the year book's row for a folded year holds its twelve months
+  - L759 ...and its gdp is the year's sum
+  - L760 ...and the book has a row a year: the folded ones and the months after
+  - L765 the folded history saves
+  - L768 ...and loads: the axis, its folded years and every series, as they were
+  - L776 ...and a year on, both have folded the next year alike
+  - L781 a history from before 0.7.55 has no folded years: every entry a month
 
 ## HoldersCheck.java - 332 labelled assertions
 
@@ -17480,7 +17511,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1904 with the works gone no plan draws a siding:
   - L1905 ...no tile carries a plot of one, and no route runs to one (
 
-## RankingsCheck.java - 174 labelled assertions
+## RankingsCheck.java - 91 labelled assertions
 
 > The Rankings board held to what it promises (batch LB2; the project's spec-leaderboards.md 3, 4, 6 and 9):
 > Rankings' pivot and display, its two boards, its ranking, its sentence and lock, and CityMeasures' reading
@@ -17496,198 +17527,108 @@ _(this harness does not label its checks through a helper - it prints its findin
 > its figures are held to the history's own reader times the named factor.
 > ...
 
-  - L202 the file -D
-- **L259 1. the pivot's identities**
-  - L273 the city's figure in its own money is X under this month's rate and PPP, and X at founding's prices under Constant (a wage's, X)
-  - L274 the live city has the five money measures (
-  - L292 Money never reorders: a board's rows and ranks are the same in the city's money, game US$ and real US$, on both boards, at every Convert
-  - L294 and the boards have rows to be the same (
-  - L297 display: the city's money is US$ x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate
-  - L300 display: game US$ is US$ x the price level, and at Constant x 1; real US$ as is
-- **L311 2. at founding real US$ equals game US$**
-  - L312 a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (
-  - L335 at founding every row's game US$ is its real US$ (
-  - L336 the live city's game dollar has inflated (
-  - L337 and once it has inflated, the game US$ differs from the real US$ on every board of every money measure
-- **L354 3. Constant holds a steady real figure while its rate moves**
-  - L369 the same figures at a dearer game dollar and a weaker rate are the same US$ of 2015 under Constant, and in the city's money its real figure
-  - L370 ...and are not under this month's rate or PPP, which move with the rate and the price level
-- **L378 4. Your world's rows equal Nations' figures for the month**
-  - L380 the file carries exactly ten measures for Your world:
-  - L388 Your world ranks exactly the ten D15 names and has no rows for the other 60; with no Nations it ranks none
-  - L440 Your world
-  - L441 Your world
-  - L442 Your world
-  - L443 Your world
-  - L444 Your world
-  - L450 Your world
-  - L457 Your world
-  - L475 Your world
-  - L476 Your world
-- **L487 5. lower is better ranks ascending**
-  - L505 a DOWN measure's first row has the least value and the rows ascend (unemployment, deaths, debt, ...)
-  - L506 an UP measure's first row has the most and the rows descend (GDP, life expectancy, ...)
-  - L507 a NONE measure ranks largest first, like an UP (inflation, investment, ...)
-  - L508 on the real file:
-  - L510 unemployment, which is lower-is-better, has the city ranked by its value among the nations (rank
-- **L519 6. ties share a rank**
-  - L548 a tie in the middle (France, Germany, Italy at 80.25): one rank for the group, the next skips two, and the board is the same twice
-- **L558 7. a place with no figure is off, never 0**
-  - L581 a place without a figure of a measure is not a row (
-  - L582 and a place with one is a row of exactly its value, year and mark: the rows are the figures
-  - L583 every row's value is a finite number: none is NaN
-  - L586 a published 0 is a row and a missing figure is not: oil has
-  - L595 a copy of the file with one nation's GDP removed loses exactly that row (
-  - L604 a city with no figure for a measure is off its board (you
-  - L616 a measure nothing real publishes (D10) has the city alone, and realFigures false (
-  - L623 a published measure's table counts its rows with a mark (not the city) and the estimates among them
-- **L631 8. the real rows' pivot**
-  - L632 the CPI-U's 2015 over 2025 is the file's us_prices_2015_over_2025 (
-  - L636 a 2025 figure at this month's rate is its value times CPI-U 2015 over 2025: the US (
-  - L638 a city region's 2021 figure is its value times CPI-U 2015 over 2021: Tokyo (
-  - L661 every place's GDP and GDP per person at this month's rate: its value times CPI-U 2015 over its year's
-  - L662 under Constant GDP and GDP per person are the file's .k figure as it is, with its year
-  - L663 under PPP they are the file's .ppp figure times CPI-U 2015 over its year's
-  - L664 a row carries its figure's mark and source
-  - L689 household spending converts by gdp.k and gdp.ppp over gdp of the same place; a wage by gdp.ppp over gdp, and is this month's figure under Constant
-- **L697 9. around you and your size**
-  - L720 around the city
-  - L732 your size: the places within ten times the city's
-  - L734 ...and every one is within the factor of the city's people, in rank order
-  - L738 a city off the board has no size to match: yourSize is empty
-- **L746 10. the city's measures from History**
-  - L752 every figure is a measure of the file, with a way of being made, and is finite
-  - L754 it has every measure a city of its age has (
-  - L755 growth_10y needs 132 monthly months, which a city of
-  - L756 only gdp, gdp_pp and hh_spend_pp have a figure at founding's prices
-  - L763 gdp is the history's last 12 months times THOUSANDS (
-  - L764 ...and at founding's prices the same months each over that month's price index
-  - L765 gdp per person is that over the people now (
-  - L766 people are the history's last population
-  - L768 household spending per person is a year of consumption times THOUSANDS over the people
-  - L770 price level is parity over fx, and fx against parity its inverse (
-  - L771 the investment share is a year of investment over a year of output:
-  - L772 the debt share is the last month's debt over a year of output
-  - L774 the average wage is the book's wage bill over posts filled, times 12 and THOUSANDS (
-  - L775 the minimum wage is the floor in today's money times 12 and THOUSANDS, and the Kaitz index the one over the other (
-  - L777 inflation is the price index over its reading twelve months before
-  - L778 unemployment is the book's, over the labour force:
-  - L782 old-age dependency is seniors and elders over adults, from the city's bands
-  - L784 area is the city's dry ground, the real file's land area (
-  - L786 reserves in months of imports is the vault in dollars over a month of imports at each month's rate:
-  - L792 the six bands' deaths add up to the deaths series over a year, to its rounding (
-  - L793 the death rate is the six bands' dead over the people, not the rounded series (
-  - L795 life expectancy is finite and between 20 and 120 (
-  - L802 the life table: a flat hazard m, in every band, gives a life expectancy of 1 over m
-  - L804 ...and with no one dying in the open band there is no life expectancy (NaN), not infinity
-  - L810 a city of six months: a year of output is the six months scaled by 12 over 6, times THOUSANDS, and says so
-  - L812 ...and inflation (13 months), real growth (24), 10-year growth and life expectancy (12 months) are absent, not 0
-  - L814 an empty history has no figures
-  - L819 a history with folded years (
-- **L839 11. the lock and the sentence**
-  - L842 Prices is locked under real US$
-  - L843 ...under Constant
-  - L844 ...on a measure that is not money (
-  - L845 ...and with no saved city on the board: always in LB2
-  - L846 it is open for money in the city's or the game's money at this month's rate or PPP once a saved city is on the board (LB3's seam)
-  - L853 with no saved city Prices is locked for every measure and setting; with one, locked exactly under real US$, Constant, or a measure that is not money
-  - L858 the opening sentence names real US dollars, 2015 prices, this month's rate, 2025, the city and its month
-  - L862 Your world in the city's money under Constant names the money, founding's prices, the constant rate and the path
-  - L865 game US dollars are of the city's month, and PPP is said:
-  - L867 a wage under Constant says it has no constant series and is at this month's rate; GDP under Constant does not
-  - L870 a measure that is not money drops the money clause and names its unit:
-  - L872 the Random path is named too
-  - L873 a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage
-- **L994 12. reading the slots**
-  - L995 fixture: the live city was saved in slots 1, 2 and 3 with a history each, and slot 3 is after a reform by
-  - L1015 a read writes nothing: every file's bytes and modified time are as they were, none added and none removed
-  - L1019 the cities on the board are slots 1 and 2, in slot order:
-  - L1020 slot 0, the autosave, holds a good save and is left out: not on the board, not counted
-  - L1021 the empty slots (3, 4 and 10) are off the board and not counted as left out
-  - L1023 a save from an older build (format
-  - L1025 a save that cannot be read and a history that cannot be read are two damaged
-  - L1026 a save with no history file is off and counted
-  - L1027 a first read parses every save in slots 1 to
-  - L1032 a saved city's row is id saved:1, kind SAVED, the city's name, its year, mark 0, source
-  - L1035 ...and it is the city as its history left it: its month is the history's last (
-  - L1041 a second refresh with nothing changed reads no slot and reuses every one (reads
-  - L1044 slot 2 saved since is the only slot read again (reads
-  - L1046 a slot deleted is gone from the next snapshot, and counted nowhere
-- **L1060 13. Prices moves only saved rows, never under real US$**
-  - L1065 fixture: the young save's price level differs from the active city's, and the old save, of the active city's month, has the same
-  - L1105 Prices per year against static moves no row that is not a saved city's: value and shown the same, on both boards, in the city's money and the game's, at this...
-  - L1106 ...and the boards had both saved cities to move (money measures)
-  - L1107 ...it moves the saved city whose game dollar is dearer or cheaper than this city's
-  - L1108 ...and does not move the one whose price level is this city's
-  - L1109 in game US$ a saved city per year is its own year's dollars (X over its rate), static its real dollars (X over rate over its price level) times this city's l...
-  - L1127 under real US$, under Constant, and for a measure that is not money, Prices changes nothing: the whole table the same, every row, rank, value and figure shown
-  - L1128 ...with saved cities on those boards to have moved (GDP and people)
-  - L1148 a static board is one order, with the saved cities in it, in the city's money, game US$ and real US$
-  - L1152 with a saved city on the board Prices is open for money in the city's money at this month's rate
-  - L1154 with no saved city on the board the sentence is the board's alone
-  - L1159 per year it adds that the saved cities are in their own year's dollars, as last saved
-  - L1160 static at an age it adds that they are at this city's prices of its year, at its age
-  - L1163 under real US$, which Prices cannot move, it names no prices: just the saved cities as last saved
-  - L1165 a measure that is not money names none either, at an age too
-  - L1167 an age is said as years and months: 50 months is 4 years 2 months, 12 is 1 year, 13 is 1 year 1 month, 7 is 7 months
-  - L1175 the drawer opens a saved city by its row id: its GDP line is its row on each board, mark 0, source
-  - L1177 ...and with no saved cities handed over, the same id opens nothing: a line of NaN each
-- **L1186 14. a reform leaves every rank**
-  - L1190 fixture: slot 3 is slot 2's city in a money a
-  - L1222 the same city saved before and after the reform has the same rank in every measure and every Settings combination, on both boards, beside the city before and...
-  - L1223 ...and the same value, and the same figure shown, to a relative 1e-9
-  - L1224 ...and where one has no row, so has the other (no figure of that measure)
-  - L1225 ...and side by side on one board, beside the live city they were saved from, the two copies share one rank (Rankings.TIE: the reform leaves noise in the last...
-  - L1226 ...the money measures among them (
-- **L1234 15. at your age**
-  - L1236 fixture: the age (
-  - L1239 at that age the cities on the board are slots 2 and 3, and slot 1 is no row
-  - L1240 slot 1 is listed as stopped, with its name and its last month (stopped at
-  - L1243 ...and the board has no row for it, with slots 2 and 3 on it
-  - L1247 fixture: slot 2's history file holds the age as a month, with a year behind it
-  - L1250 slot 2 at the age has CityMeasures.at of its history file at that month (
-  - L1255 ...its GDP is the history's GDP over the twelve months to the age, times THOUSANDS (
-  - L1256 ...its rate, parity and the game dollar's price level are the history file's fxRate, fxParity and usPrices at that month
-  - L1259 ...and the measures that need the land and the bands are absent, never guessed
-  - L1262 at its last saved month it is the whole history's last month (
-  - L1265 ...its area is the live city's at the month it was saved (
-  - L1268 the reform reaches the saved history: slot 3 at the age has a rate a
-  - L1271 a city still on the board at the month its history ends is not stopped, one past it is: at
-  - L1273 at an age none has reached, there are no rows and every city is stopped, at its own last month, in slot order
-  - L1275 at an age before the history began there is no row either, and no city has stopped
-- **L1283 16. the rank over the years**
-  - L1289 fixture: the history is all months (nothing folded) and holds at least three Decembers
-  - L1315 the rank line has one point for each December the city has a figure for, oldest first, and a point for every December where the city has a figure in all of them
-  - L1316 each point is the board's own rank for the city at that December, among as many places (Real world 2025 and the city)
-  - L1317 ...a rank from 1 to the places ranked, among the real world's dozens (a wage is published for fewer places than output is)
-  - L1318 Your world's settings give the same points: the line is against Real world 2025 only
-  - L1319 saved cities would change the places ranked (the board with them has more rows), and the point leaves them out
-  - L1321 a measure that needs the land has no point, since the history does not keep it: area and density
-  - L1322 a measure the city had no figure for in its first Decembers starts when it has one: inflation needs 13 months, so no point in the first December
-  - L1328 under Constant the line is the board's Constant rank at each December: the last of
-  - L1330 a history of nothing, or none, has no points
-  - L1332 the city at a December is the history's: its rate, parity and price level at that month, its month and year the calendar's
-- **L1342 17. the slim history equals the full one**
-  - L1365 a slot's slim history has the full one's axis
-  - L1366 CityMeasures.of over it is the full history's, figure for figure
-  - L1367 ...and so is CityMeasures.at of it at every month of the history
-  - L1368 it keeps only the series the measures read and the pivot's three, each as the file has it, under a third of the series the file has
-  - L1370 every series CityMeasures reads is a series a history has, and the pivot's fxRate, fxParity and usPrices are kept
-  - L1383 usPrices is the world economy's price level, to the digit, at the end of each month played (
-  - L1385 ...and it has an entry for every month of the history (
-  - L1391 the reform divides the rate's whole history by
-- **L1400 18. CityMeasures.at**
-  - L1404 at the history's last month it is of(), figure for figure (
-  - L1405 at the first month it was asked (
-  - L1407 a month the history never reached has no figures, nor month 0 or a negative one, nor a null history
-  - L1410 a younger month has fewer measures than an older: inflation needs 13 months, so none in the history's twelfth month (
-  - L1417 Extras.UNKNOWN leaves out exactly what needs the land and the bands (
-  - L1420 ...and its minimum wage is the history's floor lifted by the price index, times 12 and THOUSANDS (
-  - L1427 fixture: three years of the history are folded (
-  - L1428 a month in a folded year has no figures (months 12 and 36), nor does the month before the fold ends
-  - L1429 the first month after the fold is read as a month: a year of output scaled from the one month it has, 12 times the month
-  - L1431 a month in the folded history's middle has the figures of that month, a year of output 12 of the month; its last month is of()
-  - L1433 valueAt reads a series at a month and is NaN where the history has no such month or series
+  - L172 the file -D
+- **L219 1. the pivot's identities**
+  - L233 the city's figure in its own money is X under this month's rate and PPP, and X at founding's prices under Constant (a wage's, X)
+  - L234 the live city has the five money measures (
+  - L252 Money never reorders: a board's rows and ranks are the same in the city's money, game US$ and real US$, on both boards, at every Convert
+  - L254 and the boards have rows to be the same (
+  - L257 display: the city's money is US$ x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate
+  - L260 display: game US$ is US$ x the price level, and at Constant x 1; real US$ as is
+- **L271 2. at founding real US$ equals game US$**
+  - L272 a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (
+  - L295 at founding every row's game US$ is its real US$ (
+  - L296 the live city's game dollar has inflated (
+  - L297 and once it has inflated, the game US$ differs from the real US$ on every board of every money measure
+- **L314 3. Constant holds a steady real figure while its rate moves**
+  - L329 the same figures at a dearer game dollar and a weaker rate are the same US$ of 2015 under Constant, and in the city's money its real figure
+  - L330 ...and are not under this month's rate or PPP, which move with the rate and the price level
+- **L338 4. Your world's rows equal Nations' figures for the month**
+  - L340 the file carries exactly ten measures for Your world:
+  - L348 Your world ranks exactly the ten D15 names and has no rows for the other 60; with no Nations it ranks none
+  - L400 Your world
+  - L401 Your world
+  - L402 Your world
+  - L403 Your world
+  - L404 Your world
+  - L410 Your world
+  - L417 Your world
+  - L435 Your world
+  - L436 Your world
+- **L447 5. lower is better ranks ascending**
+  - L465 a DOWN measure's first row has the least value and the rows ascend (unemployment, deaths, debt, ...)
+  - L466 an UP measure's first row has the most and the rows descend (GDP, life expectancy, ...)
+  - L467 a NONE measure ranks largest first, like an UP (inflation, investment, ...)
+  - L468 on the real file:
+  - L470 unemployment, which is lower-is-better, has the city ranked by its value among the nations (rank
+- **L479 6. ties share a rank**
+  - L508 a tie in the middle (France, Germany, Italy at 80.25): one rank for the group, the next skips two, and the board is the same twice
+- **L518 7. a place with no figure is off, never 0**
+  - L541 a place without a figure of a measure is not a row (
+  - L542 and a place with one is a row of exactly its value, year and mark: the rows are the figures
+  - L543 every row's value is a finite number: none is NaN
+  - L546 a published 0 is a row and a missing figure is not: oil has
+  - L555 a copy of the file with one nation's GDP removed loses exactly that row (
+  - L564 a city with no figure for a measure is off its board (you
+  - L576 a measure nothing real publishes (D10) has the city alone, and realFigures false (
+  - L583 a published measure's table counts its rows with a mark (not the city) and the estimates among them
+- **L591 8. the real rows' pivot**
+  - L592 the CPI-U's 2015 over 2025 is the file's us_prices_2015_over_2025 (
+  - L596 a 2025 figure at this month's rate is its value times CPI-U 2015 over 2025: the US (
+  - L598 a city region's 2021 figure is its value times CPI-U 2015 over 2021: Tokyo (
+  - L621 every place's GDP and GDP per person at this month's rate: its value times CPI-U 2015 over its year's
+  - L622 under Constant GDP and GDP per person are the file's .k figure as it is, with its year
+  - L623 under PPP they are the file's .ppp figure times CPI-U 2015 over its year's
+  - L624 a row carries its figure's mark and source
+  - L649 household spending converts by gdp.k and gdp.ppp over gdp of the same place; a wage by gdp.ppp over gdp, and is this month's figure under Constant
+- **L657 9. around you and your size**
+  - L680 around the city
+  - L692 your size: the places within ten times the city's
+  - L694 ...and every one is within the factor of the city's people, in rank order
+  - L698 a city off the board has no size to match: yourSize is empty
+- **L706 10. the city's measures from History**
+  - L712 every figure is a measure of the file, with a way of being made, and is finite
+  - L714 it has every measure a city of its age has (
+  - L715 growth_10y needs 132 monthly months, which a city of
+  - L716 only gdp, gdp_pp and hh_spend_pp have a figure at founding's prices
+  - L723 gdp is the history's last 12 months times THOUSANDS (
+  - L724 ...and at founding's prices the same months each over that month's price index
+  - L725 gdp per person is that over the people now (
+  - L726 people are the history's last population
+  - L728 household spending per person is a year of consumption times THOUSANDS over the people
+  - L730 price level is parity over fx, and fx against parity its inverse (
+  - L731 the investment share is a year of investment over a year of output:
+  - L732 the debt share is the last month's debt over a year of output
+  - L734 the average wage is the book's wage bill over posts filled, times 12 and THOUSANDS (
+  - L735 the minimum wage is the floor in today's money times 12 and THOUSANDS, and the Kaitz index the one over the other (
+  - L737 inflation is the price index over its reading twelve months before
+  - L738 unemployment is the book's, over the labour force:
+  - L742 old-age dependency is seniors and elders over adults, from the city's bands
+  - L743 density is the people over the land the city owns (
+  - L744 reserves in months of imports is the vault in dollars over a month of imports at each month's rate:
+  - L750 the six bands' deaths add up to the deaths series over a year, to its rounding (
+  - L751 the death rate is the six bands' dead over the people, not the rounded series (
+  - L753 life expectancy is finite and between 20 and 120 (
+  - L760 the life table: a flat hazard m, in every band, gives a life expectancy of 1 over m
+  - L762 ...and with no one dying in the open band there is no life expectancy (NaN), not infinity
+  - L768 a city of six months: a year of output is the six months scaled by 12 over 6, times THOUSANDS, and says so
+  - L770 ...and inflation (13 months), real growth (24), 10-year growth and life expectancy (12 months) are absent, not 0
+  - L772 an empty history has no figures
+  - L777 a history with folded years (
+- **L797 11. the lock and the sentence**
+  - L800 Prices is locked under real US$
+  - L801 ...under Constant
+  - L802 ...on a measure that is not money (
+  - L803 ...and with no saved city on the board: always in LB2
+  - L804 it is open for money in the city's or the game's money at this month's rate or PPP once a saved city is on the board (LB3's seam)
+  - L811 with no saved city Prices is locked for every measure and setting; with one, locked exactly under real US$, Constant, or a measure that is not money
+  - L816 the opening sentence names real US dollars, 2015 prices, this month's rate, 2025, the city and its month
+  - L820 Your world in the city's money under Constant names the money, founding's prices, the constant rate and the path
+  - L823 game US dollars are of the city's month, and PPP is said:
+  - L825 a wage under Constant says it has no constant series and is at this month's rate; GDP under Constant does not
+  - L828 a measure that is not money drops the money clause and names its unit:
+  - L830 the Random path is named too
+  - L831 a measure with a constant series says so: gdp, gdp_pp and hh_spend_pp, and no wage
 
 ## ReadPathCheck.java - 34 labelled assertions
 
@@ -19287,7 +19228,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3769 ...and its save writes none of the new keys, in the markets or beside them
   - L3775 ...every market on the goods' literals
 
-## SaveSlotCheck.java - 157 labelled assertions
+## SaveSlotCheck.java - 150 labelled assertions
 
 > Verifies the slot system: ten saves plus an autosave, the version stamp, and
 > the labels the menu is drawn from.
@@ -19303,183 +19244,174 @@ _(this harness does not label its checks through a helper - it prints its findin
 > history ended at N - 1, and a city loaded from it never ran N. Each of the
 > ...
 
-- **L97 1. eleven distinct files**
-  - L105 22 distinct paths, no two slots sharing
-  - L107 the autosave is named for what it is
-  - L112 slot 2 sorts before slot 10
-  - L116 slot 0 is valid
-  - L117 slot 10 is valid
-  - L118 slot 11 is not
-  - L119 slot -1 is not
-- **L121 2. empty means empty**
-  - L131 and an empty slot has no header
-- **L133 3. three cities that do not touch**
-  - L141 saved to slot 1
-  - L149 saved to slot 7
-  - L154 saved to slot 10
-  - L156 slot 1 exists
-  - L157 slot 7 exists
-  - L158 slot 10 exists
-  - L159 slot 4 is still empty
-  - L160 slot 2 is too, for now
-  - L167 slot 1 still holds the month it was saved at
-  - L169 slot 7 holds its own
-  - L170 and slot 10 is later still
-  - L172 slot 1's population is its own
-- **L174 4. names**
-  - L177 the name was kept
-  - L178 ...and reported as present
-  - L179 an unnamed slot says so
-  - L191 re-saving keeps the existing name
-- **L194 5. the version stamp**
-  - L197 the build that wrote it
-  - L198 the save format
-  - L199 and when
-  - L200 this build is not from the future
-  - L203 a save from a newer build is recognised
-  - L205 an older one is not - those still load
-  - L214 the header sees it
-  - L218 and the load path refuses it
-  - L219 with nothing loaded
-- **L221 6. each slot round-trips into its own city**
-  - L226 slot 1 loads the early city
-  - L227 ...with its own population
-  - L229 ...and no failure
-  - L233 slot 10 loads a later city
-  - L236 loading one slot does not touch another
-- **L239 7. the autosave**
-  - L255 nothing autosaved yet
-  - L256 twelve months to go
-  - L263 still nothing at month
-  - L265 one month to go
-  - L268 the twelfth month writes it
-  - L270 and the counter starts again
-  - L274 it says it is an autosave
-  - L276 ...and holds the month it fired at
-  - L283 a multi-month skip autosaves on the way in
-- **L294 7b. the autosave holds a whole month (0.7.52)**
-- **L308 7c. the autosave off the clock (UP1, 2026-10-22)**
-- **L311 7d. a file held open while a write swaps over it (LB3)**
-- **L314 8. histories are per slot**
-  - L317 slot 1 has a history
-  - L318 slot 10 has its own
-  - L319 ...and they are different files
-  - L321 ...with different contents
-- **L368 7d. a file held open while a write swaps over it: the write waits for it**
-  - L392 fixture: on Windows a reader holding the file open makes a plain move over it fail
-  - L410 a write over a file let go after
-  - L411 ...after waiting for it: its swap was refused and landed on a later try (GameFiles.swapsThatWaited)
-  - L412 ...with the .tmp gone and the file before it in the .bak
-  - L418 a write over a file held past every retry fails, and says so (
-  - L419 ...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed
-  - L422 ...and once it is let go the next write lands
-- **L445 the autosave off the clock: two snapshots share nothing a month could change**
-  - L447 fixture: the grown city has a map (the save carries its stamp)
-  - L453 fixture: both jobs carry the city map's bytes
-  - L460 fixture: the walk reaches the save's lists and books, and the history's series
-  - L462 every class in the save is one the walk can see into
-  - L463 ...and in the history
-  - L464 the save: no mutable object is in both snapshots
-  - L465 the history: no mutable object is in both snapshots
-  - L470 the walk sees sharing: a snapshot shares
-  - L474 ...a snapshot of a snapshot shares all but the two objects it makes: itself and its buildings array (
-  - L479 ...and the history walked twice shares every one of its
-  - L489 ...and one list held by both saves is named by its field
-  - L495 the save holds what the bond market writes
-  - L497 ...what the exchange writes
-  - L499 ...what the construction control writes
-  - L501 ...what the fund writes
-  - L503 ...what the inbox holds (
-  - L506 ...what the build log holds (
-- **L540 the setters that copy, on states filled in every field**
-  - L547 the construction control's state (setConstructionControl)
-  - L551 the bond market's state, its bonds and books (setBondMarket)
-  - L555 the exchange's state, its books (setExchangeState)
-  - L559 the fund's state, its resolutions, orders and ledger (setFund)
-  - L563 the bank's preferred blocks (setBankPreferred)
-  - L567 the inbox's notices (setNotices)
-  - L571 the build log's entries (setBuilds)
-  - L576 the licensed heads (setLicences)
-  - L577 the skilled heads (setSkilledWorkforce)
-  - L580 the automatic builder's log, as its toState() copies it
-  - L587 the landmasses' placements, built fresh by toState() (DataSave.setLandmasses)
-  - L588 ...and two states of one table share nothing: each save is its own
-  - L599 the long bridges, built fresh by toState() (DataSave.setBridges)
-  - L600 ...and two states of one list share nothing: each save is its own
-  - L604 a state held uncopied is caught: all
-  - L607 every field of every class above was given a value (
-  - L620 ...and writes what the source writes
-- **L837 the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS**
-  - L844 fixture: the city's own history (
-  - L845 fixture: ...and has folded no year
-  - L850 fixture: the history holds MONTHLY_KEPT months
-  - L859 fixture: the old way saved
-  - L892 every due month, warm-ups too, wrote one autosave named for its month
-- **L908 the autosave off the clock: written behind the months, the same files as the old way**
-  - L915 the old way saved slot 3 from the live objects
-  - L926 fixture: three months ran while the snapshot waited
-  - L927 fixture: and they changed the city (cash
-  - L928 fixture: the writer was held: the autosave on disk is still the one before
-  - L929 fixture: ...and nothing was written meanwhile
-  - L933 released, the writer wrote the one snapshot
-  - L934 ...named as it was asked
-  - L937 both saves read back as whole JSON
-  - L949 the save: all
-  - L951 ...and the two trees are equal
-  - L958 ...and the same tree
-  - L960 the city map exists beside both
-  - L961 ...and is the same bytes
-  - L966 the autosave loads with no failure
-  - L967 ...at the month it was asked at, not three on
-  - L968 ...with the cash it was asked at
-  - L969 ...and the history it was asked at
-- **L980 the autosave off the clock: back to back, one at a time, always whole**
-  - L991 held, two autosaves asked for write once
-  - L992 ...and the file holds the second
-  - L1000 not held, two autosaves asked for write once or twice (
-  - L1001 ...and the file holds the second
-  - L1002 ...and the writer never wrote two at once, in the whole run
-- **L1014 the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it**
-  - L1026 fixture: the autosave on disk (month
-  - L1033 fixture: the held autosave is not on disk yet
-  - L1038 a load straight after an autosave returns after the writer was released
-  - L1039 ...and loads that autosave: its month
-  - L1040 ...its name
-  - L1041 ...with no failure
-  - L1047 fixture: the held autosave is not on disk yet
-  - L1052 a numbered save returns after the writer was released
-  - L1053 ...slot 4 is saved
-  - L1054 ...and the held autosave is on disk
-  - L1067 a skip returns after the writer was released
-  - L1068 ...the held autosave and the skip's own were both written (without the wait the skip's replaces the held)
-  - L1070 ...and the file holds the skip's
-  - L1080 Quit returns after the writer was released
-  - L1081 ...and its autosave is on disk
-  - L1082 ...at the city's month
-- **L1093 the autosave off the clock: a write that fails is reported, and the next one writes**
-  - L1100 fixture: the autosave's .tmp is a folder with a file in it
-  - L1115 the failed write is the last save result, not ok
-  - L1116 ...naming the autosave file
-  - L1117 ...and the calling thread said \"Autosave failed:\"
-  - L1118 the autosave on disk is still the one before
-  - L1126 fixture: the obstacle is gone
-  - L1130 with the obstacle gone, the next autosave writes
-  - L1131 ...and the file holds it
-- **L1145 the autosave off the clock: the floor of real time**
-  - L1163 fixture: each of the
-  - L1164 with the clock still,
-  - L1165 ...each due month started its counter again, at
-  - L1170 one second short of the floor, the next due month writes nothing
-  - L1171 ...and its counter starts again
-  - L1176 one second past the floor, the next due month writes exactly one
-  - L1177 ...at its month
-  - L1178 ...named for it
-  - L1198 fixture: the five due months came inside one floor of real time
-  - L1200 on the real clock,
-  - L1203 ...the first due month's, month
-  - L1470 ...and its history ends at it
-  - L1480 ...two months on, its history ends at the city's
-  - L1481 ...with no month missing (
+- **L94 1. eleven distinct files**
+  - L102 22 distinct paths, no two slots sharing
+  - L104 the autosave is named for what it is
+  - L109 slot 2 sorts before slot 10
+  - L113 slot 0 is valid
+  - L114 slot 10 is valid
+  - L115 slot 11 is not
+  - L116 slot -1 is not
+- **L118 2. empty means empty**
+  - L128 and an empty slot has no header
+- **L130 3. three cities that do not touch**
+  - L138 saved to slot 1
+  - L146 saved to slot 7
+  - L151 saved to slot 10
+  - L153 slot 1 exists
+  - L154 slot 7 exists
+  - L155 slot 10 exists
+  - L156 slot 4 is still empty
+  - L157 slot 2 is too, for now
+  - L164 slot 1 still holds the month it was saved at
+  - L166 slot 7 holds its own
+  - L167 and slot 10 is later still
+  - L169 slot 1's population is its own
+- **L171 4. names**
+  - L174 the name was kept
+  - L175 ...and reported as present
+  - L176 an unnamed slot says so
+  - L188 re-saving keeps the existing name
+- **L191 5. the version stamp**
+  - L194 the build that wrote it
+  - L195 the save format
+  - L196 and when
+  - L197 this build is not from the future
+  - L200 a save from a newer build is recognised
+  - L202 an older one is not - those still load
+  - L211 the header sees it
+  - L215 and the load path refuses it
+  - L216 with nothing loaded
+- **L218 6. each slot round-trips into its own city**
+  - L223 slot 1 loads the early city
+  - L224 ...with its own population
+  - L226 ...and no failure
+  - L230 slot 10 loads a later city
+  - L233 loading one slot does not touch another
+- **L236 7. the autosave**
+  - L252 nothing autosaved yet
+  - L253 twelve months to go
+  - L260 still nothing at month
+  - L262 one month to go
+  - L265 the twelfth month writes it
+  - L267 and the counter starts again
+  - L271 it says it is an autosave
+  - L273 ...and holds the month it fired at
+  - L280 a multi-month skip autosaves on the way in
+- **L291 7b. the autosave holds a whole month (0.7.52)**
+- **L305 7c. the autosave off the clock (UP1, 2026-10-22)**
+- **L308 8. histories are per slot**
+  - L311 slot 1 has a history
+  - L312 slot 10 has its own
+  - L313 ...and they are different files
+  - L315 ...with different contents
+- **L369 the autosave off the clock: two snapshots share nothing a month could change**
+  - L371 fixture: the grown city has a map (the save carries its stamp)
+  - L377 fixture: both jobs carry the city map's bytes
+  - L384 fixture: the walk reaches the save's lists and books, and the history's series
+  - L386 every class in the save is one the walk can see into
+  - L387 ...and in the history
+  - L388 the save: no mutable object is in both snapshots
+  - L389 the history: no mutable object is in both snapshots
+  - L394 the walk sees sharing: a snapshot shares
+  - L398 ...a snapshot of a snapshot shares all but the two objects it makes: itself and its buildings array (
+  - L403 ...and the history walked twice shares every one of its
+  - L413 ...and one list held by both saves is named by its field
+  - L419 the save holds what the bond market writes
+  - L421 ...what the exchange writes
+  - L423 ...what the construction control writes
+  - L425 ...what the fund writes
+  - L427 ...what the inbox holds (
+  - L430 ...what the build log holds (
+- **L464 the setters that copy, on states filled in every field**
+  - L471 the construction control's state (setConstructionControl)
+  - L475 the bond market's state, its bonds and books (setBondMarket)
+  - L479 the exchange's state, its books (setExchangeState)
+  - L483 the fund's state, its resolutions, orders and ledger (setFund)
+  - L487 the bank's preferred blocks (setBankPreferred)
+  - L491 the inbox's notices (setNotices)
+  - L495 the build log's entries (setBuilds)
+  - L500 the licensed heads (setLicences)
+  - L501 the skilled heads (setSkilledWorkforce)
+  - L504 the automatic builder's log, as its toState() copies it
+  - L511 the landmasses' placements, built fresh by toState() (DataSave.setLandmasses)
+  - L512 ...and two states of one table share nothing: each save is its own
+  - L523 the long bridges, built fresh by toState() (DataSave.setBridges)
+  - L524 ...and two states of one list share nothing: each save is its own
+  - L528 a state held uncopied is caught: all
+  - L531 every field of every class above was given a value (
+  - L544 ...and writes what the source writes
+- **L761 the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS**
+  - L768 fixture: the city's own history (
+  - L769 fixture: ...and has folded no year
+  - L774 fixture: the history holds MONTHLY_KEPT months
+  - L783 fixture: the old way saved
+  - L816 every due month, warm-ups too, wrote one autosave named for its month
+- **L832 the autosave off the clock: written behind the months, the same files as the old way**
+  - L839 the old way saved slot 3 from the live objects
+  - L850 fixture: three months ran while the snapshot waited
+  - L851 fixture: and they changed the city (cash
+  - L852 fixture: the writer was held: the autosave on disk is still the one before
+  - L853 fixture: ...and nothing was written meanwhile
+  - L857 released, the writer wrote the one snapshot
+  - L858 ...named as it was asked
+  - L861 both saves read back as whole JSON
+  - L873 the save: all
+  - L875 ...and the two trees are equal
+  - L882 ...and the same tree
+  - L884 the city map exists beside both
+  - L885 ...and is the same bytes
+  - L890 the autosave loads with no failure
+  - L891 ...at the month it was asked at, not three on
+  - L892 ...with the cash it was asked at
+  - L893 ...and the history it was asked at
+- **L904 the autosave off the clock: back to back, one at a time, always whole**
+  - L915 held, two autosaves asked for write once
+  - L916 ...and the file holds the second
+  - L924 not held, two autosaves asked for write once or twice (
+  - L925 ...and the file holds the second
+  - L926 ...and the writer never wrote two at once, in the whole run
+- **L938 the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it**
+  - L950 fixture: the autosave on disk (month
+  - L957 fixture: the held autosave is not on disk yet
+  - L962 a load straight after an autosave returns after the writer was released
+  - L963 ...and loads that autosave: its month
+  - L964 ...its name
+  - L965 ...with no failure
+  - L971 fixture: the held autosave is not on disk yet
+  - L976 a numbered save returns after the writer was released
+  - L977 ...slot 4 is saved
+  - L978 ...and the held autosave is on disk
+  - L991 a skip returns after the writer was released
+  - L992 ...the held autosave and the skip's own were both written (without the wait the skip's replaces the held)
+  - L994 ...and the file holds the skip's
+  - L1004 Quit returns after the writer was released
+  - L1005 ...and its autosave is on disk
+  - L1006 ...at the city's month
+- **L1017 the autosave off the clock: a write that fails is reported, and the next one writes**
+  - L1024 fixture: the autosave's .tmp is a folder with a file in it
+  - L1039 the failed write is the last save result, not ok
+  - L1040 ...naming the autosave file
+  - L1041 ...and the calling thread said \"Autosave failed:\"
+  - L1042 the autosave on disk is still the one before
+  - L1050 fixture: the obstacle is gone
+  - L1054 with the obstacle gone, the next autosave writes
+  - L1055 ...and the file holds it
+- **L1069 the autosave off the clock: the floor of real time**
+  - L1087 fixture: each of the
+  - L1088 with the clock still,
+  - L1089 ...each due month started its counter again, at
+  - L1094 one second short of the floor, the next due month writes nothing
+  - L1095 ...and its counter starts again
+  - L1100 one second past the floor, the next due month writes exactly one
+  - L1101 ...at its month
+  - L1102 ...named for it
+  - L1122 fixture: the five due months came inside one floor of real time
+  - L1124 on the real clock,
+  - L1127 ...the first due month's, month
+  - L1394 ...and its history ends at it
+  - L1404 ...two months on, its history ends at the city's
+  - L1405 ...with no month missing (
 
 ## ScaleCheck.java - 86 labelled assertions
 

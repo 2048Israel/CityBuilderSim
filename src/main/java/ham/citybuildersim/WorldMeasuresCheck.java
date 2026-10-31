@@ -98,10 +98,10 @@ public class WorldMeasuresCheck {
     /** The ten measures of Your world (spec-leaderboards D15), in the file's order. */
     static final List<String> YOUR_WORLD = List.of("gdp", "gdp_pp", "growth_real", "growth_10y", "inflation", "price_level", "people", "pop_growth", "area", "density");
 
-    /** The measures (and the GDP variants) a place cannot have 0 of: a figure of 0 for one is a figure nobody published. Oil is not here: 89 nations publish a 0 of it (EIA's). */
+    /** The measures (and the GDP variants) a place cannot have 0 of: a figure of 0 for one is a figure nobody published. Oil is not here: 89 nations publish a 0 of it (EIA's). Child deaths, tertiary enrolment, reserves, broad money and health spending left with their sources (LC1: none allows a sold game to ship them), so nothing of theirs is left to test. */
     static final Set<String> POSITIVE = Set.of("gdp", "gdp.k", "gdp.ppp", "gdp_pp", "gdp_pp.k", "gdp_pp.ppp", "people", "area", "density",
-            "life_exp", "births", "deaths", "child_deaths", "participation", "tertiary", "avg_wage", "min_wage", "kaitz", "reserves_months", "m2",
-            "price_level", "fx_vs_parity", "aged_65", "old_age_dep", "health_spend", "homes_per_1000", "electricity_pp", "water_pp");
+            "life_exp", "births", "deaths", "participation", "avg_wage", "min_wage", "kaitz",
+            "price_level", "fx_vs_parity", "aged_65", "old_age_dep", "homes_per_1000", "electricity_pp", "water_pp");
 
     /** The share of the money figures that must agree with their identity, and how near is agreeing: a few nations' published figures miss each identity (the WDI converts AGO BDI NPL SYR UGA ZWE at an alternative rate and gives Cyprus a per-person population of its own). */
     static final double AGREE_SHARE = .95, AGREE_TOLERANCE = .01;

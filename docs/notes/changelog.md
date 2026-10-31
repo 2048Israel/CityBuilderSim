@@ -18,6 +18,28 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.85 — LC1, data licences for a sold game — 2026-10-31, ready, see docs/queue/LC1-notes.md
+Every data source the game ships, and every series EP0 found for EP1, read for commercial use on the day (Jerus,
+2026-10-31: "only use sources for the rankings that allow that"); `docs/studies/licences.md` is the table, source by
+source. The World Bank labels every WDI series CC BY 4.0, but its terms leave a third party's figure to that party, so
+the 17 Rankings measures the IMF, UNODC, the WHO, the WFE, the UN IGME or UNESCO make (inflation, public finance,
+banks, reserves, homicides, health spending, child deaths, tertiary enrolment) now rank the player's cities only; the
+price level and the money against parity are the Bank's own market GDP over its PPP GDP, and the OECD's wages are
+divided by the Bank's own rate. world-2025.json holds 7,049 figures (9,643). The exe's folder now carries the world's
+credits beside the Earth's, each brought to what its licence asks; EP0's study names what EP1 uses in place of each
+refused series. The suite's picked harnesses are green; the month never reads the file, so no ensemble.
+
+### 0.8.84 — SG1, the student grant on a surplus share paid on cash — 2026-10-31, ready, see docs/queue/SG1-notes.md
+The student grant on its surplus-share basis is now a share of last month's CASH surplus (Jerus, 2026-10-31, settling
+CD7-G: "Cash only (Recommended)"), not of the budget's balance. The balance holds the exchange gain on the dollar debt
+(CD7) and the gain on paper bought back below its book (CD3), which the budget books and no cash moves on; the grant
+paid them out the next month as cash, and a loss that took the balance below nothing paid no grant on a cash surplus.
+`Game.getTreasuryCashSurplus()` is the surplus plus the bridge's own not-cash row, read by the grant's bill and the
+dial a picked basis starts at; the grant card names the cash part when it differs (★ it also adds back the discount
+amortised, which the treasury never pays: the few tenths of a percent the grant moves with discount paper and no
+gain). Nothing saved. DebtExchangeCheck's sections 11 and 12 pin the D$ 10% up and down on a schooled city and buy a
+bond back below book; reverted, they fail 14 assertions. The default grant is FIXED, so no trace moves: no ensemble.
+
 ### 0.8.83 — CD7, the city's foreign debt revalued — 2026-10-31, ready, see docs/queue/CD7-notes.md
 The city's dollar paper now books what the D$ does to it (Jerus, 2026-10-23: "both as you said, but queud right with
 the WN batches"): at each month's reprice, every dollar piece's carrying value in US$ times the move from the rate it
