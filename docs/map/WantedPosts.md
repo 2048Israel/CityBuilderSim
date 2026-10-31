@@ -29,7 +29,7 @@
 
 **Uses:** [WageBand](WageBand.md) (2), [LabourMarket](LabourMarket.md) (2)
 
-**Used by (2):** [Game](Game.md), [WantedPostsCheck](WantedPostsCheck.md)
+**Used by (3):** [Game](Game.md), [PeopleScreen](PeopleScreen.md), [WantedPostsCheck](WantedPostsCheck.md)
 
 ## Constants
 
