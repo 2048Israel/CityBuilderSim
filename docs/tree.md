@@ -416,6 +416,21 @@ adds its line here, not in `CLAUDE.md`.
                                    good, year, path and site, a small city a price-taker and a big one not,
                                    the month's step against a re-solve with the city's tonnes in, seeds
                                    repeat to the bit, the save round trip, the stand-in, the timings (WN3)
+        WorldMeasures.java         the Rankings' real-world figures (batch LB1, 2026-10-30; docs/studies/
+                                   spec-leaderboards.md 6-8): the reader of the resource
+                                   world/world-2025.json, tools/world/measures.py's file - the 196 nations
+                                   and 62 city regions, the 70 measures, each place's latest figure of each
+                                   with its year, mark and source (an estimate with its rule), the sources'
+                                   licences, the two city boundaries and the CPI-U of 2015-2025 that turns a
+                                   real US$ into a 2015 one. A figure the file lacks is absent (null, NaN),
+                                   never 0; the format is tools/world/FORMAT-2025.txt. LB2's Real
+                                   world 2025 board will read it; the game fetches nothing
+        WorldMeasuresCheck.java    WorldMeasures held to FORMAT-2025.txt: problems() is the file's rules in
+                                   one method (every nation of world-1.bin once, a missing figure absent and
+                                   never 0, every mark, source and rule resolving, a licence on every source,
+                                   a region's shares under 1, the 2015-over-2025 ratio the CPI-U's to the
+                                   last bit), the real file has none and a copy of it changed in one place
+                                   has exactly that one, and the money figures agree with each other (LB1)
         PartnerTrade.java          the city's trade by partner (batch WN3; spec-nations 6 and 8): the
                                    month's and the year's trade with each nation and by good, split from the
                                    month's own fills by WorldMarket.allocate() (Game, tallyThePartners()),
@@ -748,7 +763,9 @@ adds its line here, not in `CLAUDE.md`.
                                          earth/ EarthCheck's fixture, cut from earth-1.bin (0.7.111), which
                                          EarthTerrainCheck draws the Earth's ground on (0.7.115)
                                          world/ WorldDataCheck's fixture, cut from world-1.bin by
-                                         tools/world/fixture.py, and the .expect file beside it (WN0)
+                                         tools/world/fixture.py, and the .expect file beside it (WN0); and
+                                         world-2025.json, the Rankings' real-world measures (LB1), made by
+                                         tools/world/measures.py and read by WorldMeasures
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
                                          itself is not in the repository), its FORMAT.txt and ATTRIBUTION.txt, and
                                          fixture.py, which cuts EarthCheck's fixture from it; and since f99d62c
@@ -761,7 +778,12 @@ adds its line here, not in `CLAUDE.md`.
                                          layout and the expect file's, worldread.py the reference reader
                                          WorldData is ported from, common.py the shared ground (the 196, the
                                          years, the freight dials), the stages that make each layer, bake.py
-                                         that joins them, and fixture.py, which cuts WorldDataCheck's fixture
+                                         that joins them, and fixture.py, which cuts WorldDataCheck's fixture;
+                                         and since LB1 the Rankings' measures file beside it: FORMAT-2025.txt
+                                         its contract, measures.tsv the 70 measures and their sources,
+                                         regions.tsv the 62 city regions, measures_fetch.py the downloads (WDI,
+                                         OECD, BIS, WUP 2025, EIA, BLS) and measures.py, which writes
+                                         world-2025.json
     tools/deepseek/                      agent.py, the DeepSeek coding agent a batch's Claude session hands a slice
                                          to, and system.md, its standing instructions (Python, outside the game;
                                          2026-10-17, after the FR0 test in 6fd8dda); docs/deepseek.md is the how

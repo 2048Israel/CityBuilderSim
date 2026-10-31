@@ -1,0 +1,71 @@
+key	group	name	unit	arrow	money	scope	w	source	note
+gdp	economy	GDP	US$	up	1	NC	1	wdi:NY.GDP.MKTP.CD	current US$; also kept at constant 2015 US$ (NY.GDP.MKTP.KD) and at PPP, current international $ (NY.GDP.MKTP.PP.CD)
+gdp_pp	economy	GDP per person	US$	up	1	NC	1	wdi:NY.GDP.PCAP.CD	current US$; also at constant 2015 US$ (NY.GDP.PCAP.KD) and at PPP (NY.GDP.PCAP.PP.CD)
+growth_real	economy	real growth	% a year	up	0	NC	1	wdi:NY.GDP.MKTP.KD.ZG	GDP at constant prices, the year over the year before
+growth_10y	economy	10-year growth	% a year	up	0	N	1	wdi-cagr:NY.GDP.MKTP.KD:10	GDP at constant 2015 US$, compound yearly growth over the ten years to the figure's year
+hh_spend_pp	economy	household spending per person	US$	up	1	N	0	wdi:NE.CON.PRVT.CD/SP.POP.TOTL	households' final consumption, current US$, over the people
+investment	economy	investment	% of GDP	none	0	N	0	wdi:NE.GDI.TOTL.ZS	gross capital formation
+gov_spend	economy	government spending	% of GDP	none	0	N	0	wdi:NE.CON.GOVT.ZS	general government final consumption
+exports	economy	exports	% of GDP	none	0	N	0	wdi:NE.EXP.GNFS.ZS	goods and services
+imports	economy	imports	% of GDP	none	0	N	0	wdi:NE.IMP.GNFS.ZS	goods and services
+trade_balance	economy	trade balance	% of GDP	none	0	N	0	wdi:NE.RSB.GNFS.ZS	exports less imports of goods and services
+current_account	economy	current account	% of GDP	none	0	N	0	wdi:BN.CAB.XOKA.GD.ZS	the current account balance
+unemployment	work	unemployment	% of the labour force	down	0	NC	0	wdi:SL.UEM.TOTL.ZS	ILO modelled estimate
+participation	work	taking part in work	% of people 15+	up	0	N	0	wdi:SL.TLF.CACT.ZS	labour force participation rate, ILO modelled estimate
+avg_wage	work	average wage	US$ a year	up	1	NC	0	oecd:earnings_AV_AN_WAGE.csv|MEASURE=WG,PAY_PERIOD=A,PRICE_BASE=V,AGGREGATION_OPERATION=MEAN,nation=REF_AREA,time=TIME_PERIOD,value=OBS_VALUE,div=wdi:PA.NUS.FCRF	average annual wage, current prices, at the year's exchange rate
+min_wage	work	minimum wage	US$ a year	none	1	N	0	oecd:earnings_MW_CURP.csv|MEASURE=SM_WG,PAY_PERIOD=A,PRICE_BASE=V,nation=REF_AREA,time=TIME_PERIOD,value=OBS_VALUE,div=wdi:PA.NUS.FCRF	statutory minimum wage a year, current prices, at the year's exchange rate
+kaitz	work	minimum against average wage	ratio	none	0	N	0	oecd:earnings_MIN2AVE.csv|MEASURE=MR_WG_FT,AGGREGATION_OPERATION=MEAN,UNIT_MEASURE=PT_WG_A_SAL_FT,nation=REF_AREA,time=TIME_PERIOD,value=OBS_VALUE,mul=0.01	the minimum wage over the mean wage of full-time workers
+tertiary	work	adults in college or university	% gross enrolment	up	0	N	0	wdi:SE.TER.ENRR	tertiary school enrolment, gross
+inflation	prices	inflation	% a year	none	0	N	1	wdi:FP.CPI.TOTL.ZG	consumer prices, the year's average over the year before
+policy_rate	prices	policy rate	%	none	0	N	0	bis:WS_CBPOL_csv_col.zip|FREQ=M,nation=REF_AREA(ISO2),time=columns 2025-12 back to 2025-01 (the last one not empty),value=that cell	the central bank's policy rate at the year's end
+yield_10y	prices	10-year yield	%	down	0	N	0	oecd:finmark_IRLT.csv|MEASURE=IRLT,FREQ=A,UNIT_MEASURE=PA,nation=REF_AREA,time=TIME_PERIOD,value=OBS_VALUE	long-term government bond yield, the year's average
+real_rate	prices	real interest rate	%	none	0	N	0	wdi:FR.INR.RINR	lending rate less the GDP deflator's inflation
+fx_vs_parity	prices	currency against parity	ratio	none	0	N	0	wdi:PA.NUS.FCRF/PA.NUS.PPP	the market rate over the PPP rate, both local money a US$: above 1, the money buys more at home than its market rate says
+reserves_months	prices	reserves in months of imports	months	up	0	N	0	wdi:FI.RES.TOTL.MO	total reserves, gold included
+m2	prices	M2	% of GDP	none	0	N	0	wdi:FM.LBL.BMNY.GD.ZS	broad money
+price_level	prices	price level against the US	ratio	none	0	N	1	wdi:PA.NUS.PPP/PA.NUS.FCRF	the PPP conversion factor over the market rate (the US is 1)
+debt	public	public debt	% of GDP	down	0	N	0	wdi:GC.DOD.TOTL.GD.ZS	central government debt
+debt_foreign	public	debt in foreign money	% of debt	down	0	N	0	none:no open source publishes the currency share of public debt for most nations (the IMF's terms do not allow it)	
+budget_balance	public	budget balance	% of GDP	up	0	N	0	wdi:GC.NLD.TOTL.GD.ZS	central government net lending (+) or borrowing (-)
+tax_revenue	public	tax revenue	% of GDP	none	0	N	0	wdi:GC.TAX.TOTL.GD.ZS	central government tax revenue
+interest_revenue	public	interest	% of revenue	down	0	N	0	wdi:GC.XPN.INTP.RV.ZS	central government interest payments over revenue
+fund	public	city fund	% of GDP	up	0	N	0	none:no source whose terms let a game ship them publishes sovereign funds' assets	
+credit_rating	public	credit rating	notches	up	0	N	0	none:the rating agencies' terms do not let a game ship their ratings	
+pensions	public	pensions	% of GDP	none	0	N	0	oecd:socx_PUB_OLD.csv|MEASURE=SOCX,UNIT_MEASURE=PT_B1GQ,EXPEND_SOURCE=ES10,SPENDING_TYPE=C,PROGRAMME_TYPE=TP01,nation=REF_AREA,time=TIME_PERIOD,value=OBS_VALUE	public spending on old-age and survivors' pensions
+bank_capital	banks	bank capital ratio	% of assets	up	0	N	0	wdi:FB.BNK.CAPA.ZS	bank capital and reserves over total assets
+bad_loans	banks	bad loans	% of loans	down	0	N	0	wdi:FB.AST.NPER.ZS	non-performing loans over gross loans
+credit_private	banks	credit to firms and households	% of GDP	none	0	N	0	wdi:FS.AST.PRVT.GD.ZS	domestic credit to the private sector
+stock_market	banks	stock market	% of GDP	none	0	N	0	wdi:CM.MKT.LCAP.GD.ZS	market capitalisation of listed domestic companies
+hh_debt	banks	household debt	% of disposable income	down	0	N	0	oecd:naag_V_households.csv|MEASURE=LES1M_FD4,UNIT_MEASURE=PT_B6N_S1M,nation=REF_AREA,time=TIME_PERIOD,value=OBS_VALUE	households' debt over their net disposable income
+people	people	people	persons	none	0	NC	1	wdi:SP.POP.TOTL	mid-year population
+pop_growth	people	growth	% a year	none	0	NC	1	wdi:SP.POP.GROW	population growth
+births	people	births	per 1,000 people	none	0	N	0	wdi:SP.DYN.CBRT.IN	crude birth rate
+deaths	people	deaths	per 1,000 people	down	0	N	0	wdi:SP.DYN.CDRT.IN	crude death rate
+child_deaths	people	child deaths	per 1,000 live births	down	0	N	0	wdi:SH.DYN.MORT	deaths under five
+life_exp	people	life expectancy	years	up	0	N	0	wdi:SP.DYN.LE00.IN	at birth
+aged_65	people	aged 65+	% of people	none	0	N	0	wdi:SP.POP.65UP.TO.ZS	
+old_age_dep	people	old-age dependency	% of people 15-64	none	0	N	0	wdi:SP.POP.DPND.OL	people 65+ over people 15-64
+net_migration	people	net migration	per 1,000 people	none	0	N	0	wdi:SM.POP.NETM/SP.POP.TOTL*1000	arrivals less departures in the year
+household_size	people	people per household	persons	none	0	N	0	none:no source the study names publishes it for most nations	
+orphans	people	orphans per 10,000	per 10,000 children	down	0	Y	0	none:yours only (D10)	
+rent_income	housing	rent	% of income	down	0	NC	0	none:no comparable published figure across nations (D10's rule)	
+homes_per_1000	housing	homes per 1,000	dwellings per 1,000 people	up	0	N	0	oecd:AHD_HM1-1-Housing-stock-and-construction.xlsx|sheet=HM1.1.A1,nation=col A (the country name),value=col J else col I,time=col M else col L	the housing stock (OECD Affordable Housing Database)
+homeless	housing	without a home per 10,000	per 10,000 people	down	0	N	0	oecd:AHD_HC3-1-Population-experiencing-homelessness.xlsx|sheet=Table_HC3.1.A1,nation=col A (the country name),value=col B (a fraction of the people; a text cell is read as a percent and NA skipped),time=col J (its first four digits),mul=10000	the homeless counted (OECD Affordable Housing Database)
+sharing	housing	households sharing	% of households	down	0	N	0	none:no comparable published figure across nations	
+price_income	housing	home price to income	ratio	down	0	NC	0	none:the OECD's price-to-income series is an index, not a level that ranks	
+homicides	safety	homicides	per 100,000 people	down	0	NC	0	wdi:VC.IHR.PSRC.P5	intentional homicides (UNODC)
+prisoners	safety	prisoners	per 100,000 people	none	0	N	0	none:UNODC allows personal non-commercial use only on its current terms page (older dataUNODC terms allowed free reuse if cited); Jerus to decide, see MEASURES-SOURCES.txt	persons held in prisons
+police	safety	police	per 100,000 people	none	0	N	0	none:UNODC allows personal non-commercial use only on its current terms page (older dataUNODC terms allowed free reuse if cited); Jerus to decide, see MEASURES-SOURCES.txt	police personnel
+recorded_crime	safety	recorded crime	per 100,000 people	down	0	Y	0	none:yours only (D10)	
+health_spend	health	health spending	% of GDP	none	0	N	0	wdi:SH.XPD.CHEX.GD.ZS	current health expenditure
+sick	health	sick at any time	% of people	down	0	Y	0	none:yours only (D10)	
+hungry	health	going hungry	% of people	down	0	N	0	wdi:SN.ITK.DEFC.ZS	prevalence of undernourishment (FAO)
+care	health	care coverage	% of people	up	0	Y	0	none:yours only (D10)	
+area	land	area	km²	none	0	NC	1	wdi:AG.LND.TOTL.K2	land area
+density	land	people per km²	persons per km²	none	0	NC	1	wdi:EN.POP.DNST	people over land area
+electricity_pp	land	electricity per person	kWh a year	none	0	N	0	eia:INTL.zip|file=INTL.txt (one JSON series a line),series_id=INTL.2-2-<ISO3>-BKWH.A,time=data[n][0],value=data[n][1] (billion kWh),mul=1e9,div=wdi:SP.POP.TOTL	electricity consumed over the people
+renewable_share	land	renewable share	% of final energy	up	0	N	0	wdi:EG.FEC.RNEW.ZS	renewable energy consumption
+water_pp	land	water per person	m³ a year	none	0	N	0	wdi:ER.H2O.FWTL.K3/SP.POP.TOTL*1e9	annual freshwater withdrawals over the people
+cars_per_1000	land	cars per 1,000	per 1,000 people	none	0	N	0	none:no source the study names publishes it (the WDI's series ended; OICA's terms)	
+transit	land	commutes by transit	% of commutes	up	0	NC	0	none:no comparable published figure across nations or cities	
+oil	land	oil produced	thousand barrels a day	none	0	N	0	eia:INTL.zip|file=INTL.txt (one JSON series a line),series_id=INTL.57-1-<ISO3>-TBPD.A,time=data[n][0],value=data[n][1] (thousand barrels a day)	crude oil including lease condensate
