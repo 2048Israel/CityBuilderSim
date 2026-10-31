@@ -33,3 +33,22 @@ there now.
 It follows MF2, the map batch, since both change `CityMap`'s placement. AL1
 (the auto-builder's links) keeps "islands left unlinked" and leaves the
 harbour's look to this batch.
+
+## His further words, 2026-10-31
+
+"also not that all ports must be connected, just that if on same island, they
+prefer to be connected, but you can still have mutliple ports disconnected,
+also if the ports have inventory or whatever... perhaps showing it? and
+perhaps some rails prefering to be with ports thus a sprite with port rail,
+and perhaps even a small little upgrade to the rail and port sprites, showing
+a little thing taking the cargo or putting it ... just a little line pixel
+thing that moves say an orange box to the train or off the train or ship or
+whatever. and that ships dock properly. just some ideas, if its too much no
+worries."
+
+So HB1 is narrowed and widened by one point each:
+- **Bundling is a preference, not a rule.** Terminals on the same island lean
+  toward one harbour; separate ports on other coasts or islands stay allowed.
+  This narrows "side by side" above.
+- **Ships berth alongside the quay**, not near it.
+The quay's stock, the port rail and the crane are HB2's, after this batch.
