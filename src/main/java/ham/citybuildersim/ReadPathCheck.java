@@ -771,7 +771,21 @@ public class ReadPathCheck {
             x.deskResting(company, OrderBook.Side.BUY); x.deskResting(company, OrderBook.Side.SELL);
             x.deskCanBuy(g.getEquity(), company); x.getVolume(company); x.getBetweenHouseholds(company);
             x.getHouseholdsBoughtAbroad(company); x.getHouseholdsSoldAbroad(company); x.pricePerFoundingShare(company);
+            // ...and EM2's: the quote and what it is made of, the world's short and who lends it, the month's fees, and what the short paid.
+            x.lastTrade(company); x.quoteIsLastTrade(company); x.quoteWords(company); x.markedAtFair(company); x.cityMark(company);
+            x.shortShares(company); x.shortCollateral(company); x.shortInterest(company); x.lendingRateOf(company);
+            x.lentByCells(company); x.lentByFund(company);
+            x.lendingFeeToCells(company); x.lendingFeeToFund(company); x.lendingFeeThisMonth(company);
+            g.getEquity().getShortPaysThisMonth(company); g.getEquity().getLifetimeShortPays(company);
+            FundView.quoteMonth(x, company, g.getMonth());
         }
+        g.getExchange().isShortSelling();
+        g.getExchange().getLendingFeeToFund(); g.getExchange().getLendingFeeToCells();
+        g.getExchange().getLifeShortSold(); g.getExchange().getLifeShortSoldValue();
+        g.getExchange().getLifeShortCovered(); g.getExchange().getLifeShortCoveredValue();
+        g.getExchange().getLifeShortAsks(); g.getExchange().getLifeShortMonths();
+        g.getExchange().getLifeMarginCalls(); g.getExchange().getLifeRecalls(); g.getExchange().getLifeLendingFees();
+        g.getEquity().getShortPaysThisMonth(); g.getEquity().getLifetimeShortPays();
         g.getExchange().getLastPostedSellValue();
         g.getExchange().getLifeBetweenHouseholdsTrades();
         // ...and 0.7.12's bond market: the Bonds page and one bond's book, the
@@ -1700,11 +1714,13 @@ public class ReadPathCheck {
         System.setOut(quiet);
         Map<String, Double> before = NewGameCheck.snapshot(g);
         bankPrint(g, before);
+        exchangePrint(g, before);
         for (int i = 0; i < 50; i++) {
             readEverything(g);
         }
         Map<String, Double> after = NewGameCheck.snapshot(g);
         bankPrint(g, after);
+        exchangePrint(g, after);
         System.setOut(out);
 
         out.printf("%d fields fingerprinted%n", before.size());
@@ -2163,6 +2179,24 @@ public class ReadPathCheck {
         feed.month(); feed.exportsByNation(); feed.importsByNation(); feed.standInLat(); feed.standInLon(); feed.yearToDate(1); feed.nameOf(1);
         g.partnerTradeForTest().toState();
         g.partnerTradeForTest().history();
+    }
+
+    /** The exchange's fingerprint (EM2): each company's quote and last trade, the world's short of it and the collateral, who lends it and the month's fees, what the short paid at the dividends; the short's life. Not-a-number is -1. */
+    static void exchangePrint(Game g, Map<String, Double> into) {
+        Exchange x = g.getExchange();
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            String k = "exchange." + Equity.COMPANIES[c] + ".";
+            into.put(k + "quote", x.price(c));
+            into.put(k + "last", finiteOrMinusOne(x.lastTrade(c)));
+            into.put(k + "short", x.shortShares(c));
+            into.put(k + "collateral", x.shortCollateral(c));
+            into.put(k + "lent", x.lentByCells(c) + 3 * x.lentByFund(c));
+            into.put(k + "fees", x.lendingFeeToCells(c) + 3 * x.lendingFeeToFund(c));
+            into.put(k + "shortPays", g.getEquity().getLifetimeShortPays(c) + 3 * g.getEquity().getShortPaysThisMonth(c));
+        }
+        into.put("exchange.life.short", x.getLifeShortSold() + 3 * x.getLifeShortSoldValue() + 5 * x.getLifeShortCovered() + 7 * x.getLifeShortCoveredValue());
+        into.put("exchange.life.counts", x.getLifeShortAsks() + 3.0 * x.getLifeShortMonths() + 5.0 * x.getLifeMarginCalls() + 7.0 * x.getLifeRecalls());
+        into.put("exchange.life.fees", x.getLifeLendingFees());
     }
 
     /** The world's own fingerprint: the solved year, the prices and scales, the trade by partner's totals, every market's band. Not-a-number is -1. */

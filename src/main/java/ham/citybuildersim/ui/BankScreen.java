@@ -1757,7 +1757,7 @@ final class BankScreen {
                     tightMoney(toDollars(exchange.bestAskOf(c, Exchange.DESK)), false)));
         }
         String said = "It bids for every company a little under what the register says a share is worth, for what "
-                + "its capital carries, and asks a little over it for what it holds - carried at the last trade or the "
+                + "its capital carries, and asks a little over it for what it holds - carried at the quote or the "
                 + "register's value, whichever is lower. "
                 + (orders.length() == 0
                         ? (exchange.isOpen() ? "Nothing of its own rests on the book." : "It posts nothing: it has no capital to trade with.")
@@ -2006,7 +2006,7 @@ final class BankScreen {
         desk.getChildren().add(statementNote(positions.length() == 0
                 ? "The desk holds nothing. It bids for every company a little under what the register says"
                   + " a share is worth, for what its capital carries, and asks a little over it for what it holds."
-                : "On the desk: " + positions + ". Carried at the last trade or the register's value, whichever"
+                : "On the desk: " + positions + ". Carried at the quote or the register's value, whichever"
                   + " is lower - the desk does not mark its own book up on a price nobody has paid yet."));
         /*
          * ITS ORDERS, on the book since 0.7.12 round 2: one participant among
@@ -2303,7 +2303,7 @@ final class BankScreen {
             case BONDS -> String.format("At what they cost it; their face is %s.", moneyFull(bank.getBondFace()));
             case ALLOWANCE -> "The allowance: a year's expected loss on a sound borrower, what a default would cost on one "
                     + "in trouble.";
-            case DESK -> "Other companies' shares the desk holds, at the last trade. Its own shares are not among them: "
+            case DESK -> "Other companies' shares the desk holds, at the quote. Its own shares are not among them: "
                     + "bought back, they are cancelled.";
             case DEPOSIT_FUNDING -> "What it has lent past its own cash, as far as the deposits its branches gather cover "
                     + "it: the city's savings, lent back out - the cheap tranche of its funding.";

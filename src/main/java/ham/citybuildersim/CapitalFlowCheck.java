@@ -650,6 +650,18 @@ public class CapitalFlowCheck {
         // home, the thieves' share of the larger till and the shares bought back (the same, by the guard above) named
         // aside, as each is a line of the cash flows. (The bank's interest on the larger till is no term: it paid
         // this sector's till nothing in either month, which the cash flows' own line would show.)
+        //
+        // EM2 (2026-10-30): the tax on the SECOND coupon is the coupon x the tax rate less what the twin's loss shields of it, named
+        // aside as the others are. A profit is taxed and a loss refunds nothing (Sector.statement(): profitTax = max(pre-tax x rate, 0)),
+        // so where the plain twin is at a loss the dollars' twin pays tax on the coupon less that loss. The twin's second month was a
+        // profit on main (construction billed 162k, pre-tax 65k) and is a loss under the quote (the city's building went another
+        // way: it billed 21.5k, pre-tax -5.1k), so 0.766k of the coupon went untaxed: the floor of the tax, no money from nowhere
+        // (0.766k is 15% of 5.1k). The first month's twin is asserted in profit above; the second month's profit was never caused.
+        double lossShield = Math.min(couponNext, Math.max(0, -plainNext.preTaxIncome()));
+        out.printf("   the second month: the twin's pre-tax %,.3fk, so %,.3fk of the coupon's %,.3fk is shielded from the profit tax%n",
+                plainNext.preTaxIncome(), lossShield, couponNext);
+        close("the profit tax the second coupon paid is the coupon x the tax rate, less what the twin's loss shields of it",
+                heldNext.tax() - plainNext.tax(), taxRate * (couponNext - lossShield), 1e-9);
         close("over both months the till moved only by the tax on both coupons and the extra dividend",
                 (heldNext.cash() - plainNext.cash())
                         + (heldMonth.investedAbroad() - plainMonth.investedAbroad())
@@ -657,7 +669,7 @@ public class CapitalFlowCheck {
                         + (heldMonth.stolen() - plainMonth.stolen()) + (heldNext.stolen() - plainNext.stolen())
                         + (heldMonth.sharesBoughtBack() - plainMonth.sharesBoughtBack())
                         + (heldNext.sharesBoughtBack() - plainNext.sharesBoughtBack()),
-                -taxRate * (coupon + couponNext) - Equity.PAYOUT * coupon * (1 - taxRate), 1e-9);
+                -taxRate * (coupon + couponNext - lossShield) - Equity.PAYOUT * coupon * (1 - taxRate), 1e-9);
 
         // ...and what a save keeps of it.
         Sector.Statement kept = heldSector.toState().statement.toStatement();

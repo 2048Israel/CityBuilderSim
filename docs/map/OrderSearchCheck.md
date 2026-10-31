@@ -43,7 +43,7 @@
 
 **Uses:** [Game](Game.md) (32), [LongPlaytest](LongPlaytest.md) (32), [Mortgage](Mortgage.md) (20), [BusinessInvestment](BusinessInvestment.md) (9), [GameFiles](GameFiles.md) (6), [ScaleCheck](ScaleCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [TempDirs](TempDirs.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
 
-**Used by (1):** [ScaleCheck](ScaleCheck.md)
+**Used by (2):** [ScaleCheck](ScaleCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Sections
 

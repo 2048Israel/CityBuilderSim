@@ -1,19 +1,21 @@
-# gate of Merge batch/RE1: real Estate's stall found at its cause, a small study first (Jerus, 2026-10-29: "sure queue the small thing to find cause"): HD1's posts (2 DIPLOMA posts a Studio and Low-Rise, homes before workers, the payroll in the rent floor; fec704a7) stall the ensemble's seed 4 near 25,000 people from m1,100 (44,157 at the end against main's 249,634); seed 4 under AUTO2 is the fixture, one run per candidate switched off alone; the posts go back in as their own batch once the cause is known (Jerus, 2026-10-28: "gotta add workers to real estate"), 0.8.77
+# gate of Merge batch/EM2: a share quoted at the middle of its book (the last trade with a side empty, fair before the first), and short selling against bubbles like a 448k last print over 4k bids: long holders lend for a fee, Reg T's 150% margin, FINRA's 30% maintenance, the short pays the dividend (Jerus, 2026-10-29); saves new keys, the trace moves; and HD2-S, ScaleCheck section 6's town given a month where it grows (Jerus, 2026-10-30: "Ship, fix after (Recommended)"), 0.8.78
 # date: 2026-10-30
 # earth-2.bin: named
-# suite: 154 harnesses run in 2253s: 152 passed, 2 failed
-# timing: 13 harnesses run in 430s: 12 passed, 1 failed
+# suite: 155 harnesses run in 1476s: 153 passed, 2 failed
+# timing: 13 harnesses run in 431s: 11 passed, 2 failed; its red lines were judged side by side with main's, below
+# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the kept month is within KEPT_MONTH_MS (12.0 ms)                         FAIL   [main 4.89 ms, batch 6.07 ms (+24.2%), budget 12 ms: the batch within the budget]
+# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 3.26e-02) FAIL
+# suite red passed on Jerus's word (Ship, fix after (Recommended)): ScaleCheck | 7 FAILED
 PassThroughCheck | exit 1
-PassThroughCheck | ...and so does the price index (mean gap 0.74% against 0.51%)            FAIL
+PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
 PassThroughCheck | 1 FAILED
 ScaleCheck | exit 1
 ScaleCheck | fixture: the city is growing - more people than a year before                        FAIL
 ScaleCheck | fixture: ...and its own rents price no migrant out in the months its copies are read against (the affordability pull 1 in all 6) FAIL
 ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
 ScaleCheck | fixture: the free copy ordered - an order sized from more than a million needed, and one judged on its interest FAIL
-ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.20e+00) FAIL
-ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 3.54e-02) FAIL
-ScaleCheck | ...deposits: the copy is K times the city's within 0.0260 in all 6 months (worst 4.46e-02) FAIL
-ScaleCheck | ...prices: the copy is equal to the city's within 0.00400 in all 6 months (worst 9.01e-03) FAIL
-ScaleCheck | ...unemployment: the copy is equal to the city's within 0.0330 in all 6 months (worst 1.00e-01) FAIL
-ScaleCheck | 11 FAILED
+ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 3.26e-02) FAIL
+ScaleCheck | 7 FAILED

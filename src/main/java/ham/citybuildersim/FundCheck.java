@@ -53,9 +53,10 @@ import java.io.PrintStream;
  *      cannot be placed waits, and a holding over 10% is asked down to the
  *      limit and no further; since 0.7.48 (C3) its bid stands at the desk's
  *      ask.
- *  8b. The city's mark (0.7.48, C4): a holding whose last trade is older
- *      than Exchange.STALE_MARK_MONTHS is marked at fair value; trading
- *      still reads the last trade.
+ *  8b. The city's mark (0.7.48, C4): a holding whose quote is a last trade
+ *      older than Exchange.STALE_MARK_MONTHS is marked at fair value; one
+ *      whose book has a bid and an ask resting is marked at that quote
+ *      however old the last trade (EM2); trading reads the quote.
  *   9. The transfer at the default withdrawal, Norway's 3% a year, from cash
  *      only.
  *  9b. The withdrawal dial (0.7.48, C1; Jerus: "even 0 or 10% a month"): at
@@ -817,10 +818,15 @@ public class FundCheck {
         Game h = copy();
         Equity reg = h.getEquity();
         int company = -1;
+        // ...the largest of those the households hold 15% of at least (EM2): the largest by its shares alone was a company the desk holds
+        // nearly all of, since the quote moved the splits - what the fixtures below hand the fund is the households' to hand.
         for (int c = 0; c < Sectors.KEYS.length; c++) {
             if (reg.getShares(c) > 0 && h.getExchange().fair(c) > 0
+                    && h.getHouseholdBalance().sharesHeld(c) >= .15 * reg.getShares(c)
                     && (company < 0 || reg.getShares(c) > reg.getShares(company))) company = c;
         }
+        check("fixture: a listed company the households hold 15% of", company >= 0);
+        if (company < 0) return;
         double take = .05 * reg.getShares(company);
         double households = h.getHouseholdBalance().sharesHeld(company);
         check("fixture: a listed company whose households can hand the fund 5% of it", households >= take);
@@ -873,13 +879,13 @@ public class FundCheck {
     /* ================= 8b. the city's mark (0.7.48, C4) ================= */
 
     static void theStaleMark() {
-        out.println("\n--- 8b. the city's mark: a last trade a year old gives way to fair value ---");
+        out.println("\n--- 8b. the city's mark: a quote that is a last trade a year old gives way to fair value; a bid and an ask resting do not ---");
         Game g = copy();
         Equity reg = g.getEquity();
         Exchange ex = g.getExchange();
         int company = -1;
         for (int c = 0; c < Sectors.KEYS.length; c++) {
-            if (reg.getShares(c) > 0 && ex.hasTraded(c) && ex.price(c) != ex.fair(c)
+            if (reg.getShares(c) > 0 && ex.hasTraded(c) && ex.lastTrade(c) != ex.fair(c)
                     && g.getHouseholdBalance().sharesHeld(c) >= .05 * reg.getShares(c)
                     && (company < 0 || reg.getShares(c) > reg.getShares(company))) company = c;
         }
@@ -889,8 +895,32 @@ public class FundCheck {
         for (Household cell : g.getHouseholdBalance().cellsForMarket()) cell.shares[company] *= keep;
         reg.moveCity(company, take);
         int last = ex.bookOf(company).lastTradeMonth();
-        double traded = ex.price(company), fair = ex.fair(company);
+        double traded = ex.lastTrade(company), fair = ex.fair(company);
         check("fixture: the fund holds it and nothing else", g.fundValue() == g.fundCompanyValue(company) && take > 0);
+
+        // A book with a bid and an ask resting, the middle of them neither the last trade nor fair value: a bid under fair value and an ask over
+        // it, the cells' and the world's, put on an emptied book (EM2: the quote is the middle while both rest, and is current however old the last trade).
+        OrderBook book = ex.bookOf(company);
+        book.withdrawAll();
+        Household holder = null;
+        for (Household cell : g.getHouseholdBalance().cells()) {
+            if (cell.households() > 0 && (holder == null || cell.shares[company] * cell.households() > holder.shares[company] * holder.households())) holder = cell;
+        }
+        double bid = fair * .97, ask = fair * 1.05;
+        int now = last + Exchange.STALE_MARK_MONTHS + 1;
+        ex.attach(reg, g.getHouseholdBalance(), g.getBank(), null, now);
+        ex.tradeForCheck(company, Exchange.WORLD, OrderBook.Side.BUY, bid, 1);
+        ex.tradeForCheck(company, Exchange.CELL + holder.key(), OrderBook.Side.SELL, ask, 1);
+        double quote = (bid + ask) / 2;
+        check("fixture: a bid and an ask rest on it, the last trade older than STALE_MARK_MONTHS, and the middle of them is neither that trade nor fair value",
+                book.bestBid() == bid && book.bestAsk() == ask && book.lastTradeMonth() == last
+                        && now - last > Exchange.STALE_MARK_MONTHS && Math.abs(quote - traded) > 1e-9 && Math.abs(quote - fair) > 1e-9);
+        check("a holding whose last trade is older than STALE_MARK_MONTHS but whose book has a bid and an ask resting is marked at the quote, not at fair value",
+                !ex.markedAtFair(company) && ex.cityMark(company) == quote && g.fundCompanyValue(company) == take * quote
+                        && g.fundValue() == take * quote && FundView.sharePosition(g, company, false).price() == quote);
+
+        // Nothing resting: the quote is the last trade, and that is marked at fair value once it is a year old and a month.
+        book.withdrawAll();
         // A year with no trade, then a month more: the exchange's clock moved on, its book left alone.
         ex.attach(reg, g.getHouseholdBalance(), g.getBank(), null, last + Exchange.STALE_MARK_MONTHS);
         boolean aYear = ex.cityMark(company) == traded && !ex.markedAtFair(company)
@@ -898,6 +928,7 @@ public class FundCheck {
         ex.attach(reg, g.getHouseholdBalance(), g.getBank(), null, last + Exchange.STALE_MARK_MONTHS + 1);
         out.printf("   %s last traded m%d at %.6f, fair %.6f: the fund's holding $%,.3fk a year on, $%,.3fk a month later%n",
                 Equity.COMPANIES[company], last, traded, fair, take * traded, g.fundCompanyValue(company));
+        check("fixture: no side rests, so the quote is the last trade", ex.quoteIsLastTrade(company) && ex.price(company) == traded);
         check("a holding whose last trade is older than STALE_MARK_MONTHS is marked at fair value", aYear
                 && ex.markedAtFair(company) && ex.cityMark(company) == fair
                 && g.fundCompanyValue(company) == take * fair && g.fundValue() == take * fair

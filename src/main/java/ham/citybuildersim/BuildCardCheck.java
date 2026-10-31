@@ -2162,6 +2162,9 @@ public class BuildCardCheck {
         // The landlords' shares cheap on the book, so their owners are not asked for the down payment (MortgageCheck 3's way): the funds
         // are the till's and its money abroad, and the card's cash is the order's.
         int company = Equity.indexOf(re);
+        // EM2: the price is the quote, the middle of the book where a bid and an ask rest, so a last trade seeded under a book that stands
+        // moves nothing; the resting orders go first (as the month's start withdraws them) and the quote is the last trade, half of fair value.
+        g.getExchange().bookOf(company).withdrawAll();
         g.getExchange().bookOf(company).seedLastPrice(.5 * g.getExchange().fair(company));
         double insured = credit.getInsuredMortgageRate(), till = economy.getSectorCash(re);
         double cost = plans.getCostOf(house, 1), down = Mortgage.ownFundsFor(cost);

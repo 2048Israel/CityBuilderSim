@@ -978,6 +978,7 @@ public class LongPlaytest {
         }
         marketCum.put(month, new double[] {buybackFilledRun, buybackLeftRun, ex.getLifeTurnover()});
         marketCum.remove(month - 13);
+        countBubbles(g, month);
         boolean print = month == TARGET_MONTHS;
         for (int m : MARKET_MONTHS) print |= month == m;
         if (!print) return;
@@ -1006,6 +1007,51 @@ public class LongPlaytest {
                 month, gdp > 0 ? tills / gdp : Double.NaN, gdp > 0 ? abroad / gdp : Double.NaN,
                 now[0] - before[0], now[1] - before[1], spread(pb), spread(pe),
                 cap > 0 ? (now[2] - before[2]) / cap * 100 : Double.NaN);
+    }
+
+    /* ---- EM2: the bubbles, and the world's short (Jerus, 2026-10-29: "last traded is 448k but current bids are 4k") ---- */
+    /** A share's last trade this many times its best bid, or its quote this many times its fair value, is a bubble month. */
+    static final double BUBBLE_RATIO = 10;
+    /** Per company, the company-months a last trade stood over BUBBLE_RATIO times the best bid, and the quote over BUBBLE_RATIO times fair value: the months, the spell running now and the longest. */
+    static int[] lastMonths, lastSpell, lastLongest, quoteMonths, quoteSpell, quoteLongest;
+
+    static void countBubbles(Game g, int month) {
+        Exchange ex = g.getExchange();
+        int n = Equity.COMPANIES.length;
+        if (lastMonths == null) {
+            lastMonths = new int[n]; lastSpell = new int[n]; lastLongest = new int[n];
+            quoteMonths = new int[n]; quoteSpell = new int[n]; quoteLongest = new int[n];
+        }
+        for (int c = 0; c < n; c++) {
+            double last = ex.lastTrade(c), bid = ex.bestBid(c), quote = ex.price(c), fair = ex.fair(c);
+            boolean lastBubble = last > 0 && bid > 0 && last > BUBBLE_RATIO * bid;
+            boolean quoteBubble = quote > 0 && fair > 0 && quote > BUBBLE_RATIO * fair;
+            lastSpell[c] = lastBubble ? lastSpell[c] + 1 : 0;
+            quoteSpell[c] = quoteBubble ? quoteSpell[c] + 1 : 0;
+            if (lastBubble) lastMonths[c]++;
+            if (quoteBubble) quoteMonths[c]++;
+            lastLongest[c] = Math.max(lastLongest[c], lastSpell[c]);
+            quoteLongest[c] = Math.max(quoteLongest[c], quoteSpell[c]);
+        }
+        if (month != TARGET_MONTHS) return;
+        out.printf("BUBBLES m%d company-months: a last trade over %.0fx the best bid %s | the quote over %.0fx fair value %s | the bank's own shares, apart: last trade %d, quote %d%n",
+                month, BUBBLE_RATIO, mostOf(lastMonths, lastLongest), BUBBLE_RATIO, mostOf(quoteMonths, quoteLongest),
+                lastMonths[Equity.BANK], quoteMonths[Equity.BANK]);
+        out.printf("SHORTS m%d: asks posted %d company-months, %,.0f shares sold short for %,.0f, %,.0f covered for %,.0f, a short open %d company-months, "
+                        + "%d margin calls, %d recalls | lending fees paid %,.0f, dividends paid on what was short %,.0f%n",
+                month, ex.getLifeShortAsks(), ex.getLifeShortSold(), ex.getLifeShortSoldValue(), ex.getLifeShortCovered(), ex.getLifeShortCoveredValue(),
+                ex.getLifeShortMonths(), ex.getLifeMarginCalls(), ex.getLifeRecalls(), ex.getLifeLendingFees(), g.getEquity().getLifetimeShortPays());
+    }
+
+    /** The company-months in all (the bank's own apart), and the company with the most of them and its longest spell. */
+    static String mostOf(int[] months, int[] longest) {
+        int total = 0, top = -1;
+        for (int c = 0; c < months.length; c++) {
+            if (c == Equity.BANK) continue;
+            total += months[c];
+            if (months[c] > 0 && (top < 0 || months[c] > months[top])) top = c;
+        }
+        return top < 0 ? "none" : String.format("%d (most %s %d, its longest spell %d)", total, Equity.COMPANIES[top], months[top], longest[top]);
     }
 
     /** Lowest, median and highest of a sorted list, or "none". */
@@ -2633,6 +2679,9 @@ public class LongPlaytest {
 
     /** The answer to the bank's offer under -Dplaytest.preferred, ACCEPT when unset. */
     static final boolean PREFERRED_ACCEPT = !"DECLINE".equalsIgnoreCase(System.getProperty("playtest.preferred", "ACCEPT").trim());
+
+    /** Whether the world sells short under -Dplaytest.shorts, on when unset; "off" is the counterfactual (EM2): the market without them, to see what they change. */
+    static final boolean SHORTS = !"off".equalsIgnoreCase(System.getProperty("playtest.shorts", "on").trim());
 
     /** The fund's dial under -Dplaytest.fund, 0 when unset. */
     static final double FUND_DIAL = fundDial(System.getProperty("playtest.fund", "0"));
@@ -5946,6 +5995,7 @@ public class LongPlaytest {
             // ...and the rescue setting and the fund's dial (0.7.14), as the
             // flags say: the constructor founds on the button at 0.
             g.setRescueMode(RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
+            g.getExchange().setShortSelling(SHORTS);
             g.setFundDial(FUND_DIAL);
             if (ADVANCES_MONTHS != null) g.getCentralBank().setAdvancesCeilingMonths(ADVANCES_MONTHS);
             if (INFLATION_TARGET != null) g.getDebtManager().setInflationTarget(INFLATION_TARGET);

@@ -772,6 +772,23 @@ public final class MoneyAudit {
         in += credit.apply("+ fund SharesSoldToHouseholds", g.getExchange().getFundSoldToHouseholds(), Scope.DOMESTIC);
         in += credit.apply("+ fund SharesSoldAbroad", g.getExchange().getFundSoldAbroad(), Scope.FINANCIAL);
         /*
+         * THE WORLD'S SHORT (EM2). Two payments it makes that no pool's cash
+         * shows, each income from outside, and both owed to the city's holders
+         * for shares the world is short of. The dividend on them: the holders
+         * were paid on every share they hold, and the company's till was
+         * debited for the shares in issue only - "- equity DividendsAbroad"
+         * below counts what the world was paid as a holder, the dividend the
+         * company paid and the short's together (Equity.payDividend()), so the
+         * short's part is declared here, the other way, and the two net to
+         * what the company really sent abroad. The lending fee: the world pays
+         * the shares' lenders, and the fund's part is cash in a pool (the
+         * cells' goes to their savings, outside the pools, and the world is
+         * outside: no line). The trades themselves are the lines above and
+         * below they always were: the short sells and covers abroad.
+         */
+        in += credit.apply("+ equity DividendsPaidByShorts", g.getEquity().getShortPaysThisMonth(), Scope.INCOME);
+        in += credit.apply("+ fund LendingFee", g.getExchange().getLendingFeeToFund(), Scope.INCOME);
+        /*
          * The treasury selling reserves. Foreign money out, local money in - the
          * cash arrives in the city's pool from outside it, so it is declared.
          *

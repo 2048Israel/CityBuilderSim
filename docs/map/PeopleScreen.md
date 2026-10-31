@@ -1,4 +1,4 @@
-# PeopleScreen.java - 4,562 lines · 156 methods · 25 constants · interface
+# PeopleScreen.java - 4,563 lines · 156 methods · 25 constants · interface
 
 `ham/citybuildersim/ui/PeopleScreen.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -71,9 +71,9 @@
 | 3590 | · · the retired |
 | 3607 | · · and outside the families |
 | 3849 | THE MONEY BLOCKS BOTH PANELS SHARE |
-| 4238 | · · the month |
-| 4453 | THE TIER TABLE, AS A TABLE. |
-| 4558 | · Small helpers so the report screens stay readable. Shared by the sector |
+| 4239 | · · the month |
+| 4454 | THE TIER TABLE, AS A TABLE. |
+| 4559 | · Small helpers so the report screens stay readable. Shared by the sector |
 
 ## Constants
 
@@ -145,7 +145,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 4506 | **type** `final class PeopleScreen` | The People tab and its second page, Household money. |
+| 57 | 4507 | **type** `final class PeopleScreen` | The People tab and its second page, Household money. |
 | 62 | 1 | `PeopleScreen(UserInterface ui)` |  |
 
 ### PEOPLE (0.7.27) (lines 64-141)
@@ -415,7 +415,7 @@
 | 3736 | 45 | `Label cashCell(HouseholdAccounts hh, FamilyModel families, FamilyStructure shape, PayTier tier, int tierIndex)` | One cell: what this household has left, and how badly. |
 | 3797 | 51 | `VBox basketBlock(Household cell)` | What a full basket would have been, what they planned to spend, and where the difference came from. |
 
-### THE MONEY BLOCKS BOTH PANELS SHARE (lines 3849-4452)
+### THE MONEY BLOCKS BOTH PANELS SHARE (lines 3849-4453)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -425,16 +425,16 @@
 | 3898 | 6 | `static String monthsRun(double months)` | A run of months, said the way a person would say it. |
 | 3906 | 6 | `Label panelBlockHead(String text)` | The small heading that divides a statement panel into blocks. |
 | 3914 | 17 | `Label panelWho(HouseholdBalance bal, Household cell)` | How many of them there are, how big each one is, and how much of the city that is. |
-| 3941 | 228 | `void positionBlock(VBox panel, HouseholdBalance bal, Household own)` | What one of these households HAS, what it OWES, what it OWNS and what all of that leaves it worth. |
-| 4178 | 31 | `void ratioBlock(VBox panel, Household own, double income, double tax, String billsLabel, double bills, double fees, double shop...` | The same month again, as shares rather than figures. |
-| 4219 | 38 | `VBox outsideStatement(HouseholdBalance bal)` | One of the people outside the families, and what a month does to them. |
-| 4266 | 186 | `VBox openStatement(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | The month of whichever cell is open, in full. |
+| 3941 | 229 | `void positionBlock(VBox panel, HouseholdBalance bal, Household own)` | What one of these households HAS, what it OWES, what it OWNS and what all of that leaves it worth. |
+| 4179 | 31 | `void ratioBlock(VBox panel, Household own, double income, double tax, String billsLabel, double bills, double fees, double shop...` | The same month again, as shares rather than figures. |
+| 4220 | 38 | `VBox outsideStatement(HouseholdBalance bal)` | One of the people outside the families, and what a month does to them. |
+| 4267 | 186 | `VBox openStatement(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | The month of whichever cell is open, in full. |
 
-### THE TIER TABLE, AS A TABLE. (lines 4453-4557)
+### THE TIER TABLE, AS A TABLE. (lines 4454-4558)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4496 | 26 | `HBox flowBar(double tax, double rent, double fees, double shops, double left, double width)` | Where a household's month went, as one bar. |
-| 4524 | 10 | `Region barPart(double width, String colour, String what)` | One segment. |
-| 4536 | 21 | `HBox flowKey()` | The key under the bar, so the colours mean something the first time. |
+| 4497 | 26 | `HBox flowBar(double tax, double rent, double fees, double shops, double left, double width)` | Where a household's month went, as one bar. |
+| 4525 | 10 | `Region barPart(double width, String colour, String what)` | One segment. |
+| 4537 | 21 | `HBox flowKey()` | The key under the bar, so the colours mean something the first time. |
 

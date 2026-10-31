@@ -2876,6 +2876,9 @@ public abstract class Sector {
         return Math.max(0, Math.min(getCapacity(g) * getOperatingRate(), need));
     }
 
+    /** What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). */
+    static final double UNSOLD_DUST = 1e-9;
+
     /**
      * A flow good's unsold units, once the market has taken what it wants:
      * shipped abroad at the export price, or lost.
@@ -2885,7 +2888,10 @@ public abstract class Sector {
         Output o = output(g);
         double unsold = Math.max(0, o.produced - o.soldLocal);
         if (unsold <= 0) return;
-        if (g.exportable()) {
+        // ...past a dust floor (EM2): a plant that sold all it made can be a unit in the last place short of it - produced
+        // 52,809.95316199247 against 52,809.95316199246 sold, HaulageCheck's Iron Mine with the world file named - and that
+        // remainder is rounding, not a cargo for the world: it is idled, so made = sold + exported + idled still holds.
+        if (g.exportable() && unsold > UNSOLD_DUST * o.produced) {
             Trade t = market.record(key, Trade.WORLD, unsold, market.exportPrice());
             bookSale(t);
         } else {

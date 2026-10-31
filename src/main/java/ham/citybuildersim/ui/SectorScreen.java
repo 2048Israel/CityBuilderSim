@@ -2100,8 +2100,10 @@ final class SectorScreen {
      * its book was small has millions of them and the count says nothing.
      *
      * THE MARKET, on the order book since 0.7.12 round 2 (the bank's desk
-     * quoted it from 2026-09-11 until then). The price is the last trade,
-     * with fair value - the register's reckoning - beside it; the yield at
+     * quoted it from 2026-09-11 until then). The price is the quote since
+     * EM2 - the middle of the book - with the bid, the ask and the last
+     * trade beside it, and fair value - the register's reckoning; the world's
+     * short when there is one; the yield at
      * the price and what the company is worth at it; the month's volume; and
      * what rests on the book, best first, behind "details". Bids and asks are
      * no longer green and amber: a bid is not good news (B10).
@@ -2133,12 +2135,21 @@ final class SectorScreen {
         boolean cheap = price < fairValue * (1 - Exchange.BUYBACK_TOLERANCE);
         OrderBook shareBook = market.bookOf(company);
         javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(18, 8);
-        strip.getChildren().add(miniFigure(market.hasTraded(company) ? "LAST TRADE" : "NOT TRADED YET: AT FAIR VALUE",
-                tightMoney(toDollars(price), false), market.hasTraded(company) ? CityCalendar.format(shareBook.lastTradeMonth()) : null,
+        // The price is the quote (EM2): the middle of the book, or the last trade held inside a side that stands. The bid, the ask and
+        // the last trade are beside it, so a price far from the book can be seen to be one.
+        strip.getChildren().add(miniFigure("QUOTE", tightMoney(toDollars(price), false), market.quoteWords(company),
                 dear ? Palette.WARN : cheap ? Palette.GOOD : Palette.TEXT_HEAD,
-                dear ? "Above fair value by more than the companies' buy-back tolerance: buyers paid more than the "
-                        + "register reckons it is worth." : cheap ? "Below fair value by more than the tolerance: sellers "
-                        + "took less to get out." : null));
+                "The share's price: the middle of the best bid and the best ask while both rest; with one side empty, the last trade, "
+                        + "never over the ask that stands nor under the bid; with neither, the last trade; fair value before the first trade."
+                        + (dear ? " Above fair value by more than the companies' buy-back tolerance: buyers paid more than the "
+                        + "register reckons it is worth." : cheap ? " Below fair value by more than the tolerance: sellers "
+                        + "took less to get out." : "")));
+        double bestBid = market.bestBid(company), bestAsk = market.bestAsk(company);
+        strip.getChildren().add(miniFigure("BID / ASK", (Double.isNaN(bestBid) ? "none" : tightMoney(toDollars(bestBid), false)) + " / "
+                + (Double.isNaN(bestAsk) ? "none" : tightMoney(toDollars(bestAsk), false)), "on the book now", Palette.TEXT_HEAD, null));
+        strip.getChildren().add(miniFigure("LAST", market.hasTraded(company) ? tightMoney(toDollars(shareBook.lastPrice()), false) : "none",
+                market.hasTraded(company) ? "traded " + CityCalendar.format(shareBook.lastTradeMonth()) : "it has not traded yet",
+                Palette.TEXT_HEAD, null));
         // ...and what it is (EM1): its money past a cushion at face, and its business on what it earns.
         boolean onRecord = register.valuedOnRecord(company);
         double spareShare = market.fairSpare(company);
@@ -2156,8 +2167,19 @@ final class SectorScreen {
                         + "price: what its holders weigh against the bank's deposit rate, the city's paper, the dollars abroad and the other shares."));
         strip.getChildren().add(miniFigure("YIELD", String.format("%.1f%%", unsigned0(market.yieldAt(register, company, price) * 100, 1)),
                 "on the dividend it paid over the year", Palette.TEXT_HEAD, null));
-        strip.getChildren().add(miniFigure("MARKET CAP", m(market.marketCap(register, company)), "at the last trade",
+        strip.getChildren().add(miniFigure("MARKET CAP", m(market.marketCap(register, company)), "at the quote",
                 Palette.TEXT_HEAD, null));
+        // The world's short, when there is one (EM2): how much of the company it is short of, who lends the shares, and the fee they are paid.
+        double shortShares = market.shortShares(company);
+        if (shortShares > 0) {
+            double byCells = market.lentByCells(company) / shortShares, byFund = market.lentByFund(company) / shortShares;
+            strip.getChildren().add(miniFigure("SHORT", String.format("%.1f%%", market.shortInterest(company) * 100),
+                    "of the shares outstanding, lent by " + (byFund > 0 ? String.format("the households %.0f%% and the fund %.0f%%",
+                            byCells * 100, byFund * 100) : "the households"), Palette.TEXT_HEAD,
+                    String.format("The world has sold %,.0f shares it does not hold and owes them back; the households' cells and the city's fund "
+                            + "lend them, and are paid a fee of %.2f%% a year on their value (more when the share is hard to borrow), "
+                            + "and the dividend on them.", shortShares, market.lendingRateOf(company) * 100)));
+        }
         strip.getChildren().add(miniFigure("TRADED", market.getVolume(company) > 0
                 ? String.format("%,.0f", market.getVolume(company)) : "none", "shares this month", Palette.TEXT_HEAD, null));
         double paid = register.getDividendThisMonth(company);
@@ -2294,8 +2316,8 @@ final class SectorScreen {
     }
 
     /**
-     * One company's share price over the city's life: the last trade (the
-     * desk's quote until 0.7.12 round 2) against what the register says a
+     * One company's share price over the city's life: the quote (the last
+     * trade until EM2, the desk's quote until 0.7.12 round 2) against what the register says a
      * share is worth, both per founding share - the trend chart, with its
      * note behind an (i) (0.7.30). Null with nothing recorded.
      */
@@ -2314,12 +2336,12 @@ final class SectorScreen {
                         ? String.format(" — one founding share is %s shares today.",
                                 factor >= 1 ? String.format("%,.0f", factor) : String.format("%.4f", factor))
                         : ".")
-                + " Where the last trade sits above what the register reckons, buyers paid more "
-                + "than it is worth; below, sellers took less to get out.";
+                + " Where the quote sits above what the register reckons, buyers bid more "
+                + "than it is worth; below, sellers would take less to get out.";
         // The business area's violet (0.7.23; it was the money blue), the
         // register's reckoning in the grey a reference line is drawn in.
         VBox chart = trendChart(h.getMonth(),
-                new String[] {"The last trade", "What the register reckons"},
+                new String[] {"The quote", "What the register reckons"},
                 new double[][] {price, worth},
                 new String[] {Palette.BUSINESS, Palette.RAMP_REST});
         VBox box = new VBox(4, head("WHAT A SHARE HAS BEEN WORTH", note, null), chart);
@@ -3530,7 +3552,7 @@ final class SectorScreen {
     }
 
     /**
-     * FOR ITS SHAREHOLDERS (the Investors summary): the last trade and fair
+     * FOR ITS SHAREHOLDERS (the Investors summary): the quote and fair
      * value, earnings and the dividend a share, the yield, price to earnings
      * and to book, and who holds it - the reads Equity and Exchange already
      * keep, as the month closed.
@@ -3544,7 +3566,8 @@ final class SectorScreen {
         double abroad = register.foreignShare(company), desk = register.deskShare(company);
         javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(18, 8);
         strip.getChildren().addAll(
-                miniFigure(s.traded() ? "LAST TRADE" : "NOT TRADED: FAIR VALUE", shareWords(f[5], "$"), null, Palette.TEXT_HEAD, null),
+                miniFigure("QUOTE", shareWords(f[5], "$"), s.traded() ? "the middle of the book, as it closed" : "fair value: not traded yet",
+                        Palette.TEXT_HEAD, null),
                 miniFigure("FAIR VALUE", shareWords(f[6], "$"), "the register's", Palette.TEXT_HEAD, null),
                 miniFigure("EARNINGS A SHARE", shareWords(f[1], "$"), "the month", f[1] < 0 ? Palette.BAD : Palette.TEXT_HEAD, null),
                 miniFigure("DIVIDEND A SHARE", shareWords(f[2], "$"), "the month", Palette.TEXT_HEAD, null),
@@ -3554,7 +3577,7 @@ final class SectorScreen {
                 miniFigure("HELD", BuildScreen.pct(Math.max(0, 1 - abroad - desk)) + " here",
                         BuildScreen.pct(abroad) + " abroad" + (desk > 0 ? ", " + BuildScreen.pct(desk) + " on the desk" : ""),
                         Palette.TEXT_HEAD, null));
-        return card(head("FOR ITS SHAREHOLDERS", "A share as the month closed: the last trade on the book (fair value until "
+        return card(head("FOR ITS SHAREHOLDERS", "A share as the month closed: the quote on the book (fair value until "
                 + "it trades) and the register's fair value, what it earned and paid a share this month, the yield on a "
                 + "year's dividend, price to a year's earnings at this month's and to its book, and who holds it. The "
                 + "Statement view has the investor report, against last month.", null), strip);

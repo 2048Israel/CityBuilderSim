@@ -1455,6 +1455,43 @@ public class SaveFileCheck {
         portState.heldBack = 123.5; portState.crudeSeaIn = 900.25; portState.crudeSeaOut = 100.125; portState.crudeTrade = 9_999.5;
         full.getPorts().restore(portState);
 
+        /*
+         * THE WORLD'S SHORT (EM2): a position the exchange carries beside the register's holdings, the shares the cells and the fund lend against
+         * it, the collateral held, the month's lending fee each was paid, the dividends the short has paid over the city's life, and its own life
+         * counters. The position is caused by the trades that make one (the world sells to a cell, the lenders found by the cells and the
+         * fund); the fee, the counters and the dividends are set to figures no other has (stampShortRecordForCheck()), which a save must carry back.
+         */
+        Exchange shortEx = full.getExchange();
+        int shortCo = -1;
+        for (int c = 0; c < Equity.COMPANIES.length && shortCo < 0; c++) {
+            if (c != Equity.BANK && full.getEquity().valuedOnRecord(c) && full.getHouseholdBalance().sharesHeld(c) > 1 && shortEx.fair(c) > 0) shortCo = c;
+        }
+        double shortSold = 0;
+        if (shortCo >= 0) {
+            double shortRoom = .5 * Math.min(Exchange.MAX_SHORT_INTEREST * full.getEquity().getOutstanding(shortCo),
+                    full.getHouseholdBalance().sharesHeld(shortCo) + full.getEquity().getCityMarketShares(shortCo));
+            double shortAt = shortEx.fair(shortCo) * (1 + Exchange.SHORT_BAND);
+            shortEx.bookOf(shortCo).withdrawAll();
+            shortEx.tradeForCheck(shortCo, Exchange.WORLD_SHORT, OrderBook.Side.SELL, shortAt, shortRoom);
+            // ...bought by the household cell with the most households that may put money into shares at all (Exchange.mayBuy: no debt, not locked
+            // out, not going short), given the means to stand behind it: the desk of this city has no capital to trade with. With the world file named
+            // the biggest cell carried a debt of D$0.0013 a household and was refused every share, so the buy filled nothing and no short opened.
+            Household shortBuyer = null;
+            for (Household h : full.getHouseholdBalance().cells()) {
+                if (!h.isEmpty() && h.households() > 0 && Exchange.mayBuy(h) && (shortBuyer == null || h.households() > shortBuyer.households())) shortBuyer = h;
+            }
+            if (shortBuyer != null) {
+                shortBuyer.savings += 1e9;
+                for (OrderBook.Fill fill : shortEx.tradeForCheck(shortCo, Exchange.CELL + shortBuyer.key(), OrderBook.Side.BUY, shortAt, shortRoom)) shortSold += fill.quantity();
+            }
+            shortEx.bookOf(shortCo).withdrawAll();
+            shortEx.stampShortRecordForCheck(shortCo);
+            full.getEquity().setLifetimeShortPays(shortCo, 987.625);
+        }
+        assertTrue("fixture: the world is short of a company the households hold, lent by the cells, with collateral held against it and a record stamped",
+                shortCo >= 0 && shortSold > 0 && shortEx.shortShares(shortCo) == shortSold && shortEx.shortCollateral(shortCo) > 0
+                        && shortEx.lentByCells(shortCo) > 0 && shortEx.lendingFeeToCells(shortCo) > 0 && shortEx.getLifeMarginCalls() == 3);
+
         assertTrue("saved a city with one of everything in it",
                 full.saveGame(1, "everything").ok);
 
@@ -1727,6 +1764,36 @@ public class SaveFileCheck {
         }
         same("the shares' last trades and fair values", backPrices, livePrices);
         same("...and the orders resting on their books", backResting, liveResting);
+        // ...and the world's short (EM2), every figure of it: the position and the collateral, who lends it, the month's fees, the life counters
+        // and what the short has paid at the dividends - the company's own, and the sum over all.
+        if (shortCo >= 0) {
+            same("the world's short of " + Equity.COMPANIES[shortCo], backEx.shortShares(shortCo), liveEx.shortShares(shortCo));
+            same("...the collateral held against it", backEx.shortCollateral(shortCo), liveEx.shortCollateral(shortCo));
+            same("...the shares the cells lend", backEx.lentByCells(shortCo), liveEx.lentByCells(shortCo));
+            same("...the shares the fund lends", backEx.lentByFund(shortCo), liveEx.lentByFund(shortCo));
+            same("...the month's fee the cells were paid", backEx.lendingFeeToCells(shortCo), liveEx.lendingFeeToCells(shortCo));
+            same("...and the fund", backEx.lendingFeeToFund(shortCo), liveEx.lendingFeeToFund(shortCo));
+            same("...what the short has paid at the dividends over the city's life", back.getEquity().getLifetimeShortPays(shortCo),
+                    full.getEquity().getLifetimeShortPays(shortCo));
+            same("...the quote it is short at", backEx.price(shortCo), liveEx.price(shortCo));
+        }
+        double liveShorts = 0, backShorts = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            liveShorts += liveEx.shortShares(c) + liveEx.shortCollateral(c) + liveEx.lentByCells(c) + liveEx.lentByFund(c)
+                    + liveEx.lendingFeeThisMonth(c) + full.getEquity().getLifetimeShortPays(c);
+            backShorts += backEx.shortShares(c) + backEx.shortCollateral(c) + backEx.lentByCells(c) + backEx.lentByFund(c)
+                    + backEx.lendingFeeThisMonth(c) + back.getEquity().getLifetimeShortPays(c);
+        }
+        same("...every company's together", backShorts, liveShorts);
+        same("...shares sold short and what they fetched, over the city's life", backEx.getLifeShortSold() + backEx.getLifeShortSoldValue(),
+                liveEx.getLifeShortSold() + liveEx.getLifeShortSoldValue());
+        same("...shares covered and what that cost", backEx.getLifeShortCovered() + backEx.getLifeShortCoveredValue(),
+                liveEx.getLifeShortCovered() + liveEx.getLifeShortCoveredValue());
+        same("...the asks posted and the months a short stood open", backEx.getLifeShortAsks() * 1000.0 + backEx.getLifeShortMonths(),
+                liveEx.getLifeShortAsks() * 1000.0 + liveEx.getLifeShortMonths());
+        same("...the margin calls and the recalls", backEx.getLifeMarginCalls() * 1000.0 + backEx.getLifeRecalls(),
+                liveEx.getLifeMarginCalls() * 1000.0 + liveEx.getLifeRecalls());
+        same("...and the fees paid", backEx.getLifeLendingFees(), liveEx.getLifeLendingFees());
         same("...and what a unit of them is worth this month", back.getHouseholdBalance().getBondRatio(),
                 full.getHouseholdBalance().getBondRatio());
         same("the bank's bonds, at what they cost it", back.getBank().getBondBook(), full.getBank().getBondBook());

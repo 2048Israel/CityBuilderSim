@@ -1657,7 +1657,7 @@ final class TradeScreen {
             + "position. Idle money buys the world's paper when the world pays more than the bank, and comes home when the "
             + "bank pays more or its owner needs it - the businesses' tills and the households' savings by the same rule. "
             + "The coupon is a line of the businesses' profit, taxed and paid out on, but kept where it is earned; it reaches the currency only when the money comes home. The city's "
-            + "shares in foreign hands are at their price, the last trade; the businesses' bonds at face.";
+            + "shares in foreign hands are at their price, the quote; the businesses' bonds at face.";
 
     /* ------------------------------ the statement, under details ------------------------------ */
 

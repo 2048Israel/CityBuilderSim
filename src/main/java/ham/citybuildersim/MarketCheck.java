@@ -292,7 +292,11 @@ public class MarketCheck {
         /* ================= 3. two alike but for price ================= */
         section("3. two shares alike but for the price of their last trade: one value, and the money goes to the cheaper");
 
-        // (a) the desk open, flow both ways.
+        // (a) the desk open, flow both ways. Since EM2 a share's price is its quote, and with a bid and an ask both resting that is the middle: a cell
+        // short of money that takes the market asks at the middle, over the desk's bid, and cannot sell to the desk in a book where the desk asks. It
+        // reaches the desk's bid where the desk asks nothing - the quote is then the last trade held inside the bid - so the desk holds A, which it asks,
+        // and none of B, which it only bids for; the cell under its cushion holds B and the cell with money holds A, so the one sells to the desk's
+        // bid and the other buys from its ask, and no cell meets the other.
         HouseholdBalance hb3 = twoCells(4.0, 4.0);
         Household poor3 = poorOf(hb3), rich3 = richOf(hb3);
         poor3.savings = 0;                                   // $12 under its $12 cushion: it offers HOME_SPEED of the shortfall at the market
@@ -301,6 +305,8 @@ public class MarketCheck {
         int A = INDUSTRY, B = MATERIALS;
         c3.list(A, 1_000, 1_200).list(B, 1_000, 1_200);      // identical in record, money and shares
         c3.firm(A, 0, 0, 0).firm(B, 0, 0, 0);
+        holdOnly(hb3, A, rich3);
+        holdOnly(hb3, B, poor3);
         double fair3 = c3.reg.fairValue(A, c3.book[A], 0, W);
         close("fixture: the register values them alike", c3.reg.fairValue(B, c3.book[B], 0, W), fair3, 1e-12);
         double dearA = fair3 * 1.3, cheapB = fair3 * .7;
@@ -308,9 +314,10 @@ public class MarketCheck {
         c3.ex.bookOf(B).seedLastPrice(cheapB);               // ...B 30% under
         assertTrue("fixture: their last trades are further apart than the band round value on either side",
                 dearA - cheapB > 2 * Exchange.BAND * fair3);
-        // The desk holds a little of both, which it asks round the value; the cells take and give at its quotes.
+        // The desk holds a little of A, which it asks round the value; the cell with money takes it at its quote, the cell under its cushion gives B at its bid.
         takeFromHouseholds(c3.reg, hb3, A, 10, true);
-        takeFromHouseholds(c3.reg, hb3, B, 10, true);
+        assertTrue("fixture: the cell with money holds all of A but the desk's, and the cell under its cushion all of B",
+                heldBy(poor3, A) == 0 && heldBy(rich3, B) == 0 && heldBy(poor3, B) > 0 && heldBy(rich3, A) > 0 && c3.reg.getDealerShares(B) == 0);
         c3.step(0);
         double bid3 = fair3 * (1 - Exchange.SPREAD / 2), ask3 = fair3 * (1 + Exchange.SPREAD / 2);
         out.printf("   A last traded at $%.2f and B at $%.2f; after the step A at $%.2f and B at $%.2f, round their value of $%.2f%n",
@@ -331,7 +338,8 @@ public class MarketCheck {
             if (!(p >= c3.ex.fair(c) * (1 - Exchange.BAND) && p <= c3.ex.fair(c) * (1 + Exchange.BAND))) atQuotes = false;
         }
         assertTrue("every trade was at the desk's bid or its ask, inside the band, and the last of each is inside it too", atQuotes);
-        assertTrue("...so neither stale price was paid", c3.ex.price(A) != dearA && c3.ex.price(B) != cheapB);
+        assertTrue("...so neither stale price was paid", c3.ex.price(A) != dearA && c3.ex.price(B) != cheapB
+                && c3.ex.lastTrade(A) != dearA && c3.ex.lastTrade(B) != cheapB);
         close("the registers still agree with the cells", c3.reg.getDomesticShares(A), hb3.sharesHeld(A), 1e-9);
         close("...and in the other company", c3.reg.getDomesticShares(B), hb3.sharesHeld(B), 1e-9);
 
@@ -341,6 +349,9 @@ public class MarketCheck {
         poor3b.savings = 0;                                  // $300 under its cushion each: a big shortfall, so a big offer
         rich3b.savings = 100;
         City c3b = new City(hb3b, ExchangeCheck.bankWith(0));
+        // The world's short is off here (EM2): it would sell A at SHORT_BAND over its value, under the stale ask, and a cell would buy that. What this holds is what a
+        // buyer does with a stale ask nobody undercuts; what the shorts do to one is ShortSellingCheck's.
+        c3b.ex.setShortSelling(false);
         c3b.list(A, 1_000, 1_200).list(B, 1_000, 1_200);
         c3b.firm(A, 0, 0, 0).firm(B, 0, 0, 0);
         holdOnly(hb3b, A, poor3b);
@@ -441,7 +452,7 @@ public class MarketCheck {
         assertTrue("fixture: and the holders would not sell it but for the bid - nothing else puts it under the alternatives",
                 c4.ex.expectedReturn(RETAIL, fair4) >= alternative(0) * (1 - Exchange.BAND));
         assertTrue("the cells sold into the bid: the buyback filled", c4.ex.getBuybackToHouseholds(RETAIL) > 0);
-        close("...at its limit, fair value plus the tolerance: the last trade", c4.ex.price(RETAIL), limit4, 1e-12);
+        close("...at its limit, fair value plus the tolerance: the last trade", c4.ex.lastTrade(RETAIL), limit4, 1e-12);
         close("...the company's till fell by what it paid", cash4 - c4.firms.cash[RETAIL], c4.ex.getBuybackToHouseholds(RETAIL), 1e-9);
         close("...which is the month's pace, all of it filled", c4.ex.getBuybackToHouseholds(RETAIL), pace4, 1e-9);
         close("...its shares in issue fell by what it bought", shares4 - c4.reg.getShares(RETAIL), pace4 / limit4, 1e-9);

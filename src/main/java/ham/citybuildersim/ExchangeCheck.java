@@ -14,11 +14,14 @@ import java.nio.file.Path;
  * round-2 brief: the dealer's quote is replaced by the book, the desk is one
  * participant, the price is the last trade):
  *
- *   1. THE PRICE IS THE LAST TRADE: before its first a company is priced at
- *      fair value; the desk bids and asks half a SPREAD round fair value,
- *      within its capital, and never asks what it does not hold; a trade
- *      sets the price, fair value stays beside it, and the desk carries its
- *      inventory at the lower of the two.
+ *   1. THE PRICE IS THE QUOTE (EM2: the round-2 brief had the last trade,
+ *      which one print far over a thin book kept for as long as nobody
+ *      traded; ShortSellingCheck holds the quote's rule): before its first
+ *      trade a company is priced at fair value; the desk bids and asks half a
+ *      SPREAD round fair value, within its capital, and never asks what it
+ *      does not hold; a trade is the book's last trade, fair value stays
+ *      beside it, the price is the middle of a bid and an ask that both rest,
+ *      and the desk carries its inventory at the lower of the two.
  *   2. NOBODY IS OBLIGED: a bank with no capital posts nothing, and a
  *      household short of money with no buyer waits - its ask rests, it
  *      borrows, and the step counts it; a live desk takes what its capital
@@ -55,8 +58,8 @@ import java.nio.file.Path;
  *      with its quote as the last price.
  *  10. A LIVE CITY: every month of share trading closes the audit, the
  *      register and the cells agree, the bank carries the desk at the
- *      exchange's mark, the price read is the last trade, and it all comes
- *      back from a save.
+ *      exchange's mark, every price read is the quote (EM2) the book as it
+ *      stands gives, and it all comes back from a save.
  *
  * Every claim is CAUSED: a register handed shares, a book and a bank; a
  * family that leaves; a world shown a yield; cells given money, or left
@@ -222,8 +225,8 @@ public class ExchangeCheck {
         int MATERIALS = Equity.indexOf(Sectors.MATERIALS);
         String DESK = Exchange.DESK;
 
-        /* ================= 1. the price is the last trade ================= */
-        out.println("--- 1. before its first trade a company is priced at fair value; after it, at the last trade ---");
+        /* ================= 1. the price is the quote ================= */
+        out.println("--- 1. before its first trade a company is priced at fair value; after it, at its quote, the last trade beside it ---");
 
         HouseholdBalance town1 = savers(12.0, 4.0);          // at its cushion: it neither buys nor rebalances
         Equity reg1 = new Equity();
@@ -246,16 +249,22 @@ public class ExchangeCheck {
         double sold1 = 100 * 50 / bid1;
         close("a household short of money sells into the desk's bid for what it is short", raised1, 50, 1e-9);
         close("...at the bid: the shares it gave up", 200 - seller1.shares(INDUSTRY), 50 / bid1, 1e-9);
-        close("THE PRICE READ IS THE LAST TRADE, the desk's bid", ex1.price(INDUSTRY), bid1, 1e-12);
+        close("THE LAST TRADE IS THE DESK'S BID, which the household sold into", ex1.lastTrade(INDUSTRY), bid1, 1e-12);
         close("...the book's own last price", ex1.bookOf(INDUSTRY).lastPrice(), bid1, 1e-12);
+        assertTrue("...only the bid rests, so the price is the last trade held inside it: the more of the two",
+                !Double.isNaN(ex1.bestBid(INDUSTRY)) && Double.isNaN(ex1.bestAsk(INDUSTRY))
+                        && ex1.price(INDUSTRY) == Math.max(ex1.lastTrade(INDUSTRY), ex1.bestBid(INDUSTRY)));
         close("...with fair value beside it, unmoved", ex1.fair(INDUSTRY), fair1, 1e-12);
         close("the desk carries its inventory at the lower of the two", ex1.mark(INDUSTRY), bid1, 1e-12);
         close("...and holds what it bought", reg1.getDealerShares(INDUSTRY), sold1, 1e-9);
         close("the register still agrees with the households", reg1.getDomesticShares(INDUSTRY), town1.sharesHeld(INDUSTRY), 1e-9);
 
         step(ex1, reg1, town1, bank1, new Firms(), book1, W, 0, 2);
-        close("a month on, with nothing traded, the price is still the last trade", ex1.price(INDUSTRY), bid1, 1e-12);
+        close("a month on, with nothing traded, the last trade is still the desk's bid it was", ex1.lastTrade(INDUSTRY), bid1, 1e-12);
         close("...the desk asks half a spread over fair value", ex1.bestAsk(INDUSTRY), fair1 * (1 + Exchange.SPREAD / 2), 1e-12);
+        close("...so a bid and an ask rest and the price is the middle of them", ex1.price(INDUSTRY),
+                (ex1.bestBid(INDUSTRY) + ex1.bestAsk(INDUSTRY)) / 2, 1e-12);
+        assertTrue("...which is not the last trade: the desk's quotes are a half spread either side of fair value", ex1.price(INDUSTRY) != ex1.lastTrade(INDUSTRY));
         close("...for exactly what it holds", ex1.bookOf(INDUSTRY).resting(DESK, OrderBook.Side.SELL), sold1, 1e-9);
 
         /* ================= 2. nobody is obliged ================= */
@@ -928,14 +937,14 @@ public class ExchangeCheck {
         assertTrue("an array of the wrong length is refused whole", !new Exchange().restore(keys, new double[] {1, 2}));
 
         /* ================= 10. a live city ================= */
-        out.println("\n--- 10. and a city with a market in it still adds up, prices at its last trades, and comes back from a save ---");
+        out.println("\n--- 10. and a city with a market in it still adds up, prices at its quotes, and comes back from a save ---");
 
         Path root = TempDirs.create("exchangecheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game city = new Game(files);
         System.setOut(quiet);
         double worstResidual = 0;
-        int monthsTraded = 0, lastTradeMisread = 0, tradedBooks = 0;
+        int monthsTraded = 0, quoteMisread = 0, tradedBooks = 0, quoteNotLastTrade = 0;
         double bought = 0, soldBack = 0, boughtBack = 0, between = 0, emigrants = 0;
         double worstMarkGap = 0;
         int excessMonths = 0, deskToCompanyMonths = 0;
@@ -968,7 +977,13 @@ public class ExchangeCheck {
                 for (int c = 0; c < N; c++) {
                     if (!x.hasTraded(c)) continue;
                     tradedBooks++;
-                    if (x.price(c) != x.bookOf(c).lastPrice()) lastTradeMisread++;
+                    // The quote (EM2), from the book as it stands and not from price(): the middle of a bid and an ask that both rest;
+                    // with one side, the last trade held inside it; with neither, the last trade.
+                    double bid = x.bestBid(c), ask = x.bestAsk(c), last = x.lastTrade(c);
+                    boolean hasBid = !Double.isNaN(bid), hasAsk = !Double.isNaN(ask);
+                    double quote = hasBid && hasAsk ? (bid + ask) / 2 : hasAsk ? Math.min(last, ask) : hasBid ? Math.max(last, bid) : last;
+                    if (Math.abs(x.price(c) - quote) > 1e-12 * Math.max(1, quote)) quoteMisread++;
+                    if (x.price(c) != last) quoteNotLastTrade++;
                 }
             }
         } finally {
@@ -998,8 +1013,10 @@ public class ExchangeCheck {
         assertTrue("fixture: the desk sold shares to a company's buyback in some month", deskToCompanyMonths > 0);
         assertTrue("...and the audit closed through every month it did", worstDeskSaleResidual < .01 && worstExcessResidual < .01);
         assertTrue("...with the bank carrying the desk at the exchange's mark all along", worstMarkGap < 1e-9);
-        assertTrue("...and every price read, on a book that has traded, is its last trade (" + tradedBooks + " company-months)",
-                tradedBooks > 0 && lastTradeMisread == 0);
+        assertTrue("...and every price read, on a book that has traded, is its quote: the middle, or the last trade held inside the side that stands ("
+                + tradedBooks + " company-months)", tradedBooks > 0 && quoteMisread == 0);
+        assertTrue("fixture: ...in some of them the quote was not the last trade (" + quoteNotLastTrade + " of " + tradedBooks + "), so the line above could fail",
+                quoteNotLastTrade > 0);
         boolean agree = true, whole = true;
         for (int c = 0; c < N; c++) {
             double reg_ = register.getDomesticShares(c), held_ = people.sharesHeld(c);
@@ -1020,6 +1037,9 @@ public class ExchangeCheck {
             Exchange y = again.getExchange();
             if (Math.abs(y.price(c) - x.price(c)) > 1e-12 * Math.max(1, x.price(c))
                     || Math.abs(y.fair(c) - x.fair(c)) > 1e-12 * Math.max(1, x.fair(c))) pricesBack = false;
+            // ...the last trade too, which the quote no longer says: NaN before the first, on both sides alike.
+            if (Double.isNaN(x.lastTrade(c)) != Double.isNaN(y.lastTrade(c))
+                    || Math.abs(y.lastTrade(c) - x.lastTrade(c)) > 1e-12 * Math.max(1, x.lastTrade(c))) pricesBack = false;
             if (y.bookOf(c).bids().size() != x.bookOf(c).bids().size() || y.bookOf(c).asks().size() != x.bookOf(c).asks().size()) booksBack = false;
             for (OrderBook.Side side : OrderBook.Side.values()) {
                 if (Math.abs(y.bookOf(c).depth(side, side == OrderBook.Side.BUY ? 0 : Double.MAX_VALUE)
@@ -1027,7 +1047,7 @@ public class ExchangeCheck {
             }
             if (Math.abs(again.getEquity().getDealerShares(c) - register.getDealerShares(c)) > 1e-9 * Math.max(1, Math.abs(register.getDealerShares(c)))) deskBack = false;
         }
-        assertTrue("every last trade and fair value comes back", pricesBack);
+        assertTrue("every quote, last trade and fair value comes back", pricesBack);
         assertTrue("...every book with the orders resting on it", booksBack);
         assertTrue("...and the desk's inventory", deskBack);
         close("...at the same mark", again.getBank().getSecurities(), city.getBank().getSecurities(), 1e-6 * Math.max(1, Math.abs(city.getBank().getSecurities())));

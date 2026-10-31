@@ -1,4 +1,4 @@
-# BuildCardCheck.java - 2,270 lines · 41 methods · 1 constants · harnesses
+# BuildCardCheck.java - 2,273 lines · 41 methods · 1 constants · harnesses
 
 `ham/citybuildersim/BuildCardCheck.java` - generated 2026-10-30 by CodeMap; line numbers are as of that run.
 
@@ -103,7 +103,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 149 | 2122 | **type** `public class BuildCardCheck` | The build card (0.7.25): BuildCard's figures for every building in buildings.json (143 since FR3, the Bulk Berth) held to the model's own reads - the quote, the land, the staffing tests, the markets, the investors' wo... |
+| 149 | 2125 | **type** `public class BuildCardCheck` | The build card (0.7.25): BuildCard's figures for every building in buildings.json (143 since FR3, the Bulk Berth) held to the model's own reads - the quote, the land, the staffing tests, the markets, the investors' wo... |
 | 155 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 160 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 165 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -208,11 +208,11 @@
 | 1922 | 116 | `static void berthPayback(Path root)` |  |
 | 2040 | 60 | `static void freightsCards(Game g)` | Freight's cards: owned by Freight (the Rail cards no longer say "the rail sector"), and the Truck Depot's line is Haulage's own. |
 
-### 14. THE LANDLORDS' CARD: THE LENDER'S TEST (lines 2101-2270)
+### 14. THE LANDLORDS' CARD: THE LENDER'S TEST (lines 2101-2273)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 2104 | 17 | `static void landlordsOrder(Game g, BuildingsTemplate home, double cash, double rent)` | Game.considerOnMortgage(), the landlords' order, run for one home with the funds and the rent given: the order the card is held to. |
 | 2123 | 10 | `static String lenderWords(BuildCard.Gate gate)` | BuildScreen.lenderWords(), a package-private static of the build screen, read through reflection: it needs no toolkit (RunWorksCheck's way). |
-| 2134 | 136 | `static void theLender(Game g)` |  |
+| 2134 | 139 | `static void theLender(Game g)` |  |
 

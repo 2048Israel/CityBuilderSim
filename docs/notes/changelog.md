@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.78 — EM2, a share quoted at the middle of its book, and short selling — 2026-10-30, ready (two of main's reds with moved figures named for the gate), see docs/queue/EM2-notes.md
+A share's price is its quote: the middle of the best bid and ask, the last trade held inside the one side that stands, the
+last trade with neither, fair value before the first; every reader of the price reads it, and a quote set by a book that
+stands is current however old the trade. The world sells short where the quote stands 20% over value, an ask at that
+band, lent by the households and the fund for .5% a year (more when hard to borrow), paying the dividend on what it is short,
+held to Reg T's 150% and FINRA's 30% (a margin call or a recall buys in at the market), at most 20% of a company short. On
+main's playtest a last trade stood over 10x the best bid in 638 company-months (Business Services: last 18.80 over a bid of
+.0104 for 167 months, its asks resting at the stale print); now 85, and no quote stands over 10x value. The short's ask does
+it: nobody bids that high, so no short opens in a real run. Saved as new keys. Ensemble 23 of 26, as FL1's (R2 in, R3 out).
+HD2-S: no month on EM2's town, nor on the attentive player's; ScaleCheck stays red (the cash line's worst moved), as does
+PassThroughCheck's price index (0.68% against main's 0.74%).
+
 ### RE1 — Real Estate's stall found at its cause — 2026-10-30, ready, no tag (study), see docs/queue/RE1-notes.md
 On HD1's own tree, seed 4 reproduced exactly (44,157 at the end). The posts' payroll, 9% of the landlords' rent, took a
 margin that the property-tax step had squeezed into a loss from m1,000. The loss emptied their till, and with no till they

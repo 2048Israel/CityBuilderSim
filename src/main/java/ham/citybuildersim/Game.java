@@ -3299,7 +3299,8 @@ public class Game {
                 double cityBefore = equity.getDividendCityThisMonth(c);
                 double cityHeld = equity.getCityShares(c);
                 double rescueShare = cityHeld > 0 ? equity.getCityRescueShares(c) / cityHeld : 0;
-                equity.payDividend(c, paid, householdBalance);
+                // ...the world pays on the shares it is short of (EM2): the holders hold them and are paid, the company is not debited for them.
+                equity.payDividend(c, paid, householdBalance, exchange.shortShares(c));
                 // The desk's inventory is paid like any holder: into the bank.
                 bank.receiveDividend(equity.getDividendDeskThisMonth(c) - deskBefore);
                 // ...and the city's fund on what it holds (0.7.14), its books apart.

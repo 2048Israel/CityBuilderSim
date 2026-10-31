@@ -32,7 +32,7 @@ public final class FundView {
 
     /* ============================== the dials ============================== */
 
-    /** A share's last trade older than this many months is called stale on every page that shows it (the spec's B3: a price is its last trade, however old - and since 0.7.48 the city's own holding is marked at fair value once that trade is Exchange.STALE_MARK_MONTHS old). */
+    /** A share's quote that is its last trade (Exchange.quoteIsLastTrade(): no bid or ask rests that sets or bounds it, EM2), older than this many months, is called stale on every page that shows it (the spec's B3: a price is its last trade, however old - and since 0.7.48 the city's own holding is marked at fair value once that trade is Exchange.STALE_MARK_MONTHS old). */
     public static final int STALE_MONTHS = 3;
 
     /** The least a price per founding share, as the history records it to four places, can be and still carry three significant figures: a move off less is not shown (the spec's B6 - a consolidated share records 0.0000). */
@@ -99,6 +99,16 @@ public final class FundView {
         return out;
     }
 
+    /**
+     * The month a share's price was struck (EM2): -1 before its first trade; the last trade's month while the quote IS that trade, no bid or
+     * ask resting that sets or bounds it (Exchange.quoteIsLastTrade(), the one quote that grows stale); this month otherwise, the quote being
+     * the middle of a book that stands, or held inside a side that does.
+     */
+    public static int quoteMonth(Exchange ex, int c, int now) {
+        if (!ex.hasTraded(c)) return -1;
+        return ex.quoteIsLastTrade(c) ? ex.bookOf(c).lastTradeMonth() : now;
+    }
+
     /** One company's market book (rescue false) or rescue book, or null when it holds none. */
     public static Position sharePosition(Game g, int c, boolean rescue) {
         Equity reg = g.getEquity();
@@ -111,7 +121,7 @@ public final class FundView {
         FundLedger.Lot lot = ledger.lot(rescue ? FundLedger.rescueKey(name) : FundLedger.shareKey(name));
         // The city's mark (0.7.48, C4): the last trade, or fair value once that is STALE_MARK_MONTHS old.
         double price = ex.cityMark(c);
-        int priceMonth = ex.hasTraded(c) ? ex.bookOf(c).lastTradeMonth() : -1;
+        int priceMonth = quoteMonth(ex, c, g.getMonth());
         double value = units * price;
         // The rescue book's cost is the fund's own record of it; a market lot's the ledger's.
         double acb = rescue ? f.getRescueCost() : lot == null ? Double.NaN : lot.acb();
@@ -647,7 +657,7 @@ public final class FundView {
         FundLedger.Lot lot = f.getLedger().lot(FundLedger.shareKey(Equity.COMPANIES[c]));
         double marketAcb = lot == null ? 0 : lot.acb();
         double acbNow = marketAcb + (rescue > 0 ? f.getRescueCost() : 0);
-        int priceMonth = ex.hasTraded(c) ? book.lastTradeMonth() : -1;
+        int priceMonth = quoteMonth(ex, c, g.getMonth());
         boolean stale = priceMonth >= 0 && g.getMonth() - priceMonth > STALE_MONTHS;
         if (stale) warnings.add("stale");
         if (!(price > 0)) return null;

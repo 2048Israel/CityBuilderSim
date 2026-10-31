@@ -562,6 +562,11 @@ public final class TreasuryFund {
         dividendsMarket += amount - rescue;
     }
 
+    /** The lending fee the world pays the fund for the shares its market book lends (EM2, Exchange.strikeLending()): cash in, income from the world. */
+    void receiveLendingFee(double amount) {
+        if (amount > 0) cash += amount;
+    }
+
     /** A coupon on its bonds. */
     void receiveCoupon(double amount)     { if (amount > 0) { cash += amount; coupons += amount; monthCoupons += amount; } }
 

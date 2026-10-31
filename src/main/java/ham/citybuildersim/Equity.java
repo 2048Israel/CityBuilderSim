@@ -255,6 +255,12 @@ public class Equity {
         double offered, raisedHome, raisedAbroad, dividendHome, dividendDesk, dividendAbroad;
         /** The city's fund's part of this month's dividend (0.7.14), and over its life. */
         double dividendCity, lifetimeDividendsCity;
+        /**
+         * What the world paid on the shares it was short at this month's dividend (EM2), and over its life: the holders were paid on them and
+         * the company was not, so it is the short's. The month's is not saved, like its siblings; the life is, with the exchange's state of the short
+         * (Exchange.State.shortPays), which hands it back at the load (setLifetimeShortPays()).
+         */
+        double shortPays, lifetimeShortPays;
         double boughtBackThisMonth, lifetimeBoughtBack;
         /**
          * ITS PAID-IN CAPITAL, IN MONEY (0.7.75, the sector statements' R3;
@@ -288,6 +294,7 @@ public class Equity {
         void clearMonth() {
             offered = 0; raisedHome = 0; raisedAbroad = 0;
             dividendHome = 0; dividendDesk = 0; dividendAbroad = 0; dividendCity = 0;
+            shortPays = 0;
             boughtBackThisMonth = 0;
             foundedThisMonth = 0;
         }
@@ -719,8 +726,23 @@ public class Equity {
      * @return the part paid abroad
      */
     public double payDividend(int company, double paid, HouseholdBalance households) {
+        return payDividend(company, paid, households, 0);
+    }
+
+    /**
+     * ...with the shares the world is short of the company (EM2): the holders
+     * were sold them and hold them, so they are paid on them as on any share,
+     * and the short pays what the company does not - the dividend on its
+     * shares in issue is the company's, the dividend on those it was short is
+     * the short's (shortPays). The holdings add to the shares in issue plus
+     * what is short, so the guard against drift reads the holdings net of it.
+     *
+     * @param shortShares what the world is short of this company (Exchange.shortShares())
+     */
+    public double payDividend(int company, double paid, HouseholdBalance households, double shortShares) {
         Listing l = listings[company];
         if (paid <= 0 || l.shares <= 0) return 0;
+        double shorted = Math.max(0, shortShares);
 
         /*
          * ...OVER EVERY SHARE SOMEBODY IS PAID ON, which is the register's
@@ -735,7 +757,7 @@ public class Equity {
          * is open (the register and the cells are moved separately).
          */
         double held = households == null ? 0 : households.sharesHeld(company);
-        double perShare = paid / Math.max(l.shares, held + l.dealerShares + l.foreignShares + l.cityShares);
+        double perShare = paid / Math.max(l.shares, held + l.dealerShares + l.foreignShares + l.cityShares - shorted);
         double home = households == null ? 0 : households.creditDividend(company, perShare);
         // The desk is paid on what it holds - and PAYS on what it is short,
         // like any short seller: the holders of the shares it sold and does
@@ -744,7 +766,11 @@ public class Equity {
         // ...and the city's fund on what it holds (0.7.14), never "abroad":
         // its part is the caller's to hand to the fund (Game.payDividends()).
         double city = l.cityShares * perShare;
-        double abroad = Math.max(0, paid - home - desk - city);
+        // ...the short pays on what it is short, and the world is paid on what it holds: the difference is what crossed abroad.
+        double shortPays = perShare * shorted;
+        double abroad = Math.max(0, paid + shortPays - home - desk - city);
+        l.shortPays += shortPays;
+        l.lifetimeShortPays += shortPays;
         l.dividendHome += home;
         l.dividendDesk += desk;
         l.dividendCity += city;
@@ -762,6 +788,15 @@ public class Equity {
     public double getDividendCityThisMonth(int company) { return listings[company].dividendCity; }
     public double getLifetimeDividendsCity(int company) { return listings[company].lifetimeDividendsCity; }
     public double getDividendDeskThisMonth() { double s = 0; for (Listing l : listings) s += l.dividendDesk; return s; }
+
+    /** What the world paid on the shares it was short at this month's dividend, one company's and all (EM2); MoneyAudit declares it: the holders were paid it and the company's till was not debited. */
+    public double getShortPaysThisMonth(int company) { return listings[company].shortPays; }
+    public double getShortPaysThisMonth() { double s = 0; for (Listing l : listings) s += l.shortPays; return s; }
+    /** ...and over the city's life (saved with the exchange's short: Exchange.State.shortPays). */
+    public double getLifetimeShortPays(int company) { return listings[company].lifetimeShortPays; }
+    public double getLifetimeShortPays() { double s = 0; for (Listing l : listings) s += l.lifetimeShortPays; return s; }
+    /** A load puts the short's life back (Exchange.attach()); money in today's unit, as saved. */
+    void setLifetimeShortPays(int company, double paid) { listings[company].lifetimeShortPays = Math.max(0, paid); }
 
     /* =====================================================================
        THE HOLDERS
@@ -1018,6 +1053,7 @@ public class Equity {
 
     public double getShares(int company)         { return listings[company].shares; }
     public double getForeignShares(int company)  { return listings[company].foreignShares; }
+    /** The shares in issue the others do not hold: the households', while nothing is short. While the world is short (EM2) the households hold that much more than this (Exchange.shortShares()), the holdings adding to the shares in issue plus what is short. */
     public double getDomesticShares(int company) { return listings[company].domesticShares(); }
     public double getLastPrice(int company)      { return listings[company].lastPrice; }
     public Regime getRegime(int company)         { return listings[company].regime; }
@@ -1176,6 +1212,9 @@ public class Equity {
             }
             l.paidThisMonth = 0;
             l.foundedThisMonth = 0;
+            // ...and the short's dividends (EM2): none in this array; the exchange's state hands back the life's (Exchange.attach()).
+            l.shortPays = 0;
+            l.lifetimeShortPays = 0;
             /*
              * ITS PAID-IN CAPITAL (0.7.75, R3), or derived: a save from before
              * kept what it raised since founding, at home and abroad, and its
@@ -1219,6 +1258,7 @@ public class Equity {
             l.offered *= scale;  l.raisedHome *= scale;  l.raisedAbroad *= scale;
             l.dividendHome *= scale;  l.dividendDesk *= scale;  l.dividendAbroad *= scale;
             l.dividendCity *= scale;  l.lifetimeDividendsCity *= scale;
+            l.shortPays *= scale;  l.lifetimeShortPays *= scale;
             l.foundersBook *= scale;  l.boughtBackPaid *= scale;  l.foundedThisMonth *= scale;
         }
     }

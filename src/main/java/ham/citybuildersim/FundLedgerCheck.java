@@ -941,10 +941,13 @@ public class FundLedgerCheck {
         TreasuryFund ft = t.getFund();
         Equity rt = t.getEquity();
         Exchange xt = t.getExchange();
-        ft.receive(300 * xt.fair(c));
+        // ...what it holds first: 300 shares where the cap is the 9,370 of this company with a split behind it, and the same part of the cap where it
+        // is not (EM2: the quote under SPLIT_AT's 100 times the founding price is no print to split on, and the company has 937 shares, not 93,700).
+        double heldFirst = Math.min(300, .032 * TreasuryFund.OWNERSHIP_LIMIT * rt.getShares(c));
+        ft.receive(heldFirst * xt.fair(c));
         xt.bookOf(c).withdrawAll();
-        xt.tradeForCheck(c, Exchange.CELL + holder(t, c).key(), OrderBook.Side.SELL, xt.fair(c), 300);
-        xt.tradeForCheck(c, Exchange.FUND_HAND, OrderBook.Side.BUY, xt.fair(c), 300);
+        xt.tradeForCheck(c, Exchange.CELL + holder(t, c).key(), OrderBook.Side.SELL, xt.fair(c), heldFirst);
+        xt.tradeForCheck(c, Exchange.FUND_HAND, OrderBook.Side.BUY, xt.fair(c), heldFirst);
         t.setCashForTest(t.getCash() + lump);
         t.fundPayIn(lump);
         play(t);
@@ -955,7 +958,7 @@ public class FundLedgerCheck {
         t.fundBuyShares(c, Math.min(each / 2, .5 * (capT - held - rule) * xt.fair(c)));
         double waiting = ft.getHandOrders().get(0).amount() / xt.fair(c);
         check("fixture: the fund holds some of the company, the rule bids for more, an order of the hand's waits, and room is left",
-                held >= 300 - 1e-9 && rule > FundLedger.DUST && waiting > FundLedger.DUST && capT - held - waiting > rule + 1);
+                held >= heldFirst - 1e-9 && rule > FundLedger.DUST && waiting > FundLedger.DUST && capT - held - waiting > rule + 1);
         FundView.Quote qt = FundView.quote(t, new FundView.Order(key, true, true, capT * xt.fair(c), 0));
         if (qt == null) { check("...the ticket quotes a buy", false); return; }
         close("the ticket's room is the cap less what the fund holds and the order waiting",
