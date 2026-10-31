@@ -1473,13 +1473,17 @@ public class SaveFileCheck {
             double shortAt = shortEx.fair(shortCo) * (1 + Exchange.SHORT_BAND);
             shortEx.bookOf(shortCo).withdrawAll();
             shortEx.tradeForCheck(shortCo, Exchange.WORLD_SHORT, OrderBook.Side.SELL, shortAt, shortRoom);
-            // ...bought by the household cell with the most households, given the means to stand behind it: the desk of this city has no capital to trade with.
+            // ...bought by the household cell with the most households that may put money into shares at all (Exchange.mayBuy: no debt, not locked
+            // out, not going short), given the means to stand behind it: the desk of this city has no capital to trade with. With the world file named
+            // the biggest cell carried a debt of D$0.0013 a household and was refused every share, so the buy filled nothing and no short opened.
             Household shortBuyer = null;
             for (Household h : full.getHouseholdBalance().cells()) {
-                if (!h.isEmpty() && h.households() > 0 && (shortBuyer == null || h.households() > shortBuyer.households())) shortBuyer = h;
+                if (!h.isEmpty() && h.households() > 0 && Exchange.mayBuy(h) && (shortBuyer == null || h.households() > shortBuyer.households())) shortBuyer = h;
             }
-            shortBuyer.savings += 1e9;
-            for (OrderBook.Fill fill : shortEx.tradeForCheck(shortCo, Exchange.CELL + shortBuyer.key(), OrderBook.Side.BUY, shortAt, shortRoom)) shortSold += fill.quantity();
+            if (shortBuyer != null) {
+                shortBuyer.savings += 1e9;
+                for (OrderBook.Fill fill : shortEx.tradeForCheck(shortCo, Exchange.CELL + shortBuyer.key(), OrderBook.Side.BUY, shortAt, shortRoom)) shortSold += fill.quantity();
+            }
             shortEx.bookOf(shortCo).withdrawAll();
             shortEx.stampShortRecordForCheck(shortCo);
             full.getEquity().setLifetimeShortPays(shortCo, 987.625);

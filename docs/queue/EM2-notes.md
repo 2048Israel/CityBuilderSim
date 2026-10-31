@@ -145,9 +145,27 @@ and its town with a short opened by hand (sections 3 to 6), and in the
 audit's own month.
 
 The table is the playtest a session runs without the data files, main's
-and EM2's alike; with `earth-2.bin` and `world-1.bin` in `data/`, as the
-gate has them since FL1, the world market changes the town, and EM2's run
-is in the suite's log (section 7).
+and EM2's alike. With `earth-2.bin` and `world-1.bin` named, as the gate
+names them since FL1 (the world market changes the town):
+
+| both files named | main (0.8.77 with the counter) | EM2 |
+|---|---:|---:|
+| company-months a last trade stood over 10x the best bid, the bank apart | 271 (Retail 90, longest 55; Real Estate 59, longest 21) | 532 (Real Estate 179, longest 150) |
+| ...the price read stood over 10x fair value, the bank apart | 3,095 (Retail 738, Freight 477) | none |
+| people at m4,000 | 543,040 | 595,439 |
+| P/E low/median/high, m4000 | 16.1 / 22.2 / 27.7 | 16.2 / 20.1 / 21.7 |
+| turnover, m4000 | 3.0% | 3.2% |
+
+**A last trade can stand longer now, and the price no longer reads it.**
+With the world market, EM2 has more months in which the last trade stands
+far over the bid (Real Estate 150 in a row) though no quote stands over 10x
+value. Read from the rules, not traced month by month: the short's ask, at
+fair value plus `SHORT_BAND`, is the best ask,
+the quote the middle of it and the bid, and the sellers who take the market
+rest there, over the buyers' limits (fair value plus half `SPREAD`), so
+nothing trades and the old print stays the last. On main the same old print
+was the price everybody read. The screens show it as LAST, with the month
+it traded, beside the quote.
 
 **The ensemble** (`docs/ensemble/EM2.md`, 80 runs, two at a time, on the
 merged tip with both files, against `docs/ensemble/0.8.77.md`): **23 of 26**,
@@ -259,3 +277,24 @@ seven sections. SaveFileCheck and ReadPathCheck carry the new fields.
 TradeScreen, FundView) say "the quote" where they said "the last trade",
 with BID / ASK and LAST beside it, and the sector screen a SHORT figure when
 anything is short. Compiled, not yet looked at by eye: for the screen check.
+
+## 8. Found on the way
+
+1. **A dust floor on a flow good's unsold output** (`Sector.UNSOLD_DUST`,
+   1e-9 of what was made). With both data files named HaulageCheck's Iron
+   Mine sold all it made but for one unit in the last place (52,809.95316199247
+   made, ...246 sold), and `Sector.shipUnsoldFlow()` exported the 7e-12 left
+   as a cargo, so the harness's exact "no leg for its ore" failed; main passed
+   by the luck of the rounding (its two figures equal to the last bit). Under
+   the floor the remainder is idled, made = sold + exported + idled holding.
+   One line in `Sector`, which the world lane's RE1 also changes: RE1's branch
+   does not touch `Sector.java`, so it merges past it.
+2. **SaveFileCheck's short under the world file.** With `world-1.bin` named
+   the biggest household cell carried a debt of D$0.0013 a household, and a
+   cell in debt may not buy shares (`Exchange.mayBuy`), so the fixture's
+   short never opened: its buyer is now the biggest cell that may buy.
+3. **The data files at the gate are named, not placed.** A run with
+   `earth-2.bin` and `world-1.bin` copied into the worktree's `data/` reads
+   SaveFileCheck's "no world file" city as having one (the default location
+   is `data/`); the gate names them in `JDK_JAVA_OPTIONS`
+   (`docs/orchestrator.md`), and the suite here was judged that way.
