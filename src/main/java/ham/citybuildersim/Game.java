@@ -5147,6 +5147,10 @@ public class Game {
             String why = String.format("%d well(s) past their life: under %.0f barrels a day after %d months",
                     worn, ham.citybuildersim.sectors.Oil.WORN_OUT_BARRELS_A_DAY,
                     ham.citybuildersim.sectors.Oil.lifeMonths(kind));
+            // ...a deep platform's wells sooner (DW1, the deep wells decline faster): said only where one stands.
+            if (!land && wells.deepPlatformsStanding() > 0) {
+                why += String.format(" (%d in deep water)", ham.citybuildersim.sectors.Oil.lifeMonths(kind, true));
+            }
             int gone = retire(new BusinessInvestment.Decision(wells.key(), well, worn, why, true),
                     sectorInvestor(wells.key()), false);
             wellsWornOut += gone;

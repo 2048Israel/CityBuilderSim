@@ -60,7 +60,7 @@
 > is handed dry oil by fiat (WellCheck's), the campus town stands its units
 > (RefineryViewCheck's), the reserve is stood and filled.
 
-**Uses:** [OilView](OilView.md) (156), [Good](Good.md) (30), [RefineryView](RefineryView.md) (25), [Game](Game.md) (19), [Oil](Oil.md) (15), [SpreadPlanner](SpreadPlanner.md) (11), [RefineryViewCheck](RefineryViewCheck.md) (8), [Refining](Refining.md) (5), [Sectors](Sectors.md) (5), [WellCheck](WellCheck.md) (4), [GameFiles](GameFiles.md) (4), [RefineryFlow](RefineryFlow.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [LandManager](LandManager.md) (3), [Resource](Resource.md) (3), [Sector](Sector.md) (3), [GoodsMarket](GoodsMarket.md) (3), [StrategicReserve](StrategicReserve.md) (3), [LongPlaytest](LongPlaytest.md) (2), [BuildingManager](BuildingManager.md) (1), [Founding](Founding.md) (1), [Trade](Trade.md) (1), [CityCalendar](CityCalendar.md) (1)
+**Uses:** [OilView](OilView.md) (153), [Good](Good.md) (30), [RefineryView](RefineryView.md) (25), [Game](Game.md) (19), [Oil](Oil.md) (18), [SpreadPlanner](SpreadPlanner.md) (11), [RefineryViewCheck](RefineryViewCheck.md) (8), [Refining](Refining.md) (5), [Sectors](Sectors.md) (5), [WellCheck](WellCheck.md) (4), [GameFiles](GameFiles.md) (4), [RefineryFlow](RefineryFlow.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [LandManager](LandManager.md) (3), [Resource](Resource.md) (3), [Sector](Sector.md) (3), [GoodsMarket](GoodsMarket.md) (3), [StrategicReserve](StrategicReserve.md) (3), [LongPlaytest](LongPlaytest.md) (2), [BuildingManager](BuildingManager.md) (1), [Founding](Founding.md) (1), [Trade](Trade.md) (1), [CityCalendar](CityCalendar.md) (1)
 
 ## Sections
 

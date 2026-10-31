@@ -200,7 +200,7 @@ public class OilViewCheck {
         List<Vintage> v = List.of(new Vintage(990, 5, WellKind.PLATFORM), new Vintage(995, 4, WellKind.PLATFORM),
                 new Vintage(996, 3, WellKind.LAND), new Vintage(998, 6, WellKind.PLATFORM));
         List<Oil.Platform> ps = List.of(new Oil.Platform(1, 1, 7, 980), new Oil.Platform(1, 2, 8, 985));
-        List<List<Vintage>> dealt = OilView.deal(v, ps);
+        List<List<Vintage>> dealt = Oil.deal(v, ps);
         report("the platform wells are dealt oldest to the oldest platform, each its wells in slots: 5 + 2 to the first, 2 + 6"
                         + " to the second; the land wells are none of theirs",
                 dealt.equals(List.of(List.of(new Vintage(990, 5, WellKind.PLATFORM), new Vintage(995, 2, WellKind.PLATFORM)),
@@ -298,7 +298,7 @@ public class OilViewCheck {
             List<Vintage> vs = oil.vintagesNow();
             double askLand = OilView.ask(landOf(vs), oil.wellNameplate(), WellKind.LAND, g.getMonth());
             double askSea = 0;
-            for (List<Vintage> d : OilView.deal(vs, oil.platformsNow())) {
+            for (List<Vintage> d : Oil.deal(vs, oil.platformsNow())) {
                 askSea += OilView.ask(d, oil.platformWellNameplate(), WellKind.PLATFORM, g.getMonth());
             }
             Sector.Output o = oil.output(Good.CRUDE);
@@ -314,7 +314,7 @@ public class OilViewCheck {
                 lifted);
 
         OilView.View w = OilView.of(g);
-        double[][] again = OilView.forecast(landOf(oil.vintagesNow()), OilView.deal(oil.vintagesNow(), oil.platformsNow()),
+        double[][] again = OilView.forecast(landOf(oil.vintagesNow()), Oil.deal(oil.vintagesNow(), oil.platformsNow()),
                 oil.wellNameplate(), oil.platformWellNameplate(), land.getOilLeftOnGround(), land.getOilLeftAtSea(),
                 oil.getOperatingRate(), g.getMonth(), OilView.FORECAST_YEARS);
         boolean same = true;

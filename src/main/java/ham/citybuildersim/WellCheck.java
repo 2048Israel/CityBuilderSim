@@ -101,6 +101,19 @@ import java.util.List;
  *      the audit closing; a fixed field is taken before a floating one, the
  *      shallower of two floating ones first.
  *
+ *  15. THE DEEP WELLS DECLINE FASTER (DW1; the IEA's 10.3% a year for deep and
+ *      ultra-deep offshore against shallow's 8.5% [W6]): a platform well
+ *      dealt to a platform on a field DEEP_DECLINE_FROM_M deep or more is 1
+ *      through the plateau and DEEP_KEEPS_A_YEAR to the power of its years
+ *      past it, to the bit, and worn out at a shorter life; the lift of a
+ *      town with a shallow and a deep platform is each platform's dealt
+ *      wells at its own profile; a field a hair short of the line declines
+ *      as the shallow, and a town with no deep platform lifts, to the bit,
+ *      what it always did; the retirements count a deep platform's wells
+ *      worn out at the deep life and a shallow platform's of the same age
+ *      not; and the oil page's forecast declines the deep platform's wells
+ *      at the deep rate.
+ *
  * Every fixture CAUSES its condition: the town is handed its oil by fiat
  * (LandManager.restoreSites(), as MiningCheck hands a city its ore), its
  * wells' ages by their vintages (Oil.setVintagesForTest()), and section 5's
@@ -215,6 +228,7 @@ public class WellCheck {
         thePlanner();
         theTwoPools();
         deepWater();
+        deepDecline();
 
         for (GameFiles f : FILES.values()) LongPlaytest.cleanUp(f.getDirectory().getParent());
         out.println();
@@ -1392,6 +1406,171 @@ public class WellCheck {
         report("a field deeper than FLOATING_MAX_DEPTH_M takes no platform: no platform field, no room, a jacket refused for its deposit",
                 wells.platformFields().isEmpty() && wells.platformRoom() == 0 && !g.hasDepositFor(jacket, 1) && g.sitesFor(jacket) == 0,
                 wells.platformFields().size() + " field(s)");
+        wells.setPlatformFieldsForTest(null);
+    }
+
+    /* ============================ 15. THE DEEP WELLS DECLINE FASTER (DW1) ============================ */
+
+    static void deepDecline() {
+        out.println("\n--- 15. deep wells decline faster: past DEEP_DECLINE_FROM_M a platform's wells keep DEEP_KEEPS_A_YEAR a year after the"
+                + " plateau (DW1, the IEA's 10.3%) ---");
+        int plateau = Oil.PLATFORM_PLATEAU_MONTHS;
+        double floor = WELL_TONNES * Oil.WORN_OUT_SHARE, nearM = Math.nextDown(Oil.DEEP_DECLINE_FROM_M), deepM = Oil.DEEP_DECLINE_FROM_M;
+
+        // The dials, the line and the profile, pure.
+        assertTrue("the dials are the IEA's [W6]: a deep or ultra-deep offshore well loses 10.3% a year against a shallow one's 8.5%,"
+                        + " and deepwater starts at 450 m (its footnote 2)",
+                Math.abs((1 - Oil.DEEP_KEEPS_A_YEAR) - .103) < 1e-12 && Oil.DEEP_KEEPS_A_YEAR < Oil.PLATFORM_KEEPS_A_YEAR
+                        && Oil.DEEP_DECLINE_FROM_M == 450);
+        assertTrue("a sea declines at the deep rate from DEEP_DECLINE_FROM_M, not a hair short of it; a jacket's depth and the deepest sea are on"
+                        + " either side",
+                Oil.declinesDeep(deepM) && !Oil.declinesDeep(nearM) && Oil.declinesDeep(Oil.FLOATING_MAX_DEPTH_M)
+                        && !Oil.declinesDeep(Oil.PLATFORM_MAX_DEPTH_M) && !Oil.declinesDeep(0) && Oil.isFloating(nearM));
+        boolean deepProfile = true, through = true, slower = true, others = true;
+        for (int age = 0; age <= 600; age++) {
+            deepProfile &= Oil.profile(WellKind.PLATFORM, age, true) == (age < plateau ? 1
+                    : StrictMath.pow(Oil.DEEP_KEEPS_A_YEAR, (age - plateau) / 12.0));
+            if (age <= plateau) through &= Oil.profile(WellKind.PLATFORM, age, true) == Oil.profile(WellKind.PLATFORM, age, false);
+            else slower &= Oil.profile(WellKind.PLATFORM, age, true) < Oil.profile(WellKind.PLATFORM, age, false);
+            others &= Oil.profile(WellKind.PLATFORM, age, false) == Oil.profile(WellKind.PLATFORM, age)
+                    && Oil.profile(WellKind.LAND, age, false) == Oil.profile(WellKind.LAND, age)
+                    && Oil.profile(WellKind.LAND, age, true) == Oil.profile(WellKind.LAND, age);
+        }
+        assertTrue("a deep platform well's profile is 1 through PLATFORM_PLATEAU_MONTHS, then DEEP_KEEPS_A_YEAR to the power of its years past"
+                        + " them, every month of fifty years, to the bit",
+                deepProfile && Oil.profile(WellKind.PLATFORM, plateau - 1, true) == 1 && Oil.profile(WellKind.PLATFORM, plateau, true) == 1
+                        && Oil.profile(WellKind.PLATFORM, plateau + 12, true) == Oil.DEEP_KEEPS_A_YEAR);
+        assertTrue("...the plateau is the shallow platform's, and past it the deep well lifts less than a shallow one of the same age, every month",
+                through && slower);
+        assertTrue("...and a shallow platform's and a land well's profiles are exactly what they were: the two-argument form, and a land well"
+                + " whatever the flag says", others);
+        int deepLife = Oil.lifeMonths(WellKind.PLATFORM, true), shallowLife = Oil.lifeMonths(WellKind.PLATFORM, false);
+        report("a deep platform well is worn out at the first age it lifts under ten barrels a day: ten or more at the month before, less at"
+                        + " its life, which is shorter than the shallow platform's",
+                WELL_TONNES * Oil.profile(WellKind.PLATFORM, deepLife - 1, true) >= floor
+                        && WELL_TONNES * Oil.profile(WellKind.PLATFORM, deepLife, true) < floor && deepLife < shallowLife
+                        && deepLife > plateau,
+                String.format("%d months against %d", deepLife, shallowLife));
+        assertTrue("...the lives of the others are as they were: 348 months on a shallow platform by either form, a land well's 263 whatever the"
+                        + " flag says",
+                shallowLife == 348 && Oil.lifeMonths(WellKind.PLATFORM) == shallowLife && Oil.lifeMonths(WellKind.LAND) == 263
+                        && Oil.lifeMonths(WellKind.LAND, true) == 263 && Oil.lifeMonths(WellKind.LAND, false) == 263);
+
+        // A town with a shallow-declining platform and a deep one: the sea field of section 8 split in two by the fixture.
+        Deposit d = seaField();
+        if (d == null) {
+            report("fixture: SEA_OIL_SEED's nearest oil field is in the sea", false, "none");
+            return;
+        }
+        Game g = seaTown("wellcheck-deepdecline");
+        if (g == null) {
+            report("fixture: the town buys the ground over the sea field", false, "could not");
+            return;
+        }
+        Oil wells = g.getSectors().oil();
+        BuildingsTemplate jacket = template(g, "Offshore Platform"), seaWell = template(g, "Platform Well");
+        int each = d.sites() / 2;
+        LandManager.SeaField shallowF = new LandManager.SeaField(anotherField(d, 201, each), each, nearM),
+                otherShallowF = new LandManager.SeaField(anotherField(d, 203, each), each, nearM),
+                deepF = new LandManager.SeaField(anotherField(d, 202, each), each, deepM);
+        Game.BuildResult[] built = new Game.BuildResult[2];
+        quietly(() -> {
+            wells.setPlatformFieldsForTest(List.of(shallowF, deepF));
+            built[0] = g.buildStack(jacket, 2, true);
+            built[1] = g.buildStack(seaWell, 2 * each, true);
+        });
+        List<Oil.Platform> ps = wells.platformsNow();
+        boolean[] deep = Oil.deepPlatforms(ps, wells.platformFields());
+        report("fixture: two floating platforms stand, the first on a field a hair short of DEEP_DECLINE_FROM_M, the second on one at it, each with"
+                        + " its " + each + " wells in slots",
+                built[0] == Game.BuildResult.SUCCESS && built[1] == Game.BuildResult.SUCCESS && ps.size() == 2
+                        && ps.get(0).index() == 201 && ps.get(1).index() == 202 && ps.get(0).wells() == each && ps.get(1).wells() == each
+                        && wells.floatingPlatforms() == 2 && !deep[0] && deep[1] && each >= 4,
+                built[0] + ", " + built[1] + "; " + ps);
+
+        // The lift: vintages dealt oldest first, so the shallow platform has the oldest wells and the deep one the rest.
+        int month = g.getMonth();
+        Vintage oldest = new Vintage(month - (plateau + 120), each - 2, WellKind.PLATFORM),
+                middle = new Vintage(month - (plateau + 60), 5, WellKind.PLATFORM),
+                young = new Vintage(month - (plateau + 12), each - 3, WellKind.PLATFORM);
+        quietly(() -> wells.setVintagesForTest(List.of(oldest, middle, young)));
+        List<List<Vintage>> dealt = Oil.deal(wells.vintagesNow(), ps);
+        report("the platform vintages are dealt oldest to the oldest platform: the shallow one the oldest and 2 of the middle, the deep one 3 of the"
+                        + " middle and the youngest",
+                dealt.equals(List.of(List.of(oldest, new Vintage(middle.month(), 2, WellKind.PLATFORM)),
+                        List.of(new Vintage(middle.month(), 3, WellKind.PLATFORM), young))),
+                dealt.toString());
+        double expected = 0;
+        for (int i = 0; i < dealt.size(); i++) {
+            for (Vintage v : dealt.get(i)) expected += v.count() * WELL_TONNES * Oil.profile(WellKind.PLATFORM, month - v.month(), deep[i]);
+        }
+        double allShallow = liftOf(wells.vintagesNow(), WELL_TONNES, month), lift = wells.getCapacity(Good.CRUDE);
+        report("the town's lift is each platform's dealt wells at its own profile: the shallow platform's at PLATFORM_KEEPS_A_YEAR, the deep"
+                        + " one's at DEEP_KEEPS_A_YEAR",
+                close(lift, expected) && lift < allShallow && close(wells.getCapacityAtSea(), expected),
+                String.format("%,.4f t against %,.4f t if every well declined as the shallow", lift, allShallow));
+        wells.setPlatformFieldsForTest(List.of(shallowF, otherShallowF));
+        double noDeep = wells.getCapacity(Good.CRUDE);
+        report("...a field a hair short of the line declines as the shallow: with both platforms on such fields the lift is what it always was,"
+                        + " to the bit - and moving a field's depth moves the lift the same month",
+                !Oil.declinesDeep(nearM) && wells.platformsNow().size() == 2 && !Oil.deepPlatforms(wells.platformsNow(), wells.platformFields())[1]
+                        && noDeep == allShallow && noDeep > lift && wells.getCapacityAtSea() == noDeep,
+                String.format("%,.6f t against %,.6f t", noDeep, allShallow));
+        wells.setPlatformFieldsForTest(List.of(shallowF, deepF));
+        assertTrue("...and moved back to the deep field the lift is the deep rate's again, the cache having moved with the platforms",
+                close(wells.getCapacity(Good.CRUDE), expected) && wells.getCapacity(Good.CRUDE) < noDeep);
+
+        // The retirements: the wells past their life, each at the life of the platform it is dealt to.
+        Vintage past = new Vintage(month - deepLife, each + 2, WellKind.PLATFORM),
+                notYet = new Vintage(month - (deepLife - 1), each - 2, WellKind.PLATFORM);
+        quietly(() -> wells.setVintagesForTest(List.of(past, notYet)));
+        List<List<Vintage>> dealtLate = Oil.deal(wells.vintagesNow(), wells.platformsNow());
+        boolean aged = dealtLate.get(0).equals(List.of(new Vintage(past.month(), each, WellKind.PLATFORM)))
+                && dealtLate.get(1).equals(List.of(new Vintage(past.month(), 2, WellKind.PLATFORM), notYet));
+        report("fixture: the shallow platform holds " + each + " wells at the deep life, " + deepLife + " months, still short of its own " + shallowLife
+                        + "; the deep platform 2 of them and " + (each - 2) + " a month younger",
+                aged && deepLife < shallowLife, dealtLate.toString());
+        report("the deep platform's two wells at the deep life are worn out; the shallow platform's of the same age, and the deep one's of a month"
+                        + " less, are not",
+                wells.wornOut(WellKind.PLATFORM) == 2 && wells.wornOut() == 2 && wells.wornOut(WellKind.LAND) == 0,
+                wells.wornOut(WellKind.PLATFORM) + " platform wells worn out of " + wells.platformWellsInSlots());
+        wells.setPlatformFieldsForTest(List.of(shallowF, otherShallowF));
+        assertTrue("...with both platforms on fields short of the line the same wells are worn out at neither's life: none",
+                wells.wornOut(WellKind.PLATFORM) == 0 && wells.wornOut() == 0);
+        wells.setPlatformFieldsForTest(List.of(shallowF, deepF));
+
+        // The oil page's forecast declines the deep platform's wells at the deep rate.
+        quietly(() -> wells.setVintagesForTest(List.of(oldest, middle, young)));
+        LandManager land = g.getLandManager();
+        OilView.View page = quietlyGet(() -> OilView.of(g));
+        List<Vintage> vintages = wells.vintagesNow();
+        List<List<Vintage>> dealtNow = Oil.deal(vintages, wells.platformsNow());
+        double rate = wells.getOperatingRate();
+        double[][] ahead = OilView.forecast(OilView.landOf(vintages), dealtNow, deep, wells.wellNameplate(), wells.platformWellNameplate(),
+                land.getOilLeftOnGround(), land.getOilLeftAtSea(), rate, month, OilView.FORECAST_YEARS);
+        double[][] unitDeep = OilView.forecast(OilView.landOf(vintages), dealtNow, deep, wells.wellNameplate(), wells.platformWellNameplate(),
+                1e12, 1e12, 1, month, OilView.FORECAST_YEARS);
+        double[][] unitShallow = OilView.forecast(OilView.landOf(vintages), dealtNow, wells.wellNameplate(), wells.platformWellNameplate(),
+                1e12, 1e12, 1, month, OilView.FORECAST_YEARS);
+        boolean same = page.series().size() == 3;
+        for (int s = 0; same && s < page.series().size(); s++) same &= java.util.Arrays.equals(page.series().get(s).ahead(), ahead[s]);
+        boolean lowerAfter = true, firstSame = true;
+        for (int y = 0; y < OilView.FORECAST_YEARS; y++) {
+            firstSame &= close(unitDeep[1][y], unitShallow[1][y]);
+            lowerAfter &= unitDeep[2][y] < unitShallow[2][y];
+        }
+        report("the oil page's forecast is the wells standing declined platform by platform: its chart's years are the forecast's with each"
+                        + " platform's flag, to the bit",
+                same, String.format("%d series, rate %.4f", page.series().size(), rate));
+        report("...the shallow platform's years ahead are what they were, and the deep platform's are lower, every year ahead",
+                firstSame && lowerAfter, String.format("year ten: %,.3f t a month against %,.3f t if shallow",
+                        unitDeep[2][OilView.FORECAST_YEARS - 1], unitShallow[2][OilView.FORECAST_YEARS - 1]));
+        List<OilView.PlatformLine> lines = OilView.platformLines(page);
+        report("...and the page's platform lines say so: the shallow platform loses 8.5% a year, the deep one 10.3%",
+                lines.size() == 2 && lines.get(0).words().contains(OilView.declineWords(false)) && lines.get(1).words().contains(OilView.declineWords(true))
+                        && OilView.declineWords(true).contains("10.3") && OilView.declineWords(false).contains("8.5")
+                        && lines.get(1).tip().contains("10.3%") && lines.get(0).tip().contains("8.5%"),
+                lines.get(0).words() + " | " + lines.get(1).words());
         wells.setPlatformFieldsForTest(null);
     }
 }

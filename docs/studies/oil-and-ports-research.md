@@ -251,7 +251,7 @@ Capital uses §1.3's cost per b/d. Power uses its kWh per barrel. Staff are 10�
 
 **Deep water: leave it out.** Real deepwater sits 150–450 km out [W1][W31], off any city's map. It could come back as an off-map "frontier" field if wanted.
 
-*DW1 (2026-10-31, Jerus: "Allow deep, costlier"): a sea field past 150 m takes a floating platform (an FPSO) down to 2,914 m, the Turritella FPSO's record at Shell's Stones field [W34]; its price, its wells' and its upkeep follow the depth by the ratios of the NEMS offshore cost equations [W13] (eq. 3-4 to 3-7, 3-10, 3-15). See `docs/queue/DW1-notes.md` and `sectors/Oil.java`, DEEP WATER.*
+*DW1 (2026-10-31, Jerus: "Allow deep, costlier"): a sea field past 150 m takes a floating platform (an FPSO) down to 2,914 m, the Turritella FPSO's record at Shell's Stones field [W34]; its price, its wells' and its upkeep follow the depth by the ratios of the NEMS offshore cost equations [W13] (eq. 3-4 to 3-7, 3-10, 3-15); from 450 m its wells lose 10.3% a year past the plateau, the IEA's deep-offshore rate against shallow's 8.5% [W6]. See `docs/queue/DW1-notes.md` and `sectors/Oil.java`, DEEP WATER.*
 
 ### 3.3 On the map
 

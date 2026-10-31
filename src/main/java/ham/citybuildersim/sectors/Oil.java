@@ -149,6 +149,12 @@ public final class Oil extends Sector {
     /** ...and then keeps 91.5% of it a year: it loses 8.5% a year, the IEA's shallow-offshore rate [W6][W16]. */
     public static final double PLATFORM_KEEPS_A_YEAR = .915;
 
+    /** A platform well on a field in deep water keeps 89.7% of its lift a year past its plateau: it loses 10.3% a year, the IEA's observed post-peak decline of conventional deep and ultra-deep offshore fields, Table 1 [W6] (DW1; the plateau is the shallow platform's, the report gives none apart by depth). */
+    public static final double DEEP_KEEPS_A_YEAR = .897;
+
+    /** The depth from which a platform's wells decline at DEEP_KEEPS_A_YEAR: 450 m, the IEA's line between shallow water (under 450 m) and deepwater (450 to 1,500 m; ultra-deepwater below), its footnote 2 [W6] (DW1). */
+    public static final double DEEP_DECLINE_FROM_M = 450;
+
     /** A well's nameplate is a hundred barrels a day (BuildingManager, FUEL: 415 t a month at 7.33 barrels a tonne). */
     public static final double NAMEPLATE_BARRELS_A_DAY = 100;
 
@@ -165,29 +171,42 @@ public final class Oil extends Sector {
      * The share of its nameplate a well of `kind` lifts at `age` months (pure):
      * a land well LAND_KEEPS_A_YEAR to the power of its years; a platform well
      * 1 through its plateau and PLATFORM_KEEPS_A_YEAR to the power of its
-     * years past it. StrictMath, as World's arithmetic, so a well declines the
-     * same on every machine. An age under nothing is read as nothing.
+     * years past it - DEEP_KEEPS_A_YEAR for a platform whose field declines
+     * deep (DW1, declinesDeep()). StrictMath, as World's arithmetic, so a well
+     * declines the same on every machine. An age under nothing is read as
+     * nothing.
      */
-    public static double profile(WellKind kind, int age) {
+    public static double profile(WellKind kind, int age, boolean deep) {
         int a = Math.max(0, age);
         if (kind == WellKind.PLATFORM) {
             return a < PLATFORM_PLATEAU_MONTHS ? 1
-                    : StrictMath.pow(PLATFORM_KEEPS_A_YEAR, (a - PLATFORM_PLATEAU_MONTHS) / 12.0);
+                    : StrictMath.pow(deep ? DEEP_KEEPS_A_YEAR : PLATFORM_KEEPS_A_YEAR, (a - PLATFORM_PLATEAU_MONTHS) / 12.0);
         }
         return StrictMath.pow(LAND_KEEPS_A_YEAR, a / 12.0);
     }
 
-    /** The age, in months, from which a well of `kind` lifts under WORN_OUT_SHARE of its nameplate: 263 on land, 348 on a platform. */
-    public static int lifeMonths(WellKind kind) {
-        return kind == WellKind.PLATFORM ? PLATFORM_LIFE : LAND_LIFE;
+    /** ...a shallow platform's, or a land well's: profile(kind, age, false). */
+    public static double profile(WellKind kind, int age) {
+        return profile(kind, age, false);
     }
 
-    /** Each kind's life in months, worked out once from its profile (firstWornOut()). */
-    private static final int LAND_LIFE = firstWornOut(WellKind.LAND), PLATFORM_LIFE = firstWornOut(WellKind.PLATFORM);
+    /** The age, in months, from which a well of `kind` lifts under WORN_OUT_SHARE of its nameplate: 263 on land, 348 on a platform. */
+    public static int lifeMonths(WellKind kind) {
+        return lifeMonths(kind, false);
+    }
 
-    private static int firstWornOut(WellKind kind) {
+    /** ...and a platform well on a field that declines deep (DW1): the first age at which DEEP_KEEPS_A_YEAR leaves it under WORN_OUT_SHARE, 291; a land well's as ever. */
+    public static int lifeMonths(WellKind kind, boolean deep) {
+        return kind != WellKind.PLATFORM ? LAND_LIFE : deep ? DEEP_LIFE : PLATFORM_LIFE;
+    }
+
+    /** Each kind's life in months, worked out once from its profile (firstWornOut()): a land well's, a shallow platform's, a deep one's. */
+    private static final int LAND_LIFE = firstWornOut(WellKind.LAND, false), PLATFORM_LIFE = firstWornOut(WellKind.PLATFORM, false),
+            DEEP_LIFE = firstWornOut(WellKind.PLATFORM, true);
+
+    private static int firstWornOut(WellKind kind, boolean deep) {
         int age = 0;
-        while (!(profile(kind, age) < WORN_OUT_SHARE)) age++;
+        while (!(profile(kind, age, deep) < WORN_OUT_SHARE)) age++;
         return age;
     }
 
@@ -299,9 +318,10 @@ public final class Oil extends Sector {
         vintagesStamp++;
     }
 
-    /** The lift's cache: the month, the wells standing (land, and platform in slots) and the vintages' stamp it was summed for. */
+    /** The lift's cache: the month, the wells standing (land, and platform in slots), the vintages' stamp and the platforms (platformsNow()) it was summed for. */
     private int liftMonth = Integer.MIN_VALUE, liftStanding = -1, liftAtSea = -1;
     private long liftStamp = -1;
+    private List<Platform> liftPlatforms;
     private double liftCached, liftAtSeaCached;
 
     /**
@@ -310,7 +330,9 @@ public final class Oil extends Sector {
      * profile at its age, oldest first - cached on the month, the wells
      * standing and the vintages. Every other good, and a sector with no city,
      * the template's nameplate. Since 0.7.91 the platform wells in slots too,
-     * each at its own template's nameplate (THE OIL AT SEA).
+     * each at its own template's nameplate (THE OIL AT SEA); since DW1 those
+     * dealt to a platform on a deep field at the deep rate (THE DEEP WELLS
+     * DECLINE FASTER, under DEEP WATER).
      */
     @Override
     public double getCapacity(Good g) {
@@ -326,24 +348,46 @@ public final class Oil extends Sector {
         return liftAtSeaCached;
     }
 
-    /** Sums the month's lift into the cache, if the month, the wells or the vintages moved. */
+    /**
+     * Sums the month's lift into the cache, if the month, the wells, the vintages or the platforms moved. With no
+     * platform on a deep field it is the sum there has always been, vintage by vintage, to the bit; with one, the
+     * platform vintages are dealt to the platforms and each piece lifts at its platform's decline (DW1).
+     */
     private void strikeLift() {
         int month = monthNow(), standing = landWellsStanding(), atSea = platformWellsInSlots();
-        if (month == liftMonth && standing == liftStanding && atSea == liftAtSea && vintagesStamp == liftStamp) return;
+        List<Platform> ps = atSea > 0 ? platformsNow() : List.of();
+        if (month == liftMonth && standing == liftStanding && atSea == liftAtSea && vintagesStamp == liftStamp && ps == liftPlatforms) return;
         double each = wellNameplate(), eachAtSea = platformWellNameplate(), lift = 0, sea = 0;
-        for (Vintage v : vintagesFor(standing, atSea, month)) {
-            if (v.kind() == WellKind.PLATFORM) {
-                double part = v.count() * eachAtSea * profile(v.kind(), month - v.month());
-                lift += part;
-                sea += part;
-            } else {
-                lift += v.count() * each * profile(v.kind(), month - v.month());
+        List<Vintage> now = vintagesFor(standing, atSea, month);
+        boolean[] deep = deepFlags(ps);
+        if (deep == null) {
+            for (Vintage v : now) {
+                if (v.kind() == WellKind.PLATFORM) {
+                    double part = v.count() * eachAtSea * profile(v.kind(), month - v.month());
+                    lift += part;
+                    sea += part;
+                } else {
+                    lift += v.count() * each * profile(v.kind(), month - v.month());
+                }
+            }
+        } else {
+            for (Vintage v : now) {
+                if (v.kind() != WellKind.PLATFORM) lift += v.count() * each * profile(v.kind(), month - v.month());
+            }
+            List<List<Vintage>> dealt = deal(now, ps);
+            for (int i = 0; i < dealt.size(); i++) {
+                for (Vintage v : dealt.get(i)) {
+                    double part = v.count() * eachAtSea * profile(WellKind.PLATFORM, month - v.month(), deep[i]);
+                    lift += part;
+                    sea += part;
+                }
             }
         }
         liftMonth = month;
         liftStanding = standing;
         liftAtSea = atSea;
         liftStamp = vintagesStamp;
+        liftPlatforms = ps;
         liftCached = lift;
         liftAtSeaCached = sea;
     }
@@ -355,18 +399,30 @@ public final class Oil extends Sector {
 
     /** The wells standing that are worn out this month: past their kind's life (lifeMonths()), under ten barrels a day. */
     public int wornOut() {
-        int n = 0, month = monthNow();
-        for (Vintage v : vintagesNow()) {
-            if (month - v.month() >= lifeMonths(v.kind())) n += v.count();
-        }
-        return n;
+        return wornOutOf(null);
     }
 
-    /** ...of one kind (0.7.91): the land wells at 263 months, the platform wells at 348. */
+    /** ...of one kind (0.7.91): the land wells at 263 months, the platform wells at 348 - or, on a platform whose field declines deep, at the deep life (DW1). */
     public int wornOut(WellKind kind) {
+        return wornOutOf(kind);
+    }
+
+    /** The wells of `kind` (both, for null) past their life: the platform wells each at the life of the platform they are dealt to, when one stands on a deep field (DW1), else every vintage at its kind's. */
+    private int wornOutOf(WellKind kind) {
         int n = 0, month = monthNow();
-        for (Vintage v : vintagesNow()) {
-            if (v.kind() == kind && month - v.month() >= lifeMonths(v.kind())) n += v.count();
+        List<Vintage> now = vintagesNow();
+        List<Platform> ps = platformsNow();
+        boolean[] deep = deepFlags(ps);
+        for (Vintage v : now) {
+            if (kind != null && v.kind() != kind) continue;
+            if (deep != null && v.kind() == WellKind.PLATFORM) continue;
+            if (month - v.month() >= lifeMonths(v.kind())) n += v.count();
+        }
+        if (deep != null && kind != WellKind.LAND) {
+            List<List<Vintage>> dealt = deal(now, ps);
+            for (int i = 0; i < dealt.size(); i++) {
+                for (Vintage v : dealt.get(i)) if (month - v.month() >= lifeMonths(WellKind.PLATFORM, deep[i])) n += v.count();
+            }
         }
         return n;
     }
@@ -1057,6 +1113,84 @@ public final class Oil extends Sector {
 
     /** Whether a platform in this sea is a floating one (pure): past PLATFORM_MAX_DEPTH_M, where the fixed jacket ends. */
     public static boolean isFloating(double depthM) { return depthM > PLATFORM_MAX_DEPTH_M; }
+
+    /* ----- the deep wells decline faster (DW1) -----
+
+       A platform in deep water costs more, and its wells run down faster. The
+       IEA's observed post-peak decline of conventional oil fields, the source
+       of the shallow platform well's [W6], is 8.5% a year for shallow offshore
+       and 10.3% a year for deep and ultra-deep offshore (Table 1; "The
+       Implications of Oil and Gas Field Decline Rates", 2025, CC BY 4.0); its
+       footnote 2 puts shallow water under 450 m, deepwater at 450 to 1,500 m
+       and ultra-deepwater below. So a platform well dealt to a platform on a
+       field DEEP_DECLINE_FROM_M deep or more (declinesDeep()) keeps
+       DEEP_KEEPS_A_YEAR a year past its plateau, not PLATFORM_KEEPS_A_YEAR,
+       and is worn out at its own life (lifeMonths(PLATFORM, true)). The report
+       gives no plateau apart by depth, so the plateau is the shallow one's.
+
+       WELLS ARE DEALT, NOT BOUND. A well is not tied to a platform in this
+       model: the platform vintages are dealt to the platforms each month,
+       oldest vintages to the oldest platform, each platform its wells in
+       slots (deal(); the Oil page deals them so too), so a platform well
+       lifts and ages at the decline of the platform it is dealt to. With no
+       platform on a deep field the lift and the retirements are read as they
+       always were, to the bit (deepFlags() is null). The known approximation:
+       a retirement (Game.retireWornOutWells(), wornOut(PLATFORM)) drops the
+       oldest wells, which sit on the oldest platform, whichever platform's
+       wells wore out, and the rest are dealt again. */
+
+    /** Whether a platform in this sea declines at the deep rate (pure): DEEP_DECLINE_FROM_M deep or more. */
+    public static boolean declinesDeep(double depthM) { return depthM >= DEEP_DECLINE_FROM_M; }
+
+    /** Each platform's decline, in the list's order (pure): true where its field, in `fields`, declines deep; false for a platform on no field the city owns. */
+    public static boolean[] deepPlatforms(List<Platform> ps, List<LandManager.SeaField> fields) {
+        boolean[] out = new boolean[ps.size()];
+        for (int i = 0; i < out.length; i++) out[i] = declinesDeep(depthOf(fields, ps.get(i).cell(), ps.get(i).index()));
+        return out;
+    }
+
+    /** The platforms standing on a field that declines deep (declinesDeep()): what the retirements' words name the deep life for. */
+    public int deepPlatformsStanding() {
+        boolean[] flags = deepFlags(platformsNow());
+        if (flags == null) return 0;
+        int n = 0;
+        for (boolean f : flags) if (f) n++;
+        return n;
+    }
+
+    /** The platforms standing's decline (deepPlatforms()), or null when none declines deep: the lift and the retirements then read as they always did. */
+    private boolean[] deepFlags(List<Platform> ps) {
+        if (ps.isEmpty()) return null;
+        boolean[] flags = deepPlatforms(ps, platformFields());
+        for (boolean f : flags) if (f) return flags;
+        return null;
+    }
+
+    /** The platform vintages dealt to the platforms, oldest to the oldest, each platform its wells in slots (pure); the land vintages are none of theirs. */
+    public static List<List<Vintage>> deal(List<Vintage> vintages, List<Platform> platforms) {
+        List<List<Vintage>> out = new ArrayList<>();
+        List<int[]> left = new ArrayList<>();
+        List<Vintage> sea = new ArrayList<>();
+        for (Vintage v : vintages) {
+            if (v.kind() != WellKind.PLATFORM) continue;
+            sea.add(v);
+            left.add(new int[] { v.count() });
+        }
+        int at = 0;
+        for (Platform p : platforms) {
+            List<Vintage> mine = new ArrayList<>();
+            int want = Math.max(0, p.wells());
+            while (want > 0 && at < sea.size()) {
+                int take = Math.min(want, left.get(at)[0]);
+                if (take > 0) mine.add(new Vintage(sea.get(at).month(), take, WellKind.PLATFORM));
+                want -= take;
+                left.get(at)[0] -= take;
+                if (left.get(at)[0] == 0) at++;
+            }
+            out.add(mine);
+        }
+        return out;
+    }
 
     private static double feet(double metres) { return metres / METRES_PER_FOOT; }
 
