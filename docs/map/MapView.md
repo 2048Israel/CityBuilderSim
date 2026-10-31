@@ -1,4 +1,4 @@
-# MapView.java - 4,893 lines · 207 methods · 62 constants · interface
+# MapView.java - 4,899 lines · 207 methods · 62 constants · interface
 
 `ham/citybuildersim/ui/MapView.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > THE OVERLAY ON THE BLOCK GRID (0.7.69, batch M5; the project's
 > ... (136 more lines in the source)
 
-**Uses:** [Palette](Palette.md) (151), [MapFrame](MapFrame.md) (91), [LandMap](LandMap.md) (84), [NationsMap](NationsMap.md) (51), [GlobeFrame](GlobeFrame.md) (41), [Game](Game.md) (32), [World](World.md) (31), [CityLand](CityLand.md) (25), [LandParcel](LandParcel.md) (23), [CityMap](CityMap.md) (22), [TradeLanes](TradeLanes.md) (19), [MapTiles](MapTiles.md) (17), [GlobePicture](GlobePicture.md) (17), [LandMarket](LandMarket.md) (14), [ShipShapes](ShipShapes.md) (14), [Nations](Nations.md) (13), [TrainSchedule](TrainSchedule.md) (10), [TruckSchedule](TruckSchedule.md) (10), [TrainShapes](TrainShapes.md) (8), [BoatSchedule](BoatSchedule.md) (6), [TilePainter](TilePainter.md) (6), [Deposit](Deposit.md) (4), [HistoryScreen](HistoryScreen.md) (4), [TileRaster](TileRaster.md) (4), [TruckShapes](TruckShapes.md) (4), [LandGrid](LandGrid.md) (4), [UserInterface](UserInterface.md) (3), [Ports](Ports.md) (3), [EarthProj](EarthProj.md) (3), [WorldData](WorldData.md) (3)... and 12 more
+**Uses:** [Palette](Palette.md) (152), [MapFrame](MapFrame.md) (91), [LandMap](LandMap.md) (84), [NationsMap](NationsMap.md) (51), [GlobeFrame](GlobeFrame.md) (41), [Game](Game.md) (32), [World](World.md) (31), [CityLand](CityLand.md) (25), [LandParcel](LandParcel.md) (23), [CityMap](CityMap.md) (22), [TradeLanes](TradeLanes.md) (19), [MapTiles](MapTiles.md) (17), [GlobePicture](GlobePicture.md) (17), [LandMarket](LandMarket.md) (14), [ShipShapes](ShipShapes.md) (14), [Nations](Nations.md) (13), [TrainSchedule](TrainSchedule.md) (10), [TruckSchedule](TruckSchedule.md) (10), [TrainShapes](TrainShapes.md) (8), [BoatSchedule](BoatSchedule.md) (6), [TilePainter](TilePainter.md) (6), [Deposit](Deposit.md) (4), [HistoryScreen](HistoryScreen.md) (4), [TileRaster](TileRaster.md) (4), [TruckShapes](TruckShapes.md) (4), [LandGrid](LandGrid.md) (4), [UserInterface](UserInterface.md) (3), [Ports](Ports.md) (3), [EarthProj](EarthProj.md) (3), [WorldData](WorldData.md) (3)... and 12 more
 
 **Used by (3):** [LandScreen](LandScreen.md), [MiniMap](MiniMap.md), [UserInterface](UserInterface.md)
 
@@ -96,7 +96,7 @@
 | 4098 | · drawing |
 | 4338 | · the pointer |
 | 4379 | · the card |
-| 4504 | EXPAND: THE MAP OVER THE WHOLE WINDOW |
+| 4510 | EXPAND: THE MAP OVER THE WHOLE WINDOW |
 
 ## Constants
 
@@ -158,12 +158,12 @@
 | 3784 | `MapView.WIDTHS_MOST` | `600` | The widths of label words kept, by string (the names never change and the figures change once a year): the 600 most recently used. |
 | 3787 | `MapView.NATION_CARD_W` | `330` | A nation's card is this wide, in pixels: 330 (the board's .card)... |
 | 3790 | `MapView.NATION_CARD_GAP` | `4` | ...and its head, its distance line and its rows stand this many pixels apart: 4. |
-| 4725 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 the transport class, t... |
-| 4728 | `MapView.SHIP_SIZE_WORDS` | `"Ships are drawn 1.6\u00d7 their size until 6 px a plot"` | The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). |
-| 4731 | `MapView.TRUCK_WORDS` | `"Trucks: one per %s"` | The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). |
-| 4739 | `MapView.TRACK_ENTRY` | `LandMap.TRACK_ENTRY` | The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. |
-| 4757 | `MapView.LEGEND_NOTE_WIDTH` | `300` | The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. |
-| 4812 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
+| 4731 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 the transport class, t... |
+| 4734 | `MapView.SHIP_SIZE_WORDS` | `"Ships are drawn 1.6\u00d7 their size until 6 px a plot"` | The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). |
+| 4737 | `MapView.TRUCK_WORDS` | `"Trucks: one per %s"` | The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). |
+| 4745 | `MapView.TRACK_ENTRY` | `LandMap.TRACK_ENTRY` | The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. |
+| 4763 | `MapView.LEGEND_NOTE_WIDTH` | `300` | The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. |
+| 4818 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
 
 ## Fields (state)
 
@@ -332,20 +332,20 @@
 | 3865 | `private int nationShown` |  |
 | 3866 | `private String nationKey` |  |
 | 3867 | `private double nationX, nationY` |  |
-| 4759 | `private final Label legendNote` |  |
-| 4761 | `private String legendZones` | The zones the legend was laid out with (0.8.0): their words, joined. |
-| 4762 | `private final GridPane legendGrid` |  |
-| 4763 | `private final Label shipsLine` |  |
-| 4765 | `private final Label trucksLine` | The legend's trucks line: shown while trucks are drawn this frame (legendTrucks()). |
-| 4807 | `private HBox legendHead` | The legend's head line, its chevron and its "click to fold" (WN2), and its body. |
-| 4808 | `private VBox legendBody` |  |
-| 4809 | `private final Label legendChevron` |  |
+| 4765 | `private final Label legendNote` |  |
+| 4767 | `private String legendZones` | The zones the legend was laid out with (0.8.0): their words, joined. |
+| 4768 | `private final GridPane legendGrid` |  |
+| 4769 | `private final Label shipsLine` |  |
+| 4771 | `private final Label trucksLine` | The legend's trucks line: shown while trucks are drawn this frame (legendTrucks()). |
+| 4813 | `private HBox legendHead` | The legend's head line, its chevron and its "click to fold" (WN2), and its body. |
+| 4814 | `private VBox legendBody` |  |
+| 4815 | `private final Label legendChevron` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 237 | 4657 | **type** `final class MapView` | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, th... |
+| 237 | 4663 | **type** `final class MapView` | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, th... |
 | 276 | 1 | **type** `interface Picker` | Who hears a click: a side, and an offer's place on it or -1. |
 | 276 | 1 | `void picked(int side, int place)` _(in MapView.Picker)_ |  |
 
@@ -637,41 +637,41 @@
 | 4355 | 6 | `private String ownerWords(double sx, double sy)` | Whose land is under the pointer, where the city's plane is not drawn: a nation's or an area's name (NationsMap.ownerName() of the exact ownerAt()); null elsewhere or with Nations off. |
 | 4368 | 10 | `private boolean nationClick(double sx, double sy)` | A click on the expanded globe with Nations on, where the city's plane is not drawn under the pointer (plotAt() is null): on a dot or on a nation's land (NationsMap.nationAt(): the dot, else the exact owner) opens that... |
 
-### the card (lines 4379-4503)
+### the card (lines 4379-4509)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 4382 | 7 | `private void showNationCard(int nation, double sx, double sy)` | A nation's card opened beside the point clicked: the buying card (and its picks) goes, as there is only ever one. |
 | 4391 | 1 | `private String nationCardKey()` | What the card was drawn for: the nation and the month, which moves the year and the D$ it is struck in. |
-| 4394 | 76 | `private void fillNationCard()` | The card made (again) for the nation shown, from NationsMap.card(): its head - the name, the region as a tag, a "×" - the distance under it, and its rows in a grid of three columns. |
-| 4472 | 12 | `private void placeNationCard()` | The card beside the point clicked, as the buying card stands beside its offer: CARD_GAP off it, at its right else its left, level with it and CARD_MARGIN at least inside the view. |
-| 4486 | 7 | `private void hideNationCard()` | The card put away. |
-| 4495 | 8 | `private void syncNationCard()` | A frame's look at the card (tick()): made again when the month moved - the year's figures and the D$ it is struck in - and put away if its nation is not shown any more (Nations off, another game). |
+| 4394 | 82 | `private void fillNationCard()` | The card made (again) for the nation shown, from NationsMap.card(): its head - the name, the region as a tag, a "×" - the distance under it, and its rows in a grid of three columns. |
+| 4478 | 12 | `private void placeNationCard()` | The card beside the point clicked, as the buying card stands beside its offer: CARD_GAP off it, at its right else its left, level with it and CARD_MARGIN at least inside the view. |
+| 4492 | 7 | `private void hideNationCard()` | The card put away. |
+| 4501 | 8 | `private void syncNationCard()` | A frame's look at the card (tick()): made again when the month moved - the year's figures and the D$ it is struck in - and put away if its nation is not shown any more (Nations off, another game). |
 
-### EXPAND: THE MAP OVER THE WHOLE WINDOW (lines 4504-4893)
+### EXPAND: THE MAP OVER THE WHOLE WINDOW (lines 4510-4899)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4508 | 1 | `void expand()` |  |
-| 4511 | 25 | `private void expand(boolean keepView)` | ...or (0.7.137, B5) back at the view it left - the funding page done - when `keepView` and it has been over the window before. |
-| 4543 | 11 | `void expandOn(MiniMapFrame.Box box)` | Expanded on a box of plots (0.7.134, batch MM2): the minimap's click, the map over the window fitted on what the stamp frames (MiniMapFrame.open()) rather than on the land office's opening; Fit goes back to that. |
-| 4556 | 24 | `void collapse(boolean redraw)` | Esc, the button, or another screen: the canvas back in the office, and the office drawn again when asked - the card's picks dropped (0.7.137), and its purchase forgotten unless the funding page has it (B5). |
-| 4581 | 80 | `private void buildPane()` |  |
-| 4664 | 22 | `private void fitPane()` | The canvas sized to the pane: the window's width, and its height under the header (MS1: the pane lies below it, ui.chartFullTop()), inside the padding and under the head (City History's rule, read off the window). |
-| 4688 | 10 | `private void openBig()` | The expanded map on the city, as the small map opens - on Earth too (spec-globe 3.7), the globe's view on the plane's. |
-| 4700 | 10 | `private void fitBig()` | Fit (0): on Earth the whole planet, facing the city, north up (spec-globe 3.7); on a generated world the city, as it opens. |
-| 4712 | 1 | `static List<String[]> legendEntries(int tier)` | The legend's entries in a tier (since 0.7.135 the model's, LandMap.legend(): on the globe the kinds of ground, the city's ring and edge, in the GROUND tier its offers; on the plane the plane's), as CSS colours and words. |
-| 4715 | 5 | `static List<String[]> legendEntries(int tier, boolean relief)` | ...on an Earth world with earth-2's layers (`relief`, LandMap.reliefDrawn(); ET1 slice D) also the three greys, forest on a slope and, on the plane, the shallow sea. |
-| 4722 | 1 | `static List<String[]> legendEntries()` | ...the plane's, at every scale on a generated world. |
-| 4734 | 3 | `static String trucksWords(int loads)` | ...and its words for N loads a truck: "Trucks: one per load" for one, "Trucks: one per 1,200 loads" for more. |
-| 4742 | 3 | `static String packedWords(int packed)` | The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed at its edge. |
-| 4747 | 3 | `static String surplusWords(long plots)` | ...and when the city has road its streets have no room for (star RD2-4): how much, in plots. |
-| 4752 | 3 | `static String trackWords(long plots)` | ...and (FR7 slice 3) when the model has track the railway's ways do not use - its main line, its sidings and its branches - how much, in plots; the model's words (LandMap.trackSurplusWords()). |
-| 4767 | 38 | `private VBox legend()` |  |
-| 4815 | 9 | `private void foldLegend()` | The legend folded or open, as the player left it (GamePrefs.isMapLegendFolded()): the body shown or not, the chevron pointing down or right, and the head's ground rounded all round when it stands alone. |
-| 4826 | 31 | `private void legendFor(int tier)` | The legend laid out for a tier (0.7.135, spec-globe 3.7): its entries (legendEntries()), and the ships' line on the plane alone. |
-| 4859 | 1 | `private int shownTier()` | The tier the legend and the hover are for (MS2): the globe's on Earth - the plane at every scale closer than the handoff, past the reach too, where the plane's own ground is what is drawn - and the plane at every scal... |
-| 4862 | 5 | `private void legendTrucks()` | The trucks' line: how many loads a truck stands for while any is drawn this frame, on the plane; hidden otherwise. |
-| 4869 | 14 | `private void legendNote()` | The legend's note, from the map's packing at the city's edge once it is drawn (never planned here): what the city has no room for - on the plane. |
-| 4885 | 8 | `private static void clip(Region box)` | A box's corners rounded off its contents. |
+| 4514 | 1 | `void expand()` |  |
+| 4517 | 25 | `private void expand(boolean keepView)` | ...or (0.7.137, B5) back at the view it left - the funding page done - when `keepView` and it has been over the window before. |
+| 4549 | 11 | `void expandOn(MiniMapFrame.Box box)` | Expanded on a box of plots (0.7.134, batch MM2): the minimap's click, the map over the window fitted on what the stamp frames (MiniMapFrame.open()) rather than on the land office's opening; Fit goes back to that. |
+| 4562 | 24 | `void collapse(boolean redraw)` | Esc, the button, or another screen: the canvas back in the office, and the office drawn again when asked - the card's picks dropped (0.7.137), and its purchase forgotten unless the funding page has it (B5). |
+| 4587 | 80 | `private void buildPane()` |  |
+| 4670 | 22 | `private void fitPane()` | The canvas sized to the pane: the window's width, and its height under the header (MS1: the pane lies below it, ui.chartFullTop()), inside the padding and under the head (City History's rule, read off the window). |
+| 4694 | 10 | `private void openBig()` | The expanded map on the city, as the small map opens - on Earth too (spec-globe 3.7), the globe's view on the plane's. |
+| 4706 | 10 | `private void fitBig()` | Fit (0): on Earth the whole planet, facing the city, north up (spec-globe 3.7); on a generated world the city, as it opens. |
+| 4718 | 1 | `static List<String[]> legendEntries(int tier)` | The legend's entries in a tier (since 0.7.135 the model's, LandMap.legend(): on the globe the kinds of ground, the city's ring and edge, in the GROUND tier its offers; on the plane the plane's), as CSS colours and words. |
+| 4721 | 5 | `static List<String[]> legendEntries(int tier, boolean relief)` | ...on an Earth world with earth-2's layers (`relief`, LandMap.reliefDrawn(); ET1 slice D) also the three greys, forest on a slope and, on the plane, the shallow sea. |
+| 4728 | 1 | `static List<String[]> legendEntries()` | ...the plane's, at every scale on a generated world. |
+| 4740 | 3 | `static String trucksWords(int loads)` | ...and its words for N loads a truck: "Trucks: one per load" for one, "Trucks: one per 1,200 loads" for more. |
+| 4748 | 3 | `static String packedWords(int packed)` | The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed at its edge. |
+| 4753 | 3 | `static String surplusWords(long plots)` | ...and when the city has road its streets have no room for (star RD2-4): how much, in plots. |
+| 4758 | 3 | `static String trackWords(long plots)` | ...and (FR7 slice 3) when the model has track the railway's ways do not use - its main line, its sidings and its branches - how much, in plots; the model's words (LandMap.trackSurplusWords()). |
+| 4773 | 38 | `private VBox legend()` |  |
+| 4821 | 9 | `private void foldLegend()` | The legend folded or open, as the player left it (GamePrefs.isMapLegendFolded()): the body shown or not, the chevron pointing down or right, and the head's ground rounded all round when it stands alone. |
+| 4832 | 31 | `private void legendFor(int tier)` | The legend laid out for a tier (0.7.135, spec-globe 3.7): its entries (legendEntries()), and the ships' line on the plane alone. |
+| 4865 | 1 | `private int shownTier()` | The tier the legend and the hover are for (MS2): the globe's on Earth - the plane at every scale closer than the handoff, past the reach too, where the plane's own ground is what is drawn - and the plane at every scal... |
+| 4868 | 5 | `private void legendTrucks()` | The trucks' line: how many loads a truck stands for while any is drawn this frame, on the plane; hidden otherwise. |
+| 4875 | 14 | `private void legendNote()` | The legend's note, from the map's packing at the city's edge once it is drawn (never planned here): what the city has no room for - on the plane. |
+| 4891 | 8 | `private static void clip(Region box)` | A box's corners rounded off its contents. |
 

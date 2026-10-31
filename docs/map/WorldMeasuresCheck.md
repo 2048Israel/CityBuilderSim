@@ -53,6 +53,8 @@
 
 **Uses:** [WorldMeasures](WorldMeasures.md) (53), [WorldData](WorldData.md) (12), [WorldDataCheck](WorldDataCheck.md) (2)
 
+**Used by (1):** [RankingsCheck](RankingsCheck.md)
+
 ## Sections
 
 | line | section |

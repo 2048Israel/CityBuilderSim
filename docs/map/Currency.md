@@ -58,7 +58,7 @@
 > THE FOREIGN MONEY IS NOT A CHOICE. It stays the US dollar, US$, USD, as a
 > static: the world holds exactly one other money and no city renames it.
 
-**Used by (24):** [DataSave](DataSave.md), [Denomination](Denomination.md), [DenominationCheck](DenominationCheck.md), [FinancesScreen](FinancesScreen.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [LandClassCheck](LandClassCheck.md), [LandClassView](LandClassView.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [Money](Money.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
+**Used by (25):** [DataSave](DataSave.md), [Denomination](Denomination.md), [DenominationCheck](DenominationCheck.md), [FinancesScreen](FinancesScreen.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [LandClassCheck](LandClassCheck.md), [LandClassView](LandClassView.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [Money](Money.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 

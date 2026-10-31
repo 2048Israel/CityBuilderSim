@@ -46,7 +46,7 @@
 
 **Uses:** [Freight](Freight.md) (10), [EarthData](EarthData.md) (8), [Money](Money.md) (5)
 
-**Used by (13):** [Game](Game.md), [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [Nations](Nations.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMeasuresCheck](WorldMeasuresCheck.md)
+**Used by (14):** [Game](Game.md), [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [Nations](Nations.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [RankingsCheck](RankingsCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMeasuresCheck](WorldMeasuresCheck.md)
 
 ## Sections
 
