@@ -1,0 +1,211 @@
+# nations-1900.csv: the status of each of the 196 nations of tools/world/moneys.tsv on 1 January 1900. Study EP0, for batch EP1's rule on the years before a nation existed. Written 2026-10-30.
+# One row per nation, in moneys.tsv's order. A field with a comma is quoted. The study note for EP0 (the nations section) has the counts, the hard cases and the full source list.
+# Sources (the keys in the last column):
+# COW = Correlates of War project, State System Membership List v2016 (states2016.csv, free for research use). https://correlatesofwar.org/data-sets/state-system-membership/ . A nation is "in COW" on 1900-01-01 when its state's membership spans that date. COW's size rule leaves out micro-states and some recognised states (Andorra, Monaco, Liechtenstein, San Marino from 1990-93; Costa Rica and Liberia only from 1920; Luxembourg 1920; Nepal 1920; Oman 1971; Bhutan 1971; Montenegro 2006).
+# FB = CIA World Factbook, fields Government/Independence and Introduction/Background (public domain). The mirror's README says the CIA removed the Factbook in February 2026, and cia.gov shows only a sunset notice (checked 2026-10-30), so the text was read from the mirror https://github.com/factbook/factbook.json (251 country files, repository last pushed 2026-09-11). Row dates in the independent column follow FB's wording, converted to ISO dates.
+# WP1900 = Wikipedia, List of sovereign states in the 1900s. https://en.wikipedia.org/wiki/List_of_sovereign_states_in_the_1900s (CC BY-SA). Read through WebFetch on 2026-10-30; used for the colonies, protectorates and half-sovereign cases it lists.
+# WP:<Article> = Wikipedia article https://en.wikipedia.org/wiki/<Article> (CC BY-SA), read through WebFetch on 2026-10-30. Vilayets_of_the_Ottoman_Empire (1905 table) and Rashidi_dynasty back the Ottoman rows and Najd; the others are currency articles and back money_1900 only.
+# WD = Wikidata SPARQL query for currencies with an inception year before 1901 (CC0), https://query.wikidata.org/ , run 2026-10-30; backs the Eritrean tallero, Netherlands Indies guilder, Finnish markka, Bulgarian lev and Polish rubel.
+# Conventions:
+# status_1900 is one of: sovereign | colony | protectorate | dominion | self-governing colony | part of another state | disputed or no state. A clause in parentheses after the value says what makes the row special; read the value as the text before " (".
+# ruler_1900 is the power that held sovereignty and foreign relations on 1900-01-01: the nation's own iso3 if sovereign, the colonial or protecting power's iso3 for a colony or protectorate (a protectorate with its own ruler inside, such as Afghanistan or Kuwait, names the protector), the historical polity's name where no nation of today fits (Austria-Hungary, Ottoman Empire, South African Republic), and a polity in parentheses after an iso3 where today's nation is its continuation (RUS (Russian Empire), CHN (Qing China), SWE (Sweden-Norway)). Two or more rulers are joined with + and listed by the size of their share of today's land, a rough estimate that no source states. The Congo Free State is BEL (Leopold II personally): it was his own possession, not Belgium's, until 1908-11-15.
+# independent is the date the nation became a state in its present form, and from whom, in FB's reading; for a nation sovereign in 1900 it is the founding date or era. none means the Factbook gives no independence (Hong Kong and Macau are special administrative regions of China; Taiwan's Factbook field is empty).
+# money_1900 is the money in use in 1900 where one of the keys above says so; empty where no source was found.
+# Dates are ISO (year-month-day); where only a year is known it is the year.
+iso3,name,status_1900,ruler_1900,independent,money_1900,source
+AFG,Afghanistan,protectorate (Emir rules inside; foreign affairs under Britain by the 1879 Treaty of Gandamak),GBR,1919-08-19 from UK control of foreign affairs,"Afghan rupee (Kabuli rupee, introduced 1891)",FB;COW;WP1900;WP:Afghan_rupee
+AGO,Angola,colony (Portuguese West Africa; the interior only partly occupied),PRT,1975-11-11 from Portugal,Portuguese real (réis),FB;COW;WP:Portuguese_real
+ALB,Albania,"part of another state (Ottoman vilayets of Janina, Scutari, Monastir and Kosovo)",Ottoman Empire,1912-11-28 from the Ottoman Empire,Ottoman lira (gold standard 1881),FB;COW;WP:Vilayets_of_the_Ottoman_Empire;WP:Ottoman_lira
+AND,Andorra,sovereign (co-principality of the French head of state and the Bishop of Urgell; COW lists it only from 1993),AND,1278 joint sovereignty (paréage),,FB;COW;WP1900
+ARE,United Arab Emirates,"protectorate (Trucial States, British protection by treaty 1820 and 1892)",GBR,1971-12-02 from the UK,,FB;COW;WP1900
+ARG,Argentina,sovereign,ARG,1816-07-09 from Spain,peso moneda nacional (paper; 2.25 paper pesos to the gold peso from 1899),FB;COW;WP:Argentine_peso_moneda_nacional
+ARM,Armenia,part of another state (Russian Empire: Erivan and Elisavetpol governorates; western Armenia Ottoman),RUS (Russian Empire),1991-09-21 from the Soviet Union (first republic 1918-05-28),Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+ATG,Antigua and Barbuda,colony (Leeward Islands),GBR,1981-11-01 from the UK,,FB;COW
+AUS,Australia,self-governing colony (six colonies; the Commonwealth federated 1901-01-01),GBR,1901-01-01 federation of the UK colonies,pound sterling,FB;COW;WP:Gold_standard
+AUT,Austria,"part of another state (Cisleithania, the Austrian half of Austria-Hungary)",Austria-Hungary,1918-11-12 republic proclaimed as Austria-Hungary fell (COW: 1919-09-10),Austro-Hungarian krone (replaced the gulden from 1892; the only legal notes from 1900),FB;COW;WP:Austro-Hungarian_krone
+AZE,Azerbaijan,part of another state (Russian Empire: Baku and Elisavetpol governorates),RUS (Russian Empire),1991-08-30 declared from the Soviet Union (first republic 1918-05-28),Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+BDI,Burundi,"colony (German East Africa; German rule over the kingdom nominal, effective from about 1900)",DEU,1962-07-01 from UN trusteeship under Belgian administration,German East African rupie,FB;COW;WP:German_East_African_rupie
+BEL,Belgium,sovereign,BEL,1830-10-04 declared from the Netherlands,Belgian franc (Latin Monetary Union),FB;COW;WP:Latin_Monetary_Union
+BEN,Benin,colony (French Dahomey),FRA,1960-08-01 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+BFA,Burkina Faso,colony (French West Africa; no separate Upper Volta until 1919),FRA,1960-08-05 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+BGD,Bangladesh,colony (British India: Bengal),GBR,1971-12-16 from Pakistan (1947-08-15 from British India),Indian rupee,FB;COW;WP:Indian_rupee
+BGR,Bulgaria,sovereign (de facto; autonomous principality under Ottoman suzerainty until 1908; COW lists it only from 1908),BGR,1908-09-22 full independence from the Ottoman Empire (autonomous principality since 1878-03-03),Bulgarian lev (since 1880),FB;COW;WP1900;WD
+BHR,Bahrain,"protectorate (Al Khalifa rule; British treaties 1820, 1861, 1892)",GBR,1971-08-15 from the UK,,FB;COW;WP1900
+BHS,Bahamas,colony,GBR,1973-07-10 from the UK,pound sterling,FB;COW;WP:British_West_Indies_dollar
+BIH,Bosnia and Herzegovina,"disputed or no state (Ottoman sovereignty, occupied and administered by Austria-Hungary since 1878; annexed 1908)",Austria-Hungary,1992-03-01 from Yugoslavia,Austro-Hungarian krone,FB;COW;WP1900;WP:Austro-Hungarian_krone
+BLR,Belarus,part of another state (Russian Empire: northwestern governorates),RUS (Russian Empire),1991-08-25 from the Soviet Union,Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+BLZ,Belize,colony (British Honduras),GBR,1981-09-21 from the UK,,FB;COW;WP1900
+BOL,Bolivia,sovereign,BOL,1825-08-06 from Spain,boliviano (1864-1963),FB;COW;WP:Bolivian_boliviano
+BRA,Brazil,sovereign (republic since 1889),BRA,1822-09-07 from Portugal,"real (réis, counted in milréis)",FB;COW;WP:Brazilian_real_(old)
+BRB,Barbados,colony,GBR,1966-11-30 from the UK,sterling and dollar accounts (private bank notes show both),FB;COW;WP:British_West_Indies_dollar
+BRN,Brunei,protectorate (British protection since 1888),GBR,1984-01-01 from the UK,,FB;COW;WP1900
+BTN,Bhutan,sovereign (de facto; treaty relations with British India; COW lists it only from 1971),BTN,1907-12-17 unified hereditary kingdom,,FB;COW;WP1900
+BWA,Botswana,protectorate (Bechuanaland Protectorate since 1885),GBR,1966-09-30 from the UK,pound sterling (British Southern Africa),FB;COW;WP1900;WP:South_African_pound
+CAF,Central African Republic,"colony (French Congo, Ubangi-Shari)",FRA,1960-08-13 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+CAN,Canada,dominion (self-governing since 1867; foreign policy from London),GBR,1867-07-01 union of colonies (1931-12-11 Statute of Westminster),Canadian gold dollar (at par with the US gold dollar since 1867),FB;COW;WP:Gold_standard
+CHE,Switzerland,sovereign,CHE,1291-08-01 founding of the Confederation,Swiss franc (Latin Monetary Union),FB;COW;WP:Latin_Monetary_Union
+CHL,Chile,sovereign,CHL,1810-09-18 from Spain,Chilean peso,FB;COW;WP:Chilean_peso
+CHN,China,sovereign (Qing empire; ports and territory leased to foreign powers),CHN (Qing China),1912-01-01 republic; 1949-10-01 People's Republic,"silver liang (tael), sycee and copper cash",FB;COW;WP:Liang_(currency)
+CIV,Côte d'Ivoire,colony (French Ivory Coast),FRA,1960-08-07 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+CMR,Cameroon,colony (German Kamerun),DEU,1960-01-01 from French-administered UN trusteeship,,FB;COW;WP1900
+COD,DR Congo,"colony (Congo Free State, the personal possession of Leopold II; Belgian state colony from 1908-11-15)",BEL (Leopold II personally),1960-06-30 from Belgium,"Congo Free State franc (introduced 1887, equal to the Belgian franc)",FB;COW;WP1900;WP:Congolese_franc
+COG,Republic of the Congo,colony (French Congo),FRA,1960-08-15 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+COL,Colombia,sovereign (Thousand Days War from 1899-10),COL,1810-07-20 from Spain,Colombian peso (paper losing value from 1888),FB;COW;WP:Colombian_peso
+COM,Comoros,protectorate (French; Mayotte a colony),FRA,1975-07-06 from France,French franc,FB;COW;WP1900;WP:Latin_Monetary_Union
+CPV,Cabo Verde,colony,PRT,1975-07-05 from Portugal,Portuguese real (réis),FB;COW;WP:Portuguese_real
+CRI,Costa Rica,sovereign (COW lists it only from 1920),CRI,1821-09-15 from Spain,colón (introduced 1896),FB;COW;WP1900;WP:Costa_Rican_colón
+CUB,Cuba,disputed or no state (US military occupation 1898-1902; Spain gave up sovereignty 1898-12-10),USA,1902-05-20 from US administration,,FB;COW;WP1900
+CYP,Cyprus,"protectorate (Ottoman sovereignty, British administration since 1878; annexed 1914)",GBR,1960-08-16 from the UK,"Cypriot piastre (180 to the pound, British issue of 1879 replacing Turkish currency)",FB;COW;WP1900;WP:Cypriot_pound
+CZE,Czechia,"part of another state (Bohemia, Moravia, Austrian Silesia: Cisleithania)",Austria-Hungary,1993-01-01 split of Czechoslovakia (1918-10-28 Czechoslovakia founded),Austro-Hungarian krone (replaced the gulden from 1892; the only legal notes from 1900),FB;COW;WP:Austro-Hungarian_krone
+DEU,Germany,sovereign (German Empire),DEU,1871-01-18 German Empire; 1990-10-03 reunification,German mark (gold standard 1873),FB;COW;WP:Gold_standard
+DJI,Djibouti,colony (French Somaliland),FRA,1977-06-27 from France,French franc,FB;COW;WP1900;WP:Latin_Monetary_Union
+DMA,Dominica,colony,GBR,1978-11-03 from the UK,sterling (government) and dollar (private bank notes),FB;COW;WP:British_West_Indies_dollar
+DNK,Denmark,sovereign,DNK,ca. 965 unified kingdom,Danish krone (Scandinavian Monetary Union),FB;COW;WP:Scandinavian_Monetary_Union
+DOM,Dominican Republic,sovereign,DOM,1844-02-27 from Haiti,Dominican peso,FB;COW;WP:Dominican_peso
+DZA,Algeria,part of another state (three French departments; Sahara under military rule),FRA,1962-07-05 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+ECU,Ecuador,sovereign,ECU,1822-05-24 from Spain,sucre (gold standard from 1898-11-03),FB;COW;WP:Ecuadorian_sucre
+EGY,Egypt,"protectorate (de facto: Ottoman province under the Khedive, British occupation since 1882; formal British protectorate 1914)",GBR,1922-02-28 from UK protectorate status,Egyptian pound (gold standard 1885),FB;COW;WP1900;WP:Egyptian_pound
+ERI,Eritrea,colony (Italian Eritrea since 1890),ITA,1993-05-24 from Ethiopia,Eritrean tallero (1890-1921),FB;COW;WP1900;WD
+ESP,Spain,sovereign,ESP,1492 unified kingdom,peseta,FB;COW;WP:Latin_Monetary_Union
+EST,Estonia,part of another state (Russian Empire: Estland and northern Livland),RUS (Russian Empire),1918-02-24 from Soviet Russia (again 1991-08-20 from the Soviet Union),Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+ETH,Ethiopia,sovereign (Menelik II; Italy defeated at Adwa 1896),ETH,"ancient (Aksum); modern empire sovereign throughout, occupied by Italy 1936-41",Maria Theresa thaler (talari); Menelik's own coins circulated only in Addis Ababa,FB;COW;WP:Ethiopian_birr
+FIN,Finland,part of another state (autonomous Grand Duchy under the Russian tsar),RUS (Russian Empire),1917-12-06 from Russia,Finnish markka (since 1860),FB;COW;WP1900;WD
+FJI,Fiji,colony,GBR,1970-10-10 from the UK,pound sterling with locally issued paper money,FB;COW;WP:Fijian_pound
+FRA,France,sovereign (Alsace-Lorraine German since 1871),FRA,486 Frankish kingship (Third Republic since 1870),French franc (Latin Monetary Union),FB;COW;WP:Latin_Monetary_Union
+FSM,Micronesia,colony (Caroline Islands: Spanish until the 1899 sale to Germany),DEU,1986-11-03 from US-administered UN trusteeship,,FB;COW
+GAB,Gabon,colony (French Congo),FRA,1960-08-17 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+GBR,United Kingdom,sovereign,GBR,"no official date (927, 1707, 1801); Irish Free State seceded 1922",pound sterling (gold since 1816),FB;COW;WP:Gold_standard
+GEO,Georgia,part of another state (Russian Empire: Tiflis and Kutais governorates),RUS (Russian Empire),1991-04-09 from the Soviet Union (first republic 1918-05-26),Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+GHA,Ghana,colony (Gold Coast; Ashanti annexed 1901-01-01),GBR,1957-03-06 from the UK,pound sterling (British coinage),FB;COW;WP1900;WP:British_West_African_pound
+GIN,Guinea,colony (French Guinea),FRA,1958-10-02 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+GMB,Gambia,protectorate (Colony of the Gambia plus the Protectorate of 1894),GBR,1965-02-18 from the UK,pound sterling (British coinage),FB;COW;WP1900;WP:British_West_African_pound
+GNB,Guinea-Bissau,colony (Portuguese Guinea; effective control only from 1915),PRT,1973-09-24 declared (recognised 1974-09-10),Portuguese real (réis),FB;COW;WP:Portuguese_real
+GNQ,Equatorial Guinea,colony (Spanish Guinea; Rio Muni border with France fixed by the 1900-06-27 treaty),ESP,1968-10-12 from Spain,,FB;COW;WP1900
+GRC,Greece,sovereign,GRC,1830-02-03 from the Ottoman Empire,drachma (Latin Monetary Union),FB;COW;WP:Latin_Monetary_Union
+GRD,Grenada,colony (Windward Islands),GBR,1974-02-07 from the UK,sterling (government) and dollar (private bank notes),FB;COW;WP:British_West_Indies_dollar
+GTM,Guatemala,sovereign,GTM,1821-09-15 from Spain,Guatemalan peso,FB;COW;WP:Guatemalan_quetzal
+GUY,Guyana,colony (British Guiana),GBR,1966-05-26 from the UK,dollar accounts (British Guiana dollar) alongside sterling,FB;COW;WP1900;WP:British_West_Indies_dollar
+HKG,Hong Kong,colony (Crown colony since 1842; New Territories leased 1898-07-01 for 99 years),GBR,none: handed to China as a special administrative region 1997-07-01,"silver dollar (Spanish and Mexican dollars, British trade dollar from 1895, bank-issued dollar notes)",FB;COW;WP1900;WP:Hong_Kong_dollar
+HND,Honduras,sovereign,HND,1821-09-15 from Spain,Honduran peso,FB;COW;WP:Honduran_lempira
+HRV,Croatia,part of another state (Croatia-Slavonia under the Hungarian crown; Dalmatia and Istria Austrian),Austria-Hungary,1991-06-25 from Yugoslavia,Austro-Hungarian krone (replaced the gulden from 1892; the only legal notes from 1900),FB;COW;WP:Austro-Hungarian_krone
+HTI,Haiti,sovereign,HTI,1804-01-01 from France,gourde (5 francs = 1 gourde from 1881),FB;COW;WP:Haitian_gourde
+HUN,Hungary,"part of another state (Kingdom of Hungary, the other half of the Dual Monarchy)",Austria-Hungary,1918-11-16 republic proclaimed (dual monarchy since 1867-03-30),Austro-Hungarian krone (korona; replaced the gulden from 1892),FB;COW;WP1900;WP:Austro-Hungarian_krone
+IDN,Indonesia,colony (Dutch East Indies; Aceh and Bali not yet conquered),NLD,1945-08-17 declared (recognised 1949-12-27),Netherlands Indies guilder,FB;COW;WP1900;WD
+IND,India,colony (British India and the princely states under British paramountcy),GBR,1947-08-15 from the UK,Indian rupee (silver; gold made legal tender 1899-09-15),FB;COW;WP:Indian_rupee
+IRL,Ireland,part of another state (United Kingdom of Great Britain and Ireland),GBR,1921-12-06 treaty; Irish Free State 1922-12-06; republic 1949-04-18,pound sterling (gold since 1816),FB;COW;WP:Gold_standard
+IRN,Iran,sovereign (Qajar Persia),IRN,ancient (Persian empire ca. 550 BC); Qajar 1794; Islamic Republic 1979-04-01,qiran and toman (Qajar currency),FB;COW;WP:Iranian_rial
+IRQ,Iraq,"part of another state (Ottoman vilayets of Baghdad, Basra and Mosul)",Ottoman Empire,1932-10-03 from British mandate,Ottoman lira (gold standard 1881),FB;COW;WP:Vilayets_of_the_Ottoman_Empire;WP:Ottoman_lira
+ISL,Iceland,part of another state (Danish dependency with its own constitution since 1874),DNK,1918-12-01 sovereign state under the Danish Crown; 1944-06-17 republic,,FB;COW;WP1900
+ISR,Israel,"part of another state (Ottoman: Jerusalem sanjak, vilayets of Beirut and Syria)",Ottoman Empire,1948-05-14 from British mandate,Ottoman lira (gold standard 1881),FB;COW;WP:Vilayets_of_the_Ottoman_Empire;WP:Ottoman_lira
+ITA,Italy,sovereign,ITA,1861-03-17 kingdom,Italian lira (Latin Monetary Union),FB;COW;WP:Latin_Monetary_Union
+JAM,Jamaica,colony,GBR,1962-08-06 from the UK,pound sterling,FB;COW;WP1900;WP:British_West_Indies_dollar
+JOR,Jordan,part of another state (Ottoman vilayet of Syria),Ottoman Empire,1946-05-25 from British mandate,Ottoman lira (gold standard 1881),FB;COW;WP:Vilayets_of_the_Ottoman_Empire;WP:Ottoman_lira
+JPN,Japan,sovereign,JPN,Meiji Constitution 1890-11-29; current constitution 1947-05-03,yen (gold exchange standard 1897),FB;COW;WP:Japanese_yen
+KAZ,Kazakhstan,part of another state (Russian Empire: Steppe and Turkestan),RUS (Russian Empire),1991-12-16 from the Soviet Union,Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+KEN,Kenya,protectorate (East Africa Protectorate),GBR,1963-12-12 from the UK,Indian rupee (dominant along the East African coast),FB;COW;WP1900;WP:German_East_African_rupie
+KGZ,Kyrgyzstan,part of another state (Russian Empire: Turkestan),RUS (Russian Empire),1991-08-31 from the Soviet Union,Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+KHM,Cambodia,protectorate (French since 1863; Indochinese Union 1887),FRA,1953-11-09 from France,French Indochinese piastre (introduced 1885),FB;COW;WP:French_Indochinese_piastre
+KIR,Kiribati,"protectorate (Gilbert Islands, British since 1892)",GBR,1979-07-12 from the UK,,FB;COW;WP1900
+KNA,Saint Kitts and Nevis,colony (Leeward Islands),GBR,1983-09-19 from the UK,sterling (government) and dollar (private bank notes),FB;COW;WP:British_West_Indies_dollar
+KOR,South Korea,sovereign (Korean Empire since 1897; Japanese protectorate 1905-11-17; annexed 1910-08-22),Korean Empire (KOR and PRK),1945-08-15 from Japan; republic 1948-08-15,Korean yang (1892-1902; the won followed at 10 yang),FB;COW;WP1900;WP:Korean_yang
+KWT,Kuwait,protectorate (Exclusive Agreement with Britain 1899-01-23; Ottoman claim),GBR,1961-06-19 from the UK,,FB;COW;WP1900
+LAO,Laos,protectorate (French since 1893),FRA,1949-07-19 from France; 1953-10-22 full independence,,FB;COW
+LBN,Lebanon,part of another state (Ottoman: autonomous Mount Lebanon and the Beirut vilayet),Ottoman Empire,1943-11-22 from French mandate,Ottoman lira (gold standard 1881),FB;COW;WP:Vilayets_of_the_Ottoman_Empire;WP:Ottoman_lira
+LBR,Liberia,sovereign (COW lists it only from 1920),LBR,1847-07-26,Liberian dollar alongside the US dollar (coinage from 1896),FB;COW;WP1900;WP:Liberian_dollar
+LBY,Libya,part of another state (Ottoman vilayet of Tripoli and sanjak of Benghazi),Ottoman Empire,1951-12-24 from UN trusteeship,Ottoman lira (gold standard 1881),FB;COW;WP:Vilayets_of_the_Ottoman_Empire;WP:Ottoman_lira
+LCA,Saint Lucia,colony (Windward Islands),GBR,1979-02-22 from the UK,sterling (government) and dollar (private bank notes),FB;COW;WP:British_West_Indies_dollar
+LIE,Liechtenstein,sovereign (COW lists it only from 1990),LIE,1719-01-23 principality; 1806-07-12 free of the Holy Roman Empire,Austro-Hungarian krone,FB;COW;WP1900;WP:Austro-Hungarian_krone
+LKA,Sri Lanka,colony (Ceylon),GBR,1948-02-04 from the UK,"Ceylon rupee (sole legal tender since 1872, at par with the Indian rupee)",FB;COW;WP1900;WP:Sri_Lankan_rupee
+LSO,Lesotho,"colony (Basutoland, ruled by the Crown since 1884)",GBR,1966-10-04 from the UK,pound sterling (British Southern Africa),FB;COW;WP1900;WP:South_African_pound
+LTU,Lithuania,"part of another state (Russian Empire: Kovno, Vilna, Suwalki; Memel region German)",RUS (Russian Empire),1918-02-16 from Soviet Russia and Germany (again 1990-03-11),Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+LUX,Luxembourg,sovereign (personal union with the Netherlands ended 1890),LUX,1839 from the Netherlands,Luxembourg franc (at par with the Belgian franc since 1854; notes also in thaler and mark),FB;COW;WP1900;WP:Luxembourgish_franc
+LVA,Latvia,"part of another state (Russian Empire: Courland, southern Livland, Latgale)",RUS (Russian Empire),1918-11-18 from Soviet Russia (again 1990-05-04),Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+MAC,Macau,colony (Portuguese since 1557; China accepted Portuguese rule 1887),PRT,none: handed to China as a special administrative region 1999-12-20,,FB;COW;WP1900
+MAR,Morocco,sovereign (sultanate; French protectorate from 1912-03-30),MAR,1956-03-02 from France,Moroccan rial (1880-1921),FB;COW;WP:Moroccan_rial
+MCO,Monaco,sovereign (COW lists it only from 1993),MCO,1419 Grimaldi rule,French franc with the Monégasque franc at par,FB;COW;WP1900;WP:Monegasque_franc
+MDA,Moldova,part of another state (Russian Empire: Bessarabia),RUS (Russian Empire),1991-08-27 from the Soviet Union,Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+MDG,Madagascar,colony (French since 1896),FRA,1960-06-26 from France,French franc,FB;COW;WP1900;WP:Latin_Monetary_Union
+MDV,Maldives,protectorate (British since 1887),GBR,1965-07-26 from the UK,,FB;COW
+MEX,Mexico,sovereign,MEX,1810-09-16 declared; 1821-09-27 recognised by Spain,silver peso,FB;COW;WP:Mexican_peso
+MHL,Marshall Islands,colony (German protectorate since 1885),DEU,1986-10-21 from US-administered UN trusteeship,,FB;COW
+MKD,North Macedonia,"part of another state (Ottoman vilayets of Monastir, Salonica and Kosovo)",Ottoman Empire,1991-09-08 from Yugoslavia,Ottoman lira (gold standard 1881),FB;COW;WP:Vilayets_of_the_Ottoman_Empire;WP:Ottoman_lira
+MLI,Mali,colony (French Soudan),FRA,1960-09-22 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+MLT,Malta,colony,GBR,1964-09-21 from the UK,pound sterling (sterling coinage since 1825),FB;COW;WP1900;WP:Maltese_lira
+MMR,Myanmar,"colony (British Burma, a province of British India)",GBR,1948-01-04 from the UK,Indian rupee (Burma a province of British India),FB;COW;WP:Indian_rupee
+MNE,Montenegro,sovereign (principality recognised 1878; COW lists it only from 2006),MNE,1878-07-13 recognised at Berlin; 2006-06-03 from the State Union with Serbia,,FB;COW;WP1900
+MNG,Mongolia,"part of another state (Outer Mongolia, a Qing dependency)",CHN (Qing China),1911-12-29 declared from China; 1921-07-11 revolution,,FB;COW
+MOZ,Mozambique,colony (Portuguese East Africa; Mozambique and Niassa chartered companies),PRT,1975-06-25 from Portugal,Portuguese real (réis),FB;COW;WP:Portuguese_real
+MRT,Mauritania,"disputed or no state (independent Moorish emirates of Trarza, Brakna, Tagant and Adrar; French claim, French protectorate from 1903)",FRA,1960-11-28 from France,,FB;COW;WP1900
+MUS,Mauritius,colony,GBR,1968-03-12 from the UK,Mauritian rupee (since 1877),FB;COW;WP1900;WP:Mauritian_rupee
+MWI,Malawi,protectorate (British Central Africa Protectorate),GBR,1964-07-06 from the UK,,FB;COW;WP1900
+MYS,Malaysia,protectorate (Straits Settlements colony; protected Malay states; Sarawak and North Borneo under Brooke and company rule),GBR,1957-08-31 Malaya from the UK; 1963-09-16 Malaysia,Straits dollar (from 1898 in the Straits Settlements; also used in the Malay states),FB;COW;WP1900;WP:Straits_dollar
+NAM,Namibia,colony (German South West Africa; Walvis Bay British),DEU,1990-03-21 from South African mandate,,FB;COW;WP1900
+NER,Niger,colony (French Niger military territory),FRA,1960-08-03 from France,French franc,FB;COW;WP:Latin_Monetary_Union
+NGA,Nigeria,protectorate (Protectorates of Northern and Southern Nigeria; Lagos colony),GBR,1960-10-01 from the UK,pound sterling (British coinage),FB;COW;WP1900;WP:British_West_African_pound
+NIC,Nicaragua,sovereign,NIC,1821-09-15 from Spain,"peso moneda corriente (Nicaraguan peso, 1878-1912)",FB;COW;WP:Nicaraguan_córdoba
+NLD,Netherlands,sovereign,NLD,1581-07-26 Act of Abjuration,Dutch guilder (gold standard 1875),FB;COW;WP:Gold_standard;WP:Surinamese_guilder
+NOR,Norway,part of another state (union with Sweden under one king; own constitution and parliament),SWE (Sweden-Norway),1905-06-07 union declared dissolved (Sweden agreed 1905-10-26),Norwegian krone (Scandinavian Monetary Union from 1875),FB;COW;WP1900;WP:Scandinavian_Monetary_Union
+NPL,Nepal,sovereign (de facto; British Resident at Kathmandu; COW lists it only from 1920),NPL,1768 unified by Prithvi Narayan Shah,"Nepalese rupee (mohar), 1.28 to the Indian rupee",FB;COW;WP1900;WP:Nepalese_rupee
+NRU,Nauru,colony (German Marshall Islands Protectorate since 1888),DEU,1968-01-31 from UN trusteeship,,FB;COW
+NZL,New Zealand,self-governing colony,GBR,1907-09-26 dominion status,pound sterling,FB;COW;WP:Gold_standard
+OMN,Oman,sovereign (Sultanate of Muscat and Oman; British treaties; COW lists it only from 1971),OMN,1650 expulsion of the Portuguese,Indian rupee on the coast and Maria Theresa thaler inland,FB;COW;WP1900;WP:Omani_rial
+PAK,Pakistan,"colony (British India: Punjab, Sind, Baluchistan, North-West Frontier)",GBR,1947-08-14 from British India,Indian rupee,FB;COW;WP:Indian_rupee
+PAN,Panama,part of another state (Colombia: Department of Panama),COL,1903-11-03 from Colombia,Colombian peso (Panama a Colombian department),FB;COW;WP:Colombian_peso
+PER,Peru,sovereign,PER,1821-07-28 from Spain,sol (the libra of 1898 was a superunit),FB;COW;WP:Peruvian_sol
+PHL,Philippines,colony (United States since the 1898 Treaty of Paris; Philippine-American War 1899-1902),USA,1946-07-04 from the US,Spanish-Filipino peso (legal tender until 1904),FB;COW;WP:Philippine_peso
+PLW,Palau,colony (Caroline Islands: Spanish until the 1899 sale to Germany),DEU,1994-10-01 from US-administered UN trusteeship,,FB;COW
+PNG,Papua New Guinea,colony (German New Guinea in the north and on the islands; British New Guinea in the south-east),DEU+GBR,1975-09-16 from Australian-administered UN trusteeship,,FB;COW;WP1900
+POL,Poland,"part of another state (partitioned between Germany, Russia and Austria-Hungary)",DEU+RUS+Austria-Hungary,1918-11-11 republic proclaimed,"Russian ruble (Russian partition), German mark (Prussian), Austro-Hungarian krone (Galicia)",FB;COW;WD;WP:Russian_ruble;WP:Gold_standard;WP:Austro-Hungarian_krone
+PRK,North Korea,sovereign (Korean Empire since 1897; Japanese protectorate 1905-11-17; annexed 1910-08-22),Korean Empire (KOR and PRK),1945-08-15 from Japan; DPRK 1948-09-09,Korean yang (1892-1902; the won followed at 10 yang),FB;COW;WP1900;WP:Korean_yang
+PRT,Portugal,sovereign,PRT,1143 kingdom recognised; 1640-12-01 independence restored,Portuguese real (réis; the escudo from 1911),FB;COW;WP:Portuguese_real
+PRY,Paraguay,sovereign,PRY,1811-05-14/15 from Spain,Paraguayan peso (1856-1944),FB;COW;WP:Paraguayan_peso
+QAT,Qatar,part of another state (Ottoman nominal rule from Basra; British treaty 1868; formal British protection 1916),Ottoman Empire,1971-09-03 from the UK,,FB;COW;WP1900
+ROU,Romania,sovereign,ROU,1877-05-09 declared from the Ottoman Empire; 1878-07-13 recognised,leu (lei; Latin Monetary Union coinage),FB;COW;WP:Latin_Monetary_Union
+RUS,Russia,sovereign (Russian Empire),RUS,1991-12-25 Russian Federation (Empire proclaimed 1721-10-22),Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+RWA,Rwanda,"colony (German East Africa; German rule over the kingdom nominal, effective from about 1900)",DEU,1962-07-01 from UN trusteeship under Belgian administration,German East African rupie,FB;COW;WP:German_East_African_rupie
+SAU,Saudi Arabia,disputed or no state (Najd under the Rashidi emirate of Ha'il; Hejaz and al-Hasa Ottoman; Al Saud in exile until 1902),Ottoman Empire,1932-09-23 unification of the kingdom,,FB;COW;WP1900;WP:Vilayets_of_the_Ottoman_Empire;WP:Rashidi_dynasty
+SDN,Sudan,protectorate (Anglo-Egyptian Sudan condominium since 1899-01-19),GBR,1956-01-01 from Egypt and the UK,Egyptian pound (Anglo-Egyptian Sudan 1899-1956),FB;COW;WP:Egyptian_pound
+SEN,Senegal,colony (French Senegal),FRA,1960-04-04 federation with Mali; 1960-08-20 full independence,French franc,FB;COW;WP:Latin_Monetary_Union
+SGP,Singapore,colony (Straits Settlements),GBR,1965-08-09 from Malaysia,Straits dollar (since 1898),FB;COW;WP:Straits_dollar
+SLB,Solomon Islands,protectorate (British Solomon Islands Protectorate since 1893; the northern islands German until 1899),GBR,1978-07-07 from the UK,,FB;COW
+SLE,Sierra Leone,colony (Colony of Sierra Leone plus Protectorate of 1896),GBR,1961-04-27 from the UK,pound sterling (British coinage),FB;COW;WP1900;WP:British_West_African_pound
+SLV,El Salvador,sovereign,SLV,1821-09-15 from Spain,"Salvadoran peso (renamed colón 1892 in law, at par in 1919)",FB;COW;WP:Salvadoran_colón
+SMR,San Marino,sovereign (COW lists it only from 1992),SMR,301-09-03 traditional founding,Italian lira (Sammarinese lira pegged 1:1),FB;COW;WP1900;WP:Sammarinese_lira
+SOM,Somalia,protectorate (British Somaliland in the north; Italian Somaliland and Benadir in the south),ITA+GBR,1960-07-01 merger of British and Italian Somaliland,,FB;COW;WP1900
+SRB,Serbia,sovereign (kingdom since 1882; independence recognised 1878),SRB,1878-07-13 recognised at Berlin; 2006-06-05 from the State Union with Montenegro,Serbian dinar (par with the French franc 1873-1894; Latin Monetary Union),FB;COW;WP1900;WP:Serbian_dinar
+SSD,South Sudan,protectorate (Anglo-Egyptian Sudan; Lado Enclave leased to Leopold II),GBR,2011-07-09 from Sudan,Egyptian pound (Anglo-Egyptian Sudan 1899-1956),FB;COW;WP:Egyptian_pound
+STP,São Tomé and Príncipe,colony,PRT,1975-07-12 from Portugal,Portuguese real (réis),FB;COW;WP:Portuguese_real
+SUR,Suriname,colony (Dutch Guiana),NLD,1975-11-25 from the Netherlands,Dutch guilder (Surinamese guilder at par),FB;COW;WP1900;WP:Surinamese_guilder
+SVK,Slovakia,"part of another state (Upper Hungary, the Kingdom of Hungary)",Austria-Hungary,1993-01-01 split of Czechoslovakia,Austro-Hungarian krone (replaced the gulden from 1892; the only legal notes from 1900),FB;COW;WP:Austro-Hungarian_krone
+SVN,Slovenia,"part of another state (Carniola, southern Styria, Carinthia, Littoral: Cisleithania)",Austria-Hungary,1991-06-25 from Yugoslavia,Austro-Hungarian krone (replaced the gulden from 1892; the only legal notes from 1900),FB;COW;WP:Austro-Hungarian_krone
+SWE,Sweden,sovereign (in union with Norway),SWE,1523-06-06 Gustav Vasa elected king,Swedish krona (Scandinavian Monetary Union),FB;COW;WP:Scandinavian_Monetary_Union
+SWZ,Eswatini,protectorate (under South African Republic administration by the 1894 convention; British high commission territory from 1903; Wikipedia's list calls it independent until 1902),South African Republic (Transvaal),1968-09-06 from the UK,,FB;COW;WP1900
+SYC,Seychelles,colony (dependency of Mauritius until 1903),GBR,1976-06-29 from the UK,Mauritian rupee (1877-1914),FB;COW;WP1900;WP:Mauritian_rupee
+SYR,Syria,"part of another state (Ottoman vilayets of Syria, Aleppo and Beirut)",Ottoman Empire,1946-04-17 from French mandate,Ottoman lira (gold standard 1881),FB;COW;WP:Vilayets_of_the_Ottoman_Empire;WP:Ottoman_lira
+TCD,Chad,"disputed or no state (Rabih's state in Bornu and the sultanate of Wadai independent, Baguirmi a French protectorate; French colony from 1900-09-05)",FRA,1960-08-11 from France,,FB;COW;WP1900
+TGO,Togo,colony (German Togoland),DEU,1960-04-27 from French-administered UN trusteeship,,FB;COW;WP1900
+THA,Thailand,sovereign (Siam; never colonised),THA,1238 traditional founding,"baht (tical), silver basis until 1902-11-27",FB;COW;WP1900;WP:Thai_baht
+TJK,Tajikistan,part of another state (Russian Empire: Turkestan; Emirate of Bukhara a Russian protectorate),RUS (Russian Empire),1991-09-09 from the Soviet Union,Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+TKM,Turkmenistan,part of another state (Russian Empire: Transcaspia),RUS (Russian Empire),1991-10-27 from the Soviet Union,Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+TLS,Timor-Leste,colony (Portuguese Timor),PRT,1975-11-28 from Portugal (2002-05-20 from Indonesia),,FB;COW;WP1900
+TON,Tonga,sovereign (kingdom; British protection treaty signed 1900-05-18),TON,1970-06-04 from UK protectorate status,,FB;COW;WP1900
+TTO,Trinidad and Tobago,colony,GBR,1962-08-31 from the UK,sterling and dollar accounts (private bank notes show both),FB;COW;WP:British_West_Indies_dollar
+TUN,Tunisia,protectorate (French since 1881-05-12),FRA,1956-03-20 from France,Tunisian franc (since 1891; 1 rial = 60 centimes),FB;COW;WP:Tunisian_franc
+TUR,Turkey,sovereign (Ottoman Empire),TUR,1923-10-29 republic succeeding the Ottoman Empire,Ottoman lira (gold standard 1881),FB;COW;WP:Ottoman_lira
+TUV,Tuvalu,"protectorate (Ellice Islands, British since 1892)",GBR,1978-10-01 from the UK,,FB;COW;WP1900
+TWN,Taiwan,colony (Japanese since the 1895 Treaty of Shimonoseki),JPN,Factbook gives no independence date; COW lists the Republic of China state from 1949-12-08,Taiwanese yen (Bank of Taiwan notes),FB;COW;WP1900;WP:Old_Taiwan_dollar
+TZA,Tanzania,colony (German East Africa; Zanzibar a British protectorate since 1890),DEU (Zanzibar: GBR),"1961-12-09 Tanganyika, 1963-12-19 Zanzibar; union 1964-04-26",German East African rupie,FB;COW;WP1900;WP:German_East_African_rupie
+UGA,Uganda,protectorate (Uganda Protectorate),GBR,1962-10-09 from the UK,,FB;COW;WP1900
+UKR,Ukraine,"part of another state (Russian Empire; Galicia, Bukovina and Transcarpathia Austro-Hungarian)",RUS (Russian Empire),1991-08-24 from the Soviet Union,Russian ruble (gold ruble from 1897); Austro-Hungarian krone in the west,FB;COW;WP:Russian_ruble;WP:Austro-Hungarian_krone
+URY,Uruguay,sovereign,URY,1825-08-25 from Brazil,Uruguayan peso (gold standard from 1896),FB;COW;WP:Uruguayan_peso
+USA,United States,sovereign,USA,1776-07-04 declared; 1783-09-03 recognised by Britain,US dollar (gold standard by 1879),FB;COW;WP:Gold_standard
+UZB,Uzbekistan,part of another state (Russian Empire: Turkestan; Bukhara and Khiva Russian protectorates),RUS (Russian Empire),1991-09-01 from the Soviet Union,Russian ruble (gold ruble from 1897),FB;COW;WP:Russian_ruble
+VCT,Saint Vincent and the Grenadines,colony (Windward Islands),GBR,1979-10-27 from the UK,sterling (government) and dollar (private bank notes),FB;COW;WP:British_West_Indies_dollar
+VEN,Venezuela,sovereign,VEN,1811-07-05 from Spain,bolívar (1879; the gold bolívar unlimited legal tender from 1887),FB;COW;WP:Venezuelan_bolívar
+VNM,Vietnam,protectorate (Cochinchina a colony; Annam and Tonkin protectorates; French Indochina),FRA,1945-09-02 declared from France,French Indochinese piastre (introduced 1885),FB;COW;WP:French_Indochinese_piastre
+VUT,Vanuatu,disputed or no state (joint British-French naval commission since 1887; Condominium from 1906),GBR+FRA,1980-07-30 from France and the UK,,FB;COW
+WSM,Samoa,"disputed or no state (joint German, British and US control under the 1889 Berlin Act; partitioned 1899-12-02; German Samoa from 1900-03-01)",DEU,1962-01-01 from New Zealand-administered UN trusteeship,,FB;COW;WP1900
+YEM,Yemen,colony (Aden and its protectorates under Britain in the south; Ottoman Yemen vilayet in the north),GBR+Ottoman Empire,1990-05-22 merger of North and South Yemen,,FB;COW;WP1900;WP:Vilayets_of_the_Ottoman_Empire
+ZAF,South Africa,self-governing colony (Cape Colony and Natal; Transvaal and Orange Free State sovereign republics at war with Britain from 1899-10-11),"GBR (Cape, Natal); Boer republics",1910-05-31 Union of South Africa,pound sterling (Cape Colony standard since 1825; the Transvaal issued its own notes and coins),FB;COW;WP1900;WP:South_African_pound
+ZMB,Zambia,protectorate (British South Africa Company territory; Barotziland),GBR,1964-10-24 from the UK,,FB;COW;WP1900
+ZWE,Zimbabwe,colony (Southern Rhodesia under the British South Africa Company charter),GBR,1980-04-18 from the UK,pound sterling (British Southern Africa),FB;COW;WP1900;WP:South_African_pound
