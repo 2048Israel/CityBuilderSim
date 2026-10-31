@@ -41,3 +41,25 @@ Earth run is counted. A generated world is one landmass, so the default
 playtest's trace should not move; an Earth run's does: the ensemble if the
 trace moves. ET5's and ET6's harnesses keep their premises but the one this
 overturns, restated by his words.
+
+## Jerus's Bergen city, 2026-10-31 (month ~2,418, 0.8.90)
+
+He ticked two cases for this batch (pictures in `docs/queue/AL1/`). The
+autosave (month 2,413, 0.8.90) is a read-only fixture at
+`C:\Users\Jerus\Documents\cbs-fixtures\bergen-pictures-2026-10-31\save\`,
+outside the repository: load a copy from a `GameFiles.scratch` folder, never
+a slot.
+
+1. **Islands left unlinked** (pictures 2, 6): ground beside the city reads
+   "not linked: needs a port here (home has one)", even where a highway
+   already runs out over the water (picture 2). Picture 6 shows island 10,
+   0.706 km2. The links rule should see the highway that is there, and the
+   auto-builder should link such ground by a bridge where one is allowed.
+2. **Too many small ports** (picture 5): about 15 small terminals with ships
+   along one coast. This is the worry behind his SL1-B drop: "general cargo
+   berth no otherwise we get the same issue of too many small ports." The
+   auto-builder's port links should share a port where one already serves,
+   not add one per island.
+
+Not a fault: the city owning open sea ("i bought that open sea... it had
+tasty oil lol"). The island label was left unticked; BK1-L's plate covers it.

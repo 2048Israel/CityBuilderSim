@@ -47,3 +47,30 @@ layout watch is not weakened, and flags nothing on the paths that met them
 where they still run. Time: MapCheck's month lines and PlanCheck's ms a plan
 against main beside the same load; no budget moved. QB1 (CC1-S-B) waits for
 this batch, since PlanCheck is the district plans'.
+
+## Jerus's Bergen city, 2026-10-31 (month ~2,418, 0.8.90)
+
+He sent pictures of his own city and ticked four faults to fix
+(`docs/queue/MF2/`). The autosave they came from (month 2,413, 0.8.90:
+`autosave.json`, `-history.json`, `-map.bin`) is a read-only fixture at
+`C:\Users\Jerus\Documents\cbs-fixtures\bergen-pictures-2026-10-31\save\`,
+outside the repository. Copy it into a `GameFiles.scratch` folder to load it;
+never into a slot. Each fault gets a fixture that causes it; his city shows
+it is real.
+
+1. **Bridges as staircases** (pictures 2, 4): a highway and a railway cross
+   the sea on a brown stair-stepped strip, not a straight deck.
+2. **The broken cloverleaf** (picture 4): the loops are loose arcs not joined
+   to the highway's lanes, and a diagonal street runs through the middle.
+   This overturns MF1-C star5 ("the cloverleaf stylised") as far as the joins
+   go: the loops meet the lanes they serve, and no street crosses the
+   interchange.
+3. **A rail V-turn to a dead end** (picture 1): the railway comes diagonally
+   through the blocks, turns back sharply at a small green square, crosses
+   the street and stops in empty ground.
+4. **The highway cuts the blocks** (picture 3): the diagonal highway crosses
+   the street grid with no junctions, leaving thin strips of empty and wooded
+   ground.
+
+Not a fault, his words: the city owning open sea, "i bought that open sea...
+it had tasty oil lol."
