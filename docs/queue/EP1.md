@@ -12,6 +12,13 @@ LB1-LB3 and KP1 in lane B) and before R0. R0 keeps the 1900 economy itself
 (`docs/studies/research-1900.md`): the real wages, the basket, the build list
 and the equipment.
 
+**The study is done** (EP0, 2026-10-30): [spec-1900-start.md](../studies/spec-1900-start.md)
+has the factor (the US CPI's 1900 over 2025, 0.02588), every anchor it reaches,
+Historical's series back to 1900 with their gaps, the rule for the nations that
+did not exist, and the calendar's readers. Its §7 holds thirteen calls, each
+with a recommendation; `docs/studies/1900-start/` holds the gathered series as
+CSV, ready to bake.
+
 ## What it is
 
 - **The calendar.** `CityCalendar.EPOCH_YEAR` is 2000. It becomes 1900, and

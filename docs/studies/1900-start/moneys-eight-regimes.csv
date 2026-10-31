@@ -1,0 +1,98 @@
+# The eight moneys' regimes, 1900-2000: one row per period. Batch EP0 (study for EP1), compiled 2026-10-30.
+# Columns: money (ISO code; EUR is the euro's German ancestor line, then the euro), from and to (ISO dates; YYYY-MM where only the month
+#   is sourced), regime, units_per_usd (the money's units per US$ while a par or peg held, in the units of moneys-eight-annual.csv:
+#   AUD in A$, EUR as marks / 1.95583; empty for a float or where the rate is not sourced), event, source (keys; full list in the
+#   study's draft section "series-paths", sources at its end). A key with * was named, not read in this study: EP1 checks it.
+# Regime words: gold (a gold par, convertible), float, peg:CODE (fixed to that money), bw-par (Bretton Woods par value with the IMF,
+#   +-1% band; the central rate after Dec 1971 with +-2.25%), managed (an official rate under exchange control, or a managed float),
+#   silver (China's silver standard), uses:GBP (the money is another's), none (no market rate: war, occupation, multiple rates).
+# Pars before 1934 follow from the gold contents in law (US$ 1.504632 g; pound 7.322382 g; mark 0.358423 g; franc 0.290322 g; yen
+#   0.75 g); from 31 Jan 1934 the US$ is $35/oz, so an unchanged gold content is the old par x 20.67/35. Rates checked against the
+#   data where the data exist: BoE monthly $/pound (FRED USUKFXUKM), NBER m14002, FRED H.10 monthly, IMF ER, PWT, OECD MEI.
+money,from,to,regime,units_per_usd,event,source
+USD,1900-01-01,1933-04,gold,1,"Gold standard ($20.67 per fine ounce), made law by the Gold Standard Act of 14 Mar 1900; gold exports embargoed Sep 1917 to Jun 1919",MINT-PARS*;FRB-BMS1*
+USD,1933-04,1934-01-31,float,1,"Roosevelt's gold programme: private gold restricted and the dollar devalued step by step from the spring of 1933",FRH-GRA
+USD,1934-01-31,1971-08-15,gold,1,"Gold Reserve Act signed 30 Jan 1934; Proclamation 2072 of 31 Jan 1934 sets $35 per ounce; from Dec 1946 the anchor of the IMF par values",FRH-GRA;IMF-AR*
+USD,1971-08-15,1971-12-18,float,1,"Gold window closed 15 Aug 1971",FRH-NIXON
+USD,1971-12-18,1973-02-12,managed,1,"Smithsonian Agreement 18 Dec 1971: official gold price $38.00; other moneys' central rates with +-2.25% bands",ERP1972
+USD,1973-02-12,1973-03,managed,1,"Devalued 10%: official gold price $38 to $42.22 (announced 12 Feb 1973)",FRUS-1973*
+USD,1973-03,2000-12-31,float,1,"General float from March 1973",RBA-AR1973*;IMF-AR*
+EUR,1900-01-01,1914-08,gold,2.14636,"Gold mark: 4.1979 marks per US$ (1 kg fine gold = 2790 marks, Coinage Act 1873); NBER Berlin-on-New-York monthly 418.4-421.1 per 100 US$ 1900-1913",MINT-PARS*;NBER-M14
+EUR,1914-08,1923-11,float,,"Paper mark off gold from Aug 1914; hyperinflation 1922-23, stabilised Nov 1923 at 4.2 x 10^12 paper marks per US$",FRB-BMS1*;BBK-H*
+EUR,1923-11,1931-07,gold,2.14636,"Rentenmark from Nov 1923 (1 = 10^12 paper marks) held at 4.2 per US$; Reichsmark from 30 Aug 1924 at the old gold par 4.1979",FRB-BMS1*;BBK-H*
+EUR,1931-07,1934-01-31,managed,2.14636,"Banking crisis Jul 1931; exchange control; the Reichsmark kept its gold par officially (its US$ rate moved with the dollar from Apr 1933)",FRB-BMS1*;BBK-H*
+EUR,1934-01-31,1939-09,managed,1.26770,"Official Reichsmark rate at the unchanged gold par: 2.4794 per US$ after the dollar's devaluation (blocked and special marks traded lower)",MINT-PARS*;FRB-BMS1*
+EUR,1939-09,1948-06-20,none,,"War and occupation: no market rate",FRB-BMS1*
+EUR,1948-06-20,1949-09,managed,,"Deutsche Mark from 20 Jun 1948 (wages, prices and rents converted 1:1, money balances 10:1); official rate 30 US cents (3.33 per US$), to check",BBK-H*
+EUR,1949-09,1961-03-06,bw-par,2.14743,"4.20 per US$ (23.81 US cents) from Sep 1949 (day to check); IMF par from 1953 (to check); IMF ER 4.195 1950-1952 and 4.20 1953-1960",IMF-ER;PWT
+EUR,1961-03-06,1969-09-29,bw-par,2.04517,"Revalued 5%: 4.00 per US$ (IMF ER 1962-1968 4.00; 1961 average 4.033)",IMF-ER;BBK-AR1969*
+EUR,1969-09-29,1969-10-24,float,,"Temporary float before the revaluation (dates to check)",BBK-AR1969*
+EUR,1969-10-24,1971-05-10,bw-par,1.87133,"Revalued about 9.3%: 3.66 per US$ (fixed the evening of 24 Oct 1969)",WIFO-1969*;BBK-AR1969*
+EUR,1971-05-10,1971-12-18,float,,"Floated with the guilder from 10 May 1971 (H.10 monthly DM 3.55 in May to 3.27 in Dec)",H10-M
+EUR,1971-12-18,1973-03-19,bw-par,1.64764,"Smithsonian central rate 3.2225 per US$ (+13.58% on the 3.66 parity)",ERP1972
+EUR,1973-03-19,1979-03-13,float,,"Joint float of the European 'snake' against the US$",IRR*
+EUR,1979-03-13,1998-12-31,float,,"European Monetary System from 13 Mar 1979, the DM its anchor; floats against the US$",IRR*
+EUR,1999-01-01,2000-12-31,float,,"Euro from 1 Jan 1999 at 1.95583 DM per euro; floats",EU-2866/98*;H10-A
+JPY,1900-01-01,1917-09,gold,2.00618,"Gold yen since the Coinage Act of 1897 (0.75 g fine gold; 49.85 US cents)",MINT-PARS*;FRB-BMS1*
+JPY,1917-09,1930-01-11,float,,"Gold export embargo from Sep 1917 (date to check); the yen below its par in the 1920s; returns debated 1919, 1923, 1927",SHIZUME;FRB-BMS1*
+JPY,1930-01-11,1931-12-13,gold,2.00618,"Gold embargo lifted, return at the old parity, January 1930",SHIZUME
+JPY,1931-12-13,1933-04,float,,"Gold embargo reimposed 13 Dec 1931; the yen fell 60% against the US$ to Nov 1932",SHIZUME
+JPY,1933-04,1939-10,peg:GBP,,"From April 1933 the Yokohama Specie Bank quoted the yen in sterling, in effect a sterling peg (rate to check in FRB-BMS1)",SHIZUME;FRB-BMS1*
+JPY,1939-10,1941-12,peg:USD,,"Linked to the US$ (rate to check in FRB-BMS1)",FRB-BMS1*
+JPY,1941-12,1949-04-25,none,,"War and occupation: no single market rate; multiple official rates",IRR*
+JPY,1949-04-25,1971-08-28,bw-par,360,"Single rate 360 per US$ (date to check); IMF par from 1953 (to check); IMF ER and PWT 360 1953-1970 (361.1 in 1950-1952)",IMF-ER;PWT;IRR*
+JPY,1971-08-28,1971-12-20,float,,"Floated after the gold window closed (H.10 monthly 357 in Jul to 320 in Dec)",H10-M
+JPY,1971-12-20,1973-02-14,bw-par,308,"Smithsonian central rate 308 per US$ (+16.88% on 360)",ERP1972
+JPY,1973-02-14,2000-12-31,float,,"Float from Feb 1973 (H.10 monthly 301.8 in Jan to 278.4 in Feb 1973)",H10-M
+GBP,1900-01-01,1914-08,gold,0.205487,"Gold standard: US$4.8665 a pound (BoE monthly 4.85-4.89 1900-1913)",MINT-PARS*;BOE-M
+GBP,1914-08,1916-01,float,,"Gold in law, exports discouraged (to check); the pound rose to 5.29 in Aug 1914 then eased to 4.77",BOE-M;FRB-BMS1*
+GBP,1916-01,1919-03,peg:USD,0.209644,"Held near US$4.77 by British purchases in New York (BoE monthly 4.77 Jan 1916-Feb 1919; est. from the data, the official figure to check)",BOE-M;FRB-BMS1*
+GBP,1919-03,1925-04-28,float,,"Unpegged Mar 1919 (BoE 4.66 Apr 1919, 3.38 Feb 1920)",BOE-M
+GBP,1925-04-28,1931-09-21,gold,0.205487,"Back on gold at the old par (Gold Standard Act 1925; BoE 4.86 from May 1925)",BOE-M;FRB-BMS1*
+GBP,1931-09-21,1939-09,float,,"Gold standard suspended 21 Sep 1931 (BoE 4.86 Aug, 3.37 Dec 1931); managed by the Exchange Equalisation Account from 1932",BOE-M;POWELL
+GBP,1939-09,1949-09-18,peg:USD,0.248139,"Exchange control, official rate US$4.03 (BoE 4.00-4.01 Sep-Oct 1939); IMF par value US$4.03 from 18 Dec 1946",BOE-M;IMF-AR*
+GBP,1949-09-18,1967-11-18,bw-par,0.357143,"Devalued 30.5% to US$2.80 (BoE 2.80 Oct 1949)",RBA-UNR;BOE-M
+GBP,1967-11-18,1971-08-15,bw-par,0.416667,"Devalued 14.3% to US$2.40 (BoE 2.41 Dec 1967)",RBA-UNR;BOE-M
+GBP,1971-08-15,1971-12-18,float,,"Floated up after the gold window closed (H.10 monthly 2.42 Jul, 2.53 Dec 1971)",H10-M
+GBP,1971-12-18,1972-06-23,bw-par,0.383774,"Smithsonian central rate US$2.6057 (+8.57% on 2.40)",ERP1972
+GBP,1972-06-23,1990-10-08,float,,"Floated 23 Jun 1972 (BoE 2.57 Jun, 2.44 Jul 1972)",BOE-M;IRR*
+GBP,1990-10-08,1992-09-16,managed,,"In the European Exchange Rate Mechanism (central rate DM 2.95, +-6%); floats against the US$",IRR*
+GBP,1992-09-16,2000-12-31,float,,"Left the ERM 16 Sep 1992",IRR*
+CNY,1900-01-01,1935-11-03,silver,,"Silver standard: the Haikwan tael (customs unit) and silver dollars float against gold with the silver price; the tael abolished for the silver yuan in 1933 (date to check)",FRB-BMS1*;HSIAO*
+CNY,1935-11-04,1937-07,managed,,"Fabi: silver nationalised, legal-tender notes held at a fixed sterling and US$ rate (rate to check)",FRB-BMS1*;IRR*
+CNY,1937-07,1948-08-19,none,,"War and inflation: official and market rates far apart",FRB-BMS1*;IRR*
+CNY,1948-08-19,1955-03-01,none,,"Gold yuan (Aug 1948) collapses; People's Bank of China founded Dec 1948, first renminbi; multiple rates and inflation",IRR*
+CNY,1955-03-01,1971-12,peg:USD,2.46181,"New renminbi (1 = 10,000 old) at 2.4618 per US$ (PWT 1952-1956 and OECD 1957-1970 2.4618, new units)",PWT;OECD-MEI;IRR*
+CNY,1971-12,1980-12-31,managed,,"Official rate reset against a basket as the dollar moved (OECD 2.46 in 1971 to 1.50 in 1980)",OECD-MEI;IRR*
+CNY,1981-01-01,1984-12-31,managed,,"Dual rates: the official rate and an internal settlement rate for trade (2.8 per US$, to check)",IRR*;H10-A
+CNY,1985-01-01,1993-12-31,managed,,"Official rate devalued in steps (H.10 2.94 in 1985 to 5.76 in 1993) beside swap-market rates",H10-A;IRR*
+CNY,1994-01-01,2000-12-31,managed,,"Rates unified 1 Jan 1994 (H.10 1994 average 8.64); held near 8.28 from 1997 (H.10 1998-2000 8.28-8.30)",H10-A;IRR*
+CAD,1900-01-01,1914-08,gold,1,"Gold standard; the dollar at par with the US$",POWELL
+CAD,1914-08,1926-07-01,float,,"Dominion notes no longer redeemable in gold from Aug 1914",POWELL
+CAD,1926-07-01,1929,gold,1,"Back on gold 1 Jul 1926",POWELL
+CAD,1929,1939-09-15,float,,"Off gold in effect from 1929; gold exports banned 31 Oct 1931",POWELL
+CAD,1939-09-15,1946-07-05,managed,1.10,"Exchange control: US$1 = C$1.10 (official)",POWELL
+CAD,1946-07-05,1949-09-19,bw-par,1,"Repegged at par with the US$, Jul 1946; IMF par value from Dec 1946",POWELL;IMF-AR*
+CAD,1949-09-19,1950-09-30,bw-par,1.10,"Devalued 10% (90.91 US cents) with sterling's devaluation",POWELL
+CAD,1950-09-30,1962-05-02,float,,"Floated (announced 30 Sep 1950); above par with the US$ in most of the 1950s (PWT 0.98 in 1952)",POWELL;PWT
+CAD,1962-05-02,1970-05-31,bw-par,1.081081,"Pegged at 92.5 US cents",POWELL;ERP1972
+CAD,1970-05-31,2000-12-31,float,,"Floated from June 1970; kept floating at the Smithsonian (99.79 US cents on 31 Dec 1971)",POWELL;ERP1972
+AUD,1900-01-01,1910,uses:GBP,0.410973,"The colonies, the Commonwealth from 1901, used British coin; A$ units = 2 x pounds sterling (US$4.8665 a pound)",RBA-UNR;BOE-M
+AUD,1910,1929,peg:GBP,0.410973,"Australian notes from 1910 at par with sterling (1 pound sterling = 1 Australian pound, the British gold standard parity); rate shown at sterling's gold par",RBA-UNR
+AUD,1929,1931-12,float,,"The Australian pound fell against sterling (to 130 per 100 sterling by Jan 1931, to check)",RBA-UNR*;FRB-BMS1*
+AUD,1931-12,1949-09,peg:GBP,0.620347,"Pegged at 125 Australian pounds = 100 sterling; US$ rate follows sterling (shown at sterling's US$4.03 of 1939-1949)",RBA-UNR;BOE-M
+AUD,1949-09,1967-11,peg:GBP,0.892857,"Devalued with sterling: US$2.24 = 1 Australian pound; decimal A$ (2 = 1 pound) in 1966 (14 Feb, to check)",RBA-UNR
+AUD,1967-11,1971-12,peg:GBP,0.892857,"Sterling devalued 14.3% in Nov 1967; the A$ kept its US$ rate, so A$2.1429 = 1 pound sterling",RBA-UNR
+AUD,1971-12,1974-09-25,peg:USD,0.839631,"Revalued and pegged to the US$ (H.10 US$1.1910 Jan-Nov 1972); revalued 7.05% Dec 1972, 11.1% in effect Feb 1973 (US$1.4150 Apr-May 1973), 5% Sep 1973 (US$1.48)",RBA-UNR;H10-M
+AUD,1974-09-25,1976-11,peg:TWI,,"Devalued 12% and fixed to a trade-weighted index",RBA-UNR
+AUD,1976-11,1983-12-12,managed,,"Devalued 17.5%; crawling peg",RBA-UNR
+AUD,1983-12-12,2000-12-31,float,,"Floated 12 Dec 1983 (decided 9 Dec); most exchange controls abolished",RBA-UNR
+CHF,1900-01-01,1914-08,gold,5.18262,"Latin Monetary Union franc (0.290322 g fine gold; 19.30 US cents)",MINT-PARS*;FRB-BMS1*
+CHF,1914-08,1925,float,,"Notes inconvertible from Aug 1914",FRB-BMS1*;SNB-H*
+CHF,1925,1934-01-31,gold,5.18262,"Gold standard at the old parity from 1925 (date in year to check); Latin Monetary Union ends 1927",SNB-H*
+CHF,1934-01-31,1936-09-27,gold,3.06099,"Gold bloc: unchanged gold content, so 3.0610 per US$ at $35 gold",MINT-PARS*;SNB-H*
+CHF,1936-09-27,1971-05-10,managed,4.37295,"Devalued about 30% on 27 Sep 1936; official parity 4.373 per US$ in IMF and PWT data 1950-1970 (market 4.29-4.33, OECD 1957-1970); not an IMF member until 1992",GOLD-1936*;IMF-ER;PWT;OECD-MEI
+CHF,1971-05-10,1971-08-15,managed,4.08413,"Revalued 7%: new par 24.485 US cents, effective 10 May 1971",FRB-G5-1971*
+CHF,1971-08-15,1971-12-20,float,,"Floated 15 Aug to 19 Dec 1971",HLS*
+CHF,1971-12-20,1973-01-23,bw-par,3.84,"Smithsonian central rate 3.84 per US$ (+13.88% on the Jan 1971 parity)",ERP1972
+CHF,1973-01-23,2000-12-31,float,,"The SNB stopped buying dollars 23 Jan 1973: float",HLS*;SNB-H*
