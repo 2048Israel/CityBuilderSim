@@ -666,13 +666,16 @@ public abstract class Debt {
         private int month;
         private double face, proceeds, yield;
         private String how;
+        /** CD7: local money per unit of the piece's own money at the sale (the piece's exchangeRate then); 0 for a sale from a save that did not keep it - unknown. */
+        private double rate;
 
-        Sale(int month, double face, double proceeds, double yield, String how) {
+        Sale(int month, double face, double proceeds, double yield, String how, double rate) {
             this.month = month;
             this.face = face;
             this.proceeds = proceeds;
             this.yield = yield;
             this.how = how;
+            this.rate = rate;
         }
 
         public int getMonth()       { return month; }
@@ -680,6 +683,9 @@ public abstract class Debt {
         public double getProceeds() { return proceeds; }
         public double getYield()    { return yield; }
         public String getHow()      { return how; }
+
+        /** The rate the sale was made at (CD7): local money per unit of the money the piece is written in, as the piece was valued then; 0 when a save did not keep it. */
+        public double getRate()     { return rate; }
 
         /** The price the sale made, for each 100 of face (CD6): what it raised over its face, times 100; 0 for a sale of no face. */
         public double getPricePer100() { return face > 0 ? proceeds / face * 100 : 0; }
@@ -694,10 +700,49 @@ public abstract class Debt {
 
     private static double finiteOrZero(double v) { return Double.isFinite(v) ? v : 0; }
 
-    /** Remembers a sale. A figure that is no number is nothing: Gson cannot carry a NaN. */
+    /**
+     * Remembers a sale, and the rate the piece was valued at when it was made
+     * (CD7: a dollar piece's exchangeRate then, which DebtManager.book() had
+     * already told it). A figure that is no number is nothing: Gson cannot
+     * carry a NaN.
+     */
     void noteSale(int month, double face, double proceeds, double yield, String how) {
         if (sales == null) sales = new java.util.ArrayList<>();
-        sales.add(new Sale(month, finiteOrZero(face), Math.max(0, finiteOrZero(proceeds)), finiteOrZero(yield), how));
+        sales.add(new Sale(month, finiteOrZero(face), Math.max(0, finiteOrZero(proceeds)), finiteOrZero(yield), how,
+                exchangeRate > 0 ? finiteOrZero(exchangeRate) : 0));
+    }
+
+    /**
+     * THE RATE THE PIECE WAS SOLD AT (CD7): the mean of its sales' rates, each
+     * weighted by what the sale raised, over the sales that kept a rate and
+     * raised something. A line reopened at another rate is one line with
+     * several, and what it raised at each is what it is owed in dollars for.
+     * 0 when no sale kept a rate (a piece from a save that did not, a fixture
+     * built without a sale): unknown, not 1.
+     */
+    public final double soldAtRate() {
+        if (sales == null) return 0;
+        double weighted = 0, raised = 0;
+        for (Sale sale : sales) {
+            if (sale.rate > 0 && sale.proceeds > 0) {
+                weighted += sale.rate * sale.proceeds;
+                raised += sale.proceeds;
+            }
+        }
+        return raised > 0 ? weighted / raised : 0;
+    }
+
+    /**
+     * WHAT THE EXCHANGE HAS DONE TO WHAT IS STILL CARRIED, since the sale (CD7),
+     * in local money, a gain positive: the carrying value in the piece's own
+     * money times the sale's rate less the rate now. A dollar piece sold when
+     * the D$ stood at 1.00 and carried at $1,000 reads -100 when the D$ has
+     * fallen to 1.10 (the same dollars cost 100 more D$). 0 for domestic
+     * paper, and for a piece whose sale kept no rate.
+     */
+    public final double exchangeSinceSold() {
+        double sold = soldAtRate();
+        return foreign && sold > 0 ? carryingInCurrency() * (sold - exchangeRate) : 0;
     }
 
     /**
@@ -1127,6 +1172,10 @@ public abstract class Debt {
             }
         }
         exchangeRate *= scale;
+        // ...and the rates its sales were made at (CD7) are rates in the same unit, a dollar piece's or not.
+        if (sales != null) {
+            for (Sale sale : sales) sale.rate *= scale;
+        }
         redenominateSchedule(scale);
     }
 

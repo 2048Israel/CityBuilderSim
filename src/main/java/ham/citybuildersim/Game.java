@@ -4381,7 +4381,10 @@ public class Game {
      * ONE MONTH OF THE TREASURY'S OWN SPENDING: the budget's expenses over the
      * last Rollover.NETTING_MONTHS, as the history keeps them (revenue less
      * the surplus, plus the gain on debt retired that the surplus carries and
-     * spending does not (CD4, CD3's ★5), month by month), a month's worth. The floor the fund's
+     * spending does not (CD4, CD3's ★5), and the exchange gain on the foreign
+     * debt the surplus carries and spending does not either (CD7: surplus =
+     * revenue - expenses + gain + exchange, so expenses = revenue - surplus +
+     * gain + exchange), month by month), a month's worth. The floor the fund's
      * pay-in never takes the treasury under - Canada's Department of Finance
      * holds liquidity for at least one month of net projected cash flows
      * (Debt Management Report 2017-18, Part 1), the rollover's own source -
@@ -4391,6 +4394,7 @@ public class Game {
         double[] revenue = historySave.aligned("revenue");
         double[] surplus = historySave.aligned("surplus");
         double[] gain = historySave.aligned("retiredGain");
+        double[] exchange = historySave.aligned("debtExchange");
         int n = Math.min(revenue.length, surplus.length);
         double sum = 0;
         int months = 0;
@@ -4399,19 +4403,35 @@ public class Game {
             if (Double.isNaN(r) || Double.isNaN(s)) continue;
             int gi = gain.length - n + i;
             double g = gi >= 0 && gi < gain.length && !Double.isNaN(gain[gi]) ? gain[gi] : 0;
-            sum += r - s + g;
+            sum += r - s + g + exchangeFromEnd(exchange, n, i);
             months++;
         }
         return months > 0 ? Math.max(0, sum / months) : 0;
     }
 
-    /** The budget surplus of this calendar year's closed months so far, as the history keeps it: what the fund's year-end pay-in will read. */
+    /**
+     * The exchange gain (CD7) the history kept for the month at index {@code i} of a series {@code n} long that
+     * ends on the same month: the exchange series is read from its end as the retired gain is, 0 for a month it
+     * does not reach (a save from before it) and for a NaN.
+     */
+    private static double exchangeFromEnd(double[] exchange, int n, int i) {
+        int j = exchange.length - n + i;
+        return j >= 0 && j < exchange.length && !Double.isNaN(exchange[j]) ? exchange[j] : 0;
+    }
+
+    /**
+     * The budget surplus of this calendar year's closed months so far, as the history keeps it: what the fund's
+     * year-end pay-in will read. LESS the exchange gain on the foreign debt (CD7, the history's "debtExchange"):
+     * a currency gain is no cash to pay in with and a loss takes none, so the pay-in reads the surplus the cash
+     * made. The gain on debt retired stays in it (CD3-C).
+     */
     public double surplusThisYearSoFar() {
         double[] surplus = historySave.aligned("surplus");
+        double[] exchange = historySave.aligned("debtExchange");
         int k = CityCalendar.monthOfYear(month);
         double sum = 0;
         for (int i = Math.max(0, surplus.length - k); i < surplus.length; i++) {
-            if (!Double.isNaN(surplus[i])) sum += surplus[i];
+            if (!Double.isNaN(surplus[i])) sum += surplus[i] - exchangeFromEnd(exchange, surplus.length, i);
         }
         return sum;
     }
@@ -11109,13 +11129,18 @@ public class Game {
      * The budget surplus the city ran over the last Rollover.NETTING_MONTHS,
      * in local money: the national accounts' balance month by month, as the
      * history keeps it (HistorySave's "surplus"), over as many months as the
-     * city has lived if fewer. Negative is a deficit.
+     * city has lived if fewer. Negative is a deficit. LESS the exchange gain
+     * on the foreign debt (CD7, the history's "debtExchange"): the rollover
+     * nets what it rolls against the surplus the cash made, and a currency
+     * gain is no cash to repay out of and a loss takes none. The gain on debt
+     * retired stays in it (CD3-C).
      */
     public double surplusOverLastYear() {
         double[] surplus = historySave.aligned("surplus");
+        double[] exchange = historySave.aligned("debtExchange");
         double sum = 0;
         for (int i = Math.max(0, surplus.length - Rollover.NETTING_MONTHS); i < surplus.length; i++) {
-            if (!Double.isNaN(surplus[i])) sum += surplus[i];
+            if (!Double.isNaN(surplus[i])) sum += surplus[i] - exchangeFromEnd(exchange, surplus.length, i);
         }
         return sum;
     }
@@ -12225,7 +12250,10 @@ public class Game {
          * the next bond - reads getOustandingPrincipal(), and every one of them
          * would otherwise be a month behind the currency.
          */
-        debtManager.setExchangeRate(foreign.getRate());
+        // CD7: the same press books the exchange gain (loss) on the dollar paper - each piece's carrying value in
+        // dollars times the move from the rate it was last valued at - on the month the strike already struck
+        // (which opened the line at nothing). Not cash: no pool moves. The bridge and the history read it with its month.
+        economyManager.getNationalAccounts().setDebtExchangeGain(debtManager.revalueForeign(foreign.getRate()));
         foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
         /*
          * ...AND THE VAULT IS WORTH WHAT IT IS WORTH, the same line in the same
@@ -12943,6 +12971,8 @@ public class Game {
                 debtManager.getUpliftBooked(),
                 debtManager.getUpliftPaid());
         retiredGainSoFar = 0;
+        // CD7: the month's exchange line opens at nothing; the reprice, later in the month, books it.
+        economyManager.getNationalAccounts().setDebtExchangeGain(0);
 
         // The month's revenue, filed for the ceiling on the central bank's
         // advances: six months of it, averaged over the last twelve.
@@ -16542,8 +16572,10 @@ public class Game {
      * The part of the month's budget balance that is not cash (CD3): the
      * discount amortised, which the budget charges and the treasury never
      * pays, less the gain on paper retired, which the budget books and the
-     * treasury never receives (what it paid was the price). Struck at the
-     * bottom of the month with the rest of the bridge.
+     * treasury never receives (what it paid was the price), less the exchange
+     * gain on the foreign debt (CD7), which the budget books at the reprice
+     * and no cash moves on. Struck at the bottom of the month with the rest of
+     * the bridge.
      */
     private double treasuryNotCash;
 
@@ -16558,7 +16590,9 @@ public class Game {
         treasurySurplus = economyManager.getNationalAccounts().getBalance();
         treasuryNotCash = economyManager.getNationalAccounts().getInterestNotCash()
                 + economyManager.getNationalAccounts().getUpliftNotCash()
-                - economyManager.getNationalAccounts().getRetiredGain();
+                - economyManager.getNationalAccounts().getRetiredGain()
+                // CD7: the exchange gain on the dollar paper is in the surplus and moved no cash.
+                - economyManager.getNationalAccounts().getDebtExchangeGain();
         treasuryRecorded = true;
         // Struck with the rest: last month's lines become the ones the bridge
         // shows, and the month in progress opens empty - here, at the bottom
@@ -16576,7 +16610,7 @@ public class Game {
     public double getTreasuryRepaid()  { return treasuryRepaid; }
     public double getTreasurySurplus() { return treasurySurplus; }
 
-    /** What the balance charged or booked that the cash did not (CD3): the discount amortised, less the gain on paper retired. */
+    /** What the balance charged or booked that the cash did not (CD3, CD7): the discount amortised, less the gain on paper retired and the exchange gain on the foreign debt. */
     public double getTreasuryNotCash() { return treasuryNotCash; }
 
     /** What the balance actually did, which is the figure a player watches. */
@@ -16674,8 +16708,9 @@ public class Game {
        students' loan interest - and since 0.7.102 (A15) four: the repairs to
        the city's own buildings, the arrears paid down, and the reserve's
        crude bought and sold - and since CD3 two more, the discount the city's
-       paper amortised and the gain on paper retired. Those seventeen are the
-       steps, each an existing getter. The transit fares were a step until 0.7.49: in EARNED and in
+       paper amortised and the gain on paper retired - and since CD7 one more,
+       the exchange gain (loss) on the foreign debt, booked at the reprice.
+       Those are the steps, each an existing getter. The transit fares were a step until 0.7.49: in EARNED and in
        the cash, and not in the budget. The budget carries them since (B9),
        with the bill EARNED carries too.
 
@@ -16717,7 +16752,10 @@ public class Game {
                 // ...and the linked bonds' indexation (CD5): booked in the budget as an expense and not paid
                 // until the bond's last month, when the uplift paid comes off this row.
                 new TreasuryJournal.Entry("Inflation uplift on linked bonds, not yet paid", -na.getUpliftNotCash()),
-                new TreasuryJournal.Entry("Gain (loss) on debt retired", na.getRetiredGain()));
+                new TreasuryJournal.Entry("Gain (loss) on debt retired", na.getRetiredGain()),
+                // ...and the exchange on the foreign debt (CD7): booked at the reprice in the budget's
+                // result, and no cash moves on it, so it is not in EARNED either.
+                new TreasuryJournal.Entry("Exchange gain (loss) on foreign debt", na.getDebtExchangeGain()));
     }
 
     /** What the steps leave between EARNED and the budget: the dials moved since the month was struck, and nothing in a month nobody moved one. */

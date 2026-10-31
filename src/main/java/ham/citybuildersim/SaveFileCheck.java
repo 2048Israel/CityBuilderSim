@@ -1147,6 +1147,28 @@ public class SaveFileCheck {
         same("...beside the rest of the foreign accounts, which always did",
                 abroadBack.getForeignAccounts().getLifetimeRevaluation(),
                 abroad.getForeignAccounts().getLifetimeRevaluation());
+        // ...and what that move did to the dollar debt in the city's BOOKS (CD7): the month's exchange gain (loss), the last slot
+        // of the government block; the history's series of it; and the rate each sale into the dollar piece was made at.
+        double exchangeLine = abroad.getEconomyManager().getNationalAccounts().getDebtExchangeGain();
+        assertTrue("fixture: the month's move booked an exchange gain or loss on the dollar bond",
+                exchangeLine != 0 && abroad.getDebtManager().getForeignPrincipalUsd() > 0);
+        same("the month's exchange gain on the foreign debt reloads, in the government block",
+                abroadBack.getEconomyManager().getNationalAccounts().getDebtExchangeGain(), exchangeLine);
+        same("...and the result with it", abroadBack.getEconomyManager().getNationalAccounts().getBalance(),
+                abroad.getEconomyManager().getNationalAccounts().getBalance());
+        double[] exchangeKept = abroad.getHistorySave().aligned("debtExchange");
+        assertTrue("fixture: the history kept the line, a month for a month, and it is in the last",
+                exchangeKept.length == abroad.getHistorySave().months() && exchangeKept[exchangeKept.length - 1] != 0);
+        assertTrue("...and the history's series reloads",
+                java.util.Arrays.equals(exchangeKept, abroadBack.getHistorySave().aligned("debtExchange")));
+        Debt dollarPiece = null, dollarPieceBack = null;
+        for (Debt d : abroad.getDebtManager().getDebt()) if (d.isForeign()) dollarPiece = d;
+        for (Debt d : abroadBack.getDebtManager().getDebt()) if (d.isForeign()) dollarPieceBack = d;
+        assertTrue("fixture: the dollar bond remembers the rate it was sold at",
+                dollarPiece != null && dollarPiece.getSales().size() == 1 && dollarPiece.getSales().get(0).getRate() > 0);
+        assertTrue("...and each sale's rate reloads with the piece, so what the exchange has done since the sale reads the same",
+                dollarPieceBack != null && dollarPieceBack.getSales().get(0).getRate() == dollarPiece.getSales().get(0).getRate()
+                        && dollarPieceBack.exchangeSinceSold() == dollarPiece.exchangeSinceSold());
         // ...and the ring of twelve rates the year's depreciation is read off inside the month (XR1), a
         // flow: Game.yearlyDepreciation(), which the hot money's run reads before the month writes its own
         // slot. Read between months it is the slot just written, so the ring itself is compared.

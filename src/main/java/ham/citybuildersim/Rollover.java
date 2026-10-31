@@ -24,7 +24,9 @@ import java.util.List;
  *      home and abroad, piece by piece.
  *   2. THE NETTING, Jerus's "net of last year's surplus": the budget surplus
  *      the city ran over the last NETTING_MONTHS (NationalAccounts
- *      .getBalance(), a month at a time, as HistorySave keeps it) less what
+ *      .getBalance(), a month at a time, as HistorySave keeps it, less the
+ *      exchange gain on the foreign debt, which is no cash: CD7,
+ *      Game.surplusOverLastYear()) less what
  *      earlier rollovers netted in the same months - never below nothing,
  *      never more than the treasury holds, never more than falls due. That is
  *      S (netting()). A deficit year nets nothing. What each rollover netted

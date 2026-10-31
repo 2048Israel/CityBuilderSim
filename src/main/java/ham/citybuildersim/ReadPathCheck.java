@@ -195,6 +195,8 @@ public class ReadPathCheck {
         double[] tally = g.getDebtManager().getAuctionTally().toSave();
         for (int i = 0; i < tally.length; i++) into.put("auctionTally" + i, tally[i]);
         into.put("budget.fundTransfer", g.getEconomyManager().getNationalAccounts().getFundTransfer());
+        // ...and CD7's: the month's exchange gain on the foreign debt, a flow the list of paper cannot give back
+        into.put("budget.debtExchangeGain", g.getEconomyManager().getNationalAccounts().getDebtExchangeGain());
         // ...and 0.7.12's: every bond and who holds it, every book and what
         // rests on it, the market's month and life, the cells' own bonds,
         // the bank's bonds and its concentration, each sector's mix.
@@ -405,6 +407,9 @@ public class ReadPathCheck {
         e.getTaxIncomeNow();
         g.getEarnedToBudget();
         g.getEarnedResidual();
+        // ...and CD7's exchange gain on the foreign debt, a line the budget's result carries and the bridge takes out as not cash
+        e.getNationalAccounts().getDebtExchangeGain();
+        g.getTreasuryNotCash();
         e.getNationalAccounts().getMonthsRecorded();
         e.getNationalAccounts().getAnnualGdp();
         // ...and the desk's re-mark on the bank's statement
@@ -1067,7 +1072,18 @@ public class ReadPathCheck {
         // piece's books ahead, sales and price path, its value of a point and duration, and the curve book and the rule
         BookDesk.of(debt);
         g.bookDesk();
+        // ...and CD7's: the exchange since the sale, on the desk and on each line, and what each piece keeps of the rate it was sold at
+        BookDesk exchangeDesk = g.bookDesk();
+        exchangeDesk.exchangeSinceSold();
+        exchangeDesk.exchangeShare();
+        for (BookDesk.Line line : exchangeDesk.lines()) {
+            line.exchangeSinceSold();
+            line.exchangeShare();
+        }
         for (Debt paper : debt.getDebt()) {
+            paper.soldAtRate();
+            paper.exchangeSinceSold();
+            for (Debt.Sale sale : paper.getSales()) sale.getRate();
             paper.booksAhead(6);
             paper.getSales();
             paper.getPricePath();

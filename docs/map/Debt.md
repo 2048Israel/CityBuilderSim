@@ -1,4 +1,4 @@
-# Debt.java - 1,202 lines · 100 methods · 6 constants · model
+# Debt.java - 1,251 lines · 103 methods · 6 constants · model
 
 `ham/citybuildersim/Debt.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -28,7 +28,7 @@
 
 **Uses:** [Game](Game.md) (3), [Auction](Auction.md) (1)
 
-**Used by (38):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [BookDesk](BookDesk.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityNeeds](CityNeeds.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [FloatingRateNote](FloatingRateNote.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [HoldersCheck](HoldersCheck.md), [InflationLinkedBond](InflationLinkedBond.md), [LongPlaytest](LongPlaytest.md), [LongTermBond](LongTermBond.md), [MediumTermBond](MediumTermBond.md), [MoneyCheck](MoneyCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [ShortTermTBill](ShortTermTBill.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (40):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [BookDesk](BookDesk.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityNeeds](CityNeeds.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [DataSave](DataSave.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [FloatingRateNote](FloatingRateNote.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [HoldersCheck](HoldersCheck.md), [InflationLinkedBond](InflationLinkedBond.md), [LongPlaytest](LongPlaytest.md), [LongTermBond](LongTermBond.md), [MediumTermBond](MediumTermBond.md), [MoneyCheck](MoneyCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [ShortTermTBill](ShortTermTBill.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Sections
 
@@ -39,11 +39,11 @@
 | 270 | · THE ALLOTMENT (CD2, spec-city-debt.md section 4) |
 | 427 | THE CITY'S BOOKS (CD3, spec-city-debt.md section 5) |
 | 627 | WHAT A PIECE REMEMBERS (CD6, spec-city-debt.md section 7) |
-| 815 | · what a subclass declares, in its own currency |
-| 842 | · ...and what the city's books see |
-| 871 | · and the same figures, in dollars |
-| 882 | · what the next month repays (0.7.13) |
-| 901 | · paying for it |
+| 860 | · what a subclass declares, in its own currency |
+| 887 | · ...and what the city's books see |
+| 916 | · and the same figures, in dollars |
+| 927 | · what the next month repays (0.7.13) |
+| 946 | · paying for it |
 
 ## Constants
 
@@ -87,15 +87,16 @@
 | 666 | `private int month` |  |
 | 667 | `private double face, proceeds, yield` |  |
 | 668 | `private String how` |  |
-| 689 | `private java.util.List<Sale> sales` | The sales into this piece, oldest first; null until the first is noted. |
-| 692 | `private int pathFirstMonth` | The month of the first entry of the price path, and the price per 100 of what is owed and the carrying value per 100, one entry a month from it; null until the first month is recorded. |
-| 693 | `private double[] pricePath, carriedPath` |  |
+| 670 | `private double rate` | CD7: local money per unit of the piece's own money at the sale (the piece's exchangeRate then); 0 for a sale from a save that did not keep it - unknown. |
+| 695 | `private java.util.List<Sale> sales` | The sales into this piece, oldest first; null until the first is noted. |
+| 698 | `private int pathFirstMonth` | The month of the first entry of the price path, and the price per 100 of what is owed and the carrying value per 100, one entry a month from it; null until the first month is recorded. |
+| 699 | `private double[] pricePath, carriedPath` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 1175 | **type** `public abstract class Debt` | One piece of city paper. |
+| 28 | 1224 | **type** `public abstract class Debt` | One piece of city paper. |
 
 ### WHICH MONEY THIS PAPER IS WRITTEN IN (lines 37-94)
 
@@ -167,85 +168,88 @@
 | 622 | 1 | `public final double getLastCoupon()` | ...the coupon that month paid, likewise. |
 | 625 | 1 | `public final double getLastAmortised()` | ...and the part of the expense that is not coupon: the discount wearing off, below nothing for a premium. |
 
-### WHAT A PIECE REMEMBERS (CD6, spec-city-debt.md section 7) (lines 627-814)
+### WHAT A PIECE REMEMBERS (CD6, spec-city-debt.md section 7) (lines 627-859)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 665 | 22 | **type** `public static final class Sale` | ONE SALE INTO A PIECE, as it was made: the month, the face sold and what it raised (in the currency the piece is written in), the yield it cleared at and how it was sold. |
-| 670 | 7 | `Sale(int month, double face, double proceeds, double yield, String how)` _(in Debt.Sale)_ |  |
-| 678 | 1 | `public int getMonth()` _(in Debt.Sale)_ |  |
-| 679 | 1 | `public double getFace()` _(in Debt.Sale)_ |  |
-| 680 | 1 | `public double getProceeds()` _(in Debt.Sale)_ |  |
-| 681 | 1 | `public double getYield()` _(in Debt.Sale)_ |  |
-| 682 | 1 | `public String getHow()` _(in Debt.Sale)_ |  |
-| 685 | 1 | `public double getPricePer100()` _(in Debt.Sale)_ | The price the sale made, for each 100 of face (CD6): what it raised over its face, times 100; 0 for a sale of no face. |
-| 695 | 1 | `private static double finiteOrZero(double v)` |  |
-| 698 | 4 | `void noteSale(int month, double face, double proceeds, double yield, String how)` | Remembers a sale. |
-| 710 | 3 | `public java.util.List<Sale> getSales()` | The sales into this piece, oldest first (a reopened line is one line with several): read-only. |
-| 722 | 27 | `void recordPath(int month, double pricePer100, double carriedPer100)` | Appends this month's entry to the price path: where the piece trades and what it is carried at, each per 100 of what is owed. |
-| 751 | 1 | `public int getPathFirstMonth()` | The month the price path starts at: the first month recorded. |
-| 754 | 1 | `public double[] getPricePath()` | Where the piece traded against par at each month's close since the first recorded, per 100 of what was owed: a copy, empty before the first. |
-| 757 | 1 | `public double[] getCarriedPath()` | ...and what it was carried at, per 100 of what was owed, month for month with getPricePath(). |
-| 766 | 1 | **type** `public record BooksMonth(int ahead, double opening, double interest, double coupon, double amortised, doubl...` | ONE MONTH OF THE BOOKS TO COME, in local money: what the piece opens the month carried at, the interest at the effective rate, the coupon, the discount that wears off (the interest less the coupon; below nothing for a... |
-| 780 | 24 | `public java.util.List<BooksMonth> booksAhead(int months)` | THE NEXT MONTHS ON THE BOOKS: amortise() projected on the schedule as it stands (scheduleOwed(), couponScheduleOwed()) at the effective rate as it stands, exactly as amortise() strikes a month - the interest on the ca... |
-| 805 | 1 | `public abstract void processMonth(Game game)` |  |
-| 807 | 1 | `public abstract double getIssuePrice()` |  |
-| 809 | 1 | `public abstract int getMaturityMonth()` |  |
-| 811 | 1 | `public abstract boolean isMatured()` |  |
-| 813 | 1 | `public abstract String getType()` |  |
+| 665 | 28 | **type** `public static final class Sale` | ONE SALE INTO A PIECE, as it was made: the month, the face sold and what it raised (in the currency the piece is written in), the yield it cleared at and how it was sold. |
+| 672 | 8 | `Sale(int month, double face, double proceeds, double yield, String how, double rate)` _(in Debt.Sale)_ |  |
+| 681 | 1 | `public int getMonth()` _(in Debt.Sale)_ |  |
+| 682 | 1 | `public double getFace()` _(in Debt.Sale)_ |  |
+| 683 | 1 | `public double getProceeds()` _(in Debt.Sale)_ |  |
+| 684 | 1 | `public double getYield()` _(in Debt.Sale)_ |  |
+| 685 | 1 | `public String getHow()` _(in Debt.Sale)_ |  |
+| 688 | 1 | `public double getRate()` _(in Debt.Sale)_ | The rate the sale was made at (CD7): local money per unit of the money the piece is written in, as the piece was valued then; 0 when a save did not keep it. |
+| 691 | 1 | `public double getPricePer100()` _(in Debt.Sale)_ | The price the sale made, for each 100 of face (CD6): what it raised over its face, times 100; 0 for a sale of no face. |
+| 701 | 1 | `private static double finiteOrZero(double v)` |  |
+| 709 | 5 | `void noteSale(int month, double face, double proceeds, double yield, String how)` | Remembers a sale, and the rate the piece was valued at when it was made (CD7: a dollar piece's exchangeRate then, which DebtManager.book() had already told it). |
+| 723 | 11 | `public final double soldAtRate()` | THE RATE THE PIECE WAS SOLD AT (CD7): the mean of its sales' rates, each weighted by what the sale raised, over the sales that kept a rate and raised something. |
+| 743 | 4 | `public final double exchangeSinceSold()` | WHAT THE EXCHANGE HAS DONE TO WHAT IS STILL CARRIED, since the sale (CD7), in local money, a gain positive: the carrying value in the piece's own money times the sale's rate less the rate now. |
+| 755 | 3 | `public java.util.List<Sale> getSales()` | The sales into this piece, oldest first (a reopened line is one line with several): read-only. |
+| 767 | 27 | `void recordPath(int month, double pricePer100, double carriedPer100)` | Appends this month's entry to the price path: where the piece trades and what it is carried at, each per 100 of what is owed. |
+| 796 | 1 | `public int getPathFirstMonth()` | The month the price path starts at: the first month recorded. |
+| 799 | 1 | `public double[] getPricePath()` | Where the piece traded against par at each month's close since the first recorded, per 100 of what was owed: a copy, empty before the first. |
+| 802 | 1 | `public double[] getCarriedPath()` | ...and what it was carried at, per 100 of what was owed, month for month with getPricePath(). |
+| 811 | 1 | **type** `public record BooksMonth(int ahead, double opening, double interest, double coupon, double amortised, doubl...` | ONE MONTH OF THE BOOKS TO COME, in local money: what the piece opens the month carried at, the interest at the effective rate, the coupon, the discount that wears off (the interest less the coupon; below nothing for a... |
+| 825 | 24 | `public java.util.List<BooksMonth> booksAhead(int months)` | THE NEXT MONTHS ON THE BOOKS: amortise() projected on the schedule as it stands (scheduleOwed(), couponScheduleOwed()) at the effective rate as it stands, exactly as amortise() strikes a month - the interest on the ca... |
+| 850 | 1 | `public abstract void processMonth(Game game)` |  |
+| 852 | 1 | `public abstract double getIssuePrice()` |  |
+| 854 | 1 | `public abstract int getMaturityMonth()` |  |
+| 856 | 1 | `public abstract boolean isMatured()` |  |
+| 858 | 1 | `public abstract String getType()` |  |
 
-### what a subclass declares, in its own currency (lines 815-841)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 818 | 1 | `protected abstract double principalOwed()` | Principal still owed, in the currency the paper is written in. |
-| 821 | 1 | `protected abstract double couponOwed()` | This month's coupon, in its own currency. |
-| 830 | 1 | `protected abstract double[] scheduleOwed()` | Every payment still owed, in order, starting with next month's, in its own currency. |
-| 840 | 1 | `protected abstract double[] couponScheduleOwed()` | The coupon part of every payment still owed, in order, starting with next month's, in its own currency: scheduleOwed() less the principal each payment repays, so the first is couponOwed() to the bit. |
-
-### ...and what the city's books see (lines 842-870)
+### what a subclass declares, in its own currency (lines 860-886)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 844 | 1 | `public final double getOustandingPrincipal()` |  |
-| 847 | 1 | `public final double getMonthlyInterestExpense()` | This month's coupon, in local money. |
-| 855 | 1 | `protected double upliftOwed()` | The part of couponOwed() that is a linked bond's inflation uplift, in the piece's own currency: nothing for every other piece. |
-| 858 | 1 | `public final double getMonthlyCoupon()` | This month's coupon in local money, without the uplift a linked bond pays with its last: the coupon proper. |
-| 861 | 1 | `public final double getUpliftDue()` | The inflation uplift the coupon path pays this month, in local money: a linked bond's last month, nothing in any other piece or month. |
-| 863 | 7 | `public final double[] remainingCashFlows()` |  |
+| 863 | 1 | `protected abstract double principalOwed()` | Principal still owed, in the currency the paper is written in. |
+| 866 | 1 | `protected abstract double couponOwed()` | This month's coupon, in its own currency. |
+| 875 | 1 | `protected abstract double[] scheduleOwed()` | Every payment still owed, in order, starting with next month's, in its own currency. |
+| 885 | 1 | `protected abstract double[] couponScheduleOwed()` | The coupon part of every payment still owed, in order, starting with next month's, in its own currency: scheduleOwed() less the principal each payment repays, so the first is couponOwed() to the bit. |
 
-### and the same figures, in dollars (lines 871-881)
+### ...and what the city's books see (lines 887-915)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 874 | 1 | `public final double principalInCurrency()` | Principal still owed, in the currency written on the paper. |
-| 877 | 1 | `public final double faceInCurrency()` | Face value in the currency written on the paper. |
-| 880 | 1 | `public final double couponInCurrency()` | This month's coupon in the currency written on the paper. |
+| 889 | 1 | `public final double getOustandingPrincipal()` |  |
+| 892 | 1 | `public final double getMonthlyInterestExpense()` | This month's coupon, in local money. |
+| 900 | 1 | `protected double upliftOwed()` | The part of couponOwed() that is a linked bond's inflation uplift, in the piece's own currency: nothing for every other piece. |
+| 903 | 1 | `public final double getMonthlyCoupon()` | This month's coupon in local money, without the uplift a linked bond pays with its last: the coupon proper. |
+| 906 | 1 | `public final double getUpliftDue()` | The inflation uplift the coupon path pays this month, in local money: a linked bond's last month, nothing in any other piece or month. |
+| 908 | 7 | `public final double[] remainingCashFlows()` |  |
 
-### what the next month repays (0.7.13) (lines 882-900)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 893 | 4 | `public final double principalDueNextMonthInCurrency()` | The principal the next month's payment repays, in the currency written on the paper: the first payment of its own schedule less that month's coupon - a note's or a term bond's whole face in its last month, a serial bo... |
-| 899 | 1 | `public final double principalDueNextMonth()` | ...and in local money, at the rate the paper is valued at. |
-
-### paying for it (lines 901-1202)
+### and the same figures, in dollars (lines 916-926)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 914 | 4 | `protected void payPrincipal(Game game, double owed)` | A repayment of principal, routed by the currency it is owed in. |
-| 923 | 4 | `protected void payCoupon(Game game, double owed)` | A coupon, likewise - and at home, split by who holds the paper (0.7.1): see Game.payDomesticCoupon(). |
-| 929 | 3 | `public int getRemainingMonths()` | Months of payments still to run. |
-| 934 | 3 | `public final double getFaceValue()` | What it says on the bond, in local money. |
-| 938 | 3 | `public int getDuration()` |  |
-| 942 | 3 | `public int getMonthStarted()` |  |
-| 975 | 17 | `public double getMarketValue(double annualMarketRate)` | What this paper is worth today, to somebody buying it. |
-| 994 | 25 | `static double presentValue(double[] cashFlows, double annualRate)` | PV of a monthly schedule at an annual nominal rate. |
-| 1038 | 30 | `public double getYieldToMaturity(double price)` | The yield a buyer earns at a given price - the bond's true cost to the city, as opposed to the coupon printed on it. |
-| 1070 | 3 | `public double getCurrentYield(double annualMarketRate)` | Yield at what the market would actually pay today. |
-| 1081 | 5 | `public double getPriceAsPercentOfPar(double annualMarketRate)` | Where this bond trades against par, as a percentage of face. |
-| 1096 | 36 | `public void redenominate(double scale)` | The instrument in the new unit. |
-| 1137 | 1 | `protected void redenominateSchedule(double scale)` | Anything a subclass carries in its own currency - a coupon, an amortisation schedule - in the new unit. |
-| 1166 | 25 | `void retirePart(double bankFace, double householdFace, double firmFace, double worldFace)` | PART OF THE PIECE BOUGHT BACK (CD4, spec-city-debt.md section 6.2): this much face taken off it, by holder. |
-| 1200 | 1 | `protected void shrinkSchedule(double k)` | What a subclass carries in its own currency that scales with the piece when part of it is bought back (retirePart()): a serial bond's slice. |
+| 919 | 1 | `public final double principalInCurrency()` | Principal still owed, in the currency written on the paper. |
+| 922 | 1 | `public final double faceInCurrency()` | Face value in the currency written on the paper. |
+| 925 | 1 | `public final double couponInCurrency()` | This month's coupon in the currency written on the paper. |
+
+### what the next month repays (0.7.13) (lines 927-945)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 938 | 4 | `public final double principalDueNextMonthInCurrency()` | The principal the next month's payment repays, in the currency written on the paper: the first payment of its own schedule less that month's coupon - a note's or a term bond's whole face in its last month, a serial bo... |
+| 944 | 1 | `public final double principalDueNextMonth()` | ...and in local money, at the rate the paper is valued at. |
+
+### paying for it (lines 946-1251)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 959 | 4 | `protected void payPrincipal(Game game, double owed)` | A repayment of principal, routed by the currency it is owed in. |
+| 968 | 4 | `protected void payCoupon(Game game, double owed)` | A coupon, likewise - and at home, split by who holds the paper (0.7.1): see Game.payDomesticCoupon(). |
+| 974 | 3 | `public int getRemainingMonths()` | Months of payments still to run. |
+| 979 | 3 | `public final double getFaceValue()` | What it says on the bond, in local money. |
+| 983 | 3 | `public int getDuration()` |  |
+| 987 | 3 | `public int getMonthStarted()` |  |
+| 1020 | 17 | `public double getMarketValue(double annualMarketRate)` | What this paper is worth today, to somebody buying it. |
+| 1039 | 25 | `static double presentValue(double[] cashFlows, double annualRate)` | PV of a monthly schedule at an annual nominal rate. |
+| 1083 | 30 | `public double getYieldToMaturity(double price)` | The yield a buyer earns at a given price - the bond's true cost to the city, as opposed to the coupon printed on it. |
+| 1115 | 3 | `public double getCurrentYield(double annualMarketRate)` | Yield at what the market would actually pay today. |
+| 1126 | 5 | `public double getPriceAsPercentOfPar(double annualMarketRate)` | Where this bond trades against par, as a percentage of face. |
+| 1141 | 40 | `public void redenominate(double scale)` | The instrument in the new unit. |
+| 1186 | 1 | `protected void redenominateSchedule(double scale)` | Anything a subclass carries in its own currency - a coupon, an amortisation schedule - in the new unit. |
+| 1215 | 25 | `void retirePart(double bankFace, double householdFace, double firmFace, double worldFace)` | PART OF THE PIECE BOUGHT BACK (CD4, spec-city-debt.md section 6.2): this much face taken off it, by holder. |
+| 1249 | 1 | `protected void shrinkSchedule(double k)` | What a subclass carries in its own currency that scales with the piece when part of it is bought back (retirePart()): a serial bond's slice. |
 
