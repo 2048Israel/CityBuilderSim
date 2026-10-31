@@ -190,8 +190,8 @@ public class UserInterface extends Application {
     VBox inboxCorner;
     /** The toasts, stacked at the stage's bottom right (0.7.20); see TOASTS. */
     private VBox toastStack;
-    /** The whole window, with a dialog laid over it when one is open (0.7.20). */
-    private StackPane windowStack;
+    /** The whole window, with a dialog laid over it when one is open (0.7.20). Not private: KeptBench gives the chart's full screen a stack to go in. */
+    StackPane windowStack;
     /** The dialog that is up - Quit's, or since 0.7.22 a confirmation (confirm()) - or null. */
     private StackPane quitDialog;
     /**
@@ -478,10 +478,23 @@ public class UserInterface extends Application {
      * landing between two stops is not a speed anybody meant to pick. The
      * header's arrows (0.7.21) keep the stops and have no drag.
      */
-    private static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10, 20, SPEED_TOP};
+    static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10, 20, SPEED_TOP};
     private static final int NORMAL_SPEED = 3;              // 1x
 
     int speedIndex = NORMAL_SPEED;
+
+    /**
+     * The fastest speed a figure still counts up at when a month lands (Jerus, 2026-10-23, the study's
+     * UP4 star 4: "Count up at 1x-10x only"); above it the figure is set at once. At 50x a month lands
+     * every 100 ms and the 600 ms count-up never stops, relaying the label and the bars every frame.
+     */
+    static final double COUNT_UP_TOP = 10;
+
+    /** Whether a figure counts up to a month that lands now: the clock is paused (a month stepped by hand still counts), or runs no faster than COUNT_UP_TOP. */
+    boolean countsUp() {
+        return !clockRunning || SPEEDS[speedIndex] <= COUNT_UP_TOP;
+    }
+
     boolean clockRunning;
     private long lastFrame;
 
@@ -1533,13 +1546,22 @@ public class UserInterface extends Application {
      */
     javafx.scene.control.ScrollPane keptScroller(
             java.util.Map<String, Double> where, String key, javafx.scene.Node content) {
-        if (!Kept.drawing()) return remembering(where, key, content, false);
+        return keptScroller(where, key, content, false);
+    }
+
+    /**
+     * ...and, with `fromBottom`, the kept form of keptScrollerFromBottom(): City History's page (KP1),
+     * whose position is the distance from the bottom, put on a scroller that is new only.
+     */
+    javafx.scene.control.ScrollPane keptScroller(
+            java.util.Map<String, Double> where, String key, javafx.scene.Node content, boolean fromBottom) {
+        if (!Kept.drawing()) return remembering(where, key, content, fromBottom);
         javafx.scene.control.ScrollPane scroller =
                 Kept.of(javafx.scene.control.ScrollPane.class, javafx.scene.control.ScrollPane::new);
         boolean fresh = Kept.isNew(scroller);
         // A new scroller has its content before its position is asked for, as remembering() has it.
         if (scroller.getContent() != content) scroller.setContent(content);
-        if (fresh) remember(scroller, where, key, false);
+        if (fresh) remember(scroller, where, key, fromBottom);
         return scroller;
     }
 
@@ -3901,6 +3923,8 @@ public class UserInterface extends Application {
         if (miniMap != null) miniMap.forget();
         // ...and People: no month has just landed on it (0.7.27).
         peopleScreen.forget();
+        // ...and City History (KP1): its kept page is the last city's.
+        historyScreen.forget();
         // ...and the header and the rail hand the next city none of this one's nodes (UP2).
         forgetChrome();
     }
@@ -4337,7 +4361,9 @@ public class UserInterface extends Application {
      * controls the player is using; see keptScrollerFromBottom.
      */
     javafx.scene.control.ScrollPane scrolled(VBox column, double chrome, boolean fromBottom) {
-        VBox content = new VBox(0);
+        // Kept (KP1): inside a kept draw the content box and the scroller are the ones the last draw made,
+        // so the page keeps its place and what is bound to them is bound once; outside one both are new.
+        VBox content = Kept.column(0);
         content.setAlignment(Pos.CENTER);
         /*
          * ROOM UNDER THE END OF THE PAGE (0.7.20). The end of a scrolled page
@@ -4349,9 +4375,11 @@ public class UserInterface extends Application {
          */
         content.setPadding(new javafx.geometry.Insets(0, 0, PAGE_FOOT, 0));
         column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
-        content.getChildren().add(column);
+        content.getChildren().setAll(column);
 
-        javafx.scene.control.ScrollPane scroll = fromBottom
+        javafx.scene.control.ScrollPane scroll = Kept.drawing()
+                ? keptScroller(innerScrollAt, currentScreen + ":body", content, fromBottom)
+                : fromBottom
                 ? keptScrollerFromBottom(currentScreen + ":body", content)
                 : keptScroller(currentScreen + ":body", content);
         scroll.setFitToWidth(true);
@@ -4368,11 +4396,18 @@ public class UserInterface extends Application {
          * floor of 320 is for a window small enough that the arithmetic would
          * otherwise go negative.
          */
-        scroll.prefHeightProperty().bind(javafx.beans.binding.Bindings.max(
-                260, menuScroller.heightProperty().subtract(chrome)));
+        // Bound once to the chrome it was given: a kept scroller is handed back each draw and must not pile a binding on a binding.
+        if (!Double.valueOf(chrome).equals(scroll.getProperties().get(SCROLLED_CHROME))) {
+            scroll.prefHeightProperty().bind(javafx.beans.binding.Bindings.max(
+                    260, menuScroller.heightProperty().subtract(chrome)));
+            scroll.getProperties().put(SCROLLED_CHROME, chrome);
+        }
         scroll.setStyle("-fx-background-color:transparent;");
         return scroll;
     }
+
+    /** The key in a scroller's properties for the chrome its height is bound to (scrolled()). */
+    private static final String SCROLLED_CHROME = "scrolled.chrome";
 
     /* ---------------------------------------------------------------------
        WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and
@@ -5080,8 +5115,8 @@ public class UserInterface extends Application {
     }
 
     private HBox constructionHead() {
-        Label header = Kept.label("UNDER CONSTRUCTION");
-        header.setGraphic(areaSwatch(Palette.BUILDING, 8));
+        // The label is handed its swatch where it is made: a kept one is not stripped of it and given it back.
+        Label header = Kept.label("UNDER CONSTRUCTION", areaSwatch(Palette.BUILDING, 8));
         header.setGraphicTextGap(8);
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
                 + " -fx-text-fill: " + Palette.TEXT_HEAD + "; -fx-padding: 0 0 4 2;");

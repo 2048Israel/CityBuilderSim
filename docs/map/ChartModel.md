@@ -30,7 +30,7 @@
 
 **Uses:** [DecisionLog](DecisionLog.md) (14), [CityCalendar](CityCalendar.md) (9), [PriceIndex](PriceIndex.md) (9), [YearBook](YearBook.md) (6), [HistorySave](HistorySave.md) (4)
 
-**Used by (17):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [ChartCheck](ChartCheck.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [OilView](OilView.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md)
+**Used by (19):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [ChartCheck](ChartCheck.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [OilView](OilView.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.89 — KP1, Screens kept: City History — 2026-10-31, ready, see docs/queue/KP1-notes.md
+City History is drawn over last month's nodes instead of rebuilt (study UP4's KP1; Jerus, 2026-10-23: "Queue KP1-KP7"):
+every part and row a scope keyed by what it shows, so a line picked or a hard time begun slides nothing onto its
+neighbour's nodes. The big chart and the pins never leave the scene, so their window, zoom and crosshair hold as the
+months land; the legend's chips and the range buttons are kept in the chart's own pool and keep their hover. The
+range bar is a picture told its figures; a label is handed its graphic where it is made (People's and the chrome's
+swatches no longer leave the scene each draw). A figure counts up only at 1x-10x ("Count up at 1x-10x only", ★4):
+faster, a month sets it at once, on People and History. KeptCheck sections 14-20 compare the kept page with one built
+new through 25 months and 29 choices; KEPT_HISTORY_MS 13. ScaleRows (two closed folds) stays rebuilt for KP2. No ensemble.
+
 ### 0.8.88 — XR4, exchange rates: interest abroad — 2026-10-31, ready, see docs/queue/XR4-notes.md
 The eight central banks of the vault's moneys have policy rates (Jerus, 2026-10-21, ★9 and ★11): on Historical their
 real monthly rates of 2000-2025, then a Taylor rule on each nation's inflation in quarter-point steps; on Random the
