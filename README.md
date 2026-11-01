@@ -235,7 +235,7 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     over 300 files
+src/main/java/ham/citybuildersim/     over 450 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
     Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
