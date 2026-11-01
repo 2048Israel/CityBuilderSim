@@ -1486,6 +1486,15 @@ public class BankCheck {
              * failed bank's nothing. Main's town never failed. Held out, Freight builds nothing here and the bank stands.
              */
             books.getBusinessInvestment().holdSector(Sectors.FREIGHT);
+            /*
+             * ...AND COPPER REFINING (IC1), for the same premise. An idle builder's laid-off crews are spare for the staffing gate
+             * (IC1), so the gate lets a refinery through that it held on main: it owes the bank $40k by month 120 and $86k by month 128 and
+             * writes it down ($38k in month 129, $89k in month 141, the last of it), and the bank, which stands on $1M of capital
+             * the town's years have worn to $32k by month 139, is in resolution in month 141 (equity -$33k, no deposit rate): the book
+             * of a bank that has failed (above), so "it pays its savers something" read a failed bank's nothing. Held out, the
+             * refinery builds nothing here and the bank stands, as with the sectors above.
+             */
+            books.getBusinessInvestment().holdSector(Sectors.COPPER_REFINING);
             books.simulateMonths(24);
             books.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000);
             books.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000);

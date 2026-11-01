@@ -1631,6 +1631,15 @@ public class ForeignCheck {
          * doing twice over. Held, both cities import the programme and the shops' and mills' lesser share, and the premise reads 0.9777.
          */
         g.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
+        /*
+         * ...AND CEMENT & CONCRETE (IC1, 2026-11-01), the same hinge a fifth time, found where the premise read 1.1266 against a band
+         * of .05. An idle builder's laid-off crews are spare for the staffing gate since IC1, so the gate lets through a works it
+         * refused: the weaker city founds one (its imports: Cement & Concrete $116,942k of its $1,202,230k) and the parity city
+         * none. The kiln's material is no part of the programme, it grows with a city's own size, and which of the two cities has
+         * the builders idle when its planner asks is the path's. Held, both import the programme and nothing that grows with their
+         * own size, and the premise reads 0.9860.
+         */
+        g.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
         g.buildStack(template(g, "House"), 500, false);
         g.buildStack(template(g, "Convenience Store"), 8, false);
         g.buildStack(template(g, "Small Grocery Store"), 3, false);

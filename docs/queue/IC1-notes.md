@@ -163,7 +163,19 @@ queued.
 - ST1's `idle` switch from m0, which is IC1's rule, grew the town to 12,173 by m1,200;
 - then it busts: 12,083 at m1,500, and 6,018 at the end.
 
-IC1 ships that rule, so section 6's town moves. {scalecheck}
+IC1 ships that rule, so section 6's town moves. On IC1's full suite:
+- **Section 6.** The playtest town at `FREE_FIXTURE_MONTHS` (1,124) is growing: 23,102 people at m1,129 in 29,844
+  household places, its rents pricing no migrant out.
+  - Its 5-billion copy still builds nothing: 0 homes per K, the line in main's record.
+  - Its 10-billion copy builds 33 homes per K, and that line passes.
+- **Section 9, new on IC1.** The copy 1,000 times over no longer tracks its city. It is off from the first month:
+  cash by 1.46 of the city's, GDP by 2.73, deposits by 0.81. By the sixth month unemployment is off by 0.12 and
+  people by 0.045.
+  - That is 8 new red lines (people, cash, savings, GDP, deposits, prices, unemployment and the registers).
+  - IC1's test is a share (`Construction.isIdleAtCoreCrew()`), and the withheld posts round as main's always did,
+    so it should scale.
+  - Check first whether the copy's builders read idle in the same months as the city's. A struck share on the core
+    crew's edge, or an order count that rounds differently at K = 1,000, would part them.
 
 **What to watch on the rescan.** Rescan on IC1's tip once it is on main. Watch for an overbuild bust after the
 faster young boom: seeds 0, 5 and 6 here rise and fall at m480-600, and ST1's freed town fell by half after m1,500. A
