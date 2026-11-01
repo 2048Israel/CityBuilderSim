@@ -182,11 +182,14 @@ StaleCheck on README's count, which TR1 left at 164: mended, 165).
 - WellCheck green: OV1 mended main's fault.
 - ReplayCheck (TR1's): its trade tables' years were 2001-2010 literals; now the
   calendar's first year plus one, two, five and ten.
-- ScaleCheck: 10 lines at the factor, the gate's own, word for word (the
-  gate's record of main has only "...and it builds: more homes at the end than
-  at the start", twice, and "2 FAILED"; the gate's review ran it at today's
-  prices, section 9):
+- **After the gate's review's mends (section 9), the full suite on the final
+  tree is red on three harnesses**, the gate's own lines word for word. Main's
+  record has only ScaleCheck's "exit 1" and "...and it builds: more homes at the
+  end than at the start" (once, matched twice); every other line is new:
 
+      CentralBankCheck | exit 1
+      CentralBankCheck | very strict holds prices lower than Standard over the horizon      FAIL
+      CentralBankCheck | 1 FAILED
       ScaleCheck | exit 1
       ScaleCheck | fixture: the city is growing - more people than a year before                        FAIL
       ScaleCheck | fixture: ...and its own rents price no migrant out in the months its copies are read against (the affordability pull 1 in all 6) FAIL
@@ -199,10 +202,14 @@ StaleCheck on README's count, which TR1 left at 164: mended, 165).
       ScaleCheck | ...deposits: the copy is K times the city's within 0.0260 in all 6 months (worst 9.73e-02) FAIL
       ScaleCheck | ...prices: the copy is equal to the city's within 0.00400 in all 6 months (worst 1.08e-02) FAIL
       ScaleCheck | 10 FAILED
+      OrderSearchCheck | exit 1
+      OrderSearchCheck | every trim and refusal in the long run is the countdown's, with its rate and its "at prime" FAIL  1 against 0
+      OrderSearchCheck | 1 FAILED
 
-  Section 6's town is the playtest's at FREE_FIXTURE_MONTHS (1124): at the
-  factor it does not hold its premise (ST2's, queued). Left to ST2, whose town
-  will be another.
+  ScaleCheck's ten were red before the mend too (the fixture lines are the
+  town's premise, not main's record: main's gate shows only the builds line);
+  CentralBankCheck's and OrderSearchCheck's are new with the mend, and are the
+  same draw: section 9.
 - LongPlaytest green (no finding), the money audit clean every month.
 - Timing soft beside other runs: SaveSlotCheck 1, MapCheck 2 (the gate times
   hard). Stale 0 firm.
@@ -284,21 +291,71 @@ included). Found, mended here, and left.
   wait has the timeout (`CHILD_MINUTES`), the child is killed on it and the line
   says so.
 
-**ScaleCheck at today's prices** (the proof the review asked for: the same tree,
-`-Dcbs.priceLevel=1`): **two lines**, "...and it builds: more homes at the end
-than at the start", twice, and "2 FAILED" - main's own record, exit 3 at the gate.
-At the factor the ten lines above. So the lines are **not** the same: the
-fixture lines ("the city is growing", "its own rents price no migrant out", "the
-free copy ordered" twice) and the four comparisons fail at the factor and pass at
-today's prices, and section 6's earlier wording ("main's recorded ones") was
-wrong: main's record has only the builds lines. The founded town differs
-already at month 120 (659 people and 141 homes at today's prices, 647 and 186 at
-the factor) and the playtest's town at month 1124 does not grow over its last year at the
-factor and does at today's: the trajectory is chaotic, so this does not say the factor breaks a
-scale law, but it does say the red is the factor's town and not only ST2's old
-one. ST2 (queued) picks a month that holds every assertion, and its check
-should run at both levels; the ensemble's twin (section 7) already shows the
-factor does not change the distributions.
+**The town that parted from its twin, traced** (the coordinator's brief after the
+review: ScaleCheck's town at today's prices is main's two lines, at the factor
+ten). PriceLevelCheck gained a fourth city, section 9: ScaleCheck's founded town
+(the playtest's founding, forty houses, three stores, two farms, twenty houses
+more after three months, a depot after seven, saved and loaded as ScaleCheck
+loads it), month by month in a child at the factor and one at today's prices.
+- **First parting: month 24, the D$.** Every figure equal to the bit-level of
+  rounding to month 23; in month 24 the rate is 0.70774 over the factor against
+  0.70764, 1.4e-4 apart, and nothing else has moved. The cause is
+  `ForeignAccounts.totStep`, the second January's terms of trade
+  (`Game.cityExportPriceLevel()`): it weights the world's prices by the year's
+  exports by good, read from `PartnerTrade.history()`, whose tables are rounded
+  when they go to the history to `HISTORY_ROUND` = 100 places - hundredths of a
+  thousand, $10 at today's prices and $386 of today at the factor. A young city
+  sells a good to a nation for a thousandth of a thousand, so those cells were
+  zero or a step apart, the weights another's, the term 1.2% off. Mended:
+  `PartnerTrade.HISTORY_ROUND_MONEY` = `HISTORY_ROUND / PriceLevel.FACTOR`, the
+  money cells only (units keep 100); at factor 1 it is 100, main's. This is the
+  class the twin found twice before (`Game.cents`, `LandMarket.RANK_TIE`) and
+  the one the history's money series are tolerated for: here the model READS
+  the rounded figure. The twin's fourth city fails the unmended tree
+  (516 failing comparisons, all in section 9: cash, gdp.month, bank.deposits,
+  the rate, the price index, the CROPS market, months 35 to 55) and passes the
+  mended one (1,449 series over 56 months, 972 identical to the bit, every real
+  series within 3.5e-13, every live nominal within 4.8e-12).
+- **Second parting: month 56, a hair, not a literal.** With the first mended the
+  town runs equal to month 55. In month 56 a company's shares (Freight, 2.5
+  shares, the bank desk's excess) sell to households at the factor and do not at
+  today's prices. The household cell 66 is the difference: its debt is 5e-18
+  at today's prices (a hair there since month 3, 1.1e-16 then, most
+  likely the tail of the shortfall waterfall in `Household.fundShortfall()`,
+  positive by a rounding; not traced further) and exactly 0 at the factor, and `Exchange.mayBuy()` reads
+  `!(c.debt > 0)`. It is not a price-level fault: the same town parts from
+  today's at the same month at a price level of 0.5, 0.25, 0.1, 0.0259 and at
+  0.999999 and 1.000001 (a millionth off 1 is enough), and at 1.000001 the
+  founded town is today's again. A debt clamp of 1e-12 in `fundShortfall`
+  (tried, not kept) moves the parting to month 72, an ordinary rounding tie
+  again; the town cannot be held equal to its twin past a rounding, which is
+  why the twin's fourth city stops at month 55 (TOWN_MONTHS, its sentence says so).
+- **So ScaleCheck's section 6 is a draw.** The playtest's town at month 1124
+  (FREE_FIXTURE_MONTHS; its own sentence records that no month holds every
+  assertion, HD2 and EM2): at today's prices it fails main's two lines; at
+  1.000001 the same two; at 0.999999 nine others (the affordability, GDP, cash,
+  savings, deposits and the registers); at the factor the ten above. A price
+  level a millionth off 1 is enough to change which lines fail. EP1 cannot
+  mend it; ST2 (queued, "move FREE_FIXTURE_MONTHS to a month that holds every
+  assertion") is the batch, and it must scan at the factor, since a month that
+  holds at today's prices need not at the factor.
+- **What the mend moved.** Mending the first parting changed the factor's
+  trajectory, and two long-run premises that were green on the factor's draw
+  without it fail on the draw with it: CentralBankCheck's "very strict holds
+  prices lower than Standard over the horizon" (inflation over 240 months
+  3.071% against Standard's 3.046%: a 0.025-point ordering) and OrderSearchCheck's
+  "every trim and refusal in the long run is the countdown's" (1 against 0 of
+  2,196: month 1226, Retail 94 Convenience Store, the search says 0 where the
+  countdown finds 10, 22 desk calls against 85, the first rate the same). Both
+  are green at today's prices and at 0.999999, 1.000001, 0.5, 0.25, 0.1, 0.0259,
+  0.026, 0.0255, 0.03 and 0.02, and red only at 0.02588 and at the factor
+  (0.0258834): the draw, again. OrderSearchCheck's is more than ordering: it is
+  `Game.largestSlice()` assuming that if a slice passes then every smaller one
+  does, and the order at 1226 passes at 10 but at none of the sizes the search
+  tried; that window is in the model and not in the price level, and any
+  trajectory can draw it (not traced to its cause). Recommended: ship, queue OS1 for the
+  window (the bond plan or the yard's cost is where `passes(n)` stops being
+  monotonic), and read CentralBankCheck's ordering as the draw it is.
 
 **Left for follow-ups.**
 - EP2 (queued): the thresholds that hide or fold a young city's figures at the
@@ -311,3 +368,7 @@ factor does not change the distributions.
   (`WorldMarket.baseYearRead()` on Random, `pad()` and `usCpi()`, `PolicyRates`
   dropping the rule's state at month 1200), in `docs/queue/EP1b.md`.
 - EP1-C carries the eye-check of the lanes, the folds and the $0 cut-offs.
+- A grep of every model read of a rounded history (`HistorySave.round2` and
+  `roundSig`, `PartnerTrade.HISTORY_ROUND`): `PartnerTrade` was found because
+  `Game.cityExportPriceLevel()` reads it; whether another reader sits behind a
+  display rounding is not known beyond what the twin's four cities reach.

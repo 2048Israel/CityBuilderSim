@@ -58,6 +58,11 @@ import java.util.concurrent.TimeUnit;
  *      BORROWS: a proceeds figure rounded to a fixed hundredth of a unit (Game.cents: a thirty-eight times coarser rounding at the factor), and
  *      three offers tied at one rate of ground a dollar that the nearer should win, an ulp apart at the factor, so the farther won
  *      (LandMarket.RANK_TIE).
+ *   9. The twin on ScaleCheck's town (the playtest's founding with forty houses, stores and farms, saved and loaded as ScaleCheck loads it),
+ *      TOWN_MONTHS months. It found what the three before could not, because it is the one that SELLS ABROAD for a year and reads the year back:
+ *      the history rounded a table's money to a fixed hundredth of a thousand (PartnerTrade.HISTORY_ROUND), a thirty-eight times coarser
+ *      rounding at the factor, and Game.cityExportPriceLevel() weights the world's prices by those rounded exports, so the second January's
+ *      terms of trade, and the D$, were another's by month 24.
  *
  * The one oracle for "today's figure" is the child at today's prices: a constant that is read there is the figure as the class writes it, so
  * nothing in this file copies a literal from the model.
@@ -69,6 +74,17 @@ public class PriceLevelCheck {
 
     /** ...and the built city's: ten years, as DenominationCheck's reformed town is run (its fixture reads the loans, the schools and the first replacements). */
     static final int BUILT_MONTHS = 120;
+
+    /**
+     * ...and the town's: ScaleCheck's founded city (its section 1), to month 55 - EP1's gate review found that this town parts from its twin at
+     * the factor where the three cities above did not (the second January's terms of trade, from a history that rounded a young city's exports
+     * to a fixed hundredth of a thousand: PartnerTrade.HISTORY_ROUND_MONEY), and the twin holds it to the bit-level of rounding until then. It
+     * stops there on purpose: in month 56 a cell's debt is a hair above zero (5e-18) at today's prices and exactly zero at the factor and at 0.5, and
+     * Exchange.mayBuy() reads the hair as a debt, so one cell buys a company's shares at one level and not at the other; the town then parts
+     * from month 57 at 0.0259, 0.5, 0.25, 0.1 and at 0.999999 and 1.000001 beside 1 (a millionth off 1 is enough), so it is a draw of the
+     * rounding and not of the price level, and a twin cannot hold two draws equal.
+     */
+    static final int TOWN_MONTHS = 55;
 
     /** ...and the played city's: ten years, past its demolition (month 60), its iron mine (month 40) and the land the advisor keeps buying ahead of the city (month 96 was the first to part). */
     static final int PLAYED_MONTHS = 120;
@@ -214,6 +230,10 @@ public class PriceLevelCheck {
             Child playedToday = Child.run(true, "--twin-played");
             out.println("\n--- 8. the twin on the played city (MapCheck's: houses, stores and farms, the advisor every six months, a demolition, an iron mine), " + PLAYED_MONTHS + " months ---");
             theTwin(playedPlain, playedToday, PLAYED_MONTHS);
+            Child townPlain = Child.run(false, "--twin-town");
+            Child townToday = Child.run(true, "--twin-town");
+            out.println("\n--- 9. the twin on ScaleCheck's town (the playtest's founding, forty houses, stores and farms, twenty houses more, a depot; saved and loaded as ScaleCheck loads it), " + TOWN_MONTHS + " months ---");
+            theTwin(townPlain, townToday, TOWN_MONTHS);
         }
 
         out.printf("%nPriceLevelCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
@@ -707,7 +727,7 @@ public class PriceLevelCheck {
     static final class Twin {
 
         static void run(String flag) throws Exception {
-            boolean built = flag.equals("--twin-built"), played = flag.equals("--twin-played");
+            boolean built = flag.equals("--twin-built"), played = flag.equals("--twin-played"), town = flag.equals("--twin-town");
             PrintStream real = System.out;
             PrintStream sink = new PrintStream(OutputStream.nullOutputStream());
             System.setOut(sink);
@@ -715,16 +735,29 @@ public class PriceLevelCheck {
             try {
                 constants(real);
                 ratios(real);
-                int months = played ? PLAYED_MONTHS : built ? BUILT_MONTHS : TWIN_MONTHS;
+                int months = town ? TOWN_MONTHS : played ? PLAYED_MONTHS : built ? BUILT_MONTHS : TWIN_MONTHS;
                 Digest d = new Digest(months + 1);
-                Game g = played ? playedCity(sink) : built ? builtCity() : foundedCity();
+                GameFiles townFiles = town ? GameFiles.scratch("pricelevel-town") : null;
+                Game g = town ? townCity(sink, townFiles) : played ? playedCity(sink) : built ? builtCity() : foundedCity();
                 d.sample(g, 0);
                 for (int m = 1; m <= months; m++) {
-                    if (played) playedMonth(g, m - 1);
+                    if (town) townMonth(g, m);
+                    else if (played) playedMonth(g, m - 1);
                     else g.simulateMonths(1);
                     d.sample(g, m);
                 }
                 d.history(g);
+                if (town) {
+                    // ScaleCheck reads the town as its own save loads it: the save, then the city that comes back, month by month the same figures
+                    g.saveGame(10, "pricelevel town");
+                    Game back = new Game(townFiles);
+                    back.loadGameSave(10);
+                    Digest r = new Digest(1);
+                    r.prefix = "reload.";
+                    r.sample(back, 0);
+                    d.values.putAll(r.values);
+                    d.kinds.putAll(r.kinds);
+                }
                 d.print(real);
                 real.flush();
             } catch (Throwable t) {
@@ -771,6 +804,32 @@ public class PriceLevelCheck {
             g.setCashForTest(g.getCash() + network.getCashCost());
             g.buildStack(network, 1, true);
             return g;
+        }
+
+        /**
+         * ScaleCheck's founded town (its section 1): the playtest's founding, forty houses, three stores and two farms at the start, twenty houses
+         * after three months, two stores and a depot after seven, to the month ScaleCheck saves it at (FIXTURE_MONTHS). Nothing in it is a money
+         * figure of mine: the builds are the playtest's own, which buys its land and borrows as the model does.
+         */
+        static Game townCity(PrintStream sink, GameFiles files) {
+            LongPlaytest.out = sink;
+            Game g = new Game(files, LongPlaytest.founding());
+            g.run();
+            if (g.getMonth() != 1) throw new IllegalStateException("the town is meant to start in month 1, not " + g.getMonth());
+            LongPlaytest.build(g, "House", 40);
+            LongPlaytest.build(g, "Convenience Store", 3);
+            LongPlaytest.build(g, "Mixed Farm", 2);
+            return g;
+        }
+
+        /** One month of the town, ScaleCheck's script: month m is the m-th since the founding. */
+        static void townMonth(Game g, int m) {
+            g.simulateMonths(1);
+            if (m == 3) LongPlaytest.build(g, "House", 20);
+            if (m == 7) {
+                LongPlaytest.build(g, "Convenience Store", 2);
+                LongPlaytest.build(g, "Construction Depot", 1);
+            }
         }
 
         /**
@@ -888,9 +947,13 @@ public class PriceLevelCheck {
         final Map<String, Character> kinds = new LinkedHashMap<>();
         final Map<String, double[]> values = new LinkedHashMap<>();
 
+        /** A prefix for every series name, so a second city's one month rides in the first's digest. */
+        String prefix = "";
+
         Digest(int months) { this.months = months; }
 
         void put(String name, char kind, int m, double x) {
+            name = prefix + name;
             double[] row = values.computeIfAbsent(name, k -> new double[months]);
             kinds.putIfAbsent(name, kind);
             row[m] = x;
