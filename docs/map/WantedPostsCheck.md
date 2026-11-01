@@ -1,6 +1,6 @@
 # WantedPostsCheck.java - 673 lines · 21 methods · 4 constants · harnesses
 
-`ham/citybuildersim/WantedPostsCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WantedPostsCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). Not part of the game.
 > 

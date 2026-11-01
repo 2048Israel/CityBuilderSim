@@ -1,6 +1,6 @@
 # HealthCheck.java - 1,754 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HealthCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HealthCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Sickness: what it moves, and - much more importantly - what it does not.
 > 
@@ -36,7 +36,7 @@
 > the households' statement, and fees 0 with a premium serves the same people
 > as fees 1x without one; (16) both dials survive a save and a reform.
 
-**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (94), [Health](Health.md) (47), [AgeBand](AgeBand.md) (41), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (22), [PopulationCohorts](PopulationCohorts.md) (16), [BuildingManager](BuildingManager.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [Migration](Migration.md) (7), [Good](Good.md) (5), [JobType](JobType.md) (5), [Household](Household.md) (5), [TimeSkipReport](TimeSkipReport.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [EconomyManager](EconomyManager.md) (3), [GameFiles](GameFiles.md) (2), [Retail](Retail.md) (2), [Founding](Founding.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [LandManager](LandManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [Sectors](Sectors.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Freight](Freight.md) (1), [Haulage](Haulage.md) (1)
+**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (94), [Health](Health.md) (47), [AgeBand](AgeBand.md) (41), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (22), [PopulationCohorts](PopulationCohorts.md) (16), [PriceLevel](PriceLevel.md) (11), [BuildingManager](BuildingManager.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [Migration](Migration.md) (7), [Good](Good.md) (5), [JobType](JobType.md) (5), [Household](Household.md) (5), [TimeSkipReport](TimeSkipReport.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [EconomyManager](EconomyManager.md) (3), [GameFiles](GameFiles.md) (2), [Retail](Retail.md) (2), [Founding](Founding.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [LandManager](LandManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [Sectors](Sectors.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Freight](Freight.md) (1)... and 1 more
 
 ## Sections
 
