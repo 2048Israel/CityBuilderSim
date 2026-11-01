@@ -2576,6 +2576,44 @@ public class SaveFileCheck {
                         derived.getPopulationManager().getWagesPerType(), derived.getPopulationManager().getJobFillRate())
                         + derived.getBuildingManager().getUpkeepByCategory(BuildingType.INFRASTRUCTURE));
 
+        /* ============ a recording's switch and id cross a save (TR1, 2026-10-31) ============ */
+        System.out.println("\n--- and a recording's switch and id cross a save ---");
+
+        /*
+         * "Record this city" is kept in the save: the switch and the recording's id (DataSave.setRecording, read by the
+         * load). Additive, no format bump: a save without the keys reads back with recording off (Gson leaves the
+         * fields alone). The fixture plays a city three months with it on, so the keys are written by a city that
+         * recorded and not set by hand, and takes the keys out of a copy of its save to read the older shape.
+         */
+        Game recorded = new Game(new GameFiles(root.resolve("recorded"), root.resolve("no-legacy")));
+        recorded.run();
+        recorded.buildStack(template(recorded, "House"), 20, true);
+        recorded.setRecording(true);
+        String recordedId = recorded.getRecordingId();
+        recorded.simulateMonths(3);
+        assertTrue("fixture: the played city is recording, with an id, and its three months are kept",
+                recorded.isRecording() && recordedId != null && Recording.at(recorded.recordingFolder()).months().length == 3);
+        assertTrue("saved with recording on", recorded.saveGame(4, "recorded").ok);
+        Game recordedBack = new Game(recorded.getGameFiles());
+        recordedBack.loadGameSave(4);
+        assertTrue("the switch and the id cross a save: both back",
+                recordedBack.isRecording() && recordedId.equals(recordedBack.getRecordingId()));
+        com.google.gson.JsonObject withoutKeys = com.google.gson.JsonParser.parseString(
+                Files.readString(recorded.getGameFiles().saveFile(4))).getAsJsonObject();
+        assertTrue("fixture: the save holds the two keys", withoutKeys.has("recording") && withoutKeys.has("recordingId"));
+        withoutKeys.remove("recording");
+        withoutKeys.remove("recordingId");
+        Files.writeString(recorded.getGameFiles().saveFile(5), withoutKeys.toString());
+        // The map and the history beside it, where the city has them (a city of House stacks has no map).
+        for (java.util.function.IntFunction<Path> file : java.util.List.<java.util.function.IntFunction<Path>>of(
+                recorded.getGameFiles()::mapFile, recorded.getGameFiles()::historyFile)) {
+            if (Files.isRegularFile(file.apply(4))) Files.copy(file.apply(4), file.apply(5));
+        }
+        Game recordedOff = new Game(recorded.getGameFiles());
+        recordedOff.loadGameSave(5);
+        assertTrue("a save written without the keys reads back off: no switch, no id",
+                recordedOff.getLoadFailure() == null && !recordedOff.isRecording() && recordedOff.getRecordingId() == null);
+
         /* ============ the city's fund, its rescue setting and the bank's preferred (0.7.14) ============ */
         System.out.println("\n--- and the city's fund, its rescue setting and the bank's preferred ---");
 
