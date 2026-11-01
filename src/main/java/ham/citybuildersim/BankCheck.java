@@ -2895,6 +2895,16 @@ public class BankCheck {
         double coverAtRise = Double.NaN;
         try {
             town.run();
+            /*
+             * MANUFACTURING ASKS TO BUILD NOTHING HERE (EP1 on IC1, 2026-11-01), for the premise that the bank stands. An idle
+             * builder's laid-off crews are spare for the staffing gate since IC1, so the planners order what the gate held, and in
+             * this town on EP1's 1900 world Manufacturing's company is worth 0.184 a share at month 33 and 0.005 at month 34: the
+             * bank's desk, holding its shares, marks 3,431 off 3,898 in the month, its equity goes from 2,500 to -1,269 and it is in
+             * resolution (Bank.branchesToClose() is 0 in resolution), so the rule closed none of the five branches below. That is so
+             * at every price level, today's included (equity 96,587 to -49,028 at 1), so it is the path and not the factor. Held
+             * out, as IC1 held Freight and Copper Refining in the fixture above, the town's bank stands (equity 733 at month 34).
+             */
+            town.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
             town.setCashForTest(Founding.WEALTHY_CASH);
             town.getForeignAccounts().pinRate(1.0);
             town.getLandManager().setOwnedSqFt(30_000_000);
