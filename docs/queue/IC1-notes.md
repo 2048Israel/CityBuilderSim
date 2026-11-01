@@ -177,8 +177,13 @@ queued.
     sector is held, so the town is the steady one the premise needs, as main's stood still at 1,660.
 - **Red, not mended:**
   - **ScaleCheck** (8 new lines in section 9, beside the record's section 6 line): §7, for ST2.
-  - **WellCheck 4**: main's OV1 fault. Two of its recorded lines fail with other figures on the moved path:
-    "[3, 3, 3, 3, 3, 3, 3, 4] wells committed by month" and "Vintage[month=20, ...]".
+  - **WellCheck 4** was main's OV1 fault on 0.8.91. OV1 (0.8.93) shipped while IC1 ran and was merged in. Two of
+    the section's lines still failed on IC1's path ("[3, 3, 3, 3, 3, 3, 3, 4] wells committed by month", "Vintage[
+    month=20, ...]"). They were red on IC1's rule and green on main's.
+    - The cause: the year's town is larger (2,198 people against 1,750), with six other sites on the builders'
+      yard, so the first freed site's well opened in month 20 against 15.
+    - Mended: every sector but Oil is held for the section, so the wells are alone on the yard on both rules. The
+      holds are released after it, for section 6's reload.
   - **KeptCheck 15**: City History's kept page lays out 4 px shorter than a page built new at m822. The page's
     scroller is 731 px kept against 735.
     - The cause is not the model. `HistoryScreen.frameOver` binds the scroller's height to the frame's. In the
@@ -186,9 +191,14 @@ queued.
       where JavaFX drops the relayout request.
     - The page reads nothing of the gate, and KeptCheck passes on main's rule.
     - Queued as KH1: a deferred relayout on the frame's height (`Platform.runLater`).
-- **`./batch-check.sh --pick` on the tip (19abd209) exits 0.** It runs 26 harnesses: the eight mended, the five
-  that read the change, and LongPlaytest in place of `Game`, `Sector` and `BuildingManager`'s readers, among
-  others. Two MapCheck timing lines are SOFT. The maps are regenerated, and Stale has no firm finding.
+- **`./batch-check.sh --pick` exits 0.** It runs 26 harnesses: the eight mended, the five that read the change,
+  and LongPlaytest in place of `Game`, `Sector` and `BuildingManager`'s readers, among others. It was run on the
+  tip before main was merged (19abd209), and again after (1a92049c, main at 0.8.93 with TR1 and OV1).
+  - The MapCheck timing lines are SOFT. The maps are regenerated, and Stale has no firm finding.
+  - WellCheck and OilCheck exit 0 on the mended tip.
+  - ScaleCheck and KeptCheck stay red on the merged tip, as above, line for line.
+- **What ran before the merge.** The full suite and the ensemble ran on 0.8.91 with IC1, before TR1 and OV1. The
+  gate's suite is the first full run on the merged model.
 - **The ensemble** (`docs/ensemble/IC1.md`) ran 80 runs on IC1's model (72b7f553), two at once, in 21 minutes. It
   scores 22/26, against LD1's 23/26:
   - **A3 turns red again.** The longest deflation spell from m240 is 5 months at the median [0-12]. One seed reaches
@@ -235,10 +245,10 @@ month that holds every assertion before such a bust may not hold after the next 
   switch as it was.
 - ★ **FoundingYardCheck 6's last line follows the new rule (Recommended, taken).** It asserted the effect IC1
   reverses. The alternative is to drop the line.
-- ★ **ScaleCheck, WellCheck and KeptCheck ship red, each with its batch queued (Recommended).** ST2 already
-  follows IC1 for ScaleCheck's town, OV1 is queued for WellCheck, and KH1 is new, for KeptCheck. Each is a fault or
-  a fixture of another batch's, met on IC1's moved path, as LD1 shipped with WellCheck. The alternative is KH1's
-  screen line made here: a screen change in a model batch, untested by the eye.
+- ★ **ScaleCheck and KeptCheck ship red, each with its batch queued (Recommended).** ST2 already follows IC1 for
+  ScaleCheck's town, and KH1 is new, for KeptCheck. Each is another batch's fixture or fault, met on IC1's moved
+  path, as LD1 shipped with WellCheck. The alternative is KH1's screen line made here: a screen change in a model
+  batch, untested by the eye.
 - ★ **A3's red is accepted (Recommended).** It is one seed at the criterion's boundary: 12 months against "< 12",
   as 0.8.88's 13. The median spell is 5 months. Pending IC1-R.
 - ★ **LD1-R reads +0.19 on IC1 (Recommended: accept, as LD1-R recommends).** R2's red is smaller, not gone. Whether
