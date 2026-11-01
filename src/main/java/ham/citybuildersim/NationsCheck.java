@@ -282,8 +282,11 @@ public class NationsCheck {
             }
             for (int y = Nations.FIRST_YEAR; y <= Nations.PEOPLE_LAST_YEAR; y++) {
                 int yy = y;
-                for (Nations p : new Nations[] {h, r})
-                    people.see(p.year(i, y).people() == data.pathValue("people", i, y) && p.year(i, y).peopleMark() == data.pathMark("people", i, y), () -> iso + " " + yy + " on " + p.path());
+                people.see(h.year(i, y).people() == data.pathValue("people", i, y) && h.year(i, y).peopleMark() == data.pathMark("people", i, y), () -> iso + " " + yy + " on Historical");
+                // Random's are the UN's path from the calendar's first year (EP1, Nations.earlier): the file's people that many years later, held past its last.
+                int from = Math.min(y + data.standInYears(), Nations.PEOPLE_LAST_YEAR);
+                people.see(r.year(i, y).people() == data.pathValue("people", i, from) && (r.year(i, y).peopleMark() == data.pathMark("people", i, from)
+                        || y + data.standInYears() > Nations.PEOPLE_LAST_YEAR), () -> iso + " " + yy + " on Random (the file's " + from + ")");
             }
             Nations.Year first = r.year(i, Nations.FIRST_YEAR);
             start.see(first.output() == data.pathValue("gdp_2015usd", i, Nations.FIRST_YEAR) && first.priceLevel() == data.pathValue("cpi", i, Nations.FIRST_YEAR)
@@ -301,7 +304,7 @@ public class NationsCheck {
         tally("every nation's output and its mark equal the file's, " + Nations.FIRST_YEAR + "-2025 (the stand-in century's, the reader's, included)", outputs);
         tally("every nation's price level equals the file's cpi, and its inflation is the change of it", prices);
         tally("every nation's rate equals the file's, " + Nations.FIRST_YEAR + "-2025", rates);
-        tally("every nation's people and their mark equal the file's to 2100, on Historical and on Random", people);
+        tally("every nation's people and their mark equal the file's to 2100 on Historical, and on Random the same path from the first year, as from the file's 2000 (EP1)", people);
         tally("Random starts from the file's first January (the calendar's): output, price level and rate are the file's, inflation is NaN", start);
         tally("a Historical nation's money after the history is the file's money of 2025", money);
         tally("every good's price and its mark equal the file's " + Nations.FIRST_YEAR + "-2025 on Historical, and the first year's on Random", goods);
