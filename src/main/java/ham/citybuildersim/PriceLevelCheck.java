@@ -53,8 +53,8 @@ import java.util.concurrent.TimeUnit;
  *      one after the other, each printing a month-by-month digest; the parent loads no city.
  *   7. The twin again on a built city, BUILT_MONTHS months.
  *   8. The twin once more on the PLAYED city - the one MapCheck and the playtest play: a founding on MiningCheck's world, forty houses, three
- *      stores and two farms put up, then the playtest's advisor looking every six months, ten houses retired in the middle and an iron mine
- *      bought a third of the way in, PLAYED_MONTHS months. It found what the first two could not, because it is the one that BUYS GROUND and
+ *      stores and two farms put up, then the playtest's advisor looking every six months, ten houses retired at PLAYED_DEMOLITION and an iron mine
+ *      bought at PLAYED_IRON, PLAYED_MONTHS months. It found what the first two could not, because it is the one that BUYS GROUND and
  *      BORROWS: a proceeds figure rounded to a fixed hundredth of a unit (Game.cents: a thirty-eight times coarser rounding at the factor), and
  *      three offers tied at one rate of ground a dollar that the nearer should win, an ulp apart at the factor, so the farther won
  *      (LandMarket.RANK_TIE).
@@ -86,8 +86,23 @@ public class PriceLevelCheck {
      */
     static final int TOWN_MONTHS = 55;
 
-    /** ...and the played city's: ten years, past its demolition (month 60), its iron mine (month 40) and the land the advisor keeps buying ahead of the city (month 96 was the first to part). */
-    static final int PLAYED_MONTHS = 120;
+    /**
+     * ...and the played city's: past its demolition (PLAYED_DEMOLITION), its iron mine (PLAYED_IRON) and the land the advisor keeps buying ahead
+     * of the city (month 96 was the first to part), to month 105 - ten years until EP1 merged IC1, when the played city became another and
+     * parted from its twin at month 106 by a rounding tie, not a missed price (EP1's notes, "PriceLevelCheck 8, traced"): a household cell's
+     * count is 1e-16 at one level and 0 at the other from month 104, 70 cells move by a fraction of a household at 106 with people, homes and
+     * stores equal to the person; the factor nudged by 1e-12 either way runs equal to today's for 120 months, and today's own nudged to
+     * 1.0000001 parts from 1 at the same month with the same two values. A twin cannot hold two draws equal, so the horizon stops before it,
+     * as TOWN_MONTHS does. When a later batch parts this city earlier, nudge the factor by 1e-12 first: a parting the nudge moves is a tie
+     * (the horizon goes to the month before it), one it does not move is a price the factor missed (mend it).
+     */
+    static final int PLAYED_MONTHS = 105;
+
+    /** The month the played city pulls down ten houses: month 60, as when the horizon was 120 months and the demolition its half. */
+    static final int PLAYED_DEMOLITION = 60;
+
+    /** The month the played city is given its iron mine: month 40, as when the horizon was 120 months and the mine its third. */
+    static final int PLAYED_IRON = 40;
 
     /**
      * How far the world file's US price level from founding to 2025, times PriceLevel.FACTOR, may be from 1, as a share. The years before the file's
@@ -857,11 +872,11 @@ public class PriceLevelCheck {
                 LongPlaytest.advise(g);
                 LongPlaytest.ensureSchools(g);
             }
-            if (m == PLAYED_MONTHS / 2) {
+            if (m == PLAYED_DEMOLITION) {
                 BuildingsTemplate house = g.getBuildingManager().getTemplateByName("House");
                 if (house != null) g.getBuildingManager().retire(house, 10);
             }
-            if (m == PLAYED_MONTHS / 3 && g.getLandManager().getIronDeposits() == 0) {
+            if (m == PLAYED_IRON && g.getLandManager().getIronDeposits() == 0) {
                 MiningCheck.makeRoom(g, 0, true);
                 BuildingsTemplate mine = g.getBuildingManager().getTemplate(ham.citybuildersim.sectors.Mining.IRON_MINE);
                 g.setCashForTest(g.getCash() + g.getBusinessInvestment().getCostOf(mine, 1));
