@@ -1,6 +1,6 @@
 # UserInterface.java - 6,783 lines · 184 methods · 44 constants · interface
 
-`ham/citybuildersim/ui/UserInterface.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/UserInterface.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The window: the stage and its theme, the header - the clock and the speed,
 > the money block, five headline tiles, the "Needs you" chip, the rating and

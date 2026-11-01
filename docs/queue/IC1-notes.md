@@ -153,7 +153,42 @@ queued.
     share exactly;
   - the same builders working at 30% withhold fewer, 1,939, and yet the gate refuses at 70.5%;
   - Manufacturing's staffable count is 1 idle and 0 working.
-- {suite}
+- **The full suite** ran on the model's commit (72b7f553). It exited 4, with 48 new red lines in 11 harnesses.
+  Every one is a played city's moved path.
+- **Mended, in the fixture.** Each was red on IC1's rule and green on main's before the mend (a temporary switch,
+  removed), and green on both after. No assertion changed, and each fixture's comment names its new cause.
+  - **AutoBuildCheck.** The young city is larger (2,618 people at m60, against 1,933) and has a second clinic on
+    site, which the retiring cannot remove. The fixture plays on until none is on site (m63).
+  - **BankCheck.** The gate now lets a Copper Refining works through. It borrows $86k, writes it down, and puts the
+    bank, worn to $32k of capital, in resolution at m141. Copper Refining is held, as LD1 held Freight.
+  - **ForeignCheck.** The weaker city founds a Cement & Concrete works importing $117M, no part of the programme.
+    It is held, the same hinge as Heavy Industry. The premise reads 0.9860.
+  - **PolicyPreviewCheck.** The city is job-rich, with 473 unfilled posts at m62, so closing half the depots put
+    nobody on EI. It closes the next largest employer, at most `EI_POOL_ROUNDS` times, until some are on EI.
+  - **CapitalFlowCheck.** On IC1's path the city runs a deficit about the coupon's size. Under the leaning regime
+    the plain twin's vault sold dollars and the held twin's did not, so the rates parted by 1%. Both twins now
+    float, which leaves the coupon their one difference. The rate still moves.
+  - **PassThroughCheck.** Month 240 ends with the D$ 0.7% from the goods' D$, against main's 10.6%. Section 2 plays
+    on until they are more than `APART` apart: one month on IC1, none on main.
+  - **MapCheck.** The played city owns 16 of the 64 plots of the reserve's block, and `handBlock()` handed nothing
+    for a part-owned block. It now hands the unowned plots, as `handBlocks()` already did (WN3).
+  - **LabourCheck.** The steady-crawl town grows and busts under IC1: 8,182 people at m164 and 5,432 at m347, its
+    groceries index swinging from 2.06 to 8.75. The wage index's lag then leaves the window in 26 months. Every
+    sector is held, so the town is the steady one the premise needs, as main's stood still at 1,660.
+- **Red, not mended:**
+  - **ScaleCheck** (8 new lines in section 9, beside the record's section 6 line): §7, for ST2.
+  - **WellCheck 4**: main's OV1 fault. Two of its recorded lines fail with other figures on the moved path:
+    "[3, 3, 3, 3, 3, 3, 3, 4] wells committed by month" and "Vintage[month=20, ...]".
+  - **KeptCheck 15**: City History's kept page lays out 4 px shorter than a page built new at m822. The page's
+    scroller is 731 px kept against 735.
+    - The cause is not the model. `HistoryScreen.frameOver` binds the scroller's height to the frame's. In the
+      kept draw the frame shrank (133 to 129 px), and the invalidation landed inside the column's own layout pass,
+      where JavaFX drops the relayout request.
+    - The page reads nothing of the gate, and KeptCheck passes on main's rule.
+    - Queued as KH1: a deferred relayout on the frame's height (`Platform.runLater`).
+- **`./batch-check.sh --pick` on the tip (19abd209) exits 0.** It runs 26 harnesses: the eight mended, the five
+  that read the change, and LongPlaytest in place of `Game`, `Sector` and `BuildingManager`'s readers, among
+  others. Two MapCheck timing lines are SOFT. The maps are regenerated, and Stale has no firm finding.
 - **The ensemble** (`docs/ensemble/IC1.md`) ran 80 runs on IC1's model (72b7f553), two at once, in 21 minutes. It
   scores 22/26, against LD1's 23/26:
   - **A3 turns red again.** The longest deflation spell from m240 is 5 months at the median [0-12]. One seed reaches
@@ -200,6 +235,10 @@ month that holds every assertion before such a bust may not hold after the next 
   switch as it was.
 - ★ **FoundingYardCheck 6's last line follows the new rule (Recommended, taken).** It asserted the effect IC1
   reverses. The alternative is to drop the line.
+- ★ **ScaleCheck, WellCheck and KeptCheck ship red, each with its batch queued (Recommended).** ST2 already
+  follows IC1 for ScaleCheck's town, OV1 is queued for WellCheck, and KH1 is new, for KeptCheck. Each is a fault or
+  a fixture of another batch's, met on IC1's moved path, as LD1 shipped with WellCheck. The alternative is KH1's
+  screen line made here: a screen change in a model batch, untested by the eye.
 - ★ **A3's red is accepted (Recommended).** It is one seed at the criterion's boundary: 12 months against "< 12",
   as 0.8.88's 13. The median spell is 5 months. Pending IC1-R.
 - ★ **LD1-R reads +0.19 on IC1 (Recommended: accept, as LD1-R recommends).** R2's red is smaller, not gone. Whether
