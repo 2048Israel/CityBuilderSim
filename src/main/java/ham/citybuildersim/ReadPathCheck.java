@@ -1978,7 +1978,29 @@ public class ReadPathCheck {
             LandParcel p = market.getListing().get(i);
             standingRelief[i] = handRelief(p.getDryKm2());
         }
-        market.restoreOffers(standing, standingRelief, market.getNextOfferId());
+        // ...and who sells them (WN5, landOffersSellers): the fixture's world is a generated one, which names no seller, so the first two offers are given
+        // sellers by hand as the offers are given hills - two nations for the first (Canada's number and the United States'), one for the second.
+        double[][] standingSellers = new double[standing.length][];
+        for (int i = 0; i < standing.length; i++) {
+            standingSellers[i] = i == 0 ? new double[] { 30, 0.04, 3.5, 186, 0.02, 1.5 } : i == 1 ? new double[] { 186, 0.05, 2.25 } : new double[0];
+        }
+        market.restoreOffers(standing, standingRelief, standingSellers, market.getNextOfferId());
+        // ...and what the city has bought from whom (landBoughtKm2, landBoughtUsd): given by hand where the world file is here to size it (a nation count + 1 long).
+        int nationsOnFile = g.landSellerCount();
+        if (nationsOnFile > 0) {
+            double[] boughtKm2 = new double[nationsOnFile + 1], boughtUsd = new double[nationsOnFile + 1];
+            boughtKm2[0] = 0.5;
+            boughtUsd[0] = 12.75;
+            boughtKm2[30] = 1.25;
+            boughtUsd[30] = 40.5;
+            boughtKm2[186] = 0.0625;
+            boughtUsd[186] = 7.125;
+            g.setLandBoughtForTest(boughtKm2, boughtUsd);
+        }
+        assertTrue("fixture: the offers have sellers by hand (two named in the first, one in the second, none in the rest), and the tally has figures where the world file sizes it",
+                market.getOffersSellersState() != null && market.getListing().get(0).getSellers().size() == 2 && market.getListing().get(1).getSellers().size() == 1
+                        && market.getListing().stream().skip(2).allMatch(p -> p.getSellers().isEmpty())
+                        && (nationsOnFile == 0 || g.getLandBoughtKm2(30) == 1.25));
         assertTrue("fixture: the city holds hills by hand - the centre, " + land.purchases().size() + " purchase(s) and " + market.getListing().size()
                 + " offers, foothill and shallow sea in them", land.centreReliefKm2(CityLand.RELIEF_FOOTHILL) > 0 && land.centreReliefKm2(CityLand.RELIEF_SHALLOW) > 0
                 && !market.getListing().isEmpty() && market.getListing().stream().allMatch(p -> p.getReliefKm2(CityLand.RELIEF_SHALLOW) > 0)
@@ -2012,14 +2034,34 @@ public class ReadPathCheck {
                         && java.util.Arrays.deepEquals(loaded.getLandManager().getMarket().getOffersReliefState(), g.getLandManager().getMarket().getOffersReliefState())
                         && loaded.getCityLand().centreReliefKm2(CityLand.RELIEF_FOOTHILL) == g.getCityLand().centreReliefKm2(CityLand.RELIEF_FOOTHILL)
                         && shallowOffers(loaded.getLandManager().getMarket()) == shallowOffers(g.getLandManager().getMarket()) && shallowOffers(loaded.getLandManager().getMarket()) > 0);
+        // ...and who sells each offer (WN5, landOffersSellers), and what the city bought from whom (landBoughtKm2, landBoughtUsd), as saved.
+        boolean sellersBack = loaded.getLandManager().getMarket().getListing().size() == g.getLandManager().getMarket().getListing().size();
+        for (int i = 0; sellersBack && i < g.getLandManager().getMarket().getListing().size(); i++) {
+            sellersBack &= loaded.getLandManager().getMarket().getListing().get(i).same(g.getLandManager().getMarket().getListing().get(i));
+        }
+        assertTrue("...with who sells each of them (WN5): the offers' sellers back to the bit, the first two named and the rest not, every offer the same field for field",
+                sellersBack && java.util.Arrays.deepEquals(loaded.getLandManager().getMarket().getOffersSellersState(), g.getLandManager().getMarket().getOffersSellersState())
+                        && loaded.getLandManager().getMarket().getListing().get(0).getSellers().equals(g.getLandManager().getMarket().getListing().get(0).getSellers())
+                        && loaded.getLandManager().getMarket().getListing().get(0).getSellers().size() == 2
+                        && loaded.getLandManager().getMarket().getListing().get(2).getSellers().isEmpty());
+        boolean boughtBack = loaded.landSellerCount() == g.landSellerCount();
+        for (int i = 0; i <= g.landSellerCount(); i++) {
+            boughtBack &= loaded.getLandBoughtKm2(i) == g.getLandBoughtKm2(i) && loaded.getLandBoughtUsd(i) == g.getLandBoughtUsd(i);
+        }
+        assertTrue("...and what the city has bought from whom (WN5): every nation's area and dollars back to the bit" + (nationsOnFile > 0 ? "" : " (no world file here: nothing to size it, so none)"),
+                boughtBack && (nationsOnFile == 0 || (loaded.getLandBoughtKm2(30) == 1.25 && loaded.getLandBoughtUsd(186) == 7.125 && loaded.getLandBoughtUsd(0) == 12.75)));
         // ...and the same save with the three keys taken out, as every save before ET1 is, loads all flat - never refused.
         try {
             com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(10))).getAsJsonObject();
+            // ...and the three of WN5 (the sellers and the tally): a save without them has every offer the host's whole and nothing bought from anyone.
+            boolean sellerKeys = json.has("landOffersSellers") && (nationsOnFile == 0 || (json.has("landBoughtKm2") && json.has("landBoughtUsd")));
+            for (String k : new String[] { "landOffersSellers", "landBoughtKm2", "landBoughtUsd" }) json.remove(k);
             boolean keys = true;
             for (String k : new String[] { "landCentreRelief", "landHoldingsRelief", "landOffersRelief" }) {
                 keys &= json.has(k);
                 json.remove(k);
             }
+            assertTrue("the save carries who sells each offer, and the tally where the file sizes it, in keys of their own (WN5)", sellerKeys);
             assertTrue("the save carries the three keys of the ground by relief, and they are what the load read", keys);
             Files.writeString(files.saveFile(10), new com.google.gson.Gson().toJson(json));
             Game bare = new Game(files);
@@ -2034,6 +2076,10 @@ public class ReadPathCheck {
             for (CityLand.Purchase p : flat.purchases()) allFlat &= p.offer().getReliefKm2(CityLand.RELIEF_FLAT) == p.offer().getDryKm2();
             assertTrue("...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,"
                     + " nothing steep and nothing shallow", allFlat);
+            boolean hostsWhole = bare.getLandManager().getMarket().getOffersSellersState() == null && bare.landSellerCount() == nationsOnFile;
+            for (LandParcel p : bare.getLandManager().getMarket().getListing()) hostsWhole &= p.getSellers().isEmpty();
+            for (int i = 0; i <= bare.landSellerCount(); i++) hostsWhole &= bare.getLandBoughtKm2(i) == 0 && bare.getLandBoughtUsd(i) == 0;
+            assertTrue("...and a save without WN5's three keys loads every offer the host's whole, at the price it was listed at, and nothing bought from anyone", hostsWhole);
             // ...and, since ET5, a city on one landmass writes no "landmasses" key: loaded, and loaded from the stripped save, it is the one landmass it is.
             assertTrue("a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground",
                     !json.has("landmasses") && loaded.getLandManager().landmassState() == null && loaded.getLandManager().getLandmasses().single()

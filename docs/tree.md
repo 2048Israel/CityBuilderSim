@@ -533,6 +533,16 @@ adds its line here, not in `CLAUDE.md`.
                                    the salvage cut a clearing leaves Forestry and its planted stands'
                                    growth (THE PLANTED STANDS) - and the land office's window, six offers
                                    a side, an offer's forest priced since 0.7.138; LandCheck holds them
+        LandFactors.java, LandSellers.java
+                                   land bought from its nation (batch WN5; spec-nations 6): LandSellers the
+                                   seller of each plot of a real-Earth world, from world-1.bin's owner layer
+                                   (an area's seller, else the host; a foreign nation's sea only within 12
+                                   nautical miles of its land), and an offer's ground split by seller, exact
+                                   to CityLand's count; LandFactors each nation's land price against
+                                   Canada's (exactly 1) from world/land-2024.json, moving with its output a
+                                   head; the land office prices each part by it, Game pays each part in its
+                                   seller's money and tallies what the city bought from whom. A generated
+                                   world is the host's at 1, as before
         Zoning.java                zoning and the forest law (0.7.107, batch Z1): zones by sector, each a
                                    share of the dry ground or km2 at a share of the going price, and the
                                    law's two shares of the forest; LandManager's ZONES AND THE FOREST LAW
@@ -796,7 +806,7 @@ adds its line here, not in `CLAUDE.md`.
                                    -Dplaytest.budget=N prints the treasury's month line by line; since
                                    0.8.14 (batch CL3) its layout watch: how many boxes the map moved
                                    between month pairs, and where industry and the homes stand
-        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
+        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/) and LandTable (world/land-2024.json from tools/world/land.tsv, WN5); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
                                          conversion-saves.json the five saves' land ConversionCheck converts (0.7.66);
@@ -808,7 +818,9 @@ adds its line here, not in `CLAUDE.md`.
                                          world/ WorldDataCheck's fixture, cut from world-1.bin by
                                          tools/world/fixture.py, and the .expect file beside it (WN0); and
                                          world-2025.json, the Rankings' real-world measures (LB1), made by
-                                         tools/world/measures.py and read by WorldMeasures
+                                         tools/world/measures.py and read by WorldMeasures; and land-2024.json,
+                                         each nation's land a hectare (WN5), made by tools.LandTable from
+                                         tools/world/land.tsv and read by LandFactors
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
                                          itself is not in the repository), its FORMAT.txt and ATTRIBUTION.txt, and
                                          fixture.py, which cuts EarthCheck's fixture from it; and since f99d62c

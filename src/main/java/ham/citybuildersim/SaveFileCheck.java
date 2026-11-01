@@ -322,6 +322,54 @@ public class SaveFileCheck {
                         && java.util.Arrays.deepEquals(landRead.getLandHoldingsRelief(), ground.holdingsReliefState())
                         && java.util.Arrays.deepEquals(landRead.getLandOffersRelief(), office.getMarket().getOffersReliefState())
                         && landRead.getLandCentreRelief()[CityLand.RELIEF_FLAT] == ground.centreKm2(CityLand.DRY) && landRead.getLandCentreRelief()[CityLand.RELIEF_SHALLOW] == 0);
+        // WHO SELLS EACH OFFER, AND WHAT WAS BOUGHT FROM WHOM (WN5): three keys of their own beside the relief's. A generated city names no seller and
+        // has bought from no one, so a save of it carries none of them; the keys are proven on offers given sellers by hand.
+        assertTrue("a generated city's offers name no seller, and its save carries neither the sellers nor the tally (WN5)",
+                office.getMarket().getOffersSellersState() == null && landRead.getLandOffersSellers() == null
+                        && landRead.getLandBoughtKm2() == null && landRead.getLandBoughtUsd() == null && !landJson.contains("landOffersSellers")
+                        && !landJson.contains("landBought"));
+        LandManager seller = new LandManager();
+        seller.updateMarket(0);
+        java.util.List<LandParcel> named = seller.getMarket().getListing();
+        named.get(0).setSellers(java.util.List.of(new LandParcel.Sale(30, 0.04, 3.5), new LandParcel.Sale(186, 0.02, 1.5)));
+        named.get(1).setSellers(java.util.List.of(new LandParcel.Sale(186, 0.05, 2.25)));
+        double[][] sellerRows = seller.getMarket().getOffersSellersState();
+        double[] boughtKm2 = new double[197], boughtUsd = new double[197];
+        boughtKm2[0] = 0.5;
+        boughtUsd[0] = 12.75;
+        boughtKm2[30] = 1.25;
+        boughtUsd[30] = 40.5;
+        DataSave sellerSave = new DataSave();
+        sellerSave.setBuildingNum(13);
+        sellerSave.setLandOffersSellers(sellerRows);
+        sellerSave.setLandBought(boughtKm2, boughtUsd);
+        assertTrue("fixture: the sellers and the tally wrote themselves", sellerRows != null && sellerRows.length == named.size() && sellerRows[0].length == 6
+                && sellerRows[1].length == 3 && sellerRows[2].length == 0 && sellerSave.saveGame(trip, 2).ok);
+        DataSave sellerRead = gson.fromJson(Files.readString(trip.saveFile(2)), DataSave.class);
+        assertTrue("the offers' sellers survived, a row for each offer, to the bit (WN5)", java.util.Arrays.deepEquals(sellerRead.getLandOffersSellers(), sellerRows));
+        assertTrue("...and the tally, every nation's area and dollars", java.util.Arrays.equals(sellerRead.getLandBoughtKm2(), boughtKm2)
+                && java.util.Arrays.equals(sellerRead.getLandBoughtUsd(), boughtUsd));
+        LandManager sellerBack = new LandManager();
+        sellerBack.updateMarket(0);
+        sellerBack.getMarket().restoreOffers(seller.getMarket().getOffersState(), seller.getMarket().getOffersReliefState(),
+                sellerRead.getLandOffersSellers(), seller.getMarket().getNextOfferId());
+        boolean sellersSame = sellerBack.getMarket().getListing().size() == named.size();
+        for (int i = 0; sellersSame && i < named.size(); i++) sellersSame &= sellerBack.getMarket().getListing().get(i).same(named.get(i));
+        assertTrue("...and the offers restored from them are the offers written, sellers and all (LandParcel.same())", sellersSame
+                && sellerBack.getMarket().getListing().get(0).getSellers().size() == 2 && sellerBack.getMarket().getListing().get(2).getSellers().isEmpty());
+        LandParcel plain = named.get(2);
+        assertTrue("an offer's record is not wider for its sellers (a wider row is passed over by every save before): 29 as ever",
+                named.get(0).offerRow().length == LandParcel.OFFER_FIELDS && LandParcel.OFFER_FIELDS == 29
+                        && LandParcel.fromOfferRow(named.get(0).offerRow(), named.get(0).reliefRow(), named.get(0).sellersRow()).same(named.get(0))
+                        && !LandParcel.fromOfferRow(named.get(0).offerRow(), named.get(0).reliefRow()).same(named.get(0)));
+        assertTrue("...and a row of sellers of the wrong shape, or with a figure that is not a number or a seller that is no nation's number, reads as none",
+                LandParcel.sellersFrom(new double[] { 30, 0.04 }).isEmpty() && LandParcel.sellersFrom(new double[] { 30, 0.04, Double.NaN }).isEmpty()
+                        && LandParcel.sellersFrom(new double[] { 30, Double.POSITIVE_INFINITY, 1 }).isEmpty() && LandParcel.sellersFrom(new double[] { 0, 1, 1 }).isEmpty()
+                        && LandParcel.sellersFrom(new double[] { 2.5, 1, 1 }).isEmpty() && LandParcel.sellersFrom(new double[] { 30, -1, 1 }).isEmpty()
+                        && LandParcel.sellersFrom(new double[0]).isEmpty() && LandParcel.sellersFrom(null).isEmpty()
+                        && LandParcel.sellersFrom(new double[] { 30, 0.04, 3.5, 186, 0.02 }).isEmpty() && plain.getSellers().isEmpty());
+        assertTrue("...and a save without the keys restores every offer the host's whole, as every save before WN5 is",
+                restoredWithoutSellers(seller.getMarket()));
         assertTrue("...and no lanes, which only a format-31 save is read for (0.7.67)",
                 landRead.getLandLanes() == null && landRead.getLandPurchases() == null);
         assertEquals("...the next offer's id", landRead.getNextOfferId(), office.getMarket().getNextOfferId());
@@ -3237,6 +3285,21 @@ public class SaveFileCheck {
                 java.util.Arrays.equals(read.getLandCentreRelief(), city.getCityLand().centreReliefState())
                         && java.util.Arrays.deepEquals(read.getLandHoldingsRelief(), city.getCityLand().holdingsReliefState())
                         && java.util.Arrays.deepEquals(read.getLandOffersRelief(), city.getLandManager().getMarket().getOffersReliefState()));
+        // WHO SELLS EACH OFFER (WN5): the Earth city's offers name their sellers where the world file is here, and the save carries them in a key of its
+        // own, a row for each offer; without the file no seller is named and the key is not written.
+        boolean named = city.getLandSellers() != null;
+        assertTrue("the Earth city's save carries who sells each offer, a row for each, where the world file names the sellers - and no key where it does not (WN5)",
+                named == earthJson.has("landOffersSellers")
+                        && (!named || (earthJson.getAsJsonArray("landOffersSellers").size() == earthJson.getAsJsonArray("landOffers").size()
+                        && city.getLandManager().getMarket().getListing().stream().allMatch(p -> !p.getSellers().isEmpty())
+                        && java.util.Arrays.deepEquals(read.getLandOffersSellers(), city.getLandManager().getMarket().getOffersSellersState())
+                        && back.getLandManager().getMarket().getListing().size() == city.getLandManager().getMarket().getListing().size())));
+        boolean sellersBack = named;
+        for (int i = 0; sellersBack && i < city.getLandManager().getMarket().getListing().size(); i++) {
+            sellersBack &= back.getLandManager().getMarket().getListing().get(i).same(city.getLandManager().getMarket().getListing().get(i));
+        }
+        assertTrue("...and reloaded the Earth city stands the same offers, sellers and all, and the same nations sell its ground" + (named ? "" : " (no world file here: none)"),
+                !named ? back.getLandSellers() == null : sellersBack && back.getLandSellers() != null && back.getLandSellers().host() == city.getLandSellers().host());
         // A holding with foothill and shallow sea in it: Perth's window of the fixture, bought by hand (LandCheck.handBuy()) - the
         // condition caused, with no file named - written through DataSave and read back, then read with the keys gone.
         double[] perth = null;
@@ -3567,6 +3630,16 @@ public class SaveFileCheck {
 
     /** The console, as the harness found it: where quietly() puts the narration back. */
     static final java.io.PrintStream REAL_OUT = System.out;
+
+    /** Whether a market's offers, restored with no sellers (a save from before WN5, or without its key), come back as many offers all the host's whole. */
+    static boolean restoredWithoutSellers(LandMarket from) {
+        LandManager back = new LandManager();
+        back.updateMarket(0);
+        back.getMarket().restoreOffers(from.getOffersState(), from.getOffersReliefState(), null, from.getNextOfferId());
+        boolean whole = back.getMarket().getListing().size() == from.getListing().size() && !from.getListing().isEmpty();
+        for (LandParcel p : back.getMarket().getListing()) whole &= p.getSellers().isEmpty();
+        return whole && back.getMarket().getOffersSellersState() == null;
+    }
 
     /** Runs a piece of the city with the game's narration off. */
     static void quietly(Runnable r) {

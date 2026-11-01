@@ -315,6 +315,12 @@ public class Game {
         // ...and no world market yet (WN3): the first month, or a load, builds it where a world file is there.
         worldMarket = null;
         worldMarketTried = false;
+        // ...nor sellers of its land yet, nor anything bought from any (WN5): the founding, or the load, hands them.
+        landSellers = null;
+        landSellersTried = false;
+        landNations = -1;
+        landBoughtKm2 = null;
+        landBoughtUsd = null;
         partnerTrade = null;
         worldMoneys = null;
         policyRates = null;
@@ -736,7 +742,11 @@ public class Game {
         // not after their first month - on a new city. A load puts its own
         // land and offers back (readTheSave()), so it founds none here: the
         // default world would be built for nothing (0.7.57).
-        if (!loadingSave) landManager.updateMarket(populationManager.getPopulation());
+        // ...with the nations that sell the ground handed to the office first (WN5), so the founding's offers are priced by them; a load hands them after its land.
+        if (!loadingSave) {
+            handLandSellers();
+            landManager.updateMarket(populationManager.getPopulation());
+        }
 
         initialized = true;
         }
@@ -1253,6 +1263,12 @@ public class Game {
         handTheUsRate();
         world.followMoneys(null);
         getMarkets().clearWorldPrices();
+        // ...and no nation sells its land (WN5): the offers standing are priced again as the office always priced them.
+        if (landManager.getMarket().getSellers() != null) {
+            landSellers = null;
+            landManager.getMarket().setSellers(null);
+            landManager.getMarket().remeasureStanding();
+        }
     }
 
     /** Whether playOnLiterals() was called. */
@@ -2520,7 +2536,24 @@ public class Game {
         if (cost <= 0) {
             return false;
         }
-        double paidFromVault = landPaidFromVault ? foreign.spendReservesOnLand(fromVault) : 0;
+        // An offer with sellers named (WN5) pays each part in its seller's money, from the vault's holding of it first; one with none is paid as it always was.
+        List<LandParcel.Sale> sold = parcel.getSellers();
+        double paidFromVault;
+        if (!landPaidFromVault) {
+            paidFromVault = 0;
+        } else if (sold.isEmpty()) {
+            paidFromVault = foreign.spendReservesOnLand(fromVault);
+        } else {
+            double paid = 0;
+            boolean whole = true;
+            for (LandParcel.Sale s : sold) {
+                double spent = foreign.spendReservesOnLand(s.usd(), moneyOf(s.seller()));
+                paid += spent;
+                whole &= spent >= s.usd();
+            }
+            // ...each call clamps to what is left, so the parts together are min(usd, the vault); every part paid in full is the price exactly, not its parts' sum.
+            paidFromVault = whole ? usd : paid;
+        }
         double converted = usd - paidFromVault;
         double convertedLocal = 0;
         if (converted > 0) {
@@ -2553,12 +2586,221 @@ public class Game {
                     area, usdWords(usd), usdWords(paidFromVault), usdWords(converted),
                     localWords(here, convertedLocal));
         }
+        // ...and (WN5) who it was bought from where it was not the host's alone: "Sold by United States (62%, US$1.3M) and Canada (38%, C$1.1M)."
+        String by = soldByWords(sold);
+        if (!by.isEmpty()) lastLandReceipt += " " + by;
+        tallyLandBought(parcel, sold);
         // ...and (ET5) when the ground bought lies on a landmass no port links, where: "... - on Island 2, which no port links."
         String island = LandmassView.receiptWords(parcel, landManager.getLandmasses());
         if (!island.isEmpty()) lastLandReceipt = lastLandReceipt.substring(0, lastLandReceipt.length() - 1) + island + ".";
         lastLandReceiptMonth = month;
         GameLog.note(lastLandReceipt);
         return true;
+    }
+
+    /* ===================================================================
+       THE NATIONS THAT SELL THE LAND (WN5, 2026-11-01; docs/studies/spec-nations.md 6.2-6.4)
+
+       Jerus: "Borders baked in; land bought from its nation". On a real-Earth
+       world with the world file here, each offer's ground is sold by the
+       nation it lies in (LandSellers), priced at today's dollar formula
+       times that nation's land factor (LandFactors) and paid in that
+       nation's money: from the vault's holding of it when it is one of the
+       eight and the toggle pays from the vault (ForeignAccounts.
+       spendReservesOnLand(usd, code)), otherwise converted from the
+       treasury's cash at the cross rate, as the office always paid. An offer
+       across a border names each part (LandParcel.getSellers()), and the
+       receipt says who it was bought from.
+
+       A GENERATED WORLD, a city with no world file and a city on the
+       literals have no sellers: landSellers() is null, every offer is the
+       host's whole at factor 1, and nothing here changes a figure.
+
+       WHAT THE CITY HAS BOUGHT FROM WHOM is a flow, kept (and saved) since
+       founding for the screen that shows it (WN6): the area and the dollars,
+       by the nation's number, index 0 for a purchase with no seller named.
+       =================================================================== */
+
+    /** The sellers of this city's ground, built the first time they are asked (landSellers()); null where none sells. */
+    private transient LandSellers landSellers;
+    private transient boolean landSellersTried;
+
+    /** How many nations the world file names, -1 until asked (landNationCount()), 0 for no file. */
+    private transient int landNations = -1;
+
+    /** What the city has bought from each nation, km2 and thousands of US dollars, by the nation's number; index 0 is a purchase with no seller named. Null until the first purchase of a city with a world file (nation count + 1 long when there). Saved. */
+    private double[] landBoughtKm2, landBoughtUsd;
+
+    /** The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. */
+    private static final java.util.Map<Path, WorldData> LAND_FILES = new java.util.HashMap<>();
+
+    private static synchronized WorldData landFile(Path path) throws IOException {
+        Path key = path.toAbsolutePath().normalize();
+        WorldData open = LAND_FILES.get(key);
+        if (open == null) {
+            open = WorldData.open(key);
+            LAND_FILES.put(key, open);
+        }
+        return open;
+    }
+
+    /**
+     * The nations that sell this city's ground, built once and kept: null when the city plays on the literals, when the world file is not here, when its
+     * world is not the Earth, and (with one line) when they would not build. The land factors are this city's own, on the nations of its path.
+     */
+    private LandSellers landSellers() {
+        if (landSellersTried) return landSellers;
+        if (onLiterals || !founding.getWorldKey().earth()) return null;
+        landSellersTried = true;
+        Path file = WorldData.locate();
+        if (file == null) return null;
+        try {
+            World earth = World.of(founding.getWorldKey());
+            if (!earth.isEarth()) return null;
+            WorldData data = landFile(file);
+            LandFactors factors = LandFactors.load(data);
+            landSellers = LandSellers.on(earth, data, factors);
+            Nations beyond = landSellers == null ? null : getNations();
+            if (beyond != null) factors.setPaths(beyond);
+        } catch (IOException | RuntimeException e) {
+            System.out.println("Land is sold by no nation in this city (" + e + "): the land office prices it as it always did.");
+            landSellers = null;
+        }
+        return landSellers;
+    }
+
+    /** The nations that sell the city's ground, or null where none does (a generated world, no world file, the literals). */
+    public LandSellers getLandSellers() { return landSellers(); }
+
+    /** Hands the land office the nations that sell its ground, before the offers are listed or restored (LandMarket.setSellers()). */
+    private void handLandSellers() {
+        LandSellers sellers = landSellers();
+        landManager.getMarket().setSellers(sellers);
+        landManager.getMarket().syncMonth(month);
+    }
+
+    /** The ISO code of the money a nation uses this month (the path's), or null where it is not known. */
+    private String moneyOf(int nation) {
+        Nations beyond = nations;
+        if (beyond == null) return null;
+        try {
+            return beyond.year(nation, Nations.yearOf(month)).money();
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** How many nations the world file names, for the tally of what was bought from whom; 0 for no file (and on the literals). */
+    private int landNationCount() {
+        if (landSellers != null) return landSellers.file().nationCount();
+        if (onLiterals) return 0;
+        if (landNations < 0) {
+            landNations = 0;
+            Path file = WorldData.locate();
+            if (file != null) {
+                try {
+                    landNations = landFile(file).nationCount();
+                } catch (IOException | RuntimeException e) {
+                    landNations = 0;   // no file, no tally: nothing here is worth a line
+                }
+            }
+        }
+        return landNations;
+    }
+
+    /** How many nations the tally of the land bought counts: the world file's, 0 where there is no file. Index 0 of the tallies is a purchase with no seller named (a generated world's). */
+    public int landSellerCount() {
+        return landBoughtKm2 != null ? landBoughtKm2.length - 1 : landNationCount();
+    }
+
+    /** What the city has bought from a nation since founding, in square kilometres (0 for index 0, a purchase with no seller named, the host's on a generated world; 0 for a nation it has bought nothing from and for a number outside the file's). */
+    public double getLandBoughtKm2(int nation) {
+        return landBoughtKm2 == null || nation < 0 || nation >= landBoughtKm2.length ? 0 : landBoughtKm2[nation];
+    }
+
+    /** ...and what it paid them, in thousands of US dollars. */
+    public double getLandBoughtUsd(int nation) {
+        return landBoughtUsd == null || nation < 0 || nation >= landBoughtUsd.length ? 0 : landBoughtUsd[nation];
+    }
+
+    /** Harnesses only (WN5): the tally of what was bought from whom, set by hand (a nation count + 1 long each, or null for nothing bought). */
+    void setLandBoughtForTest(double[] km2, double[] usd) {
+        landBoughtKm2 = km2;
+        landBoughtUsd = usd;
+    }
+
+    /** A purchase added to the tally: each part to its seller, a purchase with no seller named (or a seller the tally does not count) to index 0. */
+    private void tallyLandBought(LandParcel parcel, List<LandParcel.Sale> sold) {
+        if (landBoughtKm2 == null) {
+            int n = landNationCount();
+            if (n <= 0) return;
+            landBoughtKm2 = new double[n + 1];
+            landBoughtUsd = new double[n + 1];
+        }
+        if (sold.isEmpty()) {
+            landBoughtKm2[0] += parcel.getKm2();
+            landBoughtUsd[0] += parcel.getPriceUsd();
+            return;
+        }
+        for (LandParcel.Sale s : sold) {
+            int at = s.seller() >= 1 && s.seller() < landBoughtKm2.length ? s.seller() : 0;
+            landBoughtKm2[at] += s.km2();
+            landBoughtUsd[at] += s.usd();
+        }
+    }
+
+    /** The tally as a save read it: kept only when both rows are the file's nation count + 1 long, else nothing bought (zeros). */
+    private void restoreLandBought(DataSave loaded) {
+        landBoughtKm2 = null;
+        landBoughtUsd = null;
+        double[] km2 = loaded.getLandBoughtKm2(), usd = loaded.getLandBoughtUsd();
+        if (km2 == null || usd == null) return;
+        int n = landNationCount();
+        if (n <= 0 || km2.length != n + 1 || usd.length != n + 1) return;
+        for (int i = 0; i <= n; i++) if (!(km2[i] >= 0) || !(usd[i] >= 0) || Double.isInfinite(km2[i]) || Double.isInfinite(usd[i])) return;
+        landBoughtKm2 = km2.clone();
+        landBoughtUsd = usd.clone();
+    }
+
+    /**
+     * "Sold by United States (62%, US$1.3M) and Canada (38%, C$1.1M)." - each part's share of the offer's area and its price in its own money at today's
+     * rate (WorldMoneys.rate(); in US$ where the moneys are not built or the nation's money is not one of them), marked as the eight are
+     * (ForeignAccounts.MONEY_MARK) and otherwise by its ISO code. Empty for an offer with no seller named, for one whose one seller is the host, and where
+     * the city has no sellers to name them from.
+     */
+    private String soldByWords(List<LandParcel.Sale> sold) {
+        LandSellers sellers = landSellers;
+        if (sold.isEmpty() || sellers == null || (sold.size() == 1 && sold.get(0).seller() == sellers.host())) return "";
+        double km2 = 0, usd = 0;
+        for (LandParcel.Sale s : sold) {
+            km2 += s.km2();
+            usd += s.usd();
+        }
+        List<String> parts = new ArrayList<>();
+        for (LandParcel.Sale s : sold) {
+            String name;
+            try {
+                name = sellers.file().nation(s.seller()).name();
+            } catch (RuntimeException e) {
+                name = "nation " + s.seller();
+            }
+            double share = km2 > 0 ? s.km2() / km2 : usd > 0 ? s.usd() / usd : 1.0 / sold.size();
+            parts.add(String.format("%s (%d%%, %s)", name, Math.round(100 * share), inSellersMoney(s)));
+        }
+        String all = parts.size() == 1 ? parts.get(0)
+                : String.join(", ", parts.subList(0, parts.size() - 1)) + " and " + parts.get(parts.size() - 1);
+        return "Sold by " + all + ".";
+    }
+
+    /** A part's price in the seller's own money at today's rate: "C$1.1M", "MXN 2.3M"; in US$ where the money or its rate is not known. */
+    private String inSellersMoney(LandParcel.Sale s) {
+        String code = moneyOf(s.seller());
+        WorldMoneys moneys = worldMoneys;
+        double rate = code == null || moneys == null ? Double.NaN : moneys.rate(code);
+        if (code == null || !(rate > 0) || !Double.isFinite(rate)) return usdWords(s.usd());
+        int k = ForeignAccounts.moneyIndex(code);
+        String mark = k >= 0 ? ForeignAccounts.MONEY_MARK[k] : code + " ";
+        return Formats.INSTANCE.amount(s.usd() * rate).replace("$", mark);
     }
 
     /** Thousands of US dollars as the screens write them: "US$101.8M" (Formats.amount() with the dollar's mark). */
@@ -15625,6 +15867,10 @@ public class Game {
                 landManager.getWorldSeaTheta());
         // ...and each holding's, offer's and the centre's dry ground by relief and shallow sea, in keys of their own (ET1): none widens a row.
         dataSave.setCityLandRelief(land.centreReliefState(), land.holdingsReliefState(), landManager.getMarket().getOffersReliefState());
+        // ...and who sells each offer, and what the city has bought from whom (WN5): keys of their own, none on a city that has neither.
+        dataSave.setLandOffersSellers(landManager.getMarket().getOffersSellersState());
+        // ...copies, since the snapshot shares no mutable object with the city (SaveSlotCheck).
+        dataSave.setLandBought(landBoughtKm2 == null ? null : landBoughtKm2.clone(), landBoughtUsd == null ? null : landBoughtUsd.clone());
         // ...and the offshore pool's E (0.7.93, SAVE_FORMAT 35): the depletion's oil is the ground pool's.
         dataSave.setOilDepletionAtSea(landManager.getOilExtractedAtSea());
         // ...and what has been taken out by type, once a works has dug by type (0.7.110; null until then).
@@ -18919,7 +19165,10 @@ public class Game {
         boolean oldWorld = kept == null && format < CityLand.NEW_FIELDS_FORMAT;
         land.setOldWorldHoldings(kept != null ? kept : oldWorld ? 1 + land.purchases().size() : 0);
         landManager.install(land, loaded.getDepletion(), loaded.getWorldTotals(), sea);
-        landManager.getMarket().restoreOffers(loaded.getLandOffers(), loaded.getLandOffersRelief(), loaded.getNextOfferId());
+        // The nations that sell its ground (WN5), handed before the offers come back (an old world's remeasuring prices by them), and the offers' own sellers with them.
+        handLandSellers();
+        restoreLandBought(loaded);
+        landManager.getMarket().restoreOffers(loaded.getLandOffers(), loaded.getLandOffersRelief(), loaded.getLandOffersSellers(), loaded.getNextOfferId());
         if (oldWorld) {
             // ...and its offers were listed on the old world's fields, gone from every plot it does not own: measured again, once.
             int standing = landManager.getMarket().getListing().size();

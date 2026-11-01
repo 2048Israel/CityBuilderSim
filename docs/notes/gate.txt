@@ -1,11 +1,14 @@
-# gate of Merge batch/WN7: nations: ships and trains to their partners, each on its partner's bearing; runs beside WN5 (spec-nations: WN7 after WN3; the orchestrator, 2026-11-01); the last of WN6 and WN7 to ship is 0.9.0 (`./ship.sh --version 0.9.0`; Jerus, 2026-10-31: "with the last WN its 0.9.0"), 0.8.96
+# gate of Merge batch/WN5: nations: land bought from the nation it lies in, at its land price, in its money; offers split at a border, 0.8.97
 # date: 2026-11-01
 # earth-2.bin: named
-# suite: 167 harnesses run in 1737s: 167 passed, 0 failed
-# timing: 15 harnesses run in 450s: 13 passed, 2 failed; its red lines were judged side by side with main's, below
+# suite: 168 harnesses run in 1808s: 168 passed, 0 failed
+# timing: 15 harnesses run in 457s: 12 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.4 ms, batch 29.1 ms (+6.4%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 26.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 26.6 ms, batch 27.3 ms (+2.7%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 5.47 ms, batch 4.64 ms (-15.1%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 53.9 ms, batch 54.8 ms (+1.7%), budget 80 ms: within 15% of main's]
 # timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the kept City History month is within KEPT_HISTORY_MS (13.0 ms)          FAIL   [main 4.6 ms, batch 4.57 ms (-0.8%), budget 13 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]

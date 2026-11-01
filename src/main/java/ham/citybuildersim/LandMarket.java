@@ -542,6 +542,8 @@ public class LandMarket {
     /** Puts the office on a city's land with nothing on its shelf: what LandManager does when a city is founded, converted, loaded or restated. */
     void attach(CityLand land) {
         this.land = land;
+        // ...and the sellers of another world's ground are not this land's (WN5): dropped, and the office prices as it always did.
+        if (sellers != null && land != null && !sellers.standsOn(land.key())) sellers = null;
         this.places = land == null ? null : new GridOffers(land.grid(), land.siteX(), land.siteY());
         this.takenFrom = -1;
         java.util.Arrays.fill(offers, null);
@@ -596,11 +598,83 @@ public class LandMarket {
         double[] amounts = new double[CityLand.KINDS];
         land.fieldsOn(r.x0(), r.y0(), r.x1(), r.y1(), sites, amounts);
         amounts[Resource.FOREST.ordinal()] = Math.rint(km2[CityLand.FOREST] * World.FOREST_M3_PER_KM2);
-        double usd = price(km2, ground.relief(), amounts, groundUsdPerSqFt, usPriceLevel);
+        // The one door an offer is priced through (measure() for a listing, a restating, a draft and a quote): with no sellers, price() as ever.
+        List<LandParcel.Sale> sold = List.of();
+        double usd;
+        if (sellers == null) {
+            usd = price(km2, ground.relief(), amounts, groundUsdPerSqFt, usPriceLevel);
+        } else {
+            sold = new ArrayList<>();
+            usd = priceBySellers(r, km2, sold);
+        }
         LandParcel offer = new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, ground.relief(), sites, amounts, usd, listedIn);
+        offer.setSellers(sold);
         // ...and what of it is on ground the city has not linked (ET5): derived, never in the offer's record.
         if (landmasses != null) landmasses.offerSplit(World.of(land.key()), land, offer);
         return offer;
+    }
+
+    /*
+     * THE NATIONS THAT SELL THE GROUND (WN5, 2026-11-01; docs/studies/spec-nations.md 6.2-6.4; LandSellers, LandFactors). On a real-Earth world each part of
+     * an offer is priced at today's dollar formula times its seller's land factor, and the offer's price is the parts' sum rounded once; the offer keeps
+     * the whole rectangle's ground, relief, sites and amounts as ever - the parts only price and name (LandParcel.getSellers()). Null on a generated
+     * world, with no world file and on the literals: every offer is then the host's whole at factor 1, and measure() is what it always was.
+     */
+
+    /** The sellers of the city's ground, null for none. Game hands them in (setSellers()); the office drops them when its land is put on another world (attach()). */
+    private LandSellers sellers;
+
+    /** The nations that sell the ground the offers stand on, or null where none does (a generated world, no world file, the literals). */
+    public LandSellers getSellers() { return sellers; }
+
+    /** Hands the office the sellers of its land (Game, before the founding's listing and in the load path); null for none. Offers listed from now on are priced by them. */
+    void setSellers(LandSellers sellers) {
+        this.sellers = sellers;
+    }
+
+    /** Sets the month the office prices in: the load path's, where the office has not been through update() yet and a quote's land factors move with the month. Only with sellers - without them the month is read by nothing a quote prices. */
+    void syncMonth(int month) {
+        if (sellers != null) this.month = month;
+    }
+
+    /**
+     * An offer's price with sellers: each part of its ground (LandSellers.split()) priced raw at the dollar formula of its own km2, relief and
+     * fields (forest's timber from the part's own forest, as measure() does for the whole), times its seller's land factor this month; the parts added
+     * in the order split() gives them, and rounded once. `sold` is filled with a Sale for each part - its area and its share of the price, the last
+     * part with ground taking what the others leave so the shares add up to the price exactly (all to the first where the parts are worth nothing).
+     * One part at factor 1 is the raw price times 1.0, so the price is price()'s to the bit.
+     */
+    private double priceBySellers(GridOffers.Rect r, double[] km2, List<LandParcel.Sale> sold) {
+        List<LandSellers.Part> parts = sellers.split(land, r.x0(), r.y0(), r.x1(), r.y1(), km2[CityLand.SEA]);
+        LandFactors factors = sellers.factors();
+        int n = parts.size();
+        double[] weight = new double[n];
+        double sum = 0;
+        for (int i = 0; i < n; i++) {
+            LandSellers.Part part = parts.get(i);
+            double[] own = part.km2();
+            double[] amounts = part.amounts().clone();
+            amounts[Resource.FOREST.ordinal()] = Math.rint(own[CityLand.FOREST] * World.FOREST_M3_PER_KM2);
+            double raw = rawPrice(own, part.relief(), amounts, groundUsdPerSqFt, usPriceLevel);
+            weight[i] = raw * (factors == null ? 1.0 : factors.factorAt(part.seller(), month));
+            sum += weight[i];
+        }
+        double usd = rounded(sum);
+        int last = 0;
+        for (int i = 0; i < n; i++) if (weight[i] > 0) last = i;
+        boolean shared = sum > 0 && Double.isFinite(sum);
+        double others = 0;
+        double[] share = new double[n];
+        for (int i = 0; i < n; i++) {
+            if (!shared) share[i] = i == 0 ? usd : 0;
+            else if (i != last) {
+                share[i] = usd * weight[i] / sum;
+                others += share[i];
+            }
+        }
+        if (shared) share[last] = Math.max(0, usd - others);
+        for (int i = 0; i < n; i++) sold.add(new LandParcel.Sale(parts.get(i).seller(), parts.get(i).km2()[CityLand.TOTAL], share[i]));
+        return usd;
     }
 
     /** The city's ground by landmass (ET5), which splits each offer's ground by linked and unlinked; null on an office with none, a bare one's harness-made. LandManager hands it in. */
@@ -663,8 +737,13 @@ public class LandMarket {
      * nobody wants to compare US$103,847 against US$98,211.
      */
     public static double price(double[] km2, double[] amounts, double groundUsdPerSqFt, double usPriceLevel) {
+        return rounded(rawPrice(km2, amounts, groundUsdPerSqFt, usPriceLevel));
+    }
+
+    /** price() before its rounding (WN5: the parts of an offer are priced raw, added at their sellers' factors and rounded once). */
+    private static double rawPrice(double[] km2, double[] amounts, double groundUsdPerSqFt, double usPriceLevel) {
         double ground = groundKm2(km2);
-        return plusResources(groundUsdPerSqFt * ground * LandManager.SQ_FT_PER_KM2, amounts, usPriceLevel);
+        return rawPlusResources(groundUsdPerSqFt * ground * LandManager.SQ_FT_PER_KM2, amounts, usPriceLevel);
     }
 
     /**
@@ -674,13 +753,18 @@ public class LandMarket {
      */
     public static final double PRICE_STEP_USD = 5 * PriceLevel.FACTOR;
 
-    /** The resources' share of an offer's price added to the ground's, in thousands of US dollars (price()'s second half), rounded to PRICE_STEP_USD. Adds in Resource's order to the figure it is handed, as price() always did. */
-    private static double plusResources(double groundUsd, double[] amounts, double usPriceLevel) {
+    /** The resources' share of an offer's price added to the ground's, in thousands of US dollars (price()'s second half), before its rounding to PRICE_STEP_USD (rounded()). Adds in Resource's order to the figure it is handed, as price() always did. */
+    private static double rawPlusResources(double groundUsd, double[] amounts, double usPriceLevel) {
         double usd = groundUsd;
         for (Resource r : Resource.values()) {
             if (r.good() == null || !(r.inGroundShare() > 0)) continue;
             usd += amounts[r.ordinal()] * r.good().worldExportPrice() * r.inGroundShare() * usPriceLevel;
         }
+        return usd;
+    }
+
+    /** A price rounded to PRICE_STEP_USD. */
+    private static double rounded(double usd) {
         return Math.round(usd / PRICE_STEP_USD) * PRICE_STEP_USD;
     }
 
@@ -733,14 +817,19 @@ public class LandMarket {
      * with none of foothill, steep or very steep in it, or no row, this is the four-argument price() to the bit.
      */
     public static double price(double[] km2, double[] relief, double[] amounts, double groundUsdPerSqFt, double usPriceLevel) {
-        if (allFlat(relief)) return price(km2, amounts, groundUsdPerSqFt, usPriceLevel);
+        return rounded(rawPrice(km2, relief, amounts, groundUsdPerSqFt, usPriceLevel));
+    }
+
+    /** price() with relief before its rounding (WN5). */
+    private static double rawPrice(double[] km2, double[] relief, double[] amounts, double groundUsdPerSqFt, double usPriceLevel) {
+        if (allFlat(relief)) return rawPrice(km2, amounts, groundUsdPerSqFt, usPriceLevel);
         double base = BASE_PRICE_PER_SQ_FT * usPriceLevel;
         double prep = prepUsdPerSqFt(usPriceLevel);
         double dry = relief[CityLand.RELIEF_FLAT] * reliefPrice(World.FLAT, groundUsdPerSqFt, base, prep)
                 + relief[CityLand.RELIEF_FOOTHILL] * reliefPrice(World.FOOTHILL, groundUsdPerSqFt, base, prep)
                 + (relief[CityLand.RELIEF_STEEP] + relief[CityLand.RELIEF_VERY_STEEP]) * reliefPrice(World.STEEP, groundUsdPerSqFt, base, prep);
         double water = groundUsdPerSqFt * (FRESH_PRICE_SHARE * km2[CityLand.FRESH] + SEA_PRICE_SHARE * km2[CityLand.SEA]);
-        return plusResources((dry + water) * LandManager.SQ_FT_PER_KM2, amounts, usPriceLevel);
+        return rawPlusResources((dry + water) * LandManager.SQ_FT_PER_KM2, amounts, usPriceLevel);
     }
 
     /** The ground flat at the going dollar price, in thousands of US dollars a square foot: what the office asks for flat ground now (getGroundUsdPerSqFt()). */
@@ -1275,6 +1364,21 @@ public class LandMarket {
         return rows;
     }
 
+    /**
+     * The offers' sellers (WN5), a record each in getOffersState()'s order (LandParcel.sellersRow()): DataSave's landOffersSellers. An empty row is an
+     * offer with none named; null when no offer has any (a generated world's, a city with no world file), so such a save carries no key.
+     */
+    public double[][] getOffersSellersState() {
+        List<LandParcel> listed = getListing();
+        double[][] rows = new double[listed.size()][];
+        boolean any = false;
+        for (int i = 0; i < rows.length; i++) {
+            rows[i] = listed.get(i).sellersRow();
+            any |= rows[i].length > 0;
+        }
+        return any ? rows : null;
+    }
+
     /** The id the next offer listed will take: DataSave's nextOfferId. Ids only grow. */
     public int getNextOfferId() { return nextId; }
 
@@ -1289,9 +1393,15 @@ public class LandMarket {
 
     /** ...with their ground by relief (ET1; getOffersReliefState(), a row for each of `rows` by its place): a key a save has not, or a row of the wrong width, reads the offer all flat. */
     public void restoreOffers(double[][] rows, double[][] relief, int nextOfferId) {
+        restoreOffers(rows, relief, null, nextOfferId);
+    }
+
+    /** ...and their sellers (WN5; getOffersSellersState(), a row for each of `rows` by its place): none for a key a save has not, a row missing or not a record of sellers - an older save's offers were listed with no factor, and are the host's whole. */
+    public void restoreOffers(double[][] rows, double[][] relief, double[][] sellerRows, int nextOfferId) {
         List<LandParcel> list = new ArrayList<>();
         if (rows != null) for (int i = 0; i < rows.length; i++) {
-            LandParcel p = LandParcel.fromOfferRow(rows[i], relief != null && i < relief.length ? relief[i] : null);
+            LandParcel p = LandParcel.fromOfferRow(rows[i], relief != null && i < relief.length ? relief[i] : null,
+                    sellerRows != null && i < sellerRows.length ? sellerRows[i] : null);
             if (p != null) list.add(p);
         }
         putOffers(list);

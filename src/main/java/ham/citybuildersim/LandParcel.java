@@ -1,5 +1,8 @@
 package ham.citybuildersim;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * One offer on the market, as the land office lists it: a rectangle of whole blocks against one side of the city, in one of that side's six places, with what its ground holds - its area dry, fresh, sea and forest, and the sites and amounts of the seven resources - and its price.
  *
@@ -79,6 +82,20 @@ public final class LandParcel {
 
     /** ...and the id of the unlinked landmass holding most of it, 0 for none. */
     private transient int unlinkedLargest;
+
+    /*
+     * WHO SELLS IT (WN5, 2026-11-01; docs/studies/spec-nations.md 6.2-6.4). On a real-Earth world an offer's ground may lie in more than one
+     * nation (an offer at Windsor across the Detroit River), and each part is priced at its own nation's land factor and paid to that nation in its
+     * money (LandSellers, LandFactors). Set once, when the offer is listed or restored, and saved beside the relief in a key of its own
+     * (DataSave's landOffersSellers) - not in offerRow(), which every older save would then pass over. EMPTY means no seller is named: a generated
+     * world's offer, one with no world file, a hand-made one and an older save's, read everywhere as "the host's whole, at the price listed".
+     */
+
+    /** One seller's part of an offer: the nation (the world file's number, 1-based), the part's whole area in square kilometres (its five areas' CityLand.TOTAL) and its share of the price, in thousands of US dollars like getPriceUsd(). */
+    public record Sale(int seller, double km2, double usd) { }
+
+    /** The parts of the offer by the nation that sells each, in the order LandSellers.split() says (most ground first); empty for no seller named. */
+    private List<Sale> sellers = List.of();
 
     /** The share of an offer's area that, when sea, tags it "mostly sea": 70% - listed, because sea is cheap, but never the best value (spec-land 2.2). */
     public static final double MOSTLY_SEA = 0.70;
@@ -222,6 +239,43 @@ public final class LandParcel {
     /** The id of the unlinked landmass holding most of its unlinked dry ground; 0 for none. */
     public int getUnlinkedLargest() { return unlinkedLargest; }
 
+    /**
+     * Who sells it (WN5): one Sale for each nation whose ground the offer holds, with that part's area and its share of the price (the shares add up to
+     * getPriceUsd()). Empty where no seller is named - a generated world's offer, one with no world file, a hand-made one and an older save's - which every
+     * reader takes as the host's whole, at the price listed. Never null, never changed once the offer stands.
+     */
+    public List<Sale> getSellers() { return sellers; }
+
+    /** Names the sellers when the offer is listed or restored (LandMarket); an empty or null list is none. */
+    void setSellers(List<Sale> sold) {
+        this.sellers = sold == null || sold.isEmpty() ? List.of() : List.copyOf(sold);
+    }
+
+    /** Its sellers as a record (DataSave's landOffersSellers): seller, km2, usd for each part in turn, SELLER_FIELDS figures a part; an empty row for none. */
+    public double[] sellersRow() {
+        double[] row = new double[SELLER_FIELDS * sellers.size()];
+        int i = 0;
+        for (Sale s : sellers) {
+            row[i++] = s.seller();
+            row[i++] = s.km2();
+            row[i++] = s.usd();
+        }
+        return row;
+    }
+
+    /** Sellers from a record (sellersRow()): none for a null or empty row, for a row whose width is not a whole number of parts, and for a row with any part whose seller is not a whole number from 1, or whose area or price is negative or not a number. */
+    static List<Sale> sellersFrom(double[] row) {
+        if (row == null || row.length == 0 || row.length % SELLER_FIELDS != 0) return List.of();
+        List<Sale> out = new ArrayList<>(row.length / SELLER_FIELDS);
+        for (int i = 0; i < row.length; i += SELLER_FIELDS) {
+            double who = row[i], km2 = row[i + 1], usd = row[i + 2];
+            if (!Double.isFinite(who) || who < 1 || who != Math.rint(who) || who > Integer.MAX_VALUE) return List.of();
+            if (!Double.isFinite(km2) || km2 < 0 || !Double.isFinite(usd) || usd < 0) return List.of();
+            out.add(new Sale((int) who, km2, usd));
+        }
+        return out;
+    }
+
     /** Its sites of a resource. */
     public int getSites(Resource r)      { return sites[r.ordinal()]; }
 
@@ -301,11 +355,16 @@ public final class LandParcel {
        fromPurchaseRow() return null on a wrong width), so it is kept in keys
        of its own, a row each in the same order - reliefRow(), DataSave's
        landOffersRelief and landHoldingsRelief - and a save without them reads
-       all flat.
+       all flat. Its sellers (WN5) are kept the same way, in landOffersSellers
+       (sellersRow()): an offer's, not a holding's, and a save without the key
+       reads every offer as the host's whole.
        ===================================================================== */
 
     /** Where a record keeps the rectangle: side, place, level, x0, y0, x1, y1 - seven. */
     static final int RECT_FIELDS = 7;
+
+    /** How wide a seller's part is in a sellers record (sellersRow()): the nation, its area and its price - three. */
+    static final int SELLER_FIELDS = 3;
 
     /** How wide an offer's record is: its id, its rectangle (side, place, level, x0, y0, x1, y1), its five areas, its sites, its amounts, its price and the month it was listed - 29. */
     public static final int OFFER_FIELDS = 1 + RECT_FIELDS + CityLand.AREAS + 2 * CityLand.KINDS + 2;
@@ -332,6 +391,17 @@ public final class LandParcel {
 
     /** ...with its ground by relief (reliefRow(), landOffersRelief's row for it): all flat when there is none, or it is the wrong width (ET1). */
     public static LandParcel fromOfferRow(double[] row, double[] relief) {
+        return fromOfferRow(row, relief, null);
+    }
+
+    /** ...and its sellers (sellersRow(), landOffersSellers' row for it, WN5): none when there is none, or it is not a record of sellers. */
+    public static LandParcel fromOfferRow(double[] row, double[] relief, double[] sellers) {
+        LandParcel p = fromOfferRowOf(row, relief);
+        if (p != null) p.sellers = sellersFrom(sellers);
+        return p;
+    }
+
+    private static LandParcel fromOfferRowOf(double[] row, double[] relief) {
         if (row == null || row.length != OFFER_FIELDS) return null;
         double[] km2 = new double[CityLand.AREAS];
         int[] sites = new int[CityLand.KINDS];
@@ -415,8 +485,9 @@ public final class LandParcel {
         return i;
     }
 
-    /** Whether two offers are the same, field for field: its record and its ground by relief (ET1). */
+    /** Whether two offers are the same, field for field: its record, its ground by relief (ET1) and its sellers (WN5). */
     public boolean same(LandParcel o) {
-        return o != null && java.util.Arrays.equals(offerRow(), o.offerRow()) && java.util.Arrays.equals(relief, o.relief);
+        return o != null && java.util.Arrays.equals(offerRow(), o.offerRow()) && java.util.Arrays.equals(relief, o.relief)
+                && sellers.equals(o.sellers);
     }
 }

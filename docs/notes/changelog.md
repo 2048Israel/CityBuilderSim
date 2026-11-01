@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.97 — WN5, land bought from its nation — 2026-11-01, ready, see docs/queue/WN5-notes.md
+Jerus: "Borders baked in; land bought from its nation", "land costs different prices purely by who you are buying it from".
+On the real Earth each offer is sold by the nation its ground lies in (world-1.bin's owner layer; an area or no one sells as
+the host; a foreign nation's sea only within 12 nautical miles of its land), priced at today's formula times that nation's
+land factor, its land against Canada's (exactly 1): 25 published farmland prices (Eurostat, USDA, Statistics Canada, 2024)
+and a fit on output a head and people a km2 for the rest (land-2024.json), taken back to 1900 on the file's output a head
+and moving with it. An offer across a border is split, each part priced and paid to its own nation, from the vault's
+holding of its money first; the receipt and the offer card name them ("Sold by United States 62% · Canada 38%"), and what
+the city bought from whom is kept for WN6. A generated world is the host's at factor 1: the default playtest's eight trace
+files byte-identical to main's, no ensemble. A Rotterdam city pays about 11 times Halifax's and ends a third smaller.
+Suite green (exit 0, 167 harnesses; README's count set to 167 at the gate, beside WN7's); LandNationsCheck new: Historical meets the published ratios in 2024 to 2.7e-16.
+
 ### 0.8.96 — WN7, ships and trains to their partners — 2026-11-01, ready, see docs/queue/WN7-notes.md
 The nations line's last batch: with it WN0-WN7 are whole (the world file, the nations and their paths, the map, the
 market, the moneys, land from its nation, the screens, and this). Each boat and train now carries its partner, drawn
