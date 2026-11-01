@@ -224,12 +224,42 @@ IC1 ships that rule, so section 6's town moves. On IC1's full suite:
   - Its 10-billion copy builds 33 homes per K, and that line passes.
 - **Section 9, new on IC1.** The copy 1,000 times over no longer tracks its city. It is off from the first month:
   cash by 1.46 of the city's, GDP by 2.73, deposits by 0.81. By the sixth month unemployment is off by 0.12 and
-  people by 0.045.
-  - That is 8 new red lines (people, cash, savings, GDP, deposits, prices, unemployment and the registers).
-  - IC1's test is a share (`Construction.isIdleAtCoreCrew()`), and the withheld posts round as main's always did,
-    so it should scale.
-  - Check first whether the copy's builders read idle in the same months as the city's. A struck share on the core
-    crew's edge, or an order count that rounds differently at K = 1,000, would part them.
+  people by 0.045. That is 8 new red lines (people, cash, savings, GDP, deposits, prices, unemployment and the
+  registers).
+
+**Where the copy and its city part: the planners, not IC1's rule** (the orchestrator's question at the gate). The
+probe is `docs/queue/IC1/IC1ScaleProbe.java`. It plays section 6's town, copies it at K = 1 and K = 1,000, and prints
+the builders, the gate's figures and every sector's decision, month by month.
+- **IC1's rule reads the same in both.**
+  - The builders are idle at the core crew in both, at offered 0.250000 from the load to m1.
+  - The posts withheld are 1,394 per K in the city and 1,395 in the copy, rounding alone.
+  - The unemployed are 2,651 against 2,657.4 per K at m1.
+- **The planners part.** In month 1 the copy builds what its city declines, because a building is the same size at
+  every K, so one plant is a thousandth of the copy's economy:
+  - a Commercial Vehicle Plant, where the city declines an Assembly Plant on its interest;
+  - a Snack & Oils Plant, where the city's Meat Works leaves nothing after the wages;
+  - a Truck Depot, where the city is under the 30,000 tonnes a first line wants;
+  - 174 Low-Rise Apartments where the city builds 4 Houses.
+
+  The month's cash parts at once: 1,019,358 per K in the city against -470,013 in the copy.
+- **It is older than IC1, met on IC1's path.** The same save (IC1's town, 23,102 people at m1,129) was copied and
+  played on main's own classes (0.8.91: the crews spoken for). It parts the same way to the digit: the same month-1
+  figures and the same decisions.
+  - It also does so with every laid-off crew called back in both copies.
+  - In this town the unemployed (2,636) outnumber the crews (1,394), so the gate does not bind under either rule.
+- **Why main's line was green.** Main's town at m1,129 is 8,665 people. Its copy also builds what its city does not,
+  under main's rule as it stands: a Heavy Truck Plant and a Truck Depot in month 1. Only Manufacturing is held at the
+  gate there.
+  - Those orders barely move that town's figures: month 1's cash is 576,294 per K in the city against 573,831 in the
+    copy, within section 9's bounds.
+  - IC1's town is larger, and its copy's month-1 orders move its cash by 1.5 times the city's.
+  - So the line held by the size of what the copy ordered, not by the gate.
+- **So section 9's premise holds only where no planner's order depends on a building's size against the city.**
+  - Queued as SK1, and it may run with ST2, which rescans the same town.
+  - Section 9 ships red on Jerus's words.
+- **An aside for SK1.** `ScaleCheck.scale()` multiplies Construction's `crewsNeeded` extra by K (73.33 at the load
+  against 0.0733). It is a ratio. It is harmless here: only `LongPlaytest`'s printout and the builders' screen read
+  it, and the month strikes it again before either.
 
 **What to watch on the rescan.** Rescan on IC1's tip once it is on main. Watch for an overbuild bust after the
 faster young boom: seeds 0, 5 and 6 here rise and fall at m480-600, and ST1's freed town fell by half after m1,500. A
@@ -245,10 +275,15 @@ month that holds every assertion before such a bust may not hold after the next 
   switch as it was.
 - ★ **FoundingYardCheck 6's last line follows the new rule (Recommended, taken).** It asserted the effect IC1
   reverses. The alternative is to drop the line.
-- ★ **ScaleCheck and KeptCheck ship red, each with its batch queued (Recommended).** ST2 already follows IC1 for
-  ScaleCheck's town, and KH1 is new, for KeptCheck. Each is another batch's fixture or fault, met on IC1's moved
-  path, as LD1 shipped with WellCheck. The alternative is KH1's screen line made here: a screen change in a model
-  batch, untested by the eye.
+- ★ **ScaleCheck 9 and KeptCheck 15 ship red, on Jerus's words, each with its batch queued (Recommended).** SK1
+  (new) is ScaleCheck 9's premise, and KH1 (new) is KeptCheck's fault. Each is older than IC1, met on its moved path:
+  ScaleCheck 9 parts the same way on main's classes (§7), and KeptCheck's is the kept page's layout, which main's
+  played stretch does not reach. The alternative for KeptCheck is KH1's screen line made here: a screen change in a model batch,
+  untested by the eye.
+- ★ **SK1's recommendation: section 9 holds, in both copies, the sectors whose orders are whole buildings.**
+  - Section 9 reads the scaler (FW9: the city's grains), and a copy can never order a thousandth of a plant.
+  - The other way is a month where nothing whole is ordered in FREE_MONTHS, found by ST2's scan. That holds only
+    until the next batch moves the trace.
 - ★ **A3's red is accepted (Recommended).** It is one seed at the criterion's boundary: 12 months against "< 12",
   as 0.8.88's 13. The median spell is 5 months. Pending IC1-R.
 - ★ **LD1-R reads +0.19 on IC1 (Recommended: accept, as LD1-R recommends).** R2's red is smaller, not gone. Whether
