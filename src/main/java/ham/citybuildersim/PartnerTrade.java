@@ -31,6 +31,10 @@ import java.util.TreeMap;
  *
  * <p>TWO THREADS. The model's thread writes, and publishes an immutable Snapshot through a volatile at the end of every tally (close()); the
  * screen's thread reads the snapshot and never sees a half-tallied month. Everything else here is the model thread's alone.
+ *
+ * <p>THE CARGO TABLE (WN7). The month's tonnes are also kept by kind of cargo (Good.cargo()) and nation, a table for exports and one for imports,
+ * cleared with the month and kept in the State: what CallPartners draws a ship's or a train's partner by (the map sends a boat to the nation its cargo
+ * is bound for). A good that ships in no kind of cargo is in the month's tonnes by nation and in no kind. Nothing in the model's month reads it.
  */
 public final class PartnerTrade {
 
@@ -67,6 +71,11 @@ public final class PartnerTrade {
         public double[] exportValue, importValue, exportTonnes, importTonnes;
         public double noPartnerExports, noPartnerImports;
         public double[] yearExportValue, yearImportValue, yearExportTonnes, yearImportTonnes;
+        /**
+         * The month's tonnes by kind of cargo and nation (WN7), flat: Ports.Cargo's ordinal times the nations, plus the nation less one; exports, then
+         * imports. A save written before WN7 reads them null, and the month then restores with none: the first month of such a city has no partners.
+         */
+        public double[] cargoExportTonnes, cargoImportTonnes;
         public List<Cell> yearCells;
         /** The month's units by good, every good with trade: what the next band is struck from (GoodsMarket's own tally leaves out the draws made before the clearing). */
         public List<GoodUnits> goodUnits;
@@ -79,6 +88,7 @@ public final class PartnerTrade {
      */
     public record Snapshot(int month, int year,
                            double[] exportValue, double[] importValue, double[] exportTonnes, double[] importTonnes,
+                           double[][] cargoExportTonnes, double[][] cargoImportTonnes,
                            double noPartnerExports, double noPartnerImports,
                            double[] yearExportValue, double[] yearImportValue, double[] yearExportTonnes, double[] yearImportTonnes,
                            List<Cell> yearCells, List<Table> history,
@@ -103,6 +113,15 @@ public final class PartnerTrade {
         /** How many nations the figures are of. */
         public int nations() { return exportValue.length; }
 
+        /**
+         * The month's tonnes of one kind of cargo sold to each nation (`out`) or bought of each, indexed by the nation less one (WN7: CallPartners
+         * draws a ship's or a train's partner by them). A good that ships in no kind of cargo (Good.cargo() null: check) is in the month's tonnes by
+         * nation and in none of these. This snapshot's own array, never written.
+         */
+        public double[] cargoTonnes(Ports.Cargo c, boolean out) {
+            return (out ? cargoExportTonnes : cargoImportTonnes)[c.ordinal()];
+        }
+
         /** The month's trade with the nations, both ways together, thousands of the city's money. */
         public double monthTotal() {
             double s = 0;
@@ -118,6 +137,9 @@ public final class PartnerTrade {
     private int month = -1;
     private final double[] exportValue, importValue, exportTonnes, importTonnes;
     private double noPartnerExports, noPartnerImports;
+
+    /** The month's tonnes by kind of cargo (Ports.Cargo's ordinal) and nation, exports and imports (WN7): each good's tonnes by nation, added to its cargo's row. */
+    private final double[][] cargoExportTonnes, cargoImportTonnes;
 
     /** The month's world trade by good, in units: {out, in}. Only goods with trade. The model's thread's, for the band. */
     private final Map<Good, double[]> monthUnits = new EnumMap<>(Good.class);
@@ -143,6 +165,8 @@ public final class PartnerTrade {
         importValue = new double[n];
         exportTonnes = new double[n];
         importTonnes = new double[n];
+        cargoExportTonnes = new double[Ports.Cargo.values().length][n];
+        cargoImportTonnes = new double[Ports.Cargo.values().length][n];
         yearExportValue = new double[n];
         yearImportValue = new double[n];
         yearExportTonnes = new double[n];
@@ -206,6 +230,8 @@ public final class PartnerTrade {
         double[] monthValue = out ? exportValue : importValue, monthTonnes = out ? exportTonnes : importTonnes;
         double[] yearValue = out ? yearExportValue : yearImportValue, yearTonnes = out ? yearExportTonnes : yearImportTonnes;
         TreeMap<Integer, double[]> byNation = cells.computeIfAbsent(good, g -> new TreeMap<>());
+        Ports.Cargo cargo = good.cargo();
+        double[] monthCargo = cargo == null ? null : (out ? cargoExportTonnes : cargoImportTonnes)[cargo.ordinal()];
         for (int i = 0; i < n; i++) {
             double u = units[i];
             if (!(u > 0)) continue;
@@ -213,6 +239,7 @@ public final class PartnerTrade {
             double tonnes = unitsPerTonne > 0 ? u / unitsPerTonne : 0;
             monthValue[i] += share;
             monthTonnes[i] += tonnes;
+            if (monthCargo != null) monthCargo[i] += tonnes;
             yearValue[i] += share;
             yearTonnes[i] += tonnes;
             double[] cell = byNation.computeIfAbsent(i + 1, k -> new double[4]);
@@ -244,6 +271,8 @@ public final class PartnerTrade {
         java.util.Arrays.fill(importValue, 0);
         java.util.Arrays.fill(exportTonnes, 0);
         java.util.Arrays.fill(importTonnes, 0);
+        for (double[] row : cargoExportTonnes) java.util.Arrays.fill(row, 0);
+        for (double[] row : cargoImportTonnes) java.util.Arrays.fill(row, 0);
         noPartnerExports = noPartnerImports = 0;
         monthUnits.clear();
     }
@@ -314,10 +343,17 @@ public final class PartnerTrade {
     private void publish() {
         published = new Snapshot(month, year,
                 exportValue.clone(), importValue.clone(), exportTonnes.clone(), importTonnes.clone(),
+                copy(cargoExportTonnes), copy(cargoImportTonnes),
                 noPartnerExports, noPartnerImports,
                 yearExportValue.clone(), yearImportValue.clone(), yearExportTonnes.clone(), yearImportTonnes.clone(),
                 List.copyOf(cellList(false)), List.copyOf(history),
                 standInLat, standInLon, names);
+    }
+
+    private static double[][] copy(double[][] a) {
+        double[][] out = new double[a.length][];
+        for (int i = 0; i < a.length; i++) out[i] = a[i].clone();
+        return out;
     }
 
     /* =====================================================================
@@ -333,6 +369,8 @@ public final class PartnerTrade {
         s.importValue = importValue.clone();
         s.exportTonnes = exportTonnes.clone();
         s.importTonnes = importTonnes.clone();
+        s.cargoExportTonnes = flat(cargoExportTonnes);
+        s.cargoImportTonnes = flat(cargoImportTonnes);
         s.noPartnerExports = noPartnerExports;
         s.noPartnerImports = noPartnerImports;
         s.yearExportValue = yearExportValue.clone();
@@ -343,6 +381,23 @@ public final class PartnerTrade {
         s.goodUnits = new ArrayList<>();
         for (Map.Entry<Good, double[]> e : monthUnits.entrySet()) s.goodUnits.add(new GoodUnits(e.getKey(), e.getValue()[0], e.getValue()[1]));
         return s;
+    }
+
+    private static double[] flat(double[][] a) {
+        int n = a.length == 0 ? 0 : a[0].length;
+        double[] out = new double[a.length * n];
+        for (int i = 0; i < a.length; i++) System.arraycopy(a[i], 0, out, i * n, n);
+        return out;
+    }
+
+    /** The flat table back into its rows; zeros where the save has none (an older save: Gson leaves the key null), or has it the wrong length or not a number. */
+    private void unflat(double[] flat, double[][] rows) {
+        boolean ok = flat != null && flat.length == rows.length * n;
+        if (ok) for (double v : flat) ok &= Double.isFinite(v) && v >= 0;
+        for (int i = 0; i < rows.length; i++) {
+            if (ok) System.arraycopy(flat, i * n, rows[i], 0, n);
+            else java.util.Arrays.fill(rows[i], 0);
+        }
     }
 
     /**
@@ -361,6 +416,8 @@ public final class PartnerTrade {
         System.arraycopy(s.importValue, 0, importValue, 0, n);
         System.arraycopy(s.exportTonnes, 0, exportTonnes, 0, n);
         System.arraycopy(s.importTonnes, 0, importTonnes, 0, n);
+        unflat(s.cargoExportTonnes, cargoExportTonnes);
+        unflat(s.cargoImportTonnes, cargoImportTonnes);
         noPartnerExports = s.noPartnerExports;
         noPartnerImports = s.noPartnerImports;
         System.arraycopy(s.yearExportValue, 0, yearExportValue, 0, n);

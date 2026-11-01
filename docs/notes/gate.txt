@@ -1,11 +1,11 @@
-# gate of Merge batch/EP1: the game starts in 1900, before research: the calendar's epoch to 1900 and Historical's history from 1900 (the world's series, the moneys on gold and Bretton Woods, the policy rates), today's tech kept until R0-R5; today's real economy at 1900's price level (Jerus: "1900 price level") (Jerus, 2026-10-30: "move the start date and history to 1900 once you finish all these batches youve scheduled, like a pre research batch"), 0.8.95
+# gate of Merge batch/WN7: nations: ships and trains to their partners, each on its partner's bearing; runs beside WN5 (spec-nations: WN7 after WN3; the orchestrator, 2026-11-01); the last of WN6 and WN7 to ship is 0.9.0 (`./ship.sh --version 0.9.0`; Jerus, 2026-10-31: "with the last WN its 0.9.0"), 0.8.96
 # date: 2026-11-01
 # earth-2.bin: named
-# suite: 166 harnesses run in 2387s: 166 passed, 0 failed
-# timing: 14 harnesses run in 589s: 12 passed, 2 failed; its red lines were judged side by side with main's, below
+# suite: 167 harnesses run in 1737s: 167 passed, 0 failed
+# timing: 15 harnesses run in 450s: 13 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.2 ms, batch 27.1 ms (-7.0%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.4 ms, batch 29.1 ms (+6.4%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.76 ms, batch 4.93 ms (+3.4%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 5.47 ms, batch 4.64 ms (-15.1%), budget 5 ms: within 15% of main's]
 # timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]

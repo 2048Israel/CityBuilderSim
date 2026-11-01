@@ -465,6 +465,13 @@ adds its line here, not in `CLAUDE.md`.
                                    trade rows (NationsMap.card) and a generated world's partners as
                                    arrows at the edge (Arrows); Feed is what ui/MapView is given. Tested
                                    by GlobeCheck 13 and 14, beside NationsMap (WN2) which cuts its borders
+        CallPartners.java          who each ship and train of the month calls on (batch WN7; spec-nations
+                                   9): a nation drawn by the month's tonnes of the call's kind of cargo
+                                   in its direction (PartnerTrade.Snapshot.cargoTonnes()), by land for a
+                                   train (the host, and nodes within WorldMarket.MAX_LAND_KM), and the
+                                   compass bearing of its node; immutable, one binary search a pick,
+                                   read by BoatSchedule's exits and TrainSchedule's partners; held by
+                                   PartnerCallsCheck
         WorldMoneys.java           the world's moneys against the US$, a month at a time (batch WN4;
                                    docs/studies/spec-exchange-rates.md 3.7, XR3 folded in): each money's
                                    PPP path, the dollar cycle, the risk-off, its nation's terms of trade from

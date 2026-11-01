@@ -71,3 +71,12 @@ EP1b's file walks into; none shows in a green suite today.
   whose table starts later (its gap by the anchor rule): there the rule's last
   shadow must hand over to the table's first line, not be dropped, and
   InterestAbroadCheck's stretch asserts that month's step.
+
+## From WN5's gate review (2026-11-01)
+
+WN5 saves the land's sellers and the city's tally of land bought by nation
+(`landOffersSellers`, `landBoughtKm2`, `landBoughtUsd`) under world-1.bin's
+nation numbers, and `restoreLandBought` checks only the array's length. A
+re-bake that renumbers or adds nations would load them against other
+nations: key them by ISO code, or raise SAVE_FORMAT and the floor with the
+re-bake.

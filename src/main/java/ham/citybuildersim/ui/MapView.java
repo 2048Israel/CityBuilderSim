@@ -272,6 +272,15 @@ final class MapView {
     /** ...and its dashes, the blue at 45%, 5 px on and 6 off (mockup 3's). */
     static final double LANE_DASH_ALPHA = 0.45;
 
+    /** How near the pointer must be to a boat's hull or a train's vehicle, in pixels, for its label to show (WN7): 4. */
+    static final double HIT_PX = 4;
+
+    /** A boat or a vehicle fainter than this, out in the abyss or past the world line's far end, is not named (WN7): 0.3. */
+    static final double HIT_ALPHA = 0.3;
+
+    /** A boat's or a train's label stands this many pixels off it, up and to the right, or the other way where the view's edge is in the road (WN7): 10. */
+    static final double LABEL_OFF_PX = 10;
+
     /** Who hears a click: a side, and an offer's place on it or -1. */
     interface Picker { void picked(int side, int place); }
 
@@ -403,6 +412,18 @@ final class MapView {
     private TrainSchedule trainSchedule;
     private int trainMonth = Integer.MIN_VALUE, trainGameMonth = Integer.MIN_VALUE;
     private List<TrainSchedule.Route> trainRoutes;
+    /** The partners the month's boats and trains go to (WN7; partnersNow()), and those each schedule was made with: a schedule is made again when they change. */
+    private CallPartners callPartners = CallPartners.NONE, schedulePartners, trainPartners;
+    /** The pointer over the canvas in pixels, or null when it is off the map or pressed: the boat or train it is on is named (partnerLabel()). */
+    private double[] pointerAt;
+    /**
+     * The call (a BoatSchedule.Call or a TrainSchedule.Call) of the boat or vehicle nearest the pointer in the frame being drawn, within HIT_PX, how
+     * near (labelScore: its distance from the pointer in plots to its hull or body, with its middle's distance a little), and where it stands on the
+     * canvas; null for none. hitX, hitY and hitTol are the pointer in plots and HIT_PX in plots for this frame, hitTol -1 when there is no pointer.
+     */
+    private Object labelCall;
+    private double labelScore, labelX, labelY, hitX, hitY, hitTol = -1;
+    private final Map<String, Double> callWidths = widths();
     /** Whether boats - or since 0.8.2 trains, and since 0.8.8 trucks - are in view (the frame goes on), and the clock they were last drawn at. */
     private boolean boatsLive;
     private double drawnClock = Double.NaN;
@@ -1014,6 +1035,8 @@ final class MapView {
        ===================================================================== */
 
     private void draw() {
+        labelCall = null;
+        hitTol = -1;
         if (onGlobe()) {
             drawGlobe();
             return;
@@ -1025,6 +1048,7 @@ final class MapView {
         gc.fillRect(0, 0, w, h);
         boatsLive = false;
         trucksStand = 0;
+        aimLabel(f);
         if (tiles != null) {
             int level = f.level();
             if (level == MapFrame.FAR) drawNodes(gc, f);
@@ -1051,6 +1075,7 @@ final class MapView {
         overlays(gc, f);
         tradeArrows(gc);
         drawRings(gc);
+        partnerLabel(gc, f);
         drawBox(gc);
         placeBuyCard();
         placeNationCard();
@@ -1176,25 +1201,32 @@ final class MapView {
         int m = (int) Math.floor(clock);
         double t = clock - m;
         Game g = ui.game;
-        if (schedule == null || scheduleMonth != m || scheduleRoutes != routes || scheduleGameMonth != g.getMonth()) {
-            schedule = BoatSchedule.of(m, g.getPorts(), routes, Ports.bulkShipsStanding(g.getBuildingManager()));
+        CallPartners partners = partnersNow();
+        if (schedule == null || scheduleMonth != m || scheduleRoutes != routes || scheduleGameMonth != g.getMonth() || schedulePartners != partners) {
+            schedule = BoatSchedule.of(m, g.getPorts(), routes, Ports.bulkShipsStanding(g.getBuildingManager()), partners);
             scheduleMonth = m;
             scheduleRoutes = routes;
             scheduleGameMonth = g.getMonth();
+            schedulePartners = partners;
         }
         double margin = ShipShapes.lengthM(Ports.Ship.VLCC) / World.PLOT_M * ShipShapes.BOOST;
         long x0 = (long) Math.floor(f.plotX(0) - margin), y0 = (long) Math.floor(f.plotY(0) - margin);
         long x1 = (long) Math.ceil(f.plotX(f.width()) + margin), y1 = (long) Math.ceil(f.plotY(f.height()) + margin);
-        // The legs of the lanes on screen, once each, stroked as one path: the band, then the dashes.
-        double[] legs = lanes.crossing(x0, y0, x1, y1);
-        int crossing = legs.length / 4;
-        if (crossing > 0) {
+        // The legs of the lanes on screen, once each, stroked as one path: the band, then the dashes - and (WN7) where the lane forks at the
+        // offing, the exits this month's partners take, each offing's once, in the same path.
+        double[] legs = lanes.crossing(x0, y0, x1, y1), forks = schedule.forks(x0, y0, x1, y1);
+        int crossing = legs.length / 4, forking = forks.length / 4;
+        if (crossing > 0 || forking > 0) {
             gc.setLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
             gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
             gc.beginPath();
             for (int i = 0; i < legs.length; i += 4) {
                 gc.moveTo(f.screenX(legs[i]), f.screenY(legs[i + 1]));
                 gc.lineTo(f.screenX(legs[i + 2]), f.screenY(legs[i + 3]));
+            }
+            for (int i = 0; i < forks.length; i += 4) {
+                gc.moveTo(f.screenX(forks[i]), f.screenY(forks[i + 1]));
+                gc.lineTo(f.screenX(forks[i + 2]), f.screenY(forks[i + 3]));
             }
             gc.setStroke(colour(ShipShapes.IMPORT, LANE_BAND_ALPHA));
             gc.setLineWidth(LANE_BAND_PX);
@@ -1210,7 +1242,7 @@ final class MapView {
         gc.setLineCap(javafx.scene.shape.StrokeLineCap.SQUARE);
         gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.MITER);
         drawnClock = clock;
-        if (level == MapFrame.L2 || crossing == 0 || schedule.callCount() == 0) return;
+        if (level == MapFrame.L2 || (crossing == 0 && forking == 0) || schedule.callCount() == 0) return;
         boatsLive = true;
         double s = f.scale();
         for (BoatSchedule.Boat b : schedule.frame(x0, y0, x1, y1, t)) {
@@ -1218,7 +1250,11 @@ final class MapView {
             if (bx < -margin * s || by < -margin * s || bx > f.width() + margin * s || by > f.height() + margin * s) continue;
             int c = ShipShapes.colour(b);
             double[][] hull = ShipShapes.hull(b, s);
-            if (ShipShapes.drawnLength(b, s) * s <= ShipShapes.LEAST_PX + 1e-9) {
+            double drawn = ShipShapes.drawnLength(b, s);
+            if (hitTol >= 0 && b.alpha() >= HIT_ALPHA && Math.abs(b.x() - hitX) <= drawn / 2 + hitTol && Math.abs(b.y() - hitY) <= drawn / 2 + hitTol) {
+                nameable(b.call(), polygonGap(hitX, hitY, hull[0], hull[1]), Math.hypot(b.x() - hitX, b.y() - hitY), bx, by);
+            }
+            if (drawn * s <= ShipShapes.LEAST_PX + 1e-9) {
                 fillShape(gc, f, hull, colour(c, b.alpha()));
                 continue;
             }
@@ -1256,11 +1292,13 @@ final class MapView {
         int m = (int) Math.floor(clock);
         double t = clock - m;
         Game g = ui.game;
-        if (trainSchedule == null || trainMonth != m || trainRoutes != routes || trainGameMonth != g.getMonth()) {
-            trainSchedule = TrainSchedule.of(m, g.getSectors().freight(), routes);
+        CallPartners partners = partnersNow();
+        if (trainSchedule == null || trainMonth != m || trainRoutes != routes || trainGameMonth != g.getMonth() || trainPartners != partners) {
+            trainSchedule = TrainSchedule.of(m, g.getSectors().freight(), routes, partners);
             trainMonth = m;
             trainRoutes = routes;
             trainGameMonth = g.getMonth();
+            trainPartners = partners;
         }
         if (trainSchedule.callCount() == 0) return;
         double margin = TrainSchedule.Kind.HOPPER.length();
@@ -1281,18 +1319,106 @@ final class MapView {
                     TrainSchedule.Car a = cars.get(i), b = cars.get(i + 1);
                     gc.setStroke(colour(c, Math.min(a.alpha(), b.alpha())));
                     gc.strokeLine(f.screenX(a.x()), f.screenY(a.y()), f.screenX(b.x()), f.screenY(b.y()));
+                    if (hitTol >= 0 && Math.min(a.alpha(), b.alpha()) >= HIT_ALPHA) {
+                        double gap = segmentGap(hitX, hitY, a.x(), a.y(), b.x(), b.y()), half = Math.max(2, TrainShapes.WIDTH * s) / 2 / s;
+                        nameable(tr.call(), Math.max(0, gap - half), gap, f.screenX(a.x()), f.screenY(a.y()));
+                    }
                 }
                 gc.setLineCap(javafx.scene.shape.StrokeLineCap.SQUARE);
                 continue;
             }
             int mc = TrainShapes.markColour(tr);
             for (TrainSchedule.Car car : cars) {
-                fillShape(gc, f, TrainShapes.body(car), colour(car.loco() ? TrainShapes.LOCO : c, car.alpha()));
+                double[][] body = TrainShapes.body(car);
+                if (hitTol >= 0 && car.alpha() >= HIT_ALPHA && Math.abs(car.x() - hitX) <= TrainSchedule.LOCO_PLOTS + hitTol && Math.abs(car.y() - hitY) <= TrainSchedule.LOCO_PLOTS + hitTol) {
+                    nameable(tr.call(), polygonGap(hitX, hitY, body[0], body[1]), Math.hypot(car.x() - hitX, car.y() - hitY), f.screenX(car.x()), f.screenY(car.y()));
+                }
+                fillShape(gc, f, body, colour(car.loco() ? TrainShapes.LOCO : c, car.alpha()));
                 if (s < TrainShapes.MARKS_FROM) continue;
                 double[][] mark = TrainShapes.mark(car, tr);
                 if (mark != null) fillShape(gc, f, mark, colour(mc, car.alpha()));
             }
         }
+    }
+
+    /* ----- a boat or a train names its partner (WN7) ----- */
+
+    /**
+     * The pointer and the reach of it in plots for the frame about to be drawn, and nothing named yet: boats() and trains() offer the boats and
+     * vehicles they draw to nameable() as they draw them, so no second walk of the schedule, and no pointer (off the map, pressed) means none offered.
+     */
+    private void aimLabel(MapFrame f) {
+        labelCall = null;
+        double[] p = pointerAt;
+        if (p == null || f.scale() <= 0) {
+            hitTol = -1;
+            return;
+        }
+        hitX = f.plotX(p[0]);
+        hitY = f.plotY(p[1]);
+        hitTol = HIT_PX / f.scale();
+        labelScore = Double.MAX_VALUE;
+    }
+
+    /**
+     * A boat or a vehicle the pointer may be on, `gap` plots from its hull or body (0 inside), its middle `middle` plots off, drawn at (sx, sy) on
+     * the canvas: kept if it is within the reach and nearer than the one kept, the hull's gap first and the middle's after it.
+     */
+    private void nameable(Object call, double gap, double middle, double sx, double sy) {
+        if (gap > hitTol) return;
+        double score = gap + 1e-4 * middle;
+        if (score >= labelScore) return;
+        labelScore = score;
+        labelCall = call;
+        labelX = sx;
+        labelY = sy;
+    }
+
+    /** How far a point is from a polygon's outline in plots: 0 inside it. */
+    private static double polygonGap(double px, double py, double[] xs, double[] ys) {
+        boolean inside = false;
+        double best = Double.MAX_VALUE;
+        for (int i = 0, j = xs.length - 1; i < xs.length; j = i++) {
+            if ((ys[i] > py) != (ys[j] > py) && px < (xs[j] - xs[i]) * (py - ys[i]) / (ys[j] - ys[i]) + xs[i]) inside = !inside;
+            best = Math.min(best, segmentGap(px, py, xs[j], ys[j], xs[i], ys[i]));
+        }
+        return inside ? 0 : best;
+    }
+
+    /** How far a point is from the segment (ax, ay) to (bx, by). */
+    private static double segmentGap(double px, double py, double ax, double ay, double bx, double by) {
+        double dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
+        double t = len2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2)) : 0;
+        return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+    }
+
+    /**
+     * The label of the boat or train under the pointer, in the world lines' style (the mono font at Palette.SIZE_BODY, white at WORLD_LINE_ALPHA, a
+     * halo under it to read on the tiles): CallPartners.words() of its call, up and to the right of it by LABEL_OFF_PX and kept inside the view, drawn
+     * again every frame the vehicle moves. Nothing where no boat or train was within HIT_PX of the pointer in this frame.
+     */
+    private void partnerLabel(GraphicsContext gc, MapFrame f) {
+        Object call = labelCall;
+        if (call == null) return;
+        String words = call instanceof BoatSchedule.Call b ? callPartners.words(b) : callPartners.words((TrainSchedule.Call) call);
+        if (words.isEmpty()) return;
+        javafx.scene.text.Font font = Palette.Fonts.monoFont(Palette.SIZE_BODY);
+        double w = widthOf(words, font, callWidths), h = Palette.SIZE_BODY, edge = 4;
+        double x = labelX + LABEL_OFF_PX, y = labelY - LABEL_OFF_PX;
+        if (x + w > f.width() - edge) x = labelX - LABEL_OFF_PX - w;
+        x = Math.max(edge, x);
+        if (y - h < edge) y = labelY + LABEL_OFF_PX + h;
+        double width = gc.getLineWidth();
+        javafx.scene.shape.StrokeLineJoin join = gc.getLineJoin();
+        gc.setFont(font);
+        gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+        gc.setLineWidth(HALO_PX);
+        gc.setStroke(colour(NationsMap.DOT_EDGE_ARGB, HALO_ALPHA));
+        gc.strokeText(words, x, y);
+        gc.setFill(Color.rgb(255, 255, 255, WORLD_LINE_ALPHA));
+        gc.fillText(words, x, y);
+        gc.setLineJoin(join);
+        gc.setLineWidth(width);
     }
 
     /* ----- the trucks (0.8.8, batch FR5; spec-freight 4.7, D21; whole trips since FR9) ----- */
@@ -2958,11 +3084,13 @@ final class MapView {
     private void handlers() {
         canvas.setOnMouseMoved(e -> {
             hoverAt = new double[] { e.getX(), e.getY() };
+            pointerAt = hoverAt;
             hoverShift = e.isShiftDown();
             requestDraw();
         });
         canvas.setOnMouseExited(e -> {
             hoverAt = null;
+            pointerAt = null;
             showIf(readout, false);
             if (card != null) card.setVisible(false);
             if (overSide >= 0) {
@@ -2973,6 +3101,7 @@ final class MapView {
         canvas.setOnMousePressed(e -> {
             // A second button pressed over the first starts the press again as its own: only its release ends it.
             pressed = true;
+            pointerAt = null;       // a press pans or boxes: no boat is named under it (WN7)
             pressButton = e.getButton();
             pressX = lastX = boxX = e.getX();
             pressY = lastY = boxY = e.getY();
@@ -3014,6 +3143,7 @@ final class MapView {
             boxing = false;
             // The cursor is read again for where the pointer is now.
             hoverAt = new double[] { e.getX(), e.getY() };
+            pointerAt = hoverAt;
             hoverShift = e.isShiftDown();
             if (box) boxed(pressX, pressY, e.getX(), e.getY());
             else if (click) click(e.getX(), e.getY(), e.isShiftDown());
@@ -3907,6 +4037,7 @@ final class MapView {
         lanes = null;
         lanesOf = null;
         arrows = null;
+        callPartners = CallPartners.NONE;
     }
 
     /**
@@ -3978,6 +4109,42 @@ final class MapView {
     private TradeLanes.Feed tradeFeed() {
         Game g = ui.game;
         return g == null ? TradeLanes.Feed.NONE : g.getTradeFeed();
+    }
+
+    /**
+     * The partners the month's boats and trains go to (WN7): CallPartners over the feed's snapshot when it is one (PartnerTrade.Snapshot), the city's
+     * place - the real Earth's, the spot the globe is centred on, else a generated world's stand-in the feed names - the nations' nodes from the built
+     * map, and the nation the city stands in. Kept while the snapshot, the place and the host are the same (CallPartners.matches()), else made again
+     * (a few thousand sums, once a month); CallPartners.NONE, which draws exactly what the map drew before, while any of them is missing.
+     */
+    private CallPartners partnersNow() {
+        Game g = ui.game;
+        if (g == null || !(tradeFeed() instanceof PartnerTrade.Snapshot s)) return CallPartners.NONE;
+        NationsMap nm = builtMap();
+        if (nm == null) return CallPartners.NONE;
+        World.Key key = g.getCityLand().key();
+        double lat, lon;
+        if (NationsMap.drawsOn(key)) {
+            lat = key.lat();
+            lon = EarthProj.normaliseLon(key.lon());
+        } else if (standsIn()) {
+            lat = s.standInLat();
+            lon = s.standInLon();
+        } else {
+            return CallPartners.NONE;
+        }
+        WorldMarket market = g.getWorldMarket();
+        int host = market == null ? 0 : market.host();
+        if (!callPartners.matches(s, lat, lon, host)) {
+            int n = Math.min(s.nations(), nm.count());
+            double[] nodeLat = new double[n], nodeLon = new double[n];
+            for (int i = 0; i < n; i++) {
+                nodeLat[i] = nm.nodeLat(i + 1);
+                nodeLon[i] = nm.nodeLon(i + 1);
+            }
+            callPartners = CallPartners.of(s, lat, lon, nodeLat, nodeLon, host);
+        }
+        return callPartners;
     }
 
     /** Whether this is a generated world whose feed names the place the city stands in, so its partners can be drawn as arrows. */
