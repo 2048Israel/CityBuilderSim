@@ -544,3 +544,40 @@ unmerged into main.
   | `PriceLevelCheck \| FAIL <series> month N: ...` (24 lines, months 106 to 120 of the played city) | new |
 
   Stale: 0 firm findings. The ensemble is section 10's final run.
+
+### PriceLevelCheck 8, traced (after 6e1cffab)
+
+The coordinator asked whether the parting at month 106 is an unscaled threshold (the check's "worst 1.0 in h.fxRate" read as a
+rate off by a whole regime). It is not; it is a tie, and nothing in the model was changed.
+- *The 1.0 in h.fxRate* is the check's own flip rule (`flips > TIE_FLIPS` sets the worst gap to 1), not a gap: the D$ rate is
+  1.0876 against 1.0877 at month 111, 1.0592 against 1.0593 at 112, and one step of the history's four places at 116, 118 and
+  119; the largest relative gap is 9.4e-5.
+- *The first month and figure* (the two children, money divided by the factor, from month 100; every household cell's numeric
+  fields dumped in both): months 100 to 103 equal. Month 104: cell 4's household count is 0 at the factor and 1.1e-16 at
+  today's prices, and cell 74's mean income (a cell of a hair of a household) differs by 4.6e-4. Month 105: the counts of cells
+  0, 1, 2, 4 and 5 are 5.7e-14, 1.4e-14, 1.8e-15, 1.1e-16 and 5.6e-17 at the factor and 0 at today's. Month 106: 741
+  household fields differ and the households of 70 cells move by 0.1 to 0.7 of a household (cell 6: 126.366 against 126.584;
+  cell 9: 0.302 against 0.004), the total conserved to 2e-12 and the people, workforce, homes and stores equal to the person.
+  From there the demand for drinks, fish and fruit (by 0.1% to 0.3%), the sectors' cash (5e-7), the D$ rate (2.7e-6) and the
+  price index follow. The comparison that flips was not found; the hairs are the residues of the cells' counts, which sit at
+  1e-14 to 1e-16 in both runs in different months (the class `Household.isEmpty()`'s banner describes).
+- *It is a tie, shown by a nudge:* the factor times (1 + 1e-12), the factor times (1 - 1e-12), 0.0258834638430 and 0.0258834639 each
+  run equal to today's for all 120 months. The exact factor parts at 106, and so do today's own figures against 1.0000001 and
+  1.000001000001, with the same two values (cash 5,927.228272 against 5,927.207676): the event is one that the run at the level
+  1.0 exactly takes the other way, and any other level takes the first way or the second by the last bits of its arithmetic.
+  A threshold in dollars crossed by a scaled figure would not move under a nudge of 1e-12.
+- *The month-60 partings of the other levels* are the same kind: 0.5, 0.03 and 1.0000000001 give the same figure (Construction's
+  cash 28,537.43559 against 28,537.51681, one series, at the demolition the played month does at its half) and 1.000001 a third
+  (28,537.40304); 0.500000000001 and 0.030000000003 and 1.00000000000001 run equal to today's for 120 months. Nothing is
+  fixed by the level: the factor's own city happens to take the month-106 branch and not the month-60 one.
+- So PLAYED_MONTHS is a decision and not a repair (the way TOWN_MONTHS was, section 9): the twin cannot be held equal to a
+  rounding past a month that any level may draw; the unscaled-literal reading is closed for this city.
+
+The orchestrator's call (2026-11-01, BP1, his to overturn): PLAYED_MONTHS =
+105, the month before the tie, with the trace and the nudge test in its
+sentence, as TOWN_MONTHS = 55 stops the town before its month-56 hair. The
+demolition and the iron mine stay at months 60 and 40 (PLAYED_DEMOLITION,
+PLAYED_IRON; they were the horizon's half and third). PriceLevelCheck passes
+alone at 105. A later batch that parts the played city earlier nudges the
+factor by 1e-12 first: a parting the nudge moves is a tie, one it does not
+move is a price the factor missed.
