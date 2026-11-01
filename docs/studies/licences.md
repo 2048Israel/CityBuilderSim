@@ -65,6 +65,17 @@
 | GRWL V01.01 | CC BY 4.0 | https://zenodo.org/records/1297434 | yes | Allen and Pavelsky (2018), Science 361 |
 | USGS, Geologic Provinces of the World (WEP_PRVG) | public domain; use constraints none | https://www.sciencebase.gov/catalog/item/60ad2fd7d34e4043c850edb3 | yes | the USGS data release citation |
 
+### The land table: `src/main/resources/world/land-2024.json` (in the jar; WN5, 2026-11-01)
+
+Each nation's land a hectare in US$ of 2024, read on 2026-11-01: 25 published (`tools/world/land.tsv`), the other 171 fitted by `tools.LandTable` on the world file's output a head and the Rankings' people per km2 (WDI's, from the FAO's land area: the FAO's condition above holds).
+
+| source | licence | read at | commercial | attribution it asks |
+|---|---|---|---|---|
+| Eurostat, agricultural land prices (`apri_lprc`), arable land 2024 | the Commission's reuse policy (CC BY 4.0) | https://ec.europa.eu/eurostat/en/help/copyright-notice | yes | Eurostat as the source, and that the figures were changed (converted to US$ and fitted) |
+| USDA NASS, Land Values 2026 Summary (cropland, 2024) | public domain (a US government work) | https://www.nass.usda.gov/ | yes | none required |
+| Statistics Canada, table 32-10-0047-01 (farm land and buildings, 2024) | Statistics Canada Open Licence | https://www.statcan.gc.ca/en/terms-conditions/open-licence | yes | "Adapted from Statistics Canada, table 32-10-0047-01"; no endorsement by Statistics Canada |
+| Federal Reserve, G.5A (the euro's and the Canadian dollar's 2024 averages) | public domain (a US government work) | https://www.federalreserve.gov/disclaimer.htm | yes | none required |
+
 ### Not data, but shipped
 
 | what | licence | commercial | what it asks |

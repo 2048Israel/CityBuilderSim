@@ -125,3 +125,31 @@ Consumer Price Index for All Urban Consumers, CPI-U (US Bureau of Labor Statisti
   Credit:  US Bureau of Labor Statistics, CPI-U, US city average, all items (CUUR0000SA0), annual averages
   Licence: Public domain (a US government work)
   Used for: the US's prices 2015-2025, which turn a year's US$ into 2015 dollars
+
+land-2024: the nations' land prices (WN5, 2026-11-01)
+
+land-2024.json (src/main/resources/world/) is each nation's land a hectare in US dollars of 2024: 25 published
+figures (tools/world/land.tsv) and a fit for the other nations on world-1.bin's output a head and world-2025.json's
+people per km2 (the credits above). The game prices land bought from a nation by it, against Canada's.
+
+Agricultural land prices (Eurostat)
+  Credit:  Source: Eurostat, Agricultural land prices by region (apri_lprc), arable land, 2024 (Malta 2023). The
+           figures were changed: converted to US dollars at the Federal Reserve's 2024 average and fitted.
+  Licence: CC BY 4.0, the European Commission's reuse policy (https://ec.europa.eu/eurostat/en/help/copyright-notice)
+  Used for: the land price of the 23 EU members that report one
+
+Land Values 2026 Summary (USDA, National Agricultural Statistics Service)
+  Credit:  USDA NASS, Land Values 2026 Summary (July 2026): the US average cropland value an acre, 2024
+  Licence: Public domain (a US government work)
+  Used for: the United States' land price
+
+Value per acre of farm land and buildings (Statistics Canada)
+  Credit:  Adapted from Statistics Canada, Table 32-10-0047-01, Value per acre of farm land and buildings at July 1,
+           2024. This does not constitute an endorsement by Statistics Canada of this product.
+  Licence: Statistics Canada Open Licence (https://www.statcan.gc.ca/en/terms-conditions/open-licence)
+  Used for: Canada's land price, the reference every nation's land factor is measured against
+
+Foreign Exchange Rates, G.5A (Federal Reserve)
+  Credit:  Board of Governors of the Federal Reserve System, G.5A Foreign Exchange Rates (annual), January 5, 2026
+  Licence: Public domain (a US government work)
+  Used for: the euro's and the Canadian dollar's 2024 averages, which turn the published prices into US dollars
