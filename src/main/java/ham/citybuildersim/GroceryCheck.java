@@ -150,7 +150,7 @@ public class GroceryCheck {
 
         double monthly = Math.pow(1.03, 1.0 / 12) - 1;
         double theta = ham.citybuildersim.sectors.Retail.CLEAR_SPEED;
-        double cost = .10;   // a floor of the opening price: cost-plus is under it
+        double cost = .10 * PriceLevel.FACTOR;   // a floor of the opening price: cost-plus is under it (today's figure, priced at the founding's level: EP1)
         ham.citybuildersim.sectors.Retail shelf = new ham.citybuildersim.sectors.Retail();
         shelf.setExpected(1, monthly);
         shelf.setStoreSellPrice(1.2 * floor);

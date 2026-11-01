@@ -1,6 +1,6 @@
 # DeskCheck.java - 1,224 lines · 31 methods · 0 constants · harnesses
 
-`ham/citybuildersim/DeskCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DeskCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The debt desk's figures (CD6, spec-city-debt.md sections 7 and 8): the figures the
 > debt screens used to work out for themselves, held to the model that now gives
@@ -64,7 +64,7 @@
 > 
 > ... (4 more lines in the source)
 
-**Uses:** [DebtManager](DebtManager.md) (55), [Debt](Debt.md) (54), [FloatLinkCheck](FloatLinkCheck.md) (37), [Game](Game.md) (22), [LongTermBond](LongTermBond.md) (22), [BookDesk](BookDesk.md) (19), [Founding](Founding.md) (14), [YieldCurve](YieldCurve.md) (9), [NationalAccounts](NationalAccounts.md) (5), [InflationLinkedBond](InflationLinkedBond.md) (5), [FloatingRateNote](FloatingRateNote.md) (5), [Buyback](Buyback.md) (5), [Auction](Auction.md) (3), [MediumTermBond](MediumTermBond.md) (3), [ShortTermTBill](ShortTermTBill.md) (2), [Rollover](Rollover.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
+**Uses:** [DebtManager](DebtManager.md) (55), [Debt](Debt.md) (54), [PriceLevel](PriceLevel.md) (39), [FloatLinkCheck](FloatLinkCheck.md) (37), [Game](Game.md) (22), [LongTermBond](LongTermBond.md) (22), [BookDesk](BookDesk.md) (19), [Founding](Founding.md) (14), [YieldCurve](YieldCurve.md) (9), [NationalAccounts](NationalAccounts.md) (5), [InflationLinkedBond](InflationLinkedBond.md) (5), [FloatingRateNote](FloatingRateNote.md) (5), [Buyback](Buyback.md) (5), [Auction](Auction.md) (3), [MediumTermBond](MediumTermBond.md) (3), [ShortTermTBill](ShortTermTBill.md) (2), [Rollover](Rollover.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
 
 **Used by (1):** [SaveFileCheck](SaveFileCheck.md)
 

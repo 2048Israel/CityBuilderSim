@@ -1015,7 +1015,7 @@ public class SaveFileCheck {
         indebted.buildStack(template(indebted, "House"), 80, false);
         indebted.buildStack(template(indebted, "Convenience Store"), 3, false);
         indebted.simulateMonths(5);
-        indebted.handleLongBondLogic(200000, 20, 100);
+        indebted.handleLongBondLogic(200000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR);
         indebted.simulateMonths(6);
 
         EconomyManager de = indebted.getEconomyManager();
@@ -1119,7 +1119,7 @@ public class SaveFileCheck {
             abroad.run();
             abroad.buildStack(template(abroad, "House"), 80, false);
             abroad.buildStack(template(abroad, "Convenience Store"), 3, false);
-            abroad.handleForeignLogic("Term", 5_000, 30, 100, false);   // one of the five (0.7.1)
+            abroad.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 30, 100 * PriceLevel.FACTOR, false);   // one of the five (0.7.1)
             // The months the fixture trades before its test month: 24, the currency's
             // settling months until XR1, kept so the fixture's city is the city it always was.
             final int tradingMonths = 24;
@@ -1222,7 +1222,7 @@ public class SaveFileCheck {
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
         // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
         full.setCashForTest(Founding.WEALTHY_CASH);
-        full.getGovernmentInvestor().spend(-2_000_000);
+        full.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
         full.getLandManager().setOwnedSqFt(full.getLandManager().getOwnedSqFt() + 200_000_000L);
         for (String[] order : new String[][] {
                 {"House", "400"}, {"Convenience Store", "2"}, {"Construction Depot", "6"},
@@ -2592,8 +2592,8 @@ public class SaveFileCheck {
         assertTrue("fixture: the city has a bank to ask it for preferred", fb.getBranches() > 0);
         fundCity.setFundDial(1.5);
         fundCity.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
-        fundCity.setCashForTest(fundCity.getCash() + 50_000);
-        fundCity.fundPayIn(20_000);
+        fundCity.setCashForTest(fundCity.getCash() + 50_000 * PriceLevel.FACTOR);
+        fundCity.fundPayIn(20_000 * PriceLevel.FACTOR);
         fb.setCash(fb.getCash() - (fb.equity() - .9 * fb.minimumEquity()));
         fundCity.getFund().noteOffered(fundCity.getMonth());
         assertTrue("fixture: the bank is under its minimum and its offer waits",
@@ -2631,7 +2631,7 @@ public class SaveFileCheck {
             ex.bookOf(c).withdrawAll();
         }
         assertTrue("fixture: the fund holds a share of a company the world sells and somebody stands bid for", shareCo >= 0);
-        fundCity.fundBuyShares(0, 1_000);
+        fundCity.fundBuyShares(0, 1_000 * PriceLevel.FACTOR);
         // FL1: the desk carries its inventory at the last step's mark, and a share traded between steps moves the quote, not what the bank
         // carries (this fixture's trades above do it on some paths: 28.21 on FL1's). Where they did not, the bank is made to carry one more than
         // the quote, so the save must keep what it carries - the load re-marked it from the quote and read another equity.
@@ -2816,9 +2816,9 @@ public class SaveFileCheck {
          */
         double askBill = rated.getEconomyManager().getMonthGdp() * .05;
         int salesWas = rated.getDebtManager().auctionSales();
-        quietly(() -> { rated.quoteTBill(askBill, 6, 100); rated.quoteTBill(askBill, 6, 100); });
+        quietly(() -> { rated.quoteTBill(askBill, 6, 100 * PriceLevel.FACTOR); rated.quoteTBill(askBill, 6, 100 * PriceLevel.FACTOR); });
         assertTrue("a quote is not a sale: previewed twice, the tally has not moved", rated.getDebtManager().auctionSales() == salesWas);
-        quietly(() -> rated.handleTBillLogic(askBill, 6, 100));
+        quietly(() -> rated.handleTBillLogic(askBill, 6, 100 * PriceLevel.FACTOR));
         AuctionTally.Last booked = rated.getDebtManager().lastAuction();
         assertTrue("fixture: a booked sale is counted, and is the last", rated.getDebtManager().auctionSales() == salesWas + 1
                 && booked != null && booked.kind() == Auction.Kind.BILL && booked.months() == 6 && booked.sold() > 0);

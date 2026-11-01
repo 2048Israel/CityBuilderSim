@@ -1,6 +1,6 @@
 # RailDepotCheck.java - 519 lines · 14 methods · 1 constants · harnesses
 
-`ham/citybuildersim/RailDepotCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RailDepotCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The railway's stations: the Rail Depot, and the rules that put a station
 > first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md
@@ -46,7 +46,7 @@
 > only for what the stations let through. Every threshold is caused from both
 > sides, and every figure comes from the templates and the model's constants.
 
-**Uses:** [Freight](Freight.md) (36), [BusinessInvestment](BusinessInvestment.md) (24), [Traffic](Traffic.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [HaulageCheck](HaulageCheck.md) (4), [BuildingManager](BuildingManager.md) (2), [Mining](Mining.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Markets](Markets.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Freight](Freight.md) (36), [BusinessInvestment](BusinessInvestment.md) (24), [Traffic](Traffic.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [HaulageCheck](HaulageCheck.md) (4), [BuildingManager](BuildingManager.md) (2), [Mining](Mining.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [PriceLevel](PriceLevel.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Markets](Markets.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 **Used by (1):** [HomeRailCheck](HomeRailCheck.md)
 
@@ -68,7 +68,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 61 | `RailDepotCheck.LORRY_A_TONNE` | `.319` | What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. |
+| 61 | `RailDepotCheck.LORRY_A_TONNE` | `.319 * PriceLevel.FACTOR` | What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. |
 
 ## Fields (state)
 

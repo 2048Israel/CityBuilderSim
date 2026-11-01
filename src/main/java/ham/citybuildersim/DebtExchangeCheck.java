@@ -63,10 +63,10 @@ public class DebtExchangeCheck {
     static final double SHARE = .5;
 
     /** The dollar bond section 11 sells, in US$ thousands: large beside the surplus, so its exchange line is. */
-    static final double GRANT_BOND = 60_000;
+    static final double GRANT_BOND = 60_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
     /** The domestic bond section 12 sells and buys back, in thousands: large beside the surplus, so its gain is. */
-    static final double BUYBACK_BOND = 100_000;
+    static final double BUYBACK_BOND = 100_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
     /** Everything here is in thousands, so a thousandth of a thousandth is plenty (TreasuryCheck.TOLERANCE). */
     static final double TOLERANCE = 1e-6;
@@ -255,8 +255,8 @@ public class DebtExchangeCheck {
                 fx.getRate() == OPENING && dm.getExchangeRate() == OPENING && city.foreignWindowOpen());
         String said = quote(city, "Term", 20_000, 5);
         quietly(() -> {
-            city.handleLongBondLogic(30_000, 5, 1000);
-            city.handleTBillLogic(10_000, 12, 1000);
+            city.handleLongBondLogic(30_000 * PriceLevel.FACTOR, 5, 1000 * PriceLevel.FACTOR);
+            city.handleTBillLogic(10_000 * PriceLevel.FACTOR, 12, 1000 * PriceLevel.FACTOR);
         });
         List<Debt> abroad = foreign(city);
         List<Debt> home = domestic(city);
@@ -602,7 +602,7 @@ public class DebtExchangeCheck {
 
         Game bought = schooledCity("debt-exchange-grant-buyback");
         NationalAccounts bna = accounts(bought);
-        quietly(() -> bought.handleLongBondLogic(BUYBACK_BOND, 5, 1000));
+        quietly(() -> bought.handleLongBondLogic(BUYBACK_BOND, 5, 1000 * PriceLevel.FACTOR));
         Month buyStill = untilSharing(bought);
         Debt bond = null;
         for (Debt d : bought.getDebtManager().getDebt()) if (d instanceof LongTermBond) bond = d;
@@ -651,7 +651,7 @@ public class DebtExchangeCheck {
     /** Sells dollar paper through the game's own door: returns what it said. */
     static String quote(Game g, String type, double usd, int years) {
         String[] said = new String[1];
-        quietly(() -> said[0] = g.handleForeignLogic(type, usd, years, 100, false));
+        quietly(() -> said[0] = g.handleForeignLogic(type, usd, years, 100 * PriceLevel.FACTOR, false));
         return said[0];
     }
 }

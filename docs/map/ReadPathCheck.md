@@ -1,6 +1,6 @@
 # ReadPathCheck.java - 2,377 lines · 18 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ReadPathCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReadPathCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Reading the city must not change the city.
 > 
@@ -36,7 +36,7 @@
 > would pass a before/after comparison; one that accumulates shows up as a field
 > that drifts further the more the screens are opened.
 
-**Uses:** [Game](Game.md) (34), [Good](Good.md) (33), [BuildAdvice](BuildAdvice.md) (30), [FundView](FundView.md) (24), [CityLand](CityLand.md) (22), [BuildCard](BuildCard.md) (19), [Bank](Bank.md) (18), [BuildingsTemplate](BuildingsTemplate.md) (16), [CityNeeds](CityNeeds.md) (16), [Ports](Ports.md) (16), [PolicyPreview](PolicyPreview.md) (14), [Resource](Resource.md) (14), [OrderBook](OrderBook.md) (12), [TrainSchedule](TrainSchedule.md) (12), [World](World.md) (11), [Founding](Founding.md) (10), [Sectors](Sectors.md) (9), [CorporateBond](CorporateBond.md) (9), [ForeignAccounts](ForeignAccounts.md) (9), [OldMetal](OldMetal.md) (8), [Sector](Sector.md) (8), [Equity](Equity.md) (7), [BondMarket](BondMarket.md) (7), [Retail](Retail.md) (7), [CareType](CareType.md) (7), [Refining](Refining.md) (7), [TaxPolicy](TaxPolicy.md) (6), [ChartModel](ChartModel.md) (6), [Debt](Debt.md) (6), [Landmasses](Landmasses.md) (6)... and 74 more
+**Uses:** [Game](Game.md) (34), [Good](Good.md) (33), [BuildAdvice](BuildAdvice.md) (30), [FundView](FundView.md) (24), [CityLand](CityLand.md) (22), [BuildCard](BuildCard.md) (19), [Bank](Bank.md) (18), [BuildingsTemplate](BuildingsTemplate.md) (16), [CityNeeds](CityNeeds.md) (16), [Ports](Ports.md) (16), [PolicyPreview](PolicyPreview.md) (14), [Resource](Resource.md) (14), [OrderBook](OrderBook.md) (12), [TrainSchedule](TrainSchedule.md) (12), [World](World.md) (11), [Founding](Founding.md) (10), [Sectors](Sectors.md) (9), [CorporateBond](CorporateBond.md) (9), [ForeignAccounts](ForeignAccounts.md) (9), [OldMetal](OldMetal.md) (8), [Sector](Sector.md) (8), [PriceLevel](PriceLevel.md) (8), [Equity](Equity.md) (7), [BondMarket](BondMarket.md) (7), [Retail](Retail.md) (7), [CareType](CareType.md) (7), [Refining](Refining.md) (7), [TaxPolicy](TaxPolicy.md) (6), [ChartModel](ChartModel.md) (6), [Debt](Debt.md) (6)... and 75 more
 
 **Used by (1):** [LandCheck](LandCheck.md)
 

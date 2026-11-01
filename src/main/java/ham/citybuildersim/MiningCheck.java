@@ -241,7 +241,7 @@ public class MiningCheck {
          * the other was the old row's whole confusion.
          */
         assertTrue("scrap is a good of its own: what IRON's import price was (.41), a flow good the world sells and buys",
-                Good.SCRAP.worldImportPrice() == .41 && Good.SCRAP.importable() && Good.SCRAP.exportable()
+                Good.SCRAP.worldImportPrice() == .41 * PriceLevel.FACTOR && Good.SCRAP.importable() && Good.SCRAP.exportable()
                         && !Good.SCRAP.stockable() && Good.SCRAP.traded());
         BuildingManager catalogue = new BuildingManager();
         catalogue.initializeTemplates();
@@ -333,8 +333,8 @@ public class MiningCheck {
                         && mine.getElectricityConsumption() == 600 && mine.getWaterConsumption() == 20);
         double allIn = mine.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * mine.getConstructionMaterials();
         report("...for D$45M all in: its cash, points and material each x 4.632 (7,286, 1,600 and 135 until 0.7.120)",
-                mine.getCashCost() == Math.round(7286 * 4.632) && mine.getConstructionPoints() == Math.round(1600 * 4.632)
-                        && mine.getConstructionMaterials() == Math.round(135 * 4.632) && Math.abs(allIn - 45_000) < 10,
+                mine.getCashCost() == Math.round(7286 * 4.632) * PriceLevel.FACTOR && mine.getConstructionPoints() == Math.round(1600 * 4.632)
+                        && mine.getConstructionMaterials() == Math.round(135 * 4.632) && Math.abs(allIn - 45_000 * PriceLevel.FACTOR) < 10 * PriceLevel.FACTOR,
                 String.format("D$%,.0fk", allIn));
         assertTrue("...carrying the old one's road load a tonne: 420 for 2,500 t, 3,360 for 20,000",
                 mine.getRoadLoad() * 2_500 == 420 * mine.makes(Good.IRON));

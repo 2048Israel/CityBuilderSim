@@ -1,6 +1,6 @@
-# Consumption.java - 539 lines · 24 methods · 7 constants · model
+# Consumption.java - 541 lines · 24 methods · 7 constants · model
 
-`ham/citybuildersim/Consumption.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Consumption.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > What a household eats, and what changes it.
 > 
@@ -64,9 +64,9 @@
 > Hunger feeds sickness feeds mortality, so the cost of guessing that wrong is
 > ... (1 more lines in the source)
 
-**Uses:** [FamilyStructure](FamilyStructure.md) (1)
+**Uses:** [PriceLevel](PriceLevel.md) (2), [FamilyStructure](FamilyStructure.md) (1)
 
-**Used by (5):** [CityBasket](CityBasket.md), [ConsumptionCheck](ConsumptionCheck.md), [ForeignCheck](ForeignCheck.md), [Game](Game.md), [ShadowBasket](ShadowBasket.md)
+**Used by (6):** [CityBasket](CityBasket.md), [ConsumptionCheck](ConsumptionCheck.md), [ForeignCheck](ForeignCheck.md), [Game](Game.md), [PriceLevelCheck](PriceLevelCheck.md), [ShadowBasket](ShadowBasket.md)
 
 ## Sections
 
@@ -75,10 +75,10 @@
 | 87 | ENGEL'S CURVE, AND WHY IT HAS NO FLOOR IN IT |
 | 160 | · the goods |
 | 198 | · loading |
-| 291 | · what it costs |
-| 355 | · the basket |
-| 419 | · reading a basket |
-| 520 | · who a household is |
+| 293 | · what it costs |
+| 357 | · the basket |
+| 421 | · reading a basket |
+| 522 | · who a household is |
 
 ## Constants
 
@@ -107,7 +107,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 83 | 457 | **type** `public class Consumption` | What a household eats, and what changes it. |
+| 83 | 459 | **type** `public class Consumption` | What a household eats, and what changes it. |
 
 ### ENGEL'S CURVE, AND WHY IT HAS NO FLOOR IN IT (lines 87-159)
 
@@ -124,45 +124,45 @@
 | 189 | 1 | `public Map<String, Double> targetShares()` | The calorie share each category should carry in a balanced diet. |
 | 192 | 5 | `public List<String> categories()` | Every category in the file, in the order the goods first mention them. |
 
-### loading (lines 198-290)
+### loading (lines 198-292)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 205 | 28 | `public boolean load()` | An editable copy beside the game first, the packaged one second - the same two steps and the same order as buildings.json, because a modder who can retune the buildings should be able to retune the diet. |
 | 239 | 11 | `public boolean loadFrom(Reader reader)` | Loads from anywhere, for a harness that needs to ask what the model does with DIFFERENT numbers - the currency-reform test below all others, which cannot be written at all if the only way in is a file on disk. |
-| 251 | 39 | `private boolean parse(Reader reader)` |  |
+| 251 | 41 | `private boolean parse(Reader reader)` |  |
 
-### what it costs (lines 291-354)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 300 | 8 | `public double cheapestCalorie()` | The cheapest calorie in the file, per kcal. |
-| 325 | 3 | `public double subsistenceCostAtWorldPrices()` | What a month of bare survival costs one person, IN THE WORLD'S MONEY. |
-| 334 | 3 | `public double subsistenceCost(double exchangeRate)` | What a month of bare survival costs one person, in THIS city's money. |
-| 350 | 4 | `public double incomeMultiple(double incomePerHead, double exchangeRate)` | Where a household sits on Engel's curve. |
-
-### the basket (lines 355-418)
+### what it costs (lines 293-356)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 362 | 5 | `public static double foodShare(double incomeMultiple)` | How much of its income a household spends on food. |
-| 382 | 36 | `public Map<String, Double> basket(double incomeMultiple, double timePressure)` | What one person buys in a month, by key, in the file's units. |
+| 302 | 8 | `public double cheapestCalorie()` | The cheapest calorie in the file, per kcal. |
+| 327 | 3 | `public double subsistenceCostAtWorldPrices()` | What a month of bare survival costs one person, IN THE WORLD'S MONEY. |
+| 336 | 3 | `public double subsistenceCost(double exchangeRate)` | What a month of bare survival costs one person, in THIS city's money. |
+| 352 | 4 | `public double incomeMultiple(double incomePerHead, double exchangeRate)` | Where a household sits on Engel's curve. |
 
-### reading a basket (lines 419-519)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 421 | 8 | `public double costOf(Map<String, Double> basket)` |  |
-| 430 | 8 | `public double caloriesOf(Map<String, Double> basket)` |  |
-| 448 | 11 | `public double itemQualityOf(Map<String, Double> basket)` | The average healthiness of what is in a basket, weighted by calories. |
-| 471 | 14 | `public double dietQuality(Map<String, Double> basket)` | How close a basket is to a balanced diet, 1 for on target and 0 for nothing in common with it. |
-| 487 | 11 | `public double calorieShareOf(Map<String, Double> basket, String category)` | The share of a basket's calories that comes from one category. |
-| 509 | 10 | `public Map<String, Double> valueShares(Map<String, Double> basket)` | What a basket is worth to each good, as shares of one. |
-
-### who a household is (lines 520-539)
+### the basket (lines 357-420)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 523 | 1 | `public Item byKey(String key)` | One good by its key, or null if the file has no such line. |
-| 535 | 4 | `public static double timePressure(FamilyStructure shape)` | Dependants per adult, for a household that works - and zero for one that does not, which is the whole point of the time axis. |
+| 364 | 5 | `public static double foodShare(double incomeMultiple)` | How much of its income a household spends on food. |
+| 384 | 36 | `public Map<String, Double> basket(double incomeMultiple, double timePressure)` | What one person buys in a month, by key, in the file's units. |
+
+### reading a basket (lines 421-521)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 423 | 8 | `public double costOf(Map<String, Double> basket)` |  |
+| 432 | 8 | `public double caloriesOf(Map<String, Double> basket)` |  |
+| 450 | 11 | `public double itemQualityOf(Map<String, Double> basket)` | The average healthiness of what is in a basket, weighted by calories. |
+| 473 | 14 | `public double dietQuality(Map<String, Double> basket)` | How close a basket is to a balanced diet, 1 for on target and 0 for nothing in common with it. |
+| 489 | 11 | `public double calorieShareOf(Map<String, Double> basket, String category)` | The share of a basket's calories that comes from one category. |
+| 511 | 10 | `public Map<String, Double> valueShares(Map<String, Double> basket)` | What a basket is worth to each good, as shares of one. |
+
+### who a household is (lines 522-541)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 525 | 1 | `public Item byKey(String key)` | One good by its key, or null if the file has no such line. |
+| 537 | 4 | `public static double timePressure(FamilyStructure shape)` | Dependants per adult, for a household that works - and zero for one that does not, which is the whole point of the time axis. |
 

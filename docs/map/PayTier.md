@@ -1,6 +1,6 @@
-# PayTier.java - 125 lines · 5 methods · 0 constants · model
+# PayTier.java - 135 lines · 6 methods · 0 constants · model
 
-`ham/citybuildersim/PayTier.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PayTier.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The six pay levels a household can be in.
 > 
@@ -31,9 +31,9 @@
 > demographics screen and the first thing somebody will try to "fix" in the
 > wrong place.
 
-**Uses:** [JobType](JobType.md) (2)
+**Uses:** [JobType](JobType.md) (2), [PriceLevel](PriceLevel.md) (1)
 
-**Used by (58):** [AgricultureCheck](AgricultureCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FamilyModel](FamilyModel.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [Household](Household.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MarketCheck](MarketCheck.md), [MaterialsCheck](MaterialsCheck.md), [Migration](Migration.md), [MiningCheck](MiningCheck.md), [OrphanHousehold](OrphanHousehold.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PopulationCheck](PopulationCheck.md), [PopulationManager](PopulationManager.md), [PrisonerHousehold](PrisonerHousehold.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [RestaurantsCheck](RestaurantsCheck.md), [RetiredHousehold](RetiredHousehold.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SocialSecurity](SocialSecurity.md), [StudentHousehold](StudentHousehold.md), [TaxPolicy](TaxPolicy.md), [TradeCostCheck](TradeCostCheck.md), [UnemployedHousehold](UnemployedHousehold.md), [Unemployment](Unemployment.md), [WoodProductsCheck](WoodProductsCheck.md), [WorkingHousehold](WorkingHousehold.md)
+**Used by (59):** [AgricultureCheck](AgricultureCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FamilyModel](FamilyModel.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [Household](Household.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MarketCheck](MarketCheck.md), [MaterialsCheck](MaterialsCheck.md), [Migration](Migration.md), [MiningCheck](MiningCheck.md), [OrphanHousehold](OrphanHousehold.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PopulationCheck](PopulationCheck.md), [PopulationManager](PopulationManager.md), [PriceLevelCheck](PriceLevelCheck.md), [PrisonerHousehold](PrisonerHousehold.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [RestaurantsCheck](RestaurantsCheck.md), [RetiredHousehold](RetiredHousehold.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SocialSecurity](SocialSecurity.md), [StudentHousehold](StudentHousehold.md), [TaxPolicy](TaxPolicy.md), [TradeCostCheck](TradeCostCheck.md), [UnemployedHousehold](UnemployedHousehold.md), [Unemployment](Unemployment.md), [WoodProductsCheck](WoodProductsCheck.md), [WorkingHousehold](WorkingHousehold.md)
 
 ## Sections
 
@@ -57,18 +57,20 @@
 | line | field | says |
 |---:|---|---|
 | 86 | `private final String label` |  |
-| 87 | `private final double monthlyWage` |  |
+| 87 | `private final double todaysWage` |  |
+| 88 | `private final double monthlyWage` |  |
 
 ## Methods, in file order, under their sections
 
-### THE LADDER, RE-ANCHORED ON PUBLISHED MEDIANS - 2026-09-09 (lines 33-125)
+### THE LADDER, RE-ANCHORED ON PUBLISHED MEDIANS - 2026-09-09 (lines 33-135)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 65 | 61 | **type** `public enum PayTier` |  |
-| 89 | 4 | `PayTier(String label, double monthlyWage)` |  |
-| 94 | 1 | `public String getLabel()` |  |
-| 95 | 1 | `public double getMonthlyWage()` |  |
-| 106 | 14 | `public static PayTier of(JobType job)` | Which tier a job belongs to. |
-| 122 | 3 | `public static double wageOf(JobType job)` | The wage every job of this type is paid. |
+| 65 | 71 | **type** `public enum PayTier` |  |
+| 95 | 5 | `PayTier(String label, double todaysWage)` | THE FUNNEL FOR THE LADDER (EP1, Jerus 2026-10-30: "1900 price level"). |
+| 101 | 1 | `public String getLabel()` |  |
+| 102 | 1 | `public double getMonthlyWage()` |  |
+| 105 | 1 | `public double getTodaysWage()` | The rung as its literal states it, a month's wage in thousands at today's (2025's) price level, before PriceLevel.FACTOR (PriceLevelCheck). |
+| 116 | 14 | `public static PayTier of(JobType job)` | Which tier a job belongs to. |
+| 132 | 3 | `public static double wageOf(JobType job)` | The wage every job of this type is paid. |
 

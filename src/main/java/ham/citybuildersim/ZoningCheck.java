@@ -107,7 +107,7 @@ public class ZoningCheck {
             g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             if (before != null) before.accept(g);
             g.setCashForTest(Founding.WEALTHY_CASH);
-            g.getGovernmentInvestor().spend(-2_000_000);
+            g.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
             g.getBusinessInvestment().holdSector(Sectors.AGRICULTURE);
             for (String[] w : ORDERS) {

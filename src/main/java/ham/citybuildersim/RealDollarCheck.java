@@ -22,8 +22,9 @@ import java.util.function.Supplier;
  *      inflation is the level over the level a year ago; on Historical the Januaries equal the file's US CPI over 2000's; a pinned world holds; a
  *      saved and loaded city follows the path again.
  *   2. NO FILE, THE WALK (the literals): a city on the literals has the walk, its level the bare WorldEconomy's over the same months, to the bit.
- *   3. D$ PER 2015 US$ is the rate times the level, and the rate at founding.
- *   4. REAL GDP IN 2015 US$ is the GDP over the index over the founding's rate.
+ *   3. D$ PER 2015 US$ is the rate times the level over the bridge (RealDollar.BRIDGE, EP1: the 2015 CPI over the founding year's, a founding US$ being
+ *      that many 2015 ones), and the rate over the bridge at founding.
+ *   4. REAL GDP IN 2015 US$ is the GDP over the index over the founding's rate, times the bridge.
  *   5. THE REAL EFFECTIVE RATE: 100 at founding; the city's prices up 10% and nothing else moving reads 110; a partner's money 10% dearer against the
  *      US$ with half the weight reads 100 x 1.1^-.5; the US alone with no trade; the weights are shares.
  *   6. THE SHOCK (WorldEconomy.shockLevel(), the ensemble's import shock): on the path it is a factor the next month keeps, saved, and permanent; on the
@@ -228,35 +229,35 @@ public class RealDollarCheck {
     /* ----------------------------------------------------------------- 3 */
 
     static void dollarsPer2015Usd() {
-        out.println("--- 3. D$ per 2015 US$ is the rate times the US$'s prices since founding ---");
-        close("a fixture: at 1.25 D$ a US$ and prices 1.6 times founding's, a real 2015 US$ costs 2 D$", RealDollar.dollarsPer2015Usd(1.25, 1.6), 2.0, 1e-12);
-        close("...at founding (level 1) it is the rate", RealDollar.dollarsPer2015Usd(ForeignAccounts.OPENING_RATE, 1), ForeignAccounts.OPENING_RATE, 0);
+        out.println("--- 3. D$ per 2015 US$ is the rate times the US$'s prices since founding, over the bridge ---");
+        close("a fixture: at 1.25 D$ a US$ and prices 1.6 times founding's, a real 2015 US$ costs 2 D$ of founding's dollars: 2 over the bridge", RealDollar.dollarsPer2015Usd(1.25, 1.6), 2.0 / RealDollar.BRIDGE, 1e-12);
+        close("...at founding (level 1) it is the rate over the bridge", RealDollar.dollarsPer2015Usd(ForeignAccounts.OPENING_RATE, 1), ForeignAccounts.OPENING_RATE / RealDollar.BRIDGE, 0);
         assertTrue("...and NaN for a rate or a level that is not a positive number",
                 Double.isNaN(RealDollar.dollarsPer2015Usd(0, 1)) && Double.isNaN(RealDollar.dollarsPer2015Usd(1, -1)) && Double.isNaN(RealDollar.dollarsPer2015Usd(Double.NaN, 1)));
         Game g = new Game(GameFiles.scratch("realdollar-dollars"), Founding.defaults());
         quietly(g::run);
         assertTrue("a city founds at ForeignAccounts.OPENING_RATE (" + ForeignAccounts.OPENING_RATE + "), the founding's rate the figures count from",
                 g.getForeignAccounts().getRate() == ForeignAccounts.OPENING_RATE);
-        assertTrue("...so at founding the D$ per 2015 US$ is that rate", g.dollarsPer2015Usd() == ForeignAccounts.OPENING_RATE);
+        assertTrue("...so at founding the D$ per 2015 US$ is that rate over the bridge", g.dollarsPer2015Usd() == ForeignAccounts.OPENING_RATE / RealDollar.BRIDGE);
         quietly(() -> g.simulateMonths(24));
-        close("after 24 months it is the foreign accounts' rate times the world's level", g.dollarsPer2015Usd(),
-                g.getForeignAccounts().getRate() * g.getWorldEconomy().getPriceLevel(), 1e-12);
+        close("after 24 months it is the foreign accounts' rate times the world's level, over the bridge", g.dollarsPer2015Usd(),
+                g.getForeignAccounts().getRate() * g.getWorldEconomy().getPriceLevel() / RealDollar.BRIDGE, 1e-12);
         assertTrue("...a number the city's prices moved (the level is no longer 1)", g.getWorldEconomy().getPriceLevel() != 1);
     }
 
     /* ----------------------------------------------------------------- 4 */
 
     static void realGdp() {
-        out.println("--- 4. real GDP in 2015 US$ is the GDP over the price index over the founding's rate ---");
-        close("a fixture: D$120M a month at an index of 1.2 and a founding rate of 1 is 100M real US$", RealDollar.realGdp2015Usd(120e6, 1.2, 1), 100e6, 1e-6);
-        close("...at a founding rate of 2 D$ a US$, 50M", RealDollar.realGdp2015Usd(120e6, 1.2, 2), 50e6, 1e-6);
-        close("...at an index of 1 and OPENING_RATE it is the GDP", RealDollar.realGdp2015Usd(7e6, 1, ForeignAccounts.OPENING_RATE), 7e6 / ForeignAccounts.OPENING_RATE, 1e-9);
+        out.println("--- 4. real GDP in 2015 US$ is the GDP over the price index over the founding's rate, times the bridge ---");
+        close("a fixture: D$120M a month at an index of 1.2 and a founding rate of 1 is 100M founding US$, 100M times the bridge in real 2015 US$", RealDollar.realGdp2015Usd(120e6, 1.2, 1), 100e6 * RealDollar.BRIDGE, 1e-6 * RealDollar.BRIDGE);
+        close("...at a founding rate of 2 D$ a US$, 50M times the bridge", RealDollar.realGdp2015Usd(120e6, 1.2, 2), 50e6 * RealDollar.BRIDGE, 1e-6 * RealDollar.BRIDGE);
+        close("...at an index of 1 and OPENING_RATE it is the GDP times the bridge", RealDollar.realGdp2015Usd(7e6, 1, ForeignAccounts.OPENING_RATE), 7e6 / ForeignAccounts.OPENING_RATE * RealDollar.BRIDGE, 1e-9 * RealDollar.BRIDGE);
         assertTrue("...and NaN for an index or a rate that is not positive",
                 Double.isNaN(RealDollar.realGdp2015Usd(1, 0, 1)) && Double.isNaN(RealDollar.realGdp2015Usd(1, 1, 0)) && Double.isNaN(RealDollar.realGdp2015Usd(Double.NaN, 1, 1)));
         Game g = town("realdollar-gdp", Founding.defaults());
         quietly(() -> g.simulateMonths(24));
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
-        double want = na.getGdp() / g.getPriceIndex().getIndex() / ForeignAccounts.OPENING_RATE;
+        double want = na.getGdp() / g.getPriceIndex().getIndex() / ForeignAccounts.OPENING_RATE * RealDollar.BRIDGE;
         assertTrue(String.format("a town that has earned for 24 months: GDP D$%,.0f over the index %.4f is the getter's %,.0f", na.getGdp(), g.getPriceIndex().getIndex(), g.realGdp2015Usd()),
                 na.getGdp() > 0 && g.getDenomination().getUnit() == 1 && Math.abs(g.realGdp2015Usd() - want) <= 1e-9 * Math.abs(want));
     }

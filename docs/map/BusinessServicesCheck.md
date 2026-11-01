@@ -1,6 +1,6 @@
 # BusinessServicesCheck.java - 386 lines · 5 methods · 3 constants · harnesses
 
-`ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The sector whose customer is not in the city.
 > 
@@ -21,7 +21,7 @@
 > rather than waiting for a school; the currency test moves the rate rather
 > than hoping a run drifts.
 
-**Uses:** [Good](Good.md) (20), [JobType](JobType.md) (13), [Game](Game.md) (12), [Sectors](Sectors.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [Equity](Equity.md) (5), [BuildingManager](BuildingManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GoodsMarket](GoodsMarket.md) (2), [GameFiles](GameFiles.md) (2), [BusinessServices](BusinessServices.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [PayTier](PayTier.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [SectorBooks](SectorBooks.md) (1), [Household](Household.md) (1)
+**Uses:** [Good](Good.md) (20), [JobType](JobType.md) (13), [Game](Game.md) (12), [Sectors](Sectors.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [Equity](Equity.md) (5), [BuildingManager](BuildingManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GoodsMarket](GoodsMarket.md) (2), [GameFiles](GameFiles.md) (2), [PriceLevel](PriceLevel.md) (2), [BusinessServices](BusinessServices.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [PayTier](PayTier.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [SectorBooks](SectorBooks.md) (1), [Household](Household.md) (1)
 
 ## Sections
 

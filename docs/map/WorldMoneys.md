@@ -1,6 +1,6 @@
 # WorldMoneys.java - 800 lines · 56 methods · 31 constants · model
 
-`ham/citybuildersim/WorldMoneys.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMoneys.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The world's moneys against the US dollar, a month at a time (WN4; spec-exchange-rates 3.7, spec-nations 5.1): each money's rate is its
 > purchasing-power path, plus its loading on the dollar cycle, on the risk-off and on its nation's terms of trade, plus its own swing, with
@@ -24,7 +24,7 @@
 
 **Uses:** [Nations](Nations.md) (23), [WorldData](WorldData.md) (4), [CityCalendar](CityCalendar.md) (2), [ForeignAccounts](ForeignAccounts.md) (2)
 
-**Used by (19):** [DebtManager](DebtManager.md), [DebtMoneysCheck](DebtMoneysCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignAccounts](ForeignAccounts.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapView](MapView.md), [PolicyRates](PolicyRates.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
+**Used by (20):** [DebtManager](DebtManager.md), [DebtMoneysCheck](DebtMoneysCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignAccounts](ForeignAccounts.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapView](MapView.md), [PolicyRates](PolicyRates.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 

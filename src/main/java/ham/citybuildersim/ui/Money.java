@@ -285,7 +285,8 @@ public final class Money {
         double a = Math.abs(d);
         if (a >= 1_000) return tightMoney(d, false);
         if (a >= 1)     return String.format("$%,.2f", d);
-        if (a > 0)      return String.format("$%.4f", unsigned0(d, 4));
+        if (a >= .001)  return String.format("$%.4f", unsigned0(d, 4));
+        if (a > 0)      return String.format("$%.6f", unsigned0(d, 6));   // EP1: at 1900's prices a price under a tenth of a cent is common, and four decimals left it one figure ($0.0003)
         return "$0";
     }
 

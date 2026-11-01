@@ -1,6 +1,6 @@
 # Nations.java - 780 lines · 44 methods · 42 constants · model
 
-`ham/citybuildersim/Nations.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Nations.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The nations beyond the city, each on the world's path: its year - output,
 > people, prices and its money's rate to the US dollar - from the path
@@ -41,7 +41,7 @@
 
 **Uses:** [WorldData](WorldData.md) (14), [World](World.md) (4), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (28):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DataSave](DataSave.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [NewGameCheck](NewGameCheck.md), [PartnerTrade](PartnerTrade.md), [PolicyRates](PolicyRates.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
+**Used by (29):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DataSave](DataSave.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [NewGameCheck](NewGameCheck.md), [PartnerTrade](PartnerTrade.md), [PolicyRates](PolicyRates.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldEconomy](WorldEconomy.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 

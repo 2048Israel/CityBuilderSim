@@ -241,9 +241,9 @@ public class OutsideCheck {
         System.out.println("\n--- EI: jobs lost, the ring, pro rata, the arrivals ---");
         {
             Unemployment u = new Unemployment();
-            double wage = 3.460;
+            double wage = 3.460 * PriceLevel.FACTOR;
             double[] wages = new double[tiers];
-            wages[unskilled] = wage; wages[skilled] = 4.500;
+            wages[unskilled] = wage; wages[skilled] = 4.500 * PriceLevel.FACTOR;
             double[] filled = new double[tiers];
             double[] posts = new double[tiers];
             filled[unskilled] = 900; filled[skilled] = 100;
@@ -260,7 +260,7 @@ public class OutsideCheck {
             u.advanceMonth(pool, filled2, posts2, wages, wage, 0, .55);
             check("the posts that disappeared are the jobs lost", u.getJobsLost(), 100, 1e-9);
             check("...and every one of them is on EI", u.onEi(), 100, 1e-9);
-            check("...at 55% of the wage they lost", u.getBenefitsPaid(), 100 * .55 * 4.500, 1e-9);
+            check("...at 55% of the wage they lost", u.getBenefitsPaid(), 100 * .55 * 4.500 * PriceLevel.FACTOR, 1e-9);
 
             // Posts that stay while their workers leave the city lose nobody a job.
             double[] filled3 = filled2.clone();
@@ -301,7 +301,7 @@ public class OutsideCheck {
 
             // The cap: an elite wage is insured at 1.66 unskilled wages, no more.
             Unemployment x = new Unemployment();
-            double[] wx = new double[tiers]; wx[PayTier.ELITE.ordinal()] = 15.600; wx[unskilled] = wage;
+            double[] wx = new double[tiers]; wx[PayTier.ELITE.ordinal()] = 15.600 * PriceLevel.FACTOR; wx[unskilled] = wage;
             double[] fx = new double[tiers]; fx[PayTier.ELITE.ordinal()] = 10;
             x.advanceMonth(0, fx, fx.clone(), wx, wage, 0, .55);
             x.advanceMonth(10, new double[tiers], new double[tiers], wx, wage, 0, .55);
@@ -379,7 +379,7 @@ public class OutsideCheck {
             students[0] = 0;
             singles[0] = 10;
             double[] payW = new double[R];
-            payW[unskilled] = 10 * 3.460;
+            payW[unskilled] = 10 * 3.460 * PriceLevel.FACTOR;
             grad.advanceMonth((s, tier) -> s == FamilyStructure.SINGLE_ADULT && tier == PayTier.UNSKILLED ? singles[0] : 0,
                     payW, .1, new double[R], new double[R], .3, .05, 1);
             Household family = grad.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
@@ -583,7 +583,7 @@ public class OutsideCheck {
             double[] grantStudents = new double[1], grantWage = new double[1], grantIndex = new double[1];
             quietly(() -> {
                 g.newGame();
-                g.getGovernmentInvestor().spend(-900_000_000);
+                g.getGovernmentInvestor().spend(-900_000_000 * PriceLevel.FACTOR);
                 g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
                 String[][] plan = {
                     {"Low-Rise Apartments", "120"}, {"General Hospital", "3"}, {"Small Grocery Store", "14"},

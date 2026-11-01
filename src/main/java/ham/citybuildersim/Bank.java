@@ -183,8 +183,10 @@ public class Bank {
      * recording because the two constants either side of it both moved: US
      * banks hold about $2.2tn of equity across roughly 71,000 branches, which
      * is $31M each. This says $32M. It was already right.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double PAID_IN_PER_BRANCH = 32_000;
+    public static final double PAID_IN_PER_BRANCH = 32_000 * PriceLevel.FACTOR;
 
     /** The same, in today's money - struck at the expected price level since 0.7.42 (seedConstants(), from Game.restrikeMoneyConstants()). */
     private double paidInPerBranch = PAID_IN_PER_BRANCH;
@@ -2014,8 +2016,10 @@ public class Bank {
      * them; a rich country's are owned by its own savers and pension funds. The
      * city crosses from one to the other as it accumulates deposits, and it
      * does so gradually.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double DOMESTIC_CAPITAL_SCALE = 400_000;
+    public static final double DOMESTIC_CAPITAL_SCALE = 400_000 * PriceLevel.FACTOR;
 
     /**
      * The same, in today's money.
@@ -3150,8 +3154,8 @@ public class Bank {
        audit already reads.
        ===================================================================== */
 
-    /** A month's account fee on every housed household, in founding thousands: $12, the middle of what an everyday chequing account costs a month at Canada's big banks ($10-15, 2025). */
-    public static final double ACCOUNT_FEE = .012;
+    /** A month's account fee on every housed household, in founding thousands: $12, the middle of what an everyday chequing account costs a month at Canada's big banks ($10-15, 2025). Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double ACCOUNT_FEE = .012 * PriceLevel.FACTOR;
 
     /** The fee on new lending, a share of the principal: one per cent, a typical arrangement fee on a commercial loan. */
     public static final double LOAN_FEE = .01;

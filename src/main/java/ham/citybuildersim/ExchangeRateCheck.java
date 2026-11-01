@@ -141,7 +141,7 @@ public class ExchangeRateCheck {
     }
 
     /** The trade a quiet currency settles on, each way, and the output it is weighed against: openness one. */
-    static final double TRADE = 3_000, GDP = 6_000;
+    static final double TRADE = 3_000 * PriceLevel.FACTOR, GDP = 6_000 * PriceLevel.FACTOR;   // today's figures, priced at the founding's level (EP1), as MIN_TRADE is
 
     /** The market's seed in the sections that draw one; the others are quiet. */
     static final long SEED = 20_261_021L;
@@ -476,11 +476,11 @@ public class ExchangeRateCheck {
         close("...the market itself the same path, the gate only weighing it", worstSame, 0, 1e-12);
 
         // Below MIN_TRADE of trade the rate is the trend, whatever the openness.
-        ForeignAccounts thin = still(20, 20, 100, SEED);
+        ForeignAccounts thin = still(20 * PriceLevel.FACTOR, 20 * PriceLevel.FACTOR, 100 * PriceLevel.FACTOR, SEED);
         assertTrue("fixture: the economy is open (trade 40% of output) but trades under MIN_TRADE a month",
                 thin.getOpenness() >= ForeignAccounts.OPEN_ENOUGH
                         && thin.monthlyExports() + thin.monthlyImports() <= ForeignAccounts.MIN_TRADE);
-        double[][] thinPath = swing(thin, 20, 20, 100, gated);
+        double[][] thinPath = swing(thin, 20 * PriceLevel.FACTOR, 20 * PriceLevel.FACTOR, 100 * PriceLevel.FACTOR, gated);
         double worstThin = 0, widest = 0;
         for (int t = 0; t < gated; t++) {
             worstThin = Math.max(worstThin, Math.abs(thinPath[0][t] - thinPath[2][t]));
@@ -1242,11 +1242,11 @@ public class ExchangeRateCheck {
         close("...getMoveWorld() is the gated change", half.getMoveWorld(), half.gate() * .05, 1e-12);
         close("...the world's level itself is ungated", half.getWorldLevel(), .05, 1e-12);
 
-        ForeignAccounts thin = settledStill(20, 100);
+        ForeignAccounts thin = settledStill(20 * PriceLevel.FACTOR, 100 * PriceLevel.FACTOR);
         assertTrue("fixture: a city that trades under MIN_TRADE a month, open or not, has a gate of nothing",
                 thin.gate() == 0 && thin.monthlyExports() + thin.monthlyImports() <= ForeignAccounts.MIN_TRADE);
         thin.setWorld(.05, 0, 0);
-        close("a city that trades next to nothing feels none of the cycle", lnMove(thin, 20, 100), 0, 1e-12);
+        close("a city that trades next to nothing feels none of the cycle", lnMove(thin, 20 * PriceLevel.FACTOR, 100 * PriceLevel.FACTOR), 0, 1e-12);
         close("...getMoveWorld() is nothing", thin.getMoveWorld(), 0, 1e-12);
     }
 

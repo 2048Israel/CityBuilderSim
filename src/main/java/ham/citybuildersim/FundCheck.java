@@ -941,8 +941,8 @@ public class FundCheck {
     static void theTransfer() {
         out.println("\n--- 9. the transfer at Norway's 3%, the default: a twelfth a month, from its cash only ---");
         Game g = copy();
-        g.setCashForTest(g.getCash() + 10_000);
-        g.fundPayIn(10_000);
+        g.setCashForTest(g.getCash() + 10_000 * PriceLevel.FACTOR);
+        g.fundPayIn(10_000 * PriceLevel.FACTOR);
         double value = g.fundValue();
         double due = TreasuryFund.transferOn(value);
         double treasury = g.getCash();
@@ -1002,8 +1002,8 @@ public class FundCheck {
                 && dial.getWithdrawal() == TreasuryFund.TRANSFER_RATE / TreasuryFund.YEAR_MONTHS;
         for (double v : new double[] { 0, 1, 12_345.678, 9.87e9, 1e-7, -5 }) bit &= dial.withdrawalOn(v) == TreasuryFund.transferOn(v);
         Game live = copy();
-        live.setCashForTest(live.getCash() + 10_000);
-        live.fundPayIn(10_000);
+        live.setCashForTest(live.getCash() + 10_000 * PriceLevel.FACTOR);
+        live.fundPayIn(10_000 * PriceLevel.FACTOR);
         bit &= live.fundTransferDue() == TreasuryFund.transferOn(live.fundValue()) && !live.getFund().sellsToPay();
         check("at the default the withdrawal is today's transfer to the bit", bit);
         boolean whole = true;
@@ -1025,8 +1025,8 @@ public class FundCheck {
 
         // At nothing: a fund with cash, which the rule places, pays nothing and asks nothing.
         Game zero = copy();
-        zero.setCashForTest(zero.getCash() + 1_000_000);
-        zero.fundPayIn(1_000_000);
+        zero.setCashForTest(zero.getCash() + 1_000_000 * PriceLevel.FACTOR);
+        zero.fundPayIn(1_000_000 * PriceLevel.FACTOR);
         zero.setFundWithdrawal(0);
         play(zero);
         TreasuryFund z = zero.getFund();
@@ -1041,8 +1041,8 @@ public class FundCheck {
         // Over the default with cash: the cash pays the month, and the rule buys nothing; its twin at the default buys.
         Game spend = copy(), twin = copy();
         for (Game x : java.util.List.of(spend, twin)) {
-            x.setCashForTest(x.getCash() + 1_000_000);
-            x.fundPayIn(1_000_000);
+            x.setCashForTest(x.getCash() + 1_000_000 * PriceLevel.FACTOR);
+            x.fundPayIn(1_000_000 * PriceLevel.FACTOR);
         }
         spend.setFundWithdrawal((TreasuryFund.DEFAULT_WITHDRAWAL_STEPS + 1) * TreasuryFund.WITHDRAWAL_STEP);
         play(spend);
@@ -1138,7 +1138,7 @@ public class FundCheck {
     static void theHand() {
         out.println("\n--- 10. the hand: its orders at fair value, and pay-in and draw-out off the surplus ---");
         Game a = copy(), b = copy();
-        double x = 50_000;
+        double x = 50_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
         a.setCashForTest(a.getCash() + x);
         b.setCashForTest(b.getCash() + x);
         a.fundPayIn(x);
@@ -1149,9 +1149,9 @@ public class FundCheck {
         close("a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more",
                 surplusA - surplusB, a.getFund().getTransferPaid() - b.getFund().getTransferPaid(), 1e-6);
         check("...and the journal names it", journalHas(a, "Paid into the fund", -x));
-        double drawn = a.fundDrawOut(1_000);
-        check("a draw-out moves what the fund's cash holds back", drawn == 1_000);
-        a.fundBuyShares(0, 100);
+        double drawn = a.fundDrawOut(1_000 * PriceLevel.FACTOR);
+        check("a draw-out moves what the fund's cash holds back", drawn == 1_000 * PriceLevel.FACTOR);
+        a.fundBuyShares(0, 100 * PriceLevel.FACTOR);
         check("the hand's order waits for the step", a.getFund().getHandOrders().size() == 1);
         play(a);
         check("...and is posted at it, at fair value", a.getFund().getHandOrders().isEmpty()
@@ -1159,8 +1159,8 @@ public class FundCheck {
                         .allMatch(o -> Math.abs(o.price() - a.getExchange().fair(0)) < 1e-12));
         // 0.7.39 (the project's spec-fund-0739.md, D2 and D3): a price the player names, and an order cancelled before the step.
         double limit = a.getExchange().fair(0) * .9;
-        a.fundBuyShares(0, 100, limit);
-        a.fundBuyShares(0, 100);
+        a.fundBuyShares(0, 100 * PriceLevel.FACTOR, limit);
+        a.fundBuyShares(0, 100 * PriceLevel.FACTOR);
         check("fixture: two orders wait for the step, one at a price the player named",
                 a.getFund().getHandOrders().size() == 2 && a.getFund().getHandOrders().get(0).limit() == limit);
         check("...and the second can be cancelled", a.fundCancelOrder(1) && a.getFund().getHandOrders().size() == 1);
@@ -1180,8 +1180,8 @@ public class FundCheck {
         Game g = copy();
         g.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
         g.setFundDial(2.5);
-        g.setCashForTest(g.getCash() + 100_000);
-        g.fundPayIn(60_000);
+        g.setCashForTest(g.getCash() + 100_000 * PriceLevel.FACTOR);
+        g.fundPayIn(60_000 * PriceLevel.FACTOR);
         play(g);
         Bank bank = g.getBank();
         takeEquityToOwn(bank, own -> .9 * own.minimumEquity());
@@ -1189,7 +1189,7 @@ public class FundCheck {
         g.acceptPreferredOffer();
         takeEquityToOwn(bank, own -> own.minimumEquity());
         bank.payPreferredDividends();
-        g.fundBuyShares(0, 500);
+        g.fundBuyShares(0, 500 * PriceLevel.FACTOR);
         quietly(() -> g.saveGame(3));
         Game back = new Game(files);
         quietly(() -> back.loadGameSave(3));

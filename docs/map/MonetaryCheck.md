@@ -1,6 +1,6 @@
 # MonetaryCheck.java - 930 lines · 11 methods · 5 constants · harnesses
 
-`ham/citybuildersim/MonetaryCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MonetaryCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Money: what a basket costs, what the world charges, and what the rate does.
 > 
@@ -37,7 +37,7 @@
 >      assertion since 0.7.3, with the households' saving answering the real
 >      deposit rate - and the columns that say which channel carried it.
 
-**Uses:** [PriceIndex](PriceIndex.md) (62), [DebtManager](DebtManager.md) (24), [Game](Game.md) (19), [ForeignAccounts](ForeignAccounts.md) (17), [Retail](Retail.md) (13), [LongPlaytest](LongPlaytest.md) (12), [WorldEconomy](WorldEconomy.md) (6), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [Bank](Bank.md) (1)
+**Uses:** [PriceIndex](PriceIndex.md) (62), [DebtManager](DebtManager.md) (24), [Game](Game.md) (19), [ForeignAccounts](ForeignAccounts.md) (17), [Retail](Retail.md) (13), [LongPlaytest](LongPlaytest.md) (12), [WorldEconomy](WorldEconomy.md) (6), [PriceLevel](PriceLevel.md) (5), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [Bank](Bank.md) (1)
 
 **Used by (3):** [CurveCheck](CurveCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [HouseholdCheck](HouseholdCheck.md)
 

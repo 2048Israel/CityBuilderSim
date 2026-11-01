@@ -10,6 +10,7 @@ import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.InfrastructureManager;
 import ham.citybuildersim.JobType;
 import ham.citybuildersim.Markets;
+import ham.citybuildersim.PriceLevel;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Sectors;
 import ham.citybuildersim.Traffic;
@@ -272,7 +273,7 @@ public final class Freight extends Sector {
      * .0124, not this. Nothing in the model reads it (OilCheck 1 holds the
      * eighteen to it); FUEL_LITRES_PER_TONNE keeps the litres it gave.
      */
-    public static final double WORLD_FUEL_PER_TONNE = .03;
+    public static final double WORLD_FUEL_PER_TONNE = .03 * PriceLevel.FACTOR;   // a dead constant, but a nominal anchor: today's figure, priced at the founding's level (EP1), as the pump price it was derived from is
 
     /**
      * Litres of fuel a tonne hauled burns: eighteen. From 0.7.62 to 0.7.77 it

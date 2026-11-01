@@ -1,6 +1,6 @@
 # AgricultureCheck.java - 413 lines · 7 methods · 3 constants · harnesses
 
-`ham/citybuildersim/AgricultureCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AgricultureCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The ground under the loaf.
 > 
@@ -20,7 +20,7 @@
 > rather than waiting three centuries for it; the relief test sets the dial
 > rather than hoping a run finds it.
 
-**Uses:** [Good](Good.md) (40), [BuildingsTemplate](BuildingsTemplate.md) (14), [Sectors](Sectors.md) (11), [Game](Game.md) (6), [Formats](Formats.md) (5), [JobType](JobType.md) (4), [BuildingManager](BuildingManager.md) (3), [Agriculture](Agriculture.md) (3), [TaxPolicy](TaxPolicy.md) (3), [GameFiles](GameFiles.md) (2), [GoodsMarket](GoodsMarket.md) (2), [TempDirs](TempDirs.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [Equity](Equity.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Good](Good.md) (40), [BuildingsTemplate](BuildingsTemplate.md) (14), [Sectors](Sectors.md) (11), [Game](Game.md) (6), [Formats](Formats.md) (5), [PriceLevel](PriceLevel.md) (4), [JobType](JobType.md) (4), [BuildingManager](BuildingManager.md) (3), [Agriculture](Agriculture.md) (3), [TaxPolicy](TaxPolicy.md) (3), [GameFiles](GameFiles.md) (2), [GoodsMarket](GoodsMarket.md) (2), [TempDirs](TempDirs.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [Equity](Equity.md) (1), [PayTier](PayTier.md) (1)
 
 ## Sections
 

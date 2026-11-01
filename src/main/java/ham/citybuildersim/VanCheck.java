@@ -457,7 +457,7 @@ public class VanCheck {
         // ...and a van moved with the steel in it (0.7.120, batch I3; Jerus's C): CarCheck's THE VEHICLES MOVED WITH THE STEEL IN THEM.
         System.out.println("\n--- and a van moved with the steel in it, its plant's margin a van to the cent (0.7.120) ---");
         report("a van is the world's at 68.135: 72 less 5 t of fabricated steel at .665 and 0.6 t of machinery at .9",
-                Good.VANS.worldImportPrice() == 68.135 && !Good.VANS.exportable(), String.format("%.4f", Good.VANS.worldImportPrice()));
+                Good.VANS.worldImportPrice() == 68.135 * PriceLevel.FACTOR && !Good.VANS.exportable(), String.format("%.4f", Good.VANS.worldImportPrice()));
         BuildingManager catalogue = new BuildingManager();
         catalogue.initializeTemplates();
         java.util.List<String> vanLines = new java.util.ArrayList<>();

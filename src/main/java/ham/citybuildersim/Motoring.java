@@ -93,8 +93,10 @@ public final class Motoring {
      * is its litres at petrol's market (journeyFuel()), since 0.7.78 that
      * is the wholesale ladder's - see LITRES_PER_JOURNEY - and since 0.7.83
      * the forecourts' pump price on it (journeyFuel(Game)).
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double CAR_FUEL_PER_JOURNEY = .002;
+    public static final double CAR_FUEL_PER_JOURNEY = .002 * PriceLevel.FACTOR;
 
     /**
      * ...and the litres in it (0.7.62): fifteen kilometres at eight litres a

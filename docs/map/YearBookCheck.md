@@ -1,6 +1,6 @@
 # YearBookCheck.java - 1,114 lines · 44 methods · 5 constants · harnesses
 
-`ham/citybuildersim/YearBookCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/YearBookCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Proves the year book folds each series the way that series has to be folded,
 > and that the file says so. Not part of the game.
@@ -25,7 +25,7 @@
 > YearBook.rules(); what this can do, and does, is refuse to let a series exist
 > with no rule at all.
 
-**Uses:** [YearBook](YearBook.md) (52), [HistorySave](HistorySave.md) (32), [GameFiles](GameFiles.md) (10), [Game](Game.md) (9), [CityCalendar](CityCalendar.md) (6), [Health](Health.md) (5), [Currency](Currency.md) (2), [PopulationManager](PopulationManager.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1), [DecisionLog](DecisionLog.md) (1)
+**Uses:** [YearBook](YearBook.md) (52), [HistorySave](HistorySave.md) (32), [GameFiles](GameFiles.md) (10), [Game](Game.md) (9), [CityCalendar](CityCalendar.md) (6), [Health](Health.md) (5), [Currency](Currency.md) (2), [PopulationManager](PopulationManager.md) (2), [PriceLevel](PriceLevel.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [DecisionLog](DecisionLog.md) (1)
 
 ## Sections
 

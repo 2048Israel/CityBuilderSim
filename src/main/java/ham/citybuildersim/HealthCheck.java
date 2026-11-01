@@ -1021,7 +1021,7 @@ public class HealthCheck {
 
         Healthcare free = new Healthcare();
         free.setFeeScale(0);
-        free.advanceMonth(100, 50, ward, 10, 1.0, 1000, 0);
+        free.advanceMonth(100 * PriceLevel.FACTOR, 50 * PriceLevel.FACTOR, ward, 10, 1.0, 1000, 0);
         check("at 0 nobody pays for treatment", free.getTreatmentFees(), 0, 0);
         check("...and everybody is still treated", free.getServed(CareType.GENERAL), 1000, 0);
         check("...and the funerals still charge", free.getFuneralFees(), 10 * Healthcare.BURIAL_FEE, 1e-9);
@@ -1036,21 +1036,21 @@ public class HealthCheck {
          * loses money, above it it is a business.
          */
         Healthcare even = new Healthcare();
-        even.advanceMonth(100, 50, ward, 0, 1.0, 1000, 0);
+        even.advanceMonth(100 * PriceLevel.FACTOR, 50 * PriceLevel.FACTOR, ward, 0, 1.0, 1000, 0);
         double be = even.breakEvenScale();
-        check("the break-even scale is the gross cost over the fees at 1x", be, 150 / wardAtOne, 1e-12);
+        check("the break-even scale is the gross cost over the fees at 1x", be, 150 * PriceLevel.FACTOR / wardAtOne, 1e-12);
         assertTrue("...and this ward's is inside the dial", be > 0 && be <= TaxPolicy.MAX_HEALTH_FEE_SCALE);
         even.setFeeScale(be);
-        even.advanceMonth(100, 50, ward, 0, 1.0, 1000, 0);
+        even.advanceMonth(100 * PriceLevel.FACTOR, 50 * PriceLevel.FACTOR, ward, 0, 1.0, 1000, 0);
         check("at the break-even scale the fees meet the gross cost",
                 even.getTreatmentFees(), even.getGrossCost(), 1e-9);
         check("...and the net cost is nothing", even.getNetCost(), 0, 1e-9);
         even.setFeeScale(be * .5);
-        even.advanceMonth(100, 50, ward, 0, 1.0, 1000, 0);
+        even.advanceMonth(100 * PriceLevel.FACTOR, 50 * PriceLevel.FACTOR, ward, 0, 1.0, 1000, 0);
         assertTrue("below it the service loses money", even.getNetCost() > 0);
         check("...half the fees, at half the scale", even.getTreatmentFees(), even.getGrossCost() * .5, 1e-9);
         even.setFeeScale(Math.min(TaxPolicy.MAX_HEALTH_FEE_SCALE, be * 1.25));
-        even.advanceMonth(100, 50, ward, 0, 1.0, 1000, 0);
+        even.advanceMonth(100 * PriceLevel.FACTOR, 50 * PriceLevel.FACTOR, ward, 0, 1.0, 1000, 0);
         assertTrue("above it, it is a business", even.getNetCost() < 0);
         assertTrue("...and the recovery rate says so", even.getCostRecovery() > 1);
 

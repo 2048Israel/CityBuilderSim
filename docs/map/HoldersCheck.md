@@ -1,6 +1,6 @@
 # HoldersCheck.java - 1,724 lines · 25 methods · 2 constants · harnesses
 
-`ham/citybuildersim/HoldersCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HoldersCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Proves who holds the city's own paper (0.7.1): that the households buy it at
 > the settle, are paid on it, sell it back, and are paid when it is bought
@@ -64,7 +64,7 @@
 >     the hot money departs and PANIC_EXIT of it in a run, when it also bids
 > ... (21 more lines in the source)
 
-**Uses:** [MoneyAudit](MoneyAudit.md) (49), [Game](Game.md) (45), [Debt](Debt.md) (32), [DebtManager](DebtManager.md) (26), [CapitalFlows](CapitalFlows.md) (18), [Bank](Bank.md) (15), [GameFiles](GameFiles.md) (10), [Sectors](Sectors.md) (10), [OutwardInvestment](OutwardInvestment.md) (8), [HouseholdBalance](HouseholdBalance.md) (7), [CentralBank](CentralBank.md) (7), [Founding](Founding.md) (5), [Household](Household.md) (5), [Buyback](Buyback.md) (3), [Auction](Auction.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [SectorBooks](SectorBooks.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [MoneyAudit](MoneyAudit.md) (49), [Game](Game.md) (45), [Debt](Debt.md) (32), [DebtManager](DebtManager.md) (26), [PriceLevel](PriceLevel.md) (22), [CapitalFlows](CapitalFlows.md) (18), [Bank](Bank.md) (15), [GameFiles](GameFiles.md) (10), [Sectors](Sectors.md) (10), [OutwardInvestment](OutwardInvestment.md) (8), [HouseholdBalance](HouseholdBalance.md) (7), [CentralBank](CentralBank.md) (7), [Founding](Founding.md) (5), [Household](Household.md) (5), [Buyback](Buyback.md) (3), [Auction](Auction.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [SectorBooks](SectorBooks.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 ## Sections
 

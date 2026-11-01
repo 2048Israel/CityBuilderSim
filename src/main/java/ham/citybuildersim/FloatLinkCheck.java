@@ -761,10 +761,10 @@ public class FloatLinkCheck {
     /** Sells a floater by its handler and holds the piece to its quote. */
     static FloatingRateNote sellFloater(int years, double ask) {
         DebtManager dm = city.getDebtManager();
-        DebtQuote q = city.quoteFloatingNote(ask, years, 100);
+        DebtQuote q = city.quoteFloatingNote(ask, years, 100 * PriceLevel.FACTOR);
         Set<Debt> before = piecesOf(dm);
         double cash0 = city.getCash();
-        String said = quiet(() -> city.handleFloatingNoteLogic(ask, years, 100));
+        String said = quiet(() -> city.handleFloatingNoteLogic(ask, years, 100 * PriceLevel.FACTOR));
         Debt piece = newest(dm, before);
         check("a " + years + "-year floater sold by its handler is a new piece of type FLOAT, " + years * 12 + " months, its own line",
                 piece instanceof FloatingRateNote && "FLOAT".equals(piece.getType()) && piece.getRemainingMonths() == years * 12
@@ -786,11 +786,11 @@ public class FloatLinkCheck {
     /** Sells a linker by its handler and holds the piece to its quote. */
     static InflationLinkedBond sellLinker(int years, double ask) {
         DebtManager dm = city.getDebtManager();
-        DebtQuote q = city.quoteLinkedBond(ask, years, 100);
+        DebtQuote q = city.quoteLinkedBond(ask, years, 100 * PriceLevel.FACTOR);
         Set<Debt> before = piecesOf(dm);
         double cash0 = city.getCash();
         double indexNow = dm.priceIndexLevel();
-        String said = quiet(() -> city.handleLinkedBondLogic(ask, years, 100));
+        String said = quiet(() -> city.handleLinkedBondLogic(ask, years, 100 * PriceLevel.FACTOR));
         Debt piece = newest(dm, before);
         check("a " + years + "-year linker sold by its handler is a new piece of type LINKED, " + years * 12 + " months, its own line",
                 piece instanceof InflationLinkedBond && "LINKED".equals(piece.getType()) && piece.getRemainingMonths() == years * 12
@@ -835,7 +835,7 @@ public class FloatLinkCheck {
 
         // The tail, caused: a sale far past the bids stops at the cap, short, and the tail is the cap.
         for (int years : FloatingRateNote.MATURITIES) {
-            DebtQuote q = city.quoteFloatingNote(huge, years, 100, Auction.Cap.tail(CAP_TAIL));
+            DebtQuote q = city.quoteFloatingNote(huge, years, 100 * PriceLevel.FACTOR, Auction.Cap.tail(CAP_TAIL));
             Auction.Result r = q.auction();
             String what = years + "-year floater, a sale far past the bids capped at " + String.format("%.2f", CAP_TAIL * 100) + " points";
             check(what + ": short, and stopped at the cap", r.shortSale() && Math.abs(r.tail() - CAP_TAIL) < 1e-9);
@@ -846,7 +846,7 @@ public class FloatLinkCheck {
                     pv(curve, floaterFlows(dm.expectedPolicyPath(), r.ask().fairCoupon(), years * 12)), 100, 1e-6);
         }
         for (int years : InflationLinkedBond.MATURITIES) {
-            DebtQuote q = city.quoteLinkedBond(huge, years, 100, Auction.Cap.tail(CAP_TAIL));
+            DebtQuote q = city.quoteLinkedBond(huge, years, 100 * PriceLevel.FACTOR, Auction.Cap.tail(CAP_TAIL));
             Auction.Result r = q.auction();
             String what = years + "-year linker, a sale far past the bids capped at " + String.format("%.2f", CAP_TAIL * 100) + " points";
             double fair = r.ask().fairCoupon(), through = fair + r.tail();
@@ -860,7 +860,7 @@ public class FloatLinkCheck {
                     pv(curve, linkerFlows(fair, dm.expectedInflationGrowth(), years * 12, true)), 100, 1e-6);
         }
         // ...and a sale the bids cover clears at fair: no tail, the real coupon within a step under fair.
-        DebtQuote covered = city.quoteLinkedBond(ask, 10, 100);
+        DebtQuote covered = city.quoteLinkedBond(ask, 10, 100 * PriceLevel.FACTOR);
         check("a sale the bids cover clears at fair, with no tail, and its real coupon is under fair by less than a step ("
                         + String.format("%.4f%% under %.4f%%", covered.coupon() * 100, covered.auction().ask().fairCoupon() * 100) + ")",
                 !covered.auction().shortSale() && covered.auction().tail() == 0 && covered.coupon() <= covered.auction().ask().fairCoupon() + 1e-12
@@ -868,9 +868,9 @@ public class FloatLinkCheck {
 
         // The quotes in words, and for the cash a sale must bring (the rollover sizes its issues by it).
         check("a quote says what the paper is: the floater's coupon as the policy rate plus a margin, the linker's as a real coupon",
-                city.quoteFloatingNote(ask, 2, 100).summary().contains("policy rate") && covered.summary().contains("Real coupon"));
+                city.quoteFloatingNote(ask, 2, 100 * PriceLevel.FACTOR).summary().contains("policy rate") && covered.summary().contains("Real coupon"));
         double cashWanted = 50_000;
-        DebtQuote forFloater = city.quoteFloatingNoteForCash(cashWanted, 2, 100), forLinker = city.quoteLinkedBondForCash(cashWanted, 10, 100);
+        DebtQuote forFloater = city.quoteFloatingNoteForCash(cashWanted, 2, 100 * PriceLevel.FACTOR), forLinker = city.quoteLinkedBondForCash(cashWanted, 10, 100 * PriceLevel.FACTOR);
         check("a floater quoted for the cash it must bring covers it, by less than a lot of 100 (" + String.format("%,.2f", forFloater.cashReceived()) + " for 50,000)",
                 forFloater.cashReceived() >= cashWanted - 1e-6 && forFloater.cashReceived() - cashWanted < 100 + 1e-6 && "Float".equals(forFloater.instrument()));
         check("...and so does a linker (" + String.format("%,.2f", forLinker.cashReceived()) + ")",
@@ -878,21 +878,21 @@ public class FloatLinkCheck {
 
         // What cannot be sold: refused with the instrument's own words, and nothing moves.
         double[] was = { city.getCash(), dm.getDebt().size(), dm.getAllPrincipal() };
-        String f3 = quiet(() -> city.handleFloatingNoteLogic(ask, 3, 100));
-        String f10 = quiet(() -> city.handleFloatingNoteLogic(ask, 10, 100));
-        String l20 = quiet(() -> city.handleLinkedBondLogic(ask, 20, 100));
-        String l5 = quiet(() -> city.handleLinkedBondLogic(ask, 5, 100));
-        String d1 = quiet(() -> city.handleForeignLogic("Float", 100, 2, 100, false));
-        String d2 = quiet(() -> city.handleForeignLogic("Linked", 100, 10, 100, false));
+        String f3 = quiet(() -> city.handleFloatingNoteLogic(ask, 3, 100 * PriceLevel.FACTOR));
+        String f10 = quiet(() -> city.handleFloatingNoteLogic(ask, 10, 100 * PriceLevel.FACTOR));
+        String l20 = quiet(() -> city.handleLinkedBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
+        String l5 = quiet(() -> city.handleLinkedBondLogic(ask, 5, 100 * PriceLevel.FACTOR));
+        String d1 = quiet(() -> city.handleForeignLogic("Float", 100 * PriceLevel.FACTOR, 2, 100 * PriceLevel.FACTOR, false));
+        String d2 = quiet(() -> city.handleForeignLogic("Linked", 100 * PriceLevel.FACTOR, 10, 100 * PriceLevel.FACTOR, false));
         check("a 3-year floater and a 10-year one are refused in the instrument's words",
                 FloatingRateNote.REFUSAL.equals(f3) && FloatingRateNote.REFUSAL.equals(f10));
         check("a 20-year linker and a 5-year one are refused in the instrument's words",
                 InflationLinkedBond.REFUSAL.equals(l20) && InflationLinkedBond.REFUSAL.equals(l5));
         check("a dollar floater and a dollar linker are refused: they are written at home only",
                 Game.NO_DOLLAR_FLOAT_OR_LINKED.equals(d1) && Game.NO_DOLLAR_FLOAT_OR_LINKED.equals(d2)
-                        && city.quoteForeign("Float", 100, 2, 100).isEmpty() && city.quoteForeign("Linked", 100, 10, 100).isEmpty()
-                        && city.quoteForeignForCash("Float", 1000, 2, 100).isEmpty() && city.quoteForeignForCash("Linked", 1000, 10, 100).isEmpty());
-        check("...and the quotes for those terms are empty", city.quoteFloatingNote(ask, 3, 100).isEmpty() && city.quoteLinkedBond(ask, 20, 100).isEmpty());
+                        && city.quoteForeign("Float", 100 * PriceLevel.FACTOR, 2, 100 * PriceLevel.FACTOR).isEmpty() && city.quoteForeign("Linked", 100 * PriceLevel.FACTOR, 10, 100 * PriceLevel.FACTOR).isEmpty()
+                        && city.quoteForeignForCash("Float", 1000 * PriceLevel.FACTOR, 2, 100 * PriceLevel.FACTOR).isEmpty() && city.quoteForeignForCash("Linked", 1000 * PriceLevel.FACTOR, 10, 100 * PriceLevel.FACTOR).isEmpty());
+        check("...and the quotes for those terms are empty", city.quoteFloatingNote(ask, 3, 100 * PriceLevel.FACTOR).isEmpty() && city.quoteLinkedBond(ask, 20, 100 * PriceLevel.FACTOR).isEmpty());
         check("...and none of the refusals moved the cash, the pieces or the principal",
                 city.getCash() == was[0] && dm.getDebt().size() == (int) was[1] && dm.getAllPrincipal() == was[2]);
 
@@ -944,8 +944,8 @@ public class FloatLinkCheck {
         DebtManager dm = plain.getDebtManager();
         double ask = askOf(plain, .25);
         quietly(() -> {
-            plain.handleTBillLogic(ask, 12, 100);
-            plain.handleLongBondLogic(ask, 5, 100);
+            plain.handleTBillLogic(ask, 12, 100 * PriceLevel.FACTOR);
+            plain.handleLongBondLogic(ask, 5, 100 * PriceLevel.FACTOR);
         });
         int pieces = 0, floatsOrLinks = 0, rolledBills = 0;
         Set<Debt> seen = new HashSet<>(dm.getDebt());
@@ -976,7 +976,7 @@ public class FloatLinkCheck {
         List<Double> facesSold = new ArrayList<>();
         for (Debt d : dm.getDebt()) facesSold.add(d.getFaceValue());
         int piecesSold = dm.getDebt().size();
-        quietly(() -> city.handleLongBondLogic(ask, 2, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 2, 100 * PriceLevel.FACTOR));
         for (Debt d : dm.getDebt()) if (d instanceof LongTermBond b && b.getDuration() == 24 && !b.isCallable()) fixedTwoYear = b;
         check("fixture: a fixed 2-year bond is on the books beside the floaters, for the comparison", fixedTwoYear != null);
         boolean nobodyReopened = dm.getDebt().size() == piecesSold + 1;
@@ -990,7 +990,7 @@ public class FloatLinkCheck {
         // point the assertion allows. A floater is near par when it is fresh; its distance from par after a long while is the held
         // dial's distance from the curve, which is not what the assertion is about.
         Set<Debt> beforeFresh = piecesOf(dm);
-        quietly(() -> city.handleFloatingNoteLogic(ask, 2, 100));
+        quietly(() -> city.handleFloatingNoteLogic(ask, 2, 100 * PriceLevel.FACTOR));
         Debt freshPiece = newest(dm, beforeFresh);
         check("fixture: a 2-year floater is sold beside the fixed one, for the dial's move to be read on", freshPiece instanceof FloatingRateNote);
         FloatingRateNote fresh = freshPiece instanceof FloatingRateNote fn ? fn : floaters.get(0);
@@ -1062,7 +1062,7 @@ public class FloatLinkCheck {
         runFixtures();
         near("a floater built through addFloatingRateNote() with a margin of -1 point pays no coupon in the month the dial is at nothing", fxNegAtNothing, 0, 0);
         near("...nor in the month it is at half a point (the coupon is never under nothing)", fxNegAtHalf, 0, 0);
-        near("...and with the dial at two points it pays the point that is left: 10,000 x 1% / 12", fxNegAtTwo, 10_000 * (.02 - .01) / 12, 1e-9);
+        near("...and with the dial at two points it pays the point that is left: 10,000 x 1% / 12", fxNegAtTwo, 10_000 * PriceLevel.FACTOR * (.02 - .01) / 12, 1e-9);
         check("...it is a floater whose margin is under nothing, and the books carried it all the while", fxNeg.getMargin() < 0 && fxNeg.getRemainingMonths() == 12);
     }
 
@@ -1207,7 +1207,7 @@ public class FloatLinkCheck {
     static FloatingRateNote fxNeg, fxPos;
     static InflationLinkedBond fxUp, fxDown;
     static Books fxBooks;
-    static double fxNegAtNothing, fxNegAtHalf, fxNegAtTwo, fxRepaid, fxUpPaid, fxDownPaid, fxUpRatio, fxDownRatio, fxUpFace = 20_000;
+    static double fxNegAtNothing, fxNegAtHalf, fxNegAtTwo, fxRepaid, fxUpPaid, fxDownPaid, fxUpRatio, fxDownRatio, fxUpFace = 20_000 * PriceLevel.FACTOR;
     static double fxOwed, fxOwedWant, fxPricedGap, fxDownMid;
 
     /**
@@ -1227,10 +1227,10 @@ public class FloatLinkCheck {
         Arrays.fill(rising, 1.01);
         Index idx = new Index(l0, rising);
         dm.setPriceIndexSource(idx);
-        fxNeg = fixtureFloater(fx, 10_000, 24, -.01);
-        fxPos = fixtureFloater(fx, 10_000, 12, .005);
+        fxNeg = fixtureFloater(fx, 10_000 * PriceLevel.FACTOR, 24, -.01);
+        fxPos = fixtureFloater(fx, 10_000 * PriceLevel.FACTOR, 12, .005);
         fxUp = fixtureLinker(fx, fxUpFace, 12, .02, l0);
-        fxDown = fixtureLinker(fx, 20_000, 12, .02, l0 * 1.5);
+        fxDown = fixtureLinker(fx, 20_000 * PriceLevel.FACTOR, 12, .02, l0 * 1.5);
         fxBooks = new Books();
         for (Debt d : new Debt[] { fxNeg, fxPos, fxUp, fxDown }) fxBooks.follow(d, d.getCarryingValue());
         double[] dials = { .03, .03, .03, 0, .005, .02, .02, .045, .045, .03, .03, .03, .03 };
@@ -1281,7 +1281,7 @@ public class FloatLinkCheck {
         near("the linker under a rising index paid, in the coupon of its last month, the indexed face less the face: 20,000 x (ratio - 1)", fxUpPaid, fxUpFace * (fxUpRatio - 1), 1e-6);
         near("the twin under a ratio of less than 1 paid no uplift: the floor", fxDownPaid, 0, 0);
         near("...and the bridge's repaid row of that month is the three faces, the indexed one's included at its original face",
-                fxRepaid, 10_000 + 20_000 + 20_000, 1e-6);
+                fxRepaid, (10_000 + 20_000 + 20_000) * PriceLevel.FACTOR, 1e-6);
         near("the statements' uplift paid in cash that month is the up-twin's alone", na.getUpliftPaidInCash(), fxUpPaid, 1e-9);
         check("the up-twin ended carried at nothing and its face was repaid whole: all three pieces are off the books",
                 Math.abs(fxUp.getCarryingValue()) <= 1e-9 && !dm.getDebt().contains(fxUp) && !dm.getDebt().contains(fxDown) && !dm.getDebt().contains(fxPos));
@@ -1302,11 +1302,11 @@ public class FloatLinkCheck {
         double rask = askOf(rg, .25);
         Books rb = new Books();
         Set<Debt> none = piecesOf(rdm);
-        quietly(() -> rg.handleFloatingNoteLogic(rask, 2, 100));
+        quietly(() -> rg.handleFloatingNoteLogic(rask, 2, 100 * PriceLevel.FACTOR));
         FloatingRateNote floater = (FloatingRateNote) newest(rdm, none);
         rb.follow(floater, floater.getCarryingValue());
         Set<Debt> one = piecesOf(rdm);
-        quietly(() -> rg.handleLinkedBondLogic(rask, 10, 100));
+        quietly(() -> rg.handleLinkedBondLogic(rask, 10, 100 * PriceLevel.FACTOR));
         InflationLinkedBond linker = (InflationLinkedBond) newest(rdm, one);
         int presses = 0, linkerMonth = 0;
         double raised = Double.NaN;
@@ -1381,7 +1381,7 @@ public class FloatLinkCheck {
         ddm.setPriceIndexSource(dIdx);
         Set<Debt> dnone = piecesOf(ddm);
         double dask = askOf(dg, .25);
-        quietly(() -> dg.handleLinkedBondLogic(dask, 10, 100));
+        quietly(() -> dg.handleLinkedBondLogic(dask, 10, 100 * PriceLevel.FACTOR));
         InflationLinkedBond deflating = (InflationLinkedBond) newest(ddm, dnone);
         Books db = new Books();
         int dpress = 0;
@@ -1539,10 +1539,10 @@ public class FloatLinkCheck {
         DebtManager dm = g.getDebtManager();
         double ask = askOf(g, .25);
         Set<Debt> before = piecesOf(dm);
-        quietly(() -> g.handleFloatingNoteLogic(ask, 5, 100));
+        quietly(() -> g.handleFloatingNoteLogic(ask, 5, 100 * PriceLevel.FACTOR));
         FloatingRateNote f = (FloatingRateNote) newest(dm, before);
         Set<Debt> mid = piecesOf(dm);
-        quietly(() -> g.handleLinkedBondLogic(ask, 10, 100));
+        quietly(() -> g.handleLinkedBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         InflationLinkedBond l = (InflationLinkedBond) newest(dm, mid);
         check("fixture: a floater and a linker are on the books, unsettled, and a part of either quotes nothing",
                 f != null && l != null && f.unsettledFace() > 0 && l.unsettledFace() > 0
@@ -1573,7 +1573,7 @@ public class FloatLinkCheck {
                 Set<Debt> had = piecesOf(dm);
                 double cash0 = g.getCash();
                 quietly(() -> {
-                    if (kind.equals("floater")) g.handleFloatingNoteLogic(sale, 2, 100); else g.handleLinkedBondLogic(sale, 10, 100);
+                    if (kind.equals("floater")) g.handleFloatingNoteLogic(sale, 2, 100 * PriceLevel.FACTOR); else g.handleLinkedBondLogic(sale, 10, 100 * PriceLevel.FACTOR);
                 });
                 double raised = g.getCash() - cash0;
                 Debt fresh = newest(dm, had);
@@ -1631,8 +1631,8 @@ public class FloatLinkCheck {
         check("fixture: the city rolls each piece into its own kind", g.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
         int[] floatMonths = { 24, 60 }, linkMonths = { 120, 360 };
         List<Debt> old = new ArrayList<>();
-        for (int months : floatMonths) old.add(dueNextMonth(fixtureFloater(g, 20_000, months, .002)));
-        for (int months : linkMonths) old.add(dueNextMonth(fixtureLinker(g, 20_000, months, .02, dm.priceIndexLevel())));
+        for (int months : floatMonths) old.add(dueNextMonth(fixtureFloater(g, 20_000 * PriceLevel.FACTOR, months, .002)));
+        for (int months : linkMonths) old.add(dueNextMonth(fixtureLinker(g, 20_000 * PriceLevel.FACTOR, months, .02, dm.priceIndexLevel())));
         g.setCashForTest(0);
         Rollover.Plan plan = g.rolloverPlan();
         List<String> issues = new ArrayList<>();
@@ -1670,8 +1670,8 @@ public class FloatLinkCheck {
         // Under TWELVE_MONTH_BILL each falls due into a bill.
         g.setRolloverMode(Rollover.Mode.TWELVE_MONTH_BILL);
         List<Debt> due = new ArrayList<>();
-        for (int months : floatMonths) due.add(dueNextMonth(fixtureFloater(g, 20_000, months, .002)));
-        for (int months : linkMonths) due.add(dueNextMonth(fixtureLinker(g, 20_000, months, .02, dm.priceIndexLevel())));
+        for (int months : floatMonths) due.add(dueNextMonth(fixtureFloater(g, 20_000 * PriceLevel.FACTOR, months, .002)));
+        for (int months : linkMonths) due.add(dueNextMonth(fixtureLinker(g, 20_000 * PriceLevel.FACTOR, months, .02, dm.priceIndexLevel())));
         g.setCashForTest(0);
         Rollover.Plan bills = g.rolloverPlan();
         check("the plan under TWELVE_MONTH_BILL is bills alone: " + bills.issues(),
@@ -1691,10 +1691,10 @@ public class FloatLinkCheck {
         c.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         double cask = askOf(c, .25);
         Set<Debt> none = piecesOf(cdm);
-        quietly(() -> c.handleFloatingNoteLogic(cask, 2, 100));
+        quietly(() -> c.handleFloatingNoteLogic(cask, 2, 100 * PriceLevel.FACTOR));
         FloatingRateNote heldFloater = (FloatingRateNote) newest(cdm, none);
         Set<Debt> one = piecesOf(cdm);
-        quietly(() -> c.handleLinkedBondLogic(cask, 10, 100));
+        quietly(() -> c.handleLinkedBondLogic(cask, 10, 100 * PriceLevel.FACTOR));
         InflationLinkedBond heldLinker = (InflationLinkedBond) newest(cdm, one);
         int guard = 0;
         press(c, "sale month: the settle");
@@ -1751,10 +1751,10 @@ public class FloatLinkCheck {
         dm.setPriceIndexSource(idx);
         double ask = askOf(g, .25);
         Set<Debt> had = piecesOf(dm);
-        quietly(() -> g.handleFloatingNoteLogic(ask, 5, 100));
+        quietly(() -> g.handleFloatingNoteLogic(ask, 5, 100 * PriceLevel.FACTOR));
         FloatingRateNote f = (FloatingRateNote) newest(dm, had);
         Set<Debt> mid = piecesOf(dm);
-        quietly(() -> g.handleLinkedBondLogic(ask, 10, 100));
+        quietly(() -> g.handleLinkedBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         InflationLinkedBond l = (InflationLinkedBond) newest(dm, mid);
         for (int k = 1; k <= 3; k++) {
             idx.k = k;

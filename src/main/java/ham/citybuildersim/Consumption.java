@@ -269,8 +269,10 @@ public class Consumption {
                     o.get("label").getAsString(),
                     o.get("unit").getAsString(),
                     o.get("category").getAsString(),
-                    o.get("worldImportPrice").getAsDouble(),
-                    o.get("worldExportPrice").getAsDouble(),
+                    // The file's prices are today's, as Good's table writes them; read at the founding's price level, the same product Good's
+                    // constructor forms (EP1), so ConsumptionCheck's equality to Good holds to the bit, and the income multiple stays a pure ratio.
+                    o.get("worldImportPrice").getAsDouble() * PriceLevel.FACTOR,
+                    o.get("worldExportPrice").getAsDouble() * PriceLevel.FACTOR,
                     o.get("kcalPerUnit").getAsDouble(),
                     o.get("quality").getAsDouble(),
                     o.get("elasticity").getAsDouble(),

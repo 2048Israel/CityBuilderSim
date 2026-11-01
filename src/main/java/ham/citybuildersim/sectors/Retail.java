@@ -8,6 +8,7 @@ import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.Markets;
+import ham.citybuildersim.PriceLevel;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.SupplierCredit;
 import ham.citybuildersim.Trade;
@@ -63,8 +64,8 @@ public final class Retail extends Sector {
     /** What the shops add to what their stock cost them. */
     public static final double RETAIL_MARKUP = 1.50;
 
-    /** The price the game opened at, and the floor it will not go below - struck at the expected price level since 0.7.42 (seedConstants()). */
-    public static final double OPENING_SELL_PRICE = .3;
+    /** The price the game opened at, and the floor it will not go below - struck at the expected price level since 0.7.42 (seedConstants()). Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double OPENING_SELL_PRICE = .3 * PriceLevel.FACTOR;
 
     /* ------------------------ the price that clears (0.7.43) ------------------------
      * The project's spec-inflation.md 2.6-2.7 and its star decisions 2, 3

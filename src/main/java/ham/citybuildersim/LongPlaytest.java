@@ -908,7 +908,7 @@ public class LongPlaytest {
                 // caused (since round 5 only a bank shut), and every one past
                 // $5M - the cascade's trace (round 4).
                 boolean bankState = why == BusinessDebtManager.ShortReason.BANK_SHUT;
-                if (Boolean.getBoolean("playtest.defaults") && (bankState || forgiven > 5_000)) {
+                if (Boolean.getBoolean("playtest.defaults") && (bankState || forgiven > 5_000 * PriceLevel.FACTOR)) {
                     Bank bk = g.getBank();
                     out.printf("CFD m%d %s %s short %,.0f share %.3f of $%,.0f due | interim %,.0f refused %s backstop %b | owes %,.0f quarter %.2f | bank eq %,.0f min %,.0f target %,.0f growth %.4f keepGoing %b failures %d%n",
                             g.getMonth(), s, why, forgiven, cr.getCannotPayShare(s), cr.getMonthObligations(s),
@@ -4850,9 +4850,9 @@ public class LongPlaytest {
         Game.BuildQuote q = g.quotePave(n);
         if (q == null) return false;
         if (q.total > g.getCash()) {
-            double needed = Math.max(q.total - g.getCash(), 5000);
+            double needed = Math.max(q.total - g.getCash(), 5000 * PriceLevel.FACTOR);
             if (canService(g, needed)) {
-                g.handleLongBondForCash(needed, 20, 100);
+                g.handleLongBondForCash(needed, 20, 100 * PriceLevel.FACTOR);
                 notePaper(g, n + " x paving");
             }
         }
@@ -5024,7 +5024,7 @@ public class LongPlaytest {
         if (result == Game.BuildResult.NEEDS_FUNDING) {
             // A city borrows for capital projects. Long bonds, because the
             // whole point of the instrument is small monthly payments.
-            double needed = Math.max(t.getCashCost() * quantity * 1.6, 5000);
+            double needed = Math.max(t.getCashCost() * quantity * 1.6, 5000 * PriceLevel.FACTOR);
             if (canService(g, needed)) {
                 /*
                  * AND IT TAKES THE CHEAPER MONEY, which is what a treasury
@@ -5058,11 +5058,11 @@ public class LongPlaytest {
                 if (QUOTED_BORROWING ? borrowsAbroad(g, needed) : abroadByTheRatesBefore(g)) {
                     double rateAbroad = abroadQuote(g, needed).marketRate();   // asked before the sale is booked: after it the debt is in the curve
                     g.handleForeignLogic("Term", needed / Math.max(.01, fxRate(g)),
-                            20, 100, false);
+                            20, 100 * PriceLevel.FACTOR, false);
                     bondsAbroad++;
                     dearestAbroad = Math.max(dearestAbroad, rateAbroad);
                 } else {
-                    g.handleLongBondForCash(needed, 20, 100);
+                    g.handleLongBondForCash(needed, 20, 100 * PriceLevel.FACTOR);
                     bondsAtHome++;
                 }
                 notePaper(g, quantity + " x " + name);   // the trace (0.7.10); nothing else reads it
@@ -5125,7 +5125,7 @@ public class LongPlaytest {
 
     /** The 20-year dollar term bond for a local-money need, as the build would sell it; books nothing. */
     static DebtQuote abroadQuote(Game g, double needed) {
-        return g.quoteForeign("Term", needed / Math.max(.01, fxRate(g)), 20, 100);
+        return g.quoteForeign("Term", needed / Math.max(.01, fxRate(g)), 20, 100 * PriceLevel.FACTOR);
     }
 
     /**
@@ -6169,7 +6169,7 @@ public class LongPlaytest {
                 if (stop % 19 == 0) {
                     DebtManager m = g.getDebtManager();
                     if (m.foreignWindowOpen() && m.foreignRate() < m.getRate()) {
-                        double ask = Math.max(5_000,
+                        double ask = Math.max(5_000 * PriceLevel.FACTOR,
                                 g.getEconomyManager().getMonthGdp() * .5
                                         / Math.max(.01, fxRate(g)));
                         /*
@@ -6182,11 +6182,11 @@ public class LongPlaytest {
                         if (BORROW_AT_HOME) {
                             // The same money, at home - see THE CITY'S OWN PAPER.
                             double local = ask * Math.max(.01, fxRate(g));
-                            g.handleLongBondForCash(local, 20, 100);
+                            g.handleLongBondForCash(local, 20, 100 * PriceLevel.FACTOR);
                             log.add(String.format("  m%-5d borrowed $%,.0fk at home at %.2f%%",
                                     g.getMonth(), local, m.getRate() * 100));
                         } else {
-                            g.handleForeignLogic("Term", ask, 20, 100, false);
+                            g.handleForeignLogic("Term", ask, 20, 100 * PriceLevel.FACTOR, false);
                             log.add(String.format("  m%-5d borrowed US$%,.0fk abroad at %.2f%%",
                                     g.getMonth(), ask, m.foreignRate() * 100));
                         }

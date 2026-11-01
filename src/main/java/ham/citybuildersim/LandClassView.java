@@ -153,7 +153,8 @@ public final class LandClassView {
         double a = Math.abs(d);
         if (a >= 1_000) return tight(d, false);
         if (a >= 1) return String.format("$%,.2f", d);
-        if (a > 0) return String.format("$%.4f", unsigned0(d, 4));
+        if (a >= .001) return String.format("$%.4f", unsigned0(d, 4));
+        if (a > 0) return String.format("$%.6f", unsigned0(d, 6));   // Money.unitPrice() (EP1)
         return "$0";
     }
 

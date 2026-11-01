@@ -1,6 +1,6 @@
 # BuybackCheck.java - 845 lines · 31 methods · 3 constants · harnesses
 
-`ham/citybuildersim/BuybackCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuybackCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The city's paper bought back in a reverse auction (CD4, spec-city-debt.md
 > section 6.2-6.3; D12, D17-D19, D26, D34): every holder but the central bank
@@ -45,7 +45,7 @@
 > 
 > Each fixture causes its condition rather than finding a city in it.
 
-**Uses:** [Buyback](Buyback.md) (112), [Game](Game.md) (17), [Debt](Debt.md) (15), [HouseholdBalance](HouseholdBalance.md) (9), [Founding](Founding.md) (9), [Auction](Auction.md) (8), [DebtManager](DebtManager.md) (8), [MoneyAudit](MoneyAudit.md) (4), [CapitalFlows](CapitalFlows.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [GameFiles](GameFiles.md) (2), [Sectors](Sectors.md) (2), [Bank](Bank.md) (2), [CentralBank](CentralBank.md) (1), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [Rollover](Rollover.md) (1), [HistorySave](HistorySave.md) (1)
+**Uses:** [Buyback](Buyback.md) (112), [Game](Game.md) (17), [Debt](Debt.md) (15), [PriceLevel](PriceLevel.md) (11), [HouseholdBalance](HouseholdBalance.md) (9), [Founding](Founding.md) (9), [Auction](Auction.md) (8), [DebtManager](DebtManager.md) (8), [MoneyAudit](MoneyAudit.md) (4), [CapitalFlows](CapitalFlows.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [GameFiles](GameFiles.md) (2), [Sectors](Sectors.md) (2), [Bank](Bank.md) (2), [CentralBank](CentralBank.md) (1), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [Rollover](Rollover.md) (1), [HistorySave](HistorySave.md) (1)
 
 ## Sections
 

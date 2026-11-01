@@ -219,6 +219,11 @@ public class Education {
      * make it.
      */
     public static double foundingTuition(EducationType type) {
+        return todaysTuition(type) * PriceLevel.FACTOR;
+    }
+
+    /** The table as it is written, founding thousands a month at today's (2025's) price level; foundingTuition() prices it at the founding's (times PriceLevel.FACTOR, EP1). */
+    static double todaysTuition(EducationType type) {
         switch (type) {
             case ELEMENTARY:
             case MIDDLE:      return .10;

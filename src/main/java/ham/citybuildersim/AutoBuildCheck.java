@@ -1065,7 +1065,7 @@ public class AutoBuildCheck {
     static final int YOUNG_MONTH = 60;
 
     /** What the refused order is short of, in thousands, the game's money: $0.28M, the 0.7.89 city's ($24.11M of treasury against $24.39M of order). */
-    static final double SHORT = 280;
+    static final double SHORT = 280 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
     /** The months the city plays on after the refusal, its debt limit left where the fixture pinned it. */
     static final int AFTER_MONTHS = 24;
@@ -1338,7 +1338,7 @@ public class AutoBuildCheck {
     }
 
     /** A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). */
-    static final double ROOM = 50_000;
+    static final double ROOM = 50_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
     /**
      * The town fixture with room (0.7.101): its healthcare and education

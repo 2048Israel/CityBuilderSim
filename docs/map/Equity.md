@@ -1,6 +1,6 @@
 # Equity.java - 1,265 lines · 106 methods · 20 constants · model
 
-`ham/citybuildersim/Equity.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Equity.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The share register: who owns the city's companies, what they paid for them,
 > and what the companies pay them back.
@@ -64,7 +64,7 @@
 > they'll go for less equity compared to debt, if more risky, then more
 > ... (40 more lines in the source)
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (6), [Sectors](Sectors.md) (1), [Exchange](Exchange.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (6), [Sectors](Sectors.md) (1), [PriceLevel](PriceLevel.md) (1), [Exchange](Exchange.md) (1)
 
 **Used by (50):** [AgricultureCheck](AgricultureCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BuildCardCheck](BuildCardCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Household](Household.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MarketCheck](MarketCheck.md), [MoneyAudit](MoneyAudit.md), [MortgageCheck](MortgageCheck.md), [PeopleScreen](PeopleScreen.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md), [WoodProductsCheck](WoodProductsCheck.md)
 
@@ -98,7 +98,7 @@
 | 108 | `Equity.COMPANIES` |  | The companies, in register order: every sector in the registry's order, then the bank. |
 | 109 | `Equity.BANK` |  |  |
 | 126 | `Equity.PAYOUT` | `.40` | The share of a positive month's net income paid to the owners - of what it leaves after the principal repaid, since round 2 of 0.7.11 (dividendDue()) - every company's but the bank's, which pays by its own capital rul... |
-| 129 | `Equity.FOUNDING_PRICE` | `1.0` | A founding share: a thousand dollars, in the game's thousands. |
+| 129 | `Equity.FOUNDING_PRICE` | `1.0 * PriceLevel.FACTOR` | A founding share: a thousand dollars, in the game's thousands, at today's prices. |
 | 161 | `Equity.RECORD_MONTHS` | `12` | Months on the books before a company has a record to be judged on. |
 | 164 | `Equity.GOOD_MONTHS` | `9` | Profitable months of the last twelve that make a good year. |
 | 167 | `Equity.BAD_MONTHS` | `6` | ...and the most a bad year has. |

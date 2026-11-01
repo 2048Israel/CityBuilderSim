@@ -379,7 +379,7 @@ public class BuybackCheck {
 
     /** A line sold through the auction: the piece the sale went into, unsettled until the next month. */
     static Debt sell(Game g, double ask, int years) {
-        quietly(() -> g.handleLongBondLogic(ask, years, 100));
+        quietly(() -> g.handleLongBondLogic(ask, years, 100 * PriceLevel.FACTOR));
         return unsettledPiece(g.getDebtManager());
     }
 
@@ -431,7 +431,7 @@ public class BuybackCheck {
         HouseholdBalance hb = city.getHouseholdBalance();
 
         worldWantsPaper(city);
-        double ask = Math.max(100, hb.spareForPaper() * 3);
+        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
         Debt bond = sell(city, ask, 10);
         check("fixture: the treasury sold a ten-year line", bond != null);
         check("fixture: ...which is unsettled until the month turns, and a part of it quotes nothing",
@@ -595,13 +595,13 @@ public class BuybackCheck {
 
         // The same month: a whole line, sold and bought straight back before its settle, goes off the books as it always did.
         for (String kind : new String[]{"long", "medium", "bill"}) {
-            double ask = Math.max(100, hb.spareForPaper() * 2);
+            double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 2);
             double before = city.getCash();
             quietly(() -> {
                 switch (kind) {
-                    case "long" -> city.handleLongBondLogic(ask, 10, 100);
-                    case "medium" -> city.handleMediumBondLogic(ask, 10, 100);
-                    default -> city.handleTBillLogic(ask, 12, 100);
+                    case "long" -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
+                    case "medium" -> city.handleMediumBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
+                    default -> city.handleTBillLogic(ask, 12, 100 * PriceLevel.FACTOR);
                 }
             });
             double raised = city.getCash() - before;
@@ -624,13 +624,13 @@ public class BuybackCheck {
         for (String kind : new String[]{"long", "medium", "bill"}) {
             double worst = Double.NEGATIVE_INFINITY, total = 0;
             for (int round = 0; round < 2; round++) {
-                double ask = Math.max(100, hb.spareForPaper() * 2);
+                double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 2);
                 double before = city.getCash();
                 quietly(() -> {
                     switch (kind) {
-                        case "long" -> city.handleLongBondLogic(ask, 10, 100);
-                        case "medium" -> city.handleMediumBondLogic(ask, 10, 100);
-                        default -> city.handleTBillLogic(ask, 12, 100);
+                        case "long" -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
+                        case "medium" -> city.handleMediumBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
+                        default -> city.handleTBillLogic(ask, 12, 100 * PriceLevel.FACTOR);
                     }
                 });
                 double raised = city.getCash() - before;
@@ -667,7 +667,7 @@ public class BuybackCheck {
         try { g = ForeignDebtCheck.tradingCity(root.resolve("trading")); } finally { System.setOut(out); }
         g.setCashForTest(Founding.WEALTHY_CASH);
         DebtManager ledger = g.getDebtManager();
-        quietly(() -> g.handleForeignLogic("Term", RestructureCheck.DOLLAR_ASK, 30, 100, false));
+        quietly(() -> g.handleForeignLogic("Term", RestructureCheck.DOLLAR_ASK, 30, 100 * PriceLevel.FACTOR, false));
         Debt usd = null;
         for (Debt d : ledger.getDebt()) if (d.isForeign()) usd = d;
         check("fixture: the city owes a dollar bond", usd != null && ledger.getForeignPrincipalUsd() > 0);

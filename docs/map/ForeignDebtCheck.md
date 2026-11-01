@@ -1,6 +1,6 @@
 # ForeignDebtCheck.java - 1,026 lines · 12 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Borrowing in somebody else's money.
 > 
@@ -51,7 +51,7 @@
 >      though the world's rate before it is the lower, and a small one goes
 >      abroad once the city's own paper is dearer; quoting books nothing.
 
-**Uses:** [DebtManager](DebtManager.md) (35), [Game](Game.md) (19), [LongPlaytest](LongPlaytest.md) (16), [Debt](Debt.md) (9), [CityCalendar](CityCalendar.md) (6), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [Rollover](Rollover.md) (3), [ChartModel](ChartModel.md) (3), [DecisionLog](DecisionLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Ladder](Ladder.md) (2), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [DebtManager](DebtManager.md) (35), [PriceLevel](PriceLevel.md) (27), [Game](Game.md) (19), [LongPlaytest](LongPlaytest.md) (16), [Debt](Debt.md) (9), [CityCalendar](CityCalendar.md) (6), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [Rollover](Rollover.md) (3), [ChartModel](ChartModel.md) (3), [DecisionLog](DecisionLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Ladder](Ladder.md) (2), [MoneyAudit](MoneyAudit.md) (1)
 
 **Used by (3):** [BuybackCheck](BuybackCheck.md), [CurveCheck](CurveCheck.md), [RestructureCheck](RestructureCheck.md)
 

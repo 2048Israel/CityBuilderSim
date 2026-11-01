@@ -1,6 +1,6 @@
 # TreasuryCheck.java - 1,603 lines · 33 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TreasuryCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits what the screens say the treasury did. Not part of
 > the game.
@@ -64,7 +64,7 @@
 >      line. The "Raised by issuing paper" row is asserted here too, because
 > ... (41 more lines in the source)
 
-**Uses:** [Game](Game.md) (70), [Debt](Debt.md) (29), [Rollover](Rollover.md) (24), [DebtManager](DebtManager.md) (16), [TreasuryJournal](TreasuryJournal.md) (15), [LongTermBond](LongTermBond.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (5), [GameFiles](GameFiles.md) (5), [NationalAccounts](NationalAccounts.md) (5), [MoneyAudit](MoneyAudit.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [MediumTermBond](MediumTermBond.md) (2), [Sectors](Sectors.md) (1), [LandParcel](LandParcel.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [Game](Game.md) (70), [PriceLevel](PriceLevel.md) (40), [Debt](Debt.md) (29), [Rollover](Rollover.md) (24), [DebtManager](DebtManager.md) (16), [TreasuryJournal](TreasuryJournal.md) (15), [LongTermBond](LongTermBond.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (5), [GameFiles](GameFiles.md) (5), [NationalAccounts](NationalAccounts.md) (5), [MoneyAudit](MoneyAudit.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [MediumTermBond](MediumTermBond.md) (2), [Sectors](Sectors.md) (1), [LandParcel](LandParcel.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 **Used by (2):** [CallCheck](CallCheck.md), [ScaleCheck](ScaleCheck.md)
 

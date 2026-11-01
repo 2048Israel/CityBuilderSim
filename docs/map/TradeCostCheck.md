@@ -1,6 +1,6 @@
 # TradeCostCheck.java - 621 lines · 6 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TradeCostCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TradeCostCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The wedge between what the world charges and what it pays, and what it is
 > made of.
@@ -33,7 +33,7 @@
 > the traffic split, the modes, and the haulage sector's price. See
 > claude/transport-and-the-freight-band.md.
 
-**Uses:** [Good](Good.md) (81), [Traffic](Traffic.md) (46), [TaxPolicy](TaxPolicy.md) (12), [InfrastructureManager](InfrastructureManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Formats](Formats.md) (7), [Game](Game.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [GameFiles](GameFiles.md) (1), [BuildingManager](BuildingManager.md) (1), [Mining](Mining.md) (1), [Sectors](Sectors.md) (1), [Motoring](Motoring.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Good](Good.md) (81), [Traffic](Traffic.md) (46), [TaxPolicy](TaxPolicy.md) (12), [InfrastructureManager](InfrastructureManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Formats](Formats.md) (7), [PriceLevel](PriceLevel.md) (2), [Game](Game.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [GameFiles](GameFiles.md) (1), [BuildingManager](BuildingManager.md) (1), [Mining](Mining.md) (1), [Sectors](Sectors.md) (1), [Motoring](Motoring.md) (1), [PayTier](PayTier.md) (1)
 
 ## Sections
 

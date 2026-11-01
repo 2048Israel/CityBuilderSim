@@ -112,7 +112,7 @@ public class RestructureCheck {
         Game g = founded(root, "city");
 
         System.setOut(quiet);
-        try { g.handleMediumBondLogic(200_000, 5, 1000); } finally { System.setOut(out); }
+        try { g.handleMediumBondLogic(200_000 * PriceLevel.FACTOR, 5, 1000 * PriceLevel.FACTOR); } finally { System.setOut(out); }
 
         assertTrue("the city has a bond", !g.getDebtManager().getDebt().isEmpty());
         Debt bond = g.getDebtManager().getDebt().get(0);
@@ -139,7 +139,7 @@ public class RestructureCheck {
 
         /* ---- and it must refuse when the city cannot pay ---- */
         System.setOut(quiet);
-        try { g.handleMediumBondLogic(200_000, 5, 1000); } finally { System.setOut(out); }
+        try { g.handleMediumBondLogic(200_000 * PriceLevel.FACTOR, 5, 1000 * PriceLevel.FACTOR); } finally { System.setOut(out); }
         Debt second = g.getDebtManager().getDebt().get(0);
 
         g.setCashForTest(10);
@@ -240,14 +240,14 @@ public class RestructureCheck {
                 System.setOut(quiet);
                 try {
                     switch (kind) {
-                        case "medium" -> pump.handleMediumBondLogic(200_000, 5, 1000);
+                        case "medium" -> pump.handleMediumBondLogic(200_000 * PriceLevel.FACTOR, 5, 1000 * PriceLevel.FACTOR);
                         // Thirty years since 0.7.1: term loans are issued
                         // at 10-50 years in tens, and a 25-year ask is
                         // refused - which left this round trip vacuous.
-                        case "long"   -> pump.handleLongBondLogic(200_000, 30, 100_000);
+                        case "long"   -> pump.handleLongBondLogic(200_000 * PriceLevel.FACTOR, 30, 100_000 * PriceLevel.FACTOR);
                         // Thirty years abroad, converted and spent at home.
-                        case "dollar" -> pump.handleForeignLogic("Term", DOLLAR_ASK, 30, 100, false);
-                        default       -> pump.handleTBillLogic(200_000, 12, 1000);
+                        case "dollar" -> pump.handleForeignLogic("Term", DOLLAR_ASK, 30, 100 * PriceLevel.FACTOR, false);
+                        default       -> pump.handleTBillLogic(200_000 * PriceLevel.FACTOR, 12, 1000 * PriceLevel.FACTOR);
                     }
                 } finally { System.setOut(out); }
 
@@ -312,7 +312,7 @@ public class RestructureCheck {
         Game amort = founded(root, "amortise");
         System.setOut(quiet);
         try {
-            amort.handleMediumBondLogic(120_000, 10, 1000);
+            amort.handleMediumBondLogic(120_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
         } finally { System.setOut(out); }
 
         Debt live = amort.getDebtManager().getDebt()
@@ -358,9 +358,9 @@ public class RestructureCheck {
         DebtQuote three, twelve, twoYears;
         System.setOut(quiet);
         try {
-            three = bills.quoteTBill(100_000, 3, 1000);
-            twelve = bills.quoteTBill(100_000, 12, 1000);
-            twoYears = bills.quoteTBill(100_000, 24, 1000);
+            three = bills.quoteTBill(100_000 * PriceLevel.FACTOR, 3, 1000 * PriceLevel.FACTOR);
+            twelve = bills.quoteTBill(100_000 * PriceLevel.FACTOR, 12, 1000 * PriceLevel.FACTOR);
+            twoYears = bills.quoteTBill(100_000 * PriceLevel.FACTOR, 24, 1000 * PriceLevel.FACTOR);
         } finally { System.setOut(out); }
 
         check("three months is sold at its yield compounded monthly over three months",
@@ -375,7 +375,7 @@ public class RestructureCheck {
 
         // The bug the simple discount replaced: every term produced the same face.
         assertTrue("...which it did NOT before, when every term priced alike",
-                Math.abs(three.faceValue() - twelve.faceValue()) > 1_000);
+                Math.abs(three.faceValue() - twelve.faceValue()) > 1_000 * PriceLevel.FACTOR);   // today's figure, priced at the founding's level (EP1)
 
         check("however high the yield and long the term, a bill's price stays above nothing and under par",
                 Debt.presentValue(Auction.bulletPer100(0, 120), .50) > 0
@@ -424,8 +424,8 @@ public class RestructureCheck {
         System.setOut(quiet);
         try {
             city.run();
-            city.handleMediumBondLogic(300_000, 5, 1000);
-            city.handleMediumBondLogic(150_000, 10, 1000);
+            city.handleMediumBondLogic(300_000 * PriceLevel.FACTOR, 5, 1000 * PriceLevel.FACTOR);
+            city.handleMediumBondLogic(150_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
         } finally { System.setOut(out); }
 
         check("two bonds", city.getDebtManager().getDebt().size(), 2, 0);
@@ -471,9 +471,9 @@ public class RestructureCheck {
         System.setOut(quiet);
         try {
             every.run();
-            every.handleTBillLogic(50_000, 6, 1000);
-            every.handleMediumBondLogic(100_000, 10, 1000);
-            every.handleLongBondLogic(100_000, 20, 1000);   // one of the five, since 0.7.1
+            every.handleTBillLogic(50_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR);
+            every.handleMediumBondLogic(100_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
+            every.handleLongBondLogic(100_000 * PriceLevel.FACTOR, 20, 1000 * PriceLevel.FACTOR);   // one of the five, since 0.7.1
             every.saveGame(2, "one of each");
         } finally { System.setOut(out); }
 
@@ -528,7 +528,7 @@ public class RestructureCheck {
     }
 
     /** What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. */
-    static final double DOLLAR_ASK = 5_000;
+    static final double DOLLAR_ASK = 5_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
     static void cleanUp(Path root) {
         try (var walk = Files.walk(root)) {

@@ -49,8 +49,9 @@ import java.util.function.Supplier;
  *   1. THE PIVOT'S IDENTITIES: the city's own figure in its own money is X under this month's rate and PPP, and X
  *      at founding's prices under Constant (a wage, which has no constant series, X); the order of a board is the
  *      same in the city's money, game US$ and real US$, on both boards.
- *   2. AT FOUNDING REAL US$ EQUALS GAME US$ (D1): a fresh city's game dollar price level is 1, and every row of
- *      every money measure is the same in the two; a played city's is not.
+ *   2. AT FOUNDING A GAME US$ IS THE BRIDGE'S WORTH OF REAL US$ (D1, EP1): a fresh city's game dollar price level is 1, and every row of
+ *      every money measure in real US$ is RealDollar.BRIDGE times the same row in game US$ (28.4 from 1900: a founding dollar is a 1900 dollar);
+ *      a played city's is more than that.
  *   3. CONSTANT HOLDS A STEADY REAL FIGURE WHILE ITS RATE MOVES: the same figures at another rate and price
  *      level are the same US$ of 2015 under Constant, and not under this month's rate.
  *   4. YOUR WORLD'S ROWS EQUAL NATIONS' FIGURES FOR THE MONTH: people, output, inflation, growth, area and
@@ -294,21 +295,21 @@ public class RankingsCheck {
         check("and the boards have rows to be the same (" + ranked.rows().size() + " on Real world 2025's GDP)", ranked.rows().size() > 100);
         double usd = 12_345.0;
         Rankings.Settings market = set(Board.REAL_2025, Money.CITY, Convert.MARKET), ppp = set(Board.REAL_2025, Money.CITY, Convert.PPP), constant = set(Board.REAL_2025, Money.CITY, Convert.CONSTANT);
-        check("display: the city's money is US$ x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate",
-                near(Rankings.display(usd, market, live), usd * live.usPrices() * live.fx()) && near(Rankings.display(usd, ppp, live), usd * live.usPrices() * live.parity())
-                        && near(Rankings.display(usd, constant, live), usd * live.foundingRate()));
-        check("display: game US$ is US$ x the price level, and at Constant x 1; real US$ as is",
-                near(Rankings.display(usd, set(Board.REAL_2025, Money.GAME_USD, Convert.MARKET), live), usd * live.usPrices())
-                        && near(Rankings.display(usd, set(Board.REAL_2025, Money.GAME_USD, Convert.CONSTANT), live), usd)
+        check("display: the city's money is US$ over the bridge x the game dollar's price level x the rate; at PPP x parity; at Constant x the founding rate",
+                near(Rankings.display(usd, market, live), usd * live.usPrices() * live.fx() / RealDollar.BRIDGE) && near(Rankings.display(usd, ppp, live), usd * live.usPrices() * live.parity() / RealDollar.BRIDGE)
+                        && near(Rankings.display(usd, constant, live), usd * live.foundingRate() / RealDollar.BRIDGE));
+        check("display: game US$ is US$ over the bridge x the price level, and at Constant x 1; real US$ as is",
+                near(Rankings.display(usd, set(Board.REAL_2025, Money.GAME_USD, Convert.MARKET), live), usd * live.usPrices() / RealDollar.BRIDGE)
+                        && near(Rankings.display(usd, set(Board.REAL_2025, Money.GAME_USD, Convert.CONSTANT), live), usd / RealDollar.BRIDGE)
                         && near(Rankings.display(usd, set(Board.REAL_2025, Money.REAL_USD, Convert.PPP), live), usd));
     }
 
     /* =====================================================================
-       2. AT FOUNDING REAL US$ EQUALS GAME US$ (D1)
+       2. AT FOUNDING A GAME US$ IS THE BRIDGE'S WORTH OF REAL US$ (D1, EP1)
        ===================================================================== */
 
     static void atFounding(WorldMeasures wm, Nations nations, Rankings.City live, Rankings.City founded) {
-        out.println("--- 2. at founding real US$ equals game US$ ---");
+        out.println("--- 2. at founding a game US$ is the bridge's worth of real US$ ---");
         check("a fresh city's game dollar price level is 1, and its founding rate is the rate it opens at (" + founded.usPrices() + ", " + founded.foundingRate() + ")",
                 founded.usPrices() == 1.0 && near(founded.foundingRate(), ForeignAccounts.OPENING_RATE));
         Rankings.City city = new Rankings.City(live.name(), live.currency(), founded.month(), founded.year(), founded.fx(), founded.parity(), founded.usPrices(), founded.foundingRate(), live.figures());
@@ -332,7 +333,7 @@ public class RankingsCheck {
                 }
             }
         }
-        tally("at founding every row's game US$ is its real US$ (" + rows + " rows), on both boards, at this month's rate and PPP", same);
+        tally("at founding every row's real US$ is the bridge (" + String.format("%.2f", RealDollar.BRIDGE) + ") times its game US$ (" + rows + " rows), on both boards, at this month's rate and PPP", same);
         check("the live city's game dollar has inflated (" + live.usPrices() + "), so the same test sees a difference", live.usPrices() > 1.0);
         tally("and once it has inflated, the game US$ differs from the real US$ on every board of every money measure", differ);
     }
@@ -341,7 +342,8 @@ public class RankingsCheck {
     static void sameRows(Tally t, Table a, Table b, String what) {
         Map<String, Row> other = byId(b);
         boolean ok = ids(a).equals(ids(b));
-        for (Row r : a.rows()) ok &= other.containsKey(r.id()) && other.get(r.id()).shown() == r.shown();
+        // a is the game US$ table and b the real US$ one: a founding game dollar is RealDollar.BRIDGE real ones (EP1)
+        for (Row r : a.rows()) ok &= other.containsKey(r.id()) && relative(other.get(r.id()).shown(), r.shown() * RealDollar.BRIDGE);
         boolean result = ok;
         t.see(result, () -> what);
     }
@@ -1092,8 +1094,8 @@ public class RankingsCheck {
                         control.see(relative(a.get("saved:2").value(), b.get("saved:2").value()), () -> what + " (the save of the active city's own month)");
                         if (x != null && money == Money.GAME_USD) {
                             identity.see(relative(a.get("saved:1").shown(), x.value() / rate), () -> what + ": per year its own year's game dollars, X over its rate");
-                            identity.see(relative(b.get("saved:1").value(), x.value() / rate / young.usPrices()) && relative(b.get("saved:1").shown(), b.get("saved:1").value() * active.usPrices()),
-                                    () -> what + ": static its real dollars times this city's price level");
+                            identity.see(relative(b.get("saved:1").value(), x.value() / rate / young.usPrices() * RealDollar.BRIDGE) && relative(b.get("saved:1").shown(), b.get("saved:1").value() * active.usPrices() / RealDollar.BRIDGE),
+                                    () -> what + ": static its real dollars (founding dollars times the bridge) over the bridge times this city's price level");
                         }
                         if (x != null && money == Money.CITY) {
                             identity.see(relative(a.get("saved:1").shown(), x.value() / rate * activeRate), () -> what + ": per year X over its rate times this city's rate");

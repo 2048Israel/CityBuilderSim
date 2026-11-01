@@ -1,6 +1,6 @@
 # PolicyCheck.java - 475 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/PolicyCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies.
 > 
@@ -14,7 +14,7 @@
 > dials and checks the result. Section 1 pins the zero case; everything after it
 > moves a dial.
 
-**Uses:** [Sectors](Sectors.md) (57), [TaxPolicy](TaxPolicy.md) (34), [WageBand](WageBand.md) (21), [Game](Game.md) (8), [SalesTaxLedger](SalesTaxLedger.md) (8), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sector](Sector.md) (2), [TempDirs](TempDirs.md) (1)
+**Uses:** [Sectors](Sectors.md) (57), [TaxPolicy](TaxPolicy.md) (34), [WageBand](WageBand.md) (21), [Game](Game.md) (8), [SalesTaxLedger](SalesTaxLedger.md) (8), [PriceLevel](PriceLevel.md) (5), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sector](Sector.md) (2), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 

@@ -236,8 +236,10 @@ public class LandManager {
      * around $9/sq ft the residential sector stops choosing houses. The price
      * is a density policy, not just a revenue dial, and that is the whole
      * reason the player sets it rather than the market.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    private static final double DEFAULT_PRICE_PER_SQ_FT = .001;
+    private static final double DEFAULT_PRICE_PER_SQ_FT = .001 * PriceLevel.FACTOR;
 
     /** The same, in today's money - struck at the expected price level since 0.7.42 (seedConstants()). */
     private double defaultPricePerSqFt = DEFAULT_PRICE_PER_SQ_FT;

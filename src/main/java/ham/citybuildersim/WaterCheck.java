@@ -139,7 +139,7 @@ public class WaterCheck {
                 uh.getBuildingWaterDraw() - billed - uh.getHomesWaterDraw(), plant.getWaterConsumption());
         check("the homes' power: the houses' own draw", uh.getHomesElectricityDraw(), 40000 * house.getElectricityConsumption());
 
-        double expectedWaterRev = billed * uh.getWaterRatio() * .05;
+        double expectedWaterRev = billed * uh.getWaterRatio() * .05 * PriceLevel.FACTOR;   // the default water price, today's figure priced at the founding's level (EP1)
         check("water revenue (billed only)", uh.getWaterRevenue(), expectedWaterRev);
         check("water income", uh.getWaterIncome(), expectedWaterRev - waterCrew);
         check("consolidated = electric + water",

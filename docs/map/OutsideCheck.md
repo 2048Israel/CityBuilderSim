@@ -1,6 +1,6 @@
 # OutsideCheck.java - 699 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/OutsideCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OutsideCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The people outside the families: the out of work, the students, the
 > unhoused and the orphans (2026-09-11).
@@ -12,7 +12,7 @@
 > by the fixture rather than stood next to. See
 > claude/the-people-the-books-left-out.md.
 
-**Uses:** [AgeBand](AgeBand.md) (44), [FamilyModel](FamilyModel.md) (18), [FamilyStructure](FamilyStructure.md) (17), [Unemployment](Unemployment.md) (15), [PayTier](PayTier.md) (11), [PopulationCohorts](PopulationCohorts.md) (11), [HouseholdBalance](HouseholdBalance.md) (9), [HouseholdAccounts](HouseholdAccounts.md) (8), [Game](Game.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (5), [UnemployedHousehold](UnemployedHousehold.md) (5), [StudentHousehold](StudentHousehold.md) (5), [Health](Health.md) (4), [JobType](JobType.md) (3), [OrphanHousehold](OrphanHousehold.md) (3), [GameFiles](GameFiles.md) (3), [MoneyAudit](MoneyAudit.md) (3), [PopulationManager](PopulationManager.md) (2), [WageBand](WageBand.md) (2), [Household](Household.md) (2), [EconomyManager](EconomyManager.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Healthcare](Healthcare.md) (1), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [AgeBand](AgeBand.md) (44), [FamilyModel](FamilyModel.md) (18), [FamilyStructure](FamilyStructure.md) (17), [Unemployment](Unemployment.md) (15), [PayTier](PayTier.md) (11), [PopulationCohorts](PopulationCohorts.md) (11), [HouseholdBalance](HouseholdBalance.md) (9), [HouseholdAccounts](HouseholdAccounts.md) (8), [Game](Game.md) (7), [PriceLevel](PriceLevel.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [UnemployedHousehold](UnemployedHousehold.md) (5), [StudentHousehold](StudentHousehold.md) (5), [Health](Health.md) (4), [JobType](JobType.md) (3), [OrphanHousehold](OrphanHousehold.md) (3), [GameFiles](GameFiles.md) (3), [MoneyAudit](MoneyAudit.md) (3), [PopulationManager](PopulationManager.md) (2), [WageBand](WageBand.md) (2), [Household](Household.md) (2), [EconomyManager](EconomyManager.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Healthcare](Healthcare.md) (1), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 

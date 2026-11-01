@@ -110,7 +110,7 @@ public class ZoningViewCheck {
         quietly(() -> {
             g.run();
             g.setCashForTest(Founding.WEALTHY_CASH);
-            g.getGovernmentInvestor().spend(-2_000_000);
+            g.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(LandManager.sqFt(CITY_KM2));
             g.getBusinessInvestment().holdSector(Sectors.AGRICULTURE);
             for (String[] w : ORDERS) {

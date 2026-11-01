@@ -436,8 +436,8 @@ public class HouseholdCheck {
                 SocialSecurity.pensionPerSenior(),
                 SocialSecurity.PENSION_REPLACEMENT * PayTier.UNSKILLED.getMonthlyWage());
         check("contributions are a slice of the wage bill",
-                SocialSecurity.contributionsOn(1000),
-                1000 * SocialSecurity.CONTRIBUTION_RATE);
+                SocialSecurity.contributionsOn(1000 * PriceLevel.FACTOR),
+                1000 * PriceLevel.FACTOR * SocialSecurity.CONTRIBUTION_RATE);
         assertTrue("...and it really is only a tad",
                 SocialSecurity.CONTRIBUTION_RATE < .10);
 
@@ -448,8 +448,8 @@ public class HouseholdCheck {
          * without changing a single policy. Asserted as a DIRECTION rather than
          * a level, since the level depends on the city.
          */
-        double youngCoverage = SocialSecurity.coverage(1000, 50);
-        double oldCoverage   = SocialSecurity.coverage(1000, 200);
+        double youngCoverage = SocialSecurity.coverage(1000 * PriceLevel.FACTOR, 50);
+        double oldCoverage   = SocialSecurity.coverage(1000 * PriceLevel.FACTOR, 200);
         System.out.printf("   same wage bill, 50 pensioners: %.0f%% covered;"
                 + " 200 pensioners: %.0f%%%n", youngCoverage * 100, oldCoverage * 100);
         assertTrue("an ageing city covers less of its own pension bill",
@@ -457,10 +457,10 @@ public class HouseholdCheck {
         check("a city with no pensioners owes nothing",
                 SocialSecurity.pensionsFor(0), 0);
         check("...and is fully covered by definition",
-                SocialSecurity.coverage(1000, 0), 1);
+                SocialSecurity.coverage(1000 * PriceLevel.FACTOR, 0), 1);
         check("the shortfall is what contributions do not reach",
-                SocialSecurity.shortfall(1000, 200),
-                SocialSecurity.pensionsFor(200) - SocialSecurity.contributionsOn(1000));
+                SocialSecurity.shortfall(1000 * PriceLevel.FACTOR, 200),
+                SocialSecurity.pensionsFor(200) - SocialSecurity.contributionsOn(1000 * PriceLevel.FACTOR));
 
 
         /* ---- and a household outside the families can have mouths in it ----

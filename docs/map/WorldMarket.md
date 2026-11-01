@@ -1,6 +1,6 @@
 # WorldMarket.java - 1,779 lines · 96 methods · 28 constants · model
 
-`ham/citybuildersim/WorldMarket.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMarket.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The world market: each traded good's price in each of the 196 nations on a
 > smooth spatial equilibrium (a CES gravity model), solved once a year, and
@@ -45,7 +45,7 @@
 
 **Uses:** [Good](Good.md) (22), [WorldData](WorldData.md) (15), [Nations](Nations.md) (13), [World](World.md) (3), [Freight](Freight.md) (1)
 
-**Used by (9):** [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [Markets](Markets.md), [PartnerTrade](PartnerTrade.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
+**Used by (10):** [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [Markets](Markets.md), [PartnerTrade](PartnerTrade.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 

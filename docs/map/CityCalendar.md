@@ -1,6 +1,6 @@
 # CityCalendar.java - 150 lines · 13 methods · 4 constants · model
 
-`ham/citybuildersim/CityCalendar.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityCalendar.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Turns the month counter into a date a person can hold in their head.
 > 
@@ -27,7 +27,7 @@
 > The calendar is Gregorian all the way: 1900 is not a leap year (divisible by
 > 100, not by 400), so February of the first year has 28 days and 2000's 29.
 
-**Used by (39):** [AuctionCheck](AuctionCheck.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CalendarCheck](CalendarCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FoundingScreen](FoundingScreen.md), [FundCheck](FundCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Nations](Nations.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PeopleScreen](PeopleScreen.md), [PriceLevel](PriceLevel.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TimeSkipReport](TimeSkipReport.md), [UserInterface](UserInterface.md), [WorldData](WorldData.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
+**Used by (41):** [AuctionCheck](AuctionCheck.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CalendarCheck](CalendarCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FoundingScreen](FoundingScreen.md), [FundCheck](FundCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Nations](Nations.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PeopleScreen](PeopleScreen.md), [PriceLevel](PriceLevel.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [ReadPathCheck](ReadPathCheck.md), [RealDollar](RealDollar.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TimeSkipReport](TimeSkipReport.md), [UserInterface](UserInterface.md), [WorldData](WorldData.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 

@@ -727,10 +727,10 @@ public class MaterialsCheck {
     static final double[] STUDY_YEARS = { 2.2, 4.4, 3.5 };
 
     /** ...and their running cost a month, D$ thousands, the study's 2.4 "Runs" (the mine's with its diesel in it). */
-    static final double[] STUDY_RUNS = { 469, 187, 708 };
+    static final double[] STUDY_RUNS = PriceLevelCheck.atFounding(469, 187, 708); // today's figures, priced at the founding's level (EP1)
 
     /** The study's price of a litre of diesel in its runs, D$ thousands: the oil mockups' D$0.60 (its 1.5). */
-    static final double STUDY_DIESEL = .0006;
+    static final double STUDY_DIESEL = .0006 * PriceLevel.FACTOR; // today's figures, priced at the founding's level (EP1)
 
     /** The study's rounding: its cases to a tenth of a point, its years to a tenth. */
     static final double STUDY_ROUNDING = .05;
@@ -743,7 +743,7 @@ public class MaterialsCheck {
         UtilitiesHandler founding = new UtilitiesHandler();
         double tariff = founding.getPricerPerWatt(), water = founding.getPricePerWaterUnit();
         report("fixture: the game's founding tariffs are the study's: D$10 a kW a month, D$50 a unit of water",
-                tariff == .01 && water == .05, String.format("%.3f, %.3f", tariff, water));
+                tariff == .01 * PriceLevel.FACTOR && water == .05 * PriceLevel.FACTOR, String.format("%.3f, %.3f", tariff, water));
         java.util.function.ToDoubleFunction<Good> imp = Good::worldImportPrice, exp = Good::worldExportPrice;
         String[] cases = { "A", "B", "C", "D" };
         for (int r = 0; r < IRON_ROWS.length; r++) {
@@ -790,7 +790,7 @@ public class MaterialsCheck {
         double atImport = mine.uses(Good.DIESEL) * Good.DIESEL.worldImportPrice(), atExport = mine.uses(Good.DIESEL) * Good.DIESEL.worldExportPrice();
         report("where caseEarns() and the study differ: the mine's diesel is a feed at the case's price, not D$0.60 a litre in its"
                         + " running cost - within D$6k a month of the study's either way, and no case past its rounding",
-                Math.abs(atImport - mine.uses(Good.DIESEL) * STUDY_DIESEL) < 6 && Math.abs(atExport - mine.uses(Good.DIESEL) * STUDY_DIESEL) < 6,
+                Math.abs(atImport - mine.uses(Good.DIESEL) * STUDY_DIESEL) < 6 * PriceLevel.FACTOR && Math.abs(atExport - mine.uses(Good.DIESEL) * STUDY_DIESEL) < 6 * PriceLevel.FACTOR,
                 String.format("D$%,.1fk landed, D$%,.1fk at export, the study's D$%,.1fk", atImport, atExport, mine.uses(Good.DIESEL) * STUDY_DIESEL));
     }
 
@@ -865,10 +865,10 @@ public class MaterialsCheck {
     static final double[] ROUTE_YEARS = { 1.0, 1.2, 1.7, 0.8, 1.1, 1.1, 1.7 };
 
     /** ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). */
-    static final double[] ROUTE_RUNS = { 255, 1000, 1250, 868, 11700, 25600, 5100 };
+    static final double[] ROUTE_RUNS = PriceLevelCheck.atFounding(255, 1000, 1250, 868, 11700, 25600, 5100); // today's figures, priced at the founding's level (EP1)
 
     /** ...their all-in cost, D$ thousands (the study's 2.4). */
-    static final double[] ROUTE_COSTS = { 35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800_000, 1_200_000 };
+    static final double[] ROUTE_COSTS = PriceLevelCheck.atFounding(35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800_000, 1_200_000); // today's figures, priced at the founding's level (EP1)
 
     /** ...their posts (the study's 2.4). */
     static final int[] ROUTE_POSTS = { 40, 150, 200, 150, 1200, 1800, 400 };
@@ -894,11 +894,11 @@ public class MaterialsCheck {
             BuildingsTemplate t = b.getTemplate(ROUTE_ROWS[r]);
             String name = t.getName();
             double cost = t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials();
-            report("the " + name + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", ROUTE_COSTS[r]) + "k all in, "
+            report("the " + name + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", ROUTE_COSTS[r] / PriceLevel.FACTOR) + "k all in, "
                             + ROUTE_POSTS[r] + " posts, " + String.format("%,d", ROUTE_KW[r]) + " kW drawn and "
                             + String.format("%,.0f", ROUTE_GEN[r]) + " made, " + ROUTE_HECTARES[r] + " ha; Iron & Steel's, dated "
                             + t.getSince(),
-                    cost == ROUTE_COSTS[r] && t.getTotalJobs() == ROUTE_POSTS[r] && t.getElectricityConsumption() == ROUTE_KW[r]
+                    PriceLevelCheck.sameMoney(cost, ROUTE_COSTS[r]) && t.getTotalJobs() == ROUTE_POSTS[r] && t.getElectricityConsumption() == ROUTE_KW[r]
                             && t.getGen() == ROUTE_GEN[r] && Math.round(t.getLandSqFt() / 107_639.104 * 100) == Math.round(ROUTE_HECTARES[r] * 100)
                             && Sectors.HEAVY_INDUSTRY.equals(t.getSector()) && t.getSince() >= 1900,
                     String.format("cash %,.0f + 18 x %,d material", t.getCashCost(), t.getConstructionMaterials()));
@@ -942,7 +942,7 @@ public class MaterialsCheck {
         double without = yard.makes(Good.SCRAP) * Good.SCRAP.worldExportPrice() - (yard.getConsumables() - yard.getGen() * tariff);
         assertTrue("the yard's old steel is in every case at 70% of scrap's export price, D$210 a tonne at parity: 10,500 t, D$2,205k",
                 Math.abs((without - withOld) - yard.oldMetal(Good.STEEL) * OldMetal.PAY_SHARE * Good.SCRAP.worldExportPrice()) < 1e-9
-                        && Math.abs(yard.oldMetal(Good.STEEL) * OldMetal.PAY_SHARE * Good.SCRAP.worldExportPrice() - 2205) < 1e-9);
+                        && Math.abs(yard.oldMetal(Good.STEEL) * OldMetal.PAY_SHARE * Good.SCRAP.worldExportPrice() - 2205 * PriceLevel.FACTOR) < 1e-9);
         double worstA = Double.NEGATIVE_INFINITY;
         for (int r = 1; r < ROUTE_ROWS.length; r++) {
             BuildingsTemplate t = b.getTemplate(ROUTE_ROWS[r]);
@@ -1250,10 +1250,10 @@ public class MaterialsCheck {
     static final double[] MINE_YEARS = { 2.0, 2.9, 2.7 };
 
     /** ...their running cost a month, D$ thousands, the study's 2.4 "Runs". */
-    static final double[] MINE_RUNS = { 5_420, 951, 9_580 };
+    static final double[] MINE_RUNS = PriceLevelCheck.atFounding(5_420, 951, 9_580); // today's figures, priced at the founding's level (EP1)
 
     /** ...their all-in cost, D$ thousands (the study's 2.4). */
-    static final double[] MINE_COSTS = { 1_000_000, 60_000, 1_100_000 };
+    static final double[] MINE_COSTS = PriceLevelCheck.atFounding(1_000_000, 60_000, 1_100_000); // today's figures, priced at the founding's level (EP1)
 
     /** ...their posts (the study's 2.4). */
     static final int[] MINE_POSTS = { 400, 120, 500 };
@@ -1286,11 +1286,11 @@ public class MaterialsCheck {
             String name = t.getName();
             double cost = t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials();
             BuildingsTemplate.Site site = t.site();
-            report("the " + name + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", MINE_COSTS[r]) + "k all in, "
+            report("the " + name + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", MINE_COSTS[r] / PriceLevel.FACTOR) + "k all in, "
                             + MINE_POSTS[r] + " posts, " + String.format("%,d", MINE_KW[r]) + " kW, " + String.format("%,d", MINE_WATER[r])
                             + " water, " + String.format("%,.0f", MINE_MAKES[r]) + " t a month from " + String.format("%,.0f", MINE_ROCK[r])
                             + " t dug, on " + MINE_SITES[r] + " " + MINE_TYPES[r] + " site(s); Iron Mining's, dated " + t.getSince(),
-                    cost == MINE_COSTS[r] && t.getTotalJobs() == MINE_POSTS[r] && t.getElectricityConsumption() == MINE_KW[r]
+                    PriceLevelCheck.sameMoney(cost, MINE_COSTS[r]) && t.getTotalJobs() == MINE_POSTS[r] && t.getElectricityConsumption() == MINE_KW[r]
                             && t.getWaterConsumption() == MINE_WATER[r] && t.makes(Good.IRON) == MINE_MAKES[r] && site != null
                             && site.resource() == Resource.IRON && site.type() == MINE_TYPES[r] && site.sites() == MINE_SITES[r]
                             && site.dig() * MINE_MAKES[r] == MINE_ROCK[r] && Sectors.MINING.equals(t.getSector()) && t.getSince() >= 1900

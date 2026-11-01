@@ -1,6 +1,6 @@
 # SaveFileCheck.java - 3,853 lines · 17 methods · 2 constants · harnesses
 
-`ham/citybuildersim/SaveFileCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveFileCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Verifies where saves go and how they are written.
 > 
@@ -16,7 +16,7 @@
 > tested on the machine it is running on - which is precisely the machine where
 > a mistake in the other two branches would never show up.
 
-**Uses:** [Game](Game.md) (135), [GameFiles](GameFiles.md) (65), [CityLand](CityLand.md) (40), [Founding](Founding.md) (36), [GameVersion](GameVersion.md) (36), [DataSave](DataSave.md) (29), [Sectors](Sectors.md) (26), [Nations](Nations.md) (17), [OrderBook](OrderBook.md) (14), [Equity](Equity.md) (13), [Bank](Bank.md) (13), [World](World.md) (13), [OldMetal](OldMetal.md) (12), [CareType](CareType.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (11), [Good](Good.md) (11), [Ports](Ports.md) (11), [Exchange](Exchange.md) (11), [Oil](Oil.md) (10), [Household](Household.md) (10), [TreasuryFund](TreasuryFund.md) (10), [EarthSite](EarthSite.md) (10), [HistorySave](HistorySave.md) (9), [Sector](Sector.md) (8), [MoneyAudit](MoneyAudit.md) (8), [Trade](Trade.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [LandParcel](LandParcel.md) (7), [LandmassCheck](LandmassCheck.md) (7), [WorldMoneys](WorldMoneys.md) (7)... and 62 more
+**Uses:** [Game](Game.md) (135), [GameFiles](GameFiles.md) (65), [CityLand](CityLand.md) (40), [Founding](Founding.md) (36), [GameVersion](GameVersion.md) (36), [DataSave](DataSave.md) (29), [Sectors](Sectors.md) (26), [Nations](Nations.md) (17), [OrderBook](OrderBook.md) (14), [Equity](Equity.md) (13), [Bank](Bank.md) (13), [World](World.md) (13), [OldMetal](OldMetal.md) (12), [CareType](CareType.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (11), [Good](Good.md) (11), [PriceLevel](PriceLevel.md) (11), [Ports](Ports.md) (11), [Exchange](Exchange.md) (11), [Oil](Oil.md) (10), [Household](Household.md) (10), [TreasuryFund](TreasuryFund.md) (10), [EarthSite](EarthSite.md) (10), [HistorySave](HistorySave.md) (9), [Sector](Sector.md) (8), [MoneyAudit](MoneyAudit.md) (8), [Trade](Trade.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [LandParcel](LandParcel.md) (7), [LandmassCheck](LandmassCheck.md) (7)... and 63 more
 
 **Used by (10):** [BridgeCheck](BridgeCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConversionCheck](ConversionCheck.md), [LandCheck](LandCheck.md), [LandmassCheck](LandmassCheck.md), [OilCheck](OilCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md)
 

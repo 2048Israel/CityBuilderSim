@@ -108,7 +108,7 @@ public class MoneyCheck {
                 break;
             }
         }
-        g.getGovernmentInvestor().spend(-50_000_000);
+        g.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
         g.buildStack(g.getBuildingManager().getTemplate(Mining.IRON_MINE), 2, false);
         g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 1, false);
         g.buildStack(t(g, "Memorial Cemetery"), 1, false);
@@ -502,9 +502,9 @@ public class MoneyCheck {
         // Paper sold under par: a bill, an amortizing bond, and a ten-year line at a high dial.
         ledger.setPolicyRate(.06);
         quietly(() -> {
-            paperCity.handleTBillLogic(20_000, 6, 1000);
-            paperCity.handleMediumBondLogic(30_000, 10, 1000);
-            paperCity.handleLongBondLogic(50_000, 10, 1000);
+            paperCity.handleTBillLogic(20_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR);
+            paperCity.handleMediumBondLogic(30_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
+            paperCity.handleLongBondLogic(50_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
         });
         Debt line = ledger.benchmarkLine(10);
         Debt serial = null;
@@ -525,11 +525,11 @@ public class MoneyCheck {
                 ledger.setPolicyRate(.01);
                 double carryBefore = line.carryingInCurrency(), faceBefore = line.faceInCurrency();
                 int pieces = ledger.getDebt().size();
-                quietly(() -> paperCity.handleLongBondLogic(20_000, 10, 1000));
+                quietly(() -> paperCity.handleLongBondLogic(20_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR));
                 reopenedOverPar = ledger.getDebt().size() == pieces && ledger.benchmarkLine(10) == line
                         && line.carryingInCurrency() - carryBefore > line.faceInCurrency() - faceBefore + 1;
             }
-            if (month == 8) quietly(() -> paperCity.handleTBillLogic(10_000, 6, 1000));
+            if (month == 8) quietly(() -> paperCity.handleTBillLogic(10_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR));
             if (month == 14 && ledger.getDebt().contains(serialBond)) {
                 gainQuoted = paperCity.repurchaseGain(serialBond);
                 boughtBackFor = paperCity.repurchaseDebt(serialBond);

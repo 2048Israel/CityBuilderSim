@@ -74,7 +74,8 @@ public class LandCheck {
     static int fails = 0;
 
     static void check(String label, double actual, double expected) {
-        boolean ok = Math.abs(actual - expected) < 1e-6;
+        // 1e-6 of a thousand is a dollar of today's money: at the founding's level (EP1) it is the same share of a price, a dollar times PriceLevel.FACTOR
+        boolean ok = Math.abs(actual - expected) < 1e-6 * PriceLevel.FACTOR;
         if (!ok) fails++;
         System.out.printf("%-52s %14.4f  expected %14.4f  %s%n",
                 label, actual, expected, ok ? "OK" : "FAIL");
@@ -676,16 +677,16 @@ public class LandCheck {
 
         LandManager sell = new LandManager();
 
-        check("opening price is $1/sq ft", sell.getPricePerSqFt(), .001);
-        check("a 8,000 sq ft house plot", sell.priceFor(8000), 8);
-        check("margin at the opening price", sell.getMarginPerSqFt(), .001 - .0007);
+        check("opening price is $1/sq ft", sell.getPricePerSqFt(), .001 * PriceLevel.FACTOR);
+        check("a 8,000 sq ft house plot", sell.priceFor(8000), 8 * PriceLevel.FACTOR);
+        check("margin at the opening price", sell.getMarginPerSqFt(), (.001 - .0007) * PriceLevel.FACTOR);
 
         sell.recordSale(8000);
-        check("sale recorded", sell.getLandSalesThisMonth(), 8);
+        check("sale recorded", sell.getLandSalesThisMonth(), 8 * PriceLevel.FACTOR);
         check("sq ft recorded", sell.getSqFtSoldThisMonth(), 8000);
 
         sell.recordSale(8000);
-        check("sales accumulate over the month", sell.getLandSalesThisMonth(), 16);
+        check("sales accumulate over the month", sell.getLandSalesThisMonth(), 16 * PriceLevel.FACTOR);
 
         sell.clearMonth();
         check("cleared for the next month", sell.getLandSalesThisMonth(), 0);
@@ -698,14 +699,14 @@ public class LandCheck {
         /* ==================== 8. the player's price ==================== */
         System.out.println("\n--- the price is the player's lever ---");
 
-        sell.setPricePerSqFt(.003);
-        check("price set", sell.getPricePerSqFt(), .003);
-        check("the same plot now costs more", sell.priceFor(8000), 24);
-        check("fatter margin", sell.getMarginPerSqFt(), .003 - .0007);
+        sell.setPricePerSqFt(.003 * PriceLevel.FACTOR);
+        check("price set", sell.getPricePerSqFt(), .003 * PriceLevel.FACTOR);
+        check("the same plot now costs more", sell.priceFor(8000), 24 * PriceLevel.FACTOR);
+        check("fatter margin", sell.getMarginPerSqFt(), (.003 - .0007) * PriceLevel.FACTOR);
 
         // Selling below cost is allowed - subsidising land to attract industry
         // is a real policy - but it must read as the loss it is.
-        sell.setPricePerSqFt(.0004);
+        sell.setPricePerSqFt(.0004 * PriceLevel.FACTOR);
         assertTrue("below cost reads as a negative margin", sell.getMarginPerSqFt() < 0);
 
         sell.setPricePerSqFt(0);
@@ -720,14 +721,14 @@ public class LandCheck {
 
         sell.allocate(1500000);
         sell.buyBlock(1e6);
-        sell.setPricePerSqFt(.05);
+        sell.setPricePerSqFt(.05 * PriceLevel.FACTOR);
         sell.reset();
 
         check("owned back to the start", sell.getOwnedSqFt(), LandManager.STARTING_SQ_FT);
         check("nothing allocated", sell.getAllocatedSqFt(), 0);
         check("no blocks bought", sell.getBlocksPurchased(), 0);
-        check("price back to default", sell.getPricePerSqFt(), .001);
-        check("block cost back to the first", sell.getNextBlockCost(), 70);
+        check("price back to default", sell.getPricePerSqFt(), .001 * PriceLevel.FACTOR);
+        check("block cost back to the first", sell.getNextBlockCost(), 70 * PriceLevel.FACTOR);
         check("no flows", sell.getLandSalesThisMonth(), 0);
 
         /* ============ 10. every building fits on a starting city ============ */
@@ -1726,8 +1727,8 @@ public class LandCheck {
        bought, the centre first. A restated city keeps its iron and what it
        has taken out. Forest grows back. And the best offer for each need.
        ================================================================== */
-    /** Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.120). */
-    static final double IRON_IN_THE_GROUND = .0004;
+    /** Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.120). Today's figure, priced at the founding's level (EP1). */
+    static final double IRON_IN_THE_GROUND = .0004 * PriceLevel.FACTOR;
 
     static void onTheWorld() {
         System.out.println("\n--- the world's totals are kept to the tonne ---");
@@ -2448,7 +2449,7 @@ public class LandCheck {
         LandManager sl = shortBy.getLandManager();
         LandParcel field = sl.getMarket().cheapestWith(Resource.IRON);
         double here = field.localPrice(shortBy.getForeignAccounts().getRate());
-        shortBy.setCashForTest(here - 5);
+        shortBy.setCashForTest(here - 5 * PriceLevel.FACTOR);   // five thousand short: today's figure, priced at the founding's level (EP1)
         java.util.List<Integer> ids = java.util.List.of(field.getId());
         assertTrue("fixture: a few thousand short, which the player's test for borrowing carries",
                 shortBy.landNeedsFunding(ids) && LongPlaytest.canService(shortBy, shortBy.landCashGap(ids)));
@@ -3189,8 +3190,8 @@ public class LandCheck {
         assertTrue("update() measures the drafts again at the month's price: ids kept, the world's price level doubled, every draft re-priced",
                 repriced != null && market.find(idSecond) != null && market.getDrafts().size() == 2 && repriced.getPriceUsd() != was);
         if (repriced == null) return;
-        assertTrue("...twice what it was to the US$5k rounding each price is struck at (price(): the ground and the resources both at the price level)",
-                Math.abs(repriced.getPriceUsd() - 2 * was) <= 5 + 1e-9);
+        assertTrue("...twice what it was to the rounding (LandMarket.PRICE_STEP_USD, US$5k of today's money) each price is struck at (price(): the ground and the resources both at the price level)",
+                Math.abs(repriced.getPriceUsd() - 2 * was) <= LandMarket.PRICE_STEP_USD + 1e-9);
         check("...and to the cent what an offer of that rectangle would be listed at now", repriced.getPriceUsd(), wouldBe.getPriceUsd());
         // A draft longer than an offer: the offer's rectangle and the block beyond it outward, so the city's buying the offer leaves it ground.
         LandParcel beyond = null;

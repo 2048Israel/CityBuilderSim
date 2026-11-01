@@ -1132,11 +1132,11 @@ public class Game {
        Founding has the others.
        ===================================================================== */
 
-    /** What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. The Standard preset's, and the default. */
-    public static final double FOUNDING_CASH = 100_000;
+    /** What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. The Standard preset's, and the default. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double FOUNDING_CASH = 100_000 * PriceLevel.FACTOR;
 
-    /** What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town of 8-10k. The Standard preset's, and the default. */
-    public static final double FOUNDING_RESERVE_USD = 25_000;
+    /** What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town of 8-10k. The Standard preset's, and the default. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double FOUNDING_RESERVE_USD = 25_000 * PriceLevel.FACTOR;
 
     /** For this many months the screens say where the vault's first dollars came from; after that they are the city's own. */
     public static final int FOUNDERS_NOTE_MONTHS = 120;
@@ -1814,8 +1814,8 @@ public class Game {
        THE REAL US DOLLAR (WN4, D29; RealDollar, docs/studies/spec-exchange-rates.md 3.9)
 
        Two US dollars: the in-game one, whose prices follow the US's path
-       (WorldEconomy), and the real one, constant 2015 dollars, which a
-       founding game dollar counts as one of. Three figures for comparison,
+       (WorldEconomy), and the real one, constant 2015 dollars, of which a
+       founding game dollar is RealDollar.BRIDGE worth (EP1). Three figures for comparison,
        and NOTHING IN THE MODEL READS THEM (WN6 shows them): the D$ per real
        US$, the city's GDP in real US$, and the real effective rate. All in
        the city's money of today - the founding's rate is OPENING_RATE
@@ -2802,8 +2802,8 @@ public class Game {
                 LandParcel cheapest = null;
                 for (LandParcel p : market.getListing()) {
                     if (LandMarket.buildableSqFt(p) < need.drySqFt() || !LandMarket.bareGround(p)) continue;
-                    if (cheapest == null || market.priceWithPrepUsd(p) < market.priceWithPrepUsd(cheapest)
-                            || (market.priceWithPrepUsd(p) == market.priceWithPrepUsd(cheapest) && market.nearer(p, cheapest))) cheapest = p;
+                    if (cheapest == null || LandMarket.beats(market.priceWithPrepUsd(cheapest), market.priceWithPrepUsd(p))
+                            || (LandMarket.tied(market.priceWithPrepUsd(p), market.priceWithPrepUsd(cheapest)) && market.nearer(p, cheapest))) cheapest = p;
                 }
                 if (cheapest != null) return cheapest;
                 return bestOffer(LandNeed.room());
@@ -2816,8 +2816,8 @@ public class Game {
                 boolean byBuildable = LandMarket.anyBuildable(running);
                 LandParcel best = null;
                 for (LandParcel p : running) {
-                    if (best == null || market.rankPerUsd(p, byBuildable) > market.rankPerUsd(best, byBuildable)
-                            || (market.rankPerUsd(p, byBuildable) == market.rankPerUsd(best, byBuildable) && market.nearer(p, best))) best = p;
+                    if (best == null || LandMarket.beats(market.rankPerUsd(p, byBuildable), market.rankPerUsd(best, byBuildable))
+                            || (LandMarket.tied(market.rankPerUsd(p, byBuildable), market.rankPerUsd(best, byBuildable)) && market.nearer(p, best))) best = p;
                 }
                 return best != null ? best : market.bestValue();
             }
@@ -10194,9 +10194,17 @@ public class Game {
         return new DebtQuote(instrument, duration, 0, before, before, 0, 0, 0, 0, null, 0);
     }
 
-    /** Money to the cent, as every proceeds figure has been. */
+    /**
+     * How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level
+     * (PriceLevel.FACTOR) at the founding's, so a proceeds figure is rounded to the same share of itself in 1900 as it was (EP1: the granule was a
+     * hundredth of a unit, a fixed sum, and a 1900 sale of the same real size lost thirty-eight times as much of itself to it - the played city of
+     * MapCheck drifted off the one at today's prices by it, month sixty).
+     */
+    private static final double CENTS_PER_UNIT = 100 / PriceLevel.FACTOR;
+
+    /** Money to the cent, as every proceeds figure has been (the cent of today's money, at the founding's price level). */
     private static double cents(double v) {
-        return Math.round(v * 100) / 100.0;
+        return Math.round(v * CENTS_PER_UNIT) / CENTS_PER_UNIT;
     }
 
     /**
@@ -10243,7 +10251,10 @@ public class Game {
             if (covers(q, cash)) { face = probe; quote = q; step *= 2; } else notCovering = probe;
         }
         while (face - notCovering > granule * 1.5) {
-            double mid = notCovering + granule * Math.floor((face - notCovering) / granule / 2);
+            // Whole granules between the two, however the floating point rounded them: a granule that is not exactly representable (EP1: a
+            // hundred of 1900's thousands, 2.588...) leaves two faces 1.9999999999999998 granules apart, whose half floors to 0, a mid that is
+            // notCovering again, and a bisection that never ends (NewGameCheck's Insane founding ran 26 minutes on it).
+            double mid = notCovering + granule * Math.max(1, Math.floor(Math.rint((face - notCovering) / granule) / 2));
             DebtQuote q = at.apply(mid);
             if (covers(q, cash)) { face = mid; quote = q; } else notCovering = mid;
         }
@@ -10965,7 +10976,7 @@ public class Game {
                 YieldCurve world = selfPricedWorldCurve(code, face, duration, c ->
                         inMoney(new ShortTermTBill(face, duration, month, true), code));
                 double gross = face * world.factor(duration);
-                double received = Math.round((gross - issueCostIn(code, face)) * 100) / 100.0;
+                double received = cents(gross - issueCostIn(code, face));
                 yield new DebtQuote("Note", duration, requested, world.zero(duration), before,
                         face, received, 0, face - received, null, 0);
             }
@@ -10983,7 +10994,7 @@ public class Game {
                 double coupon = dollarCoupon(world, n);
                 double gross = face * world.pv(Auction.bulletPer100(coupon, n)) / 100;
                 double rate = new LongTermBond(face, n, month, coupon).getYieldToMaturity(gross);
-                double received = Math.round((gross - issueCostIn(code, face)) * 100) / 100.0;
+                double received = cents(gross - issueCostIn(code, face));
                 double monthly = (face * coupon) / 12;
                 yield new DebtQuote("Term", duration, requested, rate, before,
                         face, received, monthly,
@@ -11198,8 +11209,8 @@ public class Game {
        costs are the existing ones.
        ----------------------------------------------------------------------- */
 
-    /** The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). */
-    public static final double BUILD_NOTE_GRANULE = 1000;
+    /** The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double BUILD_NOTE_GRANULE = 1000 * PriceLevel.FACTOR;
 
     /**
      * An amortizing bond whose CASH covers cashNeeded: the quote at the face
@@ -13054,8 +13065,8 @@ public class Game {
      */
     public static final int BUILD_BOND_YEARS = 20;
 
-    /** The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. */
-    public static final double BUILD_BOND_GRANULE = 100;
+    /** The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double BUILD_BOND_GRANULE = 100 * PriceLevel.FACTOR;
 
     /**
      * Bond counsel, rating and printing. Payable however small the deal is.
@@ -13069,8 +13080,10 @@ public class Game {
      * CapitalFlows.MIN_STOCK; it is not currently large enough to move a
      * measured trajectory, and it would have been the moment somebody reformed
      * twice.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double FIXED_ISSUE_COST = 12;
+    public static final double FIXED_ISSUE_COST = 12 * PriceLevel.FACTOR;
 
     /** The fee in today's money: founding / unit, at the expected price level since 0.7.42 (THE ANCHOR, beside restrikeMoneyConstants()). See FIXED_ISSUE_COST. */
     private double issuanceFee() {
@@ -13117,8 +13130,11 @@ public class Game {
      */
     public double minimumIssueSize() {
         double annualRevenue = economyManager.getTaxIncome() * 12;
-        return Math.max(50, annualRevenue * .05);
+        return Math.max(MINIMUM_ISSUE_FLOOR, annualRevenue * .05);
     }
+
+    /** The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1): a flat $50k at 1900's prices would be most of a young city's year. */
+    public static final double MINIMUM_ISSUE_FLOOR = 50 * PriceLevel.FACTOR;
 
     /** ...in US dollars at today's rate (0.7.40): Finances' "the minimum" on the ask abroad, which is asked in dollars. */
     public double minimumIssueSizeUsd() {

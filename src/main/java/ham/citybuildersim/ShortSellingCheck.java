@@ -82,10 +82,10 @@ public class ShortSellingCheck {
      * a line put there. A trade is a cell's share sold to the world at the price named; a bid is the world's, an ask a cell's.
      */
     static final class Table {
-        final Equity reg = new Equity();
+        final Equity reg = ExchangeCheck.equity();
         final HouseholdBalance town = ExchangeCheck.savers(12.0, 4.0);
         final Bank bank = ExchangeCheck.bankWith(100_000);
-        final Exchange ex = new Exchange();
+        final Exchange ex = ExchangeCheck.exchange();
         final String cell;
 
         Table() {
@@ -839,7 +839,7 @@ public class ShortSellingCheck {
         old.shortShares = old.shortCollateral = old.lentCells = old.lentFund = old.feeToCells = old.feeToFund = old.shortPays = null;
         old.lifeShortSold = old.lifeShortSoldValue = old.lifeShortCovered = old.lifeShortCoveredValue = old.lifeLendingFees = 0;
         old.lifeShortAsks = old.lifeShortMonths = old.lifeMarginCalls = old.lifeRecalls = 0;
-        Exchange older = new Exchange();
+        Exchange older = ExchangeCheck.exchange();
         assertTrue("a state without the shorts' fields still restores", older.restore(old));
         close("...with nothing short, lent or charged, and nothing counted", older.shortShares(f) + older.shortCollateral(f) + older.lentByCells(f)
                 + older.lentByFund(f) + older.lendingFeeThisMonth(f) + older.getLifeShortSold() + older.getLifeShortMonths() + older.getLifeLendingFees(), 0, 0);

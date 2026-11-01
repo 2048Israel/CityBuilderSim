@@ -1,6 +1,6 @@
 # ZoningCheck.java - 606 lines · 17 methods · 3 constants · harnesses
 
-`ham/citybuildersim/ZoningCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ZoningCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and
 > LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury,
@@ -52,7 +52,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [Sectors](Sectors.md) (106), [LandManager](LandManager.md) (40), [Zoning](Zoning.md) (23), [Game](Game.md) (18), [Resource](Resource.md) (10), [LongPlaytest](LongPlaytest.md) (8), [Forestry](Forestry.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [BusinessInvestment](BusinessInvestment.md) (6), [GameFiles](GameFiles.md) (4), [ForestryCheck](ForestryCheck.md) (4), [World](World.md) (3), [EconomyManager](EconomyManager.md) (2), [Sector](Sector.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Agriculture](Agriculture.md) (2), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [Formats](Formats.md) (1), [Good](Good.md) (1), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1)
+**Uses:** [Sectors](Sectors.md) (106), [LandManager](LandManager.md) (40), [Zoning](Zoning.md) (23), [Game](Game.md) (18), [Resource](Resource.md) (10), [LongPlaytest](LongPlaytest.md) (8), [Forestry](Forestry.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [BusinessInvestment](BusinessInvestment.md) (6), [GameFiles](GameFiles.md) (4), [ForestryCheck](ForestryCheck.md) (4), [World](World.md) (3), [EconomyManager](EconomyManager.md) (2), [Sector](Sector.md) (2), [TaxPolicy](TaxPolicy.md) (2), [Agriculture](Agriculture.md) (2), [Founding](Founding.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1), [Formats](Formats.md) (1), [Good](Good.md) (1), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1)
 
 ## Sections
 

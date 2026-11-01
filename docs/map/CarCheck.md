@@ -1,6 +1,6 @@
 # CarCheck.java - 1,075 lines · 8 methods · 1 constants · harnesses
 
-`ham/citybuildersim/CarCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CarCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The cars: who buys one, what it costs them, and what it does to the road.
 > 
@@ -62,7 +62,7 @@
 > See claude/the-fifth-link.md, HouseholdBalance's cars section and
 > InfrastructureManager's.
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (43), [Good](Good.md) (31), [InfrastructureManager](InfrastructureManager.md) (29), [Game](Game.md) (13), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [TaxPolicy](TaxPolicy.md) (9), [BuildingManager](BuildingManager.md) (8), [LongPlaytest](LongPlaytest.md) (8), [Sector](Sector.md) (7), [Motoring](Motoring.md) (7), [GameFiles](GameFiles.md) (6), [Traffic](Traffic.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Founding](Founding.md) (4), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [Sectors](Sectors.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Retail](Retail.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (43), [Good](Good.md) (31), [InfrastructureManager](InfrastructureManager.md) (29), [Game](Game.md) (13), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [PriceLevel](PriceLevel.md) (9), [TaxPolicy](TaxPolicy.md) (9), [BuildingManager](BuildingManager.md) (8), [LongPlaytest](LongPlaytest.md) (8), [Sector](Sector.md) (7), [Motoring](Motoring.md) (7), [GameFiles](GameFiles.md) (6), [Traffic](Traffic.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Founding](Founding.md) (4), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [Sectors](Sectors.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Retail](Retail.md) (1)
 
 **Used by (2):** [RailCheck](RailCheck.md), [VanCheck](VanCheck.md)
 
@@ -86,7 +86,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 115 | `CarCheck.CARS_WAS_IN` | `44, CARS_WAS_OUT = 36, VANS_WAS_IN = 72, ROLLING_WAS_IN = 2400, FABRICATED_WA...` | The prices to 0.7.119, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. |
+| 115 | `CarCheck.CARS_WAS_IN` | `44 * PriceLevel.FACTOR, CARS_WAS_OUT = 36 * PriceLevel.FACTOR, VANS_WAS_IN = ...` | The prices to 0.7.119, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. |
 
 ## Fields (state)
 

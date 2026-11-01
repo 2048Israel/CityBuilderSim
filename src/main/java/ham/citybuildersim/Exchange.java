@@ -370,7 +370,9 @@ public class Exchange {
        Since round 2 of 0.7.12 it decides only whether the DESK posts; the
        book is open to everybody else whatever the bank's state.
        ======================================================================= */
-    public static final double MIN_DEALER_EQUITY = 1.0;
+
+    /** The least equity a bank's desk needs to post a market, founding thousands: a thousand dollars, Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double MIN_DEALER_EQUITY = 1.0 * PriceLevel.FACTOR;
 
     /** The same floor in today's money. See MIN_DEALER_EQUITY. */
     private double minDealerEquity = MIN_DEALER_EQUITY;

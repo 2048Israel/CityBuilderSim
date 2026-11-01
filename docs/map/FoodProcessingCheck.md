@@ -1,6 +1,6 @@
 # FoodProcessingCheck.java - 455 lines · 7 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The third of the shelf that arrives already made.
 > 
@@ -33,7 +33,7 @@
 > 
 > Every fixture CAUSES its condition: the meat price is set, not waited for.
 
-**Uses:** [Good](Good.md) (25), [BuildingsTemplate](BuildingsTemplate.md) (12), [LongPlaytest](LongPlaytest.md) (11), [Formats](Formats.md) (7), [JobType](JobType.md) (6), [Game](Game.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [Equity](Equity.md) (3), [GameFiles](GameFiles.md) (2), [FoodProcessing](FoodProcessing.md) (2), [PayTier](PayTier.md) (1), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [Markets](Markets.md) (1), [TaxPolicy](TaxPolicy.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (25), [BuildingsTemplate](BuildingsTemplate.md) (12), [LongPlaytest](LongPlaytest.md) (11), [Formats](Formats.md) (7), [JobType](JobType.md) (6), [Game](Game.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [Equity](Equity.md) (3), [GameFiles](GameFiles.md) (2), [FoodProcessing](FoodProcessing.md) (2), [PayTier](PayTier.md) (1), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [Markets](Markets.md) (1), [PriceLevel](PriceLevel.md) (1), [TaxPolicy](TaxPolicy.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 ## Sections
 

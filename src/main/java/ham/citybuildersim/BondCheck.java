@@ -311,7 +311,7 @@ public class BondCheck {
         BondMarket bm = g.getBondMarket();
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
         int m = g.getMonth();
-        double[] amounts = { 10, 20, 50, 100, 200, 500, 1_000, 5_000, 20_000 };
+        double[] amounts = PriceLevelCheck.atFounding(10, 20, 50, 100, 200, 500, 1_000, 5_000, 20_000);   // today's figures, priced at the founding's level (EP1)
         BusinessDebtManager.Plan[] plans = new BusinessDebtManager.Plan[amounts.length];
         out.println("      borrowing    bank's rate  all-in   bond        its coupon  all-in   from the bank");
         double lowest = Double.POSITIVE_INFINITY;
@@ -367,7 +367,7 @@ public class BondCheck {
         // opens its pools. Past what it holds abroad and in other sectors'
         // bonds since round 4, which a short sector sells before it borrows
         // (CAN'T PAY MEANS DEFAULT): without them the desk would never be asked.
-        em.setSectorCash(ISSUER, -5_000 - em.getForeignAssets(ISSUER) - bm.faceHeldBy(ISSUER));
+        em.setSectorCash(ISSUER, -5_000 * PriceLevel.FACTOR - em.getForeignAssets(ISSUER) - bm.faceHeldBy(ISSUER));
         int before = bm.getLifeIssues();
         MoneyAudit.Result r = play(g);
         assertTrue("fixture: short of $5M, " + ISSUER + " issued a bond in the month", bm.getIssued(ISSUER) > 0
@@ -769,7 +769,7 @@ public class BondCheck {
         // (0.7.43: by then this city's shops held enough abroad to cover the
         // whole of the old short, and sold no bond); W by a twentieth of what
         // it owns.
-        em.setSectorCash(Y, -em.getForeignAssets(Y) - 2 * held - 1_000);
+        em.setSectorCash(Y, -em.getForeignAssets(Y) - 2 * held - 1_000 * PriceLevel.FACTOR);
         double wShort = .05 * credit.getAssets(W);
         em.setSectorCash(W, -wShort);
         // ...and a sector the desk will lend to: the least levered of the

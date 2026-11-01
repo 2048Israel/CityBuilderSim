@@ -237,7 +237,8 @@ public class BuildingCatalog {
         readSite(o, template, name);
         readOldMetal(o, template, name);
 
-        return template;
+        // The file's money is today's; the template is priced at the founding's, once, here (EP1).
+        return template.pricedAtFoundingLevel();
     }
 
     /**

@@ -1,6 +1,6 @@
 # RailCheck.java - 747 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/RailCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RailCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The railway: what it charges, who pays it, and what it does to the band.
 > 
@@ -32,7 +32,7 @@
 > 
 > See claude/transport-and-the-freight-band.md and sectors.Freight.
 
-**Uses:** [Good](Good.md) (21), [Traffic](Traffic.md) (15), [Freight](Freight.md) (13), [Ports](Ports.md) (11), [Sectors](Sectors.md) (9), [Markets](Markets.md) (8), [Sector](Sector.md) (7), [Game](Game.md) (6), [BuildingManager](BuildingManager.md) (5), [GoodsMarket](GoodsMarket.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [GameFiles](GameFiles.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [SectorState](SectorState.md) (2), [CarCheck](CarCheck.md) (2), [Founding](Founding.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [Haulage](Haulage.md) (1), [TrainSchedule](TrainSchedule.md) (1), [Statement](Statement.md) (1)
+**Uses:** [Good](Good.md) (21), [Traffic](Traffic.md) (15), [Freight](Freight.md) (13), [Ports](Ports.md) (11), [Sectors](Sectors.md) (9), [Markets](Markets.md) (8), [Sector](Sector.md) (7), [Game](Game.md) (6), [BuildingManager](BuildingManager.md) (5), [GoodsMarket](GoodsMarket.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [GameFiles](GameFiles.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [SectorState](SectorState.md) (2), [CarCheck](CarCheck.md) (2), [Founding](Founding.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [Haulage](Haulage.md) (1), [PriceLevel](PriceLevel.md) (1), [TrainSchedule](TrainSchedule.md) (1), [Statement](Statement.md) (1)
 
 **Used by (1):** [GdpCheck](GdpCheck.md)
 

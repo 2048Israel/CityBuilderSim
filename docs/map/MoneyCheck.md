@@ -1,6 +1,6 @@
 # MoneyCheck.java - 577 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/MoneyCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneyCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Money is conserved: every dollar that leaves a pool arrives in another, or
 > crosses the city's boundary in a way the audit can name.
@@ -16,7 +16,7 @@
 > only opens under stress: one is left to prosper, the other is bankrupted
 > and restructured, taxed hard, and made to import everything.
 
-**Uses:** [MoneyAudit](MoneyAudit.md) (21), [Game](Game.md) (18), [OldMetal](OldMetal.md) (12), [Sectors](Sectors.md) (11), [GameFiles](GameFiles.md) (7), [Founding](Founding.md) (7), [Debt](Debt.md) (6), [Sector](Sector.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [LandParcel](LandParcel.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [DebtManager](DebtManager.md) (2), [LandMarket](LandMarket.md) (1), [Mining](Mining.md) (1), [Good](Good.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [CapitalFlows](CapitalFlows.md) (1), [CopperRefining](CopperRefining.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MediumTermBond](MediumTermBond.md) (1)
+**Uses:** [MoneyAudit](MoneyAudit.md) (21), [Game](Game.md) (18), [OldMetal](OldMetal.md) (12), [PriceLevel](PriceLevel.md) (11), [Sectors](Sectors.md) (11), [GameFiles](GameFiles.md) (7), [Founding](Founding.md) (7), [Debt](Debt.md) (6), [Sector](Sector.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [LandParcel](LandParcel.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [DebtManager](DebtManager.md) (2), [LandMarket](LandMarket.md) (1), [Mining](Mining.md) (1), [Good](Good.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [CapitalFlows](CapitalFlows.md) (1), [CopperRefining](CopperRefining.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MediumTermBond](MediumTermBond.md) (1)
 
 ## Sections
 

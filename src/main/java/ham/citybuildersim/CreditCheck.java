@@ -714,9 +714,9 @@ public class CreditCheck {
         double cashBeforeAsking = city.getCash();
         double rateBeforeAsking = city.getDebtManager().getRate();
         for (int i = 1; i <= 100; i++) {
-            city.quoteTBill(i * 500, 3, 1000);
-            city.quoteMediumBond(i * 500, 5, 10000);
-            city.quoteLongBond(i * 500, 20, 100000);
+            city.quoteTBill(i * 500 * PriceLevel.FACTOR, 3, 1000 * PriceLevel.FACTOR);
+            city.quoteMediumBond(i * 500 * PriceLevel.FACTOR, 5, 10000 * PriceLevel.FACTOR);
+            city.quoteLongBond(i * 500 * PriceLevel.FACTOR, 20, 100000 * PriceLevel.FACTOR);
         }
         assertTrue("three hundred quotes book no debt",
                 city.getDebtManager().getAllPrincipal() == principalBeforeAsking);
@@ -731,8 +731,8 @@ public class CreditCheck {
          * carrying debt every further quote sits at the cap and the comparison
          * stops meaning anything.
          */
-        DebtQuote modest = city.quoteMediumBond(5_000, 5, 10000);
-        DebtQuote greedy = city.quoteMediumBond(40_000, 5, 10000);
+        DebtQuote modest = city.quoteMediumBond(5_000 * PriceLevel.FACTOR, 5, 10000 * PriceLevel.FACTOR);
+        DebtQuote greedy = city.quoteMediumBond(40_000 * PriceLevel.FACTOR, 5, 10000 * PriceLevel.FACTOR);
         System.out.printf("   $5M quotes %.2f%%; $40M quotes %.2f%%%n",
                 modest.marketRate() * 100, greedy.marketRate() * 100);
         assertTrue("asking for eight times as much is priced dearer",
@@ -749,9 +749,9 @@ public class CreditCheck {
         // main's 0.8.72-0.8.74 (BK1, HD1, EM1), so D$5M of Note stood 0.93 basis points over the floor where onCurve() asks for more than 1
         // (1.25 before: a quarter of a basis point from the clamp all along). Half a year of tax is D$15M here, a Note quoted at 3.02%, two
         // basis points over, and the section is still about the quote and the booking agreeing, not the size.
-        double noteAsk = Math.rint(city.getDebtManager().getMonthlyTaxRevenue() * 12 / 2 / 1000) * 1000;
-        bookAndCompare(city, "Note",      noteAsk,  3,  1000,   true);
-        bookAndCompare(city, "Serial", 20_000, 5,  10000,  true);
+        double noteAsk = Math.rint(city.getDebtManager().getMonthlyTaxRevenue() * 12 / 2 / (1000 * PriceLevel.FACTOR)) * (1000 * PriceLevel.FACTOR);
+        bookAndCompare(city, "Note",      noteAsk,  3,  1000 * PriceLevel.FACTOR,   true);
+        bookAndCompare(city, "Serial", 20_000 * PriceLevel.FACTOR, 5,  10000 * PriceLevel.FACTOR,  true);
 
         /*
          * The long bond twice. Once at a fine rounding so the rate lands on the
@@ -760,8 +760,8 @@ public class CreditCheck {
          * city this size is far past the cap - that is the path players use, so
          * it is checked too, just with no illusion about what its rate proves.
          */
-        bookAndCompare(city, "Term",   10_000, 20, 1000,   true);
-        bookAndCompare(city, "Term",   100_000, 20, 100000, false);
+        bookAndCompare(city, "Term",   10_000 * PriceLevel.FACTOR, 20, 1000 * PriceLevel.FACTOR,   true);
+        bookAndCompare(city, "Term",   100_000 * PriceLevel.FACTOR, 20, 100000 * PriceLevel.FACTOR, false);
 
         /* ============ 9. A NOTE DELIVERS WHAT IT WAS ASKED FOR ============
 
@@ -792,9 +792,9 @@ public class CreditCheck {
 
         int shortfalls = 0;
         for (int months : new int[]{3, 6, 12}) {
-            for (double ask : new double[]{1_000, 5_000, 20_000, 40_000, 60_000,
-                                           72_000, 100_000, 205_000, 500_000}) {
-                DebtQuote q = notes.quoteTBill(ask, months, 1000.0);
+            for (double ask : PriceLevelCheck.atFounding(1_000, 5_000, 20_000, 40_000, 60_000,
+                                           72_000, 100_000, 205_000, 500_000)) {
+                DebtQuote q = notes.quoteTBill(ask, months, 1000.0 * PriceLevel.FACTOR);
                 if (q.cashReceived() < ask) {
                     shortfalls++;
                     System.out.printf("   SHORT  %2dmo  asked $%,.0f  got $%,.2f%n",
@@ -821,9 +821,9 @@ public class CreditCheck {
          * through a quote of its own - Game.quoteLongBondForCash(), held by
          * NewGameCheck section 11 - and quoteLongBond() is unchanged.)
          */
-        DebtQuote serial = notes.quoteMediumBond(100_000, 10, 10000.0);
+        DebtQuote serial = notes.quoteMediumBond(100_000 * PriceLevel.FACTOR, 10, 10000.0 * PriceLevel.FACTOR);
         assertTrue("a serial bond's face IS the request",
-                serial.faceValue() >= 100_000 - 1e-6);
+                serial.faceValue() >= 100_000 * PriceLevel.FACTOR - 1e-6);
         assertTrue("...and the city receives par less fees, by design",
                 serial.cashReceived() < serial.faceValue());
 
@@ -897,7 +897,7 @@ public class CreditCheck {
         // The build screen's note, as its button books it (since 0.7.0 the
         // emergency path is the central bank's advance, and the note the
         // screen offers is an ordinary bill on the screen's own term).
-        roadCity.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, 1000.0);
+        roadCity.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, 1000.0 * PriceLevel.FACTOR);
 
         System.out.printf("   borrowed the $%,.2f gap; cash is now $%,.2f%n",
                 gap, roadCity.getCash());
@@ -966,7 +966,7 @@ public class CreditCheck {
            the refusal that prints is "already building", which is a third
            reason and not the one under test.
            ------------------------------------------------------------------- */
-        banned.getGovernmentInvestor().spend(-5_000_000);
+        banned.getGovernmentInvestor().spend(-5_000_000 * PriceLevel.FACTOR);
         banned.getLandManager().setOwnedSqFt(200_000_000);
         /*
          * THE HOUSES STAND FROM THE START (0.7.17), and the city grows into
@@ -1447,7 +1447,7 @@ public class CreditCheck {
         Game town = new Game(GameFiles.scratch("creditcheck"));
         quietly(() -> {
             town.run();
-            town.getGovernmentInvestor().spend(-4_000_000);
+            town.getGovernmentInvestor().spend(-4_000_000 * PriceLevel.FACTOR);
             town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 20_000_000L);
             LongPlaytest.build(town, "House", 60);
             LongPlaytest.build(town, "Convenience Store", 4);
@@ -1890,7 +1890,7 @@ public class CreditCheck {
         final String PS = P;
         Investor builder = g.getSectorInvestor(PS);
         g.getEconomyManager().setSectorCash(PS, 0);
-        double purpose = 50, owedBefore = credit.getPrincipal(PS), lentBefore = credit.getLentThisMonth();
+        double purpose = 50 * PriceLevel.FACTOR, owedBefore = credit.getPrincipal(PS), lentBefore = credit.getLentThisMonth();
         assertTrue("fixture: " + PS + " may borrow for a building", builder.canBorrow(purpose));
         builder.borrow(purpose, g.getMonth());
         double written = credit.getLentThisMonth() - lentBefore;

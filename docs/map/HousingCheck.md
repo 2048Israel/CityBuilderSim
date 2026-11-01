@@ -1,6 +1,6 @@
 # HousingCheck.java - 636 lines · 5 methods · 1 constants · harnesses
 
-`ham/citybuildersim/HousingCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Audits the three subsystems that describe the same housing, every month, and
 > makes them agree. Not part of the game.
@@ -49,7 +49,7 @@
 >      inside the month tick and three of them were reading zero on a reloaded
 >      city until 2026-09-09.
 
-**Uses:** [Game](Game.md) (7), [FamilyModel](FamilyModel.md) (7), [FamilyStructure](FamilyStructure.md) (4), [RealEstate](RealEstate.md) (3), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingManager](BuildingManager.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Construction](Construction.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [Game](Game.md) (7), [FamilyModel](FamilyModel.md) (7), [FamilyStructure](FamilyStructure.md) (4), [RealEstate](RealEstate.md) (3), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingManager](BuildingManager.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Construction](Construction.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Sectors](Sectors.md) (1), [PriceLevel](PriceLevel.md) (1)
 
 ## Sections
 

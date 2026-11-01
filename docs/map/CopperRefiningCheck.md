@@ -1,6 +1,6 @@
 # CopperRefiningCheck.java - 1,114 lines · 27 methods · 16 constants · harnesses
 
-`ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
 > 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -
@@ -64,7 +64,7 @@
 > 
 > ... (33 more lines in the source)
 
-**Uses:** [Good](Good.md) (202), [CopperRefining](CopperRefining.md) (46), [Sector](Sector.md) (43), [OldMetal](OldMetal.md) (29), [Game](Game.md) (28), [Sectors](Sectors.md) (23), [BuildingManager](BuildingManager.md) (23), [SpreadPlanner](SpreadPlanner.md) (18), [LongPlaytest](LongPlaytest.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (14), [GoodsMarket](GoodsMarket.md) (11), [CopperMiningCheck](CopperMiningCheck.md) (10), [MaterialsCheck](MaterialsCheck.md) (9), [Manufacturing](Manufacturing.md) (8), [ProcessingSector](ProcessingSector.md) (6), [JobType](JobType.md) (6), [CopperMining](CopperMining.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [Trade](Trade.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [MoneyAudit](MoneyAudit.md) (2), [NationalAccounts](NationalAccounts.md) (2), [Markets](Markets.md) (1), [PayTier](PayTier.md) (1), [Statement](Statement.md) (1), [EarthSite](EarthSite.md) (1), [GameFiles](GameFiles.md) (1), [TreasuryFund](TreasuryFund.md) (1)
+**Uses:** [Good](Good.md) (202), [CopperRefining](CopperRefining.md) (46), [Sector](Sector.md) (43), [OldMetal](OldMetal.md) (29), [Game](Game.md) (28), [Sectors](Sectors.md) (23), [BuildingManager](BuildingManager.md) (23), [SpreadPlanner](SpreadPlanner.md) (18), [LongPlaytest](LongPlaytest.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (14), [GoodsMarket](GoodsMarket.md) (11), [CopperMiningCheck](CopperMiningCheck.md) (10), [MaterialsCheck](MaterialsCheck.md) (9), [Manufacturing](Manufacturing.md) (8), [ProcessingSector](ProcessingSector.md) (6), [JobType](JobType.md) (6), [CopperMining](CopperMining.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [Trade](Trade.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PriceLevel](PriceLevel.md) (2), [MoneyAudit](MoneyAudit.md) (2), [NationalAccounts](NationalAccounts.md) (2), [Markets](Markets.md) (1), [PayTier](PayTier.md) (1), [Statement](Statement.md) (1), [EarthSite](EarthSite.md) (1)... and 2 more
 
 ## Sections
 
@@ -87,7 +87,7 @@
 | 112 | `CopperRefiningCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 114 | `CopperRefiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 203 | `CopperRefiningCheck.ROWS` | `{ CopperRefining.SMELTER, CopperRefining.ELECTROLYTIC_REFINERY, CopperRefinin...` | The rows, by their permanent ids, in the study's 4.3 order: Copper Refining's four and Manufacturing's wire works. |
-| 207 | `CopperRefiningCheck.STUDY_COSTS` | `{ 500_000, 180_000, 280_000, 45_000, 110_000 }` | The study's 4.3: each one's cost, D$ thousands all in. |
+| 207 | `CopperRefiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(500_000, 180_000, 280_000, 45_000, 110_000)` | The study's 4.3: each one's cost, D$ thousands all in. |
 | 210 | `CopperRefiningCheck.STUDY_POSTS` | `{ 700, 200, 200, 80, 400 }` | ...its posts. |
 | 213 | `CopperRefiningCheck.STUDY_KW` | `{ 13_400, 6_000, 5_500, 1_100, 2_500 }` | ...its draw, kW. |
 | 216 | `CopperRefiningCheck.STUDY_MADE` | `{ { Good.ANODE, Good.ACID }, { Good.COPPER }, { Good.COPPER }, { Good.COPPER_...` | ...what it makes a month, t. |
@@ -95,7 +95,7 @@
 | 221 | `CopperRefiningCheck.STUDY_FEED` | `{ Good.COPPER_CONC, Good.ANODE, Good.COPPER_SCRAP, Good.COPPER, Good.COPPER_R...` | ...and what it takes, t a month. |
 | 223 | `CopperRefiningCheck.STUDY_USES` | `{ 33_000, 9_750, 4_400, 8_016, 2_000 }` | ...and how many tonnes of it, a month. |
 | 226 | `CopperRefiningCheck.STUDY_TABLE` | `{ { - 0.3, 1.2, 2.7, 1.2 }, { - 1.9, 0.8, 3.5, 0.8 }, { 0.0, 2.2, 2.9, 0.7 },...` | The study's 4.4 table, % of the cost a month, cases A to D. |
-| 230 | `CopperRefiningCheck.STUDY_RUNS` | `{ 5_253, 1_460, 1_776, 846, 4_820 }` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table - but the scrap refinery's, from the -0.02% ... |
+| 230 | `CopperRefiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(5_253, 1_460, 1_776, 846, 4_820)` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table - but the scrap refinery's, from the -0.02% ... |
 | 233 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
 | 236 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 318 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |

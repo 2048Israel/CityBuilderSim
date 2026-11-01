@@ -152,9 +152,9 @@ public class DeskCheck {
         FloatLinkCheck.Index idx = new FloatLinkCheck.Index(l0, rising);
         dm.setPriceIndexSource(idx);
         // A year to live, a second linker with two to live, a floater: the manager's sums have pieces to add up.
-        InflationLinkedBond linker = FloatLinkCheck.fixtureLinker(g, 20_000, 12, .02, l0);
-        InflationLinkedBond longer = FloatLinkCheck.fixtureLinker(g, 10_000, 24, .015, l0);
-        FloatingRateNote floater = FloatLinkCheck.fixtureFloater(g, 10_000, 24, .005);
+        InflationLinkedBond linker = FloatLinkCheck.fixtureLinker(g, 20_000 * PriceLevel.FACTOR, 12, .02, l0);
+        InflationLinkedBond longer = FloatLinkCheck.fixtureLinker(g, 10_000 * PriceLevel.FACTOR, 24, .015, l0);
+        FloatingRateNote floater = FloatLinkCheck.fixtureFloater(g, 10_000 * PriceLevel.FACTOR, 24, .005);
 
         for (int k = 1; k <= 10; k++) {
             idx.k = k;
@@ -251,12 +251,12 @@ public class DeskCheck {
         g.setCashForTest(Founding.WEALTHY_CASH);
         double ask = FloatLinkCheck.askOf(g, .1);
 
-        Debt bill = sold(g, "a three-month bill", () -> g.handleTBillLogic(ask, 3, 100));
-        sold(g, "a five-year amortizing bond", () -> g.handleMediumBondLogic(ask, 5, 100));
-        sold(g, "a ten-year line", () -> g.handleLongBondLogic(ask, 10, 100));
-        sold(g, "a two-year floater", () -> g.handleFloatingNoteLogic(ask, 2, 100));
-        sold(g, "a ten-year linker", () -> g.handleLinkedBondLogic(ask, 10, 100));
-        Debt usd = sold(g, "a five-year dollar bond", () -> g.handleForeignLogic("Term", 5_000, 5, 100, false));
+        Debt bill = sold(g, "a three-month bill", () -> g.handleTBillLogic(ask, 3, 100 * PriceLevel.FACTOR));
+        sold(g, "a five-year amortizing bond", () -> g.handleMediumBondLogic(ask, 5, 100 * PriceLevel.FACTOR));
+        sold(g, "a ten-year line", () -> g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
+        sold(g, "a two-year floater", () -> g.handleFloatingNoteLogic(ask, 2, 100 * PriceLevel.FACTOR));
+        sold(g, "a ten-year linker", () -> g.handleLinkedBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
+        Debt usd = sold(g, "a five-year dollar bond", () -> g.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 5, 100 * PriceLevel.FACTOR, false));
         check("fixture: ...a bill, a serial bond, a term bond, a floater, a linker and a dollar piece are on the books",
                 onBooks(dm, "NOTE") >= 1 && onBooks(dm, "SERIAL") >= 1 && onBooks(dm, "TERM") >= 1 && onBooks(dm, "FLOAT") >= 1
                         && onBooks(dm, "LINKED") >= 1 && usd != null && usd.isForeign());
@@ -347,10 +347,10 @@ public class DeskCheck {
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         FloatLinkCheck.worldWantsPaper(g);
         g.setCashForTest(Founding.WEALTHY_CASH);
-        double ask = Math.max(100, g.getHouseholdBalance().spareForPaper() * 3);
-        Debt line = sold(g, "a ten-year line", () -> g.handleLongBondLogic(ask, 10, 100));
+        double ask = Math.max(100 * PriceLevel.FACTOR, g.getHouseholdBalance().spareForPaper() * 3);
+        Debt line = sold(g, "a ten-year line", () -> g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         g.setCashForTest(Founding.WEALTHY_CASH);
-        Debt callable = sold(g, "a callable ten-year line", () -> g.handleLongBondLogic(ask, 10, 100, Auction.Cap.DEFAULT, true));
+        Debt callable = sold(g, "a callable ten-year line", () -> g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR, Auction.Cap.DEFAULT, true));
         if (line == null || !(callable instanceof LongTermBond call)) return;
         press(g);
 
@@ -458,13 +458,13 @@ public class DeskCheck {
         press(g);
         g.setCashForTest(Founding.WEALTHY_CASH);
         double ask = FloatLinkCheck.askOf(g, .1);
-        Debt bill = sold(g, "a three-month bill", () -> g.handleTBillLogic(ask, 3, 100));
-        Debt serial = sold(g, "a five-year amortizing bond", () -> g.handleMediumBondLogic(ask, 5, 100));
-        Debt term = sold(g, "a ten-year line", () -> g.handleLongBondLogic(ask, 10, 100));
-        Debt call = sold(g, "a callable ten-year line", () -> g.handleLongBondLogic(ask, 10, 100, Auction.Cap.DEFAULT, true));
-        Debt floater = sold(g, "a two-year floater", () -> g.handleFloatingNoteLogic(ask, 2, 100));
-        Debt linker = sold(g, "a ten-year linker", () -> g.handleLinkedBondLogic(ask, 10, 100));
-        Debt usd = sold(g, "a five-year dollar bond", () -> g.handleForeignLogic("Term", 5_000, 5, 100, false));
+        Debt bill = sold(g, "a three-month bill", () -> g.handleTBillLogic(ask, 3, 100 * PriceLevel.FACTOR));
+        Debt serial = sold(g, "a five-year amortizing bond", () -> g.handleMediumBondLogic(ask, 5, 100 * PriceLevel.FACTOR));
+        Debt term = sold(g, "a ten-year line", () -> g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
+        Debt call = sold(g, "a callable ten-year line", () -> g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR, Auction.Cap.DEFAULT, true));
+        Debt floater = sold(g, "a two-year floater", () -> g.handleFloatingNoteLogic(ask, 2, 100 * PriceLevel.FACTOR));
+        Debt linker = sold(g, "a ten-year linker", () -> g.handleLinkedBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
+        Debt usd = sold(g, "a five-year dollar bond", () -> g.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 5, 100 * PriceLevel.FACTOR, false));
         if (bill == null || serial == null || term == null || call == null || floater == null || linker == null || usd == null) return;
         check("fixture: the callable line is callable and the dollar piece is written in dollars",
                 call instanceof LongTermBond c && c.isCallable() && usd.isForeign());
@@ -657,8 +657,8 @@ public class DeskCheck {
         bill.markIssued(5_000 * .99, .04);
         bill.settled();
         LongTermBond unsold = (LongTermBond) dm.addLongTermBond(6_000, 60, month, .06);
-        FloatingRateNote floater = FloatLinkCheck.fixtureFloater(g, 8_000, 9, .004);
-        InflationLinkedBond linker = FloatLinkCheck.fixtureLinker(g, 10_000, 7, .02, l0);
+        FloatingRateNote floater = FloatLinkCheck.fixtureFloater(g, 8_000 * PriceLevel.FACTOR, 9, .004);
+        InflationLinkedBond linker = FloatLinkCheck.fixtureLinker(g, 10_000 * PriceLevel.FACTOR, 7, .02, l0);
         Debt[] pieces = {line, serial, bill, unsold, floater, linker};
         String[] names = {"the line sold under par", "the amortizing bond", "the bill", "the line never sold", "the floater", "the linker"};
         check("fixture: the line was sold under par: it is carried at less than its face (" + String.format("%,.0f of %,.0f", line.getCarryingValue(), line.getFaceValue()) + ")",
@@ -769,8 +769,8 @@ public class DeskCheck {
         DebtManager dm = g.getDebtManager();
         FloatLinkCheck.worldWantsPaper(g);
         g.setCashForTest(Founding.WEALTHY_CASH);
-        double ask = Math.max(100, g.getHouseholdBalance().spareForPaper() * 3);
-        Debt line = sold(g, "a ten-year line", () -> g.handleLongBondLogic(ask, 10, 100));
+        double ask = Math.max(100 * PriceLevel.FACTOR, g.getHouseholdBalance().spareForPaper() * 3);
+        Debt line = sold(g, "a ten-year line", () -> g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         if (line == null) return;
 
         // The first sale.
@@ -813,7 +813,7 @@ public class DeskCheck {
         double faceBefore = line.getFaceValue(), carriedBefore = line.getCarryingValue();
         int reopenMonth = g.getMonth();
         g.setCashForTest(Founding.WEALTHY_CASH);
-        quietly(() -> g.handleLongBondLogic(ask, 10, 100));
+        quietly(() -> g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         check("fixture: the second sale reopened the line: one line, and more face on it (" + String.format("%,.0f to %,.0f", faceBefore, line.getFaceValue()) + ")",
                 dm.getDebt().size() == pieces && line.getFaceValue() > faceBefore + 1e-6);
         check("a reopening adds a sale and keeps one line: two sales, the first as it was", line.getSales().size() == 2 && saleText(line.getSales().get(0)).equals(saleText(first)));
@@ -885,8 +885,8 @@ public class DeskCheck {
         Game rg = FloatLinkCheck.readyCity("desk-rollover", false, 0);
         DebtManager rdm = rg.getDebtManager();
         rg.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
-        FloatLinkCheck.dueNextMonth(FloatLinkCheck.fixtureFloater(rg, 20_000, 24, .002));
-        FloatLinkCheck.dueNextMonth(FloatLinkCheck.fixtureLinker(rg, 20_000, 120, .02, rdm.priceIndexLevel()));
+        FloatLinkCheck.dueNextMonth(FloatLinkCheck.fixtureFloater(rg, 20_000 * PriceLevel.FACTOR, 24, .002));
+        FloatLinkCheck.dueNextMonth(FloatLinkCheck.fixtureLinker(rg, 20_000 * PriceLevel.FACTOR, 120, .02, rdm.priceIndexLevel()));
         rg.setCashForTest(0);
         java.util.Set<Debt> had = FloatLinkCheck.piecesOf(rdm);
         press(rg);
@@ -898,7 +898,7 @@ public class DeskCheck {
                         && d.getSales().get(0).getMonth() == d.getMonthStarted()));
         rg.setCashForTest(Founding.WEALTHY_CASH);
         double rask = FloatLinkCheck.askOf(rg, .1);
-        Debt afterwards = sold(rg, "a three-month bill after the rollover", () -> rg.handleTBillLogic(rask, 3, 100));
+        Debt afterwards = sold(rg, "a three-month bill after the rollover", () -> rg.handleTBillLogic(rask, 3, 100 * PriceLevel.FACTOR));
         check("...and a sale the player makes after it reads auction", afterwards != null && afterwards.getSales().size() == 1 && "auction".equals(afterwards.getSales().get(0).getHow()));
 
         // The path's own rules: a figure that is no number, a month recorded twice, a month skipped.
@@ -969,12 +969,12 @@ public class DeskCheck {
         g.setCashForTest(Founding.WEALTHY_CASH);
         double ask = FloatLinkCheck.askOf(g, .1);
         quietly(() -> {
-            g.handleTBillLogic(ask, 3, 100);
-            g.handleMediumBondLogic(ask, 5, 100);
-            g.handleLongBondLogic(ask, 10, 100);
-            g.handleLongBondLogic(ask, 10, 100, Auction.Cap.DEFAULT, true);
-            g.handleFloatingNoteLogic(ask, 2, 100);
-            g.handleLinkedBondLogic(ask, 10, 100);
+            g.handleTBillLogic(ask, 3, 100 * PriceLevel.FACTOR);
+            g.handleMediumBondLogic(ask, 5, 100 * PriceLevel.FACTOR);
+            g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
+            g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR, Auction.Cap.DEFAULT, true);
+            g.handleFloatingNoteLogic(ask, 2, 100 * PriceLevel.FACTOR);
+            g.handleLinkedBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
         });
         return g;
     }
@@ -1133,14 +1133,14 @@ public class DeskCheck {
         g.setCashForTest(Founding.WEALTHY_CASH);
 
         // The dollar line, sold at the D$ of its day, 1.25.
-        Debt usd = sold(g, "a five-year dollar bond", () -> g.handleForeignLogic("Term", 5_000, 5, 100, false));
+        Debt usd = sold(g, "a five-year dollar bond", () -> g.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 5, 100 * PriceLevel.FACTOR, false));
         // The gain line: sold at par at today's rates (the dial at 3%), then the dial raised five points, so it trades under what it is carried at.
-        LongTermBond gain = bankHeldAtPar(g, 20_000);
+        LongTermBond gain = bankHeldAtPar(g, 20_000 * PriceLevel.FACTOR);
         dm.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, dm.getPolicyRate() + .05));
         g.strikeTheCurve();
         press(g);
         // The loss line: sold at par at the higher rates, then the dial cut four points, so it trades over what it is carried at (the first line, sold lower, is still under).
-        LongTermBond loss = bankHeldAtPar(g, 20_000);
+        LongTermBond loss = bankHeldAtPar(g, 20_000 * PriceLevel.FACTOR);
         dm.setPolicyRate(Math.max(DebtManager.MIN_POLICY_RATE, dm.getPolicyRate() - .04));
         g.strikeTheCurve();
         press(g);

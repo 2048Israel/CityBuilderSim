@@ -1108,7 +1108,7 @@ public class InterestAbroadCheck {
         double stockNow = hot.getStock();
         out.printf("   after %d months at a %.0f%% dial: hot money D$%,.0fk here (target D$%,.0fk, a %.2f-point spread), the carry D$%,.0fk, the world's risk-off %.2f%n", months + 2,
                 HOT_DIAL * 100, stockNow, hot.getTarget(), hot.getSpread() * 100, hot.getCarryStock(), g.getWorldMoneys().riskOff());
-        assertTrue("fixture: the city holds hot money to unwind (D$" + String.format("%,.0fk", stockNow) + ") and the world is calm", stockNow > 1000 && g.getWorldMoneys().riskOff() < .5);
+        assertTrue("fixture: the city holds hot money to unwind (D$" + String.format("%,.0fk", stockNow) + ") and the world is calm", stockNow > 1000 * PriceLevel.FACTOR && g.getWorldMoneys().riskOff() < .5);
 
         // A risk-off of size one starts at the next step.
         g.getWorldMoneys().forceRiskOff(1);
@@ -1145,7 +1145,7 @@ public class InterestAbroadCheck {
         play(q);
         CapitalFlows qHot = q.getCapitalFlows();
         assertTrue("fixture: the quieted city holds hot money (D$" + String.format("%,.0fk", qHot.getStock()) + ") and its own moneys are in a risk-off (" + String.format("%.2f", q.getWorldMoneys().riskOff()) + ")",
-                qHot.getStock() > 1000 && q.getWorldMoneys().riskOff() >= 1 - 1e-9);
+                qHot.getStock() > 1000 * PriceLevel.FACTOR && q.getWorldMoneys().riskOff() >= 1 - 1e-9);
         ForeignAccounts qFx = q.getForeignAccounts();
         assertTrue("the quieted city's vault earned nothing, month or lifetime", qFx.getVaultInterestUsd() == 0 && qFx.getVaultInterestUsdLifetime() == 0 && qFx.getVaultYield() == 0);
         assertTrue("...and the risk-off unwound none of its hot money or its carry", qHot.getRiskOffDeparted() == 0 && qHot.getRiskOffDepartedLifetime() == 0 && qHot.getCarryRiskRepaidLifetime() == 0

@@ -566,14 +566,14 @@ public class RefineryCheck {
 
     /* ===================================================================== THE SPREAD PLANNER (0.7.82, batch O5) ===================================================================== */
 
-    /** The prototype's frame (spread.py): wages a post-month, world $k (m4000's Refining, 736k over 200 posts at 760). */
-    static final double PROTOTYPE_WAGE = 4.84;
+    /** The prototype's frame (spread.py): wages a post-month, world $k (m4000's Refining, 736k over 200 posts at 760). Today's figure, priced at the founding's level (EP1). */
+    static final double PROTOTYPE_WAGE = 4.84 * PriceLevel.FACTOR;
 
     /** ...and its money test, a month on the whole cost (its RATE). */
     static final double PROTOTYPE_RATE = .005;
 
-    /** ...and its Oil Refinery's capital: D$60M and its 1,000 materials at 18 (spread.py's TOPPING); every other building its cash. */
-    static final double PROTOTYPE_REFINERY_CAPITAL = 78_000;
+    /** ...and its Oil Refinery's capital: D$60M and its 1,000 materials at 18 (spread.py's TOPPING); every other building its cash. Today's figure, priced at the founding's level (EP1). */
+    static final double PROTOTYPE_REFINERY_CAPITAL = 78_000 * PriceLevel.FACTOR;
 
     /** ...and the months an order takes to open. */
     static final int PROTOTYPE_BUILD_MONTHS = 6;

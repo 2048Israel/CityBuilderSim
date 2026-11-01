@@ -87,8 +87,10 @@ public class CapitalFlows {
      * bank's deposit book, its funding cost, its foreign borrowing and the
      * balance of payments all followed. A threshold in absolute money is a
      * threshold that means something different after a reform.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double MIN_STOCK = 1;
+    public static final double MIN_STOCK = 1 * PriceLevel.FACTOR;
 
     /** MIN_STOCK in today's money. See seedConstants(). */
     private double minStock = MIN_STOCK;

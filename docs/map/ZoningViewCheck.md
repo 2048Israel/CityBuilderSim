@@ -1,6 +1,6 @@
 # ZoningViewCheck.java - 730 lines · 26 methods · 3 constants · harnesses
 
-`ham/citybuildersim/ZoningViewCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ZoningViewCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning's figures (0.7.109, batch Z2): ZoningView, and the words
 > zoning puts on the screens it does not own - NEEDS YOU's GROUND row, the
@@ -63,7 +63,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [ZoningView](ZoningView.md) (126), [Sectors](Sectors.md) (106), [Zoning](Zoning.md) (35), [LandManager](LandManager.md) (33), [BuildCard](BuildCard.md) (22), [Game](Game.md) (19), [LandMap](LandMap.md) (14), [CityNeeds](CityNeeds.md) (9), [DecisionLog](DecisionLog.md) (7), [UserInterface](UserInterface.md) (6), [LongPlaytest](LongPlaytest.md) (5), [PolicyPreview](PolicyPreview.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [EconomyManager](EconomyManager.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Resource](Resource.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
+**Uses:** [ZoningView](ZoningView.md) (126), [Sectors](Sectors.md) (106), [Zoning](Zoning.md) (35), [LandManager](LandManager.md) (33), [BuildCard](BuildCard.md) (22), [Game](Game.md) (19), [LandMap](LandMap.md) (14), [CityNeeds](CityNeeds.md) (9), [DecisionLog](DecisionLog.md) (7), [UserInterface](UserInterface.md) (6), [LongPlaytest](LongPlaytest.md) (5), [PolicyPreview](PolicyPreview.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1), [EconomyManager](EconomyManager.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Resource](Resource.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
 
 ## Sections
 

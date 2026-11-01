@@ -342,7 +342,7 @@ public class HousingCheck {
 
         Game studios = new Game(GameFiles.scratch("housing-studios"));
         studios.run();
-        studios.getGovernmentInvestor().spend(-4_000_000);
+        studios.getGovernmentInvestor().spend(-4_000_000 * PriceLevel.FACTOR);
         studios.getLandManager().setOwnedSqFt(
                 studios.getLandManager().getOwnedSqFt() + 200_000_000L);
         // Placed rather than ordered - `true` is noConstruction. Sixty studio

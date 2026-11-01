@@ -125,8 +125,8 @@ public class Equity {
     /** The share of a positive month's net income paid to the owners - of what it leaves after the principal repaid, since round 2 of 0.7.11 (dividendDue()) - every company's but the bank's, which pays by its own capital rule since 0.7.8 (Bank.dividendDue()). */
     public static final double PAYOUT = .40;
 
-    /** A founding share: a thousand dollars, in the game's thousands. */
-    public static final double FOUNDING_PRICE = 1.0;
+    /** A founding share: a thousand dollars, in the game's thousands, at today's prices. Priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double FOUNDING_PRICE = 1.0 * PriceLevel.FACTOR;
 
     /**
      * The same price in TODAY's money, after any currency reform.

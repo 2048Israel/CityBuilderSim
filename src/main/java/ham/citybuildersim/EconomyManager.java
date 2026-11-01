@@ -1061,12 +1061,12 @@ public class EconomyManager {
     public static final int PBRH_MIN_UNITS = 4;
     /** The new residential rental property rebate's share of the tax on a unit: 36% (Excise Tax Act section 256.2(3)(a); CRA RC4231). */
     public static final double NRRP_SHARE = .36;
-    /** ...and its most a unit, in founding thousands: $6,300. */
-    public static final double NRRP_CAP = 6.3;
-    /** ...in full for a unit worth up to this, in founding thousands: $350,000. */
-    public static final double NRRP_FULL_BELOW = 350;
-    /** ...and none for a unit worth this or more: $450,000. */
-    public static final double NRRP_NONE_FROM = 450;
+    /** ...and its most a unit, in founding thousands: $6,300. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double NRRP_CAP = 6.3 * PriceLevel.FACTOR;
+    /** ...in full for a unit worth up to this, in founding thousands: $350,000. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double NRRP_FULL_BELOW = 350 * PriceLevel.FACTOR;
+    /** ...and none for a unit worth this or more: $450,000. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double NRRP_NONE_FROM = 450 * PriceLevel.FACTOR;
 
     /** Today's money for a founding dollar: the month's price index over the unit. Supplied by Game; one without it. */
     private java.util.function.DoubleSupplier foundingToToday = () -> 1;

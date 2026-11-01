@@ -1,6 +1,6 @@
 # BridgeWorks.java - 126 lines · 7 methods · 12 constants · model
 
-`ham/citybuildersim/BridgeWorks.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeWorks.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > What a long bridge's span costs, in US dollars a metre by kind and by the depth of the water it crosses, and the
 > construction points those dollars are at the bridge's own founding price a point. Pure arithmetic: Game.quoteBuild()
@@ -21,9 +21,9 @@
 > bridge costs RAIL_OVER_HIGHWAY times a highway's a metre, and a road bridge, a deck about half as wide, about half
 > of a highway's, so rail is dearer than highway, and highway than road, at every depth.
 
-**Uses:** [RunWorks](RunWorks.md) (2), [BridgeSurvey](BridgeSurvey.md) (1)
+**Uses:** [RunWorks](RunWorks.md) (2), [PriceLevel](PriceLevel.md) (1), [BridgeSurvey](BridgeSurvey.md) (1)
 
-**Used by (10):** [BridgeCheck](BridgeCheck.md), [Bridges](Bridges.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [Game](Game.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (11):** [BridgeCheck](BridgeCheck.md), [Bridges](Bridges.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [Game](Game.md), [PriceLevelCheck](PriceLevelCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Enum constants
 

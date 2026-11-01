@@ -252,7 +252,7 @@ public class ForeignDebtCheck {
              * borrows until it does, within reason.
              */
             for (int k = 0; k < 6; k++) {
-                city.handleTBillLogic(city.getCash() * 2, Game.BUILD_NOTE_MONTHS, 1000.0);
+                city.handleTBillLogic(city.getCash() * 2, Game.BUILD_NOTE_MONTHS, 1000.0 * PriceLevel.FACTOR);
                 city.simulateMonths(1);
                 if (city.getDebtManager().getRate() > city.getDebtManager().foreignRate()) break;
             }
@@ -279,7 +279,7 @@ public class ForeignDebtCheck {
         System.setOut(quiet);
         String booked;
         try {
-            booked = city.handleForeignLogic("Term", 20_000, 20, 100, false);
+            booked = city.handleForeignLogic("Term", 20_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR, false);
         } finally {
             System.setOut(out);
         }
@@ -422,9 +422,9 @@ public class ForeignDebtCheck {
             Game spender = tradingCity(uses.resolve("spend"));
             double cashBefore = spender.getCash();
             double resBefore = spender.getForeignAccounts().getReserves();
-            DebtQuote q = spender.quoteForeign("Term", 20_000, 20, 100);
+            DebtQuote q = spender.quoteForeign("Term", 20_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR);
             proceeds = q.cashReceived() * spender.getForeignAccounts().getRate();
-            spender.handleForeignLogic("Term", 20_000, 20, 100, false);
+            spender.handleForeignLogic("Term", 20_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR, false);
             spendCash = spender.getCash() - cashBefore;
             spendReserves = spender.getForeignAccounts().getReserves() - resBefore;
 
@@ -432,7 +432,7 @@ public class ForeignDebtCheck {
             cashBefore = holder.getCash();
             resBefore = holder.getForeignAccounts().getReserves();
             holdNetBefore = holder.getForeignAccounts().netForeignPosition();
-            holder.handleForeignLogic("Term", 20_000, 20, 100, true);
+            holder.handleForeignLogic("Term", 20_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR, true);
             holdCash = holder.getCash() - cashBefore;
             holdReserves = holder.getForeignAccounts().getReserves() - resBefore;
             holdNet = holder.getForeignAccounts().netForeignPosition();
@@ -541,7 +541,7 @@ public class ForeignDebtCheck {
         System.setOut(quiet);
         String refused;
         try {
-            refused = city.handleForeignLogic("Term", 5_000, 20, 100, false);
+            refused = city.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR, false);
         } finally {
             System.setOut(out);
         }
@@ -584,7 +584,7 @@ public class ForeignDebtCheck {
             // purchase faded - the reload's twin, not yet reloaded, books the same -1,948 that month, so it is no phantom, but a month's move over
             // the 5% the assertion below allows. No more than 5% of a year's GDP is bought, as before wherever the city is large enough for 8,000.
             double bondUsd = Math.min(8_000, .05 * 12 * fx.getGdpTrailing() / fx.getRate());
-            city.handleForeignLogic("Term", bondUsd, 10, 100, true);   // a dollar bond; there is no dollar serial since CD2
+            city.handleForeignLogic("Term", bondUsd, 10, 100 * PriceLevel.FACTOR, true);   // a dollar bond; there is no dollar serial since CD2
             city.getDebtManager().restoreForeignStanding(new double[] { .04, 12 });
             city.simulateMonths(3);
             city.saveGame(4, "the indebted city");
@@ -683,10 +683,10 @@ public class ForeignDebtCheck {
         DebtManager market = city.getDebtManager();
         assertTrue("fixture: the world will lend", market.foreignWindowOpen());
 
-        DebtQuote quote = city.quoteForeign("Term", 5_000, 20, 100);
+        DebtQuote quote = city.quoteForeign("Term", 5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR);
         System.setOut(quiet);
         try {
-            city.handleForeignLogic("Term", 5_000, 20, 100, true);
+            city.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR, true);
         } finally {
             System.setOut(out);
         }
@@ -762,10 +762,10 @@ public class ForeignDebtCheck {
         System.setOut(quiet);
         try {
             city = tradingCity(dir);
-            city.handleTBillLogic(3_000, 6, 100);
-            city.handleMediumBondLogic(4_000, 5, 100);
-            city.handleLongBondLogic(5_000, 20, 100);
-            city.handleForeignLogic("Term", 5_000, 10, 100, false);
+            city.handleTBillLogic(3_000 * PriceLevel.FACTOR, 6, 100 * PriceLevel.FACTOR);
+            city.handleMediumBondLogic(4_000 * PriceLevel.FACTOR, 5, 100 * PriceLevel.FACTOR);
+            city.handleLongBondLogic(5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR);
+            city.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 10, 100 * PriceLevel.FACTOR, false);
             city.simulateMonths(2);
         } finally {
             System.setOut(out);
@@ -850,7 +850,7 @@ public class ForeignDebtCheck {
         assertTrue("a piece is valued at the rate the tab quotes its yield at, dollar paper on the world's curve", valued);
 
         // A proposed issue on the ladder: its own payments, in their own years.
-        DebtQuote serial = city.quoteDebt("Serial", 4_000, 3, 100);
+        DebtQuote serial = city.quoteDebt("Serial", 4_000 * PriceLevel.FACTOR, 3, 100 * PriceLevel.FACTOR);
         double[] plan = serial.schedule(1);
         double asked = 0;
         for (double v : plan) asked += v;
@@ -982,7 +982,7 @@ public class ForeignDebtCheck {
         System.setOut(quiet);
         try {
             for (int k = 0; k < 6; k++) {
-                city.handleTBillLogic(city.getCash() * 2, Game.BUILD_NOTE_MONTHS, 1000.0);
+                city.handleTBillLogic(city.getCash() * 2, Game.BUILD_NOTE_MONTHS, 1000.0 * PriceLevel.FACTOR);
                 city.simulateMonths(1);
                 if (LongPlaytest.abroadQuote(city, small).marketRate()
                         < LongPlaytest.ABROAD_SHARE * dm.quoteRate(small)) break;

@@ -1,6 +1,6 @@
 # AllChecks.java - 479 lines · 16 methods · 18 constants · harnesses
 
-`ham/citybuildersim/AllChecks.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AllChecks.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Runs every harness, one JVM each, and says which failed.
 > 
@@ -64,7 +64,7 @@
 
 **Uses:** [Timing](Timing.md) (8)
 
-**Used by (2):** [KnownRedsCheck](KnownRedsCheck.md), [TimingCheck](TimingCheck.md)
+**Used by (3):** [KnownRedsCheck](KnownRedsCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [TimingCheck](TimingCheck.md)
 
 ## Constants
 

@@ -412,7 +412,7 @@ public class YearBookCheck {
          */
         Game game = new Game(GameFiles.scratch("year-book-check-model"));
         game.newGame();
-        game.getGovernmentInvestor().spend(-900_000_000);
+        game.getGovernmentInvestor().spend(-900_000_000 * PriceLevel.FACTOR);
         game.getLandManager().setOwnedSqFt(game.getLandManager().getOwnedSqFt() + 400_000_000L);
         put(game, "Low-Rise Apartments", 120);
         put(game, "Small Grocery Store", 14);

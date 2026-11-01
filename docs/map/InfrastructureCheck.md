@@ -1,6 +1,6 @@
 # InfrastructureCheck.java - 1,184 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/InfrastructureCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InfrastructureCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The road network, from the curve up to a city that actually jams.
 > 
@@ -15,7 +15,7 @@
 > The last one is the point of the whole feature. A mechanic the player cannot
 > see themselves solve is just a tax.
 
-**Uses:** [InfrastructureManager](InfrastructureManager.md) (75), [TaxPolicy](TaxPolicy.md) (17), [Game](Game.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (13), [Traffic](Traffic.md) (7), [Motoring](Motoring.md) (6), [Markets](Markets.md) (6), [Good](Good.md) (6), [GoodsMarket](GoodsMarket.md) (4), [Retail](Retail.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [Sectors](Sectors.md) (2), [Sector](Sector.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [Ports](Ports.md) (1)
+**Uses:** [InfrastructureManager](InfrastructureManager.md) (75), [TaxPolicy](TaxPolicy.md) (17), [Game](Game.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (13), [Traffic](Traffic.md) (7), [Motoring](Motoring.md) (6), [Markets](Markets.md) (6), [Good](Good.md) (6), [GoodsMarket](GoodsMarket.md) (4), [Retail](Retail.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [Sectors](Sectors.md) (2), [PriceLevel](PriceLevel.md) (2), [Sector](Sector.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [Ports](Ports.md) (1)
 
 ## Sections
 

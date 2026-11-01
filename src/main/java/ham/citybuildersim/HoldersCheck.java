@@ -198,8 +198,8 @@ public class HoldersCheck {
         // Sized so the rule binds, not the households' purse: they bid a fifth
         // of the issue for each point over the deposit rate (never more than
         // the issue), and this asks for a fifth of what they could pay.
-        double ask = Math.max(100, spare * .2);
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        double ask = Math.max(100 * PriceLevel.FACTOR, spare * .2);
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
         Debt bond = null;
         for (Debt d : ledger.getDebt()) if (DebtManager.isTermPaper(d)) bond = d;
         assertTrue("fixture: the treasury sold a twenty-year bond between the presses", bond != null);
@@ -373,12 +373,12 @@ public class HoldersCheck {
         /* ================= 6. the save ================= */
         out.println("\n--- 6. save and reload, and every holding is where it was ---");
         ledger.setPolicyRate(ledger.getPolicyRate() - .04);
-        quietly(() -> city.handleLongBondLogic(ask, 30, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
         play(city);                                        // the settle: households take theirs
         play(city);                                        // and the central bank buys at the top of the next
         assertTrue("fixture: paper held by all three again",
                 ledger.householdPrincipal() > 0 && ledger.centralBankPrincipal() > 0 && ledger.bankPrincipal() > 0);
-        quietly(() -> city.handleLongBondLogic(ask, 10, 100));   // and one still owed for
+        quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));   // and one still owed for
         final Game[] back = new Game[1];
         quietly(() -> {
             city.saveGame(3, "the holders");
@@ -476,7 +476,7 @@ public class HoldersCheck {
 
         /* ================= 8. a dollar bond bought back ================= */
         out.println("\n--- 8. a dollar bond bought back is money leaving the country ---");
-        quietly(() -> city.handleForeignLogic("Term", ask, 20, 100, false));
+        quietly(() -> city.handleForeignLogic("Term", ask, 20, 100 * PriceLevel.FACTOR, false));
         Debt dollars = null;
         for (Debt d : ledger.getDebt()) if (d.isForeign()) dollars = d;
         assertTrue("fixture: the treasury sold a twenty-year dollar bond", dollars != null);
@@ -592,8 +592,8 @@ public class HoldersCheck {
         // not by half the issue as they were, so they take their whole purse - about 59% of
         // this issue - and the bank the rest. Both hold part, and the households hold more
         // than the first step off them, so the middle this section saves in still comes.
-        double ask = Math.max(100, hb.spareForPaper() * 1.7);
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 1.7);
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
         play(city);                                        // the settle: the households take their share
         Debt bond = termPiece(ledger);
         double face = bond.getOustandingPrincipal();
@@ -764,7 +764,7 @@ public class HoldersCheck {
         final int n = keys.length;
         // Three times what the households can pay: they bid first and in full up to their purse (D32), so only
         // an issue past it leaves the businesses, the bank and the world anything to be allotted.
-        final double ask = Math.max(100, hb.spareForPaper() * 3);
+        final double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
 
         // The businesses with idle money: the first three sectors that owe nothing, each given a till worth
         // a hundred issues, so the businesses are a bidder at the auction and not a rounding.
@@ -781,7 +781,7 @@ public class HoldersCheck {
         /* ---- the settle ---- */
         out.println("   -- the settle: each sector pays out of its till, in proportion to its own bid");
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
         final Debt bond = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a twenty-year bond between the presses", bond != null);
         double received = bond.getSettleDue(), face = bond.getOustandingPrincipal();
@@ -887,7 +887,7 @@ public class HoldersCheck {
         out.println("   -- a till caps what its sector pays, and the bank takes the rest");
         fill.run();
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 30, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
         final Debt bond2 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a thirty-year bond", bond2 != null);
         double received2 = bond2.getSettleDue(), face2 = bond2.getOustandingPrincipal();
@@ -905,7 +905,7 @@ public class HoldersCheck {
                 arr[7 + 3 * ci] = till / outward.getLastRate();
                 outward.restore(arr);
                 double was = econ.getSectorCash(capped);
-                econ.setSectorCash(capped, 1);
+                econ.setSectorCash(capped, 1 * PriceLevel.FACTOR);
                 double w = outward.allotmentWeights(bond2.getIssueYield(), bank.depositRate(), DebtManager.WORLD_BASE_RATE, econ)[ci];
                 econ.setSectorCash(capped, allotCash2 * w / 4);
                 city.setCashForTest(city.getCash() + (was - econ.getSectorCash(capped)));
@@ -1047,7 +1047,7 @@ public class HoldersCheck {
         out.println("   -- the principal, at maturity: a two-year bond held to the end");
         fill.run();
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 2, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 2, 100 * PriceLevel.FACTOR));
         final Debt bond3 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a two-year bond", bond3 != null);
         play(city);
@@ -1267,7 +1267,7 @@ public class HoldersCheck {
         CentralBank cb = city.getCentralBank();
         CapitalFlows hot = city.getCapitalFlows();
         ForeignAccounts fx = city.getForeignAccounts();
-        final double ask = Math.max(100, hb.spareForPaper() * 3);
+        final double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
         assertTrue("fixture: the world is not in a run, so its rule bids", !hot.isStopped());
         assertTrue("fixture: and the two books of its paper agree going in", worldAgrees(city));
         // The hot money the city has drawn is most of what the world would hold here (the auction counts the two together),
@@ -1286,7 +1286,7 @@ public class HoldersCheck {
         out.println("   -- the settle: the world pays from abroad, and the bank's settle shrinks by it");
         double paperBefore = hot.getPaper(), boughtBefore = hot.getLifetimePaperBought();
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
         final Debt bond = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a twenty-year bond between the presses", bond != null);
         double received = bond.getSettleDue(), face = bond.getOustandingPrincipal();
@@ -1367,11 +1367,11 @@ public class HoldersCheck {
         appetite.run();
         // A thirty-year bond is sold with it, for the rest of the section to run on: the world holds part of it.
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 30, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
         final Debt bond6 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a thirty-year bond", bond6 != null);
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 2, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 2, 100 * PriceLevel.FACTOR));
         final Debt bond3 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a two-year bond", bond3 != null);
         play(city);
@@ -1489,7 +1489,7 @@ public class HoldersCheck {
         double nowPaper = hot.getPaper();
         assertTrue("fixture: the world still holds paper", nowPaper > 0);
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 10, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         final Debt bond4 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a ten-year bond in the run", bond4 != null);
         close("the auction allotted the world none of it", bond4.allotWorldFace() + bond4.allotWorldCash(), 0, 0);
@@ -1524,7 +1524,7 @@ public class HoldersCheck {
         // purse, not a state the fixture caused.
         final double bigAsk = Math.max(ask, hb.spareForPaper() * 3);
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(bigAsk, 20, 100));
+        quietly(() -> city.handleLongBondLogic(bigAsk, 20, 100 * PriceLevel.FACTOR));
         final Debt bond5 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a twenty-year bond", bond5 != null);
         boolean worldHad = bond5.allotWorldFace() > 0;
@@ -1583,9 +1583,9 @@ public class HoldersCheck {
             for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
         });
         DebtManager ledger = city.getDebtManager();
-        final double ask1 = Math.max(100, city.getHouseholdBalance().spareForPaper() * .2);
+        final double ask1 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask1, 20, 100));
+        quietly(() -> city.handleLongBondLogic(ask1, 20, 100 * PriceLevel.FACTOR));
         Debt line = newPiece(ledger, had);
         double splitStart = city.getBank().equitySplitResidual();
         play(city);
@@ -1603,9 +1603,9 @@ public class HoldersCheck {
         double heldBefore = line.householdPrincipal();
         ledger.setPolicyRate(ledger.getPolicyRate() + .04);
         city.strikeTheCurve();
-        final double ask2 = Math.max(100, city.getHouseholdBalance().spareForPaper() * .2);
+        final double ask2 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
         int pieces = ledger.getDebt().size();
-        quietly(() -> city.handleLongBondLogic(ask2, 20, 100));
+        quietly(() -> city.handleLongBondLogic(ask2, 20, 100 * PriceLevel.FACTOR));
         boolean same = ledger.getDebt().size() == pieces && ledger.benchmarkLine(20) == line;
         return new Reopened(faceBefore, line.getOustandingPrincipal(), perFaceBefore,
                 line.getDiscountLeft() / line.getOustandingPrincipal(), heldBefore, same);

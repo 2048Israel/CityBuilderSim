@@ -349,7 +349,7 @@ public class PortCheck {
             for (BuildingsTemplate x : new BuildingsTemplate[] { t, d }) {
                 terminals &= x != null && x.getId() == 94 + i && x.getCategory() == BuildingType.PORTS && !x.isOwnedBySector()
                         && x.isPort() && x.berthCargo() == cargo[i] && x.berthTonnesAYear() == tonnes[i]
-                        && x.getCashCost() == capital[i] && x.getTotalJobs() == posts[i] && x.needsCoast();
+                        && x.getCashCost() == capital[i] * PriceLevel.FACTOR && x.getTotalJobs() == posts[i] && x.needsCoast();
             }
         }
         assertTrue("four terminals, ids 94-97, the city's, large and modern (SL1) - liquid 30 Mt, dry bulk 50 Mt, boxes 2.7M TEU,"
@@ -376,7 +376,7 @@ public class PortCheck {
         for (BuildingsTemplate x : new BuildingsTemplate[] { bm.getTemplateByName("Bulk Berth"), fileBerth }) {
             berth &= x != null && x.getId() == 142 && x.getCategory() == BuildingType.PORTS && !x.isOwnedBySector()
                     && x.isPort() && x.needsCoast() && x.berthCargo() == Ports.Cargo.DRY_BULK && x.berthTonnesAYear() == 2_500_000
-                    && x.getCashCost() == 60_000 && x.getConstructionPoints() == 30_000 && x.getConstructionMaterials() == 1_000
+                    && x.getCashCost() == 60_000 * PriceLevel.FACTOR && x.getConstructionPoints() == 30_000 && x.getConstructionMaterials() == 1_000
                     && x.getElectricityConsumption() == 0 && x.getWaterConsumption() == 0 && x.getLandSqFt() == 215_000
                     && x.getJobs(JobType.NO_DIPLOMA) == 19 && x.getJobs(JobType.DIPLOMA) == 7 && x.getJobs(JobType.COLLEGE_ENGINEERING) == 1
                     && x.getTotalJobs() == 27 && x.berthShips().equals(berthClasses) && Ports.shipsOf(x).equals(berthClasses);
@@ -461,14 +461,15 @@ public class PortCheck {
             for (BuildingsTemplate x : new BuildingsTemplate[] { t, d }) {
                 if (x == null) { scaled = false; continue; }
                 double r = x.berthTonnesAYear() / was[i];
-                double[] now = { x.getCashCost(), x.getConstructionPoints(), x.getConstructionMaterials(), x.getLandSqFt(),
+                // the lines are main's, today's thousands: the cash is read back from the founding's level (EP1)
+                double[] now = { x.getCashCost() / PriceLevel.FACTOR, x.getConstructionPoints(), x.getConstructionMaterials(), x.getLandSqFt(),
                         x.getJobs(JobType.NO_DIPLOMA), x.getJobs(JobType.DIPLOMA), x.getJobs(JobType.COLLEGE_ENGINEERING) };
                 for (int k = 0; k < now.length; k++) {
                     double want = Math.round(lines[i][k] * r);
                     if (k >= 4 && lines[i][k] > 0) want = Math.max(1, want);
                     if (Math.abs(now[k] - want) > (k < 3 ? SPLIT_ROUNDING : 0)) { scaled = false; bad.append(names[i]).append(" line ").append(k).append(": ").append(now[k]).append(" want ").append(want).append("; "); }
                 }
-                dearer &= Math.abs(x.getCashCost() / x.berthTonnesAYear() - lines[i][0] / was[i]) <= 1e-5 * lines[i][0] / was[i];
+                dearer &= Math.abs(x.getCashCost() / PriceLevel.FACTOR / x.berthTonnesAYear() - lines[i][0] / was[i]) <= 1e-5 * lines[i][0] / was[i];
             }
         }
         report("EACH TERMINAL'S COST LINES MOVED BY ITS TONNES' RATIO, in the code and in the file: the ground and every job line are main's times"
@@ -476,7 +477,7 @@ public class PortCheck {
         assertTrue("...so a tonne a year costs what it did, to the rounding (the port dues a tonne are the price over the tonnes)", dearer);
         BuildingsTemplate berth = bm.getTemplateByName("Bulk Berth");
         assertTrue("...and the Bulk Berth, dry bulk's small terminal for the young city, is as it was: 2.5 Mt a year, D$60M", berth.berthTonnesAYear() == 2_500_000
-                && berth.getCashCost() == 60_000);
+                && berth.getCashCost() == 60_000 * PriceLevel.FACTOR);
 
         /* --- payingCount() at its edges: a round berth month, the fixtures' arithmetic proved before it is used --- */
         double month = 100_000, w = Ports.WORTH_A_BERTH;
@@ -928,9 +929,9 @@ public class PortCheck {
         assertTrue("...and the refiners order it only when it passes every gate and earns more on its cost than any unit",
                 farm != null && (farm.passes() && farm.earns() > 0) == (plan.template == farmT));
         ham.citybuildersim.sectors.SpreadPlanner.City frame = new ham.citybuildersim.sectors.SpreadPlanner.City() {
-            @Override public double cost(BuildingsTemplate t) { return 250_000; }
-            @Override public double running(BuildingsTemplate t) { return 60; }
-            @Override public double standing(BuildingsTemplate t) { return 200; }
+            @Override public double cost(BuildingsTemplate t) { return 250_000 * PriceLevel.FACTOR; }
+            @Override public double running(BuildingsTemplate t) { return 60 * PriceLevel.FACTOR; }
+            @Override public double standing(BuildingsTemplate t) { return 200 * PriceLevel.FACTOR; }
             @Override public double rate() { return 1; }
             @Override public String land(BuildingsTemplate t) { return null; }
             @Override public String staff(BuildingsTemplate t) { return null; }
@@ -941,7 +942,7 @@ public class PortCheck {
                 none = ham.citybuildersim.sectors.Refining.farmEstimate(farmT, 0, saved, frame);
         report("...a Crude Unit's crude held back pays for one where an Oil Refinery's does not (a fixture's gates); nothing"
                         + " held back is refused at its feed",
-                big.passes() && big.earns() == 415_000 * saved - 260 && !small.passes() && small.failed()
+                big.passes() && big.earns() == 415_000 * saved - 60 * PriceLevel.FACTOR - 200 * PriceLevel.FACTOR && !small.passes() && small.failed()
                         == ham.citybuildersim.sectors.SpreadPlanner.Gate.MONEY && none.failed() == ham.citybuildersim.sectors.SpreadPlanner.Gate.FEED,
                 String.format("%.2f%% and %.2f%% a month", 100 * big.score(), 100 * small.score()));
         quietly(() -> {

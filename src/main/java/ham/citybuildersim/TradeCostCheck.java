@@ -181,7 +181,7 @@ public class TradeCostCheck {
             Good g = (Good) row[0];
             double wasImport = (Double) row[1], wasExport = (Double) row[2];
             report(g.name() + " delivered, to the bit",
-                    same(g.worldImportPrice(), wasImport) && same(g.worldExportPrice(), wasExport),
+                    same(g.worldImportPrice(), wasImport * PriceLevel.FACTOR) && same(g.worldExportPrice(), wasExport * PriceLevel.FACTOR),   // the table is today's, priced at the founding's level (EP1)
                     String.format("import %s export %s",
                             g.worldImportPrice(), g.worldExportPrice()));
         }

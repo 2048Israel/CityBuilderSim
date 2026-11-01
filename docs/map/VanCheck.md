@@ -1,6 +1,6 @@
 # VanCheck.java - 476 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/VanCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/VanCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The vans: what a sector needs, what it costs it, and what happens while it
 > waits for them.
@@ -45,7 +45,7 @@
 > 
 > See claude/the-sixth-link.md and Sector's THE FLEET.
 
-**Uses:** [Good](Good.md) (40), [Sector](Sector.md) (37), [Game](Game.md) (4), [Traffic](Traffic.md) (4), [BuildingManager](BuildingManager.md) (3), [Sectors](Sectors.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [SectorState](SectorState.md) (2), [GoodsMarket](GoodsMarket.md) (2), [CarCheck](CarCheck.md) (2), [HeavyIndustry](HeavyIndustry.md) (1)
+**Uses:** [Good](Good.md) (40), [Sector](Sector.md) (37), [Game](Game.md) (4), [Traffic](Traffic.md) (4), [BuildingManager](BuildingManager.md) (3), [Sectors](Sectors.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [SectorState](SectorState.md) (2), [GoodsMarket](GoodsMarket.md) (2), [CarCheck](CarCheck.md) (2), [HeavyIndustry](HeavyIndustry.md) (1), [PriceLevel](PriceLevel.md) (1)
 
 ## Sections
 

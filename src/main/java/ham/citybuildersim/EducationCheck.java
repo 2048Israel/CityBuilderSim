@@ -88,7 +88,7 @@ public class EducationCheck {
     static Game city(GameFiles files) {
         Game g = new Game(files == null ? GameFiles.scratch("educheck") : files);
         g.newGame();
-        g.getGovernmentInvestor().spend(-900_000_000);
+        g.getGovernmentInvestor().spend(-900_000_000 * PriceLevel.FACTOR);
         /*
          * FOUR HUNDRED MILLION, NOT FOUR BILLION, since 2026-09-07.
          *
@@ -902,27 +902,27 @@ public class EducationCheck {
         // the students the month opens with (0.7.1) - at the price index the
         // month opens on (0.7.19): the grant is struck before the month's own
         // prices are.
-        dials.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
+        dials.setGrant(TaxPolicy.GrantBasis.FIXED, .4 * PriceLevel.FACTOR);
         double fixedStudents = menu.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
         // ...at the expected level the month opens on (0.7.42; the price index from 0.7.19).
         double fixedIndex = menu.getExpectations().getExpectedLevel();
         quietly(() -> menu.simulateMonths(1));
         assertTrue("a fixed grant pays the amount at the expected price level per student",
-                mm.getStudentGrants() == fixedStudents * .4 * fixedIndex
-                        && Math.abs(menu.grantPerStudentUnder(TaxPolicy.GrantBasis.FIXED, .4)
-                                - .4 * menu.getExpectations().getExpectedLevel()) < 1e-12);
+                PriceLevelCheck.sameMoney(mm.getStudentGrants(), fixedStudents * (.4 * PriceLevel.FACTOR) * fixedIndex)
+                        && Math.abs(menu.grantPerStudentUnder(TaxPolicy.GrantBasis.FIXED, .4 * PriceLevel.FACTOR)
+                                - .4 * PriceLevel.FACTOR * menu.getExpectations().getExpectedLevel()) < 1e-12);
         StudentHousehold paidStudents = menu.getHouseholdBalance().students();
         assertTrue("...and it reaches the students as their income",
                 paidStudents.households() > 0
                         && Math.abs(paidStudents.disposable() * paidStudents.households()
-                                - fixedStudents * .4 * fixedIndex) < 1e-6);
+                                - fixedStudents * .4 * PriceLevel.FACTOR * fixedIndex) < 1e-6);
         TaxPolicy reformed = new TaxPolicy();
-        reformed.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
+        reformed.setGrant(TaxPolicy.GrantBasis.FIXED, .4 * PriceLevel.FACTOR);
         reformed.setStudentLoanRate(.05);
         reformed.setTuitionScale(2.5);
         reformed.redenominate(.01);
         assertTrue("...and a currency reform scales it, because it is money",
-                Math.abs(reformed.getGrantAmount() - .004) < 1e-15);
+                Math.abs(reformed.getGrantAmount() - .004 * PriceLevel.FACTOR) < 1e-15);
         assertTrue("...while the loan rate and the tuition scale, being ratios, stay",
                 reformed.getStudentLoanRate() == .05 && reformed.getTuitionScale() == 2.5);
         TaxPolicy shares = new TaxPolicy();
@@ -1039,7 +1039,7 @@ public class EducationCheck {
             studentsIn[0] = 0;
             singlesIn[0] = 10;
             double[] payW = new double[R];
-            payW[unskilled] = 10 * 3.460;
+            payW[unskilled] = 10 * 3.460 * PriceLevel.FACTOR;
             grad.advanceMonth((s, tier) -> s == FamilyStructure.SINGLE_ADULT && tier == PayTier.UNSKILLED
                     ? singlesIn[0] : 0, payW, .1, new double[R], new double[R], .3, .05, 1);
             twins[t] = grad;
@@ -1081,7 +1081,7 @@ public class EducationCheck {
         double[] prisonersNow = { 5 };
         inside.setOutsideCensus(c -> c instanceof PrisonerHousehold ? prisonersNow[0] : 0);
         double[] payHalf = new double[R];
-        payHalf[unskilled] = 5 * 3.460;
+        payHalf[unskilled] = 5 * 3.460 * PriceLevel.FACTOR;
         inside.advanceMonth((s, tier) -> s == FamilyStructure.SINGLE_ADULT && tier == PayTier.UNSKILLED
                 ? singlesNow[0] : 0, payHalf, .1, new double[R], new double[R], .3, .05, 1);
         PrisonerHousehold jailed = inside.prisoners();
@@ -1111,7 +1111,7 @@ public class EducationCheck {
         // fifty dollars a month does, and the graduates carry the difference.
         GameFiles loanFiles = GameFiles.scratch("educheck-loan");
         Game lender = city(loanFiles);
-        lender.getEconomyManager().getTaxPolicy().setGrant(TaxPolicy.GrantBasis.FIXED, .05);
+        lender.getEconomyManager().getTaxPolicy().setGrant(TaxPolicy.GrantBasis.FIXED, .05 * PriceLevel.FACTOR);
         quietly(() -> { schools(lender); lender.simulateMonths(150); });
         // ...AND PLAYED ON TO A MONTH IN WHICH STUDENTS BORROW (revised 0.7.19,
         // re-caused). The lending read below is the month's, and month 150 of
@@ -1309,21 +1309,21 @@ public class EducationCheck {
         // from before it was nominal, and is read as the real amount that pays
         // the same at the load month's index; one from 0.7.19 on is real already.
         TaxPolicy fixedThen = new TaxPolicy();
-        fixedThen.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
+        fixedThen.setGrant(TaxPolicy.GrantBasis.FIXED, .4 * PriceLevel.FACTOR);
         double[] beforeReal = java.util.Arrays.copyOf(fixedThen.getPolicyState(), TaxPolicy.STATE_BEFORE_REAL_GRANT);
         TaxPolicy readsOld = new TaxPolicy();
         assertTrue("an array from before the real grant is still read", readsOld.restorePolicyState(beforeReal));
         readsOld.realiseFixedGrant(2.5);
         assertTrue("...and its fixed grant, nominal then, pays at the load month's index what it paid",
                 readsOld.getGrantBasis() == TaxPolicy.GrantBasis.FIXED
-                        && Math.abs(readsOld.getGrantAmount() * 2.5 - .4) < 1e-15);
+                        && Math.abs(readsOld.getGrantAmount() * 2.5 - .4 * PriceLevel.FACTOR) < 1e-15);
         readsOld.realiseFixedGrant(2.5);
-        assertTrue("...once", Math.abs(readsOld.getGrantAmount() * 2.5 - .4) < 1e-15);
+        assertTrue("...once", Math.abs(readsOld.getGrantAmount() * 2.5 - .4 * PriceLevel.FACTOR) < 1e-15);
         TaxPolicy readsNew = new TaxPolicy();
         readsNew.restorePolicyState(fixedThen.getPolicyState());
         readsNew.realiseFixedGrant(2.5);
         assertTrue("...while a save from 0.7.19 on carries a real amount, and it is left alone",
-                readsNew.getGrantBasis() == TaxPolicy.GrantBasis.FIXED && readsNew.getGrantAmount() == .4);
+                readsNew.getGrantBasis() == TaxPolicy.GrantBasis.FIXED && readsNew.getGrantAmount() == .4 * PriceLevel.FACTOR);
 
         /* ============ 17. A PRICE PER SCHOOL (0.7.6) ============
 

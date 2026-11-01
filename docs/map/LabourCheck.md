@@ -1,6 +1,6 @@
 # LabourCheck.java - 1,193 lines · 14 methods · 4 constants · harnesses
 
-`ham/citybuildersim/LabourCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LabourCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Verifies the labour market: who can hold a job, and what it costs. Not part
 > of the game.
@@ -23,7 +23,7 @@
 > Both failures produce a city that looks completely normal, which is why every
 > assertion here is about a QUANTITY rather than about a screen.
 
-**Uses:** [WageBand](WageBand.md) (48), [JobType](JobType.md) (40), [LabourMarket](LabourMarket.md) (36), [Game](Game.md) (24), [GameFiles](GameFiles.md) (10), [PayTier](PayTier.md) (6), [Migration](Migration.md) (6), [LongPlaytest](LongPlaytest.md) (6), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PopulationManager](PopulationManager.md) (3), [BuildingManager](BuildingManager.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [RealEstate](RealEstate.md) (2), [Construction](Construction.md) (2), [TempDirs](TempDirs.md) (1), [AgeBand](AgeBand.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [PriceIndex](PriceIndex.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [WageBand](WageBand.md) (48), [JobType](JobType.md) (40), [LabourMarket](LabourMarket.md) (36), [Game](Game.md) (24), [GameFiles](GameFiles.md) (10), [PriceLevel](PriceLevel.md) (8), [PayTier](PayTier.md) (6), [Migration](Migration.md) (6), [LongPlaytest](LongPlaytest.md) (6), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PopulationManager](PopulationManager.md) (3), [BuildingManager](BuildingManager.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [RealEstate](RealEstate.md) (2), [Construction](Construction.md) (2), [TempDirs](TempDirs.md) (1), [AgeBand](AgeBand.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [PriceIndex](PriceIndex.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 **Used by (1):** [LandlordPortCheck](LandlordPortCheck.md)
 

@@ -1,6 +1,6 @@
 # CementConcreteCheck.java - 354 lines · 11 methods · 12 constants · harnesses
 
-`ham/citybuildersim/CementConcreteCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CementConcreteCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md
 > 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-research.md
@@ -48,7 +48,7 @@
 >      limestone at home, puts its cement in its silo or ships it, and the
 >      money audit closes.
 
-**Uses:** [Good](Good.md) (62), [Sectors](Sectors.md) (20), [SpreadPlanner](SpreadPlanner.md) (20), [CementConcrete](CementConcrete.md) (9), [BuildingManager](BuildingManager.md) (8), [ProcessingSector](ProcessingSector.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (4), [Quarrying](Quarrying.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [QuarryingCheck](QuarryingCheck.md) (3), [Sector](Sector.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [JobType](JobType.md) (2), [Deposit](Deposit.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [PayTier](PayTier.md) (1), [GoodsMarket](GoodsMarket.md) (1), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [Good](Good.md) (62), [Sectors](Sectors.md) (20), [SpreadPlanner](SpreadPlanner.md) (20), [CementConcrete](CementConcrete.md) (9), [BuildingManager](BuildingManager.md) (8), [ProcessingSector](ProcessingSector.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (4), [Quarrying](Quarrying.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [QuarryingCheck](QuarryingCheck.md) (3), [Sector](Sector.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [JobType](JobType.md) (2), [Deposit](Deposit.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [PriceLevel](PriceLevel.md) (1), [PayTier](PayTier.md) (1), [GoodsMarket](GoodsMarket.md) (1), [MoneyAudit](MoneyAudit.md) (1)
 
 ## Sections
 
@@ -67,9 +67,9 @@
 | 64 | `CementConcreteCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 66 | `CementConcreteCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 119 | `CementConcreteCheck.ROWS` | `{ CementConcrete.CEMENT_PLANT, CementConcrete.LARGE_CEMENT_PLANT, CementConcr...` | Cement & Concrete's rows, by their permanent ids, in the study's 6.4 order. |
-| 122 | `CementConcreteCheck.STUDY_COSTS` | `{ 120_000, 500_000, 75_000 }` | The study's 6.4: each one's cost, D$ thousands all in. |
+| 122 | `CementConcreteCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(120_000, 500_000, 75_000)` | The study's 6.4: each one's cost, D$ thousands all in (today's figures, priced at the founding's level: EP1). |
 | 125 | `CementConcreteCheck.STUDY_POSTS` | `{ 60, 150, 45 }` | ...its posts. |
-| 128 | `CementConcreteCheck.STUDY_RUNS` | `{ 501, 1_730, 298 }` | ...its running cost a month, D$ thousands. |
+| 128 | `CementConcreteCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(501, 1_730, 298)` | ...its running cost a month, D$ thousands (today's figures, priced at the founding's level). |
 | 131 | `CementConcreteCheck.STUDY_MAKES` | `{ 25_000, 125_000, 18_000 }` | ...what it makes a month, t: cement, cement, lime. |
 | 134 | `CementConcreteCheck.STUDY_USES` | `{ { 30_000, 3_750, 3_350 }, { 150_000, 18_750, 16_750 }, { 32_400, 0, 3_600 } }` | ...and what it takes, t a month: limestone, aggregate, thermal coal. |
 | 137 | `CementConcreteCheck.CEMENT_KWH` | `91` | The research's cement, kWh a tonne: the study's 6.2, 91 [S31]. |

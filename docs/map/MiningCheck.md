@@ -1,6 +1,6 @@
 # MiningCheck.java - 600 lines · 10 methods · 3 constants · harnesses
 
-`ham/citybuildersim/MiningCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MiningCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore.
 > 
@@ -18,9 +18,9 @@
 > measures both furnaces directly, on a month walked by hand; section 4 asks
 > whether a mine pays with every tonne shipped at the floor.
 
-**Uses:** [Good](Good.md) (47), [JobType](JobType.md) (13), [Game](Game.md) (11), [HeavyIndustry](HeavyIndustry.md) (8), [BuildingManager](BuildingManager.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [World](World.md) (6), [GoodsMarket](GoodsMarket.md) (6), [LandParcel](LandParcel.md) (5), [Mining](Mining.md) (4), [Markets](Markets.md) (4), [Sector](Sector.md) (4), [Trade](Trade.md) (3), [Resource](Resource.md) (2), [Deposit](Deposit.md) (2), [GameFiles](GameFiles.md) (2), [PayTier](PayTier.md) (2), [Statement](Statement.md) (2), [CityLand](CityLand.md) (1), [LegacyLand](LegacyLand.md) (1), [LandMarket](LandMarket.md) (1), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [BuildingType](BuildingType.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [Good](Good.md) (47), [JobType](JobType.md) (13), [Game](Game.md) (11), [HeavyIndustry](HeavyIndustry.md) (8), [BuildingManager](BuildingManager.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [World](World.md) (6), [GoodsMarket](GoodsMarket.md) (6), [LandParcel](LandParcel.md) (5), [PriceLevel](PriceLevel.md) (4), [Mining](Mining.md) (4), [Markets](Markets.md) (4), [Sector](Sector.md) (4), [Trade](Trade.md) (3), [Resource](Resource.md) (2), [Deposit](Deposit.md) (2), [GameFiles](GameFiles.md) (2), [PayTier](PayTier.md) (2), [Statement](Statement.md) (2), [CityLand](CityLand.md) (1), [LegacyLand](LegacyLand.md) (1), [LandMarket](LandMarket.md) (1), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [BuildingType](BuildingType.md) (1), [Sectors](Sectors.md) (1)
 
-**Used by (9):** [EarthFoundingCheck](EarthFoundingCheck.md), [LandCheck](LandCheck.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [OilCheck](OilCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md)
+**Used by (10):** [EarthFoundingCheck](EarthFoundingCheck.md), [LandCheck](LandCheck.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [OilCheck](OilCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md)
 
 ## Sections
 
