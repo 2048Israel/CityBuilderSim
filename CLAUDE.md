@@ -57,7 +57,7 @@ every call after it.
 
 ## Open these before reading source
 
-The tree is over 300,000 lines; `Game.java` alone is over 16,000, and the
+The tree is over 500,000 lines (about 315,000 of code); `Game.java` alone is over 20,000, and the
 interface is forty files, the largest about 6,000.
 
 | document | what it answers |
@@ -191,7 +191,7 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java     launcher (not an Application subclass; the jar's main class)
-        Game.java               the month, the seam every system meets at; 16,000+ lines, banner sections
+        Game.java               the month, the seam every system meets at; 20,000+ lines, banner sections
         SimulationEngine.java   the order the month runs in (200 lines - read it whole)
         Sector.java, Sectors.java   the template every business extends, and the registry
         sectors/                the sector classes; ProcessingSector and ExtractionSector the bases of
