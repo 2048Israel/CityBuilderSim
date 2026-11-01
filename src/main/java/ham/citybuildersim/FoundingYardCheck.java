@@ -49,12 +49,14 @@ import java.util.Locale;
  *      spare-capacity rule nor the distress rule sells the yard, nor does the
  *      city buy it out; with a Construction Depot standing beside it, both
  *      sell one of the two and leave the other.
- *   6. A FOUNDED VILLAGE HAS HANDS FOR ITS SHOPS, WHERE A DEPOT WOULD HAVE HELD
- *      THEM: a hands-off village founded on the yard opens its first shop
+ *   6. A FOUNDED VILLAGE HAS HANDS FOR ITS SHOPS, AND SINCE IC1 SO DOES A
+ *      DEPOT'S: a hands-off village founded on the yard opens its first shop
  *      within FIRST_SHOP_MONTHS, its builders idle at the core crew and holding
  *      posts back; its twin, founded the same way with a Construction Depot
- *      in the yard's place, holds more posts back in its idle months and opens
- *      none in the same months.
+ *      in the yard's place, holds more posts back in its idle months, and
+ *      opens its first shop in the same months too. Until IC1 it opened none:
+ *      an idle builder's laid-off posts were spoken for (Sector.staffing(),
+ *      AN IDLE BUILDER'S CREWS ARE SPARE).
  *   7. THE LAST BUILDER IS NOT BOUGHT OUT IN ONE WINDOW: a yard or depot the
  *      city has bought out to demolish stands until the next month starts,
  *      and counted as standing it let the city buy out the depot and then the
@@ -461,7 +463,7 @@ public class FoundingYardCheck {
         check("...or the depot out, the yard standing", g.demolishable(depot), 1);
     }
 
-    /* ============================ 6. HANDS FOR ITS SHOPS, WHERE A DEPOT WOULD HAVE HELD THEM ============================ */
+    /* ============================ 6. HANDS FOR ITS SHOPS, A DEPOT'S TOO SINCE IC1 ============================ */
 
     /** How many of the village's two small food shops stand. */
     static int shops(BuildingManager bm) {
@@ -512,7 +514,7 @@ public class FoundingYardCheck {
     }
 
     static void handsForShops(Path root) {
-        out.println("\n--- 6. a founded village has hands for its shops, where a depot would have held them ---");
+        out.println("\n--- 6. a founded village has hands for its shops; the depot's idle crews, which held its twin, are spare now (IC1) ---");
         Village yard = playHandsOff(root, "hands-yard", false);
         Village depot = playHandsOff(root, "hands-depot", true);
         out.printf("   the yard's village, %d months: %d people, first shop at month %d, %d idle months, %.1f posts held back in an idle month (most %d)%n",
@@ -528,8 +530,8 @@ public class FoundingYardCheck {
                 depot.idleMonths() > 0 && depot.mostWithheld() > 0);
         assertTrue("the twin held back more posts in its idle months than the yard did (" + String.format("%.1f against %.1f",
                 depot.meanWithheld(), yard.meanWithheld()) + ")", depot.meanWithheld() > yard.meanWithheld());
-        assertTrue("...and opened no shop in the same " + FIRST_SHOP_MONTHS + " months, the reason the founding building is a yard",
-                depot.firstShop() < 0);
+        assertTrue("...and, its idle crews being spare for the gate since IC1, opened its first shop at month " + depot.firstShop()
+                + ", within FIRST_SHOP_MONTHS (" + FIRST_SHOP_MONTHS + ") too", depot.firstShop() > 0 && depot.firstShop() <= FIRST_SHOP_MONTHS);
     }
 
     /* ============================ 7. THE LAST BUILDER IS NOT BOUGHT OUT IN ONE WINDOW ============================ */

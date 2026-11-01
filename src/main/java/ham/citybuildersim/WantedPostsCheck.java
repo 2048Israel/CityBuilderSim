@@ -4,6 +4,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 
+import ham.citybuildersim.sectors.Construction;
+
 /**
  * The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). Not part of the game.
  *
@@ -21,11 +23,14 @@ import java.nio.file.Path;
  *   4. NEVER MORE THAN THE BAND'S OWN POSTS AGAIN: the refused posts lift a band's multiple at most sqrt(2) times,
  *      never twice, and a band with few posts - a village's - bids little.
  *   5. ONLY AS FAR AS THE BUSINESS CAN PAY: the best-paying building that wants the posts is how far they count.
- *   6. THE BUILDERS' LAID-OFF CREWS ARE NOT A SHORTAGE: a hold the gate would not have put on but for them asks nothing.
+ *   6. A WORKING BUILDER'S LAID-OFF CREWS ARE NOT A SHORTAGE: a hold the gate would not have put on but for them asks
+ *      nothing.
  *   7. IT DECAYS: no hold, no latent posts, and the wage walks back.
  *   8. IT BRINGS THE BAND'S MIGRANTS: the premium it makes is what Migration reaches for.
  *   9. THE SAVE: the latent posts are priced next month, so a reloaded city prices it as the live one does.
  *  10. THE WIRING: in a city played ten years every hold a planner returns is noted, sorted and priced within the rules above.
+ *  11. AN IDLE BUILDER'S CREWS ARE SPARE (IC1): the posts a builder at its core crew has laid off do not hold the gate,
+ *      and a working builder's still do.
  *
  * Every fixture CAUSES its condition: a founded city given the hands and the posts of a stated shape, and every
  * expected figure comes from the model's own calls (LabourMarket.advanceMonth() on a twin of the market, tightnessAt(),
@@ -112,6 +117,30 @@ public class WantedPostsCheck {
         double n = 0;
         for (JobType job : JobType.values()) if (WageBand.of(job) == band) n += t.getJobs(job);
         return n;
+    }
+
+    /** The game's own hook (Game's constructor): the builders offer the share they struck, every other sector all its posts. */
+    static void builderHook(Game g) {
+        Construction builders = g.getSectors().construction();
+        g.getBuildingManager().setOfferedShareByType((key, type) -> key.equals(builders.key()) ? builders.getPostsOfferedShare() : 1);
+    }
+
+    /**
+     * Strikes the builders WORKING: {@code share} of their depots' posts on offer (above the core crew, under all). Last
+     * month's wages are struck first with every post of theirs filled, as strikeCrews() reads the sector's own fill (a
+     * city's builders have none to read until its first staffed month, and offer every post for want of one).
+     */
+    static void strikeWorking(Construction builders, double share) {
+        double[] full = new double[JobType.values().length];
+        java.util.Arrays.fill(full, 1);
+        builders.updateJobFillRate(full);
+        builders.updateWages(new double[full.length], builders.postsPerTier());
+        builders.strikeCrews(share * 1_000, 1_000);
+    }
+
+    /** Strikes the builders IDLE: no work ahead, so only the core crew (Construction.IDLE_PAYROLL_FLOOR) is on offer. */
+    static void strikeIdle(Construction builders) {
+        builders.strikeCrews(0, 1_000);
     }
 
     /** Puts the city's hands and the posts that exist in a stated shape (they stand until a month is played). */
@@ -229,9 +258,15 @@ public class WantedPostsCheck {
         for (WageBand band : WageBand.values()) postsMatch &= held.wanted()[band.ordinal()] == postsIn(mw, band);
         assertTrue("...its posts are the building's, band by band", postsMatch);
         PopulationManager pm1 = g1.getPopulationManager();
-        // ...the posts the gate counts: those that exist and the builders' laid-off crews', as Sector.staffing() adds them
+        // ...the posts the gate counts: those that exist and the laid-off crews' that are spoken for, as Sector.staffing()
+        // adds them (an idle builder's are spare, IC1: this city's builders have no work ahead)
         double[] posts1 = pm1.staffablePostsByBand();
-        for (JobType job : JobType.values()) posts1[WageBand.of(job).ordinal()] += g1.getBuildingManager().getPostsWithheld(job);
+        Construction builders1 = g1.getSectors().construction();
+        for (JobType job : JobType.values()) {
+            long spokenFor1 = g1.getBuildingManager().getPostsWithheld(job)
+                    - (builders1.isIdleAtCoreCrew() ? g1.getBuildingManager().getPostsWithheld(builders1.key(), job) : 0);
+            posts1[WageBand.of(job).ordinal()] += spokenFor1;
+        }
         double[] supply1 = pm1.supplyByBand(posts1);
         boolean spareMatches = true;
         for (int b = 0; b < supply1.length; b++) spareMatches &= held.spare()[b] == supply1[b] - posts1[b];
@@ -481,8 +516,8 @@ public class WantedPostsCheck {
         g5.settleWantedPosts();
         assertTrue("...so no band is priced on posts that were refused", !wp5.any());
 
-        /* ============ 6. the builders' laid-off crews are not a shortage ============ */
-        out.println("\n--- the builders' laid-off crews are not a shortage ---");
+        /* ============ 6. a working builder's laid-off crews are not a shortage ============ */
+        out.println("\n--- a working builder's laid-off crews are not a shortage ---");
 
         Game g6 = city(root, "crews");
         month(g6);
@@ -493,14 +528,21 @@ public class WantedPostsCheck {
         hands(g6, 1_500, plenty6, 0, 0);
         BuildingManager bm6 = g6.getBuildingManager();
         BuildingsTemplate depot = template(g6, "Construction Depot");
+        Construction builders6 = g6.getSectors().construction();
         // Every crew offered (no hook): nothing is withheld, and the Machine Works passes.
         bm6.setOfferedShare(null);
         assertTrue("fixture: with every post offered nothing is withheld and the Machine Works passes",
                 bm6.getPostsWithheld() == 0 && man6.staffing(mw6).passes());
         double shareBefore = man6.staffing(mw6).share;
-        // ...then the builders lay their crews off: the posts of the buildings they own are not offered
-        // (BuildingManager.getPostsWithheld()), and depots are put up until the gate counts enough of them spoken for.
-        bm6.setOfferedShare(sector -> sector.equals(depot.getSector()) ? 0 : 1);
+        // ...then a WORKING builder lays crews off (IC1: an idle builder's would be spare for the gate): struck at half
+        // their posts, above the core crew and under all, under the game's own hook, so the posts of the buildings they
+        // own are withheld at the share the model struck (BuildingManager.getPostsWithheld()), and depots are put up
+        // until the gate counts enough of them spoken for.
+        strikeWorking(builders6, .5);
+        builderHook(g6);
+        assertTrue("fixture: the builders are working, offering more than the core crew and not all of their posts",
+                builders6.getPostsOfferedShare() > Construction.IDLE_PAYROLL_FLOOR && builders6.getPostsOfferedShare() < 1
+                && !builders6.isIdleAtCoreCrew() && depot.getSector().equals(builders6.key()));
         int depots = 0;
         while (man6.staffing(mw6).passes() && depots < 400) {
             bm6.addStack(depot, 1, true);
@@ -508,21 +550,21 @@ public class WantedPostsCheck {
         }
         Sector.Staffing spokenFor = man6.staffing(mw6), free6 = man6.staffingWithCrewsSpare(mw6, 1);
         long withheld6 = bm6.getPostsWithheld();
-        out.printf("   %d depots laid off (%,d posts withheld): the gate refuses the Machine Works at %.1f%%; with the crews spare, %.1f%%%n",
-                depots, withheld6, spokenFor.share * 100, free6.share * 100);
-        assertTrue("with the builders' crews counted spoken for, the gate refuses the Machine Works", !spokenFor.passes() && withheld6 > 0 && depots < 400);
+        out.printf("   %d depots, the working builders offering %.0f%% of their posts (%,d posts withheld): the gate refuses the Machine Works at %.1f%%; with the crews spare, %.1f%%%n",
+                depots, builders6.getPostsOfferedShare() * 100, withheld6, spokenFor.share * 100, free6.share * 100);
+        assertTrue("with a working builder's crews counted spoken for, the gate refuses the Machine Works", !spokenFor.passes() && withheld6 > 0 && depots < 400);
         assertTrue("with the crews counted spare the same building passes: it was the crews", free6.passes());
         close("...and the crews-spare test is the one with none of the withheld posts in it: the share the city had before",
                 free6.share, shareBefore, 0);
         bm6.setOfferedShare(null);
         assertTrue("(and with the crews called back, the plain test says the same)", man6.staffing(mw6).passes());
-        bm6.setOfferedShare(sector -> sector.equals(depot.getSector()) ? 0 : 1);
+        builderHook(g6);
         Sector.Staffing three = man6.staffingWithCrewsSpare(mw6, 3);
         assertTrue("it is asked of for any number of the building", three.count() == 3 && three.wanted()[0] == 3 * postsIn(mw6, WageBand.NONE));
         g6.getWantedPosts().beginMonth();
         g6.noteStaffingHold(spokenFor);
         WantedPosts wp6 = g6.getWantedPosts();
-        assertTrue("a hold the crews alone caused is counted so", wp6.getCrewsHolds() == 1 && wp6.getHolds() == 1);
+        assertTrue("a hold a working builder's crews alone caused is counted so", wp6.getCrewsHolds() == 1 && wp6.getHolds() == 1);
         assertTrue("...and asks nothing: no ask, no unpaid hold", wp6.getAsked() == 0 && wp6.getUnpaidHolds() == 0 && wp6.asks().isEmpty());
         g6.settleWantedPosts();
         assertTrue("...so no band is priced on it", !wp6.any());
@@ -661,6 +703,74 @@ public class WantedPostsCheck {
         assertTrue("...each sorted one way: the month's holds are its crews', its unpaid and its asks", counted);
         assertTrue("...a band is priced on refused posts only in a month that had an ask", latentFromAsks);
         assertTrue("...and the month's real asks never settle to more refused posts than the band has posts", withinWorkers);
+
+        /* ============ 11. an idle builder's laid-off crews are spare for the gate: XS1's trap, released (IC1) ============ */
+        out.println("\n--- an idle builder's laid-off crews are spare for the gate (IC1) ---");
+
+        // XS1's trap, caused the model's own way: depots stand, the builders have no work and offer the core crew
+        // alone, and the posts they lay off are more than the city has unemployed to fill anything.
+        Game g11 = city(root, "idle-crews");
+        month(g11);
+        Sector man11 = g11.getSectors().manufacturing();
+        BuildingsTemplate mw11 = template(g11, MACHINE_WORKS);
+        BuildingsTemplate depot11 = template(g11, "Construction Depot");
+        BuildingManager bm11 = g11.getBuildingManager();
+        PopulationManager pm11 = g11.getPopulationManager();
+        Construction builders11 = g11.getSectors().construction();
+        // Hands for the Machine Works, every band, to spare (section 6's): its own gate passes with every crew spare.
+        double[] plenty11 = { 0, 600, postsIn(mw11, WageBand.COLLEGE) + 100, postsIn(mw11, WageBand.UNIVERSITY) + 20 };
+        hands(g11, 1_500, plenty11, 0, 0);
+        double postsThatExist = 0;
+        for (double band : pm11.staffablePostsByBand()) postsThatExist += band;
+        long unemployed11 = Math.round(pm11.getLabourForce() - postsThatExist);
+        // The builders working at a share just above the core crew lay off the most crews a working builder does:
+        // depots are put up until what they withhold is more than the city's unemployed and the gate refuses the works.
+        double workingShare = Construction.IDLE_PAYROLL_FLOOR + .05;
+        strikeWorking(builders11, workingShare);
+        builderHook(g11);
+        int depots11 = 0;
+        while ((bm11.getPostsWithheld() <= unemployed11 || man11.staffing(mw11).passes()) && depots11 < 400) {
+            bm11.addStack(depot11, 1, true);
+            depots11++;
+        }
+        long withheldWorking = bm11.getPostsWithheld();
+        double shareWorking = man11.staffing(mw11).share;
+        boolean refusedWorking = !man11.staffing(mw11).passes();
+        int countWorking = man11.staffableCount(mw11, 1);
+
+        // ...and now the same city's builders have no work at all: they stand idle at the core crew.
+        strikeIdle(builders11);
+        long withheldIdle = bm11.getPostsWithheld();
+        long builders11Withheld = 0;
+        for (JobType job : JobType.values()) builders11Withheld += bm11.getPostsWithheld(builders11.key(), job);
+        Sector.Staffing idleGate = man11.staffing(mw11), idleFree = man11.staffingWithCrewsSpare(mw11, 1);
+        out.printf("   %d depots, %,d unemployed: working at %.0f%% they withhold %,d posts (the gate reads %.1f%%), idle at %.0f%% %,d (the gate reads %.1f%%; with the crews spare, %.1f%%)%n",
+                depots11, unemployed11, workingShare * 100, withheldWorking, shareWorking * 100,
+                builders11.getPostsOfferedShare() * 100, withheldIdle, idleGate.share * 100, idleFree.share * 100);
+        assertTrue("fixture: the builders stand idle at the core crew, IDLE_PAYROLL_FLOOR of their posts offered",
+                builders11.isIdleAtCoreCrew() && builders11.getPostsOfferedShare() == Construction.IDLE_PAYROLL_FLOOR);
+        assertTrue("fixture: posts are withheld, and every one of them is the builders'",
+                withheldIdle > 0 && withheldIdle == builders11Withheld && depot11.getSector().equals(builders11.key()) && depots11 < 400);
+        assertTrue("fixture: the unemployed are fewer than the builders' laid-off crews (" + unemployed11 + " against " + withheldIdle + ")",
+                unemployed11 < withheldIdle);
+        assertTrue("while the builders stand idle at the core crew the gate passes the Machine Works", idleGate.passes());
+        close("...at the share the crews-spare test gives, exactly: no laid-off post of theirs is counted spoken for",
+                idleGate.share, idleFree.share, 0);
+        assertTrue("...and the Machine Works' planner may order one of them: Manufacturing's staffable count is 1",
+                man11.staffableCount(mw11, 1) == 1);
+
+        // The same crews laid off by a builder that is WORKING stay spoken for (0.7.17's rule, kept).
+        strikeWorking(builders11, workingShare);
+        assertTrue("fixture: the same builders, working, offer more than the core crew and not all of their posts",
+                !builders11.isIdleAtCoreCrew() && builders11.getPostsOfferedShare() > Construction.IDLE_PAYROLL_FLOOR
+                && builders11.getPostsOfferedShare() < 1);
+        assertTrue("...and a working builder lays off fewer posts than an idle one (" + withheldWorking + " against " + withheldIdle + ")",
+                bm11.getPostsWithheld() == withheldWorking && withheldWorking > 0 && withheldWorking < withheldIdle);
+        assertTrue("the same crews laid off by a working builder are spoken for: the gate refuses the Machine Works",
+                refusedWorking && !man11.staffing(mw11).passes() && man11.staffing(mw11).share == shareWorking);
+        assertTrue("...though the crews-spare test passes it, as it does an idle builder's", man11.staffingWithCrewsSpare(mw11, 1).passes());
+        assertTrue("...and Manufacturing's staffable count is 0 while the builders work, 1 while they stand idle",
+                countWorking == 0 && man11.staffableCount(mw11, 1) == 0);
 
         out.println();
         if (fails == 0) {

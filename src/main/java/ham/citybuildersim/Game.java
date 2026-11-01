@@ -882,9 +882,12 @@ public class Game {
      * at month 13. The Builders' Yard is the depot at two fifths - 20 posts in
      * its mix, 160 points at its points a post, its ground, cost and draws in
      * proportion - which a village staffs and whose idle crews leave it hands
-     * for its shops (332 people, a shop by month 25). It is a template like
-     * any of the builders': their planner may order one where a depot could
-     * not be staffed (sectors.Construction.plan(), the same points over cost).
+     * for its shops (332 people, a shop by month 25). Since IC1 an idle
+     * builder's laid-off posts are spare for the gate, so this is the reason
+     * the yard was chosen in PT1-M4, not one that still holds the depot back
+     * (FoundingYardCheck 6). It is a template like any of the builders': their
+     * planner may order one where a depot could not be staffed
+     * (sectors.Construction.plan(), the same points over cost).
      *
      * PLACED, NOT BUILT - `true` is noConstruction - like the founding bank: it
      * is part of the endowment, not a month of the builders' output. Its posts

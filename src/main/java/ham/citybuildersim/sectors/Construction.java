@@ -114,7 +114,9 @@ public final class Construction extends Sector {
      * fewer jobs (BuildingManager.getTotalJobs(), THE POSTS A SECTOR OFFERS),
      * the workers who held them are unemployed through the ordinary path
      * and draw EI, and the allocator gives them any other post it has. The
-     * posts kept on are paid in full, sick or not, like every other
+     * staffing gate counts those posts spare while the builders stand idle
+     * at the core crew, and spoken for while they work (IC1; Sector.staffing()).
+     * The posts kept on are paid in full, sick or not, like every other
      * employer's; the output is the crews kept on at the sector's fill
      * (Game.getConstructionOutput()).
      *
@@ -167,6 +169,13 @@ public final class Construction extends Sector {
 
     /** The share of the depots' posts on offer this month. */
     public double getPostsOfferedShare() { return postsOfferedShare; }
+
+    /**
+     * Whether the builders stand idle at the core crew: the work this month's
+     * strike saw needs no more than the core crew, so they offer
+     * IDLE_PAYROLL_FLOOR of their posts and lay the rest off (strikeCrews()).
+     */
+    public boolean isIdleAtCoreCrew() { return postsOfferedShare <= IDLE_PAYROLL_FLOOR + 1e-9; }
 
     /** The work over the depots' full-staffing output, as struck - above 1 when the work is more than they can do. */
     public double getCrewsNeeded() { return crewsNeeded; }
@@ -847,7 +856,7 @@ public final class Construction extends Sector {
         long standing = getPostsStanding(), offered = getPostsOffered();
         if (standing > 0 && offered < standing) {
             lines.add(Line.of("Crews kept on", f.count(offered) + " of " + f.count(standing) + " posts",
-                    postsOfferedShare <= IDLE_PAYROLL_FLOOR + 1e-9 ? Line.Tone.WARN : Line.Tone.NONE));
+                    isIdleAtCoreCrew() ? Line.Tone.WARN : Line.Tone.NONE));
         }
         // With no depot there are no posts to fill, and averageFill's 100% is its
         // empty-city default rather than a reading (0.7.20).
