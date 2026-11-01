@@ -38,11 +38,7 @@ import java.util.TreeSet;
  * the reader (WorldData's stand-in century) supplies the years before it, the
  * nations held where the file finds them in 2000 and their prices following the
  * US's, and the file's real years follow from 2000. RANDOM starts from the
- * file's January of FIRST_YEAR, the same stand-in, and draws its own path, its
- * people on the UN's path from that year as they were from 2000 (earlier()),
- * so a Random world is the one it was before EP1, a century sooner: held
- * through the stand-in, its people grew 35% less by the city's sixtieth year
- * and the ensemble's young cities with them.
+ * file's January of FIRST_YEAR, the same stand-in, and draws its own path.
  * The rule is the same in both: growth a
  * head in logs (so output is never negative) is a trend that falls as a nation
  * nears the frontier, a world factor, its region's, its own persistent shock
@@ -313,9 +309,6 @@ public final class Nations {
             size[i] = Double.isNaN(out2025) ? -1 : out2025;
             people[i] = fromFile(file, "people", i + 1, PEOPLE_LAST_YEAR - FIRST_YEAR, gone);
             if (people[i] == null) throw new IllegalArgumentException("nations: the file has no people for " + iso[i]);
-            // Random's people (EP1): its world is the file's first year's, begun in January FIRST_YEAR, so its people take the UN's path from that year
-            // as they did from 2000, not the stand-in century's held figure; Historical's stand where the reader stands them.
-            if (!historical) people[i] = earlier(people[i], file.standInYears());
         }
         if (front < 0) throw new IllegalArgumentException("nations: the file has no " + FRONTIER + ", the frontier");
         frontier = front;
@@ -556,22 +549,6 @@ public final class Nations {
             mark[i] = Math.max(WorldData.MARK_ESTIMATE, file.pathMark(series, number, FIRST_YEAR + i));
         }
         return filled(raw, mark, cap);
-    }
-
-    /**
-     * A series moved the given years earlier: year t takes year t + years' figure and mark, so its last figure comes that many years sooner and is
-     * held after it (Random's people from the stand-in century's first year, EP1). The series itself when years is 0.
-     */
-    static Series earlier(Series s, int years) {
-        if (years <= 0) return s;
-        double[] v = new double[s.v().length];
-        int[] mark = new int[s.mark().length];
-        for (int t = 0; t < v.length; t++) {
-            int from = Math.min(t + years, s.last());
-            v[t] = s.v()[from];
-            mark[t] = s.mark()[from];
-        }
-        return new Series(v, mark, Math.max(0, s.last() - years));
     }
 
     /**
