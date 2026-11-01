@@ -175,8 +175,9 @@ queued.
   - **LabourCheck.** The steady-crawl town grows and busts under IC1: 8,182 people at m164 and 5,432 at m347, its
     groceries index swinging from 2.06 to 8.75. The wage index's lag then leaves the window in 26 months. Every
     sector is held, so the town is the steady one the premise needs, as main's stood still at 1,660.
-- **Red, not mended:**
-  - **ScaleCheck** (8 new lines in section 9, beside the record's section 6 line): §7, for ST2.
+- **Red on the first suite, mended later in the batch:**
+  - **ScaleCheck** (8 new lines in section 9, beside the record's section 6 line): Freight's railway shares in the
+    scaler, the planners held and the share registers read against their issue, when SK1 was folded in (§7).
   - **WellCheck 4** was main's OV1 fault on 0.8.91. OV1 (0.8.93) shipped while IC1 ran and was merged in. Two of
     the section's lines still failed on IC1's path ("[3, 3, 3, 3, 3, 3, 3, 4] wells committed by month", "Vintage[
     month=20, ...]"). They were red on IC1's rule and green on main's.
@@ -203,6 +204,13 @@ queued.
   - The MapCheck timing lines are SOFT. The maps are regenerated, and Stale has no firm finding.
   - WellCheck and OilCheck exit 0 on the mended tip.
   - ScaleCheck and KeptCheck stayed red on the merged tip until SK1 and KH1 were folded in (§7, above).
+- **The suite on the folded tip** (28aba8ff, main at 0.8.93 with ST2's and LD2's queue notes merged, both data
+  files): only main's recorded reds. ScaleCheck fails one line, "...and it builds: more homes at the end than at the
+  start"; its tally reads "1 FAILED" against the record's "2 FAILED" (§7). Eight timing lines were SOFT beside the
+  other harnesses (SaveSlotCheck 1, MapCheck 4, KeptCheck 3: sections 5, 10 and 13, the People page and the chrome).
+  KeptCheck alone passes all four of its timings (5.4, 1.6, 4.4 and City History's 7.6 ms). Stale has no firm
+  finding; the maps are regenerated. The model's trace is not moved by SK1 or KH1 (a harness and a screen), so the
+  ensemble stands.
 - **What ran before the merge.** The full suite and the ensemble ran on 0.8.91 with IC1, before TR1 and OV1. The
   gate's suite is the first full run on the merged model.
 - **The ensemble** (`docs/ensemble/IC1.md`) ran 80 runs on IC1's model (72b7f553), two at once, in 21 minutes. It
