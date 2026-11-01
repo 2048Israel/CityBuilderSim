@@ -254,7 +254,7 @@ public final class Manufacturing extends Sector {
 
         if (best == null) {
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
             }
             return BusinessInvestment.Decision.no(sector, String.format(
                     "steel at %s a tonne and the wage bill leave nothing in it",

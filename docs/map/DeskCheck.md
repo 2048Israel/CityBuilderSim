@@ -1,4 +1,4 @@
-# DeskCheck.java - 1,224 lines · 31 methods · 0 constants · harnesses
+# DeskCheck.java - 1,233 lines · 31 methods · 0 constants · harnesses
 
 `ham/citybuildersim/DeskCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 1148 | **type** `public class DeskCheck` | The debt desk's figures (CD6, spec-city-debt.md sections 7 and 8): the figures the debt screens used to work out for themselves, held to the model that now gives them, and what the desk, a line's page and Your rate re... |
+| 77 | 1157 | **type** `public class DeskCheck` | The debt desk's figures (CD6, spec-city-debt.md sections 7 and 8): the figures the debt screens used to work out for themselves, held to the model that now gives them, and what the desk, a line's page and Your rate re... |
 | 84 | 5 | `static void check(String label, boolean ok)` |  |
 | 90 | 10 | `static void near(String label, double actual, double expected, double tol)` |  |
 | 101 | 4 | `static void quietly(Runnable r)` |  |
@@ -170,10 +170,10 @@
 | 983 | 5 | `static double[] fingerprint(Game g)` | The figures the month computes, for holding one city to its twin's. |
 | 989 | 118 | `static void theCurvesPast() throws Exception` |  |
 
-### 8. WHAT CLOSING A LINE NOW WOULD BOOK, GREEN OR RED (lines 1108-1224)
+### 8. WHAT CLOSING A LINE NOW WOULD BOOK, GREEN OR RED (lines 1108-1233)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1113 | 9 | `static LongTermBond bankHeldAtPar(Game g, double face)` | A bank-held two-year line sold at par at today's curve: its coupon the curve's two-year par yield, carried at its face, settled. |
-| 1123 | 101 | `static void whatClosingBooks()` |  |
+| 1123 | 110 | `static void whatClosingBooks()` |  |
 

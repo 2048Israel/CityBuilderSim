@@ -1,6 +1,6 @@
 # LabourMarket.java - 855 lines · 45 methods · 13 constants · model
 
-`ham/citybuildersim/LabourMarket.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LabourMarket.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
 > What labour costs, and why it costs that.
 > 
@@ -54,7 +54,7 @@
 
 **Uses:** [JobType](JobType.md) (26), [WageBand](WageBand.md) (20), [DecisionLog](DecisionLog.md) (5), [PayTier](PayTier.md) (5), [EducationType](EducationType.md) (2)
 
-**Used by (16):** [CityNeeds](CityNeeds.md), [Education](Education.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [PriceLevelCheck](PriceLevelCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
+**Used by (17):** [CityNeeds](CityNeeds.md), [Education](Education.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [WantedPosts](WantedPosts.md), [WantedPostsCheck](WantedPostsCheck.md)
 
 ## Sections
 

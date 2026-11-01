@@ -436,8 +436,10 @@ public class LuxuryRetail extends Sector {
             }
         }
         if (best == null) {
-            return BusinessInvestment.Decision.no(sector, staffingHold != null
-                    ? staffingHold.why(staffingHoldName) : "nothing worth building");
+            if (staffingHold != null) {
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+            }
+            return BusinessInvestment.Decision.no(sector, "nothing worth building");
         }
 
         int quantity = plans.orderSize(queue - cover, best.getCoverage(), best, output);

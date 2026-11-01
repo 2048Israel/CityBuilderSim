@@ -1,20 +1,25 @@
-# gate of Merge batch/CD8: the city borrows in any of the eight moneys: bills and bonds in euros, yen and the rest, each priced on its money's curve from XR4's policy rates, sold to the world, with its books, buyback and revaluation as dollar paper has them, and its choice on Borrow (Jerus, 2026-10-23), 0.8.90
-# date: 2026-10-31
+# gate of Merge batch/LD1: a business short of workers bids the wage up: the posts the staffing gate refused join the band's shortage, so the wage rises until migrants come, only as far as the building would still earn its return (Jerus, 2026-10-31: "if the reason is not enough workers and the business can... then it raises its wage"); after ST1, 0.8.91
+# date: 2026-11-01
 # earth-2.bin: named
-# suite: 163 harnesses run in 1542s: 160 passed, 3 failed
-# timing: 13 harnesses run in 414s: 11 passed, 2 failed; its red lines were judged side by side with main's, below
+# suite: 164 harnesses run in 1732s: 162 passed, 2 failed
+# timing: 13 harnesses run in 493s: 10 passed, 3 failed; its red lines were judged side by side with main's, below
+# timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 34.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.6 ms, batch 28.8 ms (+4.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.06 ms, batch 4.51 ms (+11.0%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 17.7 ms, batch 18.4 ms (+3.7%), budget 19 ms: within 15% of main's]
 # timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
-PassThroughCheck | exit 1
-PassThroughCheck | ...and so does the price index (mean gap 0.68% against 0.51%)            FAIL
-PassThroughCheck | 1 FAILED
+# suite red passed on Jerus's word (Ship, OV1 next): ScaleCheck | 2 FAILED
+# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | exit 3
+# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | a month on, the two at 263 months are retired by the month's retirements, oldest first: the two younger stand FAIL  2 retired; [Vintage[month=-249, count=1, kind=LAND], Vintage[month=-87, count=2, kind=LAND]]
+# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | the sector's one-well-a-month rule drills the freed sites again, one at a time                       FAIL  [3, 3, 3, 3, 3, 3, 3, 3] wells committed by month
+# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | ...each new well a vintage of its own month, lifting its whole nameplate when it opened              FAIL  [Vintage[month=-87, count=2, kind=LAND], Vintage[month=21, count=1, kind=LAND]]
+# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | 3 FAILED
 ScaleCheck | exit 1
-ScaleCheck | fixture: the city is growing - more people than a year before                        FAIL
-ScaleCheck | fixture: ...and its own rents price no migrant out in the months its copies are read against (the affordability pull 1 in all 6) FAIL
 ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
-ScaleCheck | fixture: the free copy ordered - an order sized from more than a million needed, and one judged on its interest FAIL
-ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 3.26e-02) FAIL
-ScaleCheck | 7 FAILED
-LongPlaytest | exit 1
-LongPlaytest | (no FAIL line)
+ScaleCheck | 2 FAILED
+WellCheck | exit 3
+WellCheck | a month on, the two at 263 months are retired by the month's retirements, oldest first: the two younger stand FAIL  2 retired; [Vintage[month=-249, count=1, kind=LAND], Vintage[month=-87, count=2, kind=LAND]]
+WellCheck | the sector's one-well-a-month rule drills the freed sites again, one at a time                       FAIL  [3, 3, 3, 3, 3, 3, 3, 3] wells committed by month
+WellCheck | ...each new well a vintage of its own month, lifting its whole nameplate when it opened              FAIL  [Vintage[month=-87, count=2, kind=LAND], Vintage[month=21, count=1, kind=LAND]]
+WellCheck | 3 FAILED

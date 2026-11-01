@@ -57,7 +57,7 @@ stranger's: the model and its harness (d1f86ed8), then the screen (aac50f74, wit
 
 - **The fixed issue cost is a D$ figure taken off US$ proceeds** (`Game.costOfIssuance()` is `FIXED_ISSUE_COST` at the
   price level, in D$), in every US$ quote on main. CD8 converts it into the money for the other seven and leaves the
-  US$ as it was, so the trace stays. Pending as CD8-F: converting it moves the trace, so its own small batch with the
+  US$ as it was, so the trace stays. Pending as CD8-I: converting it moves the trace, so its own small batch with the
   ensemble.
 - **The old stock's revaluation reads the D$'s move alone**: `ForeignAccounts.takeForeignDebt()`'s `lastRevaluation`
   (the playtest's "the currency did $x to that debt over the run", ForeignDebtCheck, CurrencyCheck) is the US$ stock

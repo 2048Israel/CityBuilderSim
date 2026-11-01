@@ -1315,6 +1315,16 @@ public class BankCheck {
              * So it is read six months after the branch opens - long enough
              * for the capital to be raised and the funding to settle, short
              * enough to still be about the branch.
+             *
+             * ...OF A BANK THAT STANDS (LD1). The same second thing again: this
+             * city's bank is in resolution within a year of its branch's
+             * opening, a borrower's default (equity from +55,000 to -23,000 in
+             * one month), and a bank in resolution quotes the window's price
+             * by construction (Bank.lastWindowShare). Main's fell in the ninth
+             * month after the branch opened, so the sixth was a bank still
+             * standing; LD1's wages move which month a borrower defaults, and
+             * the fourth month after it opened was the failure's. The reading
+             * is the share of the last month in the six that the bank stood.
              */
             int opened = -1;
             double share = Double.NaN;
@@ -1323,7 +1333,7 @@ public class BankCheck {
                 if (opened < 0 && trading.getBuildingManager().countByName("Commercial Bank") >= 1) {
                     opened = m;
                 }
-                if (opened >= 0 && m == opened + 6) share = trading.getBank().windowShare();
+                if (opened >= 0 && m <= opened + 6 && !trading.getBank().isInResolution()) share = trading.getBank().windowShare();
             }
             windowShareWhenNew = Double.isNaN(share) ? trading.getBank().windowShare() : share;
             builtWhenAffordable = trading.getBuildingManager().countByName("Commercial Bank");
@@ -1468,6 +1478,14 @@ public class BankCheck {
              * right after it: the book is caused, not hoped for.)
              */
             books.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
+            /*
+             * ...AND FREIGHT (LD1), for the same premise. On the tree whose wages move with the posts the staffing gate refused,
+             * Freight's debt goes from $3.8M to $312M in month 100 (a fleet and a depot on credit), the sector writes down
+             * $18M to $29M a month from month 107, Heavy Industry before it, and the bank is in resolution by month 114: equity
+             * $88M to $2M, no deposit rate, the book of a bank that has failed (above), so "it pays its savers something" read a
+             * failed bank's nothing. Main's town never failed. Held out, Freight builds nothing here and the bank stands.
+             */
+            books.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             books.simulateMonths(24);
             books.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000 * PriceLevel.FACTOR);
             books.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000 * PriceLevel.FACTOR);
@@ -2569,9 +2587,20 @@ public class BankCheck {
                 priceBefore = city.getMarkets().get(Good.MATERIALS).getLocalPrice();
                 city.simulateMonths(1);
                 tried++;
+                /*
+                 * ...IN A MONTH THAT NO OTHER SECTOR SOLD PLANT IN (LD1). The builders' stock and cash below move by every sale of
+                 * the month, and the figures asserted are this sale's: a second sale in the month (the builders' cash moved out
+                 * $1,352.7k where retail's was $109.8k) made "their stock rose by the units" read 118.5 against
+                 * 8.5 and "the builders' cash moved out by what they paid" 1,352.7 against 109.8. The distress is renewed and the
+                 * month tried again until retail's is the month's only sale.
+                 */
+                Game.Salvage mine = null;
+                boolean alone = true;
                 for (Game.Salvage s : city.getSalvageThisMonth()) {
-                    if (s.seller().equals(RET) && s.distress()) sale = s;
+                    if (s.seller().equals(RET) && s.distress() && mine == null) mine = s;
+                    else alone = false;
                 }
+                if (mine != null && alone) sale = mine;
                 audit = city.getLastMoneyAudit();
             }
         } finally {
@@ -2924,9 +2953,14 @@ public class BankCheck {
                 if (m == riseMonth) {
                     // the second branch's operating cost risen so that the two -
                     // the charter at its repairs, the other at its repairs and
-                    // this - cost a fifth more than the fees (revised: the
-                    // charter pays none of it)
-                    branch.setUpkeep(Math.max(0, 1.2 * b.getAccountFees() - 2 * repairsEach));
+                    // this - cost three fifths more than the fees (revised: the
+                    // charter pays none of it). A fifth more until LD1, off last
+                    // month's fees: the month then brought fees 22% above them
+                    // (cover 1.018, the fees not short of the two at all) in the
+                    // city whose wages the refused posts move. The fees this month
+                    // are not known when the cost is struck, so the margin is
+                    // the cause of "the fees fell short", not the luck of the month.
+                    branch.setUpkeep(Math.max(0, 1.6 * b.getAccountFees() - 2 * repairsEach));
                 }
                 town.simulateMonths(1);
                 int standing = town.getBuildingManager().countByName("Commercial Bank");

@@ -592,14 +592,31 @@ public class HoldersCheck {
         // not by half the issue as they were, so they take their whole purse - about 59% of
         // this issue - and the bank the rest. Both hold part, and the households hold more
         // than the first step off them, so the middle this section saves in still comes.
+        //
+        // ...AND THE SAVERS' RATE HELD LOW ENOUGH FOR THAT TO BE SO (LD1, 2026-10-31). The households' bid is
+        // the smaller of their purse and a fifth of the issue for each point over the deposit rate, and the
+        // bank's room (1.78M of face) never binds, so their share was never the purse's 59% but the rate's:
+        // 20 x (the paper's yield - the deposit rate), the same at any ask. It was 51.5% on the path before LD1
+        // (the savers' rate 1.375%) and is 47.2% on LD1's (1.627%: the bank's payout over its deposits, a
+        // path's figure). The middle needs the bank under half: the quarter of the term paper QE_SPEED takes a
+        // month clears a bank holding 53% in three steps, and the fourth, the measured month's, is then every
+        // dollar the others hold (the households' 17,177.61k against the 17,179.16k the steps needed). A
+        // bigger purse cannot move it (the rate binds first), so the rate is set, as AuctionCheck sets it, to
+        // one where the purse binds: the households take their whole purse, as this comment has always said.
+        final double savers = .005;
         double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 1.7);
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
+        quietly(() -> {
+            bank.setDepositRate(savers);
+            city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR);
+        });
         play(city);                                        // the settle: the households take their share
         Debt bond = termPiece(ledger);
         double face = bond.getOustandingPrincipal();
         assertTrue("fixture: one twenty-year bond, the households holding part and the bank the rest",
                 bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0 && bond.centralBankPrincipal() == 0
                         && bond.getSettleDue() == 0);
+        assertTrue("fixture: ...the households the larger part, the bank under half the issue, so the bank's paper clears in two steps",
+                bond.householdPrincipal() > bond.bankPrincipal() && bond.bankPrincipal() < face / 2);
         out.printf("   the households hold $%,.2fk of $%,.2fk, the bank $%,.2fk%n",
                 bond.householdPrincipal(), face, bond.bankPrincipal());
 

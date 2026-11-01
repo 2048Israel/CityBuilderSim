@@ -229,7 +229,7 @@ public final class Automotive extends Sector {
                         Formats.INSTANCE.count(Math.max(0, biggestDraw))));
             }
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
             }
             return BusinessInvestment.Decision.no(sector,
                     "the parts cost more than the vehicle fetches");

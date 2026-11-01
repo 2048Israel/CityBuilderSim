@@ -1810,9 +1810,13 @@ public final class Refining extends Sector {
         }
         // ...worded by what matters most: that it would not pay, then the staff, then the ground.
         String money = fed.refusal(SpreadPlanner.Gate.MONEY), staff = fed.refusal(SpreadPlanner.Gate.STAFF);
+        // ...a staffing refusal rides with its test, so the wage can answer it (LD1, WantedPosts).
+        if (money == null && staff != null) {
+            return BusinessInvestment.Decision.unstaffed(sector, staffing(fed.template()), staff);
+        }
         return BusinessInvestment.Decision.no(sector, money != null
                 ? named(fed) + " " + money + (fed.earns() > 0 ? "" : ": it does not pay")
-                : staff != null ? staff : fed.why());
+                : fed.why());
     }
 
     /*

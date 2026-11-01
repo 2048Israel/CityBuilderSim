@@ -444,7 +444,7 @@ public final class Forestry extends ExtractionSector {
                 return BusinessInvestment.Decision.no(sector, ProcessingSector.a(moneyHold.getName()) + " "
                         + planner().city(this, plans, game).money(moneyEarns, moneyCost));
             }
-            if (staffingHold != null) return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
+            if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
             if (forestHold != null) return BusinessInvestment.Decision.no(sector, eWords(cuttable, committed, forestHold));
             return BusinessInvestment.Decision.no(sector, "nothing worth building");
         }

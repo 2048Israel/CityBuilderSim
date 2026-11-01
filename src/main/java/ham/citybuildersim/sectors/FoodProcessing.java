@@ -273,7 +273,7 @@ public final class FoodProcessing extends Sector {
                                 + "it would get for what it makes", unprofitable));
             }
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
             }
             if (fullest != null) {
                 return BusinessInvestment.Decision.no(sector, String.format(

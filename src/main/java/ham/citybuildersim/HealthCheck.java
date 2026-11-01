@@ -1310,6 +1310,19 @@ public class HealthCheck {
                     java.util.Arrays.fill(c.shares, 0);
                     c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
                 }
+                /*
+                 * ...AND NO BUSINESS BUILDS DURING THE WINDOW (LD1, 2026-10-31). The twins stand alike for their first 48 months (one
+                 * founding, no fee yet) and the claim is the fee's, but the window left every investor free to build against each twin's
+                 * own demand, so the twins' paths parted by more than the fee does. On the path before LD1 the dear twin buried 14.67
+                 * a year per 1,000 against the founding fee's 14.19 (old 82.22 against 80.31); once the refused posts bid their band's
+                 * wage up (WantedPosts) the dear twin's economy grew the better one, ended at 12,817 people against 9,536, priced out
+                 * 928 in general care against 1,303 on the old path, and buried 14.11 against 14.29 (old 81.25 against 81.61): the
+                 * fee's few points of coverage were smaller than what the demography of two growing cities differs by. Every sector is
+                 * held (BusinessInvestment.holdSector(), "a harness names the sectors its question is not about") from the drain on,
+                 * so each twin keeps the buildings the fixture put up and the fee is all that differs: the twins end at 10,238 and 10,327
+                 * people and bury 14.49 against 14.94 (the old 81.87 against 82.73), as they do on the model before LD1 (14.49, 14.94; 81.92, 82.76).
+                 */
+                for (String key : Sectors.KEYS) town.getBusinessInvestment().holdSector(key);
                 town.getEconomyManager().getTaxPolicy().setHealthFeeScale(scales[k]);
                 for (int m = 0; m < window; m++) {
                     trucksKeepUp(town);

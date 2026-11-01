@@ -1057,14 +1057,26 @@ public class CreditCheck {
          * how long it is run is standing next to its condition, so the held months go on, the ban renewed as before, until
          * the shops on site have opened: the next month's plan is then the passes' first.
          */
-        for (int wait = 0; wait < 60 && retailShopsOnSite(banned, sector) > 0; wait++) quietly(heldBroke);
+        /*
+         * A BAN THAT OUTLASTS THE PASSES (LD1, 2026-10-31). The ban is not renewed by the held months, only re-armed when it lapses
+         * (heldBroke), and it counts down in the month before the advisor plans: a ban with n months left bars the advisor for n-1
+         * of the passes' months. "Retail is under a borrowing ban" was asserted with 3 months left - true, and lapsed in the third
+         * pass, where the advisor borrowed (m46-m48: "Built 22 Convenience Store - issued $10,672k of 10-year bonds ... and
+         * borrowed $7,783k"). The held months had ended wherever the shops on site happened to open in the ban's cycle, and LD1's
+         * wages (from a city's second month) moved that month. So the held months go on until the shops on site have opened AND the
+         * ban has more months left than the passes need; a lapse in between is re-armed by heldBroke, as before.
+         */
+        final int passes = 3;
+        for (int wait = 0; wait < 60 && (retailShopsOnSite(banned, sector) > 0
+                || ledger.getBlockedMonths(sector) <= passes); wait++) quietly(heldBroke);
         assertTrue("fixture: no shop is on site when the passes begin, so retail's plan is not \"already building\"",
                 retailShopsOnSite(banned, sector) == 0);
         ledger.setAssets(sector, -1);
         // ...and once more at the end, so a ban that lapsed in the last month is not the one the assertion meets.
         if (!ledger.isBorrowingBlocked(sector)) ledger.issueLoan(sector, 5_000_000, banned.getMonth());
         ledger.restructure(sector);
-        assertTrue("fixture: retail is under a borrowing ban", ledger.isBorrowingBlocked(sector));
+        assertTrue("fixture: retail is under a borrowing ban that outlasts the three passes",
+                ledger.getBlockedMonths(sector) > passes);
 
         /*
          * BROKE, and held broke, which is what the fixture is FOR.
@@ -1109,7 +1121,7 @@ public class CreditCheck {
          * or a refusal in the ban's own words. What it can never be is a loan.
          */
         boolean refusedForCredit = false;
-        for (int pass = 0; pass < 3; pass++) {
+        for (int pass = 0; pass < passes; pass++) {
             econ.setSectorCash(sector, 10);
             quietly(() -> banned.simulateMonths(1));
             if (banned.getLastInvestment(sector).contains("borrowing ban")) refusedForCredit = true;

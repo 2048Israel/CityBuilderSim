@@ -1,10 +1,10 @@
 # The dials
 
-Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,033 constants in 467 files.**
+**5,001 constants in 467 files.**
 
-## model (2504 constants)
+## model (2490 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -55,60 +55,60 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 84 | `Bank.LEVERAGE` | `6` | How many times its deposits the bank will lend. |
 | 113 | `Bank.CAPITAL_RATIO` | `.08` | Equity a bank must hold against its risk-weighted book. |
 | 143 | `Bank.LEVERAGE_RATIO_MIN` | `.03` | Equity a bank must hold against everything it has lent, whatever that weighs: 3%, Basel III's leverage ratio (0.7.11, round 2). |
-| 189 | `Bank.PAID_IN_PER_BRANCH` | `32_000 * PriceLevel.FACTOR` | What the shareholders put up when a branch opens. |
-| 217 | `Bank.RISK_CITY` | `.20` | The city cannot default on its own paper. |
-| 220 | `Bank.RISK_BUSINESS` | `1.00` | A business can be restructured, and in this game regularly is. |
-| 223 | `Bank.RISK_HOUSEHOLD` | `1.00` | ...and a family can be discharged. |
-| 239 | `Bank.RISK_CARRY` | `1.00` | A foreign carry borrower, against the risk weights above. |
-| 256 | `Bank.RISK_INSURED_MORTGAGE` | `0.0` | An insured mortgage (0.7.11): 0%. |
-| 259 | `Bank.SHORTEST_WEIGHT` | `.40` | What a loan repaying tomorrow weighs against one repaying never. |
-| 262 | `Bank.LONG_TERM_MONTHS` | `60` | Months of remaining term at which a loan weighs its full amount. |
-| 277 | `Bank.EASY_STRAIN` | `.80` | How much of its capacity the bank lends before it counts itself full: the carry trade is lent only the room below it. |
-| 719 | `Bank.BASE_LOSS_RATE` | `.004` | What a sound loan is expected to lose a year through the cycle, as a share of the book: 0.4%, about what Canada's big banks provision for credit losses in a normal year (RBC, 2025). |
-| 722 | `Bank.LOSS_WATCH` | `2` | How many times BASE_LOSS_RATE a year of provisions runs at before the Bank tab's CREDIT LOSSES is a warning: twice what a sound book loses (0.7.33; the screen's own literal until then). |
-| 725 | `Bank.COST_WINDOW_MONTHS` | `12` | Months of payroll and upkeep the running costs are measured over: a year, so one month's building bill is not a price. |
-| 728 | `Bank.PRIME_TERM_MONTHS` | `BusinessDebtManager.LOAN_TERM_MONTHS` | The term prime is struck at: a business loan's, BusinessDebtManager.LOAN_TERM_MONTHS, which takes the short end's term premium. |
-| 741 | `Bank.MIN_MARGIN` | `.01` | The least a lender takes for writing the loan at all. |
-| 966 | `Bank.IRB_CONFIDENCE` | `.999` | The confidence the IRB capital is struck at: 99.9% of years, BCBS (2006) paragraph 272. |
-| 969 | `Bank.IRB_CORRELATION_HIGH` | `.24` | The IRB corporate correlation for the soundest firms: 24%, BCBS (2006) paragraph 272. |
-| 972 | `Bank.IRB_CORRELATION_LOW` | `.12` | ...and for the riskiest: 12%, the same paragraph. |
-| 975 | `Bank.IRB_CORRELATION_DECAY` | `50` | How fast the correlation falls from the one to the other as the default rate rises: the 50 in exp(-50 x PD), the same paragraph. |
-| 978 | `Bank.IRB_MATURITY_YEARS` | `2.5` | The effective maturity of a corporate exposure under the foundation IRB approach: 2.5 years, BCBS (2006) paragraph 318 - where the maturity adjustment reads 1 / (1 - 1.5 b). |
-| 981 | `Bank.IRB_MATURITY_A` | `.11852` | The maturity adjustment's slope, b(PD) = (0.11852 - 0.05478 ln PD)^2: its constant, BCBS (2006) paragraph 272. |
-| 984 | `Bank.IRB_MATURITY_B` | `.05478` | ...and its log coefficient, the same paragraph. |
-| 999 | `Bank.SECTOR_CORRELATION_MULTIPLIER` | `1.25` | HOW MUCH MORE CORRELATED THE FIRMS OF ONE INDUSTRY ARE than the IRB's corporate correlation, which is struck for a book spread across every industry: 1.25, the asset value correlation multiplier Ba... |
-| 1027 | `Bank.IRB_QUANTILE` | `inverseNormal(IRB_CONFIDENCE)` | The standard normal quantile at IRB_CONFIDENCE, G(0.999) in the IRB formula: struck once. |
-| 1478 | `Bank.RISK_EQUITY` | `1.50` | What a dollar of shares on the desk weighs against capital. |
-| 1827 | `Bank.RESOLUTION_EXIT_BUFFER` | `1.5` | How far above the required ratio a rescued bank comes out. |
-| 2022 | `Bank.DOMESTIC_CAPITAL_SCALE` | `400_000 * PriceLevel.FACTOR` | Deposits at which half of new bank capital is found at home. |
-| 2235 | `Bank.PREFERRED_MIN_SHARE` | `.01` | The least preferred the bank asks for, of its risk-weighted assets: 1%, TARP's "not less than 1% of its risk-weighted assets". |
-| 2238 | `Bank.PREFERRED_MAX_SHARE` | `.03` | ...and the most: 3%, TARP's "not more than ... |
-| 2241 | `Bank.PREFERRED_RATE` | `.05` | The preferred's dividend, a year, until its fifth anniversary: 5%, TARP's "cumulative dividends at a rate of 5% per annum until the fifth anniversary". |
-| 2244 | `Bank.PREFERRED_STEP_RATE` | `.09` | ...and after it: 9%, TARP's "thereafter at a rate of 9% per annum". |
-| 2247 | `Bank.PREFERRED_STEP_MONTHS` | `60` | The months to the step: the fifth anniversary. |
-| 2250 | `Bank.PREFERRED_CONSENT_MONTHS` | `36` | The months the city's consent binds - no buyback, no rise in the common dividend a share: three years, TARP's "until the third anniversary". |
-| 2253 | `Bank.PREFERRED_REDEEM_MONTHS` | `36` | When a block is redeemed whole: its third anniversary, the first TARP's term sheet allows it from anything but new common ("may not be redeemed for a period of three years ... |
-| 2256 | `Bank.WARRANT_SHARE` | `.15` | The warrants' reach, of the preferred's amount: 15%, TARP's "aggregate market price equal to 15% of the Senior Preferred amount". |
-| 2259 | `Bank.WARRANT_TERM_MONTHS` | `120` | The warrants' term, in months: ten years, TARP's. |
-| 3158 | `Bank.ACCOUNT_FEE` | `.012 * PriceLevel.FACTOR` | A month's account fee on every housed household, in founding thousands: $12, the middle of what an everyday chequing account costs a month at Canada's big banks ($10-15, 2025). |
-| 3161 | `Bank.LOAN_FEE` | `.01` | The fee on new lending, a share of the principal: one per cent, a typical arrangement fee on a commercial loan. |
-| 3573 | `Bank.DEPOSIT_SHARE_FLUSH` | `.35` | The share of the policy rate a bank flush with reserves passes to its savers: about a third, because its next deposit only earns the policy rate at the central bank less the cost of the account - s... |
-| 3576 | `Bank.DEPOSIT_SHARE_AT_WINDOW` | `.90` | ...and the share a bank funding at the window passes on: nine-tenths, because every deposit it finds saves it the window's rate, so it pays close to the policy rate for one - the way banks short of... |
-| 3579 | `Bank.DEPOSIT_RATE_SPEED` | `1.0 / 6` | How far from last month's rate toward the one its funding asks for the bank moves in a month: a sixth, so most of a move reaches savers inside a year and none of it in a single step. |
-| 4134 | `Bank.SECTOR_WATCH_LEVERAGE` | `BusinessDebtManager.MAX_LOAN_TO_ASSETS` | Leverage past which a business borrower is in trouble ("stage 2"): BusinessDebtManager.MAX_LOAN_TO_ASSETS, the most the shortfall desk lends against a borrower's assets - past it the bank would not... |
-| 4137 | `Bank.HOUSEHOLD_WATCH_MONTHS` | `HouseholdBalance.CREDIT_LIMIT_MONTHS / 2` | Months of income owed past which a family's credit line is in trouble ("stage 2"): half its ceiling, HouseholdBalance.CREDIT_LIMIT_MONTHS - from there it owes more of its room than it has left. |
-| 4140 | `Bank.HOUSEHOLD_BOOK` | `"Households"` | The key the families' book is saved and shown under, beside the sectors' names. |
-| 4436 | `Bank.CONSERVATION_BUFFER` | `.025` | The least buffer a bank holds over the minimum: the Basel III capital conservation buffer, 2.5% of risk-weighted assets (BCBS, December 2010). |
-| 4439 | `Bank.MANAGEMENT_CUSHION` | `.025` | How far over its target a bank runs before it calls its capital surplus: 2.5 points, the gap between the ~13.5% Canada's big banks held and the 11% OSFI expected of them (June 2026). |
-| 4442 | `Bank.YEAR_MONTHS` | `12` | A year, in months: the loss record's window, the dividends' and buybacks' "over the year", and how long an excess takes to return. |
-| 4533 | `Bank.MAX_BUFFER` | `.085` | The most buffer a bank holds over the minimum, however bad a year it has seen: 8.5 points, the whole Basel III stack - the 2.5-point conservation buffer, a countercyclical buffer at its 2.5-point c... |
-| 4627 | `Bank.PAYOUT_IN_BAND` | `.45` | The share of its profit after tax a bank inside its band pays its owners: 45%, inside the 40-50% payout range Canada's big banks target; RBC paid 43% of its 2025 earnings. |
-| 4630 | `Bank.EXCESS_PAYOUT_MONTHS` | `YEAR_MONTHS` | How many months a bank over the top of its band takes to return the excess: a year, the term of a normal-course issuer bid on the TSX. |
-| 4833 | `Bank.OWN_ISSUE_DEAD_BAND` | `1e-9` | How far under its target, as a share of it, the bank must be before it issues its own shares: a billionth - rounding, not a rule - so a buyback that stopped exactly on the target does not turn into... |
-| 4914 | `Bank.RATIONED_GROWTH` | `.01` | A borrower's debt may grow this much a month halfway between the minimum and the target: 1%, the top of the 0-1% a month Jerus's brief gave a bank short of capital; nothing at the minimum, no limit... |
-| 5292 | `Bank.CUSTOMERS_PER_BRANCH` | `16_000` | The customers one branch serves: 16,000, TD's clients per branch - "approximately 16 million clients in Canadian Personal and Business banking" through "more than 1,000 branches" (TD, corporate inf... |
-| 6143 | `Bank.SHEET_ASSETS` | `{ Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM, Sheet.MORTGAGES, Sheet.FAMILIES,...` | The asset lines, in the page's order: they sum to totalAssets(). |
-| 6147 | `Bank.SHEET_LIABILITIES` | `{ Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS, Sheet.DESK_SHORT, Sheet....` | ...and the liability lines: they sum to totalLiabilities(). |
+| 187 | `Bank.PAID_IN_PER_BRANCH` | `32_000` | What the shareholders put up when a branch opens. |
+| 215 | `Bank.RISK_CITY` | `.20` | The city cannot default on its own paper. |
+| 218 | `Bank.RISK_BUSINESS` | `1.00` | A business can be restructured, and in this game regularly is. |
+| 221 | `Bank.RISK_HOUSEHOLD` | `1.00` | ...and a family can be discharged. |
+| 237 | `Bank.RISK_CARRY` | `1.00` | A foreign carry borrower, against the risk weights above. |
+| 254 | `Bank.RISK_INSURED_MORTGAGE` | `0.0` | An insured mortgage (0.7.11): 0%. |
+| 257 | `Bank.SHORTEST_WEIGHT` | `.40` | What a loan repaying tomorrow weighs against one repaying never. |
+| 260 | `Bank.LONG_TERM_MONTHS` | `60` | Months of remaining term at which a loan weighs its full amount. |
+| 275 | `Bank.EASY_STRAIN` | `.80` | How much of its capacity the bank lends before it counts itself full: the carry trade is lent only the room below it. |
+| 717 | `Bank.BASE_LOSS_RATE` | `.004` | What a sound loan is expected to lose a year through the cycle, as a share of the book: 0.4%, about what Canada's big banks provision for credit losses in a normal year (RBC, 2025). |
+| 720 | `Bank.LOSS_WATCH` | `2` | How many times BASE_LOSS_RATE a year of provisions runs at before the Bank tab's CREDIT LOSSES is a warning: twice what a sound book loses (0.7.33; the screen's own literal until then). |
+| 723 | `Bank.COST_WINDOW_MONTHS` | `12` | Months of payroll and upkeep the running costs are measured over: a year, so one month's building bill is not a price. |
+| 726 | `Bank.PRIME_TERM_MONTHS` | `BusinessDebtManager.LOAN_TERM_MONTHS` | The term prime is struck at: a business loan's, BusinessDebtManager.LOAN_TERM_MONTHS, which takes the short end's term premium. |
+| 739 | `Bank.MIN_MARGIN` | `.01` | The least a lender takes for writing the loan at all. |
+| 964 | `Bank.IRB_CONFIDENCE` | `.999` | The confidence the IRB capital is struck at: 99.9% of years, BCBS (2006) paragraph 272. |
+| 967 | `Bank.IRB_CORRELATION_HIGH` | `.24` | The IRB corporate correlation for the soundest firms: 24%, BCBS (2006) paragraph 272. |
+| 970 | `Bank.IRB_CORRELATION_LOW` | `.12` | ...and for the riskiest: 12%, the same paragraph. |
+| 973 | `Bank.IRB_CORRELATION_DECAY` | `50` | How fast the correlation falls from the one to the other as the default rate rises: the 50 in exp(-50 x PD), the same paragraph. |
+| 976 | `Bank.IRB_MATURITY_YEARS` | `2.5` | The effective maturity of a corporate exposure under the foundation IRB approach: 2.5 years, BCBS (2006) paragraph 318 - where the maturity adjustment reads 1 / (1 - 1.5 b). |
+| 979 | `Bank.IRB_MATURITY_A` | `.11852` | The maturity adjustment's slope, b(PD) = (0.11852 - 0.05478 ln PD)^2: its constant, BCBS (2006) paragraph 272. |
+| 982 | `Bank.IRB_MATURITY_B` | `.05478` | ...and its log coefficient, the same paragraph. |
+| 997 | `Bank.SECTOR_CORRELATION_MULTIPLIER` | `1.25` | HOW MUCH MORE CORRELATED THE FIRMS OF ONE INDUSTRY ARE than the IRB's corporate correlation, which is struck for a book spread across every industry: 1.25, the asset value correlation multiplier Ba... |
+| 1025 | `Bank.IRB_QUANTILE` | `inverseNormal(IRB_CONFIDENCE)` | The standard normal quantile at IRB_CONFIDENCE, G(0.999) in the IRB formula: struck once. |
+| 1476 | `Bank.RISK_EQUITY` | `1.50` | What a dollar of shares on the desk weighs against capital. |
+| 1825 | `Bank.RESOLUTION_EXIT_BUFFER` | `1.5` | How far above the required ratio a rescued bank comes out. |
+| 2018 | `Bank.DOMESTIC_CAPITAL_SCALE` | `400_000` | Deposits at which half of new bank capital is found at home. |
+| 2231 | `Bank.PREFERRED_MIN_SHARE` | `.01` | The least preferred the bank asks for, of its risk-weighted assets: 1%, TARP's "not less than 1% of its risk-weighted assets". |
+| 2234 | `Bank.PREFERRED_MAX_SHARE` | `.03` | ...and the most: 3%, TARP's "not more than ... |
+| 2237 | `Bank.PREFERRED_RATE` | `.05` | The preferred's dividend, a year, until its fifth anniversary: 5%, TARP's "cumulative dividends at a rate of 5% per annum until the fifth anniversary". |
+| 2240 | `Bank.PREFERRED_STEP_RATE` | `.09` | ...and after it: 9%, TARP's "thereafter at a rate of 9% per annum". |
+| 2243 | `Bank.PREFERRED_STEP_MONTHS` | `60` | The months to the step: the fifth anniversary. |
+| 2246 | `Bank.PREFERRED_CONSENT_MONTHS` | `36` | The months the city's consent binds - no buyback, no rise in the common dividend a share: three years, TARP's "until the third anniversary". |
+| 2249 | `Bank.PREFERRED_REDEEM_MONTHS` | `36` | When a block is redeemed whole: its third anniversary, the first TARP's term sheet allows it from anything but new common ("may not be redeemed for a period of three years ... |
+| 2252 | `Bank.WARRANT_SHARE` | `.15` | The warrants' reach, of the preferred's amount: 15%, TARP's "aggregate market price equal to 15% of the Senior Preferred amount". |
+| 2255 | `Bank.WARRANT_TERM_MONTHS` | `120` | The warrants' term, in months: ten years, TARP's. |
+| 3154 | `Bank.ACCOUNT_FEE` | `.012` | A month's account fee on every housed household, in founding thousands: $12, the middle of what an everyday chequing account costs a month at Canada's big banks ($10-15, 2025). |
+| 3157 | `Bank.LOAN_FEE` | `.01` | The fee on new lending, a share of the principal: one per cent, a typical arrangement fee on a commercial loan. |
+| 3569 | `Bank.DEPOSIT_SHARE_FLUSH` | `.35` | The share of the policy rate a bank flush with reserves passes to its savers: about a third, because its next deposit only earns the policy rate at the central bank less the cost of the account - s... |
+| 3572 | `Bank.DEPOSIT_SHARE_AT_WINDOW` | `.90` | ...and the share a bank funding at the window passes on: nine-tenths, because every deposit it finds saves it the window's rate, so it pays close to the policy rate for one - the way banks short of... |
+| 3575 | `Bank.DEPOSIT_RATE_SPEED` | `1.0 / 6` | How far from last month's rate toward the one its funding asks for the bank moves in a month: a sixth, so most of a move reaches savers inside a year and none of it in a single step. |
+| 4130 | `Bank.SECTOR_WATCH_LEVERAGE` | `BusinessDebtManager.MAX_LOAN_TO_ASSETS` | Leverage past which a business borrower is in trouble ("stage 2"): BusinessDebtManager.MAX_LOAN_TO_ASSETS, the most the shortfall desk lends against a borrower's assets - past it the bank would not... |
+| 4133 | `Bank.HOUSEHOLD_WATCH_MONTHS` | `HouseholdBalance.CREDIT_LIMIT_MONTHS / 2` | Months of income owed past which a family's credit line is in trouble ("stage 2"): half its ceiling, HouseholdBalance.CREDIT_LIMIT_MONTHS - from there it owes more of its room than it has left. |
+| 4136 | `Bank.HOUSEHOLD_BOOK` | `"Households"` | The key the families' book is saved and shown under, beside the sectors' names. |
+| 4432 | `Bank.CONSERVATION_BUFFER` | `.025` | The least buffer a bank holds over the minimum: the Basel III capital conservation buffer, 2.5% of risk-weighted assets (BCBS, December 2010). |
+| 4435 | `Bank.MANAGEMENT_CUSHION` | `.025` | How far over its target a bank runs before it calls its capital surplus: 2.5 points, the gap between the ~13.5% Canada's big banks held and the 11% OSFI expected of them (June 2026). |
+| 4438 | `Bank.YEAR_MONTHS` | `12` | A year, in months: the loss record's window, the dividends' and buybacks' "over the year", and how long an excess takes to return. |
+| 4529 | `Bank.MAX_BUFFER` | `.085` | The most buffer a bank holds over the minimum, however bad a year it has seen: 8.5 points, the whole Basel III stack - the 2.5-point conservation buffer, a countercyclical buffer at its 2.5-point c... |
+| 4623 | `Bank.PAYOUT_IN_BAND` | `.45` | The share of its profit after tax a bank inside its band pays its owners: 45%, inside the 40-50% payout range Canada's big banks target; RBC paid 43% of its 2025 earnings. |
+| 4626 | `Bank.EXCESS_PAYOUT_MONTHS` | `YEAR_MONTHS` | How many months a bank over the top of its band takes to return the excess: a year, the term of a normal-course issuer bid on the TSX. |
+| 4829 | `Bank.OWN_ISSUE_DEAD_BAND` | `1e-9` | How far under its target, as a share of it, the bank must be before it issues its own shares: a billionth - rounding, not a rule - so a buyback that stopped exactly on the target does not turn into... |
+| 4910 | `Bank.RATIONED_GROWTH` | `.01` | A borrower's debt may grow this much a month halfway between the minimum and the target: 1%, the top of the 0-1% a month Jerus's brief gave a bank short of capital; nothing at the minimum, no limit... |
+| 5288 | `Bank.CUSTOMERS_PER_BRANCH` | `16_000` | The customers one branch serves: 16,000, TD's clients per branch - "approximately 16 million clients in Canadian Personal and Business banking" through "more than 1,000 branches" (TD, corporate inf... |
+| 6139 | `Bank.SHEET_ASSETS` | `{ Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM, Sheet.MORTGAGES, Sheet.FAMILIES,...` | The asset lines, in the page's order: they sum to totalAssets(). |
+| 6143 | `Bank.SHEET_LIABILITIES` | `{ Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS, Sheet.DESK_SHORT, Sheet....` | ...and the liability lines: they sum to totalLiabilities(). |
 
 ### BoatSchedule.java ([map](map/BoatSchedule.md))
 
@@ -228,12 +228,12 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 71 | `BuildingManager.MATERIALS_WORLD_PRICE` | `Good.MATERIALS.worldImportPrice()` | What a unit of construction material costs, in the city's money. |
-| 5057 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
-| 5702 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
-| 5883 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
-| 6931 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 8118 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 70 | `BuildingManager.MATERIALS_WORLD_PRICE` | `18` | What a unit of construction material costs, in the city's money. |
+| 5052 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
+| 5697 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
+| 5878 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
+| 6926 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 8113 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -305,8 +305,8 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1079 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
-| 1082 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
+| 1063 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
+| 1066 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
 
 ### BusinessDebtManager.java ([map](map/BusinessDebtManager.md))
 
@@ -352,11 +352,11 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 64 | `BusinessInvestment.MAX_CONCURRENT_ORDERS` | `1` | Never start a second order for a sector while one is still on site - every sector but the landlords, who hold work by the month (0.7.17; withinMonthsOfWork()); the refiners count no crude unit on s... |
 | 113 | `BusinessInvestment.MAX_ORDER_MONTHS` | `12` | The largest order a sector will place, in months of the builders' work. |
 | 116 | `BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING` | `9` | Months of construction backlog above which the builders build themselves more capacity. |
-| 498 | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | `6` | Consecutive loss-making months before a sector starts selling capacity. |
-| 501 | `BusinessInvestment.RETIREMENT_SLACK` | `.25` | Capacity has to exceed demand by this much before any of it is spare. |
-| 504 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
-| 515 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
-| 1146 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
+| 517 | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | `6` | Consecutive loss-making months before a sector starts selling capacity. |
+| 520 | `BusinessInvestment.RETIREMENT_SLACK` | `.25` | Capacity has to exceed demand by this much before any of it is spare. |
+| 523 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
+| 534 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
+| 1175 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
 
 ### Buyback.java ([map](map/Buyback.md))
 
@@ -388,19 +388,19 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 71 | `CapitalFlows.MAX_SPREAD` | `.25` | Excess return above which appetite stops growing: 25 points since 0.7.2, so a 30% dial in a 5% world actually draws money and cutting it sends that money home (provisional, Jerus's number to settle). |
 | 74 | `CapitalFlows.ARRIVAL_SPEED` | `.08` | How much of the gap to its target the stock closes in a month, coming in. |
 | 77 | `CapitalFlows.DEPARTURE_SPEED` | `.20` | ...and going out, which is faster, because leaving is always faster. |
-| 93 | `CapitalFlows.MIN_STOCK` | `1 * PriceLevel.FACTOR` | Below this much foreign money, the flow is not worth modelling. |
-| 129 | `CapitalFlows.MATERIAL_MONTHS` | `.5` | Months of output below which the hot money is too small to break anything. |
-| 162 | `CapitalFlows.PANIC_BACKING` | `.25` | Reserves needed to back the hot money, as a share of it. |
-| 165 | `CapitalFlows.PANIC_DEPRECIATION` | `.12` | A twelve-month fall in the currency past this reads as a run. |
-| 168 | `CapitalFlows.PANIC_MONTHS` | `18` | How long a break lasts before money will look at the city again. |
-| 180 | `CapitalFlows.PANIC_EXIT` | `.33` | The share that leaves each month while confidence is broken. |
-| 320 | `CapitalFlows.CARRY_FULL_SPREAD` | `.02` | At this spread or better, the world wants all the spare book there is. |
-| 323 | `CapitalFlows.CARRY_MAX_SHARE` | `.90` | ...and never quite all of it, because a bank at its limit lends to nobody. |
-| 326 | `CapitalFlows.CARRY_BORROW_SPEED` | `.06` | How fast the book fills, and empties. |
-| 327 | `CapitalFlows.CARRY_REPAY_SPEED` | `.20` |  |
-| 685 | `CapitalFlows.RISK_OFF_HOT_UNWIND` | `.05` | The share of the hot money's stock that runs home in a month of a risk-off of size one, scaled by the risk-off's level as it fades: a size-one risk-off takes about a fifth of the stock over the yea... |
-| 688 | `CapitalFlows.RISK_OFF_CARRY_UNWIND` | `.50` | The share of the carry book repaid in a month of a risk-off of size one, scaled by the level (est.: the yen carry of July 2024, at a risk-off smaller than one, was mostly gone in six weeks). |
-| 695 | `CapitalFlows.RISK_OFF_FELT` | `.05` | The risk-off level under which money no longer runs home, nor is a month of one counted (getRiskOffMonths()) or logged (est.: WorldMoneys.riskOff() fades by half in three months and never reaches 0... |
+| 91 | `CapitalFlows.MIN_STOCK` | `1` | Below this much foreign money, the flow is not worth modelling. |
+| 127 | `CapitalFlows.MATERIAL_MONTHS` | `.5` | Months of output below which the hot money is too small to break anything. |
+| 160 | `CapitalFlows.PANIC_BACKING` | `.25` | Reserves needed to back the hot money, as a share of it. |
+| 163 | `CapitalFlows.PANIC_DEPRECIATION` | `.12` | A twelve-month fall in the currency past this reads as a run. |
+| 166 | `CapitalFlows.PANIC_MONTHS` | `18` | How long a break lasts before money will look at the city again. |
+| 178 | `CapitalFlows.PANIC_EXIT` | `.33` | The share that leaves each month while confidence is broken. |
+| 318 | `CapitalFlows.CARRY_FULL_SPREAD` | `.02` | At this spread or better, the world wants all the spare book there is. |
+| 321 | `CapitalFlows.CARRY_MAX_SHARE` | `.90` | ...and never quite all of it, because a bank at its limit lends to nobody. |
+| 324 | `CapitalFlows.CARRY_BORROW_SPEED` | `.06` | How fast the book fills, and empties. |
+| 325 | `CapitalFlows.CARRY_REPAY_SPEED` | `.20` |  |
+| 683 | `CapitalFlows.RISK_OFF_HOT_UNWIND` | `.05` | The share of the hot money's stock that runs home in a month of a risk-off of size one, scaled by the risk-off's level as it fades: a size-one risk-off takes about a fifth of the stock over the yea... |
+| 686 | `CapitalFlows.RISK_OFF_CARRY_UNWIND` | `.50` | The share of the carry book repaid in a month of a risk-off of size one, scaled by the level (est.: the yen carry of July 2024, at a risk-off smaller than one, was mostly gone in six weeks). |
+| 693 | `CapitalFlows.RISK_OFF_FELT` | `.05` | The risk-off level under which money no longer runs home, nor is a month of one counted (getRiskOffMonths()) or logged (est.: WorldMoneys.riskOff() fades by half in three months and never reaches 0... |
 
 ### CareType.java ([map](map/CareType.md))
 
@@ -443,10 +443,10 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 32 | `CityCalendar.EPOCH_YEAR` | `1900` | The year month 1 falls in. |
-| 34 | `CityCalendar.MONTHS` | `{ "January", "February", "March", "April", "May", "June", "July", "August", "September"...` |  |
-| 39 | `CityCalendar.SHORT_MONTHS` | `{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }` |  |
-| 45 | `CityCalendar.DAYS` | `{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }` | Days in each month of a common year; February is corrected below. |
+| 28 | `CityCalendar.EPOCH_YEAR` | `2000` | The year month 1 falls in. |
+| 30 | `CityCalendar.MONTHS` | `{ "January", "February", "March", "April", "May", "June", "July", "August", "September"...` |  |
+| 35 | `CityCalendar.SHORT_MONTHS` | `{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }` |  |
+| 41 | `CityCalendar.DAYS` | `{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }` | Days in each month of a common year; February is corrected below. |
 
 ### CityLand.java ([map](map/CityLand.md))
 
@@ -1146,9 +1146,9 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 852 | `EconomyManager.MAINTENANCE_RATE` | `ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12` |  |
 | 1061 | `EconomyManager.PBRH_MIN_UNITS` | `4` | A building with this many dwellings or more is purpose-built rental housing (CRA: "at least 4 residential units each with a private kitchen, a private bathroom, and a private living area"). |
 | 1063 | `EconomyManager.NRRP_SHARE` | `.36` | The new residential rental property rebate's share of the tax on a unit: 36% (Excise Tax Act section 256.2(3)(a); CRA RC4231). |
-| 1065 | `EconomyManager.NRRP_CAP` | `6.3 * PriceLevel.FACTOR` | ...and its most a unit, in founding thousands: $6,300. |
-| 1067 | `EconomyManager.NRRP_FULL_BELOW` | `350 * PriceLevel.FACTOR` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
-| 1069 | `EconomyManager.NRRP_NONE_FROM` | `450 * PriceLevel.FACTOR` | ...and none for a unit worth this or more: $450,000. |
+| 1065 | `EconomyManager.NRRP_CAP` | `6.3` | ...and its most a unit, in founding thousands: $6,300. |
+| 1067 | `EconomyManager.NRRP_FULL_BELOW` | `350` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
+| 1069 | `EconomyManager.NRRP_NONE_FROM` | `450` | ...and none for a unit worth this or more: $450,000. |
 | 1534 | `EconomyManager.BUDGET_NOISE` | `1e-12` | The share of its terms (what the settle leaves it, what it could raise) under which a purchase budget is arithmetic noise and reads nothing (est.: a double carries sixteen digits, and a budget is t... |
 | 2581 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
@@ -1157,12 +1157,12 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 89 | `Education.DEFAULT_SUBSIDY` | `.60` | What share of tuition the city pays. |
-| 256 | `Education.MAX_BURDEN` | `.60` | The share of a month's wage above which nobody enrols. |
-| 269 | `Education.RETURN_ELASTICITY` | `1.3` | How hard the pay gap pulls people into a classroom. |
-| 272 | `Education.MAX_PARTICIPATION` | `.90` | However good the return, this share of the eligible is the most that go. |
-| 290 | `Education.ENROLMENT_RATE` | `1 / 60.0` | What fraction of the willing eligible pool starts a course in any month. |
-| 299 | `Education.ELEMENTARY_SHARE` | `4 / 7.0` | Ages 6-10 out of the CHILD band's 6-13. |
-| 1028 | `Education.MONTH_FIELDS` | `4` | Scalars appended to the state array on 2026-09-09. |
+| 251 | `Education.MAX_BURDEN` | `.60` | The share of a month's wage above which nobody enrols. |
+| 264 | `Education.RETURN_ELASTICITY` | `1.3` | How hard the pay gap pulls people into a classroom. |
+| 267 | `Education.MAX_PARTICIPATION` | `.90` | However good the return, this share of the eligible is the most that go. |
+| 285 | `Education.ENROLMENT_RATE` | `1 / 60.0` | What fraction of the willing eligible pool starts a course in any month. |
+| 294 | `Education.ELEMENTARY_SHARE` | `4 / 7.0` | Ages 6-10 out of the CHILD band's 6-13. |
+| 1023 | `Education.MONTH_FIELDS` | `4` | Scalars appended to the state array on 2026-09-09. |
 
 ### Equity.java ([map](map/Equity.md))
 
@@ -1171,7 +1171,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 108 | `Equity.COMPANIES` |  | The companies, in register order: every sector in the registry's order, then the bank. |
 | 109 | `Equity.BANK` |  |  |
 | 126 | `Equity.PAYOUT` | `.40` | The share of a positive month's net income paid to the owners - of what it leaves after the principal repaid, since round 2 of 0.7.11 (dividendDue()) - every company's but the bank's, which pays by... |
-| 129 | `Equity.FOUNDING_PRICE` | `1.0 * PriceLevel.FACTOR` | A founding share: a thousand dollars, in the game's thousands, at today's prices. |
+| 129 | `Equity.FOUNDING_PRICE` | `1.0` | A founding share: a thousand dollars, in the game's thousands. |
 | 161 | `Equity.RECORD_MONTHS` | `12` | Months on the books before a company has a record to be judged on. |
 | 164 | `Equity.GOOD_MONTHS` | `9` | Profitable months of the last twelve that make a good year. |
 | 167 | `Equity.BAD_MONTHS` | `6` | ...and the most a bad year has. |
@@ -1216,18 +1216,18 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 344 | `Exchange.BOOK_LIMIT` | `.50` | ...and in all companies' together: the book's aggregate limit. |
 | 347 | `Exchange.SPLIT_AT` | `100` | A share priced at this many times its founding price is split; at one over it, consolidated. |
 | 357 | `Exchange.MIN_FAIR` | `1e-9` | The least a share may be worth before the market treats the company as worthless. |
-| 375 | `Exchange.MIN_DEALER_EQUITY` | `1.0 * PriceLevel.FACTOR` | The least equity a bank's desk needs to post a market, founding thousands: a thousand dollars, Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). |
-| 395 | `Exchange.DESK` | `"bank"` | The bank's trading desk. |
-| 397 | `Exchange.WORLD` | `"world"` | The world's investors. |
-| 399 | `Exchange.WORLD_SHORT` | `"world, short"` | The world's short seller (EM2): a participant of its own, so a short and the world's long never trade with each other, and never a cell's name (no BondMarket.CELL prefix). |
-| 401 | `Exchange.EMIGRANTS` | `"emigrants"` | The month's leavers, selling on the way out. |
-| 403 | `Exchange.CELL` | `BondMarket.CELL` | One household cell: this, then its key (the bond market's prefix, deliberately). |
-| 405 | `Exchange.FUND` | `BondMarket.FUND` | The city's fund, by its rule (0.7.14; TreasuryFund) - the bond market's name, deliberately. |
-| 407 | `Exchange.FUND_HAND` | `BondMarket.FUND_HAND` | ...and by the player's hand: its own name, so the two never trade with each other and the hand's sale can reach the rescue book. |
-| 972 | `Exchange.BOUND_CAPITAL` | `0, BOUND_POSITION = 1, BOUND_BOOK = 2, BOUND_FLOAT = 3` | Which of the desk's limits binds its bid: its capital, POSITION_LIMIT, BOOK_LIMIT, or the company's float. |
-| 1840 | `Exchange.BY_DESK` | `0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3, BY_FUND = 4` | Who sells, by class: the desk, the world, the leavers, a household cell, and since 0.7.14 the city's fund - for the fill rate by seller. |
-| 2237 | `Exchange.SLOTS_BEFORE_SPLITS` | `3` | Slots per company in the old dealer's array before the split factor joined (the exchange's first night): its quote, fair value and demand. |
-| 2239 | `Exchange.SLOTS` | `SLOTS_BEFORE_SPLITS + 1` | ...and after: the quote, fair value, demand and split factor, four a company - what a save from before 0.7.12 round 2 carries (restore(String[], double[])). |
+| 373 | `Exchange.MIN_DEALER_EQUITY` | `1.0` |  |
+| 393 | `Exchange.DESK` | `"bank"` | The bank's trading desk. |
+| 395 | `Exchange.WORLD` | `"world"` | The world's investors. |
+| 397 | `Exchange.WORLD_SHORT` | `"world, short"` | The world's short seller (EM2): a participant of its own, so a short and the world's long never trade with each other, and never a cell's name (no BondMarket.CELL prefix). |
+| 399 | `Exchange.EMIGRANTS` | `"emigrants"` | The month's leavers, selling on the way out. |
+| 401 | `Exchange.CELL` | `BondMarket.CELL` | One household cell: this, then its key (the bond market's prefix, deliberately). |
+| 403 | `Exchange.FUND` | `BondMarket.FUND` | The city's fund, by its rule (0.7.14; TreasuryFund) - the bond market's name, deliberately. |
+| 405 | `Exchange.FUND_HAND` | `BondMarket.FUND_HAND` | ...and by the player's hand: its own name, so the two never trade with each other and the hand's sale can reach the rescue book. |
+| 970 | `Exchange.BOUND_CAPITAL` | `0, BOUND_POSITION = 1, BOUND_BOOK = 2, BOUND_FLOAT = 3` | Which of the desk's limits binds its bid: its capital, POSITION_LIMIT, BOOK_LIMIT, or the company's float. |
+| 1838 | `Exchange.BY_DESK` | `0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3, BY_FUND = 4` | Who sells, by class: the desk, the world, the leavers, a household cell, and since 0.7.14 the city's fund - for the fill rate by seller. |
+| 2235 | `Exchange.SLOTS_BEFORE_SPLITS` | `3` | Slots per company in the old dealer's array before the split factor joined (the exchange's first night): its quote, fair value and demand. |
+| 2237 | `Exchange.SLOTS` | `SLOTS_BEFORE_SPLITS + 1` | ...and after: the quote, fair value, demand and split factor, four a company - what a save from before 0.7.12 round 2 carries (restore(String[], double[])). |
 
 ### Expectations.java ([map](map/Expectations.md))
 
@@ -1277,7 +1277,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 170 | `ForeignAccounts.MIN_RATE` | `1e-9` | The least a US dollar can cost in local money: a numerical guard against a rate run to nothing, never a price the game expects to see (.01 until 0.7.3). |
 | 172 | `ForeignAccounts.MAX_RATE` | `1e9` | ...and the most: a numerical guard against a rate run to infinity, never a price the game expects to see (100 until 0.7.3) - a city whose currency reaches a thousand reforms it. |
 | 224 | `ForeignAccounts.OPENING_PARITY` | `1.00` | The rate at which a basket costs the same at home and abroad. |
-| 321 | `ForeignAccounts.MIN_TRADE` | `50 * PriceLevel.FACTOR` | Below this much trade a month, the exchange rate is not a real price. |
+| 321 | `ForeignAccounts.MIN_TRADE` | `50` | Below this much trade a month, the exchange rate is not a real price. |
 | 412 | `ForeignAccounts.TREND_LEVEL` | `1 / 6.0` | How much of a month's jump in parity the trend takes at once: Holt's level, so a steady inflation gap passes into the rate one for one and a single month's spike moves it a sixth of itself. |
 | 415 | `ForeignAccounts.TREND_SLOPE` | `1 / 24.0` | ...and how fast its slope learns, a twenty-fourth of the level's change a month: about two years. |
 | 418 | `ForeignAccounts.PERSISTENCE` | `2.5` | How many years the market expects a real rate gap to last, so a sustained point of gap holds the D$ about 2.5% dearer (or cheaper, when negative). |
@@ -1332,20 +1332,20 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 107 | `Founding.INSANE_LAND_COUPON` | `.03` | Insane's coupon on the land it owes for, a year: 3%, Jerus's number. |
 | 110 | `Founding.INSANE_LAND_YEARS` | `20` | Insane's land bond's term, in years: twenty, Jerus's "20y" - one of the six bond maturities (LongTermBond.MATURITIES). |
-| 130 | `Founding.LEAN_CASH` | `25_000 * PriceLevel.FACTOR` | Lean's treasury, in thousands: D$25M - two-thirds of the founding village at a new city's invoices (three-quarters until the builders' sales tax went into them, 0.7.19), so the city borrows from it... |
-| 133 | `Founding.LEAN_RESERVE_USD` | `10_000 * PriceLevel.FACTOR` | Lean's vault, in thousands of US dollars: US$10M - a few months to two years of a young city's imports. |
-| 136 | `Founding.WEALTHY_CASH` | `2_500_000 * PriceLevel.FACTOR` | Wealthy's treasury, in thousands: D$2.5B - the start every city had from 0.6.10 to 0.7.9, which the playtest never drew below D$2.46B in thirty years. |
-| 139 | `Founding.WEALTHY_RESERVE_USD` | `1_000_000 * PriceLevel.FACTOR` | Wealthy's vault, in thousands of US dollars: US$1B - the old start's, which the playtest's defence took sixty-odd years to spend half of (month 739, the median of eight seeds). |
-| 213 | `Founding.MIN_CASH` | `6_000 * PriceLevel.FACTOR` | The least a city may be founded with in its treasury, in thousands: D$6M, ten houses and a shop at a new city's invoices - D$5.37M since the builders' sales tax went into them (0.7.19; it was D$5M,... |
-| 216 | `Founding.MAX_CASH` | `10_000_000 * PriceLevel.FACTOR` | The most, in thousands: D$10B, four times the Wealthy start. |
+| 130 | `Founding.LEAN_CASH` | `25_000` | Lean's treasury, in thousands: D$25M - two-thirds of the founding village at a new city's invoices (three-quarters until the builders' sales tax went into them, 0.7.19), so the city borrows from it... |
+| 133 | `Founding.LEAN_RESERVE_USD` | `10_000` | Lean's vault, in thousands of US dollars: US$10M - a few months to two years of a young city's imports. |
+| 136 | `Founding.WEALTHY_CASH` | `2_500_000` | Wealthy's treasury, in thousands: D$2.5B - the start every city had from 0.6.10 to 0.7.9, which the playtest never drew below D$2.46B in thirty years. |
+| 139 | `Founding.WEALTHY_RESERVE_USD` | `1_000_000` | Wealthy's vault, in thousands of US dollars: US$1B - the old start's, which the playtest's defence took sixty-odd years to spend half of (month 739, the median of eight seeds). |
+| 213 | `Founding.MIN_CASH` | `6_000` | The least a city may be founded with in its treasury, in thousands: D$6M, ten houses and a shop at a new city's invoices - D$5.37M since the builders' sales tax went into them (0.7.19; it was D$5M,... |
+| 216 | `Founding.MAX_CASH` | `10_000_000` | The most, in thousands: D$10B, four times the Wealthy start. |
 | 219 | `Founding.MIN_RESERVE_USD` | `0` | The least in the vault, in thousands of US dollars: none, as every city had before 0.6.10. |
-| 222 | `Founding.MAX_RESERVE_USD` | `4_000_000 * PriceLevel.FACTOR` | The most, in thousands of US dollars: US$4B, four times the Wealthy start. |
+| 222 | `Founding.MAX_RESERVE_USD` | `4_000_000` | The most, in thousands of US dollars: US$4B, four times the Wealthy start. |
 | 227 | `Founding.DEFAULT_CITY_NAME` | `"Danzik"` | The city a founding is named when nobody names it - Jerus's first city, and every save's before 0.7.10. |
 | 230 | `Founding.MAX_CITY_NAME_LENGTH` | `24` | The longest city name: room for the window's title and the slot list's line, not a policy. |
 | 235 | `Founding.DEFAULT_WORLD_SEED` | `4127` | The world a founding stands on when nobody rolls another: 4127, the map mockup's default seed (city-map.html), so every harness and the playtest found on the same ground. |
 | 238 | `Founding.ROLLED_SEED_MAX` | `999_999_999` | The largest seed the founding screen's dice rolls: 999,999,999, nine digits a player can read back and type. |
-| 501 | `Founding.VILLAGE` | `{ { "House", "60" }, { "Convenience Store", "5" }, { "Mixed Farm", "2" }, { "Constructi...` | The founding village: the playtest's hand-built settlement, name and count. |
-| 505 | `Founding.FIRST_WORKS` | `{ "Wind Farm", "Water Treatment Plant", "Elementary School", "Police Station" }` | The first big works, in the order a young city tends to need them. |
+| 496 | `Founding.VILLAGE` | `{ { "House", "60" }, { "Convenience Store", "5" }, { "Mixed Farm", "2" }, { "Constructi...` | The founding village: the playtest's hand-built settlement, name and count. |
+| 500 | `Founding.FIRST_WORKS` | `{ "Wind Farm", "Water Treatment Plant", "Elementary School", "Police Station" }` | The first big works, in the order a young city tends to need them. |
 
 ### FreightView.java ([map](map/FreightView.md))
 
@@ -1378,7 +1378,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 36 | `FundView.STALE_MONTHS` | `3` | A share's quote that is its last trade (Exchange.quoteIsLastTrade(): no bid or ask rests that sets or bounds it, EM2), older than this many months, is called stale on every page that shows it (the ... |
-| 39 | `FundView.MIN_RECORDED_PRICE` | `.01 * PriceLevel.FACTOR` | The least a price per founding share, as the history records it to four places, can be and still carry three significant figures: a move off less is not shown (the spec's B6 - a consolidated share ... |
+| 39 | `FundView.MIN_RECORDED_PRICE` | `.01` | The least a price per founding share, as the history records it to four places, can be and still carry three significant figures: a move off less is not shown (the spec's B6 - a consolidated share ... |
 | 42 | `FundView.FOLD_UNDER` | `1` | A holding worth less than this, money, is folded into "and N more" on the Portfolio page: a thousand dollars. |
 | 45 | `FundView.MOVE_MONTHS` | `12` | The months a hit's sparkline and its move cover: a year. |
 | 48 | `FundView.SHARE` | `"share", RESCUE = "rescue", BOND = "bond", PREFERRED = "preferred", WARRANTS = "warrants"` | What a holding is. |
@@ -1393,30 +1393,28 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 243 | `Game.MARKET_SEED_SALT` | `0x4D41524B45545852L` | Salt for the D$'s market seed, so the market's path is not the world's own seed spelled again ("MARKETXR"). |
 | 738 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 | 860 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
-| 1136 | `Game.FOUNDING_CASH` | `100_000 * PriceLevel.FACTOR` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
-| 1139 | `Game.FOUNDING_RESERVE_USD` | `25_000 * PriceLevel.FACTOR` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
+| 1136 | `Game.FOUNDING_CASH` | `100_000` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
+| 1139 | `Game.FOUNDING_RESERVE_USD` | `25_000` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
 | 1142 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
-| 1460 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
-| 3003 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 5897 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 5900 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 7502 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 7709 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 8866 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 9426 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 10203 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
-| 10843 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 11013 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 11052 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 11213 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 13054 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 13066 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 13069 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 13086 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 13097 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 13137 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 14713 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 15106 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 1458 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
+| 3049 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 5944 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 5947 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 7549 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 7756 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 8913 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 9473 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 10879 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 11049 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 11088 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 11249 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
+| 13090 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 13102 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 13105 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 13120 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
+| 13131 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 14750 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 15160 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1456,10 +1454,10 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.8.90"` | Bump on release. |
-| 8253 | `GameVersion.SAVE_FORMAT` | `50` | The save shape. |
-| 8300 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `50` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 8308 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
+| 7372 | `GameVersion.VERSION` | `"0.8.91"` | Bump on release. |
+| 8237 | `GameVersion.SAVE_FORMAT` | `49` | The save shape. |
+| 8282 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `49` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 8290 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ### Gateways.java ([map](map/Gateways.md))
 
@@ -1601,22 +1599,22 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 71 | `Healthcare.FOUNDING_CITY` | `1200` | How many residents the founding endowment was meant to serve. |
 | 74 | `Healthcare.FOUNDING_PLOTS` | `2500` | Graves in the old churchyard. |
-| 142 | `Healthcare.GENERAL_FEE` | `.010 * PriceLevel.FACTOR` | A general-care patient's fee a month, founding thousands. |
-| 144 | `Healthcare.CHILDCARE_FEE` | `.150 * PriceLevel.FACTOR` | A childcare place's fee a month, founding thousands. |
-| 146 | `Healthcare.SENIOR_FEE` | `.300 * PriceLevel.FACTOR` | A senior-care place's fee a month, founding thousands. |
-| 184 | `Healthcare.BURIAL_FEE` | `3.000 * PriceLevel.FACTOR` | A burial's fee, founding thousands. |
-| 186 | `Healthcare.CREMATION_FEE` | `.900 * PriceLevel.FACTOR` | A cremation's fee, founding thousands. |
-| 264 | `Healthcare.BURIAL_SAVING_MONTHS` | `120` | How long a household is assumed to be putting money aside for a funeral. |
-| 283 | `Healthcare.MAX_BACKLOG_MONTHS` | `24` | How far behind a city can get before it starts improvising. |
-| 323 | `Healthcare.CHILDCARE_SWING` | `40` | Children, and it is enormous - per Jerus, "really really really". |
-| 344 | `Healthcare.SENIOR_SWING` | `1.35` | Seniors, and it stays gentle. |
-| 360 | `Healthcare.ELDER_SWING` | `1.80` | And what it is worth to the over-85s, which is more. |
-| 371 | `Healthcare.CHILDCARE_BIRTH_BONUS` | `1.0` | How much more a city with childcare gives birth. |
-| 834 | `Healthcare.STRAINED` | `.90` | Past this share of the ovens' throughput, say so. |
-| 837 | `Healthcare.PLOT_WARNING_MONTHS` | `60` | Warn once the ground will not last this long at the current rate. |
-| 895 | `Healthcare.STATE_BEFORE_FULL_BILL` | `12` | How many figures the state carried before the full-service bill was appended (2026-09-19). |
-| 898 | `Healthcare.STATE_BEFORE_COVERAGE` | `13` | ...and before the three coverages were, the same day. |
-| 901 | `Healthcare.STATE_BEFORE_SERVED` | `16` | ...and before the three kinds' served counts were (A3, 2026-10). |
+| 141 | `Healthcare.GENERAL_FEE` | `.010` |  |
+| 142 | `Healthcare.CHILDCARE_FEE` | `.150` |  |
+| 143 | `Healthcare.SENIOR_FEE` | `.300` |  |
+| 180 | `Healthcare.BURIAL_FEE` | `3.000` |  |
+| 181 | `Healthcare.CREMATION_FEE` | `.900` |  |
+| 259 | `Healthcare.BURIAL_SAVING_MONTHS` | `120` | How long a household is assumed to be putting money aside for a funeral. |
+| 278 | `Healthcare.MAX_BACKLOG_MONTHS` | `24` | How far behind a city can get before it starts improvising. |
+| 318 | `Healthcare.CHILDCARE_SWING` | `40` | Children, and it is enormous - per Jerus, "really really really". |
+| 339 | `Healthcare.SENIOR_SWING` | `1.35` | Seniors, and it stays gentle. |
+| 355 | `Healthcare.ELDER_SWING` | `1.80` | And what it is worth to the over-85s, which is more. |
+| 366 | `Healthcare.CHILDCARE_BIRTH_BONUS` | `1.0` | How much more a city with childcare gives birth. |
+| 829 | `Healthcare.STRAINED` | `.90` | Past this share of the ovens' throughput, say so. |
+| 832 | `Healthcare.PLOT_WARNING_MONTHS` | `60` | Warn once the ground will not last this long at the current rate. |
+| 890 | `Healthcare.STATE_BEFORE_FULL_BILL` | `12` | How many figures the state carried before the full-service bill was appended (2026-09-19). |
+| 893 | `Healthcare.STATE_BEFORE_COVERAGE` | `13` | ...and before the three coverages were, the same day. |
+| 896 | `Healthcare.STATE_BEFORE_SERVED` | `16` | ...and before the three kinds' served counts were (A3, 2026-10). |
 
 ### HistorySave.java ([map](map/HistorySave.md))
 
@@ -1624,8 +1622,8 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 87 | `HistorySave.MONTHLY_KEPT` | `6_000` | Months kept a month to an entry, the newest: five hundred years (0.7.55). |
 | 540 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
-| 1033 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
-| 1055 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices ... |
+| 1031 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
+| 1053 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5). |
 
 ### Household.java ([map](map/Household.md))
 
@@ -1855,7 +1853,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 161 | `LandClassView.GROUPED` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 160 | `LandClassView.GROUPED` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandConversion.java ([map](map/LandConversion.md))
 
@@ -1900,11 +1898,11 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 176 | `LandManager.STARTING_SQ_FT` | `3000000` | Land the city starts with - thirty blocks, about 69 acres; since 0.7.67 the figure a new city's centre of whole blocks is drawn to hold, and it owns the dry plots drawn, a little more (CityLand.fou... |
 | 185 | `LandManager.FOUNDING_FRESH_UNITS` | `60_000` | A new city's fresh water, in units a month: what one Water Treatment Plant treats, its 60,000 units of 10,000 gallons (buildings.json id 10's production1) - Jerus's A24 (0.7.106, 2026-10-10: "found... |
 | 188 | `LandManager.FOUNDING_FRESH_KM2` | `FOUNDING_FRESH_UNITS / UtilitiesHandler.FRESH_UNITS_PER_KM2` | ...as lake and river ground in its centre, in square kilometres: FOUNDING_FRESH_UNITS over what one yields a month (UtilitiesHandler.FRESH_UNITS_PER_KM2), 0.4934 km2 (CityLand.found()). |
-| 242 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001 * PriceLevel.FACTOR` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
-| 329 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
-| 1047 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
-| 2564 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
-| 3085 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 240 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
+| 327 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
+| 1045 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
+| 2562 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
+| 3083 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandMap.java ([map](map/LandMap.md))
 
@@ -1973,17 +1971,15 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 94 | `LandMarket.OFFERS_A_SIDE` | `GridOffers.PLACES` | Offers standing on each side of the city: six, one a place (GridOffers.PLACES; Jerus, 2026-10-07, "six offers a side"). |
 | 97 | `LandMarket.OFFERS` | `CityLand.SIDES * OFFERS_A_SIDE` | Offers standing in all: OFFERS_A_SIDE on each of the four sides, twenty-four. |
-| 113 | `LandMarket.BASE_PRICE_PER_SQ_FT` | `.0007 * PriceLevel.FACTOR` | Ground price per square foot before any premium, in thousands of US dollars. |
-| 241 | `LandMarket.CROWDING_MIDPOINT` | `4_000` | People per square kilometre of the city's land at which the crowding premium is half way to its ceiling (0.7.55): about 60x the base. |
-| 249 | `LandMarket.CROWDING_STEEPNESS` | `5.3` | How sharply the premium climbs through the midpoint: the curve's power (0.7.55). |
-| 257 | `LandMarket.CROWDING_CEILING` | `120` | The most crowding can multiply the ground's price by, however crowded the city (0.7.55). |
-| 264 | `LandMarket.FRESH_PRICE_SHARE` | `0.45` | What a square kilometre of fresh water sells for, against dry ground: 45% (the map mockup's figure, spec-land star 6). |
-| 267 | `LandMarket.SEA_PRICE_SHARE` | `0.08` | ...and of sea: 8% (the mockup's), the reach a desalination plant needs and nothing else does. |
-| 318 | `LandMarket.SCARCITY_FLOOR` | `.65` | Multiplier on acquisition cost when land is abundant. |
-| 321 | `LandMarket.SCARCITY_CEILING` | `1.90` | Multiplier when there is effectively nothing left. |
-| 333 | `LandMarket.SCARCITY_MIDPOINT` | `4.0` | Pressure at which the curve is half way up. |
-| 675 | `LandMarket.PRICE_STEP_USD` | `5 * PriceLevel.FACTOR` | The step an offer's price is rounded to, in thousands of US dollars: US$5k, as the parcels were (nobody wants to compare US$103,847 against US$98,211). |
-| 897 | `LandMarket.RANK_TIE` | `1e-12` | How close two ranks (rates of ground a dollar, or prices that carry a sum) must be to be one rank: a part in a trillion. |
+| 111 | `LandMarket.BASE_PRICE_PER_SQ_FT` | `.0007` | Ground price per square foot before any premium, in thousands of US dollars. |
+| 239 | `LandMarket.CROWDING_MIDPOINT` | `4_000` | People per square kilometre of the city's land at which the crowding premium is half way to its ceiling (0.7.55): about 60x the base. |
+| 247 | `LandMarket.CROWDING_STEEPNESS` | `5.3` | How sharply the premium climbs through the midpoint: the curve's power (0.7.55). |
+| 255 | `LandMarket.CROWDING_CEILING` | `120` | The most crowding can multiply the ground's price by, however crowded the city (0.7.55). |
+| 262 | `LandMarket.FRESH_PRICE_SHARE` | `0.45` | What a square kilometre of fresh water sells for, against dry ground: 45% (the map mockup's figure, spec-land star 6). |
+| 265 | `LandMarket.SEA_PRICE_SHARE` | `0.08` | ...and of sea: 8% (the mockup's), the reach a desalination plant needs and nothing else does. |
+| 316 | `LandMarket.SCARCITY_FLOOR` | `.65` | Multiplier on acquisition cost when land is abundant. |
+| 319 | `LandMarket.SCARCITY_CEILING` | `1.90` | Multiplier when there is effectively nothing left. |
+| 331 | `LandMarket.SCARCITY_MIDPOINT` | `4.0` | Pressure at which the curve is half way up. |
 
 ### LandParcel.java ([map](map/LandParcel.md))
 
@@ -2167,8 +2163,8 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 99 | `Motoring.CAR_FUEL_PER_JOURNEY` | `.002 * PriceLevel.FACTOR` | What a journey to work by car burns, in world money: $2.00, fifteen kilometres at eight litres a hundred and about $1.65 a litre. |
-| 113 | `Motoring.LITRES_PER_JOURNEY` | `1.2` | ...and the litres in it (0.7.62): fifteen kilometres at eight litres a hundred, the same journey. |
+| 97 | `Motoring.CAR_FUEL_PER_JOURNEY` | `.002` | What a journey to work by car burns, in world money: $2.00, fifteen kilometres at eight litres a hundred and about $1.65 a litre. |
+| 111 | `Motoring.LITRES_PER_JOURNEY` | `1.2` | ...and the litres in it (0.7.62): fifteen kilometres at eight litres a hundred, the same journey. |
 
 ### NationalAccounts.java ([map](map/NationalAccounts.md))
 
@@ -2185,48 +2181,48 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 65 | `Nations.DEFAULT_PATH` | `Path.RANDOM` | The path a founding takes when nobody picks one, on the Earth and on a generated world alike: Random (WN3; Jerus, 2026-10-29: "A new world defaults to the Random path instead of Historical"). |
-| 68 | `Nations.DEFAULT_SEED` | `48_213L` | The path's seed when nobody rolls one: 48,213, the founding board's (spec-nations, board 4), so every harness and the playtest meet one world. |
-| 75 | `Nations.FIRST_YEAR` | `CityCalendar.EPOCH_YEAR` | The year a path begins in, January of it: the city's calendar's (CityCalendar.EPOCH_YEAR). |
-| 78 | `Nations.HISTORY_LAST_YEAR` | `2025` | The last year the file's history runs to (output, prices, rates): Historical replays it to here at most, and the game's own rule goes on [R11]. |
-| 81 | `Nations.PEOPLE_LAST_YEAR` | `2100` | The last year of the UN's people, the medium variant [R13]; past it people are held and a Historical nation's growth eases. |
-| 84 | `Nations.FRONTIER` | `"USA"` | The nation whose output a head is the frontier the others converge to: the United States [R11]. |
-| 87 | `Nations.FRONTIER_GROWTH` | `.015` | The frontier's growth a head a year (est.: the US's grew about 1.3% a year 2000-2024 [R11], about 2% over the long run). |
-| 90 | `Nations.CONVERGENCE` | `.02` | The share of the gap to the frontier (in logs) a nation closes a year: Barro and Sala-i-Martin's 2% [R29]. |
-| 93 | `Nations.CATCH_UP_MAX` | `.02` | The most the catch-up adds to the trend (est.: 2% of the whole gap would give the poorest about 10% a year; the typical developing nation grew about two points faster than the US in 2000-2019 [R11]). |
-| 96 | `Nations.SD_RICH` | `.018` | One standard deviation of a rich nation's yearly growth: the G7's, 2000-2019 [R11]. |
-| 99 | `Nations.SD_EMERGING` | `.027` | One standard deviation of an emerging economy's yearly growth: fifteen large ones, 2000-2019 [R11]. |
-| 102 | `Nations.EMERGING_GAP` | `1.7` | The gap to the frontier, in logs, at which a nation swings like an emerging economy (est.: the G7's output a head is about 5.5 times those fifteen's). |
-| 105 | `Nations.SD_MAX` | `.045` | The most a year's whole swing is, one standard deviation, however poor the nation (est.). |
-| 108 | `Nations.WORLD_SHARE_RICH` | `.27` | The share of a rich nation's output swings the world factor explains: 27% in the industrial nations, about 11% across 106 [R30]. |
-| 111 | `Nations.WORLD_SD` | `SD_RICH * Math.sqrt(WORLD_SHARE_RICH)` | The world factor's size, one standard deviation: that share of a rich nation's variance, so a fixed size that is 12% of an emerging one's [R30]. |
-| 114 | `Nations.REGION_SHARE` | `.10` | The share of an emerging economy's variance a region's factor is (est., after [R30]). |
-| 117 | `Nations.REGION_SD` | `SD_EMERGING * Math.sqrt(REGION_SHARE)` | A region's factor's size, one standard deviation, drawn per region and year. |
-| 120 | `Nations.OWN_PERSISTENCE` | `.3` | The share of this year's own shock that carries into the next: 0.3 (spec-nations 7.2). |
-| 123 | `Nations.CRISIS_RATE` | `.017` | The chance a year a nation not in a crisis starts one: Barro's falls of 15% or more in output a head, 1.7% of country-years over a century [R32]. |
-| 126 | `Nations.CRISIS_DEPTH_MIN` | `.15` | The shallowest a crisis is, the share of output a head lost over its years: Barro's threshold [R32]. |
-| 129 | `Nations.CRISIS_DEPTH_MAX` | `.30` | The deepest a crisis is (est.: Barro and Ursua's mean fall about 22%). |
-| 132 | `Nations.CRISIS_YEARS` | `3` | The years a crisis runs, the fall spread evenly over them (est.: "over a few years" [R32]). |
-| 135 | `Nations.HISTORICAL_SHOCK_SHARE` | `.5` | The size of a Historical nation's shocks after its data, against Random's: world, region and own (est.: spec 7.1, "sized as Random's but smaller"); it draws no crisis. |
-| 138 | `Nations.LONG_RUN_GROWTH` | `.01` | The growth a head a Historical nation eases to past 2100 (the leaderboard's D8; the nations study's D14: about what the world has sustained over the long run). |
-| 141 | `Nations.EASE_YEARS` | `50` | The years past 2100 a Historical nation's growth takes to ease from its 2091-2100 average to LONG_RUN_GROWTH. |
-| 144 | `Nations.LONG_RUN_WINDOW` | `10` | The years of growth a head, to 2100, the ease starts from (the leaderboard's D8). |
-| 147 | `Nations.NO_DATA_SHARE` | `.1` | The share of the frontier's output a head a nation with no output figure at all starts from (est.). |
-| 150 | `Nations.LOW_INCOME_MAX` | `890` | A nation below this output a head (US$ of 2015) is low income (est.: the World Bank's FY2026 US$1,135 of 2024 over the US GDP deflator since 2015). |
-| 153 | `Nations.LOWER_MIDDLE_MAX` | `3_510` | A nation below this is lower middle income (est.: the World Bank's FY2026 US$4,495 of 2024, deflated to 2015). |
-| 156 | `Nations.UPPER_MIDDLE_MAX` | `10_890` | A nation below this is upper middle income, above it high (est.: the World Bank's FY2026 US$13,935 of 2024, deflated to 2015). |
-| 159 | `Nations.INFLATION_MEAN` | `{.02,.035,.055,.065 }` | A year's mean inflation by income group, high, upper middle, lower middle, low (est., after the WDI's medians 2000-2019 [R11]). |
-| 162 | `Nations.INFLATION_SD` | `{.012,.025,.035,.045 }` | One standard deviation of a year's inflation innovation by income group, in the same order (est., after the WDI's medians 2000-2019 [R11]). |
-| 165 | `Nations.INFLATION_PERSISTENCE` | `.6` | The share of this year's inflation, above or below its group's mean, that carries into the next (est., after [R11]). |
-| 168 | `Nations.INFLATION_FLOOR` | `-.05` | The lowest a drawn year's inflation is, a shade of deflation (est.); a published year is the file's whatever it was. |
-| 171 | `Nations.DOLLAR` | `"USD"` | The US dollar's code: its rate is 1 always, and a money's rate is against it. |
-| 174 | `Nations.RATE_SD` | `.10` | A floating money's yearly change against the dollar beyond relative parity, one standard deviation (est.). |
-| 177 | `Nations.PRICE_PERSISTENCE` | `.7` | The share of a good's price shock that carries into the next year: 0.7 (spec-nations 7.2). |
-| 180 | `Nations.MIN_PRICE_SWING` | `.03` | The least a good's yearly price swing, one standard deviation of its log change, is taken to be (est.: manufactured goods move little). |
-| 183 | `Nations.DEFAULT_REGION` | `"East Asia & Pacific"` | The region of a nation the file gives none (Taiwan, which WDI lacks): East Asia & Pacific's. |
-| 186 | `Nations.WORLD` | `1, REGION = 2, OWN = 3, CRISIS = 4, CRISIS_DEPTH = 5, INFLATION = 6, RATE = 7, PRICE = 8` | The kinds of draw, and where a draw that belongs to no nation sits among the nations' numbers. |
-| 187 | `Nations.WORLD_NATION` | `0, REGION_BASE = 1000, GOOD_BASE = 2000` |  |
-| 211 | `Nations.NO_DRAWS` | `new Draws(0, 0, 0, 0, false)` |  |
+| 60 | `Nations.DEFAULT_PATH` | `Path.RANDOM` | The path a founding takes when nobody picks one, on the Earth and on a generated world alike: Random (WN3; Jerus, 2026-10-29: "A new world defaults to the Random path instead of Historical"). |
+| 63 | `Nations.DEFAULT_SEED` | `48_213L` | The path's seed when nobody rolls one: 48,213, the founding board's (spec-nations, board 4), so every harness and the playtest meet one world. |
+| 70 | `Nations.FIRST_YEAR` | `CityCalendar.EPOCH_YEAR` | The year a path begins in, January of it: the city's calendar's (CityCalendar.EPOCH_YEAR). |
+| 73 | `Nations.HISTORY_LAST_YEAR` | `2025` | The last year the file's history runs to (output, prices, rates): Historical replays it to here at most, and the game's own rule goes on [R11]. |
+| 76 | `Nations.PEOPLE_LAST_YEAR` | `2100` | The last year of the UN's people, the medium variant [R13]; past it people are held and a Historical nation's growth eases. |
+| 79 | `Nations.FRONTIER` | `"USA"` | The nation whose output a head is the frontier the others converge to: the United States [R11]. |
+| 82 | `Nations.FRONTIER_GROWTH` | `.015` | The frontier's growth a head a year (est.: the US's grew about 1.3% a year 2000-2024 [R11], about 2% over the long run). |
+| 85 | `Nations.CONVERGENCE` | `.02` | The share of the gap to the frontier (in logs) a nation closes a year: Barro and Sala-i-Martin's 2% [R29]. |
+| 88 | `Nations.CATCH_UP_MAX` | `.02` | The most the catch-up adds to the trend (est.: 2% of the whole gap would give the poorest about 10% a year; the typical developing nation grew about two points faster than the US in 2000-2019 [R11]). |
+| 91 | `Nations.SD_RICH` | `.018` | One standard deviation of a rich nation's yearly growth: the G7's, 2000-2019 [R11]. |
+| 94 | `Nations.SD_EMERGING` | `.027` | One standard deviation of an emerging economy's yearly growth: fifteen large ones, 2000-2019 [R11]. |
+| 97 | `Nations.EMERGING_GAP` | `1.7` | The gap to the frontier, in logs, at which a nation swings like an emerging economy (est.: the G7's output a head is about 5.5 times those fifteen's). |
+| 100 | `Nations.SD_MAX` | `.045` | The most a year's whole swing is, one standard deviation, however poor the nation (est.). |
+| 103 | `Nations.WORLD_SHARE_RICH` | `.27` | The share of a rich nation's output swings the world factor explains: 27% in the industrial nations, about 11% across 106 [R30]. |
+| 106 | `Nations.WORLD_SD` | `SD_RICH * Math.sqrt(WORLD_SHARE_RICH)` | The world factor's size, one standard deviation: that share of a rich nation's variance, so a fixed size that is 12% of an emerging one's [R30]. |
+| 109 | `Nations.REGION_SHARE` | `.10` | The share of an emerging economy's variance a region's factor is (est., after [R30]). |
+| 112 | `Nations.REGION_SD` | `SD_EMERGING * Math.sqrt(REGION_SHARE)` | A region's factor's size, one standard deviation, drawn per region and year. |
+| 115 | `Nations.OWN_PERSISTENCE` | `.3` | The share of this year's own shock that carries into the next: 0.3 (spec-nations 7.2). |
+| 118 | `Nations.CRISIS_RATE` | `.017` | The chance a year a nation not in a crisis starts one: Barro's falls of 15% or more in output a head, 1.7% of country-years over a century [R32]. |
+| 121 | `Nations.CRISIS_DEPTH_MIN` | `.15` | The shallowest a crisis is, the share of output a head lost over its years: Barro's threshold [R32]. |
+| 124 | `Nations.CRISIS_DEPTH_MAX` | `.30` | The deepest a crisis is (est.: Barro and Ursua's mean fall about 22%). |
+| 127 | `Nations.CRISIS_YEARS` | `3` | The years a crisis runs, the fall spread evenly over them (est.: "over a few years" [R32]). |
+| 130 | `Nations.HISTORICAL_SHOCK_SHARE` | `.5` | The size of a Historical nation's shocks after its data, against Random's: world, region and own (est.: spec 7.1, "sized as Random's but smaller"); it draws no crisis. |
+| 133 | `Nations.LONG_RUN_GROWTH` | `.01` | The growth a head a Historical nation eases to past 2100 (the leaderboard's D8; the nations study's D14: about what the world has sustained over the long run). |
+| 136 | `Nations.EASE_YEARS` | `50` | The years past 2100 a Historical nation's growth takes to ease from its 2091-2100 average to LONG_RUN_GROWTH. |
+| 139 | `Nations.LONG_RUN_WINDOW` | `10` | The years of growth a head, to 2100, the ease starts from (the leaderboard's D8). |
+| 142 | `Nations.NO_DATA_SHARE` | `.1` | The share of the frontier's output a head a nation with no output figure at all starts from (est.). |
+| 145 | `Nations.LOW_INCOME_MAX` | `890` | A nation below this output a head (US$ of 2015) is low income (est.: the World Bank's FY2026 US$1,135 of 2024 over the US GDP deflator since 2015). |
+| 148 | `Nations.LOWER_MIDDLE_MAX` | `3_510` | A nation below this is lower middle income (est.: the World Bank's FY2026 US$4,495 of 2024, deflated to 2015). |
+| 151 | `Nations.UPPER_MIDDLE_MAX` | `10_890` | A nation below this is upper middle income, above it high (est.: the World Bank's FY2026 US$13,935 of 2024, deflated to 2015). |
+| 154 | `Nations.INFLATION_MEAN` | `{.02,.035,.055,.065 }` | A year's mean inflation by income group, high, upper middle, lower middle, low (est., after the WDI's medians 2000-2019 [R11]). |
+| 157 | `Nations.INFLATION_SD` | `{.012,.025,.035,.045 }` | One standard deviation of a year's inflation innovation by income group, in the same order (est., after the WDI's medians 2000-2019 [R11]). |
+| 160 | `Nations.INFLATION_PERSISTENCE` | `.6` | The share of this year's inflation, above or below its group's mean, that carries into the next (est., after [R11]). |
+| 163 | `Nations.INFLATION_FLOOR` | `-.05` | The lowest a drawn year's inflation is, a shade of deflation (est.); a published year is the file's whatever it was. |
+| 166 | `Nations.DOLLAR` | `"USD"` | The US dollar's code: its rate is 1 always, and a money's rate is against it. |
+| 169 | `Nations.RATE_SD` | `.10` | A floating money's yearly change against the dollar beyond relative parity, one standard deviation (est.). |
+| 172 | `Nations.PRICE_PERSISTENCE` | `.7` | The share of a good's price shock that carries into the next year: 0.7 (spec-nations 7.2). |
+| 175 | `Nations.MIN_PRICE_SWING` | `.03` | The least a good's yearly price swing, one standard deviation of its log change, is taken to be (est.: manufactured goods move little). |
+| 178 | `Nations.DEFAULT_REGION` | `"East Asia & Pacific"` | The region of a nation the file gives none (Taiwan, which WDI lacks): East Asia & Pacific's. |
+| 181 | `Nations.WORLD` | `1, REGION = 2, OWN = 3, CRISIS = 4, CRISIS_DEPTH = 5, INFLATION = 6, RATE = 7, PRICE = 8` | The kinds of draw, and where a draw that belongs to no nation sits among the nations' numbers. |
+| 182 | `Nations.WORLD_NATION` | `0, REGION_BASE = 1000, GOOD_BASE = 2000` |  |
+| 206 | `Nations.NO_DRAWS` | `new Draws(0, 0, 0, 0, false)` |  |
 
 ### NationsMap.java ([map](map/NationsMap.md))
 
@@ -2357,21 +2353,19 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 50 | `PolicyRates.STEP` | `.0025` | The step a policy rate moves in: a quarter point, the step central banks move in. |
-| 53 | `PolicyRates.LOWER_BOUND` | `0` | The least the rule's target is: the rule does not go below zero (est.: the negative rates of 2014-2024 are replayed on Historical, and the banks that ran them had left them by 2024). |
-| 56 | `PolicyRates.TAYLOR_WEIGHT` | `.5` | Half a point of rate over inflation for each point inflation runs over the target (Taylor, 1993). |
-| 59 | `PolicyRates.RULE_HALF_LIFE` | `9` | The months for the rate's shadow to close half its gap to the rule's target (est.: an estimated rule's quarterly smoothing of about 0.8). |
-| 65 | `PolicyRates.TARGET` | `{.02,.02,.02,.02,.02,.02,.025,.01 }` | Each bank's inflation target, in WorldMoneys.EIGHT's order: 2% for all but the Reserve Bank of Australia's 2-3% band at its middle and the Swiss National Bank's 0-2% at its middle; China's "around ... |
-| 72 | `PolicyRates.NEUTRAL_REAL` | `{.01, 0, -.005,.01,.01,.0075,.01, 0 }` | Each bank's neutral real rate, in WorldMoneys.EIGHT's order: its own published long-run neutral nominal rate less its target (est.: the Fed's 3%, the ECB's about 2%, the Bank of Japan's 1-2.5% rang... |
-| 75 | `PolicyRates.CLOSE` | `1 - StrictMath.pow(.5, 1.0 / RULE_HALF_LIFE)` | The share of the gap to its target the shadow closes in a month: one less 0.5 to the 1 over RULE_HALF_LIFE. |
-| 78 | `PolicyRates.MONEYS` | `8` | The banks, in WorldMoneys.EIGHT's order. |
-| 86 | `PolicyRates.TABLE_FIRST_YEAR` | `2000` | The year the table's own lines begin in: January 2000, the first month of the BIS's CBPOL as transcribed. |
-| 89 | `PolicyRates.TABLE_FIRST_MONTH` | `(TABLE_FIRST_YEAR - Nations.FIRST_YEAR) * 12` | The month the table's own lines begin in, counted from Nations.FIRST_YEAR: January of TABLE_FIRST_YEAR. |
-| 92 | `PolicyRates.MONTHS` | `WorldMoneys.HISTORICAL_RULE_START` | The months the table covers: January of Nations.FIRST_YEAR to December 2025 (Nations.HISTORY_LAST_YEAR), the world file's reader's (WorldMoneys.HISTORICAL_RULE_START). |
-| 95 | `PolicyRates.RESOURCE` | `"/policy-rates.tsv"` | Where the table is, on the classpath. |
-| 315 | `PolicyRates.SAVE_FORMAT` | `1` | The current format of toSaveArray. |
-| 317 | `PolicyRates.HEADER` | `3` |  |
-| 320 | `PolicyRates.NOT_READ` | `- 1e9` | What a target or an inflation not read yet is saved as (the state is no NaN, so that it goes through JSON). |
+| 43 | `PolicyRates.STEP` | `.0025` | The step a policy rate moves in: a quarter point, the step central banks move in. |
+| 46 | `PolicyRates.LOWER_BOUND` | `0` | The least the rule's target is: the rule does not go below zero (est.: the negative rates of 2014-2024 are replayed on Historical, and the banks that ran them had left them by 2024). |
+| 49 | `PolicyRates.TAYLOR_WEIGHT` | `.5` | Half a point of rate over inflation for each point inflation runs over the target (Taylor, 1993). |
+| 52 | `PolicyRates.RULE_HALF_LIFE` | `9` | The months for the rate's shadow to close half its gap to the rule's target (est.: an estimated rule's quarterly smoothing of about 0.8). |
+| 58 | `PolicyRates.TARGET` | `{.02,.02,.02,.02,.02,.02,.025,.01 }` | Each bank's inflation target, in WorldMoneys.EIGHT's order: 2% for all but the Reserve Bank of Australia's 2-3% band at its middle and the Swiss National Bank's 0-2% at its middle; China's "around ... |
+| 65 | `PolicyRates.NEUTRAL_REAL` | `{.01, 0, -.005,.01,.01,.0075,.01, 0 }` | Each bank's neutral real rate, in WorldMoneys.EIGHT's order: its own published long-run neutral nominal rate less its target (est.: the Fed's 3%, the ECB's about 2%, the Bank of Japan's 1-2.5% rang... |
+| 68 | `PolicyRates.CLOSE` | `1 - StrictMath.pow(.5, 1.0 / RULE_HALF_LIFE)` | The share of the gap to its target the shadow closes in a month: one less 0.5 to the 1 over RULE_HALF_LIFE. |
+| 71 | `PolicyRates.MONEYS` | `8` | The banks, in WorldMoneys.EIGHT's order. |
+| 74 | `PolicyRates.MONTHS` | `WorldMoneys.HISTORICAL_RULE_START` | The months the table covers: January 2000 to December 2025, the world file's (WorldMoneys.HISTORICAL_RULE_START). |
+| 77 | `PolicyRates.RESOURCE` | `"/policy-rates.tsv"` | Where the table is, on the classpath. |
+| 292 | `PolicyRates.SAVE_FORMAT` | `1` | The current format of toSaveArray. |
+| 294 | `PolicyRates.HEADER` | `3` |  |
+| 297 | `PolicyRates.NOT_READ` | `- 1e9` | What a target or an inflation not read yet is saved as (the state is no NaN, so that it goes through JSON). |
 
 ### PopulationCohorts.java ([map](map/PopulationCohorts.md))
 
@@ -2423,16 +2417,6 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 579 | `PriceIndex.CHAIN_MARKER` | `743` | What follows them in a save from 0.7.43 on, so an older array - which ends there - is told apart from one that goes on. |
 | 582 | `PriceIndex.CHAIN_TAIL_0743` | `4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS *(COMPONENTS + FEE_LINES)` | The chained basket's slots behind the marker as 0.7.43 wrote them: the link, its month, the pending flag, the bases, weights and last prices, the fee lines', and the trailing year. |
 
-### PriceLevel.java ([map](map/PriceLevel.md))
-
-| line | constant | value | says |
-|---:|---|---|---|
-| 23 | `PriceLevel.FIRST_YEAR` | `1900` | The series' first year, the calendar's (CityCalendar.EPOCH_YEAR). |
-| 26 | `PriceLevel.LAST_YEAR` | `2025` | The series' last year, the year the game's literals are priced in (WorldMarket.REFERENCE_YEAR). |
-| 29 | `PriceLevel.FIRST_PUBLISHED_YEAR` | `1913` | The first year the BLS published the index; the years before it are Rees's index joined at it (est.). |
-| 32 | `PriceLevel.US_CPI` | `{ 8.333, 8.333, 8.667, 9.000, 9.000, 9.000, 9.000, 9.333, 9.000, 9.000, 9.333, 9.333, 9...` | The US CPI-U a year, 1900 to 2025, 1982-84 = 100 (the class's sources). |
-| 52 | `PriceLevel.FACTOR` | `factor()` | Every nominal anchor's multiplier, the US CPI of the calendar's first year over its 2025: 8.333 / 321.943 = 0.02588, 1/38.6 (call 1). |
-
 ### Rankings.java ([map](map/Rankings.md))
 
 | line | constant | value | says |
@@ -2448,12 +2432,6 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 154 | `Rankings.AROUND_TOP` | `3, AROUND_EITHER_SIDE = 6, AROUND_OFF = 10` | Around you: the rows from the top, and either side of the city; the rows from the top when the city is off the board. |
 | 157 | `Rankings.TIE` | `1e-9` | Two figures within this fraction of each other are one figure and share a rank: a city saved before and after a reform by 100 differs in its last digits only (LB3). |
 | 160 | `Rankings.CONSTANT_SERIES` | `Set.of("gdp", "gdp_pp", "hh_spend_pp")` | The money measures with a series at constant prices (gdp, gdp per person, household spending per person); the rest show this month's rate under Constant. |
-
-### RealDollar.java ([map](map/RealDollar.md))
-
-| line | constant | value | says |
-|---:|---|---|---|
-| 34 | `RealDollar.BRIDGE` | `PriceLevel.usCpi(Rankings.BASE_YEAR) / PriceLevel.usCpi(CityCalendar.EPOCH_YEAR)` | Real 2015 US dollars in a founding US dollar (EP1, study call 12): the US CPI-U of Rankings.BASE_YEAR over that of the calendar's first year, the one place the pivot to 2015 is struck. |
 
 ### RefineryView.java ([map](map/RefineryView.md))
 
@@ -2523,15 +2501,15 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 31 | `RunWorks.SQ_FT_PER_M2` | `1 / LandManager.SQ_M_PER_SQ_FT` | Square feet in a square metre. |
 | 34 | `RunWorks.RUN_WIDTH_M` | `SitePreparation.PAD_WIDTH_M` | The width of a run across the ground, metres: one plot (30 m), as a foothill pad's (SitePreparation.PAD_WIDTH_M). |
 | 41 | `RunWorks.FOOTHILL_USD_PER_M2` | `SitePreparation.USD_PER_M2` | Foothill: a bench cut and filled across the slope, with its wall where it meets the ground above - a pad's arithmetic on the class's mean grade over the run's width, which is a pad's (SitePreparati... |
-| 50 | `RunWorks.DECK_USD_PER_M2` | `250 * SQ_FT_PER_M2 * PriceLevel.FACTOR` | A bridge's deck, US dollars a m2: Wisconsin DOT's 2025 planning cost to replace a structure is $220 a sq ft of deck (wisconsindot.gov, "bos-cost", June 2025) and Colorado DOT's 2025 cost data book'... |
-| 56 | `RunWorks.DECK_WIDTH_M` | `2 *(2 * 3.66 + 3.05 + 1.22)` | The deck a highway's viaduct carries, metres: four lanes of 3.66 m (12 ft), an outside shoulder of 3.05 m (10 ft) and an inside one of 1.22 m (4 ft) each way, the Interstate standard's - 23.2 m of ... |
-| 59 | `RunWorks.STEEP_USD_PER_M2` | `DECK_USD_PER_M2 * DECK_WIDTH_M / RUN_WIDTH_M` | Steep: the run carried on a viaduct, its deck over the run's width, about $2,080 a m2 of the run's land. |
-| 70 | `RunWorks.TUNNEL_BORE_USD_PER_KM` | `35e6 * PriceLevel.FACTOR` | One bore of a tunnel, US dollars a km: the European Commission's rail unit-cost study finds tunnels cost 25-30 million euros a km on average and over 80 million in very complex cases (Assessment of... |
-| 73 | `RunWorks.TUNNEL_BORES` | `2` | The bores a highway's tunnel needs: two, one a direction, its four lanes two to a bore. |
-| 76 | `RunWorks.VERY_STEEP_USD_PER_M2` | `TUNNEL_BORES * TUNNEL_BORE_USD_PER_KM /(1000 * RUN_WIDTH_M)` | Very steep: the run in tunnel, its bores over the run's width, about $2,330 a m2 of the run's land. |
-| 82 | `RunWorks.HIGHWAY_GRADE` | `0.06` | The steepest grade a highway climbs, 6%: the Interstate standard's in mountainous terrain (AASHTO's geometric design policy; WSDOT Design Manual M 22-01, chapter 1220). |
-| 88 | `RunWorks.RAIL_GRADE` | `0.022` | ...and a main-line railway, 2.2%: the practicable limit the Baltimore and Ohio set in the 1830s, and the ruling grades of the western US mountain main lines, about 2 to 2.4% (Trains, "Mountain rail... |
-| 96 | `RunWorks.RAIL_FACTOR` | `HIGHWAY_GRADE / RAIL_GRADE` | How many times a highway's works a m2 of a railway's land needs on any class above flat, about 2.7: a line gains a height in no less than the height over its grade of length, so to cross the same g... |
+| 48 | `RunWorks.DECK_USD_PER_M2` | `250 * SQ_FT_PER_M2` | A bridge's deck, US dollars a m2: Wisconsin DOT's 2025 planning cost to replace a structure is $220 a sq ft of deck (wisconsindot.gov, "bos-cost", June 2025) and Colorado DOT's 2025 cost data book'... |
+| 54 | `RunWorks.DECK_WIDTH_M` | `2 *(2 * 3.66 + 3.05 + 1.22)` | The deck a highway's viaduct carries, metres: four lanes of 3.66 m (12 ft), an outside shoulder of 3.05 m (10 ft) and an inside one of 1.22 m (4 ft) each way, the Interstate standard's - 23.2 m of ... |
+| 57 | `RunWorks.STEEP_USD_PER_M2` | `DECK_USD_PER_M2 * DECK_WIDTH_M / RUN_WIDTH_M` | Steep: the run carried on a viaduct, its deck over the run's width, about $2,080 a m2 of the run's land. |
+| 66 | `RunWorks.TUNNEL_BORE_USD_PER_KM` | `35e6` | One bore of a tunnel, US dollars a km: the European Commission's rail unit-cost study finds tunnels cost 25-30 million euros a km on average and over 80 million in very complex cases (Assessment of... |
+| 69 | `RunWorks.TUNNEL_BORES` | `2` | The bores a highway's tunnel needs: two, one a direction, its four lanes two to a bore. |
+| 72 | `RunWorks.VERY_STEEP_USD_PER_M2` | `TUNNEL_BORES * TUNNEL_BORE_USD_PER_KM /(1000 * RUN_WIDTH_M)` | Very steep: the run in tunnel, its bores over the run's width, about $2,330 a m2 of the run's land. |
+| 78 | `RunWorks.HIGHWAY_GRADE` | `0.06` | The steepest grade a highway climbs, 6%: the Interstate standard's in mountainous terrain (AASHTO's geometric design policy; WSDOT Design Manual M 22-01, chapter 1220). |
+| 84 | `RunWorks.RAIL_GRADE` | `0.022` | ...and a main-line railway, 2.2%: the practicable limit the Baltimore and Ohio set in the 1830s, and the ruling grades of the western US mountain main lines, about 2 to 2.4% (Trains, "Mountain rail... |
+| 92 | `RunWorks.RAIL_FACTOR` | `HIGHWAY_GRADE / RAIL_GRADE` | How many times a highway's works a m2 of a railway's land needs on any class above flat, about 2.7: a line gains a height in no less than the height over its grade of length, so to cross the same g... |
 
 ### SalesTaxLedger.java ([map](map/SalesTaxLedger.md))
 
@@ -2588,21 +2566,21 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 247 | `Sector.MIN_STAFFABLE_TO_ORDER` | `.80` |  |
-| 337 | `Sector.Staffing.ANY` | `new Staffing(1, new double [ 0 ], new double [ 0 ], new double [ 0 ], new boolean [ 0 ])` | Always staffable: a building with no posts, or nobody to ask. |
-| 654 | `Sector.CONSUMABLES` | `"Consumables"` | The consumables' name on a sector's input line. |
-| 741 | `Sector.TONNES_PER_VAN` | `120` | What one vehicle in a sector's fleet moves in a month. |
-| 747 | `Sector.VAN_LIFE_MONTHS` | `120` | How long a working vehicle lasts. |
-| 776 | `Sector.FLEET_DELIVERY_MONTHS` | `8` | The fastest a sector can put vehicles on the road: this much of the fleet it needs, a month. |
-| 790 | `Sector.MIN_VAN_RATE` | `.6` | What a sector with no lorries of its own still gets done. |
-| 804 | `Sector.LOADS_A_VAN_MONTH` | `TONNES_PER_VAN / Good.VANS.tonnesPerUnit()` | The loads a van-month carries: TONNES_PER_VAN at a van's own weight, three tonnes (Good.VANS.tonnesPerUnit()) - forty. |
-| 807 | `Sector.KM_A_LOAD` | `50` | How far a load goes, there and back: fifty kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). |
-| 810 | `Sector.DIESEL_LITRES_PER_100_KM` | `12` | What a laden van or truck burns: twelve litres of diesel a hundred kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). |
-| 813 | `Sector.DIESEL_LITRES_A_VAN_MONTH` | `LOADS_A_VAN_MONTH * KM_A_LOAD * DIESEL_LITRES_PER_100_KM / 100` | ...so a van-month burns LOADS_A_VAN_MONTH x KM_A_LOAD x DIESEL_LITRES_PER_100_KM / 100 litres: 240. |
-| 1098 | `Sector.BORROWING_COST_MOST_MONTHS` | `Mortgage.MORTGAGE_AMORTIZATION_MONTHS` | The longest life a cost of borrowing is expensed over, in months: a mortgage's amortization, forty years (0.7.102, A16) - the clock's length. |
-| 2253 | `Sector.STOCK_MONTHS` | `2` | How many months of local demand a maker holds in stock before it idles. |
-| 2256 | `Sector.DUMP_THRESHOLD` | `.8` | Above this share of warehouse room a maker clears stock even at a loss. |
-| 2644 | `Sector.FLOW_EXPORT_HEADROOM` | `.02` | The margin over its inputs' cost a works aims next month's export price at on the world's slope (FL1): a month's drift in the band then leaves this month's price over the cost, so the line does not... |
-| 2880 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
+| 345 | `Sector.Staffing.ANY` | `new Staffing(1, new double [ 0 ], new double [ 0 ], new double [ 0 ], new boolean [ 0 ])` | Always staffable: a building with no posts, or nobody to ask. |
+| 703 | `Sector.CONSUMABLES` | `"Consumables"` | The consumables' name on a sector's input line. |
+| 790 | `Sector.TONNES_PER_VAN` | `120` | What one vehicle in a sector's fleet moves in a month. |
+| 796 | `Sector.VAN_LIFE_MONTHS` | `120` | How long a working vehicle lasts. |
+| 825 | `Sector.FLEET_DELIVERY_MONTHS` | `8` | The fastest a sector can put vehicles on the road: this much of the fleet it needs, a month. |
+| 839 | `Sector.MIN_VAN_RATE` | `.6` | What a sector with no lorries of its own still gets done. |
+| 853 | `Sector.LOADS_A_VAN_MONTH` | `TONNES_PER_VAN / Good.VANS.tonnesPerUnit()` | The loads a van-month carries: TONNES_PER_VAN at a van's own weight, three tonnes (Good.VANS.tonnesPerUnit()) - forty. |
+| 856 | `Sector.KM_A_LOAD` | `50` | How far a load goes, there and back: fifty kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). |
+| 859 | `Sector.DIESEL_LITRES_PER_100_KM` | `12` | What a laden van or truck burns: twelve litres of diesel a hundred kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). |
+| 862 | `Sector.DIESEL_LITRES_A_VAN_MONTH` | `LOADS_A_VAN_MONTH * KM_A_LOAD * DIESEL_LITRES_PER_100_KM / 100` | ...so a van-month burns LOADS_A_VAN_MONTH x KM_A_LOAD x DIESEL_LITRES_PER_100_KM / 100 litres: 240. |
+| 1147 | `Sector.BORROWING_COST_MOST_MONTHS` | `Mortgage.MORTGAGE_AMORTIZATION_MONTHS` | The longest life a cost of borrowing is expensed over, in months: a mortgage's amortization, forty years (0.7.102, A16) - the clock's length. |
+| 2302 | `Sector.STOCK_MONTHS` | `2` | How many months of local demand a maker holds in stock before it idles. |
+| 2305 | `Sector.DUMP_THRESHOLD` | `.8` | Above this share of warehouse room a maker clears stock even at a loss. |
+| 2693 | `Sector.FLOW_EXPORT_HEADROOM` | `.02` | The margin over its inputs' cost a works aims next month's export price at on the world's slope (FL1): a month's drift in the band then leaves this month's price over the cost, so the line does not... |
+| 2929 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
 
 ### SectorBooks.java ([map](map/SectorBooks.md))
 
@@ -2696,9 +2674,9 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 31 | `SitePreparation.PAD_WIDTH_M` | `30` | The width of a pad across the contours, metres: one plot (30 m). |
 | 34 | `SitePreparation.EARTH_M3_PER_M2` | `MEAN_FOOTHILL_GRADE * PAD_WIDTH_M / 4` | Earth moved a m2 of pad, m3: balanced cut and fill on a pad W wide on a grade g moves g x W / 4 (spec 4.1), 1.425. |
 | 37 | `SitePreparation.WALL_M2_PER_M2` | `MEAN_FOOTHILL_GRADE` | Wall face a m2 of pad, m2: one wall the height of the pad's drop, g m2 of face per m2 of pad (spec 4.1). |
-| 46 | `SitePreparation.EARTH_USD_PER_M3` | `20 * PriceLevel.FACTOR` | US dollars a m3 of earth, balanced cut and fill with compaction and no haul off site: US$15-30 a cubic yard (about $20-39 a m3) is the commonest 2026 benchmark (snaptrude.com/blog/cut-fill-earthwor... |
-| 55 | `SitePreparation.WALL_USD_PER_M2` | `430 * PriceLevel.FACTOR` | US dollars a m2 of retaining wall, face area: a segmental block wall is US$15-35 a sq ft in national guides (fixr.com/costs/retaining-wall-building) and $70-140 for an engineered wall with geogrid ... |
-| 58 | `SitePreparation.USD_PER_M2` | `EARTH_M3_PER_M2 * EARTH_USD_PER_M3 + WALL_M2_PER_M2 * WALL_USD_PER_M2` | US dollars to prepare a m2 of foothill: its earth and its wall at their rates (about $110). |
+| 44 | `SitePreparation.EARTH_USD_PER_M3` | `20` | US dollars a m3 of earth, balanced cut and fill with compaction and no haul off site: US$15-30 a cubic yard (about $20-39 a m3) is the commonest 2026 benchmark (snaptrude.com/blog/cut-fill-earthwor... |
+| 51 | `SitePreparation.WALL_USD_PER_M2` | `430` | US dollars a m2 of retaining wall, face area: a segmental block wall is US$15-35 a sq ft in national guides (fixr.com/costs/retaining-wall-building) and $70-140 for an engineered wall with geogrid ... |
+| 54 | `SitePreparation.USD_PER_M2` | `EARTH_M3_PER_M2 * EARTH_USD_PER_M3 + WALL_M2_PER_M2 * WALL_USD_PER_M2` | US dollars to prepare a m2 of foothill: its earth and its wall at their rates (about $110). |
 
 ### SocialSecurity.java ([map](map/SocialSecurity.md))
 
@@ -2757,11 +2735,11 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 741 | `TaxPolicy.MAX_HEALTH_FEE_SCALE` | `15.0` | Fifteen times the founding fees: past every played city's break-even (x7 to x13 at today's wages), so the business corner is reachable; a ceiling, not a default. |
 | 744 | `TaxPolicy.DEFAULT_HEALTH_PREMIUM` | `0` | Where the health premium starts: nobody pays one until the player says so. |
 | 747 | `TaxPolicy.MAX_HEALTH_PREMIUM` | `.10` | A health premium past a tenth of a wage is a second income tax, as the EI premium's ceiling says. |
-| 867 | `TaxPolicy.DEFAULT_TRANSIT_FARE` | `.0025 * PriceLevel.FACTOR` | What a single journey costs a rider, in thousands. |
-| 870 | `TaxPolicy.MAX_TRANSIT_FARE` | `.05 * PriceLevel.FACTOR` | The dial's cap, $50 a ride, twenty times the default, in founding money: past it no car owner rides while a journey's fuel costs under half of it, and the commuters with no car of their own still d... |
+| 867 | `TaxPolicy.DEFAULT_TRANSIT_FARE` | `.0025` | What a single journey costs a rider, in thousands. |
+| 870 | `TaxPolicy.MAX_TRANSIT_FARE` | `.05` | The dial's cap, $50 a ride, twenty times the default, in founding money: past it no car owner rides while a journey's fuel costs under half of it, and the commuters with no car of their own still d... |
 | 911 | `TaxPolicy.JOURNEYS_A_MONTH` | `40` | Journeys one commuter makes in a month: out and back, twenty days. |
 | 1032 | `TaxPolicy.DEFAULT_FUEL_DUTY` | `0` | No duty: the city it was (Jerus's A7: default 0). |
-| 1035 | `TaxPolicy.MAX_FUEL_DUTY` | `.001 * PriceLevel.FACTOR` | The dial's top, a dollar a litre at founding prices, in thousands: past the dearest duty the research found, the Netherlands' EUR 0.789 a litre of petrol (2024; runs/research-pump.md 6 [30]) - a ce... |
+| 1035 | `TaxPolicy.MAX_FUEL_DUTY` | `.001` | The dial's top, a dollar a litre at founding prices, in thousands: past the dearest duty the research found, the Netherlands' EUR 0.789 a litre of petrol (2024; runs/research-pump.md 6 [30]) - a ce... |
 | 1074 | `TaxPolicy.DEFAULT_PORT_DUES` | `1.0` | The default due: the berths' cost recovered over their life at the city's rate (D9). |
 | 1077 | `TaxPolicy.MAX_PORT_DUES` | `2.0` | The dial's top: twice the default. |
 | 1442 | `TaxPolicy.STATE_BEFORE_EI` | `4 + WageBand.values().length` | The slots a save from before the EI and grant dials carried: the four rates and the wage-band offsets. |
@@ -3107,8 +3085,14 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 39 | `UtilitiesHandler.BASE_WATER_SUPPLY` | `8000` | What the city can draw before it builds anything: the legacy wells and the old municipal intake. |
 | 42 | `UtilitiesHandler.BASE_GRID_KW` | `10000` | The kilowatts the grid starts with, before a power plant is built (setWattsProduction()). |
 | 69 | `UtilitiesHandler.WATER_PER_PERSON` | `.3` | Per-resident draw, in units of 10,000 gallons/month. |
-| 114 | `UtilitiesHandler.FRESH_UNITS_PER_KM2` | `121_600` | Units of fresh water a month one square kilometre of owned lake or river yields: the world's renewable river runoff (about 42,700 km3 a year, Shiklomanov) over the world's river and stream area (77... |
-| 713 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
+| 112 | `UtilitiesHandler.FRESH_UNITS_PER_KM2` | `121_600` | Units of fresh water a month one square kilometre of owned lake or river yields: the world's renewable river runoff (about 42,700 km3 a year, Shiklomanov) over the world's river and stream area (77... |
+| 711 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
+
+### WantedPosts.java ([map](map/WantedPosts.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 46 | `WantedPosts.MOST_OF_POSTS` | `1.0` | The most a band's refused posts may count as, as a share of the posts it has that exist. |
 
 ### World.java ([map](map/World.md))
 
@@ -3222,29 +3206,26 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 76 | `WorldData.DATA_FILE` | `"data/world-1.bin"` | Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored). |
-| 79 | `WorldData.PROPERTY` | `"cbs.world"` | The system property that names the file instead (-Dcbs.world=<path>), as the harness's run on the full file takes it. |
-| 82 | `WorldData.FIXTURE` | `"world/world-1-fixture.bin"` | The fixture, a resource beside the classes: the full file cut by tools/world/fixture.py to twelve nations and the Rotterdam window (WorldDataCheck's, with world-1-fixture.expect beside it). |
-| 85 | `WorldData.MAGIC` | `"WORLD-1\n"` | The bytes the first eight of the file are: the earth container's layout, under its own name. |
-| 88 | `WorldData.FORMAT` | `1` | The layout's version this reads (FORMAT.txt). |
-| 91 | `WorldData.KIND_TILES` | `EarthData.KIND_TILES` | A layer of 64,800 1-degree tiles, numbered (lat0 + 90) x 360 + (lon0 + 180) from the south-west corner (EarthData's). |
-| 93 | `WorldData.KIND_WHOLE` | `EarthData.KIND_WHOLE` | A layer held whole, one blob. |
-| 95 | `WorldData.TILES` | `EarthData.TILES` | The tiles in a KIND_TILES layer. |
-| 97 | `WorldData.META` | `"meta", NATIONS = "nations", MONEYS = "moneys", PATHS = "paths", GOODS = "goods", TRADE...` |  |
-| 101 | `WorldData.LAYERS` | `List.of(META, NATIONS, MONEYS, PATHS, GOODS, TRADE, FREIGHT, OWNER, LINES, PRICES)` | The layers, in the file's order (FORMAT.txt, LAYERS). |
-| 104 | `WorldData.OWNER_CELLS` | `240` | The owner layer's cells a degree: 240, 15", the earth file's landmass layer's grid. |
-| 107 | `WorldData.OWNER_TILE_BYTES` | `OWNER_CELLS * OWNER_CELLS` | The bytes of an owner tile with two owners or more: a byte a cell, OWNER_CELLS squared. |
-| 110 | `WorldData.MAX_OWNERS` | `255` | The most owners the layer's byte holds: nations and areas together are numbered up to this (FORMAT.txt, NUMBERS). |
-| 113 | `WorldData.CACHE_TILES` | `64` | The inflated owner tiles kept, 64 of 57,600 bytes: a screen or a scan reads the same few tiles over and over. |
-| 116 | `WorldData.FIRST_YEAR` | `CityCalendar.EPOCH_YEAR` | The year month 0 is in, as this reads the file: the calendar's first year (EP1; it was 2000, the file's own first); months are numbered from January of it. |
-| 119 | `WorldData.FILE_FIRST_YEAR` | `2000` | The year the file's own figures begin in: its paths and prices run from it, and FORMAT.txt numbers its months from January of it (world-1.bin; EP1b rebuilds the file from 1900). |
-| 122 | `WorldData.FILE_MONTH_ZERO` | `(FILE_FIRST_YEAR - FIRST_YEAR) * 12` | The file's month 0, 2000-01, in the numbers this reads: the months the stand-in century has before it. |
-| 125 | `WorldData.NOMINAL_SERIES` | `List.of("cpi", "gdp_usd")` | The paths' series that are nominal money, which the stand-in carries back on the US price level; every other series is real and is held. |
-| 128 | `WorldData.LINE_UNITS` | `100_000` | A lines layer's coordinate is stored in these units a degree. |
-| 131 | `WorldData.MARK_NONE` | `0, MARK_ESTIMATE = 1, MARK_PROJECTED = 2, MARK_PUBLISHED = 3` | The marks (see the class comment). |
-| 134 | `WorldData.KIND_NATION` | `"nation", KIND_AREA = "area"` | A nations row's kind for a nation, and for an area. |
-| 137 | `WorldData.LAND_PER_SEA` | `"LAND_PER_SEA"` | The meta dial that weighs a land km against a sea km in the freight cost (FORMAT.txt, freight). |
-| 140 | `WorldData.HEAD_BYTES` | `16 + 64 *(2 + 255 + 33)` | The first eight bytes' length, the format version, the layer count, and the room a layer's header row takes at most: the head read to find the layers. |
+| 70 | `WorldData.DATA_FILE` | `"data/world-1.bin"` | Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored). |
+| 73 | `WorldData.PROPERTY` | `"cbs.world"` | The system property that names the file instead (-Dcbs.world=<path>), as the harness's run on the full file takes it. |
+| 76 | `WorldData.FIXTURE` | `"world/world-1-fixture.bin"` | The fixture, a resource beside the classes: the full file cut by tools/world/fixture.py to twelve nations and the Rotterdam window (WorldDataCheck's, with world-1-fixture.expect beside it). |
+| 79 | `WorldData.MAGIC` | `"WORLD-1\n"` | The bytes the first eight of the file are: the earth container's layout, under its own name. |
+| 82 | `WorldData.FORMAT` | `1` | The layout's version this reads (FORMAT.txt). |
+| 85 | `WorldData.KIND_TILES` | `EarthData.KIND_TILES` | A layer of 64,800 1-degree tiles, numbered (lat0 + 90) x 360 + (lon0 + 180) from the south-west corner (EarthData's). |
+| 87 | `WorldData.KIND_WHOLE` | `EarthData.KIND_WHOLE` | A layer held whole, one blob. |
+| 89 | `WorldData.TILES` | `EarthData.TILES` | The tiles in a KIND_TILES layer. |
+| 91 | `WorldData.META` | `"meta", NATIONS = "nations", MONEYS = "moneys", PATHS = "paths", GOODS = "goods", TRADE...` |  |
+| 95 | `WorldData.LAYERS` | `List.of(META, NATIONS, MONEYS, PATHS, GOODS, TRADE, FREIGHT, OWNER, LINES, PRICES)` | The layers, in the file's order (FORMAT.txt, LAYERS). |
+| 98 | `WorldData.OWNER_CELLS` | `240` | The owner layer's cells a degree: 240, 15", the earth file's landmass layer's grid. |
+| 101 | `WorldData.OWNER_TILE_BYTES` | `OWNER_CELLS * OWNER_CELLS` | The bytes of an owner tile with two owners or more: a byte a cell, OWNER_CELLS squared. |
+| 104 | `WorldData.MAX_OWNERS` | `255` | The most owners the layer's byte holds: nations and areas together are numbered up to this (FORMAT.txt, NUMBERS). |
+| 107 | `WorldData.CACHE_TILES` | `64` | The inflated owner tiles kept, 64 of 57,600 bytes: a screen or a scan reads the same few tiles over and over. |
+| 110 | `WorldData.FIRST_YEAR` | `2000` | The year month 0 is in: months are numbered from January of it. |
+| 113 | `WorldData.LINE_UNITS` | `100_000` | A lines layer's coordinate is stored in these units a degree. |
+| 116 | `WorldData.MARK_NONE` | `0, MARK_ESTIMATE = 1, MARK_PROJECTED = 2, MARK_PUBLISHED = 3` | The marks (see the class comment). |
+| 119 | `WorldData.KIND_NATION` | `"nation", KIND_AREA = "area"` | A nations row's kind for a nation, and for an area. |
+| 122 | `WorldData.LAND_PER_SEA` | `"LAND_PER_SEA"` | The meta dial that weighs a land km against a sea km in the freight cost (FORMAT.txt, freight). |
+| 125 | `WorldData.HEAD_BYTES` | `16 + 64 *(2 + 255 + 33)` | The first eight bytes' length, the format version, the layer count, and the room a layer's header row takes at most: the head read to find the layers. |
 
 ### WorldEconomy.java ([map](map/WorldEconomy.md))
 
@@ -3277,7 +3258,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 88 | `WorldMarket.REFERENCE_YEAR` | `2025` | The year the literals are set in (the Historical path's last year of data, seed-free). |
 | 91 | `WorldMarket.SOLVES_KEPT` | `64` | The solved years kept in the process-wide cache, so harness cities on one world share a January. |
 | 94 | `WorldMarket.BASE_MS` | `2_000` | The Base on the full file, read and calibrated, takes at most this many milliseconds. |
-| 97 | `WorldMarket.SOLVE_COLD_MS` | `600` | The founding solve (the calendar's first year, every good, from p-hat = 1) takes at most this many milliseconds. |
+| 97 | `WorldMarket.SOLVE_COLD_MS` | `600` | The founding solve (year 2000, every good, from p-hat = 1) takes at most this many milliseconds. |
 | 100 | `WorldMarket.SOLVE_WARM_MS` | `60` | A January (every good, from last year's answer) takes at most this many milliseconds. |
 | 103 | `WorldMarket.BAND_MONTH_US` | `200` | A month's bands for every good take at most this many microseconds. |
 | 106 | `WorldMarket.ACCEL_MEMORY` | `5` | The steps Anderson's acceleration remembers: the solve is a fixed-point iteration that closes about a tenth of its distance a pass, and the last few steps tell it where it is going. |
@@ -3291,9 +3272,9 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 130 | `WorldMarket.PHI_FALLBACK` | `1` | The freight scale a world with no good that calibrates stands on (est.: the file's reference freight as it is). |
 | 295 | `WorldMarket.Base.LOADED` | `new HashMap<>()` |  |
 | 296 | `WorldMarket.Base.OF` | `new IdentityHashMap<>()` |  |
-| 722 | `WorldMarket.STAND_IN` | `0x57A4D1` | Draws a stand-in's nation (Nations.scramble's "what"). |
-| 990 | `WorldMarket.SOLVES` | `new LinkedHashMap<>(16,.75f, true) { @ Override protected boolean removeEldestEntry(Map...` |  |
-| 1428 | `WorldMarket.SCARCITY_MULTIPLE` | `4` | Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill has no level (infinity), and a market's strike needs a fi... |
+| 719 | `WorldMarket.STAND_IN` | `0x57A4D1` | Draws a stand-in's nation (Nations.scramble's "what"). |
+| 987 | `WorldMarket.SOLVES` | `new LinkedHashMap<>(16,.75f, true) { @ Override protected boolean removeEldestEntry(Map...` |  |
+| 1414 | `WorldMarket.SCARCITY_MULTIPLE` | `4` | Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill has no level (infinity), and a market's strike needs a fi... |
 
 ### WorldMeasures.java ([map](map/WorldMeasures.md))
 
@@ -3305,37 +3286,37 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 41 | `WorldMoneys.CYCLE_SIGMA` | `.016` | One standard deviation of the dollar cycle's monthly innovation: 1.6% (the broad dollar's swings of 35-50% over 6-11 years [R5]). |
-| 44 | `WorldMoneys.CYCLE_HALF_LIFE` | `60` | The dollar cycle's half-life in months: five years, one AR(1) for the world [R5]. |
-| 47 | `WorldMoneys.RISK_OFF_RATE` | `1.0 / 96` | The chance a month a risk-off starts: once in eight years [R6]. |
-| 50 | `WorldMoneys.RISK_OFF_HALF_LIFE` | `3` | The risk-off's half-life in months: it fades by half in three [R6]. |
-| 53 | `WorldMoneys.RISK_OFF_SIZE_MIN` | `.5` | The least a risk-off's size is, the multiple of the loadings it moves the moneys by (est.: 2024's was smaller than one). |
-| 56 | `WorldMoneys.RISK_OFF_SIZE_MAX` | `1.5` | The most a risk-off's size is (est.: 2008's was larger than one). |
-| 59 | `WorldMoneys.OWN_HALF_LIFE` | `42` | A money's own swing's half-life in months: three and a half years, an AR(1) around its parity [R1]. |
-| 62 | `WorldMoneys.TOT_PASS` | `.5` | The share of a nation's commodity share of exports its terms of trade pass into its money [R17][R18]: a better price of what it sells makes the money dearer. |
-| 65 | `WorldMoneys.TOT_MONTHS` | `3` | The months a January's change in the terms of trade takes to reach the rate, a third in each of the year's first (est.). |
-| 68 | `WorldMoneys.HISTORICAL_RULE_START` | `(Nations.HISTORY_LAST_YEAR + 1 - Nations.FIRST_YEAR) * 12` | The first month the rule rules on Historical: January 2026, after the file's 1,512 months (1900-01 to 2025-12, the stand-in century's 1,200 and the file's 312; the file's real rates are replayed be... |
-| 71 | `WorldMoneys.RANDOM_RULE_START` | `1` | The first month the rule rules on Random: the second month (February of Nations.FIRST_YEAR), the month after the file's first it opens from. |
-| 74 | `WorldMoneys.CURRENCY_BOARDS` | `Set.of("HKD", "BND", "DJF", "XCD")` | The boards the file's pegs include, which never break: the game keeps no nation's vault, and a board breaks only if its vault falls under its money (est., the IMF's list [R21]). |
-| 80 | `WorldMoneys.EIGHT` | `List.of("USD", "EUR", "JPY", "GBP", "CNY", "CAD", "AUD", "CHF")` | The eight moneys the IMF's COFER names, the vault's (spec-nations 5.2), in this order. |
-| 83 | `WorldMoneys.MAJORS` | `List.of("EUR", "JPY", "GBP", "CHF", "CAD", "AUD")` | The six floating majors the dollar cycle is fitted to at the opening: the euro, the yen, the pound, the franc, and the Canadian and Australian dollars. |
-| 91 | `WorldMoneys.EURO` | `new Kind("euro",.020, 1,.03)` | The euro: own swing 2.0% a month, the cycle in full, +3% in a risk-off (the study's table 3.7, its own swing solved given the cycle [R6]). |
-| 94 | `WorldMoneys.YEN` | `new Kind("yen",.023, 1, -.08)` | The yen: 2.3%, the cycle in full, -8% in a risk-off (it rises) [R6]. |
-| 97 | `WorldMoneys.POUND` | `new Kind("pound",.019, 1,.06)` | The pound: 1.9%, the cycle in full, +6% [R6]. |
-| 100 | `WorldMoneys.FRANC` | `new Kind("franc",.021, 1, -.05)` | The Swiss franc: 2.1%, the cycle in full, -5% (it rises) [R6]. |
-| 103 | `WorldMoneys.CANADIAN` | `new Kind("Canadian dollar",.021,.6,.07)` | The Canadian dollar: 2.1%, 0.6 of the cycle (tied to the US), +7% [R6]. |
-| 106 | `WorldMoneys.AUSTRALIAN` | `new Kind("Australian dollar",.028, 1,.14)` | The Australian dollar: 2.8%, the cycle in full, +14% [R6]. |
-| 109 | `WorldMoneys.KIWI` | `new Kind("New Zealand dollar",.027, 1,.14)` | The New Zealand dollar: 2.7%, the cycle in full, +14% (est.: the Australian dollar's loading). |
-| 112 | `WorldMoneys.YUAN` | `new Kind("yuan",.010,.3, 0)` | The yuan: 1.0%, 0.3 of the cycle, no risk-off (est.: a managed money). |
-| 115 | `WorldMoneys.ADVANCED_FLOAT` | `new Kind("advanced float",.022, 1,.06)` | Another advanced float, one whose anchor nation is high income when the rule begins: 2.2%, the cycle in full, +6% (est.: the euro's and the pound's, between them). |
-| 118 | `WorldMoneys.EMERGING_FLOAT` | `new Kind("emerging float",.040, 1,.20)` | An emerging float, any other money: 4.0%, the cycle in full, +20% [R6]. |
-| 121 | `WorldMoneys.DOLLAR_KIND` | `new Kind("US dollar", 0, 0, 0)` | The US dollar: it moves against nothing, its rate is 1 always. |
-| 123 | `WorldMoneys.NAMED` | `Map.of("USD", DOLLAR_KIND, "EUR", EURO, "JPY", YEN, "GBP", POUND, "CHF", FRANC, "CAD", ...` |  |
-| 127 | `WorldMoneys.PHI_CYCLE` | `StrictMath.pow(.5, 1 / CYCLE_HALF_LIFE), PHI_RISK_OFF = StrictMath.pow(.5, 1 / RISK_OFF...` | The monthly persistence of each AR(1): 0.5 to the 1 over its half-life. |
-| 131 | `WorldMoneys.SAVE_FORMAT` | `1` | The current format of toSaveArray. |
-| 134 | `WorldMoneys.WORLD` | `9_999, MONEY_BASE = 10_000` | The draws' who and what: a world's draw sits at WORLD, a money's at MONEY_BASE plus its number in the file, and no what is a Nations draw's (1-8). |
-| 135 | `WorldMoneys.CYCLE_DRAW` | `100, RISK_START_DRAW = 101, RISK_SIZE_DRAW = 102, OWN_DRAW = 103, BREAK_DRAW = 104` |  |
-| 724 | `WorldMoneys.HEADER` | `4, GLOBALS = 5, PER_MONEY = 11` |  |
+| 40 | `WorldMoneys.CYCLE_SIGMA` | `.016` | One standard deviation of the dollar cycle's monthly innovation: 1.6% (the broad dollar's swings of 35-50% over 6-11 years [R5]). |
+| 43 | `WorldMoneys.CYCLE_HALF_LIFE` | `60` | The dollar cycle's half-life in months: five years, one AR(1) for the world [R5]. |
+| 46 | `WorldMoneys.RISK_OFF_RATE` | `1.0 / 96` | The chance a month a risk-off starts: once in eight years [R6]. |
+| 49 | `WorldMoneys.RISK_OFF_HALF_LIFE` | `3` | The risk-off's half-life in months: it fades by half in three [R6]. |
+| 52 | `WorldMoneys.RISK_OFF_SIZE_MIN` | `.5` | The least a risk-off's size is, the multiple of the loadings it moves the moneys by (est.: 2024's was smaller than one). |
+| 55 | `WorldMoneys.RISK_OFF_SIZE_MAX` | `1.5` | The most a risk-off's size is (est.: 2008's was larger than one). |
+| 58 | `WorldMoneys.OWN_HALF_LIFE` | `42` | A money's own swing's half-life in months: three and a half years, an AR(1) around its parity [R1]. |
+| 61 | `WorldMoneys.TOT_PASS` | `.5` | The share of a nation's commodity share of exports its terms of trade pass into its money [R17][R18]: a better price of what it sells makes the money dearer. |
+| 64 | `WorldMoneys.TOT_MONTHS` | `3` | The months a January's change in the terms of trade takes to reach the rate, a third in each of the year's first (est.). |
+| 67 | `WorldMoneys.HISTORICAL_RULE_START` | `(Nations.HISTORY_LAST_YEAR + 1 - Nations.FIRST_YEAR) * 12` | The first month the rule rules on Historical: January 2026, after the file's 312 months (the file's real rates are replayed before it). |
+| 70 | `WorldMoneys.RANDOM_RULE_START` | `1` | The first month the rule rules on Random: February 2000, the month after the file's January 2000 it opens from. |
+| 73 | `WorldMoneys.CURRENCY_BOARDS` | `Set.of("HKD", "BND", "DJF", "XCD")` | The boards the file's pegs include, which never break: the game keeps no nation's vault, and a board breaks only if its vault falls under its money (est., the IMF's list [R21]). |
+| 79 | `WorldMoneys.EIGHT` | `List.of("USD", "EUR", "JPY", "GBP", "CNY", "CAD", "AUD", "CHF")` | The eight moneys the IMF's COFER names, the vault's (spec-nations 5.2), in this order. |
+| 82 | `WorldMoneys.MAJORS` | `List.of("EUR", "JPY", "GBP", "CHF", "CAD", "AUD")` | The six floating majors the dollar cycle is fitted to at the opening: the euro, the yen, the pound, the franc, and the Canadian and Australian dollars. |
+| 90 | `WorldMoneys.EURO` | `new Kind("euro",.020, 1,.03)` | The euro: own swing 2.0% a month, the cycle in full, +3% in a risk-off (the study's table 3.7, its own swing solved given the cycle [R6]). |
+| 93 | `WorldMoneys.YEN` | `new Kind("yen",.023, 1, -.08)` | The yen: 2.3%, the cycle in full, -8% in a risk-off (it rises) [R6]. |
+| 96 | `WorldMoneys.POUND` | `new Kind("pound",.019, 1,.06)` | The pound: 1.9%, the cycle in full, +6% [R6]. |
+| 99 | `WorldMoneys.FRANC` | `new Kind("franc",.021, 1, -.05)` | The Swiss franc: 2.1%, the cycle in full, -5% (it rises) [R6]. |
+| 102 | `WorldMoneys.CANADIAN` | `new Kind("Canadian dollar",.021,.6,.07)` | The Canadian dollar: 2.1%, 0.6 of the cycle (tied to the US), +7% [R6]. |
+| 105 | `WorldMoneys.AUSTRALIAN` | `new Kind("Australian dollar",.028, 1,.14)` | The Australian dollar: 2.8%, the cycle in full, +14% [R6]. |
+| 108 | `WorldMoneys.KIWI` | `new Kind("New Zealand dollar",.027, 1,.14)` | The New Zealand dollar: 2.7%, the cycle in full, +14% (est.: the Australian dollar's loading). |
+| 111 | `WorldMoneys.YUAN` | `new Kind("yuan",.010,.3, 0)` | The yuan: 1.0%, 0.3 of the cycle, no risk-off (est.: a managed money). |
+| 114 | `WorldMoneys.ADVANCED_FLOAT` | `new Kind("advanced float",.022, 1,.06)` | Another advanced float, one whose anchor nation is high income when the rule begins: 2.2%, the cycle in full, +6% (est.: the euro's and the pound's, between them). |
+| 117 | `WorldMoneys.EMERGING_FLOAT` | `new Kind("emerging float",.040, 1,.20)` | An emerging float, any other money: 4.0%, the cycle in full, +20% [R6]. |
+| 120 | `WorldMoneys.DOLLAR_KIND` | `new Kind("US dollar", 0, 0, 0)` | The US dollar: it moves against nothing, its rate is 1 always. |
+| 122 | `WorldMoneys.NAMED` | `Map.of("USD", DOLLAR_KIND, "EUR", EURO, "JPY", YEN, "GBP", POUND, "CHF", FRANC, "CAD", ...` |  |
+| 126 | `WorldMoneys.PHI_CYCLE` | `StrictMath.pow(.5, 1 / CYCLE_HALF_LIFE), PHI_RISK_OFF = StrictMath.pow(.5, 1 / RISK_OFF...` | The monthly persistence of each AR(1): 0.5 to the 1 over its half-life. |
+| 130 | `WorldMoneys.SAVE_FORMAT` | `1` | The current format of toSaveArray. |
+| 133 | `WorldMoneys.WORLD` | `9_999, MONEY_BASE = 10_000` | The draws' who and what: a world's draw sits at WORLD, a money's at MONEY_BASE plus its number in the file, and no what is a Nations draw's (1-8). |
+| 134 | `WorldMoneys.CYCLE_DRAW` | `100, RISK_START_DRAW = 101, RISK_SIZE_DRAW = 102, OWN_DRAW = 103, BREAK_DRAW = 104` |  |
+| 722 | `WorldMoneys.HEADER` | `4, GLOBALS = 5, PER_MONEY = 11` |  |
 
 ### YearBook.java ([map](map/YearBook.md))
 
@@ -3467,19 +3448,19 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 157 | `Freight.RAIL_FLOOR` | `.30` | The cheapest the railway will ever quote, as a share of the lorry rate. |
-| 160 | `Freight.OPENING_QUOTE` | `.60` | What a city with no railway assumes the first line could charge. |
-| 181 | `Freight.MIN_LINE_UTILISATION` | `.60` | How much of a line's nameplate has to be freight nobody is carrying before it is worth laying. |
-| 200 | `Freight.TONNES_PER_SET` | `2500` | Tonnes a month one wagon set can haul. |
-| 203 | `Freight.SET_LIFE_MONTHS` | `240` | How long a wagon set lasts before it is scrap. |
-| 234 | `Freight.TARGET_RETURN` | `.012` | What it tries to earn a month ON THE TRACK IT HAS SUNK, before scarcity. |
-| 237 | `Freight.MAX_SCARCITY_MULTIPLE` | `1.6` | How far a network that cannot keep up can push the quote above cost-plus. |
-| 240 | `Freight.REPRICE_SPEED` | `.25` | How fast the quote walks to where it should be. |
-| 276 | `Freight.WORLD_FUEL_PER_TONNE` | `.03 * PriceLevel.FACTOR` | What a tonne of haulage burns, IN THE WORLD'S MONEY. |
-| 288 | `Freight.FUEL_LITRES_PER_TONNE` | `18` | Litres of fuel a tonne hauled burns: eighteen. |
-| 293 | `Freight.PORT_YARD_SHARE` | `.45` | The most of the BULK tonnes that crossed a berth the port yard takes to rail (FR6, D7): Montreal's rail share, on the port's own railway on the quay (spec R70). |
-| 299 | `Freight.CITY_LITRES_A_TONNE` | `Haulage.DIESEL_LITRES_A_TONNE / 3` | Litres of diesel the railway burns on a city tonne (FR6): a third of a truck's city leg (Haulage.DIESEL_LITRES_A_TONNE), as rail costs about a third of a truck a tonne-kilometre (spec R50, R51); FU... |
-| 1037 | `Freight.BULK_WORKS_MIN_TONNES` | `TONNES_PER_SET * MIN_LINE_UTILISATION` | The bulk a building has to make and use between them, tonnes a month at nameplate, to be a bulk works (FR7): MIN_LINE_UTILISATION of a wagon set's month, as a line is not laid below that share of i... |
+| 156 | `Freight.RAIL_FLOOR` | `.30` | The cheapest the railway will ever quote, as a share of the lorry rate. |
+| 159 | `Freight.OPENING_QUOTE` | `.60` | What a city with no railway assumes the first line could charge. |
+| 180 | `Freight.MIN_LINE_UTILISATION` | `.60` | How much of a line's nameplate has to be freight nobody is carrying before it is worth laying. |
+| 199 | `Freight.TONNES_PER_SET` | `2500` | Tonnes a month one wagon set can haul. |
+| 202 | `Freight.SET_LIFE_MONTHS` | `240` | How long a wagon set lasts before it is scrap. |
+| 233 | `Freight.TARGET_RETURN` | `.012` | What it tries to earn a month ON THE TRACK IT HAS SUNK, before scarcity. |
+| 236 | `Freight.MAX_SCARCITY_MULTIPLE` | `1.6` | How far a network that cannot keep up can push the quote above cost-plus. |
+| 239 | `Freight.REPRICE_SPEED` | `.25` | How fast the quote walks to where it should be. |
+| 275 | `Freight.WORLD_FUEL_PER_TONNE` | `.03` | What a tonne of haulage burns, IN THE WORLD'S MONEY. |
+| 287 | `Freight.FUEL_LITRES_PER_TONNE` | `18` | Litres of fuel a tonne hauled burns: eighteen. |
+| 292 | `Freight.PORT_YARD_SHARE` | `.45` | The most of the BULK tonnes that crossed a berth the port yard takes to rail (FR6, D7): Montreal's rail share, on the port's own railway on the quay (spec R70). |
+| 298 | `Freight.CITY_LITRES_A_TONNE` | `Haulage.DIESEL_LITRES_A_TONNE / 3` | Litres of diesel the railway burns on a city tonne (FR6): a third of a truck's city leg (Haulage.DIESEL_LITRES_A_TONNE), as rail costs about a third of a truck a tonne-kilometre (spec R50, R51); FU... |
+| 1036 | `Freight.BULK_WORKS_MIN_TONNES` | `TONNES_PER_SET * MIN_LINE_UTILISATION` | The bulk a building has to make and use between them, tonnes a month at nameplate, to be a bulk works (FR7): MIN_LINE_UTILISATION of a wagon set's month, as a line is not laid below that share of i... |
 
 ### Haulage.java ([map](map/Haulage.md))
 
@@ -3560,16 +3541,16 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 165 | `Oil.WORN_OUT_SHARE` | `WORN_OUT_BARRELS_A_DAY / NAMEPLATE_BARRELS_A_DAY` | ...the share of its nameplate a well is retired under: WORN_OUT_BARRELS_A_DAY over NAMEPLATE_BARRELS_A_DAY, a tenth. |
 | 168 | `Oil.VINTAGE_KEY` | `"vintages."` | The extras' key a vintage is saved under: vintages.<month opened>.<kind>, its count the value. |
 | 204 | `Oil.LAND_LIFE` | `firstWornOut(WellKind.LAND, false), PLATFORM_LIFE = firstWornOut(WellKind.PLATFORM, fal...` | Each kind's life in months, worked out once from its profile (firstWornOut()): a land well's, a shallow platform's, a deep one's. |
-| 753 | `Oil.PLATFORM_MAX_DEPTH_M` | `150` | The deepest sea a fixed steel jacket stands in, in metres: 150, the fixed platform's limit (the research's 3.2; spec-oil 2.7) - since DW1 where the jacket ends and the floating platform begins (isF... |
-| 756 | `Oil.PIPE_LIFE_MONTHS` | `480` | A pipe's working life, in months: 480, 40 years (the research's 4.5, est.) - what the pipeline rule counts the field's months to at most. |
-| 759 | `Oil.PIPE_PAYBACK` | `1.25` | The pipeline rule's margin: the freight a pipe saves over the field's life must repay its cost 1.25 times (the research's 4.5; spec-oil 2.11). |
-| 762 | `Oil.SHUTTLE_TANKERS` | `"Shuttle tankers"` | The shuttle tankers' name on the Oil sector's input line. |
-| 765 | `Oil.PLATFORM_KEY` | `"platforms."` | The extras' key a platform is saved under: platforms.<place>.<cell>.<index>.<month opened>, the wells in its slots the value. |
-| 768 | `Oil.PIPELINE_KEY` | `"pipelines."` | ...and a pipeline: pipelines.<place>.<cell>.<index>.<month ordered>, its kilometres the value. |
-| 1103 | `Oil.FLOATING_MAX_DEPTH_M` | `2914` | The deepest sea a platform stands in, in metres: 2,914, the Turritella FPSO at Shell's Stones field, 9,560 ft, the world's water-depth record for a production facility (BOEM, OCS Report BOEM 2021-0... |
-| 1106 | `Oil.WELL_DRILLING_DEPTH_FT` | `10_000` | The drilling depth below the sea floor every well is priced at, in feet: 10,000 (the game has no drilling depth; at it NEMS's development-well equation gives about the Platform Well's price at PLAT... |
-| 1109 | `Oil.METRES_PER_FOOT` | `0.3048` | The metre in feet's terms: NEMS takes water depth in feet [W13]. |
-| 1112 | `Oil.DEEP_WATER_UPKEEP` | `"Deep-water upkeep"` | The Oil sector's input line for the supply boats, helicopters and moorings' upkeep of the floating platforms, bought from the world. |
+| 755 | `Oil.PLATFORM_MAX_DEPTH_M` | `150` | The deepest sea a fixed steel jacket stands in, in metres: 150, the fixed platform's limit (the research's 3.2; spec-oil 2.7) - since DW1 where the jacket ends and the floating platform begins (isF... |
+| 758 | `Oil.PIPE_LIFE_MONTHS` | `480` | A pipe's working life, in months: 480, 40 years (the research's 4.5, est.) - what the pipeline rule counts the field's months to at most. |
+| 761 | `Oil.PIPE_PAYBACK` | `1.25` | The pipeline rule's margin: the freight a pipe saves over the field's life must repay its cost 1.25 times (the research's 4.5; spec-oil 2.11). |
+| 764 | `Oil.SHUTTLE_TANKERS` | `"Shuttle tankers"` | The shuttle tankers' name on the Oil sector's input line. |
+| 767 | `Oil.PLATFORM_KEY` | `"platforms."` | The extras' key a platform is saved under: platforms.<place>.<cell>.<index>.<month opened>, the wells in its slots the value. |
+| 770 | `Oil.PIPELINE_KEY` | `"pipelines."` | ...and a pipeline: pipelines.<place>.<cell>.<index>.<month ordered>, its kilometres the value. |
+| 1105 | `Oil.FLOATING_MAX_DEPTH_M` | `2914` | The deepest sea a platform stands in, in metres: 2,914, the Turritella FPSO at Shell's Stones field, 9,560 ft, the world's water-depth record for a production facility (BOEM, OCS Report BOEM 2021-0... |
+| 1108 | `Oil.WELL_DRILLING_DEPTH_FT` | `10_000` | The drilling depth below the sea floor every well is priced at, in feet: 10,000 (the game has no drilling depth; at it NEMS's development-well equation gives about the Platform Well's price at PLAT... |
+| 1111 | `Oil.METRES_PER_FOOT` | `0.3048` | The metre in feet's terms: NEMS takes water depth in feet [W13]. |
+| 1114 | `Oil.DEEP_WATER_UPKEEP` | `"Deep-water upkeep"` | The Oil sector's input line for the supply boats, helicopters and moorings' upkeep of the floating platforms, bought from the world. |
 
 ### PortDivision.java ([map](map/PortDivision.md))
 
@@ -3653,22 +3634,22 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 62 | `Retail.STORE_COVER_MONTHS` | `2.5` | Months of recent sales a store tries to keep on the shelf. |
-| 65 | `Retail.RETAIL_MARKUP` | `1.50` | What the shops add to what their stock cost them. |
-| 68 | `Retail.OPENING_SELL_PRICE` | `.3 * PriceLevel.FACTOR` | The price the game opened at, and the floor it will not go below - struck at the expected price level since 0.7.42 (seedConstants()). |
-| 83 | `Retail.SATIATION_MULTIPLE` | `1.5` | How far over the opening floor a full basket is still wanted: 1.5x. |
-| 91 | `Retail.GROCERY_ELASTICITY` | `.4` | How far a household's baskets fall with their price above satiation, an elasticity: .4, the middle of the measured food-at-home range (USDA ERS -0.3 to -0.6; Andreyeva et al. |
-| 94 | `Retail.CLEARING_CAP` | `1.5` | The most the shelf's target goes over its floor however short the shops are: half again. |
-| 97 | `Retail.CLEAR_SPEED` | `1.0 / 6` | The share of the way to its target, in logs, the shelf moves in a month: a sixth - about six months to clear, slower than the old quarter. |
-| 100 | `Retail.FLOOR_CATCH_UP` | `.5` | How much of the gap to its floor a shelf under the floor closes in a month: half. |
-| 103 | `Retail.CLEARING_BAND` | `50` | The clearing price is looked for between the shelf price over this and the shelf price times it. |
-| 106 | `Retail.CLEARING_STEPS` | `50` | Halvings (in logs) of that band the search takes: fifty, far finer than a cent's grain. |
-| 122 | `Retail.SUPPLIER_CREDIT_MONTHS` | `1` | How much the shops' suppliers will wait for, in months of the stock for the sale the shops expect, at what it costs to bring in: one - a month's terms, repaid at the next strike out of the sale the... |
-| 180 | `Retail.SHELF` | `{ Good.GRAINS, Good.BREAD, Good.DAIRY_EGGS, Good.VEGETABLES, Good.FRUIT, Good.MEAT, Goo...` |  |
-| 880 | `Retail.PUMP_MARGIN` | `.12` | What a station adds to the wholesale price it paid a litre, before the sales tax: twelve per cent (runs/research-pump.md 7: Canada's 10.4 c/L in 2025, about 10% of the wholesale ex tax [6]; the US ... |
-| 888 | `Retail.QUEUE_MARGIN` | `.18` | ...and on the litres past what the stations can sell: eighteen per cent, the top of the research's range - a rural or post-spike forecourt's (runs/research-pump.md 2, 7). |
-| 971 | `Retail.FuelSale.NONE` | `new FuelSale(0, 0, 0, 0, 0, 0)` | No sale: no litres asked, or no market or city to sell through. |
-| 1278 | `Retail.SUPPLIER_CREDIT_KEY` | `"supplierCredit."` | The prefix the suppliers' credit is saved under among the extras. |
+| 61 | `Retail.STORE_COVER_MONTHS` | `2.5` | Months of recent sales a store tries to keep on the shelf. |
+| 64 | `Retail.RETAIL_MARKUP` | `1.50` | What the shops add to what their stock cost them. |
+| 67 | `Retail.OPENING_SELL_PRICE` | `.3` | The price the game opened at, and the floor it will not go below - struck at the expected price level since 0.7.42 (seedConstants()). |
+| 82 | `Retail.SATIATION_MULTIPLE` | `1.5` | How far over the opening floor a full basket is still wanted: 1.5x. |
+| 90 | `Retail.GROCERY_ELASTICITY` | `.4` | How far a household's baskets fall with their price above satiation, an elasticity: .4, the middle of the measured food-at-home range (USDA ERS -0.3 to -0.6; Andreyeva et al. |
+| 93 | `Retail.CLEARING_CAP` | `1.5` | The most the shelf's target goes over its floor however short the shops are: half again. |
+| 96 | `Retail.CLEAR_SPEED` | `1.0 / 6` | The share of the way to its target, in logs, the shelf moves in a month: a sixth - about six months to clear, slower than the old quarter. |
+| 99 | `Retail.FLOOR_CATCH_UP` | `.5` | How much of the gap to its floor a shelf under the floor closes in a month: half. |
+| 102 | `Retail.CLEARING_BAND` | `50` | The clearing price is looked for between the shelf price over this and the shelf price times it. |
+| 105 | `Retail.CLEARING_STEPS` | `50` | Halvings (in logs) of that band the search takes: fifty, far finer than a cent's grain. |
+| 121 | `Retail.SUPPLIER_CREDIT_MONTHS` | `1` | How much the shops' suppliers will wait for, in months of the stock for the sale the shops expect, at what it costs to bring in: one - a month's terms, repaid at the next strike out of the sale the... |
+| 179 | `Retail.SHELF` | `{ Good.GRAINS, Good.BREAD, Good.DAIRY_EGGS, Good.VEGETABLES, Good.FRUIT, Good.MEAT, Goo...` |  |
+| 881 | `Retail.PUMP_MARGIN` | `.12` | What a station adds to the wholesale price it paid a litre, before the sales tax: twelve per cent (runs/research-pump.md 7: Canada's 10.4 c/L in 2025, about 10% of the wholesale ex tax [6]; the US ... |
+| 889 | `Retail.QUEUE_MARGIN` | `.18` | ...and on the litres past what the stations can sell: eighteen per cent, the top of the research's range - a rural or post-spike forecourt's (runs/research-pump.md 2, 7). |
+| 972 | `Retail.FuelSale.NONE` | `new FuelSale(0, 0, 0, 0, 0, 0)` | No sale: no litres asked, or no market or city to sell through. |
+| 1279 | `Retail.SUPPLIER_CREDIT_KEY` | `"supplierCredit."` | The prefix the suppliers' credit is saved under among the extras. |
 
 ### SpreadPlanner.java ([map](map/SpreadPlanner.md))
 
@@ -3913,13 +3894,13 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 250 | `FoundingScreen.GLOBE_H` | `GlobeFrame.FOUNDING_H` | The globe's height: 270 px, so the page still fits an 868-pixel window with the longest card under it (the words probe's, 0.7.121; GlobeFrame.FOUNDING_H since 0.7.135). |
 | 253 | `FoundingScreen.LEFT` | `EARTH_PANEL - 2 * PANEL_PAD - COLUMN_GAP - GLOBE_W` | The left column's width on Earth: what the panel leaves. |
 | 689 | `FoundingScreen.NO_SPOT_WORDS` | `"None yet.Drag the globe or hold W, A, S and D to turn it, zoom with the wheel or - and...` | The card's line before a spot is picked; how the globe is used. |
-| 1059 | `FoundingScreen.Globe.MOST_KM_PX` | `2 * EarthProj.RADIUS_M / 1000 /(GlobeFrame.FIT_SHARE * GLOBE_H)` | The widest view: the whole planet, 12,742 km, across GlobeFrame.FIT_SHARE (nine tenths) of the globe's height. |
-| 1062 | `FoundingScreen.Globe.GROUND_KM_PX` | `GlobeFrame.FOUNDING_HANDOFF_KM` | From here closer the ground is drawn round the view's centre, not through the globe: GlobeFrame.FOUNDING_HANDOFF_KM, 2.32 km a pixel (★E9; 4 until 0.7.135). |
-| 1065 | `FoundingScreen.Globe.LEAST_KM_PX` | `5 * World.PLOT_M / 1000.0` | The closest view: 150 m a pixel, five plots (spec-earth 2's 150 m view). |
-| 1068 | `FoundingScreen.Globe.PICK_KM_PX` | `0.3` | How close a pick from the search or Random spot opens: 0.3 km a pixel, the 5 km round the site 33 pixels across. |
-| 1071 | `FoundingScreen.Globe.STEP` | `MapFrame.ZOOM_STEP` | A wheel notch's zoom, the map's: MapFrame.ZOOM_STEP. |
-| 1074 | `FoundingScreen.Globe.SPACE` | `0xff0b1118` | Space round the globe: the page's stage. |
-| 1077 | `FoundingScreen.Globe.COLOURS` | `GlobePicture.colours(false)` | The ground's colours, as the map draws them where the city owns it (GlobePicture.colours()): the founding globe dims nothing. |
+| 1055 | `FoundingScreen.Globe.MOST_KM_PX` | `2 * EarthProj.RADIUS_M / 1000 /(GlobeFrame.FIT_SHARE * GLOBE_H)` | The widest view: the whole planet, 12,742 km, across GlobeFrame.FIT_SHARE (nine tenths) of the globe's height. |
+| 1058 | `FoundingScreen.Globe.GROUND_KM_PX` | `GlobeFrame.FOUNDING_HANDOFF_KM` | From here closer the ground is drawn round the view's centre, not through the globe: GlobeFrame.FOUNDING_HANDOFF_KM, 2.32 km a pixel (★E9; 4 until 0.7.135). |
+| 1061 | `FoundingScreen.Globe.LEAST_KM_PX` | `5 * World.PLOT_M / 1000.0` | The closest view: 150 m a pixel, five plots (spec-earth 2's 150 m view). |
+| 1064 | `FoundingScreen.Globe.PICK_KM_PX` | `0.3` | How close a pick from the search or Random spot opens: 0.3 km a pixel, the 5 km round the site 33 pixels across. |
+| 1067 | `FoundingScreen.Globe.STEP` | `MapFrame.ZOOM_STEP` | A wheel notch's zoom, the map's: MapFrame.ZOOM_STEP. |
+| 1070 | `FoundingScreen.Globe.SPACE` | `0xff0b1118` | Space round the globe: the page's stage. |
+| 1073 | `FoundingScreen.Globe.COLOURS` | `GlobePicture.colours(false)` | The ground's colours, as the map draws them where the city owns it (GlobePicture.colours()): the founding globe dims nothing. |
 
 ### FundScreen.java ([map](map/FundScreen.md))
 
@@ -4384,14 +4365,14 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1855 | `PeopleScreen.Strip.UNUSED` | `" "` | What the "+n more" label says while nothing folds: a space, never nothing (PT1-M4). |
 | 1926 | `PeopleScreen.Strip.TILE_TALL` | `62` | How tall a strip is. |
 | 2110 | `PeopleScreen.OUTSIDE_INFO` | `"Families are built from the adults who work, and their children." + "Everybody else is...` | OUTSIDE THE FAMILIES' (i): who they are, the old page's words. |
-| 2360 | `PeopleScreen.LADDER_INFO` | `"open = posts this band can be put into(licensed posts are on the " + "chips under the ...` | The ladder's (i): the old legend. |
-| 2847 | `PeopleScreen.IN_DOLLARS` | `"Every figure on this page is in dollars, not the thousands the rest of the " + "game c...` | The page's (i): what its money is counted in. |
-| 2852 | `PeopleScreen.PAID_IN_ORDER` | `"The order is fixed: the payslip first, then rent, then the fees, and " + "the shop tak...` | The order a household pays in, and what happens when it comes up short: the verdict's (i). |
-| 3056 | `PeopleScreen.BESIDE` | `1200` | The narrowest page that sets the open cell's books beside the grid; under it they stack. |
-| 3377 | `PeopleScreen.CARS_INFO` | `"Bought out of savings past the same cushion a share is, so income " + "decides who can...` | The cars' (i): the old note. |
-| 3447 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
-| 3448 | `PeopleScreen.SHAPE_COL` | `168` |  |
-| 3579 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + "on EI for...` | The section captions' (i): who is below the rule, and what their one cell says. |
+| 2387 | `PeopleScreen.LADDER_INFO` | `"open = posts this band can be put into(licensed posts are on the " + "chips under the ...` | The ladder's (i): the old legend. |
+| 2876 | `PeopleScreen.IN_DOLLARS` | `"Every figure on this page is in dollars, not the thousands the rest of the " + "game c...` | The page's (i): what its money is counted in. |
+| 2881 | `PeopleScreen.PAID_IN_ORDER` | `"The order is fixed: the payslip first, then rent, then the fees, and " + "the shop tak...` | The order a household pays in, and what happens when it comes up short: the verdict's (i). |
+| 3085 | `PeopleScreen.BESIDE` | `1200` | The narrowest page that sets the open cell's books beside the grid; under it they stack. |
+| 3406 | `PeopleScreen.CARS_INFO` | `"Bought out of savings past the same cushion a share is, so income " + "decides who can...` | The cars' (i): the old note. |
+| 3476 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
+| 3477 | `PeopleScreen.SHAPE_COL` | `168` |  |
+| 3608 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + "on EI for...` | The section captions' (i): who is below the rule, and what their one cell says. |
 
 ### Pieces.java ([map](map/Pieces.md))
 
@@ -4869,7 +4850,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 718 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 974 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1295 constants)
+## harnesses (1277 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -4918,11 +4899,11 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 301 | `AutoBuildCheck.heldBy` | `new LinkedHashMap<>()` | The passes that held a kept service short of its target with nothing on site, by the cut that held it. |
 | 303 | `AutoBuildCheck.builtBy` | `new LinkedHashMap<>()` | The buildings it ordered over the run, by measure. |
 | 1065 | `AutoBuildCheck.YOUNG_MONTH` | `60` | The month the young city is played to before the refusal: the 0.7.89 city that stalled was refused at month 60. |
-| 1068 | `AutoBuildCheck.SHORT` | `280 * PriceLevel.FACTOR` | What the refused order is short of, in thousands, the game's money: $0.28M, the 0.7.89 city's ($24.11M of treasury against $24.39M of order). |
+| 1068 | `AutoBuildCheck.SHORT` | `280` | What the refused order is short of, in thousands, the game's money: $0.28M, the 0.7.89 city's ($24.11M of treasury against $24.39M of order). |
 | 1071 | `AutoBuildCheck.AFTER_MONTHS` | `24` | The months the city plays on after the refusal, its debt limit left where the fixture pinned it. |
 | 1074 | `AutoBuildCheck.LOOK_MONTHS` | `6` | The months between the test player's looks, as section 3's loop plays: it plays on, then moves. |
 | 1077 | `AutoBuildCheck.YOUNG_PEOPLE` | `100_000` | A young city has fewer people than this at the refusal: a town, not the city it grows into. |
-| 1341 | `AutoBuildCheck.ROOM` | `50_000 * PriceLevel.FACTOR` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
+| 1341 | `AutoBuildCheck.ROOM` | `50_000` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
 | 1443 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
 | 1484 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
 
@@ -4943,7 +4924,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 76 | `BridgeCheck.BAY_BUDGET_MS` | `10_000` | The worst case of a synthetic bay a bridge can be as long as, milliseconds: the survey of 1.7 million plots of open shallow water. |
 | 102 | `BridgeCheck.DEEP_M` | `100` | The depth the grid gives a plot nobody set: deep sea. |
 | 200 | `BridgeCheck.ISLAND` | `2, HOME = 1` | The far island's landmass id and home's, in every grid here. |
-| 912 | `BridgeCheck.SHORE_SQUARE` | `128` | Plots a side of the squares the full-file crossings buy at each shore. |
+| 911 | `BridgeCheck.SHORE_SQUARE` | `128` | Plots a side of the squares the full-file crossings buy at each shore. |
 
 ### BridgeMapCheck.java ([map](map/BridgeMapCheck.md))
 
@@ -5004,7 +4985,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 115 | `CarCheck.CARS_WAS_IN` | `44 * PriceLevel.FACTOR, CARS_WAS_OUT = 36 * PriceLevel.FACTOR, VANS_WAS_IN = 72 * Price...` | The prices to 0.7.119, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. |
+| 115 | `CarCheck.CARS_WAS_IN` | `44, CARS_WAS_OUT = 36, VANS_WAS_IN = 72, ROLLING_WAS_IN = 2400, FABRICATED_WAS = 2.21, ...` | The prices to 0.7.119, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. |
 
 ### CementConcreteCheck.java ([map](map/CementConcreteCheck.md))
 
@@ -5013,9 +4994,9 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 64 | `CementConcreteCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 66 | `CementConcreteCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 119 | `CementConcreteCheck.ROWS` | `{ CementConcrete.CEMENT_PLANT, CementConcrete.LARGE_CEMENT_PLANT, CementConcrete.LIME_K...` | Cement & Concrete's rows, by their permanent ids, in the study's 6.4 order. |
-| 122 | `CementConcreteCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(120_000, 500_000, 75_000)` | The study's 6.4: each one's cost, D$ thousands all in (today's figures, priced at the founding's level: EP1). |
+| 122 | `CementConcreteCheck.STUDY_COSTS` | `{ 120_000, 500_000, 75_000 }` | The study's 6.4: each one's cost, D$ thousands all in. |
 | 125 | `CementConcreteCheck.STUDY_POSTS` | `{ 60, 150, 45 }` | ...its posts. |
-| 128 | `CementConcreteCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(501, 1_730, 298)` | ...its running cost a month, D$ thousands (today's figures, priced at the founding's level). |
+| 128 | `CementConcreteCheck.STUDY_RUNS` | `{ 501, 1_730, 298 }` | ...its running cost a month, D$ thousands. |
 | 131 | `CementConcreteCheck.STUDY_MAKES` | `{ 25_000, 125_000, 18_000 }` | ...what it makes a month, t: cement, cement, lime. |
 | 134 | `CementConcreteCheck.STUDY_USES` | `{ { 30_000, 3_750, 3_350 }, { 150_000, 18_750, 16_750 }, { 32_400, 0, 3_600 } }` | ...and what it takes, t a month: limestone, aggregate, thermal coal. |
 | 137 | `CementConcreteCheck.CEMENT_KWH` | `91` | The research's cement, kWh a tonne: the study's 6.2, 91 [S31]. |
@@ -5069,15 +5050,15 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 92 | `CoalMiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 127 | `CoalMiningCheck.STUDY_RAW` | `500_000, STUDY_COKING = 275_000, STUDY_THERMAL = 100_000, STUDY_SPOIL = 125_000` | The study's 3.3: a plant's 500,000 t of raw coal, and what comes of it. |
 | 204 | `CoalMiningCheck.ROWS` | `{ CoalMining.SURFACE_MINE, CoalMining.LARGE_SURFACE_MINE, CoalMining.UNDERGROUND_MINE, ...` | Coal Mining's rows, by their permanent ids, in the study's 3.3 order. |
-| 208 | `CoalMiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(120_000, 950_000, 800_000, 150_000)` | The study's 3.3: each one's cost, D$ thousands all in. |
+| 208 | `CoalMiningCheck.STUDY_COSTS` | `{ 120_000, 950_000, 800_000, 150_000 }` | The study's 3.3: each one's cost, D$ thousands all in. |
 | 211 | `CoalMiningCheck.STUDY_POSTS` | `{ 80, 350, 400, 50 }` | ...its posts. |
 | 214 | `CoalMiningCheck.STUDY_KW` | `{ 800, 6_000, 29_000, 4_000 }` | ...its draw, kW. |
-| 217 | `CoalMiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(1_070, 5_570, 5_770, 774)` | ...its running cost a month, D$ thousands (the surface mine's "with 230,000 L diesel" in it, at the study's D$0.60). |
+| 217 | `CoalMiningCheck.STUDY_RUNS` | `{ 1_070, 5_570, 5_770, 774 }` | ...its running cost a month, D$ thousands (the surface mine's "with 230,000 L diesel" in it, at the study's D$0.60). |
 | 220 | `CoalMiningCheck.STUDY_MAKES` | `{ 100_000, 800_000, 250_000, 500_000 }` | ...the coal each mine makes a month, t (the longwall's raw), and the plant's wash. |
 | 223 | `CoalMiningCheck.STUDY_SITES` | `{ 1, 4, 1, 0 }` | ...the sites each stands on, and of which type (the study's 1.3 and 3.3; the plant none). |
 | 225 | `CoalMiningCheck.STUDY_TYPES` | `{ Deposit.FieldType.THERMAL, Deposit.FieldType.THERMAL, Deposit.FieldType.COKING, null }` | ...and the type of field each stands on (null for the plant, which stands on none). |
 | 228 | `CoalMiningCheck.SURFACE_DIG` | `1 /.95, UNDERGROUND_DIG = 1 /.80` | ...the tonnes of seam a tonne of coal takes: 95% of the seam recovered at the surface, 80% by a longwall (the study's 3.1; spec 2.4). |
-| 231 | `CoalMiningCheck.STUDY_DIESEL_LITRES` | `230_000, STUDY_DIESEL =.0006 * PriceLevel.FACTOR` | ...the surface mine's diesel, litres a month (the study's 3.3), and its price in the study's runs, D$ thousands a litre (its 1.5). |
+| 231 | `CoalMiningCheck.STUDY_DIESEL_LITRES` | `230_000, STUDY_DIESEL =.0006` | ...the surface mine's diesel, litres a month (the study's 3.3), and its price in the study's runs, D$ thousands a litre (its 1.5). |
 | 234 | `CoalMiningCheck.STUDY_PLANT_HECTARES` | `19` | ...the plant's ground, hectares (the study's 3.3). |
 | 237 | `CoalMiningCheck.STUDY_ROUNDING` | `.05, STUDY_ROUNDING_POINT =.5` | The study's rounding: its returns to a tenth of a point, the plant's 19% to the point. |
 | 240 | `CoalMiningCheck.STUDY_SURFACE` | `3.3, STUDY_LARGE = 3.6, STUDY_ALONE =.8, STUDY_PAIR = 2.4, STUDY_PLANT = 19` | The returns the study's 3.4 states, % of the cost a month: a surface mine and a large one exporting, a longwall alone, the pair, the plant alone. |
@@ -5111,11 +5092,11 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 108 | `CopperMiningCheck.CU` | `Resource.COPPER` | Copper, the resource its mines and leach plants dig. |
 | 110 | `CopperMiningCheck.SULPHIDE` | `Deposit.FieldType.SULPHIDE, OXIDE = Deposit.FieldType.OXIDE` | Copper's two types of field (Resource.typesOf()): sulphide, floated at the mine, and oxide, leached. |
 | 115 | `CopperMiningCheck.GOODS` | `{ Good.COPPER_CONC, Good.ANODE, Good.COPPER, Good.COPPER_SCRAP, Good.COPPER_ROD, Good.A...` | Copper's goods, the study's 4.2: import and export price, D$ thousands a tonne. |
-| 117 | `CopperMiningCheck.STUDY_IMPORT` | `PriceLevelCheck.atFounding(2.800, 10.150, 10.500, 8.700, 10.750,.160, 17.000)` | ...each one's import price, D$ thousands a tonne (the study's 4.2)... |
-| 119 | `CopperMiningCheck.STUDY_EXPORT` | `PriceLevelCheck.atFounding(2.575, 9.650, 10.000, 7.300, 10.250,.070, 13.000)` | ...and its export price. |
+| 117 | `CopperMiningCheck.STUDY_IMPORT` | `{ 2.800, 10.150, 10.500, 8.700, 10.750,.160, 17.000 }` | ...each one's import price, D$ thousands a tonne (the study's 4.2)... |
+| 119 | `CopperMiningCheck.STUDY_EXPORT` | `{ 2.575, 9.650, 10.000, 7.300, 10.250,.070, 13.000 }` | ...and its export price. |
 | 122 | `CopperMiningCheck.FREIGHT_SHARE` | `.375` | Good.java's rule: freight three eighths of the wedge. |
 | 193 | `CopperMiningCheck.ROWS` | `{ CopperMining.MINE_AND_MILL, CopperMining.LARGE_MINE, CopperMining.LEACH_PLANT }` | Copper Mining's rows, by their permanent ids, in the study's 4.3 order. |
-| 196 | `CopperMiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(160_000, 2_000_000, 250_000)` | The study's 4.3: each one's cost, D$ thousands all in. |
+| 196 | `CopperMiningCheck.STUDY_COSTS` | `{ 160_000, 2_000_000, 250_000 }` | The study's 4.3: each one's cost, D$ thousands all in. |
 | 199 | `CopperMiningCheck.STUDY_POSTS` | `{ 120, 450, 150 }` | ...its posts. |
 | 202 | `CopperMiningCheck.STUDY_KW` | `{ 5_500, 60_000, 6_000 }` | ...its draw, kW. |
 | 205 | `CopperMiningCheck.STUDY_MAKES` | `{ 2_200, 26_400, 1_000 }` | ...what it makes a month, t: concentrate, concentrate, cathode. |
@@ -5123,7 +5104,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 211 | `CopperMiningCheck.STUDY_SITES` | `{ 1, 8, 1 }` | ...the sites each stands on, and of which type (its 4.3 and 1.3: "an oxide copper field takes a leach plant"). |
 | 213 | `CopperMiningCheck.STUDY_TYPES` | `{ SULPHIDE, SULPHIDE, OXIDE }` | ...and the type of field each stands on. |
 | 216 | `CopperMiningCheck.STUDY_TABLE` | `{ { 2.6, 2.6, 2.9, 2.9 }, { 2.8, 2.8, 3.1, 3.1 }, { 3.1, 3.2, 3.4, 3.3 } }` | The study's 4.4 table, % of the cost a month, cases A to D. |
-| 219 | `CopperMiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(1_512.5, 11_950, 1_722.5)` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table. |
+| 219 | `CopperMiningCheck.STUDY_RUNS` | `{ 1_512.5, 11_950, 1_722.5 }` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table. |
 | 222 | `CopperMiningCheck.SINCE` | `{ 1900, 1906, 1968 }` | The year each first existed: 1900 - standing before the start - but the Large Copper Mine, the open-pit porphyry mine at Bingham Canyon in 1906 (research-1900.md 1.2, PE8), and the leach plant, SX-... |
 | 225 | `CopperMiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 289 | `CopperMiningCheck.TYPE_WITHIN` | `.02` | How far copper's sulphide share of the fields may sit from Deposit.TYPE_SHARES (spec-materials 4: two points, WorldCheck 8's). |
@@ -5135,7 +5116,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 112 | `CopperRefiningCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 114 | `CopperRefiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 203 | `CopperRefiningCheck.ROWS` | `{ CopperRefining.SMELTER, CopperRefining.ELECTROLYTIC_REFINERY, CopperRefining.SCRAP_RE...` | The rows, by their permanent ids, in the study's 4.3 order: Copper Refining's four and Manufacturing's wire works. |
-| 207 | `CopperRefiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(500_000, 180_000, 280_000, 45_000, 110_000)` | The study's 4.3: each one's cost, D$ thousands all in. |
+| 207 | `CopperRefiningCheck.STUDY_COSTS` | `{ 500_000, 180_000, 280_000, 45_000, 110_000 }` | The study's 4.3: each one's cost, D$ thousands all in. |
 | 210 | `CopperRefiningCheck.STUDY_POSTS` | `{ 700, 200, 200, 80, 400 }` | ...its posts. |
 | 213 | `CopperRefiningCheck.STUDY_KW` | `{ 13_400, 6_000, 5_500, 1_100, 2_500 }` | ...its draw, kW. |
 | 216 | `CopperRefiningCheck.STUDY_MADE` | `{ { Good.ANODE, Good.ACID }, { Good.COPPER }, { Good.COPPER }, { Good.COPPER_ROD }, { G...` | ...what it makes a month, t. |
@@ -5143,11 +5124,11 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 221 | `CopperRefiningCheck.STUDY_FEED` | `{ Good.COPPER_CONC, Good.ANODE, Good.COPPER_SCRAP, Good.COPPER, Good.COPPER_ROD }` | ...and what it takes, t a month. |
 | 223 | `CopperRefiningCheck.STUDY_USES` | `{ 33_000, 9_750, 4_400, 8_016, 2_000 }` | ...and how many tonnes of it, a month. |
 | 226 | `CopperRefiningCheck.STUDY_TABLE` | `{ { - 0.3, 1.2, 2.7, 1.2 }, { - 1.9, 0.8, 3.5, 0.8 }, { 0.0, 2.2, 2.9, 0.7 }, { - 6.7, ...` | The study's 4.4 table, % of the cost a month, cases A to D. |
-| 230 | `CopperRefiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(5_253, 1_460, 1_776, 846, 4_820)` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table - but the scrap refinery... |
+| 230 | `CopperRefiningCheck.STUDY_RUNS` | `{ 5_253, 1_460, 1_776, 846, 4_820 }` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table - but the scrap refinery... |
 | 233 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
 | 236 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 318 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |
-| 1031 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
+| 1035 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
 
 ### CreditCheck.java ([map](map/CreditCheck.md))
 
@@ -5182,8 +5163,8 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 166 | `CurrencyRegimeCheck.SEED` | `20_261_022L` | The market's seed in the sections that draw one. |
 | 169 | `CurrencyRegimeCheck.DEEP` | `1e9` | A vault no fixture of these can empty or come near the floor of, in dollars. |
 | 172 | `CurrencyRegimeCheck.DOLLAR` | `1e-6` | What the harness's own sums are held to where they are exact arithmetic on dollars. |
-| 893 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
-| 1149 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
+| 882 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
+| 1138 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
 
 ### CurveCheck.java ([map](map/CurveCheck.md))
 
@@ -5198,8 +5179,8 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 169 | `CurveCheck.BEHIND` | `new Study("behind",.01,.05,.60, 0, new double[] { 1.12, 3.65, 4.46, 5.00, 5.35, 5.79, 6...` | ...the city behind: the dial at 1% against inflation at 5%, credibility .60. |
 | 172 | `CurveCheck.QE` | `new Study("QE",.03,.02,.80,.25, new double[] { 3.12, 3.12, 3.15, 3.24, 3.37, 3.57, 3.70...` | ...and QE: the calm city with the central bank holding a quarter of the term paper. |
 | 175 | `CurveCheck.CITIES` | `{ CALM, HIKING, BEHIND, QE }` | The four, in the study's order. |
-| 488 | `CurveCheck.ASK` | `20_000 * PriceLevel.FACTOR` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
-| 564 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
+| 488 | `CurveCheck.ASK` | `20_000` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
+| 564 | `CurveCheck.USD_ASK` | `1_000` | What the dollar legs borrow, in dollars. |
 
 ### DeathCareFirstCheck.java ([map](map/DeathCareFirstCheck.md))
 
@@ -5217,8 +5198,8 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 57 | `DebtExchangeCheck.OPENING` | `1.25` | The D$'s rate the city's dollar paper is first sold at, D$ per US$ (the fixture pins it there). |
 | 60 | `DebtExchangeCheck.KEEPS` | `0.90` | The share of its worth in US$ the D$ keeps in a fall: 0.90 is a D$ 10% weaker; the rise back is the same factor the other way. |
 | 63 | `DebtExchangeCheck.SHARE` | `.5` | The share of the surplus the grant is set to in section 11. |
-| 66 | `DebtExchangeCheck.GRANT_BOND` | `60_000 * PriceLevel.FACTOR` | The dollar bond section 11 sells, in US$ thousands: large beside the surplus, so its exchange line is. |
-| 69 | `DebtExchangeCheck.BUYBACK_BOND` | `100_000 * PriceLevel.FACTOR` | The domestic bond section 12 sells and buys back, in thousands: large beside the surplus, so its gain is. |
+| 66 | `DebtExchangeCheck.GRANT_BOND` | `60_000` | The dollar bond section 11 sells, in US$ thousands: large beside the surplus, so its exchange line is. |
+| 69 | `DebtExchangeCheck.BUYBACK_BOND` | `100_000` | The domestic bond section 12 sells and buys back, in thousands: large beside the surplus, so its gain is. |
 | 72 | `DebtExchangeCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a thousandth of a thousandth is plenty (TreasuryCheck.TOLERANCE). |
 
 ### DebtMoneysCheck.java ([map](map/DebtMoneysCheck.md))
@@ -5366,15 +5347,14 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 89 | `ExchangeCheck.W` | `DebtManager.WORLD_BASE_RATE` |  |
 | 90 | `ExchangeCheck.N` | `Equity.COMPANIES.length` |  |
-| 100 | `ExchangeCheck.TODAYS_DOLLAR` | `PriceLevel.FACTOR` | THE FIXTURES' DOLLAR IS TODAY'S (EP1). |
-| 107 | `ExchangeCheck.HURDLE` | `W + Equity.FOREIGN_PREMIUM` |  |
-| 109 | `ExchangeCheck.DEPOSIT_AT_HURDLE` | `HURDLE - Exchange.HOUSEHOLD_PREMIUM` | A deposit rate at which a cell neither buys nor sells a share returning the required return (EM1): the best alternative plus the premium is that return, and it is inside the band either side. |
+| 91 | `ExchangeCheck.HURDLE` | `W + Equity.FOREIGN_PREMIUM` |  |
+| 93 | `ExchangeCheck.DEPOSIT_AT_HURDLE` | `HURDLE - Exchange.HOUSEHOLD_PREMIUM` | A deposit rate at which a cell neither buys nor sells a share returning the required return (EM1): the best alternative plus the premium is that return, and it is inside the band either side. |
 
 ### ExchangeRateCheck.java ([map](map/ExchangeRateCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 144 | `ExchangeRateCheck.TRADE` | `3_000 * PriceLevel.FACTOR, GDP = 6_000 * PriceLevel.FACTOR` | The trade a quiet currency settles on, each way, and the output it is weighed against: openness one. |
+| 144 | `ExchangeRateCheck.TRADE` | `3_000, GDP = 6_000` | The trade a quiet currency settles on, each way, and the output it is weighed against: openness one. |
 | 147 | `ExchangeRateCheck.SEED` | `20_261_021L` | The market's seed in the sections that draw one; the others are quiet. |
 | 150 | `ExchangeRateCheck.OLD_PULL` | `.004` | The old pull toward parity, REVERSION, retired by XR1 (WHAT XR1 RETIRED): a month's share of the distance it closed. |
 | 198 | `ExchangeRateCheck.FEES` | `{ 1, 1, 1, 1 }` | The four fees' prices a fixture's basket is fed: all at 1. |
@@ -5431,16 +5411,16 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 123 | `ForestryCheck.F` | `Resource.FOREST` |  |
 | 126 | `ForestryCheck.M3_A_KM2` | `World.FOREST_M3_PER_KM2` | Timber a square kilometre of forest holds: the world's (World.FOREST_M3_PER_KM2, Canada's 137 m3 a hectare). |
 | 136 | `ForestryCheck.GOODS` | `{ Good.SAWLOGS, Good.PULPWOOD }` | Wood's two goods, the study's 5.3: import and export price, D$ thousands a cubic metre. |
-| 138 | `ForestryCheck.STUDY_IMPORT` | `PriceLevelCheck.atFounding(.110,.090)` | ...each one's import price (pulpwood's widened from 70, the study's 1.2)... |
-| 140 | `ForestryCheck.STUDY_EXPORT` | `PriceLevelCheck.atFounding(.065,.035)` | ...and its export price. |
+| 138 | `ForestryCheck.STUDY_IMPORT` | `{.110,.090 }` | ...each one's import price (pulpwood's widened from 70, the study's 1.2)... |
+| 140 | `ForestryCheck.STUDY_EXPORT` | `{.065,.035 }` | ...and its export price. |
 | 142 | `ForestryCheck.FREIGHT_SHARE` | `.375` | Good.java's rule: freight three eighths of the wedge. |
 | 144 | `ForestryCheck.GREEN_WOOD` | `.9` | Green roundwood, tonnes a cubic metre (spec 2.3, est.). |
 | 146 | `ForestryCheck.IN_GROUND` | `.02` | The share of forest's pulpwood price its standing timber sells for in the ground (the study's 8). |
 | 212 | `ForestryCheck.ROWS` | `{ Forestry.LOGGING_CAMP, Forestry.HARVESTING_OPERATION, Forestry.TREE_PLANTATION, Fores...` | Forestry's rows, by their permanent ids, in the study's 5.4 order and the woodlot after. |
-| 215 | `ForestryCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(3_000, 15_000, 2_000)` | The study's 5.4 for the first three: cost, D$ thousands all in. |
+| 215 | `ForestryCheck.STUDY_COSTS` | `{ 3_000, 15_000, 2_000 }` | The study's 5.4 for the first three: cost, D$ thousands all in. |
 | 217 | `ForestryCheck.STUDY_POSTS` | `{ 11, 18, 5 }` | ...posts. |
 | 219 | `ForestryCheck.STUDY_SAWLOGS` | `{ 1_000, 6_250, 0 }` | ...sawlogs a month, m3 (and as much pulpwood). |
-| 221 | `ForestryCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(61, 217, 24)` | ...its running cost a month, D$ thousands ("Runs"). |
+| 221 | `ForestryCheck.STUDY_RUNS` | `{ 61, 217, 24 }` | ...its running cost a month, D$ thousands ("Runs"). |
 | 223 | `ForestryCheck.STUDY_TABLE` | `{ { 1.3, 1.3, 4.6, 4.6 }, { 2.7, 2.7, 6.9, 6.9 }, { - 1.2, - 1.2, - 1.2, - 1.2 } }` | The study's 5.5 table, % of the cost a month, cases A to D. |
 | 225 | `ForestryCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 227 | `ForestryCheck.PLANTATION_HA` | `1_000, WOODLOT_HA = 100` | A plantation's hectares (the study's 5.4) and a woodlot's (A12). |
@@ -5601,8 +5581,8 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1175 | `HoldersCheck.CENT` | `.0051` | The audit's tolerance for a figure read to the cent. |
-| 1614 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
+| 1192 | `HoldersCheck.CENT` | `.0051` | The audit's tolerance for a figure read to the cent. |
+| 1631 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
 
 ### HomeRailCheck.java ([map](map/HomeRailCheck.md))
 
@@ -5659,17 +5639,15 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 62 | `InterestAbroadCheck.out` | `System.out` | Where the harness prints: the console. |
-| 63 | `InterestAbroadCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` |  |
-| 66 | `InterestAbroadCheck.SEED` | `9_101` | The seed the single-world sections use, and the others the mean real rate is counted over. |
-| 67 | `InterestAbroadCheck.SEEDS` | `{ 9_101, 9_102, 9_103, 9_104, 9_105 }` |  |
-| 70 | `InterestAbroadCheck.LONG` | `1_200` | The months a Random run covers: a hundred years from the calendar's first January (the last month stepped is 1,199). |
-| 73 | `InterestAbroadCheck.HISTORICAL_END` | `at(2099, 12) + 1` | The month after the last a Historical run steps: December 2099 is the last, the nations' path (the rule rules the 888 months after the table's end). |
-| 76 | `InterestAbroadCheck.RULED` | `888` | The months the rule rules on Historical after the table: January 2026 to December 2099. |
-| 79 | `InterestAbroadCheck.EXACT` | `1e-12` | Two rates or two logs that should be one differ by less than this. |
-| 223 | `InterestAbroadCheck.SPOTS` | `{ { "USD", 2000, 1,.055 }, { "USD", 2000, 12,.065 }, { "USD", 2001, 1,.055 }, { "USD", ...` | The spot values of the table, from the file's own history: bank, year, month, rate. |
-| 743 | `InterestAbroadCheck.CROSS` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the section hands: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
-| 1037 | `InterestAbroadCheck.HOT_DIAL` | `.15` | The dial the hot-money city is put at: well over the US's rate in any year, so the spread is there. |
+| 59 | `InterestAbroadCheck.out` | `System.out` | Where the harness prints: the console. |
+| 60 | `InterestAbroadCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 63 | `InterestAbroadCheck.SEED` | `9_101` | The seed the single-world sections use, and the others the mean real rate is counted over. |
+| 64 | `InterestAbroadCheck.SEEDS` | `{ 9_101, 9_102, 9_103, 9_104, 9_105 }` |  |
+| 67 | `InterestAbroadCheck.LONG` | `1_200` | The months a long run covers: January 2000 to December 2099, the nations' path (the last month stepped is 1,199). |
+| 70 | `InterestAbroadCheck.EXACT` | `1e-12` | Two rates or two logs that should be one differ by less than this. |
+| 214 | `InterestAbroadCheck.SPOTS` | `{ { "USD", 2000, 1,.055 }, { "USD", 2000, 12,.065 }, { "USD", 2001, 1,.055 }, { "USD", ...` | The spot values of the table, from the file's own history: bank, year, month, rate. |
+| 692 | `InterestAbroadCheck.CROSS` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the section hands: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
+| 986 | `InterestAbroadCheck.HOT_DIAL` | `.15` | The dial the hot-money city is put at: well over the US's rate in any year, so the spread is there. |
 
 ### IslandNetCheck.java ([map](map/IslandNetCheck.md))
 
@@ -5730,9 +5708,9 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1731 | `LandCheck.IRON_IN_THE_GROUND` | `.0004 * PriceLevel.FACTOR` | Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.120). |
-| 2176 | `LandCheck.RESEARCH` | `{ new Research("city600 m612", 906013741141069877L, 32_635_000, 10, 36200450.60153519, ...` | The three research saves' land (the autosaves at months 612, 2412 and 1851), and a city whose mines outnumber its sites. |
-| 2278 | `LandCheck.DEAL` | `7` | Read by nothing since 0.7.67: the width of the bands section 19 tiled the plane with until then, 7 plots, which no offer was - the pieces are the holdings and the offers standing now. |
+| 1730 | `LandCheck.IRON_IN_THE_GROUND` | `.0004` | Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.120). |
+| 2175 | `LandCheck.RESEARCH` | `{ new Research("city600 m612", 906013741141069877L, 32_635_000, 10, 36200450.60153519, ...` | The three research saves' land (the autosaves at months 612, 2412 and 1851), and a city whose mines outnumber its sites. |
+| 2277 | `LandCheck.DEAL` | `7` | Read by nothing since 0.7.67: the width of the bands section 19 tiled the plane with until then, 7 plots, which no offer was - the pieces are the holdings and the offers standing now. |
 
 ### LandClassCheck.java ([map](map/LandClassCheck.md))
 
@@ -5902,8 +5880,8 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 68 | `ManufacturingCheck.SHOP` | `"Fabrication Shop"` |  |
 | 69 | `ManufacturingCheck.WORKS` | `"Fabrication Works"` |  |
 | 70 | `ManufacturingCheck.MACH` | `"Machine Works"` |  |
-| 79 | `ManufacturingCheck.STEEL_WAS` | `1.284 * PriceLevel.FACTOR, FABRICATED_WAS = 2.21 * PriceLevel.FACTOR, MACHINERY_WAS = 9...` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
-| 82 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650 * PriceLevel.FACTOR` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
+| 79 | `ManufacturingCheck.STEEL_WAS` | `1.284, FABRICATED_WAS = 2.21, MACHINERY_WAS = 9.0` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
+| 82 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
 
 ### MapCheck.java ([map](map/MapCheck.md))
 
@@ -6055,14 +6033,14 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 721 | `MaterialsCheck.IRON_ROWS` | `{ Mining.IRON_MINE, HeavyIndustry.ARC_FURNACE, HeavyIndustry.MINI_MILL }` | The iron rows of batch I3 (0.7.120), by their permanent ids: the Iron Mine, the Electric Arc Furnace, the Steel Mini-Mill. |
 | 724 | `MaterialsCheck.STUDY_CASES` | `{ { 2.7, 2.7, 4.1, 4.1 }, { - 0.5, - 0.1, 0.7, 0.2 }, { - 0.5, 0.1, 1.0, 0.4 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
 | 727 | `MaterialsCheck.STUDY_YEARS` | `{ 2.2, 4.4, 3.5 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 730 | `MaterialsCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(469, 187, 708)` | ...and their running cost a month, D$ thousands, the study's 2.4 "Runs" (the mine's with its diesel in it). |
-| 733 | `MaterialsCheck.STUDY_DIESEL` | `.0006 * PriceLevel.FACTOR` | The study's price of a litre of diesel in its runs, D$ thousands: the oil mockups' D$0.60 (its 1.5). |
+| 730 | `MaterialsCheck.STUDY_RUNS` | `{ 469, 187, 708 }` | ...and their running cost a month, D$ thousands, the study's 2.4 "Runs" (the mine's with its diesel in it). |
+| 733 | `MaterialsCheck.STUDY_DIESEL` | `.0006` | The study's price of a litre of diesel in its runs, D$ thousands: the oil mockups' D$0.60 (its 1.5). |
 | 736 | `MaterialsCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its cases to a tenth of a point, its years to a tenth. |
 | 857 | `MaterialsCheck.ROUTE_ROWS` | `{ HeavyIndustry.SCRAP_YARD, HeavyIndustry.PELLETISING_PLANT, HeavyIndustry.COKE_OVENS, ...` | The integrated route's rows of batch I4 (0.7.123), by their permanent ids, in the study's 2.4 order. |
 | 861 | `MaterialsCheck.ROUTE_CASES` | `{ { 1.5, 1.5, 4.7, 4.7 }, { 0.1, 1.8, 3.7, 2.0 }, { - 0.2, 0.7, 2.2, 1.3 }, { - 1.1, 1....` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
 | 865 | `MaterialsCheck.ROUTE_YEARS` | `{ 1.0, 1.2, 1.7, 0.8, 1.1, 1.1, 1.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 868 | `MaterialsCheck.ROUTE_RUNS` | `PriceLevelCheck.atFounding(255, 1000, 1250, 868, 11700, 25600, 5100)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). |
-| 871 | `MaterialsCheck.ROUTE_COSTS` | `PriceLevelCheck.atFounding(35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800_000, 1_20...` | ...their all-in cost, D$ thousands (the study's 2.4). |
+| 868 | `MaterialsCheck.ROUTE_RUNS` | `{ 255, 1000, 1250, 868, 11700, 25600, 5100 }` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). |
+| 871 | `MaterialsCheck.ROUTE_COSTS` | `{ 35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800_000, 1_200_000 }` | ...their all-in cost, D$ thousands (the study's 2.4). |
 | 874 | `MaterialsCheck.ROUTE_POSTS` | `{ 40, 150, 200, 150, 1200, 1800, 400 }` | ...their posts (the study's 2.4). |
 | 877 | `MaterialsCheck.ROUTE_KW` | `{ 550, 5750, 2200, 2050, 51400, 51600, 77000 }` | ...their draw, kW (the study's 2.4 and 1.6). |
 | 880 | `MaterialsCheck.ROUTE_GEN` | `{ 0, 0, 8000, 0, 60000, 25000, 0 }` | ...and what they make, kW: the Coke Ovens', the Blast Furnace's and the Oxygen Steel Shop's power from their gas (the study's 2.4 and 1.6). |
@@ -6070,8 +6048,8 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1244 | `MaterialsCheck.MINE_ROWS` | `{ Mining.LARGE_OPEN_PIT, Mining.MAGNETITE_MINE, Mining.LARGE_MAGNETITE }` | Iron Mining's rows of batch I5 (0.7.124), by their permanent ids, in the study's 2.4 order: the Large Open-Pit Mine, the Magnetite Mine & Concentrator, the Large Magnetite Complex. |
 | 1247 | `MaterialsCheck.MINE_CASES` | `{ { 3.7, 3.7, 5.2, 5.2 }, { 1.2, 1.2, 2.2, 2.2 }, { 2.2, 2.2, 3.3, 3.3 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
 | 1250 | `MaterialsCheck.MINE_YEARS` | `{ 2.0, 2.9, 2.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 1253 | `MaterialsCheck.MINE_RUNS` | `PriceLevelCheck.atFounding(5_420, 951, 9_580)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs". |
-| 1256 | `MaterialsCheck.MINE_COSTS` | `PriceLevelCheck.atFounding(1_000_000, 60_000, 1_100_000)` | ...their all-in cost, D$ thousands (the study's 2.4). |
+| 1253 | `MaterialsCheck.MINE_RUNS` | `{ 5_420, 951, 9_580 }` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs". |
+| 1256 | `MaterialsCheck.MINE_COSTS` | `{ 1_000_000, 60_000, 1_100_000 }` | ...their all-in cost, D$ thousands (the study's 2.4). |
 | 1259 | `MaterialsCheck.MINE_POSTS` | `{ 400, 120, 500 }` | ...their posts (the study's 2.4). |
 | 1262 | `MaterialsCheck.MINE_KW` | `{ 3_000, 3_000, 52_000 }, MINE_WATER = { 300, 400, 7_900 }` | ...their draw, kW, and water, units a month (the study's 2.4). |
 | 1265 | `MaterialsCheck.MINE_MAKES` | `{ 500_000, 20_000, 400_000 }, MINE_ROCK = { 500_000, 60_000, 1_200_000 }` | ...what each makes a month, t of ore or concentrate, and the t of rock it digs for it (the study's 2.4: 60,000 t for the small magnetite works' 20,000, 1.2 Mt for the large one's 400,000; the hemat... |
@@ -6109,9 +6087,9 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 64 | `NationsCheck.out` | `System.out` | Where the harness prints: the console. |
 | 67 | `NationsCheck.BASE_SEED` | `7_001` | The seed the single-world sections use, and the one the others start from. |
-| 70 | `NationsCheck.SEEDS` | `20` | The seeds the statistics are counted over, and the years each (the 100 after the first: FIRST_YEAR + 1 to FIRST_YEAR + 100). |
+| 70 | `NationsCheck.SEEDS` | `20` | The seeds the statistics are counted over, and the years each (2001-2100). |
 | 73 | `NationsCheck.GOOD_SEEDS` | `30` | The goods' statistics are counted over this many seeds of 100 years (a lag-1 autocorrelation's error is about 1 over the root of the count). |
-| 76 | `NationsCheck.GOOD_BURN_IN` | `30` | The years a good's price needs to settle from the first year's ratio (the file's 2000, held through the stand-in century) to its mean before it is counted: 0.7 to the 30th is 2e-5. |
+| 76 | `NationsCheck.GOOD_BURN_IN` | `30` | The years a good's price needs to settle from the file's 2000 ratio to its mean before it is counted: 0.7 to the 30th is 2e-5. |
 | 79 | `NationsCheck.SD_TOL` | `.10, FRONTIER_SD_TOL =.12, GOOD_SD_TOL =.12, SHARE_TOL =.15` | A swing's standard deviation is within this share of its dial (the world's, a region's, the frontier's, a good's). |
 | 82 | `NationsCheck.LAG_TOL` | `.06` | An autocorrelation is within this of its dial (error of a lag-1 estimate over 2,000 years is about .02). |
 | 85 | `NationsCheck.RATE_TOL` | `.004` | The crisis rate among the years a crisis could start is within this of CRISIS_RATE. |
@@ -6123,17 +6101,17 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 267 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
-| 1256 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 1257 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
-| 1283 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
-| 1285 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
+| 1251 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 1252 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 1278 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
+| 1280 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
 
 ### OilCheck.java ([map](map/OilCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 236 | `OilCheck.FILES` | `new java.util.IdentityHashMap<>()` | Each fixture town's save folder, for the reloads (section 9). |
-| 668 | `OilCheck.DUTY` | `.000215 * PriceLevel.FACTOR` | The duty a litre the fixture sets, in thousands: the research's Canada-like default for petrol, 21.5 cents a litre (runs/research-pump.md 7). |
+| 668 | `OilCheck.DUTY` | `.000215` | The duty a litre the fixture sets, in thousands: the research's Canada-like default for petrol, 21.5 cents a litre (runs/research-pump.md 7). |
 | 964 | `OilCheck.PRODUCTS` | `{ Good.LPG, Good.NAPHTHA, Good.PETROL, Good.JET, Good.DIESEL, Good.LUBRICANTS, Good.FUE...` | The nine products of 0.7.76 (spec-oil 2.1), in the spec's table's order. |
 | 968 | `OilCheck.LITRES_A_TONNE` | `{ 1850, 1351, 1320, 1260, 1180, 1127, 1010, Double.NaN, Double.NaN }` | The spec's table (2.1): litres a tonne for the litre goods ([P35]; naphtha and lubricants est., JODI), NaN for the two in tonnes. |
 | 971 | `OilCheck.LADDER` | `{.46, 1.0, 1.20, 1.28, 1.35, 1.89,.98, 1.08,.155 }` | ...and each one's ratio to crude's world middle (the research's ladder, the prototype's RATIO): a litre's, or a tonne's for bitumen and coke. |
@@ -6243,7 +6221,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 87 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 169 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
+| 176 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
 
 ### PopulationCheck.java ([map](map/PopulationCheck.md))
 
@@ -6266,26 +6244,6 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 438 | `PortCheck.MAIN_GENERAL_BERTHS_AT_M3996` | `35` | ...and how many it stood, all full, at m3996. |
 | 444 | `PortCheck.SPLIT_ROUNDING` | `2` | How far a terminal's cash, points or materials may sit from its ratio's rounding: 2. |
 
-### PriceLevelCheck.java ([map](map/PriceLevelCheck.md))
-
-| line | constant | value | says |
-|---:|---|---|---|
-| 68 | `PriceLevelCheck.TWIN_MONTHS` | `60` | The months each twin runs: five years, enough for the founding's wages, rents, builds, loans, trade and the first inflation to act, short enough for a minute or two a child. |
-| 71 | `PriceLevelCheck.BUILT_MONTHS` | `120` | ...and the built city's: ten years, as DenominationCheck's reformed town is run (its fixture reads the loans, the schools and the first replacements). |
-| 74 | `PriceLevelCheck.PLAYED_MONTHS` | `120` | ...and the played city's: ten years, past its demolition (month 60), its iron mine (month 40) and the land the advisor keeps buying ahead of the city (month 96 was the first to part). |
-| 82 | `PriceLevelCheck.US_LEVEL_TOLERANCE` | `.003` | How far the world file's US price level from founding to 2025, times PriceLevel.FACTOR, may be from 1, as a share. |
-| 85 | `PriceLevelCheck.STAND_IN_TOLERANCE` | `1e-9` | The stand-in century follows the series to this share: floating point of one logarithm, nothing the model rounds. |
-| 94 | `PriceLevelCheck.TWIN_NOMINAL_TOLERANCE` | `1e-9` | How far a nominal series of the factor's city, divided by the factor, may be from the same series in the city at today's prices, as a share of the larger. |
-| 97 | `PriceLevelCheck.TWIN_REAL_TOLERANCE` | `1e-9` | ...and a real one (a count, a ratio, a quantity in units), the same band: nothing real is rounded differently by a change of price level. |
-| 103 | `PriceLevelCheck.TWIN_MONEY_FLOOR` | `1e-9` | A nominal series' value below this, in today's thousands, is zero for the comparison (a millionth of a dollar): the model's own numeric floors are at 1e-9 (OrderBook.DUST, Exchange.MIN_FAIR), and a... |
-| 112 | `PriceLevelCheck.HISTORY_SIG_TOLERANCE` | `1.1e-5` | The history records money to a fixed grid (HistorySave.round2, round4, round6) or to six significant figures (roundSig), so a nominal history series of the factor's city, divided by the factor, is ... |
-| 119 | `PriceLevelCheck.TWIN_QUANTITY_FLOOR` | `1e-9` | A real quantity below this, in units, is zero for the comparison: a billionth of a unit, the size of the model's own numeric floors (OrderBook.DUST, Exchange.MIN_FAIR). |
-| 126 | `PriceLevelCheck.TIE_FLIPS` | `2` | A real series the history records to a grid may be one step apart in at most this many months: a value that sits on the middle of two steps (0.00175 recorded to four places, the bank's deposit rate... |
-| 129 | `PriceLevelCheck.CONSTANT_TOLERANCE` | `1e-12` | The relative gap allowed between a constant that carries the factor and today's figure times it, and between a ratio and today's ratio: one rounding of one product. |
-| 132 | `PriceLevelCheck.DOOR` | `"cbs.priceLevel"` | The child property that stands in for the factor (PriceLevel's one door). |
-| 440 | `PriceLevelCheck.NOMINAL_CONSTANTS` | `{ "Game.FOUNDING_CASH", "Game.FOUNDING_RESERVE_USD", "Game.FIXED_ISSUE_COST", "Game.BUI...` | The nominal amounts struck as constants, each a class and a name: today's figure times the factor, in both children. |
-| 589 | `PriceLevelCheck.SIG_RECORDED` | `java.util.regex.Pattern.compile("h\\.(minimumWage\|landPrice\|foodPrice\|materialsPrice\|or...` | The history series recorded to six significant figures (HistorySave.roundSig) rather than to a grid: the share prices and the household-scale prices. |
-
 ### QuarryingCheck.java ([map](map/QuarryingCheck.md))
 
 | line | constant | value | says |
@@ -6295,9 +6253,9 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 117 | `QuarryingCheck.STONE` | `Resource.STONE` | Stone, the resource its quarries dig. |
 | 119 | `QuarryingCheck.LIME` | `Deposit.FieldType.LIMESTONE, HARD = Deposit.FieldType.HARD_ROCK` | Stone's two types of field (Resource.typesOf()): limestone, and hard rock. |
 | 295 | `QuarryingCheck.ROWS` | `{ Quarrying.QUARRY, Quarrying.LARGE_QUARRY, Quarrying.DIMENSION_STONE_QUARRY }` | Quarrying's rows, by their permanent ids, in the study's 6.4 order. |
-| 298 | `QuarryingCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(15_000, 90_000, 6_000)` | The study's 6.4: each one's cost, D$ thousands all in. |
+| 298 | `QuarryingCheck.STUDY_COSTS` | `{ 15_000, 90_000, 6_000 }` | The study's 6.4: each one's cost, D$ thousands all in. |
 | 301 | `QuarryingCheck.STUDY_POSTS` | `{ 22, 125, 17 }` | ...its posts. |
-| 304 | `QuarryingCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(163, 981, 104)` | ...its running cost a month, D$ thousands. |
+| 304 | `QuarryingCheck.STUDY_RUNS` | `{ 163, 981, 104 }` | ...its running cost a month, D$ thousands. |
 | 307 | `QuarryingCheck.STUDY_MAKES` | `{ 40_000, 250_000, 1_000 }` | ...what it makes a month, t: stone, stone, blocks. |
 | 310 | `QuarryingCheck.STUDY_SITES` | `{ 1, 3, 1 }` | ...the sites it takes, and of which type (null for either; the study's 6.4). |
 | 312 | `QuarryingCheck.STUDY_TYPES` | `{ null, null, HARD }` | ...and the type of field each stands on (null for either). |
@@ -6313,7 +6271,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 61 | `RailDepotCheck.LORRY_A_TONNE` | `.319 * PriceLevel.FACTOR` | What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. |
+| 61 | `RailDepotCheck.LORRY_A_TONNE` | `.319` | What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. |
 
 ### RailDrawCheck.java ([map](map/RailDrawCheck.md))
 
@@ -6327,24 +6285,24 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 100 | `RankingsCheck.out` | `System.out` | Where the harness prints: the console. |
-| 103 | `RankingsCheck.SEED` | `7_001` | The seed of the nations' paths. |
-| 106 | `RankingsCheck.LIVE_MONTH` | `40` | The month the live city is played to: over the two years real growth needs. |
-| 109 | `RankingsCheck.TOLERANCE` | `1e-9` | How near two figures that should be one are: relative to the larger, with 1e-9 a floor. |
-| 112 | `RankingsCheck.YEAR_HISTORY` | `2012, YEAR_RULE = 2050` | The years Your world is read at: one inside the world file's history, one the game's rule makes. |
-| 115 | `RankingsCheck.MONEY` | `List.of("gdp", "gdp_pp", "hh_spend_pp", "avg_wage", "min_wage")` | The money measures of the file, and the ones Your world ranks of them. |
-| 118 | `RankingsCheck.ABSENT` | `Set.of("participation", "tertiary", "yield_10y", "debt_foreign", "interest_revenue", "c...` | The measures the brief leaves absent from the city, each for a reason CityMeasures' javadoc gives. |
-| 122 | `RankingsCheck.CORE` | `List.of("gdp", "gdp_pp", "growth_real", "hh_spend_pp", "investment", "gov_spend", "expo...` | What a city of a few years has: every one of these is in its figures. |
-| 899 | `RankingsCheck.LB3_FACTOR` | `100` |  |
+| 99 | `RankingsCheck.out` | `System.out` | Where the harness prints: the console. |
+| 102 | `RankingsCheck.SEED` | `7_001` | The seed of the nations' paths. |
+| 105 | `RankingsCheck.LIVE_MONTH` | `40` | The month the live city is played to: over the two years real growth needs. |
+| 108 | `RankingsCheck.TOLERANCE` | `1e-9` | How near two figures that should be one are: relative to the larger, with 1e-9 a floor. |
+| 111 | `RankingsCheck.YEAR_HISTORY` | `2012, YEAR_RULE = 2050` | The years Your world is read at: one inside the world file's history, one the game's rule makes. |
+| 114 | `RankingsCheck.MONEY` | `List.of("gdp", "gdp_pp", "hh_spend_pp", "avg_wage", "min_wage")` | The money measures of the file, and the ones Your world ranks of them. |
+| 117 | `RankingsCheck.ABSENT` | `Set.of("participation", "tertiary", "yield_10y", "debt_foreign", "interest_revenue", "c...` | The measures the brief leaves absent from the city, each for a reason CityMeasures' javadoc gives. |
+| 121 | `RankingsCheck.CORE` | `List.of("gdp", "gdp_pp", "growth_real", "hh_spend_pp", "investment", "gov_spend", "expo...` | What a city of a few years has: every one of these is in its figures. |
+| 897 | `RankingsCheck.LB3_FACTOR` | `100` |  |
 
 ### RealDollarCheck.java ([map](map/RealDollarCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 36 | `RealDollarCheck.out` | `System.out` |  |
-| 37 | `RealDollarCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 40 | `RealDollarCheck.SEED` | `20_261_031L` | The path seed the cities are founded on. |
-| 333 | `RealDollarCheck.GROWING` | `new WorldEconomy.UsPath() { @ Override public double level(int t) { return Math.pow(1.0...` | A synthetic US: 0.2% a month, 2.4% a year, so a shock is read against a path that moves. |
+| 35 | `RealDollarCheck.out` | `System.out` |  |
+| 36 | `RealDollarCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 39 | `RealDollarCheck.SEED` | `20_261_031L` | The path seed the cities are founded on. |
+| 332 | `RealDollarCheck.GROWING` | `new WorldEconomy.UsPath() { @ Override public double level(int t) { return Math.pow(1.0...` | A synthetic US: 0.2% a month, 2.4% a year, so a shock is read against a path that moves. |
 
 ### RefineryCheck.java ([map](map/RefineryCheck.md))
 
@@ -6353,9 +6311,9 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 155 | `RefineryCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 157 | `RefineryCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 453 | `RefineryCheck.UNITS` | `{ "Small Reformer", "Small Cracking Unit", "Small Hydrocracker", "Small Alkylation Unit...` | The units the town stands beside its Oil Refinery: one small one of every kind but the asphalt unit, which medium crude cannot feed. |
-| 570 | `RefineryCheck.PROTOTYPE_WAGE` | `4.84 * PriceLevel.FACTOR` | The prototype's frame (spread.py): wages a post-month, world $k (m4000's Refining, 736k over 200 posts at 760). |
+| 570 | `RefineryCheck.PROTOTYPE_WAGE` | `4.84` | The prototype's frame (spread.py): wages a post-month, world $k (m4000's Refining, 736k over 200 posts at 760). |
 | 573 | `RefineryCheck.PROTOTYPE_RATE` | `.005` | ...and its money test, a month on the whole cost (its RATE). |
-| 576 | `RefineryCheck.PROTOTYPE_REFINERY_CAPITAL` | `78_000 * PriceLevel.FACTOR` | ...and its Oil Refinery's capital: D$60M and its 1,000 materials at 18 (spread.py's TOPPING); every other building its cash. |
+| 576 | `RefineryCheck.PROTOTYPE_REFINERY_CAPITAL` | `78_000` | ...and its Oil Refinery's capital: D$60M and its 1,000 materials at 18 (spread.py's TOPPING); every other building its cash. |
 | 579 | `RefineryCheck.PROTOTYPE_BUILD_MONTHS` | `6` | ...and the months an order takes to open. |
 | 582 | `RefineryCheck.PROTOTYPE_MONTHS` | `240` | ...and the months it runs. |
 | 585 | `RefineryCheck.M4000_PETROL` | `7.63e6, M4000_DIESEL = 16.13e6` | The prototype's demands, litres a month of petrol and diesel: the playtest's city at m4000 (spread.py's cities). |
@@ -6405,7 +6363,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 531 | `RestructureCheck.DOLLAR_ASK` | `5_000 * PriceLevel.FACTOR` | What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. |
+| 531 | `RestructureCheck.DOLLAR_ASK` | `5_000` | What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. |
 
 ### RoadCheck.java ([map](map/RoadCheck.md))
 
@@ -6586,6 +6544,15 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 50 | `VaultMoneysCheck.SLOTS` | `147` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them). |
 | 52 | `VaultMoneysCheck.ALL_USD` | `ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE, WORLD_MIX =...` |  |
 
+### WantedPostsCheck.java ([map](map/WantedPostsCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 83 | `WantedPostsCheck.MACHINE_WORKS` | `"Machine Works"` |  |
+| 87 | `WantedPostsCheck.WORKFORCE` | `5_000` | The hands the fixture's city has: its workforce, and how many of them have a diploma, a college degree and a university degree. |
+| 88 | `WantedPostsCheck.DIPLOMA_HEADS` | `2_000, COLLEGE_HEADS = 200, UNIVERSITY_HEADS = 20` |  |
+| 179 | `WantedPostsCheck.COLLEGE` | `WageBand.COLLEGE.ordinal(), UNIVERSITY = WageBand.UNIVERSITY.ordinal()` |  |
+
 ### WellCheck.java ([map](map/WellCheck.md))
 
 | line | constant | value | says |
@@ -6605,20 +6572,20 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 81 | `WoodProductsCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 83 | `WoodProductsCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 119 | `WoodProductsCheck.GOODS` | `{ Good.LUMBER, Good.PANELS, Good.RESIDUES, Good.PULP, Good.PAPER, Good.WOOD_PELLETS }` | Wood's six goods, in Good's order (the spec's 2.3). |
-| 121 | `WoodProductsCheck.STUDY_IMPORT` | `PriceLevelCheck.atFounding(.340,.420,.045,.760, 1.050,.220)` | The study's 5.3: each one's import price, D$ thousands a cubic metre or a tonne. |
-| 123 | `WoodProductsCheck.STUDY_EXPORT` | `PriceLevelCheck.atFounding(.250,.260,.015,.600,.880,.150)` | ...and its export price. |
+| 121 | `WoodProductsCheck.STUDY_IMPORT` | `{.340,.420,.045,.760, 1.050,.220 }` | The study's 5.3: each one's import price, D$ thousands a cubic metre or a tonne. |
+| 123 | `WoodProductsCheck.STUDY_EXPORT` | `{.250,.260,.015,.600,.880,.150 }` | ...and its export price. |
 | 125 | `WoodProductsCheck.STUDY_UNIT` | `{ "cubic metre", "cubic metre", "cubic metre", "tonne", "tonne", "tonne" }` | ...its unit. |
 | 127 | `WoodProductsCheck.TONNES_A_M3` | `{.5,.62,.9, Double.NaN, Double.NaN, Double.NaN }` | ...the tonnes a cubic metre of it weighs (spec 2.3, est.: sawn lumber 0.5, OSB 0.62 [W35], chips green as the logs, 0.9); NaN for one by the tonne. |
 | 129 | `WoodProductsCheck.STOCKABLE` | `{ true, true, false, true, true, true }` | ...and whether it keeps in a yard (spec 2.3: all but the residues). |
 | 131 | `WoodProductsCheck.FREIGHT_SHARE` | `.375` | Good.java's rule: freight three eighths of the wedge. |
 | 217 | `WoodProductsCheck.ROWS` | `{ WoodProducts.SAWMILL, WoodProducts.LARGE_SAWMILL, WoodProducts.PANEL_MILL, WoodProduc...` | The rows, by their permanent ids, in the study's 5.4 order. |
-| 221 | `WoodProductsCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(15_000, 150_000, 140_000, 260_000, 150_000, 30_000)` | The study's 5.4: each one's cost, D$ thousands all in. |
+| 221 | `WoodProductsCheck.STUDY_COSTS` | `{ 15_000, 150_000, 140_000, 260_000, 150_000, 30_000 }` | The study's 5.4: each one's cost, D$ thousands all in. |
 | 224 | `WoodProductsCheck.STUDY_POSTS` | `{ 35, 130, 100, 200, 120, 30 }` | ...its posts. |
 | 227 | `WoodProductsCheck.STUDY_MADE` | `{ { Good.LUMBER, Good.RESIDUES }, { Good.LUMBER, Good.RESIDUES }, { Good.PANELS }, { Go...` | ...what it makes a month. |
 | 230 | `WoodProductsCheck.STUDY_MAKES` | `{ { 2_080, 1_640 }, { 20_020, 15_785 }, { 15_000 }, { 11_000 }, { 5_500 }, { 6_000 } }` | ...and how much of each, a month (cubic metres or tonnes). |
 | 233 | `WoodProductsCheck.STUDY_FEED` | `{ { Good.SAWLOGS }, { Good.SAWLOGS }, { Good.PULPWOOD }, { Good.PULPWOOD, Good.RESIDUES...` | ...what it takes a month. |
 | 236 | `WoodProductsCheck.STUDY_USES` | `{ { 4_000 }, { 38_500 }, { 27_750 }, { 28_000, 21_500 }, { 5_775, 850_000 }, { 13_200 } }` | ...and how much of each (the paper mill's fuel in litres, the study's 5.6). |
-| 239 | `WoodProductsCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(177, 844, 1_360, 2_170, 1_380, 183)` | ...its running cost a month, D$ thousands, the study's 5.4 "Runs" - power bought from the grid only (its 2.4), the paper mill's fuel in it. |
+| 239 | `WoodProductsCheck.STUDY_RUNS` | `{ 177, 844, 1_360, 2_170, 1_380, 183 }` | ...its running cost a month, D$ thousands, the study's 5.4 "Runs" - power bought from the grid only (its 2.4), the paper mill's fuel in it. |
 | 242 | `WoodProductsCheck.STUDY_TABLE` | `{ { - 0.5, 0.7, 2.3, 1.1 }, { 0.1, 1.3, 2.8, 1.6 }, { 0.0, 1.1, 2.8, 1.7 }, { 0.4, 1.3,...` | The study's 5.5 table, % of the cost a month, cases A to D. |
 | 246 | `WoodProductsCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 249 | `WoodProductsCheck.PULP_GEN` | `13_500` | The pulp mill's power past its own draw, kW (the study's 1.6: 11,000 t at 0.9 MWh a tonne [W42]). |
@@ -6660,53 +6627,50 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 83 | `WorldDataCheck.EXPECT` | `"world/world-1-fixture.expect"` | The fixture's expected figures, beside the classes (the fixture itself is WorldData.FIXTURE). |
-| 86 | `WorldDataCheck.FIXTURE_NAME` | `"world-1-fixture", FULL_NAME = "world-1"` | A fixture's meta name row, and the full file's. |
-| 89 | `WorldDataCheck.SUM_TOL` | `1e-9` | A sum, a make or a use, agrees with the flows it is the sum of within this share of it (FORMAT.txt, trade: 1e-9). |
-| 92 | `WorldDataCheck.TRIANGLE_SLACK` | `1e-9` | The triangle rule holds within this share of the dearer side (floating point adds the same route in a different order). |
-| 95 | `WorldDataCheck.TABLE_TOL` | `1e-9` | The freight table is symmetric, and is its edges' closure, within this share of the figure. |
-| 98 | `WorldDataCheck.MARGIN_TOL` | `1e-12` | The solve's margins meet when no make or use is off by more than this share of it (FORMAT.txt, THE KERNEL: 1e-12). |
-| 101 | `WorldDataCheck.FLOW_TOL` | `1e-9` | The solve gives the file's flow within this share of it (FORMAT.txt: 1e-9), plus MARGIN_ULPS of its margin over the flow (see there). |
-| 108 | `WorldDataCheck.MARGIN_ULPS` | `1e-15` | The room a flow is given beyond FLOW_TOL, as this share of the smaller of its row's make and its column's use, over the flow: 4 ulps of the margin. |
-| 111 | `WorldDataCheck.COST_TOL` | `1e-9` | A pair's cost is elasticity x ln(1 + freight / unit value) within this share of it. |
-| 114 | `WorldDataCheck.BACI_TOL` | `1e-6` | BACI's own sum for a pair is the file's flow within this share of it (the file's flow is BACI's, as the CSV is summed in a second pass). |
-| 117 | `WorldDataCheck.SWEEP_CAP` | `100_000` | The most passes (every nation's a and b solved together, the others held) the solve may take for one good before it is called not to converge. |
-| 120 | `WorldDataCheck.CHANGE_TOL` | `1e-9` | The solve may stop when no a or b moved by more than this share in a pass, and every margin is within MARGIN_TOL / TARGET_DIVISOR (econ_trade.py's rule). |
-| 123 | `WorldDataCheck.TARGET_DIVISOR` | `100` | A margin must be within MARGIN_TOL over this before the solve may stop: the margin floor of double precision is far below MARGIN_TOL. |
-| 126 | `WorldDataCheck.CHANGE_FLOOR` | `1e-15` | The solve stops at once when no a or b moved by more than this share in a pass: they have stopped moving, at the floor of double precision. |
-| 129 | `WorldDataCheck.STALE_PASSES` | `8` | ...or when this many passes after it may stop have moved them no less than the least so far: a nation whose own pair is nearly all of its make and use keeps a rounding wobble. |
-| 132 | `WorldDataCheck.TWELVE` | `List.of("AUS", "BEL", "CAN", "CHE", "CHN", "COL", "DEU", "FRA", "GBR", "JPN", "NLD", "U...` | The nations of the fixture, in iso3 order (FORMAT.txt, THE FIXTURE). |
-| 135 | `WorldDataCheck.THE_THREE` | `List.of("TWN", "HKG", "MAC")` | The three the 193 UN members do not hold, that the full file's N = 196 adds: Taiwan, Hong Kong and Macau. |
-| 138 | `WorldDataCheck.UN_MEMBER_COUNT` | `193` | How many member states the UN has (since South Sudan joined in 2011). |
-| 141 | `WorldDataCheck.WORLD_BANK_REGIONS` | `7` | How many regions the World Bank's countries list sorts the nations in (FORMAT.txt, nations). |
-| 144 | `WorldDataCheck.FULL_NATIONS` | `UN_MEMBER_COUNT + THE_THREE.size()` | How many nations the full file holds. |
-| 151 | `WorldDataCheck.UN_MEMBERS` | `"AFG AGO ALB AND ARE ARG ARM ATG AUS AUT AZE " + "BDI BEL BEN BFA BGD BGR BHR BHS BIH B...` | The United Nations' 193 member states by ISO 3166 alpha-3 code, A to Z: the list on the UN's member states page (https://www.un.org/en/about-us/member-states), written here and not read from the fi... |
-| 179 | `WorldDataCheck.LAST_MONTH` | `WorldData.monthNumber(2025, 12)` | The last month the rates and the figures run to: 2025-12. |
-| 182 | `WorldDataCheck.FILE_MONTH_ZERO` | `WorldData.monthNumber(WorldData.FILE_FIRST_YEAR, 1)` | The file's own month 0, 2000-01, as WorldData numbers months from FIRST_YEAR: where the stand-in century ends and the file begins. |
-| 185 | `WorldDataCheck.PEOPLE_LAST` | `2100, FIGURES_LAST = 2025` | The people run to this year; the figures (output, the exchange rate) to FIGURES_LAST. |
-| 188 | `WorldDataCheck.FIGURE_SERIES` | `List.of("gdp_2015usd", "gdp_usd", "gdp_ppp", "rate")` | The series that have a figure for every nation to FIGURES_LAST. |
-| 191 | `WorldDataCheck.FREIGHT_DIALS` | `List.of("SEA_USD_TKM", "LAND_USD_TKM", "HANDLING_USD_T", "LAND_PER_SEA")` | The dials the freight cost and the kernel read (FORMAT.txt, trade and freight). |
-| 194 | `WorldDataCheck.DAY` | `Pattern.compile("\\d{4}-\\d{2}-\\d{2}")` | A day as the meta writes it. |
-| 198 | `WorldDataCheck.out` | `System.out` | Where the harness prints: the console. |
-| 1065 | `WorldDataCheck.NOMINAL` | `List.of("cpi", "gdp_usd")` | The paths' series the stand-in carries back on the US price level; it holds every other. |
-| 1068 | `WorldDataCheck.LEAD_TOL` | `1e-12` | The lead's figure is the rule's within this share of it (a product and a quotient of the same doubles: a rounding or two). |
+| 76 | `WorldDataCheck.EXPECT` | `"world/world-1-fixture.expect"` | The fixture's expected figures, beside the classes (the fixture itself is WorldData.FIXTURE). |
+| 79 | `WorldDataCheck.FIXTURE_NAME` | `"world-1-fixture", FULL_NAME = "world-1"` | A fixture's meta name row, and the full file's. |
+| 82 | `WorldDataCheck.SUM_TOL` | `1e-9` | A sum, a make or a use, agrees with the flows it is the sum of within this share of it (FORMAT.txt, trade: 1e-9). |
+| 85 | `WorldDataCheck.TRIANGLE_SLACK` | `1e-9` | The triangle rule holds within this share of the dearer side (floating point adds the same route in a different order). |
+| 88 | `WorldDataCheck.TABLE_TOL` | `1e-9` | The freight table is symmetric, and is its edges' closure, within this share of the figure. |
+| 91 | `WorldDataCheck.MARGIN_TOL` | `1e-12` | The solve's margins meet when no make or use is off by more than this share of it (FORMAT.txt, THE KERNEL: 1e-12). |
+| 94 | `WorldDataCheck.FLOW_TOL` | `1e-9` | The solve gives the file's flow within this share of it (FORMAT.txt: 1e-9), plus MARGIN_ULPS of its margin over the flow (see there). |
+| 101 | `WorldDataCheck.MARGIN_ULPS` | `1e-15` | The room a flow is given beyond FLOW_TOL, as this share of the smaller of its row's make and its column's use, over the flow: 4 ulps of the margin. |
+| 104 | `WorldDataCheck.COST_TOL` | `1e-9` | A pair's cost is elasticity x ln(1 + freight / unit value) within this share of it. |
+| 107 | `WorldDataCheck.BACI_TOL` | `1e-6` | BACI's own sum for a pair is the file's flow within this share of it (the file's flow is BACI's, as the CSV is summed in a second pass). |
+| 110 | `WorldDataCheck.SWEEP_CAP` | `100_000` | The most passes (every nation's a and b solved together, the others held) the solve may take for one good before it is called not to converge. |
+| 113 | `WorldDataCheck.CHANGE_TOL` | `1e-9` | The solve may stop when no a or b moved by more than this share in a pass, and every margin is within MARGIN_TOL / TARGET_DIVISOR (econ_trade.py's rule). |
+| 116 | `WorldDataCheck.TARGET_DIVISOR` | `100` | A margin must be within MARGIN_TOL over this before the solve may stop: the margin floor of double precision is far below MARGIN_TOL. |
+| 119 | `WorldDataCheck.CHANGE_FLOOR` | `1e-15` | The solve stops at once when no a or b moved by more than this share in a pass: they have stopped moving, at the floor of double precision. |
+| 122 | `WorldDataCheck.STALE_PASSES` | `8` | ...or when this many passes after it may stop have moved them no less than the least so far: a nation whose own pair is nearly all of its make and use keeps a rounding wobble. |
+| 125 | `WorldDataCheck.TWELVE` | `List.of("AUS", "BEL", "CAN", "CHE", "CHN", "COL", "DEU", "FRA", "GBR", "JPN", "NLD", "U...` | The nations of the fixture, in iso3 order (FORMAT.txt, THE FIXTURE). |
+| 128 | `WorldDataCheck.THE_THREE` | `List.of("TWN", "HKG", "MAC")` | The three the 193 UN members do not hold, that the full file's N = 196 adds: Taiwan, Hong Kong and Macau. |
+| 131 | `WorldDataCheck.UN_MEMBER_COUNT` | `193` | How many member states the UN has (since South Sudan joined in 2011). |
+| 134 | `WorldDataCheck.WORLD_BANK_REGIONS` | `7` | How many regions the World Bank's countries list sorts the nations in (FORMAT.txt, nations). |
+| 137 | `WorldDataCheck.FULL_NATIONS` | `UN_MEMBER_COUNT + THE_THREE.size()` | How many nations the full file holds. |
+| 144 | `WorldDataCheck.UN_MEMBERS` | `"AFG AGO ALB AND ARE ARG ARM ATG AUS AUT AZE " + "BDI BEL BEN BFA BGD BGR BHR BHS BIH B...` | The United Nations' 193 member states by ISO 3166 alpha-3 code, A to Z: the list on the UN's member states page (https://www.un.org/en/about-us/member-states), written here and not read from the fi... |
+| 172 | `WorldDataCheck.LAST_MONTH` | `WorldData.monthNumber(2025, 12)` | The last month the rates and the figures run to: 2025-12. |
+| 175 | `WorldDataCheck.PEOPLE_LAST` | `2100, FIGURES_LAST = 2025` | The people run to this year; the figures (output, the exchange rate) to FIGURES_LAST. |
+| 178 | `WorldDataCheck.FIGURE_SERIES` | `List.of("gdp_2015usd", "gdp_usd", "gdp_ppp", "rate")` | The series that have a figure for every nation to FIGURES_LAST. |
+| 181 | `WorldDataCheck.FREIGHT_DIALS` | `List.of("SEA_USD_TKM", "LAND_USD_TKM", "HANDLING_USD_T", "LAND_PER_SEA")` | The dials the freight cost and the kernel read (FORMAT.txt, trade and freight). |
+| 184 | `WorldDataCheck.DAY` | `Pattern.compile("\\d{4}-\\d{2}-\\d{2}")` | A day as the meta writes it. |
+| 188 | `WorldDataCheck.out` | `System.out` | Where the harness prints: the console. |
 
 ### WorldMarketCheck.java ([map](map/WorldMarketCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 80 | `WorldMarketCheck.out` | `System.out` | Where the harness prints: the console. |
-| 86 | `WorldMarketCheck.BASE_SEED` | `11` | The seed the single-world sections use. |
-| 89 | `WorldMarketCheck.SHARES` | `{ 0,.001,.01,.1,.5 }` | The city's yearly exports and imports in sections 3 and 4, as shares of the good's world use. |
-| 92 | `WorldMarketCheck.STEPS` | `{.001,.01,.05,.10 }` | The volumes of section 5, shares of the world's use. |
-| 95 | `WorldMarketCheck.STEP_TOL` | `.03` | The month's step is within this share of the price (the served buyers' landed price, tonne-weighted) of the re-solve's figure: a freight-heavy good's netback is a small remainder of its price, so a... |
-| 98 | `WorldMarketCheck.SMALL_MOVE` | `.01, BIG_MOVE =.05` | An ordinary city (0.01% of the world's use) moves its netback by less than this share of the price it sells at, a big one (10%) by at least BIG_MOVE of it. |
-| 101 | `WorldMarketCheck.ORDINARY_SHARE` | `.0001, LARGE_SHARE =.001, BIG_SHARE =.1` | The shares of a good's world use section 4 reads: an ordinary city's, a large mill town's (printed only: the host's market is small), and a big city's. |
-| 104 | `WorldMarketCheck.ONE_PERCENT` | `{ Good.LUMBER, Good.CRUDE, Good.IRON, Good.GRAINS }` | The goods whose step is asserted within STEP_TOL at 1% of world use, beside the median: the study's and the brief's four. |
-| 107 | `WorldMarketCheck.SAME` | `1e-9` | Two figures that should be one are the same within this share. |
-| 110 | `WorldMarketCheck.STAND_IN_SEEDS` | `2_000` | Seeds drawn for the stand-in. |
-| 113 | `WorldMarketCheck.SIGMAS` | `4.5` | A frequency is judged within this many standard deviations of a binomial. |
-| 534 | `WorldMarketCheck.NAMED` | `{ Good.LUMBER, Good.IRON, Good.CRUDE, Good.GRAINS, Good.MACHINERY, Good.CARS }` | The goods the study and the brief name, always printed. |
+| 79 | `WorldMarketCheck.out` | `System.out` | Where the harness prints: the console. |
+| 85 | `WorldMarketCheck.BASE_SEED` | `11` | The seed the single-world sections use. |
+| 88 | `WorldMarketCheck.SHARES` | `{ 0,.001,.01,.1,.5 }` | The city's yearly exports and imports in sections 3 and 4, as shares of the good's world use. |
+| 91 | `WorldMarketCheck.STEPS` | `{.001,.01,.05,.10 }` | The volumes of section 5, shares of the world's use. |
+| 94 | `WorldMarketCheck.STEP_TOL` | `.03` | The month's step is within this share of the price (the served buyers' landed price, tonne-weighted) of the re-solve's figure: a freight-heavy good's netback is a small remainder of its price, so a... |
+| 97 | `WorldMarketCheck.SMALL_MOVE` | `.01, BIG_MOVE =.05` | An ordinary city (0.01% of the world's use) moves its netback by less than this share of the price it sells at, a big one (10%) by at least BIG_MOVE of it. |
+| 100 | `WorldMarketCheck.ORDINARY_SHARE` | `.0001, LARGE_SHARE =.001, BIG_SHARE =.1` | The shares of a good's world use section 4 reads: an ordinary city's, a large mill town's (printed only: the host's market is small), and a big city's. |
+| 103 | `WorldMarketCheck.ONE_PERCENT` | `{ Good.LUMBER, Good.CRUDE, Good.IRON, Good.GRAINS }` | The goods whose step is asserted within STEP_TOL at 1% of world use, beside the median: the study's and the brief's four. |
+| 106 | `WorldMarketCheck.SAME` | `1e-9` | Two figures that should be one are the same within this share. |
+| 109 | `WorldMarketCheck.STAND_IN_SEEDS` | `2_000` | Seeds drawn for the stand-in. |
+| 112 | `WorldMarketCheck.SIGMAS` | `4.5` | A frequency is judged within this many standard deviations of a binomial. |
+| 494 | `WorldMarketCheck.NAMED` | `{ Good.LUMBER, Good.IRON, Good.CRUDE, Good.GRAINS, Good.MACHINERY, Good.CARS }` | The goods the study and the brief name, always printed. |
 
 ### WorldMeasuresCheck.java ([map](map/WorldMeasuresCheck.md))
 
@@ -6764,21 +6728,20 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 61 | `WorldMoneysCheck.out` | `System.out` | Where the harness prints: the console. |
-| 64 | `WorldMoneysCheck.BASE_SEED` | `9_101` | The seed the single-world sections use. |
-| 67 | `WorldMoneysCheck.FULL_SEEDS` | `1_000, FIXTURE_SEEDS = 300` | The seeds the statistics are counted over: the full file's paths (26 years each), and the fixture's. |
-| 70 | `WorldMoneysCheck.PATH_MONTHS` | `311` | The months of a Random path the statistics are counted over: the 26-year run (the first January to the November 26 years on). |
-| 73 | `WorldMoneysCheck.LONG_MONTHS` | `360` | The months the identity and restore sections run on Random: thirty years. |
-| 76 | `WorldMoneysCheck.RULED_MONTHS` | `48` | The months Historical's rule runs in the identity and restore sections: 48, after the table's end. |
-| 84 | `WorldMoneysCheck.DIAL_TOL` | `.05` | A measured sd or persistence is within this share of the dial it is drawn from (a pooled lag-1 fit over 311 months a path is biased low by about 1.3%). |
-| 87 | `WorldMoneysCheck.SIGMAS` | `3` | A count of breaks or of risk-off starts is within this many standard deviations of its expected number. |
-| 90 | `WorldMoneysCheck.EXACT` | `1e-12` | Two logs or two rates that should be one differ by less than this (the rates are exp of sums of a few logs). |
-| 94 | `WorldMoneysCheck.FIXTURE_PEGS` | `Map.of("CHN", "peg:USD", "COL", "peg:CNY")` | Pegs the fixture is given: the yuan on the dollar, the peso on the yuan (a chain); and the loop of the two. |
-| 95 | `WorldMoneysCheck.FIXTURE_LOOP` | `Map.of("CHN", "peg:COP", "COL", "peg:CNY")` |  |
-| 98 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
-| 99 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { 9.1, 9.6, ...` |  |
-| 100 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
-| 1061 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
+| 59 | `WorldMoneysCheck.out` | `System.out` | Where the harness prints: the console. |
+| 62 | `WorldMoneysCheck.BASE_SEED` | `9_101` | The seed the single-world sections use. |
+| 65 | `WorldMoneysCheck.FULL_SEEDS` | `1_000, FIXTURE_SEEDS = 300` | The seeds the statistics are counted over: the full file's paths (26 years each), and the fixture's. |
+| 68 | `WorldMoneysCheck.PATH_MONTHS` | `311` | The months of a path the statistics are counted over: January 2000 to November 2025, the 26-year run. |
+| 71 | `WorldMoneysCheck.LONG_MONTHS` | `360` | The months the identity and restore sections run: thirty years, so Historical's rule runs 48 months. |
+| 74 | `WorldMoneysCheck.DIAL_TOL` | `.05` | A measured sd or persistence is within this share of the dial it is drawn from (a pooled lag-1 fit over 311 months a path is biased low by about 1.3%). |
+| 77 | `WorldMoneysCheck.SIGMAS` | `3` | A count of breaks or of risk-off starts is within this many standard deviations of its expected number. |
+| 80 | `WorldMoneysCheck.EXACT` | `1e-12` | Two logs or two rates that should be one differ by less than this (the rates are exp of sums of a few logs). |
+| 84 | `WorldMoneysCheck.FIXTURE_PEGS` | `Map.of("CHN", "peg:USD", "COL", "peg:CNY")` | Pegs the fixture is given: the yuan on the dollar, the peso on the yuan (a chain); and the loop of the two. |
+| 85 | `WorldMoneysCheck.FIXTURE_LOOP` | `Map.of("CHN", "peg:COP", "COL", "peg:CNY")` |  |
+| 88 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
+| 89 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { 9.1, 9.6, ...` |  |
+| 90 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
+| 1047 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
 
 ### YearBookCheck.java ([map](map/YearBookCheck.md))
 

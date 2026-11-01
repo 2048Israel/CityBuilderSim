@@ -1,4 +1,4 @@
-# LuxuryRetail.java - 547 lines · 23 methods · 4 constants · sectors
+# LuxuryRetail.java - 549 lines · 23 methods · 4 constants · sectors
 
 `ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -57,7 +57,7 @@
 > falls rather than going round again. If a domestic maker ever appears, that
 > is import substitution, and it is something a player should have to earn.
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (3), [Markets](Markets.md) (2), [Trade](Trade.md) (2), [Game](Game.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingType](BuildingType.md) (1), [Retail](Retail.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (3), [Markets](Markets.md) (2), [Trade](Trade.md) (2), [Game](Game.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingType](BuildingType.md) (1), [Retail](Retail.md) (1)
 
 **Used by (5):** [EconomyManager](EconomyManager.md), [Game](Game.md), [LuxuryCounter](LuxuryCounter.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md)
 
@@ -69,8 +69,8 @@
 | 123 | WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG |
 | 191 | THE SALE |
 | 362 | PLANNING - the queue at a door that is not there |
-| 480 | THE SCREEN |
-| 522 | SAVE, RESET (0.7.43) |
+| 482 | THE SCREEN |
+| 524 | SAVE, RESET (0.7.43) |
 
 ## Constants
 
@@ -93,7 +93,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 476 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
+| 72 | 478 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
 
 ### THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT (lines 74-122)
 
@@ -122,26 +122,26 @@
 | 339 | 1 | `public double onShelf()` | What the shops hold, in pieces. |
 | 357 | 4 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
 
-### PLANNING - the queue at a door that is not there (lines 362-479)
+### PLANNING - the queue at a door that is not there (lines 362-481)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 390 | 62 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who came AT ITS PRICE, not against a sales record (0.7.19: the buyers at the margin it struck - see strikeMargin() - where it read the queue at the floor price until then). |
-| 469 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
+| 390 | 64 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who came AT ITS PRICE, not against a sales record (0.7.19: the buyers at the margin it struck - see strikeMargin() - where it read the queue at the floor price until then). |
+| 471 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
 
-### THE SCREEN (lines 480-521)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 486 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. |
-| 489 | 1 | `public boolean hasPlantBlock()` |  |
-| 492 | 30 | `public List<Line> ownLines(Game game)` |  |
-
-### SAVE, RESET (0.7.43) (lines 522-547)
+### THE SCREEN (lines 482-523)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 528 | 4 | `protected void saveExtras(java.util.Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
-| 535 | 6 | `protected void restoreExtras(java.util.Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its fixed point. |
-| 543 | 4 | `protected void resetExtras()` |  |
+| 488 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. |
+| 491 | 1 | `public boolean hasPlantBlock()` |  |
+| 494 | 30 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE, RESET (0.7.43) (lines 524-549)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 530 | 4 | `protected void saveExtras(java.util.Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
+| 537 | 6 | `protected void restoreExtras(java.util.Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its fixed point. |
+| 545 | 4 | `protected void resetExtras()` |  |
 

@@ -53,8 +53,10 @@ runs give:
    together, population flat, the staffing gate holding the builders.
    `docs/queue/RE1/probe-main.patch` puts each investor's last decision and
    the landlords' books in a TSV a month. If a seed shows the signature, it
-   is the fixture for RE1-T (pending, Jerus's call; recommended way: the
-   payroll billed with the rent at once).
+   is the fixture for RE1-T's way (a), the payroll billed with the rent at
+   once, which the notes then queue as a batch of its own (RE1-T settled
+   2026-10-31 the recommended way, (d) until a seed shows it, then (a), on
+   Jerus's "Take all (Recommended)").
 5. HealthCheck, OrderSearchCheck, SaveFileCheck, LabourCheck, MonetaryCheck,
    BuildingDataCheck, HousingCheck and SectorStatementCheck passed with the
    posts on 0.8.77 (RE1, both data files named). The full suite runs as for
