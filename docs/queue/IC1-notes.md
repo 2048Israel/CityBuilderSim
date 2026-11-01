@@ -154,7 +154,16 @@ queued.
   - the same builders working at 30% withhold fewer, 1,939, and yet the gate refuses at 70.5%;
   - Manufacturing's staffable count is 1 idle and 0 working.
 - {suite}
-- {ensemble}
+- **The ensemble** (`docs/ensemble/IC1.md`) ran 80 runs on IC1's model (72b7f553), two at once, in 21 minutes. It
+  scores 22/26, against LD1's 23/26:
+  - **A3 turns red again.** The longest deflation spell from m240 is 5 months at the median [0-12]. One seed reaches
+    12 against "< 12 in every seed": LD1 had 4 [0-11], 0.8.88 6 [0-13]. Pending IC1-R.
+  - **A2, S1 and R2 fail as on LD1.** A2 is 15 months over 10% at the median [11-34], against 16 [12-32]. S1's
+    longest spell is 79 months.
+  - **R2 reads +0.19 points at the median [-3.65 to +2.94]**, against LD1's +0.38 and under R2's +0.50. That is
+    LD1-R's reading on IC1, asked for in its row: still red, and smaller.
+  - **T1 and T2 pass.** 16/16 seeds pass 40,000 at m976 [770-1,133], and the final population is 335,718. These are
+    the sixteen-seed figures of §3, run for run.
 
 ## 7. What ST2 should know about ScaleCheck's town
 
@@ -191,7 +200,10 @@ month that holds every assertion before such a bust may not hold after the next 
   switch as it was.
 - ★ **FoundingYardCheck 6's last line follows the new rule (Recommended, taken).** It asserted the effect IC1
   reverses. The alternative is to drop the line.
-- {ld1r}
+- ★ **A3's red is accepted (Recommended).** It is one seed at the criterion's boundary: 12 months against "< 12",
+  as 0.8.88's 13. The median spell is 5 months. Pending IC1-R.
+- ★ **LD1-R reads +0.19 on IC1 (Recommended: accept, as LD1-R recommends).** R2's red is smaller, not gone. Whether
+  R2's premise still reads the rate stays LD1-R's question.
 
 ## 9. One in, one out
 
