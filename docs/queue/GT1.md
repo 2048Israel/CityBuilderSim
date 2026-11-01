@@ -45,6 +45,13 @@ one-out rule binds it (its notes give the count).
    (2026-11-01: ScaleCheck and CentralBankCheck went red only because the path
    moved), so a harness whose condition is a behaviour keeps its own fixture.
 
+5. **README's harness count set at the gate.** Two batches that each add a
+   harness both write the count up by one, and the second to ship stops on
+   StaleCheck ("every stated count is the count"): CD7 after LB2, TR1 beside
+   LD1, WN5 after WN7 (2026-11-01, a 45-minute regate). `ship.sh` writes the
+   count itself in the merge (the *Check.java files on the merged tree), or
+   README states no exact count; either way a batch no longer edits it.
+
 ## The checks
 
 The gate's time before and after, the suite's and each step's, on the same
