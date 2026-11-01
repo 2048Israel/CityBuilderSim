@@ -9,7 +9,7 @@ and moving with it. An offer across a border is split, each part priced and paid
 holding of its money first; the receipt and the offer card name them ("Sold by United States 62% · Canada 38%"), and what
 the city bought from whom is kept for WN6. A generated world is the host's at factor 1: the default playtest's eight trace
 files byte-identical to main's, no ensemble. A Rotterdam city pays about 11 times Halifax's and ends a third smaller.
-Suite green (exit 0, 167 harnesses); LandNationsCheck new: Historical meets the published ratios in 2024 to 2.7e-16.
+Suite green (exit 0, 167 harnesses; README's count set to 167 at the gate, beside WN7's); LandNationsCheck new: Historical meets the published ratios in 2024 to 2.7e-16.
 ## pending
 | WN5-L | Land at its real price ({next}): a Rotterdam city pays about 11 times what a Halifax city pays (the Netherlands' published ratio, 10.9) and over 4,005 months buys 83 km2 of dry ground against main's 135 and ends at 315,000 people against 471,000; Japan's factor is 3.8, Germany's 4.4, the US's 1.35, Brazil's 0.3. ★ Recommended: keep the real ratio undamped (the study's spread, 6.3, is what was asked); a dial on its exponent is a one-line batch if a played European city feels starved of land. | his call | docs/queue/WN5-notes.md §2 call 9, §4 |
 | WN5-C | Eye-check WN5 ({next}) on an Earth city at a border (Windsor, 42.30 -83.03): the land office's card line "Sold by United States 62% · Canada 38%" under an offer across the Detroit River and "Sold by United States" under one wholly across it, nothing on Canada's own offers or on a generated world; the receipt's "Sold by ... (62%, US$...) and Canada (38%, C$...)"; the dearer prices across the river. | needs his eye | docs/queue/WN5-notes.md §1 |
