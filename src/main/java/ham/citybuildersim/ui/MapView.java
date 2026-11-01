@@ -1938,6 +1938,7 @@ final class MapView {
 
     /** The scale bar at the bottom left: the longest of 1, 2 or 5 times a power of ten metres in SCALE_BAR_PX, its length in words. */
     private void scaleBar(GraphicsContext gc, MapFrame f) {
+        if (cinematic && expanded) return;      // (TR1) not drawn in a replay's cinematic mode
         double[] bar = f.scaleBar(SCALE_BAR_PX);
         scaleBar(gc, f.height(), bar[1], MapFrame.scaleWords(bar[0]));
     }
@@ -2756,6 +2757,7 @@ final class MapView {
 
     /** The scale bar on the globe: GlobeFrame.scaleBar() at the view's centre, its words saying so. */
     private void globeScaleBar(GraphicsContext gc) {
+        if (cinematic && expanded) return;      // (TR1) not drawn in a replay's cinematic mode
         double[] bar = globe.scaleBar(SCALE_BAR_PX);
         scaleBar(gc, globe.height(), bar[1], GlobeFrame.scaleWords(bar[0]));
     }
@@ -4535,6 +4537,7 @@ final class MapView {
         // Under the window's header, which stays in view and says the clock (MS1): the head here has no clock line.
         ui.showChartFullScreen(bigPane, null, this::collapse, true);
         ui.panKeysTo(this);
+        setCinematic(ui.isCinematic());     // (TR1) a replay's cinematic mode that is on holds for a map expanded in it
         canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
         boolean before = big != null;
         fitPane();
@@ -4673,8 +4676,8 @@ final class MapView {
     private void fitPane() {
         if (!expanded) return;
         javafx.scene.Scene window = bigPane.getScene();
-        double w = (window != null ? window.getWidth() : bigPane.getWidth()) - 2 * PANE_SIDE;
-        double h = (window != null ? window.getHeight() - ui.chartFullTop() : bigPane.getHeight()) - PANE_TOP - PANE_BOTTOM - PANE_HEAD;
+        double w = (window != null ? window.getWidth() : bigPane.getWidth()) - 2 * padded(PANE_SIDE);     // (TR1) padded(): none in cinematic mode
+        double h = (window != null ? window.getHeight() - ui.chartFullTop() : bigPane.getHeight()) - padded(PANE_TOP) - padded(PANE_BOTTOM) - padded(PANE_HEAD);
         if (w <= 0 || h <= 0) return;
         w = Math.floor(w);
         h = Math.floor(h);
@@ -4898,5 +4901,80 @@ final class MapView {
         clip.setArcWidth(16);
         clip.setArcHeight(16);
         box.setClip(clip);
+    }
+
+    /* =====================================================================
+       REPLAY: CINEMATIC (TR1, 2026-10-31)
+
+       A replay's cinematic mode (UserInterface.replayCinematic(), ReplayMode)
+       hides everything round the picture so the screen recorder films the
+       map and nothing else. On the expanded map that is its head line (with
+       the hint), its legend, its hover card, the scale bar and the mouse
+       cursor, and the pane's padding: the canvas fills the pane, which lies
+       at the window's top (the header is gone) and fills the window.
+       fitPane() sizes the canvas from padded(), so none of the padding is
+       taken off it. The window-level half - the header, the rail, the
+       construction panel, the toasts, the time bar - is UserInterface's.
+       Nothing here is read by normal play: the flag is off until a replay
+       turns it on.
+       ===================================================================== */
+
+    /** Whether the replay's cinematic mode is on for this view: the scale bar is not drawn, the head and the legend are hidden, the cursor is none. */
+    private boolean cinematic;
+
+    /** The pane's style as buildPane() set it, kept to put back what cinematic mode took out (its padding). */
+    private String paddedStyle;
+
+    /** Holds the canvas's cursor at none while cinematic mode is on, whatever cursorFor() or a press asks for. */
+    private final javafx.beans.value.ChangeListener<javafx.scene.Cursor> cursorOff = (o, was, now) -> {
+        if (now != javafx.scene.Cursor.NONE) canvas.setCursor(javafx.scene.Cursor.NONE);
+    };
+
+    /** A pane measure as it is now: the padding's and the head's room, none in cinematic mode. */
+    private double padded(double px) {
+        return cinematic ? 0 : px;
+    }
+
+    /**
+     * Cinematic mode on or off for the expanded map: the head, the legend, the hover card and the padding gone and the cursor
+     * none, or all of it back as it was. The canvas is sized again to the pane, which must already lie at the window's top
+     * (UserInterface.replayCinematic() lifts it first). A map that is not expanded keeps only the flag, which expand() reads.
+     */
+    void setCinematic(boolean on) {
+        boolean was = cinematic;
+        cinematic = on;
+        if (!on && !was) return;        // normal play: nothing to put back
+        canvas.cursorProperty().removeListener(cursorOff);
+        if (on && expanded) {
+            canvas.cursorProperty().addListener(cursorOff);
+            canvas.setCursor(javafx.scene.Cursor.NONE);
+        } else if (expanded) {
+            canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
+        }
+        if (bigPane == null || !expanded) return;
+        if (paddedStyle == null) paddedStyle = bigPane.getStyle();
+        showIf(bigPane.getChildren().get(0), !on);
+        if (legendHead != null && legendHead.getParent() != null) showIf(legendHead.getParent(), !on);
+        card.setOpacity(on ? 0 : 1);
+        bigPane.setStyle(on ? "-fx-background-color: " + Palette.STAGE + ";" : paddedStyle);
+        // The rounded corners of the picture would show the window's ground at its four corners.
+        if (on) bigBox.setClip(null); else clip(bigBox);
+        if (big != null) fitPane();
+    }
+
+    /**
+     * The expanded map's view for the input log (InputRecorder): {1 on Earth else 0, a, b, scale, roll} - the globe's centre
+     * latitude and longitude, its km a pixel and its roll, or the plane's centre x and y, its scale and 0 - or null when the
+     * map is not expanded.
+     */
+    double[] replayView() {
+        if (!expanded) return null;
+        if (globe != null) return new double[] {1, globe.centreLat(), globe.centreLon(), globe.kmPx(), globe.roll()};
+        return big == null ? null : new double[] {0, big.centreX(), big.centreY(), big.scale(), 0};
+    }
+
+    /** The city's map is another object (a replay's quick step swapped it): the view draws again, and the frame's keepUp() takes the new map, so a small map in the office and the expanded one both follow. */
+    void replayChanged() {
+        requestDraw();
     }
 }
