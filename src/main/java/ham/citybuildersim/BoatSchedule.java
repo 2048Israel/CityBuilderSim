@@ -44,6 +44,18 @@ import java.util.List;
  * of every leg) and, on each, which calls are on the water now (a binary
  * search of the route's sorted arrivals).
  *
+ * PARTNERS AND EXITS (WN7; docs/studies/spec-nations.md 9). A call may carry
+ * the nation it is bound for or from (Call.partner), drawn by CallPartners
+ * from the month's tonnes of its kind of cargo by a hash of its key and
+ * PARTNER_SALT - never the arrival's or the route's, so a month's calls are
+ * the same with partners as without - and, on a route that says its exits
+ * (SeaRoutes: an offing per bearing), the exit nearest that nation's compass
+ * bearing (Call.exit). A boat with an exit rides the route's points to the
+ * offing unturned and leaves it on the exit's bearing, its last leg turned by
+ * turnOf() about the offing, fading to the exit's end; one with none is the
+ * route's own, byte for byte. The partner is drawn only for a call whose boat
+ * is on the water, so a frame stays as cheap.
+ *
  * CHEAP TO COUNT, BUILT ONLY WHEN ASKED. The month's calls are counted by
  * kind, direction and class when the schedule is made (callCount()); each
  * call's route and arrival are worked out the first time a frame or the
@@ -68,6 +80,9 @@ public final class BoatSchedule {
     /** The salt the calls' hashes start from. */
     private static final long SALT = 0xB0A7_5417L;
 
+    /** The salt a call's partner is drawn with (WN7): a hash of the call's key and this, never the arrival's or the route's, so a month's calls are the same with partners as without. */
+    private static final long PARTNER_SALT = 0x9A47_4E25L;
+
     /* A call's key: its route + 1 (0 for none) from bit ROUTE_SHIFT up, its arrival in ARRIVAL_BITS ticks of a month, its group in the low GROUP_BITS. */
     private static final int GROUP_BITS = 7, ARRIVAL_BITS = 36, ROUTE_SHIFT = GROUP_BITS + ARRIVAL_BITS;
     /** The masks that take a key's group and its arrival back out, once shifted down. */
@@ -85,8 +100,20 @@ public final class BoatSchedule {
      * distance along it (`along`); the point its last leg turns about for a
      * call's spread (`pivot`), and how far that leg may turn either way, in
      * radians (`spread`). A lane (O9's) is two points, no abyss, no spread.
+     * Since WN7 a route found on the sea may say its EXITS: for each compass
+     * bearing every SeaRoutes.BEARING_STEP degrees from north, the run of open
+     * sea from the offing on it, in plots, 0 where it is closed (`exits`; null
+     * for a lane, a fixture's route, and any made without them). A call with a
+     * partner leaves the offing on the exit nearest its partner's bearing
+     * instead of going on into the abyss. Never written once made, and shared
+     * by the routes that share an offing.
      */
-    public record Route(Berth berth, long x1, long y1, double[] xs, double[] ys, double[] along, int offing, int pivot, double spread) {
+    public record Route(Berth berth, long x1, long y1, double[] xs, double[] ys, double[] along, int offing, int pivot, double spread, double[] exits) {
+
+        /** A route through points with no exits: the abyss alone, as every route was before WN7. */
+        public Route(Berth berth, long x1, long y1, double[] xs, double[] ys, double[] along, int offing, int pivot, double spread) {
+            this(berth, x1, y1, xs, ys, along, offing, pivot, spread, null);
+        }
 
         /** A straight lane from its quay to (x1, y1): O9's. */
         public Route(Berth berth, long x1, long y1) {
@@ -103,6 +130,17 @@ public final class BoatSchedule {
                     Math.max(1, Math.min(n, offing)), Math.max(0, Math.min(n - 1, pivot)), Math.max(0, spread));
         }
 
+        /** The same route saying its exits (SeaRoutes.EXITS runs, in plots; the array is kept, not copied), or none with null. */
+        public Route withExits(double[] exits) {
+            return new Route(berth, x1, y1, xs, ys, along, offing, pivot, spread, exits);
+        }
+
+        /** The run of open sea from the offing on a compass bearing (the nearest of its exits), in plots; 0 where it is closed or the route has none. */
+        public double exitRun(int bearing) {
+            if (exits == null || exits.length != SeaRoutes.EXITS || bearing < 0) return 0;
+            return exits[exitIndex(bearing)];
+        }
+
         /** Its length, quay to far end, in plots. */
         public double length() { return along[along.length - 1]; }
 
@@ -114,9 +152,19 @@ public final class BoatSchedule {
      * One call: a kind and its class, whether it lands cargo (an import, or a
      * box ship, which carries both ways) or comes to load it, its route among
      * the schedule's (-1 with no berth of its kind to draw it at), and when it
-     * reaches the quay, in month fractions.
+     * reaches the quay, in month fractions. Since WN7 it may say its partner,
+     * the nation (1-based, 0 for none) it is bound for or from, drawn by
+     * CallPartners from the month's trade, and its exit: the compass bearing
+     * in whole degrees it leaves the offing on, the nearest open one of its
+     * route to the partner's (-1 for none: the route's own abyss, as before).
      */
-    public record Call(Ports.Cargo cargo, Ports.Ship ship, boolean inbound, int route, double arrives) { }
+    public record Call(Ports.Cargo cargo, Ports.Ship ship, boolean inbound, int route, double arrives, int partner, int exit) {
+
+        /** A call with no partner and no exit: every call before WN7. */
+        public Call(Ports.Cargo cargo, Ports.Ship ship, boolean inbound, int route, double arrives) {
+            this(cargo, ship, inbound, route, arrives, 0, -1);
+        }
+    }
 
     /**
      * A boat at a moment: its call, where it is in plots, whether it is
@@ -133,6 +181,7 @@ public final class BoatSchedule {
     private final List<Route> routes;
     private final List<Group> groups;
     private final int count;
+    private final CallPartners partners;
 
     /* Built on the first ask: the calls' keys, sorted; where each route's begin (route + 1, so routeStart[0] is the calls with none); the index of routes by district cell. */
     private long[] keys;
@@ -145,10 +194,14 @@ public final class BoatSchedule {
     private int[] seenAt;
     private int frames;
 
-    private BoatSchedule(int month, List<Route> routes, List<Group> groups) {
+    /** Each call's partner and exit once a frame or the list has drawn it (callAt()); null until then, and always with no partners. */
+    private int[] drawn;
+
+    private BoatSchedule(int month, List<Route> routes, List<Group> groups, CallPartners partners) {
         this.month = month;
         this.routes = routes;
         this.groups = groups;
+        this.partners = partners;
         int n = 0;
         for (Group g : groups) n += g.calls();
         this.count = n;
@@ -209,6 +262,15 @@ public final class BoatSchedule {
      * shorter forms use the Bulk Terminal's, Panamax and Capesize.
      */
     public static BoatSchedule of(int month, Ports ports, List<Route> routes, List<Ports.Ship> bulkShips) {
+        return of(month, ports, routes, bulkShips, CallPartners.NONE);
+    }
+
+    /**
+     * ...and the partners its calls draw (WN7): each call's nation by the month's tonnes of its cargo (CallPartners.pick()), and on a route with
+     * exits the one nearest the partner's bearing. With CallPartners.NONE, or null, this is every form above: the same calls, arrivals,
+     * routes and positions, byte for byte.
+     */
+    public static BoatSchedule of(int month, Ports ports, List<Route> routes, List<Ports.Ship> bulkShips, CallPartners partners) {
         routes = routes == null ? new ArrayList<>() : new ArrayList<>(routes);
         List<Group> groups = new ArrayList<>();
         if (ports != null) {
@@ -237,7 +299,7 @@ public final class BoatSchedule {
                 }
             }
         }
-        return new BoatSchedule(month, routes, groups);
+        return new BoatSchedule(month, routes, groups, partners == null ? CallPartners.NONE : partners);
     }
 
     private static void add(List<Group> groups, int month, Ports.Cargo c, boolean inbound, Ports.Ship ship, double tonnes) {
@@ -305,12 +367,99 @@ public final class BoatSchedule {
         for (java.util.Map.Entry<Long, List<Integer>> e : cells.entrySet()) index.put(e.getKey(), e.getValue().stream().mapToInt(Integer::intValue).toArray());
     }
 
-    /** A call out of its key. */
+    /**
+     * A call out of its key, with its partner and exit (WN7): the nation CallPartners draws for it by a hash of the key and PARTNER_SALT, and the exit of
+     * its route nearest that nation's bearing (exitFor()); with no partners, the call as it always was.
+     */
     private Call call(long key) {
         Group g = groups.get((int) (key & GROUP_MASK));
         int route = (int) (key >>> ROUTE_SHIFT) - 1;
-        double arrives = ((key >>> GROUP_BITS) & ARRIVAL_MASK) / TICKS;
-        return new Call(g.cargo(), g.ship(), g.inbound(), route, arrives);
+        double arrives = arrivalOf(key);
+        if (partners == CallPartners.NONE) return new Call(g.cargo(), g.ship(), g.inbound(), route, arrives);
+        int partner = partners.pick(g.cargo(), g.inbound(), false, World.mix(key ^ PARTNER_SALT));
+        int exit = partner > 0 && route >= 0 ? exitFor(routes.get(route), partners.bearing(partner)) : -1;
+        return new Call(g.cargo(), g.ship(), g.inbound(), route, arrives, partner, exit);
+    }
+
+    /**
+     * The i-th call of the sorted keys: its partner and exit drawn the first time it is asked for and kept (drawn[i], the partner from bit
+     * DRAWN_PARTNER up and the exit + 1 below it, DRAWN_SET once drawn), so the frames after see a boat's partner for the price of a read - a
+     * frame at 10 billion meets the same thousands of boats sixty times a second. Built with the keys on the first ask, with partners only.
+     */
+    private Call callAt(int i) {
+        if (partners == CallPartners.NONE) return call(keys[i]);
+        if (drawn == null) drawn = new int[keys.length];
+        int d = drawn[i];
+        if (d == 0) {
+            Call c = call(keys[i]);
+            drawn[i] = DRAWN_SET | (c.partner() << DRAWN_PARTNER) | (c.exit() + 1);
+            return c;
+        }
+        long key = keys[i];
+        Group g = groups.get((int) (key & GROUP_MASK));
+        int partner = (d & ~DRAWN_SET) >>> DRAWN_PARTNER, exit = (d & ((1 << DRAWN_PARTNER) - 1)) - 1;
+        return new Call(g.cargo(), g.ship(), g.inbound(), (int) (key >>> ROUTE_SHIFT) - 1, arrivalOf(key), partner, exit);
+    }
+
+    /** drawn[]'s layout: set once drawn; the partner from this bit up (a nation's number, under 2^20); the exit + 1 (0 to 360) below it. */
+    private static final int DRAWN_SET = 1 << 30, DRAWN_PARTNER = 10;
+
+    /** When a key's call reaches its quay, in month fractions. */
+    private static double arrivalOf(long key) {
+        return ((key >>> GROUP_BITS) & ARRIVAL_MASK) / TICKS;
+    }
+
+    /** The index among a route's exits of a compass bearing: the nearest of them, wrapping at north. */
+    static int exitIndex(double bearing) {
+        return Math.floorMod((int) Math.round(bearing / SeaRoutes.BEARING_STEP), SeaRoutes.EXITS);
+    }
+
+    /** The plane's east component of a step along a compass bearing (degrees clockwise from north): sin b. The one place the compass meets the plane (x east, y south, World's). */
+    public static double compassX(double bearing) { return StrictMath.sin(StrictMath.toRadians(bearing)); }
+
+    /** ...and its south component, -cos b (y runs south). */
+    public static double compassY(double bearing) { return -StrictMath.cos(StrictMath.toRadians(bearing)); }
+
+    /** The plane's step and heading (radians, east 0, south a quarter turn) along each exit's bearing, worked out once: a frame's boats on exits do not take a sine and an arctangent a boat. */
+    private static final double[] EXIT_X = new double[SeaRoutes.EXITS], EXIT_Y = new double[SeaRoutes.EXITS], EXIT_HEADING = new double[SeaRoutes.EXITS];
+
+    static {
+        for (int k = 0; k < SeaRoutes.EXITS; k++) {
+            double b = (double) k * SeaRoutes.BEARING_STEP;
+            EXIT_X[k] = compassX(b);
+            EXIT_Y[k] = compassY(b);
+            EXIT_HEADING[k] = Math.atan2(EXIT_Y[k], EXIT_X[k]);
+        }
+    }
+
+    /** The angle between two compass bearings, in degrees, [0, 180]. */
+    static double apart(double a, double b) { return Math.abs(Math.IEEEremainder(a - b, 360)); }
+
+    /**
+     * The exit of a route nearest a compass bearing (WN7): of the bearings whose run is open (> 0), the one the least angle from it, the smaller
+     * bearing on a tie, in whole degrees; -1 for a bearing unknown (< 0), a route with no exits, or none open. The first open exit either way
+     * round from the bearing is the nearest on that side, so only those two are looked at.
+     */
+    static int exitFor(Route rt, double bearing) {
+        double[] ex = rt.exits();
+        if (ex == null || ex.length != SeaRoutes.EXITS || !(bearing >= 0)) return -1;
+        double b = bearing % 360;
+        int n = SeaRoutes.EXITS, lo = (int) Math.floor(b / SeaRoutes.BEARING_STEP);
+        int best = -1;
+        double bestD = Double.MAX_VALUE;
+        for (int s = 0; s < n; s++) {
+            int k = Math.floorMod(lo - s, n);
+            if (ex[k] > 0) { best = k; bestD = apart(b, (double) k * SeaRoutes.BEARING_STEP); break; }
+        }
+        for (int s = 0; s < n; s++) {
+            int k = Math.floorMod(lo + 1 + s, n);
+            if (ex[k] > 0) {
+                double d = apart(b, (double) k * SeaRoutes.BEARING_STEP);
+                if (best < 0 || d < bestD || (d == bestD && k < best)) { best = k; bestD = d; }
+                break;
+            }
+        }
+        return best < 0 ? -1 : best * SeaRoutes.BEARING_STEP;
     }
 
     /* =====================================================================
@@ -339,6 +488,8 @@ public final class BoatSchedule {
      * heading, and how much of it shows past the offing.
      */
     static Boat along(Call call, Route route, double f, boolean coming, boolean loaded, boolean docked) {
+        double run = call.exit() >= 0 ? route.exitRun(call.exit()) : 0;
+        if (run > 0) return alongExit(call, route, run, f, coming, loaded, docked);
         double[] xs = route.xs(), ys = route.ys(), al = route.along();
         int n = xs.length - 1;
         double d = f * al[n];
@@ -356,6 +507,40 @@ public final class BoatSchedule {
         }
         if (coming) heading += Math.PI;
         double fade = route.fadeFrom(), alpha = d <= fade || !(al[n] > fade) ? 1 : Math.max(0, 1 - (d - fade) / (al[n] - fade));
+        return new Boat(call, x, y, loaded, docked, heading, alpha);
+    }
+
+    /**
+     * ...for a call that leaves by an exit (WN7), `run` plots of open sea from the offing on its bearing: f is a share of the way from the quay
+     * (0) to the exit's end (1), so the boat rides the route's own points up to the offing unturned, then the exit's leg, turned by turnOf() about the
+     * offing where the route has a spread, and shows less from the offing on (alpha falls to 0 at the exit's end).
+     */
+    private static Boat alongExit(Call call, Route route, double run, double f, boolean coming, boolean loaded, boolean docked) {
+        double[] xs = route.xs(), ys = route.ys(), al = route.along();
+        int o = route.offing();
+        double fade = al[o], d = f * (fade + run), x, y, heading;
+        if (d <= fade) {
+            int s = 0;
+            while (s < o - 1 && al[s + 1] < d) s++;
+            double seg = al[s + 1] - al[s], u = seg > 0 ? (d - al[s]) / seg : 0;
+            x = xs[s] + (xs[s + 1] - xs[s]) * u;
+            y = ys[s] + (ys[s + 1] - ys[s]) * u;
+            heading = Math.atan2(ys[s + 1] - ys[s], xs[s + 1] - xs[s]);
+        } else {
+            int ei = call.exit() % SeaRoutes.BEARING_STEP == 0 ? exitIndex(call.exit()) : -1;
+            double ux = ei >= 0 ? EXIT_X[ei] : compassX(call.exit()), uy = ei >= 0 ? EXIT_Y[ei] : compassY(call.exit()), e = d - fade;
+            x = xs[o] + ux * e;
+            y = ys[o] + uy * e;
+            heading = ei >= 0 ? EXIT_HEADING[ei] : Math.atan2(uy, ux);
+            if (route.spread() > 0) {
+                double turn = turnOf(call, route), c = Math.cos(turn), sn = Math.sin(turn), dx = x - xs[o], dy = y - ys[o];
+                x = xs[o] + dx * c - dy * sn;
+                y = ys[o] + dx * sn + dy * c;
+                heading += turn;
+            }
+        }
+        if (coming) heading += Math.PI;
+        double alpha = d <= fade ? 1 : Math.max(0, 1 - (d - fade) / run);
         return new Boat(call, x, y, loaded, docked, heading, alpha);
     }
 
@@ -392,9 +577,12 @@ public final class BoatSchedule {
                     int from = routeStart[r + 1], to = routeStart[r + 2];
                     long low = ((long) (r + 1) << ROUTE_SHIFT) | ((long) Math.max(0, Math.floor((t - berth - leg) * TICKS)) << GROUP_BITS);
                     for (int i = lower(keys, from, to, low); i < to; i++) {
-                        Call c = call(keys[i]);
-                        if (c.arrives() > t + leg) break;
-                        Boat b = position(c, rt, t);
+                        long k = keys[i];
+                        double a = arrivalOf(k);
+                        if (a > t + leg) break;
+                        // A partner is drawn only for a call whose boat is on the water now (position() answers null outside this span): a frame stays as cheap as without them.
+                        if (partners != CallPartners.NONE && (t < a - leg || t > a + berth + leg)) continue;
+                        Boat b = position(callAt(i), rt, t);
                         if (b != null) out.add(b);
                     }
                 }
@@ -417,11 +605,20 @@ public final class BoatSchedule {
     /**
      * Each leg's box, {x0, y0, x1, y1} in plots, inclusive: its two points'
      * - past the pivot widened by how far the call's spread can swing it
-     * (its far end's distance from the pivot x sin(spread), and a plot).
+     * (its far end's distance from the pivot x sin(spread), and a plot). A
+     * route with exits (WN7) has one box more, the offing's, a plot past its
+     * longest exit's run every way: the legs of the boats that leave by them.
      */
     static double[][] legBoxes(Route rt) {
         double[] xs = rt.xs(), ys = rt.ys();
-        double[][] out = new double[xs.length - 1][];
+        boolean exits = rt.exits() != null;
+        double[][] out = new double[xs.length - 1 + (exits ? 1 : 0)][];
+        if (exits) {
+            double longest = 0;
+            for (double e : rt.exits()) longest = Math.max(longest, e);
+            double ox = xs[rt.offing()], oy = ys[rt.offing()], w = longest + 1;
+            out[xs.length - 1] = new double[] { ox - w, oy - w, ox + w, oy + w };
+        }
         for (int i = 0; i + 1 < xs.length; i++) {
             double w = 0;
             if (rt.spread() > 0 && i >= rt.pivot()) {
@@ -449,7 +646,7 @@ public final class BoatSchedule {
     public List<Call> calls() {
         build();
         List<Call> out = new ArrayList<>(keys.length);
-        for (long k : keys) out.add(call(k));
+        for (int i = 0; i < keys.length; i++) out.add(callAt(i));
         return out;
     }
 

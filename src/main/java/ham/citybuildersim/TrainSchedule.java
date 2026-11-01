@@ -71,6 +71,10 @@ import java.util.List;
  * hopper train goes there, one with the yards' routes; mixed and container
  * trains still run to the yards.
  *
+ * PARTNERS (WN7). A train may carry the nation it is bound for or from (Call.partner), drawn by CallPartners from the month's tonnes of its kind
+ * by land - the host and the nodes within WorldMarket.MAX_LAND_KM, never a far nation - by a hash of its key and PARTNER_SALT, never its arrival's
+ * or route's. It changes nothing of the train's way: the world line keeps its gateway's bearing.
+ *
  * A TRAIN. A locomotive at each end - distributed power, as a unit train
  * has - so it leaves the way it came with no run-round, and its wagons
  * between: each vehicle's place is its distance along the route behind the
@@ -127,6 +131,9 @@ public final class TrainSchedule {
 
     /** The salt the trains' hashes start from. */
     private static final long SALT = 0x7A41_45EDL;
+
+    /** The salt a train's partner is drawn with (WN7): a hash of the train's key and this, never the arrival's or the route's, so a month's trains are the same with partners as without. */
+    private static final long PARTNER_SALT = 0x5E1C_B07DL;
 
     /* A train's key: its arrival in ARRIVAL_BITS ticks of a month from bit ARRIVAL_SHIFT up, its route + 1 (0 for none) in ROUTE_BITS, its group in the low GROUP_BITS. */
     private static final int GROUP_BITS = 7, ROUTE_BITS = 20, ARRIVAL_BITS = 36, ARRIVAL_SHIFT = GROUP_BITS + ROUTE_BITS;
@@ -255,8 +262,19 @@ public final class TrainSchedule {
         public double legSeconds() { return Math.max(LEG_SECONDS, Math.min(LEG_MOST, length() / TRAIN_PLOTS_A_SECOND)); }
     }
 
-    /** One train: its kind, whether it lands cargo (an import, or boxes, which go both ways) or comes to load it, its route among the schedule's (-1 with none), and when it reaches its siding's end, in month fractions. */
-    public record Call(Kind kind, boolean inbound, int route, double arrives) { }
+    /**
+     * One train: its kind, whether it lands cargo (an import, or boxes, which go both ways) or comes to load it, its route among the schedule's
+     * (-1 with none), and when it reaches its siding's end, in month fractions. Since WN7 it may say its partner: the nation (1-based, 0 for none)
+     * it is bound for or from, drawn by CallPartners from the month's tonnes of its kind by land. It changes nothing of the train's way: the world
+     * line keeps its gateway's bearing.
+     */
+    public record Call(Kind kind, boolean inbound, int route, double arrives, int partner) {
+
+        /** A train with no partner: every train before WN7. */
+        public Call(Kind kind, boolean inbound, int route, double arrives) {
+            this(kind, inbound, route, arrives, 0);
+        }
+    }
 
     /** A train at a moment: its call, how far along its route its front is, in plots, whether it is loaded, and whether it stands on its siding. */
     public record Train(Call call, double front, boolean loaded, boolean standing) { }
@@ -272,18 +290,20 @@ public final class TrainSchedule {
     private final List<Group> groups;
     private final int count, stands;
     private final boolean boxes;
+    private final CallPartners partners;
 
     /* Built on the first ask: the trains' keys, sorted by arrival; each route's box, {x0, y0, x1, y1} in plots; and the trains given no route. */
     private long[] keys;
     private double[][] boxesOf;
     private int touched, unfit;
 
-    private TrainSchedule(int month, List<Route> routes, List<Group> groups, int stands, boolean boxes) {
+    private TrainSchedule(int month, List<Route> routes, List<Group> groups, int stands, boolean boxes, CallPartners partners) {
         this.month = month;
         this.routes = routes;
         this.groups = groups;
         this.stands = stands;
         this.boxes = boxes;
+        this.partners = partners;
         int n = 0;
         for (Group g : groups) n += g.calls();
         this.count = n;
@@ -300,6 +320,11 @@ public final class TrainSchedule {
 
     /** The month's schedule from the railway's month billed (sectors.Freight.railedIn() and railedOut()), on the map's routes; none with no railway. */
     public static TrainSchedule of(int month, ham.citybuildersim.sectors.Freight rail, List<Route> routes) {
+        return of(month, rail, routes, CallPartners.NONE);
+    }
+
+    /** ...with the partners its trains draw (WN7): by land only, by the month's tonnes of the kind (CallPartners.pick()). With NONE, or null, every form above, byte for byte. */
+    public static TrainSchedule of(int month, ham.citybuildersim.sectors.Freight rail, List<Route> routes, CallPartners partners) {
         int n = Ports.Cargo.values().length;
         double[] in = new double[n], out = new double[n];
         if (rail != null) {
@@ -308,7 +333,7 @@ public final class TrainSchedule {
                 out[c.ordinal()] = rail.railedOut(c);
             }
         }
-        return of(month, in, out, routes);
+        return of(month, in, out, routes, partners);
     }
 
     /**
@@ -318,6 +343,11 @@ public final class TrainSchedule {
      * to, by a hash, when its key is built.
      */
     public static TrainSchedule of(int month, double[] in, double[] out, List<Route> routes) {
+        return of(month, in, out, routes, CallPartners.NONE);
+    }
+
+    /** ...with the partners its trains draw (WN7). */
+    public static TrainSchedule of(int month, double[] in, double[] out, List<Route> routes, CallPartners partners) {
         routes = routes == null ? new ArrayList<>() : new ArrayList<>(routes);
         double exact = 0;
         for (Kind k : Kind.values()) {
@@ -336,7 +366,7 @@ public final class TrainSchedule {
             }
         }
         boolean boxes = tonnes(in, Kind.INTERMODAL) + tonnes(out, Kind.INTERMODAL) > 0;
-        return new TrainSchedule(month, routes, groups, stands, boxes);
+        return new TrainSchedule(month, routes, groups, stands, boxes, partners == null ? CallPartners.NONE : partners);
     }
 
     private static double tonnes(double[] t, Kind k) {
@@ -503,12 +533,24 @@ public final class TrainSchedule {
         keys = built;
     }
 
-    /** A call out of its key. */
+    /** A call out of its key, with its partner (WN7). */
     private Call call(long key) {
+        return partnered(plainCall(key), key);
+    }
+
+    /** A call out of its key with no partner: its kind, route and arrival, which no partner changes. */
+    private Call plainCall(long key) {
         Group g = groups.get((int) (key & GROUP_MASK));
         int route = (int) ((key >>> GROUP_BITS) & ROUTE_MASK) - 1;
         double arrives = ((key >>> ARRIVAL_SHIFT) & ARRIVAL_MASK) / TICKS;
         return new Call(g.kind(), g.inbound(), route, arrives);
+    }
+
+    /** The call given its partner (WN7): a nation CallPartners draws for it by land, by a hash of its key and PARTNER_SALT; the call itself with no partners. */
+    private Call partnered(Call c, long key) {
+        if (partners == CallPartners.NONE) return c;
+        int partner = partners.pick(c.kind().cargo(), c.inbound(), true, World.mix(key ^ PARTNER_SALT));
+        return partner == 0 ? c : new Call(c.kind(), c.inbound(), c.route(), c.arrives(), partner);
     }
 
     /* =====================================================================
@@ -587,7 +629,7 @@ public final class TrainSchedule {
         double most = LEG_MOST / MONTH_SECONDS, longest = longestStand() / MONTH_SECONDS, w = LOCO_PLOTS;
         long low = (long) Math.max(0, Math.floor((t - longest - most) * TICKS)) << ARRIVAL_SHIFT;
         for (int i = BoatSchedule.lower(keys, 0, keys.length, low); i < keys.length; i++) {
-            Call c = call(keys[i]);
+            Call c = plainCall(keys[i]);
             if (c.arrives() > t + most) break;
             if (c.route() < 0) continue;
             Route r = routes.get(c.route());
@@ -597,7 +639,7 @@ public final class TrainSchedule {
             double leg = r.legSeconds() / MONTH_SECONDS, dwell = c.kind().standSeconds() / MONTH_SECONDS;
             if (t < c.arrives() - leg || t > c.arrives() + dwell + leg) continue;
             touched++;
-            Train tr = position(c, r, t);
+            Train tr = position(partnered(c, keys[i]), r, t);
             if (tr == null) continue;
             for (Car car : cars(tr, r)) {
                 if (car.x() + w >= x0 && car.x() - w < x1 && car.y() + w >= y0 && car.y() - w < y1) {

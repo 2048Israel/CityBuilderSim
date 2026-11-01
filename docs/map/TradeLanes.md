@@ -28,7 +28,7 @@
 
 **Uses:** [NationsMap](NationsMap.md) (10), [GlobeFrame](GlobeFrame.md) (4), [EarthProj](EarthProj.md) (2)
 
-**Used by (7):** [Game](Game.md), [GlobeCheck](GlobeCheck.md), [MapView](MapView.md), [NationsMap](NationsMap.md), [PartnerTrade](PartnerTrade.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (9):** [CallPartners](CallPartners.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [MapView](MapView.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnerTrade](PartnerTrade.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

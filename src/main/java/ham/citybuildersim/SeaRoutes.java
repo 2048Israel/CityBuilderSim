@@ -54,6 +54,12 @@ import java.util.PriorityQueue;
  * A berth with no sea within reach, or no way found, has the straight lane on
  * its bearing (BoatSchedule.lane() with no sea at all).
  *
+ * AN OFFING PER BEARING (WN7; docs/studies/spec-nations.md 9). A route also says its EXITS: from its offing, for each compass bearing every
+ * BEARING_STEP degrees from north, the run of open sea in plots - the least of abyssRun() on the bearing and on the bearing SPREAD_DEG either side,
+ * so a leg turned by a call's spread keeps to the sea - or 0 where that is under EXIT_LEAST_M (exitsAt()). A boat bound for a nation leaves the
+ * offing on the open exit nearest the bearing of its node, not on the abyss's. Routes that share an offing (a joined route has its lane's) share
+ * its exits, worked out once; routes kept keep theirs; a straight lane has none.
+ *
  * SHARED LANES (SL1, 2026-10-28; Jerus: "if lots of ship lanes, its not
  * different lanes, its same lane that later diverages if needed"; "late
  * cities thats probably the thing that slows down stuff the most"). Every
@@ -131,6 +137,12 @@ public final class SeaRoutes {
 
     /** How much the city's radius may grow before the routes are found again, in metres: OFFING_M / 2, 5 km - they are found at the radius rounded up to a multiple of it (band(); SL1, 2026-10-28). */
     public static final double REFIND_M = OFFING_M / 2;
+
+    /** How many exits a route has: one every BEARING_STEP degrees round the compass, 72 (WN7). */
+    public static final int EXITS = 360 / BEARING_STEP;
+
+    /** The least run of open sea an exit has, in metres: ABYSS_M / 2, 1.5 km; a bearing whose sea (and its turned legs') ends sooner is closed, for a boat would fade within sight of the offing (WN7). */
+    public static final double EXIT_LEAST_M = ABYSS_M / 2;
 
     /** Cells a side of a block of the grid read at once: 64, 1,024 plots (a block a World.regionTerrain() call). */
     static final int BLOCK = 64;
@@ -468,6 +480,27 @@ public final class SeaRoutes {
         return step;
     }
 
+    /**
+     * The exits of the offing at (x, y) (WN7): for each compass bearing every BEARING_STEP degrees from north (the plane's
+     * BoatSchedule.compassX() and compassY()), the run of open sea out on it in plots - the least of abyssRun() on the bearing
+     * and on the bearing SPREAD_DEG either side, so a leg turned by the call's spread keeps to the sea too - or 0 where
+     * that is under EXIT_LEAST_M.
+     */
+    static double[] exitsAt(Grid g, double x, double y) {
+        double[] out = new double[EXITS];
+        double least = EXIT_LEAST_M / World.PLOT_M;
+        for (int k = 0; k < EXITS; k++) {
+            double b = (double) k * BEARING_STEP;
+            double run = abyssRun(g, x, y, BoatSchedule.compassX(b), BoatSchedule.compassY(b));
+            for (double side : new double[] { -SPREAD_DEG, SPREAD_DEG }) {
+                if (run < least) break;
+                run = Math.min(run, abyssRun(g, x, y, BoatSchedule.compassX(b + side), BoatSchedule.compassY(b + side)));
+            }
+            out[k] = run < least ? 0 : run;
+        }
+        return out;
+    }
+
     /** Whether the straight leg from (ax, ay) to (bx, by) keeps to the sea's cells, looked at three times a cell along it, both ends too. */
     static boolean legOnSea(Grid g, double ax, double ay, double bx, double by) {
         int n = (int) Math.ceil(Math.hypot(bx - ax, by - ay) / CELL * 3) + 1;
@@ -609,6 +642,9 @@ public final class SeaRoutes {
         final int[] joinAt;
         int searched, joined;
 
+        /** The exits worked out for each offing point so far (WN7): a joined route has its lane's offing, so it has its lane's exits, found once. */
+        private final Map<List<Double>, double[]> exitsAt = new HashMap<>();
+
         /** The window's cells: the cost reached, the cell it was reached from, and the join they were last reached in (a stamp, so nothing is cleared). */
         private final double[] cost = new double[SIDE * SIDE];
         private final int[] prev = new int[SIDE * SIDE], mark = new int[SIDE * SIDE];
@@ -628,9 +664,21 @@ public final class SeaRoutes {
             java.util.Arrays.fill(joinAt, -1);
         }
 
-        /** A route found already, for the next berth: it is a lane for those after. */
+        /** A route found already, for the next berth: it is a lane for those after, and its exits are those of its offing. */
         void keep(BoatSchedule.Route r) {
             lanes.add(r);
+            if (r.exits() != null && r.xs().length >= 3) exitsAt.putIfAbsent(offingOf(r), r.exits());
+        }
+
+        private static List<Double> offingOf(BoatSchedule.Route r) {
+            return List.of(r.xs()[r.offing()], r.ys()[r.offing()]);
+        }
+
+        /** The route with the exits of its offing (WN7), made once for each offing point; a straight lane has none. */
+        private BoatSchedule.Route withExits(BoatSchedule.Route r) {
+            if (r.xs().length < 3) return r;
+            double[] ex = exitsAt.computeIfAbsent(offingOf(r), p -> SeaRoutes.exitsAt(g, p.get(0), p.get(1)));
+            return r.withExits(ex);
         }
 
         /** The next berth's route: joined to a lane when one is in reach, else searched. */
@@ -644,7 +692,7 @@ public final class SeaRoutes {
             } else {
                 joined++;
             }
-            lanes.add(r);
+            lanes.add(withExits(r));
         }
 
         /**
