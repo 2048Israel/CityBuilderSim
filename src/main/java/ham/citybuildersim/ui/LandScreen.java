@@ -768,6 +768,9 @@ final class LandScreen {
         // ...and, for an offer with dry ground on a landmass no port links, the line saying so (ET5), under it: the row's tooltip and the map card's size words carry it.
         String island = LandmassView.offerLine(p, g.getLandManager().getLandmasses());
         if (!island.isEmpty()) ground = ground.isEmpty() ? island : ground + "\n" + island;
+        // ...and, for an offer not wholly the host's own, who sells it (WN5): "Sold by United States 62% · Canada 38%", under the island's line; empty on a generated world.
+        String soldBy = LandSellersView.offerLine(p, g.getLandSellers());
+        if (!soldBy.isEmpty()) ground = ground.isEmpty() ? soldBy : ground + "\n" + soldBy;
         String size = sizeWords(p) + (ground.isEmpty() ? "" : "\n" + ground);
         StringBuilder tip = new StringBuilder(String.format("%s: %s%nListed in month %,d at %s: %s at today's rate.",
                 p.where(), size, p.getListedMonth(), listedUsd, todayHere));

@@ -46,8 +46,8 @@ public final class LandTable {
     /** The table it writes. */
     static final String OUT = "src/main/resources" + LandFactors.RESOURCE;
 
-    /** Acres in a hectare: a published price an acre is divided by it to be a price a hectare. */
-    static final double ACRES_PER_HECTARE = 2.47105381;
+    /** Acres in a hectare: a published price an acre times it is the price a hectare. */
+    public static final double ACRES_PER_HECTARE = 2.47105381;
 
     /** The mark of a published figure, and of the game's estimate (WorldData.MARK_PUBLISHED, MARK_ESTIMATE). */
     static final int PUBLISHED = WorldData.MARK_PUBLISHED, ESTIMATE = WorldData.MARK_ESTIMATE;
