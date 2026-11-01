@@ -518,6 +518,19 @@ public class CapitalFlowCheck {
         double topUp = 1_000;
         Game plainCity = couponCity("couponplain"), heldCity = couponCity("couponheld");
         Sector plainSector = plainCity.getSectors().byKey(earner), heldSector = heldCity.getSectors().byKey(earner);
+        /*
+         * ...AND THE CURRENCY LEFT TO FLOAT (IC1, 2026-11-01), so that the coupon is the twins' one difference. The founding
+         * regime leans against a fall (ForeignAccounts, A RESERVE DEFENDS A CURRENCY): the central bank sells dollars against a
+         * month's net outflow, and the coupon is income in, so where the city's second year runs a deficit of about its size the
+         * defence parts the twins by it. It did on the path where an idle builder's crews are spare for the staffing gate: the plain
+         * twin's vault sold against the month's deficit (a move of -0.0112 in the rate, from the intervention) and the held twin's,
+         * with the coupon in its current account, did not (none), so the rates parted by 1% in the first month with dollars, and
+         * the second month's books were struck at two rates: the held twin's profit differed from its twin's by the coupon and
+         * 0.0019k more. On main's path there was no deficit, so no sale. Under a float the vault sells nothing in either twin, and
+         * the rate moves the same under both cities, which the premise needs; it still moves (the assertion below that it does).
+         */
+        plainCity.getForeignAccounts().setRegime(ForeignAccounts.Regime.FLOAT);
+        heldCity.getForeignAccounts().setRegime(ForeignAccounts.Regime.FLOAT);
         plainSector.addCash(topUp);
         heldSector.addCash(topUp);
         quietMonth(plainCity);

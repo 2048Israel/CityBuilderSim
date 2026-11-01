@@ -1,0 +1,49 @@
+--- a/src/main/java/ham/citybuildersim/Sector.java
++++ b/src/main/java/ham/citybuildersim/Sector.java
+@@ -480,7 +480,17 @@
+         BuildingManager bm = game.getBuildingManager();
+         if (crewsSpokenFor && bm != null && bm.getPostsWithheld() > 0) {
+             posts = posts.clone();
+-            for (JobType job : JobType.values()) posts[WageBand.of(job).ordinal()] += bm.getPostsWithheld(job);
++            // IC1 STUDY SWITCH (temporary): -Dic1.rule=off|a|all, -Dic1.grace=N months idle before the crews are spare.
++            String rule = System.getProperty("ic1.rule", "a");
++            ham.citybuildersim.sectors.Construction b = game.getSectors() != null ? game.getSectors().construction() : null;
++            boolean idle = b != null && b.getPostsOfferedShare() <= ham.citybuildersim.sectors.Construction.IDLE_PAYROLL_FLOOR + 1e-9
++                    && b.IC1STUDYidleMonths > Integer.getInteger("ic1.grace", 0);
++            for (JobType job : JobType.values()) {
++                long w = bm.getPostsWithheld(job);
++                if (idle && rule.equals("all")) w = 0;
++                else if (idle && rule.equals("a")) w -= bm.IC1STUDYwithheldBy(b.key(), job);
++                posts[WageBand.of(job).ordinal()] += w;
++            }
+         }
+         double[] supply = people.supplyByBand(posts);
+         if (supply == null) return Staffing.ANY;
+--- a/src/main/java/ham/citybuildersim/BuildingManager.java
++++ b/src/main/java/ham/citybuildersim/BuildingManager.java
+@@ -6784,6 +6784,13 @@
+         return withheld;
+     }
+ 
++    public long IC1STUDYwithheldBy(String sector, JobType type) {
++        if (offeredShare == null) return 0;
++        long posts = 0;
++        for (BuildingsStacks stack : stacks) if (sector.equals(stack.getBuilding().getSector())) posts += stack.getTotalJobs(type);
++        return posts - postsOffered(posts, offeredShareOf(sector, type));
++    }
++
+     /** getPostsWithheld() over every job type. */
+     public long getPostsWithheld() {
+         long withheld = 0;
+--- a/src/main/java/ham/citybuildersim/sectors/Construction.java
++++ b/src/main/java/ham/citybuildersim/sectors/Construction.java
+@@ -163,7 +163,9 @@
+         fillStruckOn = fill;
+         double offered = crewsNeeded <= 0 ? 0 : fill > 0 ? crewsNeeded / fill : 1;
+         postsOfferedShare = Math.min(1, Math.max(IDLE_PAYROLL_FLOOR, offered));
++        IC1STUDYidleMonths = postsOfferedShare <= IDLE_PAYROLL_FLOOR + 1e-9 ? IC1STUDYidleMonths + 1 : 0;
+     }
++    public int IC1STUDYidleMonths;
+ 
+     /** The share of the depots' posts on offer this month. */
+     public double getPostsOfferedShare() { return postsOfferedShare; }

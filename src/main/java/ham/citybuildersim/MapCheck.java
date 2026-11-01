@@ -2247,9 +2247,15 @@ public class MapCheck {
     /** Hands the city the one block that holds plot `at` ({x, y, the block level it was found at}: the level moves as the city's ground grows, the block is the one handGroundRound() left out), between months, as 2c's blocks are, dated `month`: the plots handed. */
     static long handBlock(CityLand land, long[] at, int month) {
         long b = 1L << at[2], x = Math.floorDiv(at[0], b) * b, y = Math.floorDiv(at[1], b) * b;
-        if (land.grid().owned(x, y, x + b, y + b) != 0) return 0;
-        land.extend(new LandParcel(-5, 1, 0, (int) at[2], x, y, x + b, y + b, null, null, null, 0, 0), month, 0);
-        return b * b;
+        /*
+         * ...A BLOCK THE CITY OWNS PART OF IS HANDED IN ITS UNOWNED PARTS (IC1, 2026-11-01), as handBlocks() hands one (WN3). It handed
+         * nothing for a block with a plot owned. An idle builder's laid-off crews are spare for the staffing gate since IC1, so the
+         * played city is another city (629 boxes stand in the district at month 134, 518 on main's rule), and from its own purchases
+         * it owns 16 of the 64 plots of the hole's block (a level-3 block, at 371768,344408): nothing was bought, the crossing stayed
+         * a stack, no reserve was laid and every line of the scenario read zero plots. The 48 plots it does not own are handed it in
+         * the one month, as the whole block would have been had it owned none.
+         */
+        return handBlocks(land, x, y, x + b, y + b, (int) at[2], month, null);
     }
 
     /** How many of a district's journal records at `month` take a plot from nothing to an interchange's reserve (`toReserve`), or the other way. */

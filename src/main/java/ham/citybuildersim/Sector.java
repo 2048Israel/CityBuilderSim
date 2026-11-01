@@ -427,6 +427,22 @@ public abstract class Sector {
         };
     }
 
+    /* ----- AN IDLE BUILDER'S CREWS ARE SPARE (IC1, {next}, 2026-11-01) -----
+     * While the builders stand idle at their core crew (Construction.isIdleAtCoreCrew()), the posts they have
+     * laid off are spare for this test, not spoken for. A working builder's are still spoken for, and so are the
+     * posts any other sector withholds (Freight's undriven depot places).
+     *
+     * WHY. 0.7.17 counted every laid-off post as spoken for (Jerus: the crews "are hired back when work
+     * returns"): a builder that let crews go in a lull wants them back for the work already coming, and a plant
+     * ordered on those workers would find them gone. A builder at its core crew has no work coming. Its crews
+     * come back only when something is ordered, and this test held every order on their account. XS1
+     * (2026-10-31) found the trap in all sixteen AUTO2 seeds: after a boom the builders lay off most of their
+     * posts, the unemployed are fewer than the crews, 8-11 sectors read "the city could staff 33%", nothing is
+     * ordered, and the crews stay laid off. Seed 11 was held 1,300 months at 20,000 people by 3,187 such posts.
+     * Jerus's own answer said the crews "can take other jobs"; now the gate lets them. A grace of 12 or 24
+     * months before they are spare was measured and not taken (docs/queue/IC1-notes.md).
+     */
+
     /** The staffing test every planner that builds posts asks before ordering one (0.7.18); see above. */
     public Staffing staffing(BuildingsTemplate t) {
         return staffing(t, 1);
@@ -462,7 +478,10 @@ public abstract class Sector {
      * BuildingManager.getPostsWithheld() adds. WantedPosts asks it of a refusal:
      * a building the test passes once the crews are free was held for the crews
      * (XS1's trap, IC1's), not for want of workers a higher wage would bring, so
-     * it is no ask on the wage.
+     * it is no ask on the wage. Since IC1 an idle builder's crews are already
+     * spare in staffing() (AN IDLE BUILDER'S CREWS ARE SPARE), so a hold this
+     * test passes is one a working builder's crews, or another sector's
+     * withheld posts, caused.
      */
     public Staffing staffingWithCrewsSpare(BuildingsTemplate t, int count) {
         return staffing(t, count, false);
@@ -473,14 +492,20 @@ public abstract class Sector {
         PopulationManager people = game.getPopulationManager();
         double[] posts  = people.staffablePostsByBand();
         if (posts == null) return Staffing.ANY;
-        // ...every post, the builders' laid-off crews included (0.7.17): the
-        // people laid off for want of work go back to those posts when the
-        // work comes, so they are not spare for a new building. See
-        // BuildingManager.getPostsWithheld().
+        // ...every post, the laid-off posts included (0.7.17), but an idle
+        // builder's (IC1, above): the people laid off for want of work go back
+        // to those posts when the work comes, so they are not spare for a new
+        // building. See BuildingManager.getPostsWithheld().
         BuildingManager bm = game.getBuildingManager();
         if (crewsSpokenFor && bm != null && bm.getPostsWithheld() > 0) {
             posts = posts.clone();
-            for (JobType job : JobType.values()) posts[WageBand.of(job).ordinal()] += bm.getPostsWithheld(job);
+            ham.citybuildersim.sectors.Construction builders = game.getSectors() != null ? game.getSectors().construction() : null;
+            String idleBuilders = builders != null && builders.isIdleAtCoreCrew() ? builders.key() : null;
+            for (JobType job : JobType.values()) {
+                long withheld = bm.getPostsWithheld(job);
+                if (idleBuilders != null) withheld -= bm.getPostsWithheld(idleBuilders, job);
+                posts[WageBand.of(job).ordinal()] += withheld;
+            }
         }
         double[] supply = people.supplyByBand(posts);
         if (supply == null) return Staffing.ANY;

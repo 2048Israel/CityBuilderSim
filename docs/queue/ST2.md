@@ -34,3 +34,14 @@ rents price no migrant out, copied K times over and read against itself. Its
 tolerances stay as they are.
 
 A version only if the harness changes. No model change.
+
+## From EP1's gate (2026-11-01): scan at the factor
+
+EP1 (the 1900 start) moves every anchor to 1900's price level. Its trace of
+ScaleCheck's town showed section 6's month 1124 is a draw of the rounding:
+at month 56 a 5e-18 debt hair in one household cell (`Exchange.mayBuy()` reads
+`!(c.debt > 0)`) parts any two price levels, so the town at 0.999999 fails nine
+lines and at the factor ten, while factor 1 fails only main's two
+(EP1-notes §9). Scan for the town's month on EP1's classes at the factor, not
+at today's prices; and prefer a town whose assertions hold over a band of
+months, since a single month holds only until the next batch moves the trace.
