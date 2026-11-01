@@ -210,20 +210,35 @@ public class PolicyPreviewCheck {
      * half of the largest employer's buildings close and a month passes: those out of work are on EI, and they stay (the posts are gone).
      */
     static void anEiPool(Game g) {
-        BuildingsTemplate biggest = null;
-        int biggestJobs = 0;
-        for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
-            if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
-            int jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
-            if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
+        /*
+         * ...AND AGAIN WHILE THE CITY STILL HAS A POST FOR EVERYONE (IC1, 2026-11-01). An idle builder's laid-off crews are spare for
+         * the staffing gate since IC1, so the planners order the buildings the gate used to refuse and the city this fixture plays has
+         * 473 posts with no worker in them at month 62 (3,260 posts, 2,787 filled), not a lull's 366 out of work: the first closing (six depots, 300 posts) takes
+         * workers who are hired into the vacancies the same month, and nobody is on EI after it. The next largest employer is closed the
+         * same way, a month passing each time, until some are on EI (the second closing, a Fabrication Shop, leaves 240 on EI and the
+         * pool grows with the third): it is the posts being gone that keeps them out. On main's rule the first closing does it
+         * (766 out of work), so it is the only one.
+         */
+        for (int round = 0; round < EI_POOL_ROUNDS; round++) {
+            BuildingsTemplate biggest = null;
+            int biggestJobs = 0;
+            for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
+                if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
+                int jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
+                if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
+            }
+            final BuildingsTemplate closing = biggest;
+            if (closing == null) return;
+            quietly(() -> {
+                g.getBuildingManager().retire(closing, Math.max(1, g.getBuildingManager().getQuantity(closing.getId()) / 2));
+                g.simulateMonths(1);
+            });
+            if (g.getUnemployment().onEi() > 0) return;
         }
-        final BuildingsTemplate closing = biggest;
-        if (closing == null) return;
-        quietly(() -> {
-            g.getBuildingManager().retire(closing, Math.max(1, g.getBuildingManager().getQuantity(closing.getId()) / 2));
-            g.simulateMonths(1);
-        });
     }
+
+    /** The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. */
+    static final int EI_POOL_ROUNDS = 6;
 
     /** The city as the previews read it, for the record. */
     static void printCity(Game g) {

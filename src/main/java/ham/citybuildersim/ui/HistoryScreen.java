@@ -907,6 +907,20 @@ final class HistoryScreen {
      * nothing on the page can move it; the charts leave SLACK of it unused,
      * and a TimeChart is cut at its edge rather than pushing it (its
      * minimum width is nothing).
+     *
+     * THE PAGE FOLLOWS THE FRAME'S HEIGHT, A PASS LATER (KH1, folded into
+     * IC1, 2026-11-01). KeptCheck 15 met a kept page 4 px shorter than a page
+     * built new (731 against 735, at month 822 of IC1's town). The kept draw
+     * shrank the frame from 133 to 129 px inside the column's own layout pass,
+     * after the column had sized the scroller from the frame's old height, and
+     * the scroller's request for another pass was dropped: a JavaFX 21 box
+     * drops its children's requests while it lays them out
+     * (Parent.requestParentLayout). Nothing else on a kept page asks again, so
+     * the page stayed short until something did. Now, when the frame's height
+     * moves, each box from the column up is asked itself. A box's flag is
+     * cleared before it lays out, so a request made during the pass stands,
+     * and the next pass gives the scroller what is left under the frame. A
+     * Platform.runLater would come a frame later and after the bench's passes.
      */
     private void frameOver(VBox frame, VBox body) {
         frame.setMaxWidth(PAGE_WIDE);
@@ -923,6 +937,12 @@ final class HistoryScreen {
                             - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
                     ui.menuScroller.heightProperty(), frame.heightProperty()));
             scroller.getProperties().put(BOUND_TO_FRAME, frame);
+        }
+        // ...and each box from the column up asked for a layout when the frame's height moves (KH1, above).
+        if (frame.getProperties().put(RELAYOUT_ON_HEIGHT, Boolean.TRUE) == null) {
+            frame.heightProperty().addListener((o, was, now) -> {
+                for (javafx.scene.Parent p = frame.getParent(); p != null; p = p.getParent()) p.requestLayout();
+            });
         }
         if (body.getProperties().get(BOUND_TO_SCROLLER) != scroller) {
             body.prefWidthProperty().unbind();
@@ -941,9 +961,9 @@ final class HistoryScreen {
         page = scroller;
     }
 
-    /** Keys in a kept scroller's and body's properties for what is bound to them: the frame the scroller's height reads, the scroller the body's width reads, the viewport listener. */
+    /** Keys in a kept scroller's, body's and frame's properties for what is bound to them: the frame the scroller's height reads, the scroller the body's width reads, the viewport listener, the frame's height listener (KH1). */
     private static final String BOUND_TO_FRAME = "history.frame", BOUND_TO_SCROLLER = "history.scroller",
-            FOLLOWS_VIEWPORT = "history.follows";
+            FOLLOWS_VIEWPORT = "history.follows", RELAYOUT_ON_HEIGHT = "history.relayout";
 
     /** The page's width for a viewport this wide: all of it, from 320 up to PAGE_WIDE. */
     static double given(double viewport) {

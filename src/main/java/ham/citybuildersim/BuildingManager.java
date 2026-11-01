@@ -6758,10 +6758,12 @@ public class BuildingManager {
      * takes.
      *
      * A PLANNER COUNTS THEM AS JOBS. A post laid off for want of work is a
-     * job that comes back with the work, so what the city's planners weigh -
-     * the landlords' jobs (sectors.RealEstate), the staff a new building could
-     * find (Sector.staffableShare()) - is every post, these included; only
-     * the labour market and the wage bills take the posts offered.
+     * job that comes back with the work, so what the city's planners weigh is
+     * every post, these included: the landlords (sectors.RealEstate) still
+     * count every post; the staffing gate (Sector.staffing()) counts a working
+     * builder's laid-off posts, and since IC1 not an idle builder's, which are
+     * spare for it (Sector, AN IDLE BUILDER'S CREWS ARE SPARE). Only the
+     * labour market and the wage bills take the posts offered.
      *
      * KEYED BY THE OWNER, NOT THE OPERATOR (FR3): a sector lays off the posts
      * of the buildings it owns (the builders' crews, Freight's drivers on its
@@ -6782,6 +6784,16 @@ public class BuildingManager {
             withheld += e.getValue() - postsOffered(e.getValue(), offeredShareOf(e.getKey(), type));
         }
         return withheld;
+    }
+
+    /** The posts of a job type one sector does not offer this month: getPostsWithheld(type) for that sector alone (IC1). */
+    public long getPostsWithheld(String sector, JobType type) {
+        if (offeredShare == null || sector == null) return 0;
+        long posts = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (sector.equals(stack.getBuilding().getSector())) posts += stack.getTotalJobs(type);
+        }
+        return posts == 0 ? 0 : posts - postsOffered(posts, offeredShareOf(sector, type));
     }
 
     /** getPostsWithheld() over every job type. */

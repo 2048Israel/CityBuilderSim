@@ -381,6 +381,22 @@ public class WellCheck {
         Oil wells = g.getSectors().oil();
         int[] at = new int[1];
         quietly(() -> {
+            /*
+             * NO SECTOR BUT THE WELLS' ASKS TO BUILD (IC1, 2026-11-01): the question is the oil sector's one-well-a-month rule on the
+             * sites it frees, and the town around it is the one stood up by hand below (BusinessInvestment.holdSector(), as section 9's
+             * sea town and LabourCheck's crawl hold theirs). An idle builder's laid-off crews are spare for the staffing gate since IC1,
+             * so the planners order what the gate used to refuse and the town is not the one that stood still through this year on
+             * main's rule: 2,198 people at the retirements against 1,750, with six sites on the yard (the builders, a machine works,
+             * a boutique, a diner, a cement works, a sawmill) where main's yard was bare. The first freed site's well, ordered in
+             * month 14, was a share of that yard's work for six months and opened in month 20 against 15, and the second was
+             * ordered in month 21: [3, 3, 3, 3, 3, 3, 3, 4] wells committed by month, one new vintage (month 20), not two. Held, the
+             * yard holds the wells alone on both rules, as it did on main's, and the sections below read as they were written.
+             * The holds are released when the section is done (below): section 6 reloads this town and plays it a month beside
+             * its reload, and the two are to be the same town.
+             */
+            for (Sector s : g.getSectors().all()) {
+                if (!Sectors.OIL.equals(s.key())) g.getBusinessInvestment().holdSector(s.key());
+            }
             g.buildStack(template(g, "Construction Depot"), moreDepots, true);
             g.buildStack(template(g, "House"), 300, true);
             land.restoreSites(Resource.OIL, 4, PLENTY);
@@ -427,6 +443,9 @@ public class WellCheck {
         report("...each new well a vintage of its own month, lifting its whole nameplate when it opened",
                 refilled && fresh == 2, now.toString());
         assertTrue("...and the world's oil is conserved, to the tonne", kept);
+        quietly(() -> {
+            for (Sector s : g.getSectors().all()) g.getBusinessInvestment().releaseSector(s.key());
+        });
         return g;
     }
 

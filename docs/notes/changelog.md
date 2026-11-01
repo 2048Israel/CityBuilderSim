@@ -18,6 +18,20 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.94 — IC1, the builders' idle crews free for other work — 2026-11-01, ready, see docs/queue/IC1-notes.md
+After a boom the builders go idle at their core crew and lay off most of their posts, and the staffing gate counted those
+posts as spoken for (0.7.17: they "are hired back when work returns"), so its spare was the unemployed less the crews:
+8-11 sectors stood at "the city could staff 33%", nothing was ordered and the crews stayed laid off (XS1: seed 11 held
+1,300 months at 20,000 people). Now an idle builder's laid-off posts are spare for every planner's gate (Sector.staffing());
+a working builder's, and other sectors' withheld posts, stay spoken for. Over the 16 AUTO2 seeds the town is 77% larger at
+m300 and passes 40,000 at m976 against m1,033, the median end unchanged (335,718); seed 11 passes it at m770. A 12- or
+24-month grace before the crews are spare was measured and not taken: the slow seeds are the tail, reshuffled. A founding
+depot's village now opens its shop. WantedPostsCheck 11 causes the trap and shows it released; nine harnesses' fixtures
+cause their conditions again on the moved paths. ScaleCheck's scaler now copies Freight's railway shares as shares (its
+copy hauled K squared tonnes once the town had a line), and section 9 holds every sector in both copies, a building
+being one size at any K (SK1); City History's kept page follows its frame's height, where it stood 4 px short (KH1).
+Ensemble 22/26 (LD1 23/26: A3, one seed at its boundary).
+
 ### 0.8.93 — OV1, a well that opens the month two wear out keeps its own month — 2026-11-01, ready, see docs/queue/OV1-notes.md
 Latent on main, met by LD1's path (WellCheck 4, the three red lines Jerus passed on "Ship, OV1 next"): `Oil.view()` nets the
 wells standing against the stored vintages as one figure, so when a well opened in a month two wore out it dropped one of the

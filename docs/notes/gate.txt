@@ -1,11 +1,29 @@
-# gate of Merge batch/OV1: a worn-out well is retired against a well that opened the same month: `Oil.view()` nets the month's retirement against the opening and drops one oldest where two wore out, so the fresh well carries the old vintage and is retired again next month (latent on main, reproduced on 0.8.90's classes; met by WellCheck 4 on LD1's path). One line: re-strike the vintages after a retirement, `if (gone > 0) wells.strikeVintages();` in `Game.retireWornOutWells()`; WellCheck, OilCheck, OilViewCheck, ReadPathCheck and SaveFileCheck pass with it., 0.8.93
+# gate of Merge batch/IC1: the builders' idle crews free for other work: while Construction stands idle at its core crew, its laid-off posts are spare for the staffing gate (`Sector.staffing()`), not spoken for (XS1: seed 11 held 1,300 months at 20,000 by 3,187 such posts, 8-11 sectors at the gate; the rule from m0 on the 16 AUTO2 seeds: none stalls, seed 11 296,345, but four pass 40,000 50-170 months later and the median ends 329,143 against 347,140). Recommended (a), a time limit (b) if the slow seeds need it; after LD1, on its gate; the suite and the ensemble, seed 11, RE1's seed 4 and FoundingYardCheck 6 watched; the trace moves, 0.8.94
 # date: 2026-11-01
 # earth-2.bin: named
-# suite: 165 harnesses run in 1974s: 164 passed, 1 failed
-# timing: 14 harnesses run in 495s: 12 passed, 2 failed; its red lines were judged side by side with main's, below
+# suite: 165 harnesses run in 2807s: 164 passed, 1 failed
+# timing: 14 harnesses run in 917s: 8 passed, 6 failed; its red lines were judged side by side with main's, below
+# timing red not the batch's (paired): WorldMarketCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): WorldMarketCheck | a January (every good, from last year's answer) takes under SOLVE_WARM_MS, the median of 12                                        FAIL  median 70.0 ms, slowest 109.2 ms; 10.6 sweeps a good   [main 16.9 ms, batch 20.0 ms (+18.3%), budget 60 ms: the batch within the budget]
+# timing red not the batch's (paired): WorldMarketCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): EarthTerrainCheck | the Earth screen: 198 tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS FAIL  96.5 ms (0.487 a tile), 17,690 buildings; the first time, its plans made, 3442 ms; the square city 121 districts a side, laid in 46990 ms; the screen 3% sea, 4% fresh   [main 60.5 ms, batch 56.7 ms (-6.2%), budget 80 ms: within 15% of main's]
+# timing red not the batch's (paired): EarthTerrainCheck | the cells pass in no more than CELLS_PASS_MS of the wall clock, its tiles read from the file the first time FAIL  1390 ms of the wall clock (this JVM cannot read a thread's CPU finely enough) the first time (1390 on the wall clock), 1042 again (1042 on the wall clock); the study 370-450 on the wall clock   [main 471 ms, batch 500 ms (+6.2%), budget 1000 ms: within 15% of main's]
+# timing red not the batch's (paired): EarthTerrainCheck | ...and at 1024 plots a pixel it is drawn in no more than SCREEN_MS                                   FAIL  93.1 ms with the relief, 77.1 without, 700 ms the first time over fresh data   [main 33.1 ms, batch 34.1 ms (+3.2%), budget 80 ms: within 15% of main's]
+# timing red not the batch's (paired): EarthTerrainCheck | 3 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 40.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.2 ms, batch 33.0 ms (+9.2%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 64.3 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.8 ms, batch 40.1 ms (+34.6%), budget 25 ms: main over the budget too]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | ...and is written and read back in no more than SIDECAR_MS (500 ms) each       FAIL   [main 317 ms, batch 334 ms (+5.1%), budget 500 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 6.71 ms, batch 4.27 ms (-36.4%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 57.4 ms, batch 56.5 ms (-1.7%), budget 80 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 24.8 ms, batch 24.4 ms (-1.6%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 4 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 7.13 ms, batch 4.94 ms (-30.7%), budget 8 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite red passed on Jerus's word (Fix first; Pass it): ScaleCheck | 1 FAILED
 ScaleCheck | exit 1
 ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
-ScaleCheck | 2 FAILED
+ScaleCheck | 1 FAILED

@@ -125,8 +125,14 @@ public class PassThroughCheck {
     /** The share of a step in the D$ that has reached the goods after n months. */
     static double reached(double speed, int n) { return 1 - Math.pow(1 - speed, n); }
 
-    /** The months section 2 plays the real city, and the one it is saved at the end of. */
+    /** The months section 2 plays the real city, and the series it records; it is saved there, or the first month on from it that the D$ is apart from the goods' D$ (APART). */
     static final int MONTHS = 240;
+
+    /** The gap, in logs, between the D$ and the goods' D$ that sections 3 and 5 need the saved city to stand at (they assert more than this). */
+    static final double APART = .01;
+
+    /** The most months section 2 plays on past MONTHS to find the saved city apart by APART (IC1): the D$ and the goods' D$ are apart in nearly every month. */
+    static final int APART_LOOK_MONTHS = 24;
 
     /** The size of the step in sections 1 and 3: the D$ 10% weaker. */
     static final double STEP = 1.10;
@@ -289,6 +295,24 @@ public class PassThroughCheck {
                 + " of " + MONTHS + ")", wrongMarkets == 0);
         assertTrue("...and so is the rate the economy manager prices the building materials at (wrong in " + wrongBuildings + " of " + MONTHS + ")",
                 wrongBuildings == 0);
+
+        /*
+         * ...AND ON UNTIL THE D$ AND THE GOODS' D$ ARE APART (IC1, 2026-11-01). Sections 3 and 5 pin and compare at the saved city's gap
+         * (more than APART in logs): the premise that the pin removes a real gap. The D$ and the goods' D$ are apart in 229 of the 240 months
+         * on IC1's path (a median of 15%), but month 240 is not one of them: the city ends it with the D$ at 0.7437, 0.7% from the goods'
+         * D$ at 0.7491, where on main's path (0.8695 against 0.9667) they stand 10.6% apart. An idle builder's laid-off crews are spare
+         * for the staffing gate since IC1, so the town is built by other months than main's, and where the D$ stands against the goods'
+         * D$ in the month it stops is the path's. It plays on, a month at a time, until the gap is more than APART (at most APART_LOOK_MONTHS),
+         * and the city is saved there; the 240 months of the series (section 6) are those played above. On main's path the gap is
+         * apart at month 240 and it plays none.
+         */
+        int past = 0;
+        while (past < APART_LOOK_MONTHS && Math.abs(Math.log(fx.getRate() / em.getStruckRate())) <= APART) {
+            month(city);
+            past++;
+        }
+        out.printf("   the city plays %d month(s) past the %d to stand with the D$ %.1f%% from the goods' D$ (more than %.0f%%, as sections 3 and 5 need)%n",
+                past, MONTHS, 100 * Math.abs(Math.log(fx.getRate() / em.getStruckRate())), 100 * APART);
 
         boolean[] saved = new boolean[1];
         quietly(() -> saved[0] = city.saveGame(BASE_SLOT, "the pass-through city").ok);
