@@ -18,7 +18,7 @@
 
 **Uses:** [Palette](Palette.md) (3)
 
-**Used by (2):** [BrandingCheck](BrandingCheck.md), [UserInterface](UserInterface.md)
+**Used by (3):** [BrandingCheck](BrandingCheck.md), [ReplayMode](ReplayMode.md), [UserInterface](UserInterface.md)
 
 ## Constants
 

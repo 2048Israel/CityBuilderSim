@@ -114,6 +114,11 @@ import java.util.List;
  *      not; and the oil page's forecast declines the deep platform's wells
  *      at the deep rate.
  *
+ *  16. A WELL THAT OPENS THE MONTH TWO WEAR OUT KEEPS ITS OWN MONTH (OV1):
+ *      the month's retirement is struck to the vintages before the fresh well
+ *      is netted against it, so the two oldest go and the new one is a vintage
+ *      of its month, and is not retired with the old the month after.
+ *
  * Every fixture CAUSES its condition: the town is handed its oil by fiat
  * (LandManager.restoreSites(), as MiningCheck hands a city its ore), its
  * wells' ages by their vintages (Oil.setVintagesForTest()), and section 5's
@@ -229,6 +234,7 @@ public class WellCheck {
         theTwoPools();
         deepWater();
         deepDecline();
+        openingAsTwoWearOut();
 
         for (GameFiles f : FILES.values()) LongPlaytest.cleanUp(f.getDirectory().getParent());
         out.println();
@@ -1572,5 +1578,47 @@ public class WellCheck {
                         && lines.get(1).tip().contains("10.3%") && lines.get(0).tip().contains("8.5%"),
                 lines.get(0).words() + " | " + lines.get(1).words());
         wells.setPlatformFieldsForTest(null);
+    }
+
+    /* ============================ 16. A WELL OPENS THE MONTH TWO WEAR OUT ============================ */
+
+    static void openingAsTwoWearOut() {
+        out.println("\n--- 16. a well that opens the month two wear out keeps its own month, and is not retired with them (OV1) ---");
+        // OV1 (2026-10-31): Oil.view() nets the month's retirement against the month's opening and drops only as many
+        // vintages as the wells fell by, so two worn out and one opened dropped one of the old two and left the fresh well
+        // out of the book: the old vintage went on standing, and was retired the month after. Five sites, four wells (two
+        // of them a month short of their life) and a fifth that stands when the month's retirements are made, which
+        // only the vintages struck before the retirements mends; section 4, on LD1's path, meets the other order, which only the
+        // strike after them mends. The sector is not held here, since a held sector's wells are not retired.
+        Game g = town("wellcheck-open", 600, 6 * 87_120, 0);
+        BuildingsTemplate well = template(g, "Oil Well");
+        LandManager land = g.getLandManager();
+        Oil wells = g.getSectors().oil();
+        int month = g.getMonth();
+        Vintage old = new Vintage(month - (Oil.lifeMonths(WellKind.LAND) - 1), 2, WellKind.LAND);
+        Vintage middle = new Vintage(month - 100, 2, WellKind.LAND);
+        quietly(() -> {
+            land.restoreSites(Resource.OIL, 5, PLENTY);
+            g.buildStack(well, 4, true);
+            wells.setVintagesForTest(List.of(old, middle));
+            g.buildStack(well, 1, true);
+        });
+        report("fixture: five wells stand on five sites, two of them a month short of their life: none worn out yet",
+                wells.landWellsStanding() == 5 && wells.wornOut() == 0 && land.getSites(Resource.OIL, true) == 5,
+                wells.vintagesNow().toString());
+        int retiredBefore = g.getWellsWornOut();
+        quietly(() -> g.simulateMonths(1));
+        List<Vintage> after = wells.vintages();
+        Vintage fresh = new Vintage(month + 1, 1, WellKind.LAND);
+        report("a month on, the two at 263 months are retired and the well that opened that month is a vintage of its own",
+                g.getWellsWornOut() - retiredBefore == 2 && after.equals(List.of(middle, fresh)),
+                String.format("%d retired; %s", g.getWellsWornOut() - retiredBefore, after));
+        int retiredAfter = g.getWellsWornOut();
+        quietly(() -> g.simulateMonths(1));
+        List<Vintage> next = wells.vintages();
+        report("...and the month after, none is worn out: the fresh well is not retired with the old ones",
+                g.getWellsWornOut() == retiredAfter && wells.wornOut() == 0 && next.size() >= 2 && next.get(0).equals(middle)
+                        && next.get(1).equals(fresh) && wells.landWellsStanding() >= 3,
+                String.format("%d retired; %s; %d stand", g.getWellsWornOut() - retiredAfter, next, wells.landWellsStanding()));
     }
 }
