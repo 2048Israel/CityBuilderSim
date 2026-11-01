@@ -1,0 +1,12 @@
+--- src/main/java/ham/citybuildersim/WantedPosts.java	2026-10-31 18:49:07.162023200 -0300
++++ src/main/java/ham/citybuildersim/WantedPosts.java	2026-10-31 19:00:02.618211700 -0300
+@@ -65,7 +65,8 @@
+         double[] posts = new double[wanted.length];
+         for (int b = 0; b < wanted.length; b++) {
+             double free = b < spare.length ? Math.max(0, spare[b]) : 0;
+-            if (wanted[b] > free) posts[b] = wanted[b];
++            String v = System.getProperty("ld1.var", "");
++            if (wanted[b] > free) posts[b] = v.equals("short") ? wanted[b] - free : (v.equals("skilled") && b < 2 ? 0 : wanted[b]);
+         }
+         double payFactor = shortBill > 0 ? 1 + margin / shortBill : Double.POSITIVE_INFINITY;
+         return new Ask(sector, building, posts, payFactor);

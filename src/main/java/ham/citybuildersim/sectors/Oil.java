@@ -610,8 +610,10 @@ public final class Oil extends Sector {
         }
 
         if (best == null) {
-            return BusinessInvestment.Decision.no(sector, staffingHold != null
-                    ? staffingHold.why(staffingHoldName) : "nothing worth sinking");
+            if (staffingHold != null) {
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+            }
+            return BusinessInvestment.Decision.no(sector, "nothing worth sinking");
         }
         if (plans.plotsAvailableFor(best) < 1) {
             return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
@@ -1647,7 +1649,7 @@ public final class Oil extends Sector {
             Staffing staffing = staffing(well);
             double cost = plans.getCostOf(well, 1), earns = estimatedMonthlyProfit(well, plans);
             if (!staffing.passes()) {
-                held = BusinessInvestment.Decision.no(sector, staffing.why(well.getName()));
+                held = BusinessInvestment.Decision.unstaffed(sector, staffing, staffing.why(well.getName()));
             } else if (cost > 0 && game.carriesItsWholeCost(sector, earns, cost)) {
                 return new BusinessInvestment.Decision(sector, well, 1,
                         String.format("%d platform slot(s) free at sea, %,.0fk tonnes under the sea", free, reserve / 1000), true);
@@ -1670,7 +1672,7 @@ public final class Oil extends Sector {
         JacketCase c = jacketCase(plans);
         if (jacket != null && c != null && game.hasDepositFor(jacket, 1)) {
             Staffing staffing = staffing(jacket);
-            if (!staffing.passes()) return BusinessInvestment.Decision.no(sector, staffing.why(jacket.getName()));
+            if (!staffing.passes()) return BusinessInvestment.Decision.unstaffed(sector, staffing, staffing.why(jacket.getName()));
             if (game.carriesItsWholeCost(sector, c.earns(), c.cost())) {
                 return new BusinessInvestment.Decision(sector, jacket, 1,
                         String.format("a sea field with %d site(s) free, %.0f m deep: a %splatform and %d well(s)",

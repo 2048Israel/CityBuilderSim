@@ -1,4 +1,4 @@
-# CopperRefiningCheck.java - 1,114 lines · 27 methods · 16 constants · harnesses
+# CopperRefiningCheck.java - 1,118 lines · 27 methods · 16 constants · harnesses
 
 `ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -99,23 +99,23 @@
 | 233 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
 | 236 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 318 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |
-| 1031 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
+| 1035 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 110 | `static int fails` |  |
-| 999 | `int months, cutMonths, firstCut` |  |
-| 1000 | `final java.util.EnumSet<Good> goods` |  |
-| 1001 | `final java.util.TreeSet<String> sectors` |  |
-| 1002 | `double units` |  |
+| 1003 | `int months, cutMonths, firstCut` |  |
+| 1004 | `final java.util.EnumSet<Good> goods` |  |
+| 1005 | `final java.util.TreeSet<String> sectors` |  |
+| 1006 | `double units` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 108 | 1007 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
+| 108 | 1011 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
 | 116 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 121 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 126 | 5 | `static void quietly(Runnable r)` |  |
@@ -174,7 +174,7 @@
 | 603 | 3 | `static boolean near(double a, double b)` | Whether a number is within a relative hair of another (a month's figures are sums of products). |
 | 607 | 113 | `static void idleWorks()` |  |
 
-### 9. a works making a flow good orders no input for exports that sell under it (lines 721-1114)
+### 9. a works making a flow good orders no input for exports that sell under it (lines 721-1118)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -183,10 +183,10 @@
 | 738 | 3 | `static boolean close(double a, double b)` | Whether a figure made at one moment of the month is another's, to what the month's vans add to the rate between them: the flow goods are made at the top of the market pass and the inputs ordered as each good clears, a... |
 | 743 | 5 | `static double monthRate(Sector s, Good in)` | The operating rate a month ran at, read off an input's row (needed = the need at the nameplate times the rate the month cleared at): the rate itself moves at the month's end. |
 | 750 | 10 | `static void booksLine(String label, Game g, CopperRefining cr)` | The books of the month before, as section 8 (d) reads them: the month's GDP plus the rest of the imports is not below C + G. |
-| 761 | 224 | `static void flowGoods()` |  |
-| 987 | 9 | `static void netExportAt(GoodsMarket m, Good g, double net)` | Sets a good's world export price, its import price as the literal, so its net export price is `net` (the net price rises with the export price: bisection) (FL1). |
-| 998 | 31 | **type** `static final class Cuts` | The Rotterdam run's tally of a flow order's cuts (9 (f)). |
-| 1005 | 23 | `void month(Game g)` _(in CopperRefiningCheck.Cuts)_ | Counts the month just played: an exportable traded flow good is cut where its row idled units (the order's cut is all it idles), and the month's GDP. |
-| 1034 | 6 | `static void play(Game g, int months, Cuts cuts)` | Plays months one at a time, each counted (LongPlaytest.run(g, 1) is the same month as a run of many). |
-| 1042 | 72 | `static void rotterdam()` | (f) how often the rule fires in a real run: a Rotterdam city played as LandmassCheck 13 plays it, each month counted. |
+| 761 | 228 | `static void flowGoods()` |  |
+| 991 | 9 | `static void netExportAt(GoodsMarket m, Good g, double net)` | Sets a good's world export price, its import price as the literal, so its net export price is `net` (the net price rises with the export price: bisection) (FL1). |
+| 1002 | 31 | **type** `static final class Cuts` | The Rotterdam run's tally of a flow order's cuts (9 (f)). |
+| 1009 | 23 | `void month(Game g)` _(in CopperRefiningCheck.Cuts)_ | Counts the month just played: an exportable traded flow good is cut where its row idled units (the order's cut is all it idles), and the month's GDP. |
+| 1038 | 6 | `static void play(Game g, int months, Cuts cuts)` | Plays months one at a time, each counted (LongPlaytest.run(g, 1) is the same month as a run of many). |
+| 1046 | 72 | `static void rotterdam()` | (f) how often the rule fires in a real run: a Rotterdam city played as LandmassCheck 13 plays it, each month counted. |
 

@@ -212,6 +212,14 @@ public class BusinessInvestment {
          */
         public final boolean landBlocked;
 
+        /**
+         * The staffing test that refused this, when it was a hold for want of
+         * workers (Sector.Staffing), with the building and the sector it was
+         * asked of; null for every other decision. Game.consider() hands it
+         * to WantedPosts (LD1), which prices the posts it would have opened.
+         */
+        public final Sector.Staffing heldForStaff;
+
         public Decision(String sector, BuildingsTemplate template, int quantity,
                         String reason, boolean build) {
             this(sector, template, quantity, reason, build, false);
@@ -219,16 +227,27 @@ public class BusinessInvestment {
 
         public Decision(String sector, BuildingsTemplate template, int quantity,
                         String reason, boolean build, boolean landBlocked) {
+            this(sector, template, quantity, reason, build, landBlocked, null);
+        }
+
+        private Decision(String sector, BuildingsTemplate template, int quantity,
+                         String reason, boolean build, boolean landBlocked, Sector.Staffing heldForStaff) {
             this.sector = sector;
             this.template = template;
             this.quantity = quantity;
             this.reason = reason;
             this.build = build;
             this.landBlocked = landBlocked;
+            this.heldForStaff = heldForStaff;
         }
 
         public static Decision no(String sector, String reason) {
             return new Decision(sector, null, 0, reason, false);
+        }
+
+        /** Held back by the staffing test; the reason is the test's own words, and the test rides along (LD1). */
+        public static Decision unstaffed(String sector, Sector.Staffing held, String reason) {
+            return new Decision(sector, null, 0, reason, false, false, held);
         }
 
         /** Wanted to build, had nowhere to put it. */
@@ -864,7 +883,7 @@ public class BusinessInvestment {
         }
 
         if (best == null) {
-            return staffingHold != null ? Decision.no(key, staffingHold.why(staffingHoldName))
+            return staffingHold != null ? Decision.unstaffed(key, staffingHold, staffingHold.why(staffingHoldName))
                     : Decision.no(key, "output ahead of demand");
         }
 
@@ -1079,7 +1098,7 @@ public class BusinessInvestment {
         // ...and one the city could staff (0.7.18's test, asked of the branch
         // since 0.7.19; see Sector.staffing()).
         Sector.Staffing staffing = economyManager.getSectors().retail().staffing(branch);
-        if (!staffing.passes()) return Decision.no(sector, staffing.why(branch.getName()));
+        if (!staffing.passes()) return Decision.unstaffed(sector, staffing, staffing.why(branch.getName()));
 
         // With no bank the city's credit is lent from outside it, priced as the
         // central bank's window money since 0.7.7 - not at a punitive rate,
@@ -1109,11 +1128,21 @@ public class BusinessInvestment {
      */
     public boolean servicesItsOwnDebt(double estimatedMonthlyProfit,
                                       double amountBorrowed, double annualRate) {
-        if (amountBorrowed <= 0) return true;
+        return amountBorrowed <= 0 || estimatedMonthlyProfit >= interestHurdle(amountBorrowed, annualRate);
+    }
+
+    /**
+     * The monthly profit servicesItsOwnDebt() asks for on {@code amountBorrowed}
+     * at {@code annualRate}: the interest at the real rate, times
+     * PROFIT_OVER_INTEREST; minus infinity when nothing is borrowed (anything
+     * carries it). Out of servicesItsOwnDebt so Game.noteStaffingHold() can
+     * ask how far over the hurdle a building that was held for want of
+     * workers would be (LD1, WantedPosts) with the arithmetic the test uses.
+     */
+    public double interestHurdle(double amountBorrowed, double annualRate) {
+        if (amountBorrowed <= 0) return Double.NEGATIVE_INFINITY;
         // In real terms since 0.7.42: see THE HURDLE IS REAL.
-        annualRate = realTestRate(annualRate);
-        double monthlyInterest = amountBorrowed * annualRate / 12;
-        return estimatedMonthlyProfit >= monthlyInterest * PROFIT_OVER_INTEREST;
+        return amountBorrowed * realTestRate(annualRate) / 12 * PROFIT_OVER_INTEREST;
     }
 
     /*

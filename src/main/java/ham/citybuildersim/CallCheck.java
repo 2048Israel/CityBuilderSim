@@ -458,6 +458,13 @@ public class CallCheck {
         check("a callable sale puts one callable piece on the books, and only one", made.size() == 1 && bonds(city) == bondsBefore + 1);
         LongTermBond line = made.isEmpty() ? null : made.get(0);
         if (line == null) return;
+        /*
+         * WORTH ABOUT ITS FACE IS THE SALE'S CLAIM (LD1), so it is read at the sale. It was read two months on, after the two months
+         * the audit lines below play, which lets the curve drift between the sale and the reading: in the city whose wages the
+         * refused posts move, the ten-year yield is 7.9% and the rule pulls it, and the line sold at an 8.000% coupon stood at
+         * 103.89 per 100 two months on (the claim's bound is 102). On main, with a 3.2% curve, it stood at 99.72.
+         */
+        double worthAtTheSale = ledger.marketValue(line) / line.getOustandingPrincipal();
         check("...it is a callable line, with the quote's first call month and coupon",
                 line.isCallable() && line.getFirstCallMonth() == call.firstCallMonth() && Math.abs(line.couponRate() - call.coupon()) < 1e-12);
         check("...the first call is " + CallTree.FIRST_CALL_10Y + " years after the sale, and the term ten", line.callTermMonths() == CallTree.FIRST_CALL_10Y * 12 && line.getDuration() == 120);
@@ -478,8 +485,8 @@ public class CallCheck {
                 value, CallTree.price(curve, city.rateVolatility(), flows, line.monthsToFirstCall(), principal), 1e-6 * principal);
         check("...never above the same payments that cannot be called (" + String.format("%.3f against %.3f per 100", value / principal * 100, curve.pv(flows) / principal * 100) + ")",
                 value <= curve.pv(flows) + 1e-9 * principal);
-        check("...and a callable line sold in the market is worth about its face (" + String.format("%.2f per 100", value / principal * 100) + ")",
-                value / principal > .9 && value / principal < 1.02);
+        check("...and a callable line sold in the market is worth about its face (" + String.format("%.2f per 100", worthAtTheSale * 100) + ")",
+                worthAtTheSale > .9 && worthAtTheSale < 1.02);
 
         // A non-call sale at the same term does not reopen it; a callable one does.
         city.setCashForTest(Founding.WEALTHY_CASH);

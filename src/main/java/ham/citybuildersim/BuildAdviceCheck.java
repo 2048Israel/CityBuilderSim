@@ -1103,13 +1103,24 @@ public class BuildAdviceCheck {
 
         Game f = founded(root, "founded", 9);
         double come9 = CityNeeds.wouldCome(f, uni);
+        /*
+         * ...ITS FIRST MONTH FROM THE NINTH THAT A CLASS WOULD COME TO (LD1, 2026-10-31). The ninth month drew 31 on
+         * 0.8.89 and 22 on LD1's path, whose founding prices the posts the staffing gate refused into its wages and so
+         * moves who would study. The question is the rule's - a founding a class would come to, and few posts would
+         * hire, is shown no university - so the fixture plays on to the month that has its class, inside the
+         * founding's third year.
+         */
+        while (come9 < CityNeeds.SEATS_FLOOR && f.getMonth() < 36) {
+            quietly(() -> f.simulateMonths(1));
+            come9 = CityNeeds.wouldCome(f, uni);
+        }
         long uniPosts = 0;
         long[] jobs = f.getBuildingManager().getTotalJobs();
         for (JobType j : JobType.values()) if (WageBand.of(j) == uni.produces()) uniPosts += jobs[j.ordinal()];
         out.printf("      the founding at month %d: %,d people, %,.0f would come to a university, %,d university posts%n",
                 f.getMonth(), f.getPopulationManager().getPopulation(), come9, uniPosts);
-        assertTrue("fixture: month 9 of a Standard founding, at least a class would come to a university",
-                f.getMonth() == 9 && come9 >= CityNeeds.SEATS_FLOOR);
+        assertTrue("fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university",
+                f.getMonth() >= 9 && f.getMonth() <= 36 && come9 >= CityNeeds.SEATS_FLOOR);
         List<CityNeeds.Need> f9 = CityNeeds.measure(f, CityNeeds.PLAIN);
         assertTrue("no university row there", schoolRow(f9, uni) == null);
         assertTrue("...and no university card", !suggests(f, f9, uni));

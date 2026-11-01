@@ -2351,16 +2351,45 @@ final class PeopleScreen {
                                 Palette.SIZE_LABEL, Palette.TEXT_MUTED))),
                 details("posts", "every post in the city",
                         Kept.scope("posts table", () -> jobTable(pm.getJobs(), pm.getJobVacancy(), pm.getJobFillRate(), pm.getWagesPerType()))),
-                words(String.format("Minimum wage %s a month; every wage in the city is a multiple of it.",
-                        cash(market.cashMinimumWage())), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                words(String.format("Minimum wage %s a month; every wage in the city is a multiple of it.%s",
+                        cash(market.cashMinimumWage()), wantedNote(ui.game.getWantedPosts())),
+                        Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         return c;
+    }
+
+    /**
+     * The posts the wages are priced on beyond the open ones (LD1): what the city's businesses wanted and the
+     * staffing gate would not let them open for want of these workers (WantedPosts), as a sentence to follow the
+     * minimum wage's; empty when there are none. In the one caption rather than a line of its own, so the page has
+     * the same nodes whether or not there are any.
+     */
+    static String wantedNote(WantedPosts wanted) {
+        if (wanted == null || !wanted.any()) return "";
+        List<String> parts = new ArrayList<>();
+        for (WageBand band : WageBand.values()) {
+            double n = wanted.getLatent(band);
+            if (n < .5) continue;
+            parts.add(people(n) + " " + switch (band) {
+                case NONE -> "unskilled";
+                case DIPLOMA -> "diploma";
+                case COLLEGE -> "college";
+                case UNIVERSITY -> "university";
+            });
+        }
+        if (parts.isEmpty()) return "";
+        String list = parts.size() == 1 ? parts.get(0)
+                : String.join(", ", parts.subList(0, parts.size() - 1)) + " and " + parts.get(parts.size() - 1);
+        return " The tight column also counts " + list + " posts that businesses wanted and could not staff,"
+                + " so those wages rise until the workers come.";
     }
 
     /** The ladder's (i): the old legend. */
     static final String LADDER_INFO = "open = posts this band can be put into (licensed posts are on the "
             + "chips under the ladder). queue = its own workers plus everyone over-qualified who came down for "
             + "the same jobs, less any drawn further down by better pay. chance = open/queue, which is what "
-            + "decides whether anybody in this band moves here at all. pay = the band's wage against the going "
+            + "decides whether anybody in this band moves here at all. tight = the posts against the queue the wage "
+            + "is priced on: open, and any post a business wanted and could not staff (the note under the tables). "
+            + "pay = the band's wage against the going "
             + "rate, red over 1.05x: the shortage showing up as money before it shows up as a gap.";
 
     /** "Doctors" from "doctors". */

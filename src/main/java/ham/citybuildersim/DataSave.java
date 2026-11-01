@@ -2369,6 +2369,17 @@ public class DataSave implements Cloneable {
     private double[] labour;
 
     /**
+     * The posts per wage band the staffing gate refused this month that the labour market prices next month as if they
+     * were offered (LD1; WantedPosts).
+     *
+     * A FLOW, AND A LAGGED ONE. The asks are made while the month's businesses plan, and the posts they settle into
+     * are added to the posts the wage is priced on in the next month's reprice. Nothing in the state a month ended in
+     * reproduces them - the refusals are gone with the plans - so a reloaded city that forgot them would price its
+     * next month on fewer posts than the live one, and the two would part by a wage step.
+     */
+    private double[] wantedPosts;
+
+    /**
      * How many skilled workers the city has, by band. Index 0 unused.
      *
      * A STOCK, and the purest kind. Until schools exist a skill arrives in
@@ -2406,6 +2417,8 @@ public class DataSave implements Cloneable {
 
     public void setLabour(double[] a)           { this.labour = a; }
     public double[] getLabour()                 { return labour; }
+    public void setWantedPosts(double[] a)      { this.wantedPosts = a; }
+    public double[] getWantedPosts()            { return wantedPosts; }
     // UP1: a copy, not the live head counts.
     public void setSkilledWorkforce(double[] a) { this.skilledWorkforce = a == null ? null : a.clone(); }
     public double[] getSkilledWorkforce()       { return skilledWorkforce; }

@@ -743,8 +743,10 @@ public final class Retail extends Sector {
         }
 
         if (best == null) {
-            return BusinessInvestment.Decision.no(sector, staffingHold != null
-                    ? staffingHold.why(staffingHoldName) : "what the shops can hand over is ahead of what is wanted");
+            if (staffingHold != null) {
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+            }
+            return BusinessInvestment.Decision.no(sector, "what the shops can hand over is ahead of what is wanted");
         }
 
         int quantity = plans.orderSize(demandAtOpening - supply, best.getCoverage() * rate, best, output);
@@ -1095,7 +1097,7 @@ public final class Retail extends Sector {
             return BusinessInvestment.Decision.no(sector, "the stations can sell what the drivers burn");
         }
         Staffing staffing = staffing(best);
-        if (!staffing.passes()) return BusinessInvestment.Decision.no(sector, staffing.why(best.getName()));
+        if (!staffing.passes()) return BusinessInvestment.Decision.unstaffed(sector, staffing, staffing.why(best.getName()));
         if (!(stationEarns(best, plans) > 0) || plans.getCostOf(best, 1) <= 0) {
             return BusinessInvestment.Decision.no(sector, "no wholesale petrol price to sell at");
         }

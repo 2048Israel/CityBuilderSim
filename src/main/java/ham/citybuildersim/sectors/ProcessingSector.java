@@ -399,9 +399,13 @@ public abstract class ProcessingSector extends Sector {
             return BusinessInvestment.Decision.no(sector, all.isEmpty() ? "no works to build" : "no feed for any of its works");
         }
         String money = fed.refusal(SpreadPlanner.Gate.MONEY), staff = fed.refusal(SpreadPlanner.Gate.STAFF);
+        // ...a staffing refusal rides with its test, so the wage can answer it (LD1, WantedPosts).
+        if (money == null && staff != null) {
+            return BusinessInvestment.Decision.unstaffed(sector, staffing(fed.template()), staff);
+        }
         return BusinessInvestment.Decision.no(sector, money != null
                 ? a(fed.template().getName()) + " " + money + (fed.earns() > 0 ? "" : ": it does not pay")
-                : staff != null ? staff : fed.why());
+                : fed.why());
     }
 
     /** What one more of its works would earn its owner a month: the planner's estimate (THE PLAN) - what Game.consider() tests the order on, and the build card shows. */

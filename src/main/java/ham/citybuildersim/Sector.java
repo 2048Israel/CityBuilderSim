@@ -333,6 +333,14 @@ public abstract class Sector {
         /** A band it has posts in that nobody can fill (see passes()), or null. */
         public final WageBand unfillable;
 
+        // Who asked and for what, kept so a planner's hold can say which building it was for
+        // and a refusal for want of workers can be priced (LD1, WantedPosts): the owner, the
+        // template, how many of it, and the posts and the spare workers per band.
+        private final Sector owner;
+        private final BuildingsTemplate template;
+        private final int count;
+        private final double[] wantedCopy, spareCopy;
+
         /** Always staffable: a building with no posts, or nobody to ask. */
         static final Staffing ANY = new Staffing(1, new double[0], new double[0], new double[0], new boolean[0]);
 
@@ -343,6 +351,16 @@ public abstract class Sector {
          * @param comeFor  whether any migrant comes for each band (Migration.admits())
          */
         Staffing(double share, double[] wanted, double[] spare, double[] above, boolean[] comeFor) {
+            this(share, wanted, spare, above, comeFor, null, null, 0);
+        }
+
+        Staffing(double share, double[] wanted, double[] spare, double[] above, boolean[] comeFor,
+                 Sector owner, BuildingsTemplate template, int count) {
+            this.owner = owner;
+            this.template = template;
+            this.count = count;
+            this.wantedCopy = wanted.clone();
+            this.spareCopy = spare.clone();
             this.share = share;
             WageBand none = null;
             for (int b = 0; b < wanted.length && none == null; b++) {
@@ -350,6 +368,21 @@ public abstract class Sector {
             }
             this.unfillable = none;
         }
+
+        /** The sector that asked, or null for the always-staffable answer. */
+        public Sector owner() { return owner; }
+
+        /** The building asked about, or null for the always-staffable answer. */
+        public BuildingsTemplate template() { return template; }
+
+        /** How many of it were asked about at once (0 for the always-staffable answer). */
+        public int count() { return count; }
+
+        /** The posts the order has per band (a copy). */
+        public double[] wanted() { return wantedCopy.clone(); }
+
+        /** Each band's supply less its posts, from the fill (a copy). */
+        public double[] spare() { return spareCopy.clone(); }
 
         /**
          * THE ONE DEFINITION OF "NOBODY CAN FILL" (Jerus, "Truly unfillable
@@ -420,6 +453,22 @@ public abstract class Sector {
 
     /** The same test for {@code count} of these at once. */
     public Staffing staffing(BuildingsTemplate t, int count) {
+        return staffing(t, count, true);
+    }
+
+    /**
+     * The same test with the builders' laid-off crews counted spare (LD1): as
+     * staffing(t, count) is asked, without the posts
+     * BuildingManager.getPostsWithheld() adds. WantedPosts asks it of a refusal:
+     * a building the test passes once the crews are free was held for the crews
+     * (XS1's trap, IC1's), not for want of workers a higher wage would bring, so
+     * it is no ask on the wage.
+     */
+    public Staffing staffingWithCrewsSpare(BuildingsTemplate t, int count) {
+        return staffing(t, count, false);
+    }
+
+    private Staffing staffing(BuildingsTemplate t, int count, boolean crewsSpokenFor) {
         if (t == null || game == null) return Staffing.ANY;
         PopulationManager people = game.getPopulationManager();
         double[] posts  = people.staffablePostsByBand();
@@ -429,7 +478,7 @@ public abstract class Sector {
         // work comes, so they are not spare for a new building. See
         // BuildingManager.getPostsWithheld().
         BuildingManager bm = game.getBuildingManager();
-        if (bm != null && bm.getPostsWithheld() > 0) {
+        if (crewsSpokenFor && bm != null && bm.getPostsWithheld() > 0) {
             posts = posts.clone();
             for (JobType job : JobType.values()) posts[WageBand.of(job).ordinal()] += bm.getPostsWithheld(job);
         }
@@ -461,7 +510,7 @@ public abstract class Sector {
             if (wanted[b] > 0) fillable += Math.min(wanted[b], Math.max(0, spare[b]));
         }
         // The lowest band nobody can fill is the one named: it is the one the fill runs out of first.
-        return new Staffing(fillable / total, wanted, spare, above, comeFor);
+        return new Staffing(fillable / total, wanted, spare, above, comeFor, this, t, Math.max(1, count));
     }
 
     /**

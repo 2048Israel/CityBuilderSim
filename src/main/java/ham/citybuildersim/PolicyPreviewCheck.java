@@ -153,6 +153,13 @@ public class PolicyPreviewCheck {
             // makes a loss through month 63: sections 6 and 7 are about the bank's profit tax, and there is none to preview. The
             // fixture measures the Policy tab's previews, not the credit cycle, so no sector borrows a works the town cannot build.
             g.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
+            // LD1 (2026-10-31): nor does Freight build a Rail Depot. The staffing gate held it on main ("the city could staff 26% of a
+            // Rail Depot; it wants 80%") and the refused posts priced into the band's wage now let it through: it borrows $185M from the
+            // bank by month 61, loses $1.3M a month on it (net income -544k, -1,280k, -1,382k in months 61 to 63, its cash nil) and the
+            // loan is written off at $740k a month from month 62, so the bank's profit is a loss in months 61 to 64 (-2,113k, -5,363k,
+            // -1,693k, -4,546k) and again from month 73: bankTaxUnder() is nothing in the month section 6 reads. Same cause as the Lime
+            // Kiln above and the same remedy; the previews are the fixture's subject, not the credit cycle.
+            g.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);

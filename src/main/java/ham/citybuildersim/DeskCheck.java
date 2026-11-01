@@ -1139,14 +1139,23 @@ public class DeskCheck {
         dm.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, dm.getPolicyRate() + .05));
         g.strikeTheCurve();
         press(g);
-        // The loss line: sold at par at the higher rates, then the dial cut four points, so it trades over what it is carried at (the first line, sold lower, is still under).
+        // The loss line: sold at par at the higher rates, then the dial cut to nothing, last (below), so it trades over what it is carried at (the first line, sold lower, is still under).
         LongTermBond loss = bankHeldAtPar(g, 20_000);
-        dm.setPolicyRate(Math.max(DebtManager.MIN_POLICY_RATE, dm.getPolicyRate() - .04));
-        g.strikeTheCurve();
-        press(g);
         // The D$ moves after the dollar line was sold, and the month ends on the new rate: the dollar line is valued at the month's actual D$.
         fx.pinRate(1.4);
         press(g);
+        /*
+         * ...AND THE DIAL IS CUT LAST (LD1), the month before it is read. It was cut four points straight after the loss line was
+         * sold and two months passed before the lines were read, which assumed the curve stays where the cut put it. The month's
+         * close moves it by itself, toward the rule: in the city whose wages the refused posts move the rule is 23% to the dial's 4%
+         * and the two-year par yield, 8.77% when the line was sold and 8.17% after the cut, was back at 8.80% two months on - the
+         * line's yield over its coupon, worth 99.85 per 100 against the 100 it is carried at (on main the same drift left it
+         * at 100.50). Cut and struck at the end, the curve is the cut's. And to the floor, not four points: the rule pulls the
+         * expected path back up (the two-year yield fell 0.6 points for a four-point cut), and read at once the line stood at
+         * 99.97 per 100 against the 100 it is carried at; to the floor it is 101.2.
+         */
+        dm.setPolicyRate(DebtManager.MIN_POLICY_RATE);
+        g.strikeTheCurve();
         g.setCashForTest(Founding.WEALTHY_CASH);
         if (usd == null) return;
 
