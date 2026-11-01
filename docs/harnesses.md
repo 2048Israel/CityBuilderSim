@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**167 harness files, 18,274 labelled assertions.** AllChecks runs 167 of them.
+**167 harness files, 18,301 labelled assertions.** AllChecks runs 167 of them.
 
 ## Which harnesses read which class
 
@@ -198,7 +198,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Names](map/Names.md) | StaleCheck |
 | [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperMiningCheck, CopperRefiningCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EducationCheck, FloatLinkCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, QuarryingCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, ScaleCheck, SlopeCheck, TreasuryCheck, WoodProductsCheck |
 | [Nations](map/Nations.md) | CurrencyRegimeCheck, GlobeCheck, InterestAbroadCheck, LongPlaytest, NationsCheck, NewGameCheck, PriceLevelCheck, RankingsCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMoneysCheck |
-| [NationsMap](map/NationsMap.md) | GlobeCheck, MapCheck |
+| [NationsMap](map/NationsMap.md) | GlobeCheck, MapCheck, PartnerCallsCheck |
 | [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, ConstructionControlCheck, InboxCheck, KeptCheck, LandmassCheck, LongPlaytest, PlaytestFixCheck, SaveSlotCheck |
 | [Offending](map/Offending.md) | **none** |
 | [Oil](map/Oil.md) | BuildingDataCheck, EarthFoundingCheck, LongPlaytest, MapCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryViewCheck, SaveFileCheck, SectorBooksCheck, WellCheck |
@@ -313,7 +313,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
 | [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandNetCheck, JunctionCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
-| [WorldData](map/WorldData.md) | GlobeCheck, InterestAbroadCheck, MapCheck, NationsCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
+| [WorldData](map/WorldData.md) | GlobeCheck, InterestAbroadCheck, MapCheck, NationsCheck, PartnerCallsCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, RealDollarCheck, SaveFileCheck, SkipReportCheck |
 | [WorldMarket](map/WorldMarket.md) | GlobeCheck, InterestAbroadCheck, PartnerCallsCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, WorldMarketCheck, WorldMoneysCheck |
 | [WorldMeasures](map/WorldMeasures.md) | RankingsCheck, WorldMeasuresCheck |
@@ -16540,11 +16540,12 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L690 fixture: somebody finished that month
   - L692 a temporary directory for the save:
 
-## PartnerCallsCheck.java - 63 labelled assertions
+## PartnerCallsCheck.java - 90 labelled assertions
 
 > The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by
-> kind of cargo, CallPartners' draw of a nation for a call, the boats' exits (an offing per bearing) and the trains' land partners. The map
-> (ui/MapView) draws them in a later slice; nothing in the model's month reads any of it, so no trace moves.
+> kind of cargo, CallPartners' draw of a nation for a call, the boats' exits (an offing per bearing) and the trains' land partners, and (slice U)
+> what the map draws of them: a boat's or a train's words, and the forks of a lane at the offing. The map (ui/MapView) draws them from those;
+> nothing in the model's month reads any of it, so no trace moves.
 > 
 > <p>WHY. The map drew every boat out of the offing the way its route went and every train in from the one gateway, whoever the cargo was
 > for; the month's trade by partner (WN3) says exactly who bought what. A call now carries the nation it is bound for, drawn by the tonnes
@@ -16553,79 +16554,107 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > <p>What this has to prove:
 > <ol>
->   <li>PARTNERTRADE BY CARGO: the month's tonnes by kind of cargo add, per direction and nation, to the month's tonnes of the goods that
 > ...
 
-- **L154 1. PartnerTrade's month tonnes by kind of cargo**
-  - L161 fixture: two goods of every kind of cargo, and a good that ships in none
-  - L189 the month's tonnes of a kind of cargo are its goods' tonnes by nation, each good's units over its units to the tonne, out and in
-  - L196 ...the kinds add, per direction and nation, to the month's tonnes of the goods that have a cargo: the good with none is in the month's tonnes and in no kind
-  - L213 ...through State and back, and through Gson as a save is, equal to the bit
-  - L230 ...a save without them, or with the wrong length or a figure that is not a number, restores none, and the rest of the month as it was
-  - L244 ...cleared at the month's turn: a month later holds that month's tonnes alone, and the snapshot published before is not written to
-- **L252 2. pick() draws a nation by the month's tonnes of the call's kind**
-  - L264 two nations 3 to 1 in dry bulk exports are drawn 3 to 1 for a bulker leaving, within
-  - L266 ...a nation with none of that cargo is never drawn, though it has other cargo, or none at all
-  - L268 ...the direction is the call's: a bulker coming in draws the nation the dry bulk imports come from, and only that one
-  - L270 ...the nation with the liquid exports is the only one a tanker leaving draws
-  - L274 ...the boxes draw on both ways at once (exports 1,000 t, imports 3,000 t is one in four and three in four), the same nation either way for a hash
-  - L280 a kind with no tonnes the month falls back on the direction's tonnes of every kind by nation, those of the good with no cargo too
-  - L283 ...in the direction the call is in: the imports
-  - L285 ...a hash at either end of its range draws the first nation with tonnes and the last, never one with none or none at all
-  - L294 NONE draws no one, nor does a month with no trade at all; no snapshot is NONE
-  - L298 a nation's bearing is the great circle's compass degrees from the city to its node: east 90, north 0, south 180, west 270
-  - L301 the reach by land is WorldMarket.MAX_LAND_KM from the city: the near nodes, not the far one, and the host wherever its node is
-  - L307 ...a node with no place has no bearing and no reach by land, and can still be drawn
-  - L311 a nation's name is the snapshot's
-  - L312 a map keeps the partners until the snapshot or the place moves: matches() says whether they are its
-- **L408 3. with no partners every call, arrival, route and position is what it was**
-  - L415 fixture: a month of calls, most on the coast's routes and some with none
-  - L417 with NONE (the shorter forms and null too) the calls are the old schedule's, one for one: kind, class, direction, route, arrival, no partner, no exit
-  - L433 ...every boat's place, heading and fade is the same on the routes that have exits as on the routes that have none, at the times of its whole visit
-  - L436 ...and a frame on the first berth's legs finds the same boats
-  - L443 the same inputs twice make the same partners and exits, call for call
-  - L450 ...and a partner changes no call's kind, class, direction, route or arrival: the hash it is drawn by is its own
-  - L461 the month's calls draw by tonnes: dry bulk leaving goes to the nation with three quarters of the tonnes in three quarters of its calls (
-- **L470 4. an offing per bearing: exits on a mask of the sea**
-  - L474 the compass in the plane: east is +x, north is -y (y runs south), south +y, west -x
-  - L485 fixture: the open sea's routes have every one of the 72 exits open at ABYSS_M
-  - L486 fixture: the island beside the first offing changes none of the ways (it takes away the spread of the routes that share the lane, whose fan would touch it; t...
-  - L513 EXITS: a bearing into the island is closed (0), whatever the sampling lets by a leg's end
-  - L514 ...every open exit's run keeps to the sea on its bearing and SPREAD_DEG either side, is at least EXIT_LEAST_M and at most ABYSS_M
-  - L515 ...a bearing whose sea and turned legs are clear for ABYSS_M is open at the full ABYSS_M, and some are open short of it (the island's near edge)
-  - L518 a joined route has its lane's exits, the same array, found once (it joined the first; the third has an offing of its own)
-  - L520 ...a straight lane (no sea within reach) has none
-  - L523 routes kept keep their exits, the same objects, and the rest routed onto them are those found whole, exits too, a joined one sharing the kept lane's
-  - L543 a call whose partner's bearing is closed leaves on the open exit nearest it (a plain scan of all 72 says which), not on the closed one
-  - L544 ...one whose bearing is open leaves on it
-  - L545 ...a call on a straight lane or with no route has its partner and no exit; every call has the partner the east nation is
-  - L550 ...a partner whose node has no place has no bearing, and its calls leave by no exit
-  - L589 fixture: boats of
-  - L590 a boat rides its route's own points to the offing, unturned and whole
-  - L591 ...then leaves the offing on its exit's bearing, turned by the call's spread about the offing: its place is the exit's run turned, its heading within the spr...
-  - L592 ...fading from the offing (whole there) to the exit's end (nothing), and shows less the farther it goes
-  - L593 ...coming in it heads the other way, in the same places
-  - L594 ...and every place on the exit's run keeps to the sea
-  - L631 fixture: a rectangle beside the offing that the route's legs do not cross and its exits' box does
-  - L638 fixture: calls on the route, all bound east and leaving on due east
-  - L654 frame() on it returns exactly the boats position() puts in the rectangle, at
-- **L662 5. trains go by land: only the host and the nodes within MAX_LAND_KM**
-  - L671 fixture: nation 1 and 4 within MAX_LAND_KM, 2 and 5 beyond it, the host (3) far and the one it always may reach
-  - L675 pick() by land draws the land nations by their tonnes, one to two between nation 1 and the host, and never the far one
-  - L678 ...a boat may draw the far one: half of the dry bulk exports are to nation 2
-  - L680 ...coming in by land only the near seller is drawn (the far one sold 1,000 t of the 4,000)
-  - L682 a kind with no tonnes falls back on the exports of every kind by land: the host and the near nation, not the far ones with the good that has no cargo
-  - L686 ...and where only a far nation has any, a train draws no one though a boat draws it
-  - L709 trains draw only land partners: outbound hoppers go to nation 1 and the host in one to two, never to the far nations (
-  - L711 ...inbound ones come from the near seller alone, the far one never boards
-  - L713 ...and a partner changes no train's kind, direction, route or arrival, and the schedule without them has none
-  - L725 a frame's trains carry their partners, the same calls as the schedule lists, and the same inputs twice make the same ones
-- **L753 6. the plane's compass is the Earth's**
-  - L761 from the spot a world is centred on, a step along (sin b, -cos b) has the bearing b to a degree for b every 45 degrees, in Rotterdam, Perth, Quito and Reykja...
-  - L775 ...and from the founded city's own site on the Earth file, within the same degree (worst
-- **L783 7. at 10 billion a frame's boats with exits and partners over 196 nations**
-  - L846 fixture: boats on every view, and boats that leave by an exit among them
-  - L847 a frame's boats with exits and partners over 196 nations take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and 8 districts
+- **L166 1. PartnerTrade's month tonnes by kind of cargo**
+  - L173 fixture: two goods of every kind of cargo, and a good that ships in none
+  - L201 the month's tonnes of a kind of cargo are its goods' tonnes by nation, each good's units over its units to the tonne, out and in
+  - L208 ...the kinds add, per direction and nation, to the month's tonnes of the goods that have a cargo: the good with none is in the month's tonnes and in no kind
+  - L225 ...through State and back, and through Gson as a save is, equal to the bit
+  - L242 ...a save without them, or with the wrong length or a figure that is not a number, restores none, and the rest of the month as it was
+  - L256 ...cleared at the month's turn: a month later holds that month's tonnes alone, and the snapshot published before is not written to
+- **L264 2. pick() draws a nation by the month's tonnes of the call's kind**
+  - L276 two nations 3 to 1 in dry bulk exports are drawn 3 to 1 for a bulker leaving, within
+  - L278 ...a nation with none of that cargo is never drawn, though it has other cargo, or none at all
+  - L280 ...the direction is the call's: a bulker coming in draws the nation the dry bulk imports come from, and only that one
+  - L282 ...the nation with the liquid exports is the only one a tanker leaving draws
+  - L286 ...the boxes draw on both ways at once (exports 1,000 t, imports 3,000 t is one in four and three in four), the same nation either way for a hash
+  - L292 a kind with no tonnes the month falls back on the direction's tonnes of every kind by nation, those of the good with no cargo too
+  - L295 ...in the direction the call is in: the imports
+  - L297 ...a hash at either end of its range draws the first nation with tonnes and the last, never one with none or none at all
+  - L306 NONE draws no one, nor does a month with no trade at all; no snapshot is NONE
+  - L310 a nation's bearing is the great circle's compass degrees from the city to its node: east 90, north 0, south 180, west 270
+  - L313 the reach by land is WorldMarket.MAX_LAND_KM from the city: the near nodes, not the far one, and the host wherever its node is
+  - L319 ...a node with no place has no bearing and no reach by land, and can still be drawn
+  - L323 a nation's name is the snapshot's
+  - L324 a map keeps the partners until the snapshot or the place moves: matches() says whether they are its
+- **L420 3. with no partners every call, arrival, route and position is what it was**
+  - L427 fixture: a month of calls, most on the coast's routes and some with none
+  - L429 with NONE (the shorter forms and null too) the calls are the old schedule's, one for one: kind, class, direction, route, arrival, no partner, no exit
+  - L445 ...every boat's place, heading and fade is the same on the routes that have exits as on the routes that have none, at the times of its whole visit
+  - L448 ...and a frame on the first berth's legs finds the same boats
+  - L455 the same inputs twice make the same partners and exits, call for call
+  - L462 ...and a partner changes no call's kind, class, direction, route or arrival: the hash it is drawn by is its own
+  - L473 the month's calls draw by tonnes: dry bulk leaving goes to the nation with three quarters of the tonnes in three quarters of its calls (
+- **L482 4. an offing per bearing: exits on a mask of the sea**
+  - L486 the compass in the plane: east is +x, north is -y (y runs south), south +y, west -x
+  - L497 fixture: the open sea's routes have every one of the 72 exits open at ABYSS_M
+  - L498 fixture: the island beside the first offing changes none of the ways (it takes away the spread of the routes that share the lane, whose fan would touch it; t...
+  - L525 EXITS: a bearing into the island is closed (0), whatever the sampling lets by a leg's end
+  - L526 ...every open exit's run keeps to the sea on its bearing and SPREAD_DEG either side, is at least EXIT_LEAST_M and at most ABYSS_M
+  - L527 ...a bearing whose sea and turned legs are clear for ABYSS_M is open at the full ABYSS_M, and some are open short of it (the island's near edge)
+  - L530 a joined route has its lane's exits, the same array, found once (it joined the first; the third has an offing of its own)
+  - L532 ...a straight lane (no sea within reach) has none
+  - L535 routes kept keep their exits, the same objects, and the rest routed onto them are those found whole, exits too, a joined one sharing the kept lane's
+  - L555 a call whose partner's bearing is closed leaves on the open exit nearest it (a plain scan of all 72 says which), not on the closed one
+  - L556 ...one whose bearing is open leaves on it
+  - L557 ...a call on a straight lane or with no route has its partner and no exit; every call has the partner the east nation is
+  - L562 ...a partner whose node has no place has no bearing, and its calls leave by no exit
+  - L601 fixture: boats of
+  - L602 a boat rides its route's own points to the offing, unturned and whole
+  - L603 ...then leaves the offing on its exit's bearing, turned by the call's spread about the offing: its place is the exit's run turned, its heading within the spr...
+  - L604 ...fading from the offing (whole there) to the exit's end (nothing), and shows less the farther it goes
+  - L605 ...coming in it heads the other way, in the same places
+  - L606 ...and every place on the exit's run keeps to the sea
+  - L643 fixture: a rectangle beside the offing that the route's legs do not cross and its exits' box does
+  - L650 fixture: calls on the route, all bound east and leaving on due east
+  - L666 frame() on it returns exactly the boats position() puts in the rectangle, at
+- **L674 5. trains go by land: only the host and the nodes within MAX_LAND_KM**
+  - L683 fixture: nation 1 and 4 within MAX_LAND_KM, 2 and 5 beyond it, the host (3) far and the one it always may reach
+  - L687 pick() by land draws the land nations by their tonnes, one to two between nation 1 and the host, and never the far one
+  - L690 ...a boat may draw the far one: half of the dry bulk exports are to nation 2
+  - L692 ...coming in by land only the near seller is drawn (the far one sold 1,000 t of the 4,000)
+  - L694 a kind with no tonnes falls back on the exports of every kind by land: the host and the near nation, not the far ones with the good that has no cargo
+  - L698 ...and where only a far nation has any, a train draws no one though a boat draws it
+  - L721 trains draw only land partners: outbound hoppers go to nation 1 and the host in one to two, never to the far nations (
+  - L723 ...inbound ones come from the near seller alone, the far one never boards
+  - L725 ...and a partner changes no train's kind, direction, route or arrival, and the schedule without them has none
+  - L737 a frame's trains carry their partners, the same calls as the schedule lists, and the same inputs twice make the same ones
+- **L765 6. the plane's compass is the Earth's**
+  - L773 from the spot a world is centred on, a step along (sin b, -cos b) has the bearing b to a degree for b every 45 degrees, in Rotterdam, Perth, Quito and Reykja...
+  - L787 ...and from the founded city's own site on the Earth file, within the same degree (worst
+- **L795 7. at 10 billion a frame's boats with exits and partners over 196 nations**
+  - L858 fixture: boats on every view, and boats that leave by an exit among them
+  - L859 a frame's boats with exits and partners over 196 nations take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and 8 districts
+- **L880 8. a boat's or a train's words name its partner and the way it goes**
+  - L889 a boat going out laden with exports says its class and 'to' its partner; one coming in with imports 'from' it
+  - L893 ...a feeder, which carries boxes both ways, says the nation alone, whichever way its call is flagged
+  - L898 a train says its kind and the nation the same way: 'to' going out, 'from' coming in, the nation alone for the boxes
+  - L905 with no partner the class alone: a call with none, NONE, a nation the snapshot has no name for, a null call says nothing
+  - L924 ...in a month's calls each says what pick() drew it by: the bulkers leaving go to the nation they sell to, those coming in come from the one they buy of, the...
+  - L941 ...and a month's trains: the hoppers leaving to the nation they sell to, those coming in from the one they buy of, the intermodal ones the boxes' (
+- **L1033 9. the lane forks at the offing into the exits this month's partners take**
+  - L1057 seaPartners(kind) is exactly the nations pick() draws for the kind, going out or coming in (a direction with none of the kind falls back on every kind's)
+  - L1058 ...biggest first, the lower number first on a tie: dry bulk 1 (100), 2 (50), 4 (30), 5 (20); the boxes 1 and 2 at 25 each
+  - L1059 ...none for NONE, an empty month and a null kind; a new array each time
+  - L1069 seaShares(kind) are those nations' shares of the kind's tonnes in the same order, adding to 1, never rising: dry bulk .50, .25, .15, .10 of the 200 t
+  - L1087 a route's forks are exactly the exits whose nations' shares reach FORK_SHARE (dry bulk: nations 1, 2, 4, 5 at .50, .25, .15, .10 - not 3 - and 1 and 5 share ...
+  - L1090 ...a route whose east the island closes forks on the open exit nearest it, not on east; the route on the open sea forks on it
+  - L1092 ...a joined route has its lane's forks, and a straight lane none, nor a route that does not exist
+  - L1101 with NONE, with routes that have no exits, and with partners that have no bearing there are no forks at all, and none is drawn
+  - L1106 the forks on a rectangle that covers the map are the legs of the forks of each offing, each once:
+  - L1115 two routes that share an offing draw its forks once: the joined pair's
+  - L1121 ...a rectangle round another offing has that offing's forks alone
+  - L1127 ...one only a fork's far end is in draws that fork, its offing outside it; one far from every offing draws none
+  - L1137 an offing that a dry bulk berth's lane and a tanker berth's share forks both their partners' exits, once each: the tanker's (nation 3 and, in the direction i...
+  - L1150 fixture: six nations on 0, 60, 120, 180, 180 and 240 degrees with 700, 50, 40, 30, 30 and 150 t of dry bulk: shares .70, .05 (FORK_SHARE), .04, two of .03, .15
+  - L1152 an exit under FORK_SHARE has no fork (120, at .04), one at it has (60, at .05), and two nations on one exit add (180: .03 and .03 make .06)
+  - L1163 ...though a boat bound for the small partner still leaves the offing on its own exit (120), off the drawn forks, as every partner's does
+  - L1175 with
+  - L1187 ...and where shares tie (
+  - L1203 an offing shared by a dry bulk lane and a tanker lane draws both kinds' forks,
+  - L1316 fixture: forks on every view
+  - L1317 a frame's forks take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and 8 districts
 
 ## PassThroughCheck.java - 52 labelled assertions
 

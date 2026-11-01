@@ -56,6 +56,15 @@ import java.util.List;
  * route's own, byte for byte. The partner is drawn only for a call whose boat
  * is on the water, so a frame stays as cheap.
  *
+ * FORKS (WN7, slice U). The lanes the map strokes fork at the offing into the
+ * exits the month's big partners take: forksOf() gives a route the exits
+ * exitFor() finds for the nations with tonnes of its kind of cargo
+ * (CallPartners.seaPartners()) that carry at least FORK_SHARE of them between
+ * them, the MAX_FORKS largest at most, and forks() the legs of them on a
+ * rectangle, each offing's once whatever routes share it, indexed by district
+ * cell, so a frame touches only the offings in view, no route and no call.
+ * Pure in the month's partners; with none, nothing.
+ *
  * CHEAP TO COUNT, BUILT ONLY WHEN ASKED. The month's calls are counted by
  * kind, direction and class when the schedule is made (callCount()); each
  * call's route and arrival are worked out the first time a frame or the
@@ -177,6 +186,27 @@ public final class BoatSchedule {
     /** One (kind, class, direction) of the month: its seed and its calls. */
     private record Group(Ports.Cargo cargo, Ports.Ship ship, boolean inbound, long seed, int calls) { }
 
+    /** An offing that forks (WN7): where it is, in plots, and the legs of its forks - four doubles each, the offing then the exit's end - by bearing from north. */
+    private record Offing(double x, double y, double[] legs) { }
+
+    /**
+     * The least share of a kind's tonnes an exit must carry to be drawn as a fork: 0.05, an exit a twentieth of the kind's partners' tonnes take.
+     * The Earth's 196 nations stand on 47 to 61 of the 72 bearings from a port (thirteen measured), so every bearing with a partner on it drawn
+     * would be a starburst; a boat bound for a small partner still leaves the offing on its exit and sails off the drawn forks, as a partner under
+     * TradeLanes.MIN_LANE has no lane on the Earth map.
+     */
+    public static final double FORK_SHARE = 0.05;
+
+    /**
+     * The most forks a route's kind of cargo draws at its offing: 8, the largest shares kept, the smaller bearing on a tie - a bound on the
+     * strokes, like TradeLanes' 16 (BUCKETS), though at 0.05 a share (FORK_SHARE) at most 20 exits qualify. An offing draws the union of its routes'
+     * forks, so at most MAX_FORKS for each of the four kinds of cargo.
+     */
+    public static final int MAX_FORKS = 8;
+
+    private static final int[] NO_BEARINGS = new int[0];
+    private static final double[] NO_LEGS = new double[0];
+
     private final int month;
     private final List<Route> routes;
     private final List<Group> groups;
@@ -196,6 +226,14 @@ public final class BoatSchedule {
 
     /** Each call's partner and exit once a frame or the list has drawn it (callAt()); null until then, and always with no partners. */
     private int[] drawn;
+
+    /* Built when asked (WN7, slice U): each route's forks (forksOf()), by route and, so that the routes of one lane work them out once, by exits array and kind of cargo; the offings that fork, by district cell (forks()). */
+    private int[][] forkCache;
+    private java.util.IdentityHashMap<double[], int[][]> forkMemo;
+    private Offing[] offings;
+    private java.util.Map<Long, int[]> offingIndex;
+    private int[] offingSeen;
+    private int offingFrames;
 
     private BoatSchedule(int month, List<Route> routes, List<Group> groups, CallPartners partners) {
         this.month = month;
@@ -460,6 +498,148 @@ public final class BoatSchedule {
             }
         }
         return best < 0 ? -1 : best * SeaRoutes.BEARING_STEP;
+    }
+
+    /* =====================================================================
+       THE FORKS AT THE OFFING (WN7, slice U)
+       ===================================================================== */
+
+    /**
+     * The exits a route draws as forks: of the nations a ship of the route's kind of cargo can be bound for or from (CallPartners.seaPartners(): those
+     * with tonnes of that kind in either direction, else of every kind, as pick() falls back), each one's share of those tonnes (seaShares()) is added
+     * to the exit exitFor() gives its bearing, so two nations on one exit add; a fork is an exit whose shares add to at least FORK_SHARE, and of those
+     * at most MAX_FORKS are kept, the largest, the smaller bearing on a tie. As compass degrees ascending, a multiple of SeaRoutes.BEARING_STEP each.
+     * Empty for a route without exits, partners without a bearing or none with a share to speak of, and for a schedule without partners.
+     * Boats still leave on every partner's exit (Call.exit()): a small partner's boat just sails off the drawn forks, as a partner under
+     * TradeLanes.MIN_LANE has no lane on the Earth map. Worked out the first time it is asked and kept (the same array every time: never written).
+     */
+    public int[] forksOf(int route) {
+        if (partners == CallPartners.NONE || route < 0 || route >= routes.size()) return NO_BEARINGS;
+        if (forkCache == null) forkCache = new int[routes.size()][];
+        int[] f = forkCache[route];
+        if (f == null) f = forkCache[route] = forksOf(routes.get(route));
+        return f;
+    }
+
+    private int[] forksOf(Route rt) {
+        double[] ex = rt.exits();
+        if (ex == null || ex.length != SeaRoutes.EXITS) return NO_BEARINGS;
+        if (forkMemo == null) forkMemo = new java.util.IdentityHashMap<>();
+        int[][] byKind = forkMemo.computeIfAbsent(ex, k -> new int[Ports.Cargo.values().length][]);
+        Ports.Cargo kind = rt.berth().cargo();
+        int[] f = byKind[kind.ordinal()];
+        if (f == null) {
+            int[] nations = partners.seaPartners(kind);
+            double[] shares = partners.seaShares(kind), byExit = new double[SeaRoutes.EXITS];
+            for (int k = 0; k < nations.length; k++) {
+                int e = exitFor(rt, partners.bearing(nations[k]));
+                if (e >= 0) byExit[e / SeaRoutes.BEARING_STEP] += shares[k];
+            }
+            // The exits over FORK_SHARE, the largest MAX_FORKS of them (the smaller bearing first on a tie), in ascending bearings.
+            int[] big = java.util.stream.IntStream.range(0, byExit.length).filter(k -> byExit[k] >= FORK_SHARE).boxed()
+                    .sorted((a, b) -> byExit[a] == byExit[b] ? Integer.compare(a, b) : Double.compare(byExit[b], byExit[a]))
+                    .limit(MAX_FORKS).mapToInt(Integer::intValue).sorted().toArray();
+            f = new int[big.length];
+            for (int k = 0; k < big.length; k++) f[k] = big[k] * SeaRoutes.BEARING_STEP;
+            byKind[kind.ordinal()] = f;
+        }
+        return f;
+    }
+
+    /**
+     * The forks on the rectangle [x0, x1) x [y0, y1) in plots, as the legs of each in turn - four doubles a fork: the offing's x and y, then the
+     * end of the exit's run - for the routes' offings, each offing's forks once whatever routes share it (the union of their routes' forksOf(), each
+     * kind of cargo's capped at MAX_FORKS already), a fork drawn when its leg's box meets the rectangle. Only the offings in the district cells the
+     * rectangle covers are looked at; empty with no partners. Built on the first ask; for one thread at a time, the screen's.
+     */
+    public double[] forks(long x0, long y0, long x1, long y1) {
+        if (partners == CallPartners.NONE) return NO_LEGS;
+        buildOffings();
+        if (offings.length == 0) return NO_LEGS;
+        int stamp = ++offingFrames, n = 0;
+        long cx0 = Math.floorDiv(x0, World.DISTRICT), cx1 = Math.floorDiv(Math.max(x0, x1 - 1), World.DISTRICT);
+        long cy0 = Math.floorDiv(y0, World.DISTRICT), cy1 = Math.floorDiv(Math.max(y0, y1 - 1), World.DISTRICT);
+        if ((cx1 - cx0 + 1) * (cy1 - cy0 + 1) > offingIndex.size()) {
+            for (java.util.Map.Entry<Long, int[]> e : offingIndex.entrySet()) {
+                long cx = e.getKey() >> 32, cy = (int) (long) e.getKey();
+                if (cx < cx0 || cx > cx1 || cy < cy0 || cy > cy1) continue;
+                for (int o : e.getValue()) {
+                    if (offingSeen[o] == stamp) continue;
+                    offingSeen[o] = stamp;
+                    n = forksInto(n, offings[o], x0, y0, x1, y1);
+                }
+            }
+        } else {
+            for (long cx = cx0; cx <= cx1; cx++) {
+                for (long cy = cy0; cy <= cy1; cy++) {
+                    int[] os = offingIndex.get(key(cx, cy));
+                    if (os == null) continue;
+                    for (int o : os) {
+                        if (offingSeen[o] == stamp) continue;
+                        offingSeen[o] = stamp;
+                        n = forksInto(n, offings[o], x0, y0, x1, y1);
+                    }
+                }
+            }
+        }
+        return n == 0 ? NO_LEGS : java.util.Arrays.copyOf(forkOut, n);
+    }
+
+    /** The legs a frame has gathered, grown as needed and kept (a frame allocates only the copy it hands out). */
+    private double[] forkOut = new double[64];
+
+    /** An offing's forks whose legs' boxes meet the rectangle, added to the frame's after its first n doubles; the new count. */
+    private int forksInto(int n, Offing o, long x0, long y0, long x1, long y1) {
+        double[] legs = o.legs();
+        for (int i = 0; i < legs.length; i += 4) {
+            double ex = legs[i + 2], ey = legs[i + 3];
+            if (Math.max(o.x(), ex) < x0 || Math.min(o.x(), ex) >= x1 || Math.max(o.y(), ey) < y0 || Math.min(o.y(), ey) >= y1) continue;
+            if (n + 4 > forkOut.length) forkOut = java.util.Arrays.copyOf(forkOut, forkOut.length * 2);
+            System.arraycopy(legs, i, forkOut, n, 4);
+            n += 4;
+        }
+        return n;
+    }
+
+    /**
+     * The offings that fork, made once from the routes: each distinct offing point of a route with forks, with the union of the forks of the
+     * routes that share it (a lane's kinds of cargo each take their own partners' exits), and indexed by the district cells its longest fork reaches.
+     */
+    private void buildOffings() {
+        if (offings != null) return;
+        java.util.Map<List<Double>, double[]> runs = new java.util.LinkedHashMap<>();
+        for (int r = 0; r < routes.size(); r++) {
+            int[] f = forksOf(r);
+            if (f.length == 0) continue;
+            Route rt = routes.get(r);
+            double[] at = runs.computeIfAbsent(List.of(rt.xs()[rt.offing()], rt.ys()[rt.offing()]), p -> new double[SeaRoutes.EXITS]);
+            for (int e : f) at[e / SeaRoutes.BEARING_STEP] = Math.max(at[e / SeaRoutes.BEARING_STEP], rt.exitRun(e));
+        }
+        offings = new Offing[runs.size()];
+        java.util.Map<Long, List<Integer>> cells = new java.util.HashMap<>();
+        int i = 0;
+        for (java.util.Map.Entry<List<Double>, double[]> e : runs.entrySet()) {
+            double ox = e.getKey().get(0), oy = e.getKey().get(1), longest = 0;
+            double[] legs = new double[SeaRoutes.EXITS * 4];
+            int n = 0;
+            for (int k = 0; k < SeaRoutes.EXITS; k++) {
+                double run = e.getValue()[k];
+                if (!(run > 0)) continue;
+                legs[n++] = ox;
+                legs[n++] = oy;
+                legs[n++] = ox + EXIT_X[k] * run;
+                legs[n++] = oy + EXIT_Y[k] * run;
+                longest = Math.max(longest, run);
+            }
+            offings[i] = new Offing(ox, oy, java.util.Arrays.copyOf(legs, n));
+            long cx0 = Math.floorDiv((long) Math.floor(ox - longest), World.DISTRICT), cx1 = Math.floorDiv((long) Math.floor(ox + longest), World.DISTRICT);
+            long cy0 = Math.floorDiv((long) Math.floor(oy - longest), World.DISTRICT), cy1 = Math.floorDiv((long) Math.floor(oy + longest), World.DISTRICT);
+            for (long cx = cx0; cx <= cx1; cx++) for (long cy = cy0; cy <= cy1; cy++) cells.computeIfAbsent(key(cx, cy), x -> new ArrayList<>()).add(i);
+            i++;
+        }
+        offingIndex = new java.util.HashMap<>();
+        for (java.util.Map.Entry<Long, List<Integer>> e : cells.entrySet()) offingIndex.put(e.getKey(), e.getValue().stream().mapToInt(Integer::intValue).toArray());
+        offingSeen = new int[offings.length];
     }
 
     /* =====================================================================

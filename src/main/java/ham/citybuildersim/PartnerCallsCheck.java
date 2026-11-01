@@ -14,8 +14,9 @@ import java.util.Set;
 
 /**
  * The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by
- * kind of cargo, CallPartners' draw of a nation for a call, the boats' exits (an offing per bearing) and the trains' land partners. The map
- * (ui/MapView) draws them in a later slice; nothing in the model's month reads any of it, so no trace moves.
+ * kind of cargo, CallPartners' draw of a nation for a call, the boats' exits (an offing per bearing) and the trains' land partners, and (slice U)
+ * what the map draws of them: a boat's or a train's words, and the forks of a lane at the offing. The map (ui/MapView) draws them from those;
+ * nothing in the model's month reads any of it, so no trace moves.
  *
  * <p>WHY. The map drew every boat out of the offing the way its route went and every train in from the one gateway, whoever the cargo was
  * for; the month's trade by partner (WN3) says exactly who bought what. A call now carries the nation it is bound for, drawn by the tonnes
@@ -45,6 +46,15 @@ import java.util.Set;
  *       TradeLanes.bearingDeg, within a degree, for b every 45 degrees; from a founded city's site too when the Earth file is named.</li>
  *   <li>AT TEN BILLION a frame's boats, on MapCheck's 20,000 lanes with exits and partners over 196 nations, take no more than
  *       BOAT_FRAME_MS on its three views.</li>
+ *   <li>A BOAT AND A TRAIN NAME THEIR PARTNER: the words are the class's or kind's, then " to " the nation for a boat or train going out laden with
+ *       exports, " from " it for one coming in with imports, the nation alone for the boxes, which go both ways; the class alone with no partner,
+ *       none named, or NONE; and in a month's calls and trains each says what pick() drew it by.</li>
+ *   <li>THE LANE FORKS AT THE OFFING: seaPartners(kind) is exactly the nations pick() draws for the kind, biggest first, and seaShares(kind) their
+ *       shares of its tonnes; a route's forks are exactly the exits (by a scan of all 72) whose nations' shares add to at least FORK_SHARE - an
+ *       exit under it has none, two nations on one exit add, more than MAX_FORKS over it keep the largest, the smaller bearing on a tie - none for a
+ *       route without exits, for NONE, or for partners with no bearing, and a small partner's boat still leaves on its own exit; forks() on a
+ *       rectangle gives each offing's once whatever routes share it, the union of their kinds' (each capped already); and a frame of them takes
+ *       no more than BOAT_FRAME_MS.</li>
  * </ol>
  */
 public class PartnerCallsCheck {
@@ -78,6 +88,8 @@ public class PartnerCallsCheck {
         trainsByLand();
         compassOnTheEarth();
         frameAtTenBillion();
+        wordsOfACall(c);
+        forksAtTheOffing(c);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -845,6 +857,464 @@ public class PartnerCallsCheck {
                 + " without them %.3f, %.3f, %.3f%n", with.callCount(), lanes.size(), best[0], seen[0], best[1], seen[1], best[2], seen[2], plainBest[0], plainBest[1], plainBest[2]);
         check("fixture: boats on every view, and boats that leave by an exit among them", seen[0] > 0 && seen[1] > 0 && seen[2] > 0 && exiting[0] + exiting[1] + exiting[2] > 0);
         check("a frame's boats with exits and partners over 196 nations take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and 8 districts",
+                Timing.within(best[0], MapCheck.BOAT_FRAME_MS) && Timing.within(best[1], MapCheck.BOAT_FRAME_MS) && Timing.within(best[2], MapCheck.BOAT_FRAME_MS));
+    }
+
+    /* =====================================================================
+       8. A BOAT AND A TRAIN NAME THEIR PARTNER
+       ===================================================================== */
+
+    /** The middle dot the words carry between a class and its partner. */
+    static final String DOT = " · ";
+
+    /** A month's trade at sea both ways: dry bulk out and in, and boxes (which count one way and carry both). */
+    static Ports tradeBothWays(double dryOut, double dryIn, double boxes) {
+        Ports p = new Ports();
+        p.beginMonth();
+        p.tally(goodOf(Ports.Cargo.DRY_BULK, 0), dryIn, dryOut, 1);
+        p.tally(goodOf(Ports.Cargo.CONTAINER, 0), boxes, boxes, 1);
+        return p;
+    }
+
+    static void wordsOfACall(Coast c) {
+        out.println("\n--- 8. a boat's or a train's words name its partner and the way it goes ---");
+        int n = 5;
+        String[] names = { "Aland", "Bland", "Cland", "Dland", "Eland" };
+        Good dry = goodOf(Ports.Cargo.DRY_BULK, 0);
+        PartnerTrade pt = trade(n, 9, new Row(dry, nat(n, 100), nat(n, 0, 50)));
+        pt.setPlace(0, 0, names);
+        CallPartners p = CallPartners.of(pt.snapshot(), 0, 0, NODE_LAT, NODE_LON, 1);
+        BoatSchedule.Call goingOut = new BoatSchedule.Call(Ports.Cargo.DRY_BULK, Ports.Ship.CAPESIZE, false, 0, 0.5, 2, -1);
+        BoatSchedule.Call coming = new BoatSchedule.Call(Ports.Cargo.DRY_BULK, Ports.Ship.PANAMAX, true, 0, 0.5, 1, -1);
+        check("a boat going out laden with exports says its class and 'to' its partner; one coming in with imports 'from' it",
+                p.words(goingOut).equals(Ports.Ship.CAPESIZE.label() + DOT + "to Bland") && p.words(coming).equals(Ports.Ship.PANAMAX.label() + DOT + "from Aland"));
+        BoatSchedule.Call boxesIn = new BoatSchedule.Call(Ports.Cargo.CONTAINER, Ports.Ship.FEEDER, true, 0, 0.5, 3, 90);
+        BoatSchedule.Call boxesOut = new BoatSchedule.Call(Ports.Cargo.CONTAINER, Ports.Ship.FEEDER, false, 0, 0.5, 3, -1);
+        check("...a feeder, which carries boxes both ways, says the nation alone, whichever way its call is flagged",
+                p.words(boxesIn).equals(Ports.Ship.FEEDER.label() + DOT + "Cland") && p.words(boxesOut).equals(p.words(boxesIn)));
+        TrainSchedule.Call hopperOut = new TrainSchedule.Call(TrainSchedule.Kind.HOPPER, false, 0, 0.5, 4);
+        TrainSchedule.Call tankIn = new TrainSchedule.Call(TrainSchedule.Kind.TANK, true, 0, 0.5, 5);
+        TrainSchedule.Call boxTrain = new TrainSchedule.Call(TrainSchedule.Kind.INTERMODAL, true, 0, 0.5, 1);
+        check("a train says its kind and the nation the same way: 'to' going out, 'from' coming in, the nation alone for the boxes",
+                p.words(hopperOut).equals(TrainSchedule.Kind.HOPPER.label() + DOT + "to Dland") && p.words(tankIn).equals(TrainSchedule.Kind.TANK.label() + DOT + "from Eland")
+                        && p.words(boxTrain).equals(TrainSchedule.Kind.INTERMODAL.label() + DOT + "Aland")
+                        && p.words(new TrainSchedule.Call(TrainSchedule.Kind.INTERMODAL, false, 0, 0.5, 1)).equals(p.words(boxTrain)));
+        PartnerTrade bare = trade(n, 9, new Row(dry, nat(n, 100), new double[n]));
+        CallPartners unnamed = CallPartners.of(bare.snapshot(), 0, 0, NODE_LAT, NODE_LON, 1);
+        BoatSchedule.Call noOne = new BoatSchedule.Call(Ports.Cargo.DRY_BULK, Ports.Ship.CAPESIZE, false, 0, 0.5);
+        check("with no partner the class alone: a call with none, NONE, a nation the snapshot has no name for, a null call says nothing",
+                p.words(noOne).equals(Ports.Ship.CAPESIZE.label()) && p.words(new TrainSchedule.Call(TrainSchedule.Kind.HOPPER, false, 0, 0.5)).equals(TrainSchedule.Kind.HOPPER.label())
+                        && CallPartners.NONE.words(goingOut).equals(Ports.Ship.CAPESIZE.label()) && CallPartners.NONE.words(hopperOut).equals(TrainSchedule.Kind.HOPPER.label())
+                        && unnamed.words(goingOut).equals(Ports.Ship.CAPESIZE.label()) && p.words((BoatSchedule.Call) null).isEmpty() && p.words((TrainSchedule.Call) null).isEmpty());
+        // The words are the way the call was drawn: dry bulk exports to nation 1, imports from nation 2, boxes both ways with nation 3.
+        PartnerTrade ways = trade(n, 7, new Row(dry, nat(n, 1000), nat(n, 0, 1000)), new Row(goodOf(Ports.Cargo.CONTAINER, 0), nat(n, 0, 0, 500), nat(n, 0, 0, 500)));
+        ways.setPlace(0, 0, names);
+        CallPartners pw = CallPartners.of(ways.snapshot(), 0, 0, NODE_LAT, NODE_LON, 1);
+        List<BoatSchedule.Call> calls = BoatSchedule.of(7, tradeBothWays(DRY_TONNES, DRY_TONNES, 9e6), c.routes, Ports.BULK_TERMINAL_SHIPS, pw).calls();
+        int outs = 0, ins = 0, boxes = 0;
+        boolean told = true;
+        for (BoatSchedule.Call k : calls) {
+            String want;
+            if (k.cargo() == Ports.Cargo.DRY_BULK && !k.inbound()) { want = k.ship().label() + DOT + "to Aland"; outs++; }
+            else if (k.cargo() == Ports.Cargo.DRY_BULK) { want = k.ship().label() + DOT + "from Bland"; ins++; }
+            else if (k.cargo() == Ports.Cargo.CONTAINER) { want = k.ship().label() + DOT + "Cland"; boxes++; }
+            else continue;
+            told &= pw.words(k).equals(want);
+        }
+        check("...in a month's calls each says what pick() drew it by: the bulkers leaving go to the nation they sell to, those coming in come from the one they buy of, the feeders name the boxes' (" + outs + ", " + ins + ", " + boxes + " calls)",
+                told && outs > 20 && ins > 20 && boxes > 0);
+        List<TrainSchedule.Route> yard = MapCheck.handYard(100, 100);
+        double[] in = new double[Ports.Cargo.values().length], outT = new double[in.length];
+        // Ten hopper trains each way and ten box trains: under TrainSchedule.MOST_A_MONTH together, so each stands once.
+        in[Ports.Cargo.DRY_BULK.ordinal()] = outT[Ports.Cargo.DRY_BULK.ordinal()] = 10 * TrainSchedule.Kind.HOPPER.tonnes();
+        in[Ports.Cargo.CONTAINER.ordinal()] = outT[Ports.Cargo.CONTAINER.ordinal()] = 10 * TrainSchedule.Kind.INTERMODAL.tonnes();
+        int tOut = 0, tIn = 0, tBox = 0;
+        boolean trainsTold = true;
+        for (TrainSchedule.Call k : TrainSchedule.of(7, in, outT, yard, pw).calls()) {
+            String want;
+            if (k.kind() == TrainSchedule.Kind.HOPPER && !k.inbound()) { want = k.kind().label() + DOT + "to Aland"; tOut++; }
+            else if (k.kind() == TrainSchedule.Kind.HOPPER) { want = k.kind().label() + DOT + "from Bland"; tIn++; }
+            else if (k.kind() == TrainSchedule.Kind.INTERMODAL) { want = k.kind().label() + DOT + "Cland"; tBox++; }
+            else continue;
+            trainsTold &= pw.words(k).equals(want);
+        }
+        check("...and a month's trains: the hoppers leaving to the nation they sell to, those coming in from the one they buy of, the intermodal ones the boxes' (" + tOut + ", " + tIn + ", " + tBox + " trains)",
+                trainsTold && tOut > 5 && tIn > 5 && tBox > 0);
+    }
+
+    /* =====================================================================
+       9. THE FORKS AT THE OFFING
+       ===================================================================== */
+
+    /**
+     * A kind's tonnes by nation as pick() draws a boat of it, read off the snapshot with no help from CallPartners: in each direction the kind's own
+     * tonnes if it has any there, else every kind's (the boxes both ways added); the two directions added.
+     */
+    static double[] weights(PartnerTrade.Snapshot s, Ports.Cargo kind) {
+        int n = s.nations();
+        double[] to = s.cargoTonnes(kind, true), from = s.cargoTonnes(kind, false), w = new double[n];
+        if (kind == Ports.Cargo.CONTAINER) {
+            boolean own = sum(to) + sum(from) > 0;
+            for (int i = 0; i < n; i++) w[i] = own ? to[i] + from[i] : s.exportTonnes()[i] + s.importTonnes()[i];
+        } else {
+            boolean ownOut = sum(to) > 0, ownIn = sum(from) > 0;
+            for (int i = 0; i < n; i++) w[i] = (ownOut ? to[i] : s.exportTonnes()[i]) + (ownIn ? from[i] : s.importTonnes()[i]);
+        }
+        return w;
+    }
+
+    /**
+     * The forks of a route held to a plain read of the snapshot: each nation's share of the kind's tonnes (weights() over their sum, the nations with
+     * no bearing in the sum) added to the exit (oracleExit(), a scan of all 72) of its bearing; the exits at FORK_SHARE or more, the MAX_FORKS largest
+     * of them (the smaller bearing first on a tie), ascending.
+     */
+    static int[] expectedForks(BoatSchedule.Route rt, PartnerTrade.Snapshot s, CallPartners p) {
+        if (rt.exits() == null) return new int[0];
+        double[] w = weights(s, rt.berth().cargo()), byExit = new double[SeaRoutes.EXITS];
+        double total = sum(w);
+        for (int i = 0; i < w.length; i++) {
+            if (!(w[i] > 0) || p.bearing(i + 1) < 0) continue;
+            int e = oracleExit(rt.exits(), p.bearing(i + 1));
+            if (e >= 0) byExit[e / SeaRoutes.BEARING_STEP] += w[i] / total;
+        }
+        List<Integer> over = new ArrayList<>();
+        for (int k = 0; k < byExit.length; k++) if (byExit[k] >= BoatSchedule.FORK_SHARE) over.add(k);
+        over.sort((x, y) -> byExit[x] == byExit[y] ? Integer.compare(x, y) : Double.compare(byExit[y], byExit[x]));
+        return over.stream().limit(BoatSchedule.MAX_FORKS).mapToInt(k -> k * SeaRoutes.BEARING_STEP).sorted().toArray();
+    }
+
+    /** The legs forks() should give for some routes: per distinct offing the union of their routes' expected forks, each as {offing x, y, end x, y}. */
+    static Set<List<Double>> expectedLegs(List<BoatSchedule.Route> routes, PartnerTrade.Snapshot s, CallPartners p) {
+        java.util.Map<List<Double>, java.util.TreeSet<Integer>> byOffing = new java.util.HashMap<>();
+        java.util.Map<List<Double>, BoatSchedule.Route> routeAt = new java.util.HashMap<>();
+        for (BoatSchedule.Route rt : routes) {
+            int[] f = expectedForks(rt, s, p);
+            List<Double> at = List.of(rt.xs()[rt.offing()], rt.ys()[rt.offing()]);
+            if (f.length == 0) continue;
+            for (int e : f) byOffing.computeIfAbsent(at, k -> new java.util.TreeSet<>()).add(e);
+            routeAt.putIfAbsent(at, rt);
+        }
+        Set<List<Double>> legs = new HashSet<>();
+        for (java.util.Map.Entry<List<Double>, java.util.TreeSet<Integer>> e : byOffing.entrySet()) {
+            double ox = e.getKey().get(0), oy = e.getKey().get(1);
+            for (int bearing : e.getValue()) {
+                double run = routeAt.get(e.getKey()).exitRun(bearing);
+                legs.add(List.of(ox, oy, ox + BoatSchedule.compassX(bearing) * run, oy + BoatSchedule.compassY(bearing) * run));
+            }
+        }
+        return legs;
+    }
+
+    /** Nations standing 0.1 radian from the city at (0, 0) on the given compass bearings, one each: {latitudes, longitudes}. */
+    static double[][] ringNodes(double... bearings) {
+        double[] lat = new double[bearings.length], lon = new double[bearings.length];
+        double d = 0.1;
+        for (int i = 0; i < bearings.length; i++) {
+            double b = Math.toRadians(bearings[i]);
+            lat[i] = Math.toDegrees(Math.asin(Math.sin(d) * Math.cos(b)));
+            lon[i] = Math.toDegrees(Math.atan2(Math.sin(b) * Math.sin(d), Math.cos(d)));
+        }
+        return new double[][] { lat, lon };
+    }
+
+    /** A schedule of the given routes whose dry bulk goes to nations standing on `bearings`, `weights` tonnes each, and the partners it draws by. */
+    static CallPartners ringPartners(double[] bearings, double[] weights, Good good) {
+        double[][] at = ringNodes(bearings);
+        return CallPartners.of(trade(bearings.length, 7, new Row(good, weights, new double[bearings.length])).snapshot(), 0, 0, at[0], at[1], 1);
+    }
+
+    static Set<List<Double>> legsOf(double[] forks) {
+        Set<List<Double>> out = new HashSet<>();
+        for (int i = 0; i < forks.length; i += 4) out.add(List.of(forks[i], forks[i + 1], forks[i + 2], forks[i + 3]));
+        return out;
+    }
+
+    static void forksAtTheOffing(Coast c) {
+        out.println("\n--- 9. the lane forks at the offing into the exits this month's partners take ---");
+        int n = 5;
+        Good dry = goodOf(Ports.Cargo.DRY_BULK, 0), liq = goodOf(Ports.Cargo.LIQUID, 0), box = goodOf(Ports.Cargo.CONTAINER, 0), gen = goodOf(Ports.Cargo.GENERAL, 0);
+        // Nations 1 and 5 lie due east, 2 north, 3 south, 4 west: dry bulk is sold to 1, 2 and 5 and bought of 4; nation 3 has the other cargo only.
+        PartnerTrade pt = trade(n, 7, new Row(dry, nat(n, 100, 50, 0, 0, 20), nat(n, 0, 0, 0, 30)), new Row(gen, nat(n, 0, 0, 40), new double[n]),
+                new Row(box, nat(n, 25), nat(n, 0, 25)), new Row(liq, nat(n, 0, 0, 60), new double[n]));
+        PartnerTrade.Snapshot s = pt.snapshot();
+        CallPartners p = CallPartners.of(s, 0, 0, NODE_LAT, NODE_LON, 1);
+        // seaPartners(): the nations pick() can draw for a boat of the kind, either way, biggest first.
+        Ports.Cargo[] kinds = Ports.Cargo.values();
+        boolean sameSet = true, ordered = true;
+        for (Ports.Cargo k : kinds) {
+            Set<Integer> drawn = new HashSet<>();
+            for (int i = 0; i < 3000; i++) {
+                drawn.add(p.pick(k, true, false, hash(i)));
+                drawn.add(p.pick(k, false, false, hash(i)));
+            }
+            int[] sea = p.seaPartners(k);
+            Set<Integer> sea1 = new HashSet<>();
+            for (int v : sea) sea1.add(v);
+            sameSet &= drawn.equals(sea1) && sea.length == sea1.size();
+        }
+        int[] dryOrder = p.seaPartners(Ports.Cargo.DRY_BULK), boxOrder = p.seaPartners(Ports.Cargo.CONTAINER);
+        ordered = Arrays.equals(dryOrder, new int[] { 1, 2, 4, 5 }) && Arrays.equals(boxOrder, new int[] { 1, 2 });
+        check("seaPartners(kind) is exactly the nations pick() draws for the kind, going out or coming in (a direction with none of the kind falls back on every kind's)", sameSet);
+        check("...biggest first, the lower number first on a tie: dry bulk 1 (100), 2 (50), 4 (30), 5 (20); the boxes 1 and 2 at 25 each", ordered);
+        check("...none for NONE, an empty month and a null kind; a new array each time", CallPartners.NONE.seaPartners(Ports.Cargo.DRY_BULK).length == 0
+                && CallPartners.of(trade(n, 7).snapshot(), 0, 0, NODE_LAT, NODE_LON, 1).seaPartners(Ports.Cargo.DRY_BULK).length == 0 && p.seaPartners(null).length == 0
+                && p.seaPartners(Ports.Cargo.DRY_BULK) != p.seaPartners(Ports.Cargo.DRY_BULK));
+        boolean sharesOk = true;
+        for (Ports.Cargo k : kinds) {
+            double[] sh = p.seaShares(k);
+            sharesOk &= sh.length == p.seaPartners(k).length && sh.length > 0 && Math.abs(sum(sh) - 1) < 1e-9;
+            for (int i = 1; i < sh.length; i++) sharesOk &= sh[i] <= sh[i - 1];
+        }
+        double[] dryShares = p.seaShares(Ports.Cargo.DRY_BULK);
+        check("seaShares(kind) are those nations' shares of the kind's tonnes in the same order, adding to 1, never rising: dry bulk .50, .25, .15, .10 of the 200 t",
+                sharesOk && dryShares.length == 4 && near(dryShares[0], 0.5) && near(dryShares[1], 0.25) && near(dryShares[2], 0.15) && near(dryShares[3], 0.10)
+                        && CallPartners.NONE.seaShares(Ports.Cargo.DRY_BULK).length == 0 && p.seaShares(null).length == 0 && p.seaShares(Ports.Cargo.DRY_BULK) != p.seaShares(Ports.Cargo.DRY_BULK));
+        // A route's forks.
+        List<BoatSchedule.Route> routes = c.routes;
+        BoatSchedule sch = BoatSchedule.of(7, tradeOf(DRY_TONNES), routes, Ports.BULK_TERMINAL_SHIPS, p);
+        boolean exact = true, distinct = true, sorted = true;
+        int total = 0;
+        for (int r = 0; r < routes.size(); r++) {
+            int[] want = expectedForks(routes.get(r), s, p), got = sch.forksOf(r);
+            exact &= Arrays.equals(want, got);
+            for (int i = 0; i < got.length; i++) {
+                distinct &= i == 0 || got[i] != got[i - 1];
+                sorted &= i == 0 || got[i] > got[i - 1];
+                distinct &= got[i] % SeaRoutes.BEARING_STEP == 0 && routes.get(r).exitRun(got[i]) > 0;
+            }
+            total += got.length;
+        }
+        check("a route's forks are exactly the exits whose nations' shares reach FORK_SHARE (dry bulk: nations 1, 2, 4, 5 at .50, .25, .15, .10 - not 3 - and 1 and 5 share a bearing), by a scan of all 72, ascending",
+                exact && distinct && sorted && sch.forksOf(0).length > 0 && sch.forksOf(0).length < 4 && dryShares[3] >= BoatSchedule.FORK_SHARE);
+        int east = 90;
+        check("...a route whose east the island closes forks on the open exit nearest it, not on east; the route on the open sea forks on it",
+                Arrays.stream(sch.forksOf(0)).noneMatch(b -> b == east) && Arrays.stream(sch.forksOf(2)).anyMatch(b -> b == east) && !Arrays.equals(sch.forksOf(0), sch.forksOf(2)));
+        check("...a joined route has its lane's forks, and a straight lane none, nor a route that does not exist", Arrays.equals(sch.forksOf(0), sch.forksOf(1)) && sch.forksOf(3).length == 0
+                && sch.forksOf(-1).length == 0 && sch.forksOf(routes.size()).length == 0);
+        BoatSchedule none = BoatSchedule.of(7, tradeOf(DRY_TONNES), routes), noExits = BoatSchedule.of(7, tradeOf(DRY_TONNES), withoutExits(routes), Ports.BULK_TERMINAL_SHIPS, p);
+        double[] lat = NODE_LAT.clone();
+        Arrays.fill(lat, Double.NaN);
+        BoatSchedule blind = BoatSchedule.of(7, tradeOf(DRY_TONNES), routes, Ports.BULK_TERMINAL_SHIPS, CallPartners.of(s, 0, 0, lat, NODE_LON, 1));
+        long huge = 1_000_000_000L;
+        boolean nothing = true;
+        for (int r = 0; r < routes.size(); r++) nothing &= none.forksOf(r).length == 0 && noExits.forksOf(r).length == 0 && blind.forksOf(r).length == 0;
+        check("with NONE, with routes that have no exits, and with partners that have no bearing there are no forks at all, and none is drawn",
+                nothing && none.forks(-huge, -huge, huge, huge).length == 0 && noExits.forks(-huge, -huge, huge, huge).length == 0 && blind.forks(-huge, -huge, huge, huge).length == 0);
+        // The legs on a rectangle: each offing's once.
+        double[] everywhere = sch.forks(-huge, -huge, huge, huge);
+        Set<List<Double>> want = expectedLegs(routes, s, p), got = legsOf(everywhere);
+        check("the forks on a rectangle that covers the map are the legs of the forks of each offing, each once: " + got.size() + " legs for the routes' " + total + " forks",
+                got.equals(want) && everywhere.length / 4 == got.size() && got.size() > 0 && got.size() < total);
+        BoatSchedule.Route r0 = routes.get(0), r2 = routes.get(2);
+        int sharedForks = sch.forksOf(0).length;
+        long ox0 = Math.round(r0.xs()[r0.offing()]), oy0 = Math.round(r0.ys()[r0.offing()]);
+        long dist = Math.round(SeaRoutes.ABYSS_M / World.PLOT_M) + 2;
+        double[] near0 = sch.forks(ox0 - dist, oy0 - dist, ox0 + dist, oy0 + dist);
+        int atOffing = 0;
+        for (int i = 0; i < near0.length; i += 4) if (near0[i] == r0.xs()[r0.offing()] && near0[i + 1] == r0.ys()[r0.offing()]) atOffing++;
+        check("two routes that share an offing draw its forks once: the joined pair's " + sharedForks + " forks are " + atOffing + " legs, not " + 2 * sharedForks + ", on a rectangle round it",
+                atOffing == sharedForks && near0.length / 4 == sharedForks && legsOf(near0).size() == sharedForks);
+        long ox2 = Math.round(r2.xs()[r2.offing()]), oy2 = Math.round(r2.ys()[r2.offing()]);
+        double[] near2 = sch.forks(ox2 - dist, oy2 - dist, ox2 + dist, oy2 + dist);
+        boolean only2 = near2.length / 4 == sch.forksOf(2).length;
+        for (int i = 0; i < near2.length; i += 4) only2 &= near2[i] == r2.xs()[r2.offing()] && near2[i + 1] == r2.ys()[r2.offing()];
+        check("...a rectangle round another offing has that offing's forks alone", only2 && near2.length > 0);
+        // A rectangle only a fork's far end is in draws that fork (the offing is outside it), and one nowhere near an offing draws none.
+        double ex = near2[2], ey = near2[3];
+        long ex0 = (long) Math.floor(ex) - 1, ey0 = (long) Math.floor(ey) - 1;
+        double[] tip = sch.forks(ex0, ey0, ex0 + 3, ey0 + 3);
+        boolean tipOnly = legsOf(tip).contains(List.of(near2[0], near2[1], ex, ey)) && !(near2[0] >= ex0 && near2[0] < ex0 + 3 && near2[1] >= ey0 && near2[1] < ey0 + 3);
+        check("...one only a fork's far end is in draws that fork, its offing outside it; one far from every offing draws none",
+                tipOnly && sch.forks(ox2 + 100_000, oy2 + 100_000, ox2 + 100_100, oy2 + 100_100).length == 0 && sch.forks(ox2 - 100_100, oy2 - 100_100, ox2 - 100_000, oy2 - 100_000).length == 0);
+        // An offing two kinds of cargo share draws the union of their forks.
+        BoatSchedule.Berth quay = new BoatSchedule.Berth(Ports.Cargo.LIQUID, r2.berth().x(), r2.berth().y());
+        BoatSchedule.Route tanker = new BoatSchedule.Route(quay, r2.x1(), r2.y1(), r2.xs(), r2.ys(), r2.along(), r2.offing(), r2.pivot(), r2.spread(), r2.exits());
+        BoatSchedule both = BoatSchedule.of(7, tradeOf(DRY_TONNES), List.of(r2, tanker), Ports.BULK_TERMINAL_SHIPS, p);
+        java.util.TreeSet<Integer> union = new java.util.TreeSet<>();
+        for (int e : both.forksOf(0)) union.add(e);
+        for (int e : both.forksOf(1)) union.add(e);
+        double[] bothLegs = both.forks(ox2 - dist, oy2 - dist, ox2 + dist, oy2 + dist);
+        check("an offing that a dry bulk berth's lane and a tanker berth's share forks both their partners' exits, once each: the tanker's (nation 3 and, in the direction it has none, every kind's imports) and the bulker's",
+                !Arrays.equals(both.forksOf(0), both.forksOf(1)) && bothLegs.length / 4 == union.size() && union.size() > both.forksOf(0).length && union.size() > both.forksOf(1).length
+                        && legsOf(bothLegs).equals(expectedLegs(List.of(r2, tanker), s, p)));
+        // The share rule, on an open sea (all 72 exits open), nations standing on given bearings with given weights of dry bulk sold to them.
+        long huge2 = huge;
+        BoatSchedule.Route open = c.plainFound.routes().get(0);
+        // An exit under FORK_SHARE has no fork, one at it has; the shares of two nations on one exit add (nations C: 120, D and E: 180 together).
+        double[] bearings = { 0, 60, 120, 180, 180, 240 }, weights = { 700, 50, 40, 30, 30, 150 };
+        double total6 = sum(weights);
+        boolean fixtureOk = weights[1] / total6 >= BoatSchedule.FORK_SHARE && weights[2] / total6 < BoatSchedule.FORK_SHARE
+                && weights[3] / total6 < BoatSchedule.FORK_SHARE && (weights[3] + weights[4]) / total6 >= BoatSchedule.FORK_SHARE;
+        CallPartners six = ringPartners(bearings, weights, dry);
+        BoatSchedule bs = BoatSchedule.of(7, tradeOf(DRY_TONNES), List.of(open), Ports.BULK_TERMINAL_SHIPS, six);
+        check("fixture: six nations on 0, 60, 120, 180, 180 and 240 degrees with 700, 50, 40, 30, 30 and 150 t of dry bulk: shares .70, .05 (FORK_SHARE), .04, two of .03, .15", fixtureOk
+                && Arrays.equals(bs.forksOf(0), expectedForks(open, trade(6, 7, new Row(dry, weights, new double[6])).snapshot(), six)));
+        check("an exit under FORK_SHARE has no fork (120, at .04), one at it has (60, at .05), and two nations on one exit add (180: .03 and .03 make .06)",
+                Arrays.equals(bs.forksOf(0), new int[] { 0, 60, 180, 240 }));
+        // A boat bound for the small partner still leaves on its exit: the call's exit is 120, and no fork is drawn there.
+        boolean smallLeaves = false, others = true;
+        for (int month = 0; month < 60; month++) {
+            for (BoatSchedule.Call k : BoatSchedule.of(month, tradeOf(DRY_TONNES), List.of(open), Ports.BULK_TERMINAL_SHIPS, six).calls()) {
+                if (k.cargo() != Ports.Cargo.DRY_BULK || k.inbound()) continue;
+                if (k.partner() == 3) smallLeaves |= k.exit() == 120;
+                others &= k.exit() == oracleExit(open.exits(), six.bearing(k.partner()));
+            }
+        }
+        check("...though a boat bound for the small partner still leaves the offing on its own exit (120), off the drawn forks, as every partner's does", smallLeaves && others);
+        // More exits over the share than MAX_FORKS keep the largest, the smaller bearing on a tie.
+        int m = BoatSchedule.MAX_FORKS + 4;
+        double[] descBearings = new double[m], desc = new double[m];
+        for (int k = 0; k < m; k++) {
+            descBearings[k] = k * SeaRoutes.BEARING_STEP;
+            desc[k] = 100 + 4 * (m - k);
+        }
+        CallPartners many = ringPartners(descBearings, desc, dry);
+        int[] wantLargest = new int[BoatSchedule.MAX_FORKS];
+        for (int k = 0; k < wantLargest.length; k++) wantLargest[k] = k * SeaRoutes.BEARING_STEP;
+        BoatSchedule bm = BoatSchedule.of(7, tradeOf(DRY_TONNES), List.of(open), Ports.BULK_TERMINAL_SHIPS, many);
+        check("with " + m + " exits over FORK_SHARE (the smallest at " + String.format("%.3f", desc[m - 1] / sum(desc)) + ") only the MAX_FORKS largest are forks: the nations with the most tonnes, at bearings 0 to "
+                        + (BoatSchedule.MAX_FORKS - 1) * SeaRoutes.BEARING_STEP,
+                desc[m - 1] / sum(desc) >= BoatSchedule.FORK_SHARE && m > BoatSchedule.MAX_FORKS && Arrays.equals(bm.forksOf(0), wantLargest));
+        int ties = BoatSchedule.MAX_FORKS + 2;
+        double[] tieBearings = new double[ties], equal = new double[ties];
+        for (int k = 0; k < ties; k++) {
+            tieBearings[k] = 100 + (ties - 1 - k) * SeaRoutes.BEARING_STEP;      // the higher the nation, the smaller its bearing
+            equal[k] = 100;
+        }
+        BoatSchedule bt = BoatSchedule.of(7, tradeOf(DRY_TONNES), List.of(open), Ports.BULK_TERMINAL_SHIPS, ringPartners(tieBearings, equal, dry));
+        int[] wantSmallest = new int[BoatSchedule.MAX_FORKS];
+        for (int k = 0; k < wantSmallest.length; k++) wantSmallest[k] = 100 + k * SeaRoutes.BEARING_STEP;
+        check("...and where shares tie (" + ties + " nations at " + String.format("%.3f", 1.0 / ties) + " each) the MAX_FORKS smaller bearings are kept, whatever the nations' order",
+                1.0 / ties >= BoatSchedule.FORK_SHARE && Arrays.equals(bt.forksOf(0), wantSmallest));
+        // An offing shared by two kinds draws the union of their forks, each kind's capped already: no cut of the union.
+        Good tank = liq;
+        double[] bothBearings = new double[2 * BoatSchedule.MAX_FORKS], bothDry = new double[bothBearings.length], bothLiq = new double[bothBearings.length];
+        for (int k = 0; k < bothBearings.length; k++) {
+            bothBearings[k] = k * SeaRoutes.BEARING_STEP;
+            (k < BoatSchedule.MAX_FORKS ? bothDry : bothLiq)[k] = 100;
+        }
+        double[][] ring2 = ringNodes(bothBearings);
+        PartnerTrade twoKinds = trade(bothBearings.length, 7, new Row(dry, bothDry, new double[bothBearings.length]), new Row(tank, bothLiq, new double[bothBearings.length]));
+        CallPartners pk = CallPartners.of(twoKinds.snapshot(), 0, 0, ring2[0], ring2[1], 1);
+        BoatSchedule.Route tanker2 = new BoatSchedule.Route(new BoatSchedule.Berth(Ports.Cargo.LIQUID, open.berth().x(), open.berth().y()), open.x1(), open.y1(),
+                open.xs(), open.ys(), open.along(), open.offing(), open.pivot(), open.spread(), open.exits());
+        BoatSchedule kinds2 = BoatSchedule.of(7, tradeOf(DRY_TONNES), List.of(open, tanker2), Ports.BULK_TERMINAL_SHIPS, pk);
+        double[] union2 = kinds2.forks(-huge2, -huge2, huge2, huge2);
+        check("an offing shared by a dry bulk lane and a tanker lane draws both kinds' forks, " + union2.length / 4 + " of them: MAX_FORKS each, none cut from the union",
+                kinds2.forksOf(0).length == BoatSchedule.MAX_FORKS && kinds2.forksOf(1).length == BoatSchedule.MAX_FORKS && union2.length / 4 == 2 * BoatSchedule.MAX_FORKS
+                        && legsOf(union2).size() == 2 * BoatSchedule.MAX_FORKS);
+        forksOnTheEarth();
+        forksAtTenBillion();
+    }
+
+    /**
+     * Printed, not asserted: how many forks a route draws on the open sea (all 72 exits open, the most there can be) from thirteen ports, were the
+     * Earth's nations trading dry bulk with the city in proportion to their GDP in 2020 (the world file's gdp_usd) divided by their distance in km
+     * (a gravity month), and by GDP alone. Needs the world file named (-Dcbs.world); without it a line says so.
+     */
+    static void forksOnTheEarth() {
+        java.nio.file.Path file = WorldData.locate();
+        if (file == null) {
+            out.println("      (no world file named: the forks on the Earth are not printed)");
+            return;
+        }
+        WorldData data = null;
+        try {
+            data = WorldData.open(file);
+            NationsMap nm = NationsMap.of(data);
+            int nations = nm.count();
+            double[][] ports = { { 51.95, 4.14 }, { 1.26, 103.8 }, { 40.66, -74.04 }, { 31.2, 121.5 }, { 33.74, -118.27 }, { -33.86, 151.2 }, { -23.96, -46.3 },
+                    { -29.87, 31.03 }, { 25.0, 55.1 }, { 35.0, 139.7 }, { 64.1, -21.9 }, { -41.3, 174.8 }, { 10.0, -83.0 } };
+            double[] nodeLat = new double[nations], nodeLon = new double[nations], gdp = new double[nations];
+            for (int i = 0; i < nations; i++) {
+                nodeLat[i] = nm.nodeLat(i + 1);
+                nodeLon[i] = nm.nodeLon(i + 1);
+                double g = data.pathValue("gdp_usd", i + 1, 2020);
+                gdp[i] = Double.isFinite(g) && g > 0 ? g : 0;
+            }
+            Good dry = goodOf(Ports.Cargo.DRY_BULK, 0);
+            BoatSchedule.Route open = coast().plainFound.routes().get(0);
+            StringBuilder line = new StringBuilder();
+            int most = 0, mostAlone = 0;
+            for (double[] port : ports) {
+                double[] gravity = new double[nations];
+                for (int i = 0; i < nations; i++) gravity[i] = gdp[i] / Math.max(100, EarthProj.distanceM(port[0], port[1], nodeLat[i], nodeLon[i]) / 1000);
+                int[] counts = new int[2];
+                double[][] weights = { gravity, gdp };
+                for (int w = 0; w < 2; w++) {
+                    PartnerTrade.Snapshot snap = trade(nations, 7, new Row(dry, weights[w], new double[nations])).snapshot();
+                    counts[w] = BoatSchedule.of(7, tradeOf(DRY_TONNES), List.of(open), Ports.BULK_TERMINAL_SHIPS, CallPartners.of(snap, port[0], port[1], nodeLat, nodeLon, 0)).forksOf(0).length;
+                }
+                most = Math.max(most, counts[0]);
+                mostAlone = Math.max(mostAlone, counts[1]);
+                line.append(String.format(" %d/%d", counts[0], counts[1]));
+            }
+            out.println("      forks a dry bulk route draws on the open sea from 13 ports (Rotterdam, Singapore, New York, Shanghai, Los Angeles, Sydney, Santos, Durban, Dubai, Tokyo,"
+                    + " Reykjavik, Wellington, Limon), a gravity month / GDP alone:" + line + " (at most " + most + " / " + mostAlone + ", MAX_FORKS " + BoatSchedule.MAX_FORKS + ")");
+        } catch (java.io.IOException | RuntimeException e) {
+            out.println("      (the world file would not open: " + e + ")");
+        } finally {
+            if (data != null) try { data.close(); } catch (java.io.IOException ignored) { }
+        }
+    }
+
+    /** The forks of an offing a frame draws, on the 10-billion lanes sharing 200 offings (a late city's lanes share, SL1): built once, then a frame's forks in no more than BOAT_FRAME_MS. */
+    static void forksAtTenBillion() {
+        long sx = World.SIDE / 2, sy = World.SIDE / 2;
+        double[] exits = new double[SeaRoutes.EXITS];
+        for (int k = 0; k < exits.length; k++) exits[k] = k >= 12 && k <= 24 ? 0 : SeaRoutes.ABYSS_M / World.PLOT_M;
+        long span = (long) (Math.sqrt(1e10 / 5000.0) * 33), step = Math.max(1, span / 200);
+        List<BoatSchedule.Route> lanes = new ArrayList<>();
+        for (BoatSchedule.Route r : MapCheck.protoLanes(sx, sy)) {
+            long qx = Math.floorDiv(r.x1(), step) * step;
+            lanes.add(new BoatSchedule.Route(r.berth(), qx, r.y1()).withExits(exits));
+        }
+        int nations = 196;
+        PartnerTrade pt = new PartnerTrade(nations);
+        for (Ports.Cargo c : Ports.Cargo.values()) {
+            double[] to = new double[nations], from = new double[nations];
+            for (int i = 0; i < nations; i++) {
+                long h = World.mix(c.ordinal() * 1000L + i);
+                to[i] = World.unit(h) < 0.3 ? 0 : 1 + World.unit(h) * 1000;
+                from[i] = World.unit(World.mix(h)) < 0.3 ? 0 : 1 + World.unit(World.mix(h)) * 1000;
+            }
+            tally(pt, 7, goodOf(c, 0), to, from, 1);
+        }
+        pt.close(7);
+        double[] lat = new double[nations], lon = new double[nations];
+        for (int i = 0; i < nations; i++) {
+            lat[i] = -70 + 140 * World.unit(World.mix(2L * i + 1));
+            lon[i] = -180 + 360 * World.unit(World.mix(2L * i + 2));
+        }
+        CallPartners partners = CallPartners.of(pt.snapshot(), 0, 0, lat, lon, 1);
+        BoatSchedule sch = BoatSchedule.of(7, MapCheck.tradeAtSea(1, 1, 0, 0), lanes, Ports.BULK_TERMINAL_SHIPS, partners);
+        long b0 = System.nanoTime();
+        sch.forks(sx, sy, sx + 1, sy + 1);
+        double buildMs = (System.nanoTime() - b0) / 1e6;
+        // The views are centred on an offing: the forks are out at the lanes' ends, not along them.
+        long midX = lanes.get(0).x1(), midY = lanes.get(0).y1();
+        long[][] views = {
+                { Math.round(MapCheck.SCREEN_W_PX / MapFrame.L0_FROM), Math.round(MapCheck.SCREEN_H_PX / MapFrame.L0_FROM) },
+                { Math.round(MapCheck.SCREEN_W_PX / MapFrame.L1_FROM), Math.round(MapCheck.SCREEN_H_PX / MapFrame.L1_FROM) },
+                { 8L * World.DISTRICT, Math.abs(MapCheck.PROTO_LANE_DY) + 2 } };
+        double[] best = new double[views.length];
+        int[] legs = new int[views.length];
+        Arrays.fill(best, Double.MAX_VALUE);
+        for (int round = 0; round < MapCheck.WARM_ROUNDS + MapCheck.TIMED_ROUNDS; round++) {
+            for (int v = 0; v < views.length; v++) {
+                long ax = midX - views[v][0] / 2, ay = midY - views[v][1] / 2, bx = ax + views[v][0], by = ay + views[v][1];
+                long f0 = System.nanoTime();
+                int count = 0;
+                for (int k = 0; k < MapCheck.BOAT_FRAMES; k++) count += sch.forks(ax + k % 3, ay, bx, by).length / 4;
+                double ms = (System.nanoTime() - f0) / 1e6 / MapCheck.BOAT_FRAMES;
+                if (round >= MapCheck.WARM_ROUNDS) best[v] = Math.min(best[v], ms);
+                legs[v] = count / MapCheck.BOAT_FRAMES;
+            }
+        }
+        out.printf("      %,d lanes on 200 offings over 196 nations: the offings made once in %.1f ms; a frame's forks take %.3f ms on an L0 screen (%,d legs), %.3f on an L1 one (%,d), %.3f on 8 districts (%,d)%n",
+                lanes.size(), buildMs, best[0], legs[0], best[1], legs[1], best[2], legs[2]);
+        check("fixture: forks on every view", legs[0] > 0 && legs[1] > 0 && legs[2] > 0);
+        check("a frame's forks take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and 8 districts",
                 Timing.within(best[0], MapCheck.BOAT_FRAME_MS) && Timing.within(best[1], MapCheck.BOAT_FRAME_MS) && Timing.within(best[2], MapCheck.BOAT_FRAME_MS));
     }
 }

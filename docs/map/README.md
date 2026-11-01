@@ -4,7 +4,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 481 files, 523,121 lines, 22,550 methods, 5,124 constants. `GameVersion.VERSION` is "0.8.95", `SAVE_FORMAT` 50.
+**The tree:** 481 files, 524,017 lines, 22,578 methods, 5,132 constants. `GameVersion.VERSION` is "0.8.95", `SAVE_FORMAT` 50.
 
 ## model (226 files)
 
@@ -16,7 +16,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AutoBuilder.java](AutoBuilder.md) | 2,172 | 145 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 12 |
 | [BalanceSheet.java](BalanceSheet.md) | 201 | 30 | A simple balance sheet for one business in the city. | 6 |
 | [Bank.java](Bank.md) | 6,665 | 454 | The city's commercial bank: every loan in it, and every default. | 63 |
-| [BoatSchedule.java](BoatSchedule.md) | 667 | 45 | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7... | 17 |
+| [BoatSchedule.java](BoatSchedule.md) | 847 | 50 | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7... | 18 |
 | [BondMarket.java](BondMarket.md) | 2,091 | 172 | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participa... | 21 |
 | [BookDesk.java](BookDesk.md) | 184 | 20 | The debt book as a desk: every figure the book page and a line's page draw (CD6, spec-city-debt.md section 7, boards 1 and 2), a pure model of what... | 5 |
 | [BridgeGround.java](BridgeGround.md) | 72 | 7 | The ground a bridge is surveyed over, read from the World and the city's land: the Earth's terrain, relief and landmass a tile at a time, the city'... | 1 |
@@ -39,7 +39,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BusinessInvestment.java](BusinessInvestment.md) | 1,354 | 72 | Capacity planning for the private sector. | 70 |
 | [BusinessLoan.java](BusinessLoan.md) | 72 | 7 | A fixed-term business loan: interest-only each month, principal repaid in full at maturity. | 7 |
 | [Buyback.java](Buyback.md) | 357 | 22 | The city's paper bought back in a reverse auction: every holder offers what it holds in slices, each at the price where its own buying rule would s... | 9 |
-| [CallPartners.java](CallPartners.md) | 154 | 10 | Who each ship and train of the month calls on: a nation drawn by the month's tonnes of the call's kind of cargo, and the compass bearing of its nod... | 3 |
+| [CallPartners.java](CallPartners.md) | 233 | 16 | Who each ship and train of the month calls on: a nation drawn by the month's tonnes of the call's kind of cargo, and the compass bearing of its nod... | 4 |
 | [CallTree.java](CallTree.md) | 330 | 18 | What a callable bond is worth, and what the right to call it costs: a Ho-Lee short-rate tree on monthly steps, fitted to the city's curve (CD4, doc... | 4 |
 | [CameraPath.java](CameraPath.md) | 231 | 20 | The replay camera's arithmetic without the toolkit (TR1, 2026-10-31): the glide between two marked views, the fly out to the whole Earth and back, ... | 5 |
 | [CapSetting.java](CapSetting.md) | 78 | 8 | A cap on the yield an automatic sale takes, saved and said (D28). | 5 |
@@ -147,7 +147,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Motoring.java](Motoring.md) | 367 | 21 | The households' car market: the second-hand pass, then the showroom, with the road told what is parked on it - and since 0.7.49 the drivers' fuel a... | 6 |
 | [NationalAccounts.java](NationalAccounts.md) | 1,560 | 119 | The city's GDP, measured properly, plus the government's own books. | 38 |
 | [Nations.java](Nations.md) | 780 | 44 | The nations beyond the city, each on the world's path: its year - output, people, prices and its money's rate to the US dollar - from the path (His... | 29 |
-| [NationsMap.java](NationsMap.md) | 1,042 | 66 | The nations on the map, without the toolkit: the borders simplified and cut to a view, each nation's dot and the name written on its land, what lie... | 4 |
+| [NationsMap.java](NationsMap.md) | 1,042 | 66 | The nations on the map, without the toolkit: the borders simplified and cut to a view, each nation's dot and the name written on its land, what lie... | 5 |
 | [Notice.java](Notice.md) | 119 | 17 | One thing the city needs told about, and whether anybody has looked at it. | 13 |
 | [Offending.java](Offending.md) | 169 | 5 | Who is at risk of offending, sorted by reason, and the thefts handed to them. | 1 |
 | [OilView.java](OilView.md) | 1,346 | 72 | The oil industry on one page (0.7.96, batch O12; docs/studies/spec-oil.md 2.13): the city's wells by kind with what they would lift over the next t... | 6 |
@@ -156,7 +156,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [OreView.java](OreView.md) | 71 | 4 | The land office's Ore card as the model reads it (batch I13-L): for each ore the city's ground holds, its deposits, the tonnes still in the ground,... | 2 |
 | [OrphanHousehold.java](OrphanHousehold.md) | 39 | 10 | Children no family holds, by age band. | 3 |
 | [OutwardInvestment.java](OutwardInvestment.md) | 753 | 47 | Outward investment: what the city's businesses do with money the bank will not pay for. | 16 |
-| [PartnerTrade.java](PartnerTrade.md) | 465 | 33 | The city's trade by partner: what it sold to each nation and bought of each this month and so far this year, by good, and every finished year's tab... | 11 |
+| [PartnerTrade.java](PartnerTrade.md) | 465 | 33 | The city's trade by partner: what it sold to each nation and bought of each this month and so far this year, by good, and every finished year's tab... | 12 |
 | [PayTier.java](PayTier.md) | 135 | 6 | The six pay levels a household can be in. | 59 |
 | [PolicyPreview.java](PolicyPreview.md) | 583 | 49 | What a staged set of the Policy tab's dials would do, by the model's own arithmetic (0.7.36): the tax take under another policy, line by line, and ... | 10 |
 | [PolicyRates.java](PolicyRates.md) | 357 | 25 | The policy rates of the eight central banks of the moneys the vault holds (XR4; spec-exchange-rates 3.8, Jerus's calls 9 and 11): the Federal Reser... | 9 |
@@ -213,7 +213,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TradeBand.java](TradeBand.md) | 253 | 21 | The freight band of what the city trades, split into its legs, as the Trade tab draws it (batch FR4; docs/studies/spec-freight-and-infrastructure.m... | 2 |
 | [TradeLanes.java](TradeLanes.md) | 840 | 65 | The city's trade as routes on the Earth's map, without the toolkit: one lane from the city toward each partner, the lanes that go the same way shar... | 9 |
 | [Traffic.java](Traffic.md) | 60 | 3 | The three things that move, which used to be one number. | 34 |
-| [TrainSchedule.java](TrainSchedule.md) | 710 | 54 | The month's trains, as a pure function of time: which trains the city's railed tonnes make, when each reaches its yard, and where each one is at an... | 14 |
+| [TrainSchedule.java](TrainSchedule.md) | 710 | 54 | The month's trains, as a pure function of time: which trains the city's railed tonnes make, when each reaches its yard, and where each one is at an... | 15 |
 | [TrainShapes.java](TrainShapes.md) | 92 | 6 | How the map draws a train: each vehicle's body and its load's mark as points in plots about where it is and the way it heads, and their colours by ... | 3 |
 | [TreasuryFund.java](TreasuryFund.md) | 1,107 | 151 | The city's fund: the government's holding of its own city's companies and their bonds, bought on the order book by a rule and by the player's hand,... | 36 |
 | [TreasuryJournal.java](TreasuryJournal.md) | 283 | 16 | The treasury's journal: every movement of the city's cash that is neither a budget line nor paper raised or repaid, recorded by name as it happens,... | 14 |
@@ -227,9 +227,9 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [WantedPosts.java](WantedPosts.md) | 164 | 17 | The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of them the labour market prices as i... | 3 |
 | [WorkingHousehold.java](WorkingHousehold.md) | 50 | 7 | A household with an earner in it, at one pay tier. | 5 |
 | [World.java](World.md) | 2,162 | 120 | The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and ri... | 101 |
-| [WorldData.java](WorldData.md) | 1,179 | 109 | The reader of world-1.bin, the nations' world as data: the 196 nations and the areas no nation holds, their borders (an owner a 15" cell, and the l... | 21 |
+| [WorldData.java](WorldData.md) | 1,179 | 109 | The reader of world-1.bin, the nations' world as data: the 196 nations and the areas no nation holds, their borders (an owner a 15" cell, and the l... | 22 |
 | [WorldEconomy.java](WorldEconomy.md) | 521 | 27 | The rest of the world, which has its own inflation and did not use to: the in-game US dollar's price level, which is the US's own path where the ci... | 14 |
-| [WorldMarket.java](WorldMarket.md) | 1,779 | 96 | The world market: each traded good's price in each of the 196 nations on a smooth spatial equilibrium (a CES gravity model), solved once a year, an... | 12 |
+| [WorldMarket.java](WorldMarket.md) | 1,779 | 96 | The world market: each traded good's price in each of the 196 nations on a smooth spatial equilibrium (a CES gravity model), solved once a year, an... | 13 |
 | [WorldMeasures.java](WorldMeasures.md) | 388 | 46 | The Rankings' real-world figures: world-2025.json's 196 nations and city regions, the 70 measures each is ranked on, every place's latest figure of... | 4 |
 | [WorldMoneys.java](WorldMoneys.md) | 800 | 56 | The world's moneys against the US dollar, a month at a time (WN4; spec-exchange-rates 3.7, spec-nations 5.1): each money's rate is its purchasing-p... | 20 |
 | [YearBook.java](YearBook.md) | 1,669 | 85 | The run, one line a year - for READING rather than for drawing. | 22 |
@@ -296,7 +296,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Ladder.java](Ladder.md) | 354 | 26 | One dial, drawn the one way: a "−" worth one step, a slider that snaps to the step, a "+" worth one step, the reading, and a line under them saying... | 14 |
 | [LandScreen.java](LandScreen.md) | 2,412 | 95 | The land office: whether the city has room to grow, and which ground to buy - since 0.7.61 round the city's map (batch J4; the project's spec-land.... | 3 |
 | [Levers.java](Levers.md) | 145 | 3 | The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36) - the dial on a card with what it does beside it, which every dial on t... | 3 |
-| [MapView.java](MapView.md) | 5,157 | 220 | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's ... | 3 |
+| [MapView.java](MapView.md) | 5,324 | 226 | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's ... | 3 |
 | [MiniMap.java](MiniMap.md) | 471 | 20 | The minimap: a stamp of the city at the foot of the rail, above Menu, on screen from every tab; while the pointer is on it a preview beside it, 288... | 1 |
 | [Money.java](Money.md) | 385 | 30 | Every figure the interface prints as money, in one place. | 20 |
 | [Palette.java](Palette.md) | 726 | 27 | Every colour, size and spacing this game is allowed to use, in one place. | 34 |
@@ -433,7 +433,7 @@ Generated 2026-11-01 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [OrderBookCheck.java](OrderBookCheck.md) | 297 | 16 | The limit-order book (0.7.12), on its own: the rules any instrument trades by, proved on a book that knows nothing about what it trades. | 0 |
 | [OrderSearchCheck.java](OrderSearchCheck.md) | 783 | 22 | The three order searches against the countdowns they replaced (0.7.54). | 2 |
 | [OutsideCheck.java](OutsideCheck.md) | 699 | 5 | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). | 0 |
-| [PartnerCallsCheck.java](PartnerCallsCheck.md) | 850 | 29 | The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by ... | 0 |
+| [PartnerCallsCheck.java](PartnerCallsCheck.md) | 1,320 | 40 | The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by ... | 0 |
 | [PassThroughCheck.java](PassThroughCheck.md) | 633 | 19 | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUG... | 0 |
 | [PlanCheck.java](PlanCheck.md) | 4,574 | 161 | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway... | 4 |
 | [PlaytestFixCheck.java](PlaytestFixCheck.md) | 224 | 9 | Verifies the small fixes of a played city (PT1): words and the log, nothing the month does. | 0 |

@@ -18,6 +18,9 @@ package ham.citybuildersim;
  * boxes, whose calls carry both ways) and reach (any partner, or by land); pick() is then a binary search of one of them under a hash.
  * A kind with no tonnes in the direction falls back on the direction's tonnes of every kind (the snapshot's own exports and imports by
  * nation), and a month with none gives no partner at all (0); NONE is that always.
+ *
+ * <p>WHAT THE MAP SHOWS OF THEM (slice U). seaPartners() is the nations a boat of a kind can be bound for, which BoatSchedule turns into the
+ * forks a lane draws at its offing; words() is what a boat's or a train's label says of its call, the class or kind and the nation by the way it goes.
  */
 public final class CallPartners {
 
@@ -42,6 +45,10 @@ public final class CallPartners {
     /** The same of every kind of cargo together: [OUT, IN, BOTH][any, by land]; the fallback. */
     private final double[][][] all;
 
+    /** The nations a ship of each kind of cargo can be bound for or from, either direction, biggest first (seaPartners()): [kind of cargo][rank], nations 1-based; and each one's share of the kind's tonnes there, same order (seaShares()). */
+    private final int[][] sea;
+    private final double[][] seaShare;
+
     private CallPartners() {
         snapshot = null;
         cityLat = cityLon = Double.NaN;
@@ -51,6 +58,8 @@ public final class CallPartners {
         bearing = new double[0];
         cargo = null;
         all = null;
+        sea = null;
+        seaShare = null;
     }
 
     private CallPartners(PartnerTrade.Snapshot s, double cityLat, double cityLon, double[] nodeLat, double[] nodeLon, int host) {
@@ -79,6 +88,35 @@ public final class CallPartners {
         fill(all[OUT], s.exportTonnes(), null);
         fill(all[IN], s.importTonnes(), null);
         fill(all[BOTH], s.exportTonnes(), s.importTonnes());
+        sea = new int[kinds.length][];
+        seaShare = new double[kinds.length][];
+        for (Ports.Cargo c : kinds) seaNations(c);
+    }
+
+    /**
+     * The nations pick() can draw for a ship of this kind, either direction (the tables a boat's call would draw by), by their tonnes there, biggest
+     * first, the lower number first on a tie - kept in sea[], and each one's share of those tonnes (w[i] over their sum) in seaShare[].
+     */
+    private void seaNations(Ports.Cargo c) {
+        double[] w = new double[n];
+        for (int d : c == Ports.Cargo.CONTAINER ? new int[] { BOTH } : new int[] { OUT, IN }) {
+            double[] cum = cargo[c.ordinal()][d][0];
+            if (cum == null) cum = all[d][0];
+            if (cum == null) continue;
+            for (int i = 0; i < n; i++) w[i] += cum[i] - (i == 0 ? 0 : cum[i - 1]);
+        }
+        int[] order = java.util.stream.IntStream.range(0, n).filter(i -> w[i] > 0).boxed()
+                .sorted((a, b) -> w[a] == w[b] ? Integer.compare(a, b) : Double.compare(w[b], w[a])).mapToInt(Integer::intValue).toArray();
+        double total = 0;
+        for (int i : order) total += w[i];
+        int[] nations = new int[order.length];
+        double[] shares = new double[order.length];
+        for (int k = 0; k < order.length; k++) {
+            nations[k] = order[k] + 1;
+            shares[k] = w[order[k]] / total;
+        }
+        sea[c.ordinal()] = nations;
+        seaShare[c.ordinal()] = shares;
     }
 
     /** Makes the cumulative tonnes by nation into [any, by land]: those of `a`, and of `b` added where it is given; null where they add to nothing. */
@@ -133,6 +171,47 @@ public final class CallPartners {
         // x is under the total, so lo has tonnes of its own; the guard is for a total that rounds to x.
         while (lo > 0 && !(cum[lo] > cum[lo - 1])) lo--;
         return lo + 1;
+    }
+
+    /**
+     * Every nation a ship carrying this kind of cargo can be bound for or from, in either direction (WN7): those pick() can return for a boat's call
+     * of the kind - the kind's own tonnes in the direction, else every kind's - biggest first (the lower number first on a tie), nation 1-based. The
+     * boxes count both ways together, as pick() draws them. Empty for NONE, a month with no trade, and a null kind. A new array.
+     */
+    public int[] seaPartners(Ports.Cargo cargo) {
+        return sea == null || cargo == null ? new int[0] : sea[cargo.ordinal()].clone();
+    }
+
+    /**
+     * Each of seaPartners(cargo)'s nations' share of the kind's tonnes as seaPartners() weighs them (either direction added, the fallback where a
+     * direction has none of the kind): the same order, so seaShares(c)[k] is seaPartners(c)[k]'s, and they add to 1. Empty where seaPartners() is.
+     * The lane's forks are drawn by these (BoatSchedule.forksOf()). A new array.
+     */
+    public double[] seaShares(Ports.Cargo cargo) {
+        return seaShare == null || cargo == null ? new double[0] : seaShare[cargo.ordinal()].clone();
+    }
+
+    /**
+     * What a boat's label says (WN7): its class's words, then its partner by the way it goes - " · to Aland" for one going out laden with
+     * exports, " · from Aland" for one coming in with imports, " · Aland" for the boxes, which go both ways - as pick() drew it. The
+     * class alone where the call has no partner or the snapshot has no name for it; "" for a null call.
+     */
+    public String words(BoatSchedule.Call c) {
+        if (c == null) return "";
+        return c.ship().label() + via(c.partner(), c.cargo() == Ports.Cargo.CONTAINER ? BOTH : c.inbound() ? IN : OUT);
+    }
+
+    /** ...and a train's: its kind's words, then its partner the same way (the intermodal train, boxes, goes both ways). */
+    public String words(TrainSchedule.Call c) {
+        if (c == null) return "";
+        return c.kind().label() + via(c.partner(), c.kind().cargo() == Ports.Cargo.CONTAINER ? BOTH : c.inbound() ? IN : OUT);
+    }
+
+    /** " · to X" going out, " · from X" coming in, " · X" both ways; "" for no partner or no name. */
+    private String via(int partner, int direction) {
+        String name = partner > 0 ? nameOf(partner) : null;
+        if (name == null || name.isEmpty()) return "";
+        return " · " + (direction == OUT ? "to " : direction == IN ? "from " : "") + name;
     }
 
     /** Whether a train can reach the nation: it is the host, or its node is within LAND_KM of the city by the great circle. */
