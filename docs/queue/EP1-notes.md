@@ -382,3 +382,104 @@ mend) and ZERO_SLACK's final population fails (162,106 against 75% of
 236,141); SHOCK's is 16,811 against 26,598. 40,000 people at m1,276
 [872-2,012] at the median, 16/16 seeds (m1,148 before the mend, m1,033 on
 0.8.91). `docs/ensemble/EP1.md` is the rerun's.
+
+## 11. Fixed after Jerus's word
+
+Jerus: "fix then ship". The two long-run reds that were not ST2's: OrderSearchCheck
+is mended, CentralBankCheck is a draw and is left as it was. The full
+`./batch-check.sh` after both (exit 4): red on CentralBankCheck (1 line) and
+ScaleCheck (10 lines, ST2's town); OrderSearchCheck passes. The lookup was made lazy
+after that run (an IntSupplier, behaviour the same); OrderSearchCheck, InvestCheck,
+BuildCardCheck and PriceLevelCheck pass on the final code and ScaleCheck has the same ten
+lines.
+
+**OrderSearchCheck, OS1 (mended).** `Game.largestSlice()` returned 0 where the
+countdown found 10, month 1226, Retail's 94 Convenience Stores. Replayed
+(1,226 months, 20 s) and both searches printed for that order, till 18,817, a
+building earning 31.7 a month, cost 4,395.6 a building:
+- slices 1 to 4 are paid by the till and fail, tested on their whole cost at the
+  sector's own rate (17.83%; 4 stores: earnings 126.8 against a hurdle of 168.5);
+- slices 5 to 10 borrow what the bank and the bond desk can raise whole
+  (`Plan.covers()`), a bond is part of it, and the slice is tested at the plan's
+  blended rate, 14.0% against the loan's 17.9%: they pass (10: 317.1 against 245.9);
+- slices 11 to 94 borrow past that room, `covers()` is false, the slice is tested
+  at the loan's rate again and fails.
+The doubling asked 79 (counted), then 78, 76, 72, 64, 48, 16 and 1: all failed, so
+`pass` stayed 0 and `fail` reached 1, and the halving had nothing to halve. It is
+the case Game's banner already named ("a slice the till pays for is judged at the
+sector's own rate, while a bigger one that borrows may be judged at a bond's
+cheaper one"), not an unscaled literal: the search holds only quantities, and the
+pieces under its test are scaled (`FIXED_ISSUE_COST` = 12 x FACTOR, divided by the
+unit; the room and the rates are ratios). At today's prices the same window needs
+a bond cheaper than the loan by that much, which main's paths did not meet.
+- *The mend* (Game.java:6023, `largestSlice(quantity, passes, borrowsFrom)`; the two-argument
+  form stays, for the abstract tests): a fourth step, the first slice the till does
+  not pay for (`Slices.firstThatBorrows()`, Game.java:6083, found by a
+  run-from-one search on the cost against the till, no bond desk; 0 under a ban, and
+  looked up only when the counted slices all failed), asked unless a probe already did, and if it passes, halving above it up to the
+  lowest slice known to fail over it. A window that opens at the till's edge and runs
+  to the bank's room is found whatever its width; one that opens later (a bond
+  dearer than the loan for the first few slices that borrow) is not asked, as before:
+  the banner says so. `deskCallsMost()` = COUNTDOWN_SLICES + 3 x bits + 2 (was
+  + 2 x bits + 1: the one probe and the halving above it).
+- *The proof* (OrderSearchCheck 5, `window()`, OrderSearchCheck.java:533): the
+  playtest's city at month 500 asked a rule of `windowGate()` (the seam
+  `Game.setOrderGate()`: the slices the room raises whole tested on what they borrow,
+  which a rate that much cheaper makes of them; the city's own bidders price a bond
+  at the loan's rate there, 12.96% against 12.88%, so a real bond window cannot be
+  caused in it), a till of 2 or 4 slices, a room of 3, 6 or 9 past it, the profit of
+  a building swept in 4% steps: 816 orders of 94, 207 of them windows (the countdown
+  trims into a slice past the till's while the till's slices fail, the widest by
+  9). Then 6,867 windows on tests of their own (six orders to 65,537, a till of 0 to
+  40, a width of 1 to 40), and 68,850 runs from one with six first slices named.
+  Before (the same check against the tree's Game.java with the new overload ignoring
+  its third argument): `every order of the sweep is the countdown's ... FAIL  207
+  against 0` and `the search finds the window's last slice, the countdown's, in every
+  one FAIL  5,176 against 0` (the first that differs: till 2, room 3, a building
+  earning 0.8059: quantity 0 and 22 desk calls against the count's 3 and 92). After:
+  both `OK  0 against 0`. The whole OrderSearchCheck passes ("All checks passed."): the
+  long run judges 2,193 orders (2,196 before: the path moves from 1226, where the
+  order built 10 instead of being refused), 19 trimmed against 18, 0 differing.
+- *Left*: the mend moves the playtest wherever an order was refused that the
+  countdown would have trimmed, and so the ensemble's path from there; the 21/26 of
+  section 10 was run before it.
+
+**CentralBankCheck (a draw; the check is as it was).** "Very strict holds prices
+lower than Standard over the horizon" fails by 0.025 of a point (3.071% a year
+against 3.046%) on the factor's path. Read first: the section plays the probe city
+(the playtest's founding in seed 7's shape, to month 600) and from one save the
+three ends for 240 months each; the claim is the order of two twenty-year
+inflations. Looked for, and not found: a threshold or an unscaled literal in the
+rule or its policy (the twins' rule is the city's own DebtManager autopilot, in rates and
+ratios; PolicyRates feeds the US's rate to worldRate() by a rule of the same kind - a
+neutral real rate, TAYLOR_WEIGHT, LOWER_BOUND, STEP, no money literal - and both ends
+read the one world) or a feedback through output that is the factor's.
+- *The gap at each price level* (very strict less Standard, points a year, 240 months, the full
+  section re-run in a scratch driver, `-Dcbs.priceLevel`): 1 -0.265; 0.5 -0.268;
+  0.25 -0.205; 0.1 -0.337; 0.03 -0.165; 0.028 -0.233; 0.027 -0.393; 0.026 -0.502;
+  0.0259 -0.167; 0.0255 -0.262; 0.025 -0.404; 0.02 -0.220; 0.999999 -0.155;
+  1.000001 -0.301; 0.0258 -0.250; 0.02589 -0.229; 0.025884 -0.424; 0.0258835
+  -0.310; 0.02588347 -0.334; 0.0258834 -0.870; 0.025883464 (6e-9 over the factor)
+  -0.499; 0.02588346385 (3e-10 over) -0.350. Positive: 0.02588 +0.149 and the
+  factor 0.0258834638 +0.025. 22 of 24 hold it, by 0.15 to 0.87 of a point; the
+  sign changes between two levels 3e-10 apart.
+- *The same at the factor, other founding shapes* (houses 40 to 46 before the next
+  twenty, 4 or 5 months): 11 of 12 hold it (-0.13 to -1.97); 46 houses and 4 months is
+  +0.29.
+- *The path is bimodal.* At 1, 0.5, 0.1, 0.02 and 0.0255 the twins are near-equal
+  (9,654 to 9,670 people, the dial at most 13.4% to 13.9%, inflation's sd 2.6 to 2.7
+  points): a model that does not know its price level, over a 50-fold range. The
+  other levels fall onto other paths by a rounding tie (0.0259, 0.026 and 0.03 share
+  one: sd 3.38, min -8.4%), as ScaleCheck's town does (section 9). The factor's is a
+  wilder one: very strict's inflation sd 3.34 against Standard's 2.54, the dial 24.98%
+  against 15.38%, and a late burst, the last year 3.39% against 0.65%.
+- *Where the two part*: the rule differs from month 1 (the dial 6.31% against 4.73%);
+  the indexes part at month 2 (0.99999) and very strict's is first above Standard's
+  at month 25, then 0.944 at month 72 (Standard at 8-15% dial), 1.003 at 96, 0.962
+  at 144, 1.063 at 168, 0.971 at 216 and 1.005 at 240 (the last two years the dial
+  12-15% against 10%). At 0.03 it first passes at 131, at 1.000001 never.
+- *So*: a draw, in the sense of ScaleCheck's town: the premise holds in the general
+  case and the factor's trajectory is one that does not. Not changed: the assertion,
+  the horizon, the fixture. If Jerus would have it green, the probe city's shape is
+  re-picked (the banner of `probeCity()` has done it several times for this reason);
+  that is a batch's work at the factor, and is not done here.

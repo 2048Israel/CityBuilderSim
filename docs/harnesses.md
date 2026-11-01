@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**166 harness files, 18,191 labelled assertions.** AllChecks runs 166 of them.
+**166 harness files, 18,199 labelled assertions.** AllChecks runs 166 of them.
 
 ## Which harnesses read which class
 
@@ -16356,7 +16356,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L291 an order posted after the reload queues behind the saved ones at its price
   - L294 a book saved with nothing on it loads empty, with no last price
 
-## OrderSearchCheck.java - 27 labelled assertions
+## OrderSearchCheck.java - 35 labelled assertions
 
 > The three order searches against the countdowns they replaced (0.7.54).
 > 
@@ -16372,37 +16372,45 @@ _(this harness does not label its checks through a helper - it prints its findin
 > doubles down and halves (Game, THE LARGEST SLICE, WITHOUT COUNTING TO IT).
 > ...
 
-- **L170 1. a long run, every order watched**
-  - L195 the long run
-  - L196 fixture: the run sized orders, and judged them on their interest, refusing some
-  - L198 fixture: ...and bought on a mortgage, trimmed and refused some
-  - L200 the long run
-- **L202 2. the same city, a thousand times over**
-  - L215 the copy loads
-  - L226 the copy
-  - L227 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
-  - L229 the copy
-  - L233 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
-  - L248 the twin loads, at the copy's month
-  - L261 the twin
-  - L262 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
-  - L264 fixture: ...some by more than the counted slices, so the search found them
-  - L265 the twin
-  - L266 fixture: ...and the twin's too
-- **L363 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
-  - L396 on a test that holds on a run from one, the search finds the countdown's slice every time
-  - L397 ...and never asks more than deskCallsMost() times
-  - L421 fixture: some were decided inside the counted slices, and some below them
-  - L423 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
-  - L424 ...and below them it finds a slice that passes with the next one up failing
-- **L430 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
-  - L473 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
-  - L475 every order on the grid is the count's: its size, what trimmed it and the facts for one
-  - L476 ...reading fewer costs than the count
-  - L557 every order's size in
-  - L558 every trim and refusal in
-  - L559 every mortgage in
-  - L560 no order in
+- **L177 1. a long run, every order watched**
+  - L202 the long run
+  - L203 fixture: the run sized orders, and judged them on their interest, refusing some
+  - L205 fixture: ...and bought on a mortgage, trimmed and refused some
+  - L207 the long run
+- **L209 2. the same city, a thousand times over**
+  - L222 the copy loads
+  - L233 the copy
+  - L234 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
+  - L236 the copy
+  - L240 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
+  - L255 the twin loads, at the copy's month
+  - L268 the twin
+  - L269 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
+  - L271 fixture: ...some by more than the counted slices, so the search found them
+  - L272 the twin
+  - L273 fixture: ...and the twin's too
+- **L370 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
+  - L403 on a test that holds on a run from one, the search finds the countdown's slice every time
+  - L404 ...and never asks more than deskCallsMost() times
+  - L428 fixture: some were decided inside the counted slices, and some below them
+  - L430 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
+  - L431 ...and below them it finds a slice that passes with the next one up failing
+- **L437 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
+  - L480 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
+  - L482 every order on the grid is the count's: its size, what trimmed it and the facts for one
+  - L483 ...reading fewer costs than the count
+  - L540 fixture: the city has Convenience Stores
+  - L573 fixture: the sweep caused windows - the countdown trims into a slice past the till's while the till's slices fail
+  - L574 every order of the sweep is the countdown's: its slice, its \"at prime\" and its rate at the whole order
+  - L575 ...and none asks the bond desk more than Game.deskCallsMost() times
+  - L594 fixture: the doubling and halving alone miss some of the windows, so the first slice that borrows finds them
+  - L595 the search finds the window's last slice, the countdown's, in every one
+  - L596 ...within deskCallsMost() asks
+  - L612 on a test that holds on a run from one the first slice that borrows changes nothing, and asks within deskCallsMost()
+  - L693 every order's size in
+  - L694 every trim and refusal in
+  - L695 every mortgage in
+  - L696 no order in
 
 ## OutsideCheck.java - 104 labelled assertions
 

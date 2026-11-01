@@ -5878,8 +5878,10 @@ public class Game {
             decided exactly as it always was, whatever shape the test has;
          2. below them, doubling down from the last slice that failed - one
             less, then two, four, eight - until one passes or one is left;
-         3. then halving between that one and the last that failed.
-       The bond desk is asked at most COUNTDOWN_SLICES + 2 x 31 + 1 times an
+         3. then halving between that one and the last that failed;
+         4. then the first slice the till does not pay for, if the doubling
+            stepped over it, and halving above it (OS1, below).
+       The bond desk is asked at most COUNTDOWN_SLICES + 3 x 31 + 2 times an
        order, whatever its size (deskCallsMost()).
 
        WHY NOT HALVING FROM THE START. Halving assumes that if a slice fails,
@@ -5899,7 +5901,14 @@ public class Game {
        passes at some slice, fails at a smaller one and passes again at a
        smaller one still. In the runs measured at today's sizes - the long
        run of OrderSearchCheck, and Jerus's city and city2400 as they are -
-       no order was trimmed into the search at all. OrderSearchCheck holds
+       no order was trimmed into the search at all. EP1's path at the
+       factor met such a window (OS1): a slice the till
+       pays for is judged at the sector's own rate and the first that
+       borrows at a bond's cheaper one, so slices that borrow pass above
+       the till's that fail (month 1226: 1 to 4 failing, 5 to 10 passing on a
+       bond, 11 to 94 failing past the bank's room), a window of a few slices
+       the doubling stepped over; step 4 asks the first slice that borrows
+       and halves above it. OrderSearchCheck holds
        the two to the same answer over that run, in a copy a thousand times
        over whose trims do reach the search, and on tests of its own;
        ScaleCheck holds the bond desk to deskCallsMost() at 5 and 10
@@ -5961,10 +5970,10 @@ public class Game {
     /** The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. */
     public static final int PRIME_SCAN_SLICES = 4096;
 
-    /** The most times an order of this many may ask the bond desk: the countdown's slices, then doubling down and halving, each at most once a bit of the order. */
+    /** The most times an order of this many may ask the bond desk: the countdown's slices, then doubling down, halving and halving again above the first slice that borrows, each at most once a bit of the order, and that slice itself (OS1). */
     public static int deskCallsMost(int quantity) {
         int bits = 32 - Integer.numberOfLeadingZeros(Math.max(1, quantity));
-        return COUNTDOWN_SLICES + 2 * bits + 1;
+        return COUNTDOWN_SLICES + 3 * bits + 2;
     }
 
     /**
@@ -5983,36 +5992,72 @@ public class Game {
     /** The largest slice of the order that carries its interest - see THE LARGEST SLICE, WITHOUT COUNTING TO IT. */
     private Afford largestSliceThatCarries(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
         Slices test = new Slices(decision, cash, perUnitProfit);
-        int pass = largestSlice(decision.quantity, test::passes);
+        int pass = largestSlice(decision.quantity, test::passes, () -> test.firstThatBorrows(decision.quantity));
         if (pass == 0) test.askPrimeOfTheRest(decision.quantity);
         return test.result(pass);
+    }
+
+    /** largestSlice() for a test with no first slice that borrows to look at: the countdown's slices, doubling down and halving. */
+    static int largestSlice(int quantity, java.util.function.IntPredicate passes) {
+        return largestSlice(quantity, passes, () -> 0);
     }
 
     /**
      * The largest n from 1 to quantity that passes, 0 for none, found as THE
      * LARGEST SLICE, WITHOUT COUNTING TO IT says: the countdown's first
-     * COUNTDOWN_SLICES, then doubling down, then halving. Asks `passes` at
+     * COUNTDOWN_SLICES, then doubling down, then halving - and, when the
+     * caller names `borrowsFrom`, the first slice the till does not pay for (asked
+     * of it only when the counted slices all fail), that slice and the halving above it (OS1). WHY: the doubling steps
+     * over the slices a bond opens. A slice the till pays for is judged at
+     * the sector's own rate, the first that borrows may be judged at a
+     * bond's cheaper one, so the test can fail at every slice the doubling
+     * asked (the till's, then the slices past the bank's room) and pass at a
+     * few between them: EP1's path met it at month 1226, Retail's 94
+     * Convenience Stores failing at 1 to 4 (the till's) and 11 to 94 (past the
+     * room), passing at 5 to 10 on a bond, which the countdown found and the
+     * doubling, asking 78, 76, 72, 64, 48, 16 and 1, did not. Asks `passes` at
      * most deskCallsMost(quantity) times. OrderSearchCheck holds it to the
-     * countdown on every boundary of a run from one.
+     * countdown on every boundary of a run from one, and with a window a bond
+     * opens at the first slice that borrows.
      */
-    static int largestSlice(int quantity, java.util.function.IntPredicate passes) {
+    static int largestSlice(int quantity, java.util.function.IntPredicate passes, java.util.function.IntSupplier borrowsFrom) {
+        int[] failed = new int[2 * 32 + 2];   // the slices asked below the counted ones that failed, for the window's wall
+        int failures = 0;
         int fail = Math.max(1, quantity);   // the smallest slice known to fail, once one has
         // 1. The countdown itself, for its first COUNTDOWN_SLICES slices.
         for (int n = quantity; n >= 1 && n > quantity - COUNTDOWN_SLICES; n--) {
             if (passes.test(n)) return n;
             fail = n;
         }
+        failed[failures++] = fail;
         // 2. Doubling down from the last that failed...
         int pass = 0;              // the largest slice known to pass; 0 for none
         for (long step = 1; fail > 1; step *= 2) {
             int n = (int) Math.max(1, fail - step);
             if (passes.test(n)) { pass = n; break; }
             fail = n;
+            failed[failures++] = n;
         }
         // 3. ...then halving between the two.
         while (fail - pass > 1) {
             int mid = (int) (((long) pass + fail) >>> 1);
-            if (passes.test(mid)) pass = mid; else fail = mid;
+            if (passes.test(mid)) pass = mid; else { fail = mid; failed[failures++] = mid; }
+        }
+        // 4. The first slice that borrows, if the doubling stepped over it (OS1): where a bond's cheaper rate opens a window
+        //    above slices that fail, and halving above it up to the lowest slice known to fail over it.
+        int first = quantity > COUNTDOWN_SLICES ? borrowsFrom.getAsInt() : 0;   // asked of the till only when the counted slices all failed
+        if (first > pass && first <= quantity - COUNTDOWN_SLICES) {
+            boolean asked = false;
+            for (int i = 0; i < failures; i++) asked |= failed[i] == first;
+            if (!asked && passes.test(first)) {
+                pass = first;
+                int wall = Integer.MAX_VALUE;
+                for (int i = 0; i < failures; i++) if (failed[i] > pass && failed[i] < wall) wall = failed[i];
+                while (wall - pass > 1) {
+                    int mid = (int) (((long) pass + wall) >>> 1);
+                    if (passes.test(mid)) pass = mid; else wall = mid;
+                }
+            }
         }
         return pass;
     }
@@ -6032,6 +6077,12 @@ public class Game {
             this.cash = cash;
             this.perUnitProfit = perUnitProfit;
             this.banned = credit.isBorrowingBlocked(decision.sector);
+        }
+
+        /** The first slice the till does not pay for, which largestSlice() looks at (OS1): one more than the largest whose cost the till covers, quantity + 1 when it covers the order, 0 under a ban (no slice that borrows is built). Asks no bond desk. */
+        int firstThatBorrows(int q) {
+            if (banned) return 0;
+            return largestSlice(q, n -> businessInvestment.getCostOf(decision.template, n) <= cash) + 1;
         }
 
         /** Whether n of them carry the interest on their whole cost (0.7.113); what failed at prime and the rate at the whole order are kept for the refusal. */
