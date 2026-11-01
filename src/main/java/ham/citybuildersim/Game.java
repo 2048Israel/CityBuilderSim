@@ -686,8 +686,16 @@ public class Game {
 
         this.reports = false;
         this.graphs = false;
+
+        // A new city records nothing; a load takes its switch from its save (readTheSave()). replayCopy is the game's, never reset (TR1).
+        this.recordingId = null;
+        this.recording = false;
+        this.recordedSinceLoad = false;
+        this.recordingStartedAt = 0;
+        this.monthsNotRecorded = 0;
+        this.inUnrecordedRun = false;
     }
-    
+
     public void run() {
         initialize();
         foundingBank();
@@ -7061,6 +7069,7 @@ public class Game {
 
         boolean previousGraphs = graphs;
         boolean previousReports = reports;
+        boolean previousSkipping = skipping;
 
         graphs = false;
         reports = false;
@@ -7073,6 +7082,8 @@ public class Game {
         captureSkipSnapshot(true);
 
         try {
+            // The recording waits for its writer inside a skip, and records nothing it cannot keep up with on the clock (TR1; recordForReplay()).
+            skipping = true;
             for (int i = 0; i < months; i++) {
                 nextMonth();
                 completed++;
@@ -7123,6 +7134,7 @@ public class Game {
         } finally {
             graphs = previousGraphs;
             reports = previousReports;
+            skipping = previousSkipping;
 
             // In the finally block so a skip that stops early - or throws - still
             // produces a readable summary rather than a half-filled one.
@@ -12733,6 +12745,8 @@ public class Game {
                 monthsSinceAutosave = 0;
             }
         }
+        // A recorded city keeps this whole month, beside the autosave (TR1; THE RECORDING). Moves no pool.
+        recordForReplay();
         // The month's draws were shown with its fills; a draw from here on is the next month's (FW5, 2026-10-25). Last, on purpose.
         getMarkets().closeMonth();
     }
@@ -15188,11 +15202,14 @@ public class Game {
 
         reportSaves();
 
-        SaveWriter.shared().submit(prepareSave(GameFiles.AUTOSAVE_SLOT, "Autosave - " + reason, true),
+        SaveWriter.Job job = prepareSave(GameFiles.AUTOSAVE_SLOT, "Autosave - " + reason, true);
+        SaveWriter.shared().submit(job,
                 result -> {
                     System.out.println(GameFiles.slotLabel(GameFiles.AUTOSAVE_SLOT) + ": " + result.message());
                     savesWritten.add(result);
                 });
+        // A recorded city's history goes at the autosave's pace, from the snapshot the save already made (TR1; THE RECORDING).
+        recordHistoryFrom(job);
 
         // The floor paces real time and lives as long as the window does: not buildWorld()'s to reset.
         lastAutosaveAt = saveClock.getAsLong();
@@ -15300,6 +15317,24 @@ public class Game {
      * autosave's, written on another thread); without, the live objects.
      */
     private SaveWriter.Job prepareSave(int slot, String slotName, boolean snapshot){
+
+        byte[] mapBytes = fillSave(slotName);
+
+        // The writing itself is SaveWriter.Job.write(): the save, its map, then the history.
+        // A snapshot is taken here, on the FX thread, because this is the only place the model is safe to read.
+        return new SaveWriter.Job(gameFiles, slot,
+                snapshot ? dataSave.snapshot() : dataSave,
+                snapshot ? historySave.snapshot() : historySave,
+                mapBytes);
+    }
+
+    /**
+     * Fills the save from the city as it stands, asks the map for its bytes and
+     * stamps it (TR1: split out of prepareSave(), so the recording fills the
+     * same save and snapshots it without the history). Returns the map's
+     * sidecar bytes, or null when the city has none.
+     */
+    private byte[] fillSave(String slotName){
 
         sendBuildingSave();
         // NOTE: cash wasn't explicitly set here - it only ended up correct because
@@ -15631,6 +15666,8 @@ public class Game {
         dataSave.setGovernmentMonth(economyManager.governmentMonthToSave());
         dataSave.setReports(reports);
         dataSave.setGraphs(graphs);
+        // ...and the recording's switch and id (TR1; THE RECORDING).
+        dataSave.setRecording(recordingId, recording);
         dataSave.setSlotName(slotName);
         // The city map's sidecar (0.7.60), written after the save; its stamp in the save, none when there is no map.
         byte[] mapBytes = null;
@@ -15644,13 +15681,198 @@ public class Game {
         dataSave.setMapStamp(mapBytes != null ? cityMap.lastStamp() : null);
         dataSave.stamp(GameVersion.VERSION, GameVersion.SAVE_FORMAT,
                 System.currentTimeMillis());
+        return mapBytes;
+    }
 
-        // The writing itself is SaveWriter.Job.write(): the save, its map, then the history.
-        // A snapshot is taken here, on the FX thread, because this is the only place the model is safe to read.
-        return new SaveWriter.Job(gameFiles, slot,
-                snapshot ? dataSave.snapshot() : dataSave,
-                snapshot ? historySave.snapshot() : historySave,
-                mapBytes);
+    /* ===== THE RECORDING (TR1, 2026-10-31) ==================================
+     *
+     * "Record this city" (a switch kept in the save, with an id) keeps every
+     * month of the city on disk - its save and its map's sidecar, compressed,
+     * in recordings/<id>/ (Recording) - so a replay (ReplayCity) can show any
+     * month on a throwaway copy. A recording never changes the month and never
+     * blocks the clock: what stays on the FX thread is the fill and a snapshot
+     * of the save (not of the history, which is 6 to 27 MB in a long game), and
+     * SaveWriter's thread does the rest. The history is written at the
+     * autosave's pace, from the snapshot the autosave already made, and when
+     * recording stops. A replay copy (markReplayCopy) never records, and the
+     * replay's hooks at the end swap its map and history.
+     * ====================================================================== */
+
+    /** The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. */
+    public static final int RECORD_BACKLOG = 6;
+
+    /** The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. */
+    static final long RECORD_WAIT_MS = 30_000;
+
+    /** The recording's id, which names its folder under recordings/; null in a city that never recorded. */
+    private String recordingId;
+    /** Whether "Record this city" is on. */
+    private boolean recording;
+    /** False from a load or from switching on until the first month is written: that write drops the months past it (the rewind) and takes the history with it. */
+    private boolean recordedSinceLoad;
+    /** True for the throwaway copy a replay shows (markReplayCopy): it never records and never writes the player's folder. */
+    private boolean replayCopy;
+    /** True while simulateMonths() runs its months: the recorder then waits for the writer rather than skipping a month. */
+    private boolean skipping;
+    /** When the recording was started, in epoch milliseconds (its meta); 0 in a city loaded from a save, whose meta is on disk already. */
+    private long recordingStartedAt;
+    /** The files the recorder has handed the writer that are not yet written, by target: a task replaced while it waited is counted once, and its replacement removes it. */
+    private final java.util.Set<Path> recordingsWaiting = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Object recordingRoom = new Object();
+    /** Months the clock did not record because the writer was behind, since the city was built or loaded. */
+    private int monthsNotRecorded;
+    /** True while the clock is in a run of unrecorded months: the first of a run prints one line. */
+    private boolean inUnrecordedRun;
+    /** What the last recorded month cost the FX thread: the fill, the snapshot and the hand-over, in nanoseconds. */
+    private volatile long lastRecordNanos;
+
+    public boolean isRecording() { return recording; }
+
+    public String getRecordingId() { return recordingId; }
+
+    /** The recording's folder, or null in a city with no id. */
+    public Path recordingFolder() {
+        return recordingId == null ? null : gameFiles.recordingsDirectory().resolve(recordingId);
+    }
+
+    /** Months the clock left out of the recording because the writer was behind (RECORD_BACKLOG). */
+    public int getMonthsNotRecorded() { return monthsNotRecorded; }
+
+    /** For ReplayCheck: the FX-thread cost of the last recorded month, in nanoseconds. */
+    long lastRecordNanos() { return lastRecordNanos; }
+
+    /**
+     * Switches "Record this city" on or off. On: an id if the city has none, and the next month written starts the
+     * timeline (it drops the months past it). Off: the history is written now. A replay copy stays off.
+     */
+    public void setRecording(boolean on) {
+        if (replayCopy) {
+            recording = false;
+            return;
+        }
+        if (on) {
+            if (recordingId == null) {
+                recordingStartedAt = System.currentTimeMillis();
+                recordingId = Recording.newId(getCityName(), recordingStartedAt);
+            }
+            recording = true;
+            recordedSinceLoad = false;
+        } else {
+            boolean was = recording;
+            recording = false;
+            if (was && recordedSinceLoad && recordingId != null) {
+                submitRecording(Recording.historyTask(gameFiles, recordingFolder(), historySave.snapshot()));
+            }
+        }
+    }
+
+    /** The meta of the recording being written: who the city is, and what wrote it. */
+    private Recording.Meta recordingMeta() {
+        return new Recording.Meta(recordingId, getCityName(), GameVersion.VERSION, GameVersion.SAVE_FORMAT,
+                recordingStartedAt > 0 ? recordingStartedAt : System.currentTimeMillis(), founding.getWorldKey().earth());
+    }
+
+    /** Hands the writer a recording file and counts it until it is written (a failure is printed there). */
+    private void submitRecording(SaveWriter.Task task) {
+        Path target = task.target();
+        recordingsWaiting.add(target);
+        SaveWriter.shared().submit(task, result -> {
+            if (!result.ok) System.out.println("Recording: " + result.message());
+            recordingsWaiting.remove(target);
+            synchronized (recordingRoom) {
+                recordingRoom.notifyAll();
+            }
+        });
+    }
+
+    /** Waits, at most RECORD_WAIT_MS, for the writer to get inside RECORD_BACKLOG; true when it has. */
+    private boolean awaitRecordingRoom() {
+        long until = System.nanoTime() + RECORD_WAIT_MS * 1_000_000L;
+        synchronized (recordingRoom) {
+            while (recordingsWaiting.size() >= RECORD_BACKLOG) {
+                long left = (until - System.nanoTime()) / 1_000_000L;
+                if (left <= 0) return false;
+                try {
+                    recordingRoom.wait(Math.min(left, 50));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Keeps the month that has just ended, when "Record this city" is on (called by nextMonth(), after the autosave: the
+     * counter and every month-end record agree). The FX-thread part is the fill of the save, a snapshot of it and the
+     * hand-over; the writer does the rest. Writer behind by RECORD_BACKLOG: a skip waits for it, the clock records nothing
+     * this month and says so once per run. The first write since a load or since switching on drops the months past it (the
+     * rewind: the recording is the timeline last played) and takes the history with it.
+     */
+    private void recordForReplay() {
+        if (!recording || replayCopy || recordingId == null) return;
+        if (recordingsWaiting.size() >= RECORD_BACKLOG && !(skipping && awaitRecordingRoom())) {
+            monthsNotRecorded++;
+            if (!inUnrecordedRun) {
+                inUnrecordedRun = true;
+                System.out.println("Recording: the writer is " + recordingsWaiting.size() + " files behind; month " + month
+                        + " and the months after it are not kept until it catches up.");
+            }
+            return;
+        }
+        inUnrecordedRun = false;
+        long began = System.nanoTime();
+        byte[] map = fillSave("Recording");
+        DataSave snapshot = dataSave.snapshot();
+        boolean first = !recordedSinceLoad;
+        HistorySave history = first ? historySave.snapshot() : null;
+        Path folder = recordingFolder();
+        Recording.Meta meta = recordingMeta();
+        submitRecording(Recording.monthTask(gameFiles, folder, meta, month, snapshot, map, first));
+        if (first) {
+            submitRecording(Recording.historyTask(gameFiles, folder, history));
+            recordedSinceLoad = true;
+        }
+        lastRecordNanos = System.nanoTime() - began;
+    }
+
+    /** The autosave's history, handed to the recording from the snapshot the save made (autosave()); only once a month of this timeline is on disk. */
+    private void recordHistoryFrom(SaveWriter.Job job) {
+        if (!recording || replayCopy || recordingId == null || !recordedSinceLoad) return;
+        submitRecording(Recording.historyTask(gameFiles, recordingFolder(), job.history()));
+    }
+
+    /** Makes this game the replay's throwaway copy: recording off, and never on again. Never undone. */
+    public void markReplayCopy() {
+        replayCopy = true;
+        recording = false;
+    }
+
+    public boolean isReplayCopy() { return replayCopy; }
+
+    /**
+     * Replay's quick step: the map of a recorded month read from its sidecar and put in place of the city's, nothing else
+     * moved. False, and nothing changed, when this is not a replay copy or the sidecar is not for this land (a purchase
+     * between the months: the land is not the one it was drawn on) - the caller then loads the month whole.
+     */
+    public boolean replayMap(byte[] sidecar, int month) {
+        if (!replayCopy || sidecar == null) return false;
+        CityMap m = CityMap.readSidecar(sidecar, landManager.getCityLand(), landManager::remainingByHolding, getMapTypes(),
+                month, CityMap.stampIn(sidecar), getLandmassPicture(), getBridgePicture());
+        if (m == null) return false;
+        cityMap = m;
+        mapGeneration++;
+        mapAtSeaStale = true;
+        return true;
+    }
+
+    /** Replay's history: a parsed history put in place of the copy's, as loadHistory() does with the file's, and the partner trade's years with it. A game that is not a replay copy keeps its own. */
+    public void replayHistory(HistorySave h) {
+        if (!replayCopy || h == null) return;
+        historySave.restoreFrom(h);
+        PartnerTrade backTo = partnerTrade;
+        if (backTo != null) backTo.restoreHistory(historySave.getTradeByPartner());
     }
 
     /**
@@ -19020,6 +19242,10 @@ public class Game {
             households.setCumulativeSaving(loaded.getHouseholdSavings());
             this.reports = loaded.getReports();
             this.graphs = loaded.getGraphs();
+            // ...and the recording's id and switch (TR1): none in a save from before it, and never on in a replay copy.
+            this.recordingId = loaded.getRecordingId();
+            this.recording = loaded.isRecording() && recordingId != null && !replayCopy;
+            this.recordedSinceLoad = false;
             inbox.restoreFrom(loaded.getNotices());
             sectorBooks.restoreFrom(loaded.getSectorBooks(),
                     loaded.getSectorBooksBefore());

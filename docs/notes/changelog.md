@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.92 — TR1, replay a recorded city (the trailer's camera tools) — 2026-10-31, shipped, see docs/queue/TR1-notes.md
+"Record this city" (the Menu, kept in the save) keeps every month - the save and the map, gzipped - in recordings\<id>\, written on
+SaveWriter's thread; the month pays only the save's fill (3-5 ms on a 78,000-person city), about 0.2-0.5 MB a month on disk, and a
+rewind rewrites from the month played on. The player's input is logged beside it for TR2's ghost. "Replay a recording" opens any
+month on a throwaway copy in its own scratch folder, so nothing sticks and no save or slot is written: a time bar plays both ways
+at 1-16 months a second (the map swapped while moving, the month loaded whole at rest, 0.2-0.8 s). Cinematic mode (C) hides the
+chrome and the cursor, and a button sizes the window to 1920 x 1080. On the map: the wheel and W A S D ease, a drift, a glide
+from view A to B through time (1, 2, 3), a fly out to the whole Earth and back (O, I), and faint GDP and population lines behind
+the city (G). Recording is off by default and changes no month (ReplayCheck 6): no ensemble.
+
 ### 0.8.91 — LD1, a business short of workers bids the wage up — 2026-10-31, ready, see docs/queue/LD1-notes.md
 Jerus's loop, from his own city (2026-10-31: "if the reason is not enough workers and the business can... then it raises its
 wage?"): a building the staffing gate refuses posts no jobs, so its band's wage never saw it and the band's migrants had no

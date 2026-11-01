@@ -1,6 +1,6 @@
 # TilePainter.java - 920 lines · 44 methods · 51 constants · model
 
-`ham/citybuildersim/TilePainter.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TilePainter.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, width and role, and every building's box - the city's highways and railway through it and the resource sites under it, what each plot is - the same picture from the same inputs, on any machine.
 > 
@@ -57,7 +57,7 @@
 
 **Uses:** [BuildingVisual](BuildingVisual.md) (11), [TrackCurves](TrackCurves.md) (8), [DistrictPlan](DistrictPlan.md) (8), [World](World.md) (7), [CityRuns](CityRuns.md) (1), [CityMap](CityMap.md) (1)
 
-**Used by (22):** [BridgeMapCheck](BridgeMapCheck.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SlopeRenders](SlopeRenders.md), [TileRaster](TileRaster.md), [TruckRouteCheck](TruckRouteCheck.md)
+**Used by (23):** [BridgeMapCheck](BridgeMapCheck.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [ReplayCheck](ReplayCheck.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SlopeRenders](SlopeRenders.md), [TileRaster](TileRaster.md), [TruckRouteCheck](TruckRouteCheck.md)
 
 ## Sections
 

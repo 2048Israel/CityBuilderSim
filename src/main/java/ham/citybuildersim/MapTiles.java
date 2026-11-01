@@ -65,6 +65,16 @@ public final class MapTiles {
 
     public MapTiles(CityMap map) { this.map = map; }
 
+    /**
+     * Tiles for another map of the same world (TR1, 2026-10-31): a replay's quick step swaps the city's map every month while its
+     * bar plays, and the ground already read is the world's - it does not change - so it is carried over rather than read again.
+     * Nothing else is: a painted tile, the stamps and the plans belong to the map. On another world the ground starts empty.
+     */
+    public MapTiles(CityMap map, MapTiles from) {
+        this(map);
+        if (from != null && from.map.worldKey().equals(map.worldKey())) terrain.putAll(from.terrain);
+    }
+
     /** The map these tiles are painted from. */
     public CityMap map() { return map; }
 

@@ -1,6 +1,6 @@
 # UiProbe.java - 729 lines · 23 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/UiProbe.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/UiProbe.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > What the window costs the JavaFX thread as a city ages, measured: it grows
 > the playtest's city to the months it is given, opens the real window on it,
@@ -64,7 +64,7 @@
 >     (UP2), the same chrome with its pools forgotten first, turn and turn
 > ... (28 more lines in the source)
 
-**Uses:** [GameFiles](GameFiles.md) (8), [UserInterface](UserInterface.md) (5), [LongPlaytest](LongPlaytest.md) (4), [Game](Game.md) (3), [GamePrefs](GamePrefs.md) (2), [Timing](Timing.md) (2), [TempDirs](TempDirs.md) (1), [SaveWriter](SaveWriter.md) (1)
+**Uses:** [GameFiles](GameFiles.md) (8), [UserInterface](UserInterface.md) (5), [LongPlaytest](LongPlaytest.md) (4), [Game](Game.md) (3), [GamePrefs](GamePrefs.md) (2), [Recording](Recording.md) (2), [Timing](Timing.md) (2), [TempDirs](TempDirs.md) (1), [SaveWriter](SaveWriter.md) (1)
 
 ## Sections
 

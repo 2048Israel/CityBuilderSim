@@ -74,6 +74,9 @@ public final class GameFiles {
     public static final int AUTOSAVE_SLOT = 0;
     public static final String SAVES_FOLDER = "saves";
 
+    /** The folder, beside saves/, that holds one folder per recorded city (TR1): a recording's file can never be a slot's. */
+    public static final String RECORDINGS_FOLDER = "recordings";
+
     /** The folder the game used before this class existed. */
     static final String LEGACY_FOLDER = "YourGame";
 
@@ -119,6 +122,9 @@ public final class GameFiles {
     public Path legacyFlatHistory() { return directory.resolve(HISTORY_FILE); }
 
     public Path savesDirectory() { return directory.resolve(SAVES_FOLDER); }
+
+    /** Where the recordings are (TR1): one folder a recorded city, named by its id (Recording). */
+    public Path recordingsDirectory() { return directory.resolve(RECORDINGS_FOLDER); }
 
     public Path saveFile(int slot)    { return savesDirectory().resolve(stem(slot) + ".json"); }
     public Path historyFile(int slot) { return savesDirectory().resolve(stem(slot) + "-history.json"); }

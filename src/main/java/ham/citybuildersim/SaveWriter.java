@@ -39,11 +39,25 @@ public final class SaveWriter {
     public static final double FLOOR_SECONDS = 30;
 
     /**
+     * Anything the one writer writes (TR1, 2026-10-31): the autosave's Job, and a recording's month or history (Recording). Two
+     * tasks for one target never run beside each other, and a newer one replaces one still waiting - the recording rides the
+     * thread the autosave does, so a month of it never holds the clock and never runs beside a save.
+     */
+    public interface Task {
+
+        /** The file this task is for: tasks with the same target replace one another while they wait. */
+        Path target();
+
+        /** Writes it, on the writer's thread; the outcome is returned, not thrown. */
+        GameFiles.Result write();
+    }
+
+    /**
      * One city to put on disk: the three things a save is, already taken off
      * the live model on the FX thread. It writes in the order Game.save()
      * always has: the save, its map, then the history.
      */
-    public static final class Job {
+    public static final class Job implements Task {
 
         private final GameFiles files;
         private final int slot;
@@ -70,11 +84,13 @@ public final class SaveWriter {
         byte[] map() { return map; }
 
         /** The file this job is for: the save's; two jobs with the same target never run beside each other. */
+        @Override
         public Path target() {
             return files.saveFile(slot);
         }
 
         /** Writes all three files and returns the save's outcome; the map's and the history's failures are printed. */
+        @Override
         public GameFiles.Result write() {
 
             GameFiles.Result result = data.saveGame(files, slot);
@@ -97,12 +113,12 @@ public final class SaveWriter {
         }
     }
 
-    /** A job waiting its turn, and who to tell when it has been written. */
+    /** A task waiting its turn, and who to tell when it has been written. */
     private static final class Waiting {
-        final Job job;
+        final Task job;
         final Consumer<GameFiles.Result> done;
 
-        Waiting(Job job, Consumer<GameFiles.Result> done) {
+        Waiting(Task job, Consumer<GameFiles.Result> done) {
             this.job = job;
             this.done = done;
         }
@@ -140,7 +156,7 @@ public final class SaveWriter {
      * with the job's result - or with a failure naming the throwable, if
      * writing it threw anything.
      */
-    void submit(Job job, Consumer<GameFiles.Result> done) {
+    void submit(Task job, Consumer<GameFiles.Result> done) {
         synchronized (this) {
             waiting.put(job.target(), new Waiting(job, done));
             startWorker();

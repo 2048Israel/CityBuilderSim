@@ -967,6 +967,9 @@ public class UserInterface extends Application {
                 return;
             }
 
+            // A replay's keys (TR1; ReplayMode.key()): taken, and consumed, before the clock's Space and the ladder's arrows.
+            if (replayKey(e, typing)) { e.consume(); return; }
+
             /*
              * THE MAP'S CARD TAKES ESC, ENTER AND CTRL+A (0.7.137, batch M6;
              * docs/studies/spec-earth.md 3): while the land office's map is
@@ -1141,6 +1144,7 @@ public class UserInterface extends Application {
 
         // button actions
         showMainMenu();
+        startReplayAndRecording();      // (TR1) the replay's mode and the input recorder, on this scene
 
 
     }
@@ -1469,7 +1473,7 @@ public class UserInterface extends Application {
         switch (screen) {
             case "showMainMenu": case "showSavingMenu": case "showSaveSlotConfirm":
             case "showLoadMenu": case "loadSlot": case "showSaveResult":
-            case "showSettingsMenu": case FoundingScreen.SCREEN:
+            case "showSettingsMenu": case FoundingScreen.SCREEN: case ReplayMode.LIST:
                 return true;
             default:
                 return false;
@@ -3247,7 +3251,7 @@ public class UserInterface extends Application {
     private static boolean coldMenu(String screen) {
         switch (screen) {
             case "showSettingsMenu": case "showLoadMenu": case "loadSlot":
-            case "showSavingMenu": case "showSaveSlotConfirm": case "showSaveResult":
+            case "showSavingMenu": case "showSaveSlotConfirm": case "showSaveResult": case ReplayMode.LIST:
                 return true;
             default:
                 return false;
@@ -3404,6 +3408,7 @@ public class UserInterface extends Application {
                 && !isGameMenu(currentScreen)) {
             resumeTo = redrawScreen;
         }
+        if (replayMenu()) return;       // (TR1) in a replay the menu is the replay's own
         clearMenu("showMainMenu", () -> showMainMenu());
         StackPane layer = titleContent();
 
@@ -3491,6 +3496,7 @@ public class UserInterface extends Application {
             column.getChildren().add(save);
         }
         column.getChildren().addAll(found, load, settings, quit);
+        addReplayEntries(column);       // (TR1) "Record this city" and "Replay a recording", above Quit
         column.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         StackPane.setAlignment(column, Pos.TOP_LEFT);
 
@@ -3894,6 +3900,7 @@ public class UserInterface extends Application {
          * has room for.
          */
         stage.setTitle(game.getCityName() + " - " + GameVersion.title());
+        replayRetitle();        // (TR1) "Replay - ..." while a replay is on
         buildScreen.showBuildMenu();
     }
 
@@ -3918,7 +3925,7 @@ public class UserInterface extends Application {
         buildScreen.buildCategory = BuildScreen.BUILD_HOME;
         buildScreen.measurePicked.clear();
         // ...and the land office forgets what it last showed: nothing on a new shelf is NEW (0.7.26).
-        landScreen.forget();
+        if (!replayKeepsMap()) landScreen.forget();     // (TR1) a replay's load keeps the map that is over the window, and its view
         // ...and the minimap what it drew (0.7.134).
         if (miniMap != null) miniMap.forget();
         // ...and People: no month has just landed on it (0.7.27).
@@ -4019,7 +4026,7 @@ public class UserInterface extends Application {
         Button yes = new Button("Quit");
         yes.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
                 + " -fx-background-color: " + Palette.ALERT_EDGE + ";");
-        yes.setOnAction(e -> game.toggleQuit());
+        yes.setOnAction(e -> { stopRecorder(); game.toggleQuit(); });   // (TR1) the input log is closed before the exit
         Button no = new Button("Cancel");
         no.setOnAction(e -> closeQuitDialog());
         HBox buttons = new HBox(Palette.GAP, no, yes);
@@ -4442,6 +4449,7 @@ public class UserInterface extends Application {
        ===================================================================== */
 
     private void showSimulateMonthsMenu() {
+        if (replayOn()) return;     // (TR1) a replay runs no months
         clearMenu("showSimulateMonthsMenu", () -> showSimulateMonthsMenu());
 
         final int[] months = {0};
@@ -6428,7 +6436,7 @@ public class UserInterface extends Application {
 
                 // ...and while a dialog is up (0.7.22): a confirmation's figures
                 // are the ones its action will meet.
-                if (!clockRunning || game == null || isGameMenu(currentScreen) || quitDialog != null) {
+                if (!clockRunning || game == null || isGameMenu(currentScreen) || quitDialog != null || replayOn()) {    // (TR1) a replay's clock never runs
                     pace.idle(dt);
                     // A month landed and its redraw was throttled away; the
                     // clock has since stopped, so nothing else will draw it.
@@ -6621,6 +6629,7 @@ public class UserInterface extends Application {
             header.heightProperty().addListener(chartFullHeaderHeight);
         }
         windowStack.getChildren().add(pane);
+        replayCinematicPane(underHeader);       // (TR1) laid in cinematic mode, it starts at the window's top
     }
 
     /** The overlay's top margin while it lies under the header (MS1): the header's height, 0 when it covers the window. */
@@ -6686,6 +6695,7 @@ public class UserInterface extends Application {
      * (MapView.BOAT_GAME_MONTHS). It stands while the clock is paused.
      */
     double clockMonths() {
+        if (replayOn()) return replayClockMonths();     // (TR1) a replay's clock is stopped; its boats and trains sail on real time
         return game == null ? 0 : game.getMonth() + pace.progress();
     }
 
@@ -6732,6 +6742,7 @@ public class UserInterface extends Application {
 
     /** Play, or pause. The one control the whole game now runs on. */
     private void setClockRunning(boolean run) {
+        if (run && replayOn()) return;      // (TR1) a replay's clock never runs
         clockRunning = run;
         if (run) {
             pausedBecause = null;
@@ -6779,5 +6790,233 @@ public class UserInterface extends Application {
         // Through Kept.play: a figure that is kept (the clock's month) pops again from rest when a month lands
         // while the last pop still runs, and not twice over.
         Kept.play(pip, pop);
+    }
+
+    /* ===== THE REPLAY AND THE RECORDING (TR1, 2026-10-31) ===================
+     *
+     * The window's half of "Record this city" and "Replay a recording": the
+     * code is ReplayMode (the list, entering and leaving, the time bar, the
+     * keys) and InputRecorder (the input log); what is here is what they
+     * cannot reach - this class's private fields - as small package-private
+     * methods, and the cinematic mode's hiding of the window's chrome.
+     * Nothing here runs in normal play: replayMode is idle and the recorder
+     * writes only while the city on screen is recording.
+     * ====================================================================== */
+
+    /** The replay (the list of recordings, the copy on show, the time bar); null until first asked for (replayMode()). */
+    private ReplayMode replayMode;
+
+    /** The input log's recorder (TR1); null until start() has made the scene. */
+    private InputRecorder inputRecorder;
+
+    /** Whether cinematic mode is on: the header, the rail, the construction panel and its tab, the toasts, the inbox's list, the time bar and the mouse cursor hidden. */
+    private boolean cinematic;
+
+    /** The expanded map's pane while cinematic mode holds it at the window's top (it lay under the header), to put back under the header when cinematic mode ends. */
+    private javafx.scene.Node cinematicLifted;
+
+    /** The replay's mode, made when first asked for: the first main menu is drawn in start() before the recorder is, and a harness's window never starts. */
+    private ReplayMode replayMode() {
+        if (replayMode == null) replayMode = new ReplayMode(this);
+        return replayMode;
+    }
+
+    /** Called at the end of start(): the recorder listening to this scene. */
+    private void startReplayAndRecording() {
+        replayMode();
+        inputRecorder = new InputRecorder(this);
+        inputRecorder.install(scene);
+    }
+
+    /** The platform calls this as the last window goes: the input log is closed (flushed) with it. */
+    @Override
+    public void stop() {
+        stopRecorder();
+    }
+
+    /** The input log closed, if one is open: before Quit's System.exit, and when the window closes. */
+    private void stopRecorder() {
+        if (inputRecorder != null) inputRecorder.close();
+    }
+
+    /** Whether a replay is on: the game on screen is its throwaway copy. */
+    boolean replayOn() {
+        return replayMode != null && replayMode.isOn();
+    }
+
+    /** A key the replay takes (ReplayMode.key()); false when none is on. */
+    private boolean replayKey(javafx.scene.input.KeyEvent e, boolean typing) {
+        return replayMode != null && replayMode.key(e, typing);
+    }
+
+    /** The clock the map's boats, trains and trucks sail on in a replay (ReplayMode.clockMonths()). */
+    private double replayClockMonths() {
+        return replayMode.clockMonths();
+    }
+
+    /** In a replay: the replay's own menu drawn in place of the main menu; false otherwise, and the main menu draws. */
+    private boolean replayMenu() {
+        return replayMode != null && replayMode.showMenu();
+    }
+
+    /** The menu's two entries (ReplayMode.menuEntries()), placed above Quit. */
+    private void addReplayEntries(VBox column) {
+        column.getChildren().addAll(Math.max(0, column.getChildren().size() - 1), replayMode().menuEntries());
+    }
+
+    /** The list of recordings. */
+    void showReplayList() {
+        replayMode().showList(null);
+    }
+
+    /** The window's title for a replay, after openCity() has set the city's. */
+    private void replayRetitle() {
+        if (replayOn()) stage.setTitle(replayMode.title());
+    }
+
+    /** Whether a load in a replay leaves alone the land office's map that is over the window: its view is the next shot's start. */
+    private boolean replayKeepsMap() {
+        return replayOn() && panKeys != null;
+    }
+
+    /** The land office's map redrawn from the copy's new map (a quick step swapped it). */
+    void replayMapChanged() {
+        landScreen.replayMapChanged();
+    }
+
+    /** The expanded map's view for the input log, or null (MapView.replayView()). */
+    double[] expandedMapView() {
+        return panKeys == null ? null : panKeys.replayView();
+    }
+
+    /** The replay's camera (MapView.replayCamera()), or null when no replay is on. */
+    ReplayCamera replayCamera() {
+        return replayMode != null && replayMode.isOn() ? replayMode.camera() : null;
+    }
+
+    /** The expanded map's view as a camera view (month 0), or null when it is not over the window (MapView.cameraView()). */
+    CameraPath.View expandedMapCameraView() {
+        return panKeys == null ? null : panKeys.cameraView();
+    }
+
+    /** ...and the widest view the camera flies out to (MapView.cameraWhole()). */
+    CameraPath.View expandedMapWhole() {
+        return panKeys == null ? null : panKeys.cameraWhole();
+    }
+
+    /** The expanded map's frames asked for (the camera has a move to make). */
+    void replayWake() {
+        if (panKeys != null) panKeys.replayChanged();
+    }
+
+    /** The land office's map over the window on the city, as Expand opens it (the replay's M key). */
+    void replayOpenMap() { openMapOn(null); }
+
+    // What ReplayMode needs of this class's private parts, one small method each.
+
+    Stage replayStage() { return stage; }
+
+    Scene replayScene() { return scene; }
+
+    VBox replayPage() { return menuPage(); }
+
+    Button replayButton(String text, String under, boolean primary) { return menuButton(text, under, primary); }
+
+    boolean replayCityOpen() { return cityOpen; }
+
+    void replaySetCityOpen(boolean open) { cityOpen = open; }
+
+    Runnable replayResumeTo() { return resumeTo; }
+
+    void replaySetResumeTo(Runnable again) { resumeTo = again; }
+
+    void replayStopClock() { setClockRunning(false); }
+
+    /** Another city on screen (the copy's month loaded, or the real city given back): the per-city reset a load does, and the notices it already had not toasted. */
+    void replayAnotherCity() {
+        anotherCity();
+        if (game != null && game.getInbox() != null) game.getInbox().markAllToasted(toasted);
+    }
+
+    void replayOpenCity() { openCity(); }
+
+    void replayQuit() { showQuitDialog(); }
+
+    void replayPlaceMenu(Runnable place) { placeMenu = place; }
+
+    /** The layers that stay above the time bar: the title layer (the menu) and the dialog that is up. */
+    javafx.scene.Node replayTitleLayer() { return titleLayer; }
+
+    javafx.scene.Node replayDialog() { return quitDialog; }
+
+    /** Whether a mouse button is down: nothing is rebuilt or loaded under a press (0.7.40). */
+    boolean replayPressHeld() { return pressHeld; }
+
+    /** Whether a menu of the game's own is up (the replay's menu, the list): the screens' keys and the time bar's step aside. */
+    boolean replayGameMenuUp() { return isGameMenu(currentScreen); }
+
+    void replayHideTooltips() { hideTooltips(); }
+
+    /** The window's root: the BorderPane the header, the rail and the stage hang off, the first layer of windowStack. */
+    BorderPane replayRoot() {
+        return windowStack != null && !windowStack.getChildren().isEmpty()
+                && windowStack.getChildren().get(0) instanceof BorderPane root ? root : null;
+    }
+
+    /** Whether cinematic mode is on. */
+    boolean isCinematic() { return cinematic; }
+
+    /**
+     * Cinematic mode on or off (ReplayMode: the C key and the bar's button). On, the header, the rail (the minimap at its foot),
+     * the construction panel and its tab, the toasts and the inbox's list are taken off the window - taken out of their parents
+     * rather than hidden, because the screens show and hide them on every redraw and would show them again - and the mouse
+     * cursor is none; the expanded map's pane, which lay under the header, starts at the window's top, and the map takes its
+     * own chrome away (MapView.setCinematic()). Off, every one of them goes back where it was, in the order it was. The page on
+     * show stays. The time bar is ReplayMode's.
+     */
+    void replayCinematic(boolean on) {
+        BorderPane root = replayRoot();
+        if (on == cinematic || root == null || stagePane == null) return;
+        cinematic = on;
+        if (on) {
+            hideTooltips();
+            root.setTop(null);
+            root.setLeft(null);
+            root.setRight(null);
+            stagePane.getChildren().removeAll(drawer, constructionPanel, inboxCorner, toastStack);
+            scene.setCursor(javafx.scene.Cursor.NONE);
+            liftChartPane(true);
+        } else {
+            root.setTop(header);
+            root.setLeft(tabRail);
+            root.setRight(constructionTab);
+            stagePane.getChildren().addAll(drawer, constructionPanel, inboxCorner, toastStack);
+            scene.setCursor(null);
+            liftChartPane(false);
+        }
+        if (panKeys != null) panKeys.setCinematic(on);
+    }
+
+    /** A pane laid under the header while cinematic mode is on (showChartFullScreen()) starts at the window's top. */
+    private void replayCinematicPane(boolean underHeader) {
+        if (cinematic && underHeader) liftChartPane(true);
+    }
+
+    /** The expanded map's pane at the window's top (chartFullTop() 0, no margin) or, ending cinematic mode, back under the header as it was. */
+    private void liftChartPane(boolean lift) {
+        if (lift) {
+            if (chartFull != null && chartFullTop > 0) {
+                cinematicLifted = chartFull;
+                chartFullTop = 0;
+                StackPane.setMargin(chartFull, null);
+            }
+        } else {
+            // Only the very pane that was lifted: the pane may have gone, and another one over the whole window may be there.
+            if (cinematicLifted != null && cinematicLifted == chartFull && header != null) {
+                chartFullTop = headerHeight();
+                StackPane.setMargin(chartFull, new javafx.geometry.Insets(chartFullTop, 0, 0, 0));
+            }
+            cinematicLifted = null;
+        }
     }
 }

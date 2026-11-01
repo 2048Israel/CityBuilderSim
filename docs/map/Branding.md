@@ -1,6 +1,6 @@
 # Branding.java - 124 lines · 4 methods · 7 constants · interface
 
-`ham/citybuildersim/ui/Branding.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Branding.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The game's identity on screen: its icon on the window (every size of resources/icons/ handed
 > to the stage, so Windows takes the one it needs for the taskbar and Alt+Tab) and its title art
@@ -18,7 +18,7 @@
 
 **Uses:** [Palette](Palette.md) (3)
 
-**Used by (2):** [BrandingCheck](BrandingCheck.md), [UserInterface](UserInterface.md)
+**Used by (3):** [BrandingCheck](BrandingCheck.md), [ReplayMode](ReplayMode.md), [UserInterface](UserInterface.md)
 
 ## Constants
 

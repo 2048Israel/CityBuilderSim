@@ -1,6 +1,6 @@
 # Palette.java - 726 lines · 27 methods · 74 constants · interface
 
-`ham/citybuildersim/ui/Palette.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Palette.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Every colour, size and spacing this game is allowed to use, in one place.
 > 
@@ -44,7 +44,7 @@
 > their names, so every screen that read them took the new values without
 > an edit; the window's own literals moved here the same day.
 
-**Used by (32):** [BankScreen](BankScreen.md), [Branding](Branding.md), [BuildScreen](BuildScreen.md), [CapChips](CapChips.md), [ChartFitBench](ChartFitBench.md), [ConstructionScreen](ConstructionScreen.md), [EarthData](EarthData.md), [FinancesScreen](FinancesScreen.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [ZoningScreen](ZoningScreen.md)
+**Used by (34):** [BankScreen](BankScreen.md), [Branding](Branding.md), [BuildScreen](BuildScreen.md), [CapChips](CapChips.md), [ChartFitBench](ChartFitBench.md), [ConstructionScreen](ConstructionScreen.md), [EarthData](EarthData.md), [FinancesScreen](FinancesScreen.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [ReplayGraphLayer](ReplayGraphLayer.md), [ReplayMode](ReplayMode.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [ZoningScreen](ZoningScreen.md)
 
 ## Sections
 
