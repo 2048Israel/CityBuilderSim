@@ -6889,6 +6889,29 @@ public class UserInterface extends Application {
         return panKeys == null ? null : panKeys.replayView();
     }
 
+    /** The replay's camera (MapView.replayCamera()), or null when no replay is on. */
+    ReplayCamera replayCamera() {
+        return replayMode != null && replayMode.isOn() ? replayMode.camera() : null;
+    }
+
+    /** The expanded map's view as a camera view (month 0), or null when it is not over the window (MapView.cameraView()). */
+    CameraPath.View expandedMapCameraView() {
+        return panKeys == null ? null : panKeys.cameraView();
+    }
+
+    /** ...and the widest view the camera flies out to (MapView.cameraWhole()). */
+    CameraPath.View expandedMapWhole() {
+        return panKeys == null ? null : panKeys.cameraWhole();
+    }
+
+    /** The expanded map's frames asked for (the camera has a move to make). */
+    void replayWake() {
+        if (panKeys != null) panKeys.replayChanged();
+    }
+
+    /** The land office's map over the window on the city, as Expand opens it (the replay's M key). */
+    void replayOpenMap() { openMapOn(null); }
+
     // What ReplayMode needs of this class's private parts, one small method each.
 
     Stage replayStage() { return stage; }

@@ -1,11 +1,13 @@
 package ham.citybuildersim.ui;
 
+import ham.citybuildersim.CameraPath;
 import ham.citybuildersim.CityCalendar;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.GameVersion;
 import ham.citybuildersim.Recording;
 import ham.citybuildersim.ReplayCity;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
@@ -17,6 +19,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -38,7 +41,9 @@ import javafx.util.Duration;
  * second - and a cinematic mode that hides everything round the picture for the screen recorder. This is the screen's half:
  * the list of recordings, putting the real game aside and giving it back, the replay's own menu, the keys, the bar, the
  * window's size for the recorder. ReplayCity does the loading, UserInterface the little of itself this reaches (its
- * replay... methods), and every figure on screen is the copy's.
+ * replay... methods), and every figure on screen is the copy's. The camera's moves are ReplayCamera's (marks A and B, the
+ * glide, the fly, the drift; its arithmetic CameraPath) and the faint graphs behind the city ReplayGraphLayer's: this takes their
+ * keys, puts their buttons in the bar's second row, and is the month a glide moves (showMonth()).
  *
  * <p>Nothing is written. The copy lives in a scratch folder of its own; the player's save slots, the autosave and the recording
  * are never touched; the clock never runs (UserInterface treats a replay as paused, and the time skip does nothing); Save,
@@ -77,6 +82,11 @@ final class ReplayMode {
     private final UserInterface ui;
     private boolean on;
 
+    /** The camera's moves (the marks, the glide, the fly, the smooth hand's drift) and the faint graphs behind the city: this mode's keys and bar drive them. */
+    private final ReplayCamera camera;
+    private final ReplayGraphLayer graphs;
+    private boolean graphsLoaded;
+
     // The real game, put aside while the replay runs, and what the window held of it.
     private Game realGame;
     private boolean realCityOpen;
@@ -103,6 +113,13 @@ final class ReplayMode {
     private Slider slider;
     private boolean syncing;
     private Button bStepBack, bPlayBack, bPlay, bPlayFwd, bStepFwd;
+    // The bar's camera group (TR1, camera tools).
+    private Button bMarkA, bMarkB, bGraphs;
+    private TextField glideField;
+    private Label driftLabel;
+    private CameraPath.View shownA, shownB;
+    private boolean shownGraphs;
+    private String shownDrift = "";
     private SVGPath playGlyph;
     private final List<Label> speedChips = new ArrayList<>();
     private Label readout, noteLabel;
@@ -116,9 +133,29 @@ final class ReplayMode {
 
     ReplayMode(UserInterface ui) {
         this.ui = ui;
+        this.camera = new ReplayCamera(this, ui);
+        this.graphs = new ReplayGraphLayer(this, ui);
     }
 
     boolean isOn() { return on; }
+
+    /** The replay's camera: MapView asks for it each frame (UserInterface.replayCamera()). */
+    ReplayCamera camera() { return camera; }
+
+    /** The recorded month on screen. */
+    int shownMonth() { return months[at]; }
+
+    /**
+     * The camera asks for a month (a glide of views with different months moves time with it): the recorded month nearest it, by
+     * quick steps; the bar's play stops. The month on screen is loaded whole when the glide ends and it rests (frame()).
+     */
+    void showMonth(int month) {
+        if (!on || city == null) return;
+        int index = Arrays.binarySearch(months, city.nearest(month));
+        if (index < 0 || index == at) return;
+        playing = false;
+        go(index);
+    }
 
     /** The window's title in a replay: "Replay - Medellin - Civic Ledger 0.9.0". */
     String title() {
@@ -270,6 +307,9 @@ final class ReplayMode {
         acc = 0;
         restFailed = -1;
         note = null;
+        camera.reset();
+        graphs.leave();
+        graphsLoaded = false;
         beganNs = System.nanoTime();
         lastMoveNs = beganNs;
         on = true;
@@ -298,6 +338,8 @@ final class ReplayMode {
         setCinematic(false);
         if (timer != null) timer.stop();
         playing = false;
+        camera.reset();
+        graphs.leave();
         hideBar();
         on = false;
         ui.game = realGame;
@@ -394,13 +436,24 @@ final class ReplayMode {
      *
      * <p>Space play or pause; B the direction; Left and Right a month back or forward; Up and Down the speed; Home and End the
      * first and the last month; C cinematic mode.
+     *
+     * <p>The camera's, with the expanded map over the window (M opens it; any other says so on the bar): 1 marks view A and 2 view
+     * B (the map's view and the month on screen), 3 glides from A to B over the seconds the bar's field says, time moving with it
+     * when their months differ; O flies out to the whole Earth and I flies back in to where it began; Shift+W, A, S, D each add a
+     * step of drift that way (DRIFT_STEP_PX a second more), R and F drift the zoom in and out, X stops every drift and move; G
+     * the graphs behind the city on and off. Esc stops a glide or fly where it is, before it is cinematic mode's.
      */
     boolean key(KeyEvent e, boolean typing) {
         if (!on) return false;
         KeyCode code = e.getCode();
         boolean menuUp = ui.replayGameMenuUp();
         if (code == KeyCode.ESCAPE) {
-            if (menuUp || !ui.isCinematic()) return false;
+            if (menuUp) return false;
+            if (camera.busy()) {
+                camera.stop();
+                return true;
+            }
+            if (!ui.isCinematic()) return false;
             setCinematic(false);
             return true;
         }
@@ -415,9 +468,66 @@ final class ReplayMode {
             case HOME -> jump(0);
             case END -> jump(months.length - 1);
             case C -> setCinematic(!ui.isCinematic());
+            case DIGIT1, NUMPAD1 -> camera.mark(true);
+            case DIGIT2, NUMPAD2 -> camera.mark(false);
+            case DIGIT3, NUMPAD3 -> glide();
+            case O -> camera.flyOut();
+            case I -> camera.flyIn();
+            case X -> camera.stillAll();
+            case G -> toggleGraphs();
+            case M -> ui.replayOpenMap();
+            case R -> drift(0, 0, CameraPath.DRIFT_ZOOM_STEP);
+            case F -> drift(0, 0, -CameraPath.DRIFT_ZOOM_STEP);
+            case W, A, S, D -> {
+                // Plain W, A, S, D pan the map (MapView); with Shift each adds a step of drift. The ground moves the other way from the view.
+                if (!e.isShiftDown()) return false;
+                double step = CameraPath.DRIFT_STEP_PX;
+                switch (code) {
+                    case W -> drift(0, step, 0);
+                    case S -> drift(0, -step, 0);
+                    case A -> drift(step, 0, 0);
+                    default -> drift(-step, 0, 0);
+                }
+            }
             default -> { return false; }
         }
         return true;
+    }
+
+    /** A step of drift, with the map over the window; with none, the bar says so. */
+    private void drift(double across, double down, double zoom) {
+        if (ui.expandedMapCameraView() == null) {
+            say("open the map first (M)");
+            return;
+        }
+        camera.driftBy(across, down, zoom);
+    }
+
+    /** The glide, from the key or the bar's button: the seconds the field says first. */
+    private void glide() {
+        commitGlideSeconds();
+        camera.glide();
+    }
+
+    /** G or the bar's button: the faint GDP and population lines behind the city on or off. */
+    private void toggleGraphs() {
+        if (!graphsLoaded) {
+            graphs.load(city);
+            graphsLoaded = true;
+        }
+        say("graphs behind the city: " + (graphs.toggle() ? "on" : "off"));
+    }
+
+    /** The bar's field of seconds read into the camera, and written back as it took it. */
+    private void commitGlideSeconds() {
+        if (glideField == null) return;
+        try {
+            camera.setGlideSeconds(Double.parseDouble(glideField.getText().trim().replace(',', '.')));
+        } catch (NumberFormatException bad) {
+            camera.setGlideSeconds(Double.NaN);
+        }
+        double s = camera.glideSeconds();
+        glideField.setText(s == Math.rint(s) ? String.valueOf((long) s) : String.format("%.1f", s));
     }
 
     /* ------------------------------------ the clock ------------------------------------ */
@@ -512,7 +622,7 @@ final class ReplayMode {
         ui.redraw();
     }
 
-    private void say(String words) {
+    void say(String words) {
         note = words;
         noteUntilNs = System.nanoTime() + NOTE_MS * 1_000_000L;
     }
@@ -524,15 +634,18 @@ final class ReplayMode {
         double dt = lastFrame == 0 ? 0 : Math.min(0.1, (now - lastFrame) / 1e9);
         lastFrame = now;
         keepBarAbove();
+        // A hand on the bar's time (play, the slider) takes it from a glide.
+        if (camera.busy() && (playing || (slider != null && slider.isValueChanging()))) camera.hand();
         if (ui.replayGameMenuUp()) {
             playing = false;
         } else if (playing) {
             advance(dt);
-        } else if (!city.wholeMonth() && months[at] != restFailed && !ui.replayPressHeld()
+        } else if (!city.wholeMonth() && months[at] != restFailed && !ui.replayPressHeld() && !camera.busy()
                 && System.nanoTime() - lastMoveNs >= REST_MS * 1_000_000L) {
             rest();
         }
         refreshBar();
+        graphs.frame(months[at], paddedBy > 0 ? paddedBy : 0);
     }
 
     /** Play: the months due since the last frame, in the direction chosen; the end of the recording either way ends the play. */
@@ -613,7 +726,7 @@ final class ReplayMode {
         HBox row = new HBox(14, transport, speeds, readout, gap, noteLabel, cinematic, film, leave);
         row.setAlignment(Pos.CENTER_LEFT);
 
-        bar = new VBox(6, slider, row);
+        bar = new VBox(6, slider, row, cameraRow());
         bar.setMaxHeight(Region.USE_PREF_SIZE);
         bar.setStyle("-fx-padding: 8 14 10 14; -fx-background-color: " + Palette.PANEL + ";"
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 1 0 0 0;");
@@ -624,13 +737,64 @@ final class ReplayMode {
         paddedBy = -1;
     }
 
+    /** A bar button: it stops a glide or fly in flight where it is, and then does what it says. */
     private Button barButton(String text, String tip, Runnable act) {
+        return camButton(text, tip, () -> {
+            camera.hand();
+            act.run();
+        });
+    }
+
+    private Button camButton(String text, String tip, Runnable act) {
         Button b = new Button(text);
         b.setStyle("-fx-padding: 5 10 5 10;");
         b.setFocusTraversable(false);
         b.setOnAction(e -> act.run());
         Tooltip.install(b, new Tooltip(tip));
         return b;
+    }
+
+    /**
+     * The bar's camera group (TR1): the map button, A and B (lit when marked, their tooltips say the mark), Glide with its field
+     * of seconds, Fly out and Fly in, Graphs (lit when on), Stop - and, when a drift is set, its reading. These do not stop a move
+     * in flight themselves: each starts its own, which replaces it.
+     */
+    private HBox cameraRow() {
+        Label name = new Label("CAMERA");
+        name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        name.setMinWidth(Region.USE_PREF_SIZE);
+        Button map = camButton("Map", "Open the map over the window on the city  (M)", ui::replayOpenMap);
+        bMarkA = camButton("A", "Mark the map's view and the month on screen as view A  (1)", () -> camera.mark(true));
+        bMarkB = camButton("B", "Mark the map's view and the month on screen as view B  (2)", () -> camera.mark(false));
+        glideField = new TextField(String.valueOf((long) camera.glideSeconds()));
+        glideField.setPrefColumnCount(3);
+        glideField.setMaxWidth(52);
+        glideField.setOnAction(e -> {
+            commitGlideSeconds();
+            ui.replayScene().getRoot().requestFocus();
+        });
+        glideField.focusedProperty().addListener((o, was, now) -> {
+            if (!now) commitGlideSeconds();
+        });
+        Tooltip.install(glideField, new Tooltip("Seconds the glide takes, " + (int) ReplayCamera.GLIDE_S_LEAST + " to " + (int) ReplayCamera.GLIDE_S_MOST
+                + "  (Enter sets it)"));
+        Button glide = camButton("Glide", "Glide from view A to view B over the seconds in the field, time moving with it when their months differ"
+                + "  (3; Esc stops it)", this::glide);
+        Label seconds = new Label("s");
+        seconds.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        Button out = camButton("Fly out", "Pull out from the view to the whole Earth  (O)", camera::flyOut);
+        Button in = camButton("Fly in", "Fly back in to where the fly out began  (I)", camera::flyIn);
+        bGraphs = camButton("Graphs", "GDP and population lines behind the city, rising as the months play  (G)", this::toggleGraphs);
+        Button stop = camButton("Stop", "Stop every glide, fly, drift and move  (X)", camera::stillAll);
+        driftLabel = new Label();
+        driftLabel.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
+        driftLabel.setMinWidth(0);
+        shownA = shownB = null;
+        shownGraphs = false;
+        shownDrift = "";
+        HBox row = new HBox(8, name, map, bMarkA, bMarkB, glide, glideField, seconds, out, in, bGraphs, stop, driftLabel);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
     private static SVGPath glyph(String content) {
@@ -670,9 +834,11 @@ final class ReplayMode {
             if (k == bar || (k != title && k != dialog)) continue;
             want = Math.min(want, cur >= 0 && cur < i ? i - 1 : i);
         }
-        if (cur == want) return;
-        if (cur >= 0) kids.remove(cur);
-        kids.add(Math.min(want, kids.size()), bar);
+        if (cur != want) {
+            if (cur >= 0) kids.remove(cur);
+            kids.add(Math.min(want, kids.size()), bar);
+        }
+        graphs.keepUnder(bar);      // the faint graphs (G) lie just under the bar: over the content and the expanded map
     }
 
     /** The bar's figures and lit buttons, set only when they change; the window's room for the bar. */
@@ -689,11 +855,13 @@ final class ReplayMode {
             slider.setValue(at);
             syncing = false;
         }
-        String say = note != null && System.nanoTime() < noteUntilNs ? note : "";
+        String doing = camera.status();
+        String say = doing != null ? doing : note != null && System.nanoTime() < noteUntilNs ? note : "";
         if (!say.equals(shownNote)) {
             shownNote = say;
             noteLabel.setText(say);
         }
+        refreshCamera();
         if (shownSpeed != speed) {
             shownSpeed = speed;
             for (int i = 0; i < speedChips.size(); i++) {
@@ -716,6 +884,36 @@ final class ReplayMode {
             paddedBy = room;
             root.setPadding(new Insets(0, 0, room, 0));
         }
+    }
+
+    /** The camera group's lit buttons, their tooltips and the drift's reading, set only when they change. */
+    private void refreshCamera() {
+        CameraPath.View a = camera.markA(), b = camera.markB();
+        boolean g = graphs.isOn();
+        if (!java.util.Objects.equals(a, shownA)) {
+            shownA = a;
+            litButton(bMarkA, a != null);
+            if (a != null) Tooltip.install(bMarkA, new Tooltip("View A: " + ReplayCamera.words(a) + "  (1 marks it again)"));
+        }
+        if (!java.util.Objects.equals(b, shownB)) {
+            shownB = b;
+            litButton(bMarkB, b != null);
+            if (b != null) Tooltip.install(bMarkB, new Tooltip("View B: " + ReplayCamera.words(b) + "  (2 marks it again)"));
+        }
+        if (g != shownGraphs) {
+            shownGraphs = g;
+            litButton(bGraphs, g);
+        }
+        String drift = camera.driftReading();
+        if (drift == null) drift = "";
+        if (!drift.equals(shownDrift)) {
+            shownDrift = drift;
+            driftLabel.setText(drift);
+        }
+    }
+
+    private static void litButton(Button b, boolean lit) {
+        b.setStyle("-fx-padding: 5 10 5 10;" + (lit ? " -fx-border-color: " + Palette.ACCENT + ";" : ""));
     }
 
     /* ----------------------------- cinematic mode, the window ----------------------------- */

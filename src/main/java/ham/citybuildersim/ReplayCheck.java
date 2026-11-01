@@ -33,7 +33,14 @@ import java.util.TreeSet;
  *   4. the input log round-trips - every kind, event for event, the moves closer than MOVE_EVERY_MS dropped, the sittings oldest
  *      first, a file cut mid-record reads back a prefix, a sitting still open reads up to its last flush - and a re-enacted Save,
  *      Load and Quit on the copy writes nothing outside the copy's own folder;
- *   5. (the camera's arithmetic: the next slice's, in this file);
+ *   5. the camera's arithmetic (CameraPath): a glide's ends are exact on the globe and the plane, its middle scale the ends'
+ *      geometric mean, its ease symmetric, monotone and still at both ends, the centre's share the formula's (2/3 at the middle
+ *      for a ratio of 4, the eased share when the scales match, halfway on the equator), its month linear; the fly out ends at
+ *      the widest scale on the city and takes as long as the doublings say; the smooth hand's five notches sum to ZOOM_STEP^5
+ *      and ease out, a held key's velocity rises and falls without a jump, a hitch is a pause, a drift moves until still();
+ *      5b. the graphs behind the city (ReplayGraphs): the recording's months in order, scaled to its highest, a year of GDP;
+ *      5c. a quick step leaves most of the map's pictures as they were: a month on, fewer than half the tiles in view have another
+ *      stamp, those that have the same stamp paint the same pixels in both maps, and the new map's tiles read the ground carried over;
  *   6. recording costs the month only its fill and changes nothing in it: two same cities played 12 months, one recording, agree
  *      to the last digit; the recorder's FX-thread cost per month is within SaveWriter.CLOCK_MS (printed, with the size of a month's
  *      file and of the history, and of a month at deflate level 6 and 1).
@@ -52,6 +59,38 @@ public class ReplayCheck {
     static void helper(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-96s %s%n", label, Timing.verdict(ok, label));
+    }
+
+    /** The middle of a map's districts in plots {x, y}: where a view of the city looks. */
+    static double[] districtsMiddle(CityMap map) {
+        double sx = 0, sy = 0;
+        int n = 0;
+        for (CityMap.District d : map.districts()) {
+            sx += (map.baseDX() + d.dx + 0.5) * (double) World.DISTRICT;
+            sy += (map.baseDY() + d.dy + 0.5) * (double) World.DISTRICT;
+            n++;
+        }
+        return n == 0 ? new double[] {World.SIDE / 2.0, World.SIDE / 2.0} : new double[] {sx / n, sy / n};
+    }
+
+    /** The stamps of the tiles in a view, their district plans drawn first as the view's worker draws them (the jobs run and kept here). */
+    static long[] stampsOf(MapTiles tiles, CityMap map, List<long[]> view) {
+        TilePainter.Input in = new TilePainter.Input();
+        long[] out = new long[view.size()];
+        for (int i = 0; i < out.length; i++) {
+            long tx = view.get(i)[0], ty = view.get(i)[1];
+            for (CityMap.Job j : tiles.jobs(tx, ty)) {
+                j.run();
+                map.adopt(j);
+            }
+            out[i] = tiles.input(tx, ty, in);
+        }
+        return out;
+    }
+
+    /** Whether two figures agree to {@code tol}, absolutely under 1 and relatively over it. */
+    static boolean near(double a, double b, double tol) {
+        return Math.abs(a - b) <= tol * Math.max(1, Math.abs(b));
     }
 
     /** What the city shows at a month's end: the figures the replay has to give back. */
@@ -487,7 +526,227 @@ public class ReplayCheck {
         helper("...and the player's folder, with the recording in it, is byte for byte what it was" + (hurt2 == null ? "" : " - " + hurt2), hurt2 == null);
         helper("...and the recording's months are the months it had", Arrays.equals(rec.months(), have));
 
-        /* ---- 5. the camera's arithmetic: the next slice's section (CameraPath) lands here ---- */
+        /* ====== 5. the camera's arithmetic ====== */
+        System.out.println("\n--- 5. the camera's arithmetic ---");
+
+        CameraPath.View globeA = new CameraPath.View(true, 45, 10, 2.0, 12), globeB = new CameraPath.View(true, -10, 80, 0.05, 36);
+        CameraPath.View planeA = new CameraPath.View(false, 100_000, 120_000, 0.5, 10), planeB = new CameraPath.View(false, 300_000, 80_000, 8.0, 50);
+        for (CameraPath.View[] ends : new CameraPath.View[][] {{globeA, globeB}, {planeA, planeB}}) {
+            String kind = ends[0].globe() ? "globe" : "plane";
+            CameraPath.View g0 = CameraPath.glide(ends[0], ends[1], 0), g1 = CameraPath.glide(ends[0], ends[1], 1);
+            helper("on the " + kind + " a glide at t = 0 is its start and at t = 1 its end: the centre, the scale and the month",
+                    near(g0.a(), ends[0].a(), 1e-9) && near(g0.b(), ends[0].b(), 1e-9) && near(g0.scale(), ends[0].scale(), 1e-9) && g0.month() == ends[0].month()
+                            && near(g1.a(), ends[1].a(), 1e-9) && near(g1.b(), ends[1].b(), 1e-9) && near(g1.scale(), ends[1].scale(), 1e-9) && g1.month() == ends[1].month());
+            CameraPath.View mid = CameraPath.glide(ends[0], ends[1], 0.5);
+            helper("...its middle scale is the geometric mean of the ends (to 1e-9)",
+                    Math.abs(mid.scale() / Math.sqrt(ends[0].scale() * ends[1].scale()) - 1) < 1e-9);
+            boolean steady = true;
+            double was = Double.NaN;
+            for (int i = 0; i <= 100; i++) {
+                double s = CameraPath.glide(ends[0], ends[1], i / 100.0).scale();
+                if (!Double.isNaN(was) && (ends[0].scale() < ends[1].scale() ? s < was - 1e-12 : s > was + 1e-12)) steady = false;
+                was = s;
+            }
+            helper("...and the scale only ever goes one way from the start to the end", steady);
+        }
+        boolean symmetric = true, monotone = true;
+        double eased = -1;
+        for (int i = 0; i <= 1000; i++) {
+            double t = i / 1000.0;
+            if (Math.abs(CameraPath.ease(1 - t) - (1 - CameraPath.ease(t))) > 1e-12) symmetric = false;
+            if (CameraPath.ease(t) < eased) monotone = false;
+            eased = CameraPath.ease(t);
+        }
+        double slope = 1e-7;
+        helper("the ease is 0 and 1 at the ends, symmetric about the middle, monotone, and still at both ends (a slope under 1e-6 at 0 and 1)",
+                CameraPath.ease(0) == 0 && CameraPath.ease(1) == 1 && near(CameraPath.ease(0.5), 0.5, 1e-15) && symmetric && monotone
+                        && CameraPath.ease(slope) / slope < 1e-6 && (1 - CameraPath.ease(1 - slope)) / slope < 1e-6
+                        && CameraPath.ease(-3) == 0 && CameraPath.ease(7) == 1);
+        double formula = (1 - Math.pow(4, -0.5)) / (1 - 1.0 / 4);
+        CameraPath.View planeFour = new CameraPath.View(false, 0, 0, 1, 0), planeFar = new CameraPath.View(false, 300, 90, 4, 0);
+        CameraPath.View midFour = CameraPath.glide(planeFour, planeFar, 0.5);
+        helper("the centre's share at the middle for a ratio of 4 is the formula's own, (1 - r^-e) / (1 - r^-1), 2/3",
+                near(CameraPath.share(4, 0.5), formula, 1e-12) && near(formula, 2.0 / 3, 1e-12) && near(midFour.a(), 300 * formula, 1e-9) && near(midFour.b(), 90 * formula, 1e-9));
+        CameraPath.View sameScale = CameraPath.glide(new CameraPath.View(false, 0, 0, 2, 0), new CameraPath.View(false, 300, 90, 2, 0), 0.3);
+        helper("...and the share is the eased share itself when the scales match",
+                near(sameScale.a(), 300 * CameraPath.ease(0.3), 1e-9) && near(sameScale.b(), 90 * CameraPath.ease(0.3), 1e-9));
+        CameraPath.View onEquator = CameraPath.glide(new CameraPath.View(true, 0, 0, 3, 0), new CameraPath.View(true, 0, 20, 3, 0), 0.5);
+        helper("on the globe the middle of a glide between two points on the equator 20 degrees apart is on the equator, halfway",
+                near(onEquator.a(), 0, 1e-9) && near(onEquator.b(), 10, 1e-9));
+        CameraPath.View closing = CameraPath.glide(new CameraPath.View(true, 0, 0, 4, 0), new CameraPath.View(true, 0, 20, 1, 0), 0.5);
+        helper("...closing in, the globe's share is the same formula on the inverse ratio: two thirds of the way",
+                near(closing.a(), 0, 1e-9) && near(closing.b(), 20 * formula, 1e-9));
+        CameraPath.View stay = CameraPath.glide(new CameraPath.View(true, 33, 44, 3, 5), new CameraPath.View(true, 33, 44, 1, 5), 0.37);
+        helper("...a path of no length stays at the point at every step", near(stay.a(), 33, 1e-9) && near(stay.b(), 44, 1e-9));
+        CameraPath.View monthMid = CameraPath.glide(new CameraPath.View(false, 0, 0, 1, 12), new CameraPath.View(false, 0, 0, 5, 36), 0.25);
+        helper("a glide's month is linear in t, not eased: a quarter of the way from 12 to 36 is 18, and the ends are the marks'",
+                monthMid.month() == 18 && CameraPath.glide(planeA, planeB, 0).month() == 10 && CameraPath.glide(planeA, planeB, 1).month() == 50
+                        && CameraPath.path(planeA, planeB, 24).size() == 25 && CameraPath.path(planeA, planeB, 24).get(12).month() == 30
+                        && CameraPath.path(planeA, planeB, 24).get(24).equals(CameraPath.glide(planeA, planeB, 1)));
+        helper("a glide between a globe's view and a plane's stays at its start until the end (the kinds cannot blend)",
+                CameraPath.glide(globeA, planeB, 0.5).globe() && CameraPath.glide(globeA, planeB, 1).equals(planeB));
+
+        double widest = 17.7, cityLat = 6.2, cityLon = -75.6;
+        CameraPath.View fromStreet = new CameraPath.View(true, 6.25, -75.57, 0.01, 77);
+        CameraPath.View farthest = CameraPath.flyOut(fromStreet, widest, cityLat, cityLon, 1);
+        boolean grows = true;
+        double scaleBefore = 0;
+        for (int i = 0; i <= 200; i++) {
+            double s = CameraPath.flyOut(fromStreet, widest, cityLat, cityLon, i / 200.0).scale();
+            if (s < scaleBefore - 1e-12) grows = false;
+            scaleBefore = s;
+        }
+        helper("the fly out at t = 1 is exactly the widest scale and the city's centre, its scale grows all the way, and the month stays",
+                near(farthest.scale(), widest, 1e-12) && near(farthest.a(), cityLat, 1e-9) && near(farthest.b(), cityLon, 1e-9) && grows && farthest.month() == 77);
+        helper("the time a fly takes is the doublings of the view's width over the dial: a ratio squared takes twice as long, in as out",
+                near(CameraPath.flySeconds(1, 16), 2 * CameraPath.flySeconds(1, 4), 1e-12) && near(CameraPath.flySeconds(1, 4), 2 / CameraPath.FLY_DOUBLINGS_A_SECOND, 1e-12)
+                        && near(CameraPath.flySeconds(4, 1), CameraPath.flySeconds(1, 4), 1e-12) && CameraPath.flySeconds(5, 5) == 0
+                        && CameraPath.flySeconds(0.01, widest) > CameraPath.flySeconds(2, widest));
+
+        // The smooth hand: five notches in, then steps of 1/60 s until it rests (the brief's 2 s leaves exp(-10) of it to do, 5e-5; the rest takes 3 s).
+        CameraPath.Smooth hand = new CameraPath.Smooth();
+        hand.wheel(300, 200, 5);
+        double product = 1, previous = Double.POSITIVE_INFINITY;
+        boolean easesOut = true, anchored = true;
+        int steps = 0;
+        CameraPath.Move firstStep = null;
+        while (hand.moving() && steps < 1200) {
+            CameraPath.Move m = hand.step(1.0 / 60);
+            if (firstStep == null) firstStep = m;
+            if (m.zoom() > previous + 1e-15 || m.zoom() < 1) easesOut = false;
+            if (!m.none() && (m.sx() != 300 || m.sy() != 200)) anchored = false;
+            previous = m.zoom();
+            product *= m.zoom();
+            steps++;
+        }
+        helper("five notches in: the product of the steps' zooms is ZOOM_STEP^5 to 1e-6, and the hand rests after " + steps + " steps",
+                Math.abs(product / Math.pow(CameraPath.ZOOM_STEP, 5) - 1) < 1e-6 && !hand.moving() && hand.step(1.0 / 60).none());
+        helper("...every step zooms no more than the one before (it eases out), the first the most, about the point the wheel was at",
+                easesOut && anchored && firstStep.zoom() > 1.05 && firstStep.zoom() < Math.pow(CameraPath.ZOOM_STEP, 5));
+        CameraPath.Smooth outHand = new CameraPath.Smooth();
+        outHand.wheel(10, 10, -2);
+        double outProduct = 1;
+        for (int i = 0; i < 600 && outHand.moving(); i++) outProduct *= outHand.step(1.0 / 60).zoom();
+        helper("two notches out are ZOOM_STEP^-2 in the same way", Math.abs(outProduct * Math.pow(CameraPath.ZOOM_STEP, 2) - 1) < 1e-6);
+
+        CameraPath.Smooth keyHand = new CameraPath.Smooth();
+        double target = 600, biggest = 0, lastV = 0;
+        boolean rises = true, falls = true;
+        keyHand.keys(target, 0);
+        for (int i = 0; i < 60; i++) {
+            keyHand.step(1.0 / 60);
+            double v = keyHand.velocity()[0];
+            biggest = Math.max(biggest, Math.abs(v - lastV));
+            if (v < lastV) rises = false;
+            lastV = v;
+        }
+        double reached = lastV;
+        keyHand.keys(0, 0);
+        for (int i = 0; i < 60; i++) {
+            keyHand.step(1.0 / 60);
+            double v = keyHand.velocity()[0];
+            biggest = Math.max(biggest, Math.abs(v - lastV));
+            if (v > lastV) falls = false;
+            lastV = v;
+        }
+        helper("a held key's velocity rises toward its target and, let go, falls to nothing, no step jumping more than MOST_DT_S / SMOOTH_S of the target",
+                rises && falls && reached > 0.99 * target && reached < target && lastV < 0.01 * target
+                        && biggest <= CameraPath.MOST_DT_S / CameraPath.SMOOTH_S * target + 1e-9);
+        CameraPath.Smooth slow = new CameraPath.Smooth(), quick = new CameraPath.Smooth();
+        for (CameraPath.Smooth s : new CameraPath.Smooth[] {slow, quick}) {
+            s.wheel(1, 2, 3);
+            s.keys(600, -300);
+        }
+        CameraPath.Move hitch = slow.step(1.0), ordinary = quick.step(CameraPath.MOST_DT_S);
+        helper("a frame of a one-second hitch moves the view no more than a MOST_DT_S step does: a pause, not a jump",
+                hitch.equals(ordinary) && Math.abs(hitch.dx()) <= 600 * CameraPath.MOST_DT_S && slow.step(-1).none());
+        CameraPath.Smooth driftHand = new CameraPath.Smooth();
+        driftHand.centre(640, 360);
+        driftHand.drift(CameraPath.DRIFT_STEP_PX, 0, CameraPath.DRIFT_ZOOM_STEP);
+        double across = 0, zoomed = 1;
+        boolean centred = true;
+        for (int i = 0; i < 60; i++) {
+            CameraPath.Move m = driftHand.step(1.0 / 60);
+            across += m.dx();
+            zoomed *= m.zoom();
+            if (m.sx() != 640 || m.sy() != 360) centred = false;
+        }
+        helper("a drift moves the ground DRIFT_STEP_PX in a second and closes in by exp(DRIFT_ZOOM_STEP) about the view's middle, until still()",
+                near(across, CameraPath.DRIFT_STEP_PX, 1e-9) && near(zoomed, Math.exp(CameraPath.DRIFT_ZOOM_STEP), 1e-9) && centred
+                        && driftHand.moving() && driftHand.drifting());
+        driftHand.still();
+        helper("...and still() stops it, and the zoom still to do and the keys' velocity with it",
+                !driftHand.moving() && !driftHand.drifting() && driftHand.step(1.0 / 60).none());
+
+        System.out.println("\n--- 5b. the graphs behind the city ---");
+        ReplayGraphs.Line people = ReplayGraphs.of(master, "population", first, last, false);
+        ReplayGraphs.Line output = ReplayGraphs.of(master, "gdp", first, last, true);
+        boolean ascending = true, within = true;
+        for (int i = 0; i < people.months().length; i++) {
+            if (i > 0 && people.months()[i] <= people.months()[i - 1]) ascending = false;
+            if (people.months()[i] < first || people.months()[i] > last) within = false;
+        }
+        helper("the population line holds the recording's months in order, from its first month to its last",
+                people.months().length > 1 && ascending && within && people.months()[0] == first && people.months()[people.months().length - 1] == last);
+        helper("...it draws nothing before the first month, all of it at the last, and the head is the last point",
+                people.drawn(first - 1) == 0 && people.drawn(last) == people.months().length && people.head(last) == people.values()[people.values().length - 1]
+                        && people.drawn(middle) > 0 && people.drawn(middle) < people.months().length);
+        double top = 0;
+        boolean fits = true;
+        for (int i = 0; i < people.values().length; i++) {
+            top = Math.max(top, people.values()[i]);
+            if (people.share(i) > 1 + 1e-12 || people.share(i) < 0) fits = false;
+        }
+        helper("...scaled to the whole recording: its highest point is 1 and none is above it, so a line rises as the months play",
+                fits && top == people.max() && top > 0 && near(people.share(people.drawn(first) - 1), people.values()[0] / top, 1e-12)
+                        && people.share(people.drawn(first) - 1) < 1);
+        double[] gdpRaw = master.aligned("gdp");
+        int axisAt = master.getMonth().indexOf(last);
+        double yearSum = 0;
+        for (int j = axisAt - ReplayGraphs.YEAR + 1; axisAt >= 0 && j <= axisAt; j++) yearSum += gdpRaw[j];
+        helper("GDP is a year of output, twelve times the mean of the last twelve months, as the header quotes it",
+                axisAt >= ReplayGraphs.YEAR && output.months().length == people.months().length && near(output.head(last), yearSum, 1e-9 * Math.max(1, yearSum)));
+        helper("a month's place across the recording runs 0 at the first to 1 at the last, and a recording of one month is at 0",
+                ReplayGraphs.across(first, first, last) == 0 && ReplayGraphs.across(last, first, last) == 1
+                        && near(ReplayGraphs.across((first + last) / 2, first, last), 0.5, 0.5 / (last - first) + 1e-12)
+                        && ReplayGraphs.across(5, 5, 5) == 0 && ReplayGraphs.of(null, "gdp", first, last, true).months().length == 0);
+
+        System.out.println("\n--- 5c. a quick step leaves most of the map's pictures as they were ---");
+        // The pop-in's premise (ui/MapView.staleAll()): a step to the next month changes few tiles' inputs, so the pictures the view
+        // keeps are repainted only where their stamp moved. The view is the plane at 4 px a plot over the city's districts.
+        replay.loadWhole(first);
+        CityMap mapBefore = replay.game().getCityMap();
+        double[] middleOf = districtsMiddle(mapBefore);
+        MapFrame eye = new MapFrame(1345, 806);
+        eye.set(middleOf[0], middleOf[1], 4.0);
+        List<long[]> inView = new ArrayList<>();
+        for (long ty = eye.tileY0(); ty <= eye.tileY1(); ty++) for (long tx = eye.tileX0(); tx <= eye.tileX1(); tx++) inView.add(new long[] {tx, ty});
+        MapTiles tilesBefore = new MapTiles(mapBefore);
+        long[] stampsBefore = stampsOf(tilesBefore, mapBefore, inView);
+        boolean stepped2 = replay.stepQuick(have[1]);
+        CityMap mapAfter = replay.game().getCityMap();
+        MapTiles tilesAfter = new MapTiles(mapAfter, tilesBefore);
+        long[] stampsAfter = stampsOf(tilesAfter, mapAfter, inView);
+        int repainted = 0;
+        for (int i = 0; i < stampsAfter.length; i++) if (stampsAfter[i] != stampsBefore[i]) repainted++;
+        System.out.printf("      one month on, %d of %d tiles in view have another stamp (repainted); the rest keep their pictures%n", repainted, inView.size());
+        helper("a quick step to the next month is another map of the same world, and its tiles read the same ground the first read",
+                stepped2 && mapAfter != mapBefore && mapAfter.worldKey().equals(mapBefore.worldKey()) && inView.size() > 8
+                        && Arrays.equals(tilesAfter.terrain(inView.get(0)[0], inView.get(0)[1]), new MapTiles(mapAfter).terrain(inView.get(0)[0], inView.get(0)[1])));
+        helper("...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved", repainted * 2 < inView.size());
+        int[] pixelsA = new int[MapTiles.tileImagePixels(MapFrame.SMALL_TILE_PX)], pixelsB = new int[pixelsA.length];
+        TilePainter.Input scratch = new TilePainter.Input();
+        int sameStamp = 0, agree = 0;
+        for (int i = 0; i < inView.size() && sameStamp < 40; i++) {
+            if (stampsAfter[i] != stampsBefore[i]) continue;
+            sameStamp++;
+            long tx = inView.get(i)[0], ty = inView.get(i)[1];
+            tilesBefore.pixels(tx, ty, MapFrame.L0, MapFrame.SMALL_TILE_PX, scratch, pixelsA);
+            tilesAfter.pixels(tx, ty, MapFrame.L0, MapFrame.SMALL_TILE_PX, scratch, pixelsB);
+            if (Arrays.equals(pixelsA, pixelsB)) agree++;
+        }
+        helper("...a tile whose stamp is the same paints the same pixels in both maps (" + sameStamp + " of them painted and compared), so a picture held against it is the new map's",
+                sameStamp > 0 && agree == sameStamp);
 
         /* ====== 6. recording costs the month only its fill, and changes nothing in it ====== */
         System.out.println("\n--- recording costs the month only its fill, and changes nothing in it ---");
