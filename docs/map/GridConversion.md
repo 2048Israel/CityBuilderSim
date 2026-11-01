@@ -54,7 +54,7 @@
 
 **Uses:** [World](World.md) (55), [CityLand](CityLand.md) (17), [Resource](Resource.md) (15), [LegacyLand](LegacyLand.md) (11), [LandGrid](LandGrid.md) (10), [Deposit](Deposit.md) (4), [LandConversion](LandConversion.md) (2)
 
-**Used by (5):** [CityLand](CityLand.md), [ConversionCheck](ConversionCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [LandCheck](LandCheck.md), [LandConversion](LandConversion.md)
+**Used by (6):** [CityLand](CityLand.md), [ConversionCheck](ConversionCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [LandCheck](LandCheck.md), [LandConversion](LandConversion.md), [LandSellers](LandSellers.md)
 
 ## Sections
 
