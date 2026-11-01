@@ -248,3 +248,76 @@ builder's crews, who are coming back to work.
   affordability. So the bid works where the city is already taking migrants
   (the gap was positive in 12,037 of main's 12,466 shortage holds), by making
   the short band a larger share of them.
+
+## 7. The checks
+
+**The ensemble** (`docs/ensemble/LD1.md`): 80 runs on LD1's model (9e590801), two at once, 38 minutes. 23/26
+against 0.8.88's 22/26:
+- **A3 and R3 now pass.** A3: the longest deflation spell is 4 months at the median [0-11], against 6 [0-13].
+- **A2 and S1 fail as on 0.8.88.** A2: inflation over 10% for 16 months at the median [12-32], against 16 [11-31].
+- **R2 turns red.** HIGH's unemployment over its twin is +0.38 points at the median [-2.74 to +6.05], against
+  +1.50 [-4.32 to +9.74], under R2's +0.50. Pending LD1-R.
+- The young city's inflation (m240-600) is 4.65% at the median, against 4.40%.
+- T1 and T2: 16/16 seeds pass 40,000, at m1,033 [857-1,141]. The final population is 335,916, against 347,140.
+
+**The full suite**, on the first tip (004b2d8f), exited 4 with 25 NEW red lines in 12 harnesses. Every one was a
+played city's path. With the bid off, LD1 is main's to the byte (§3).
+- **Mended**, each fixture now causing its condition again. No assertion changed; the fixture lines name their new
+  causes. Each is green on the branch and on main's model.
+  - CreditCheck: the ban had 3 months left and lapsed in the third pass. It was not a fault: `Slices.passes()`
+    refuses any borrowing under a ban.
+  - BondCheck 5c, BankCheck (four mends), DeskCheck, CallCheck and BuildAdviceCheck.
+  - HealthCheck: every sector is held from the drain on, so the fee is all the twins differ by.
+  - ForeignCheck: Heavy Industry is held, the same hinge as EM1's Wood Products. The parity twin's bid let a Blast
+    Furnace through and the weaker twin's did not, since what a building can pay is in local money.
+  - PolicyPreviewCheck: Freight is held, as WN3 held Cement & Concrete.
+  - HoldersCheck 9: the savers' rate is set at .005, as AuctionCheck sets it, so the households' purse binds and the
+    bank holds under half the issue.
+  - CopperRefiningCheck (d): read to one part in a billion at the bisection's boundary, which LD1's path read one ulp
+    under.
+- **WellCheck 4 is a fault of main's**, which LD1's path meets, so it is not mended:
+  - when a well opens in the month two wear out, `Oil.view()` nets the retirement against the opening and drops only
+    the oldest one;
+  - the fresh well carries the old vintage and is retired again next month;
+  - the slice reproduced it on main's own classes, by landing a second retirement in the month an order completed.
+  The one-line fix, `if (gone > 0) wells.strikeVintages();` in `Game.retireWornOutWells()`, passes WellCheck,
+  OilCheck, OilViewCheck, ReadPathCheck and SaveFileCheck. It is queued as OV1, not made here: it is not LD1's
+  mechanic, and it may move the trace the ensemble measured.
+- **What the moved paths showed of Freight.** Twice, a depot the gate had held on main was let through once its
+  band's workers came: a Rail Depot that borrowed $185M and lost $1.3M a month (PolicyPreviewCheck's town), and a
+  fleet and depot on credit whose default failed the bank (BankCheck's books city). The estimate it was ordered on
+  is Freight's own, and the gate had been hiding it. Recorded for IC1's ensemble, which lets more held buildings
+  through again.
+- The first build's run (capped at the band's workers) had other path reds. They are gone with that build:
+  FoundingYardCheck, AutoBuildCheck, MonetaryCheck, CentralBankCheck, FundCheck, CurrencyRegimeCheck and MapCheck.
+
+**The final suite**, on the tip with every mend (6705f230), exits 4 with 6 NEW lines in two harnesses. Every other
+harness is green but for main's recorded reds. 5 timing lines are soft (SaveSlotCheck 1, MapCheck 4), and Stale
+has no firm finding.
+- **WellCheck 4**: its three lines, above (OV1).
+- **ScaleCheck**: 2 lines fail where main's record has 7. Both are "...and it builds: more homes at the end than
+  at the start", one in each copy of the growing city it copies with its sectors free (5 and 10 billion people).
+  - That line is in main's record. Of the record's other lines, the city now grows, its rents price no migrant
+    out, the free copy orders, and the cash tracks.
+  - The judge reads the line's second time as NEW.
+  - The section's town is ST1's subject, which ST2 rescans after LD1 and IC1.
+
+## 8. The calls (★, each taken the recommended way)
+
+- ★ **The bid is held to the band's own posts, not its workers (Recommended, taken).** A village has few posts, so
+  the gate's reason for being stands. The bound is exact (1.41x). The alternative, the first build, bid a founding
+  village's unskilled wage to 1.87x (§4).
+- ★ **"Can pay" is consider()'s own interest test at prime and the record's surcharge (Recommended, taken).** That
+  is the most the business could borrow at. The brief's "BuildAdvice's estimate" is the same figure
+  (`BusinessInvestment.estimatedMonthlyProfit`, which BuildAdvice reads). The alternative is the lender's quoted
+  rate for this sector this month: a wage bid that moves with the bank's mood.
+- ★ **The builders' laid-off crews ask nothing (Recommended by XS1, taken).** §5.
+- ★ **R2's red is accepted for now, and read again on IC1's ensemble (Recommended).** Pending LD1-R.
+- ★ **WellCheck 4's three lines ship red on Jerus's word, with OV1 queued to mend them (Recommended).** It is main's
+  fault, met on LD1's path, as WN3-F's was met on WN3's and shipped with FL1 queued. The alternative is OV1's line
+  made here: an Oil book change in a wage batch, and maybe a moved trace after the ensemble.
+
+## 9. One in, one out
+
+Not a process batch. No script under `tools/`, no check rule and no session rule changed. The probe and its scripts
+live in `docs/queue/LD1/`, the study's own folder.

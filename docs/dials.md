@@ -5128,7 +5128,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 233 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
 | 236 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 318 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |
-| 1031 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
+| 1035 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
 
 ### CreditCheck.java ([map](map/CreditCheck.md))
 
@@ -5581,8 +5581,8 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1175 | `HoldersCheck.CENT` | `.0051` | The audit's tolerance for a figure read to the cent. |
-| 1614 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
+| 1192 | `HoldersCheck.CENT` | `.0051` | The audit's tolerance for a figure read to the cent. |
+| 1631 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
 
 ### HomeRailCheck.java ([map](map/HomeRailCheck.md))
 
@@ -6221,7 +6221,7 @@ Generated 2026-10-31 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 87 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 169 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
+| 176 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
 
 ### PopulationCheck.java ([map](map/PopulationCheck.md))
 
