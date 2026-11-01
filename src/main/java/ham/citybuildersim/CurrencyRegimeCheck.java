@@ -1254,7 +1254,7 @@ public class CurrencyRegimeCheck {
         double issued = cb.getCentralBank().getIssued() - cb.getCentralBank().getRetired();
         close("the central bank's city: it paid the owed local price in new money: getDollarsBought() is exactly it", cb.getCentralBank().getDollarsBought(), owed, 1e-9);
         close("...and its lifetime", cb.getCentralBank().getDollarsBoughtLifetime(), owed, 1e-9);
-        close("...M0 moved by what was made less what was taken back, to the cent", cb.getCentralBank().m0() - m0Before, issued, .01);
+        close("...M0 moved by what was made less what was taken back, to the cent", cb.getCentralBank().m0() - m0Before, issued, MoneyAudit.CENT);
         assertTrue("...and the money made includes it (" + String.format("%,.1f made, %,.1f of it for the dollars", cb.getCentralBank().getIssued(), owed) + ")",
                 cb.getCentralBank().getIssued() >= owed - 1e-9);
         assertTrue("...the treasury's cash did not pay it: no line in the treasury's journal for the bill", billPaid(cb) == 0);
@@ -1272,7 +1272,7 @@ public class CurrencyRegimeCheck {
                 cb.getCentralBank().m0() - tr.getCentralBank().m0(), paid, 1e-3 * Math.max(1, paid));
         assertTrue("the audit closes in both, the settlement month (residuals " + String.format("%.4f and %.4f", cb.getLastMoneyAudit().residual, tr.getLastMoneyAudit().residual) + ")",
                 ExchangeRateCheck.auditCloses(cb) && ExchangeRateCheck.auditCloses(tr)
-                        && Math.abs(cb.getLastMoneyAudit().residual) <= .01 && Math.abs(tr.getLastMoneyAudit().residual) <= .01);
+                        && Math.abs(cb.getLastMoneyAudit().residual) <= MoneyAudit.CENT && Math.abs(tr.getLastMoneyAudit().residual) <= MoneyAudit.CENT);
 
         // The central bank's equity, once settled, is unmoved by the purchase: the treasury's city, which paid out of cash, keeps the
         // dollars in its equity by what it paid; the central bank's, which made the money, does not. Three more months of it.

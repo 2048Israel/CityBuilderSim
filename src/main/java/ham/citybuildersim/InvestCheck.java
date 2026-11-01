@@ -1305,7 +1305,7 @@ public class InvestCheck {
                 shopSector19.statement().capitalTaxCredit, shopCredit19, 1e-9);
         MoneyAudit.Result audit19 = priced19.getLastMoneyAudit();
         assertTrue("...and the month closes the audit, the escalation and the credits in it",
-                Math.abs(audit19.residual) <= .01 || audit19.relative() <= 1e-7);
+                Math.abs(audit19.residual) <= MoneyAudit.CENT || audit19.relative() <= 1e-7);
         System.out.printf("   the shops' capital credit $%,.2fk; their repairs' credit $%,.2fk at %.0f%%%n",
                 shopSector19.statement().capitalTaxCredit, shopTaxRepairs19, rB19 * 100);
 
@@ -1474,7 +1474,7 @@ public class InvestCheck {
                 landSector19.statement().salesTax, 0, 1e-9);
         MoneyAudit.Result auditRebate19 = priced19.getLastMoneyAudit();
         assertTrue("...and the month closes the audit with the rebate in it",
-                Math.abs(auditRebate19.residual) <= .01 || auditRebate19.relative() <= 1e-7);
+                Math.abs(auditRebate19.residual) <= MoneyAudit.CENT || auditRebate19.relative() <= 1e-7);
         // An order booked with it.
         System.setOut(quiet);
         boolean orderedLow19, orderedHouse19;

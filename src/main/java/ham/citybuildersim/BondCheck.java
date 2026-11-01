@@ -156,7 +156,7 @@ public class BondCheck {
     }
 
     static boolean closes(MoneyAudit.Result r) {
-        return r != null && (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7);
+        return r != null && (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7);
     }
 
     /** One line of a month's audit, by its label: what MoneyAudit declared under it, 0 when it declared nothing. */

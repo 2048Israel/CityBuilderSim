@@ -287,8 +287,8 @@ public class SkipReportCheck {
             for (int m = 0; m < 12; m++) {
                 stepped.toggleNextMonth();
                 MoneyAudit.Result r = stepped.getLastMoneyAudit();
-                closed &= (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7)
-                        && Math.abs(stepped.getPostAuditDrift()) <= .01;
+                closed &= (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7)
+                        && Math.abs(stepped.getPostAuditDrift()) <= MoneyAudit.CENT;
                 advancedStepped += stepped.getCentralBank().getAdvancedToTreasury();
                 if (stepped.getCentralBank().getAdvancesToTreasury() > 0) onAdvances++;
             }

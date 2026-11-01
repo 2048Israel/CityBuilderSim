@@ -45,7 +45,7 @@
 > 
 > Each fixture causes its condition rather than finding a city in it.
 
-**Uses:** [Buyback](Buyback.md) (112), [Game](Game.md) (17), [Debt](Debt.md) (15), [PriceLevel](PriceLevel.md) (11), [HouseholdBalance](HouseholdBalance.md) (9), [Founding](Founding.md) (9), [Auction](Auction.md) (8), [DebtManager](DebtManager.md) (8), [MoneyAudit](MoneyAudit.md) (4), [CapitalFlows](CapitalFlows.md) (4), [Sectors](Sectors.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [GameFiles](GameFiles.md) (2), [Bank](Bank.md) (2), [CentralBank](CentralBank.md) (1), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [Rollover](Rollover.md) (1), [HistorySave](HistorySave.md) (1)
+**Uses:** [Buyback](Buyback.md) (112), [Game](Game.md) (17), [Debt](Debt.md) (15), [PriceLevel](PriceLevel.md) (11), [HouseholdBalance](HouseholdBalance.md) (9), [Founding](Founding.md) (9), [Auction](Auction.md) (8), [DebtManager](DebtManager.md) (8), [MoneyAudit](MoneyAudit.md) (6), [CapitalFlows](CapitalFlows.md) (4), [Sectors](Sectors.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [GameFiles](GameFiles.md) (2), [Bank](Bank.md) (2), [CentralBank](CentralBank.md) (1), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [Rollover](Rollover.md) (1), [HistorySave](HistorySave.md) (1)
 
 ## Sections
 

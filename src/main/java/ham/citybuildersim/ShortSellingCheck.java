@@ -569,7 +569,7 @@ public class ShortSellingCheck {
                 paid = true;
                 named |= a.detail.contains("DividendsPaidByShorts");
                 assertTrue("a month the company paid its dividend with a short open: the short paid " + String.format("%,.2f", pays)
-                        + ", more than the audit's own floor, so a month that left the line out would show it", pays > .01 && pays / Math.max(1, a.moved()) > 1e-7);
+                        + ", more than the audit's own floor, so a month that left the line out would show it", pays > MoneyAudit.CENT && pays / Math.max(1, a.moved()) > 1e-7);
             }
             feeFund += cityEx.getLendingFeeToFund();
             feeCells += cityEx.getLendingFeeToCells();
@@ -894,7 +894,7 @@ public class ShortSellingCheck {
             r.months++;
             MoneyAudit.Result a = g.getLastMoneyAudit();
             r.worstAudit = Math.max(r.worstAudit, Math.abs(a.residual));
-            if (Math.abs(a.residual) > .01 && a.relative() > 1e-7) r.auditBad++;
+            if (Math.abs(a.residual) > MoneyAudit.CENT && a.relative() > 1e-7) r.auditBad++;
             for (int c = 0; c < n; c++) {
                 double s = r.ex.shortShares(c);
                 double holdings = g.getHouseholdBalance().sharesHeld(c) + r.reg.getDealerShares(c) + r.reg.getForeignShares(c) + r.reg.getCityShares(c);

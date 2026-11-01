@@ -182,15 +182,27 @@ StaleCheck on README's count, which TR1 left at 164: mended, 165).
 - WellCheck green: OV1 mended main's fault.
 - ReplayCheck (TR1's): its trade tables' years were 2001-2010 literals; now the
   calendar's first year plus one, two, five and ten.
-- ScaleCheck: 10 lines. Its fixture lines are main's recorded ones ("the city
-  is growing", "its own rents price no migrant out", "the free copy ordered",
-  twice): section 6's town no longer holds its premise, which is ST2's, queued
-  ("move FREE_FIXTURE_MONTHS to a month that holds every assertion"). Measured
-  on that town, its comparisons read otherwise than main's: "...cash: the copy
-  is K times the city's within 0.0125 in all 6 months (worst 1.62e+00)" (main's
-  3.26e-02), and "...savings ... (worst 2.38e-02)", "...deposits ... (worst
-  9.73e-02)", "...prices: the copy is equal to the city's within 0.00400 in all
-  6 months (worst 1.08e-02)", new. Left to ST2, whose town will be another.
+- ScaleCheck: 10 lines at the factor, the gate's own, word for word (the
+  gate's record of main has only "...and it builds: more homes at the end than
+  at the start", twice, and "2 FAILED"; the gate's review ran it at today's
+  prices, section 9):
+
+      ScaleCheck | exit 1
+      ScaleCheck | fixture: the city is growing - more people than a year before                        FAIL
+      ScaleCheck | fixture: ...and its own rents price no migrant out in the months its copies are read against (the affordability pull 1 in all 6) FAIL
+      ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
+      ScaleCheck | fixture: the free copy ordered - an order sized from more than a million needed, and one judged on its interest FAIL
+      ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
+      ScaleCheck | fixture: the free copy ordered - an order sized from more than a million needed, and one judged on its interest FAIL
+      ScaleCheck | ...cash: the copy is K times the city's within 0.0125 in all 6 months (worst 1.62e+00) FAIL
+      ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 2.38e-02) FAIL
+      ScaleCheck | ...deposits: the copy is K times the city's within 0.0260 in all 6 months (worst 9.73e-02) FAIL
+      ScaleCheck | ...prices: the copy is equal to the city's within 0.00400 in all 6 months (worst 1.08e-02) FAIL
+      ScaleCheck | 10 FAILED
+
+  Section 6's town is the playtest's at FREE_FIXTURE_MONTHS (1124): at the
+  factor it does not hold its premise (ST2's, queued). Left to ST2, whose town
+  will be another.
 - LongPlaytest green (no finding), the money audit clean every month.
 - Timing soft beside other runs: SaveSlotCheck 1, MapCheck 2 (the gate times
   hard). Stale 0 firm.
@@ -235,3 +247,67 @@ share them), and the stand-in holds Random's people a century. Recommended
   ensemble's cities read it in their own seeds.
 - One in, one out: no process line changed (no script, check machinery or
   rule a session reads).
+
+## 9. The gate's review
+
+A stranger's review at the ship gate, on the tree of 6348862c (the ship file
+included). Found, mended here, and left.
+
+**Mended here.**
+- **The audit's cent was still a cent of today's thousands.** `MoneyAudit.CENT`
+  was .01 (and LongPlaytest's gate a literal .01): at the factor $10 of 1900,
+  $386 of today, so every conservation check through `tolerance()` let by a leak
+  38.6 times main's. Now `CENT = .01 * PriceLevel.FACTOR` (a twin at
+  `-Dcbs.priceLevel=1` has the old cent exactly), and the relative part takes
+  over from 260 million units, not ten billion (the banner says so). The
+  harness cents of the same size were scaled the same way, each `.01` in an
+  audit residual, a post-audit drift or a conserved amount now `MoneyAudit.CENT`
+  (BankCheck, BondCheck, BuybackCheck, CentralBankCheck (and its two `.005`,
+  now CENT / 2), CurrencyCheck, CurrencyRegimeCheck (two), ExchangeCheck,
+  ExchangeRateCheck, ForeignDebtCheck (two), FundCheck (four), HoldersCheck,
+  InvestCheck (two), LongPlaytest (two), MoneyCheck (three), MortgageCheck,
+  NewGameCheck (two), ShortSellingCheck (two), SkipReportCheck (two),
+  SlopeCheck). Every one of them is tighter or equal, none looser. The full
+  suite on that tree: no audit, drift or conserved amount missed by more than
+  the new cent. One scaled cent was wrong and went back: `HoldersCheck.CENT`
+  (.0051) reads a figure from the audit's printed detail, which prints thousands
+  to two places (`%,14.2f`), so it is the print's rounding and not a tolerance:
+  scaled, four assertions failed on the printed 0.06 for 0.0575 (a step of $10 of
+  1900 is the print's, not a leak). It stays .0051 with its sentence saying why.
+  Not scaled, being no audit or conservation: ReloadCheck.CENT (.005, a reload
+  equals the live city), ConservationCheck:375 (a reload), the 1e-5 cents of
+  FreightViewCheck, LandlordPortCheck, PolicyPreviewCheck and SectorFlowCheck
+  (already under the scaled cent).
+- **PriceLevelCheck's hung child.** `Child.run` read the child's output to the
+  end before it waited, so the ten-minute guard could never fire on a child that
+  hangs. The output goes to a file under the check's `TempDirs` folder now; the
+  wait has the timeout (`CHILD_MINUTES`), the child is killed on it and the line
+  says so.
+
+**ScaleCheck at today's prices** (the proof the review asked for: the same tree,
+`-Dcbs.priceLevel=1`): **two lines**, "...and it builds: more homes at the end
+than at the start", twice, and "2 FAILED" - main's own record, exit 3 at the gate.
+At the factor the ten lines above. So the lines are **not** the same: the
+fixture lines ("the city is growing", "its own rents price no migrant out", "the
+free copy ordered" twice) and the four comparisons fail at the factor and pass at
+today's prices, and section 6's earlier wording ("main's recorded ones") was
+wrong: main's record has only the builds lines. The founded town differs
+already at month 120 (659 people and 141 homes at today's prices, 647 and 186 at
+the factor) and the playtest's town at month 1124 does not grow over its last year at the
+factor and does at today's: the trajectory is chaotic, so this does not say the factor breaks a
+scale law, but it does say the red is the factor's town and not only ST2's old
+one. ST2 (queued) picks a month that holds every assertion, and its check
+should run at both levels; the ensemble's twin (section 7) already shows the
+factor does not change the distributions.
+
+**Left for follow-ups.**
+- EP2 (queued): the thresholds that hide or fold a young city's figures at the
+  factor (`TradeLanes.MIN_LANE`, `FundView.FOLD_UNDER`, the `>= .5` cut-offs on
+  the Government and Finances screens, `ui/Money.java`'s $0 under .5) and
+  NewGameCheck (c)'s single-gap bound. The audit's printed detail
+  (`MoneyAudit`, `%,14.2f`) is in the same family: a 1900 city's lines print in
+  steps of $10 of 1900.
+- EP1b: three traps in the stand-in that the new file walks into
+  (`WorldMarket.baseYearRead()` on Random, `pad()` and `usCpi()`, `PolicyRates`
+  dropping the rule's state at month 1200), in `docs/queue/EP1b.md`.
+- EP1-C carries the eye-check of the lanes, the folds and the $0 cut-offs.

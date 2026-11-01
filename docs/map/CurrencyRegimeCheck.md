@@ -64,7 +64,7 @@
 >      array is 19 long (FX8): slot 15 the doubt's lifetime, 16 to 18 the month's
 > ... (46 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (119), [Game](Game.md) (45), [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (24), [Expectations](Expectations.md) (13), [CurrencyCheck](CurrencyCheck.md) (11), [ExchangeRateCheck](ExchangeRateCheck.md) (11), [Founding](Founding.md) (9), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [Nations](Nations.md) (2), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [PriceLevel](PriceLevel.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (119), [Game](Game.md) (45), [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (24), [Expectations](Expectations.md) (13), [CurrencyCheck](CurrencyCheck.md) (11), [ExchangeRateCheck](ExchangeRateCheck.md) (11), [Founding](Founding.md) (9), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [MoneyAudit](MoneyAudit.md) (3), [Nations](Nations.md) (2), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [PriceLevel](PriceLevel.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
 
 **Used by (1):** [VaultMoneysCheck](VaultMoneysCheck.md)
 

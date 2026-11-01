@@ -1103,7 +1103,7 @@ public class MortgageCheck {
                 Sectors.RETAIL + " sold 6");
         close("...its founding capital left where it was", capitalisedAfter, capitalisedBefore, 0);
         close("the bank's equity moved by its income and its named causes that month", equityResidual, 0, 1e-6);
-        close("...and the month's money audit closes through the closure", audit, 0, .01);
+        close("...and the month's money audit closes through the closure", audit, 0, MoneyAudit.CENT);
 
         // ...and what the rule reads is carried in the save: the customers and
         // the month's running costs (Bank.monthLinesToSave(), 0.7.19).

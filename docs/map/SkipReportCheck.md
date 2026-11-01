@@ -10,7 +10,7 @@
 > problem - so the episode counters have to be sampled, and a sampling bug
 > would silently report a smooth century on a city that spent it starving.
 
-**Uses:** [TimeSkipReport](TimeSkipReport.md) (15), [Founding](Founding.md) (3), [Game](Game.md) (3), [GameFiles](GameFiles.md) (2), [WorldEconomy](WorldEconomy.md) (1), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [TimeSkipReport](TimeSkipReport.md) (15), [Founding](Founding.md) (3), [Game](Game.md) (3), [MoneyAudit](MoneyAudit.md) (3), [GameFiles](GameFiles.md) (2), [WorldEconomy](WorldEconomy.md) (1)
 
 ## Sections
 

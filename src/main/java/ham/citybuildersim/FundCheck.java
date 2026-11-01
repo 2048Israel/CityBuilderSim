@@ -124,7 +124,7 @@ public class FundCheck {
     static boolean play(Game g) {
         quietly(g::toggleNextMonth);
         MoneyAudit.Result r = g.getLastMoneyAudit();
-        return Math.abs(r.residual) <= .01 || r.relative() <= 1e-7;
+        return Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7;
     }
 
     static GameFiles files;
@@ -1288,7 +1288,7 @@ public class FundCheck {
         quietly(() -> ran[0] = g.simulateMonths(1));
         check("...a month", ran[0] == 1);
         MoneyAudit.Result r = g.getLastMoneyAudit();
-        check("...and its audit closes", Math.abs(r.residual) <= .01 || r.relative() <= 1e-7);
+        check("...and its audit closes", Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7);
     }
 
     /* ================= 13. Insane, never borrowing (0.7.15) ================= */
@@ -1334,8 +1334,8 @@ public class FundCheck {
             quietly(() -> ran[0] = g.simulateMonths(1));
             everyMonthRan &= ran[0] == 1;
             MoneyAudit.Result r = g.getLastMoneyAudit();
-            everyAuditClosed &= (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7)
-                    && Math.abs(g.getPostAuditDrift()) <= .01;
+            everyAuditClosed &= (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7)
+                    && Math.abs(g.getPostAuditDrift()) <= MoneyAudit.CENT;
             double paid = g.getForeignInterestPaidThisMonth();
             everyCoupon &= Math.abs(paid - couponUsd * rate) <= 1e-9 * Math.max(1, paid);
             NationalAccounts books = g.getEconomyManager().getNationalAccounts();

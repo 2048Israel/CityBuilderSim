@@ -1269,7 +1269,7 @@ public class LongPlaytest {
          * finding.
          */
         MoneyAudit.Result money = g.getLastMoneyAudit();
-        if (Math.abs(money.residual) > .01 && money.relative() > 1e-7) {
+        if (Math.abs(money.residual) > MoneyAudit.CENT && money.relative() > 1e-7) {
             flag(month, "money was not conserved", money.toString());
         }
 
@@ -1352,7 +1352,7 @@ public class LongPlaytest {
            game is played; after the strike is where nothing should happen.
            ------------------------------------------------------------------- */
         double drift = g.getPostAuditDrift();
-        if (Math.abs(drift) > .01) {
+        if (Math.abs(drift) > MoneyAudit.CENT) {
             flag(month, "money moved after the audit struck", String.format(
                     "$%,.2f moved once the month was already reconciled, most of it in %s ($%,.2f)",
                     drift, g.getPostAuditDriftPool(), g.getPostAuditDriftWorst()));

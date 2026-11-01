@@ -189,7 +189,7 @@ public class MoneyCheck {
         assertTrue("a city that paid for land out of the vault conserves money",
                 worst.relative() < 1e-4);
         assertTrue("...and nothing moved a pool after any month's audit",
-                Math.abs(worstDrift) < .01);
+                Math.abs(worstDrift) < MoneyAudit.CENT);
 
         /* ==================== 2. a city under stress ==================== */
         System.out.println("\n--- broke, banned, taxed and importing: still nothing leaks ---");
@@ -301,7 +301,7 @@ public class MoneyCheck {
         assertTrue("a city conserves money with hot money flowing", worst.relative() < 1e-4);
         System.out.printf("   worst drift after a strike: $%,.2f%s%n", worstDrift,
                 worstDriftPool.isEmpty() ? "" : " (" + worstDriftPool + ")");
-        assertTrue("...and nothing moved after the audit struck", Math.abs(worstDrift) < .01);
+        assertTrue("...and nothing moved after the audit struck", Math.abs(worstDrift) < MoneyAudit.CENT);
 
         /* ==================================================================
            4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES
@@ -573,7 +573,7 @@ public class MoneyCheck {
                 Math.abs(gainBooked - gainQuoted) < 1e-6 && gainQuoted < 0);
         assertTrue("a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month",
                 worstPaper.relative() < 1e-4);
-        assertTrue("...and nothing moved a pool after any month's audit struck", worstPaperDrift < .01);
+        assertTrue("...and nothing moved a pool after any month's audit struck", worstPaperDrift < MoneyAudit.CENT);
         assertTrue("the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool",
                 worstCouponGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));
         assertTrue("...and it is the cash coupons the budget calls its cash interest", worstCashGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));

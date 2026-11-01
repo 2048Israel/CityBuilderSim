@@ -510,12 +510,12 @@ public class ForeignDebtCheck {
             System.setOut(out);
         }
 
-        close("everything owed abroad is written off", written, owedAtDefault, .01);
+        close("everything owed abroad is written off", written, owedAtDefault, MoneyAudit.CENT);
         close("...so the city owes nothing abroad", city.getDebtManager().getForeignPrincipal(), 0, 1e-9);
         assertTrue("...and the position improves by the whole of it",
                 fx.netForeignPosition() > positionBefore);
         close("...recorded as what it is: money nobody was paid",
-                fx.getRepudiated(), owedAtDefault, .01);
+                fx.getRepudiated(), owedAtDefault, MoneyAudit.CENT);
 
         assertTrue("the window is shut", !city.getDebtManager().foreignWindowOpen());
         assertTrue("...for five years", city.getDebtManager()

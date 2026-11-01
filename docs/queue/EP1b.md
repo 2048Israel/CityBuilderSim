@@ -46,3 +46,28 @@ The stand-in's harness sections (WorldDataCheck 9, NationsCheck's, InterestAbroa
 first stretch) become the replay's; `standInYears()` is 0 on the new file;
 PriceLevelCheck's US level within its tolerance or tighter; every trace moves:
 the full suite and the ensemble.
+
+## Traps from EP1's gate review
+
+Three things the stranger's review at EP1's ship gate found in the stand-in that
+EP1b's file walks into; none shows in a green suite today.
+
+- `WorldMarket.baseYearRead()` (`WorldMarket.java:1184`) on Random is `baseYear -
+  standInYears`. Once the file starts in 1900, `standInYears` is 0 and Random's
+  base year becomes 2019, 119 years into its path (the trade base year is the
+  file's, not the calendar's); WorldMarketCheck stays green, because it reads the
+  Historical path. Re-derive Random's base year from the calendar (the year the
+  game's month 1 falls in, plus what the path reads), and give WorldMarketCheck a
+  Random section that would have failed.
+- `pad()` (`WorldData.java:633`) calls `PriceLevel.usCpi()` for the nominal series
+  it extends, and `usCpi` throws outside 1900-2025: a nominal series whose first
+  figure is after 2025 refuses the whole world file, and the city plays on with no
+  nations. A file whose series start where their sources do (EP1b's replay has
+  many that start after 1900) must not meet this; clamp or skip, and assert it.
+- On Historical, `PolicyRates` drops the rule's state at `TABLE_FIRST_MONTH` (month
+  1200), so every bank's rate and shadow snap to the table in one month (the Fed
+  to 5.5%, the Bank of Japan to 0.25%) from where a century of the rule left them.
+  EP1b's table replaces the rule from 1900 and the snap goes, except for a bank
+  whose table starts later (its gap by the anchor rule): there the rule's last
+  shadow must hand over to the table's first line, not be dropped, and
+  InterestAbroadCheck's stretch asserts that month's step.

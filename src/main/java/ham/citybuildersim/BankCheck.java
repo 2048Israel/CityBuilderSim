@@ -3023,7 +3023,7 @@ public class BankCheck {
                         + " one - the second; the charter's is exempt",
                 operatingAfter, operatingOne, 1e-9 * Math.max(1, operatingAfter));
         assertTrue("...and that month closes the audit, the operating cost in it",
-                Math.abs(auditAfterResidual) <= .01 || auditAfterRelative <= 1e-7);
+                Math.abs(auditAfterResidual) <= MoneyAudit.CENT || auditAfterRelative <= 1e-7);
         assertTrue("fixture: two branches stood every month until what a branch costs rose",
                 twoBeforeRise == riseMonth);
         assertTrue("while what a branch costs held still, the fees covered the branches the rule kept",

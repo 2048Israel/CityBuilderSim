@@ -190,7 +190,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, ConservationCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PlanCheck, PriceLevelCheck, RailDepotCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
 | [Money](map/Money.md) | LandClassCheck, PriceLevelCheck, RankingsCheck, RunWorksCheck, TradeBandCheck, WorldDataCheck |
-| [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BondCheck, BuildersFirstCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, EducationCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FundCheck, GroceryCheck, HistoryCheck, HoldersCheck, InterestAbroadCheck, InvestCheck, LandCheck, LongPlaytest, MaterialsCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PortCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TreasuryCheck, WoodProductsCheck |
+| [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BondCheck, BuildersFirstCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FundCheck, GroceryCheck, HistoryCheck, HoldersCheck, InterestAbroadCheck, InvestCheck, LandCheck, LongPlaytest, MaterialsCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PortCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TreasuryCheck, WoodProductsCheck |
 | [MonthOrder](map/MonthOrder.md) | **none** |
 | [Mortgage](map/Mortgage.md) | BooksCheck, BuildCardCheck, CreditCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
@@ -10497,131 +10497,131 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1180 ...and the sectors' book says the same
   - L1181 every month on the way the books agreed
   - L1182 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the businesses' purchase among it
-- **L1212 11. the world is a holder: it buys from abroad, is paid abroad, leaves with its money, and the books agree**
-  - L1219 it holds the face it was allotted, whatever it paid
-  - L1220 ...and remembers what it paid
-  - L1224 a save carries the book
-  - L1225 ...and what it has paid and been paid
-  - L1229 a save from before the world held any has none (the array ends at the carry trade)
-  - L1231 a reform scales the book
-  - L1233 ...and a new game clears it
-  - L1242 fixture: money came for a seven-point rate
-  - L1247 fixture: the spread is gone, so the money leaves, and nobody has panicked
-  - L1249 the paper that leaves is what departs, over the world's whole position (its stock and the paper at market),
-  - L1251 ...and at a market below face the same departure is a smaller share of a smaller position
-  - L1253 ...which is less than the face, whatever the book
-  - L1262 a month in which no money leaves sends none of the paper home
-  - L1271 fixture: a twenty-point fall on thin reserves is a run
-  - L1272 in a run PANIC_EXIT of the paper leaves, the same share as of the stock
-  - L1275 ...and what is sold comes off the book
-  - L1276 ...and is remembered
-  - L1307 fixture: the world is not in a run, so its rule bids
-  - L1308 fixture: and the two books of its paper agree going in
-  - L1319 fixture: the world holds a tenth of the hot money it had, and has the appetite for the rest
-  - L1327 fixture: the treasury sold a twenty-year bond between the presses
-  - L1333 fixture: the stop is over what the world pays, so its rule bids
-  - L1334 fixture: the auction filled the world
-  - L1335 ...for the issue's price: its cash over its face is what the issue raised over its face
-  - L1337 it holds none of it until the settle
-  - L1344 the world paid exactly what the auction allotted it
-  - L1345 ...and the paper's world share is the face it was allotted
-  - L1346 ...and the world's book, CapitalFlows', is up by the same face
-  - L1347 ...for what it paid, remembered
-  - L1348 ...and the two books agree
-  - L1349 the bank paid exactly the rest
-  - L1351 ...and holds exactly the rest of the face
-  - L1353 the audit's financial inflow line for it is what it paid
-  - L1355 ...inside the financial account the currency reads
-  - L1356 ...which the balance of payments took
-  - L1357 the audit closed on the settle month: the world's money is declared coming in
-  - L1367 fixture: the world holds paper that pays a coupon
-  - L1369 the world was paid its share of the month's coupon
-  - L1370 ...declared to the audit as income paid abroad
-  - L1372 ...so the current account carries it
-  - L1373 ...and the audit closes: the treasury's pool paid a stranger
-  - L1375 the two books still agree
-  - L1380 fixture: the world still holds some of the twenty-year bond
-  - L1389 fixture: the buyback was at the quoted price
-  - L1390 the world's paper is down by the face it held of it
-  - L1391 ...and it sold exactly that face
-  - L1392 ...and the treasury's pool carries its share of the price until the month declares it leaving
-  - L1394 the two books still agree
-  - L1396 the month after, the audit closes: the world's share left the country, declared as a financial outflow
-  - L1398 ...and the financial account carries at least that share
-  - L1408 fixture: the treasury sold a thirty-year bond
-  - L1412 fixture: the treasury sold a two-year bond
-  - L1414 fixture: the world took part of it at the settle
-  - L1415 fixture: and the world took part of the thirty-year bond
-  - L1428 fixture: it fell due
-  - L1429 every month of its life, the world's book was the paper's (a coupon, a sale, a settle among them)
-  - L1430 ...and the audit closed every month of it
-  - L1431 the world was paid, as principal, the face it held of it at the end
-  - L1432 ...declared to the audit as a financial outflow
-  - L1433 ...and the financial account carries it
-  - L1437 fixture: the world still holds paper
-  - L1446 the book came back exactly
-  - L1447 ...and what it paid and was paid for it since founding
-  - L1453 ...and every piece's world share
-  - L1454 ...and the two books agree in the reloaded city
-  - L1456 a month on, both pay the world the same coupon
-  - L1457 ...and hold the same
-  - L1458 ...and both months close
-  - L1468 fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 24 slots long
-  - L1480 it loads
-  - L1481 the world holds none of the city's paper
-  - L1482 ...nor does the paper say it does
-  - L1485 ...and it runs, the audit closing every month
-  - L1486 ...with the two books agreeing
-  - L1496 fixture: the world holds paper going into the month
-  - L1500 fixture: the stock was over its target, so money left, and nobody panicked
-  - L1505 part of the paper left with the money
-  - L1506 ...the departure over the world's whole position, of the face
-  - L1507 ...sold to the bank's desk at a market price, below or at face
-  - L1509 ...which is what the world was paid, remembered
-  - L1510 ...declared to the audit as a financial outflow
-  - L1512 the two books still agree
-  - L1513 the audit closes on it: the desk's cash and the deposits that left are both declared
-  - L1515 the bank's book rose, whatever its room: it buys what the world sells
-  - L1523 fixture: confidence is broken
-  - L1525 the auction's bidders say the world is in a run
-  - L1526 ...so its bid is nothing, at any yield
-  - L1528 fixture: the world still holds paper
-  - L1532 fixture: the treasury sold a ten-year bond in the run
-  - L1533 the auction allotted the world none of it
-  - L1537 the month after, PANIC_EXIT of the paper has gone to the desk
-  - L1539 ...declared as a financial outflow
-  - L1540 ...with the two books agreeing and the audit closed
-  - L1547 every month of the run the books agreed and the audit closed
-  - L1548 ...and the paper has been running home: a third a month leaves it under what it was
-  - L1567 fixture: the treasury sold a twenty-year bond
-  - L1570 fixture: the world took part of it
-  - L1585 the dial is reached: the central bank holds all of the term paper
-  - L1586 ...the world none of it, the last it reached
-  - L1587 ...having paid the world for it, abroad
-  - L1588 every month on the way the two books agreed
-  - L1589 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the world's purchase among it
-  - L1682 fixture: the treasury sold a twenty-year bond between the presses
-  - L1683 a fresh line's settle re-strikes nothing
-  - L1685 ...its equity's movement leaves nothing unexplained
-  - L1686 ...and its equity's two parts and the preferred still add up to its equity, as they did
-  - L1688 fixture: the households and the bank each hold part of the line
-  - L1692 fixture: the twin is the same city going in
-  - L1697 fixture: the second sale reopened the same line, and the households held part of it going in
-  - L1701 fixture: ...and the twin's line was reopened to the same face and the same price
-  - L1718 the households took their share of the reopening at the settle
-  - L1720 the month of the reopened settle re-struck the line's discount: far over what the movement's tolerance would pass
-  - L1722 ...it is the movement's cause, whole
-  - L1723 ...and it is not in the statement's line: the gains on the city's paper are what they are without it
-  - L1725 ...the twin, which books no re-strike, booked none
-  - L1726 ...so the month's movement leaves nothing unexplained
-  - L1727 ...and its equity's two parts and the preferred add up to its equity
-  - L1728 ...where the twin's, as main's were, opened by the re-strike
-  - L1730 ...and the twin's movement left exactly the re-strike unexplained
-  - L1732 the audit closed on the settle month
-  - L1733 ...and on the twin's
-  - L1759 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-  - L1761 three months on, the movement left nothing unexplained and the split still added up to the equity, every month
-  - L1762 ...while the twin's split, opened by the re-strike in the settle month, stayed open
+- **L1216 11. the world is a holder: it buys from abroad, is paid abroad, leaves with its money, and the books agree**
+  - L1223 it holds the face it was allotted, whatever it paid
+  - L1224 ...and remembers what it paid
+  - L1228 a save carries the book
+  - L1229 ...and what it has paid and been paid
+  - L1233 a save from before the world held any has none (the array ends at the carry trade)
+  - L1235 a reform scales the book
+  - L1237 ...and a new game clears it
+  - L1246 fixture: money came for a seven-point rate
+  - L1251 fixture: the spread is gone, so the money leaves, and nobody has panicked
+  - L1253 the paper that leaves is what departs, over the world's whole position (its stock and the paper at market),
+  - L1255 ...and at a market below face the same departure is a smaller share of a smaller position
+  - L1257 ...which is less than the face, whatever the book
+  - L1266 a month in which no money leaves sends none of the paper home
+  - L1275 fixture: a twenty-point fall on thin reserves is a run
+  - L1276 in a run PANIC_EXIT of the paper leaves, the same share as of the stock
+  - L1279 ...and what is sold comes off the book
+  - L1280 ...and is remembered
+  - L1311 fixture: the world is not in a run, so its rule bids
+  - L1312 fixture: and the two books of its paper agree going in
+  - L1323 fixture: the world holds a tenth of the hot money it had, and has the appetite for the rest
+  - L1331 fixture: the treasury sold a twenty-year bond between the presses
+  - L1337 fixture: the stop is over what the world pays, so its rule bids
+  - L1338 fixture: the auction filled the world
+  - L1339 ...for the issue's price: its cash over its face is what the issue raised over its face
+  - L1341 it holds none of it until the settle
+  - L1348 the world paid exactly what the auction allotted it
+  - L1349 ...and the paper's world share is the face it was allotted
+  - L1350 ...and the world's book, CapitalFlows', is up by the same face
+  - L1351 ...for what it paid, remembered
+  - L1352 ...and the two books agree
+  - L1353 the bank paid exactly the rest
+  - L1355 ...and holds exactly the rest of the face
+  - L1357 the audit's financial inflow line for it is what it paid
+  - L1359 ...inside the financial account the currency reads
+  - L1360 ...which the balance of payments took
+  - L1361 the audit closed on the settle month: the world's money is declared coming in
+  - L1371 fixture: the world holds paper that pays a coupon
+  - L1373 the world was paid its share of the month's coupon
+  - L1374 ...declared to the audit as income paid abroad
+  - L1376 ...so the current account carries it
+  - L1377 ...and the audit closes: the treasury's pool paid a stranger
+  - L1379 the two books still agree
+  - L1384 fixture: the world still holds some of the twenty-year bond
+  - L1393 fixture: the buyback was at the quoted price
+  - L1394 the world's paper is down by the face it held of it
+  - L1395 ...and it sold exactly that face
+  - L1396 ...and the treasury's pool carries its share of the price until the month declares it leaving
+  - L1398 the two books still agree
+  - L1400 the month after, the audit closes: the world's share left the country, declared as a financial outflow
+  - L1402 ...and the financial account carries at least that share
+  - L1412 fixture: the treasury sold a thirty-year bond
+  - L1416 fixture: the treasury sold a two-year bond
+  - L1418 fixture: the world took part of it at the settle
+  - L1419 fixture: and the world took part of the thirty-year bond
+  - L1432 fixture: it fell due
+  - L1433 every month of its life, the world's book was the paper's (a coupon, a sale, a settle among them)
+  - L1434 ...and the audit closed every month of it
+  - L1435 the world was paid, as principal, the face it held of it at the end
+  - L1436 ...declared to the audit as a financial outflow
+  - L1437 ...and the financial account carries it
+  - L1441 fixture: the world still holds paper
+  - L1450 the book came back exactly
+  - L1451 ...and what it paid and was paid for it since founding
+  - L1457 ...and every piece's world share
+  - L1458 ...and the two books agree in the reloaded city
+  - L1460 a month on, both pay the world the same coupon
+  - L1461 ...and hold the same
+  - L1462 ...and both months close
+  - L1472 fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 24 slots long
+  - L1484 it loads
+  - L1485 the world holds none of the city's paper
+  - L1486 ...nor does the paper say it does
+  - L1489 ...and it runs, the audit closing every month
+  - L1490 ...with the two books agreeing
+  - L1500 fixture: the world holds paper going into the month
+  - L1504 fixture: the stock was over its target, so money left, and nobody panicked
+  - L1509 part of the paper left with the money
+  - L1510 ...the departure over the world's whole position, of the face
+  - L1511 ...sold to the bank's desk at a market price, below or at face
+  - L1513 ...which is what the world was paid, remembered
+  - L1514 ...declared to the audit as a financial outflow
+  - L1516 the two books still agree
+  - L1517 the audit closes on it: the desk's cash and the deposits that left are both declared
+  - L1519 the bank's book rose, whatever its room: it buys what the world sells
+  - L1527 fixture: confidence is broken
+  - L1529 the auction's bidders say the world is in a run
+  - L1530 ...so its bid is nothing, at any yield
+  - L1532 fixture: the world still holds paper
+  - L1536 fixture: the treasury sold a ten-year bond in the run
+  - L1537 the auction allotted the world none of it
+  - L1541 the month after, PANIC_EXIT of the paper has gone to the desk
+  - L1543 ...declared as a financial outflow
+  - L1544 ...with the two books agreeing and the audit closed
+  - L1551 every month of the run the books agreed and the audit closed
+  - L1552 ...and the paper has been running home: a third a month leaves it under what it was
+  - L1571 fixture: the treasury sold a twenty-year bond
+  - L1574 fixture: the world took part of it
+  - L1589 the dial is reached: the central bank holds all of the term paper
+  - L1590 ...the world none of it, the last it reached
+  - L1591 ...having paid the world for it, abroad
+  - L1592 every month on the way the two books agreed
+  - L1593 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the world's purchase among it
+  - L1686 fixture: the treasury sold a twenty-year bond between the presses
+  - L1687 a fresh line's settle re-strikes nothing
+  - L1689 ...its equity's movement leaves nothing unexplained
+  - L1690 ...and its equity's two parts and the preferred still add up to its equity, as they did
+  - L1692 fixture: the households and the bank each hold part of the line
+  - L1696 fixture: the twin is the same city going in
+  - L1701 fixture: the second sale reopened the same line, and the households held part of it going in
+  - L1705 fixture: ...and the twin's line was reopened to the same face and the same price
+  - L1722 the households took their share of the reopening at the settle
+  - L1724 the month of the reopened settle re-struck the line's discount: far over what the movement's tolerance would pass
+  - L1726 ...it is the movement's cause, whole
+  - L1727 ...and it is not in the statement's line: the gains on the city's paper are what they are without it
+  - L1729 ...the twin, which books no re-strike, booked none
+  - L1730 ...so the month's movement leaves nothing unexplained
+  - L1731 ...and its equity's two parts and the preferred add up to its equity
+  - L1732 ...where the twin's, as main's were, opened by the re-strike
+  - L1734 ...and the twin's movement left exactly the re-strike unexplained
+  - L1736 the audit closed on the settle month
+  - L1737 ...and on the twin's
+  - L1763 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+  - L1765 three months on, the movement left nothing unexplained and the split still added up to the equity, every month
+  - L1766 ...while the twin's split, opened by the re-strike in the settle month, stayed open
 
 ## HomeRailCheck.java - 45 labelled assertions
 
@@ -17498,25 +17498,25 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L508 the child at today's prices ran with 1
   - L587 ...the
   - L589 ...and the city really lived (more people at the end than the start)
-  - L889 cash
-  - L890 gdp.month
-  - L891 bank.deposits
-  - L892 retail.shelf
-  - L893 rent
-  - L894 wage.minimum
-  - L895 rate
-  - L896 world.level
-  - L897 priceIndex
-  - L898 pop
-  - L899 workforce
-  - L900 unemployed
-  - L901 homes
-  - L902 stores
-  - L904 jobs.
-  - L916 stock.
-  - L918 sector.
-  - L940 h.
-  - L945 h.
+  - L900 cash
+  - L901 gdp.month
+  - L902 bank.deposits
+  - L903 retail.shelf
+  - L904 rent
+  - L905 wage.minimum
+  - L906 rate
+  - L907 world.level
+  - L908 priceIndex
+  - L909 pop
+  - L910 workforce
+  - L911 unemployed
+  - L912 homes
+  - L913 stores
+  - L915 jobs.
+  - L927 stock.
+  - L929 sector.
+  - L951 h.
+  - L956 h.
 
 ## QuarryingCheck.java - 47 labelled assertions
 

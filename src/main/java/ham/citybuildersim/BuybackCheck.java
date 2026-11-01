@@ -455,7 +455,7 @@ public class BuybackCheck {
         double p0 = bond.getOustandingPrincipal();
         Buyback.Result first = part(city, bond, p0 / 2, "half");
         check("half: the piece is still on the books, at half its principal",
-                ledger.getDebt().contains(bond) && Math.abs(bond.getOustandingPrincipal() - p0 / 2) <= .01);
+                ledger.getDebt().contains(bond) && Math.abs(bond.getOustandingPrincipal() - p0 / 2) <= MoneyAudit.CENT);
 
         // Most of what is left: past the bank's holding, so the other holders sell at their own prices.
         double left = bond.getOustandingPrincipal();
@@ -463,7 +463,7 @@ public class BuybackCheck {
         check("fixture: ...and this time the households, the businesses or the world sold too, at prices over the bank's",
                 second.householdFace() + second.firmFace() + second.worldFace() > 0 && second.stopPer100() > second.fairPer100());
         check("most of the rest: the piece is still on the books, at a fifth of what was left",
-                ledger.getDebt().contains(bond) && Math.abs(bond.getOustandingPrincipal() - left * .2) <= .01);
+                ledger.getDebt().contains(bond) && Math.abs(bond.getOustandingPrincipal() - left * .2) <= MoneyAudit.CENT);
 
         // The last of it: the piece leaves the books.
         double last = bond.getOustandingPrincipal();

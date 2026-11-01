@@ -16,7 +16,7 @@
 > only opens under stress: one is left to prosper, the other is bankrupted
 > and restructured, taxed hard, and made to import everything.
 
-**Uses:** [MoneyAudit](MoneyAudit.md) (21), [Game](Game.md) (18), [PriceLevel](PriceLevel.md) (14), [Sectors](Sectors.md) (12), [OldMetal](OldMetal.md) (12), [GameFiles](GameFiles.md) (7), [Founding](Founding.md) (7), [Debt](Debt.md) (6), [Sector](Sector.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [LandParcel](LandParcel.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [DebtManager](DebtManager.md) (2), [LandMarket](LandMarket.md) (1), [Mining](Mining.md) (1), [Good](Good.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [CapitalFlows](CapitalFlows.md) (1), [CopperRefining](CopperRefining.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MediumTermBond](MediumTermBond.md) (1)
+**Uses:** [MoneyAudit](MoneyAudit.md) (24), [Game](Game.md) (18), [PriceLevel](PriceLevel.md) (14), [Sectors](Sectors.md) (12), [OldMetal](OldMetal.md) (12), [GameFiles](GameFiles.md) (7), [Founding](Founding.md) (7), [Debt](Debt.md) (6), [Sector](Sector.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [LandParcel](LandParcel.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [DebtManager](DebtManager.md) (2), [LandMarket](LandMarket.md) (1), [Mining](Mining.md) (1), [Good](Good.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [CapitalFlows](CapitalFlows.md) (1), [CopperRefining](CopperRefining.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MediumTermBond](MediumTermBond.md) (1)
 
 ## Sections
 

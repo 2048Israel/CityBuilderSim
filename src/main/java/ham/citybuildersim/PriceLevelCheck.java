@@ -626,6 +626,9 @@ public class PriceLevelCheck {
         Series(char kind, double[] v) { this.kind = kind; this.v = v; }
     }
 
+    /** How long a child JVM may run before the check kills it and fails: the longest (the played city) takes a few minutes. */
+    static final long CHILD_MINUTES = 10;
+
     /** What a child printed: its factor, the constants it read, the ratios, and the series. */
     static final class Child {
         double factor = Double.NaN;
@@ -654,15 +657,23 @@ public class PriceLevelCheck {
             long t0 = System.nanoTime();
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.redirectErrorStream(true);
+            // The child's output goes to a file, not through a pipe this thread reads to the end: a read to the end returns only when the child
+            // exits, so the wait below could never time out on a child that hangs (EP1, the ship gate's review).
+            Path log = TempDirs.create("pricelevel-child").resolve((todaysPrices ? "today-" : "factor-") + flag.substring(2) + ".txt");
+            pb.redirectOutput(log.toFile());
             Process p = pb.start();
             Child c = new Child();
-            Path log = TempDirs.create("pricelevel-child").resolve(todaysPrices ? "today.txt" : "factor.txt");
-            byte[] bytes = p.getInputStream().readAllBytes();
-            Files.write(log, bytes);
-            boolean done = p.waitFor(10, TimeUnit.MINUTES);
-            if (!done) { p.destroyForcibly(); out.println("   FAIL the child did not finish in ten minutes"); fails++; return c; }
+            boolean done = p.waitFor(CHILD_MINUTES, TimeUnit.MINUTES);
+            if (!done) {
+                p.destroyForcibly();
+                p.waitFor(1, TimeUnit.MINUTES);
+                out.println("   FAIL the child (" + flag + ", " + (todaysPrices ? "at today's prices" : "at the factor") + ") did not finish in " + CHILD_MINUTES
+                        + " minutes and was killed (its output so far: " + log + ")");
+                fails++;
+                return c;
+            }
             int exit = p.exitValue();
-            for (String line : new String(bytes, StandardCharsets.UTF_8).split("\\R")) c.read(line);
+            for (String line : new String(Files.readAllBytes(log), StandardCharsets.UTF_8).split("\\R")) c.read(line);
             out.printf("   child %s: exit %d, %d constants, %d ratios, %d series, %.0f s (its output: %s)%n", todaysPrices ? "at today's prices" : "at the factor",
                     exit, c.consts.size(), c.ratios.size(), c.series.size(), (System.nanoTime() - t0) / 1e9, log);
             if (exit != 0) { out.println("   FAIL the child exited " + exit); fails++; }

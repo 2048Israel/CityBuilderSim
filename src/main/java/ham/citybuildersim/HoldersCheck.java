@@ -137,7 +137,7 @@ public class HoldersCheck {
     static MoneyAudit.Result play(Game g) {
         quietly(g::toggleNextMonth);
         MoneyAudit.Result r = g.getLastMoneyAudit();
-        if (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7) closedMonths++;
+        if (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7) closedMonths++;
         else {
             brokenMonths++;
             out.printf("   m%d: residual %.4f%n", g.getMonth(), r.residual);
@@ -1205,7 +1205,11 @@ public class HoldersCheck {
         return 0;
     }
 
-    /** The audit's tolerance for a figure read to the cent. */
+    /**
+     * The audit's tolerance for a figure read to the cent: auditLine() reads a figure back from the audit's printed detail, which prints thousands to two
+     * places (MoneyAudit, "%,14.2f"), a step of 0.01 whatever the price level, so half a step and a hair is the reading's rounding and not a money
+     * tolerance: it stays .0051 at the factor (EP1's gate review scaled it by the factor, and four assertions failed on the printed 0.06 for 0.0575).
+     */
     static final double CENT = .0051;
 
     static void theWorld() throws Exception {

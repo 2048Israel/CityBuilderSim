@@ -1029,7 +1029,7 @@ public class ExchangeCheck {
          */
         out.printf("   the desk sold shares to a company's buyback in %d month(s)%n", deskToCompanyMonths);
         assertTrue("fixture: the desk sold shares to a company's buyback in some month", deskToCompanyMonths > 0);
-        assertTrue("...and the audit closed through every month it did", worstDeskSaleResidual < .01 && worstExcessResidual < .01);
+        assertTrue("...and the audit closed through every month it did", worstDeskSaleResidual < MoneyAudit.CENT && worstExcessResidual < MoneyAudit.CENT);
         assertTrue("...with the bank carrying the desk at the exchange's mark all along", worstMarkGap < 1e-9);
         assertTrue("...and every price read, on a book that has traded, is its quote: the middle, or the last trade held inside the side that stands ("
                 + tradedBooks + " company-months)", tradedBooks > 0 && quoteMisread == 0);

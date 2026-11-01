@@ -995,8 +995,8 @@ public class NewGameCheck {
     /** The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. */
     static boolean audited(Game g) {
         MoneyAudit.Result money = g.getLastMoneyAudit();
-        boolean conserved = Math.abs(money.residual) <= .01 || money.relative() <= 1e-7;
-        return conserved && Math.abs(g.getPostAuditDrift()) <= .01;
+        boolean conserved = Math.abs(money.residual) <= MoneyAudit.CENT || money.relative() <= 1e-7;
+        return conserved && Math.abs(g.getPostAuditDrift()) <= MoneyAudit.CENT;
     }
 
     /* =====================================================================

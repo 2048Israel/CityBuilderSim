@@ -1042,7 +1042,7 @@ public class ExchangeRateCheck {
     /** The audit closes as it does in the playtest (LongPlaytest.audit(), CurrencyCheck 4): no residual over a cent, or none over a ten-millionth of the money moved. */
     static boolean auditCloses(Game g) {
         MoneyAudit.Result r = g.getLastMoneyAudit();
-        return Double.isFinite(r.residual) && (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7);
+        return Double.isFinite(r.residual) && (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7);
     }
 
     static void theGameSurvivesTheSpiral() {

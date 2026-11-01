@@ -229,12 +229,12 @@ public class CentralBankCheck {
         CentralBank cb = g.getCentralBank();
         MoneyAudit.Result r = g.getLastMoneyAudit();
         double made = cb.getIssued() - cb.getRetired();
-        boolean closes = Math.abs(r.residual) <= .01 || r.relative() <= 1e-7;
-        boolean sameMoney = Math.abs(r.moneyMade() - made) <= .005;
-        boolean m0Moved = Math.abs((cb.m0() - m0Before) - made) <= .005;
+        boolean closes = Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7;
+        boolean sameMoney = Math.abs(r.moneyMade() - made) <= MoneyAudit.CENT / 2;
+        boolean m0Moved = Math.abs((cb.m0() - m0Before) - made) <= MoneyAudit.CENT / 2;
         // Equity less the vault, with what it paid in new money for the vault's dollars added back (FX8: the strong edge's purchases).
         boolean keptNothing = Math.abs(cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime()
-                - (cb.getRemittanceDue() - cb.getLossCarried())) <= .01;
+                - (cb.getRemittanceDue() - cb.getLossCarried())) <= MoneyAudit.CENT;
         monthsPlayed++;
         worstResidual = Math.max(worstResidual, Math.abs(r.residual));
         if (!(closes && sameMoney && m0Moved && keptNothing)) {
