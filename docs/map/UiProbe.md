@@ -64,7 +64,7 @@
 >     (UP2), the same chrome with its pools forgotten first, turn and turn
 > ... (28 more lines in the source)
 
-**Uses:** [GameFiles](GameFiles.md) (8), [UserInterface](UserInterface.md) (5), [LongPlaytest](LongPlaytest.md) (4), [Game](Game.md) (3), [GamePrefs](GamePrefs.md) (2), [Timing](Timing.md) (2), [TempDirs](TempDirs.md) (1), [SaveWriter](SaveWriter.md) (1)
+**Uses:** [GameFiles](GameFiles.md) (8), [UserInterface](UserInterface.md) (5), [LongPlaytest](LongPlaytest.md) (4), [Game](Game.md) (3), [GamePrefs](GamePrefs.md) (2), [Recording](Recording.md) (2), [Timing](Timing.md) (2), [TempDirs](TempDirs.md) (1), [SaveWriter](SaveWriter.md) (1)
 
 ## Sections
 

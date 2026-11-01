@@ -300,7 +300,7 @@ final class MapView {
     /* ----------------------------- what it draws from ----------------------------- */
 
     private CityMap shownMap;
-    private MapTiles tiles;
+    private volatile MapTiles tiles;     // (TR1) volatile: WORKER's queue skips the plans of a map a replay has stepped past (ask())
     private Game.MapDraft draft;
     private int draftsFailed;
     private long version = Long.MIN_VALUE;
@@ -549,7 +549,7 @@ final class MapView {
         tiles = null;
         draft = null;
         version = Long.MIN_VALUE;
-        for (Pictures p : List.of(l0small, l0big, l1, l2, nodes)) p.clear();
+        if (keepPictures) staleAll(); else for (Pictures p : List.of(l0small, l0big, l1, l2, nodes)) p.clear();     // (TR1) a replay's quick step keeps the pictures, stale
         nodesAsked.clear();
         picturesAsked.clear();
         picturesWanted.clear();
@@ -606,9 +606,10 @@ final class MapView {
             running = false;
             return;
         }
-        long deadline = System.nanoTime() + (long) (FRAME_MS * 1e6);
+        long deadline = System.nanoTime() + (long) ((ui.replayOn() ? REPLAY_FRAME_MS : FRAME_MS) * 1e6);      // (TR1) a replay computes no month
         boolean more = keepUp();
         more |= keys();
+        boolean camera = replayCamera();     // (TR1) the replay's glide, fly and smooth hand
         // The head's money and the card caught up with the city (0.7.137): a month, a purchase, the toggle.
         if (expanded) {
             syncHead();
@@ -641,7 +642,8 @@ final class MapView {
             more = true;
         }
         // Idle: nothing to paint, nothing to draw. A draft or a far node coming back from WORKER asks again.
-        if (!more && !dirty && hoverAt == null) {
+        paintIdle = !more && !dirty && hoverAt == null;     // (TR1) what the replay's warm-up waits for (replaySettled())
+        if (paintIdle && !camera) {
             pump.stop();
             running = false;
         }
@@ -684,9 +686,12 @@ final class MapView {
             }
         }
         if (g.hasCityMap() && g.getCityMap() != shownMap) {
+            MapTiles was = takingSameLand(g.getCityMap()) ? tiles : null;     // (TR1) a replay's quick step: the pictures stay, stale, until checked
+            keepPictures = was != null;
             reset();
+            keepPictures = false;
             shownMap = g.getCityMap();
-            tiles = new MapTiles(shownMap);
+            tiles = was == null ? new MapTiles(shownMap) : new MapTiles(shownMap, was);
         }
         showIf(note, tiles == null && !expanded);
         // Fitted again when the land moves: a purchase, or the land drawn again.
@@ -806,6 +811,7 @@ final class MapView {
         final CityMap map = shownMap;
         for (CityMap.Job j : tiles.jobs(tx, ty)) {
             WORKER.submit(() -> {
+                if (tiles != askedFor) return;      // (TR1) a map a replay has stepped past: its plans are not drawn
                 try {
                     j.run();
                 } catch (RuntimeException e) {
@@ -873,6 +879,7 @@ final class MapView {
         }
         if (asked.isEmpty()) return;
         WORKER.submit(() -> {
+            if (tiles != askedFor) return;      // (TR1) a map a replay has stepped past: its pictures are not drawn
             for (CityMap.Job j : jobs) {
                 try {
                     j.run();
@@ -1938,6 +1945,7 @@ final class MapView {
 
     /** The scale bar at the bottom left: the longest of 1, 2 or 5 times a power of ten metres in SCALE_BAR_PX, its length in words. */
     private void scaleBar(GraphicsContext gc, MapFrame f) {
+        if (cinematic && expanded) return;      // (TR1) not drawn in a replay's cinematic mode
         double[] bar = f.scaleBar(SCALE_BAR_PX);
         scaleBar(gc, f.height(), bar[1], MapFrame.scaleWords(bar[0]));
     }
@@ -2756,6 +2764,7 @@ final class MapView {
 
     /** The scale bar on the globe: GlobeFrame.scaleBar() at the view's centre, its words saying so. */
     private void globeScaleBar(GraphicsContext gc) {
+        if (cinematic && expanded) return;      // (TR1) not drawn in a replay's cinematic mode
         double[] bar = globe.scaleBar(SCALE_BAR_PX);
         scaleBar(gc, globe.height(), bar[1], GlobeFrame.scaleWords(bar[0]));
     }
@@ -2904,6 +2913,7 @@ final class MapView {
 
     /** A frame of the keys held: the expanded map panned by their velocity over the time since the last frame (MapFrame.keyPan(), GlobeFrame.keyPan()); all let go when the window loses the focus, whose key-ups it would not hear. True while one is held. */
     private boolean keys() {
+        if (ui.replayOn()) return false;        // (TR1) a replay's W, A, S and D go to its smooth hand (replayCamera())
         if (!expanded || big == null || !(keyW || keyA || keyS || keyD)) {
             keyNanos = 0;
             return false;
@@ -3013,6 +3023,7 @@ final class MapView {
             if (!expanded) return;
             double notches = e.getDeltaY() / 40.0;
             if (notches == 0) return;
+            if (replayWheel(e.getX(), e.getY(), notches)) { e.consume(); return; }      // (TR1) a replay's wheel eases in
             if (globe != null) {
                 globe.zoomNotches(e.getX(), e.getY(), notches);
                 follow();
@@ -3036,6 +3047,7 @@ final class MapView {
 
     /** The wheel's or + and -'s notches at a point of the expanded map: the globe's view on Earth, the plane's elsewhere. */
     private void zoomBig(double sx, double sy, double notches) {
+        if (replayWheel(sx, sy, notches)) return;       // (TR1) a replay's + and - ease in
         if (globe != null) {
             globe.zoomNotches(sx, sy, notches);
             follow();
@@ -4535,6 +4547,7 @@ final class MapView {
         // Under the window's header, which stays in view and says the clock (MS1): the head here has no clock line.
         ui.showChartFullScreen(bigPane, null, this::collapse, true);
         ui.panKeysTo(this);
+        setCinematic(ui.isCinematic());     // (TR1) a replay's cinematic mode that is on holds for a map expanded in it
         canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
         boolean before = big != null;
         fitPane();
@@ -4673,8 +4686,8 @@ final class MapView {
     private void fitPane() {
         if (!expanded) return;
         javafx.scene.Scene window = bigPane.getScene();
-        double w = (window != null ? window.getWidth() : bigPane.getWidth()) - 2 * PANE_SIDE;
-        double h = (window != null ? window.getHeight() - ui.chartFullTop() : bigPane.getHeight()) - PANE_TOP - PANE_BOTTOM - PANE_HEAD;
+        double w = (window != null ? window.getWidth() : bigPane.getWidth()) - 2 * padded(PANE_SIDE);     // (TR1) padded(): none in cinematic mode
+        double h = (window != null ? window.getHeight() - ui.chartFullTop() : bigPane.getHeight()) - padded(PANE_TOP) - padded(PANE_BOTTOM) - padded(PANE_HEAD);
         if (w <= 0 || h <= 0) return;
         w = Math.floor(w);
         h = Math.floor(h);
@@ -4898,5 +4911,247 @@ final class MapView {
         clip.setArcWidth(16);
         clip.setArcHeight(16);
         box.setClip(clip);
+    }
+
+    /* =====================================================================
+       REPLAY: CINEMATIC (TR1, 2026-10-31)
+
+       A replay's cinematic mode (UserInterface.replayCinematic(), ReplayMode)
+       hides everything round the picture so the screen recorder films the
+       map and nothing else. On the expanded map that is its head line (with
+       the hint), its legend, its hover card, the scale bar and the mouse
+       cursor, and the pane's padding: the canvas fills the pane, which lies
+       at the window's top (the header is gone) and fills the window.
+       fitPane() sizes the canvas from padded(), so none of the padding is
+       taken off it. The window-level half - the header, the rail, the
+       construction panel, the toasts, the time bar - is UserInterface's.
+       Nothing here is read by normal play: the flag is off until a replay
+       turns it on.
+       ===================================================================== */
+
+    /** Whether the replay's cinematic mode is on for this view: the scale bar is not drawn, the head and the legend are hidden, the cursor is none. */
+    private boolean cinematic;
+
+    /** The pane's style as buildPane() set it, kept to put back what cinematic mode took out (its padding). */
+    private String paddedStyle;
+
+    /** Holds the canvas's cursor at none while cinematic mode is on, whatever cursorFor() or a press asks for. */
+    private final javafx.beans.value.ChangeListener<javafx.scene.Cursor> cursorOff = (o, was, now) -> {
+        if (now != javafx.scene.Cursor.NONE) canvas.setCursor(javafx.scene.Cursor.NONE);
+    };
+
+    /** A pane measure as it is now: the padding's and the head's room, none in cinematic mode. */
+    private double padded(double px) {
+        return cinematic ? 0 : px;
+    }
+
+    /**
+     * Cinematic mode on or off for the expanded map: the head, the legend, the hover card and the padding gone and the cursor
+     * none, or all of it back as it was. The canvas is sized again to the pane, which must already lie at the window's top
+     * (UserInterface.replayCinematic() lifts it first). A map that is not expanded keeps only the flag, which expand() reads.
+     */
+    void setCinematic(boolean on) {
+        boolean was = cinematic;
+        cinematic = on;
+        if (!on && !was) return;        // normal play: nothing to put back
+        canvas.cursorProperty().removeListener(cursorOff);
+        if (on && expanded) {
+            canvas.cursorProperty().addListener(cursorOff);
+            canvas.setCursor(javafx.scene.Cursor.NONE);
+        } else if (expanded) {
+            canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
+        }
+        if (bigPane == null || !expanded) return;
+        if (paddedStyle == null) paddedStyle = bigPane.getStyle();
+        showIf(bigPane.getChildren().get(0), !on);
+        if (legendHead != null && legendHead.getParent() != null) showIf(legendHead.getParent(), !on);
+        card.setOpacity(on ? 0 : 1);
+        bigPane.setStyle(on ? "-fx-background-color: " + Palette.STAGE + ";" : paddedStyle);
+        // The rounded corners of the picture would show the window's ground at its four corners.
+        if (on) bigBox.setClip(null); else clip(bigBox);
+        if (big != null) fitPane();
+    }
+
+    /**
+     * The expanded map's view for the input log (InputRecorder): {1 on Earth else 0, a, b, scale, roll} - the globe's centre
+     * latitude and longitude, its km a pixel and its roll, or the plane's centre x and y, its scale and 0 - or null when the
+     * map is not expanded.
+     */
+    double[] replayView() {
+        if (!expanded) return null;
+        if (globe != null) return new double[] {1, globe.centreLat(), globe.centreLon(), globe.kmPx(), globe.roll()};
+        return big == null ? null : new double[] {0, big.centreX(), big.centreY(), big.scale(), 0};
+    }
+
+    /** The city's map is another object (a replay's quick step swapped it): the view draws again, and the frame's keepUp() takes the new map, so a small map in the office and the expanded one both follow. */
+    void replayChanged() {
+        requestDraw();
+    }
+
+    /* =====================================================================
+       REPLAY: THE CAMERA, THE PAINT BUDGET AND THE QUICK STEP (TR1, 2026-10-31)
+
+       The camera's arithmetic is CameraPath (the glide, the fly, the smooth
+       hand) and its state ReplayCamera's; this is the toolkit's half, which
+       only applies what they say. Each frame (tick(), after keys()) it asks
+       the camera for a Shot: a view to take whole (a glide, a fly, the
+       warm-up's walk) or a Move to ease on (the wheel, W A S D and the drift
+       through the smooth hand), and applies it as a drag and a notch of the
+       wheel do (the globe's set(), zoomAt(), pan(), then follow(); the
+       plane's). In a replay the wheel's notches and W A S D's velocity go to
+       the smooth hand instead of moving the view at once (replayWheel(),
+       keys()), a replay paints REPLAY_FRAME_MS of tiles a frame, not
+       FRAME_MS, and a quick step's new map is taken with its pictures
+       (takingSameLand(), staleAll()). With no replay on, none of it runs:
+       replayCamera() asks ui.replayCamera(), null outside a replay.
+       ===================================================================== */
+
+    /** The most a frame spends painting tiles in a replay, in ms: 24 - a replay computes no month, so a frame's whole share is the picture's, and a view reached by the camera comes in over two or three frames, not eight. */
+    static final double REPLAY_FRAME_MS = 24;
+
+    /** A gap between two camera frames longer than this, in seconds, is not time the camera moved in: 0.25 - the pump stops when the view is idle and a glide or a warm-up must not find the minutes gone by in its first frame. */
+    static final double CAMERA_PAUSE_S = 0.25;
+
+    /** Set while reset() runs for a replay's quick step: the pictures are kept, stale (staleAll()), not thrown out. */
+    private boolean keepPictures;
+
+    /** Whether the last frame ended with nothing to paint or draw (what the idle test at tick()'s end found): the warm-up waits for it. */
+    private boolean paintIdle;
+
+    /** When the camera's last frame was taken, for its dt (0 when it has not run). */
+    private long camNanos;
+
+    /**
+     * Whether the city's new map is a replay's quick step on the land on show: a replay is on and the new map is of the same world
+     * as the one shown. The pictures are then kept (staleAll()) rather than thrown out, so the map does not repaint from nothing every
+     * month the bar plays. A load (forget(), the whole month) keeps the full reset.
+     */
+    private boolean takingSameLand(CityMap next) {
+        return ui.replayOn() && shownMap != null && tiles != null && next.worldKey().equals(shownMap.worldKey());
+    }
+
+    /**
+     * Every kept picture made stale against the new map, none thrown out: a tile picture's version and key forgotten, so the next
+     * paint() reads its inputs again and repaints it only if their stamp (a hash of the content, the same across maps) moved; a far
+     * node keeps its ground (the expensive part, asked of WORKER) and is coloured again. The version and key counters of a CityMap
+     * (changes(), the runs', siteGen) start again in every map, so neither is trusted across two. While a tile waits for its plans
+     * (the new map has drawn none) its old picture stays on screen.
+     */
+    private void staleAll() {
+        for (Pictures p : List.of(l0small, l0big, l1, l2)) {
+            for (Img i : p.values()) {
+                i.version = Long.MIN_VALUE;
+                i.keyed = false;
+            }
+        }
+        for (Img i : nodes.values()) {
+            i.version = Long.MIN_VALUE;
+            i.stamp = Long.MIN_VALUE;
+        }
+    }
+
+    /** The expanded map's view as a camera view (month 0: the camera puts the month on), or null when it is not expanded: on Earth the globe's centre and km a pixel, elsewhere the plane's centre and pixels a plot. */
+    CameraPath.View cameraView() {
+        if (!expanded) return null;
+        if (globe != null) return new CameraPath.View(true, globe.centreLat(), globe.centreLon(), globe.kmPx(), 0);
+        return big == null ? null : new CameraPath.View(false, big.centreX(), big.centreY(), big.scale(), 0);
+    }
+
+    /** The widest view as a camera view, what Fit shows: on Earth the whole planet facing the city, on a generated world the whole world from its middle; null when the map is not expanded. */
+    CameraPath.View cameraWhole() {
+        if (!expanded) return null;
+        if (globe != null) return new CameraPath.View(true, globe.cityLat(), globe.cityLon(), globe.mostKmPx(), 0);
+        return big == null ? null : new CameraPath.View(false, World.SIDE / 2.0, World.SIDE / 2.0, big.leastScale(), 0);
+    }
+
+    /** A view taken whole (a glide's, a fly's, the warm-up's): the globe set to it and the plane following, or the plane set. */
+    private void applyCameraView(CameraPath.View v) {
+        if (globe != null && v.globe()) {
+            globe.set(v.a(), v.b(), v.scale());
+            follow();
+        } else if (globe == null && !v.globe()) {
+            big.set(v.a(), v.b(), v.scale());
+        } else {
+            return;
+        }
+        if (card != null) card.setVisible(false);
+        dirty = true;
+    }
+
+    /** The smooth hand's step: the zoom about its anchor as the wheel's notch is applied, then the pan as a drag's. */
+    private void applyMove(CameraPath.Move m) {
+        if (m.zoom() != 1) {
+            if (globe != null) globe.zoomAt(m.sx(), m.sy(), 1 / m.zoom());
+            else big.zoomAt(m.sx(), m.sy(), m.zoom());
+        }
+        if (m.dx() != 0 || m.dy() != 0) {
+            if (globe != null) globe.pan(m.dx(), m.dy());
+            else big.pan(m.dx(), m.dy());
+        }
+        if (globe != null) follow();
+        if (card != null) card.setVisible(false);
+        dirty = true;
+    }
+
+    /**
+     * One frame of the replay's camera (tick()): W A S D's velocity to the smooth hand, then the camera's Shot applied. True while
+     * it has more to do - a glide in flight, a move still easing - which keeps the frames coming. Nothing outside a replay; a map
+     * that is not expanded has no camera to move, and a glide in flight is let go.
+     */
+    private boolean replayCamera() {
+        ReplayCamera cam = ui.replayCamera();
+        if (cam == null) {
+            camNanos = 0;
+            return false;
+        }
+        if (!expanded || big == null) {
+            camNanos = 0;
+            cam.mapGone();
+            return false;
+        }
+        long now = System.nanoTime();
+        double dt = camNanos == 0 ? 0 : (now - camNanos) / 1e9;
+        camNanos = now;
+        if (dt > CAMERA_PAUSE_S) dt = 0;        // the frames had stopped (the view was idle), or a load held this one up: a pause, not a jump
+        javafx.stage.Window win = canvas.getScene() == null ? null : canvas.getScene().getWindow();
+        if (win != null && !win.isFocused()) keyW = keyA = keyS = keyD = false;
+        double[] v = MapFrame.keyVelocity(keyW, keyA, keyS, keyD);
+        if (v[0] != 0 || v[1] != 0 || (pressed && moved >= CLICK_SLOP)) cam.hand();
+        cam.smooth().keys(v[0], v[1]);
+        cam.smooth().centre(big.width() / 2, big.height() / 2);
+        ReplayCamera.Shot shot = cam.frame(dt, this::replaySettled);
+        if (shot.view() != null) applyCameraView(shot.view());
+        else if (shot.move() != null) applyMove(shot.move());
+        return shot.more();
+    }
+
+    /** The wheel's notches in a replay: eased in by the smooth hand about the pointer, and a glide in flight let go. False outside a replay, and the wheel moves the view at once. */
+    private boolean replayWheel(double sx, double sy, double notches) {
+        ReplayCamera cam = ui.replayCamera();
+        if (cam == null || !expanded || big == null) return false;
+        cam.hand();
+        cam.smooth().wheel(sx, sy, notches);
+        if (card != null) card.setVisible(false);
+        requestDraw();
+        return true;
+    }
+
+    /**
+     * Whether the view as it stands has nothing left to paint, for the warm-up: the last frame ended idle (nothing to paint or draw),
+     * no far node, district picture or chart node is asked of WORKER and not back, and on the plane at a tile level every tile in
+     * view has a picture current against the map (a tile waiting for its plans has none to show yet).
+     */
+    private boolean replaySettled() {
+        if (!paintIdle || tiles == null || !nodesAsked.isEmpty() || !picturesAsked.isEmpty() || !chartsAsked.isEmpty()) return false;
+        if (onGlobe()) return true;
+        MapFrame f = frame();
+        int level = f.level();
+        if (level == MapFrame.FAR) return true;
+        Pictures pictures = picturesFor(level, MapFrame.tilePx(level, f.scale()));
+        for (long[] t : tilesInView(f)) {
+            Img img = pictures.get(MapTiles.key(t[0], t[1]));
+            if (img == null || img.version != version) return false;
+        }
+        return true;
     }
 }

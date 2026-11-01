@@ -41,6 +41,8 @@
 
 **Uses:** [GameFiles](GameFiles.md) (68), [Game](Game.md) (52), [LongPlaytest](LongPlaytest.md) (30), [SaveWriter](SaveWriter.md) (20), [GameVersion](GameVersion.md) (8), [SaveHeader](SaveHeader.md) (6), [Bridges](Bridges.md) (6), [HistorySave](HistorySave.md) (6), [TempDirs](TempDirs.md) (5), [DataSave](DataSave.md) (4), [Notice](Notice.md) (4), [TreasuryFund](TreasuryFund.md) (4), [AutoBuilder](AutoBuilder.md) (4), [Landmasses](Landmasses.md) (4), [Bank](Bank.md) (3), [BuildLog](BuildLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [ConstructionControl](ConstructionControl.md) (2), [BondMarket](BondMarket.md) (2), [Exchange](Exchange.md) (2), [Timing](Timing.md) (2), [SaveCopy](SaveCopy.md) (1), [BridgeWorks](BridgeWorks.md) (1)
 
+**Used by (1):** [ReplayCheck](ReplayCheck.md)
+
 ## Sections
 
 | line | section |

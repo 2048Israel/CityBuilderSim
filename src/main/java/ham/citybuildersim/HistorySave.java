@@ -1333,6 +1333,39 @@ public class HistorySave {
         return copy;
     }
 
+    /**
+     * A copy of this history as it stood at {@code lastMonth} (TR1, 2026-10-31): only the axis entries whose month is at most it,
+     * and what every series held for them. WHY: a replay shows the month on screen from a recording's one history, written at
+     * the autosave's pace and so ahead of the month shown, and every chart draws "up to the month on screen". A series shorter
+     * than the axis lines up with its END (see WHAT A SHORT SERIES MEANS), so the same number of entries comes off the tail of
+     * each - the whole series when it is shorter than that. A folded year sits on the axis at its last month and is kept or
+     * dropped whole. The finished years of trade by partner are those that ended by lastMonth: a year finishes at the first month
+     * of the next (PartnerTrade). A cut at or after the last month is a whole snapshot().
+     */
+    public HistorySave cutAt(int lastMonth) {
+        HistorySave copy = snapshot();
+        int axis = copy.month.size();
+        int keep = axis;
+        while (keep > 0 && copy.month.get(keep - 1) > lastMonth) keep--;
+        int dropped = axis - keep;
+        if (dropped > 0) {
+            copy.month.subList(keep, axis).clear();
+            while (copy.foldedMonths.size() > keep) copy.foldedMonths.remove(copy.foldedMonths.size() - 1);
+            // seriesByName() hands back the live lists (slim() and foldYear() rely on it), each once; the identity set keeps a list that two names reach from being cut twice.
+            java.util.Set<List<?>> cut = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+            for (List<? extends Number> list : copy.seriesByName().values()) {
+                if (list == null || !cut.add(list)) continue;
+                int drop = Math.min(dropped, list.size());
+                if (drop > 0) list.subList(list.size() - drop, list.size()).clear();
+            }
+        }
+        if (dropped > 0 && copy.tradeByPartner != null) {
+            int thisYear = CityCalendar.yearOf(lastMonth);
+            copy.tradeByPartner.removeIf(t -> t.year() >= thisYear);
+        }
+        return copy;
+    }
+
     /* ==================================================================
        READING
        ================================================================== */

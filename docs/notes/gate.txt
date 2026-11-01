@@ -1,25 +1,11 @@
-# gate of Merge batch/LD1: a business short of workers bids the wage up: the posts the staffing gate refused join the band's shortage, so the wage rises until migrants come, only as far as the building would still earn its return (Jerus, 2026-10-31: "if the reason is not enough workers and the business can... then it raises its wage"); after ST1, 0.8.91
+# gate of Merge batch/OV1: a worn-out well is retired against a well that opened the same month: `Oil.view()` nets the month's retirement against the opening and drops one oldest where two wore out, so the fresh well carries the old vintage and is retired again next month (latent on main, reproduced on 0.8.90's classes; met by WellCheck 4 on LD1's path). One line: re-strike the vintages after a retirement, `if (gone > 0) wells.strikeVintages();` in `Game.retireWornOutWells()`; WellCheck, OilCheck, OilViewCheck, ReadPathCheck and SaveFileCheck pass with it., 0.8.93
 # date: 2026-11-01
 # earth-2.bin: named
-# suite: 164 harnesses run in 1732s: 162 passed, 2 failed
-# timing: 13 harnesses run in 493s: 10 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 165 harnesses run in 1974s: 164 passed, 1 failed
+# timing: 14 harnesses run in 495s: 12 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 34.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.6 ms, batch 28.8 ms (+4.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 40.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.2 ms, batch 33.0 ms (+9.2%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 17.7 ms, batch 18.4 ms (+3.7%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# suite red passed on Jerus's word (Ship, OV1 next): ScaleCheck | 2 FAILED
-# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | exit 3
-# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | a month on, the two at 263 months are retired by the month's retirements, oldest first: the two younger stand FAIL  2 retired; [Vintage[month=-249, count=1, kind=LAND], Vintage[month=-87, count=2, kind=LAND]]
-# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | the sector's one-well-a-month rule drills the freed sites again, one at a time                       FAIL  [3, 3, 3, 3, 3, 3, 3, 3] wells committed by month
-# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | ...each new well a vintage of its own month, lifting its whole nameplate when it opened              FAIL  [Vintage[month=-87, count=2, kind=LAND], Vintage[month=21, count=1, kind=LAND]]
-# suite red passed on Jerus's word (Ship, OV1 next): WellCheck | 3 FAILED
 ScaleCheck | exit 1
 ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
 ScaleCheck | 2 FAILED
-WellCheck | exit 3
-WellCheck | a month on, the two at 263 months are retired by the month's retirements, oldest first: the two younger stand FAIL  2 retired; [Vintage[month=-249, count=1, kind=LAND], Vintage[month=-87, count=2, kind=LAND]]
-WellCheck | the sector's one-well-a-month rule drills the freed sites again, one at a time                       FAIL  [3, 3, 3, 3, 3, 3, 3, 3] wells committed by month
-WellCheck | ...each new well a vintage of its own month, lifting its whole nameplate when it opened              FAIL  [Vintage[month=-87, count=2, kind=LAND], Vintage[month=21, count=1, kind=LAND]]
-WellCheck | 3 FAILED

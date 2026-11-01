@@ -571,8 +571,21 @@ public class DataSave implements Cloneable {
     //settings
     private boolean reports = true;
     private boolean graphs = true;
-    
-    
+
+    /*
+     * THE RECORDING'S SWITCH AND ID (TR1, 2026-10-31).
+     *
+     * Additive, and deliberately NOT a format bump: a save without the keys
+     * (every save written before TR1) lands here as null and false, which
+     * Game's load reads as "never recorded, recording off" - Gson leaves a
+     * missing field alone. The id names the city's folder under
+     * recordings/ (Recording); the switch is "Record this city" in the Menu.
+     * A String and a boolean, so snapshot() needs nothing.
+     */
+    private String recordingId;
+    private boolean recording;
+
+
     /**
      * What the residents have not spent, since the city was founded.
      *
@@ -958,6 +971,11 @@ public class DataSave implements Cloneable {
     public void setGraphs(boolean graphs){
         this.graphs = graphs;
     }
+    /** The recording's id (null: never recorded) and whether "Record this city" is on (TR1; see the field). */
+    public void setRecording(String id, boolean on){
+        this.recordingId = id;
+        this.recording = on;
+    }
 
     
 
@@ -1056,7 +1074,7 @@ public class DataSave implements Cloneable {
      * purpose - this runs once, on a path that has already failed, and a list
      * would go stale the next time a field is added.
      */
-    private String describeUnwritable() {
+    String describeUnwritable() {
 
         StringBuilder found = new StringBuilder();
 
@@ -2645,5 +2663,13 @@ public class DataSave implements Cloneable {
     }
     public boolean getGraphs(){
         return graphs;
+    }
+    /** The recording's id, or null in a city never recorded and in a save from before TR1. */
+    public String getRecordingId(){
+        return recordingId;
+    }
+    /** Whether the city was recording when it was saved; false in a save from before TR1. */
+    public boolean isRecording(){
+        return recording;
     }
 }
