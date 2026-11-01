@@ -86,7 +86,9 @@ public class PriceLevelCheck {
 
     /**
      * How far a nominal series of the factor's city, divided by the factor, may be from the same series in the city at today's prices, as a share
-     * of the larger. Floating point only: a money amount multiplied by the factor and divided by it again carries a relative error of a few parts
+     * of the larger of the two series' largest size so far (a balance is a sum of flows, and its rounding is the flows' size, not what is left:
+     * LD1's played city spent its treasury down to 34 of today's thousands at month 103, and a gap of 7e-8 there was 1.9e-9 of what was left and
+     * 7e-13 of the treasury it had been). Floating point only: a money amount multiplied by the factor and divided by it again carries a relative error of a few parts
      * in 1e16 a step, and a month is a few hundred steps, so 1e-9 is a hundred thousand times what rounding gives and a million times less than
      * a relative price that is off by an anchor (the smallest misses are a few per cent). A series that crosses a rule whose edge is a dollar
      * threshold would part company at the edge by a whole step; none is excused here.
@@ -529,11 +531,13 @@ public class PriceLevelCheck {
             boolean recorded = nominal && history;
             double grid = history && !SIG_RECORDED.matcher(name).matches() ? gridOf(b.v) : 0;
             double tol = !nominal ? TWIN_REAL_TOLERANCE : recorded ? (grid > 0 ? Double.POSITIVE_INFINITY : HISTORY_SIG_TOLERANCE) : TWIN_NOMINAL_TOLERANCE;
-            double worst = 0;
+            double worst = 0, scale = 0;
             int at = -1, flips = 0, firstFlip = -1;
             for (int m = 0; m < b.v.length; m++) {
                 double x = nominal ? a.v[m] / plain.factor : a.v[m];
                 double y = b.v[m];
+                if (Double.isFinite(x)) scale = Math.max(scale, Math.abs(x));
+                if (Double.isFinite(y)) scale = Math.max(scale, Math.abs(y));
                 double g;
                 if (nominal && Math.abs(x) < TWIN_MONEY_FLOOR && Math.abs(y) < TWIN_MONEY_FLOOR) g = 0;
                 else if (!nominal && Math.abs(x) < TWIN_QUANTITY_FLOOR && Math.abs(y) < TWIN_QUANTITY_FLOOR) g = 0;
@@ -546,7 +550,8 @@ public class PriceLevelCheck {
                     double allowed = .5 * grid * (1 / plain.factor + 1) * (1 + 1e-9) + TWIN_NOMINAL_TOLERANCE * Math.max(Math.abs(x), Math.abs(y));
                     g = Double.isNaN(x) != Double.isNaN(y) ? Double.POSITIVE_INFINITY : (Double.isNaN(x) ? 0 : Math.abs(x - y) / allowed);
                     if (g <= 1) g = 0;
-                } else g = gap(x, y);
+                } else if (nominal && !recorded && scale > 0 && !Double.isNaN(x) && !Double.isNaN(y)) g = Math.abs(x - y) / scale;
+                else g = gap(x, y);
                 if (g > worst) { worst = g; at = m; }
             }
             if (recorded && grid > 0) tol = 0;
