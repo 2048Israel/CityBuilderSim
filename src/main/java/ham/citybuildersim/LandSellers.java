@@ -127,6 +127,9 @@ public final class LandSellers {
     /** The world file the owners are read from. */
     public WorldData file() { return file; }
 
+    /** Whether these sellers are of the world a key names: the land office drops sellers whose world is not its land's (LandMarket.attach()). */
+    public boolean standsOn(World.Key key) { return world.key().equals(key); }
+
     /** How many plots split() has read one by one since it was made: a tile it counted whole adds none. */
     public long plotsRead() { return plotsRead.sum(); }
 

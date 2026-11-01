@@ -355,6 +355,16 @@ public class DataSave implements Cloneable {
     private double[] landCentreRelief;
     private double[][] landHoldingsRelief;
     private double[][] landOffersRelief;
+    /**
+     * WN5 (2026-11-01; spec-nations 6.2-6.4): who sells each offer standing - a row for each of landOffers, in its order, of (nation, km2, US$ thousands)
+     * for each nation whose ground it holds (LandParcel.sellersRow()), an empty row for an offer with none named - and what the city has bought from whom,
+     * landBoughtKm2 and landBoughtUsd, a figure for each nation of the world file by its number and index 0 for a purchase with no seller named
+     * (cumulative since founding: a flow, so saved). Keys of their own, written only when there is something to say: a save without them reads every
+     * offer as the host's whole, at the price it was listed at, and nothing bought from anyone. No SAVE_FORMAT change.
+     */
+    private double[][] landOffersSellers;
+    private double[] landBoughtKm2;
+    private double[] landBoughtUsd;
     private Integer nextOfferId;
     private double[] depletion;
     /**
@@ -1290,6 +1300,17 @@ public class DataSave implements Cloneable {
         this.landOffersRelief = offers;
     }
 
+    /** Who sells each offer standing (WN5; LandMarket.getOffersSellersState()), a row for each of landOffers; null for none. Written beside the land, never inside its rows. */
+    public void setLandOffersSellers(double[][] offers) {
+        this.landOffersSellers = offers;
+    }
+
+    /** What the city has bought from each nation, in km2 and in thousands of US dollars (WN5; Game.getLandBoughtKm2()): a figure for each nation of the world file and index 0 for the purchases with no seller named; null for none. */
+    public void setLandBought(double[] km2, double[] usd) {
+        this.landBoughtKm2 = km2;
+        this.landBoughtUsd = usd;
+    }
+
     /** The centre's record: 24 wide in format 32, 25 (with a half-side) in format 31. */
     public double[] getLandCentre()         { return landCentre; }
     /** The centre's blocks (format 32). */
@@ -1311,6 +1332,12 @@ public class DataSave implements Cloneable {
     public double[][] getLandHoldingsRelief() { return landHoldingsRelief; }
     /** The offers' relief, a row each in landOffers' order, or null: all flat. */
     public double[][] getLandOffersRelief() { return landOffersRelief; }
+    /** The offers' sellers, a row each in landOffers' order, or null: every offer the host's whole (WN5). */
+    public double[][] getLandOffersSellers() { return landOffersSellers; }
+    /** The km2 bought from each nation (index 0: no seller named), or null for nothing bought (WN5). */
+    public double[] getLandBoughtKm2() { return landBoughtKm2; }
+    /** ...and the thousands of US dollars paid. */
+    public double[] getLandBoughtUsd() { return landBoughtUsd; }
     /** The next offer's id, 1 on a save that has none. */
     public int getNextOfferId()             { return nextOfferId != null ? nextOfferId : 1; }
     public double[] getDepletion()          { return depletion; }

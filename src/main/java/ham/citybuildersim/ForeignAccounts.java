@@ -2398,6 +2398,37 @@ public class ForeignAccounts {
         return spent;
     }
 
+    /**
+     * ...out of the money the seller is paid in first (WN5): a part of an offer sold by a nation whose money is one of the eight is paid from the
+     * vault's holding of that money, up to what it holds at today's rate, and the rest of the dollars from the largest holdings as the one-argument
+     * method takes them. A code that is none of the eight, or a money the vault holds none of, is the one-argument method to the bit; so is a vault that
+     * holds that money alone. The books it keeps are the same lines on the same total.
+     *
+     * @return the dollars actually paid out of the vault, at most `usd` and at most what the vault holds
+     */
+    public double spendReservesOnLand(double usd, String code) {
+        double held = getReservesUsd();
+        if (!(usd > 0) || !Double.isFinite(usd) || held <= 0 || rate <= 0) return 0;
+        double spent = Math.min(usd, held);
+        int k = moneyIndex(code);
+        double holding = getHoldingUsd(k);
+        if (spent >= held || !(holding > 0)) {
+            vaultRemove(spent);
+        } else {
+            double take = Math.min(spent, holding);
+            vault[k] = take >= holding ? 0 : Math.max(0, vault[k] - take / usdPer[k]);
+            if (spent - take > 0) vaultRemove(spent - take);
+        }
+        lifetimeIntervention -= spent * rate;
+        landUsdOpen += spent;
+        landVaultUsdOpen += spent;
+        landLocalOpen += spent * rate;
+        landVaultLocalOpen += spent * rate;
+        landUsdLifetime += spent;
+        landVaultUsdLifetime += spent;
+        return spent;
+    }
+
     /** Strikes the land's month where the government's books strike its local cost. */
     public void strikeLandMonth() {
         landUsd = landUsdOpen;
