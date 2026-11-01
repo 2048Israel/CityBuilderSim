@@ -1,6 +1,6 @@
 # WorldMoneysCheck.java - 1,201 lines · 47 methods · 14 constants · harnesses
 
-`ham/citybuildersim/WorldMoneysCheck.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMoneysCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The world's moneys (batch WN4; spec-exchange-rates 3.7, spec-nations 5.1): WorldMoneys' monthly rate of each money to the US dollar -
 > its parity path, the dollar cycle, the risk-off, the terms of trade and its own swing, with the pegs held and the soft ones broken by
