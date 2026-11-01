@@ -20148,103 +20148,103 @@ _(this harness does not label its checks through a helper - it prints its findin
 > model, the save, the history and the screens.
 > ...
 
-- **L411 1. the fixture, and its copy K times over**
-  - L448 fixture: the founded city has people, posts and homes
-  - L450 fixture: K times its people passes 2^31
-- **L456 2. the counts read back whole**
-  - L460 the slot header of a save past 2^31 people reads (an int could not parse it)
-  - L461 ...and its population is K times the founded city's
-  - L467 the copy loads
-  - L468 its population is K times the founded city's, past 2^31
-  - L469 ...its workforce too, not stuck at 2,147,483,647
-  - L470 ...both past the int ceiling
-  - L483 its ground is K times the founded city's
-  - L484 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
-  - L495 ...its iron as the founded city's: sites and tonnes
-- **L499 3. posts, doors and household places**
-  - L501 every post is K times the founded city's
-  - L502 every home is K times the founded city's
-  - L503 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
-  - L505 ...because the copy holds K founding endowments where the founded city holds one
-- **L509 4. three months at that size**
-  - L518 the months ran
-  - L519 the population is still past 2^31
-  - L520 ...and is the pyramid's, rounded once
-  - L521 the workforce is still past 2^31
-  - L524 the history's last population is the city's
-  - L525 ...its workforce
-  - L526 ...its posts
-  - L527 ...the people out of work
-  - L528 ...and its homes
-- **L530 5. the save round-trips them**
-  - L532 the city past 2^31 saves
-  - L534 its header reads
-  - L535 ...with the population it was saved with
-  - L541 it loads at the month it was saved
-  - L542 the population came back
-  - L543 ...the workforce
-  - L544 ...the posts
-  - L545 ...the posts filled
-  - L546 ...the people out of work
-  - L547 ...the homes
-  - L548 ...the household places
-  - L549 ...the founding endowments it holds (FW9)
-  - L552 ...and the history, month for month
-  - L559 the loaded city plays its next month to the same population
-  - L561 ...the same workforce
-  - L562 ...and the same people out of work
-- **L564 6. the sectors free, at 5 and 10 billion**
-  - L586 fixture: the city is growing - more people than a year before
-  - L590 fixture: ...with ground free for a home
-  - L594 fixture: ...and its own rents price no migrant out in the months its copies are read against
-- **L598 7. money at that size reads**
-- **L601 8. the audit's floor at size**
-- **L604 9. a copy tracks its city month by month**
-- **L616 the audit's floor is never under the figures' own step (0.7.63)**
-  - L626 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
-  - L627 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
-  - L631 ...so the cash-flow statement K's copy missed on rounding alone is within it
-  - L637 a cent never moves: a cent or a part in a trillion, at every size, as before
-  - L638 ...and a size that is not a number keeps the floor alone
-- **L644 money at that size reads in its own unit**
-  - L646 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
-  - L647 ...a thousand quadrillion and more is grouped
-  - L648 ...a negative one keeps its sign
-  - L649 ...and a trillion still reads as one
-  - L651 cash() prints every whole dollar a double holds, as before
-  - L653 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
-  - L654 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
-  - L744 the copy loads
-  - L780 every month the population is past 2^31, whole, and the pyramid's rounded once
-  - L781 ...and the posts, the doors and the household places add up exactly, every month
-  - L790 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
-  - L793 ...and its businesses pay the city's price for it
-  - L803 ...and it builds: more homes at the end than at the start
-  - L804 fixture: the free copy ordered - an order sized from more than a million needed,
-  - L883 the copy at K =
-  - L1107 the month's money audit closes, to the cent (BankCheck and four more)
-  - L1116 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
-  - L1122 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
-  - L1127 the money the audit saw made is the central bank's (LongPlaytest)
-  - L1131 M0 moved by the money made (LongPlaytest, already relative)
-  - L1139 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
-  - L1144 the treasury's window opens where it closed (TreasuryCheck)
-  - L1148 the treasury's closing balance is its cash (TreasuryCheck)
-  - L1154 the treasury's bridge foots (TreasuryCheck)
-  - L1172 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
-  - L1175 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
-  - L1181 the history's net income is the sector books', to the cent (HistoryCheck)
-  - L1188 the history's bank figures are the bank's own, to the cent (HistoryCheck)
-  - L1201 ...
-  - L1265 no order sized read more waits than one a bit of what it needed, and one more
-  - L1266 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
-  - L1288 every post,
-  - L1291 ...the posts on offer by job type add up to the total
-  - L1292 ...and the total is every post less those withheld
-  - L1297 every home is the stacks' quantity times their doors
-  - L1298 ...and the homes by size add up to it
-  - L1300 ...and the landlords' studio and family doors to it too
-  - L1302 the household places are the city's hundred for each founding endowment and the stacks' places
+- **L424 1. the fixture, and its copy K times over**
+  - L461 fixture: the founded city has people, posts and homes
+  - L463 fixture: K times its people passes 2^31
+- **L469 2. the counts read back whole**
+  - L473 the slot header of a save past 2^31 people reads (an int could not parse it)
+  - L474 ...and its population is K times the founded city's
+  - L480 the copy loads
+  - L481 its population is K times the founded city's, past 2^31
+  - L482 ...its workforce too, not stuck at 2,147,483,647
+  - L483 ...both past the int ceiling
+  - L496 its ground is K times the founded city's
+  - L497 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
+  - L508 ...its iron as the founded city's: sites and tonnes
+- **L512 3. posts, doors and household places**
+  - L514 every post is K times the founded city's
+  - L515 every home is K times the founded city's
+  - L516 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
+  - L518 ...because the copy holds K founding endowments where the founded city holds one
+- **L522 4. three months at that size**
+  - L531 the months ran
+  - L532 the population is still past 2^31
+  - L533 ...and is the pyramid's, rounded once
+  - L534 the workforce is still past 2^31
+  - L537 the history's last population is the city's
+  - L538 ...its workforce
+  - L539 ...its posts
+  - L540 ...the people out of work
+  - L541 ...and its homes
+- **L543 5. the save round-trips them**
+  - L545 the city past 2^31 saves
+  - L547 its header reads
+  - L548 ...with the population it was saved with
+  - L554 it loads at the month it was saved
+  - L555 the population came back
+  - L556 ...the workforce
+  - L557 ...the posts
+  - L558 ...the posts filled
+  - L559 ...the people out of work
+  - L560 ...the homes
+  - L561 ...the household places
+  - L562 ...the founding endowments it holds (FW9)
+  - L565 ...and the history, month for month
+  - L572 the loaded city plays its next month to the same population
+  - L574 ...the same workforce
+  - L575 ...and the same people out of work
+- **L577 6. the sectors free, at 5 and 10 billion**
+  - L599 fixture: the city is growing - more people than a year before
+  - L603 fixture: ...with ground free for a home
+  - L607 fixture: ...and its own rents price no migrant out in the months its copies are read against
+- **L611 7. money at that size reads**
+- **L614 8. the audit's floor at size**
+- **L617 9. a copy tracks its city month by month**
+- **L629 the audit's floor is never under the figures' own step (0.7.63)**
+  - L639 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
+  - L640 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
+  - L644 ...so the cash-flow statement K's copy missed on rounding alone is within it
+  - L650 a cent never moves: a cent or a part in a trillion, at every size, as before
+  - L651 ...and a size that is not a number keeps the floor alone
+- **L657 money at that size reads in its own unit**
+  - L659 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
+  - L660 ...a thousand quadrillion and more is grouped
+  - L661 ...a negative one keeps its sign
+  - L662 ...and a trillion still reads as one
+  - L664 cash() prints every whole dollar a double holds, as before
+  - L666 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
+  - L667 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
+  - L757 the copy loads
+  - L793 every month the population is past 2^31, whole, and the pyramid's rounded once
+  - L794 ...and the posts, the doors and the household places add up exactly, every month
+  - L803 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
+  - L806 ...and its businesses pay the city's price for it
+  - L816 ...and it builds: more homes at the end than at the start
+  - L817 fixture: the free copy ordered - an order sized from more than a million needed,
+  - L896 the copy at K =
+  - L1120 the month's money audit closes, to the cent (BankCheck and four more)
+  - L1129 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
+  - L1135 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
+  - L1140 the money the audit saw made is the central bank's (LongPlaytest)
+  - L1144 M0 moved by the money made (LongPlaytest, already relative)
+  - L1152 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
+  - L1157 the treasury's window opens where it closed (TreasuryCheck)
+  - L1161 the treasury's closing balance is its cash (TreasuryCheck)
+  - L1167 the treasury's bridge foots (TreasuryCheck)
+  - L1185 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
+  - L1188 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
+  - L1194 the history's net income is the sector books', to the cent (HistoryCheck)
+  - L1201 the history's bank figures are the bank's own, to the cent (HistoryCheck)
+  - L1214 ...
+  - L1278 no order sized read more waits than one a bit of what it needed, and one more
+  - L1279 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
+  - L1301 every post,
+  - L1304 ...the posts on offer by job type add up to the total
+  - L1305 ...and the total is every post less those withheld
+  - L1310 every home is the stacks' quantity times their doors
+  - L1311 ...and the homes by size add up to it
+  - L1313 ...and the landlords' studio and family doors to it too
+  - L1315 the household places are the city's hundred for each founding endowment and the stacks' places
 
 ## SectorBooksCheck.java - 16 labelled assertions
 
