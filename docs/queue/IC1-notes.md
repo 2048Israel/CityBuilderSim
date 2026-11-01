@@ -190,13 +190,19 @@ queued.
       kept draw the frame shrank (133 to 129 px), and the invalidation landed inside the column's own layout pass,
       where JavaFX drops the relayout request.
     - The page reads nothing of the gate, and KeptCheck passes on main's rule.
-    - Queued as KH1: a deferred relayout on the frame's height (`Platform.runLater`).
+    - **Mended here (KH1, folded in at the gate: Jerus, "Fix first").** When the frame's height moves,
+      `HistoryScreen.frameOver` now asks each box from the column up for a layout itself. JavaFX 21 clears a box's
+      flag before it lays out, so a request made during the pass stands, and the next pass gives the scroller what
+      is left under the frame. The `Platform.runLater` the queue row proposed would have come a frame later, after
+      KeptBench's passes, which run inside one FX call: KeptCheck would have stayed red.
+    - KeptCheck exits 0: section 15 reads "0 differ", and section 20's kept City History month is 7.6 ms against
+      KEPT_HISTORY_MS (13.0). An eye-check is pending as IC1-C.
 - **`./batch-check.sh --pick` exits 0.** It runs 26 harnesses: the eight mended, the five that read the change,
   and LongPlaytest in place of `Game`, `Sector` and `BuildingManager`'s readers, among others. It was run on the
   tip before main was merged (19abd209), and again after (1a92049c, main at 0.8.93 with TR1 and OV1).
   - The MapCheck timing lines are SOFT. The maps are regenerated, and Stale has no firm finding.
   - WellCheck and OilCheck exit 0 on the mended tip.
-  - ScaleCheck and KeptCheck stay red on the merged tip, as above, line for line.
+  - ScaleCheck and KeptCheck stayed red on the merged tip until SK1 and KH1 were folded in (§7, above).
 - **What ran before the merge.** The full suite and the ensemble ran on 0.8.91 with IC1, before TR1 and OV1. The
   gate's suite is the first full run on the merged model.
 - **The ensemble** (`docs/ensemble/IC1.md`) ran 80 runs on IC1's model (72b7f553), two at once, in 21 minutes. It
@@ -222,44 +228,57 @@ IC1 ships that rule, so section 6's town moves. On IC1's full suite:
   household places, its rents pricing no migrant out.
   - Its 5-billion copy still builds nothing: 0 homes per K, the line in main's record.
   - Its 10-billion copy builds 33 homes per K, and that line passes.
-- **Section 9, new on IC1.** The copy 1,000 times over no longer tracks its city. It is off from the first month:
-  cash by 1.46 of the city's, GDP by 2.73, deposits by 0.81. By the sixth month unemployment is off by 0.12 and
-  people by 0.045. That is 8 new red lines (people, cash, savings, GDP, deposits, prices, unemployment and the
-  registers).
+- **Section 9, red on IC1 until SK1 was folded in.** The copy 1,000 times over did not track its city. It was off
+  from the first month: cash by 1.46 of the city's, GDP by 2.73, deposits by 0.81. By the sixth month unemployment
+  was off by 0.12 and people by 0.045: 8 new red lines (people, cash, savings, GDP, deposits, prices, unemployment
+  and the registers).
 
-**Where the copy and its city part: the planners, not IC1's rule** (the orchestrator's question at the gate). The
-probe is `docs/queue/IC1/IC1ScaleProbe.java`. It plays section 6's town, copies it at K = 1 and K = 1,000, and prints
-the builders, the gate's figures and every sector's decision, month by month.
+**Where the copy and its city part: the scaler's freight shares, then the planners** (the orchestrator's question at
+the gate, then SK1 folded in at Jerus's "Fix first"). The probes are `docs/queue/IC1/IC1ScaleProbe.java` (each
+sector's decision, month by month) and `IC1BankProbe.java` (every public figure of each sector and the bank, the
+copy's over the city's, at the load or after a month).
 - **IC1's rule reads the same in both.**
   - The builders are idle at the core crew in both, at offered 0.250000 from the load to m1.
   - The posts withheld are 1,394 per K in the city and 1,395 in the copy, rounding alone.
   - The unemployed are 2,651 against 2,657.4 per K at m1.
-- **The planners part.** In month 1 the copy builds what its city declines, because a building is the same size at
-  every K, so one plant is a thousandth of the copy's economy:
-  - a Commercial Vehicle Plant, where the city declines an Assembly Plant on its interest;
-  - a Snack & Oils Plant, where the city's Meat Works leaves nothing after the wages;
-  - a Truck Depot, where the city is under the 30,000 tonnes a first line wants;
-  - 174 Low-Rise Apartments where the city builds 4 Houses.
-
-  The month's cash parts at once: 1,019,358 per K in the city against -470,013 in the copy.
-- **It is older than IC1, met on IC1's path.** The same save (IC1's town, 23,102 people at m1,129) was copied and
-  played on main's own classes (0.8.91: the crews spoken for). It parts the same way to the digit: the same month-1
-  figures and the same decisions.
-  - It also does so with every laid-off crew called back in both copies.
-  - In this town the unemployed (2,636) outnumber the crews (1,394), so the gate does not bind under either rule.
-- **Why main's line was green.** Main's town at m1,129 is 8,665 people. Its copy also builds what its city does not,
-  under main's rule as it stands: a Heavy Truck Plant and a Truck Depot in month 1. Only Manufacturing is held at the
-  gate there.
-  - Those orders barely move that town's figures: month 1's cash is 576,294 per K in the city against 573,831 in the
-    copy, within section 9's bounds.
-  - IC1's town is larger, and its copy's month-1 orders move its cash by 1.5 times the city's.
-  - So the line held by the size of what the copy ordered, not by the gate.
-- **So section 9's premise holds only where no planner's order depends on a building's size against the city.**
-  - Queued as SK1, and it may run with ST2, which rescans the same town.
-  - Section 9 ships red on Jerus's words.
-- **An aside for SK1.** `ScaleCheck.scale()` multiplies Construction's `crewsNeeded` extra by K (73.33 at the load
-  against 0.0733). It is a ratio. It is harmless here: only `LongPlaytest`'s printout and the builders' screen read
-  it, and the month strikes it again before either.
+- **First, the scaler (the money).** Freight's `carried.<stream>`, the share of each traffic stream the railway
+  carries (0.7.86), is saved under a name `ScaleCheck.INTENSIVE` did not know. So the copy loaded each share K times
+  over, and hauled K squared tonnes: 4.99e10 against 49,730 x K in month 1, its fuel and haulage billed with them.
+  - At the load the copy's freight costs, its import prices (Retail's 14.5% over) and three sectors' input positions
+    (Manufacturing's steel 0.625 against 1.0) were already not the city's.
+  - In month 1 the haulage sank Manufacturing (a loss of 6.26 billion) and the bank with it: the copy's bank lost
+    1.79 billion, and the treasury resolved it for its shares (2,140,152 per K), which is the 1.46 of the cash.
+  - The shares are nothing until a town lays a line. IC1's town at m1,129 has a railway; FW9's town and main's had
+    not, so the line was green there. Older than IC1 (0.7.86), met on its path.
+  - Mended: `^carried\.` in `INTENSIVE`, beside SK1's aside (`crewsNeeded`, a ratio the copy also loaded K times
+    over). At the load every sector's figures are then K times the city's or the city's own, but for the rounding of
+    the builders' offered posts (466 against 465 per K) and the bank's branches (below).
+- **Then the planners (the people).** With the freight mended and the sectors free, month 1 tracks on every figure
+  (cash 5.9e-4, GDP 2.2e-3), and from month 2 the copy parts again:
+  - in month 1 the copy builds what its city declines, because a building is the same size at every K: a Commercial
+    Vehicle Plant, a Snack & Oils Plant, a Truck Depot, and 174 Low-Rise Apartments where the city builds 4 Houses;
+  - the city's 4 Houses set its builders working (offered 1.0 at m2, unemployment down to 1,258), while the copy's
+    stay idle at the core crew;
+  - by month 6 the copy's people are 4.5e-2 short of K times the city's and its unemployment 0.12 points over; its
+    cash 0.196 and GDP 0.59 off.
+  - So section 9 holds every sector in both copies, as sections 2 to 5 do (SK1, the recommended way): its question
+    is the scaler, and a copy can never order a thousandth of a plant. The TRACK_ dials stay as FW9 set them.
+- **Held, with the freight mended, section 9 passes every line.** Its worst misses in six months: people 5.9e-4,
+  cash 1.2e-3, savings 7.3e-4, GDP 8.3e-3, deposits 5.4e-4, prices 5.3e-4, unemployment 4.8e-4 points, the policy
+  rate 0. Each is under its TRACK_ dial and under what FW9 measured with the sectors free.
+- **The registers' line, measured against the issue.** It also failed in the city itself, at the load, at K = 1.
+  Business Services' domestic register is its issue less the world's, the dealer's and the city's shares, and the
+  dealer holds all but 3.2e-7 of its 1,605.65. So the register stood 4e-12 shares from the households' cells: 2.3e-15
+  of the issue, about ten of a double's steps there, but 1.2e-5 of the remainder, which is what the line measured.
+  `registersMiss()` now measures a company's register against its issue; the bonds and the paper are measured as
+  before. A register the scaler left K times out still reads (K - 1) times the households' holding over the issue,
+  2e-7 of that one, against REGISTER_WITHIN's 1e-9. Held and mended, the worst is 1.7e-14.
+- **ScaleCheck now fails one line, main's recorded "...and it builds"** (section 6's 5-billion copy builds no home).
+  Main's record tallies "2 FAILED": its 10-billion copy fails the same line, and IC1's builds 33 homes per K.
+- **What the copy keeps that is not scaling.** The bank's first branch is the charter, exempt from the operating cost
+  and never closed; a copy has one charter among K branches, so 569 of its 1,000 are due to close at the load. FW9
+  named this grain, and its figures stay within the bounds here. Making the charter count the founding endowments
+  (FW9's way for the founding care, the grid and the wells) is a model change left out of IC1.
 
 **What to watch on the rescan.** Rescan on IC1's tip once it is on main. Watch for an overbuild bust after the
 faster young boom: seeds 0, 5 and 6 here rise and fall at m480-600, and ST1's freed town fell by half after m1,500. A
@@ -275,15 +294,24 @@ month that holds every assertion before such a bust may not hold after the next 
   switch as it was.
 - ★ **FoundingYardCheck 6's last line follows the new rule (Recommended, taken).** It asserted the effect IC1
   reverses. The alternative is to drop the line.
-- ★ **ScaleCheck 9 and KeptCheck 15 ship red, on Jerus's words, each with its batch queued (Recommended).** SK1
-  (new) is ScaleCheck 9's premise, and KH1 (new) is KeptCheck's fault. Each is older than IC1, met on its moved path:
-  ScaleCheck 9 parts the same way on main's classes (§7), and KeptCheck's is the kept page's layout, which main's
-  played stretch does not reach. The alternative for KeptCheck is KH1's screen line made here: a screen change in a model batch,
-  untested by the eye.
-- ★ **SK1's recommendation: section 9 holds, in both copies, the sectors whose orders are whole buildings.**
-  - Section 9 reads the scaler (FW9: the city's grains), and a copy can never order a thousandth of a plant.
+- **ScaleCheck 9 and KeptCheck 15 mended here, not shipped red (Jerus at the gate: "Fix first").** The call put to
+  him was whether IC1 ships red on both, with SK1 and KH1 queued, or holds until they are done. Both are folded in
+  (§7, §6).
+- ★ **SK1 the recommended way: section 9 holds every sector in both copies (Recommended, taken).**
+  - Section 9 reads the scaler (FW9: the city's grains), and a copy can never order a thousandth of a plant. Every
+    planner's order and every retirement is a whole building, so every sector is held, as sections 2 to 5 hold them.
   - The other way is a month where nothing whole is ordered in FREE_MONTHS, found by ST2's scan. That holds only
     until the next batch moves the trace.
+  - The hold alone was not enough, and it was not the larger cause: the scaler's freight shares were (§7). That is
+    a scaler fault, mended with no call.
+- ★ **A company's share register is measured against its issue (Recommended, taken).** The register is the issue's
+  remainder, so its rounding is the issue's; the line failed in the city itself at K = 1, at 2.3e-15 of the issue.
+  It still catches a register the scaler leaves K times out. The alternative is to keep the remainder as the measure
+  and ship that one line red, with a batch to keep the register some other way.
+- ★ **The bank's charter stays one in a copy (Recommended, taken).** A copy holds one charter among K branches
+  (569 of its 1,000 due to close at the load), a grain FW9 named; section 9's figures are within their bounds with
+  it. The alternative is a model change in the bank: the charter counting the founding endowments, as FW9 made the
+  founding care, the grid and the wells.
 - ★ **A3's red is accepted (Recommended).** It is one seed at the criterion's boundary: 12 months against "< 12",
   as 0.8.88's 13. The median spell is 5 months. Pending IC1-R.
 - ★ **LD1-R reads +0.19 on IC1 (Recommended: accept, as LD1-R recommends).** R2's red is smaller, not gone. Whether

@@ -96,7 +96,9 @@ import java.util.regex.Pattern;
  *      rate each K times the city's (or equal to it) within its TRACK_ dial in
  *      every month, and the shares', the corporate bonds' and the city's paper
  *      registers adding up to the households' holdings, the copy's as the
- *      city's.
+ *      city's; every sector held in both copies (SK1, IC1: a building is one
+ *      size at any K, so a free copy's planners order what its city's
+ *      decline, which is not scaling).
  */
 public class ScaleCheck {
 
@@ -835,6 +837,36 @@ public class ScaleCheck {
      * and by month 6 people 6.1e-2, savings .30, GDP 9.3e-2, deposits .28,
      * prices 4.2e-2 and unemployment 9.5e-3. A copy that does not track its
      * city is a poor test of what size does.
+     *
+     * WHAT PARTED THE COPY ON IC1'S TOWN, AND EVERY SECTOR HELD (SK1, folded
+     * into IC1, 2026-11-01). IC1's town (23,102 people at month 1,129) and its
+     * copy parted from the first month: the copy's cash by 1.46 of K times the
+     * city's, its GDP by 2.73, its deposits by 0.81 - from the same save on
+     * main's own classes too, to the digit (IC1-notes §7). Two causes.
+     *
+     * The scaler's: Freight's carried.<stream>, the share of each traffic
+     * stream the railway carries (0.7.86), had a name INTENSIVE did not know,
+     * so the copy loaded each share K times over and hauled K squared tonnes
+     * (4.99e10 against 49,730 x K). The haulage sank Manufacturing, whose loss
+     * sank the bank, resolved for its shares in the copy's first month. The
+     * shares are nothing until a town lays a line, which FW9's town and main's
+     * had not. INTENSIVE knows the name now.
+     *
+     * And the planners'. A planner orders whole buildings, and a building is
+     * one size at any K: a plant too big for the city is a K-th of that
+     * against the copy, so the copy orders what its city declines - in its
+     * first month a Commercial Vehicle Plant, a Snack & Oils Plant and a Truck
+     * Depot, and 174 Low-Rise Apartments where the city built 4 Houses, which
+     * set the city's builders working while the copy's stayed idle at their
+     * core crew. Its people parted by 4.5e-2 and its unemployment by 0.12
+     * points by the sixth month. That is the planners weighing a building
+     * against the city's size, not the scaler, and this section asks whether
+     * the scaler copies a city: so both copies hold every sector
+     * (BusinessInvestment.holdSector(), which holds a sector's orders and the
+     * whole buildings it retires), as sections 2 to 5 do. What is under way at
+     * the load is built in both, and the bank's branches (planBank(), apart
+     * from the sectors) stay free. The TRACK_ dials are FW9's, measured with
+     * the sectors free, and stay.
      */
     static void tracks(Path root, GameFiles grown) throws Exception {
         out.printf("%n--- a copy %,d times over tracks its city month by month ---%n", TRACK_TIMES);
@@ -849,6 +881,8 @@ public class ScaleCheck {
             g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
             quietly(() -> g.loadGameSave(10));
             assertTrue("the copy at K = " + times[c] + " loads", g.getLoadFailure() == null);
+            // Every sector held in both copies (SK1, above): a planner's order is a whole building, which no K scales.
+            for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
             registers[c][0] = registersMiss(g);
             for (int i = 0; i < FREE_MONTHS; i++) {
                 quietly(() -> g.simulateMonths(1));
@@ -874,15 +908,27 @@ public class ScaleCheck {
         double worstRegister = 0;
         for (double[] row : registers) for (double miss : row) worstRegister = Math.max(worstRegister, miss);
         assertTrue(String.format("...and the registers add up to their holders, the city's and the copy's, at the load and in all %d"
-                + " months (shares, corporate bonds, the city's paper; worst %.1e of the register)", FREE_MONTHS, worstRegister),
+                + " months (shares, of the issue; corporate bonds, the city's paper; worst %.1e of the register)", FREE_MONTHS, worstRegister),
                 worstRegister <= REGISTER_WITHIN);
     }
 
-    /** The worst a register stands from what the households hold of it: the shares of each company, the corporate bonds' face and the city's paper, as a share of the larger. */
+    /**
+     * The worst a register stands from what the households hold of it: the shares of each company, the corporate
+     * bonds' face and the city's paper, as a share of the larger - a company's shares as a share of its issue.
+     *
+     * A SHARE REGISTER IS THE ISSUE'S REMAINDER (SK1, folded into IC1, 2026-11-01). The domestic register is the
+     * issue less the world's, the dealer's and the city's shares (Equity's domesticShares()), so its rounding is the
+     * issue's. On IC1's town the dealer holds all but 3.2e-7 of Business Services' 1,605.65 shares, and the register
+     * stood 4e-12 shares from the households' cells - in the city itself, at the load: 2.3e-15 of the issue, ten of a
+     * double's steps there, and 1.2e-5 of the remainder, which is what this read until then. A register the scaler
+     * left K times out still reads (K - 1) times the households' holding over the issue: 2e-7 of that one.
+     */
     static double registersMiss(Game g) {
         double worst = 0;
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
-            worst = Math.max(worst, apart(g.getEquity().getDomesticShares(c), g.getHouseholdBalance().sharesHeld(c)));
+            double register = g.getEquity().getDomesticShares(c), held = g.getHouseholdBalance().sharesHeld(c);
+            worst = Math.max(worst, Math.abs(register - held) / Math.max(1e-9,
+                    Math.max(Math.abs(g.getEquity().getShares(c)), Math.max(Math.abs(register), Math.abs(held)))));
         }
         worst = Math.max(worst, apart(g.getBondMarket().faceHeldByHouseholds(), g.getHouseholdBalance().totalBonds()));
         return Math.max(worst, apart(g.getDebtManager().householdPrincipal(), g.getHouseholdBalance().totalPaper()));
@@ -1305,7 +1351,12 @@ public class ScaleCheck {
             + "^leverage$|Margin$|(^|\\.)quote$|(^|\\.)tightness$|^utilisation$|Multiple$|StruckOn$|"
             // FW9, 2026-10-25: the refiners' crude mix is each grade's share of their run, and the pump's wholesale price and
             // duty are dollars a litre; none of the three has a name the pattern knew, and the copy's refinery ran a mix of 1000.
-            + "^crudeMix\\.|(^|\\.)(wholesale|duty)$)");
+            + "^crudeMix\\.|(^|\\.)(wholesale|duty)$|"
+            // SK1 (IC1, 2026-11-01): the builders' crews needed is the work over the depots, a ratio, and the copy loaded it K times over;
+            // and Freight's carried.<stream> is the share of each stream the railway carries (0.7.86), which the copy loaded K times
+            // over and so hauled K squared tonnes once its town had a line (section 9 on IC1's town: Manufacturing's haulage sank it,
+            // and the bank with it, in the first month).
+            + "^crewsNeeded$|^carried\\.)");
 
     /*
      * THE NAMES THE PATTERN READ WRONG (0.7.54). The scaled copy's first month
