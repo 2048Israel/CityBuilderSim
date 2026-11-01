@@ -62,6 +62,12 @@ and draws its own; the world market's base year (the trade table's 2019) sits
 as far into Random's path as it did before (1919), so a Random world is
 founded at the size it always was (`WorldMarket.baseYearRead`).
 
+Tried and reverted (ffa31140, cab783f6): Random's people on the UN's path from
+1900, as they ran from 2000, rather than held through the stand-in. It did not
+move the ensemble's young cities (SHOCK's m720 median 15,970 against 19,154
+without it) and its path met a map finding in the playtest and three more
+harnesses' fixtures, so both paths hold people through the stand-in.
+
 This is the study's hold-quantities way of call 5, for now: the real century
 (people and output replayed, the moneys before the euro, the nations under
 their 1900 ruler, the banks' real rates) is EP1b's.
@@ -92,7 +98,10 @@ figure times it (call 2 (a)):
 - **not scaled**: rates, shares, ratios to a wage (they follow their rung: the
   minimum wage, the pension base, the fixed grant, the EI cap), the numeric
   floors and guards, display thresholds, the opening rate (D$1.00 a US$), and
-  never an index (WorldEconomy, PriceIndex, Expectations, Denomination);
+  never an index (WorldEconomy, PriceIndex, Expectations, Denomination).
+  `LabourMarket` (LD1's, beside this batch): no line changed, its minimum wage
+  and bounds derive from the unskilled rung, and PriceLevelCheck asserts they
+  are not scaled twice;
 - **the world market** needed nothing: its calibration (sigma and phi to the
   literals at Halifax in 2025) absorbs the scale, as the study said; the twin
   confirms it;
@@ -167,11 +176,50 @@ tenth of a cent: the smallest world price read $0.0003 (call 13).
 
 ## 6. The checks
 
-{suite}
+The full suite on the final model (801c949f; the tree since differs in docs
+only), the world file named, 164 harnesses: **exit 4, ScaleCheck alone NEW**.
+- WellCheck: main's three recorded lines, word for word (OV1's).
+- ScaleCheck: 10 lines. Its fixture lines are main's recorded ones ("the city
+  is growing", "its own rents price no migrant out", "the free copy ordered",
+  twice): section 6's town no longer holds its premise, which is ST2's, queued
+  ("move FREE_FIXTURE_MONTHS to a month that holds every assertion"). Measured
+  on that town, its comparisons read otherwise than main's: "...cash: the copy
+  is K times the city's within 0.0125 in all 6 months (worst 1.62e+00)" (main's
+  3.26e-02), and "...savings ... (worst 2.38e-02)", "...deposits ... (worst
+  9.73e-02)", "...prices: the copy is equal to the city's within 0.00400 in all
+  6 months (worst 1.08e-02)", new. Left to ST2, whose town will be another.
+- LongPlaytest green (no finding), the money audit clean every month.
+- Timing soft beside other runs: SaveSlotCheck 1, MapCheck 2 (the gate times
+  hard). Stale 0 firm.
 
 ## 7. The ensemble
 
-{ensemble}
+80 runs, 2 at once, on the final model (classes 48dc072e), against 0.8.91:
+**21/26** (0.8.91 23/26). `docs/ensemble/EP1.md`.
+
+| id | EP1 | 0.8.91 |
+|---|---|---|
+| A2 longest spell of yoy > 10% from m240 | 20 [11 to 40] FAIL | 16 [12 to 32] FAIL |
+| A3 deflation spell from m240 | 4 [0 to 12] FAIL (one seed 12) | 4 [0 to 11] PASS |
+| S1 ZERO_SLACK over its twin | 2.46% FAIL | 2.59% FAIL |
+| R2 HIGH's unemployment over its twin | +3.21 pts PASS | +0.38 FAIL |
+| T1 seeds to 40,000 | 16/16, m1,148 [968 to 1,873] | 16/16, m1,033 [857 to 1,141] |
+| T2 AUTO2 final | 292,358 PASS | 335,916 |
+| T2 SHOCK at m720 | 19,154 FAIL (72% of 0.8.91's) | 26,598 |
+| T2 HIGH at m720 | 9,374 FAIL (73%) | 12,758 |
+| M1 money audit, F1 findings | 0, 0/16 | 0, 0/16 |
+
+The young city starts slower: 40,000 people about 115 months later at the
+median, and SHOCK's and HIGH's 720-month cities a quarter smaller. **The factor
+is not the cause**: the same model run at today's prices (`JAVA_OPTS=
+-Dcbs.priceLevel=1`, on ffa31140's classes beside its own run at the factor)
+scores alike, 20/26 against 20/26, SHOCK 18,184 against 15,970, HIGH 9,734
+against 8,904, T1 m1,124 against m1,139; seed by seed the two part within
+decades by chaos (the twin holds them equal to 1e-9 for 120 months), the
+distributions agree. What is left is the calendar's: Random's draws are keyed
+by the calendar year, so the 16 seeds meet 16 other worlds (all three EP1 runs
+share them), and the stand-in holds Random's people a century. Recommended
+(EP1-E): accept, and read it again on EP1b, which moves every path again.
 
 ## 8. Found, for later
 
