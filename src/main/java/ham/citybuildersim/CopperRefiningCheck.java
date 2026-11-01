@@ -858,9 +858,13 @@ public class CopperRefiningCheck {
                 String.format("net export D$%.4f, D$%.4f at the whole spare of %,.1f t; cost D$%.4f, with headroom D$%.4f", srod.netExportPrice(),
                         srod.netExportPriceAt(spare), spare, scost, target));
         double exported = so == null ? 0 : so.exported;
+        // The order is the most whose band nets the target, found by sixty bisections and handed on as a rate (1 - (spare - exported) / n), so what
+        // is exported is the boundary to the last bit or two and no nearer: LD1's path read the band one ulp under the target (-1.8e-15, where main's
+        // read 0.0 exactly) and "clears" read to the last bit was a coin toss. A hair of a part in a billion; one per cent more still has to fall under.
+        final double hair = 1 - 1e-9;
         report("(d) the rod exported is some, and less than the spare, and it is the most the slope allows: at it next month's net export price still"
                         + " clears the cost with its headroom, one per cent more would not",
-                so != null && exported > 0 && exported < spare && near(so.produced, exported) && srod.netExportPriceAt(exported) >= target
+                so != null && exported > 0 && exported < spare && near(so.produced, exported) && srod.netExportPriceAt(exported) >= target * hair
                         && srod.netExportPriceAt(exported * 1.01) < target,
                 String.format("%,.1f of %,.1f t exported; next month's net export price D$%.4f there, D$%.4f at 1%% more, the aim D$%.4f", exported, spare,
                         srod.netExportPriceAt(exported), srod.netExportPriceAt(exported * 1.01), target));
