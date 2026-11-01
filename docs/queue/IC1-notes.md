@@ -1,4 +1,4 @@
-# IC1 - an idle builder's crews are spare for the staffing gate ({next}, 2026-11-01)
+# IC1 - an idle builder's crews are spare for the staffing gate (0.8.94, 2026-11-01)
 
 The brief is IC1's row in `QUEUE.md` and `docs/queue/XS1-notes.md` §5 (XS1's call ★, (a) recommended). A model
 batch: Opus, with one Sonnet slice. Built on LD1 (0.8.91), which changed the same gate and left the idle crews'
