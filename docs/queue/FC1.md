@@ -41,8 +41,12 @@ then price per contract should be very high".
 
 ## Calls (each recommended; settled that way unless Jerus says otherwise)
 
-- ★ The premium reads the share of points the repairs take (a state the city
-  can see), not the backlog alone, which a big order inflates.
+- The premium reads ALL the work queued against the builders' site output
+  (orders on site and the repairs' share alike), so every order makes the next
+  one dearer: BA1 drops the caps on orders and leaves the rationing to this
+  price (Jerus, 2026-11-01: "too much and contracts get expensive thus
+  business stop trying to place orders until contracts arent so expensive").
+  Each order is priced on the queue as it stands with the orders before it.
 - ★ Foreign crews are a last resort, priced at about twice the local price of a
   point and above the scarcity ceiling, so a city never prefers them.
 - ★ Repairs keep their place before sites (deferring them would let the

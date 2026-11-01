@@ -19,10 +19,21 @@ keeps one sector from filling the builders' queue for years.
 
 ## What to build
 
-1. **The landlords' rule for every sector.** A sector may add orders while
-   the points its own sites owe stay inside a number of months of the
-   builders' site output, each order sized to stay inside it, so a growing
-   sector does not wait for one plant to finish before the next is begun.
+1. **No cap: the price rations the queue** (Jerus, 2026-11-01: "why bounded?
+   why not let contracts flow? market after is efficient, too much and
+   contracts get expensive thus business stop trying to place orders until
+   contracts arent so expensive"). `MAX_CONCURRENT_ORDERS` and the landlords'
+   `MAX_ORDER_MONTHS` both go: a sector orders whenever an order clears its
+   profit test at the price of a point it would pay, FC1's scarcity price, which
+   rises with ALL the work queued. So a growing sector does not wait for one
+   plant to finish before the next is begun, and a flood of orders makes the
+   next one dearer until the orders stop.
+   - Each order is priced on the queue as it stands with the orders before it
+     that month (in the planners' order), never at the month-old price, so a
+     month's orders cannot all take the cheap price before it moves.
+   - The profit test counts the money tied up: an order pays up front for a
+     building delivered when the queue reaches it, so the interest over that
+     wait is part of its cost, and an order years out must earn it.
 2. **A longer horizon where the build is long.** A sector plans its demand
    growth over its lead time plus a horizon that grows with how long its
    buildings take, so a works that takes years is ordered years ahead of the
@@ -33,19 +44,18 @@ keeps one sector from filling the builders' queue for years.
 
 ## Calls (each recommended; settled that way unless Jerus says otherwise)
 
-- ★ One cap for all sectors, the landlords' months of the builders' work, with
-  each sector's share of it (so the landlords' 12 months do not become every
-  sector's 12 months at once): the builders' queue stays bounded.
-- ★ FC1 first: with the scarcity price a far-ahead order pays for the strain
-  it puts on the builders, so the market rations itself.
-- ★ `MAX_CONCURRENT_ORDERS` goes, replaced by the months rule; the refiners'
-  crude units keep their own count.
+- Jerus's: no cap; the price and the interest on the wait ration the queue.
+- ★ FC1 first: its scarcity price reads the whole queue (FC1, call 1).
+- ★ `MAX_CONCURRENT_ORDERS` and `MAX_ORDER_MONTHS` go; the refiners' crude
+  units keep their own count (a unit count, not a cap on orders).
 
 ## The checks
 
 A fixture whose sector's demand grows faster than one order at a time can
 meet: it holds two orders on site, the second begun before the first is done,
 and its capacity keeps up. A fixture where every sector wants to build: the
-builders' queue stays inside the cap. The 16-seed ensemble before and after
+price of a point rises month by month until the orders stop, and the queue
+settles where the last order just clears its test (count the months it takes,
+and that no single month's orders all took the old price). The 16-seed ensemble before and after
 (the young city's growth, and the overbuild busts ST2 saw after a fast boom:
 count them).
