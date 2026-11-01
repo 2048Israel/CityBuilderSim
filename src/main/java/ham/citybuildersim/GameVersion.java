@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.8.94";
+    public static final String VERSION = "0.8.95";
 
     /**
      * The save shape.
@@ -8233,8 +8233,24 @@ public final class GameVersion {
      *     reprice moves the rate by the gate times the whole world's level at
      *     once. It is refused, naming the build that still opens it. No
      *     conversion is written.
+     *
+     * 50 - THE GAME STARTS IN 1900 (batch EP1; docs/studies/spec-1900-start.md
+     *     6.3 and 7, call 10): month 1 is January 1900 (CityCalendar.EPOCH_YEAR),
+     *     the world file's reader supplies the century before its first year
+     *     (WorldData, THE STAND-IN CENTURY), and every nominal anchor is
+     *     today's figure at 1900's price level (PriceLevel.FACTOR, 1/38.6). No
+     *     field is added.
+     *
+     *     THE FLOOR RISES TO 50 WITH IT (the rule): a save of format 49 or
+     *     older would load WRONGLY. Its month index re-reads a century early
+     *     while four saved fields hold a calendar year (DataSave.worldYear,
+     *     PartnerTrade's year and its finished tables, TreasuryFund's
+     *     transferYear), so they read a century ahead of the clock; a Historical
+     *     city's world state belongs to another real year; and every dollar it
+     *     holds is 38 times its new world's prices and wages. It is refused,
+     *     naming the build that still opens it. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 49;
+    public static final int SAVE_FORMAT = 50;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8244,7 +8260,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 49 since batch WN4 (THE WORLD'S MONEYS above: a save's dollar walked
+     * 50 since batch EP1 (THE GAME STARTS IN 1900 above: a save's calendar
+     * years would read a century ahead and its dollars 38 times its world's).
+     * 49 from batch WN4 (THE WORLD'S MONEYS above: a save's dollar walked
      * and its D$ felt no world, and loaded on the US's path both would jump in
      * its first month). 48 from batch WN3 (THE WORLD MARKET above: a save's
      * band was the literals and it has no solved world and no trade by
@@ -8279,7 +8297,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 49;
+    public static final int OLDEST_LOADABLE_FORMAT = 50;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

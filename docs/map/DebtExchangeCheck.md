@@ -43,7 +43,7 @@
 >  12. The same for the gain on paper bought back below its book: the balance holds it, the cash does not (the
 >      price paid was the cash), and the grant is the share of the cash.
 
-**Uses:** [Debt](Debt.md) (27), [MoneyAudit](MoneyAudit.md) (20), [Game](Game.md) (20), [BookDesk](BookDesk.md) (10), [TaxPolicy](TaxPolicy.md) (9), [NationalAccounts](NationalAccounts.md) (8), [TreasuryJournal](TreasuryJournal.md) (6), [FamilyModel](FamilyModel.md) (5), [ForeignAccounts](ForeignAccounts.md) (3), [DebtManager](DebtManager.md) (3), [GameFiles](GameFiles.md) (2), [EducationCheck](EducationCheck.md) (2), [Rollover](Rollover.md) (2), [HistorySave](HistorySave.md) (1), [CityCalendar](CityCalendar.md) (1), [EconomyManager](EconomyManager.md) (1), [LongTermBond](LongTermBond.md) (1)
+**Uses:** [Debt](Debt.md) (27), [MoneyAudit](MoneyAudit.md) (20), [Game](Game.md) (20), [BookDesk](BookDesk.md) (10), [TaxPolicy](TaxPolicy.md) (9), [PriceLevel](PriceLevel.md) (8), [NationalAccounts](NationalAccounts.md) (8), [TreasuryJournal](TreasuryJournal.md) (6), [FamilyModel](FamilyModel.md) (5), [ForeignAccounts](ForeignAccounts.md) (3), [DebtManager](DebtManager.md) (3), [GameFiles](GameFiles.md) (2), [EducationCheck](EducationCheck.md) (2), [Rollover](Rollover.md) (2), [HistorySave](HistorySave.md) (1), [CityCalendar](CityCalendar.md) (1), [EconomyManager](EconomyManager.md) (1), [LongTermBond](LongTermBond.md) (1)
 
 ## Sections
 
@@ -69,8 +69,8 @@
 | 57 | `DebtExchangeCheck.OPENING` | `1.25` | The D$'s rate the city's dollar paper is first sold at, D$ per US$ (the fixture pins it there). |
 | 60 | `DebtExchangeCheck.KEEPS` | `0.90` | The share of its worth in US$ the D$ keeps in a fall: 0.90 is a D$ 10% weaker; the rise back is the same factor the other way. |
 | 63 | `DebtExchangeCheck.SHARE` | `.5` | The share of the surplus the grant is set to in section 11. |
-| 66 | `DebtExchangeCheck.GRANT_BOND` | `60_000` | The dollar bond section 11 sells, in US$ thousands: large beside the surplus, so its exchange line is. |
-| 69 | `DebtExchangeCheck.BUYBACK_BOND` | `100_000` | The domestic bond section 12 sells and buys back, in thousands: large beside the surplus, so its gain is. |
+| 66 | `DebtExchangeCheck.GRANT_BOND` | `60_000 * PriceLevel.FACTOR` | The dollar bond section 11 sells, in US$ thousands: large beside the surplus, so its exchange line is. |
+| 69 | `DebtExchangeCheck.BUYBACK_BOND` | `100_000 * PriceLevel.FACTOR` | The domestic bond section 12 sells and buys back, in thousands: large beside the surplus, so its gain is. |
 | 72 | `DebtExchangeCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a thousandth of a thousandth is plenty (TreasuryCheck.TOLERANCE). |
 
 ## Fields (state)

@@ -745,9 +745,10 @@ public class AuctionCheck {
         return g.getLastMoneyAudit();
     }
 
-    /** Money to the cent, as every proceeds figure is. */
+    /** Money to the cent, as every proceeds figure is: the cent of today's money, at the founding's price level (Game.cents, EP1). */
     static double cents(double v) {
-        return Math.round(v * 100) / 100.0;
+        double perUnit = 100 / PriceLevel.FACTOR;
+        return Math.round(v * perUnit) / perUnit;
     }
 
     /** HoldersCheck's city: given the money and the ground, a bank and three hundred houses, sixty months played. */
@@ -780,19 +781,19 @@ public class AuctionCheck {
         out.println("--- 7. the lineup in a city: a line opens, reopens while it is the benchmark, and is not reopened past that ---");
         DebtManager ledger = city.getDebtManager();
         double spare = city.getHouseholdBalance().spareForPaper();
-        double ask = Math.max(100, spare * .05);
+        double ask = Math.max(100 * PriceLevel.FACTOR, spare * .05);
         out.printf("   m%d: households hold $%,.0fk past their cushion; each sale below asks $%,.0fk of face%n",
                 city.getMonth(), spare, ask);
         assertTrue("fixture: households with savings past the cushion", spare > 0);
         assertTrue("fixture: no ten-year or two-year line stands yet", ledger.benchmarkLine(10) == null && ledger.benchmarkLine(2) == null);
 
         /* A NEW LINE: the stop, rounded down to an eighth. */
-        DebtQuote q1 = city.quoteLongBond(ask, 10, 100);
+        DebtQuote q1 = city.quoteLongBond(ask, 10, 100 * PriceLevel.FACTOR);
         Result r1 = q1.auction();
         assertTrue("a ten-year sale with no line to reopen offers a new one, and sells it in full",
                 r1 != null && r1.ask().isNewLine() && !q1.isEmpty() && !r1.shortSale() && r1.sold() == r1.ask().face());
         int piecesBefore = ledger.getDebt().size();
-        quietly(() -> city.handleLongBondLogic(ask, 10, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         Debt ten = ledger.benchmarkLine(10);
         assertTrue("...which opens a ten-year LongTermBond: one piece more on the books, 120 months long",
                 ten instanceof LongTermBond && ten.getDuration() == 120 && ledger.getDebt().size() == piecesBefore + 1);
@@ -808,13 +809,13 @@ public class AuctionCheck {
 
         /* A BILL AND AN AMORTIZING SALE open pieces of their own, and open another each time. */
         long bills = pieces(ledger, ShortTermTBill.class), serials = pieces(ledger, MediumTermBond.class);
-        DebtQuote billQuote = city.quoteTBill(ask, 6, 100);
+        DebtQuote billQuote = city.quoteTBill(ask, 6, 100 * PriceLevel.FACTOR);
         assertTrue("fixture: the bill sells in full", !billQuote.isEmpty() && !billQuote.isShort());
-        quietly(() -> city.handleTBillLogic(ask, 6, 100));
+        quietly(() -> city.handleTBillLogic(ask, 6, 100 * PriceLevel.FACTOR));
         // Quoted after the bill is booked: its issue is on the books the amortizing sale is struck on.
-        DebtQuote serialQuote = city.quoteMediumBond(ask, 10, 100);
+        DebtQuote serialQuote = city.quoteMediumBond(ask, 10, 100 * PriceLevel.FACTOR);
         assertTrue("fixture: the amortizing bond sells in full", !serialQuote.isEmpty() && !serialQuote.isShort());
-        quietly(() -> city.handleMediumBondLogic(ask, 10, 100));
+        quietly(() -> city.handleMediumBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         assertTrue("a six-month bill and a ten-year amortizing bond each open a piece of their own",
                 pieces(ledger, ShortTermTBill.class) == bills + 1 && pieces(ledger, MediumTermBond.class) == serials + 1
                         && ledger.getDebt().size() == piecesBefore + 3);
@@ -823,7 +824,7 @@ public class AuctionCheck {
         close("the amortizing bond's coupon is its auction's stop", ((MediumTermBond) serial1).couponRate(), serialQuote.auction().stop(), 1e-12);
 
         /* A TWO-YEAR LINE, opened now: it is the benchmark while 22 of its 24 months are left, and not when 21 are. */
-        quietly(() -> city.handleLongBondLogic(ask, 2, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 2, 100 * PriceLevel.FACTOR));
         Debt two = ledger.benchmarkLine(2);
         assertTrue("a two-year line opens beside it", two instanceof LongTermBond && two.getDuration() == 24 && two != ten);
         double twoFace = two.getOustandingPrincipal();
@@ -834,12 +835,12 @@ public class AuctionCheck {
         assertTrue("a month on, the ten-year line still has " + ten.getRemainingMonths() + " of its 120 months: at least "
                 + need10 + ", nine tenths, so it is still the benchmark",
                 ten.getRemainingMonths() >= need10 && ledger.benchmarkLine(10) == ten);
-        double ask2 = Math.max(100, spare * .03);
+        double ask2 = Math.max(100 * PriceLevel.FACTOR, spare * .03);
         double principal1 = ten.getOustandingPrincipal(), yield1 = ten.getIssueYield();
         double monthly1 = ten.getMonthlyInterestExpense();
         int left = ten.getRemainingMonths();
         int debtsBefore = ledger.getDebt().size();
-        DebtQuote q2 = city.quoteLongBond(ask2, 10, 100);
+        DebtQuote q2 = city.quoteLongBond(ask2, 10, 100 * PriceLevel.FACTOR);
         Result r2 = q2.auction();
         assertTrue("the second ten-year sale reopens the SAME piece: its coupon, priced for the months it has left",
                 !r2.ask().isNewLine() && r2.ask().lineCoupon() == coupon1 && r2.ask().months() == left
@@ -851,7 +852,7 @@ public class AuctionCheck {
         close("...raising that price on the face, less the fee", q2.cashReceived(),
                 cents(priced / 100 * r2.sold() - city.costOfIssuance(r2.sold())), 1e-9);
         double cash0 = city.getCash();
-        quietly(() -> city.handleLongBondLogic(ask2, 10, 100));
+        quietly(() -> city.handleLongBondLogic(ask2, 10, 100 * PriceLevel.FACTOR));
         close("the treasury was paid what the second sale raised", city.getCash() - cash0, q2.cashReceived(), 1e-6);
         assertTrue("no piece was added: the face went into the line", ledger.getDebt().size() == debtsBefore && ledger.benchmarkLine(10) == ten);
         close("the line's face is the sum of the two sales", ten.getOustandingPrincipal(), principal1 + q2.faceValue(), 1e-9);
@@ -861,8 +862,8 @@ public class AuctionCheck {
                 (yield1 * principal1 + r2.stop() * q2.faceValue()) / (principal1 + q2.faceValue()), 1e-9);
 
         long bills2 = pieces(ledger, ShortTermTBill.class), serials2 = pieces(ledger, MediumTermBond.class);
-        quietly(() -> city.handleTBillLogic(ask, 6, 100));
-        quietly(() -> city.handleMediumBondLogic(ask, 10, 100));
+        quietly(() -> city.handleTBillLogic(ask, 6, 100 * PriceLevel.FACTOR));
+        quietly(() -> city.handleMediumBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         Debt serial2 = ledger.getDebt().get(ledger.getDebt().size() - 1);
         assertTrue("a second bill and a second amortizing bond are pieces of their own: nothing reopens them",
                 pieces(ledger, ShortTermTBill.class) == bills2 + 1 && pieces(ledger, MediumTermBond.class) == serials2 + 1
@@ -875,16 +876,16 @@ public class AuctionCheck {
         for (int guard = 0; guard < 6 && two.getRemainingMonths() > need2; guard++) play(city);
         assertTrue("with " + two.getRemainingMonths() + " of its 24 months left the two-year line is still the benchmark",
                 two.getRemainingMonths() == need2 && ledger.benchmarkLine(2) == two);
-        DebtQuote atEdge = city.quoteLongBond(ask, 2, 100);
+        DebtQuote atEdge = city.quoteLongBond(ask, 2, 100 * PriceLevel.FACTOR);
         assertTrue("...and a two-year sale reopens it", !atEdge.auction().ask().isNewLine()
                 && atEdge.auction().ask().lineCoupon() == ((LongTermBond) two).couponRate());
         play(city);
         assertTrue("one month more and it has " + two.getRemainingMonths() + ", under nine tenths: no longer the benchmark",
                 two.getRemainingMonths() == need2 - 1 && ledger.benchmarkLine(2) == null);
-        DebtQuote past = city.quoteLongBond(ask, 2, 100);
+        DebtQuote past = city.quoteLongBond(ask, 2, 100 * PriceLevel.FACTOR);
         assertTrue("...so a two-year sale opens a NEW line", past.auction().ask().isNewLine() && !past.isEmpty());
         int debtsAtEdge = ledger.getDebt().size();
-        quietly(() -> city.handleLongBondLogic(ask, 2, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 2, 100 * PriceLevel.FACTOR));
         Debt newTwo = ledger.benchmarkLine(2);
         assertTrue("...a piece more, the old line not touched, and the new one is the benchmark now",
                 ledger.getDebt().size() == debtsAtEdge + 1 && newTwo != null && newTwo != two
@@ -895,10 +896,10 @@ public class AuctionCheck {
         int debts = ledger.getDebt().size();
         double cash = city.getCash();
         int tallied = ledger.auctionSales();
-        String said = city.handleLongBondLogic(ask, 40, 100);
+        String said = city.handleLongBondLogic(ask, 40, 100 * PriceLevel.FACTOR);
         assertTrue("a 40-year ask is refused, in LongTermBond's words", LongTermBond.REFUSAL.equals(said));
         assertTrue("...quoted nothing, and books nothing: no piece, no cash, no sale counted",
-                city.quoteLongBond(ask, 40, 100).isEmpty() && ledger.getDebt().size() == debts
+                city.quoteLongBond(ask, 40, 100 * PriceLevel.FACTOR).isEmpty() && ledger.getDebt().size() == debts
                         && city.getCash() == cash && ledger.auctionSales() == tallied);
     }
 
@@ -918,18 +919,18 @@ public class AuctionCheck {
         lender.setBondMarket(city.getBondMarket(), null);
         play(city);                                    // section 7's last sales settle here, not in the month under test
         double spare = hb.spareForPaper();
-        double askFace = Math.max(100, spare * .2);
+        double askFace = Math.max(100 * PriceLevel.FACTOR, spare * .2);
         assertTrue("fixture: households with savings past the cushion", spare > 0);
 
-        DebtQuote quote = city.quoteLongBond(askFace, 20, 100);
+        DebtQuote quote = city.quoteLongBond(askFace, 20, 100 * PriceLevel.FACTOR);
         Result r = quote.auction();
         assertTrue("fixture: the twenty-year sale sells in full", !quote.isEmpty() && !quote.isShort() && r.sold() == r.ask().face());
         double cash0 = city.getCash(), principal0 = ledger.getAllPrincipal();
         int salesWas = ledger.auctionSales();
-        quietly(() -> city.handleLongBondLogic(askFace, 20, 100));
+        quietly(() -> city.handleLongBondLogic(askFace, 20, 100 * PriceLevel.FACTOR));
         Debt bond = ledger.benchmarkLine(20);
         assertTrue("fixture: it is booked as a twenty-year line", bond instanceof LongTermBond && bond.getDuration() == 240);
-        close("the booking took in what the quote said, to the cent", city.getCash() - cash0, quote.cashReceived(), .005);
+        close("the booking took in what the quote said, to the cent", city.getCash() - cash0, quote.cashReceived(), .005 * PriceLevel.FACTOR);
         close("...and that is the auction's proceeds to the cent", quote.cashReceived(), cents(r.proceeds()), 1e-9);
         close("the face it put on the books is the quote's", ledger.getAllPrincipal() - principal0, quote.faceValue(), 1e-9);
         close("...at the quote's coupon", ((LongTermBond) bond).couponRate(), quote.couponRate(), 1e-12);
@@ -984,11 +985,11 @@ public class AuctionCheck {
         // more slowly (CD2 slice 4) - one sale more than twelve here, but not the same in every city. The loop therefore
         // runs until the leftover is a sliver, not for a count of sales it was once found to take.
         for (; rounds < 600 && tiny == null; rounds++) {
-            DebtQuote q = city.quoteTBill(huge, 6, 100);
+            DebtQuote q = city.quoteTBill(huge, 6, 100 * PriceLevel.FACTOR);
             if (q.isEmpty()) { tiny = q; break; }
             everyBookedSaleRaised &= q.cashReceived() > 0;
             everyBookedSaleWorthIt &= !q.isShort() || q.faceValue() >= smallest;
-            quietly(() -> city.handleTBillLogic(huge, 6, 100));
+            quietly(() -> city.handleTBillLogic(huge, 6, 100 * PriceLevel.FACTOR));
         }
         out.printf("   %d huge bill sale(s) drained the buyers; the smallest deal worth arranging is $%,.1fk%n", rounds, smallest);
         assertTrue("fixture: the drain reached a sliver the auction could sell: bids, but under the minimum issue (or raising nothing)",
@@ -1004,7 +1005,7 @@ public class AuctionCheck {
         out.println("   " + tiny.summary().replace('\n', ' '));
         int debtsNow = ledger.getDebt().size(), salesNow = ledger.auctionSales();
         double cashNow = city.getCash();
-        String said = city.handleTBillLogic(huge, 6, 100);
+        String said = city.handleTBillLogic(huge, 6, 100 * PriceLevel.FACTOR);
         assertTrue("booking it does nothing: 'Nothing issued', no cash, no piece, no sale counted",
                 "Nothing issued.".equals(said) && city.getCash() == cashNow && ledger.getDebt().size() == debtsNow
                         && ledger.auctionSales() == salesNow);
@@ -1170,7 +1171,7 @@ public class AuctionCheck {
         Game g = ChildcareCheck.town(root, label);
         quietly(() -> {
             g.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
-            g.handleTBillLogic(20_000, 3, Game.BUILD_NOTE_GRANULE);
+            g.handleTBillLogic(20_000 * PriceLevel.FACTOR, 3, Game.BUILD_NOTE_GRANULE);
         });
         for (int i = 0; i < 2; i++) quietly(g::toggleNextMonth);
         return g;
@@ -1228,7 +1229,7 @@ public class AuctionCheck {
 
         /* A SHORT SALE: the cash covers the rest. */
         Game s1 = rolloverTown(root, "auction9-short");
-        Scene sc = scene(s1, 1_000_000);
+        Scene sc = scene(s1, 1_000_000 * PriceLevel.FACTOR);
         DebtQuote ample = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.DEFAULT);
         assertTrue("fixture: a 3-month note rolls into a 3-month bill, and with the bank's room ample the sale covers at the default cap",
                 sc.issue().type().equals("Note") && sc.issue().term() == 3 && !ample.isShort());
@@ -1273,11 +1274,12 @@ public class AuctionCheck {
 
         /* A SHORT SALE: the cash does not cover the rest, the central bank's advances do. */
         Game s2 = rolloverTown(root, "auction9-advances");
-        Scene sc2 = scene(s2, 300);
+        final double treasury = 300 * PriceLevel.FACTOR;   // D$300k: today's figure, priced at the founding's level (EP1)
+        Scene sc2 = scene(s2, treasury);
         roomTo(s2, sc2.room());
         DebtQuote capped2 = s2.quoteTBill(sc2.issue().cash(), sc2.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.DEFAULT);
         assertTrue("fixture: a treasury of D$300k, the same room: the sale is short at the default cap, and the treasury cannot pay the rest",
-                capped2.isShort() && s2.getCash() == 300 && sc2.issue().cash() - capped2.cashReceived() > 300);
+                capped2.isShort() && s2.getCash() == treasury && sc2.issue().cash() - capped2.cashReceived() > treasury);
         double shortfall = sc2.issue().cash() - capped2.cashReceived();
         double due2 = s2.rolloverPlan().due();
         String log2 = printed(() -> s2.simulateMonths(1));
@@ -1285,8 +1287,8 @@ public class AuctionCheck {
         assertTrue("the maturity is paid in full here too: all that fell due is repaid",
                 Math.abs(s2.getTreasuryRepaid() - due2) < 1e-6);
         assertTrue(String.format("the log names the advances' part - the sale's shortfall, %,.0fk, less the D$300k the cash held - and not the cash's",
-                        shortfall - 300),
-                note2.contains(String.format("%,.0fk of ", shortfall - 300)) && note2.contains("was paid by the central bank's advances")
+                        (shortfall - treasury) / PriceLevel.FACTOR),
+                note2.contains(String.format("%,.0fk of ", shortfall - treasury)) && note2.contains("was paid by the central bank's advances")
                         && !note2.contains("paid from the treasury's cash") && log2.contains(note2));
         assertTrue("...and the inbox says it", s2.getInbox().live("rolloverShort") != null
                 && String.join(" ", s2.getInbox().live("rolloverShort").getBody()).contains("central bank's advances"));
@@ -1294,7 +1296,7 @@ public class AuctionCheck {
         quietly(() -> s2.simulateMonths(1));
         double advances2 = s2.getCentralBank().getAdvancesToTreasury();
         Game k = rolloverTown(root, "auction9-control");
-        scene(k, 300);
+        scene(k, treasury);
         DebtQuote coveredK = k.quoteTBill(sc2.issue().cash(), sc2.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.DEFAULT);
         quietly(() -> k.simulateMonths(1));
         quietly(() -> k.simulateMonths(1));
@@ -1309,7 +1311,7 @@ public class AuctionCheck {
 
         /* FILLED: the same room covers at the higher stop, and the inbox names the tail. */
         Game f = rolloverTown(root, "auction9-filled");
-        Scene scf = scene(f, 1_000_000);
+        Scene scf = scene(f, 1_000_000 * PriceLevel.FACTOR);
         roomTo(f, scf.room());
         f.setRolloverCap(Cap.FILL);
         DebtQuote fq = f.quoteTBill(scf.issue().cash(), scf.issue().term(), Game.BUILD_NOTE_GRANULE, Cap.FILL);

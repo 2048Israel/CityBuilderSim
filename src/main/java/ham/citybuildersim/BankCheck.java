@@ -1117,7 +1117,7 @@ public class BankCheck {
              *
              * So the city borrows, on its own account, deliberately.
              */
-            unattended.handleMediumBondLogic(20_000, 10, 1000);
+            unattended.handleMediumBondLogic(20_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
 
             /*
              * ...AND KEEPS BORROWING, because a ten-year serial bond is repaid
@@ -1151,7 +1151,7 @@ public class BankCheck {
              * bank - so the book needs to exist at the moment of asking, and
              * nothing else about the run depends on when it was raised.
              */
-            unattended.handleMediumBondLogic(20_000, 10, 1000);
+            unattended.handleMediumBondLogic(20_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
             unattended.simulateMonths(1);
             branchesBuilt = unattended.getBuildingManager().countByName("Commercial Bank");
         } finally {
@@ -1284,7 +1284,7 @@ public class BankCheck {
              * version gave it the money and not the land, and the advisor
              * decided correctly every month and was refused by the ground.
              */
-            trading.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000);
+            trading.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000 * PriceLevel.FACTOR);
             trading.getLandManager().setOwnedSqFt(8_000_000);
             /*
              * STEPPED, AND READ WHEN THE BRANCH IS NEW (2026-09-17).
@@ -1496,8 +1496,8 @@ public class BankCheck {
              */
             books.getBusinessInvestment().holdSector(Sectors.COPPER_REFINING);
             books.simulateMonths(24);
-            books.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000);
-            books.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000);
+            books.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000 * PriceLevel.FACTOR);
+            books.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000 * PriceLevel.FACTOR);
 
             Bank kept = books.getBank();
             /*
@@ -1742,7 +1742,7 @@ public class BankCheck {
          */
         HouseholdBalance leavers = ExchangeCheck.savers(20.0, 4.0);
         int RETAIL = Equity.indexOf(Sectors.RETAIL);
-        Equity register = new Equity();
+        Equity register = ExchangeCheck.equity();
         register.listIfUnlisted(RETAIL, 10_000, leavers);
         double[][] fewer = new double[FamilyStructure.values().length][PayTier.values().length];
         fewer[FamilyStructure.COUPLE.ordinal()][PayTier.UNSKILLED.ordinal()] = 80;
@@ -1752,7 +1752,7 @@ public class BankCheck {
         leavers.advanceMonth((s, t) -> fewer[s.ordinal()][t.ordinal()], income, 0, nothing, nothing, .25, .05, 1);
         register.followEmigrants(leavers);
 
-        Exchange desk = new Exchange();
+        Exchange desk = ExchangeCheck.exchange();
         Bank dealer = ExchangeCheck.bankWith(10_000);
         double[] bookValue = new double[Equity.COMPANIES.length];
         bookValue[RETAIL] = 10_000;                          // $1 a share
@@ -2731,7 +2731,7 @@ public class BankCheck {
                 streaks.put(RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
                 city.getBusinessInvestment().restoreLossMonths(streaks);
                 econ.setSectorCash(RET, Math.min(econ.getSectorCash(RET), -2 * shop.getCashCost()));
-                econ.setSectorCash(builders.key(), -1e12);
+                econ.setSectorCash(builders.key(), -1e12 * PriceLevel.FACTOR);
                 city.simulateMonths(1);
                 tried++;
                 for (Game.Salvage s : city.getSalvageThisMonth()) {
@@ -2895,6 +2895,16 @@ public class BankCheck {
         double coverAtRise = Double.NaN;
         try {
             town.run();
+            /*
+             * MANUFACTURING ASKS TO BUILD NOTHING HERE (EP1 on IC1, 2026-11-01), for the premise that the bank stands. An idle
+             * builder's laid-off crews are spare for the staffing gate since IC1, so the planners order what the gate held, and in
+             * this town on EP1's 1900 world Manufacturing's company is worth 0.184 a share at month 33 and 0.005 at month 34: the
+             * bank's desk, holding its shares, marks 3,431 off 3,898 in the month, its equity goes from 2,500 to -1,269 and it is in
+             * resolution (Bank.branchesToClose() is 0 in resolution), so the rule closed none of the five branches below. That is so
+             * at every price level, today's included (equity 96,587 to -49,028 at 1), so it is the path and not the factor. Held
+             * out, as IC1 held Freight and Copper Refining in the fixture above, the town's bank stands (equity 733 at month 34).
+             */
+            town.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
             town.setCashForTest(Founding.WEALTHY_CASH);
             town.getForeignAccounts().pinRate(1.0);
             town.getLandManager().setOwnedSqFt(30_000_000);
@@ -3032,7 +3042,7 @@ public class BankCheck {
                         + " one - the second; the charter's is exempt",
                 operatingAfter, operatingOne, 1e-9 * Math.max(1, operatingAfter));
         assertTrue("...and that month closes the audit, the operating cost in it",
-                Math.abs(auditAfterResidual) <= .01 || auditAfterRelative <= 1e-7);
+                Math.abs(auditAfterResidual) <= MoneyAudit.CENT || auditAfterRelative <= 1e-7);
         assertTrue("fixture: two branches stood every month until what a branch costs rose",
                 twoBeforeRise == riseMonth);
         assertTrue("while what a branch costs held still, the fees covered the branches the rule kept",
@@ -3084,7 +3094,7 @@ public class BankCheck {
         reg.listIfUnlisted(BANK, own.equity(), town);
         assertTrue("fixture: its shares have a record neither new nor bad",
                 reg.getRegime(BANK) != Equity.Regime.NEW && reg.getRegime(BANK) != Equity.Regime.BAD);
-        Exchange ex = new Exchange();
+        Exchange ex = ExchangeCheck.exchange();
         double[] book = new double[Equity.COMPANIES.length];
         book[BANK] = own.equity();
         ex.startMonth(1);
@@ -3123,9 +3133,9 @@ public class BankCheck {
         double deskSpare = 1_000;
         Bank desk = lentOut(target * B + deskSpare, B);
         HouseholdBalance holders = ExchangeCheck.savers(0, 4.0);
-        Equity reg2 = new Equity();
+        Equity reg2 = ExchangeCheck.equity();
         reg2.listIfUnlisted(IND, 100_000, holders);
-        Exchange ex2 = new Exchange();
+        Exchange ex2 = ExchangeCheck.exchange();
         double[] book2 = new double[Equity.COMPANIES.length];
         book2[IND] = 100_000;                                 // $1 a share on the books
         ex2.startMonth(1);
@@ -3161,9 +3171,9 @@ public class BankCheck {
 
         Bank short_ = lentOut(target * B - 1_000, B);
         HouseholdBalance holders3 = ExchangeCheck.savers(0, 4.0);
-        Equity reg3 = new Equity();
+        Equity reg3 = ExchangeCheck.equity();
         reg3.listIfUnlisted(IND, 100_000, holders3);
-        Exchange ex3 = new Exchange();
+        Exchange ex3 = ExchangeCheck.exchange();
         ex3.startMonth(1);
         ex3.takeMonth(reg3, holders3, short_, new ExchangeCheck.Firms(), book2, W, 0, 1);
         assertTrue("fixture: a bank under its target, its desk still posting", ex3.isOpen() && short_.spareCapital() < 0);
@@ -3174,7 +3184,7 @@ public class BankCheck {
         close("...and the desk holds none", reg3.getDealerShares(IND), 0, 0);
 
         HouseholdBalance leaving = ExchangeCheck.savers(20.0, 4.0);
-        Equity reg4 = new Equity();
+        Equity reg4 = ExchangeCheck.equity();
         reg4.listIfUnlisted(IND, 10_000, leaving);
         double[][] fewer = new double[FamilyStructure.values().length][PayTier.values().length];
         fewer[FamilyStructure.COUPLE.ordinal()][PayTier.UNSKILLED.ordinal()] = 80;
@@ -3185,7 +3195,7 @@ public class BankCheck {
         reg4.followEmigrants(leaving);
         double abroad = reg4.getForeignShares(IND);
         assertTrue("fixture: twenty households leave with their shares", abroad > 0);
-        Exchange ex4 = new Exchange();
+        Exchange ex4 = ExchangeCheck.exchange();
         double[] book4 = new double[Equity.COMPANIES.length];
         book4[IND] = 10_000;
         Bank short4 = lentOut(target * B - 1_000, B);
@@ -3380,7 +3390,7 @@ public class BankCheck {
             city.buildStack(template(city, "Construction Depot"), 4, true);
             city.buildStack(template(city, "Coal Power Plant"), 1, true);
             city.buildStack(template(city, "Water Treatment Plant"), 1, true);
-            city.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000);
+            city.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000 * PriceLevel.FACTOR);
             // WN3: the wood sector builds nothing here, as in the first city of this harness (see its hold, above). On the world's band
             // it raises a pellet mill and a panel mill ($92M borrowed by month 13, $111M by 61), defaults in months 66 to 73 (write-offs
             // $13M, $16M, $11M, $8M a month against a bank of $49M equity) and the bank is under water: the rescue's guard below is
@@ -3455,8 +3465,8 @@ public class BankCheck {
 
                 // The city borrows; the bank buys the paper at the next settle.
                 if (m == 12) {
-                    city.setCashForTest(city.getCash() + 20_000);
-                    city.handleLongBondLogic(5_000, LongTermBond.MATURITIES[0], 100);
+                    city.setCashForTest(city.getCash() + 20_000 * PriceLevel.FACTOR);
+                    city.handleLongBondLogic(5_000 * PriceLevel.FACTOR, LongTermBond.MATURITIES[0], 100 * PriceLevel.FACTOR);
                     bond = city.getDebtManager().getDebt().get(city.getDebtManager().getDebt().size() - 1);
                 }
                 // ...and buys it back between two presses, which is in no income statement.
@@ -3859,24 +3869,25 @@ public class BankCheck {
         out.println("\n--- (8) a bank that has lived through a bad year chooses more capital than a young one ---");
 
         Bank young = new Bank(), scarred = new Bank(), ruined = new Bank(), small = new Bank();
-        double book = 1_000_000;
+        // the sums are today's figures, priced at the founding's level (EP1), as Bank.PAID_IN_PER_BRANCH is
+        double book = 1_000_000 * PriceLevel.FACTOR;
         for (Bank b : new Bank[] { young, scarred, ruined }) {
-            b.injectCapital(200_000);
+            b.injectCapital(200_000 * PriceLevel.FACTOR);
             b.lend(book);
         }
-        small.injectCapital(200_000);
-        small.lend(50_000);
+        small.injectCapital(200_000 * PriceLevel.FACTOR);
+        small.lend(50_000 * PriceLevel.FACTOR);
         for (int m = 1; m <= 24; m++) {
             for (Bank b : new Bank[] { young, scarred, ruined, small }) {
                 b.startMonth();
-                double lent = b == small ? 50_000 : book;
+                double lent = b == small ? 50_000 * PriceLevel.FACTOR : book;
                 // One month of the second year writes a sector down: 1% of the
                 // book in the young bank's year, 6% in the scarred one's, 90%
                 // in the ruined one's, and 40% of the small bank's small book.
                 double off = m != 18 ? 0 : b == young ? .01 * lent : b == scarred ? .06 * lent
                         : b == ruined ? .90 * lent : .40 * lent;
                 if (off > 0) b.writeOffSector(IND, off);
-                b.refresh(1, 10_000_000, 0, lent, 0, 0);
+                b.refresh(1, 10_000_000 * PriceLevel.FACTOR, 0, lent, 0, 0);
                 b.provide(owing(IND, lent, lent * 4), 0, 0);
                 b.closeMonth();
             }
@@ -3899,7 +3910,7 @@ public class BankCheck {
                 ruined.capitalTarget(), Bank.CAPITAL_RATIO + Bank.MAX_BUFFER, 1e-12);
         double capacityOfOne = Bank.PAID_IN_PER_BRANCH / Bank.CAPITAL_RATIO;
         close("...and a loss on a book smaller than its founding capital carries is read over that capacity",
-                small.getWorstLossRate(), .40 * 50_000 / capacityOfOne, .002);
+                small.getWorstLossRate(), .40 * 50_000 * PriceLevel.FACTOR / capacityOfOne, .002);
         boolean floor = true;
         for (Bank b : new Bank[] { young, scarred, ruined, small, new Bank() }) {
             if (b.capitalTarget() < Bank.CAPITAL_RATIO + Bank.CONSERVATION_BUFFER - 1e-15) floor = false;
@@ -4178,8 +4189,8 @@ public class BankCheck {
         double allowanceBefore = bank.getAllowance();
         System.setOut(quiet);
         try {
-            city.handleTBillLogic(5_000, 6, 1000);
-            city.handleMediumBondLogic(10_000, 10, 1000);
+            city.handleTBillLogic(5_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR);
+            city.handleMediumBondLogic(10_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
         } finally {
             System.setOut(out);
         }

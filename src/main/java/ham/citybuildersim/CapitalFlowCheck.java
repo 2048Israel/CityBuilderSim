@@ -711,6 +711,12 @@ public class CapitalFlowCheck {
     /** A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). */
     static Game couponCity(String label) {
         Game g = new Game(GameFiles.scratch(label));
+        // The world this twin is written against: the constant world rate (XR4), as BondCheck's and MapCheck's played cities have it. Under the US's
+        // rate on the default path the world stood over the city's dial at month 27 (4.75% against 3%) once the calendar began in 1900 (EP1: the
+        // path's draws are keyed by calendar year), the bank lent a carry book to the sectors' abroad, and the book differs between the twins by
+        // what their tills do to the bank's cash - so the twins differed by more than the coupon. A fixture causes its condition: the twins' one
+        // difference is the coupon, with no carry in either. Its premise unmoved.
+        g.quietTheWorldForTheD();
         System.setOut(quiet);
         try { g.run(); g.simulateMonths(24); } finally { System.setOut(out); }
         return g;

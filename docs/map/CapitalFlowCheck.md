@@ -1,4 +1,4 @@
-# CapitalFlowCheck.java - 740 lines · 8 methods · 0 constants · harnesses
+# CapitalFlowCheck.java - 746 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -58,13 +58,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 705 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
+| 36 | 711 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
 | 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 58 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
 | 64 | 646 | `public static void main(String[] args) throws Exception` |  |
-| 712 | 6 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
-| 720 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
-| 726 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
-| 734 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 712 | 12 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
+| 726 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
+| 732 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
+| 740 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

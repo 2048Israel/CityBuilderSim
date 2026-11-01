@@ -37,7 +37,8 @@ import java.util.function.Supplier;
  * What this has to prove:
  *   1. THE SOLVE CONVERGES: every good clears to SOLVE_TOL (sales over supply,
  *      recomputed from the file's pairs) and meets the price path's level,
- *      cold in 2000 and warm after, on both paths; the sweeps are counted.
+ *      cold at the founding (the calendar's first year, and again at the file's
+ *      first, 2000) and warm after, on both paths; the sweeps are counted.
  *   2. THE CALIBRATION: the reference city (Halifax, 2025, Historical) sees
  *      Good's literals on every calibrated side to 1e-9; no two-sided good
  *      goes without; a one-sided good takes its class's median freight scale.
@@ -211,8 +212,44 @@ public class WorldMarketCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
+    /**
+     * EP1: the base year growth() and level() read. The trade table is the file's base year (2019); a Random path begins from the file's first year's world
+     * in the calendar's first year, so the year that table stands for is the base year less the stand-in's years (1919), as far into the path as it was
+     * before the calendar moved; Historical's stand-in holds the file's first year's world and reads the base year itself. Caused on both paths: the
+     * year read, and the growth and the price target the market solves against at the founding, a year on and a file year, each recomputed from Nations.
+     */
+    static void theBaseYear(Scope sc) {
+        out.println("--- the base year the market reads: Random's is the table's less the stand-in's years, Historical's the table's (" + sc.name + ") ---");
+        int standIn = sc.data.standInYears();
+        assertTrue("fixture: the data has a stand-in century to move the base year by (" + standIn + " years)", standIn > 0);
+        Tally year = new Tally(), growth = new Tally(), level = new Tally(), apart = new Tally();
+        for (Nations.Path path : Nations.Path.values()) {
+            Nations nations = new Nations(sc.data, path, BASE_SEED);
+            WorldMarket m = new WorldMarket(sc.base, nations);
+            int want = path == Nations.Path.HISTORICAL ? sc.base.baseYear : sc.base.baseYear - standIn;
+            year.see(m.baseYearRead() == want, () -> path + " reads " + m.baseYearRead() + ", wanted " + want);
+            int[] idx = WorldMarket.priceIndices(nations, sc.base.traded);
+            for (int solved : new int[] {Nations.FIRST_YEAR, Nations.FIRST_YEAR + 7, WorldData.FILE_FIRST_YEAR + 5}) {
+                m.solveYear(solved);
+                double[] g = WorldMarket.growth(nations, solved, want, sc.base.n);
+                growth.see(Arrays.equals(m.gHat(), g), () -> path + " " + solved + ": the growth solved against is not output over the output of " + want);
+                for (int gi = 0; gi < idx.length; gi++) {
+                    int good = gi;
+                    level.see(m.levelTarget(gi) == WorldMarket.level(nations, idx[gi], solved, want), () -> path + " " + solved + ": good " + good + "'s price target is not over the price of " + want);
+                }
+                if (path != Nations.Path.HISTORICAL && solved == Nations.FIRST_YEAR)
+                    apart.see(!Arrays.equals(g, WorldMarket.growth(nations, solved, sc.base.baseYear, sc.base.n)), () -> "the founding's growth is the same whichever base year is read");
+            }
+        }
+        tally("the market reads the table's base year on Historical and the base year less the data's standInYears() on Random", year);
+        tally("...the growth it solves against is each nation's output in the year over its output in that year", growth);
+        tally("...and each good's price target is its real price in the year over its price in that year", level);
+        tally("...and on Random the founding's growth is not the table's year's (the cause is there to read)", apart);
+    }
+
     static void sections(Scope sc) {
         theSolve(sc);
+        theBaseYear(sc);
         theCalibration(sc);
         theFloorUnderCeiling(sc);
         theBigCity(sc);
@@ -267,27 +304,30 @@ public class WorldMarketCheck {
         Tally clearing = new Tally(), level = new Tally(), years = new Tally();
         List<Integer> cold = new ArrayList<>(), warm = new ArrayList<>();
         double tol = WorldMarket.SOLVE_TOL * (1 + 1e-9);
+        // Two foundings per path: the calendar's first year (EP1: the stand-in century's, where a city begins) and the file's own first, 2000 (real years).
         for (Nations.Path path : Nations.Path.values()) {
-            WorldMarket m = sc.market(path, BASE_SEED);
-            for (int y = 2000; y <= 2010; y++) {
-                m.solveYear(y);
-                int yy = y;
-                years.see(m.solvedYear() == y, () -> "solved " + m.solvedYear() + " for " + yy);
-                for (Good g : sc.base.goods()) {
-                    (y == 2000 ? cold : warm).add(m.passes(g));
-                    if (y != 2000 && y != 2005 && y != 2010) continue;
-                    double[] r = residual(sc.data, m, g);
-                    clearing.see(r[0] <= tol, () -> g + " " + path + " " + yy + ": sales over supply off by " + r[0]);
-                    level.see(r[1] <= tol, () -> g + " " + path + " " + yy + ": the mean mill price off its path by " + r[1]);
+            for (int start : new int[] {Nations.FIRST_YEAR, WorldData.FILE_FIRST_YEAR}) {
+                WorldMarket m = sc.market(path, BASE_SEED);
+                for (int y = start; y <= start + 10; y++) {
+                    m.solveYear(y);
+                    int yy = y, first = start;
+                    years.see(m.solvedYear() == y, () -> "solved " + m.solvedYear() + " for " + yy);
+                    for (Good g : sc.base.goods()) {
+                        (y == start ? cold : warm).add(m.passes(g));
+                        if (y != start && y != start + 5 && y != start + 10) continue;
+                        double[] r = residual(sc.data, m, g);
+                        clearing.see(r[0] <= tol, () -> g + " " + path + " " + yy + ": sales over supply off by " + r[0]);
+                        level.see(r[1] <= tol, () -> g + " " + path + " " + yy + " (from " + first + "): the mean mill price off its path by " + r[1]);
+                    }
                 }
             }
         }
         tally("the solved year is the year asked for", years);
-        tally("every maker's sales are within SOLVE_TOL of its supply, recomputed from the file's pairs: 2000, 2005 and 2010 on both paths", clearing);
-        tally("the mean mill price is within SOLVE_TOL of the good's real price path (over the base year's), 2000, 2005 and 2010 on both paths", level);
+        tally("every maker's sales are within SOLVE_TOL of its supply, recomputed from the file's pairs: the founding, five and ten years on, from " + Nations.FIRST_YEAR + " and from " + WorldData.FILE_FIRST_YEAR + ", on both paths", clearing);
+        tally("the mean mill price is within SOLVE_TOL of the good's real price path (over the base year's), the founding, five and ten years on, from " + Nations.FIRST_YEAR + " and from " + WorldData.FILE_FIRST_YEAR + ", on both paths", level);
         Collections.sort(cold);
         Collections.sort(warm);
-        out.printf("sweeps a good: founding (cold, 2000) median %d, worst %d; a January after (warm) median %d, worst %d%n",
+        out.printf("sweeps a good: founding (cold, " + Nations.FIRST_YEAR + " and " + WorldData.FILE_FIRST_YEAR + ") median %d, worst %d; a January after (warm) median %d, worst %d%n",
                 cold.get(cold.size() / 2), cold.get(cold.size() - 1), warm.get(warm.size() / 2), warm.get(warm.size() - 1));
         assertTrue("no good stopped at SOLVE_MAX_PASSES (" + WorldMarket.SOLVE_MAX_PASSES + "): the worst took " + Math.max(cold.get(cold.size() - 1), warm.get(warm.size() - 1)),
                 Math.max(cold.get(cold.size() - 1), warm.get(warm.size() - 1)) < WorldMarket.SOLVE_MAX_PASSES);
@@ -938,23 +978,23 @@ public class WorldMarketCheck {
             WorldMarket.forgetSolves();
             WorldMarket m = sc.market(Nations.Path.RANDOM, 101 + k);
             long t0 = System.nanoTime();
-            m.solveYear(2000);
+            m.solveYear(Nations.FIRST_YEAR);
             cold[k] = (System.nanoTime() - t0) / 1e6;
             for (Good g : sc.base.goods()) passes[0] += m.passes(g);
         }
         WorldMarket.forgetSolves();
         WorldMarket m = sc.market(Nations.Path.RANDOM, 211);
-        m.solveYear(2000);
+        m.solveYear(Nations.FIRST_YEAR);
         for (int k = 0; k < warm.length; k++) {
             long t0 = System.nanoTime();
-            m.solveYear(2001 + k);
+            m.solveYear(Nations.FIRST_YEAR + 1 + k);
             warm[k] = (System.nanoTime() - t0) / 1e6;
             for (Good g : sc.base.goods()) passes[1] += m.passes(g);
         }
         double[] c = cold.clone(), w = warm.clone();
         Arrays.sort(c);
         Arrays.sort(w);
-        report("the founding solve (2000, every good, from nothing) takes under SOLVE_COLD_MS, the median of " + cold.length, Timing.within(c[c.length / 2], WorldMarket.SOLVE_COLD_MS),
+        report("the founding solve (" + Nations.FIRST_YEAR + ", the calendar's first year, every good, from nothing) takes under SOLVE_COLD_MS, the median of " + cold.length, Timing.within(c[c.length / 2], WorldMarket.SOLVE_COLD_MS),
                 String.format(Locale.ROOT, "median %.1f ms, slowest %.1f ms; %.1f sweeps a good", c[c.length / 2], c[c.length - 1], passes[0] / (double) cold.length / sc.base.goods().size()));
         report("a January (every good, from last year's answer) takes under SOLVE_WARM_MS, the median of " + warm.length, Timing.within(w[w.length / 2], WorldMarket.SOLVE_WARM_MS),
                 String.format(Locale.ROOT, "median %.1f ms, slowest %.1f ms; %.1f sweeps a good", w[w.length / 2], w[w.length - 1], passes[1] / (double) warm.length / sc.base.goods().size()));

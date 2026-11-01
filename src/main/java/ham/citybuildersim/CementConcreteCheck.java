@@ -118,14 +118,14 @@ public class CementConcreteCheck {
     /** Cement & Concrete's rows, by their permanent ids, in the study's 6.4 order. */
     static final int[] ROWS = { CementConcrete.CEMENT_PLANT, CementConcrete.LARGE_CEMENT_PLANT, CementConcrete.LIME_KILN };
 
-    /** The study's 6.4: each one's cost, D$ thousands all in. */
-    static final double[] STUDY_COSTS = { 120_000, 500_000, 75_000 };
+    /** The study's 6.4: each one's cost, D$ thousands all in (today's figures, priced at the founding's level: EP1). */
+    static final double[] STUDY_COSTS = PriceLevelCheck.atFounding(120_000, 500_000, 75_000);
 
     /** ...its posts. */
     static final int[] STUDY_POSTS = { 60, 150, 45 };
 
-    /** ...its running cost a month, D$ thousands. */
-    static final double[] STUDY_RUNS = { 501, 1_730, 298 };
+    /** ...its running cost a month, D$ thousands (today's figures, priced at the founding's level). */
+    static final double[] STUDY_RUNS = PriceLevelCheck.atFounding(501, 1_730, 298);
 
     /** ...what it makes a month, t: cement, cement, lime. */
     static final double[] STUDY_MAKES = { 25_000, 125_000, 18_000 };
@@ -167,10 +167,10 @@ public class CementConcreteCheck {
                     : Math.round(CEMENT_KWH * STUDY_MAKES[r] / HOURS);
             boolean uses = true;
             for (int i = 0; i < feed.length; i++) uses &= t.uses(feed[i]) == STUDY_USES[r][i];
-            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r]) + "k all in, "
+            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r] / PriceLevel.FACTOR) + "k all in, "
                             + STUDY_POSTS[r] + " posts, " + kw + " kW, " + String.format("%,.0f", STUDY_MAKES[r]) + " t of " + made.label()
                             + " from its 6.4 feed; Cement & Concrete's, HEAVY_INDUSTRY, dated " + SINCE[r] + ", on no site",
-                    cost == STUDY_COSTS[r] && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == kw
+                    PriceLevelCheck.sameMoney(cost, STUDY_COSTS[r]) && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == kw
                             && t.makes(made) == STUDY_MAKES[r] && t.goodsMade().size() == 1 && uses
                             && t.goodsUsed().size() == (kiln ? 2 : 3) && Sectors.CEMENT_CONCRETE.equals(t.getSector())
                             && t.getCategory() == BuildingType.HEAVY_INDUSTRY && t.getSince() == SINCE[r] && t.site() == null,

@@ -43,7 +43,7 @@ public class CrimeCheck {
     /** One month of a fresh Crime with these reasons, returned. */
     static Crime month(Crime.Causes k, double people, double coverage, double cells) {
         Crime c = new Crime();
-        c.advanceMonth(k, people, officersFor(coverage, people), cells, 0, 3.46);
+        c.advanceMonth(k, people, officersFor(coverage, people), cells, 0, 3.46 * PriceLevel.FACTOR);
         return c;
     }
 
@@ -74,7 +74,7 @@ public class CrimeCheck {
         check("the injured: half a month off for each violent crime, over the city",
                 canada.getInjuredShare(), canada.getViolent() * .5 / people, 1e-15);
         check("a theft takes a quarter of a month's unskilled wage",
-                canada.getTheftWanted(), canada.getProperty() * .25 * 3.46, 1e-9);
+                canada.getTheftWanted(), canada.getProperty() * .25 * 3.46 * PriceLevel.FACTOR, 1e-9);
 
         /* ============ 2. the police ============ */
         System.out.println("\n--- what the police do ---");
@@ -138,40 +138,40 @@ public class CrimeCheck {
         check("...and with no cells, every one of them caught and not held", canada.getNotHeld(), canada.getCaught(), 1e-12);
         Crime held = new Crime();
         for (int m = 0; m < 36; m++) {
-            held.advanceMonth(Crime.Causes.canadaLike(adults), people, officersFor(.5, people), 1e9, 0, 3.46);
+            held.advanceMonth(Crime.Causes.canadaLike(adults), people, officersFor(.5, people), 1e9, 0, 3.46 * PriceLevel.FACTOR);
         }
         check("Canada's police, six months each: about Canada's 127 inside per 100,000",
                 held.getPrisonersPer100k(), 127, 2);
         check("...admitted, 4.5% of crimes", held.getAdmitted() / held.getCrimes(), .045, 1e-12);
 
         Crime ring = new Crime();
-        ring.advanceMonth(bust(1000), peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, 0, 3.46);
+        ring.advanceMonth(bust(1000), peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, 0, 3.46 * PriceLevel.FACTOR);
         double sent = ring.getAdmitted();
         assertTrue("fixture: somebody went in", sent > 0);
         Crime.Causes nobody = new Crime.Causes();
         boolean stillIn = true;
         for (int m = 2; m <= 6; m++) {
-            ring.advanceMonth(nobody, peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, 0, 3.46);
+            ring.advanceMonth(nobody, peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, 0, 3.46 * PriceLevel.FACTOR);
             if (Math.abs(ring.prisoners() - sent) > 1e-12 || ring.getReleased() > 0) stillIn = false;
         }
         assertTrue("they serve months two to six", stillIn);
-        ring.advanceMonth(nobody, peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, 0, 3.46);
+        ring.advanceMonth(nobody, peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, 0, 3.46 * PriceLevel.FACTOR);
         check("...and the seventh month they are out", ring.getReleased(), sent, 1e-12);
         check("...and nobody is inside", ring.prisoners(), 0, 1e-12);
 
         Crime cramped = month(bust(adults), people, 1, 10);
         check("prisons full: ten cells hold ten", cramped.getAdmitted(), 10, 1e-12);
         check("...and the rest are caught but not held", cramped.getNotHeld(), cramped.getCaught() - 10, 1e-9);
-        cramped.advanceMonth(bust(adults), people, officersFor(1, people), 10, 0, 3.46);
+        cramped.advanceMonth(bust(adults), people, officersFor(1, people), 10, 0, 3.46 * PriceLevel.FACTOR);
         check("...next month the cells are still full, so nobody goes in", cramped.getAdmitted(), 0, 1e-12);
-        cramped.advanceMonth(bust(adults), people, officersFor(1, people), 4, 0, 3.46);
+        cramped.advanceMonth(bust(adults), people, officersFor(1, people), 4, 0, 3.46 * PriceLevel.FACTOR);
         check("a prison that lost its guards lets out who it cannot hold", cramped.getReleasedEarly(), 6, 1e-12);
         check("...leaving what its staffed cells hold", cramped.prisoners(), 4, 1e-12);
 
         Crime thinning = new Crime();
-        thinning.advanceMonth(bust(1000), peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, 0, 3.46);
+        thinning.advanceMonth(bust(1000), peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, 0, 3.46 * PriceLevel.FACTOR);
         double in = thinning.prisoners();
-        thinning.advanceMonth(nobody, peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, .01, 3.46);
+        thinning.advanceMonth(nobody, peopleFor(1000), officersFor(1, peopleFor(1000)), 1000, .01, 3.46 * PriceLevel.FACTOR);
         check("prisoners die and turn seventy at the adults' rate", thinning.prisoners(), in * .99, 1e-12);
 
         double[] state = held.getState();
@@ -197,8 +197,9 @@ public class CrimeCheck {
             if (t == null) continue;
             assertTrue("...as " + a[1], t.getSafety() == SafetyType.valueOf(a[1]));
             check("...holding " + a[2], t.getCapacity(), Double.parseDouble(a[2]), 0);
-            check("...for what the real thing costs", t.getCashCost() + 18 * t.getConstructionMaterials(),
-                    Double.parseDouble(a[3]), 10);
+            // the real thing's cost is today's figure (the anchor) and 18 a unit of material is today's price: both priced at the founding's level (EP1)
+            check("...for what the real thing costs", t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials(),
+                    Double.parseDouble(a[3]) * PriceLevel.FACTOR, 10 * PriceLevel.FACTOR);
         }
         check("the founding constabulary: full coverage for 1,200 people",
                 SafetyType.POLICE.foundingCapacity(), 1200 * .0036, 1e-12);

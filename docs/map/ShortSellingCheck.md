@@ -36,7 +36,7 @@
 > Every claim is CAUSED: a book emptied and given one trade, then the orders a line names and no others; a bid or an ask put on it by a participant
 > with the means to stand behind it.
 
-**Uses:** [Exchange](Exchange.md) (84), [OrderBook](OrderBook.md) (26), [MarketCheck](MarketCheck.md) (21), [Equity](Equity.md) (18), [Game](Game.md) (15), [ExchangeCheck](ExchangeCheck.md) (9), [LongPlaytest](LongPlaytest.md) (9), [Household](Household.md) (5), [HouseholdBalance](HouseholdBalance.md) (3), [TreasuryFund](TreasuryFund.md) (2), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [MoneyAudit](MoneyAudit.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1)
+**Uses:** [Exchange](Exchange.md) (82), [OrderBook](OrderBook.md) (26), [MarketCheck](MarketCheck.md) (21), [Equity](Equity.md) (17), [Game](Game.md) (15), [ExchangeCheck](ExchangeCheck.md) (12), [LongPlaytest](LongPlaytest.md) (9), [Household](Household.md) (5), [MoneyAudit](MoneyAudit.md) (4), [HouseholdBalance](HouseholdBalance.md) (3), [TreasuryFund](TreasuryFund.md) (2), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1)
 
 ## Sections
 

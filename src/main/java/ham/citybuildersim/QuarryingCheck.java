@@ -266,14 +266,14 @@ public class QuarryingCheck {
                 String.format("US$%,.0fk", with - without));
         assertTrue("stone's goods are the study's 6.3: aggregate 40/10 (limestone's band), dimension stone 260/170, cement 110/45;"
                         + " freight three eighths of each wedge",
-                Good.AGGREGATE.worldImportPrice() == .040 && Good.AGGREGATE.worldExportPrice() == .010
+                Good.AGGREGATE.worldImportPrice() == .040 * PriceLevel.FACTOR && Good.AGGREGATE.worldExportPrice() == .010 * PriceLevel.FACTOR
                         && Good.AGGREGATE.worldImportPrice() == Good.LIMESTONE.worldImportPrice()
                         && Good.AGGREGATE.worldExportPrice() == Good.LIMESTONE.worldExportPrice()
-                        && Good.DIMENSION_STONE.worldImportPrice() == .260 && Good.DIMENSION_STONE.worldExportPrice() == .170
-                        && Good.CEMENT.worldImportPrice() == .110 && Good.CEMENT.worldExportPrice() == .045
-                        && Math.abs(Good.AGGREGATE.baseFreight() - .375 * .030) < 1e-12
-                        && Math.abs(Good.DIMENSION_STONE.baseFreight() - .375 * .090) < 1e-12
-                        && Math.abs(Good.CEMENT.baseFreight() - .375 * .065) < 1e-12);
+                        && Good.DIMENSION_STONE.worldImportPrice() == .260 * PriceLevel.FACTOR && Good.DIMENSION_STONE.worldExportPrice() == .170 * PriceLevel.FACTOR
+                        && Good.CEMENT.worldImportPrice() == .110 * PriceLevel.FACTOR && Good.CEMENT.worldExportPrice() == .045 * PriceLevel.FACTOR
+                        && Math.abs(Good.AGGREGATE.baseFreight() - .375 * .030 * PriceLevel.FACTOR) < 1e-12
+                        && Math.abs(Good.DIMENSION_STONE.baseFreight() - .375 * .090 * PriceLevel.FACTOR) < 1e-12
+                        && Math.abs(Good.CEMENT.baseFreight() - .375 * .065 * PriceLevel.FACTOR) < 1e-12);
         // ...cement on HELD's end when it came (0.7.131), and copper's cathode after it since 0.7.133 (batch I8).
         java.util.List<Good> held = java.util.Arrays.asList(NationalAccounts.HELD);
         assertTrue("...cement stockable, on HELD after the coals (cathode after it since 0.7.133); aggregate and blocks flow goods;"
@@ -295,13 +295,13 @@ public class QuarryingCheck {
     static final int[] ROWS = { Quarrying.QUARRY, Quarrying.LARGE_QUARRY, Quarrying.DIMENSION_STONE_QUARRY };
 
     /** The study's 6.4: each one's cost, D$ thousands all in. */
-    static final double[] STUDY_COSTS = { 15_000, 90_000, 6_000 };
+    static final double[] STUDY_COSTS = PriceLevelCheck.atFounding(15_000, 90_000, 6_000); // today's figures, priced at the founding's level (EP1)
 
     /** ...its posts. */
     static final int[] STUDY_POSTS = { 22, 125, 17 };
 
     /** ...its running cost a month, D$ thousands. */
-    static final double[] STUDY_RUNS = { 163, 981, 104 };
+    static final double[] STUDY_RUNS = PriceLevelCheck.atFounding(163, 981, 104); // today's figures, priced at the founding's level (EP1)
 
     /** ...what it makes a month, t: stone, stone, blocks. */
     static final double[] STUDY_MAKES = { 40_000, 250_000, 1_000 };
@@ -347,11 +347,11 @@ public class QuarryingCheck {
                     && site.dig() == (blocks ? BLOCKS_DIG : 1)
                     && (blocks ? t.makes(Good.DIMENSION_STONE) == STUDY_MAKES[r] : t.makes(Good.AGGREGATE) == STUDY_MAKES[r])
                     && t.goodsMade().size() == 1 && t.goodsUsed().isEmpty();
-            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r]) + "k all in, "
+            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r] / PriceLevel.FACTOR) + "k all in, "
                             + STUDY_POSTS[r] + " posts, " + kw + " kW (" + CRUSH_KWH + " kWh a tonne of rock dug), "
                             + String.format("%,.0f", STUDY_MAKES[r]) + (blocks ? " t of blocks on one hard-rock site" : " t of stone on "
                             + STUDY_SITES[r] + " site(s) of either type") + "; Quarrying's, MINING, dated 1900",
-                    cost == STUDY_COSTS[r] && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == kw && siteOk
+                    PriceLevelCheck.sameMoney(cost, STUDY_COSTS[r]) && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == kw && siteOk
                             && Sectors.QUARRYING.equals(t.getSector()) && t.getCategory() == BuildingType.MINING && t.getSince() == 1900
                             && t.getStock() == 0,
                     String.format("cash %,.0f + 18 x %,d material", t.getCashCost(), t.getConstructionMaterials()));
@@ -388,7 +388,7 @@ public class QuarryingCheck {
         double largeIn = 100 * (STUDY_MAKES[1] * Good.AGGREGATE.worldImportPrice() - STUDY_RUNS[1]) / STUDY_COSTS[1];
         report("...and about 10% replacing imports at D$40 (\"D$4 a tonne to run\": 163k for 40,000 t)",
                 Math.abs(smallIn - STUDY_REPLACING) <= STUDY_ROUNDING_POINT && Math.abs(largeIn - STUDY_REPLACING) <= STUDY_ROUNDING_POINT
-                        && Math.round(STUDY_RUNS[0] / STUDY_MAKES[0] * 1000) == 4,
+                        && Math.round(STUDY_RUNS[0] / PriceLevel.FACTOR / STUDY_MAKES[0] * 1000) == 4,
                 String.format("%.2f%%, %.2f%%", smallIn, largeIn));
     }
 

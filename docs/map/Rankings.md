@@ -1,4 +1,4 @@
-# Rankings.java - 729 lines · 38 methods · 11 constants · model
+# Rankings.java - 730 lines · 38 methods · 11 constants · model
 
 `ham/citybuildersim/Rankings.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -14,8 +14,8 @@
 > conversions of one figure disagree. So every money figure is turned ONCE into US$ of 2015 (the pivot),
 > ranked there, and only then shown in the money picked (the display): Money can never reorder a board,
 > and the city's own figure in its own money comes back to the figure the rest of the game shows. A
-> founding game dollar counts as one 2015 dollar (D1), so at founding the game's US dollar and the real
-> one are equal.
+> founding game dollar is a US dollar of the calendar's first year, RealDollar.BRIDGE of 2015's (D1, EP1: 28.4 from 1900), so at founding the game's
+> US dollar is that many real ones.
 > 
 > Builds spec-leaderboards 3 (the pivot, the display, the identities, the lock, the sentence), 4 (the two
 > boards: Real world 2025 from WorldMeasures, Your world from Nations at the city's month, the city
@@ -24,9 +24,9 @@
 > each its own world pivoted by its own rate, parity and founding rate, and by its own price level or the active
 > city's (Prices, D2): the toggle's reason to exist.
 
-**Uses:** [WorldMeasures](WorldMeasures.md) (53), [Nations](Nations.md) (21), [CityMeasures](CityMeasures.md) (18), [World](World.md) (7), [CityCalendar](CityCalendar.md) (5), [Money](Money.md) (4), [AgeBand](AgeBand.md) (3), [ForeignAccounts](ForeignAccounts.md) (2), [HistorySave](HistorySave.md) (2), [Game](Game.md) (1), [LandManager](LandManager.md) (1)
+**Uses:** [WorldMeasures](WorldMeasures.md) (53), [Nations](Nations.md) (21), [CityMeasures](CityMeasures.md) (18), [RealDollar](RealDollar.md) (10), [World](World.md) (7), [CityCalendar](CityCalendar.md) (5), [Money](Money.md) (4), [AgeBand](AgeBand.md) (3), [ForeignAccounts](ForeignAccounts.md) (2), [HistorySave](HistorySave.md) (2), [Game](Game.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (3):** [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [SavedCities](SavedCities.md)
+**Used by (5):** [PriceLevelCheck](PriceLevelCheck.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [RealDollar](RealDollar.md), [SavedCities](SavedCities.md)
 
 ## Sections
 
@@ -37,11 +37,11 @@
 | 200 | · THE LOCK AND THE SENTENCE (spec-leaderboards 3) |
 | 284 | · A FIGURE, BEFORE IT IS A ROW |
 | 295 | · THE ACTIVE CITY |
-| 320 | · A SAVED CITY (spec-leaderboards 3 and 5; LB3) |
-| 384 | · THE REAL WORLD, 2025 (spec-leaderboards 3 and LB1-notes 5) |
-| 443 | · YOUR WORLD (spec-leaderboards 3 and 4) |
-| 564 | · THE TABLE (spec-leaderboards 4 and 9) |
-| 683 | · THE DRAWER (spec-leaderboards 7: opening a row) |
+| 321 | · A SAVED CITY (spec-leaderboards 3 and 5; LB3) |
+| 385 | · THE REAL WORLD, 2025 (spec-leaderboards 3 and LB1-notes 5) |
+| 444 | · YOUR WORLD (spec-leaderboards 3 and 4) |
+| 565 | · THE TABLE (spec-leaderboards 4 and 9) |
+| 684 | · THE DRAWER (spec-leaderboards 7: opening a row) |
 
 ## Enum constants
 
@@ -82,15 +82,15 @@
 
 | line | field | says |
 |---:|---|---|
-| 449 | `final WorldMeasures wm` |  |
-| 450 | `final Nations nations` |  |
-| 451 | `final int year, us` |  |
+| 450 | `final WorldMeasures wm` |  |
+| 451 | `final Nations nations` |  |
+| 452 | `final int year, us` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 695 | **type** `public final class Rankings` | The Rankings board as the screen draws it: a measure's table of ranked places, the active city among the real world's 196 nations and 62 city regions or among the nations of its own world, in the money and at the pric... |
+| 35 | 696 | **type** `public final class Rankings` | The Rankings board as the screen draws it: a measure's table of ranked places, the active city among the real world's 196 nations and 62 city regions or among the nations of its own world, in the money and at the pric... |
 | 37 | 1 | `private Rankings()` |  |
 | 40 | 1 | **type** `public enum Board` | The two boards: the real world's latest year (spec-leaderboards 4), and the nations of the city's own world at its month. |
 | 43 | 1 | **type** `public enum Money` | The money a figure is shown in: the city's own, the game's US dollars, or real US dollars at 2015 prices. |
@@ -119,7 +119,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 184 | 11 | `public static double display(double usd15, Settings s, City c)` | Real US$ of 2015 into the money picked: REAL_USD as is; GAME_USD times the game dollar's price level (times 1 under Constant, which is at founding's prices); CITY times that level and the rate (this month's rate, or p... |
+| 184 | 11 | `public static double display(double usd15, Settings s, City c)` | Real US$ of 2015 into the money picked: REAL_USD as is; GAME_USD over the bridge (RealDollar.BRIDGE) times the game dollar's price level (times 1 under Constant, which is at founding's prices); CITY the same times the... |
 | 196 | 3 | `private static double shown(double value, Settings eff, City c, WorldMeasures.Measure m)` |  |
 
 ### THE LOCK AND THE SENTENCE (spec-leaderboards 3) (lines 200-283)
@@ -140,58 +140,58 @@
 | 289 | 1 | **type** `private record Cell(double value, int year, int mark, String source, String rule, double people)` | A place's figure for the measure once pivoted: its value (US$ of 2015 for money), year, mark, source, rule and people. |
 | 291 | 3 | `private static boolean usable(double v)` |  |
 
-### THE ACTIVE CITY (lines 295-319)
+### THE ACTIVE CITY (lines 295-320)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 304 | 15 | `private static Cell cityCell(City c, WorldMeasures.Measure m, Settings eff)` | The city's figure for a measure, pivoted to US$ of 2015 (spec-leaderboards 3): a money figure X (the city's money, whole units) is X over the rate over the game dollar's price level at this month's rate, X over parity... |
+| 305 | 15 | `private static Cell cityCell(City c, WorldMeasures.Measure m, Settings eff)` | The city's figure for a measure, pivoted to US$ of 2015 (spec-leaderboards 3): a money figure X (the city's money, whole units) is X over the rate over the game dollar's price level at this month's rate, X over parity... |
 
-### A SAVED CITY (spec-leaderboards 3 and 5; LB3) (lines 320-383)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 332 | 17 | `private static Cell savedCell(Saved saved, City active, Settings s, WorldMeasures.Measure m, Settings eff)` | A saved city's figure for a measure, pivoted to US$ of 2015 as cityCell does but by ITS OWN rate, parity and founding rate, all in the units of its last save (a reform rescales them with its money, so a reform never m... |
-| 356 | 5 | `public static City cityAt(String name, String currency, double foundingRate, HistorySave h, CityMeasures.Extras extras, int month)` | A city as a history stood at the end of game month `month` (LB3): its name, its money and its founding rate as given, its rate, parity and the game dollar's price level from the history's fxRate, fxParity and usPrices... |
-| 368 | 15 | `public static List<RankPoint> rankOverYears(WorldMeasures wm, City city, HistorySave h, Settings s, String measure)` | The active city's rank on one measure at each December of its history (D12, LB3), against Real world 2025 only: its nations and regions, no saved rows and no Your world, a board that holds still, at the money and conv... |
-
-### THE REAL WORLD, 2025 (spec-leaderboards 3 and LB1-notes 5) (lines 384-442)
+### A SAVED CITY (spec-leaderboards 3 and 5; LB3) (lines 321-384)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 389 | 3 | `private static double toBase(WorldMeasures wm, int year)` | A US dollar of the given year in 2015 dollars (CPI-U); NaN where the file has no CPI-U for the year. |
-| 394 | 5 | `private static Cell lowest(WorldMeasures.Figure primary, double value, WorldMeasures.Figure...also)` | The lower of two marks, and the rule of the lower (the first on a tie). |
-| 406 | 36 | `private static Cell realCell(WorldMeasures wm, WorldMeasures.Place p, WorldMeasures.Measure m, Settings eff)` | A real place's figure, pivoted: current US$ of its year times CPI-U 2015 over CPI-U of that year (this month's rate); under Constant the file's .k figure as is for gdp and gdp per person, and household spending's this... |
+| 333 | 17 | `private static Cell savedCell(Saved saved, City active, Settings s, WorldMeasures.Measure m, Settings eff)` | A saved city's figure for a measure, pivoted to US$ of 2015 as cityCell does but by ITS OWN rate, parity and founding rate, all in the units of its last save (a reform rescales them with its money, so a reform never m... |
+| 357 | 5 | `public static City cityAt(String name, String currency, double foundingRate, HistorySave h, CityMeasures.Extras extras, int month)` | A city as a history stood at the end of game month `month` (LB3): its name, its money and its founding rate as given, its rate, parity and the game dollar's price level from the history's fxRate, fxParity and usPrices... |
+| 369 | 15 | `public static List<RankPoint> rankOverYears(WorldMeasures wm, City city, HistorySave h, Settings s, String measure)` | The active city's rank on one measure at each December of its history (D12, LB3), against Real world 2025 only: its nations and regions, no saved rows and no Your world, a board that holds still, at the money and conv... |
 
-### YOUR WORLD (spec-leaderboards 3 and 4) (lines 443-563)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 448 | 115 | **type** `private static final class World` | The nations of the city's own world at the city's year, and what the pivot needs of the US. |
-| 453 | 6 | `World(WorldMeasures wm, Nations nations, City city)` _(in Rankings.World)_ |  |
-| 461 | 7 | `double market(int i)` _(in Rankings.World)_ | A nation's output at that year's prices and rate, into US$ of 2015 by the world's own US prices (spec-leaderboards 3, this month's rate). |
-| 470 | 9 | `double priceLevel(int i, WorldMeasures.Place file)` _(in Rankings.World)_ | The nation's price level against the US at the city's year: the file's 2025 figure (none: 1) moved by relative prices and the rate since (D13). |
-| 481 | 7 | `double output(int i, WorldMeasures.Place file, Settings eff)` _(in Rankings.World)_ | A nation's output in the converted money (US$ of 2015): this month's rate, the output as it is under Constant, or PPP, the market figure over the price level. |
-| 490 | 6 | `int outputMark(int i, WorldMeasures.Place file, Settings eff)` _(in Rankings.World)_ | The mark of that figure: the output's, and under PPP the lower of it and the price level's (a nation with none is an estimate). |
-| 498 | 33 | `Cell nation(int i, WorldMeasures.Place file, WorldMeasures.Measure m, Settings eff)` _(in Rankings.World)_ | A nation of the game's world as a cell for a measure, or null where it has no figure at that year. |
-| 538 | 20 | `Cell region(WorldMeasures.Place r, WorldMeasures.Measure m, Settings eff)` _(in Rankings.World)_ | A city region as a cell: its nation's path times its 2025 share of the nation's people and output, rates held, so every figure is an estimate (spec-leaderboards 4). |
-| 559 | 3 | `private String rule(String id)` _(in Rankings.World)_ |  |
-
-### THE TABLE (spec-leaderboards 4 and 9) (lines 564-682)
+### THE REAL WORLD, 2025 (spec-leaderboards 3 and LB1-notes 5) (lines 385-443)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 575 | 3 | `public static Table table(WorldMeasures wm, Nations nations, City city, Settings s, String measure)` | The ranked board of one measure. |
-| 585 | 37 | `public static Table table(WorldMeasures wm, Nations nations, City city, List<Saved> saved, Settings s, String measure)` | table() with the saved cities beside the active one (LB3): each is a Kind.SAVED row ranked by the same function, pivoted by its own rate and price level (savedCell) and shown in the active city's money, on any board t... |
-| 623 | 4 | `private static Row row(String id, Kind kind, String name, String nation, Cell c, WorldMeasures.Measure m, Settings eff, City city)` |  |
-| 629 | 21 | `private static Table rank(WorldMeasures.Measure m, Settings s, List<Row> unranked, boolean ranked, boolean realFigures)` | Orders the rows (DOWN ascending, otherwise descending, ties by name), gives ties one rank and the next rank skips, and counts the marks. |
-| 652 | 3 | `static boolean tied(double a, double b)` | Whether two figures, next to each other in rank order, are one figure: equal, or within TIE of each other. |
-| 657 | 13 | `public static List<Row> around(Table t)` | The rows Around you shows (spec-leaderboards 1, 11): the top three, then the city and six either side, none twice, in rank order; the first ten when the city is off the board. |
-| 672 | 10 | `public static List<Row> yourSize(Table t)` | Your size: the places with people within YOUR_SIZE_FACTOR times the city's, either way, and the city; empty when the city is off the board or its people are not known. |
+| 390 | 3 | `private static double toBase(WorldMeasures wm, int year)` | A US dollar of the given year in 2015 dollars (CPI-U); NaN where the file has no CPI-U for the year. |
+| 395 | 5 | `private static Cell lowest(WorldMeasures.Figure primary, double value, WorldMeasures.Figure...also)` | The lower of two marks, and the rule of the lower (the first on a tie). |
+| 407 | 36 | `private static Cell realCell(WorldMeasures wm, WorldMeasures.Place p, WorldMeasures.Measure m, Settings eff)` | A real place's figure, pivoted: current US$ of its year times CPI-U 2015 over CPI-U of that year (this month's rate); under Constant the file's .k figure as is for gdp and gdp per person, and household spending's this... |
 
-### THE DRAWER (spec-leaderboards 7: opening a row) (lines 683-729)
+### YOUR WORLD (spec-leaderboards 3 and 4) (lines 444-564)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 692 | 3 | `public static List<Line> drawer(WorldMeasures wm, Nations nations, City city, Settings s, String placeId)` | Every measure for one place: placeId is a nation's or a region's id in the file, or PLACE_CITY for the active city. |
-| 701 | 28 | `public static List<Line> drawer(WorldMeasures wm, Nations nations, City city, List<Saved> saved, Settings s, String placeId)` | drawer() that also opens a saved city (LB3): placeId is then its row's id, "saved:" + slot (Saved.id()), and its lines are its own figures pivoted by its own rate and price level (savedCell), on both boards as the act... |
+| 449 | 115 | **type** `private static final class World` | The nations of the city's own world at the city's year, and what the pivot needs of the US. |
+| 454 | 6 | `World(WorldMeasures wm, Nations nations, City city)` _(in Rankings.World)_ |  |
+| 462 | 7 | `double market(int i)` _(in Rankings.World)_ | A nation's output at that year's prices and rate, into US$ of 2015 by the world's own US prices (spec-leaderboards 3, this month's rate). |
+| 471 | 9 | `double priceLevel(int i, WorldMeasures.Place file)` _(in Rankings.World)_ | The nation's price level against the US at the city's year: the file's 2025 figure (none: 1) moved by relative prices and the rate since (D13). |
+| 482 | 7 | `double output(int i, WorldMeasures.Place file, Settings eff)` _(in Rankings.World)_ | A nation's output in the converted money (US$ of 2015): this month's rate, the output as it is under Constant, or PPP, the market figure over the price level. |
+| 491 | 6 | `int outputMark(int i, WorldMeasures.Place file, Settings eff)` _(in Rankings.World)_ | The mark of that figure: the output's, and under PPP the lower of it and the price level's (a nation with none is an estimate). |
+| 499 | 33 | `Cell nation(int i, WorldMeasures.Place file, WorldMeasures.Measure m, Settings eff)` _(in Rankings.World)_ | A nation of the game's world as a cell for a measure, or null where it has no figure at that year. |
+| 539 | 20 | `Cell region(WorldMeasures.Place r, WorldMeasures.Measure m, Settings eff)` _(in Rankings.World)_ | A city region as a cell: its nation's path times its 2025 share of the nation's people and output, rates held, so every figure is an estimate (spec-leaderboards 4). |
+| 560 | 3 | `private String rule(String id)` _(in Rankings.World)_ |  |
+
+### THE TABLE (spec-leaderboards 4 and 9) (lines 565-683)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 576 | 3 | `public static Table table(WorldMeasures wm, Nations nations, City city, Settings s, String measure)` | The ranked board of one measure. |
+| 586 | 37 | `public static Table table(WorldMeasures wm, Nations nations, City city, List<Saved> saved, Settings s, String measure)` | table() with the saved cities beside the active one (LB3): each is a Kind.SAVED row ranked by the same function, pivoted by its own rate and price level (savedCell) and shown in the active city's money, on any board t... |
+| 624 | 4 | `private static Row row(String id, Kind kind, String name, String nation, Cell c, WorldMeasures.Measure m, Settings eff, City city)` |  |
+| 630 | 21 | `private static Table rank(WorldMeasures.Measure m, Settings s, List<Row> unranked, boolean ranked, boolean realFigures)` | Orders the rows (DOWN ascending, otherwise descending, ties by name), gives ties one rank and the next rank skips, and counts the marks. |
+| 653 | 3 | `static boolean tied(double a, double b)` | Whether two figures, next to each other in rank order, are one figure: equal, or within TIE of each other. |
+| 658 | 13 | `public static List<Row> around(Table t)` | The rows Around you shows (spec-leaderboards 1, 11): the top three, then the city and six either side, none twice, in rank order; the first ten when the city is off the board. |
+| 673 | 10 | `public static List<Row> yourSize(Table t)` | Your size: the places with people within YOUR_SIZE_FACTOR times the city's, either way, and the city; empty when the city is off the board or its people are not known. |
+
+### THE DRAWER (spec-leaderboards 7: opening a row) (lines 684-730)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 693 | 3 | `public static List<Line> drawer(WorldMeasures wm, Nations nations, City city, Settings s, String placeId)` | Every measure for one place: placeId is a nation's or a region's id in the file, or PLACE_CITY for the active city. |
+| 702 | 28 | `public static List<Line> drawer(WorldMeasures wm, Nations nations, City city, List<Saved> saved, Settings s, String placeId)` | drawer() that also opens a saved city (LB3): placeId is then its row's id, "saved:" + slot (Saved.id()), and its lines are its own figures pivoted by its own rate and price level (savedCell), on both boards as the act... |
 

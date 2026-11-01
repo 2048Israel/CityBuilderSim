@@ -45,7 +45,13 @@ import java.util.function.IntToDoubleFunction;
  *      countdown would have stopped inside the counted slices, and otherwise
  *      a slice that passes with the next one failing;
  *   4. Mortgage.decide() against its count on a grid of tills, incomes,
- *      rates and costs, the yard running out part-way included.
+ *      rates and costs, the yard running out part-way included;
+ *   5. a window a bond opens (OS1, EP1's gate): an order whose till pays for
+ *      a few slices that fail at the sector's own rate, whose first slices
+ *      past the till pass on a bond's cheaper one and whose later ones are
+ *      past the bank's room and fail, is trimmed to the window's last slice,
+ *      the countdown's, in the playtest's city with its room set to cause it
+ *      and on tests of its own.
  */
 public class OrderSearchCheck {
 
@@ -158,6 +164,7 @@ public class OrderSearchCheck {
             run(root);
             search();
             grid();
+            window(root);
         } finally {
             ScaleCheck.cleanUp(root);
         }
@@ -474,6 +481,135 @@ public class OrderSearchCheck {
                 trimmed > 0 && refusedShort > 0 && refusedTest > 0 && kinked > 0);
         same("every order on the grid is the count's: its size, what trimmed it and the facts for one", differ, 0);
         assertTrue("...reading fewer costs than the count", readBySearch < readByCount);
+    }
+
+    /* ============== 5. a window a bond opens, caused (OS1) ============== */
+
+    /** The order the window is caused in: Retail's Convenience Stores, more than the counted slices and past the doubling's steps (94, 78, 76, 72, 64, 48, 16, 1) of the window. */
+    static final int WINDOW_ORDER = 94;
+    /** The slices the till pays for, which fail at the sector's own rate: two and four, so the doubling's last step (slice 1) is not in the window... */
+    static final int[] WINDOW_TILLS = { 2, 4 };
+    /** ...and how many slices past the till the bank's room reaches, which a bond raises whole and may pass: a window of that many at most. */
+    static final int[] WINDOW_ROOMS = { 3, 6, 9 };
+    /** The profit of a building the sweep starts at, as a share of a twelfth of its cost (a building that earns its cost a year at 100%)... */
+    static final double WINDOW_PROFIT_FROM = .005;
+    /** ...ends at... */
+    static final double WINDOW_PROFIT_TO = 1;
+    /** ...and steps by. */
+    static final double WINDOW_PROFIT_STEP = 1.04;
+
+    /**
+     * THE WINDOW'S GATE (OS1). A slice the bank's room raises whole may be judged at a bond's cheaper rate (month 1226: 14%
+     * against the sector's 17.8%), and the interest test is the same inequality whether the rate falls or the amount it is
+     * struck on does: a building's earnings against 1.25 times a month's interest on an amount at a rate. The city's own
+     * bidders do not price a bond under the loan in the playtest's city at COPY_MONTH (the coupon is the loan's less its
+     * fees: 12.96% against 12.88%), so the window is caused through the seam the check has for another rule
+     * (Game.setOrderGate()): the slices the till pays for are tested on their whole cost, as the game does; the slices past
+     * it that the room raises whole (up to `room` dollars borrowed) on what they borrow, which is what a rate that much
+     * cheaper would make of them; the slices past the room on their whole cost again.
+     */
+    static ham.citybuildersim.sectors.SpreadPlanner.MoneyGate windowGate(double room) {
+        return new ham.citybuildersim.sectors.SpreadPlanner.MoneyGate() {
+            @Override public double testedOn(double cost, double cash) {
+                double borrowed = Math.max(0, cost - Math.max(0, cash));
+                return borrowed > 0 && borrowed <= room ? borrowed : Math.max(0, cost);
+            }
+            @Override public String words() { return "the interest on what the room raises, on the whole cost otherwise"; }
+            @Override public String toString() { return "WINDOW (room " + room + ")"; }
+        };
+    }
+
+    /**
+     * THE WINDOW, CAUSED (OS1, 2026-11-01). EP1's path at the factor met a slice test that fails at the till's slices,
+     * passes at a few past it and fails again past the bank's room (month 1226, Retail's 94 Convenience Stores: 1 to 4
+     * failing, 5 to 10 passing on a bond, 11 to 94 failing), which the countdown found at 10 and the search, doubling
+     * down by 1, 2, 4, 8, 16, 32 and 64 from the 79th, did not. The window is made here instead of waited for: the
+     * playtest's city at COPY_MONTH asked the rule of windowGate() with a till of WINDOW_TILLS slices and a room of
+     * WINDOW_ROOMS, the profit of a building swept from where nothing carries to where everything does, so that at some
+     * profit the till's slices fail and the first past them pass. Every order of the sweep is put to the search
+     * (Game.sliceFor(), which books nothing) and to the countdown, and must come out the same; and the same windows are
+     * put to Game.largestSlice() on tests of their own.
+     */
+    static void window(Path root) throws Exception {
+        out.println("\n--- 5. a window a bond opens: " + WINDOW_ORDER + " Convenience Stores, a till of a few, a room past it, the profit swept ---");
+        GameFiles files = new GameFiles(root.resolve("window"), root.resolve("window-no-legacy"));
+        Game g = new Game(files, LongPlaytest.founding());
+        playtestCity(g, COPY_MONTH, quiet);
+        BuildingsTemplate store = null;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getName().equals("Convenience Store")) store = t;
+        assertTrue("fixture: the city has Convenience Stores", store != null && store.getSector() != null);
+        BusinessInvestment plans = g.getBusinessInvestment();
+        String sector = store.getSector();
+        double one = plans.getCostOf(store, 1);
+        int cases = 0, windows = 0, differ = 0, overDesk = 0, widest = 0;
+        String first = null;
+        for (int till : WINDOW_TILLS) {
+            for (int room : WINDOW_ROOMS) {
+                double cash = plans.getCostOf(store, till);
+                // The room raises the slices past the till up to `room` of them whole, and half a slice more.
+                g.setOrderGate(windowGate(plans.getCostOf(store, till + room) - cash + one / 2));
+                for (double profit = one / 12 * WINDOW_PROFIT_FROM; profit <= one / 12 * WINDOW_PROFIT_TO; profit *= WINDOW_PROFIT_STEP) {
+                    BusinessInvestment.Decision d = new BusinessInvestment.Decision(sector, store, WINDOW_ORDER, "", true);
+                    Game.Afford found = g.sliceFor(d, cash, profit);
+                    Game.Afford byCount = investedByCount(g, d, cash, profit);
+                    boolean tillFails = g.sliceFor(new BusinessInvestment.Decision(sector, store, 1, "", true), cash, profit).quantity() == 0;
+                    cases++;
+                    if (byCount.quantity() > till && tillFails) { windows++; widest = Math.max(widest, byCount.quantity() - till); }
+                    if (found.quantity() != byCount.quantity() || found.atPrime() != byCount.atPrime()
+                            || Double.compare(found.firstRate(), byCount.firstRate()) != 0) {
+                        differ++;
+                        if (first == null) first = String.format("till %d, room %d, a building earning %.4f: %s against the count's %s",
+                                till, room, profit, found, byCount);
+                    }
+                    if (found.deskCalls() > Game.deskCallsMost(WINDOW_ORDER)) overDesk++;
+                }
+            }
+        }
+        g.setOrderGate(null);
+        out.printf("      %,d orders of %d Convenience Stores swept (a till of %s slices, a room of %s past it): %,d trimmed by the countdown"
+                + " into a slice past the till while the till's slices fail, the widest by %d%n", cases, WINDOW_ORDER,
+                java.util.Arrays.toString(WINDOW_TILLS), java.util.Arrays.toString(WINDOW_ROOMS), windows, widest);
+        if (first != null) out.println("      first that differs: " + first);
+        assertTrue("fixture: the sweep caused windows - the countdown trims into a slice past the till's while the till's slices fail", windows > 0);
+        same("every order of the sweep is the countdown's: its slice, its \"at prime\" and its rate at the whole order", differ, 0);
+        same("...and none asks the bond desk more than Game.deskCallsMost() times", overDesk, 0);
+
+        // The same on tests of their own: a window of passing slices past the till's, nothing else passes.
+        int tests = 0, windowWrong = 0, doublingMisses = 0, over = 0;
+        int[] asks = { 0 };
+        for (int q : new int[] { 20, 40, WINDOW_ORDER, 200, 1000, 65_537 }) {
+            for (int till = 0; till <= Math.min(40, q); till++) {
+                for (int width = 1; width <= 40 && till + width <= q - Game.COUNTDOWN_SLICES; width++) {
+                    final int lo = till + 1, hi = till + width;
+                    asks[0] = 0;
+                    int found = Game.largestSlice(q, n -> { asks[0]++; return n >= lo && n <= hi; }, () -> lo);
+                    tests++;
+                    if (found != hi) windowWrong++;
+                    if (asks[0] > Game.deskCallsMost(q)) over++;
+                    if (Game.largestSlice(q, n -> n >= lo && n <= hi) != hi) doublingMisses++;
+                }
+            }
+        }
+        out.printf("      %,d windows on tests of their own, each from one past the till: the doubling and halving alone miss %,d of them%n", tests, doublingMisses);
+        assertTrue("fixture: the doubling and halving alone miss some of the windows, so the first slice that borrows finds them", doublingMisses > 0);
+        same("the search finds the window's last slice, the countdown's, in every one", windowWrong, 0);
+        same("...within deskCallsMost() asks", over, 0);
+
+        // ...and a first slice that borrows named where the test is a run from one changes nothing.
+        int wrong = 0, runs = 0;
+        for (int q = 1; q <= 150; q++) {
+            for (int b = 0; b <= q; b++) {
+                final int line = b;
+                for (int borrows : new int[] { 0, 1, b / 2 + 1, b, b + 1, q + 1 }) {
+                    asks[0] = 0;
+                    int found = Game.largestSlice(q, n -> { asks[0]++; return n <= line; }, () -> borrows);
+                    runs++;
+                    if (found != b || asks[0] > Game.deskCallsMost(q)) wrong++;
+                }
+            }
+        }
+        out.printf("      %,d runs from one, each with six first slices that borrow named%n", runs);
+        same("on a test that holds on a run from one the first slice that borrows changes nothing, and asks within deskCallsMost()", wrong, 0);
     }
 
     /* =====================================================================

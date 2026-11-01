@@ -64,7 +64,7 @@
 >   5. THE STOPS ARE GONE: the dial takes 60%; the autopilot sets a rule's
 > ... (12 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (52), [ForeignCheck](ForeignCheck.md) (9), [Game](Game.md) (8), [DebtManager](DebtManager.md) (7), [CentralBank](CentralBank.md) (6), [CapitalFlows](CapitalFlows.md) (5), [MoneyAudit](MoneyAudit.md) (3), [GameFiles](GameFiles.md) (3), [PriceIndex](PriceIndex.md) (3), [TempDirs](TempDirs.md) (2), [Founding](Founding.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (52), [ForeignCheck](ForeignCheck.md) (9), [Game](Game.md) (8), [DebtManager](DebtManager.md) (7), [CentralBank](CentralBank.md) (6), [CapitalFlows](CapitalFlows.md) (5), [MoneyAudit](MoneyAudit.md) (4), [GameFiles](GameFiles.md) (3), [PriceIndex](PriceIndex.md) (3), [TempDirs](TempDirs.md) (2), [Founding](Founding.md) (1)
 
 **Used by (5):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [ForeignCheck](ForeignCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 

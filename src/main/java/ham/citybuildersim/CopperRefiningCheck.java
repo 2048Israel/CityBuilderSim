@@ -204,7 +204,7 @@ public class CopperRefiningCheck {
             CopperRefining.ROD_MILL, Manufacturing.WIRE_CABLE_WORKS };
 
     /** The study's 4.3: each one's cost, D$ thousands all in. */
-    static final double[] STUDY_COSTS = { 500_000, 180_000, 280_000, 45_000, 110_000 };
+    static final double[] STUDY_COSTS = PriceLevelCheck.atFounding(500_000, 180_000, 280_000, 45_000, 110_000); // today's figures, priced at the founding's level (EP1)
 
     /** ...its posts. */
     static final int[] STUDY_POSTS = { 700, 200, 200, 80, 400 };
@@ -227,7 +227,7 @@ public class CopperRefiningCheck {
             { -6.7, 2.2, 11.1, 2.2 }, { -0.3, 0.6, 7.9, 7.0 } };
 
     /** Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table - but the scrap refinery's, from the -0.02% the study states for its case A. */
-    static final double[] STUDY_RUNS = { 5_253, 1_460, 1_776, 846, 4_820 };
+    static final double[] STUDY_RUNS = PriceLevelCheck.atFounding(5_253, 1_460, 1_776, 846, 4_820); // today's figures, priced at the founding's level (EP1)
 
     /** The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. */
     static final double STUDY_SCRAP_A = -0.02, STUDY_SCRAP_A_ROUNDING = .005;
@@ -255,11 +255,11 @@ public class CopperRefiningCheck {
             boolean makes = t.goodsMade().size() == STUDY_MADE[r].length;
             for (int i = 0; i < STUDY_MADE[r].length; i++) makes &= t.makes(STUDY_MADE[r][i]) == STUDY_MAKES[r][i];
             String sector = wire ? Sectors.MANUFACTURING : Sectors.COPPER_REFINING;
-            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r]) + "k all in, "
+            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r] / PriceLevel.FACTOR) + "k all in, "
                             + STUDY_POSTS[r] + " posts, " + String.format("%,d", STUDY_KW[r]) + " kW, its 4.3 makes of "
                             + String.format("%,.0f", STUDY_USES[r]) + " t of " + STUDY_FEED[r].label().toLowerCase() + "; " + sector
                             + "'s, HEAVY_INDUSTRY, dated 1900, on no site",
-                    cost == STUDY_COSTS[r] && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == STUDY_KW[r] && makes
+                    PriceLevelCheck.sameMoney(cost, STUDY_COSTS[r]) && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == STUDY_KW[r] && makes
                             && t.uses(STUDY_FEED[r]) == STUDY_USES[r] && t.goodsUsed().size() == 1 && sector.equals(t.getSector())
                             && t.getCategory() == BuildingType.HEAVY_INDUSTRY && t.getSince() == 1900 && t.site() == null && t.getGen() == 0,
                     String.format("cash %,.0f + 18 x %,d material", t.getCashCost(), t.getConstructionMaterials()));
@@ -329,6 +329,10 @@ public class CopperRefiningCheck {
                         && refinery.makes(Good.COPPER) == 9_700 && rod.uses(Good.COPPER) == 8_016 && rod.makes(Good.COPPER_ROD) == 8_000
                         && wire.uses(Good.COPPER_ROD) == wire.makes(Good.WIRE_CABLE));
         Game g = CopperMiningCheck.copperTown("copperrefiningcheck-chain", 0);
+        // ...on the goods' literals (the premise is a fixed world price, as in 8 and 9): on the world file's band under Random the rod mill's inputs
+        // cost more than its rod nets abroad in the calendar's first months (EP1: 0.0664 against 0.0649 in 1900's draws), and a works orders nothing it
+        // loses on (THE ORDER, FL1), so the chain this section stands made nothing; at the literals rod nets 10.25 to the cathode's 10.02 in it.
+        g.playOnLiterals();
         BuildingManager b = g.getBuildingManager();
         CopperRefining cr = g.getSectors().copperRefining();
         Manufacturing man = g.getSectors().manufacturing();
@@ -374,6 +378,10 @@ public class CopperRefiningCheck {
     static void acid() {
         out.println("\n--- 4. the smelter's acid sold, the leach plant's bought at home, the rest shipped ---");
         Game g = CopperMiningCheck.copperTown("copperrefiningcheck-acid", 0);
+        // ...on the goods' literals, as 3: on the world file's band under Random the smelter alone on landed concentrate nets less for its anode than
+        // the concentrate costs it less the acid (EP1, the draws of 1900: 0.0610 against 0.0670, the study's case A), and a works orders nothing it
+        // loses on (THE ORDER, FL1), so it made no acid for the leach plant to buy.
+        g.playOnLiterals();
         BuildingManager b = g.getBuildingManager();
         CopperRefining cr = g.getSectors().copperRefining();
         CopperMining cm = g.getSectors().copperMining();
@@ -659,7 +667,7 @@ public class CopperRefiningCheck {
 
         // (b) the shared pool: one smelter, two refineries (the smelter's anode covers half their need), the cathode's export price low enough
         // that the refineries' marginal cost, the anode they must buy included, is over it.
-        Game pool = copperWorks("copperrefiningcheck-pool", 1, 2, 0, 3.0);
+        Game pool = copperWorks("copperrefiningcheck-pool", 1, 2, 0, 3.0 * PriceLevel.FACTOR);
         CopperRefining pr = pool.getSectors().copperRefining();
         holdAndRun(pool, pr);
         Sector.Output pcu = pr.outputRow(Good.COPPER), panode = pr.outputRow(Good.ANODE);

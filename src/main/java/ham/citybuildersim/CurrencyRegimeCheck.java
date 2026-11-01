@@ -460,9 +460,20 @@ public class CurrencyRegimeCheck {
         fx.repriceCurrency();
     }
 
+    /**
+     * The founding the peg fixtures stand on: the default's, on the Historical path (EP1). These towns are read at months 36 to 60, the young town's deficit
+     * against the world's prices, and on the Random path those prices are draws keyed by calendar year, so what the town sells abroad, and whether a
+     * month at the peg is a surplus or a deficit, changed with the calendar's move to 1900 (the vault's dollars sold every month from the peg, the
+     * basket not based before the first break) and not with anything the fixture is about. Historical's world in the stand-in century is the file's first
+     * year held, with no draw in it: the same world whatever the key. A fixture causes its condition; the assertions' premises stand.
+     */
+    static Founding steady() {
+        return Founding.defaults().withPath(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
+    }
+
     /** A city on the default founding pegged with a surplus at the peg and the D$ a fifth over it: the doubt fixture, five months from its break at the peg's chance. */
     static Game doubtTown(String label, long reseed) {
-        Game g = town(label, Founding.defaults());
+        Game g = town(label, steady());
         play(g, 36);
         quietly(() -> {
             g.setCurrencyRegime(PEG);
@@ -472,6 +483,19 @@ public class CurrencyRegimeCheck {
         if (reseed != 0) g.getForeignAccounts().setMarketSeed(reseed);
         quietly(() -> g.repeg(g.getForeignAccounts().getShadowRate() * Math.exp(-.20)));
         return g;
+    }
+
+    /**
+     * The doubt town's twin: played to the month before `months`, its credibility (start[0]) read, its peg moved to a rate so weak the shadow sits far
+     * under it, so that month nothing breaks by chance, and played the month.
+     */
+    static Game heldTwin(String label, long seed, int months, double[] start) {
+        Game b = doubtTown(label, seed);
+        play(b, months - 1);
+        start[0] = b.getExpectations().getCredibility();
+        quietly(() -> b.repeg(b.getForeignAccounts().getShadowRate() * 1.5));
+        play(b, 1);
+        return b;
     }
 
     static void aVaultAtTheFloorBreaks() {
@@ -603,8 +627,12 @@ public class CurrencyRegimeCheck {
          * twin's repegged peg meets as well, and not the doubt this section is about.
          * The fixture is made to cause it: a seed whose break is by doubt and follows a month the city's credibility climbed in
          * (its step above nothing), the default seed first and then SEED + 1, + 2, ... - on EM1's path SEED + 11, in month 52.
+         * AND WHOSE TWIN HOLDS (EP1): the search takes the twin's conditions as it takes the city's, because the first seed that met the city's
+         * (SEED + 3, month 54, on the calendar of 1900) left the vault at US$48.3k against a floor of 38.7k and a month's deficit of 22.4k, so
+         * the twin's repegged peg broke by the vault too and its credibility fell as the city's did - no difference to read the dent in.
          */
-        Game a = null;
+        Game a = null, b = null;
+        double c0 = 0;
         long creditSeed = 0;
         int k = 0;
         final int seeds = 40;
@@ -618,9 +646,19 @@ public class CurrencyRegimeCheck {
                 months++;
                 play(candidate, 1);
             }
-            if (attempt == seeds - 1 || (candidate.getForeignAccounts().brokeThisMonth() && climbing
-                    && candidate.getForeignAccounts().getLastBreakCause() == ForeignAccounts.BreakCause.DOUBT)) {
+            boolean fits = candidate.getForeignAccounts().brokeThisMonth() && climbing
+                    && candidate.getForeignAccounts().getLastBreakCause() == ForeignAccounts.BreakCause.DOUBT;
+            Game twin = null;
+            double[] start = new double[1];
+            if (fits || attempt == seeds - 1) {
+                twin = heldTwin("xr2-credibility-b-" + attempt, tried, months, start);
+                fits = fits && !twin.getForeignAccounts().brokeThisMonth()
+                        && Math.abs(twin.getExpectations().getCredibility() - (start[0] + (Expectations.KMAX - start[0]) / Expectations.GAIN_MONTHS)) <= 1e-12;
+            }
+            if (attempt == seeds - 1 || fits) {
                 a = candidate;
+                b = twin;
+                c0 = start[0];
                 creditSeed = tried;
                 k = months;
             }
@@ -628,12 +666,6 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: the doubt city's peg broke within " + k + " months of the revaluation", a.getForeignAccounts().brokeThisMonth());
         if (a.getForeignAccounts().brokeThisMonth()) {
             double afterA = a.getExpectations().getCredibility();
-            Game b = doubtTown("xr2-credibility-b", creditSeed);
-            play(b, k - 1);
-            double c0 = b.getExpectations().getCredibility();
-            // The twin's peg is moved to a rate so weak the shadow sits far under it, so that month nothing breaks by chance.
-            quietly(() -> b.repeg(b.getForeignAccounts().getShadowRate() * 1.5));
-            play(b, 1);
             double afterB = b.getExpectations().getCredibility();
             assertTrue("fixture: the twin's peg did not break that month, and the city's did", !b.getForeignAccounts().brokeThisMonth());
             assertTrue("fixture: the twin's credibility climbed that month (the bank's gain branch, miss within tolerance)",
@@ -1139,7 +1171,7 @@ public class CurrencyRegimeCheck {
 
     /** A city pegged at 36 months with a large positive spread: the dial high, money arriving, a surplus at the peg every month. */
     static Game surplusTown(String label, ForeignAccounts.EdgePayer payer) {
-        Game g = town(label, Founding.defaults());
+        Game g = town(label, steady());
         play(g, 36);
         quietly(() -> {
             g.setCurrencyRegime(PEG);
@@ -1188,7 +1220,7 @@ public class CurrencyRegimeCheck {
         double owed = cbFx.getEdgeOwedLocal();
         out.printf("   the month after the peg: the vault bought US$%,.0fk, owed %,.0fk of local money%n", cbFx.getEdgeBoughtUsd(), owed);
         assertTrue("fixture: money arrived and the vault bought dollars at the peg, the same in both cities (a surplus at the peg), and the payer is recorded with it",
-                owed > 100 && Double.compare(owed, trFx.getEdgeOwedLocal()) == 0 && cbFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK
+                owed > 100 * PriceLevel.FACTOR && Double.compare(owed, trFx.getEdgeOwedLocal()) == 0 && cbFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK
                         && trFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.TREASURY && cbFx.getEdgeBoughtUsd() > 0);
         assertTrue("fixture: nothing was paid yet: the bill is settled the month after, and the cities are alike to the bit until it is",
                 cb.getCentralBank().getDollarsBought() == 0 && billPaid(tr) == 0 && Double.compare(cb.getCentralBank().m0(), tr.getCentralBank().m0()) == 0
@@ -1222,7 +1254,7 @@ public class CurrencyRegimeCheck {
         double issued = cb.getCentralBank().getIssued() - cb.getCentralBank().getRetired();
         close("the central bank's city: it paid the owed local price in new money: getDollarsBought() is exactly it", cb.getCentralBank().getDollarsBought(), owed, 1e-9);
         close("...and its lifetime", cb.getCentralBank().getDollarsBoughtLifetime(), owed, 1e-9);
-        close("...M0 moved by what was made less what was taken back, to the cent", cb.getCentralBank().m0() - m0Before, issued, .01);
+        close("...M0 moved by what was made less what was taken back, to the cent", cb.getCentralBank().m0() - m0Before, issued, MoneyAudit.CENT);
         assertTrue("...and the money made includes it (" + String.format("%,.1f made, %,.1f of it for the dollars", cb.getCentralBank().getIssued(), owed) + ")",
                 cb.getCentralBank().getIssued() >= owed - 1e-9);
         assertTrue("...the treasury's cash did not pay it: no line in the treasury's journal for the bill", billPaid(cb) == 0);
@@ -1240,7 +1272,7 @@ public class CurrencyRegimeCheck {
                 cb.getCentralBank().m0() - tr.getCentralBank().m0(), paid, 1e-3 * Math.max(1, paid));
         assertTrue("the audit closes in both, the settlement month (residuals " + String.format("%.4f and %.4f", cb.getLastMoneyAudit().residual, tr.getLastMoneyAudit().residual) + ")",
                 ExchangeRateCheck.auditCloses(cb) && ExchangeRateCheck.auditCloses(tr)
-                        && Math.abs(cb.getLastMoneyAudit().residual) <= .01 && Math.abs(tr.getLastMoneyAudit().residual) <= .01);
+                        && Math.abs(cb.getLastMoneyAudit().residual) <= MoneyAudit.CENT && Math.abs(tr.getLastMoneyAudit().residual) <= MoneyAudit.CENT);
 
         // The central bank's equity, once settled, is unmoved by the purchase: the treasury's city, which paid out of cash, keeps the
         // dollars in its equity by what it paid; the central bank's, which made the money, does not. Three more months of it.

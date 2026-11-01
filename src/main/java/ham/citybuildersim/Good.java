@@ -1127,6 +1127,10 @@ public enum Good {
     private final double worldImportPrice;
     private final double worldExportPrice;
     private final double baseFreight;
+    /** The three prices as the table writes them, world thousands a unit at today's (2025's) level, before PriceLevel.FACTOR (PriceLevelCheck). */
+    private final double todaysImportPrice;
+    private final double todaysExportPrice;
+    private final double todaysBaseFreight;
     private final boolean stockable;
     private final Pricing pricing;
     private final boolean taxExempt;
@@ -1153,14 +1157,29 @@ public enum Good {
         this.tonnesPerCubicMetre = tonnesPerCubicMetre;
         this.label = label;
         this.unit = unit;
-        this.worldImportPrice = worldImportPrice;
-        this.worldExportPrice = worldExportPrice;
-        this.baseFreight = baseFreight;
+        // THE FUNNEL FOR THE WORLD'S PRICES (EP1, Jerus 2026-10-30: "1900 price level"). The table's figures are today's real prices in world
+        // thousands; the three a good carries are those times PriceLevel.FACTOR (NaN stays NaN), and the base freight the table writes is
+        // three quarters of the wedge, a ratio, so it scales with the prices and keeps its share. Everything reads these three getters.
+        this.todaysImportPrice = worldImportPrice;
+        this.todaysExportPrice = worldExportPrice;
+        this.todaysBaseFreight = baseFreight;
+        this.worldImportPrice = worldImportPrice * PriceLevel.FACTOR;
+        this.worldExportPrice = worldExportPrice * PriceLevel.FACTOR;
+        this.baseFreight = baseFreight * PriceLevel.FACTOR;
         this.stockable = stockable;
         this.pricing = pricing;
         this.taxExempt = taxExempt;
         this.litresPerTonne = litresPerTonne;
     }
+
+    /** The import ceiling as the table writes it, at today's price level (before PriceLevel.FACTOR); NaN where the world sells none. */
+    public double todaysImportPrice() { return todaysImportPrice; }
+
+    /** The export floor as the table writes it, at today's price level (before PriceLevel.FACTOR); NaN where the world buys none. */
+    public double todaysExportPrice() { return todaysExportPrice; }
+
+    /** The base freight as the table writes it, at today's price level (before PriceLevel.FACTOR). */
+    public double todaysBaseFreight() { return todaysBaseFreight; }
 
     /** Litres to the tonne (0.7.76): what a litre of this weighs, inverted; NaN for a good not counted in litres. */
     public double litresPerTonne() { return litresPerTonne; }

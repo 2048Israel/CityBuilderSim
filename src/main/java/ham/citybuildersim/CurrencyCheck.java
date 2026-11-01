@@ -719,7 +719,7 @@ public class CurrencyCheck {
             boolean[] held = {
                 Math.abs((cb.m0() - m0) - made) <= tol && Math.abs(r.moneyMade() - made) <= tol,
                 Math.abs(cb.getRetired() - namedRetired) <= tol,
-                (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7) && !r.detail.contains("Defen"),
+                (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7) && !r.detail.contains("Defen"),
                 Math.abs((cb.getRemittanceDue() - remittance) - (cb.getLossCarried() - loss)
                         + cb.getRemitted() - cb.monthProfit()) <= tol,
                 // ...with what it paid in new money for the vault's dollars added back (FX8; none under Lean).

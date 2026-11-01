@@ -178,7 +178,7 @@ public class FoodProcessingCheck {
             double perHead = midBandRevenue(t) / jobsOf(t);
             double payShare = payrollOf(t) / midBandRevenue(t);
             report(t.getName() + ": revenue a worker against the Bakery's",
-                    perHead >= 12.0,
+                    perHead >= 12.0 * PriceLevel.FACTOR,   // $12k a head: today's figure, priced at the founding's level (EP1)
                     String.format("$%.1fk a head (Bakery $%.1fk), payroll %.0f%% of revenue",
                             perHead, bakeryPerHead, payShare * 100));
             report("...and its payroll is a maker's share of what it sells",

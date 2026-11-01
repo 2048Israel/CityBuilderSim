@@ -48,7 +48,7 @@
 > trade; a bid placed over value; a cash box whose money earns less than
 > dollars abroad; a market of shares inside each other's band.
 
-**Uses:** [Exchange](Exchange.md) (57), [Equity](Equity.md) (22), [ExchangeCheck](ExchangeCheck.md) (20), [HouseholdBalance](HouseholdBalance.md) (20), [Household](Household.md) (12), [OrderBook](OrderBook.md) (11), [PayTier](PayTier.md) (7), [FamilyStructure](FamilyStructure.md) (5), [Sectors](Sectors.md) (4), [OutwardInvestment](OutwardInvestment.md) (4), [Bank](Bank.md) (2)
+**Uses:** [Exchange](Exchange.md) (53), [ExchangeCheck](ExchangeCheck.md) (25), [Equity](Equity.md) (21), [HouseholdBalance](HouseholdBalance.md) (20), [Household](Household.md) (12), [OrderBook](OrderBook.md) (11), [PayTier](PayTier.md) (7), [FamilyStructure](FamilyStructure.md) (5), [Sectors](Sectors.md) (4), [OutwardInvestment](OutwardInvestment.md) (4), [Bank](Bank.md) (2)
 
 **Used by (1):** [ShortSellingCheck](ShortSellingCheck.md)
 

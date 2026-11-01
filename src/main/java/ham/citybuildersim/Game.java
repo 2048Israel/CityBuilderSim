@@ -1143,11 +1143,11 @@ public class Game {
        Founding has the others.
        ===================================================================== */
 
-    /** What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. The Standard preset's, and the default. */
-    public static final double FOUNDING_CASH = 100_000;
+    /** What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. The Standard preset's, and the default. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double FOUNDING_CASH = 100_000 * PriceLevel.FACTOR;
 
-    /** What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town of 8-10k. The Standard preset's, and the default. */
-    public static final double FOUNDING_RESERVE_USD = 25_000;
+    /** What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town of 8-10k. The Standard preset's, and the default. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double FOUNDING_RESERVE_USD = 25_000 * PriceLevel.FACTOR;
 
     /** For this many months the screens say where the vault's first dollars came from; after that they are the city's own. */
     public static final int FOUNDERS_NOTE_MONTHS = 120;
@@ -1183,7 +1183,9 @@ public class Game {
             try (WorldData data = WorldData.open(file)) {
                 nations = new Nations(data, founding.getPath(), founding.getPathSeed());
             } catch (IOException | IllegalArgumentException e) {
-                System.out.println("The world file " + file + " would not open: " + e.getMessage());
+                // EP1: the file begins in 2000 and the city in 1900; the reader supplies the years between (WorldData), so this is a file that is not whole, or not this build's. Said plainly, since nothing else shows it.
+                System.out.println("The world file " + file + " would not open: " + e.getMessage()
+                        + ". The city plays on without nations: no world market, no map dots, the goods at their literals.");
             }
         }
         return nations;
@@ -1452,7 +1454,7 @@ public class Game {
             in HistorySave (policyUSD ... policyCHF).
 
        A moneys object behind the month - a load of a save that had none, a file
-       that came late - is caught up from January 2000 with no terms of trade,
+       that came late - is caught up from the first January (Nations.FIRST_YEAR) with no terms of trade,
        and a line says so; the policy rates behind it are stepped to it month by
        month, as they are in a load.
        ===================================================================== */
@@ -1503,7 +1505,7 @@ public class Game {
         }
     }
 
-    /** The eight central banks' policy rates over these moneys, standing in January 2000; null, and a line, if they will not build (the city then reads the constant world rate). */
+    /** The eight central banks' policy rates over these moneys, standing in the first January (Nations.FIRST_YEAR); null, and a line, if they will not build (the city then reads the constant world rate). */
     private PolicyRates buildPolicyRates(WorldMoneys moneys) {
         if (moneys == null) return null;
         try {
@@ -1536,7 +1538,7 @@ public class Game {
     /**
      * Steps the moneys to the month the city is in (strikeTheWorldMarket(), after the January solve): each month in turn, handing the market's
      * terms of trade in the January it solved and null in every other month. The founding's solve is in February (the city's first month is
-     * January 2000, its clock turns before the first month runs) while the moneys stand in January 2000: its terms of trade are only recorded, as
+     * January of Nations.FIRST_YEAR, its clock turns before the first month runs) while the moneys stand in that January: its terms of trade are only recorded, as
      * last year's for the next January's change. A moneys behind by more than a month is caught up with no terms of trade and a line says so. In
      * a January it solved, the city's own terms of trade go to the D$ as well.
      */
@@ -1766,8 +1768,8 @@ public class Game {
     }
 
     /**
-     * A load's half of the moneys (restoreWorldMarket()): the saved state put back where it fits this world file, else the moneys stand at January
-     * 2000 and are caught up to the city's month with no terms of trade, a line saying so; a state saved in an earlier month is stepped on to this one.
+     * A load's half of the moneys (restoreWorldMarket()): the saved state put back where it fits this world file, else the moneys stand at the first
+     * January (Nations.FIRST_YEAR) and are caught up to the city's month with no terms of trade, a line saying so; a state saved in an earlier month is stepped on to this one.
      */
     private void restoreWorldMoneys(DataSave loaded) {
         WorldMoneys moneys = worldMoneys;
@@ -1779,18 +1781,18 @@ public class Game {
                 moneys.restore(saved);
                 restored = true;
             } catch (IllegalArgumentException e) {
-                System.out.println("The saved world moneys would not restore on this world file (" + e.getMessage() + "): they start again from January 2000.");
+                System.out.println("The saved world moneys would not restore on this world file (" + e.getMessage() + "): they start again from January " + Nations.FIRST_YEAR + ".");
             }
         }
         int target = WorldMoneys.monthIndex(month);
         if (moneys.month() >= target) return;
-        if (!restored && saved == null) System.out.println("The save has no world moneys: they start from January 2000 and catch up to the city's month with no terms of trade.");
+        if (!restored && saved == null) System.out.println("The save has no world moneys: they start from January " + Nations.FIRST_YEAR + " and catch up to the city's month with no terms of trade.");
         while (moneys.month() < target) moneys.step(moneys.month() + 1, null);
     }
 
     /**
      * A load's half of the policy rates (restoreWorldMarket(), after the moneys): the saved state put back where it fits, else the rates are rebuilt by
-     * stepping from January 2000 to the city's month, a line saying so; a state saved in an earlier month is stepped on to this one. Then the US's
+     * stepping from the first January (Nations.FIRST_YEAR) to the city's month, a line saying so; a state saved in an earlier month is stepped on to this one. Then the US's
      * rate is handed to the city, before anything reads it.
      */
     private void restorePolicyRates(DataSave loaded) {
@@ -1806,10 +1808,10 @@ public class Game {
                 rates.restore(saved);
                 restored = true;
             } catch (IllegalArgumentException e) {
-                System.out.println("The saved policy rates would not restore (" + e.getMessage() + "): they are rebuilt from January 2000.");
+                System.out.println("The saved policy rates would not restore (" + e.getMessage() + "): they are rebuilt from January " + Nations.FIRST_YEAR + ".");
             }
         } else {
-            System.out.println("The save has no policy rates: they are rebuilt from January 2000 to the city's month.");
+            System.out.println("The save has no policy rates: they are rebuilt from January " + Nations.FIRST_YEAR + " to the city's month.");
         }
         if (!restored) {
             rates = buildPolicyRates(worldMoneys);
@@ -1823,8 +1825,8 @@ public class Game {
        THE REAL US DOLLAR (WN4, D29; RealDollar, docs/studies/spec-exchange-rates.md 3.9)
 
        Two US dollars: the in-game one, whose prices follow the US's path
-       (WorldEconomy), and the real one, constant 2015 dollars, which a
-       founding game dollar counts as one of. Three figures for comparison,
+       (WorldEconomy), and the real one, constant 2015 dollars, of which a
+       founding game dollar is RealDollar.BRIDGE worth (EP1). Three figures for comparison,
        and NOTHING IN THE MODEL READS THEM (WN6 shows them): the D$ per real
        US$, the city's GDP in real US$, and the real effective rate. All in
        the city's money of today - the founding's rate is OPENING_RATE
@@ -1850,7 +1852,7 @@ public class Game {
     /**
      * The D$'s real effective rate, 100 at founding (RealDollar.realEffectiveRate): the weights are the city's trade with each nation over the last
      * finished year, else the year to date, else the US alone. Each partner's money is the one its nation uses now, against that money's rate in
-     * January 2000; the US's prices are the in-game US$'s own (the world's level, shock and all), a partner's its nation's on the path. With no
+     * the first January (Nations.FIRST_YEAR); the US's prices are the in-game US$'s own (the world's level, shock and all), a partner's its nation's on the path. With no
      * world's moneys it is the D$ against the US$ alone, the US$'s prices the world's level.
      */
     public double realEffectiveRate() {
@@ -2811,8 +2813,8 @@ public class Game {
                 LandParcel cheapest = null;
                 for (LandParcel p : market.getListing()) {
                     if (LandMarket.buildableSqFt(p) < need.drySqFt() || !LandMarket.bareGround(p)) continue;
-                    if (cheapest == null || market.priceWithPrepUsd(p) < market.priceWithPrepUsd(cheapest)
-                            || (market.priceWithPrepUsd(p) == market.priceWithPrepUsd(cheapest) && market.nearer(p, cheapest))) cheapest = p;
+                    if (cheapest == null || LandMarket.beats(market.priceWithPrepUsd(cheapest), market.priceWithPrepUsd(p))
+                            || (LandMarket.tied(market.priceWithPrepUsd(p), market.priceWithPrepUsd(cheapest)) && market.nearer(p, cheapest))) cheapest = p;
                 }
                 if (cheapest != null) return cheapest;
                 return bestOffer(LandNeed.room());
@@ -2825,8 +2827,8 @@ public class Game {
                 boolean byBuildable = LandMarket.anyBuildable(running);
                 LandParcel best = null;
                 for (LandParcel p : running) {
-                    if (best == null || market.rankPerUsd(p, byBuildable) > market.rankPerUsd(best, byBuildable)
-                            || (market.rankPerUsd(p, byBuildable) == market.rankPerUsd(best, byBuildable) && market.nearer(p, best))) best = p;
+                    if (best == null || LandMarket.beats(market.rankPerUsd(p, byBuildable), market.rankPerUsd(best, byBuildable))
+                            || (LandMarket.tied(market.rankPerUsd(p, byBuildable), market.rankPerUsd(best, byBuildable)) && market.nearer(p, best))) best = p;
                 }
                 return best != null ? best : market.bestValue();
             }
@@ -5879,8 +5881,10 @@ public class Game {
             decided exactly as it always was, whatever shape the test has;
          2. below them, doubling down from the last slice that failed - one
             less, then two, four, eight - until one passes or one is left;
-         3. then halving between that one and the last that failed.
-       The bond desk is asked at most COUNTDOWN_SLICES + 2 x 31 + 1 times an
+         3. then halving between that one and the last that failed;
+         4. then the first slice the till does not pay for, if the doubling
+            stepped over it, and halving above it (OS1, below).
+       The bond desk is asked at most COUNTDOWN_SLICES + 3 x 31 + 2 times an
        order, whatever its size (deskCallsMost()).
 
        WHY NOT HALVING FROM THE START. Halving assumes that if a slice fails,
@@ -5900,7 +5904,14 @@ public class Game {
        passes at some slice, fails at a smaller one and passes again at a
        smaller one still. In the runs measured at today's sizes - the long
        run of OrderSearchCheck, and Jerus's city and city2400 as they are -
-       no order was trimmed into the search at all. OrderSearchCheck holds
+       no order was trimmed into the search at all. EP1's path at the
+       factor met such a window (OS1): a slice the till
+       pays for is judged at the sector's own rate and the first that
+       borrows at a bond's cheaper one, so slices that borrow pass above
+       the till's that fail (month 1226: 1 to 4 failing, 5 to 10 passing on a
+       bond, 11 to 94 failing past the bank's room), a window of a few slices
+       the doubling stepped over; step 4 asks the first slice that borrows
+       and halves above it. OrderSearchCheck holds
        the two to the same answer over that run, in a copy a thousand times
        over whose trims do reach the search, and on tests of its own;
        ScaleCheck holds the bond desk to deskCallsMost() at 5 and 10
@@ -5962,10 +5973,10 @@ public class Game {
     /** The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. */
     public static final int PRIME_SCAN_SLICES = 4096;
 
-    /** The most times an order of this many may ask the bond desk: the countdown's slices, then doubling down and halving, each at most once a bit of the order. */
+    /** The most times an order of this many may ask the bond desk: the countdown's slices, then doubling down, halving and halving again above the first slice that borrows, each at most once a bit of the order, and that slice itself (OS1). */
     public static int deskCallsMost(int quantity) {
         int bits = 32 - Integer.numberOfLeadingZeros(Math.max(1, quantity));
-        return COUNTDOWN_SLICES + 2 * bits + 1;
+        return COUNTDOWN_SLICES + 3 * bits + 2;
     }
 
     /**
@@ -5984,36 +5995,72 @@ public class Game {
     /** The largest slice of the order that carries its interest - see THE LARGEST SLICE, WITHOUT COUNTING TO IT. */
     private Afford largestSliceThatCarries(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
         Slices test = new Slices(decision, cash, perUnitProfit);
-        int pass = largestSlice(decision.quantity, test::passes);
+        int pass = largestSlice(decision.quantity, test::passes, () -> test.firstThatBorrows(decision.quantity));
         if (pass == 0) test.askPrimeOfTheRest(decision.quantity);
         return test.result(pass);
+    }
+
+    /** largestSlice() for a test with no first slice that borrows to look at: the countdown's slices, doubling down and halving. */
+    static int largestSlice(int quantity, java.util.function.IntPredicate passes) {
+        return largestSlice(quantity, passes, () -> 0);
     }
 
     /**
      * The largest n from 1 to quantity that passes, 0 for none, found as THE
      * LARGEST SLICE, WITHOUT COUNTING TO IT says: the countdown's first
-     * COUNTDOWN_SLICES, then doubling down, then halving. Asks `passes` at
+     * COUNTDOWN_SLICES, then doubling down, then halving - and, when the
+     * caller names `borrowsFrom`, the first slice the till does not pay for (asked
+     * of it only when the counted slices all fail), that slice and the halving above it (OS1). WHY: the doubling steps
+     * over the slices a bond opens. A slice the till pays for is judged at
+     * the sector's own rate, the first that borrows may be judged at a
+     * bond's cheaper one, so the test can fail at every slice the doubling
+     * asked (the till's, then the slices past the bank's room) and pass at a
+     * few between them: EP1's path met it at month 1226, Retail's 94
+     * Convenience Stores failing at 1 to 4 (the till's) and 11 to 94 (past the
+     * room), passing at 5 to 10 on a bond, which the countdown found and the
+     * doubling, asking 78, 76, 72, 64, 48, 16 and 1, did not. Asks `passes` at
      * most deskCallsMost(quantity) times. OrderSearchCheck holds it to the
-     * countdown on every boundary of a run from one.
+     * countdown on every boundary of a run from one, and with a window a bond
+     * opens at the first slice that borrows.
      */
-    static int largestSlice(int quantity, java.util.function.IntPredicate passes) {
+    static int largestSlice(int quantity, java.util.function.IntPredicate passes, java.util.function.IntSupplier borrowsFrom) {
+        int[] failed = new int[2 * 32 + 2];   // the slices asked below the counted ones that failed, for the window's wall
+        int failures = 0;
         int fail = Math.max(1, quantity);   // the smallest slice known to fail, once one has
         // 1. The countdown itself, for its first COUNTDOWN_SLICES slices.
         for (int n = quantity; n >= 1 && n > quantity - COUNTDOWN_SLICES; n--) {
             if (passes.test(n)) return n;
             fail = n;
         }
+        failed[failures++] = fail;
         // 2. Doubling down from the last that failed...
         int pass = 0;              // the largest slice known to pass; 0 for none
         for (long step = 1; fail > 1; step *= 2) {
             int n = (int) Math.max(1, fail - step);
             if (passes.test(n)) { pass = n; break; }
             fail = n;
+            failed[failures++] = n;
         }
         // 3. ...then halving between the two.
         while (fail - pass > 1) {
             int mid = (int) (((long) pass + fail) >>> 1);
-            if (passes.test(mid)) pass = mid; else fail = mid;
+            if (passes.test(mid)) pass = mid; else { fail = mid; failed[failures++] = mid; }
+        }
+        // 4. The first slice that borrows, if the doubling stepped over it (OS1): where a bond's cheaper rate opens a window
+        //    above slices that fail, and halving above it up to the lowest slice known to fail over it.
+        int first = quantity > COUNTDOWN_SLICES ? borrowsFrom.getAsInt() : 0;   // asked of the till only when the counted slices all failed
+        if (first > pass && first <= quantity - COUNTDOWN_SLICES) {
+            boolean asked = false;
+            for (int i = 0; i < failures; i++) asked |= failed[i] == first;
+            if (!asked && passes.test(first)) {
+                pass = first;
+                int wall = Integer.MAX_VALUE;
+                for (int i = 0; i < failures; i++) if (failed[i] > pass && failed[i] < wall) wall = failed[i];
+                while (wall - pass > 1) {
+                    int mid = (int) (((long) pass + wall) >>> 1);
+                    if (passes.test(mid)) pass = mid; else wall = mid;
+                }
+            }
         }
         return pass;
     }
@@ -6033,6 +6080,12 @@ public class Game {
             this.cash = cash;
             this.perUnitProfit = perUnitProfit;
             this.banned = credit.isBorrowingBlocked(decision.sector);
+        }
+
+        /** The first slice the till does not pay for, which largestSlice() looks at (OS1): one more than the largest whose cost the till covers, quantity + 1 when it covers the order, 0 under a ban (no slice that borrows is built). Asks no bond desk. */
+        int firstThatBorrows(int q) {
+            if (banned) return 0;
+            return largestSlice(q, n -> businessInvestment.getCostOf(decision.template, n) <= cash) + 1;
         }
 
         /** Whether n of them carry the interest on their whole cost (0.7.113); what failed at prime and the rate at the whole order are kept for the refusal. */
@@ -10261,9 +10314,17 @@ public class Game {
         return new DebtQuote(instrument, duration, 0, before, before, 0, 0, 0, 0, null, 0);
     }
 
-    /** Money to the cent, as every proceeds figure has been. */
+    /**
+     * How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level
+     * (PriceLevel.FACTOR) at the founding's, so a proceeds figure is rounded to the same share of itself in 1900 as it was (EP1: the granule was a
+     * hundredth of a unit, a fixed sum, and a 1900 sale of the same real size lost thirty-eight times as much of itself to it - the played city of
+     * MapCheck drifted off the one at today's prices by it, month sixty).
+     */
+    private static final double CENTS_PER_UNIT = 100 / PriceLevel.FACTOR;
+
+    /** Money to the cent, as every proceeds figure has been (the cent of today's money, at the founding's price level). */
     private static double cents(double v) {
-        return Math.round(v * 100) / 100.0;
+        return Math.round(v * CENTS_PER_UNIT) / CENTS_PER_UNIT;
     }
 
     /**
@@ -10310,7 +10371,10 @@ public class Game {
             if (covers(q, cash)) { face = probe; quote = q; step *= 2; } else notCovering = probe;
         }
         while (face - notCovering > granule * 1.5) {
-            double mid = notCovering + granule * Math.floor((face - notCovering) / granule / 2);
+            // Whole granules between the two, however the floating point rounded them: a granule that is not exactly representable (EP1: a
+            // hundred of 1900's thousands, 2.588...) leaves two faces 1.9999999999999998 granules apart, whose half floors to 0, a mid that is
+            // notCovering again, and a bisection that never ends (NewGameCheck's Insane founding ran 26 minutes on it).
+            double mid = notCovering + granule * Math.max(1, Math.floor(Math.rint((face - notCovering) / granule) / 2));
             DebtQuote q = at.apply(mid);
             if (covers(q, cash)) { face = mid; quote = q; } else notCovering = mid;
         }
@@ -11032,7 +11096,7 @@ public class Game {
                 YieldCurve world = selfPricedWorldCurve(code, face, duration, c ->
                         inMoney(new ShortTermTBill(face, duration, month, true), code));
                 double gross = face * world.factor(duration);
-                double received = Math.round((gross - issueCostIn(code, face)) * 100) / 100.0;
+                double received = cents(gross - issueCostIn(code, face));
                 yield new DebtQuote("Note", duration, requested, world.zero(duration), before,
                         face, received, 0, face - received, null, 0);
             }
@@ -11050,7 +11114,7 @@ public class Game {
                 double coupon = dollarCoupon(world, n);
                 double gross = face * world.pv(Auction.bulletPer100(coupon, n)) / 100;
                 double rate = new LongTermBond(face, n, month, coupon).getYieldToMaturity(gross);
-                double received = Math.round((gross - issueCostIn(code, face)) * 100) / 100.0;
+                double received = cents(gross - issueCostIn(code, face));
                 double monthly = (face * coupon) / 12;
                 yield new DebtQuote("Term", duration, requested, rate, before,
                         face, received, monthly,
@@ -11265,8 +11329,8 @@ public class Game {
        costs are the existing ones.
        ----------------------------------------------------------------------- */
 
-    /** The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). */
-    public static final double BUILD_NOTE_GRANULE = 1000;
+    /** The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double BUILD_NOTE_GRANULE = 1000 * PriceLevel.FACTOR;
 
     /**
      * An amortizing bond whose CASH covers cashNeeded: the quote at the face
@@ -13123,8 +13187,8 @@ public class Game {
      */
     public static final int BUILD_BOND_YEARS = 20;
 
-    /** The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. */
-    public static final double BUILD_BOND_GRANULE = 100;
+    /** The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double BUILD_BOND_GRANULE = 100 * PriceLevel.FACTOR;
 
     /**
      * Bond counsel, rating and printing. Payable however small the deal is.
@@ -13138,8 +13202,10 @@ public class Game {
      * CapitalFlows.MIN_STOCK; it is not currently large enough to move a
      * measured trajectory, and it would have been the moment somebody reformed
      * twice.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double FIXED_ISSUE_COST = 12;
+    public static final double FIXED_ISSUE_COST = 12 * PriceLevel.FACTOR;
 
     /** The fee in today's money: founding / unit, at the expected price level since 0.7.42 (THE ANCHOR, beside restrikeMoneyConstants()). See FIXED_ISSUE_COST. */
     private double issuanceFee() {
@@ -13186,8 +13252,11 @@ public class Game {
      */
     public double minimumIssueSize() {
         double annualRevenue = economyManager.getTaxIncome() * 12;
-        return Math.max(50, annualRevenue * .05);
+        return Math.max(MINIMUM_ISSUE_FLOOR, annualRevenue * .05);
     }
+
+    /** The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1): a flat $50k at 1900's prices would be most of a young city's year. */
+    public static final double MINIMUM_ISSUE_FLOOR = 50 * PriceLevel.FACTOR;
 
     /** ...in US dollars at today's rate (0.7.40): Finances' "the minimum" on the ask abroad, which is asked in dollars. */
     public double minimumIssueSizeUsd() {

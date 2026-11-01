@@ -219,7 +219,7 @@ public class LabourCheck {
         Game city = new Game(GameFiles.scratch("labourcheck"));
         quietly(() -> {
             city.newGame();
-            city.getGovernmentInvestor().spend(-50_000_000);
+            city.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             city.getLandManager().setOwnedSqFt(
                     city.getLandManager().getOwnedSqFt() + 400_000_000);
             city.buildStack(t(city, "Low-Rise Apartments"), 60, true);
@@ -301,7 +301,7 @@ public class LabourCheck {
         Game lived = new Game(files);
         quietly(() -> {
             lived.newGame();
-            lived.getGovernmentInvestor().spend(-20_000_000);
+            lived.getGovernmentInvestor().spend(-20_000_000 * PriceLevel.FACTOR);
             lived.getLandManager().setOwnedSqFt(
                     lived.getLandManager().getOwnedSqFt() + 100_000_000);
             lived.buildStack(t(lived, "Low-Rise Apartments"), 30, true);
@@ -435,7 +435,7 @@ public class LabourCheck {
         Game growing = new Game(GameFiles.scratch("labourcheck"));
         quietly(() -> {
             growing.newGame();
-            growing.getGovernmentInvestor().spend(-20_000_000);
+            growing.getGovernmentInvestor().spend(-20_000_000 * PriceLevel.FACTOR);
             growing.getLandManager().setOwnedSqFt(
                     growing.getLandManager().getOwnedSqFt() + 100_000_000);
             growing.buildStack(t(growing, "Low-Rise Apartments"), 40, true);
@@ -535,7 +535,7 @@ public class LabourCheck {
         Game short_ = new Game(GameFiles.scratch("labourcheck"));
         quietly(() -> {
             short_.newGame();
-            short_.getGovernmentInvestor().spend(-50_000_000);
+            short_.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             short_.getLandManager().setOwnedSqFt(
                     short_.getLandManager().getOwnedSqFt() + 100_000_000);
             short_.buildStack(t(short_, "Low-Rise Apartments"), 40, true);
@@ -646,7 +646,7 @@ public class LabourCheck {
         Game buses = new Game(GameFiles.scratch("labourcheck-buses"));
         quietly(() -> {
             buses.newGame();
-            buses.getGovernmentInvestor().spend(-50_000_000);
+            buses.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             buses.getLandManager().setOwnedSqFt(buses.getLandManager().getOwnedSqFt() + 100_000_000);
             buses.buildStack(t(buses, "Low-Rise Apartments"), 10, true);
             buses.buildStack(t(buses, "Bus Network"), 8, true);
@@ -844,7 +844,7 @@ public class LabourCheck {
              * assertions below read as they were written.
              */
             for (String sector : Sectors.KEYS) city.getBusinessInvestment().holdSector(sector);
-            city.getGovernmentInvestor().spend(-2_000_000);
+            city.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 200_000_000L);
             LongPlaytest.build(city, "House", 200);
             LongPlaytest.build(city, "Convenience Store", 10);
@@ -1003,7 +1003,7 @@ public class LabourCheck {
         Game g = new Game(GameFiles.scratch("labourcheck-payroll"));
         quietly(() -> {
             g.newGame();
-            g.getGovernmentInvestor().spend(-50_000_000);
+            g.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000);
             g.buildStack(t(g, "Low-Rise Apartments"), 60, true);
             g.buildStack(t(g, "General Hospital"), 2, true);
@@ -1147,7 +1147,7 @@ public class LabourCheck {
 
         quietly(() -> {
             // ...the city paying for it, on ground it is given.
-            town.getGovernmentInvestor().spend(-50_000_000);
+            town.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 400_000_000);
             town.buildStack(t(town, "Low-Rise Apartments"), 400, false);
             town.simulateMonths(1);

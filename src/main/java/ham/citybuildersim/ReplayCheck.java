@@ -349,8 +349,9 @@ public class ReplayCheck {
             final double v = m;
             longer.appendMonth(m, name -> v);
         }
-        longer.setTradeByPartner(List.of(new PartnerTrade.Table(2001, null), new PartnerTrade.Table(2002, null),
-                new PartnerTrade.Table(2005, null), new PartnerTrade.Table(2010, null)));
+        int y0 = CityCalendar.EPOCH_YEAR;   // the calendar's first year: the tables are its 2nd, 3rd, 6th and 11th (EP1)
+        longer.setTradeByPartner(List.of(new PartnerTrade.Table(y0 + 1, null), new PartnerTrade.Table(y0 + 2, null),
+                new PartnerTrade.Table(y0 + 5, null), new PartnerTrade.Table(y0 + 10, null)));
         helper("fixture: a history past MONTHLY_KEPT has its oldest five years folded, and all its months", longer.yearlyPoints() == 5 && longer.monthsLived() == total);
         HistorySave among = longer.cutAt(12 * 5 + 3);
         double[] gdpAll = longer.raw("gdp"), gdpAmong = among.raw("gdp");
@@ -358,12 +359,12 @@ public class ReplayCheck {
         for (int i = 0; prefix && i < gdpAmong.length; i++) prefix = Double.compare(gdpAmong[i], gdpAll[i]) == 0;
         helper("a cut among the months after the folded years: the five years and three months, every series their prefix",
                 among.yearlyPoints() == 5 && among.monthsLived() == 63 && among.getMonth().get(among.months() - 1) == 63 && prefix);
-        helper("...the finished years of trade are those before the month's year: 2001 and 2002 for a cut in 2005",
-                among.tradeYears() == 2 && among.getTradeByPartner().get(1).year() == 2002 && longer.tradeYears() == 4);
+        helper("...the finished years of trade are those before the month's year: " + (y0 + 1) + " and " + (y0 + 2) + " for a cut in " + (y0 + 5),
+                among.tradeYears() == 2 && among.getTradeByPartner().get(1).year() == y0 + 2 && longer.tradeYears() == 4);
         HistorySave inside = longer.cutAt(30);
-        helper("a cut inside a folded year drops that year whole: month 30 keeps the two years that ended by it, 2000 and 2001",
+        helper("a cut inside a folded year drops that year whole: month 30 keeps the two years that ended by it, " + y0 + " and " + (y0 + 1),
                 inside.months() == 2 && inside.yearlyPoints() == 2 && inside.monthsLived() == 24 && inside.getMonth().get(1) == 24
-                        && inside.raw("cash").length == 2 && inside.tradeYears() == 1 && inside.getTradeByPartner().get(0).year() == 2001);
+                        && inside.raw("cash").length == 2 && inside.tradeYears() == 1 && inside.getTradeByPartner().get(0).year() == y0 + 1);
         HistorySave newest = longer.cutAt(total - 10);
         helper("a cut among the newest months drops them: ten fewer entries, the folded years as they were, every series as long as the axis",
                 newest.yearlyPoints() == longer.yearlyPoints() && newest.months() == longer.months() - 10 && newest.raw("cash").length == newest.months()

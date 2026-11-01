@@ -64,7 +64,7 @@
 >   6. ONE SEED, ONE PATH. The same seed and months are the same rates to the
 > ... (45 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (156), [LongPlaytest](LongPlaytest.md) (35), [CurrencyCheck](CurrencyCheck.md) (29), [PriceIndex](PriceIndex.md) (27), [Game](Game.md) (23), [WorldMoneys](WorldMoneys.md) (12), [ForeignCheck](ForeignCheck.md) (7), [Founding](Founding.md) (5), [GameFiles](GameFiles.md) (2), [TreasuryFund](TreasuryFund.md) (2), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (156), [LongPlaytest](LongPlaytest.md) (35), [CurrencyCheck](CurrencyCheck.md) (29), [PriceIndex](PriceIndex.md) (27), [Game](Game.md) (23), [PriceLevel](PriceLevel.md) (12), [WorldMoneys](WorldMoneys.md) (12), [ForeignCheck](ForeignCheck.md) (7), [Founding](Founding.md) (5), [GameFiles](GameFiles.md) (2), [TreasuryFund](TreasuryFund.md) (2), [MoneyAudit](MoneyAudit.md) (2)
 
 **Used by (1):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md)
 
@@ -93,7 +93,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 144 | `ExchangeRateCheck.TRADE` | `3_000, GDP = 6_000` | The trade a quiet currency settles on, each way, and the output it is weighed against: openness one. |
+| 144 | `ExchangeRateCheck.TRADE` | `3_000 * PriceLevel.FACTOR, GDP = 6_000 * PriceLevel.FACTOR` | The trade a quiet currency settles on, each way, and the output it is weighed against: openness one. |
 | 147 | `ExchangeRateCheck.SEED` | `20_261_021L` | The market's seed in the sections that draw one; the others are quiet. |
 | 150 | `ExchangeRateCheck.OLD_PULL` | `.004` | The old pull toward parity, REVERSION, retired by XR1 (WHAT XR1 RETIRED): a month's share of the distance it closed. |
 | 198 | `ExchangeRateCheck.FEES` | `{ 1, 1, 1, 1 }` | The four fees' prices a fixture's basket is fed: all at 1. |

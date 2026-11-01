@@ -65,9 +65,10 @@ public class BuildingManager {
      * against materials again, and both halves mean what they say.
      *
      * Only the fields are in thousands: this constant is $18,000 written as
-     * the game writes money.
+     * the game writes money, at today's price level; it is read from Good.MATERIALS
+     * (whose constructor prices it at the founding's, EP1) and not written a second time.
      */
-    public static final double MATERIALS_WORLD_PRICE = 18;
+    public static final double MATERIALS_WORLD_PRICE = Good.MATERIALS.worldImportPrice();
     private double materialsCost = MATERIALS_WORLD_PRICE;
 
     /* =====================================================================
@@ -292,7 +293,10 @@ public class BuildingManager {
      * there is always a working set of buildings even with no data file at all.
      */
     public void initializeBuiltInTemplates() {
-        
+
+        // Every figure below is today's, as the data file writes it; the set is priced at the founding's level once, after the last is added (EP1).
+        final int firstBuiltIn = templates.size();
+
         //Residential Buildings
         /*
          * HOUSING IS CHEAP TO BUILD, AND THAT IS NOT A BALANCE TWEAK.
@@ -4849,6 +4853,7 @@ public class BuildingManager {
                 .setSince(1900)
                 .setId(147));
         //add more buildings; next Building ID is 62
+        for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 
     public void finalUpdateBuildings() {

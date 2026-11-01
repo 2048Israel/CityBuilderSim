@@ -201,10 +201,24 @@ public class TreasuryCheck {
         throw new IllegalStateException("no template named " + name);
     }
 
+    /**
+     * A hands-off city is one whose player presses nothing, and the bank's button is the one thing newGame() leaves pressed for him: it sets the
+     * treasury to resolve a failed bank the month it fails (TreasuryFund.RescueMode.AUTOMATIC, 0.7.14), which puts capital into the bank - "Resolved the
+     * bank for its shares" in the journal, 927k in the default city at month 93 - and the premise of 5 is that none of those happen on their own. A
+     * default city's bank does fail by itself in a fair share of hands-off runs of 120 months (EP1, measured on twelve Random seeds of the 120 months
+     * each: four failed on this path, three on main after LD1, none of four before LD1), so the premise cannot rest on its not failing; the setting is put
+     * back to the button, the bare constructor city's, and the bank that fails waits, frozen, as the player has not come. The bridge's identity is the
+     * same in either (the journal's line named the whole of the 927k: "Not accounted for" was nothing).
+     */
+    static void nobodyPressesTheBankButton(Game g) {
+        g.setRescueMode(TreasuryFund.RescueMode.BUTTON);
+    }
+
     public static void main(String[] args) {
 
         Game game = new Game(GameFiles.scratch("treasury-check"));
         game.newGame();
+        nobodyPressesTheBankButton(game);
 
         System.out.println("Playing 120 months and auditing the treasury bridge.");
 
@@ -268,6 +282,7 @@ public class TreasuryCheck {
 
         Game funded = new Game(GameFiles.scratch("treasury-subsidy"));
         funded.newGame();
+        nobodyPressesTheBankButton(funded);
         for (String sector : Sectors.KEYS) {
             funded.setAutoSubsidised(sector, true);
         }
@@ -402,20 +417,20 @@ public class TreasuryCheck {
         // the gift went: a movement of the treasury's between presses that is
         // neither a budget line nor paper, and so the journal's, as the
         // reserves bought and sold below are.
-        double capitalPut = opened.fundPayIn(5_000);
-        double reservesBought = opened.buyForeignCurrency(2_000) + opened.buyForeignCurrency(1_000);
-        double reservesSold = opened.sellForeignCurrency(500);
+        double capitalPut = opened.fundPayIn(5_000 * PriceLevel.FACTOR);
+        double reservesBought = opened.buyForeignCurrency(2_000 * PriceLevel.FACTOR) + opened.buyForeignCurrency(1_000 * PriceLevel.FACTOR);
+        double reservesSold = opened.sellForeignCurrency(500 * PriceLevel.FACTOR);
         check("fixture: 5,000 went into the city's fund and reserves were bought twice and sold once",
-                capitalPut == 5_000 && reservesBought == 3_000 && reservesSold == 500);
+                capitalPut == 5_000 * PriceLevel.FACTOR && PriceLevelCheck.sameMoney(reservesBought, 3_000 * PriceLevel.FACTOR) && reservesSold == 500 * PriceLevel.FACTOR);
 
         // Two issues, so the raised row has something to carry and the
         // buyback has a bond to retire that is not the one paying the coupon.
         double raisedForReal = 0;
         double cashBeforeNote = opened.getCash();
-        opened.handleTBillLogic(10_000, 6, 1000);
+        opened.handleTBillLogic(10_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR);
         raisedForReal += opened.getCash() - cashBeforeNote;
         double cashBeforeBond = opened.getCash();
-        opened.handleMediumBondLogic(20_000, 10, 1000);
+        opened.handleMediumBondLogic(20_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
         raisedForReal += opened.getCash() - cashBeforeBond;
         check("fixture: the city issued a note and a serial bond", raisedForReal > 0);
 
@@ -508,7 +523,7 @@ public class TreasuryCheck {
         // counter has.
         double lateReserves = opened.buyForeignCurrency(700);
         double cashBeforeLateNote = opened.getCash();
-        opened.handleTBillLogic(5_000, 6, 1000);
+        opened.handleTBillLogic(5_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR);
         double lateRaised = opened.getCash() - cashBeforeLateNote;
         opened.saveGame(2);
         Game backAgain = new Game(opened.getGameFiles());
@@ -627,7 +642,7 @@ public class TreasuryCheck {
         System.out.printf("   month %d: EARNED %,.2fk -> %,.2fk on five points of wage tax; the budget %,.2fk%n",
                 m, earnedBefore, earnedAfter, moved[3]);
         check("fixture: five points more wage tax moves EARNED with no month played",
-                earnedAfter > earnedBefore + 1);
+                earnedAfter > earnedBefore + 1 * PriceLevel.FACTOR);   // a thousand of today's money, at the founding's level (EP1)
         nearOf("...and not the budget it walks to", m, moved[3], still[3], moved[4]);
         nearOf("...so the dials leave exactly the move", m, moved[2], -(earnedAfter - earnedBefore), moved[4]);
         check("...and reading EARNED struck nothing into the month's wage tax",
@@ -811,9 +826,9 @@ public class TreasuryCheck {
         byHand.setRolloverMode(Rollover.Mode.MANUAL);
         Game[] three = { same, bills, byHand };
         for (Game g : three) for (int i = 0; i < 12; i++) press(g);
-        for (Game g : three) quietly(() -> g.handleTBillLogic(20_000, 3, Game.BUILD_NOTE_GRANULE));
+        for (Game g : three) quietly(() -> g.handleTBillLogic(20_000 * PriceLevel.FACTOR, 3, Game.BUILD_NOTE_GRANULE));
         for (Game g : three) press(g);
-        for (Game g : three) quietly(() -> g.handleTBillLogic(20_000, 3, Game.BUILD_NOTE_GRANULE));
+        for (Game g : three) quietly(() -> g.handleTBillLogic(20_000 * PriceLevel.FACTOR, 3, Game.BUILD_NOTE_GRANULE));
         for (Game g : three) press(g);
 
         int m = same.getMonth();
@@ -911,12 +926,12 @@ public class TreasuryCheck {
         roads.getLandManager().setOwnedSqFt(roads.getLandManager().getOwnedSqFt() + road.getLandSqFt() * 10);
         check("fixture: it builds five roads this year", roads.buildStack(road, 5, false) == Game.BuildResult.SUCCESS);
         check("fixture: the window abroad is open while it owes nothing abroad", roads.foreignWindowOpen());
-        quietly(() -> roads.handleForeignLogic("Note", 2_000, 6, Game.BUILD_NOTE_GRANULE, false));
+        quietly(() -> roads.handleForeignLogic("Note", 2_000 * PriceLevel.FACTOR, 6, Game.BUILD_NOTE_GRANULE, false));
         check("fixture: ...and shut once it owes dollars and sells nothing abroad", !roads.foreignWindowOpen());
-        quietly(() -> roads.handleTBillLogic(5_000, 3, Game.BUILD_NOTE_GRANULE));
+        quietly(() -> roads.handleTBillLogic(5_000 * PriceLevel.FACTOR, 3, Game.BUILD_NOTE_GRANULE));
         // Five years, the shortest amortizing bond the lineup sells (CD2): a serial rolls into the nearest of
         // 5 to 30, and a two-year one is off it. Its instalments fall due on the same anniversaries.
-        quietly(() -> roads.handleMediumBondLogic(10_000, 5, Game.BUILD_BOND_GRANULE));
+        quietly(() -> roads.handleMediumBondLogic(10_000 * PriceLevel.FACTOR, 5, Game.BUILD_BOND_GRANULE));
         int issuedAt = roads.getMonth();
         Debt dollars = paper(roads, "NOTE", 6, issuedAt, true);
         Debt serial = paper(roads, "SERIAL", 60, issuedAt, false);
@@ -960,7 +975,7 @@ public class TreasuryCheck {
         while (same.getMonth() < 20) press(same);
         check("fixture: it sells abroad now, and the window is open",
                 same.getDebtManager().getMonthlyExports() > 0 && same.foreignWindowOpen());
-        quietly(() -> same.handleForeignLogic("Note", 500, 6, Game.BUILD_NOTE_GRANULE, false));
+        quietly(() -> same.handleForeignLogic("Note", 500 * PriceLevel.FACTOR, 6, Game.BUILD_NOTE_GRANULE, false));
         Debt abroad = paper(same, "NOTE", 6, same.getMonth(), true);
         check("fixture: it owes a dollar note", abroad != null);
         while (abroad != null && abroad.getRemainingMonths() > 2) press(same);
@@ -1161,9 +1176,9 @@ public class TreasuryCheck {
         Game city = founded("treasury-books-balance");
         press(city);
         quietly(() -> {
-            city.handleTBillLogic(10_000, 6, 1000);
-            city.handleMediumBondLogic(20_000, 10, 1000);
-            city.handleLongBondLogic(30_000, 5, 1000);
+            city.handleTBillLogic(10_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR);
+            city.handleMediumBondLogic(20_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
+            city.handleLongBondLogic(30_000 * PriceLevel.FACTOR, 5, 1000 * PriceLevel.FACTOR);
         });
         for (int i = 0; i < 3; i++) press(city);
         DebtManager manager = city.getDebtManager();
@@ -1225,8 +1240,8 @@ public class TreasuryCheck {
         Game city = founded("treasury-books-buyback");
         press(city);
         quietly(() -> {
-            city.handleLongBondLogic(30_000, 5, 1000);
-            city.handleTBillLogic(10_000, 12, 1000);
+            city.handleLongBondLogic(30_000 * PriceLevel.FACTOR, 5, 1000 * PriceLevel.FACTOR);
+            city.handleTBillLogic(10_000 * PriceLevel.FACTOR, 12, 1000 * PriceLevel.FACTOR);
         });
         for (int i = 0; i < 3; i++) press(city);
         Debt bond = null, bill = null;
@@ -1294,9 +1309,9 @@ public class TreasuryCheck {
         Game city = founded("treasury-books-played");
         press(city);
         quietly(() -> {
-            city.handleTBillLogic(10_000, 6, 1000);
-            city.handleMediumBondLogic(20_000, 10, 1000);
-            city.handleLongBondLogic(30_000, 5, 1000);
+            city.handleTBillLogic(10_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR);
+            city.handleMediumBondLogic(20_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
+            city.handleLongBondLogic(30_000 * PriceLevel.FACTOR, 5, 1000 * PriceLevel.FACTOR);
         });
         int under = 0;
         for (Debt d : city.getDebtManager().getDebt()) if (d.getCarryingValue() < d.getOustandingPrincipal()) under++;
@@ -1307,7 +1322,7 @@ public class TreasuryCheck {
         double sumNotCash = 0, bankShareBefore = 0;
         int monthsAmortising = 0;
         for (int i = 0; i < 30; i++) {
-            if (i % 6 == 5) quietly(() -> city.handleTBillLogic(10_000, 6, 1000));
+            if (i % 6 == 5) quietly(() -> city.handleTBillLogic(10_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR));
             press(city);
             int m = city.getMonth();
             worstSplit = Math.max(worstSplit, Math.abs(na.getInterestExpense() - (na.getInterestPaidInCash() + na.getInterestNotCash())));
@@ -1373,7 +1388,7 @@ public class TreasuryCheck {
         for (int i = 0; i < 2; i++) {
             Game g = twins[i];
             java.util.concurrent.atomic.AtomicReference<String> r = new java.util.concurrent.atomic.AtomicReference<>();
-            quietly(() -> r.set(g.handleForeignLogic("Term", 20_000, 5, 100, false)));
+            quietly(() -> r.set(g.handleForeignLogic("Term", 20_000 * PriceLevel.FACTOR, 5, 100 * PriceLevel.FACTOR, false)));
             said[i] = r.get();
         }
         Debt a = onlyPiece(still), b = onlyPiece(moved);

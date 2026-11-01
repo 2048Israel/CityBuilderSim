@@ -1,4 +1,4 @@
-# ExchangeCheck.java - 1,058 lines · 25 methods · 4 constants · harnesses
+# ExchangeCheck.java - 1,076 lines · 27 methods · 5 constants · harnesses
 
 `ham/citybuildersim/ExchangeCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -62,7 +62,7 @@
 > family that leaves; a world shown a yield; cells given money, or left
 > short; a company handed a surplus and a market that is cheap, then dear.
 
-**Uses:** [Exchange](Exchange.md) (140), [Equity](Equity.md) (74), [HouseholdBalance](HouseholdBalance.md) (49), [OrderBook](OrderBook.md) (41), [PayTier](PayTier.md) (23), [Bank](Bank.md) (18), [FamilyStructure](FamilyStructure.md) (15), [Household](Household.md) (7), [Game](Game.md) (4), [Sectors](Sectors.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [GameFiles](GameFiles.md) (2), [DebtManager](DebtManager.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [Exchange](Exchange.md) (109), [Equity](Equity.md) (61), [HouseholdBalance](HouseholdBalance.md) (49), [OrderBook](OrderBook.md) (41), [PayTier](PayTier.md) (23), [Bank](Bank.md) (18), [FamilyStructure](FamilyStructure.md) (15), [Household](Household.md) (7), [Game](Game.md) (4), [Sectors](Sectors.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [GameFiles](GameFiles.md) (2), [MoneyAudit](MoneyAudit.md) (2), [DebtManager](DebtManager.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1)
 
 **Used by (3):** [BankCheck](BankCheck.md), [MarketCheck](MarketCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
@@ -70,19 +70,19 @@
 
 | line | section |
 |---:|---|
-| 228 | · 1. the price is the quote |
-| 270 | · 2. nobody is obliged |
-| 321 | · 2b. the desk's caps (round 3) |
-| 368 | · 2c. what is over the caps, offered at fair value |
-| 462 | · 3. the leavers |
-| 504 | · 4. the world |
-| 561 | · 5. the household cells |
-| 656 | · 6. cell to cell |
-| 703 | · 6b. the cells rebalance by the bond rule (round 3) |
-| 734 | · 7. the buyback, and the money that stays |
-| 868 | · 8. the split |
-| 902 | · 9. the save |
-| 939 | · 10. a live city |
+| 246 | · 1. the price is the quote |
+| 288 | · 2. nobody is obliged |
+| 339 | · 2b. the desk's caps (round 3) |
+| 386 | · 2c. what is over the caps, offered at fair value |
+| 480 | · 3. the leavers |
+| 522 | · 4. the world |
+| 579 | · 5. the household cells |
+| 674 | · 6. cell to cell |
+| 721 | · 6b. the cells rebalance by the bond rule (round 3) |
+| 752 | · 7. the buyback, and the money that stays |
+| 886 | · 8. the split |
+| 920 | · 9. the save |
+| 957 | · 10. a live city |
 
 ## Constants
 
@@ -90,8 +90,9 @@
 |---:|---|---|---|
 | 89 | `ExchangeCheck.W` | `DebtManager.WORLD_BASE_RATE` |  |
 | 90 | `ExchangeCheck.N` | `Equity.COMPANIES.length` |  |
-| 91 | `ExchangeCheck.HURDLE` | `W + Equity.FOREIGN_PREMIUM` |  |
-| 93 | `ExchangeCheck.DEPOSIT_AT_HURDLE` | `HURDLE - Exchange.HOUSEHOLD_PREMIUM` | A deposit rate at which a cell neither buys nor sells a share returning the required return (EM1): the best alternative plus the premium is that return, and it is inside the band either side. |
+| 100 | `ExchangeCheck.TODAYS_DOLLAR` | `PriceLevel.FACTOR` | THE FIXTURES' DOLLAR IS TODAY'S (EP1). |
+| 107 | `ExchangeCheck.HURDLE` | `W + Equity.FOREIGN_PREMIUM` |  |
+| 109 | `ExchangeCheck.DEPOSIT_AT_HURDLE` | `HURDLE - Exchange.HOUSEHOLD_PREMIUM` | A deposit rate at which a cell neither buys nor sells a share returning the required return (EM1): the best alternative plus the premium is that return, and it is inside the band either side. |
 
 ## Fields (state)
 
@@ -100,40 +101,42 @@
 | 70 | `static int fails` |  |
 | 71 | `static PrintStream out` |  |
 | 72 | `static PrintStream quiet` |  |
-| 166 | `final double[] cash` |  |
-| 168 | `final double[] debt` | Interest and principal a month (0.7.11, round 2): nothing unless a fixture says so. |
-| 169 | `final double[] boughtBack` |  |
-| 178 | `final double[] money` | The money it holds, at face, and what that money earns it a year (EM1): nothing unless a fixture says so; worth() sets the first. |
+| 184 | `final double[] cash` |  |
+| 186 | `final double[] debt` | Interest and principal a month (0.7.11, round 2): nothing unless a fixture says so. |
+| 187 | `final double[] boughtBack` |  |
+| 196 | `final double[] money` | The money it holds, at face, and what that money earns it a year (EM1): nothing unless a fixture says so; worth() sets the first. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 991 | **type** `public class ExchangeCheck` | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what price, what a company does with its surplus, a split, and that a city ... |
+| 68 | 1009 | **type** `public class ExchangeCheck` | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what price, what a company does with its surplus, a split, and that a city ... |
 | 74 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 79 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 96 | 5 | `static Equity withRecord(int company, double...monthlyIncome)` | A register with twelve months of this income on one company's record, and no dividend paid. |
-| 103 | 5 | `static Equity withPaid(int company, double monthlyIncome, double monthlyPaid)` | A register with twelve months of this income and this ordinary dividend actually paid on one company's record - what the participants value a share on since round 2. |
-| 109 | 7 | `static void addPaid(Equity e, int company, double monthlyIncome, double monthlyPaid)` |  |
-| 118 | 11 | `static Equity withPaid(int a, double incomeA, double paidA, int b, double incomeB, double paidB)` | ...for two companies over the same twelve months: the register closes every company's month together, so each is noted in it. |
-| 130 | 1 | `static double[] months(double v)` |  |
-| 133 | 5 | `static double[] fading(double yearly)` | A year of profit that is fading - the older six months twice the newer six, so a NORMAL regime - adding up to this much (EM1: a company's value is its earnings capitalised, so a fixture says what it earns a year). |
-| 140 | 12 | `static HouseholdBalance savers(double savedEach, double takeHome)` | Households: a hundred unskilled couples with this much saved each, struck once so they have a take-home. |
-| 153 | 1 | `static Household couple(HouseholdBalance hb)` |  |
-| 156 | 7 | `static Bank bankWith(double capital)` | A bank with one branch and this much capital, its month open: a desk posts only for a bank that stands (0.7.12 round 2). |
-| 165 | 31 | **type** `static class Firms implements Exchange.Companies` | The companies, as the exchange sees them: a till, a balance sheet, a payroll. |
-| 170 | 1 | `public double cashAvailable(int c, double wanted)` _(in ExchangeCheck.Firms)_ |  |
-| 171 | 1 | `public double till(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 172 | 1 | `public void payBuyback(int c, double x)` _(in ExchangeCheck.Firms)_ |  |
-| 173 | 1 | `public double assets(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 174 | 1 | `public double equity(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 175 | 1 | `public double monthlyOperatingCost(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 176 | 1 | `public double monthlyDebtService(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 179 | 1 | `public double money(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 180 | 1 | `public double moneyIncome(int c)` _(in ExchangeCheck.Firms)_ |  |
-| 190 | 5 | `Firms worth(Equity reg, int c, double value, double worldRate)` _(in ExchangeCheck.Firms)_ | Gives the company money enough to be worth `value` on the register's reckoning (EM1): its record's earnings capitalised at the required return, and the rest spare money past its cushion. |
-| 198 | 5 | `static void step(Exchange ex, Equity reg, HouseholdBalance hb, Bank bank, Firms firms, double[] book, double worldRate, double ...` | The exchange's step for month m, its flows opened first, as Game runs it. |
-| 205 | 6 | `static double freshDeskLimit(Bank bank, double bid, double fair, double floatShares)` | What a desk holding nothing bids for at this price: the tightest of its capital, its two caps at fair value, and the float (round 3). |
-| 212 | 5 | `static double[] bookOf(int company, double equity)` |  |
-| 218 | 840 | `public static void main(String[] args) throws Exception` |  |
+| 103 | 1 | `static Equity equity()` | A register in the fixtures' dollar. |
+| 106 | 1 | `static Exchange exchange()` | An exchange in the fixtures' dollar. |
+| 112 | 5 | `static Equity withRecord(int company, double...monthlyIncome)` | A register with twelve months of this income on one company's record, and no dividend paid. |
+| 119 | 5 | `static Equity withPaid(int company, double monthlyIncome, double monthlyPaid)` | A register with twelve months of this income and this ordinary dividend actually paid on one company's record - what the participants value a share on since round 2. |
+| 125 | 7 | `static void addPaid(Equity e, int company, double monthlyIncome, double monthlyPaid)` |  |
+| 134 | 11 | `static Equity withPaid(int a, double incomeA, double paidA, int b, double incomeB, double paidB)` | ...for two companies over the same twelve months: the register closes every company's month together, so each is noted in it. |
+| 146 | 1 | `static double[] months(double v)` |  |
+| 149 | 5 | `static double[] fading(double yearly)` | A year of profit that is fading - the older six months twice the newer six, so a NORMAL regime - adding up to this much (EM1: a company's value is its earnings capitalised, so a fixture says what it earns a year). |
+| 156 | 13 | `static HouseholdBalance savers(double savedEach, double takeHome)` | Households: a hundred unskilled couples with this much saved each, struck once so they have a take-home. |
+| 170 | 1 | `static Household couple(HouseholdBalance hb)` |  |
+| 173 | 8 | `static Bank bankWith(double capital)` | A bank with one branch and this much capital, its month open: a desk posts only for a bank that stands (0.7.12 round 2). |
+| 183 | 31 | **type** `static class Firms implements Exchange.Companies` | The companies, as the exchange sees them: a till, a balance sheet, a payroll. |
+| 188 | 1 | `public double cashAvailable(int c, double wanted)` _(in ExchangeCheck.Firms)_ |  |
+| 189 | 1 | `public double till(int c)` _(in ExchangeCheck.Firms)_ |  |
+| 190 | 1 | `public void payBuyback(int c, double x)` _(in ExchangeCheck.Firms)_ |  |
+| 191 | 1 | `public double assets(int c)` _(in ExchangeCheck.Firms)_ |  |
+| 192 | 1 | `public double equity(int c)` _(in ExchangeCheck.Firms)_ |  |
+| 193 | 1 | `public double monthlyOperatingCost(int c)` _(in ExchangeCheck.Firms)_ |  |
+| 194 | 1 | `public double monthlyDebtService(int c)` _(in ExchangeCheck.Firms)_ |  |
+| 197 | 1 | `public double money(int c)` _(in ExchangeCheck.Firms)_ |  |
+| 198 | 1 | `public double moneyIncome(int c)` _(in ExchangeCheck.Firms)_ |  |
+| 208 | 5 | `Firms worth(Equity reg, int c, double value, double worldRate)` _(in ExchangeCheck.Firms)_ | Gives the company money enough to be worth `value` on the register's reckoning (EM1): its record's earnings capitalised at the required return, and the rest spare money past its cushion. |
+| 216 | 5 | `static void step(Exchange ex, Equity reg, HouseholdBalance hb, Bank bank, Firms firms, double[] book, double worldRate, double ...` | The exchange's step for month m, its flows opened first, as Game runs it. |
+| 223 | 6 | `static double freshDeskLimit(Bank bank, double bid, double fair, double floatShares)` | What a desk holding nothing bids for at this price: the tightest of its capital, its two caps at fair value, and the float (round 3). |
+| 230 | 5 | `static double[] bookOf(int company, double equity)` |  |
+| 236 | 840 | `public static void main(String[] args) throws Exception` |  |
 

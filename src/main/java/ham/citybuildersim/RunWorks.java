@@ -44,8 +44,10 @@ public final class RunWorks {
      * A bridge's deck, US dollars a m2: Wisconsin DOT's 2025 planning cost to replace a structure is $220 a sq ft of
      * deck (wisconsindot.gov, "bos-cost", June 2025) and Colorado DOT's 2025 cost data book's weighted bid averages run
      * to about $305 a sq ft for prestressed box girders (codot.gov); $250 a sq ft, between them, about $2,690 a m2.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double DECK_USD_PER_M2 = 250 * SQ_FT_PER_M2;
+    public static final double DECK_USD_PER_M2 = 250 * SQ_FT_PER_M2 * PriceLevel.FACTOR;
 
     /**
      * The deck a highway's viaduct carries, metres: four lanes of 3.66 m (12 ft), an outside shoulder of 3.05 m (10 ft)
@@ -62,8 +64,10 @@ public final class RunWorks {
      * (standard prices) of rail projects, annex 13, the tunnelling case study); about $35M at 30 million euros.
      * Medellin's own Tunel de Oriente, bores of 8.2 km and 0.8 km in 22 km of road for about COP 1.1 trillion
      * (2019), is of that order.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double TUNNEL_BORE_USD_PER_KM = 35e6;
+    public static final double TUNNEL_BORE_USD_PER_KM = 35e6 * PriceLevel.FACTOR;
 
     /** The bores a highway's tunnel needs: two, one a direction, its four lanes two to a bore. */
     public static final int TUNNEL_BORES = 2;

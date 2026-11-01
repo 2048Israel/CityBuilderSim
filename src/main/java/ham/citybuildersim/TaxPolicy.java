@@ -863,11 +863,11 @@ public class TaxPolicy {
        about it should not be quietly running the buses for nothing.
        ======================================================================= */
 
-    /** What a single journey costs a rider, in thousands. $2.50 a ride. */
-    public static final double DEFAULT_TRANSIT_FARE = .0025;
+    /** What a single journey costs a rider, in thousands. $2.50 a ride. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double DEFAULT_TRANSIT_FARE = .0025 * PriceLevel.FACTOR;
 
-    /** The dial's cap, $50 a ride, twenty times the default, in founding money: past it no car owner rides while a journey's fuel costs under half of it, and the commuters with no car of their own still do (0.7.49, InfrastructureManager, WHO RIDES, BY WHAT THEY PAY). */
-    public static final double MAX_TRANSIT_FARE = .05;
+    /** The dial's cap, $50 a ride, twenty times the default, in founding money: past it no car owner rides while a journey's fuel costs under half of it, and the commuters with no car of their own still do (0.7.49, InfrastructureManager, WHO RIDES, BY WHAT THEY PAY). Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double MAX_TRANSIT_FARE = .05 * PriceLevel.FACTOR;
 
     /* =======================================================================
        A RIDE IS NOT A MONTH (2026-09-17)
@@ -1031,8 +1031,8 @@ public class TaxPolicy {
     /** No duty: the city it was (Jerus's A7: default 0). */
     public static final double DEFAULT_FUEL_DUTY = 0;
 
-    /** The dial's top, a dollar a litre at founding prices, in thousands: past the dearest duty the research found, the Netherlands' EUR 0.789 a litre of petrol (2024; runs/research-pump.md 6 [30]) - a ceiling, not a default. */
-    public static final double MAX_FUEL_DUTY = .001;
+    /** The dial's top, a dollar a litre at founding prices, in thousands: past the dearest duty the research found, the Netherlands' EUR 0.789 a litre of petrol (2024; runs/research-pump.md 6 [30]) - a ceiling, not a default. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double MAX_FUEL_DUTY = .001 * PriceLevel.FACTOR;
 
     private double fuelDuty = DEFAULT_FUEL_DUTY;
 

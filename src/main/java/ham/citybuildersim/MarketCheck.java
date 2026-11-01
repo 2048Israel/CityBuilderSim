@@ -94,12 +94,12 @@ public class MarketCheck {
      * company, each given a year of earnings and the money it holds.
      */
     static final class City {
-        final Equity reg = new Equity();
+        final Equity reg = ExchangeCheck.equity();
         final HouseholdBalance hb;
         final Bank bank;
         final ExchangeCheck.Firms firms = new ExchangeCheck.Firms();
         final double[] book = new double[N];
-        final Exchange ex = new Exchange();
+        final Exchange ex = ExchangeCheck.exchange();
         int month = 0;
 
         City(HouseholdBalance hb, Bank bank) {
@@ -570,7 +570,7 @@ public class MarketCheck {
         section("7. the figures fair value was struck on survive a save, an old save strikes them again, and a redenomination scales them");
 
         com.google.gson.Gson gson = new com.google.gson.GsonBuilder().serializeSpecialFloatingPointValues().create();
-        Exchange back = new Exchange();
+        Exchange back = ExchangeCheck.exchange();
         assertTrue("the state restores through Gson", back.restore(gson.fromJson(gson.toJson(c1.ex.toState()), Exchange.State.class)));
         boolean figures = true;
         for (int c = 0; c < N; c++) {
@@ -585,7 +585,7 @@ public class MarketCheck {
         oldSave.spare = null;
         oldSave.earnings = null;
         oldSave.moneyIncome = null;
-        Exchange older = new Exchange();
+        Exchange older = ExchangeCheck.exchange();
         assertTrue("a save from before them still restores", older.restore(oldSave));
         close("...with them at nothing until the next step", older.spareOf(RETAIL) + older.earningsOf(INDUSTRY) + older.moneyIncomeOf(MATERIALS), 0, 0);
         ExchangeCheck.step(older, c1.reg, c1.hb, c1.bank, c1.firms, c1.book, W, 0, 2);
@@ -597,7 +597,7 @@ public class MarketCheck {
         assertTrue("...and the next step strikes them again, as they were", struck);
 
         double scale = .01;
-        Exchange reformed = new Exchange();
+        Exchange reformed = ExchangeCheck.exchange();
         reformed.restore(gson.fromJson(gson.toJson(c1.ex.toState()), Exchange.State.class));
         reformed.redenominate(scale);
         boolean scaled = true;

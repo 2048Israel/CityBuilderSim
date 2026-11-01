@@ -7725,8 +7725,12 @@ public class MapCheck {
      * FR8's path the city reached month 121 broke (cash under zero, its districts over their room, 2,031 people) and the advisor bought and built nothing for the
      * 120 months that followed: no district's counts moved, so the run caused none of what it counts (redraws of the districts whose plots moved). A city that
      * holds more than this is left as it is, so on a path where it is solvent the run is the playtest's own.
+     * EP1, 2026-11-01 (the path moved again): three months of its GDP were not enough. On the calendar of 1900 the city reached month 121 at 3,144 people, the
+     * advisor spent each handing of 3 months (about 1,500) on homes and schools alone, and in 120 months no district's picture was redrawn (counts moved in
+     * 107 of the 240 district-months, plots in none: the homes stacked in the plots the districts had). Handed a year of its GDP the advisor buys and builds
+     * the kinds a district does not hold yet, and plots move in 10 of the first 23 months; the measure is the same at the price level of today.
      */
-    static final int PICTURE_CASH_MONTHS = 3;
+    static final int PICTURE_CASH_MONTHS = 12;
 
     /** Tops the played city's cash up to PICTURE_CASH_MONTHS months of its GDP when it holds less: the money a young city the playtest left broke needs for the advisor's purchases to happen. */
     static void handCash(Game city) {

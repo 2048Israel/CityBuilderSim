@@ -256,7 +256,7 @@ public class PolicyCheck {
         BusinessInvestment counter = new BusinessInvestment(
                 city.getBuildingManager(), city.getEconomyManager());
 
-        double monthlyLoss = -800;
+        double monthlyLoss = -800 * PriceLevel.FACTOR;   // D$800k a month: today's figure, priced at the founding's level (EP1)
 
         // Unprotected: the loss reaches the counter untouched.
         city.setAutoSubsidised(Sectors.MINING, false);
@@ -292,16 +292,16 @@ public class PolicyCheck {
 
         double cityCash = city.getCash();
         double sectorCash = construction.getCash();
-        double loss = -50;
+        double loss = -50 * PriceLevel.FACTOR;
 
         // Drive one month of support by hand, so the two sides can be compared
         // without a month of trading moving everything else.
         city.setAutoSubsidised(Sectors.CONSTRUCTION, true);
         double paid = payOneSubsidy(city, construction, loss);
 
-        check("the city paid the whole loss", paid, 50);
-        check("...out of its own cash", city.getCash(), cityCash - 50);
-        check("...and into the sector's", construction.getCash(), sectorCash + 50);
+        check("the city paid the whole loss", paid, 50 * PriceLevel.FACTOR);
+        check("...out of its own cash", city.getCash(), cityCash - 50 * PriceLevel.FACTOR);
+        check("...and into the sector's", construction.getCash(), sectorCash + 50 * PriceLevel.FACTOR);
 
         /* ============ 9. it all survives a save ============ */
         System.out.println("\n--- policy survives a round trip ---");

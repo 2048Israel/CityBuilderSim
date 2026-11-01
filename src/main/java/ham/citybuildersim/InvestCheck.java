@@ -1305,7 +1305,7 @@ public class InvestCheck {
                 shopSector19.statement().capitalTaxCredit, shopCredit19, 1e-9);
         MoneyAudit.Result audit19 = priced19.getLastMoneyAudit();
         assertTrue("...and the month closes the audit, the escalation and the credits in it",
-                Math.abs(audit19.residual) <= .01 || audit19.relative() <= 1e-7);
+                Math.abs(audit19.residual) <= MoneyAudit.CENT || audit19.relative() <= 1e-7);
         System.out.printf("   the shops' capital credit $%,.2fk; their repairs' credit $%,.2fk at %.0f%%%n",
                 shopSector19.statement().capitalTaxCredit, shopTaxRepairs19, rB19 * 100);
 
@@ -1409,7 +1409,8 @@ public class InvestCheck {
         assertTrue("...and the city and the bank's branch get none of it back: the city's rebate is the tax coming home",
                 pe.taxRecoveredShare("City", lowRise19, 100) == 0 && pe.taxRecoveredShare("City", house19, 100) == 0
                         && pe.taxRecoveredShare(shops19, template(priced19, "Commercial Bank"), 100) == 0);
-        double scale19 = priced19.getPriceIndex().getIndex() / priced19.getDenomination().getUnit();
+        // the rebate's amounts are founding thousands, today's figures priced at the founding's level (EP1): the scale carries the factor
+        double scale19 = priced19.getPriceIndex().getIndex() / priced19.getDenomination().getUnit() * PriceLevel.FACTOR;
         double landSqFt19 = pe.getLandPricePerSqFt();
         java.util.function.DoubleSupplier houseValue19 = () -> pb.nonMaterialCost(house19)
                 + house19.getConstructionMaterials() * Math.max(0, pb.getConstructionMaterialPrice())
@@ -1421,7 +1422,7 @@ public class InvestCheck {
         };
         double cashCost19 = house19.getCashCost();
         double[] bandValue19 = new double[3], bandRebate19 = new double[3];
-        double[] targets19 = {300, 400, 500};     // founding thousands: in full, phased, gone
+        double[] targets19 = {300, 400, 500};     // today's thousands, priced at the founding's level by scale19: in full, phased, gone
         for (int k = 0; k < 3; k++) {
             // the House's cash cost struck so that it is worth the band's figure (its value rises with it)
             double lo = 1e-6, hi = 100 * cashCost19;
@@ -1473,7 +1474,7 @@ public class InvestCheck {
                 landSector19.statement().salesTax, 0, 1e-9);
         MoneyAudit.Result auditRebate19 = priced19.getLastMoneyAudit();
         assertTrue("...and the month closes the audit with the rebate in it",
-                Math.abs(auditRebate19.residual) <= .01 || auditRebate19.relative() <= 1e-7);
+                Math.abs(auditRebate19.residual) <= MoneyAudit.CENT || auditRebate19.relative() <= 1e-7);
         // An order booked with it.
         System.setOut(quiet);
         boolean orderedLow19, orderedHouse19;

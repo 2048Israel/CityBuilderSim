@@ -107,8 +107,10 @@ public class LandMarket {
      * IN THE WORLD'S MONEY SINCE 0.7.6: the seller is outside the city and is
      * paid in dollars, so no reform reaches this - like every foreign price
      * (Denomination) - and at the founding rate of 1.00 it is the $0.70 it was.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). LandManager's opening price a square foot carries the same factor, so the 43% margin between them holds.
      */
-    private static final double BASE_PRICE_PER_SQ_FT = .0007;
+    private static final double BASE_PRICE_PER_SQ_FT = .0007 * PriceLevel.FACTOR;
 
     /** The ground's price a square foot at the founding, in thousands of US dollars: BASE_PRICE_PER_SQ_FT, before any premium - what an Insane city owes a square foot of its starting land (Founding.landBondUsd(), 0.7.14; since 0.7.106 on the plots it owns, as the office charges them). */
     public static double openingUsdPerSqFt() { return BASE_PRICE_PER_SQ_FT; }
@@ -665,14 +667,21 @@ public class LandMarket {
         return plusResources(groundUsdPerSqFt * ground * LandManager.SQ_FT_PER_KM2, amounts, usPriceLevel);
     }
 
-    /** The resources' share of an offer's price added to the ground's, in thousands of US dollars (price()'s second half), rounded to US$5k. Adds in Resource's order to the figure it is handed, as price() always did. */
+    /**
+     * The step an offer's price is rounded to, in thousands of US dollars: US$5k, as the parcels were (nobody wants to compare US$103,847 against
+     * US$98,211). Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1): at 1900's prices a fixed US$5k would round
+     * every small offer to a few steps, or to none.
+     */
+    public static final double PRICE_STEP_USD = 5 * PriceLevel.FACTOR;
+
+    /** The resources' share of an offer's price added to the ground's, in thousands of US dollars (price()'s second half), rounded to PRICE_STEP_USD. Adds in Resource's order to the figure it is handed, as price() always did. */
     private static double plusResources(double groundUsd, double[] amounts, double usPriceLevel) {
         double usd = groundUsd;
         for (Resource r : Resource.values()) {
             if (r.good() == null || !(r.inGroundShare() > 0)) continue;
             usd += amounts[r.ordinal()] * r.good().worldExportPrice() * r.inGroundShare() * usPriceLevel;
         }
-        return Math.round(usd / 5) * 5.0;
+        return Math.round(usd / PRICE_STEP_USD) * PRICE_STEP_USD;
     }
 
     /* ----- a price for each class of ground (ET3; spec-earth2-terrain 5.1, 5.2) ----- */
@@ -881,6 +890,19 @@ public class LandMarket {
     }
 
     /**
+     * How close two ranks (rates of ground a dollar, or prices that carry a sum) must be to be one rank: a part in a trillion. WHY (EP1): the offers'
+     * rates tie exactly at today's prices - three parcels of one price for one area - and the tie goes to the nearer; priced at the founding's
+     * level the same rates are an ulp apart, and the farther parcel won the tie. A comparison of money by == is a comparison of a float's last bit.
+     */
+    public static final double RANK_TIE = 1e-12;
+
+    /** ...a rate that beats another by more than a tie (rates are never under nothing). */
+    public static boolean beats(double rate, double than) { return rate > than * (1 + RANK_TIE); }
+
+    /** ...two rates that are one rank. */
+    public static boolean tied(double a, double b) { return !beats(a, b) && !beats(b, a); }
+
+    /**
      * Whether a is nearer the city than b (0.7.67): the nearer its nearest
      * plot to the founding site, L-infinity, then the lower id - a tie's
      * breaker for the best-offer rules. (Until 0.7.67, the smaller inner
@@ -951,7 +973,7 @@ public class LandMarket {
         for (LandParcel p : offers) {
             if (p == null || !(p.getKm2(CityLand.FRESH) > 0)) continue;
             double rate = p.getPriceUsd() > 0 ? p.getKm2(CityLand.FRESH) / p.getPriceUsd() : Double.POSITIVE_INFINITY;
-            if (best == null || rate > bestRate || (rate == bestRate && nearer(p, best))) {
+            if (best == null || beats(rate, bestRate) || (tied(rate, bestRate) && nearer(p, best))) {
                 best = p;
                 bestRate = rate;
             }
@@ -990,7 +1012,7 @@ public class LandMarket {
         double bestRate = 0;
         for (LandParcel p : running) {
             double rate = rankPerUsd(p, byBuildable);
-            if (best == null || rate > bestRate || (rate == bestRate && nearer(p, best))) {
+            if (best == null || beats(rate, bestRate) || (tied(rate, bestRate) && nearer(p, best))) {
                 best = p;
                 bestRate = rate;
             }

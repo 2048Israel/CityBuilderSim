@@ -18,6 +18,20 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.95 — EP1, the game starts in 1900 — 2026-11-01, ready, see docs/queue/EP1-notes.md
+Jerus, 2026-10-30: "1900 start date with todays tech", at "1900 price level". Month 1 is January 1900, and today's real
+economy is priced at 1900's level: every nominal anchor is today's figure times the US CPI's 1900 over its 2025
+(PriceLevel.FACTOR, 1/38.6) - the six wage rungs (the unskilled D$3,460 a month is D$89.56), the 68 goods, the building
+costs, the opening treasury and vault, about forty dollar dials - and no ratio, rate or quantity moves: PriceLevelCheck's
+twin runs four cities at the factor and at today's prices, equal within 1e-9, and seven anchors it caught are mended. The
+world file still starts in 2000, so its reader stands in for the century before it: today's real world at each year's US
+prices, the moneys and goods held, the eight banks on their rule; Historical replays the real years from 2000, and the real
+century is EP1b's. The rankings' real dollar bridges 1900 to 2015 (x28.4). Saves before format 50 are refused. The audit's cent is
+scaled too (MoneyAudit.CENT). The order search also asks the first slice that borrows (OS1: Game.largestSlice() said 0 where the
+countdown found 10, month 1226, Retail's 94 Convenience Stores: a bond's cheaper rate passes a few slices the doubling stepped over).
+Suite green on IC1 (0.8.94): ScaleCheck's section 6 copies the playtest's town at month 718, 1124 having sat in its bust (ST2,
+folded in; a draw, of months 710-726 only 717, 718 and 722 hold: ST3 queued), PriceLevelCheck 8 to month 105 (a rounding tie at 106); ensemble 23/26 as 0.8.91.
+
 ### 0.8.94 — IC1, the builders' idle crews free for other work — 2026-11-01, ready, see docs/queue/IC1-notes.md
 After a boom the builders go idle at their core crew and lay off most of their posts, and the staffing gate counted those
 posts as spoken for (0.7.17: they "are hired back when work returns"), so its spare was the unemployed less the crews:

@@ -317,8 +317,8 @@ public class ForeignAccounts {
      * has the full text.
      */
 
-    /** Below this much trade a month, the exchange rate is not a real price. */
-    public static final double MIN_TRADE = 50;
+    /** Below this much trade a month, the exchange rate is not a real price. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double MIN_TRADE = 50 * PriceLevel.FACTOR;
 
     /**
      * The same floor, in TODAY's money.

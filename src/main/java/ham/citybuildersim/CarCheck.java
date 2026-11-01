@@ -112,8 +112,8 @@ public class CarCheck {
        ===================================================================== */
 
     /** The prices to 0.7.119, written down: cars in and out, vans and wagon sets in; fabricated steel out; machinery in and out. */
-    static final double CARS_WAS_IN = 44, CARS_WAS_OUT = 36, VANS_WAS_IN = 72, ROLLING_WAS_IN = 2400,
-            FABRICATED_WAS = 2.21, MACHINERY_WAS_IN = 14.3, MACHINERY_WAS_OUT = 9.0;
+    static final double CARS_WAS_IN = 44 * PriceLevel.FACTOR, CARS_WAS_OUT = 36 * PriceLevel.FACTOR, VANS_WAS_IN = 72 * PriceLevel.FACTOR, ROLLING_WAS_IN = 2400 * PriceLevel.FACTOR,
+            FABRICATED_WAS = 2.21 * PriceLevel.FACTOR, MACHINERY_WAS_IN = 14.3 * PriceLevel.FACTOR, MACHINERY_WAS_OUT = 9.0 * PriceLevel.FACTOR;
 
     /** What a plant makes of one vehicle over the parts in it (pure): the vehicle at `price`, its fabricated steel at `fab` and its machinery at `mach`, a vehicle's worth of each off its template. */
     static double marginOf(BuildingsTemplate t, Good vehicle, double price, double fab, double mach) {
@@ -1053,7 +1053,7 @@ public class CarCheck {
 
         System.out.println("\n--- and a car moved with the steel in it, its plants' margin a car to the cent (0.7.120) ---");
         report("a car is the world's at 41.3125 in and 33.3125 out: 44 and 36 less 3.5 t of fabricated steel at .665 and 0.4 t of"
-                        + " machinery at .9", Good.CARS.worldImportPrice() == 41.3125 && Good.CARS.worldExportPrice() == 33.3125
+                        + " machinery at .9", Good.CARS.worldImportPrice() == 41.3125 * PriceLevel.FACTOR && Good.CARS.worldExportPrice() == 33.3125 * PriceLevel.FACTOR
                         && Math.abs(CARS_WAS_IN - Good.CARS.worldImportPrice() - (3.5 * (FABRICATED_WAS - Good.FABRICATED_STEEL.worldExportPrice())
                         + .4 * (MACHINERY_WAS_IN - Good.MACHINERY.worldImportPrice()))) < 1e-9,
                 String.format("%.4f / %.4f", Good.CARS.worldImportPrice(), Good.CARS.worldExportPrice()));

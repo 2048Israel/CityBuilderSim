@@ -128,7 +128,7 @@ public class BusinessServicesCheck {
             check(names[i] + ": every seat is a job", jobsOf(t), seats, 0);
             check(names[i] + ": all-in cost",
                     t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials(),
-                    want[i][1], 1);
+                    want[i][1] * PriceLevel.FACTOR, PriceLevel.FACTOR);   // the design's all-in cost is today's figure, priced at the founding's level; its tolerance, a thousand dollars of today's money, the same
             check(names[i] + ": 250 sq ft of lot a seat", t.getLandSqFt(), want[i][2], 1);
             check(names[i] + ": 0.8 power units a seat", t.getElectricityConsumption(), want[i][3], 1);
             check(names[i] + ": 0.8 of road load a seat", t.getRoadLoad(), want[i][4], 1);

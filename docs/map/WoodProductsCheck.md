@@ -64,7 +64,7 @@
 > 
 > ... (2 more lines in the source)
 
-**Uses:** [Good](Good.md) (156), [WoodProducts](WoodProducts.md) (29), [JobType](JobType.md) (12), [Sectors](Sectors.md) (11), [NationalAccounts](NationalAccounts.md) (10), [SpreadPlanner](SpreadPlanner.md) (10), [BuildingManager](BuildingManager.md) (9), [Sector](Sector.md) (8), [MaterialsCheck](MaterialsCheck.md) (8), [Game](Game.md) (7), [Traffic](Traffic.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [MoneyAudit](MoneyAudit.md) (5), [Ports](Ports.md) (5), [Equity](Equity.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [Forestry](Forestry.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PayTier](PayTier.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [GameFiles](GameFiles.md) (2), [Markets](Markets.md) (1), [ProcessingSector](ProcessingSector.md) (1), [Bank](Bank.md) (1), [Statement](Statement.md) (1), [ForestryCheck](ForestryCheck.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (156), [WoodProducts](WoodProducts.md) (29), [JobType](JobType.md) (12), [Sectors](Sectors.md) (11), [NationalAccounts](NationalAccounts.md) (10), [SpreadPlanner](SpreadPlanner.md) (10), [BuildingManager](BuildingManager.md) (9), [Sector](Sector.md) (8), [MaterialsCheck](MaterialsCheck.md) (8), [Game](Game.md) (7), [Traffic](Traffic.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [PriceLevelCheck](PriceLevelCheck.md) (5), [MoneyAudit](MoneyAudit.md) (5), [Ports](Ports.md) (5), [Equity](Equity.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [Forestry](Forestry.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PayTier](PayTier.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [GameFiles](GameFiles.md) (2), [Markets](Markets.md) (1), [ProcessingSector](ProcessingSector.md) (1), [Bank](Bank.md) (1), [PriceLevel](PriceLevel.md) (1), [Statement](Statement.md) (1), [ForestryCheck](ForestryCheck.md) (1)... and 1 more
 
 ## Sections
 
@@ -85,20 +85,20 @@
 | 81 | `WoodProductsCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 83 | `WoodProductsCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 119 | `WoodProductsCheck.GOODS` | `{ Good.LUMBER, Good.PANELS, Good.RESIDUES, Good.PULP, Good.PAPER, Good.WOOD_P...` | Wood's six goods, in Good's order (the spec's 2.3). |
-| 121 | `WoodProductsCheck.STUDY_IMPORT` | `{.340,.420,.045,.760, 1.050,.220 }` | The study's 5.3: each one's import price, D$ thousands a cubic metre or a tonne. |
-| 123 | `WoodProductsCheck.STUDY_EXPORT` | `{.250,.260,.015,.600,.880,.150 }` | ...and its export price. |
+| 121 | `WoodProductsCheck.STUDY_IMPORT` | `PriceLevelCheck.atFounding(.340,.420,.045,.760, 1.050,.220)` | The study's 5.3: each one's import price, D$ thousands a cubic metre or a tonne. |
+| 123 | `WoodProductsCheck.STUDY_EXPORT` | `PriceLevelCheck.atFounding(.250,.260,.015,.600,.880,.150)` | ...and its export price. |
 | 125 | `WoodProductsCheck.STUDY_UNIT` | `{ "cubic metre", "cubic metre", "cubic metre", "tonne", "tonne", "tonne" }` | ...its unit. |
 | 127 | `WoodProductsCheck.TONNES_A_M3` | `{.5,.62,.9, Double.NaN, Double.NaN, Double.NaN }` | ...the tonnes a cubic metre of it weighs (spec 2.3, est.: sawn lumber 0.5, OSB 0.62 [W35], chips green as the logs, 0.9); NaN for one by the tonne. |
 | 129 | `WoodProductsCheck.STOCKABLE` | `{ true, true, false, true, true, true }` | ...and whether it keeps in a yard (spec 2.3: all but the residues). |
 | 131 | `WoodProductsCheck.FREIGHT_SHARE` | `.375` | Good.java's rule: freight three eighths of the wedge. |
 | 217 | `WoodProductsCheck.ROWS` | `{ WoodProducts.SAWMILL, WoodProducts.LARGE_SAWMILL, WoodProducts.PANEL_MILL, ...` | The rows, by their permanent ids, in the study's 5.4 order. |
-| 221 | `WoodProductsCheck.STUDY_COSTS` | `{ 15_000, 150_000, 140_000, 260_000, 150_000, 30_000 }` | The study's 5.4: each one's cost, D$ thousands all in. |
+| 221 | `WoodProductsCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(15_000, 150_000, 140_000, 260_000, 150_000, 30_000)` | The study's 5.4: each one's cost, D$ thousands all in. |
 | 224 | `WoodProductsCheck.STUDY_POSTS` | `{ 35, 130, 100, 200, 120, 30 }` | ...its posts. |
 | 227 | `WoodProductsCheck.STUDY_MADE` | `{ { Good.LUMBER, Good.RESIDUES }, { Good.LUMBER, Good.RESIDUES }, { Good.PANE...` | ...what it makes a month. |
 | 230 | `WoodProductsCheck.STUDY_MAKES` | `{ { 2_080, 1_640 }, { 20_020, 15_785 }, { 15_000 }, { 11_000 }, { 5_500 }, { ...` | ...and how much of each, a month (cubic metres or tonnes). |
 | 233 | `WoodProductsCheck.STUDY_FEED` | `{ { Good.SAWLOGS }, { Good.SAWLOGS }, { Good.PULPWOOD }, { Good.PULPWOOD, Goo...` | ...what it takes a month. |
 | 236 | `WoodProductsCheck.STUDY_USES` | `{ { 4_000 }, { 38_500 }, { 27_750 }, { 28_000, 21_500 }, { 5_775, 850_000 }, ...` | ...and how much of each (the paper mill's fuel in litres, the study's 5.6). |
-| 239 | `WoodProductsCheck.STUDY_RUNS` | `{ 177, 844, 1_360, 2_170, 1_380, 183 }` | ...its running cost a month, D$ thousands, the study's 5.4 "Runs" - power bought from the grid only (its 2.4), the paper mill's fuel in it. |
+| 239 | `WoodProductsCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(177, 844, 1_360, 2_170, 1_380, 183)` | ...its running cost a month, D$ thousands, the study's 5.4 "Runs" - power bought from the grid only (its 2.4), the paper mill's fuel in it. |
 | 242 | `WoodProductsCheck.STUDY_TABLE` | `{ { - 0.5, 0.7, 2.3, 1.1 }, { 0.1, 1.3, 2.8, 1.6 }, { 0.0, 1.1, 2.8, 1.7 }, {...` | The study's 5.5 table, % of the cost a month, cases A to D. |
 | 246 | `WoodProductsCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 249 | `WoodProductsCheck.PULP_GEN` | `13_500` | The pulp mill's power past its own draw, kW (the study's 1.6: 11,000 t at 0.9 MWh a tonne [W42]). |

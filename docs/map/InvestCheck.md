@@ -1,4 +1,4 @@
-# InvestCheck.java - 1,614 lines · 8 methods · 0 constants · harnesses
+# InvestCheck.java - 1,615 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/InvestCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -15,7 +15,7 @@
 > fixture pinned - the trend, the lead time, the order size, the brake, the
 > costing, the land cap - is still asked of BusinessInvestment directly.
 
-**Uses:** [BusinessInvestment](BusinessInvestment.md) (66), [BuildingsTemplate](BuildingsTemplate.md) (32), [Game](Game.md) (26), [BuildingManager](BuildingManager.md) (25), [Sector](Sector.md) (20), [BuildingsStacks](BuildingsStacks.md) (20), [Construction](Construction.md) (15), [Good](Good.md) (9), [EconomyManager](EconomyManager.md) (8), [Sectors](Sectors.md) (6), [WageBand](WageBand.md) (5), [GameFiles](GameFiles.md) (4), [BuildingType](BuildingType.md) (4), [PopulationManager](PopulationManager.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (3), [PayTier](PayTier.md) (2), [GoodsMarket](GoodsMarket.md) (2), [JobType](JobType.md) (2), [MoneyAudit](MoneyAudit.md) (2), [TempDirs](TempDirs.md) (1), [Retail](Retail.md) (1), [Household](Household.md) (1), [FamilyStructure](FamilyStructure.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Mining](Mining.md) (1), [Founding](Founding.md) (1), [Markets](Markets.md) (1), [RealEstate](RealEstate.md) (1)
+**Uses:** [BusinessInvestment](BusinessInvestment.md) (66), [BuildingsTemplate](BuildingsTemplate.md) (32), [Game](Game.md) (26), [BuildingManager](BuildingManager.md) (25), [Sector](Sector.md) (20), [BuildingsStacks](BuildingsStacks.md) (20), [Construction](Construction.md) (15), [Good](Good.md) (9), [EconomyManager](EconomyManager.md) (8), [Sectors](Sectors.md) (6), [WageBand](WageBand.md) (5), [GameFiles](GameFiles.md) (4), [BuildingType](BuildingType.md) (4), [PopulationManager](PopulationManager.md) (4), [MoneyAudit](MoneyAudit.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (3), [PayTier](PayTier.md) (2), [GoodsMarket](GoodsMarket.md) (2), [JobType](JobType.md) (2), [TempDirs](TempDirs.md) (1), [Retail](Retail.md) (1), [Household](Household.md) (1), [FamilyStructure](FamilyStructure.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Mining](Mining.md) (1), [Founding](Founding.md) (1), [Markets](Markets.md) (1), [RealEstate](RealEstate.md) (1), [PriceLevel](PriceLevel.md) (1)
 
 ## Sections
 
@@ -53,13 +53,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 1591 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
+| 24 | 1592 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
 | 29 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 37 | 6 | `static void check(String label, double actual, double expected, double tolerance)` | The same, within a stated tolerance - for sums of shares, whose rounding scales with the output. |
 | 44 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 49 | 3 | `static BuildingsTemplate template(Game g, String name)` |  |
 | 54 | 14 | `static Game city(Path root, String name)` | A fresh city, currency and world pinned, land by fiat. |
 | 70 | 4 | `static void month(Game g)` | One month, quietly. |
-| 75 | 1427 | `public static void main(String[] args) throws Exception` |  |
-| 1518 | 96 | `static void wholeCost(Path root)` | ON ITS WHOLE COST (0.7.113, batch I2b; Jerus's decisions A and A13, "test every order on its whole cost, whoever pays"). |
+| 75 | 1428 | `public static void main(String[] args) throws Exception` |  |
+| 1519 | 96 | `static void wholeCost(Path root)` | ON ITS WHOLE COST (0.7.113, batch I2b; Jerus's decisions A and A13, "test every order on its whole cost, whoever pays"). |
 

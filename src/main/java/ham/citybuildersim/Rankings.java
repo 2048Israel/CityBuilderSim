@@ -22,8 +22,8 @@ import java.util.TreeSet;
  * conversions of one figure disagree. So every money figure is turned ONCE into US$ of 2015 (the pivot),
  * ranked there, and only then shown in the money picked (the display): Money can never reorder a board,
  * and the city's own figure in its own money comes back to the figure the rest of the game shows. A
- * founding game dollar counts as one 2015 dollar (D1), so at founding the game's US dollar and the real
- * one are equal.
+ * founding game dollar is a US dollar of the calendar's first year, RealDollar.BRIDGE of 2015's (D1, EP1: 28.4 from 1900), so at founding the game's
+ * US dollar is that many real ones.
  *
  * Builds spec-leaderboards 3 (the pivot, the display, the identities, the lock, the sentence), 4 (the two
  * boards: Real world 2025 from WorldMeasures, Your world from Nations at the city's month, the city
@@ -176,19 +176,19 @@ public final class Rankings {
        --------------------------------------------------------------------- */
 
     /**
-     * Real US$ of 2015 into the money picked: REAL_USD as is; GAME_USD times the game dollar's price level (times 1 under Constant, which is at
-     * founding's prices); CITY times that level and the rate (this month's rate, or parity under PPP), or under Constant the founding rate. So the
-     * city's own figure in its own money is X under this month's rate and PPP and X at founding's prices under Constant. s must be the settings the
-     * figure was pivoted at (effective() for a money measure with no constant series).
+     * Real US$ of 2015 into the money picked: REAL_USD as is; GAME_USD over the bridge (RealDollar.BRIDGE) times the game dollar's price level (times 1
+     * under Constant, which is at founding's prices); CITY the same times the rate (this month's rate, or parity under PPP), or under Constant the
+     * founding rate. So the city's own figure in its own money is X under this month's rate and PPP and X at founding's prices under Constant. s must
+     * be the settings the figure was pivoted at (effective() for a money measure with no constant series).
      */
     public static double display(double usd15, Settings s, City c) {
         return switch (s.money()) {
             case REAL_USD -> usd15;
-            case GAME_USD -> s.convert() == Convert.CONSTANT ? usd15 : usd15 * c.usPrices();
+            case GAME_USD -> (s.convert() == Convert.CONSTANT ? usd15 : usd15 * c.usPrices()) / RealDollar.BRIDGE;
             case CITY -> switch (s.convert()) {
-                case MARKET -> usd15 * c.usPrices() * c.fx();
-                case PPP -> usd15 * c.usPrices() * c.parity();
-                case CONSTANT -> usd15 * c.foundingRate();
+                case MARKET -> usd15 * c.usPrices() * c.fx() / RealDollar.BRIDGE;
+                case PPP -> usd15 * c.usPrices() * c.parity() / RealDollar.BRIDGE;
+                case CONSTANT -> usd15 * c.foundingRate() / RealDollar.BRIDGE;
             };
         };
     }
@@ -299,7 +299,8 @@ public final class Rankings {
     /**
      * The city's figure for a measure, pivoted to US$ of 2015 (spec-leaderboards 3): a money figure X (the city's money, whole units) is X over the
      * rate over the game dollar's price level at this month's rate, X over parity over that level at PPP, and under Constant X at founding's prices
-     * over the founding rate. Null where the city has no figure, or none at constant prices under Constant.
+     * over the founding rate, each times the bridge (RealDollar.BRIDGE: founding dollars into 2015's). Null where the city has no figure, or none at
+     * constant prices under Constant.
      */
     private static Cell cityCell(City c, WorldMeasures.Measure m, Settings eff) {
         CityMeasures.Figure f = c.figures().get(m.key());
@@ -307,9 +308,9 @@ public final class Rankings {
         double value = f.value();
         if (m.money()) {
             value = switch (eff.convert()) {
-                case MARKET -> f.value() / c.fx() / c.usPrices();
-                case PPP -> f.value() / c.parity() / c.usPrices();
-                case CONSTANT -> f.real() / c.foundingRate();
+                case MARKET -> f.value() / c.fx() / c.usPrices() * RealDollar.BRIDGE;
+                case PPP -> f.value() / c.parity() / c.usPrices() * RealDollar.BRIDGE;
+                case CONSTANT -> f.real() / c.foundingRate() * RealDollar.BRIDGE;
             };
         }
         if (!usable(value)) return null;
@@ -337,9 +338,9 @@ public final class Rankings {
         if (m.money()) {
             double level = s.prices() == Prices.PER_YEAR && !pricesLocked(s, m, true) ? active.usPrices() : c.usPrices();
             value = switch (eff.convert()) {
-                case MARKET -> f.value() / c.fx() / level;
-                case PPP -> f.value() / c.parity() / level;
-                case CONSTANT -> f.real() / c.foundingRate();
+                case MARKET -> f.value() / c.fx() / level * RealDollar.BRIDGE;
+                case PPP -> f.value() / c.parity() / level * RealDollar.BRIDGE;
+                case CONSTANT -> f.real() / c.foundingRate() * RealDollar.BRIDGE;
             };
         }
         if (!usable(value)) return null;

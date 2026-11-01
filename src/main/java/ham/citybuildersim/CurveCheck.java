@@ -485,7 +485,7 @@ public class CurveCheck {
     /* ================= 7. the issue at the curve ================= */
 
     /** What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). */
-    static final double ASK = 20_000;
+    static final double ASK = 20_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
     /**
      * A founded city with the rule's hand on the dial to month 38, then the
@@ -526,7 +526,7 @@ public class CurveCheck {
 
         // The serial: the coupon is the one that prices its schedule at par on the curve.
         int before = dm.getDebt().size();
-        quietly(() -> g.handleMediumBondLogic(ASK, 5, 1000));
+        quietly(() -> g.handleMediumBondLogic(ASK, 5, 1000 * PriceLevel.FACTOR));
         check("fixture: the serial was booked", dm.getDebt().size() == before + 1);
         Debt serial = lastPiece(g);
         double face = serial.getFaceValue();
@@ -535,8 +535,8 @@ public class CurveCheck {
                 dm.marketValue(serial), face, .01 * face / 1e6);
 
         // The term loan: worth its quoted gross the moment it is booked.
-        DebtQuote quote = g.quoteLongBond(ASK, 20, 1000);
-        quietly(() -> g.handleLongBondLogic(ASK, 20, 1000));
+        DebtQuote quote = g.quoteLongBond(ASK, 20, 1000 * PriceLevel.FACTOR);
+        quietly(() -> g.handleLongBondLogic(ASK, 20, 1000 * PriceLevel.FACTOR));
         check("fixture: the term loan was booked on the quote it was shown",
                 dm.getDebt().size() == before + 2 && lastPiece(g).getFaceValue() == quote.faceValue());
         Debt term = lastPiece(g);
@@ -548,8 +548,8 @@ public class CurveCheck {
                 dm.marketValue(term), gross, .005 + .01 * quote.faceValue() / 1e6);
 
         // The note: at or above what it raised.
-        DebtQuote note = g.quoteTBill(ASK, 12, 1000);
-        quietly(() -> g.handleTBillLogic(ASK, 12, 1000));
+        DebtQuote note = g.quoteTBill(ASK, 12, 1000 * PriceLevel.FACTOR);
+        quietly(() -> g.handleTBillLogic(ASK, 12, 1000 * PriceLevel.FACTOR));
         check("fixture: the note was booked on the quote it was shown",
                 dm.getDebt().size() == before + 3 && lastPiece(g).getFaceValue() == note.faceValue());
         Debt bill = lastPiece(g);
@@ -561,7 +561,7 @@ public class CurveCheck {
     /* ================= 8. no money pump ================= */
 
     /** What the dollar legs borrow, in dollars. */
-    static final double USD_ASK = 1_000;
+    static final double USD_ASK = 1_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
     static void noMoneyPump(Path root, Game steep) throws Exception {
         out.println("\n--- 8. no money pump ---");
@@ -585,12 +585,12 @@ public class CurveCheck {
     static void roundTrips(String city, Game g) {
         boolean tradingCity = "trading".equals(city);
         if (!tradingCity) {
-            roundTrip(city, g, "Note", () -> g.handleTBillLogic(ASK, 12, 1000));
-            roundTrip(city, g, "Serial", () -> g.handleMediumBondLogic(ASK, 5, 1000));
+            roundTrip(city, g, "Note", () -> g.handleTBillLogic(ASK, 12, 1000 * PriceLevel.FACTOR));
+            roundTrip(city, g, "Serial", () -> g.handleMediumBondLogic(ASK, 5, 1000 * PriceLevel.FACTOR));
             // A bond sold while a line of its term is the benchmark goes into that line (CD2), and the round trip
             // buys back the piece it sold - the whole line, the 20-year one section 7 left standing too. So the
             // round trip sells the 30-year, a line of its own.
-            roundTrip(city, g, "Term", () -> g.handleLongBondLogic(ASK, 30, 1000));
+            roundTrip(city, g, "Term", () -> g.handleLongBondLogic(ASK, 30, 1000 * PriceLevel.FACTOR));
         }
         // The dollar legs: on the home cities when the window is open, and always on ForeignDebtCheck's trading
         // city, the fixture RestructureCheck proves the world's pricing on.
@@ -600,8 +600,8 @@ public class CurveCheck {
             return;
         }
         double ask = tradingCity ? RestructureCheck.DOLLAR_ASK : USD_ASK;
-        roundTrip(city + " dollar", g, "Note", () -> g.handleForeignLogic("Note", ask, 12, 100, false));
-        roundTrip(city + " dollar", g, "Term", () -> g.handleForeignLogic("Term", ask, 20, 100, false));
+        roundTrip(city + " dollar", g, "Note", () -> g.handleForeignLogic("Note", ask, 12, 100 * PriceLevel.FACTOR, false));
+        roundTrip(city + " dollar", g, "Term", () -> g.handleForeignLogic("Term", ask, 20, 100 * PriceLevel.FACTOR, false));
     }
 
     static void roundTrip(String city, Game g, String kind, Runnable issue) {

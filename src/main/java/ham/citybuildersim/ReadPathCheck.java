@@ -982,10 +982,10 @@ public class ReadPathCheck {
         for (int years : LongTermBond.MATURITIES) {
             debt.curveRate(years * 12);
             debt.compression(years * 12);
-            g.quoteLongBond(1_000, years, 100);
+            g.quoteLongBond(1_000 * PriceLevel.FACTOR, years, 100 * PriceLevel.FACTOR);
         }
         // ...and the build screen's bond, sized to the cash it brings (0.7.10)
-        g.quoteLongBondForCash(1_000, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        g.quoteLongBondForCash(1_000 * PriceLevel.FACTOR, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
         debt.curveRate(6);
         debt.bookValues();
         debt.householdPrincipal();
@@ -1111,7 +1111,7 @@ public class ReadPathCheck {
         debt.settledDial();
         for (String kind : DebtManager.LADDER_KINDS) debt.getPrincipalOf(kind);
         debt.ladder(g.getMonth());
-        debt.ladder(g.getMonth(), g.quoteDebt("Serial", 1_000, 3, 100).schedule(1));
+        debt.ladder(g.getMonth(), g.quoteDebt("Serial", 1_000 * PriceLevel.FACTOR, 3, 100 * PriceLevel.FACTOR).schedule(1));
         debt.dueWithin(12);
         for (Debt paper : debt.getDebt()) debt.valuationRate(paper);
         g.rolloverPlan().fromCash();
@@ -1592,20 +1592,20 @@ public class ReadPathCheck {
             // on a mortgage two years into its term.
             BusinessDebtManager lender = g.getEconomyManager().getBusinessDebtManager();
             lender.setInsuredMortgageRate(g.getBank().insuredMortgageRate(g.getDebtManager().getPolicyRate()));
-            lender.issueMortgage(Sectors.REAL_ESTATE, 50_000, g.getMonth());
+            lender.issueMortgage(Sectors.REAL_ESTATE, 50_000 * PriceLevel.FACTOR, g.getMonth());
 
             // ...and the city's fund at work (0.7.14): the dial at the year's surplus and a
             // sum paid in by hand, so the reads below take in every figure the Fund pages show
             // on a fund that holds shares and bonds.
             g.setFundDial(1);
-            g.fundPayIn(20_000);
+            g.fundPayIn(20_000 * PriceLevel.FACTOR);
 
             g.simulateMonths(24);
             // ...and a bond on the books (0.7.12): the builders five million
             // short, set between months, borrow it in the next - a bond where
             // the book takes one, so the reads below take in every figure the
             // bond pages, the Bank tab and the Trade tab show.
-            g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, -5_000);
+            g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, -5_000 * PriceLevel.FACTOR);
             g.simulateMonths(2);
             /*
              * ...AND PLAYED ON UNTIL THE FUND HOLDS A BOND (0.7.18, re-caused).

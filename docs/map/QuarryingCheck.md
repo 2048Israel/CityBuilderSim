@@ -64,7 +64,7 @@
 > 
 > ... (3 more lines in the source)
 
-**Uses:** [Good](Good.md) (135), [Quarrying](Quarrying.md) (34), [Sectors](Sectors.md) (15), [Deposit](Deposit.md) (13), [BuildingManager](BuildingManager.md) (13), [Game](Game.md) (10), [LandManager](LandManager.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (9), [World](World.md) (9), [Equity](Equity.md) (7), [MoneyAudit](MoneyAudit.md) (5), [CityLand](CityLand.md) (5), [Sector](Sector.md) (4), [LandCheck](LandCheck.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Resource](Resource.md) (3), [Markets](Markets.md) (3), [GoodsMarket](GoodsMarket.md) (3), [MaterialsCheck](MaterialsCheck.md) (3), [Traffic](Traffic.md) (3), [Ports](Ports.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [CementConcrete](CementConcrete.md) (2), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1)... and 4 more
+**Uses:** [Good](Good.md) (135), [Quarrying](Quarrying.md) (34), [Sectors](Sectors.md) (15), [Deposit](Deposit.md) (13), [BuildingManager](BuildingManager.md) (13), [PriceLevel](PriceLevel.md) (11), [Game](Game.md) (10), [LandManager](LandManager.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (9), [World](World.md) (9), [Equity](Equity.md) (7), [MoneyAudit](MoneyAudit.md) (5), [CityLand](CityLand.md) (5), [Sector](Sector.md) (4), [LandCheck](LandCheck.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Resource](Resource.md) (3), [Markets](Markets.md) (3), [GoodsMarket](GoodsMarket.md) (3), [MaterialsCheck](MaterialsCheck.md) (3), [Traffic](Traffic.md) (3), [Ports](Ports.md) (3), [PriceLevelCheck](PriceLevelCheck.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [CementConcrete](CementConcrete.md) (2), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2)... and 6 more
 
 **Used by (1):** [CementConcreteCheck](CementConcreteCheck.md)
 
@@ -90,9 +90,9 @@
 | 117 | `QuarryingCheck.STONE` | `Resource.STONE` | Stone, the resource its quarries dig. |
 | 119 | `QuarryingCheck.LIME` | `Deposit.FieldType.LIMESTONE, HARD = Deposit.FieldType.HARD_ROCK` | Stone's two types of field (Resource.typesOf()): limestone, and hard rock. |
 | 295 | `QuarryingCheck.ROWS` | `{ Quarrying.QUARRY, Quarrying.LARGE_QUARRY, Quarrying.DIMENSION_STONE_QUARRY }` | Quarrying's rows, by their permanent ids, in the study's 6.4 order. |
-| 298 | `QuarryingCheck.STUDY_COSTS` | `{ 15_000, 90_000, 6_000 }` | The study's 6.4: each one's cost, D$ thousands all in. |
+| 298 | `QuarryingCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(15_000, 90_000, 6_000)` | The study's 6.4: each one's cost, D$ thousands all in. |
 | 301 | `QuarryingCheck.STUDY_POSTS` | `{ 22, 125, 17 }` | ...its posts. |
-| 304 | `QuarryingCheck.STUDY_RUNS` | `{ 163, 981, 104 }` | ...its running cost a month, D$ thousands. |
+| 304 | `QuarryingCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(163, 981, 104)` | ...its running cost a month, D$ thousands. |
 | 307 | `QuarryingCheck.STUDY_MAKES` | `{ 40_000, 250_000, 1_000 }` | ...what it makes a month, t: stone, stone, blocks. |
 | 310 | `QuarryingCheck.STUDY_SITES` | `{ 1, 3, 1 }` | ...the sites it takes, and of which type (null for either; the study's 6.4). |
 | 312 | `QuarryingCheck.STUDY_TYPES` | `{ null, null, HARD }` | ...and the type of field each stands on (null for either). |

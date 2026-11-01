@@ -45,7 +45,7 @@
 >      priced out and the short of stock to the hunger, and THE BUDGET
 >      previews the dial by the vouchers it would have paid.
 
-**Uses:** [Retail](Retail.md) (20), [HouseholdBalance](HouseholdBalance.md) (16), [PolicyPreview](PolicyPreview.md) (15), [Household](Household.md) (14), [Game](Game.md) (8), [FamilyStructure](FamilyStructure.md) (7), [PayTier](PayTier.md) (7), [BondCheck](BondCheck.md) (2), [TreasuryLine](TreasuryLine.md) (2), [TempDirs](TempDirs.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [LongPlaytest](LongPlaytest.md) (1), [PriceIndex](PriceIndex.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [Retail](Retail.md) (20), [HouseholdBalance](HouseholdBalance.md) (16), [PolicyPreview](PolicyPreview.md) (15), [Household](Household.md) (14), [Game](Game.md) (8), [FamilyStructure](FamilyStructure.md) (7), [PayTier](PayTier.md) (7), [BondCheck](BondCheck.md) (2), [TreasuryLine](TreasuryLine.md) (2), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [LongPlaytest](LongPlaytest.md) (1), [PriceIndex](PriceIndex.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
 ## Sections
 

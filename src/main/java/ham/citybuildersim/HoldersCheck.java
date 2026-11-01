@@ -137,7 +137,7 @@ public class HoldersCheck {
     static MoneyAudit.Result play(Game g) {
         quietly(g::toggleNextMonth);
         MoneyAudit.Result r = g.getLastMoneyAudit();
-        if (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7) closedMonths++;
+        if (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7) closedMonths++;
         else {
             brokenMonths++;
             out.printf("   m%d: residual %.4f%n", g.getMonth(), r.residual);
@@ -152,8 +152,17 @@ public class HoldersCheck {
 
         GameFiles files = GameFiles.scratch("holderscheck");
         Game city = new Game(files);
+        // The constant world rate (XR4), as section 9 stands it (EP1): hot money bids for the city's paper over the world's rate (Auction.worldAt()), and the
+        // file's rate stood at 2.25% on main's path and at 5.5% in the draws of 1900, where the bank's bid at fair took the whole issue and the world held
+        // none (sections 6 to 8 read the world's holding). Its premise unmoved.
+        city.quietTheWorldForTheD();
         quietly(() -> {
             city.run();
+            // ...and Heavy Industry held (EP1), as ForeignCheck holds it (LD1): in the draws of 1900 it raises a plant on bonds and a bank loan in the
+            // month after the town is played to (BuybackCheck's town, which is this one, measured it: 215k of ten-year bonds and a 414k loan, the
+            // households' savings down from 526k to 212k that month), so the paper a sale made then allots the households is not what they can pay at
+            // the settle, and the bank holds the rest: sections 6, 9 and 12 read the split. The sections are about the paper, not that sector's capital.
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             /*
              * THE TREASURY AND THE GROUND THIS FIXTURE WAS WRITTEN AGAINST
              * (0.7.17), as the suite's other founding fixtures have been given
@@ -198,8 +207,8 @@ public class HoldersCheck {
         // Sized so the rule binds, not the households' purse: they bid a fifth
         // of the issue for each point over the deposit rate (never more than
         // the issue), and this asks for a fifth of what they could pay.
-        double ask = Math.max(100, spare * .2);
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        double ask = Math.max(100 * PriceLevel.FACTOR, spare * .2);
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
         Debt bond = null;
         for (Debt d : ledger.getDebt()) if (DebtManager.isTermPaper(d)) bond = d;
         assertTrue("fixture: the treasury sold a twenty-year bond between the presses", bond != null);
@@ -373,16 +382,17 @@ public class HoldersCheck {
         /* ================= 6. the save ================= */
         out.println("\n--- 6. save and reload, and every holding is where it was ---");
         ledger.setPolicyRate(ledger.getPolicyRate() - .04);
-        quietly(() -> city.handleLongBondLogic(ask, 30, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
         play(city);                                        // the settle: households take theirs
         play(city);                                        // and the central bank buys at the top of the next
         assertTrue("fixture: paper held by all three again",
                 ledger.householdPrincipal() > 0 && ledger.centralBankPrincipal() > 0 && ledger.bankPrincipal() > 0);
-        quietly(() -> city.handleLongBondLogic(ask, 10, 100));   // and one still owed for
+        quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));   // and one still owed for
         final Game[] back = new Game[1];
         quietly(() -> {
             city.saveGame(3, "the holders");
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(3);
         });
         Game twin = back[0];
@@ -459,6 +469,7 @@ public class HoldersCheck {
         Files.writeString(files.saveFile(4), json.toString());
         quietly(() -> {
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(4);
         });
         Game old = back[0];
@@ -476,7 +487,7 @@ public class HoldersCheck {
 
         /* ================= 8. a dollar bond bought back ================= */
         out.println("\n--- 8. a dollar bond bought back is money leaving the country ---");
-        quietly(() -> city.handleForeignLogic("Term", ask, 20, 100, false));
+        quietly(() -> city.handleForeignLogic("Term", ask, 20, 100 * PriceLevel.FACTOR, false));
         Debt dollars = null;
         for (Debt d : ledger.getDebt()) if (d.isForeign()) dollars = d;
         assertTrue("fixture: the treasury sold a twenty-year dollar bond", dollars != null);
@@ -555,6 +566,7 @@ public class HoldersCheck {
              * site held them "already building" all sixty months).
              */
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -604,10 +616,10 @@ public class HoldersCheck {
         // bigger purse cannot move it (the rate binds first), so the rate is set, as AuctionCheck sets it, to
         // one where the purse binds: the households take their whole purse, as this comment has always said.
         final double savers = .005;
-        double ask = Math.max(100, hb.spareForPaper() * 1.7);
+        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 1.7);
         quietly(() -> {
             bank.setDepositRate(savers);
-            city.handleLongBondLogic(ask, 20, 100);
+            city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR);
         });
         play(city);                                        // the settle: the households take their share
         Debt bond = termPiece(ledger);
@@ -671,6 +683,7 @@ public class HoldersCheck {
         quietly(() -> {
             city.saveGame(5, "the whole book");
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(5);
         });
         Game twin = back[0];
@@ -753,6 +766,7 @@ public class HoldersCheck {
         out.println("\n--- 10. the businesses are a holder: they buy at the settle, are paid, sell, and the books agree ---");
         GameFiles files = GameFiles.scratch("holderscheck-firms");
         Game city = new Game(files);
+        city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         quietly(() -> {
             city.run();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
@@ -760,6 +774,7 @@ public class HoldersCheck {
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -781,7 +796,7 @@ public class HoldersCheck {
         final int n = keys.length;
         // Three times what the households can pay: they bid first and in full up to their purse (D32), so only
         // an issue past it leaves the businesses, the bank and the world anything to be allotted.
-        final double ask = Math.max(100, hb.spareForPaper() * 3);
+        final double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
 
         // The businesses with idle money: the first three sectors that owe nothing, each given a till worth
         // a hundred issues, so the businesses are a bidder at the auction and not a rounding.
@@ -798,7 +813,7 @@ public class HoldersCheck {
         /* ---- the settle ---- */
         out.println("   -- the settle: each sector pays out of its till, in proportion to its own bid");
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
         final Debt bond = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a twenty-year bond between the presses", bond != null);
         double received = bond.getSettleDue(), face = bond.getOustandingPrincipal();
@@ -904,7 +919,7 @@ public class HoldersCheck {
         out.println("   -- a till caps what its sector pays, and the bank takes the rest");
         fill.run();
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 30, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
         final Debt bond2 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a thirty-year bond", bond2 != null);
         double received2 = bond2.getSettleDue(), face2 = bond2.getOustandingPrincipal();
@@ -922,7 +937,7 @@ public class HoldersCheck {
                 arr[7 + 3 * ci] = till / outward.getLastRate();
                 outward.restore(arr);
                 double was = econ.getSectorCash(capped);
-                econ.setSectorCash(capped, 1);
+                econ.setSectorCash(capped, 1 * PriceLevel.FACTOR);
                 double w = outward.allotmentWeights(bond2.getIssueYield(), bank.depositRate(), DebtManager.WORLD_BASE_RATE, econ)[ci];
                 econ.setSectorCash(capped, allotCash2 * w / 4);
                 city.setCashForTest(city.getCash() + (was - econ.getSectorCash(capped)));
@@ -1064,7 +1079,7 @@ public class HoldersCheck {
         out.println("   -- the principal, at maturity: a two-year bond held to the end");
         fill.run();
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 2, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 2, 100 * PriceLevel.FACTOR));
         final Debt bond3 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a two-year bond", bond3 != null);
         play(city);
@@ -1093,6 +1108,7 @@ public class HoldersCheck {
         quietly(() -> {
             city.saveGame(3, "the businesses");
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(3);
         });
         Game twin = back[0];
@@ -1129,6 +1145,7 @@ public class HoldersCheck {
         Files.writeString(files.saveFile(4), json.toString());
         quietly(() -> {
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(4);
         });
         Game old = back[0];
@@ -1188,7 +1205,11 @@ public class HoldersCheck {
         return 0;
     }
 
-    /** The audit's tolerance for a figure read to the cent. */
+    /**
+     * The audit's tolerance for a figure read to the cent: auditLine() reads a figure back from the audit's printed detail, which prints thousands to two
+     * places (MoneyAudit, "%,14.2f"), a step of 0.01 whatever the price level, so half a step and a hair is the reading's rounding and not a money
+     * tolerance: it stays .0051 at the factor (EP1's gate review scaled it by the factor, and four assertions failed on the printed 0.06 for 0.0575).
+     */
     static final double CENT = .0051;
 
     static void theWorld() throws Exception {
@@ -1261,6 +1282,7 @@ public class HoldersCheck {
         /* ---- the city ---- */
         GameFiles files = GameFiles.scratch("holderscheck-world");
         Game city = new Game(files);
+        city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         quietly(() -> {
             city.run();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
@@ -1268,6 +1290,7 @@ public class HoldersCheck {
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -1284,7 +1307,7 @@ public class HoldersCheck {
         CentralBank cb = city.getCentralBank();
         CapitalFlows hot = city.getCapitalFlows();
         ForeignAccounts fx = city.getForeignAccounts();
-        final double ask = Math.max(100, hb.spareForPaper() * 3);
+        final double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
         assertTrue("fixture: the world is not in a run, so its rule bids", !hot.isStopped());
         assertTrue("fixture: and the two books of its paper agree going in", worldAgrees(city));
         // The hot money the city has drawn is most of what the world would hold here (the auction counts the two together),
@@ -1303,7 +1326,7 @@ public class HoldersCheck {
         out.println("   -- the settle: the world pays from abroad, and the bank's settle shrinks by it");
         double paperBefore = hot.getPaper(), boughtBefore = hot.getLifetimePaperBought();
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
         final Debt bond = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a twenty-year bond between the presses", bond != null);
         double received = bond.getSettleDue(), face = bond.getOustandingPrincipal();
@@ -1384,11 +1407,11 @@ public class HoldersCheck {
         appetite.run();
         // A thirty-year bond is sold with it, for the rest of the section to run on: the world holds part of it.
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 30, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
         final Debt bond6 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a thirty-year bond", bond6 != null);
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 2, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 2, 100 * PriceLevel.FACTOR));
         final Debt bond3 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a two-year bond", bond3 != null);
         play(city);
@@ -1420,6 +1443,7 @@ public class HoldersCheck {
         quietly(() -> {
             city.saveGame(3, "the world");
             twinBox[0] = new Game(files);
+            twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
             twinBox[0].loadGameSave(3);
         });
         Game twin = twinBox[0];
@@ -1453,6 +1477,7 @@ public class HoldersCheck {
         Files.writeString(files.saveFile(4), json.toString());
         quietly(() -> {
             twinBox[0] = new Game(files);
+            twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
             twinBox[0].loadGameSave(4);
         });
         Game old = twinBox[0];
@@ -1506,7 +1531,7 @@ public class HoldersCheck {
         double nowPaper = hot.getPaper();
         assertTrue("fixture: the world still holds paper", nowPaper > 0);
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 10, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         final Debt bond4 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a ten-year bond in the run", bond4 != null);
         close("the auction allotted the world none of it", bond4.allotWorldFace() + bond4.allotWorldCash(), 0, 0);
@@ -1541,7 +1566,7 @@ public class HoldersCheck {
         // purse, not a state the fixture caused.
         final double bigAsk = Math.max(ask, hb.spareForPaper() * 3);
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(bigAsk, 20, 100));
+        quietly(() -> city.handleLongBondLogic(bigAsk, 20, 100 * PriceLevel.FACTOR));
         final Debt bond5 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a twenty-year bond", bond5 != null);
         boolean worldHad = bond5.allotWorldFace() > 0;
@@ -1581,6 +1606,7 @@ public class HoldersCheck {
     static Reopening reopeningFixture(String label, boolean restrikeOff) throws Exception {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
+        city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         city.restrikeOffForTest = restrikeOff;
         quietly(() -> {
             city.run();
@@ -1589,6 +1615,7 @@ public class HoldersCheck {
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -1600,9 +1627,9 @@ public class HoldersCheck {
             for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
         });
         DebtManager ledger = city.getDebtManager();
-        final double ask1 = Math.max(100, city.getHouseholdBalance().spareForPaper() * .2);
+        final double ask1 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask1, 20, 100));
+        quietly(() -> city.handleLongBondLogic(ask1, 20, 100 * PriceLevel.FACTOR));
         Debt line = newPiece(ledger, had);
         double splitStart = city.getBank().equitySplitResidual();
         play(city);
@@ -1620,9 +1647,9 @@ public class HoldersCheck {
         double heldBefore = line.householdPrincipal();
         ledger.setPolicyRate(ledger.getPolicyRate() + .04);
         city.strikeTheCurve();
-        final double ask2 = Math.max(100, city.getHouseholdBalance().spareForPaper() * .2);
+        final double ask2 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
         int pieces = ledger.getDebt().size();
-        quietly(() -> city.handleLongBondLogic(ask2, 20, 100));
+        quietly(() -> city.handleLongBondLogic(ask2, 20, 100 * PriceLevel.FACTOR));
         boolean same = ledger.getDebt().size() == pieces && ledger.benchmarkLine(20) == line;
         return new Reopened(faceBefore, line.getOustandingPrincipal(), perFaceBefore,
                 line.getDiscountLeft() / line.getOustandingPrincipal(), heldBefore, same);

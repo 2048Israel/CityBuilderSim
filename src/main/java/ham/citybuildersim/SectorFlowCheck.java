@@ -78,7 +78,7 @@ public class SectorFlowCheck {
         quietly(() -> {
             g.run();
             g.setCashForTest(Founding.WEALTHY_CASH);
-            g.getGovernmentInvestor().spend(-2_000_000);
+            g.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
             for (String[] w : ORDERS) {
                 BuildingsTemplate t = LongPlaytest.template(g, w[0]);

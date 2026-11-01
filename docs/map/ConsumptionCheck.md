@@ -1,4 +1,4 @@
-# ConsumptionCheck.java - 342 lines · 4 methods · 1 constants · harnesses
+# ConsumptionCheck.java - 343 lines · 4 methods · 1 constants · harnesses
 
 `ham/citybuildersim/ConsumptionCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -18,7 +18,7 @@
 > subsistence, and a quality score that said a famine diet of eighty per cent
 > starch was better than a mixed one.
 
-**Uses:** [Consumption](Consumption.md) (19), [FamilyStructure](FamilyStructure.md) (4), [Good](Good.md) (2)
+**Uses:** [Consumption](Consumption.md) (19), [FamilyStructure](FamilyStructure.md) (4), [Good](Good.md) (2), [PriceLevel](PriceLevel.md) (2)
 
 ## Sections
 
@@ -50,9 +50,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 23 | 320 | **type** `public class ConsumptionCheck` | Verifies the consumption model against the two laws it is shaped to obey, and guards the data file against the Java. |
+| 23 | 321 | **type** `public class ConsumptionCheck` | Verifies the consumption model against the two laws it is shaped to obey, and guards the data file against the Java. |
 | 27 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 32 | 5 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 40 | 277 | `public static void main(String[] args)` |  |
-| 319 | 23 | `static String scaledFile(Consumption c, double by)` | The file as it stands, with every price multiplied - a currency reform, on paper. |
+| 319 | 24 | `static String scaledFile(Consumption c, double by)` | The file as it stands, with every price multiplied - a currency reform, on paper. |
 
