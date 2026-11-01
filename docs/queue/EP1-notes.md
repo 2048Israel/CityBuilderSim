@@ -176,9 +176,12 @@ tenth of a cent: the smallest world price read $0.0003 (call 13).
 
 ## 6. The checks
 
-The full suite on the final model (801c949f; the tree since differs in docs
-only), the world file named, 164 harnesses: **exit 4, ScaleCheck alone NEW**.
-- WellCheck: main's three recorded lines, word for word (OV1's).
+The full suite on the final tree (a15127f7, main merged in at 0.8.93 with TR1
+and OV1), the world file named, 165 harnesses: **ScaleCheck alone red** (and
+StaleCheck on README's count, which TR1 left at 164: mended, 165).
+- WellCheck green: OV1 mended main's fault.
+- ReplayCheck (TR1's): its trade tables' years were 2001-2010 literals; now the
+  calendar's first year plus one, two, five and ten.
 - ScaleCheck: 10 lines. Its fixture lines are main's recorded ones ("the city
   is growing", "its own rents price no migrant out", "the free copy ordered",
   twice): section 6's town no longer holds its premise, which is ST2's, queued
@@ -194,8 +197,9 @@ only), the world file named, 164 harnesses: **exit 4, ScaleCheck alone NEW**.
 
 ## 7. The ensemble
 
-80 runs, 2 at once, on the final model (classes 48dc072e), against 0.8.91:
-**21/26** (0.8.91 23/26). `docs/ensemble/EP1.md`.
+80 runs, 2 at once, on EP1's model before main's TR1 and OV1 were merged in
+(classes 48dc072e; both left main's playtest trace as it was and ran no
+ensemble), against 0.8.91: **21/26** (0.8.91 23/26). `docs/ensemble/EP1.md`.
 
 | id | EP1 | 0.8.91 |
 |---|---|---|

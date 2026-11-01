@@ -1,4 +1,4 @@
-# ReplayCheck.java - 838 lines · 12 methods · 2 constants · harnesses
+# ReplayCheck.java - 839 lines · 12 methods · 2 constants · harnesses
 
 `ham/citybuildersim/ReplayCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -32,17 +32,17 @@
 >      to the last digit; the recorder's FX-thread cost per month is within SaveWriter.CLOCK_MS (printed, with the size of a month's
 >      file and of the history, and of a month at deflate level 6 and 1).
 
-**Uses:** [CameraPath](CameraPath.md) (103), [InputLog](InputLog.md) (73), [Recording](Recording.md) (20), [HistorySave](HistorySave.md) (12), [ReplayGraphs](ReplayGraphs.md) (11), [GameFiles](GameFiles.md) (8), [CityMap](CityMap.md) (7), [MapTiles](MapTiles.md) (7), [ReplayCity](ReplayCity.md) (7), [DataSave](DataSave.md) (7), [MapFrame](MapFrame.md) (7), [Game](Game.md) (6), [World](World.md) (4), [TilePainter](TilePainter.md) (4), [PartnerTrade](PartnerTrade.md) (4), [SaveWriter](SaveWriter.md) (4), [SaveSlotCheck](SaveSlotCheck.md) (3), [Timing](Timing.md) (2), [GameVersion](GameVersion.md) (2), [TaxPolicy](TaxPolicy.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [CameraPath](CameraPath.md) (103), [InputLog](InputLog.md) (73), [Recording](Recording.md) (20), [HistorySave](HistorySave.md) (12), [ReplayGraphs](ReplayGraphs.md) (11), [GameFiles](GameFiles.md) (8), [CityMap](CityMap.md) (7), [MapTiles](MapTiles.md) (7), [ReplayCity](ReplayCity.md) (7), [DataSave](DataSave.md) (7), [MapFrame](MapFrame.md) (7), [Game](Game.md) (6), [World](World.md) (4), [TilePainter](TilePainter.md) (4), [PartnerTrade](PartnerTrade.md) (4), [SaveWriter](SaveWriter.md) (4), [SaveSlotCheck](SaveSlotCheck.md) (3), [Timing](Timing.md) (2), [GameVersion](GameVersion.md) (2), [CityCalendar](CityCalendar.md) (1), [TaxPolicy](TaxPolicy.md) (1), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 166 | · 1. a recording writes one month each, and a rewind rewrites from the next |
-| 375 | · 3. nothing sticks |
-| 404 | · 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing |
-| 529 | · 5. the camera's arithmetic |
-| 751 | · 6. recording costs the month only its fill, and changes nothing in it |
+| 376 | · 3. nothing sticks |
+| 405 | · 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing |
+| 530 | · 5. the camera's arithmetic |
+| 752 | · 6. recording costs the month only its fill, and changes nothing in it |
 
 ## Constants
 
@@ -61,7 +61,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 791 | **type** `public class ReplayCheck` | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs. |
+| 48 | 792 | **type** `public class ReplayCheck` | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs. |
 | 59 | 4 | `static void helper(String label, boolean ok)` | An assertion's line: Timing.verdict says OK, FAIL, or SOFT with the figure and its budget. |
 | 65 | 10 | `static double[] districtsMiddle(CityMap map)` | The middle of a map's districts in plots {x, y}: where a view of the city looks. |
 | 77 | 13 | `static long[] stampsOf(MapTiles tiles, CityMap map, List<long[]> view)` | The stamps of the tiles in a view, their district plans drawn first as the view's worker draws them (the jobs run and kept here). |
@@ -73,6 +73,6 @@
 | 132 | 8 | `static String firstDifference(Map<String, String> before, Map<String, String> after)` | The first difference between two maps of hashes, in words, or null when they are the same. |
 | 142 | 9 | `static void clockMonth(Game game)` | Plays one month on the clock's path with the month's printed report silenced: the city prints its reports to the log. |
 | 152 | 5 | `static Map<Integer, byte[]> monthBytes(Recording rec) throws IOException` |  |
-| 158 | 672 | `public static void main(String[] args) throws Exception` |  |
-| 832 | 6 | `static boolean closedIgnores(InputLog.Writer closed) throws Exception` | Whether a closed log ignores an event added to it: nothing more is read from its file. |
+| 158 | 673 | `public static void main(String[] args) throws Exception` |  |
+| 833 | 6 | `static boolean closedIgnores(InputLog.Writer closed) throws Exception` | Whether a closed log ignores an event added to it: nothing more is read from its file. |
 
