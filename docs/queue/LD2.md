@@ -46,3 +46,11 @@ drains the bank: the wage bill outrunning the loans' income, or the deposits
 leaving with the migrants the wage did not bring. A fix keeps LD1's purpose
 (a business short of workers bids the wage up, Jerus 10-31) and brings the
 count back to main's before LD1; the harness counts it in the twelve seeds.
+
+Another sighting (EP1 merged with IC1, 2026-11-01): BankCheck 19's town has
+its bank in resolution at month 34 at every price level, today's included:
+Manufacturing's company falls from 0.184 a share at month 33 to 0.005 at
+month 34, and the bank's desk, holding its shares, marks 3,431 off 3,898
+(equity 2,500 to -1,269 at the factor; 96,587 to -49,028 at today's prices).
+BankCheck holds Manufacturing out of that town for its own premise; the crash
+itself, a company losing 97% in a month, is this section's to explain.
