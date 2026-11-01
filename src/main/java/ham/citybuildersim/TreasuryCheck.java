@@ -201,10 +201,24 @@ public class TreasuryCheck {
         throw new IllegalStateException("no template named " + name);
     }
 
+    /**
+     * A hands-off city is one whose player presses nothing, and the bank's button is the one thing newGame() leaves pressed for him: it sets the
+     * treasury to resolve a failed bank the month it fails (TreasuryFund.RescueMode.AUTOMATIC, 0.7.14), which puts capital into the bank - "Resolved the
+     * bank for its shares" in the journal, 927k in the default city at month 93 - and the premise of 5 is that none of those happen on their own. A
+     * default city's bank does fail by itself in a fair share of hands-off runs of 120 months (EP1, measured on twelve Random seeds of the 120 months
+     * each: four failed on this path, three on main after LD1, none of four before LD1), so the premise cannot rest on its not failing; the setting is put
+     * back to the button, the bare constructor city's, and the bank that fails waits, frozen, as the player has not come. The bridge's identity is the
+     * same in either (the journal's line named the whole of the 927k: "Not accounted for" was nothing).
+     */
+    static void nobodyPressesTheBankButton(Game g) {
+        g.setRescueMode(TreasuryFund.RescueMode.BUTTON);
+    }
+
     public static void main(String[] args) {
 
         Game game = new Game(GameFiles.scratch("treasury-check"));
         game.newGame();
+        nobodyPressesTheBankButton(game);
 
         System.out.println("Playing 120 months and auditing the treasury bridge.");
 
@@ -268,6 +282,7 @@ public class TreasuryCheck {
 
         Game funded = new Game(GameFiles.scratch("treasury-subsidy"));
         funded.newGame();
+        nobodyPressesTheBankButton(funded);
         for (String sector : Sectors.KEYS) {
             funded.setAutoSubsidised(sector, true);
         }

@@ -224,6 +224,12 @@ public class RestructureCheck {
                 pump = founded(root, "pump-" + kind);
             }
             if ("dollar".equals(kind)) {
+                // ...with the dial held over the world's rate (EP1), as FloatLinkCheck's section 3 holds it: the city lends itself at the dial or the bank's
+                // floor, and the world lends it at the world's rate and a spread, so the world is the cheaper only where the dial is over the world's rate.
+                // The default 3% was over a world rate of 2.25%, and is under 5.5% in the draws of 1900 (the world's quote 5.89%, the city's own 3.00%).
+                DebtManager dial = pump.getDebtManager();
+                dial.takeTheDial(dial.worldRate() + FloatLinkCheck.HELD_OVER_THE_WORLD);
+                dial.updateInterest();
                 assertTrue("  fixture: the dollar city earns abroad, and the world lends it for less than it lends itself",
                         pump.getDebtManager().getMonthlyExports() > 0
                                 && pump.getDebtManager().quoteForeignRate(DOLLAR_ASK) < pump.getDebtManager().getRate());

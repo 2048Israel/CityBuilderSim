@@ -215,7 +215,7 @@ public class MoneyCheck {
         }
         // Take the treasury to the edge so the central bank's advances are
         // drawn and repaid inside the window (emergency notes, before 0.7.0).
-        s.setCashForTest(20_000);
+        s.setCashForTest(20_000 * PriceLevel.FACTOR);   // today's figure, priced at the founding's level (EP1)
 
         worst = play("a stressed city, 180 months", s, 180, verbose);
         assertTrue("a stressed city conserves money to within 0.01% of what moved",
@@ -236,9 +236,16 @@ public class MoneyCheck {
          * audits those.
          */
         BusinessDebtManager credit = s.getEconomyManager().getBusinessDebtManager();
-        credit.issueLoan(Sectors.RETAIL, 5_000_000, s.getMonth());
+        // ...retail free to go under (EP1): in the draws of 1900 the stressed city's retail had been restructured four times and was inside its ban when
+        // the fixture came to it, and a sector inside its ban "is in the episode it started: nothing new is written off or counted"
+        // (BusinessDebtManager.restructure()), so the default the fixture causes was no new episode and retail stayed at its four for sixty months. The
+        // credit record is put back as it stood with retail's ban out (restoreCreditRecord()), and the default below is a new episode.
+        java.util.Map<String, Integer> bans = credit.getBlockedMonthsAll();
+        bans.put(Sectors.RETAIL, 0);
+        credit.restoreCreditRecord(credit.getRestructureCounts(), bans);
+        credit.issueLoan(Sectors.RETAIL, 5_000_000 * PriceLevel.FACTOR, s.getMonth());   // today's figures, priced at the founding's level (EP1)
         double retailOwnsBesidesItsTill = credit.getAssets(Sectors.RETAIL) - credit.getCash(Sectors.RETAIL);
-        s.getEconomyManager().setSectorCash(Sectors.RETAIL, -Math.max(0, retailOwnsBesidesItsTill) - 100_000);
+        s.getEconomyManager().setSectorCash(Sectors.RETAIL, -Math.max(0, retailOwnsBesidesItsTill) - 100_000 * PriceLevel.FACTOR);
         int wholeBefore = credit.getRestructureCount(Sectors.RETAIL);
 
         worst = play("through a restructure, 60 months", s, 60, verbose);

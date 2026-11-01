@@ -144,10 +144,20 @@ public class HaulageCheck {
     static Game base(GameFiles files) { return base(files, true); }
 
     /** ...with or without the plant: mines and no works are a city whose ore all goes abroad. */
-    static Game base(GameFiles files, boolean plant) {
+    static Game base(GameFiles files, boolean plant) { return base(files, plant, false); }
+
+    /**
+     * ...and, with `literals`, playing on the goods' literals (Game.playOnLiterals(): the flag is the harness's and not the save's, so a city so
+     * made is not one to reload). For a section whose premise is the plant's ore and coal landed and its pellets shipped, every month:
+     * on the world file's band under Random, in the draws of 1900 (EP1), pellets netted 0.0010 to the 0.0008 or 0.0014 their inputs cost (the ore at
+     * the price the mines sell it at, or at the sea's), so a works that orders nothing it loses on (THE ORDER, FL1) ran every other month and in the
+     * others landed no ore at all; at the literals pellets net 0.0032 to a cost of 0.0028, month after month.
+     */
+    static Game base(GameFiles files, boolean plant, boolean literals) {
         Game g = new Game(files);
         quietly(() -> {
             g.newGame();
+            if (literals) g.playOnLiterals();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getForeignAccounts().pinRate(1.0);
             g.getWorldEconomy().pin();
@@ -177,8 +187,10 @@ public class HaulageCheck {
     /** ...played for `months`, which is long enough for the trucks to be seeded (at the first haul, at the plant's nameplate need) and the books settled. */
     static Game played(GameFiles files, int months) { return played(files, months, true); }
 
-    static Game played(GameFiles files, int months, boolean plant) {
-        Game g = base(files, plant);
+    static Game played(GameFiles files, int months, boolean plant) { return played(files, months, plant, false); }
+
+    static Game played(GameFiles files, int months, boolean plant, boolean literals) {
+        Game g = base(files, plant, literals);
         quietly(() -> { for (int i = 0; i < months; i++) g.toggleNextMonth(); });
         return g;
     }
@@ -1017,7 +1029,8 @@ public class HaulageCheck {
 
     static void siding() {
         System.out.println("\n--- 4. the siding: a railed share of the imports relieves RAIL_ROAD_RELIEF of their truck tonnes; the sea relieves none ---");
-        Game b = played("haulagecheck-rail", 14);
+        // ...on the goods' literals (base(): the plant's ore must land every month for the siding to relieve a landed tonne to read)
+        Game b = played(GameFiles.scratch("haulagecheck-rail"), 14, true, true);
         quietly(() -> lay(b, "Rail Spur", 1));
         quietly(() -> { for (int i = 0; i < 4; i++) b.toggleNextMonth(); });
         Freight fr = b.getSectors().freight();
@@ -1204,7 +1217,8 @@ public class HaulageCheck {
 
     static void weighing() {
         System.out.println("\n--- 10. the weighing: a works is weighed with its legs at the quote and vans for its goods only ---");
-        Game b = played("haulagecheck-weigh", 14);
+        // ...on the goods' literals (base()): the plant buys the mines' ore at home and lands the rest every month, which these figures read
+        Game b = played(GameFiles.scratch("haulagecheck-weigh"), 14, true, true);
         quietly(() -> lay(b, "Rail Spur", 1));
         quietly(() -> { for (int i = 0; i < 4; i++) b.toggleNextMonth(); });
         Freight fr = b.getSectors().freight();

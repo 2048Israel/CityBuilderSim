@@ -869,12 +869,12 @@ public class FloatLinkCheck {
         // The quotes in words, and for the cash a sale must bring (the rollover sizes its issues by it).
         check("a quote says what the paper is: the floater's coupon as the policy rate plus a margin, the linker's as a real coupon",
                 city.quoteFloatingNote(ask, 2, 100 * PriceLevel.FACTOR).summary().contains("policy rate") && covered.summary().contains("Real coupon"));
-        double cashWanted = 50_000;
-        DebtQuote forFloater = city.quoteFloatingNoteForCash(cashWanted, 2, 100 * PriceLevel.FACTOR), forLinker = city.quoteLinkedBondForCash(cashWanted, 10, 100 * PriceLevel.FACTOR);
-        check("a floater quoted for the cash it must bring covers it, by less than a lot of 100 (" + String.format("%,.2f", forFloater.cashReceived()) + " for 50,000)",
-                forFloater.cashReceived() >= cashWanted - 1e-6 && forFloater.cashReceived() - cashWanted < 100 + 1e-6 && "Float".equals(forFloater.instrument()));
+        double cashWanted = 50_000 * PriceLevel.FACTOR, lot = 100 * PriceLevel.FACTOR;   // today's figures, priced at the founding's level (EP1)
+        DebtQuote forFloater = city.quoteFloatingNoteForCash(cashWanted, 2, lot), forLinker = city.quoteLinkedBondForCash(cashWanted, 10, lot);
+        check("a floater quoted for the cash it must bring covers it, by less than a lot of 100 (" + String.format("%,.2f", forFloater.cashReceived()) + " for " + String.format("%,.2f", cashWanted) + ")",
+                forFloater.cashReceived() >= cashWanted - 1e-6 && forFloater.cashReceived() - cashWanted < lot + 1e-6 && "Float".equals(forFloater.instrument()));
         check("...and so does a linker (" + String.format("%,.2f", forLinker.cashReceived()) + ")",
-                forLinker.cashReceived() >= cashWanted - 1e-6 && forLinker.cashReceived() - cashWanted < 100 + 1e-6 && "Linked".equals(forLinker.instrument()));
+                forLinker.cashReceived() >= cashWanted - 1e-6 && forLinker.cashReceived() - cashWanted < lot + 1e-6 && "Linked".equals(forLinker.instrument()));
 
         // What cannot be sold: refused with the instrument's own words, and nothing moves.
         double[] was = { city.getCash(), dm.getDebt().size(), dm.getAllPrincipal() };
@@ -968,10 +968,20 @@ public class FloatLinkCheck {
        3. THE FLOATER'S COUPON FOLLOWS THE DIAL
        ===================================================================== */
 
+    /** How far over the world's rate the dial is held in 3 (the old calendar's 3% over its 2.25%), and the move of it the section reads the bond's fall on. */
+    static final double HELD_OVER_THE_WORLD = .0075, DIAL_MOVE = .015;
+
     static void followsTheDial() {
         out.println("\n--- 3. the floater's coupon follows the dial: face x (dial + margin) / 12, the rate reset with it, the books holding ---");
 
         DebtManager dm = city.getDebtManager();
+        // THE DIAL IS HELD A POINT AND THREE QUARTERS OVER THE WORLD'S RATE (EP1), where it was 3% over a world rate of 2.25%. The market's floor is the
+        // dial or the bank's cost of funds plus its margin, whichever is more (DebtManager.floorAt()), and a dial under it moves the floor by only part
+        // of its move: with the world's rate at 5.5% in this path (the calendar moved the draws) the cost of funds stood at 3.92% over a dial of 3%, and
+        // a move of 1.5 points moved the floor 0.76 and took the fixed 2-year bond down 0.31, under the half point the premise asks. Over the world's rate
+        // the dial is the floor and a move of it is the whole move; the move below is the same 1.5 points on it.
+        final double held = dm.worldRate() + HELD_OVER_THE_WORLD;
+        if (dm.getPolicyRate() != held) quietly(() -> dm.takeTheDial(held));
         double ask = saleOf(city, .25);
         List<Double> facesSold = new ArrayList<>();
         for (Debt d : dm.getDebt()) facesSold.add(d.getFaceValue());
@@ -1000,7 +1010,7 @@ public class FloatLinkCheck {
         press(city, b, "sale month: the settle");
         int pieces = dm.getDebt().size();
         press(city, b, "dial unmoved");
-        double[] dials = { .045, 0, .005, .02, .03 };
+        double[] dials = { held + DIAL_MOVE, 0, .005, .02, .03 };
         String[] events = { "dial moved up", "dial at nothing", "dial moved to half a point", "dial moved to two points", "dial back to three" };
         for (int i = 0; i < dials.length; i++) {
             double was = dm.priceOfPar(fresh), wasFixed = dm.priceOfPar(fixedTwoYear);
@@ -1009,7 +1019,7 @@ public class FloatLinkCheck {
             if (i == 0) {
                 double nowFloat = dm.priceOfPar(fresh), nowFixed = dm.priceOfPar(fixedTwoYear);
                 out.printf("   the dial from %.2f%% to %.2f%%: the 2-year floater's value %.4f -> %.4f per 100, the fixed 2-year bond's %.4f -> %.4f%n",
-                        3.0, to * 100, was, nowFloat, wasFixed, nowFixed);
+                        held * 100, to * 100, was, nowFloat, wasFixed, nowFixed);
                 // The floater is not quite deaf to the dial: its coupon in a month reads the dial of that tick while the curve discounts
                 // the month on the dial before it, so a path that falls back costs it about the dial's expected change over its life, a twelfth.
                 check("a move of the dial takes a fixed bond of the same term down by more than half a point (" + String.format("%.2f", wasFixed - nowFixed) + ")", wasFixed - nowFixed > .5);

@@ -485,6 +485,19 @@ public class CurrencyRegimeCheck {
         return g;
     }
 
+    /**
+     * The doubt town's twin: played to the month before `months`, its credibility (start[0]) read, its peg moved to a rate so weak the shadow sits far
+     * under it, so that month nothing breaks by chance, and played the month.
+     */
+    static Game heldTwin(String label, long seed, int months, double[] start) {
+        Game b = doubtTown(label, seed);
+        play(b, months - 1);
+        start[0] = b.getExpectations().getCredibility();
+        quietly(() -> b.repeg(b.getForeignAccounts().getShadowRate() * 1.5));
+        play(b, 1);
+        return b;
+    }
+
     static void aVaultAtTheFloorBreaks() {
         out.println("\n--- 3. a vault at the floor breaks that month, at the shadow plus overshoot ---");
 
@@ -614,8 +627,12 @@ public class CurrencyRegimeCheck {
          * twin's repegged peg meets as well, and not the doubt this section is about.
          * The fixture is made to cause it: a seed whose break is by doubt and follows a month the city's credibility climbed in
          * (its step above nothing), the default seed first and then SEED + 1, + 2, ... - on EM1's path SEED + 11, in month 52.
+         * AND WHOSE TWIN HOLDS (EP1): the search takes the twin's conditions as it takes the city's, because the first seed that met the city's
+         * (SEED + 3, month 54, on the calendar of 1900) left the vault at US$48.3k against a floor of 38.7k and a month's deficit of 22.4k, so
+         * the twin's repegged peg broke by the vault too and its credibility fell as the city's did - no difference to read the dent in.
          */
-        Game a = null;
+        Game a = null, b = null;
+        double c0 = 0;
         long creditSeed = 0;
         int k = 0;
         final int seeds = 40;
@@ -629,9 +646,19 @@ public class CurrencyRegimeCheck {
                 months++;
                 play(candidate, 1);
             }
-            if (attempt == seeds - 1 || (candidate.getForeignAccounts().brokeThisMonth() && climbing
-                    && candidate.getForeignAccounts().getLastBreakCause() == ForeignAccounts.BreakCause.DOUBT)) {
+            boolean fits = candidate.getForeignAccounts().brokeThisMonth() && climbing
+                    && candidate.getForeignAccounts().getLastBreakCause() == ForeignAccounts.BreakCause.DOUBT;
+            Game twin = null;
+            double[] start = new double[1];
+            if (fits || attempt == seeds - 1) {
+                twin = heldTwin("xr2-credibility-b-" + attempt, tried, months, start);
+                fits = fits && !twin.getForeignAccounts().brokeThisMonth()
+                        && Math.abs(twin.getExpectations().getCredibility() - (start[0] + (Expectations.KMAX - start[0]) / Expectations.GAIN_MONTHS)) <= 1e-12;
+            }
+            if (attempt == seeds - 1 || fits) {
                 a = candidate;
+                b = twin;
+                c0 = start[0];
                 creditSeed = tried;
                 k = months;
             }
@@ -639,12 +666,6 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: the doubt city's peg broke within " + k + " months of the revaluation", a.getForeignAccounts().brokeThisMonth());
         if (a.getForeignAccounts().brokeThisMonth()) {
             double afterA = a.getExpectations().getCredibility();
-            Game b = doubtTown("xr2-credibility-b", creditSeed);
-            play(b, k - 1);
-            double c0 = b.getExpectations().getCredibility();
-            // The twin's peg is moved to a rate so weak the shadow sits far under it, so that month nothing breaks by chance.
-            quietly(() -> b.repeg(b.getForeignAccounts().getShadowRate() * 1.5));
-            play(b, 1);
             double afterB = b.getExpectations().getCredibility();
             assertTrue("fixture: the twin's peg did not break that month, and the city's did", !b.getForeignAccounts().brokeThisMonth());
             assertTrue("fixture: the twin's credibility climbed that month (the bank's gain branch, miss within tolerance)",

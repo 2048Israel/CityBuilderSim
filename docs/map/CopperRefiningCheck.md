@@ -1,4 +1,4 @@
-# CopperRefiningCheck.java - 1,118 lines · 27 methods · 16 constants · harnesses
+# CopperRefiningCheck.java - 1,126 lines · 27 methods · 16 constants · harnesses
 
 `ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -73,12 +73,12 @@
 | 147 | 1. the sector |
 | 200 | 2. the five rows against the study |
 | 315 | 3. the chain by its ratios |
-| 372 | 4. the smelter's acid sold, the leach plant's bought |
-| 405 | 5. old copper |
-| 494 | 6. the planner weighs the old copper |
-| 547 | 7. the wire works' estimate |
-| 575 | 8. a works buys inputs only for what it makes |
-| 721 | 9. a works making a flow good orders no input for exports that sell under it |
+| 376 | 4. the smelter's acid sold, the leach plant's bought |
+| 413 | 5. old copper |
+| 502 | 6. the planner weighs the old copper |
+| 555 | 7. the wire works' estimate |
+| 583 | 8. a works buys inputs only for what it makes |
+| 729 | 9. a works making a flow good orders no input for exports that sell under it |
 
 ## Constants
 
@@ -99,23 +99,23 @@
 | 233 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
 | 236 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 318 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |
-| 1035 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
+| 1043 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 110 | `static int fails` |  |
-| 1003 | `int months, cutMonths, firstCut` |  |
-| 1004 | `final java.util.EnumSet<Good> goods` |  |
-| 1005 | `final java.util.TreeSet<String> sectors` |  |
-| 1006 | `double units` |  |
+| 1011 | `int months, cutMonths, firstCut` |  |
+| 1012 | `final java.util.EnumSet<Good> goods` |  |
+| 1013 | `final java.util.TreeSet<String> sectors` |  |
+| 1014 | `double units` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 108 | 1011 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
+| 108 | 1019 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
 | 116 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 121 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 126 | 5 | `static void quietly(Runnable r)` |  |
@@ -133,60 +133,60 @@
 |---:|---:|---|---|
 | 238 | 76 | `static void rows()` |  |
 
-### 3. the chain by its ratios (lines 315-371)
+### 3. the chain by its ratios (lines 315-375)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 320 | 51 | `static void chain()` |  |
+| 320 | 55 | `static void chain()` |  |
 
-### 4. the smelter's acid sold, the leach plant's bought (lines 372-404)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 374 | 30 | `static void acid()` |  |
-
-### 5. old copper (lines 405-493)
+### 4. the smelter's acid sold, the leach plant's bought (lines 376-412)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 407 | 86 | `static void oldCopper()` |  |
+| 378 | 34 | `static void acid()` |  |
 
-### 6. the planner weighs the old copper (lines 494-546)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 496 | 31 | `static void plannerWeighsOldCopper()` |  |
-| 529 | 10 | `static SpreadPlanner.Values oldValues(SpreadPlanner.Values plain, double spare, double price)` | The planner's values with `spare` t of old copper at `price` in front of the market's scrap (CopperRefining, THE OLD COPPER), built by hand. |
-| 541 | 5 | `static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, ...` | One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. |
-
-### 7. the wire works' estimate (lines 547-574)
+### 5. old copper (lines 413-501)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 549 | 25 | `static void wireWorksEstimate()` |  |
+| 415 | 86 | `static void oldCopper()` |  |
 
-### 8. a works buys inputs only for what it makes (lines 575-720)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 581 | 14 | `static Game copperWorks(String label, int smelters, int refineries, int rodMills, double cathodeExport)` | A copper town on the goods' literals (Game.playOnLiterals(): the premise is a fixed world price) with the works standing and, where the cathode's export price is given, that price set on its market (nothing resets it ... |
-| 597 | 4 | `static void holdAndRun(Game g, CopperRefining cr)` | One month with the cathode shed put back at the dump line first: the condition caused again each month, not waited for. |
-| 603 | 3 | `static boolean near(double a, double b)` | Whether a number is within a relative hair of another (a month's figures are sums of products). |
-| 607 | 113 | `static void idleWorks()` |  |
-
-### 9. a works making a flow good orders no input for exports that sell under it (lines 721-1118)
+### 6. the planner weighs the old copper (lines 502-554)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 724 | 3 | `static void rodPays(Game g)` | A Rod Mill's rod paying for its cathode at any price the cathode is costed at: rod's world prices doubled, import above export as a band must be (FL1). |
-| 729 | 3 | `static void rodUnpaid(Game g)` | ...and rod's export price at half the literal, the import price as it was: what a unit sells for abroad is under what its cathode costs (FL1). |
-| 738 | 3 | `static boolean close(double a, double b)` | Whether a figure made at one moment of the month is another's, to what the month's vans add to the rate between them: the flow goods are made at the top of the market pass and the inputs ordered as each good clears, a... |
-| 743 | 5 | `static double monthRate(Sector s, Good in)` | The operating rate a month ran at, read off an input's row (needed = the need at the nameplate times the rate the month cleared at): the rate itself moves at the month's end. |
-| 750 | 10 | `static void booksLine(String label, Game g, CopperRefining cr)` | The books of the month before, as section 8 (d) reads them: the month's GDP plus the rest of the imports is not below C + G. |
-| 761 | 228 | `static void flowGoods()` |  |
-| 991 | 9 | `static void netExportAt(GoodsMarket m, Good g, double net)` | Sets a good's world export price, its import price as the literal, so its net export price is `net` (the net price rises with the export price: bisection) (FL1). |
-| 1002 | 31 | **type** `static final class Cuts` | The Rotterdam run's tally of a flow order's cuts (9 (f)). |
-| 1009 | 23 | `void month(Game g)` _(in CopperRefiningCheck.Cuts)_ | Counts the month just played: an exportable traded flow good is cut where its row idled units (the order's cut is all it idles), and the month's GDP. |
-| 1038 | 6 | `static void play(Game g, int months, Cuts cuts)` | Plays months one at a time, each counted (LongPlaytest.run(g, 1) is the same month as a run of many). |
-| 1046 | 72 | `static void rotterdam()` | (f) how often the rule fires in a real run: a Rotterdam city played as LandmassCheck 13 plays it, each month counted. |
+| 504 | 31 | `static void plannerWeighsOldCopper()` |  |
+| 537 | 10 | `static SpreadPlanner.Values oldValues(SpreadPlanner.Values plain, double spare, double price)` | The planner's values with `spare` t of old copper at `price` in front of the market's scrap (CopperRefining, THE OLD COPPER), built by hand. |
+| 549 | 5 | `static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, ...` | One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. |
+
+### 7. the wire works' estimate (lines 555-582)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 557 | 25 | `static void wireWorksEstimate()` |  |
+
+### 8. a works buys inputs only for what it makes (lines 583-728)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 589 | 14 | `static Game copperWorks(String label, int smelters, int refineries, int rodMills, double cathodeExport)` | A copper town on the goods' literals (Game.playOnLiterals(): the premise is a fixed world price) with the works standing and, where the cathode's export price is given, that price set on its market (nothing resets it ... |
+| 605 | 4 | `static void holdAndRun(Game g, CopperRefining cr)` | One month with the cathode shed put back at the dump line first: the condition caused again each month, not waited for. |
+| 611 | 3 | `static boolean near(double a, double b)` | Whether a number is within a relative hair of another (a month's figures are sums of products). |
+| 615 | 113 | `static void idleWorks()` |  |
+
+### 9. a works making a flow good orders no input for exports that sell under it (lines 729-1126)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 732 | 3 | `static void rodPays(Game g)` | A Rod Mill's rod paying for its cathode at any price the cathode is costed at: rod's world prices doubled, import above export as a band must be (FL1). |
+| 737 | 3 | `static void rodUnpaid(Game g)` | ...and rod's export price at half the literal, the import price as it was: what a unit sells for abroad is under what its cathode costs (FL1). |
+| 746 | 3 | `static boolean close(double a, double b)` | Whether a figure made at one moment of the month is another's, to what the month's vans add to the rate between them: the flow goods are made at the top of the market pass and the inputs ordered as each good clears, a... |
+| 751 | 5 | `static double monthRate(Sector s, Good in)` | The operating rate a month ran at, read off an input's row (needed = the need at the nameplate times the rate the month cleared at): the rate itself moves at the month's end. |
+| 758 | 10 | `static void booksLine(String label, Game g, CopperRefining cr)` | The books of the month before, as section 8 (d) reads them: the month's GDP plus the rest of the imports is not below C + G. |
+| 769 | 228 | `static void flowGoods()` |  |
+| 999 | 9 | `static void netExportAt(GoodsMarket m, Good g, double net)` | Sets a good's world export price, its import price as the literal, so its net export price is `net` (the net price rises with the export price: bisection) (FL1). |
+| 1010 | 31 | **type** `static final class Cuts` | The Rotterdam run's tally of a flow order's cuts (9 (f)). |
+| 1017 | 23 | `void month(Game g)` _(in CopperRefiningCheck.Cuts)_ | Counts the month just played: an exportable traded flow good is cut where its row idled units (the order's cut is all it idles), and the month's GDP. |
+| 1046 | 6 | `static void play(Game g, int months, Cuts cuts)` | Plays months one at a time, each counted (LongPlaytest.run(g, 1) is the same month as a run of many). |
+| 1054 | 72 | `static void rotterdam()` | (f) how often the rule fires in a real run: a Rotterdam city played as LandmassCheck 13 plays it, each month counted. |
 

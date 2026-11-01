@@ -739,9 +739,18 @@ public class MonetaryCheck {
      * the stronger D$: 4.23%, 6.55%, 5.96%, 5.75%. The premise of the rows is a fixed price level, so they are struck on the literals.
      */
     static Game founding(Path root, String label, boolean onLiterals) {
+        return founding(root, label, onLiterals, new String[0]);
+    }
+
+    /**
+     * ...with the sectors named held out of the investor's building (BusinessInvestment.holdSector()), as the harnesses that read a steady bank hold
+     * the one whose plant on a bank loan the bank cannot carry (WN3 held Cement & Concrete in PolicyPreviewCheck).
+     */
+    static Game founding(Path root, String label, boolean onLiterals, String... held) {
         Game g = new Game(new GameFiles(root.resolve(label), root.resolve("no-legacy")));
         if (onLiterals) g.playOnLiterals();
         g.run();
+        for (String sector : held) g.getBusinessInvestment().holdSector(sector);
         LongPlaytest.build(g, "House", 40);
         LongPlaytest.build(g, "Convenience Store", 3);
         LongPlaytest.build(g, "Mixed Farm", 2);

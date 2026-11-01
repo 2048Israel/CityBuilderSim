@@ -329,6 +329,10 @@ public class CopperRefiningCheck {
                         && refinery.makes(Good.COPPER) == 9_700 && rod.uses(Good.COPPER) == 8_016 && rod.makes(Good.COPPER_ROD) == 8_000
                         && wire.uses(Good.COPPER_ROD) == wire.makes(Good.WIRE_CABLE));
         Game g = CopperMiningCheck.copperTown("copperrefiningcheck-chain", 0);
+        // ...on the goods' literals (the premise is a fixed world price, as in 8 and 9): on the world file's band under Random the rod mill's inputs
+        // cost more than its rod nets abroad in the calendar's first months (EP1: 0.0664 against 0.0649 in 1900's draws), and a works orders nothing it
+        // loses on (THE ORDER, FL1), so the chain this section stands made nothing; at the literals rod nets 10.25 to the cathode's 10.02 in it.
+        g.playOnLiterals();
         BuildingManager b = g.getBuildingManager();
         CopperRefining cr = g.getSectors().copperRefining();
         Manufacturing man = g.getSectors().manufacturing();
@@ -374,6 +378,10 @@ public class CopperRefiningCheck {
     static void acid() {
         out.println("\n--- 4. the smelter's acid sold, the leach plant's bought at home, the rest shipped ---");
         Game g = CopperMiningCheck.copperTown("copperrefiningcheck-acid", 0);
+        // ...on the goods' literals, as 3: on the world file's band under Random the smelter alone on landed concentrate nets less for its anode than
+        // the concentrate costs it less the acid (EP1, the draws of 1900: 0.0610 against 0.0670, the study's case A), and a works orders nothing it
+        // loses on (THE ORDER, FL1), so it made no acid for the leach plant to buy.
+        g.playOnLiterals();
         BuildingManager b = g.getBuildingManager();
         CopperRefining cr = g.getSectors().copperRefining();
         CopperMining cm = g.getSectors().copperMining();

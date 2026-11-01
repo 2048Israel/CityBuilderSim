@@ -152,8 +152,17 @@ public class HoldersCheck {
 
         GameFiles files = GameFiles.scratch("holderscheck");
         Game city = new Game(files);
+        // The constant world rate (XR4), as section 9 stands it (EP1): hot money bids for the city's paper over the world's rate (Auction.worldAt()), and the
+        // file's rate stood at 2.25% on main's path and at 5.5% in the draws of 1900, where the bank's bid at fair took the whole issue and the world held
+        // none (sections 6 to 8 read the world's holding). Its premise unmoved.
+        city.quietTheWorldForTheD();
         quietly(() -> {
             city.run();
+            // ...and Heavy Industry held (EP1), as ForeignCheck holds it (LD1): in the draws of 1900 it raises a plant on bonds and a bank loan in the
+            // month after the town is played to (BuybackCheck's town, which is this one, measured it: 215k of ten-year bonds and a 414k loan, the
+            // households' savings down from 526k to 212k that month), so the paper a sale made then allots the households is not what they can pay at
+            // the settle, and the bank holds the rest: sections 6, 9 and 12 read the split. The sections are about the paper, not that sector's capital.
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             /*
              * THE TREASURY AND THE GROUND THIS FIXTURE WAS WRITTEN AGAINST
              * (0.7.17), as the suite's other founding fixtures have been given
@@ -383,6 +392,7 @@ public class HoldersCheck {
         quietly(() -> {
             city.saveGame(3, "the holders");
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(3);
         });
         Game twin = back[0];
@@ -459,6 +469,7 @@ public class HoldersCheck {
         Files.writeString(files.saveFile(4), json.toString());
         quietly(() -> {
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(4);
         });
         Game old = back[0];
@@ -555,6 +566,7 @@ public class HoldersCheck {
              * site held them "already building" all sixty months).
              */
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -671,6 +683,7 @@ public class HoldersCheck {
         quietly(() -> {
             city.saveGame(5, "the whole book");
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(5);
         });
         Game twin = back[0];
@@ -753,6 +766,7 @@ public class HoldersCheck {
         out.println("\n--- 10. the businesses are a holder: they buy at the settle, are paid, sell, and the books agree ---");
         GameFiles files = GameFiles.scratch("holderscheck-firms");
         Game city = new Game(files);
+        city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         quietly(() -> {
             city.run();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
@@ -760,6 +774,7 @@ public class HoldersCheck {
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -1093,6 +1108,7 @@ public class HoldersCheck {
         quietly(() -> {
             city.saveGame(3, "the businesses");
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(3);
         });
         Game twin = back[0];
@@ -1129,6 +1145,7 @@ public class HoldersCheck {
         Files.writeString(files.saveFile(4), json.toString());
         quietly(() -> {
             back[0] = new Game(files);
+            back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(4);
         });
         Game old = back[0];
@@ -1261,6 +1278,7 @@ public class HoldersCheck {
         /* ---- the city ---- */
         GameFiles files = GameFiles.scratch("holderscheck-world");
         Game city = new Game(files);
+        city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         quietly(() -> {
             city.run();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
@@ -1268,6 +1286,7 @@ public class HoldersCheck {
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -1420,6 +1439,7 @@ public class HoldersCheck {
         quietly(() -> {
             city.saveGame(3, "the world");
             twinBox[0] = new Game(files);
+            twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
             twinBox[0].loadGameSave(3);
         });
         Game twin = twinBox[0];
@@ -1453,6 +1473,7 @@ public class HoldersCheck {
         Files.writeString(files.saveFile(4), json.toString());
         quietly(() -> {
             twinBox[0] = new Game(files);
+            twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
             twinBox[0].loadGameSave(4);
         });
         Game old = twinBox[0];
@@ -1581,6 +1602,7 @@ public class HoldersCheck {
     static Reopening reopeningFixture(String label, boolean restrikeOff) throws Exception {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
+        city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         city.restrikeOffForTest = restrikeOff;
         quietly(() -> {
             city.run();
@@ -1589,6 +1611,7 @@ public class HoldersCheck {
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);

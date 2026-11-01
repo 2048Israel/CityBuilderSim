@@ -813,7 +813,12 @@ public class DeskCheck {
         double faceBefore = line.getFaceValue(), carriedBefore = line.getCarryingValue();
         int reopenMonth = g.getMonth();
         g.setCashForTest(Founding.WEALTHY_CASH);
-        quietly(() -> g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
+        // ...sized as the first was, by the households' purse at the time (EP1): the first ask, three times the purse of month 62, was the whole of the
+        // bids then, and four months on the purse had fallen to a third (1,804 against 5,353), so the same ask met bids that did not cover it and cleared
+        // at 89.44 per 100 with a 9-point tail, which dragged the line's carrying value to 94.95 under a market price that the five points of rates then
+        // took only to 95.13. Covered, as the first was, the second sale clears at 98.36 and the line is carried above where the rise leaves it.
+        final double reopening = Math.max(100 * PriceLevel.FACTOR, g.getHouseholdBalance().spareForPaper() * 3);
+        quietly(() -> g.handleLongBondLogic(reopening, 10, 100 * PriceLevel.FACTOR));
         check("fixture: the second sale reopened the line: one line, and more face on it (" + String.format("%,.0f to %,.0f", faceBefore, line.getFaceValue()) + ")",
                 dm.getDebt().size() == pieces && line.getFaceValue() > faceBefore + 1e-6);
         check("a reopening adds a sale and keeps one line: two sales, the first as it was", line.getSales().size() == 2 && saleText(line.getSales().get(0)).equals(saleText(first)));

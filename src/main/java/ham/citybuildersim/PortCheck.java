@@ -717,6 +717,12 @@ public class PortCheck {
         out.println("\n--- 5. no port gives a bit-identical band: a town with a railway and no terminal ---");
         Game g = town("portcheck-rail", 300, 2_000_000);
         Game.BuildResult[] stood = new Game.BuildResult[2];
+        // ...on the literals, steel's world prices doubled, as 6 (FL1): on the world file's band under Random an Arc Furnace on imported scrap shipped
+        // steel that netted a hair under its scrap's cost in the draws of 1900 (EP1: 0.0058 against 0.0059 by the third month, the slope sinking each
+        // month's band with the last month's exports), THE ORDER does not buy scrap for an export at a loss, and the premise here is foundries that
+        // ship (the general cargo out by rail and road) - so their steel pays.
+        g.playOnLiterals();
+        g.getMarkets().get(Good.STEEL).setWorldPrices(Good.STEEL.worldImportPrice() * 2, Good.STEEL.worldExportPrice() * 2);
         quietly(() -> {
             g.setCashForTest(Founding.WEALTHY_CASH * 100);
             stood[0] = g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 2, true);

@@ -387,12 +387,20 @@ public class BuybackCheck {
     static Game playedCity(String label) {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
+        // The world these sections are written against: the constant world rate (XR4), as HoldersCheck's section 9 stands it (EP1). Hot money bids for the
+        // city's paper over the world's rate (Auction.worldAt()), and the file's rate stood at 2.25% on main's path and at 5.5% in the draws of 1900: the
+        // bank's bid at fair took the whole line (1,180k of it) and the world, bidding nothing under 5.5%, held none of it. Its premise unmoved.
+        city.quietTheWorldForTheD();
         quietly(() -> {
             city.run();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            // ...and Heavy Industry held (EP1), as ForeignCheck holds it (LD1): in the draws of 1900 it raised a plant in month 62, the month after the
+            // town is played to, on 215k of ten-year bonds and a 414k loan, and the households' savings fell from 526k to 212k that month (the bonds
+            // and the shares took them), so the households that were allotted 508k of the line at its sale could pay 148k of it at the settle.
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);

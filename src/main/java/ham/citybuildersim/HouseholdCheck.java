@@ -1606,7 +1606,11 @@ public class HouseholdCheck {
         try {
             java.nio.file.Path root = TempDirs.create("householdcheck-rate");
             System.setOut(hushed);
-            city = MonetaryCheck.founding(root, "saving-pays");
+            // ...Cement & Concrete held (EP1): in the draws of 1900 its investor stood a plant on a bank loan of 1,326 (51,188 at today's prices), which
+            // put the bank's book at 2,059 beside deposits of 245; the bank funded it at the central bank's window at a dial of 40%, and its margin
+            // could not pay savers anything: they were paid 0.00%, where on main's path (a book of 790) saving paid 2.9%. The premise is a bank that
+            // pays savers, as WN3 held the sector in PolicyPreviewCheck.
+            city = MonetaryCheck.founding(root, "saving-pays", false, Sectors.CEMENT_CONCRETE);
             for (int m = 0; m < 12; m++) {
                 MonetaryCheck.step(city, .40, 0);
                 worstAudit = Math.max(worstAudit, city.getLastMoneyAudit().relative());
