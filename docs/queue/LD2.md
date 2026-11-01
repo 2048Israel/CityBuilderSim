@@ -35,3 +35,14 @@ whole, unless point 3 turns out large. LD1's notes are the background.
    nothing, since the wage is meant to bring migrants.
 
 Each point's fixture causes it, and no premise moves.
+
+## 5. A hands-off city's bank fails more often since LD1
+
+Found by EP1's slice D (2026-11-01, EP1's notes §8) in TreasuryCheck's
+setting: a hands-off default city's bank fails within 120 months in 0 of 4
+seeds before LD1, 3 of 12 after it, 4 of 12 on EP1. Count it over the twelve
+seeds on main first, then find which of LD1's bids (or points 2-4 above)
+drains the bank: the wage bill outrunning the loans' income, or the deposits
+leaving with the migrants the wage did not bring. A fix keeps LD1's purpose
+(a business short of workers bids the wage up, Jerus 10-31) and brings the
+count back to main's before LD1; the harness counts it in the twelve seeds.
