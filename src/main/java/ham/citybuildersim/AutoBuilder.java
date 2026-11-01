@@ -1521,14 +1521,14 @@ public final class AutoBuilder {
         for (LandParcel p : market.getListing()) {
             if (taken.contains(p.getId()) || !LandMarket.bareGround(p) || !(p.getSizeSqFt() > 0)) continue;
             if (LandMarket.buildableSqFt(p) >= lackSqFt && (cheapest == null
-                    || market.priceWithPrepUsd(p) < market.priceWithPrepUsd(cheapest)
-                    || (market.priceWithPrepUsd(p) == market.priceWithPrepUsd(cheapest) && market.nearer(p, cheapest)))) cheapest = p;
+                    || LandMarket.beats(market.priceWithPrepUsd(cheapest), market.priceWithPrepUsd(p))
+                    || (LandMarket.tied(market.priceWithPrepUsd(p), market.priceWithPrepUsd(cheapest)) && market.nearer(p, cheapest)))) cheapest = p;
             if (!p.isMostlySea()) running.add(p);
         }
         boolean byBuildable = LandMarket.anyBuildable(running);
         for (LandParcel p : running) {
-            if (best == null || market.rankPerUsd(p, byBuildable) > market.rankPerUsd(best, byBuildable)
-                    || (market.rankPerUsd(p, byBuildable) == market.rankPerUsd(best, byBuildable) && market.nearer(p, best))) best = p;
+            if (best == null || LandMarket.beats(market.rankPerUsd(p, byBuildable), market.rankPerUsd(best, byBuildable))
+                    || (LandMarket.tied(market.rankPerUsd(p, byBuildable), market.rankPerUsd(best, byBuildable)) && market.nearer(p, best))) best = p;
         }
         return cheapest != null ? cheapest : best;
     }

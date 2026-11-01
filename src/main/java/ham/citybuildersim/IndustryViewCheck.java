@@ -197,10 +197,13 @@ public class IndustryViewCheck {
      * Plant on them, and every works of Copper Refining - a smelter far bigger
      * than the mine, so its concentrate is mostly landed; a refinery and a rod
      * mill on its anode and cathode; a scrap refinery on old copper arising
-     * every month.
+     * every month. On the goods' literals (Game.playOnLiterals()), as CopperRefiningCheck's chains: on the world file's band under Random the rod
+     * mill's cathode cost more than its rod netted abroad in the calendar's first months (EP1, the draws of 1900), a works orders nothing it
+     * loses on (THE ORDER, FL1), and the town this view reads made no rod.
      */
     static Town copper() {
         Game g = CopperMiningCheck.copperTown("industryviewcheck-copper", 1);
+        g.playOnLiterals();
         FILES.add(g.getGameFiles());
         BuildingManager b = g.getBuildingManager();
         quietly(() -> {

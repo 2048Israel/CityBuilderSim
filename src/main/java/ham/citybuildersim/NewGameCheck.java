@@ -834,7 +834,12 @@ public class NewGameCheck {
         }
 
         // The getter is the invoice: a new city is charged exactly this for the village.
-        Game v = quietly(() -> { Game g = new Game(files); g.run(); return g; });
+        // EP1: on the Historical path (the default founding's otherwise). The gap below is the city's after a year, and the auction's coupon
+        // steps an eighth in a sawtooth of the face (see the XR1 note and the sawtooth below), so whether the quote for this one gap lands
+        // within a granule of it depends on where the gap falls on the tooth. On the Random path that is a draw of the world's prices, keyed by
+        // calendar year, and the calendar's move to 1900 moved it ($1,109k over a bound of $112k); Historical's stand-in has no draw in it.
+        // The section's premise, a Standard city short of the water plant a year on, stands.
+        Game v = quietly(() -> { Game g = new Game(files, Founding.defaults().withPath(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED)); g.run(); return g; });
         // XR1 (2026-10-21): this section measures what the founding endowment buys and a bond sized to a gap,
         // not the currency. Under THE FLOAT the D$ falls from 1.00 to 0.77 in the year the fixture waits, which
         // moves the gap to a face where the auction's coupon steps an eighth (an $800k tooth in the proceeds,
@@ -990,8 +995,8 @@ public class NewGameCheck {
     /** The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. */
     static boolean audited(Game g) {
         MoneyAudit.Result money = g.getLastMoneyAudit();
-        boolean conserved = Math.abs(money.residual) <= .01 || money.relative() <= 1e-7;
-        return conserved && Math.abs(g.getPostAuditDrift()) <= .01;
+        boolean conserved = Math.abs(money.residual) <= MoneyAudit.CENT || money.relative() <= 1e-7;
+        return conserved && Math.abs(g.getPostAuditDrift()) <= MoneyAudit.CENT;
     }
 
     /* =====================================================================

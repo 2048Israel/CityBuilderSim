@@ -28,10 +28,12 @@ import java.util.stream.IntStream;
  *
  * What this has to prove:
  *   0. THE MONEYS: every money a nation's year names on the path is carried, each with an anchor nation, and a nation's rate is a number.
- *   1. ONE SEED, ONE PATH: two WorldMoneys of one path and seed step identically for 30 years, bit for bit; another seed differs; a save
- *      at month 150 (and 320) restored into a fresh one steps on bit for bit, on both paths; a save of another file is refused.
+ *   1. ONE SEED, ONE PATH: two WorldMoneys of one path and seed step identically for 30 years (Historical: the whole replay of the file, the
+ *      stand-in century's 1,200 months included, and 48 months of the rule), bit for bit; another seed differs; a save at month 150 (and, a
+ *      few months into the rule, at 320 on Random and 8 months after the table's end on Historical) restored into a fresh one steps on bit for
+ *      bit, on both paths; a save of another file is refused.
  *   2. HISTORICAL IS THE FILE to December 2025: every money with a figure of the file equals it, exactly, in every month; both paths
- *      begin from the file's January 2000.
+ *      begin from the file's first January (the calendar's, 1900: the file's own 2000 held through the stand-in century).
  *   3. THE SWINGS ARE THE DIALS' (Random, seeded paths, the terms of trade null): the dollar cycle's innovation sd and persistence, and each
  *      major's and an emerging float's own swing's, within 5% of CYCLE_SIGMA / CYCLE_HALF_LIFE and the money's sigma / OWN_HALF_LIFE; printed:
  *      each one's volatility a year and the half-life an economist would fit, beside the study's table.
@@ -64,11 +66,19 @@ public class WorldMoneysCheck {
     /** The seeds the statistics are counted over: the full file's paths (26 years each), and the fixture's. */
     static final int FULL_SEEDS = 1_000, FIXTURE_SEEDS = 300;
 
-    /** The months of a path the statistics are counted over: January 2000 to November 2025, the 26-year run. */
+    /** The months of a Random path the statistics are counted over: the 26-year run (the first January to the November 26 years on). */
     static final int PATH_MONTHS = 311;
 
-    /** The months the identity and restore sections run: thirty years, so Historical's rule runs 48 months. */
+    /** The months the identity and restore sections run on Random: thirty years. */
     static final int LONG_MONTHS = 360;
+
+    /** The months Historical's rule runs in the identity and restore sections: 48, after the table's end. */
+    static final int RULED_MONTHS = 48;
+
+    /** The last month the identity and restore sections step a path to: Random's thirty years; Historical's whole replay and RULED_MONTHS of the rule. */
+    static int longMonths(Nations.Path path) {
+        return path == Nations.Path.HISTORICAL ? WorldMoneys.HISTORICAL_RULE_START + RULED_MONTHS : LONG_MONTHS;
+    }
 
     /** A measured sd or persistence is within this share of the dial it is drawn from (a pooled lag-1 fit over 311 months a path is biased low by about 1.3%). */
     static final double DIAL_TOL = .05;
@@ -252,7 +262,8 @@ public class WorldMoneysCheck {
                 anchored.see(w.anchorOf(c) >= 1 && w.anchorOf(c) <= n.count(), () -> c + " has anchor " + w.anchorOf(c));
                 if (!Double.isFinite(w.rate(c))) absent++;
             }
-            for (int t = 0; t <= LONG_MONTHS; t++) {
+            int last = longMonths(path);
+            for (int t = 0; t <= last; t++) {
                 if (t > 0) w.step(t, null);
                 if (t % 12 != 0) continue;
                 for (int i = 1; i <= n.count(); i++) {
@@ -262,10 +273,10 @@ public class WorldMoneysCheck {
                     rated.see(Double.isFinite(w.rateOfNation(i)) && w.rateOfNation(i) > 0, () -> n.iso3(nation) + " in " + year + " (" + money + ") has no rate");
                 }
             }
-            tally(path + ": every money a nation's year names, 2000-2030, is carried", carried);
+            tally(path + ": every money a nation's year names, " + Nations.FIRST_YEAR + "-" + (Nations.FIRST_YEAR + last / 12) + ", is carried", carried);
             tally(path + ": every money carried has an anchor nation of the file", anchored);
-            tally(path + ": every nation's money this January, 2000-2030, has a rate above 0", rated);
-            out.println(path + ": " + w.codes().size() + " moneys carried, " + absent + " with no rate in January 2000 (they come in with the file's first figure)");
+            tally(path + ": every nation's money this January, " + Nations.FIRST_YEAR + "-" + (Nations.FIRST_YEAR + last / 12) + ", has a rate above 0", rated);
+            out.println(path + ": " + w.codes().size() + " moneys carried, " + absent + " with no rate in the first January (they come in with the file's first figure)");
         }
     }
 
@@ -279,20 +290,21 @@ public class WorldMoneysCheck {
         int n = sc.data.nationCount();
         for (Nations.Path path : Nations.Path.values()) {
             WorldMoneys a = sc.moneys(path, BASE_SEED, regimes), b = sc.moneys(path, BASE_SEED, regimes);
+            int last = longMonths(path);
             Tally same = new Tally();
-            for (int t = 1; t <= LONG_MONTHS; t++) {
+            for (int t = 1; t <= last; t++) {
                 double[] ln = t % 12 == 0 ? synthetic(t, n) : null;
                 a.step(t, ln);
                 b.step(t, ln);
                 int tt = t;
                 same.see(alike(a, b), () -> "month " + tt);
             }
-            tally(path + ": two WorldMoneys of one seed agree on every rate, shadow, swing and peg, bit for bit, for " + LONG_MONTHS + " months", same);
+            tally(path + ": two WorldMoneys of one seed agree on every rate, shadow, swing and peg, bit for bit, for " + last + " months", same);
             WorldMoneys other = sc.moneys(path, BASE_SEED + 1, regimes);
-            run(other, LONG_MONTHS, n);
-            assertTrue(path + ": another seed gives another path: some money's rate in month " + LONG_MONTHS + " differs", !alike(a, other));
-            // a save at 150 and at 320, restored into a fresh one, goes on as the one saved did
-            for (int at : new int[] {150, 320}) {
+            run(other, last, n);
+            assertTrue(path + ": another seed gives another path: some money's rate in month " + last + " differs", !alike(a, other));
+            // a save at 150 and a little way into the rule (Random: month 320; Historical: 8 months past the table's end), restored into a fresh one, goes on as the one saved did
+            for (int at : new int[] {150, path == Nations.Path.HISTORICAL ? WorldMoneys.HISTORICAL_RULE_START + 8 : 320}) {
                 WorldMoneys saved = sc.moneys(path, BASE_SEED, regimes);
                 run(saved, at, n);
                 double[] bits = saved.toSaveArray();
@@ -302,14 +314,14 @@ public class WorldMoneysCheck {
                 fresh.restore(bits);
                 Tally go = new Tally();
                 go.see(alike(saved, fresh), () -> "at the save");
-                for (int t = at + 1; t <= LONG_MONTHS; t++) {
+                for (int t = at + 1; t <= last; t++) {
                     double[] ln = t % 12 == 0 ? synthetic(t, n) : null;
                     saved.step(t, ln);
                     fresh.step(t, ln);
                     int tt = t;
                     go.see(alike(saved, fresh), () -> "month " + tt);
                 }
-                tally(path + ": a save at month " + at + " (" + broken + " pegs broken by then) restored into a fresh one steps on to " + LONG_MONTHS + " bit for bit", go);
+                tally(path + ": a save at month " + at + " (" + broken + " pegs broken by then) restored into a fresh one steps on to " + last + " bit for bit", go);
                 boolean finite = true;
                 for (double x : bits) finite &= Double.isFinite(x);
                 assertTrue(path + ": the save at month " + at + " is " + bits.length + " numbers, none NaN or infinite (it goes through JSON)", finite);
@@ -379,10 +391,12 @@ public class WorldMoneysCheck {
         tally("the dollar's rate is 1 in every month, and cross(USD, USD) is 1", dollar);
         if (without > 0) tally("a month the file has no figure for holds the last or is not there yet (" + without + " such money-months)", held);
         else out.println("  every carried money has a figure of the file in every month here: the full file's section holds the old moneys' held months");
-        tally("both paths begin from the file's January 2000: rateAtStart is the file's figure for every money it has one for", start);
-        assertTrue("Historical ran the rule from month " + h.ruleStart() + " and stands in month " + h.month(), h.ruleStart() == 312 && h.month() == 311 && !h.ruling());
-        h.step(312, null);
-        assertTrue("month 312 (January 2026) is the rule's first on Historical, and Random's is month " + r.ruleStart(), h.ruling() && r.ruleStart() == 1);
+        tally("both paths begin from the file's first January (the calendar's): rateAtStart is the file's figure for every money it has one for", start);
+        int january2026 = WorldData.monthNumber(Nations.HISTORY_LAST_YEAR + 1, 1);
+        assertTrue("Historical ran the rule from month " + h.ruleStart() + " (January 2026) and stands in the month before, " + h.month(),
+                h.ruleStart() == january2026 && h.month() == january2026 - 1 && !h.ruling());
+        h.step(january2026, null);
+        assertTrue("month " + january2026 + " (January 2026) is the rule's first on Historical, and Random's is month " + r.ruleStart(), h.ruling() && r.ruleStart() == 1);
     }
 
     /* =====================================================================
@@ -636,7 +650,7 @@ public class WorldMoneysCheck {
     static void thePegs(Scope sc, Pass pass, boolean given) {
         out.println("--- pegs hold and break by the rule (" + sc.name + (given ? ", with pegs given by regimes" : "") + ": " + pass.seeds + " Random paths) ---");
         assertTrue("there are pegs to count: " + pass.pegs.length + " moneys held to another from the start", pass.pegs.length > 0);
-        assertTrue("every month a peg holds, its rate over the money it is pegged to equals its ratio of January 2000 to " + EXACT + " (" + pass.ratioChecked + " peg-months read, "
+        assertTrue("every month a peg holds, its rate over the money it is pegged to equals its ratio of the first January to " + EXACT + " (" + pass.ratioChecked + " peg-months read, "
                 + pass.ratioBad + " off)", pass.ratioChecked > 0 && pass.ratioBad == 0);
         int soft = 0, boards = 0;
         long breaks = 0, faced = 0;
@@ -767,8 +781,8 @@ public class WorldMoneysCheck {
         assertTrue("there is a commodity exporter whose money floats on its own prices: " + n.iso3(exporter) + ", commodity share " + String.format("%.3f", sc.shares[exporter - 1]), exporter > 0 && sc.shares[exporter - 1] > 0);
         String money = n.year(exporter, Nations.FIRST_YEAR + 1).money();
         double share = sc.shares[exporter - 1], rise = .1, expected = WorldMoneys.TOT_PASS * share * rise;
-        out.printf("  finding: %s's commodity share of exports is %.3f, so its t is TOT_PASS x share = %.3f: a rise of %.1f in its ln terms of trade moves the %s by %.3f%% in the end (t = month 12, January 2001)%n",
-                n.iso3(exporter), share, WorldMoneys.TOT_PASS * share, rise, money, 100 * expected);
+        out.printf("  finding: %s's commodity share of exports is %.3f, so its t is TOT_PASS x share = %.3f: a rise of %.1f in its ln terms of trade moves the %s by %.3f%% in the end (t = month 12, January %d)%n",
+                n.iso3(exporter), share, WorldMoneys.TOT_PASS * share, rise, money, 100 * expected, Nations.FIRST_YEAR + 1);
         w.quiet();
         int count = n.count();
         w.recordTermsOfTrade(new double[count]);
@@ -777,7 +791,7 @@ public class WorldMoneysCheck {
         up[exporter - 1] = rise;
         Tally mine = new Tally(), others = new Tally(), pegsHeld = new Tally();
         int third = WorldMoneys.TOT_MONTHS;
-        double[] expect = new double[6];   // January..June of 2001: a third each of the first TOT_MONTHS, then what has been reached
+        double[] expect = new double[6];   // January..June of the second year: a third each of the first TOT_MONTHS, then what has been reached
         for (int k = 0; k < expect.length; k++) expect[k] = -expected * Math.min(k + 1, third) / third;
         List<String> floats = floats(w);
         for (int k = 0; k < expect.length; k++) {
@@ -793,7 +807,7 @@ public class WorldMoneysCheck {
         }
         tally("the " + money + " is dearer by TOT_PASS x share x " + rise + " = " + String.format("%.5f", expected) + ": a third in January, February and March, the whole by March, and not a bit more in April, May or June", mine);
         tally("no other float moves: " + (floats.size() - 1) + " moneys, six months, to " + EXACT, others);
-        // the change, not the level: the same figure again in January 2002 is no news; a null January leaves it; a fall of the same size takes it back
+        // the change, not the level: the same figure again in the next January is no news; a null January leaves it; a fall of the same size takes it back
         w.step(18, null);
         for (int t = 19; t < 24; t++) w.step(t, null);
         w.step(24, up);
@@ -910,7 +924,7 @@ public class WorldMoneysCheck {
         Tally cross = new Tally(), dollar = new Tally(), triangle = new Tally();
         for (Nations.Path path : Nations.Path.values()) {
             WorldMoneys w = sc.moneys(path, BASE_SEED, null);
-            for (int t = 0; t <= LONG_MONTHS; t++) {
+            for (int t = 0; t <= longMonths(path); t++) {
                 if (t > 0) w.step(t, null);
                 int tt = t;
                 dollar.see(w.rate(Nations.DOLLAR) == 1, () -> path + " month " + tt);
@@ -923,7 +937,7 @@ public class WorldMoneysCheck {
                 }
             }
         }
-        tally("cross(a, b) is rate(b) / rate(a) for the eight, in every month 0-" + LONG_MONTHS + " of both paths", cross);
+        tally("cross(a, b) is rate(b) / rate(a) for the eight, in every month of both paths (0-" + LONG_MONTHS + " on Random, 0-" + longMonths(Nations.Path.HISTORICAL) + " on Historical)", cross);
         tally("the dollar's rate is 1 in every month of both paths", dollar);
         tally("a cross through a third money is the cross: cross(a, b) x cross(b, c) = cross(a, c) for the eight and the euro and the yen", triangle);
         assertTrue("the eight in their load-bearing order: " + WorldMoneys.EIGHT, WorldMoneys.EIGHT.equals(List.of("USD", "EUR", "JPY", "GBP", "CNY", "CAD", "AUD", "CHF")));
@@ -967,7 +981,7 @@ public class WorldMoneysCheck {
                 }
             }
             tally(path + ": quiet, over a year from month " + first + " each of " + floats.size() + " floats' ln rate moves by exactly the change in ln(P_anchor / P_US)", moves);
-            // its constant: the mean over the years the anchor was on the money of the file's real gap from the cpis
+            // its constant: the mean over the file's own years (2000 to 2025) the anchor was on the money of the file's real gap from the cpis
             Tally constants = new Tally();
             int checked = 0;
             for (String c : WorldMoneys.EIGHT) {
@@ -975,8 +989,8 @@ public class WorldMoneysCheck {
                 if (c.equals(Nations.DOLLAR) || a < 1) continue;
                 double sum = 0;
                 int count = 0;
-                for (int y = Nations.FIRST_YEAR; y <= Nations.HISTORY_LAST_YEAR; y++) {
-                    if (!c.equals(data.moneyAt(a, (y - Nations.FIRST_YEAR) * 12 + 11))) continue;
+                for (int y = WorldData.FILE_FIRST_YEAR; y <= Nations.HISTORY_LAST_YEAR; y++) {   // the file's own years: the stand-in century before them is no evidence
+                    if (!c.equals(data.moneyAt(a, WorldData.monthNumber(y, 12)))) continue;
                     double r = data.pathValue("rate", a, y), pa = data.pathValue("cpi", a, y), pu = data.pathValue("cpi", usa, y);
                     if (r > 0 && pa > 0 && pu > 0) {
                         sum += Math.log(r) - Math.log(pa / pu);
@@ -1036,7 +1050,7 @@ public class WorldMoneysCheck {
         Tally there = new Tally();
         for (String b : boards) there.see(w.isBoard(b) && w.pegHeld(b), () -> b + " is not a held board in the file");
         tally("the file's currency boards " + Arrays.toString(boards) + " are pegs held from the start and boards", there);
-        out.println("  " + pass.pegs.length + " moneys are pegged or tied from January 2000 on Random (the full file's regimes)");
+        out.println("  " + pass.pegs.length + " moneys are pegged or tied from the first January on Random (the full file's regimes)");
     }
 
     /* =====================================================================
@@ -1173,11 +1187,11 @@ public class WorldMoneysCheck {
         seller.partnerTradeForTest().restoreHistory(List.of(new PartnerTrade.Table(Nations.FIRST_YEAR, cells)));
         double expected = 0;
         for (int k = 0; k < 2; k++) expected += values[k] / (values[0] + values[1]) * Math.log(beyond.goodPrice(numbers[k], Nations.FIRST_YEAR + 1));
-        assertTrue("fixture: it is January 2001's turn next, and the two goods' prices in 2001 are off their normal (" + String.format("%+.5f", expected) + ")",
+        assertTrue("fixture: it is the next January's turn (" + (Nations.FIRST_YEAR + 1) + "), and the two goods' prices that year are off their normal (" + String.format("%+.5f", expected) + ")",
                 CityCalendar.monthOfYear(seller.getMonth() + 1) == 1 && Math.abs(expected) > 1e-6);
         play(seller);
         double piece = -WorldMoneys.TOT_PASS * expected / WorldMoneys.TOT_MONTHS;
-        out.printf("  exports of 70%% and 30%% in two goods whose prices sit %+.5f (ln, export-weighted) off their normal in 2001: the D$'s terms of trade after the January reprice %+.6f (a third of %+.6f)%n",
+        out.printf("  exports of 70%% and 30%% in two goods whose prices sit %+.5f (ln, export-weighted) off their normal in the second year: the D$'s terms of trade after the January reprice %+.6f (a third of %+.6f)%n",
                 expected, seller.getForeignAccounts().getTermsOfTradeReached(), -WorldMoneys.TOT_PASS * expected);
         assertTrue("the January steps the D$ by minus TOT_PASS times the export-weighted ln of their prices against normal: a third of it in that month's reprice",
                 Math.abs(seller.getForeignAccounts().getTermsOfTradeReached() - piece) < 1e-12);

@@ -13,9 +13,11 @@ import java.util.List;
  * its path (WorldEconomy, THE US DOLLAR ON THE US'S PATH), so a figure in it moves with its prices and says nothing across the years; a real US$ is
  * what the World Bank's gdp_2015usd is in, and what the nations' output is already in.
  *
- * THE BRIDGE (the leaderboard's D1, Jerus 2026-10-21: "2015 so that its calibrated to the other"): a founding game dollar counts as one real 2015 US
- * dollar, whatever year the calendar starts, so the US's price level in 2015 over its level at founding is 1 and the real US$ is the in-game US$
- * deflated by its own level since founding. The game's prices stay as struck from 2025's.
+ * THE BRIDGE (the leaderboard's D1, Jerus 2026-10-21: "2015 so that its calibrated to the other"): a founding game dollar is a US dollar of the
+ * calendar's first year, and BRIDGE of them is a real 2015 US dollar's worth: the US's price level in 2015 over its level in that year, from the same
+ * series the founding prices are struck from (PriceLevel; 28.4 for the 1900 start, EP1; it was 1 while the calendar began in 2000 and a founding
+ * dollar counted as a 2015 one). The real US$ is the in-game US$ deflated by its own level since founding and then bridged; the game's prices stay
+ * as struck from 2025's (PriceLevel.FACTOR).
  *
  * Every figure is in the city's money of today, so a currency reform (Denomination) changes nothing: the caller hands the founding's rate in today's
  * units (Denomination.money(ForeignAccounts.OPENING_RATE)), and the D$ per real US$ is read in today's D$.
@@ -23,6 +25,13 @@ import java.util.List;
 public final class RealDollar {
 
     private RealDollar() { }
+
+    /**
+     * Real 2015 US dollars in a founding US dollar (EP1, study call 12): the US CPI-U of Rankings.BASE_YEAR over that of the calendar's first year, the
+     * one place the pivot to 2015 is struck. Multiply a figure in founding dollars (the game dollar over its level since founding) by it for real
+     * 2015 dollars, divide by it to go back.
+     */
+    public static final double BRIDGE = PriceLevel.usCpi(Rankings.BASE_YEAR) / PriceLevel.usCpi(CityCalendar.EPOCH_YEAR);
 
     /**
      * What the city's money is worth against a partner, for the real effective rate: the weight it trades with (any positive scale: the weights are
@@ -43,21 +52,21 @@ public final class RealDollar {
     }
 
     /**
-     * D$ per real 2015 US$: the rate (D$ per US$) times the US$'s price level since founding. A real 2015 US$ buys what a dollar bought in 2015 - at
-     * founding what a founding US$ buys - and a US$ of today buys less by the level, so it takes that many more US$ for it, each at the rate. At
-     * founding the level is 1, so it is the rate. NaN for a rate or a level that is not positive.
+     * D$ per real 2015 US$: the rate (D$ per US$) times the US$'s price level since founding, over the bridge. A real 2015 US$ buys what a dollar bought in
+     * 2015 - at founding 1/BRIDGE of what a founding US$ buys - and a US$ of today buys less by the level, so it takes that many more US$ for it, each at
+     * the rate. At founding the level is 1, so it is the rate over the bridge. NaN for a rate or a level that is not positive.
      */
     public static double dollarsPer2015Usd(double ratePerUsd, double usPricesSinceFounding) {
-        return positive(ratePerUsd) && positive(usPricesSinceFounding) ? ratePerUsd * usPricesSinceFounding : Double.NaN;
+        return positive(ratePerUsd) && positive(usPricesSinceFounding) ? ratePerUsd * usPricesSinceFounding / BRIDGE : Double.NaN;
     }
 
     /**
      * The city's GDP in real 2015 US$, the World Bank's way: the GDP over the city's price index (YearBook.realGdp's division, which carries it back to
-     * the D$ of founding, and is the same through a currency reform) over the founding's rate in today's money (D$ per US$ then), so the founding's
-     * D$ is one real US$ and a month of the same city is the same figure in whatever it is counted. NaN for an index or a rate that is not positive.
+     * the D$ of founding, and is the same through a currency reform) over the founding's rate in today's money (D$ per US$ then), bridged, so the founding's
+     * D$ is BRIDGE real US$ and a month of the same city is the same figure in whatever it is counted. NaN for an index or a rate that is not positive.
      */
     public static double realGdp2015Usd(double gdp, double priceIndex, double foundingRatePerUsd) {
-        return positive(priceIndex) && positive(foundingRatePerUsd) && Double.isFinite(gdp) ? gdp / priceIndex / foundingRatePerUsd : Double.NaN;
+        return positive(priceIndex) && positive(foundingRatePerUsd) && Double.isFinite(gdp) ? gdp / priceIndex / foundingRatePerUsd * BRIDGE : Double.NaN;
     }
 
     /**

@@ -57,7 +57,7 @@
 >      1-year and the months the dial is off the rule by more than a quarter
 >      point, over 120 months of the playtest's founding.
 
-**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (27), [Debt](Debt.md) (19), [YieldCurve](YieldCurve.md) (8), [Expectations](Expectations.md) (7), [MonetaryCheck](MonetaryCheck.md) (2), [CentralBank](CentralBank.md) (2), [DebtQuote](DebtQuote.md) (2), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [BondMarket](BondMarket.md) (1), [GameFiles](GameFiles.md) (1)
+**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (27), [Debt](Debt.md) (19), [PriceLevel](PriceLevel.md) (12), [YieldCurve](YieldCurve.md) (8), [Expectations](Expectations.md) (7), [MonetaryCheck](MonetaryCheck.md) (2), [CentralBank](CentralBank.md) (2), [DebtQuote](DebtQuote.md) (2), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [BondMarket](BondMarket.md) (1), [GameFiles](GameFiles.md) (1)
 
 ## Sections
 
@@ -90,8 +90,8 @@
 | 169 | `CurveCheck.BEHIND` | `new Study("behind",.01,.05,.60, 0, new double[] { 1.12, 3.65, 4.46, 5.00, 5.3...` | ...the city behind: the dial at 1% against inflation at 5%, credibility .60. |
 | 172 | `CurveCheck.QE` | `new Study("QE",.03,.02,.80,.25, new double[] { 3.12, 3.12, 3.15, 3.24, 3.37, ...` | ...and QE: the calm city with the central bank holding a quarter of the term paper. |
 | 175 | `CurveCheck.CITIES` | `{ CALM, HIKING, BEHIND, QE }` | The four, in the study's order. |
-| 488 | `CurveCheck.ASK` | `20_000` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
-| 564 | `CurveCheck.USD_ASK` | `1_000` | What the dollar legs borrow, in dollars. |
+| 488 | `CurveCheck.ASK` | `20_000 * PriceLevel.FACTOR` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
+| 564 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
 
 ## Fields (state)
 
@@ -181,7 +181,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 566 | 7 | `static void noMoneyPump(Path root, Game steep) throws Exception` |  |
+| 566 | 7 | `static void noMoneyPump(Path root, Game steep) throws Exception` | today's figure, priced at the founding's level (EP1) |
 | 574 | 9 | `static Game tradingCity(Path root) throws Exception` |  |
 | 585 | 21 | `static void roundTrips(String city, Game g)` | Issues each kind and buys it straight back: the city ends no richer, the piece is off the books. |
 | 607 | 21 | `static void roundTrip(String city, Game g, String kind, Runnable issue)` |  |

@@ -47,8 +47,16 @@ public final class PartnerTrade {
     /** A good's trade with the world in a month, in its units: what the city sold abroad and what it bought. Immutable. */
     public record GoodUnits(Good good, double unitsOut, double unitsIn) { }
 
-    /** The places a table is rounded to when it goes to the history: hundredths of a unit and of a thousand. */
+    /** The places a table's units are rounded to when it goes to the history: hundredths of a unit. */
     static final double HISTORY_ROUND = 100;
+
+    /**
+     * ...and its money: hundredths of a thousand at today's prices, so 100 / PriceLevel.FACTOR places at the founding's (EP1's gate review). The
+     * history is read by the model (Game.cityExportPriceLevel() weights the world's prices by the year's exports by good), and a young city sells a
+     * good to a nation for a thousandth of a thousand: rounded to hundredths those cells were zero or a step apart, the weights and so the terms
+     * of trade and the D$ were another's, and ScaleCheck's town parted from its twin at the January of its second year.
+     */
+    static final double HISTORY_ROUND_MONEY = HISTORY_ROUND / PriceLevel.FACTOR;
 
     /**
      * The state a save carries, plain fields (Gson matches them by name): the month last tallied by nation, with the trade that had no partner, and the
@@ -273,7 +281,7 @@ public final class PartnerTrade {
             for (Map.Entry<Integer, double[]> e : g.getValue().entrySet()) {
                 double[] c = e.getValue();
                 out.add(rounded
-                        ? new Cell(g.getKey(), e.getKey(), round(c[0]), round(c[1]), round(c[2]), round(c[3]))
+                        ? new Cell(g.getKey(), e.getKey(), round(c[0]), round(c[1]), roundMoney(c[2]), roundMoney(c[3]))
                         : new Cell(g.getKey(), e.getKey(), c[0], c[1], c[2], c[3]));
             }
         }
@@ -281,6 +289,8 @@ public final class PartnerTrade {
     }
 
     private static double round(double v) { return Math.round(v * HISTORY_ROUND) / HISTORY_ROUND; }
+
+    private static double roundMoney(double v) { return Math.round(v * HISTORY_ROUND_MONEY) / HISTORY_ROUND_MONEY; }
 
     /* =====================================================================
        READS - the snapshot, and the history

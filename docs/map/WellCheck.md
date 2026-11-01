@@ -1,4 +1,4 @@
-# WellCheck.java - 1,624 lines · 31 methods · 7 constants · harnesses
+# WellCheck.java - 1,643 lines · 31 methods · 7 constants · harnesses
 
 `ham/citybuildersim/WellCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      platform well into a free slot - since 0.7.113 each, and the land well
 > ... (51 more lines in the source)
 
-**Uses:** [Oil](Oil.md) (227), [Game](Game.md) (88), [Good](Good.md) (42), [LandManager](LandManager.md) (40), [Resource](Resource.md) (39), [OilView](OilView.md) (20), [BuildingsTemplate](BuildingsTemplate.md) (19), [Sector](Sector.md) (12), [Sectors](Sectors.md) (11), [Deposit](Deposit.md) (11), [BuildCard](BuildCard.md) (11), [OilCheck](OilCheck.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [GameFiles](GameFiles.md) (7), [Founding](Founding.md) (7), [World](World.md) (7), [BuildingManager](BuildingManager.md) (4), [LandParcel](LandParcel.md) (2), [MiningCheck](MiningCheck.md) (2), [Statement](Statement.md) (2), [Formats](Formats.md) (2), [GameVersion](GameVersion.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [LongPlaytest](LongPlaytest.md) (1), [Mining](Mining.md) (1), [BuildingCatalog](BuildingCatalog.md) (1), [JobType](JobType.md) (1), [GoodsMarket](GoodsMarket.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [Oil](Oil.md) (227), [Game](Game.md) (88), [Good](Good.md) (42), [LandManager](LandManager.md) (40), [Resource](Resource.md) (39), [OilView](OilView.md) (20), [BuildingsTemplate](BuildingsTemplate.md) (19), [Sector](Sector.md) (14), [Sectors](Sectors.md) (12), [Deposit](Deposit.md) (11), [BuildCard](BuildCard.md) (11), [OilCheck](OilCheck.md) (9), [BusinessInvestment](BusinessInvestment.md) (9), [GameFiles](GameFiles.md) (7), [Founding](Founding.md) (7), [World](World.md) (7), [BuildingManager](BuildingManager.md) (4), [LandParcel](LandParcel.md) (2), [MiningCheck](MiningCheck.md) (2), [Statement](Statement.md) (2), [Formats](Formats.md) (2), [GameVersion](GameVersion.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [LongPlaytest](LongPlaytest.md) (1), [Mining](Mining.md) (1), [BuildingCatalog](BuildingCatalog.md) (1), [JobType](JobType.md) (1), [GoodsMarket](GoodsMarket.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 **Used by (2):** [MapCheck](MapCheck.md), [OilViewCheck](OilViewCheck.md)
 
@@ -76,19 +76,19 @@
 | 274 | 2. THEIR LIFE |
 | 295 | 3. A TOWN'S LIFT |
 | 363 | 4. WORN OUT, RETIRED, REFILLED |
-| 433 | 5. DRY AND SEA SITES |
-| 500 | 6. ACROSS A SAVE |
-| 554 | 7. ONE POST |
-| 572 | THE OIL AT SEA (0.7.91) |
-| 611 | 8. A PLATFORM |
-| 742 | 9. THE SHUTTLE TANKERS |
-| 803 | 10. THE PIPELINE |
-| 860 | 11. ACROSS A SAVE |
-| 920 | 12. THE PLANNER |
-| 980 | 13. THE TWO POOLS (0.7.93) |
-| 1177 | 14. DEEP WATER (DW1) |
-| 1418 | 15. THE DEEP WELLS DECLINE FASTER (DW1) |
-| 1583 | 16. A WELL OPENS THE MONTH TWO WEAR OUT |
+| 452 | 5. DRY AND SEA SITES |
+| 519 | 6. ACROSS A SAVE |
+| 573 | 7. ONE POST |
+| 591 | THE OIL AT SEA (0.7.91) |
+| 630 | 8. A PLATFORM |
+| 761 | 9. THE SHUTTLE TANKERS |
+| 822 | 10. THE PIPELINE |
+| 879 | 11. ACROSS A SAVE |
+| 939 | 12. THE PLANNER |
+| 999 | 13. THE TWO POOLS (0.7.93) |
+| 1196 | 14. DEEP WATER (DW1) |
+| 1437 | 15. THE DEEP WELLS DECLINE FASTER (DW1) |
+| 1602 | 16. A WELL OPENS THE MONTH TWO WEAR OUT |
 
 ## Constants
 
@@ -98,9 +98,9 @@
 | 166 | `WellCheck.WELL_TONNES` | `415` | A well's nameplate a month, the template's: 415 t, a hundred barrels a day. |
 | 169 | `WellCheck.FILL` | `50_000` | The Strategic Reserve's fill a month in the sea sections (OilCheck 16's order): more than the wells lift, so the city buys every tonne of theirs at home. |
 | 172 | `WellCheck.PLENTY` | `50_000_000` | The oil a town is handed: far more than its wells lift in the months a section runs, so the ground never limits them. |
-| 983 | `WellCheck.GROUND` | `2 * WELL_TONNES` | Section 13's ground pool: two months of a land well's nameplate, so it is worked out inside the months the section runs. |
-| 986 | `WellCheck.LAST_AT_SEA` | `100` | Section 13's offshore pool left for its other half: less than a month of the platform wells' lift, so it is worked out in one. |
-| 1180 | `WellCheck.FEET_PER_METRE` | `1 / 0.3048` | Feet to the metre as NEMS takes the water depth [W13]: the conversion the curve's ratios are read at. |
+| 1002 | `WellCheck.GROUND` | `2 * WELL_TONNES` | Section 13's ground pool: two months of a land well's nameplate, so it is worked out inside the months the section runs. |
+| 1005 | `WellCheck.LAST_AT_SEA` | `100` | Section 13's offshore pool left for its other half: less than a month of the platform wells' lift, so it is worked out in one. |
+| 1199 | `WellCheck.FEET_PER_METRE` | `1 / 0.3048` | Feet to the metre as NEMS takes the water depth [W13]: the conversion the curve's ratios are read at. |
 
 ## Fields (state)
 
@@ -114,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 127 | 1498 | **type** `public class WellCheck` | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil 2.7, 2.11): the platforms, their wells, the shuttle tankers and ... |
+| 127 | 1517 | **type** `public class WellCheck` | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil 2.7, 2.11): the platforms, their wells, the shuttle tankers and ... |
 | 133 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 138 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 143 | 5 | `static void quietly(Runnable r)` |  |
@@ -143,92 +143,92 @@
 |---:|---:|---|---|
 | 297 | 65 | `static Game aTownsLift()` |  |
 
-### 4. WORN OUT, RETIRED, REFILLED (lines 363-432)
+### 4. WORN OUT, RETIRED, REFILLED (lines 363-451)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 365 | 67 | `static Game wornOutWellsRetire()` |  |
+| 365 | 86 | `static Game wornOutWellsRetire()` |  |
 
-### 5. DRY AND SEA SITES (lines 433-499)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 435 | 64 | `static void drySitesAndSea()` |  |
-
-### 6. ACROSS A SAVE (lines 500-553)
+### 5. DRY AND SEA SITES (lines 452-518)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 502 | 51 | `static void acrossASave(Game g) throws Exception` |  |
+| 454 | 64 | `static void drySitesAndSea()` |  |
 
-### 7. ONE POST (lines 554-571)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 556 | 15 | `static void onePost()` |  |
-
-### THE OIL AT SEA (0.7.91) (lines 572-610)
+### 6. ACROSS A SAVE (lines 519-572)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 575 | 3 | `static Deposit seaField()` | The sea field the sea sections stand on: section 5's, the nearest oil field to SEA_OIL_SEED's site, in the sea. |
-| 586 | 24 | `static Game seaTown(String label)` | Section 4's staffed town on SEA_OIL_SEED's world, owning the ground over the sea field (bought, as section 5 buys it) and handed plenty of oil; every sector's own orders held, so the ground and the hands the sections ... |
+| 521 | 51 | `static void acrossASave(Game g) throws Exception` |  |
 
-### 8. A PLATFORM (lines 611-741)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 613 | 128 | `static Game aPlatform()` |  |
-
-### 9. THE SHUTTLE TANKERS (lines 742-802)
+### 7. ONE POST (lines 573-590)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 744 | 58 | `static void theShuttleTankers(Game g)` |  |
+| 575 | 15 | `static void onePost()` |  |
 
-### 10. THE PIPELINE (lines 803-859)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 805 | 54 | `static void thePipeline(Game g)` |  |
-
-### 11. ACROSS A SAVE (lines 860-919)
+### THE OIL AT SEA (0.7.91) (lines 591-629)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 862 | 57 | `static void seaAcrossASave(Game g) throws Exception` |  |
+| 594 | 3 | `static Deposit seaField()` | The sea field the sea sections stand on: section 5's, the nearest oil field to SEA_OIL_SEED's site, in the sea. |
+| 605 | 24 | `static Game seaTown(String label)` | Section 4's staffed town on SEA_OIL_SEED's world, owning the ground over the sea field (bought, as section 5 buys it) and handed plenty of oil; every sector's own orders held, so the ground and the hands the sections ... |
 
-### 12. THE PLANNER (lines 920-979)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 922 | 57 | `static void thePlanner()` |  |
-
-### 13. THE TWO POOLS (0.7.93) (lines 980-1176)
+### 8. A PLATFORM (lines 630-760)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 989 | 3 | `static boolean close(double a, double b)` | Whether two figures agree but for a rounding: within a billionth of the larger, or of a tonne. |
-| 994 | 4 | `static String lineValue(List<Sector.Line> lines, String label)` | The value of the line of `lines` with this label, or null. |
-| 1000 | 8 | `static int untilWorkedOut(Game g, java.util.function.DoubleSupplier left, int most)` | Months played until a pool is worked out to the tonne's last bit (left == 0), at most `most`; the months played. |
-| 1009 | 167 | `static void theTwoPools() throws Exception` |  |
+| 632 | 128 | `static Game aPlatform()` |  |
 
-### 14. DEEP WATER (DW1) (lines 1177-1417)
+### 9. THE SHUTTLE TANKERS (lines 761-821)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1183 | 3 | `static Deposit anotherField(Deposit d, int index, int sites)` | A field the check makes of `d`: the same place, another number in its cell and `sites` sites - another field to the platforms' records. |
-| 1187 | 230 | `static void deepWater()` |  |
+| 763 | 58 | `static void theShuttleTankers(Game g)` |  |
 
-### 15. THE DEEP WELLS DECLINE FASTER (DW1) (lines 1418-1582)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1420 | 162 | `static void deepDecline()` |  |
-
-### 16. A WELL OPENS THE MONTH TWO WEAR OUT (lines 1583-1624)
+### 10. THE PIPELINE (lines 822-878)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1585 | 39 | `static void openingAsTwoWearOut()` |  |
+| 824 | 54 | `static void thePipeline(Game g)` |  |
+
+### 11. ACROSS A SAVE (lines 879-938)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 881 | 57 | `static void seaAcrossASave(Game g) throws Exception` |  |
+
+### 12. THE PLANNER (lines 939-998)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 941 | 57 | `static void thePlanner()` |  |
+
+### 13. THE TWO POOLS (0.7.93) (lines 999-1195)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1008 | 3 | `static boolean close(double a, double b)` | Whether two figures agree but for a rounding: within a billionth of the larger, or of a tonne. |
+| 1013 | 4 | `static String lineValue(List<Sector.Line> lines, String label)` | The value of the line of `lines` with this label, or null. |
+| 1019 | 8 | `static int untilWorkedOut(Game g, java.util.function.DoubleSupplier left, int most)` | Months played until a pool is worked out to the tonne's last bit (left == 0), at most `most`; the months played. |
+| 1028 | 167 | `static void theTwoPools() throws Exception` |  |
+
+### 14. DEEP WATER (DW1) (lines 1196-1436)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1202 | 3 | `static Deposit anotherField(Deposit d, int index, int sites)` | A field the check makes of `d`: the same place, another number in its cell and `sites` sites - another field to the platforms' records. |
+| 1206 | 230 | `static void deepWater()` |  |
+
+### 15. THE DEEP WELLS DECLINE FASTER (DW1) (lines 1437-1601)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1439 | 162 | `static void deepDecline()` |  |
+
+### 16. A WELL OPENS THE MONTH TWO WEAR OUT (lines 1602-1643)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1604 | 39 | `static void openingAsTwoWearOut()` |  |
 

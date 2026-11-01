@@ -379,7 +379,7 @@ public class BuybackCheck {
 
     /** A line sold through the auction: the piece the sale went into, unsettled until the next month. */
     static Debt sell(Game g, double ask, int years) {
-        quietly(() -> g.handleLongBondLogic(ask, years, 100));
+        quietly(() -> g.handleLongBondLogic(ask, years, 100 * PriceLevel.FACTOR));
         return unsettledPiece(g.getDebtManager());
     }
 
@@ -387,12 +387,20 @@ public class BuybackCheck {
     static Game playedCity(String label) {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
+        // The world these sections are written against: the constant world rate (XR4), as HoldersCheck's section 9 stands it (EP1). Hot money bids for the
+        // city's paper over the world's rate (Auction.worldAt()), and the file's rate stood at 2.25% on main's path and at 5.5% in the draws of 1900: the
+        // bank's bid at fair took the whole line (1,180k of it) and the world, bidding nothing under 5.5%, held none of it. Its premise unmoved.
+        city.quietTheWorldForTheD();
         quietly(() -> {
             city.run();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            // ...and Heavy Industry held (EP1), as ForeignCheck holds it (LD1): in the draws of 1900 it raised a plant in month 62, the month after the
+            // town is played to, on 215k of ten-year bonds and a 414k loan, and the households' savings fell from 526k to 212k that month (the bonds
+            // and the shares took them), so the households that were allotted 508k of the line at its sale could pay 148k of it at the settle.
+            city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
@@ -431,7 +439,7 @@ public class BuybackCheck {
         HouseholdBalance hb = city.getHouseholdBalance();
 
         worldWantsPaper(city);
-        double ask = Math.max(100, hb.spareForPaper() * 3);
+        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
         Debt bond = sell(city, ask, 10);
         check("fixture: the treasury sold a ten-year line", bond != null);
         check("fixture: ...which is unsettled until the month turns, and a part of it quotes nothing",
@@ -447,7 +455,7 @@ public class BuybackCheck {
         double p0 = bond.getOustandingPrincipal();
         Buyback.Result first = part(city, bond, p0 / 2, "half");
         check("half: the piece is still on the books, at half its principal",
-                ledger.getDebt().contains(bond) && Math.abs(bond.getOustandingPrincipal() - p0 / 2) <= .01);
+                ledger.getDebt().contains(bond) && Math.abs(bond.getOustandingPrincipal() - p0 / 2) <= MoneyAudit.CENT);
 
         // Most of what is left: past the bank's holding, so the other holders sell at their own prices.
         double left = bond.getOustandingPrincipal();
@@ -455,7 +463,7 @@ public class BuybackCheck {
         check("fixture: ...and this time the households, the businesses or the world sold too, at prices over the bank's",
                 second.householdFace() + second.firmFace() + second.worldFace() > 0 && second.stopPer100() > second.fairPer100());
         check("most of the rest: the piece is still on the books, at a fifth of what was left",
-                ledger.getDebt().contains(bond) && Math.abs(bond.getOustandingPrincipal() - left * .2) <= .01);
+                ledger.getDebt().contains(bond) && Math.abs(bond.getOustandingPrincipal() - left * .2) <= MoneyAudit.CENT);
 
         // The last of it: the piece leaves the books.
         double last = bond.getOustandingPrincipal();
@@ -595,13 +603,13 @@ public class BuybackCheck {
 
         // The same month: a whole line, sold and bought straight back before its settle, goes off the books as it always did.
         for (String kind : new String[]{"long", "medium", "bill"}) {
-            double ask = Math.max(100, hb.spareForPaper() * 2);
+            double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 2);
             double before = city.getCash();
             quietly(() -> {
                 switch (kind) {
-                    case "long" -> city.handleLongBondLogic(ask, 10, 100);
-                    case "medium" -> city.handleMediumBondLogic(ask, 10, 100);
-                    default -> city.handleTBillLogic(ask, 12, 100);
+                    case "long" -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
+                    case "medium" -> city.handleMediumBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
+                    default -> city.handleTBillLogic(ask, 12, 100 * PriceLevel.FACTOR);
                 }
             });
             double raised = city.getCash() - before;
@@ -624,13 +632,13 @@ public class BuybackCheck {
         for (String kind : new String[]{"long", "medium", "bill"}) {
             double worst = Double.NEGATIVE_INFINITY, total = 0;
             for (int round = 0; round < 2; round++) {
-                double ask = Math.max(100, hb.spareForPaper() * 2);
+                double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 2);
                 double before = city.getCash();
                 quietly(() -> {
                     switch (kind) {
-                        case "long" -> city.handleLongBondLogic(ask, 10, 100);
-                        case "medium" -> city.handleMediumBondLogic(ask, 10, 100);
-                        default -> city.handleTBillLogic(ask, 12, 100);
+                        case "long" -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
+                        case "medium" -> city.handleMediumBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
+                        default -> city.handleTBillLogic(ask, 12, 100 * PriceLevel.FACTOR);
                     }
                 });
                 double raised = city.getCash() - before;
@@ -667,7 +675,7 @@ public class BuybackCheck {
         try { g = ForeignDebtCheck.tradingCity(root.resolve("trading")); } finally { System.setOut(out); }
         g.setCashForTest(Founding.WEALTHY_CASH);
         DebtManager ledger = g.getDebtManager();
-        quietly(() -> g.handleForeignLogic("Term", RestructureCheck.DOLLAR_ASK, 30, 100, false));
+        quietly(() -> g.handleForeignLogic("Term", RestructureCheck.DOLLAR_ASK, 30, 100 * PriceLevel.FACTOR, false));
         Debt usd = null;
         for (Debt d : ledger.getDebt()) if (d.isForeign()) usd = d;
         check("fixture: the city owes a dollar bond", usd != null && ledger.getForeignPrincipalUsd() > 0);

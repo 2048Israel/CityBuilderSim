@@ -161,7 +161,7 @@ public class PolicyPreviewCheck {
             // Kiln above and the same remedy; the previews are the fixture's subject, not the credit cycle.
             g.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             g.setCashForTest(Founding.WEALTHY_CASH);
-            g.getGovernmentInvestor().spend(-2_000_000);
+            g.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
             for (String[] w : ORDERS) {
                 BuildingsTemplate t = LongPlaytest.template(g, w[0]);
@@ -210,20 +210,35 @@ public class PolicyPreviewCheck {
      * half of the largest employer's buildings close and a month passes: those out of work are on EI, and they stay (the posts are gone).
      */
     static void anEiPool(Game g) {
-        BuildingsTemplate biggest = null;
-        int biggestJobs = 0;
-        for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
-            if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
-            int jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
-            if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
+        /*
+         * ...AND AGAIN WHILE THE CITY STILL HAS A POST FOR EVERYONE (IC1, 2026-11-01). An idle builder's laid-off crews are spare for
+         * the staffing gate since IC1, so the planners order the buildings the gate used to refuse and the city this fixture plays has
+         * 473 posts with no worker in them at month 62 (3,260 posts, 2,787 filled), not a lull's 366 out of work: the first closing (six depots, 300 posts) takes
+         * workers who are hired into the vacancies the same month, and nobody is on EI after it. The next largest employer is closed the
+         * same way, a month passing each time, until some are on EI (the second closing, a Fabrication Shop, leaves 240 on EI and the
+         * pool grows with the third): it is the posts being gone that keeps them out. On main's rule the first closing does it
+         * (766 out of work), so it is the only one.
+         */
+        for (int round = 0; round < EI_POOL_ROUNDS; round++) {
+            BuildingsTemplate biggest = null;
+            int biggestJobs = 0;
+            for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
+                if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
+                int jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
+                if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
+            }
+            final BuildingsTemplate closing = biggest;
+            if (closing == null) return;
+            quietly(() -> {
+                g.getBuildingManager().retire(closing, Math.max(1, g.getBuildingManager().getQuantity(closing.getId()) / 2));
+                g.simulateMonths(1);
+            });
+            if (g.getUnemployment().onEi() > 0) return;
         }
-        final BuildingsTemplate closing = biggest;
-        if (closing == null) return;
-        quietly(() -> {
-            g.getBuildingManager().retire(closing, Math.max(1, g.getBuildingManager().getQuantity(closing.getId()) / 2));
-            g.simulateMonths(1);
-        });
     }
+
+    /** The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. */
+    static final int EI_POOL_ROUNDS = 6;
 
     /** The city as the previews read it, for the record. */
     static void printCity(Game g) {
@@ -512,15 +527,15 @@ public class PolicyPreviewCheck {
         double litres = PolicyPreview.fuelLitres(g);
         assertTrue("fixture: the drivers bought petrol at the pump last month (" + Formats.INSTANCE.count(litres) + " L)", litres > 0);
         TaxPolicy duty = live.copy();
-        duty.setFuelDuty(.000215);
+        duty.setFuelDuty(.000215 * PriceLevel.FACTOR);
         assertTrue("at the city's own dial the duty previewed is the month's, to the bit (none at the default)",
                 PolicyPreview.fuelDutyAt(g, live) == em.getFuelDuty());
         double moved = PolicyPreview.change(g, live, duty, share, share), byHand = litres * duty.chargedFuelDuty() - PolicyPreview.fuelDutyAt(g, live);
         System.out.printf("   moved %.6f, by hand %.6f; at the duty %.9f against %.9f%n", moved, byHand, PolicyPreview.fuelDutyAt(g, duty),
-                litres * .000215 * live.getExpectedLevel());
+                litres * .000215 * PriceLevel.FACTOR * live.getExpectedLevel());
         assertTrue("a duty of 21.5 cents a litre moves the budget by the litres at it as charged, the expected price level in it",
                 near(moved, byHand) && PolicyPreview.fuelDutyAt(g, duty) == litres * duty.chargedFuelDuty()
-                        && duty.chargedFuelDuty() == .000215 * live.getExpectedLevel());
+                        && duty.chargedFuelDuty() == .000215 * PriceLevel.FACTOR * live.getExpectedLevel());
         assertTrue("...and a litre at the pump by exactly the duty",
                 near(PolicyPreview.pumpPriceAt(g, duty) - PolicyPreview.pumpPriceAt(g, live),
                         duty.chargedFuelDuty() - live.chargedFuelDuty()));

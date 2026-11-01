@@ -62,9 +62,16 @@ import java.util.regex.Pattern;
  *      tile with a blob, every cell the earth file's landmass layer calls land
  *      has an owner.
  *   8. THE MONEYS AND PATHS ARE WHOLE: every nation's money has a rate in
- *      every month of 2000-01 to 2025-12, people are known to 2100, output and
- *      the exchange rate to 2025, and a figure is NaN exactly where its mark
- *      is 0; each good's price path ends at 1 in 2025.
+ *      every month of FIRST_YEAR-01 (the stand-in century's) to 2025-12,
+ *      people are known from FIRST_YEAR to 2100, output and the exchange rate
+ *      to 2025, and a figure is NaN exactly where its mark is 0; each good's
+ *      price path ends at 1 in 2025.
+ *   9. THE STAND-IN CENTURY (EP1): the file begins in 2000 and the reader in
+ *      1900. Before a series' first figure a real series holds it and the two
+ *      nominal ones (cpi, gdp_usd) follow the US price level; a good's price
+ *      and a money's rate hold theirs; a nation's money at month 0 is its
+ *      2000-01 money; everything made is marked an estimate; the file's own
+ *      years read as they did.
  *
  * Every fixture causes its condition: a fixture's twelve nations trade with one
  * another in every good, its edges are a whole freight table, and its window's
@@ -170,6 +177,9 @@ public class WorldDataCheck {
 
     /** The last month the rates and the figures run to: 2025-12. */
     static final int LAST_MONTH = WorldData.monthNumber(2025, 12);
+
+    /** The file's own month 0, 2000-01, as WorldData numbers months from FIRST_YEAR: where the stand-in century ends and the file begins. */
+    static final int FILE_MONTH_ZERO = WorldData.monthNumber(WorldData.FILE_FIRST_YEAR, 1);
 
     /** The people run to this year; the figures (output, the exchange rate) to FIGURES_LAST. */
     static final int PEOPLE_LAST = 2100, FIGURES_LAST = 2025;
@@ -277,6 +287,7 @@ public class WorldDataCheck {
             theKernel(scopes);
             theCells(scopes);
             theMoneysAndPaths(scopes);
+            theStandInCentury(scopes, fixtureBytes);
         }
 
         out.printf("%nWorldDataCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
@@ -331,10 +342,10 @@ public class WorldDataCheck {
         return d.numberOf(token);
     }
 
-    /** A month as an expect line writes it: its number, or yyyy-mm. */
+    /** A month as an expect line writes it: its number in the FILE's count (FORMAT.txt: month 0 is 2000-01), or yyyy-mm; as WorldData numbers it, from FIRST_YEAR (EP1). */
     static int month(String token) {
         if (token.length() == 7 && token.charAt(4) == '-') return WorldData.monthNumber(Integer.parseInt(token.substring(0, 4)), Integer.parseInt(token.substring(5)));
-        return Integer.parseInt(token);
+        return FILE_MONTH_ZERO + Integer.parseInt(token);
     }
 
     /** A tolerance as a short label: 1e-09. */
@@ -984,7 +995,7 @@ public class WorldDataCheck {
                 int[] from = nation.moneyMonths();
                 String[] codes = nation.moneyCodes();
                 boolean ok = from.length > 0 && from[0] == 0 && codes[codes.length - 1].equals(nation.money());
-                for (int i = 1; i < from.length; i++) ok &= from[i] > from[i - 1];
+                for (int i = 1; i < from.length; i++) ok &= from[i] > from[i - 1] && from[i] > FILE_MONTH_ZERO;
                 for (String code : codes) ok &= d.moneyNumber(code) > 0;
                 history.see(ok, nation.iso3() + " history " + Arrays.toString(codes) + " from " + Arrays.toString(from) + ", money in 2025-12 " + nation.money());
                 for (int m = 0; m <= LAST_MONTH; m++) {
@@ -994,8 +1005,8 @@ public class WorldDataCheck {
                     rates.see(Double.isFinite(rate) && rate > 0, nation.iso3() + " " + WorldData.monthLabel(m) + " " + code + " rate " + rate);
                 }
             }
-            tally(s.label("every nation's money history starts at 2000-01, rises by month, ends at its money, and names moneys the file has"), history);
-            tally(s.label("every nation's money, month by month from 2000-01 to 2025-12, has a rate above 0 and finite"), rates);
+            tally(s.label("every nation's money history starts at month 0 (its 2000-01 money covers the stand-in century), rises by month after 2000-01, ends at its money, and names moneys the file has"), history);
+            tally(s.label("every nation's money, month by month from " + WorldData.monthLabel(0) + " to 2025-12, has a rate above 0 and finite"), rates);
 
             assertTrue(s.label("the moneys span " + d.months() + " months from " + WorldData.monthLabel(d.firstMonth()) + ", and the paths " + d.pathYears() + " years from " + d.pathFirstYear() + " for the " + d.pathNations() + " nations"),
                     d.firstMonth() == 0 && d.months() == LAST_MONTH + 1 && d.pathFirstYear() == WorldData.FIRST_YEAR && d.pathYears() == PEOPLE_LAST - WorldData.FIRST_YEAR + 1 && d.pathNations() == n);
@@ -1039,10 +1050,335 @@ public class WorldDataCheck {
                 }
                 tally(s.label("every good's price is above 0 where it has a mark, NaN where its mark is 0, and 1 in 2025"), prices);
             }
-            tally(s.label("every nation's people are finite and above 0 in every year 2000 to 2100"), people);
-            tally(s.label("every nation's output (gdp_2015usd, gdp_usd, gdp_ppp) and rate are finite and above 0 in every year 2000 to 2025"), figures);
+            tally(s.label("every nation's people are finite and above 0 in every year " + WorldData.FIRST_YEAR + " to 2100"), people);
+            tally(s.label("every nation's output (gdp_2015usd, gdp_usd, gdp_ppp) and rate are finite and above 0 in every year " + WorldData.FIRST_YEAR + " to 2025"), figures);
             tally(s.label("every path figure's mark is 0 to 3, and the figure is NaN exactly where the mark is 0"), marks);
             tally(s.label("every money's rate has a mark of 0 to 3, and is NaN exactly where the mark is 0"), rateMarks);
         }
+    }
+
+    /* =====================================================================
+       9. THE STAND-IN CENTURY (EP1)
+       ===================================================================== */
+
+    /** The paths' series the stand-in carries back on the US price level; it holds every other. */
+    static final List<String> NOMINAL = List.of("cpi", "gdp_usd");
+
+    /** The lead's figure is the rule's within this share of it (a product and a quotient of the same doubles: a rounding or two). */
+    static final double LEAD_TOL = 1e-12;
+
+    /** The first year from the file's first that the series has a figure for the nation; -1 where it has none. */
+    static int firstFigure(WorldData d, String series, int nation) {
+        for (int y = WorldData.FILE_FIRST_YEAR; y < d.pathFirstYear() + d.pathYears(); y++) if (!Double.isNaN(d.pathValue(series, nation, y))) return y;
+        return -1;
+    }
+
+    /** What the rule makes of a nominal series' lead year y, given the figure v0 of its first year y0: that figure on the US price level. */
+    static double carried(double v0, int y0, int y) {
+        return v0 * PriceLevel.usCpi(y) / PriceLevel.usCpi(y0);
+    }
+
+    /** The mark a made value has: an estimate, or none where it is NaN. */
+    static boolean madeMark(double v, int mark) {
+        return mark == (Double.isNaN(v) ? WorldData.MARK_NONE : WorldData.MARK_ESTIMATE);
+    }
+
+    static void theStandInCentury(List<Scope> scopes, byte[] fixtureBytes) throws Exception {
+        int lead = WorldData.FILE_FIRST_YEAR - WorldData.FIRST_YEAR;
+        out.println("--- 9. the stand-in century: the reader supplies " + WorldData.FIRST_YEAR + " to " + (WorldData.FILE_FIRST_YEAR - 1) + ", the file's begin in " + WorldData.FILE_FIRST_YEAR + " ---");
+        for (Scope s : scopes) {
+            WorldData d = s.data;
+            int n = d.nationCount();
+            assertTrue(s.label("the stand-in is " + lead + " years: the paths and the prices begin in " + WorldData.FIRST_YEAR + ", the rates in its January, month 0"),
+                    d.standInYears() == lead && d.priceStandInYears() == lead && d.standInMonths() == 12 * lead
+                    && d.pathFirstYear() == WorldData.FIRST_YEAR && d.priceFirstYear() == WorldData.FIRST_YEAR && d.firstMonth() == 0);
+            assertTrue(s.label("...and the file's own figures run after it: " + (PEOPLE_LAST - WorldData.FILE_FIRST_YEAR + 1) + " years of paths, " + (FIGURES_LAST - WorldData.FILE_FIRST_YEAR + 1)
+                            + " of prices, " + (LAST_MONTH + 1 - FILE_MONTH_ZERO) + " months of rates"),
+                    d.pathYears() == lead + PEOPLE_LAST - WorldData.FILE_FIRST_YEAR + 1 && d.priceYears() == lead + FIGURES_LAST - WorldData.FILE_FIRST_YEAR + 1
+                    && d.months() == 12 * lead + LAST_MONTH + 1 - FILE_MONTH_ZERO);
+            assertTrue(s.label("month 0 is " + WorldData.FIRST_YEAR + "-01 and the file's month 0 is 2000-01, month " + FILE_MONTH_ZERO),
+                    WorldData.monthLabel(0).equals(WorldData.FIRST_YEAR + "-01") && WorldData.monthLabel(FILE_MONTH_ZERO).equals("2000-01") && FILE_MONTH_ZERO == 12 * lead);
+
+            Tally held = new Tally(), followed = new Tally(), marks = new Tally(), parity = new Tally();
+            int none = 0, later = 0;
+            int us = d.numberOf(Nations.FRONTIER);
+            for (String series : d.pathSeries()) {
+                boolean nominal = NOMINAL.contains(series);
+                for (int nation = 1; nation <= n; nation++) {
+                    int y0 = firstFigure(d, series, nation);
+                    if (y0 < 0) none++;
+                    else if (y0 > WorldData.FILE_FIRST_YEAR) later++;
+                    double v0 = y0 < 0 ? Double.NaN : d.pathValue(series, nation, y0);
+                    for (int y = d.pathFirstYear(); y < WorldData.FILE_FIRST_YEAR; y++) {
+                        double v = d.pathValue(series, nation, y);
+                        String what = series + " " + d.nation(nation).iso3() + " " + y + " " + v + " (first figure " + y0 + ": " + v0 + ")";
+                        if (nominal) followed.see(y0 < 0 ? Double.isNaN(v) : rel(v, carried(v0, y0, y)) <= LEAD_TOL, what);
+                        else held.see(same(v, v0), what);
+                        marks.see(madeMark(v, d.pathMark(series, nation, y)), what + " mark " + d.pathMark(series, nation, y));
+                    }
+                }
+            }
+            tally(s.label("a real series (people, gdp_2015usd, gdp_ppp, rate) holds its first figure through every year before the file's, a nation at a time"), held);
+            tally(s.label("a nominal series (cpi, gdp_usd) is its first figure times PriceLevel.usCpi(year) over usCpi(the figure's year), before the file's years"), followed);
+            tally(s.label("every figure the stand-in makes is marked an estimate (1), and none (0) where it is NaN"), marks);
+            out.println("  " + s.label("rows (a series and a nation) with no figure at all: " + none + "; with a first figure after " + WorldData.FILE_FIRST_YEAR + ": " + later + " (the tallies above count both; the cases below cause them)"));
+            if (us > 0) {
+                int usY0 = firstFigure(d, "cpi", us);
+                for (int nation = 1; nation <= n; nation++) {
+                    if (nation == us || firstFigure(d, "cpi", nation) != WorldData.FILE_FIRST_YEAR || usY0 != WorldData.FILE_FIRST_YEAR) continue;
+                    double rate0 = d.pathValue("rate", nation, WorldData.FILE_FIRST_YEAR), relative0 = d.pathValue("cpi", nation, WorldData.FILE_FIRST_YEAR) / d.pathValue("cpi", us, WorldData.FILE_FIRST_YEAR);
+                    for (int y = d.pathFirstYear(); y < WorldData.FILE_FIRST_YEAR; y++) {
+                        double relative = d.pathValue("cpi", nation, y) / d.pathValue("cpi", us, y), rate = d.pathValue("rate", nation, y);
+                        parity.see(rel(relative, relative0) <= LEAD_TOL && same(rate, rate0), d.nation(nation).iso3() + " " + y + " prices against the US's " + relative + " and rate " + rate + ", " + WorldData.FILE_FIRST_YEAR + "'s " + relative0 + " and " + rate0);
+                    }
+                }
+            }
+            tally(s.label("purchasing-power parity holds before the file: each nation's prices against the US's, and its rate, are its " + WorldData.FILE_FIRST_YEAR + "'s in every year"), parity);
+
+            if (d.hasPrices()) {
+                Tally prices = new Tally();
+                for (WorldData.TradedGood good : d.goods()) {
+                    int first = -1;
+                    for (int y = WorldData.FILE_FIRST_YEAR; y < d.priceFirstYear() + d.priceYears() && first < 0; y++) if (!Double.isNaN(d.price(good.number(), y))) first = y;
+                    double p0 = first < 0 ? Double.NaN : d.price(good.number(), first);
+                    for (int y = d.priceFirstYear(); y < WorldData.FILE_FIRST_YEAR; y++) {
+                        double v = d.price(good.number(), y);
+                        prices.see(same(v, p0) && madeMark(v, d.priceMark(good.number(), y)), good.key() + " " + y + " price " + v + " mark " + d.priceMark(good.number(), y) + ", the first figure " + p0);
+                    }
+                }
+                tally(s.label("a good's real price holds its first figure through every year before the file's, marked an estimate"), prices);
+            }
+
+            Tally rates = new Tally();
+            for (WorldData.Money money : d.moneys()) {
+                int first = -1;
+                for (int t = FILE_MONTH_ZERO; t < d.firstMonth() + d.months() && first < 0; t++) if (!Double.isNaN(d.rate(money.number(), t))) first = t;
+                double r0 = first < 0 ? Double.NaN : d.rate(money.number(), first);
+                for (int t = d.firstMonth(); t < FILE_MONTH_ZERO; t++) {
+                    double v = d.rate(money.number(), t);
+                    rates.see(same(v, r0) && madeMark(v, d.rateMark(money.number(), t)), money.code() + " " + WorldData.monthLabel(t) + " rate " + v + " mark " + d.rateMark(money.number(), t) + ", the first month's " + r0);
+                }
+            }
+            tally(s.label("a money's rate holds its first month's through every month before the file's, marked an estimate; NaN stays NaN"), rates);
+
+            Tally moneys = new Tally();
+            for (WorldData.Nation nation : d.nations()) {
+                if (!nation.isNation()) continue;
+                String in2000 = d.moneyAt(nation.number(), FILE_MONTH_ZERO);
+                boolean ok = in2000 != null && nation.moneyMonths()[0] == 0 && in2000.equals(nation.moneyCodes()[0]);
+                for (int t = 0; t < FILE_MONTH_ZERO; t++) ok &= in2000 != null && in2000.equals(d.moneyAt(nation.number(), t));
+                moneys.see(ok, nation.iso3() + " is on " + d.moneyAt(nation.number(), 0) + " in month 0 and " + in2000 + " in 2000-01");
+            }
+            tally(s.label("a nation's money at month 0, and in every month before the file's, is the money it had in 2000-01 (the first entry of its history covers them)"), moneys);
+
+            each(s, "the file's own first year reads as the expect file says, the same calendar year: every " + WorldData.FILE_FIRST_YEAR + " path line", "path", f -> {
+                if (Integer.parseInt(f[2]) != WorldData.FILE_FIRST_YEAR) return null;
+                int nation = nation(d, f[1]);
+                return firstOf(differs("value", WorldData.number(f[3]), d.pathValue(f[0], nation, WorldData.FILE_FIRST_YEAR)), differs("mark", f[4], String.valueOf(d.pathMark(f[0], nation, WorldData.FILE_FIRST_YEAR))));
+            });
+            each(s, "...and its first month, 2000-01: every rate line at the file's month 0", "rate", f -> {
+                if (month(f[1]) != FILE_MONTH_ZERO) return null;
+                int money = d.moneyNumber(f[0]);
+                return firstOf(differs("value", WorldData.number(f[2]), d.rate(money, FILE_MONTH_ZERO)), differs("mark", f[3], String.valueOf(d.rateMark(money, FILE_MONTH_ZERO))));
+            });
+        }
+        theStandInOnAHole(scopes.get(0), fixtureBytes);
+    }
+
+    /**
+     * The conditions the fixture does not have, caused: the fixture's bytes with cells made NaN (a row with no figure at all, a row whose first figure is
+     * later than the file's first year, for a real and for a nominal series, for a good's price and for a money's rate), read again. Every other cell must read
+     * as the unpatched file's.
+     */
+    static void theStandInOnAHole(Scope fixture, byte[] fixtureBytes) throws Exception {
+        WorldData whole = fixture.data;
+        int first = WorldData.FILE_FIRST_YEAR, last = PEOPLE_LAST;
+        // Paths: cpi of 1 and gdp_usd of 4 and people of 5 with no figure at all; gdp_ppp of 2 from 2005; cpi of 3 from 2003.
+        byte[] cut = withLayer(fixtureBytes, WorldData.PATHS, raw -> {
+            noPaths(raw, "cpi", 1, first, last);
+            noPaths(raw, "gdp_usd", 4, first, last);
+            noPaths(raw, "people", 5, first, last);
+            noPaths(raw, "gdp_ppp", 2, first, 2004);
+            noPaths(raw, "cpi", 3, first, 2002);
+            return raw;
+        });
+        // Prices: good 1 with no figure at all, good 2 from 2003.
+        cut = withLayer(cut, WorldData.PRICES, raw -> {
+            noPrices(raw, 1, first, FIGURES_LAST);
+            noPrices(raw, 2, first, 2002);
+            return raw;
+        });
+        // Rates: the first money that has a figure two years in, from 2002-01; the next money with a figure, none at all.
+        int slow = 0, gone = 0;
+        for (WorldData.Money m : whole.moneys()) {
+            if (slow == 0 && !Double.isNaN(whole.rate(m.number(), FILE_MONTH_ZERO)) && !Double.isNaN(whole.rate(m.number(), FILE_MONTH_ZERO + 24))) slow = m.number();
+            else if (gone == 0 && !Double.isNaN(whole.rate(m.number(), FILE_MONTH_ZERO))) gone = m.number();
+        }
+        assertTrue(fixture.label("the fixture has a money to make late and one to make none (so the cases below are caused)"), slow > 0 && gone > 0);
+        final int lateMoney = slow, noMoney = gone;
+        cut = withLayer(cut, WorldData.MONEYS, raw -> {
+            noRates(raw, lateMoney, 0, 23);
+            noRates(raw, noMoney, 0, LAST_MONTH - FILE_MONTH_ZERO);
+            return raw;
+        });
+        WorldData d = WorldData.of(cut);
+
+        Tally nothing = new Tally(), late = new Tally(), carriedLate = new Tally(), others = new Tally();
+        String[] noneSeries = {"cpi", "gdp_usd", "people"};
+        int[] noneNation = {1, 4, 5};
+        for (int row = 0; row < noneSeries.length; row++) {
+            String series = noneSeries[row];
+            int nation = noneNation[row];
+            for (int y = d.pathFirstYear(); y < d.pathFirstYear() + d.pathYears(); y++) {
+                double v = d.pathValue(series, nation, y);
+                nothing.see(Double.isNaN(v) && d.pathMark(series, nation, y) == WorldData.MARK_NONE, series + " " + nation + " " + y + " " + v + " mark " + d.pathMark(series, nation, y));
+            }
+        }
+        tally(fixture.label("a row with no figure at all (a nominal and a real one) stays NaN, marked none, through the lead and the file's years"), nothing);
+        double ppp2005 = d.pathValue("gdp_ppp", 2, 2005);
+        for (int y = d.pathFirstYear(); y < 2005; y++) {
+            double v = d.pathValue("gdp_ppp", 2, y);
+            boolean inLead = y < first;
+            late.see(inLead ? same(v, ppp2005) && d.pathMark("gdp_ppp", 2, y) == WorldData.MARK_ESTIMATE : Double.isNaN(v) && d.pathMark("gdp_ppp", 2, y) == WorldData.MARK_NONE, "gdp_ppp 2 " + y + " " + v);
+        }
+        late.see(ppp2005 == whole.pathValue("gdp_ppp", 2, 2005) && d.pathMark("gdp_ppp", 2, 2005) == whole.pathMark("gdp_ppp", 2, 2005), "gdp_ppp 2 in 2005 is the file's");
+        tally(fixture.label("a real row whose first figure is 2005's holds it through the lead; its " + first + " to 2004 stay NaN, marked none, and 2005 is the file's"), late);
+        double cpi2003 = d.pathValue("cpi", 3, 2003);
+        for (int y = d.pathFirstYear(); y < 2003; y++) {
+            double v = d.pathValue("cpi", 3, y);
+            boolean inLead = y < first;
+            carriedLate.see(inLead ? rel(v, carried(cpi2003, 2003, y)) <= LEAD_TOL && d.pathMark("cpi", 3, y) == WorldData.MARK_ESTIMATE : Double.isNaN(v) && d.pathMark("cpi", 3, y) == WorldData.MARK_NONE, "cpi 3 " + y + " " + v);
+        }
+        carriedLate.see(cpi2003 == whole.pathValue("cpi", 3, 2003), "cpi 3 in 2003 is the file's");
+        tally(fixture.label("a nominal row whose first figure is 2003's is that figure on the US price level through the lead; its " + first + " to 2002 stay NaN (Nations.filled's to fill)"), carriedLate);
+
+        Tally priced = new Tally();
+        int g1 = 1, g2 = 2;
+        for (int y = d.priceFirstYear(); y < d.priceFirstYear() + d.priceYears(); y++) {
+            priced.see(Double.isNaN(d.price(g1, y)) && d.priceMark(g1, y) == WorldData.MARK_NONE, "good 1 " + y + " " + d.price(g1, y));
+            double v = d.price(g2, y);
+            if (y < first) priced.see(same(v, d.price(g2, 2003)) && d.priceMark(g2, y) == WorldData.MARK_ESTIMATE, "good 2 " + y + " " + v);
+            else if (y < 2003) priced.see(Double.isNaN(v) && d.priceMark(g2, y) == WorldData.MARK_NONE, "good 2 " + y + " " + v);
+        }
+        tally(fixture.label("a good with no price stays NaN through the lead; a good whose first is 2003's holds it through the lead and is NaN 2000 to 2002"), priced);
+
+        Tally moneyRates = new Tally();
+        double late2002 = d.rate(lateMoney, FILE_MONTH_ZERO + 24);
+        for (int t = 0; t < FILE_MONTH_ZERO + 24; t++) {
+            double v = d.rate(lateMoney, t);
+            if (t < FILE_MONTH_ZERO) moneyRates.see(same(v, late2002) && d.rateMark(lateMoney, t) == WorldData.MARK_ESTIMATE, "late money " + WorldData.monthLabel(t) + " " + v);
+            else moneyRates.see(Double.isNaN(v) && d.rateMark(lateMoney, t) == WorldData.MARK_NONE, "late money " + WorldData.monthLabel(t) + " " + v);
+        }
+        for (int t = d.firstMonth(); t < d.firstMonth() + d.months(); t++) {
+            moneyRates.see(Double.isNaN(d.rate(noMoney, t)) && d.rateMark(noMoney, t) == WorldData.MARK_NONE, "money with none " + WorldData.monthLabel(t));
+        }
+        tally(fixture.label("a money first quoted in 2002-01 holds that rate through the lead and is NaN to 2001-12; a money with no rate is NaN in every month"), moneyRates);
+
+        // Everything else is as the fixture reads it: the lead made from the cells that were not cut, and the file's years.
+        for (String series : whole.pathSeries()) {
+            for (int nation = 1; nation <= whole.nationCount(); nation++) {
+                boolean cutRow = nation == 1 && series.equals("cpi") || nation == 4 && series.equals("gdp_usd") || nation == 5 && series.equals("people")
+                        || nation == 2 && series.equals("gdp_ppp") || nation == 3 && series.equals("cpi");
+                if (cutRow) continue;
+                for (int y = whole.pathFirstYear(); y < whole.pathFirstYear() + whole.pathYears(); y++) {
+                    others.see(same(whole.pathValue(series, nation, y), d.pathValue(series, nation, y)) && whole.pathMark(series, nation, y) == d.pathMark(series, nation, y), series + " " + nation + " " + y);
+                }
+            }
+        }
+        for (int good = 3; good <= whole.goodCount(); good++) {
+            for (int y = whole.priceFirstYear(); y < whole.priceFirstYear() + whole.priceYears(); y++) others.see(same(whole.price(good, y), d.price(good, y)), "good " + good + " " + y);
+        }
+        tally(fixture.label("the rows that were not cut read as the fixture's, the lead and the file's years alike"), others);
+    }
+
+    /** A short-prefixed UTF-8 string, as the layers write names. */
+    static String utf(java.nio.ByteBuffer b) {
+        byte[] raw = new byte[b.getShort() & 0xFFFF];
+        b.get(raw);
+        return new String(raw, StandardCharsets.UTF_8);
+    }
+
+    /** A paths layer's inflated bytes with a series' figures for a nation (1-based) made NaN, mark 0, in the years from to to. */
+    static void noPaths(byte[] raw, String series, int nation, int from, int to) {
+        java.nio.ByteBuffer b = java.nio.ByteBuffer.wrap(raw);
+        int nations = b.getInt(), firstYear = b.getInt(), years = b.getInt(), count = b.getInt(), which = -1;
+        for (int i = 0; i < count; i++) {
+            if (utf(b).equals(series)) which = i;
+            utf(b);
+        }
+        int values = b.position(), marks = values + count * nations * years * 8;
+        for (int y = from; y <= to; y++) {
+            int cell = which * nations * years + (nation - 1) * years + (y - firstYear);
+            b.putDouble(values + 8 * cell, Double.NaN);
+            raw[marks + cell] = 0;
+        }
+    }
+
+    /** A prices layer's inflated bytes with a good's prices (1-based) made NaN, mark 0, in the years from to to. */
+    static void noPrices(byte[] raw, int good, int from, int to) {
+        java.nio.ByteBuffer b = java.nio.ByteBuffer.wrap(raw);
+        int goods = b.getInt(), firstYear = b.getInt(), years = b.getInt();
+        int[] at = new int[goods];
+        for (int i = 0; i < goods; i++) {
+            utf(b);
+            at[i] = b.position();
+            b.position(b.position() + 8 * years);
+        }
+        int marks = b.position();
+        for (int y = from; y <= to; y++) {
+            b.putDouble(at[good - 1] + 8 * (y - firstYear), Double.NaN);
+            raw[marks + (good - 1) * years + (y - firstYear)] = 0;
+        }
+    }
+
+    /** A moneys layer's inflated bytes with a money's rates (1-based) made NaN, mark 0, in the file's months from to to (the file's count, month 0 being 2000-01). */
+    static void noRates(byte[] raw, int money, int from, int to) {
+        java.nio.ByteBuffer b = java.nio.ByteBuffer.wrap(raw);
+        int count = b.getInt(), firstMonth = b.getInt(), months = b.getInt();
+        for (int i = 0; i < count; i++) {
+            utf(b);
+            utf(b);
+        }
+        int values = b.position(), marks = values + count * months * 8;
+        for (int t = from; t <= to; t++) {
+            int cell = (money - 1) * months + (t - firstMonth);
+            b.putDouble(values + 8 * cell, Double.NaN);
+            raw[marks + cell] = 0;
+        }
+    }
+
+    /**
+     * A file's bytes with one whole layer's inflated bytes changed: the new blob is appended to the file and the layer's header entry points at it (the old blob
+     * is left where it was, unread). A fixture the harness cuts itself, so that a condition the fixture does not have is caused.
+     */
+    static byte[] withLayer(byte[] file, String layer, java.util.function.UnaryOperator<byte[]> change) throws Exception {
+        java.nio.ByteBuffer b = java.nio.ByteBuffer.wrap(file);
+        b.position(8 + 4);   // the magic and the layout's version
+        int layers = b.getInt();
+        for (int k = 0; k < layers; k++) {
+            String name = utf(b);
+            b.get();         // kind
+            b.getInt();      // cells a degree
+            b.getLong();     // index offset
+            b.getInt();      // index length
+            int at = b.position();
+            long offset = b.getLong(), length = b.getLong();
+            if (!name.equals(layer)) continue;
+            byte[] changed = change.apply(EarthData.inflate(Arrays.copyOfRange(file, (int) offset, (int) (offset + length)), 0));
+            java.util.zip.Deflater deflater = new java.util.zip.Deflater();
+            deflater.setInput(changed);
+            deflater.finish();
+            java.io.ByteArrayOutputStream blob = new java.io.ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            while (!deflater.finished()) blob.write(buffer, 0, deflater.deflate(buffer));
+            deflater.end();
+            byte[] out = Arrays.copyOf(file, file.length + blob.size());
+            System.arraycopy(blob.toByteArray(), 0, out, file.length, blob.size());
+            java.nio.ByteBuffer patch = java.nio.ByteBuffer.wrap(out);
+            patch.putLong(at, file.length);
+            patch.putLong(at + 8, blob.size());
+            return out;
+        }
+        throw new IllegalArgumentException("the file has no layer " + layer);
     }
 }

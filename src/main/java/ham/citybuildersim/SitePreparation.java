@@ -40,15 +40,19 @@ public final class SitePreparation {
      * US dollars a m3 of earth, balanced cut and fill with compaction and no haul off site: US$15-30 a cubic yard
      * (about $20-39 a m3) is the commonest 2026 benchmark (snaptrude.com/blog/cut-fill-earthwork-calculator-site-grading,
      * March 2026), with contractor guides lower ($6.50-14 a yd3); 20, the low end of the benchmark.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double EARTH_USD_PER_M3 = 20;
+    public static final double EARTH_USD_PER_M3 = 20 * PriceLevel.FACTOR;
 
     /**
      * US dollars a m2 of retaining wall, face area: a segmental block wall is US$15-35 a sq ft in national guides
      * (fixr.com/costs/retaining-wall-building) and $70-140 for an engineered wall with geogrid in San Diego
      * (installitdirect.com, 2025); about $40 a sq ft, between them, 430 a m2.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    public static final double WALL_USD_PER_M2 = 430;
+    public static final double WALL_USD_PER_M2 = 430 * PriceLevel.FACTOR;
 
     /** US dollars to prepare a m2 of foothill: its earth and its wall at their rates (about $110). */
     public static final double USD_PER_M2 = EARTH_M3_PER_M2 * EARTH_USD_PER_M3 + WALL_M2_PER_M2 * WALL_USD_PER_M2;

@@ -36,7 +36,7 @@ public final class FundView {
     public static final int STALE_MONTHS = 3;
 
     /** The least a price per founding share, as the history records it to four places, can be and still carry three significant figures: a move off less is not shown (the spec's B6 - a consolidated share records 0.0000). */
-    public static final double MIN_RECORDED_PRICE = .01;
+    public static final double MIN_RECORDED_PRICE = .01 * PriceLevel.FACTOR;   // a hundredth of a founding share's price: today's figure, priced at the founding's level (EP1)
 
     /** A holding worth less than this, money, is folded into "and N more" on the Portfolio page: a thousand dollars. */
     public static final double FOLD_UNDER = 1;

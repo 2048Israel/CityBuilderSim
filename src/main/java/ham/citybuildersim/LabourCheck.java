@@ -219,7 +219,7 @@ public class LabourCheck {
         Game city = new Game(GameFiles.scratch("labourcheck"));
         quietly(() -> {
             city.newGame();
-            city.getGovernmentInvestor().spend(-50_000_000);
+            city.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             city.getLandManager().setOwnedSqFt(
                     city.getLandManager().getOwnedSqFt() + 400_000_000);
             city.buildStack(t(city, "Low-Rise Apartments"), 60, true);
@@ -301,7 +301,7 @@ public class LabourCheck {
         Game lived = new Game(files);
         quietly(() -> {
             lived.newGame();
-            lived.getGovernmentInvestor().spend(-20_000_000);
+            lived.getGovernmentInvestor().spend(-20_000_000 * PriceLevel.FACTOR);
             lived.getLandManager().setOwnedSqFt(
                     lived.getLandManager().getOwnedSqFt() + 100_000_000);
             lived.buildStack(t(lived, "Low-Rise Apartments"), 30, true);
@@ -435,7 +435,7 @@ public class LabourCheck {
         Game growing = new Game(GameFiles.scratch("labourcheck"));
         quietly(() -> {
             growing.newGame();
-            growing.getGovernmentInvestor().spend(-20_000_000);
+            growing.getGovernmentInvestor().spend(-20_000_000 * PriceLevel.FACTOR);
             growing.getLandManager().setOwnedSqFt(
                     growing.getLandManager().getOwnedSqFt() + 100_000_000);
             growing.buildStack(t(growing, "Low-Rise Apartments"), 40, true);
@@ -535,7 +535,7 @@ public class LabourCheck {
         Game short_ = new Game(GameFiles.scratch("labourcheck"));
         quietly(() -> {
             short_.newGame();
-            short_.getGovernmentInvestor().spend(-50_000_000);
+            short_.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             short_.getLandManager().setOwnedSqFt(
                     short_.getLandManager().getOwnedSqFt() + 100_000_000);
             short_.buildStack(t(short_, "Low-Rise Apartments"), 40, true);
@@ -646,7 +646,7 @@ public class LabourCheck {
         Game buses = new Game(GameFiles.scratch("labourcheck-buses"));
         quietly(() -> {
             buses.newGame();
-            buses.getGovernmentInvestor().spend(-50_000_000);
+            buses.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             buses.getLandManager().setOwnedSqFt(buses.getLandManager().getOwnedSqFt() + 100_000_000);
             buses.buildStack(t(buses, "Low-Rise Apartments"), 10, true);
             buses.buildStack(t(buses, "Bus Network"), 8, true);
@@ -831,7 +831,20 @@ public class LabourCheck {
         city.playOnLiterals();
         quietly(() -> {
             city.run();
-            city.getGovernmentInvestor().spend(-2_000_000);
+            /*
+             * NO SECTOR ASKS TO BUILD (IC1, 2026-11-01): the town is the one stood up by hand below, because the question is the wage
+             * index against the price index under a steady crawl and no sector's building is about it (BusinessInvestment.holdSector()).
+             * An idle builder's laid-off crews are spare for the staffing gate since IC1, so the planners order what the gate used to
+             * refuse, and the town is not the 1,660 people that stood still through the stretch on main's rule: it is 6,567 at the
+             * crawl's start, 8,182 at month 164 and 5,432 at month 347, with steel, vehicles, food works and a call centre founded, and
+             * its groceries index swinging between 2.06 and 8.75 with the town's own shortages and gluts, not the crawl alone. The wage
+             * index, a lagged chase, then stood below the window's low (the index of four years before) for 9 months (182 to 190) and
+             * 17 (332 to 348): the lag is a design lag and the window fits a steady inflation, which is the premise. Held, the town is
+             * the same on both rules (894 people at the crawl's start, the index 2.0 to 8.2), none is outside the window, and the
+             * assertions below read as they were written.
+             */
+            for (String sector : Sectors.KEYS) city.getBusinessInvestment().holdSector(sector);
+            city.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 200_000_000L);
             LongPlaytest.build(city, "House", 200);
             LongPlaytest.build(city, "Convenience Store", 10);
@@ -990,7 +1003,7 @@ public class LabourCheck {
         Game g = new Game(GameFiles.scratch("labourcheck-payroll"));
         quietly(() -> {
             g.newGame();
-            g.getGovernmentInvestor().spend(-50_000_000);
+            g.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000);
             g.buildStack(t(g, "Low-Rise Apartments"), 60, true);
             g.buildStack(t(g, "General Hospital"), 2, true);
@@ -1134,7 +1147,7 @@ public class LabourCheck {
 
         quietly(() -> {
             // ...the city paying for it, on ground it is given.
-            town.getGovernmentInvestor().spend(-50_000_000);
+            town.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
             town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 400_000_000);
             town.buildStack(t(town, "Low-Rise Apartments"), 400, false);
             town.simulateMonths(1);

@@ -27,7 +27,7 @@
 > rather than waiting for a mill; the wage test moves the floor rather than
 > hoping a run drifts.
 
-**Uses:** [Good](Good.md) (70), [Game](Game.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (8), [Sectors](Sectors.md) (8), [Sector](Sector.md) (6), [JobType](JobType.md) (6), [Manufacturing](Manufacturing.md) (6), [GoodsMarket](GoodsMarket.md) (5), [BuildingManager](BuildingManager.md) (5), [GameFiles](GameFiles.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [PopulationManager](PopulationManager.md) (1), [Founding](Founding.md) (1), [SectorBooks](SectorBooks.md) (1), [Equity](Equity.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Good](Good.md) (70), [Game](Game.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (8), [Sectors](Sectors.md) (8), [PriceLevel](PriceLevel.md) (7), [Sector](Sector.md) (6), [JobType](JobType.md) (6), [Manufacturing](Manufacturing.md) (6), [GoodsMarket](GoodsMarket.md) (5), [BuildingManager](BuildingManager.md) (5), [GameFiles](GameFiles.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [PopulationManager](PopulationManager.md) (1), [Founding](Founding.md) (1), [SectorBooks](SectorBooks.md) (1), [Equity](Equity.md) (1), [PayTier](PayTier.md) (1)
 
 ## Sections
 
@@ -48,8 +48,8 @@
 | 68 | `ManufacturingCheck.SHOP` | `"Fabrication Shop"` |  |
 | 69 | `ManufacturingCheck.WORKS` | `"Fabrication Works"` |  |
 | 70 | `ManufacturingCheck.MACH` | `"Machine Works"` |  |
-| 79 | `ManufacturingCheck.STEEL_WAS` | `1.284, FABRICATED_WAS = 2.21, MACHINERY_WAS = 9.0` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
-| 82 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
+| 79 | `ManufacturingCheck.STEEL_WAS` | `1.284 * PriceLevel.FACTOR, FABRICATED_WAS = 2.21 * PriceLevel.FACTOR, MACHINE...` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
+| 82 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650 * PriceLevel.FACTOR` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
 
 ## Fields (state)
 

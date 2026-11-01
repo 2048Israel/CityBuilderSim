@@ -221,7 +221,7 @@ public class DataSave implements Cloneable {
      * The world's moneys (WN4, 2026-10-30; WorldMoneys, Game's THE WORLD'S MONEYS IN THE MONTH), when the city has a world market: the month they
      * stand in, the dollar cycle, the risk-off and each money's rate, swing, terms of trade and peg (WorldMoneys.toSaveArray()), which a load puts
      * back (WorldMoneys.restore()) so the dollar and the pegs continue the path they were on. Absent on a city with no world file and on a save from
-     * before it, which starts them from January 2000 and catches them up with no terms of trade. No format bump: a missing key reads none.
+     * before it, which starts them from January of Nations.FIRST_YEAR and catches them up with no terms of trade. No format bump: a missing key reads none.
      */
     private double[] worldMoneys;
 
@@ -229,7 +229,7 @@ public class DataSave implements Cloneable {
      * The eight central banks' policy rates (XR4, 2026-10-31; PolicyRates, Game's THE WORLD'S MONEYS IN THE MONTH), when the city has a world market: the
      * month they stand in and each bank's rate, shadow, target and inflation read (PolicyRates.toSaveArray()), which a load puts back
      * (PolicyRates.restore()) so the US's rate, and the city's price of money with it, continues the path it was on. Absent on a city with no world
-     * file and on a save from before it, which rebuilds them by stepping from January 2000. No format bump: a missing key reads none.
+     * file and on a save from before it, which rebuilds them by stepping from January of Nations.FIRST_YEAR. No format bump: a missing key reads none.
      */
     private double[] policyRates;
 

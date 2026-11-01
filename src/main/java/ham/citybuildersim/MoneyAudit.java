@@ -396,7 +396,9 @@ public final class MoneyAudit {
        So a comparison of money allows a cent, or a part in RELATIVE_TOLERANCE
        of the figures it is made of, whichever is more - the study's star 6,
        as TreasuryCheck.nearOf() already did with a part in a billion. Below
-       CENT / RELATIVE_TOLERANCE, ten billion units, that is the cent exactly.
+       CENT / RELATIVE_TOLERANCE, ten billion units at today's prices and 260
+       million at 1900's (EP1: CENT is 0.01 times PriceLevel.FACTOR), that is
+       the cent exactly.
        A comparison held tighter than a cent passes its own floor
        (tolerance(floor, scale)), and keeps it exactly below the same ten
        billion units, where a part in a trillion is still under a cent: the
@@ -422,15 +424,21 @@ public final class MoneyAudit {
        before; ULP_STEPS steps pass 1e-6 only from 2^27 units (1.3e8), which
        only ScaleCheck's copies reach. A cent never moves: ULP_STEPS steps
        pass a cent only from 2^40 units (1.1e12), where the relative part is
-       already 1.1 units. The build Jerus was given as 0.7.63 held the floor
+       already 1.1 units (EP1: from 2^35, 3.4e10, at 1900's cent, where it
+       is already 0.034). The build Jerus was given as 0.7.63 held the floor
        at 8 steps (the most a cash-flow statement missed by at months 410 and
        430, 6 steps); batch L's copies at 410 to 570 measured the bank's
        equity at 57.7 steps and a statement at 10.75, both past 8, so 0.7.64
        holds it at 64.
        ======================================================================= */
 
-    /** A harness's cent: 0.01 of a unit of a thousand dollars, the least a money comparison has allowed. */
-    public static final double CENT = .01;
+    /**
+     * A harness's cent: 0.01 of a unit of a thousand dollars at today's prices, times PriceLevel.FACTOR - the least a money comparison has
+     * allowed, priced at the founding's level (EP1, the ship gate's review: the cent stayed .01 while every anchor fell to 1900's price level,
+     * and at FACTOR 0.02588 a cent of thousands is $10 of 1900, $386 of today, so every conservation check through tolerance() passed a leak
+     * 38.6 times the size main's let by). A twin founded at today's prices (-Dcbs.priceLevel=1) has the old cent exactly.
+     */
+    public static final double CENT = .01 * PriceLevel.FACTOR;
 
     /** ...and the share of the figures compared that their own rounding is allowed past it: a part in a trillion. */
     public static final double RELATIVE_TOLERANCE = 1e-12;

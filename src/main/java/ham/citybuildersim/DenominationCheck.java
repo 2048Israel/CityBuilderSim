@@ -145,7 +145,7 @@ public class DenominationCheck {
             // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
             g.setCashForTest(Founding.WEALTHY_CASH);
-            g.getGovernmentInvestor().spend(-2_000_000);
+            g.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
             // PT1-M4: the works department that built for a town nobody staffed is retired. This town's builders are the
             // founding yard's 20 posts, filled from ninety-odd people at the city's per-type fill, and its list of 400
@@ -522,7 +522,7 @@ public class DenominationCheck {
         Game saved = new Game(files);
         quietly(() -> {
             saved.run();
-            saved.getGovernmentInvestor().spend(-2_000_000);
+            saved.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             saved.getLandManager().setOwnedSqFt(saved.getLandManager().getOwnedSqFt() + 100_000_000L);
             LongPlaytest.build(saved, "House", 200);
             LongPlaytest.build(saved, "Convenience Store", 10);

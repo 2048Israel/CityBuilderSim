@@ -383,7 +383,7 @@ public class WorldEconomy {
 
            level(t) = levelFactor x P_US(t) / P_US(0)
 
-       t the month since January 2000, P_US(0) the founding's, so the founding
+       t the month since January of Nations.FIRST_YEAR, P_US(0) the founding's, so the founding
        month reads 1; the headline rate getInflation() is this year's pace,
        P_US(y+1)/P_US(y) - 1; the thirteen-month ring and realisedInflation()
        are as they were, and pin() holds it still as it did. NOTHING PULLS IT
@@ -410,7 +410,7 @@ public class WorldEconomy {
 
     /** The US's price path, as the dollar follows it: WorldMoneys' interpolation of the nations' price levels (Game hands it, followUsPath()). */
     public interface UsPath {
-        /** The US's price level in month t (months since January 2000) against its level in month 0. */
+        /** The US's price level in month t (months since January of Nations.FIRST_YEAR) against its level in month 0. */
         double level(int t);
 
         /** The US's inflation in the calendar year of month t: P_US(y+1)/P_US(y) - 1. */

@@ -656,6 +656,22 @@ public class BuildingsTemplate {
         return this;
     }
 
+    /**
+     * THE FUNNEL FOR THE BUILDINGS' MONEY (EP1, Jerus 2026-10-30: "1900 price level"). The data file and the built-in definitions both write
+     * today's figures, thousands at 2025's price level; this prices the cash cost, the upkeep, the consumables and a pipeline's kilometre on land
+     * at the founding's, each times PriceLevel.FACTOR, once, where the template is made (BuildingCatalog.readBuilding and the end of BuildingManager.initializeBuiltInTemplates),
+     * before anything is seeded, so the founding figures the seeding captures are already the founding's. Points, materials and every physical
+     * quantity are untouched: only the dollars move, and the dollars a build also pays (the materials' price, the builders' wages) carry the
+     * same factor from Good and PayTier, so a house costs the same share of a wage that it did.
+     */
+    BuildingsTemplate pricedAtFoundingLevel() {
+        this.cashCost *= PriceLevel.FACTOR;
+        this.upkeep *= PriceLevel.FACTOR;
+        this.consumables *= PriceLevel.FACTOR;
+        this.onshoreCashPerKm *= PriceLevel.FACTOR;
+        return this;
+    }
+
     public BuildingsTemplate setConstructionPoints(int constructionPoints) {
         this.constructionPoints = constructionPoints;
         return this;

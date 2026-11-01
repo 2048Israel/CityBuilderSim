@@ -11,7 +11,7 @@
 > no land, which has no limit, and every one of their figures is the old
 > formula still; the new sections build the limit on top of them.
 
-**Uses:** [Game](Game.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (11), [CityLand](CityLand.md) (11), [BuildAdvice](BuildAdvice.md) (9), [UtilitiesHandler](UtilitiesHandler.md) (8), [GameFiles](GameFiles.md) (6), [BuildingManager](BuildingManager.md) (5), [LandParcel](LandParcel.md) (5), [ServicesManager](ServicesManager.md) (4), [LandManager](LandManager.md) (4), [BuildCard](BuildCard.md) (4), [CityNeeds](CityNeeds.md) (3), [Sector](Sector.md) (2), [World](World.md) (2), [MiningCheck](MiningCheck.md) (2), [FoodIndustry](FoodIndustry.md) (1), [Retail](Retail.md) (1), [LandConversion](LandConversion.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
+**Uses:** [Game](Game.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (11), [CityLand](CityLand.md) (11), [BuildAdvice](BuildAdvice.md) (9), [UtilitiesHandler](UtilitiesHandler.md) (8), [GameFiles](GameFiles.md) (6), [BuildingManager](BuildingManager.md) (5), [LandParcel](LandParcel.md) (5), [ServicesManager](ServicesManager.md) (4), [LandManager](LandManager.md) (4), [BuildCard](BuildCard.md) (4), [CityNeeds](CityNeeds.md) (3), [Sector](Sector.md) (2), [World](World.md) (2), [MiningCheck](MiningCheck.md) (2), [PriceLevel](PriceLevel.md) (1), [FoodIndustry](FoodIndustry.md) (1), [Retail](Retail.md) (1), [LandConversion](LandConversion.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
 
 ## Sections
 

@@ -229,12 +229,12 @@ public class CentralBankCheck {
         CentralBank cb = g.getCentralBank();
         MoneyAudit.Result r = g.getLastMoneyAudit();
         double made = cb.getIssued() - cb.getRetired();
-        boolean closes = Math.abs(r.residual) <= .01 || r.relative() <= 1e-7;
-        boolean sameMoney = Math.abs(r.moneyMade() - made) <= .005;
-        boolean m0Moved = Math.abs((cb.m0() - m0Before) - made) <= .005;
+        boolean closes = Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7;
+        boolean sameMoney = Math.abs(r.moneyMade() - made) <= MoneyAudit.CENT / 2;
+        boolean m0Moved = Math.abs((cb.m0() - m0Before) - made) <= MoneyAudit.CENT / 2;
         // Equity less the vault, with what it paid in new money for the vault's dollars added back (FX8: the strong edge's purchases).
         boolean keptNothing = Math.abs(cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime()
-                - (cb.getRemittanceDue() - cb.getLossCarried())) <= .01;
+                - (cb.getRemittanceDue() - cb.getLossCarried())) <= MoneyAudit.CENT;
         monthsPlayed++;
         worstResidual = Math.max(worstResidual, Math.abs(r.residual));
         if (!(closes && sameMoney && m0Moved && keptNothing)) {
@@ -421,7 +421,7 @@ public class CentralBankCheck {
         // five terms (LongTermBond.MATURITIES).
         double ask = (bank.cashReserves() + bank.depositsGathered() + 100_000)
                 / (1 - HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE);
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR));
         Debt bond = null;
         for (Debt d : ledger.getDebt()) if (!d.isForeign()) bond = d;
         assertTrue("fixture: the treasury sold the bank a bond", bond != null);
@@ -557,19 +557,19 @@ public class CentralBankCheck {
         close("...overdrawing it", city.getCash(), -promise, 1e-9);
         double arrearsBefore = city.getArrearsTotal();
         close("a discretionary line is refused",
-                city.treasuryPays(TreasuryLine.BUSINESS_SUBSIDIES, 500,
+                city.treasuryPays(TreasuryLine.BUSINESS_SUBSIDIES, 500 * PriceLevel.FACTOR,
                         city.getSectors().retail().key()), 0, 0);
-        close("...and the refusal is owed", city.getArrearsTotal() - arrearsBefore, 500, 1e-9);
+        close("...and the refusal is owed", city.getArrearsTotal() - arrearsBefore, 500 * PriceLevel.FACTOR, 1e-9);
         close("a purchase is refused and nothing is owed",
-                city.treasuryPays(TreasuryLine.LAND, 500) + (city.getArrearsTotal() - arrearsBefore - 500),
+                city.treasuryPays(TreasuryLine.LAND, 500 * PriceLevel.FACTOR) + (city.getArrearsTotal() - arrearsBefore - 500 * PriceLevel.FACTOR),
                 0, 1e-9);
         final Game.BuildResult[] built = new Game.BuildResult[1];
         double cashNow = city.getCash();
         quietly(() -> built[0] = city.buildStack(template(city, "Gravel Road"), 1, false));
         assertTrue("...a building the treasury cannot pay for is not ordered",
                 built[0] != Game.BuildResult.SUCCESS && city.getCash() == cashNow);
-        close("...nor capital put into the bank", city.treasuryPays(TreasuryLine.BANK_CAPITAL, 1_000), 0, 0);
-        close("...nor reserves bought", city.buyForeignCurrency(1_000), 0, 0);
+        close("...nor capital put into the bank", city.treasuryPays(TreasuryLine.BANK_CAPITAL, 1_000 * PriceLevel.FACTOR), 0, 0);
+        close("...nor reserves bought", city.buyForeignCurrency(1_000 * PriceLevel.FACTOR), 0, 0);
 
         play(city);
         assertTrue("the promise's overdraft is advanced past the ceiling",
@@ -602,8 +602,8 @@ public class CentralBankCheck {
         String builders = city.getSectors().construction().key(), shops = city.getSectors().retail().key();
         double owedBuilders = city.getArrearsOwedTo(builders), owedShops = city.getArrearsOwedTo(shops);
         assertTrue("fixture: the builders are owed their repairs and the shops their subsidy",
-                owedBuilders > 0 && owedShops >= 500);
-        city.setCashForTest(advancesOwed * 1.2 + arrearsOwed + 200_000);
+                owedBuilders > 0 && owedShops >= 500 * PriceLevel.FACTOR);
+        city.setCashForTest(advancesOwed * 1.2 + arrearsOwed + 200_000 * PriceLevel.FACTOR);
         play(city);
         close("the central bank was repaid in full", cb.getAdvancesToTreasury(), 0, 1e-6);
         close("...and then the arrears", city.getArrearsTotal(), grantArrears, 1e-6);
@@ -694,7 +694,7 @@ public class CentralBankCheck {
         city.setCashForTest(-(1.5 * cb.ceiling()));
         play(city);
         city.setCashForTest(0);
-        city.treasuryPays(TreasuryLine.CONSTRUCTION_SUBSIDY, 250);
+        city.treasuryPays(TreasuryLine.CONSTRUCTION_SUBSIDY, 250 * PriceLevel.FACTOR);
         assertTrue("fixture: advances and arrears to carry",
                 cb.getAdvancesToTreasury() > 0 && city.hasArrears());
         quietly(() -> {
@@ -745,7 +745,7 @@ public class CentralBankCheck {
         /* ================= 10. an old save ================= */
         out.println("\n--- 10. a save from before the central bank founds an empty one ---");
 
-        quietly(() -> city.handleTBillLogic(20_000, Game.BUILD_NOTE_MONTHS, 1000.0));
+        quietly(() -> city.handleTBillLogic(20_000 * PriceLevel.FACTOR, Game.BUILD_NOTE_MONTHS, 1000.0 * PriceLevel.FACTOR));
         int notesBefore = 0;
         for (Debt d : ledger.getDebt()) if (d instanceof ShortTermTBill) notesBefore++;
         assertTrue("fixture: the city carries a note", notesBefore > 0);
@@ -838,7 +838,7 @@ public class CentralBankCheck {
          * them more than the bank does (HoldersCheck) - take none, and the
          * bank is the whole of the market the dial buys from.
          */
-        quietly(() -> city.handleLongBondLogic(1_000, 20, 100));
+        quietly(() -> city.handleLongBondLogic(1_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR));
         Debt bond = null;
         for (Debt d : ledger.getDebt()) if (DebtManager.isTermPaper(d)) bond = d;
         assertTrue("fixture: the treasury sold a twenty-year bond", bond != null);
@@ -1024,13 +1024,13 @@ public class CentralBankCheck {
         city.setCashForTest(-atSix);
         close("fixture: overdrawn by the whole ceiling, the treasury has no room",
                 city.discretionaryRoom(), 0, 1e-6);
-        close("...so a purchase is refused", city.treasuryPays(TreasuryLine.LAND, 500), 0, 0);
+        close("...so a purchase is refused", city.treasuryPays(TreasuryLine.LAND, 500 * PriceLevel.FACTOR), 0, 0);
 
         cb.setAdvancesCeilingMonths(12);
         close("set to twelve months, the ceiling doubles", cb.ceiling(), 2 * atSix, 1e-6);
         close("...and the room is the six months it added", city.discretionaryRoom(), atSix, 1e-6);
         close("...so the same purchase is paid, overdrawing further",
-                city.treasuryPays(TreasuryLine.LAND, 500), 500, 0);
+                city.treasuryPays(TreasuryLine.LAND, 500 * PriceLevel.FACTOR), 500 * PriceLevel.FACTOR, 0);
         double drawBefore = cb.getAdvancesToTreasury();
         play(city);
         out.printf("   drew $%,.0fk at the top of the month against a ceiling of $%,.0fk (twelve months)%n",
@@ -1243,7 +1243,7 @@ public class CentralBankCheck {
         // three times what the households can pay: they bid by their rule at the auction's yield and are held
         // by their purse, not by half the issue (D32), so a smaller issue left the bank nothing to hold.
         double purse = city.getHouseholdBalance().spareForPaper();
-        quietly(() -> city.handleMediumBondLogic(Math.max(20_000, purse * 3), 5, 100));
+        quietly(() -> city.handleMediumBondLogic(Math.max(20_000, purse * 3), 5, 100 * PriceLevel.FACTOR));
         Debt serial = fixtureSerial(city, soldIn);
         assertTrue("fixture: the treasury sold a five-year serial", serial != null);
         play(city);                                        // the settle: the households take their share
@@ -1319,7 +1319,7 @@ public class CentralBankCheck {
         Debt sh = fixtureSerial(h, soldIn);
         double handPar = sh.principalDueNextMonth() * sh.centralBankPrincipal() / sh.getOustandingPrincipal();
         close("by hand, the plan still names its par", h.rolloverPlan().centralBankPar(), handPar, 1e-9);
-        quietly(() -> h.handleLongBondLogic(5_000, 20, 100));
+        quietly(() -> h.handleLongBondLogic(5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR));
         play(h);
         java.util.List<Debt> byHand = soldAtTheLastPress(h);
         assertTrue("fixture: by hand, the one term loan the player sold in the gap",
@@ -1475,7 +1475,7 @@ public class CentralBankCheck {
         });
         city.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         final int soldIn = city.getMonth();
-        quietly(() -> city.handleMediumBondLogic(400, 2, 100));
+        quietly(() -> city.handleMediumBondLogic(400 * PriceLevel.FACTOR, 2, 100 * PriceLevel.FACTOR));
         Debt serial = fixtureSerial(city, soldIn);
         assertTrue("fixture: the treasury sold a small two-year serial", serial != null);
         play(city);

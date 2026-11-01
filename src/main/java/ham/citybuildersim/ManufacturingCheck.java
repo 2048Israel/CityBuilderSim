@@ -76,10 +76,10 @@ public class ManufacturingCheck {
      * price and each good fell by the steel in it; the sheds did not move, so
      * a shed is a year of what its plant billed at these.
      */
-    static final double STEEL_WAS = 1.284, FABRICATED_WAS = 2.21, MACHINERY_WAS = 9.0;
+    static final double STEEL_WAS = 1.284 * PriceLevel.FACTOR, FABRICATED_WAS = 2.21 * PriceLevel.FACTOR, MACHINERY_WAS = 9.0 * PriceLevel.FACTOR;   // today's figures, priced at the founding's level (EP1)
 
     /** Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. */
-    static final double STEEL_FALL = STEEL_WAS - .650;
+    static final double STEEL_FALL = STEEL_WAS - .650 * PriceLevel.FACTOR;
 
     /* =====================================================================
        WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is
@@ -233,7 +233,7 @@ public class ManufacturingCheck {
             check(names[i] + ": posts", jobsOf(t), want[i][2], 0);
             check(names[i] + ": all-in build cost",
                     t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials(),
-                    want[i][3], 12);
+                    want[i][3] * PriceLevel.FACTOR, 12 * PriceLevel.FACTOR);   // the design's figure and its twelve thousand dollars of tolerance, priced at the founding's level
             check(names[i] + ": the ground it stands on", t.getLandSqFt(), want[i][4], 1);
             // The build cost is ONE YEAR of what the plant bills. That is the
             // strong end of the game's own convention (the Steel Foundry is
@@ -243,7 +243,7 @@ public class ManufacturingCheck {
             // steel by the steel in them, its margin held, its shed did not move.
             double was = makes[i] == Good.MACHINERY ? MACHINERY_WAS : FABRICATED_WAS;
             check(names[i] + ": a year of its own billings at the prices it was costed on, which is the whole shed",
-                    want[i][3] / (t.makes(makes[i]) * was * 12), 1.0, .01);
+                    want[i][3] * PriceLevel.FACTOR / (t.makes(makes[i]) * was * 12), 1.0, .01);
             /*
              * ITS MARGIN OVER ITS STEEL HELD (0.7.120; Jerus's Q6b: "move them
              * with steel", so Manufacturing's returns hold). Steel fell

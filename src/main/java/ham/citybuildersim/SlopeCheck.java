@@ -494,7 +494,7 @@ public class SlopeCheck {
 
     /** The playtest's own test of a month's money audit (LongPlaytest.audit()): no residual over a cent, or none over a ten-millionth of the money moved. */
     static boolean closes(MoneyAudit.Result r) {
-        return Double.isFinite(r.residual) && (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7);
+        return Double.isFinite(r.residual) && (Math.abs(r.residual) <= MoneyAudit.CENT || r.relative() <= 1e-7);
     }
 
     /** One month, played and audited as the playtest audits one: the money, the GDP identity, GDP's construction against the builders' own books, and every sector's statements (SectorStatementCheck.audit()). */

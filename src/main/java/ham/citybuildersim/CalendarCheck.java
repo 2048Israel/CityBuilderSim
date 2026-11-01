@@ -37,14 +37,21 @@ public class CalendarCheck {
         System.out.printf("%-56s %s%n", label, ok ? "OK" : "FAIL");
     }
 
+    /** The game month of a real calendar month: the epoch's January is month 1. */
+    static int monthOf(int year, int monthOfYear) {
+        return 1 + 12 * (year - CityCalendar.EPOCH_YEAR) + monthOfYear - 1;
+    }
+
     public static void main(String[] args) throws Exception {
 
         /* ==================== 1. the epoch ==================== */
-        System.out.println("--- month 1 is January 2000 ---");
+        int epoch = CityCalendar.EPOCH_YEAR;
+        System.out.println("--- month 1 is January " + epoch + " ---");
 
-        check("month 1 -> year", CityCalendar.yearOf(1), 2000);
+        check("the epoch is 1900, the year the game starts in (EP1)", epoch, 1900);
+        check("month 1 -> year", CityCalendar.yearOf(1), epoch);
         check("month 1 -> month of year", CityCalendar.monthOfYear(1), 1);
-        same("month 1 formatted", CityCalendar.format(1), "January 2000");
+        same("month 1 formatted", CityCalendar.format(1), "January " + epoch);
 
         // A new game really does start at month 1, so the epoch is not an
         // assumption this harness is making on its own.
@@ -64,27 +71,29 @@ public class CalendarCheck {
         /* ==================== 2. every boundary in the first year ============ */
         System.out.println("\n--- walking the first year ---");
 
-        same("month 12", CityCalendar.format(12), "December 2000");
-        same("month 13", CityCalendar.format(13), "January 2001");
-        check("month 12 is still 2000", CityCalendar.yearOf(12), 2000);
-        check("month 13 rolls over", CityCalendar.yearOf(13), 2001);
+        same("month 12", CityCalendar.format(12), "December " + epoch);
+        same("month 13", CityCalendar.format(13), "January " + (epoch + 1));
+        check("month 12 is still the first year", CityCalendar.yearOf(12), epoch);
+        check("month 13 rolls over", CityCalendar.yearOf(13), epoch + 1);
 
         /*
-         * The one Jerus stated outright: "120 months later it's 2010". 120
-         * months after month 1 is month 121, and that has to be January 2010 or
+         * The one Jerus stated outright: "120 months later it's 2010" (of a game
+         * that began in 2000; the epoch is 1900 now, EP1, and the same ten years
+         * on). 120 months after month 1 is month 121, and that has to be January
+         * of the epoch's tenth year on or
          * the epoch is off by a year somewhere.
          */
         System.out.println("\n--- the decade Jerus specified ---");
-        same("month 121, ten years on", CityCalendar.format(121), "January 2010");
-        check("...and 120 months IS ten years", CityCalendar.yearOf(121) - 2000, 10);
-        same("month 120, the month before", CityCalendar.format(120), "December 2009");
+        same("month 121, ten years on", CityCalendar.format(121), "January " + (epoch + 10));
+        check("...and 120 months IS ten years", CityCalendar.yearOf(121) - epoch, 10);
+        same("month 120, the month before", CityCalendar.format(120), "December " + (epoch + 9));
 
         /* ==================== 3. the far end and the bad end ================= */
         System.out.println("\n--- long runs and nonsense input ---");
 
         // LongPlaytest ends at m4002, so the panel really does render this.
-        same("month 4002 (the playtest's last)", CityCalendar.format(4002), "June 2333");
-        check("4002 lands in 2333", CityCalendar.yearOf(4002), 2333);
+        same("month 4002 (the playtest's last)", CityCalendar.format(4002), "June " + (epoch + 333));
+        check("4002 lands 333 years in", CityCalendar.yearOf(4002), epoch + 333);
 
         /* ================= days, which only the clock uses =================
          *
@@ -97,18 +106,22 @@ public class CalendarCheck {
         check("January has 31",  CityCalendar.daysIn(1),  31);
         check("April has 30",    CityCalendar.daysIn(4),  30);
         check("December has 31", CityCalendar.daysIn(12), 31);
-        // Month 2 is February 2000, and the epoch year is a leap year - which
-        // this check asserted 28 for on the first pass and was rightly told
-        // otherwise. The common-year February is month 14.
-        check("February 2001 has 28", CityCalendar.daysIn(14), 28);
+        // The epoch's year is 1900 now, and 1900 is NOT a leap year (divisible by
+        // 100, not by 400): the first February has 28 days, and 2000's has 29.
+        // (This asserted the epoch's February at 29 for the epoch of 2000, and was
+        // rightly told otherwise the first time round.)
+        check("February 1900 has 28",           CityCalendar.daysIn(monthOf(1900, 2)), 28);
+        check("February 2001 has 28", CityCalendar.daysIn(monthOf(2001, 2)), 28);
 
-        // 2000 is a leap year (divisible by 400), 2100 is not (by 100 and not 400).
+        // 2000 is a leap year (divisible by 400), 1900 and 2100 are not (by 100 and not 400).
+        assertTrue("1900 was not a leap year", !CityCalendar.isLeapYear(1900));
         assertTrue("2000 was a leap year",      CityCalendar.isLeapYear(2000));
         assertTrue("2100 is not",              !CityCalendar.isLeapYear(2100));
         assertTrue("2400 is",                   CityCalendar.isLeapYear(2400));
         assertTrue("2001 is not",              !CityCalendar.isLeapYear(2001));
-        check("...so month 2 has 29 days",      CityCalendar.daysIn(2), 29);
-        check("February 2100 has 28",           CityCalendar.daysIn(1 + 100 * 12 + 1), 28);
+        check("...so February 2000 has 29 days", CityCalendar.daysIn(monthOf(2000, 2)), 29);
+        check("February 2100 has 28",           CityCalendar.daysIn(monthOf(2100, 2)), 28);
+        check("...and the epoch's own February, month 2, is 1900's", CityCalendar.daysIn(2), 28);
 
         /*
          * THE DAY NEVER LEAVES THE MONTH, at either end. The clock hands this a
@@ -120,7 +133,8 @@ public class CalendarCheck {
         check("half way through January",    CityCalendar.dayOf(1, 0.5),   16);
         check("the end of January is the 31st", CityCalendar.dayOf(1, 1),  31);
         check("...and past the end is still the 31st", CityCalendar.dayOf(1, 9), 31);
-        check("the end of February is the 29th in 2000", CityCalendar.dayOf(2, 1), 29);
+        check("the end of February is the 28th in 1900", CityCalendar.dayOf(monthOf(1900, 2), 1), 28);
+        check("...and the 29th in 2000", CityCalendar.dayOf(monthOf(2000, 2), 1), 29);
         boolean inside = true;
         for (int m = 1; m <= 120; m++) {
             for (int s = 0; s <= 100; s++) {
@@ -129,15 +143,15 @@ public class CalendarCheck {
             }
         }
         assertTrue("ten years of days, none of them outside their month", inside);
-        same("the date the clock prints", CityCalendar.formatDay(3, 0.5), "16 March 2000");
+        same("the date the clock prints", CityCalendar.formatDay(3, 0.5), "16 March " + epoch);
 
         /*
          * Month 0 and below are not reachable in play, but a corrupt save can
          * hand them over and a status bar must not be the thing that dies.
-         * Floored at the epoch rather than counting back into 1999.
+         * Floored at the epoch rather than counting back into the year before it.
          */
-        same("month 0 floors at the epoch", CityCalendar.format(0), "January 2000");
-        same("a negative month does too", CityCalendar.format(-40), "January 2000");
+        same("month 0 floors at the epoch", CityCalendar.format(0), "January " + epoch);
+        same("a negative month does too", CityCalendar.format(-40), "January " + epoch);
 
         /* ==================== 4. "in N months" ==================== */
         System.out.println("\n--- how far off a maturity is ---");

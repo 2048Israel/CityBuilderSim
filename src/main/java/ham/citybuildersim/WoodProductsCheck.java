@@ -118,9 +118,9 @@ public class WoodProductsCheck {
     /** Wood's six goods, in Good's order (the spec's 2.3). */
     static final Good[] GOODS = { Good.LUMBER, Good.PANELS, Good.RESIDUES, Good.PULP, Good.PAPER, Good.WOOD_PELLETS };
     /** The study's 5.3: each one's import price, D$ thousands a cubic metre or a tonne. */
-    static final double[] STUDY_IMPORT = { .340, .420, .045, .760, 1.050, .220 };
+    static final double[] STUDY_IMPORT = PriceLevelCheck.atFounding(.340, .420, .045, .760, 1.050, .220); // today's figures, priced at the founding's level (EP1)
     /** ...and its export price. */
-    static final double[] STUDY_EXPORT = { .250, .260, .015, .600, .880, .150 };
+    static final double[] STUDY_EXPORT = PriceLevelCheck.atFounding(.250, .260, .015, .600, .880, .150); // today's figures, priced at the founding's level (EP1)
     /** ...its unit. */
     static final String[] STUDY_UNIT = { "cubic metre", "cubic metre", "cubic metre", "tonne", "tonne", "tonne" };
     /** ...the tonnes a cubic metre of it weighs (spec 2.3, est.: sawn lumber 0.5, OSB 0.62 [W35], chips green as the logs, 0.9); NaN for one by the tonne. */
@@ -218,7 +218,7 @@ public class WoodProductsCheck {
             WoodProducts.PAPER_MILL, WoodProducts.PELLET_MILL };
 
     /** The study's 5.4: each one's cost, D$ thousands all in. */
-    static final double[] STUDY_COSTS = { 15_000, 150_000, 140_000, 260_000, 150_000, 30_000 };
+    static final double[] STUDY_COSTS = PriceLevelCheck.atFounding(15_000, 150_000, 140_000, 260_000, 150_000, 30_000); // today's figures, priced at the founding's level (EP1)
 
     /** ...its posts. */
     static final int[] STUDY_POSTS = { 35, 130, 100, 200, 120, 30 };
@@ -236,7 +236,7 @@ public class WoodProductsCheck {
     static final double[][] STUDY_USES = { { 4_000 }, { 38_500 }, { 27_750 }, { 28_000, 21_500 }, { 5_775, 850_000 }, { 13_200 } };
 
     /** ...its running cost a month, D$ thousands, the study's 5.4 "Runs" - power bought from the grid only (its 2.4), the paper mill's fuel in it. */
-    static final double[] STUDY_RUNS = { 177, 844, 1_360, 2_170, 1_380, 183 };
+    static final double[] STUDY_RUNS = PriceLevelCheck.atFounding(177, 844, 1_360, 2_170, 1_380, 183); // today's figures, priced at the founding's level (EP1)
 
     /** The study's 5.5 table, % of the cost a month, cases A to D. */
     static final double[][] STUDY_TABLE = { { -0.5, 0.7, 2.3, 1.1 }, { 0.1, 1.3, 2.8, 1.6 }, { 0.0, 1.1, 2.8, 1.7 }, { 0.4, 1.3, 1.9, 1.1 },
@@ -294,9 +294,9 @@ public class WoodProductsCheck {
             for (int i = 0; i < STUDY_MADE[r].length; i++) makes &= t.makes(STUDY_MADE[r][i]) == STUDY_MAKES[r][i];
             for (int i = 0; i < STUDY_FEED[r].length; i++) uses &= t.uses(STUDY_FEED[r][i]) == STUDY_USES[r][i];
             boolean pulpMill = ROWS[r] == WoodProducts.PULP_MILL, paperMill = ROWS[r] == WoodProducts.PAPER_MILL;
-            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r]) + "k all in, "
+            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r] / PriceLevel.FACTOR) + "k all in, "
                             + STUDY_POSTS[r] + " posts, what it makes and uses; Wood Products', HEAVY_INDUSTRY, on no site",
-                    cost == STUDY_COSTS[r] && t.getTotalJobs() == STUDY_POSTS[r] && makes && uses
+                    PriceLevelCheck.sameMoney(cost, STUDY_COSTS[r]) && t.getTotalJobs() == STUDY_POSTS[r] && makes && uses
                             && Sectors.WOOD_PRODUCTS.equals(t.getSector()) && t.getCategory() == BuildingType.HEAVY_INDUSTRY && t.site() == null
                             && t.oldMetalTaken().isEmpty(),
                     String.format("cash %,.0f + 18 x %,d material", t.getCashCost(), t.getConstructionMaterials()));

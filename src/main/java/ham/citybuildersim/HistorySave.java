@@ -696,7 +696,9 @@ public class HistorySave {
         totalWage.add(round2(people.getTotalWage()));
 
         LabourMarket labour = game.getLabourMarket();
-        minimumWage.add(round4(labour.getMinimumWage()));
+        // The prices a household pays or is paid are recorded to six significant figures (EP1): fixed places (cents of thousands, four places, six)
+        // kept three digits of a wage and one of a rent once the opening prices were 1900's, a thirty-eighth of today's.
+        minimumWage.add(roundSig(labour.getMinimumWage()));
         unskilledPremium.add(round4(labour.premium(JobType.NO_DIPLOMA)));
 
         double[] mix = people.getBandShare();
@@ -713,10 +715,10 @@ public class HistorySave {
         careCoverage.add(round4(game.getHealth().getCoverage()));
         outbreak.add(round4(game.getHealth().getOutbreakSeverity()));
 
-        landPrice.add(Math.round(game.getLandManager().getGroundUsdPerSqFt() * 1e6) / 1e6);
-        foodPrice.add(round4(game.getSectors().retail().getFoodPrice()));
-        materialsPrice.add(round4(game.getBuildingManager().getConstructionMaterialPrice()));
-        orePrice.add(round4(game.getMarkets().get(Good.IRON).exportPrice()));
+        landPrice.add(roundSig(game.getLandManager().getGroundUsdPerSqFt()));
+        foodPrice.add(roundSig(game.getSectors().retail().getFoodPrice()));
+        materialsPrice.add(roundSig(game.getBuildingManager().getConstructionMaterialPrice()));
+        orePrice.add(roundSig(game.getMarkets().get(Good.IRON).exportPrice()));
 
         /* ------------------------- the edge ------------------------- */
         ForeignAccounts abroad = game.getForeignAccounts();
@@ -804,7 +806,7 @@ public class HistorySave {
         healthBill.add(round2(game.getHealthcare().getNetCost()));
 
         /* ------------------------- housing ------------------------- */
-        rentPrice.add(round2(game.getSectors().realEstate().getRentPrice()));
+        rentPrice.add(roundSig(game.getSectors().realEstate().getRentPrice()));
         homes.add(game.getBuildingManager().getTotalHomes());
         households.add(round2(game.getFamilies().totalHouseholds()));
 
@@ -1049,7 +1051,7 @@ public class HistorySave {
     private static double round2(double v) { return Math.round(v * 100.0) / 100.0; }
     private static double round4(double v) { return Math.round(v * 10000.0) / 10000.0; }
 
-    /** Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5). */
+    /** Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices of food, materials, ore and ground, which 1900's thirty-eighth of today's prices left two or three digits at four places. */
     static final int SHARE_PRICE_DIGITS = 6;
 
     /** A price per founding share to SHARE_PRICE_DIGITS significant figures; 0 stays 0, and a figure that is not a number is kept as 0, as finite() keeps the rest (JSON holds no NaN). */

@@ -64,7 +64,7 @@
 >      protected - by the regrowth rule's own constant.
 > ... (8 more lines in the source)
 
-**Uses:** [Forestry](Forestry.md) (80), [Good](Good.md) (53), [LandManager](LandManager.md) (25), [Sectors](Sectors.md) (21), [Game](Game.md) (16), [BuildingManager](BuildingManager.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [GameFiles](GameFiles.md) (6), [Zoning](Zoning.md) (5), [Resource](Resource.md) (4), [LandMarket](LandMarket.md) (4), [LandParcel](LandParcel.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [Equity](Equity.md) (3), [MoneyAudit](MoneyAudit.md) (3), [CityLand](CityLand.md) (3), [JobType](JobType.md) (3), [Sector](Sector.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Traffic](Traffic.md) (2), [Ports](Ports.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [PayTier](PayTier.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [World](World.md) (1), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1)... and 4 more
+**Uses:** [Forestry](Forestry.md) (80), [Good](Good.md) (53), [LandManager](LandManager.md) (25), [Sectors](Sectors.md) (21), [Game](Game.md) (16), [BuildingManager](BuildingManager.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [GameFiles](GameFiles.md) (6), [PriceLevelCheck](PriceLevelCheck.md) (5), [Zoning](Zoning.md) (5), [Resource](Resource.md) (4), [LandMarket](LandMarket.md) (4), [LandParcel](LandParcel.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [Equity](Equity.md) (3), [MoneyAudit](MoneyAudit.md) (3), [CityLand](CityLand.md) (3), [JobType](JobType.md) (3), [Sector](Sector.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Traffic](Traffic.md) (2), [Ports](Ports.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [PayTier](PayTier.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [World](World.md) (1), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1)... and 6 more
 
 **Used by (4):** [BuildCardCheck](BuildCardCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md)
 
@@ -91,16 +91,16 @@
 | 123 | `ForestryCheck.F` | `Resource.FOREST` |  |
 | 126 | `ForestryCheck.M3_A_KM2` | `World.FOREST_M3_PER_KM2` | Timber a square kilometre of forest holds: the world's (World.FOREST_M3_PER_KM2, Canada's 137 m3 a hectare). |
 | 136 | `ForestryCheck.GOODS` | `{ Good.SAWLOGS, Good.PULPWOOD }` | Wood's two goods, the study's 5.3: import and export price, D$ thousands a cubic metre. |
-| 138 | `ForestryCheck.STUDY_IMPORT` | `{.110,.090 }` | ...each one's import price (pulpwood's widened from 70, the study's 1.2)... |
-| 140 | `ForestryCheck.STUDY_EXPORT` | `{.065,.035 }` | ...and its export price. |
+| 138 | `ForestryCheck.STUDY_IMPORT` | `PriceLevelCheck.atFounding(.110,.090)` | ...each one's import price (pulpwood's widened from 70, the study's 1.2)... |
+| 140 | `ForestryCheck.STUDY_EXPORT` | `PriceLevelCheck.atFounding(.065,.035)` | ...and its export price. |
 | 142 | `ForestryCheck.FREIGHT_SHARE` | `.375` | Good.java's rule: freight three eighths of the wedge. |
 | 144 | `ForestryCheck.GREEN_WOOD` | `.9` | Green roundwood, tonnes a cubic metre (spec 2.3, est.). |
 | 146 | `ForestryCheck.IN_GROUND` | `.02` | The share of forest's pulpwood price its standing timber sells for in the ground (the study's 8). |
 | 212 | `ForestryCheck.ROWS` | `{ Forestry.LOGGING_CAMP, Forestry.HARVESTING_OPERATION, Forestry.TREE_PLANTAT...` | Forestry's rows, by their permanent ids, in the study's 5.4 order and the woodlot after. |
-| 215 | `ForestryCheck.STUDY_COSTS` | `{ 3_000, 15_000, 2_000 }` | The study's 5.4 for the first three: cost, D$ thousands all in. |
+| 215 | `ForestryCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(3_000, 15_000, 2_000)` | The study's 5.4 for the first three: cost, D$ thousands all in. |
 | 217 | `ForestryCheck.STUDY_POSTS` | `{ 11, 18, 5 }` | ...posts. |
 | 219 | `ForestryCheck.STUDY_SAWLOGS` | `{ 1_000, 6_250, 0 }` | ...sawlogs a month, m3 (and as much pulpwood). |
-| 221 | `ForestryCheck.STUDY_RUNS` | `{ 61, 217, 24 }` | ...its running cost a month, D$ thousands ("Runs"). |
+| 221 | `ForestryCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(61, 217, 24)` | ...its running cost a month, D$ thousands ("Runs"). |
 | 223 | `ForestryCheck.STUDY_TABLE` | `{ { 1.3, 1.3, 4.6, 4.6 }, { 2.7, 2.7, 6.9, 6.9 }, { - 1.2, - 1.2, - 1.2, - 1....` | The study's 5.5 table, % of the cost a month, cases A to D. |
 | 225 | `ForestryCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 227 | `ForestryCheck.PLANTATION_HA` | `1_000, WOODLOT_HA = 100` | A plantation's hectares (the study's 5.4) and a woodlot's (A12). |

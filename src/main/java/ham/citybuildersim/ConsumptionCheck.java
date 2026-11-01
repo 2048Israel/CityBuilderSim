@@ -333,7 +333,8 @@ public class ConsumptionCheck {
                             + "\"worldImportPrice\":%.12f,\"worldExportPrice\":%.12f,\"kcalPerUnit\":%s,"
                             + "\"quality\":%s,\"elasticity\":%s,\"convenience\":%s,\"referenceKg\":%s}",
                     i.key(), i.label(), i.unit(), i.category(),
-                    i.worldImportPrice() * by, i.worldExportPrice() * by, i.kcalPerUnit(),
+                    // The file's prices are today's and load at the founding's level (EP1), so the fixture writes them back as the file does.
+                    i.worldImportPrice() / PriceLevel.FACTOR * by, i.worldExportPrice() / PriceLevel.FACTOR * by, i.kcalPerUnit(),
                     i.quality(), i.elasticity(), i.convenience(), i.referenceKg()));
             first = false;
         }

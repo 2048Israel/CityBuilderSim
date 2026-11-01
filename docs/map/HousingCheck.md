@@ -49,7 +49,7 @@
 >      inside the month tick and three of them were reading zero on a reloaded
 >      city until 2026-09-09.
 
-**Uses:** [Game](Game.md) (7), [FamilyModel](FamilyModel.md) (7), [FamilyStructure](FamilyStructure.md) (4), [RealEstate](RealEstate.md) (3), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingManager](BuildingManager.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Construction](Construction.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [Game](Game.md) (7), [FamilyModel](FamilyModel.md) (7), [FamilyStructure](FamilyStructure.md) (4), [RealEstate](RealEstate.md) (3), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingManager](BuildingManager.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Construction](Construction.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Sectors](Sectors.md) (1), [PriceLevel](PriceLevel.md) (1)
 
 ## Sections
 

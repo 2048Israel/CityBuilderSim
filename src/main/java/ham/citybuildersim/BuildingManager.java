@@ -65,9 +65,10 @@ public class BuildingManager {
      * against materials again, and both halves mean what they say.
      *
      * Only the fields are in thousands: this constant is $18,000 written as
-     * the game writes money.
+     * the game writes money, at today's price level; it is read from Good.MATERIALS
+     * (whose constructor prices it at the founding's, EP1) and not written a second time.
      */
-    public static final double MATERIALS_WORLD_PRICE = 18;
+    public static final double MATERIALS_WORLD_PRICE = Good.MATERIALS.worldImportPrice();
     private double materialsCost = MATERIALS_WORLD_PRICE;
 
     /* =====================================================================
@@ -292,7 +293,10 @@ public class BuildingManager {
      * there is always a working set of buildings even with no data file at all.
      */
     public void initializeBuiltInTemplates() {
-        
+
+        // Every figure below is today's, as the data file writes it; the set is priced at the founding's level once, after the last is added (EP1).
+        final int firstBuiltIn = templates.size();
+
         //Residential Buildings
         /*
          * HOUSING IS CHEAP TO BUILD, AND THAT IS NOT A BALANCE TWEAK.
@@ -4849,6 +4853,7 @@ public class BuildingManager {
                 .setSince(1900)
                 .setId(147));
         //add more buildings; next Building ID is 62
+        for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 
     public void finalUpdateBuildings() {
@@ -6758,10 +6763,12 @@ public class BuildingManager {
      * takes.
      *
      * A PLANNER COUNTS THEM AS JOBS. A post laid off for want of work is a
-     * job that comes back with the work, so what the city's planners weigh -
-     * the landlords' jobs (sectors.RealEstate), the staff a new building could
-     * find (Sector.staffableShare()) - is every post, these included; only
-     * the labour market and the wage bills take the posts offered.
+     * job that comes back with the work, so what the city's planners weigh is
+     * every post, these included: the landlords (sectors.RealEstate) still
+     * count every post; the staffing gate (Sector.staffing()) counts a working
+     * builder's laid-off posts, and since IC1 not an idle builder's, which are
+     * spare for it (Sector, AN IDLE BUILDER'S CREWS ARE SPARE). Only the
+     * labour market and the wage bills take the posts offered.
      *
      * KEYED BY THE OWNER, NOT THE OPERATOR (FR3): a sector lays off the posts
      * of the buildings it owns (the builders' crews, Freight's drivers on its
@@ -6782,6 +6789,16 @@ public class BuildingManager {
             withheld += e.getValue() - postsOffered(e.getValue(), offeredShareOf(e.getKey(), type));
         }
         return withheld;
+    }
+
+    /** The posts of a job type one sector does not offer this month: getPostsWithheld(type) for that sector alone (IC1). */
+    public long getPostsWithheld(String sector, JobType type) {
+        if (offeredShare == null || sector == null) return 0;
+        long posts = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (sector.equals(stack.getBuilding().getSector())) posts += stack.getTotalJobs(type);
+        }
+        return posts == 0 ? 0 : posts - postsOffered(posts, offeredShareOf(sector, type));
     }
 
     /** getPostsWithheld() over every job type. */

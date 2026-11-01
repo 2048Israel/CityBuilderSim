@@ -436,8 +436,8 @@ public class HouseholdCheck {
                 SocialSecurity.pensionPerSenior(),
                 SocialSecurity.PENSION_REPLACEMENT * PayTier.UNSKILLED.getMonthlyWage());
         check("contributions are a slice of the wage bill",
-                SocialSecurity.contributionsOn(1000),
-                1000 * SocialSecurity.CONTRIBUTION_RATE);
+                SocialSecurity.contributionsOn(1000 * PriceLevel.FACTOR),
+                1000 * PriceLevel.FACTOR * SocialSecurity.CONTRIBUTION_RATE);
         assertTrue("...and it really is only a tad",
                 SocialSecurity.CONTRIBUTION_RATE < .10);
 
@@ -448,8 +448,8 @@ public class HouseholdCheck {
          * without changing a single policy. Asserted as a DIRECTION rather than
          * a level, since the level depends on the city.
          */
-        double youngCoverage = SocialSecurity.coverage(1000, 50);
-        double oldCoverage   = SocialSecurity.coverage(1000, 200);
+        double youngCoverage = SocialSecurity.coverage(1000 * PriceLevel.FACTOR, 50);
+        double oldCoverage   = SocialSecurity.coverage(1000 * PriceLevel.FACTOR, 200);
         System.out.printf("   same wage bill, 50 pensioners: %.0f%% covered;"
                 + " 200 pensioners: %.0f%%%n", youngCoverage * 100, oldCoverage * 100);
         assertTrue("an ageing city covers less of its own pension bill",
@@ -457,10 +457,10 @@ public class HouseholdCheck {
         check("a city with no pensioners owes nothing",
                 SocialSecurity.pensionsFor(0), 0);
         check("...and is fully covered by definition",
-                SocialSecurity.coverage(1000, 0), 1);
+                SocialSecurity.coverage(1000 * PriceLevel.FACTOR, 0), 1);
         check("the shortfall is what contributions do not reach",
-                SocialSecurity.shortfall(1000, 200),
-                SocialSecurity.pensionsFor(200) - SocialSecurity.contributionsOn(1000));
+                SocialSecurity.shortfall(1000 * PriceLevel.FACTOR, 200),
+                SocialSecurity.pensionsFor(200) - SocialSecurity.contributionsOn(1000 * PriceLevel.FACTOR));
 
 
         /* ---- and a household outside the families can have mouths in it ----
@@ -1606,7 +1606,11 @@ public class HouseholdCheck {
         try {
             java.nio.file.Path root = TempDirs.create("householdcheck-rate");
             System.setOut(hushed);
-            city = MonetaryCheck.founding(root, "saving-pays");
+            // ...Cement & Concrete held (EP1): in the draws of 1900 its investor stood a plant on a bank loan of 1,326 (51,188 at today's prices), which
+            // put the bank's book at 2,059 beside deposits of 245; the bank funded it at the central bank's window at a dial of 40%, and its margin
+            // could not pay savers anything: they were paid 0.00%, where on main's path (a book of 790) saving paid 2.9%. The premise is a bank that
+            // pays savers, as WN3 held the sector in PolicyPreviewCheck.
+            city = MonetaryCheck.founding(root, "saving-pays", false, Sectors.CEMENT_CONCRETE);
             for (int m = 0; m < 12; m++) {
                 MonetaryCheck.step(city, .40, 0);
                 worstAudit = Math.max(worstAudit, city.getLastMoneyAudit().relative());

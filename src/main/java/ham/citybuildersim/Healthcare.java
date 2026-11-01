@@ -138,9 +138,12 @@ public class Healthcare {
        The funeral fees below are NOT scaled.
        =================================================================== */
 
-    public static final double GENERAL_FEE   = .010;
-    public static final double CHILDCARE_FEE = .150;
-    public static final double SENIOR_FEE    = .300;
+    /** A general-care patient's fee a month, founding thousands. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double GENERAL_FEE   = .010 * PriceLevel.FACTOR;
+    /** A childcare place's fee a month, founding thousands. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double CHILDCARE_FEE = .150 * PriceLevel.FACTOR;
+    /** A senior-care place's fee a month, founding thousands. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double SENIOR_FEE    = .300 * PriceLevel.FACTOR;
 
     /** The same three, in today's money - reformed with every other price, and struck at the expected price level since 0.7.42 (seedConstants()). */
     private double generalFee   = GENERAL_FEE;
@@ -177,8 +180,10 @@ public class Healthcare {
        crematorium is a machine you have to keep busy.
        =================================================================== */
 
-    public static final double BURIAL_FEE    = 3.000;
-    public static final double CREMATION_FEE = .900;
+    /** A burial's fee, founding thousands. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double BURIAL_FEE    = 3.000 * PriceLevel.FACTOR;
+    /** A cremation's fee, founding thousands. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double CREMATION_FEE = .900 * PriceLevel.FACTOR;
 
     /** The same two, in today's money. */
     private double burialFee    = BURIAL_FEE;

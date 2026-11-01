@@ -114,9 +114,9 @@ public class CopperMiningCheck {
     /** Copper's goods, the study's 4.2: import and export price, D$ thousands a tonne. */
     static final Good[] GOODS = { Good.COPPER_CONC, Good.ANODE, Good.COPPER, Good.COPPER_SCRAP, Good.COPPER_ROD, Good.ACID, Good.WIRE_CABLE };
     /** ...each one's import price, D$ thousands a tonne (the study's 4.2)... */
-    static final double[] STUDY_IMPORT = { 2.800, 10.150, 10.500, 8.700, 10.750, .160, 17.000 };
+    static final double[] STUDY_IMPORT = PriceLevelCheck.atFounding(2.800, 10.150, 10.500, 8.700, 10.750, .160, 17.000); // today's figures, priced at the founding's level (EP1)
     /** ...and its export price. */
-    static final double[] STUDY_EXPORT = { 2.575, 9.650, 10.000, 7.300, 10.250, .070, 13.000 };
+    static final double[] STUDY_EXPORT = PriceLevelCheck.atFounding(2.575, 9.650, 10.000, 7.300, 10.250, .070, 13.000); // today's figures, priced at the founding's level (EP1)
 
     /** Good.java's rule: freight three eighths of the wedge. */
     static final double FREIGHT_SHARE = .375;
@@ -193,7 +193,7 @@ public class CopperMiningCheck {
     static final int[] ROWS = { CopperMining.MINE_AND_MILL, CopperMining.LARGE_MINE, CopperMining.LEACH_PLANT };
 
     /** The study's 4.3: each one's cost, D$ thousands all in. */
-    static final double[] STUDY_COSTS = { 160_000, 2_000_000, 250_000 };
+    static final double[] STUDY_COSTS = PriceLevelCheck.atFounding(160_000, 2_000_000, 250_000); // today's figures, priced at the founding's level (EP1)
 
     /** ...its posts. */
     static final int[] STUDY_POSTS = { 120, 450, 150 };
@@ -216,7 +216,7 @@ public class CopperMiningCheck {
     static final double[][] STUDY_TABLE = { { 2.6, 2.6, 2.9, 2.9 }, { 2.8, 2.8, 3.1, 3.1 }, { 3.1, 3.2, 3.4, 3.3 } };
 
     /** Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table. */
-    static final double[] STUDY_RUNS = { 1_512.5, 11_950, 1_722.5 };
+    static final double[] STUDY_RUNS = PriceLevelCheck.atFounding(1_512.5, 11_950, 1_722.5); // today's figures, priced at the founding's level (EP1)
 
     /** The year each first existed: 1900 - standing before the start - but the Large Copper Mine, the open-pit porphyry mine at Bingham Canyon in 1906 (research-1900.md 1.2, PE8), and the leach plant, SX-EW at Bluebird in 1968 (E12). */
     static final int[] SINCE = { 1900, 1906, 1968 };
@@ -242,11 +242,11 @@ public class CopperMiningCheck {
             BuildingsTemplate.Site site = t.site();
             boolean siteOk = site != null && site.resource() == CU && site.type() == STUDY_TYPES[r] && site.sites() == STUDY_SITES[r]
                     && site.dig() == (leach ? CopperMining.LEACH_DIG : CopperMining.CONC_DIG);
-            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r]) + "k all in, "
+            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r] / PriceLevel.FACTOR) + "k all in, "
                             + STUDY_POSTS[r] + " posts, " + String.format("%,d", STUDY_KW[r]) + " kW, " + String.format("%,.0f", STUDY_MAKES[r])
                             + " t of " + made.label().toLowerCase() + " a month on " + STUDY_SITES[r] + " " + STUDY_TYPES[r] + " site(s), "
                             + (leach ? "of 3,500 t of acid; " : "") + "Copper Mining's, MINING, dated " + SINCE[r],
-                    cost == STUDY_COSTS[r] && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == STUDY_KW[r] && siteOk
+                    PriceLevelCheck.sameMoney(cost, STUDY_COSTS[r]) && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == STUDY_KW[r] && siteOk
                             && t.makes(made) == STUDY_MAKES[r] && t.goodsMade().size() == 1
                             && (leach ? t.uses(Good.ACID) == STUDY_ACID && t.goodsUsed().size() == 1 : t.goodsUsed().isEmpty())
                             && Sectors.COPPER_MINING.equals(t.getSector()) && t.getCategory() == BuildingType.MINING

@@ -664,8 +664,8 @@ public class OilCheck {
 
     /* ============================ 17. THE FUEL DUTY (0.7.103) ============================ */
 
-    /** The duty a litre the fixture sets, in thousands: the research's Canada-like default for petrol, 21.5 cents a litre (runs/research-pump.md 7). */
-    static final double DUTY = .000215;
+    /** The duty a litre the fixture sets, in thousands: the research's Canada-like default for petrol, 21.5 cents a litre (runs/research-pump.md 7). Today's figure, priced at the founding's level (EP1). */
+    static final double DUTY = .000215 * PriceLevel.FACTOR;
 
     /**
      * A 600-house town that drives, with two filling stations, eighteen
@@ -983,7 +983,7 @@ public class OilCheck {
         out.println("--- 1. the goods, the buildings and the sectors are the spec's ---");
         Good crude = Good.CRUDE;
         assertTrue("crude: US$600 a tonne in, US$500 out - about US$75 a barrel at 7.33 barrels a tonne",
-                crude.worldImportPrice() == .60 && crude.worldExportPrice() == .50 && crude.unit().equals("tonne"));
+                crude.worldImportPrice() == .60 * PriceLevel.FACTOR && crude.worldExportPrice() == .50 * PriceLevel.FACTOR && crude.unit().equals("tonne"));
         double half = (crude.worldImportPrice() - crude.worldExportPrice()) / 2;
         close("CRUDE: freight is three quarters of the half-wedge, Good's rule", crude.baseFreight(), .75 * half, 1e-12);
         assertTrue("...so the world still buys below what it sells for", crude.worldBuyPrice() > crude.worldSellPrice());

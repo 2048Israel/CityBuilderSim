@@ -35,6 +35,16 @@ public class BuildingDataCheck {
         System.out.printf("%-56s %s%n", label, ok ? "OK" : "FAIL");
     }
 
+    /** Two money figures built differently (a sum of a price and a price times units, against the study's product) are the same to a billionth: floating point only. */
+    static boolean near(double a, double b) {
+        return Math.abs(a - b) <= 1e-9 * Math.max(Math.abs(a), Math.abs(b));
+    }
+
+    /** A building's cash in the thousands of today's prices, as the data file writes it: the pinned figures below are the study's (EP1: priced at the founding's level, times PriceLevel.FACTOR). */
+    static double todays(double atFounding) {
+        return atFounding / PriceLevel.FACTOR;
+    }
+
     public static void main(String[] args) {
 
         /* ---------- what the code says ---------- */
@@ -407,7 +417,7 @@ public class BuildingDataCheck {
                         && station.pumpLitres() == 350_000 && station.goodsMade().isEmpty() && station.goodsUsed().isEmpty()
                         && station.getCoverage() == 0 && ham.citybuildersim.sectors.Retail.isStation(station));
         assertTrue("...US$0.5M all in at founding prices (cash and 18 a unit of material), three posts, an acre's 4,000 m2",
-                station != null && station.getCashCost() + 18 * station.getConstructionMaterials() == 500
+                station != null && near(station.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * station.getConstructionMaterials(), 500 * PriceLevel.FACTOR)
                         && station.getTotalJobs() == 3 && Math.round(station.getLandSqFt() / 10.7639104) == 4000);
         int stations = 0;
         for (BuildingsTemplate t : data) if (t.pumpLitres() > 0) stations++;
@@ -445,7 +455,7 @@ public class BuildingDataCheck {
                         && ham.citybuildersim.sectors.Refining.isTankFarm(farm) && !StrategicReserve.isReserve(farm));
         assertTrue("...D$190M of capital (US$60 a barrel of room, star), material a sixtieth of it and points a half; ten"
                         + " posts 5/3/2; 10 ha",
-                farm != null && farm.getCashCost() == 190_000 && farm.getConstructionMaterials() == Math.round(190_000 / 60.0)
+                farm != null && farm.getCashCost() == 190_000 * PriceLevel.FACTOR && farm.getConstructionMaterials() == Math.round(190_000 / 60.0)
                         && farm.getConstructionPoints() == 95_000 && farm.getTotalJobs() == 10
                         && farm.getJobs(JobType.NO_DIPLOMA) == 5 && farm.getJobs(JobType.DIPLOMA) == 3
                         && farm.getJobs(JobType.COLLEGE_ENGINEERING) == 2
@@ -473,8 +483,8 @@ public class BuildingDataCheck {
             for (BuildingsTemplate x : data) if (terminals[i].equals(x.getName())) t = x;
             ports &= t != null && t.getId() == 94 + i && t.getCategory() == BuildingType.PORTS && !t.isOwnedBySector()
                     && t.isPort() && t.berthCargo() == Ports.Cargo.values()[i] && t.goodsMade().isEmpty() && t.goodsUsed().isEmpty()
-                    && t.getConstructionMaterials() == Math.round(t.getCashCost() / 60.0)
-                    && t.getConstructionPoints() == t.getCashCost() / 2 && t.getStock() == 0;
+                    && t.getConstructionMaterials() == Math.round(todays(t.getCashCost()) / 60.0)
+                    && near(t.getConstructionPoints(), todays(t.getCashCost()) / 2) && t.getStock() == 0;
         }
         for (BuildingsTemplate t : data) if (t.isPort()) berths++;
         assertTrue("ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its"
@@ -511,18 +521,18 @@ public class BuildingDataCheck {
                 + " material and points to the cash as the Oil Well's, a fortieth and a fifth", split);
         assertTrue("id 98 is the Offshore Platform: a jacket of 12 slots, D$18M, 12 posts 6/4/2, lifting nothing itself",
                 jacket != null && "Offshore Platform".equals(jacket.getName()) && jacket.isPlatform()
-                        && jacket.platformSlots() == 12 && jacket.getCashCost() == 18_000 && jacket.getTotalJobs() == 12
+                        && jacket.platformSlots() == 12 && jacket.getCashCost() == 18_000 * PriceLevel.FACTOR && jacket.getTotalJobs() == 12
                         && jacket.getJobs(JobType.NO_DIPLOMA) == 6 && jacket.getJobs(JobType.DIPLOMA) == 4
                         && jacket.getJobs(JobType.COLLEGE_ENGINEERING) == 2 && jacket.goodsMade().isEmpty()
                         && jacket.goodsUsed().isEmpty() && Game.siteOf(jacket) == Resource.OIL);
         assertTrue("id 99 is the Platform Well: D$14M, 415 t of crude a month, one diploma's post, on oil, and no land well",
                 platformWell != null && "Platform Well".equals(platformWell.getName()) && platformWell.isPlatformWell()
-                        && platformWell.getCashCost() == 14_000 && platformWell.makes(Good.CRUDE) == 415
+                        && platformWell.getCashCost() == 14_000 * PriceLevel.FACTOR && platformWell.makes(Good.CRUDE) == 415
                         && platformWell.getTotalJobs() == 1 && platformWell.getJobs(JobType.DIPLOMA) == 1
                         && Game.siteOf(platformWell) == Resource.OIL && !ham.citybuildersim.sectors.Oil.isLandWell(platformWell));
         assertTrue("id 100 is the Crude Pipeline, a kilometre: D$4.5M at sea and D$3M on land, no posts, on no site",
-                pipe != null && "Crude Pipeline".equals(pipe.getName()) && pipe.isPipeline() && pipe.getCashCost() == 4_500
-                        && pipe.onshoreCashPerKm() == 3_000 && pipe.getTotalJobs() == 0 && Game.siteOf(pipe) == null);
+                pipe != null && "Crude Pipeline".equals(pipe.getName()) && pipe.isPipeline() && pipe.getCashCost() == 4_500 * PriceLevel.FACTOR
+                        && pipe.onshoreCashPerKm() == 3_000 * PriceLevel.FACTOR && pipe.getTotalJobs() == 0 && Game.siteOf(pipe) == null);
         assertTrue("...and the only buildings at sea", atSea == 3);
 
         /* ---------- the site each stands on (0.7.110, batch I1) ----------

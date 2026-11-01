@@ -193,8 +193,8 @@ public class CoalMiningCheck {
                 Math.abs((with - without) - Resource.COAL.amountPerSite() * Good.THERMAL_COAL.worldExportPrice() / 200) <= 5,
                 String.format("US$%,.0fk", (with - without)));
         assertTrue("the two coals are the goods batch I4 brought, at the study's 3.2 prices (thermal 75/50, coking 225/180), stockable",
-                Good.THERMAL_COAL.worldImportPrice() == .075 && Good.THERMAL_COAL.worldExportPrice() == .050
-                        && Good.COKING_COAL.worldImportPrice() == .225 && Good.COKING_COAL.worldExportPrice() == .180
+                Good.THERMAL_COAL.worldImportPrice() == .075 * PriceLevel.FACTOR && Good.THERMAL_COAL.worldExportPrice() == .050 * PriceLevel.FACTOR
+                        && Good.COKING_COAL.worldImportPrice() == .225 * PriceLevel.FACTOR && Good.COKING_COAL.worldExportPrice() == .180 * PriceLevel.FACTOR
                         && Good.THERMAL_COAL.stockable() && Good.COKING_COAL.stockable());
     }
 
@@ -205,7 +205,7 @@ public class CoalMiningCheck {
             CoalMining.PREPARATION_PLANT };
 
     /** The study's 3.3: each one's cost, D$ thousands all in. */
-    static final double[] STUDY_COSTS = { 120_000, 950_000, 800_000, 150_000 };
+    static final double[] STUDY_COSTS = PriceLevelCheck.atFounding(120_000, 950_000, 800_000, 150_000); // today's figures, priced at the founding's level (EP1)
 
     /** ...its posts. */
     static final int[] STUDY_POSTS = { 80, 350, 400, 50 };
@@ -214,7 +214,7 @@ public class CoalMiningCheck {
     static final int[] STUDY_KW = { 800, 6_000, 29_000, 4_000 };
 
     /** ...its running cost a month, D$ thousands (the surface mine's "with 230,000 L diesel" in it, at the study's D$0.60). */
-    static final double[] STUDY_RUNS = { 1_070, 5_570, 5_770, 774 };
+    static final double[] STUDY_RUNS = PriceLevelCheck.atFounding(1_070, 5_570, 5_770, 774); // today's figures, priced at the founding's level (EP1)
 
     /** ...the coal each mine makes a month, t (the longwall's raw), and the plant's wash. */
     static final double[] STUDY_MAKES = { 100_000, 800_000, 250_000, 500_000 };
@@ -228,7 +228,7 @@ public class CoalMiningCheck {
     static final double SURFACE_DIG = 1 / .95, UNDERGROUND_DIG = 1 / .80;
 
     /** ...the surface mine's diesel, litres a month (the study's 3.3), and its price in the study's runs, D$ thousands a litre (its 1.5). */
-    static final double STUDY_DIESEL_LITRES = 230_000, STUDY_DIESEL = .0006;
+    static final double STUDY_DIESEL_LITRES = 230_000, STUDY_DIESEL = .0006 * PriceLevel.FACTOR;
 
     /** ...the plant's ground, hectares (the study's 3.3). */
     static final double STUDY_PLANT_HECTARES = 19;
@@ -256,11 +256,11 @@ public class CoalMiningCheck {
                     : site != null && site.resource() == Resource.COAL && site.type() == STUDY_TYPES[r] && site.sites() == STUDY_SITES[r]
                     && site.dig() == (r == 2 ? UNDERGROUND_DIG : SURFACE_DIG) && t.makes(Good.THERMAL_COAL) == STUDY_MAKES[r]
                     && t.getWash() == 0;
-            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r]) + "k all in, "
+            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r] / PriceLevel.FACTOR) + "k all in, "
                             + STUDY_POSTS[r] + " posts, " + String.format("%,d", STUDY_KW[r]) + " kW, " + String.format("%,.0f", STUDY_MAKES[r])
                             + (plant ? " t of raw coal washed a month, on no site" : " t of " + (r == 2 ? "raw" : "thermal") + " coal a month on "
                             + STUDY_SITES[r] + " " + STUDY_TYPES[r] + " site(s)") + "; Coal Mining's, MINING, dated 1900",
-                    cost == STUDY_COSTS[r] && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == STUDY_KW[r] && siteOk
+                    PriceLevelCheck.sameMoney(cost, STUDY_COSTS[r]) && t.getTotalJobs() == STUDY_POSTS[r] && t.getElectricityConsumption() == STUDY_KW[r] && siteOk
                             && Sectors.COAL_MINING.equals(t.getSector()) && t.getCategory() == BuildingType.MINING && t.getSince() == 1900
                             && t.getStock() > 0,
                     String.format("cash %,.0f + 18 x %,d material", t.getCashCost(), t.getConstructionMaterials()));

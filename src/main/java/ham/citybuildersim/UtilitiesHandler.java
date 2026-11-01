@@ -73,8 +73,10 @@ public class UtilitiesHandler {
      * $4-6 per 1,000 gallons, so this is close to life and - deliberately -
      * affordable next to the wage table: a household of four pays about $55 a
      * month against the lowest full-time wage of $800.
+     *
+     * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
      */
-    private double pricePerWaterUnit = .05;
+    private double pricePerWaterUnit = .05 * PriceLevel.FACTOR;
 
     /* =====================================================================
        THE FRESH WATER LIMIT (0.7.59, batch J2; spec-land 2.3 and star 7)
@@ -146,8 +148,8 @@ public class UtilitiesHandler {
 
     private double averageUtilityFill = 1;
 
-    //temporary
-    private double pricePerWatt = .01;
+    //temporary; today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1)
+    private double pricePerWatt = .01 * PriceLevel.FACTOR;
 
     public UtilitiesHandler() {
 

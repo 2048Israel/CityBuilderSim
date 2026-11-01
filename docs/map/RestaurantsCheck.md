@@ -33,7 +33,7 @@
 > 
 > Every fixture CAUSES its condition rather than waiting for it.
 
-**Uses:** [Restaurants](Restaurants.md) (22), [HouseholdBalance](HouseholdBalance.md) (20), [Household](Household.md) (14), [LongPlaytest](LongPlaytest.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (9), [PayTier](PayTier.md) (8), [FamilyStructure](FamilyStructure.md) (7), [Retail](Retail.md) (6), [Game](Game.md) (5), [Good](Good.md) (5), [GameFiles](GameFiles.md) (3), [TempDirs](TempDirs.md) (2), [Sectors](Sectors.md) (2), [JobType](JobType.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sector](Sector.md) (1), [Equity](Equity.md) (1)
+**Uses:** [Restaurants](Restaurants.md) (22), [HouseholdBalance](HouseholdBalance.md) (20), [Household](Household.md) (14), [LongPlaytest](LongPlaytest.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (9), [PayTier](PayTier.md) (8), [FamilyStructure](FamilyStructure.md) (7), [Retail](Retail.md) (6), [Game](Game.md) (5), [Good](Good.md) (5), [GameFiles](GameFiles.md) (3), [TempDirs](TempDirs.md) (2), [Sectors](Sectors.md) (2), [PriceLevel](PriceLevel.md) (2), [JobType](JobType.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sector](Sector.md) (1), [Equity](Equity.md) (1)
 
 ## Sections
 

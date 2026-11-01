@@ -279,8 +279,11 @@ public class HomeRailCheck {
 
         System.out.println("fixtures: the cities are built first, and each section says what it needs of them");
         Game plain = HaulageCheck.played(GameFiles.scratch("homerailcheck-plain"), BASE_MONTHS);
-        Game trackOnly = railed(GameFiles.scratch("homerailcheck-track"), 0, 0, 4, null, 3);
-        Game tight = railed(GameFiles.scratch("homerailcheck-tight"), 1, 3, 0, null, 8);
+        // ...the two whose premise is a plant that buys at home and lands every month (the city's tonnes offered, a boundary that fills the track) on the
+        // literals with pellets paying, as `rail`: on the world file's band under Random the plant ran every other month in the draws of 1900 (EP1),
+        // and in the idle months the city offered the railway 0 t and its boundary dealt 53,202 of the 199,167 t of track.
+        Game trackOnly = railed(GameFiles.scratch("homerailcheck-track"), 0, 0, 4, null, 3, true);
+        Game tight = railed(GameFiles.scratch("homerailcheck-tight"), 1, 3, 0, null, 8, true);
         Game rail = railed(GameFiles.scratch("homerailcheck-rail"), 1, 4, 0, null, 3, true);
         untilFractional(rail);
         Game yard = railed(yardFiles, 1, 0, 0, "Bulk Berth", 4);

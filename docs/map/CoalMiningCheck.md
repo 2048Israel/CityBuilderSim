@@ -64,7 +64,7 @@
 > 
 > ... (11 more lines in the source)
 
-**Uses:** [Good](Good.md) (70), [CoalMining](CoalMining.md) (53), [Resource](Resource.md) (36), [Deposit](Deposit.md) (24), [World](World.md) (14), [Geology](Geology.md) (14), [Sectors](Sectors.md) (13), [BuildingManager](BuildingManager.md) (13), [Game](Game.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (7), [LandManager](LandManager.md) (7), [Equity](Equity.md) (6), [CityLand](CityLand.md) (5), [SpreadPlanner](SpreadPlanner.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [MoneyAudit](MoneyAudit.md) (4), [LandCheck](LandCheck.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1), [PayTier](PayTier.md) (1), [GameFiles](GameFiles.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Good](Good.md) (70), [CoalMining](CoalMining.md) (53), [Resource](Resource.md) (36), [Deposit](Deposit.md) (24), [World](World.md) (14), [Geology](Geology.md) (14), [Sectors](Sectors.md) (13), [BuildingManager](BuildingManager.md) (13), [Game](Game.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (7), [LandManager](LandManager.md) (7), [Equity](Equity.md) (6), [PriceLevel](PriceLevel.md) (6), [CityLand](CityLand.md) (5), [SpreadPlanner](SpreadPlanner.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [MoneyAudit](MoneyAudit.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [LandCheck](LandCheck.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1), [PayTier](PayTier.md) (1)... and 2 more
 
 **Used by (2):** [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md)
 
@@ -89,15 +89,15 @@
 | 92 | `CoalMiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 127 | `CoalMiningCheck.STUDY_RAW` | `500_000, STUDY_COKING = 275_000, STUDY_THERMAL = 100_000, STUDY_SPOIL = 125_000` | The study's 3.3: a plant's 500,000 t of raw coal, and what comes of it. |
 | 204 | `CoalMiningCheck.ROWS` | `{ CoalMining.SURFACE_MINE, CoalMining.LARGE_SURFACE_MINE, CoalMining.UNDERGRO...` | Coal Mining's rows, by their permanent ids, in the study's 3.3 order. |
-| 208 | `CoalMiningCheck.STUDY_COSTS` | `{ 120_000, 950_000, 800_000, 150_000 }` | The study's 3.3: each one's cost, D$ thousands all in. |
+| 208 | `CoalMiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(120_000, 950_000, 800_000, 150_000)` | The study's 3.3: each one's cost, D$ thousands all in. |
 | 211 | `CoalMiningCheck.STUDY_POSTS` | `{ 80, 350, 400, 50 }` | ...its posts. |
 | 214 | `CoalMiningCheck.STUDY_KW` | `{ 800, 6_000, 29_000, 4_000 }` | ...its draw, kW. |
-| 217 | `CoalMiningCheck.STUDY_RUNS` | `{ 1_070, 5_570, 5_770, 774 }` | ...its running cost a month, D$ thousands (the surface mine's "with 230,000 L diesel" in it, at the study's D$0.60). |
+| 217 | `CoalMiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(1_070, 5_570, 5_770, 774)` | ...its running cost a month, D$ thousands (the surface mine's "with 230,000 L diesel" in it, at the study's D$0.60). |
 | 220 | `CoalMiningCheck.STUDY_MAKES` | `{ 100_000, 800_000, 250_000, 500_000 }` | ...the coal each mine makes a month, t (the longwall's raw), and the plant's wash. |
 | 223 | `CoalMiningCheck.STUDY_SITES` | `{ 1, 4, 1, 0 }` | ...the sites each stands on, and of which type (the study's 1.3 and 3.3; the plant none). |
 | 225 | `CoalMiningCheck.STUDY_TYPES` | `{ Deposit.FieldType.THERMAL, Deposit.FieldType.THERMAL, Deposit.FieldType.COK...` | ...and the type of field each stands on (null for the plant, which stands on none). |
 | 228 | `CoalMiningCheck.SURFACE_DIG` | `1 /.95, UNDERGROUND_DIG = 1 /.80` | ...the tonnes of seam a tonne of coal takes: 95% of the seam recovered at the surface, 80% by a longwall (the study's 3.1; spec 2.4). |
-| 231 | `CoalMiningCheck.STUDY_DIESEL_LITRES` | `230_000, STUDY_DIESEL =.0006` | ...the surface mine's diesel, litres a month (the study's 3.3), and its price in the study's runs, D$ thousands a litre (its 1.5). |
+| 231 | `CoalMiningCheck.STUDY_DIESEL_LITRES` | `230_000, STUDY_DIESEL =.0006 * PriceLevel.FACTOR` | ...the surface mine's diesel, litres a month (the study's 3.3), and its price in the study's runs, D$ thousands a litre (its 1.5). |
 | 234 | `CoalMiningCheck.STUDY_PLANT_HECTARES` | `19` | ...the plant's ground, hectares (the study's 3.3). |
 | 237 | `CoalMiningCheck.STUDY_ROUNDING` | `.05, STUDY_ROUNDING_POINT =.5` | The study's rounding: its returns to a tenth of a point, the plant's 19% to the point. |
 | 240 | `CoalMiningCheck.STUDY_SURFACE` | `3.3, STUDY_LARGE = 3.6, STUDY_ALONE =.8, STUDY_PAIR = 2.4, STUDY_PLANT = 19` | The returns the study's 3.4 states, % of the cost a month: a surface mine and a large one exporting, a longwall alone, the pair, the plant alone. |

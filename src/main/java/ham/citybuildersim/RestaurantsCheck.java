@@ -144,7 +144,7 @@ public class RestaurantsCheck {
              * sixty-house town could afford one - so the city is given the
              * money and the land the way every other fixture in this suite is.
              */
-            game.getGovernmentInvestor().spend(-4_000_000);
+            game.getGovernmentInvestor().spend(-4_000_000 * PriceLevel.FACTOR);
             game.getLandManager().setOwnedSqFt(game.getLandManager().getOwnedSqFt() + 20_000_000L);
             LongPlaytest.build(game, "House", 60);
             LongPlaytest.build(game, "Convenience Store", 4);
@@ -452,7 +452,7 @@ public class RestaurantsCheck {
         Game hungry = new Game(new GameFiles(dir2.resolve("data"), dir2.resolve("no-legacy")));
         quietly(() -> {
             hungry.run();
-            hungry.getGovernmentInvestor().spend(-4_000_000);
+            hungry.getGovernmentInvestor().spend(-4_000_000 * PriceLevel.FACTOR);
             hungry.getLandManager().setOwnedSqFt(hungry.getLandManager().getOwnedSqFt() + 20_000_000L);
             LongPlaytest.build(hungry, "House", 60);
             LongPlaytest.build(hungry, "Convenience Store", 4);

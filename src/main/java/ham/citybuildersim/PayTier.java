@@ -84,15 +84,25 @@ public enum PayTier {
     ELITE("Elite", 15.600);
 
     private final String label;
+    private final double todaysWage;
     private final double monthlyWage;
 
-    PayTier(String label, double monthlyWage) {
+    /**
+     * THE FUNNEL FOR THE LADDER (EP1, Jerus 2026-10-30: "1900 price level"). The literal above is Nova Scotia's 2026 median in thousands, today's
+     * figure; the wage a city is paid is that times PriceLevel.FACTOR, the founding's price level. Every reader (the labour market, the schools,
+     * the tax) takes getMonthlyWage(), so the ladder is scaled here and nowhere else, and every constant derived from a rung follows it.
+     */
+    PayTier(String label, double todaysWage) {
         this.label = label;
-        this.monthlyWage = monthlyWage;
+        this.todaysWage = todaysWage;
+        this.monthlyWage = todaysWage * PriceLevel.FACTOR;
     }
 
     public String getLabel()      { return label; }
     public double getMonthlyWage(){ return monthlyWage; }
+
+    /** The rung as its literal states it, a month's wage in thousands at today's (2025's) price level, before PriceLevel.FACTOR (PriceLevelCheck). */
+    public double getTodaysWage() { return todaysWage; }
 
     /**
      * Which tier a job belongs to.

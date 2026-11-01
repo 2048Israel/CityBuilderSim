@@ -58,9 +58,9 @@ public final class BridgeWorks {
     /** US dollars a Canadian dollar in 2025: 0.72. */
     public static final double USD_PER_CAD_2025 = 0.72;
 
-    /** The Confederation's deck a m2 in 2025 US dollars, its cost over its deck's area: about $11,800. The rate at CONFEDERATION_DEPTH_M. */
+    /** The Confederation's deck a m2 in 2025 US dollars, its cost over its deck's area: about $11,800. The rate at CONFEDERATION_DEPTH_M. Priced at the founding's level (times PriceLevel.FACTOR, EP1), as the base rate beside it is, so the two interpolate as they did. */
     public static final double CONFEDERATION_USD_PER_M2 = CONFEDERATION_COST_CAD * CAD_CPI_1997_TO_2025 * USD_PER_CAD_2025
-            / (CONFEDERATION_LENGTH_M * CONFEDERATION_DECK_M);
+            / (CONFEDERATION_LENGTH_M * CONFEDERATION_DECK_M) * PriceLevel.FACTOR;
 
     /** A highway bridge's deck, metres: RunWorks.DECK_WIDTH_M (23.2, the Interstate standard's four lanes and shoulders). */
     public static final double HIGHWAY_DECK_WIDTH_M = RunWorks.DECK_WIDTH_M;

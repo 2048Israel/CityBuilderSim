@@ -126,17 +126,17 @@ public final class Founding {
         return landBondUsd(LandManager.foundingLand(worldKey));
     }
 
-    /** Lean's treasury, in thousands: D$25M - two-thirds of the founding village at a new city's invoices (three-quarters until the builders' sales tax went into them, 0.7.19), so the city borrows from its first months, for the rest of it and for every big work. */
-    public static final double LEAN_CASH = 25_000;
+    /** Lean's treasury, in thousands: D$25M - two-thirds of the founding village at a new city's invoices (three-quarters until the builders' sales tax went into them, 0.7.19), so the city borrows from its first months, for the rest of it and for every big work. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double LEAN_CASH = 25_000 * PriceLevel.FACTOR;
 
-    /** Lean's vault, in thousands of US dollars: US$10M - a few months to two years of a young city's imports. */
-    public static final double LEAN_RESERVE_USD = 10_000;
+    /** Lean's vault, in thousands of US dollars: US$10M - a few months to two years of a young city's imports. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double LEAN_RESERVE_USD = 10_000 * PriceLevel.FACTOR;
 
-    /** Wealthy's treasury, in thousands: D$2.5B - the start every city had from 0.6.10 to 0.7.9, which the playtest never drew below D$2.46B in thirty years. */
-    public static final double WEALTHY_CASH = 2_500_000;
+    /** Wealthy's treasury, in thousands: D$2.5B - the start every city had from 0.6.10 to 0.7.9, which the playtest never drew below D$2.46B in thirty years. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double WEALTHY_CASH = 2_500_000 * PriceLevel.FACTOR;
 
-    /** Wealthy's vault, in thousands of US dollars: US$1B - the old start's, which the playtest's defence took sixty-odd years to spend half of (month 739, the median of eight seeds). */
-    public static final double WEALTHY_RESERVE_USD = 1_000_000;
+    /** Wealthy's vault, in thousands of US dollars: US$1B - the old start's, which the playtest's defence took sixty-odd years to spend half of (month 739, the median of eight seeds). Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double WEALTHY_RESERVE_USD = 1_000_000 * PriceLevel.FACTOR;
 
     /** The five choices of money, hardest first; CUSTOM carries no figures of its own. */
     public enum Preset {
@@ -209,17 +209,17 @@ public final class Founding {
        default anyway.
        ===================================================================== */
 
-    /** The least a city may be founded with in its treasury, in thousands: D$6M, ten houses and a shop at a new city's invoices - D$5.37M since the builders' sales tax went into them (0.7.19; it was D$5M, over D$4.56M). */
-    public static final double MIN_CASH = 6_000;
+    /** The least a city may be founded with in its treasury, in thousands: D$6M, ten houses and a shop at a new city's invoices - D$5.37M since the builders' sales tax went into them (0.7.19; it was D$5M, over D$4.56M). Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double MIN_CASH = 6_000 * PriceLevel.FACTOR;
 
-    /** The most, in thousands: D$10B, four times the Wealthy start. Testing room, not policy. */
-    public static final double MAX_CASH = 10_000_000;
+    /** The most, in thousands: D$10B, four times the Wealthy start. Testing room, not policy. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double MAX_CASH = 10_000_000 * PriceLevel.FACTOR;
 
     /** The least in the vault, in thousands of US dollars: none, as every city had before 0.6.10. */
     public static final double MIN_RESERVE_USD = 0;
 
-    /** The most, in thousands of US dollars: US$4B, four times the Wealthy start. Testing room, not policy. */
-    public static final double MAX_RESERVE_USD = 4_000_000;
+    /** The most, in thousands of US dollars: US$4B, four times the Wealthy start. Testing room, not policy. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    public static final double MAX_RESERVE_USD = 4_000_000 * PriceLevel.FACTOR;
 
     /* ------------------------------------------------------------ the name */
 
@@ -419,10 +419,16 @@ public final class Founding {
         return null;
     }
 
+    /** Thousands as millions for a sentence: whole above ten, with decimals below, so a 1900-priced bound (EP1: D$0.16M) does not read $0M. */
+    private static String millions(double thousands) {
+        double m = thousands / 1000;
+        return m >= 10 || m == 0 ? String.format("%,.0f", m) : m >= 1 ? String.format("%,.1f", m) : String.format("%,.2f", m);
+    }
+
     /** Why a treasury will not do, or null. */
     public static String cashProblem(double cash) {
         if (!Double.isFinite(cash) || cash < MIN_CASH || cash > MAX_CASH) {
-            return String.format("The treasury has to be between $%,.0fM and $%,.0fM.", MIN_CASH / 1000, MAX_CASH / 1000);
+            return String.format("The treasury has to be between $%sM and $%sM.", millions(MIN_CASH), millions(MAX_CASH));
         }
         return null;
     }
@@ -430,8 +436,7 @@ public final class Founding {
     /** Why a vault will not do, or null. */
     public static String reserveProblem(double reserveUsd) {
         if (!Double.isFinite(reserveUsd) || reserveUsd < MIN_RESERVE_USD || reserveUsd > MAX_RESERVE_USD) {
-            return String.format("The vault has to be between US$%,.0fM and US$%,.0fM.",
-                    MIN_RESERVE_USD / 1000, MAX_RESERVE_USD / 1000);
+            return String.format("The vault has to be between US$%sM and US$%sM.", millions(MIN_RESERVE_USD), millions(MAX_RESERVE_USD));
         }
         return null;
     }

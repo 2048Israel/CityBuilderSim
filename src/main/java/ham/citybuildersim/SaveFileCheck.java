@@ -1015,7 +1015,7 @@ public class SaveFileCheck {
         indebted.buildStack(template(indebted, "House"), 80, false);
         indebted.buildStack(template(indebted, "Convenience Store"), 3, false);
         indebted.simulateMonths(5);
-        indebted.handleLongBondLogic(200000, 20, 100);
+        indebted.handleLongBondLogic(200000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR);
         indebted.simulateMonths(6);
 
         EconomyManager de = indebted.getEconomyManager();
@@ -1119,7 +1119,7 @@ public class SaveFileCheck {
             abroad.run();
             abroad.buildStack(template(abroad, "House"), 80, false);
             abroad.buildStack(template(abroad, "Convenience Store"), 3, false);
-            abroad.handleForeignLogic("Term", 5_000, 30, 100, false);   // one of the five (0.7.1)
+            abroad.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 30, 100 * PriceLevel.FACTOR, false);   // one of the five (0.7.1)
             // The months the fixture trades before its test month: 24, the currency's
             // settling months until XR1, kept so the fixture's city is the city it always was.
             final int tradingMonths = 24;
@@ -1222,7 +1222,7 @@ public class SaveFileCheck {
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
         // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
         full.setCashForTest(Founding.WEALTHY_CASH);
-        full.getGovernmentInvestor().spend(-2_000_000);
+        full.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
         full.getLandManager().setOwnedSqFt(full.getLandManager().getOwnedSqFt() + 200_000_000L);
         for (String[] order : new String[][] {
                 {"House", "400"}, {"Convenience Store", "2"}, {"Construction Depot", "6"},
@@ -2630,8 +2630,8 @@ public class SaveFileCheck {
         assertTrue("fixture: the city has a bank to ask it for preferred", fb.getBranches() > 0);
         fundCity.setFundDial(1.5);
         fundCity.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
-        fundCity.setCashForTest(fundCity.getCash() + 50_000);
-        fundCity.fundPayIn(20_000);
+        fundCity.setCashForTest(fundCity.getCash() + 50_000 * PriceLevel.FACTOR);
+        fundCity.fundPayIn(20_000 * PriceLevel.FACTOR);
         fb.setCash(fb.getCash() - (fb.equity() - .9 * fb.minimumEquity()));
         fundCity.getFund().noteOffered(fundCity.getMonth());
         assertTrue("fixture: the bank is under its minimum and its offer waits",
@@ -2669,7 +2669,7 @@ public class SaveFileCheck {
             ex.bookOf(c).withdrawAll();
         }
         assertTrue("fixture: the fund holds a share of a company the world sells and somebody stands bid for", shareCo >= 0);
-        fundCity.fundBuyShares(0, 1_000);
+        fundCity.fundBuyShares(0, 1_000 * PriceLevel.FACTOR);
         // FL1: the desk carries its inventory at the last step's mark, and a share traded between steps moves the quote, not what the bank
         // carries (this fixture's trades above do it on some paths: 28.21 on FL1's). Where they did not, the bank is made to carry one more than
         // the quote, so the save must keep what it carries - the load re-marked it from the quote and read another equity.
@@ -2854,9 +2854,9 @@ public class SaveFileCheck {
          */
         double askBill = rated.getEconomyManager().getMonthGdp() * .05;
         int salesWas = rated.getDebtManager().auctionSales();
-        quietly(() -> { rated.quoteTBill(askBill, 6, 100); rated.quoteTBill(askBill, 6, 100); });
+        quietly(() -> { rated.quoteTBill(askBill, 6, 100 * PriceLevel.FACTOR); rated.quoteTBill(askBill, 6, 100 * PriceLevel.FACTOR); });
         assertTrue("a quote is not a sale: previewed twice, the tally has not moved", rated.getDebtManager().auctionSales() == salesWas);
-        quietly(() -> rated.handleTBillLogic(askBill, 6, 100));
+        quietly(() -> rated.handleTBillLogic(askBill, 6, 100 * PriceLevel.FACTOR));
         AuctionTally.Last booked = rated.getDebtManager().lastAuction();
         assertTrue("fixture: a booked sale is counted, and is the last", rated.getDebtManager().auctionSales() == salesWas + 1
                 && booked != null && booked.kind() == Auction.Kind.BILL && booked.months() == 6 && booked.sold() > 0);
@@ -3817,7 +3817,7 @@ public class SaveFileCheck {
                     GameVersion.isNoLongerReadable(47) && !GameVersion.isNoLongerReadable(GameVersion.SAVE_FORMAT) && files.readHeader(2).isNoLongerReadable()
                             && refusedAtTheFloor(files, 2, refused, olderBytes));
 
-            // A save with no moneys (an older one): they start from January 2000 and are caught up to the city's month, with no terms of trade.
+            // A save with no moneys (an older one): they start from the first January (Nations.FIRST_YEAR) and are caught up to the city's month, with no terms of trade.
             // The cycle and the risk-off are pure functions of the seed and the month, so they are the saved ones'.
             com.google.gson.JsonObject noMoneys = json.deepCopy();
             noMoneys.remove("worldMoneys");
@@ -3826,18 +3826,18 @@ public class SaveFileCheck {
             Game caught = new Game(files);
             quietly(() -> caught.loadGameSave(3));
             WorldMoneys cm = caught.getWorldMoneys();
-            assertTrue("a save with no world moneys loads, and they are caught up from January 2000 to the saved month (" + (cm == null ? "none" : cm.month()) + ")",
+            assertTrue("a save with no world moneys loads, and they are caught up from the first January to the saved month (" + (cm == null ? "none" : cm.month()) + ")",
                     caught.getLoadFailure() == null && cm != null && cm.month() == savedMonth);
             assertTrue("...with the very cycle and risk-off the saved city had: they are a function of the seed and the month",
                     cm != null && Double.compare(cm.cycle(), savedCycle) == 0 && Double.compare(cm.riskOff(), savedRiskOff) == 0);
-            // A save with no policy rates (an older one): the load rebuilds them by stepping from January 2000 to the saved month, which is the saved state to the bit.
+            // A save with no policy rates (an older one): the load rebuilds them by stepping from the first January to the saved month, which is the saved state to the bit.
             com.google.gson.JsonObject noPolicy = json.deepCopy();
             noPolicy.remove("policyRates");
             Files.writeString(files.saveFile(4), gson.toJson(noPolicy));
             Files.copy(files.historyFile(1), files.historyFile(4), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             Game rebuilt = new Game(files);
             quietly(() -> rebuilt.loadGameSave(4));
-            assertTrue("a save with no policy rates loads, and they are rebuilt from January 2000 to the saved month: the very state the saved city had, to the bit (a function of the moneys' path), and the US's rate handed",
+            assertTrue("a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function of the moneys' path), and the US's rate handed",
                     rebuilt.getLoadFailure() == null && rebuilt.getPolicyRates() != null && rebuilt.getPolicyRates().month() == savedMonth
                             && java.util.Arrays.equals(rebuilt.getPolicyRates().toSaveArray(), savedPolicy)
                             && Double.compare(rebuilt.getDebtManager().worldRate(), savedWorldRate) == 0);

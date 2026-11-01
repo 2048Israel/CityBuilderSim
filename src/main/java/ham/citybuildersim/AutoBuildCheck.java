@@ -1065,7 +1065,7 @@ public class AutoBuildCheck {
     static final int YOUNG_MONTH = 60;
 
     /** What the refused order is short of, in thousands, the game's money: $0.28M, the 0.7.89 city's ($24.11M of treasury against $24.39M of order). */
-    static final double SHORT = 280;
+    static final double SHORT = 280 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
     /** The months the city plays on after the refusal, its debt limit left where the fixture pinned it. */
     static final int AFTER_MONTHS = 24;
@@ -1131,6 +1131,16 @@ public class AutoBuildCheck {
         return retired;
     }
 
+    /** How many of a measure's buildings are on site, not yet open (AutoBuilder.serving() less what stands). */
+    static int onSite(Game g, BuildAdvice.Measure m) {
+        int[] site = g.getBuildingManager().getUnderConstructionById();
+        int n = 0;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (m.serves(t) && t.getId() < site.length) n += site[t.getId()];
+        }
+        return n;
+    }
+
     /** The first step of a pass that was held for the money, none ordered ahead of it: the order the pass would place, were the money there. */
     static AutoBuilder.Step firstRefused(AutoBuilder ab) {
         for (AutoBuilder.Step s : ab.steps()) {
@@ -1194,6 +1204,18 @@ public class AutoBuildCheck {
             AutoBuilder ab = g.getAutoBuilder();
             // The young city short of general care (FR8): see the note on the section.
             BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+            /*
+             * ...WITH NONE ON SITE (IC1, 2026-11-01). The city's general care is retired, the standing clinics and nothing else:
+             * a clinic on site cannot be retired, and the city of this fixture has one there from IC1 on. An idle builder's laid-off
+             * crews are spare for the staffing gate since IC1, so the planners order what the gate used to refuse and the young
+             * city is the larger (2,618 people at month 60 against 1,933), wanting a second clinic: one standing and one on site at
+             * month 60, the second opening in month 63 (the assertion below read "1 standing or on site" after the retiring). It
+             * plays on, a month at a time, until none is on site (at most LOOK_MONTHS), and then the standing are retired. On
+             * main's path nothing was on site at month 60, so it plays no month there.
+             */
+            quietly(() -> {
+                for (int i = 0; i < LOOK_MONTHS && onSite(g, care) > 0; i++) youngMonths(g, 1);
+            });
             quietly(() -> retireServing(g, care));
             int standing = AutoBuilder.serving(g, care);
             double[] supplyDemand = BuildAdvice.supplyDemand(g, care, new LinkedHashMap<>());
@@ -1338,7 +1360,7 @@ public class AutoBuildCheck {
     }
 
     /** A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). */
-    static final double ROOM = 50_000;
+    static final double ROOM = 50_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
     /**
      * The town fixture with room (0.7.101): its healthcare and education

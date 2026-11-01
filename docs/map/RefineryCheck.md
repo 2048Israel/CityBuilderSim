@@ -64,7 +64,7 @@
 >      no stream; a crude unit a hair under rule 6's FEED_GATE), the ground
 > ... (77 more lines in the source)
 
-**Uses:** [Refining](Refining.md) (187), [Good](Good.md) (132), [RefineryFlow](RefineryFlow.md) (86), [SpreadPlanner](SpreadPlanner.md) (79), [BuildingsTemplate](BuildingsTemplate.md) (38), [Game](Game.md) (25), [BusinessInvestment](BusinessInvestment.md) (20), [BuildingManager](BuildingManager.md) (15), [GoodsMarket](GoodsMarket.md) (14), [Sectors](Sectors.md) (13), [Sector](Sector.md) (10), [Deposit](Deposit.md) (9), [GameFiles](GameFiles.md) (9), [Freight](Freight.md) (5), [RefineryView](RefineryView.md) (5), [Founding](Founding.md) (3), [Trade](Trade.md) (3), [Ports](Ports.md) (3), [LandManager](LandManager.md) (2), [MoneyAudit](MoneyAudit.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [Resource](Resource.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
+**Uses:** [Refining](Refining.md) (187), [Good](Good.md) (132), [RefineryFlow](RefineryFlow.md) (86), [SpreadPlanner](SpreadPlanner.md) (79), [BuildingsTemplate](BuildingsTemplate.md) (38), [Game](Game.md) (25), [BusinessInvestment](BusinessInvestment.md) (20), [BuildingManager](BuildingManager.md) (15), [GoodsMarket](GoodsMarket.md) (14), [Sectors](Sectors.md) (13), [Sector](Sector.md) (10), [Deposit](Deposit.md) (9), [GameFiles](GameFiles.md) (9), [Freight](Freight.md) (5), [RefineryView](RefineryView.md) (5), [Founding](Founding.md) (3), [Trade](Trade.md) (3), [Ports](Ports.md) (3), [LandManager](LandManager.md) (2), [MoneyAudit](MoneyAudit.md) (2), [PriceLevel](PriceLevel.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [Resource](Resource.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
 ## Sections
 
@@ -101,9 +101,9 @@
 | 155 | `RefineryCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 157 | `RefineryCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 453 | `RefineryCheck.UNITS` | `{ "Small Reformer", "Small Cracking Unit", "Small Hydrocracker", "Small Alkyl...` | The units the town stands beside its Oil Refinery: one small one of every kind but the asphalt unit, which medium crude cannot feed. |
-| 570 | `RefineryCheck.PROTOTYPE_WAGE` | `4.84` | The prototype's frame (spread.py): wages a post-month, world $k (m4000's Refining, 736k over 200 posts at 760). |
+| 570 | `RefineryCheck.PROTOTYPE_WAGE` | `4.84 * PriceLevel.FACTOR` | The prototype's frame (spread.py): wages a post-month, world $k (m4000's Refining, 736k over 200 posts at 760). |
 | 573 | `RefineryCheck.PROTOTYPE_RATE` | `.005` | ...and its money test, a month on the whole cost (its RATE). |
-| 576 | `RefineryCheck.PROTOTYPE_REFINERY_CAPITAL` | `78_000` | ...and its Oil Refinery's capital: D$60M and its 1,000 materials at 18 (spread.py's TOPPING); every other building its cash. |
+| 576 | `RefineryCheck.PROTOTYPE_REFINERY_CAPITAL` | `78_000 * PriceLevel.FACTOR` | ...and its Oil Refinery's capital: D$60M and its 1,000 materials at 18 (spread.py's TOPPING); every other building its cash. |
 | 579 | `RefineryCheck.PROTOTYPE_BUILD_MONTHS` | `6` | ...and the months an order takes to open. |
 | 582 | `RefineryCheck.PROTOTYPE_MONTHS` | `240` | ...and the months it runs. |
 | 585 | `RefineryCheck.M4000_PETROL` | `7.63e6, M4000_DIESEL = 16.13e6` | The prototype's demands, litres a month of petrol and diesel: the playtest's city at m4000 (spread.py's cities). |

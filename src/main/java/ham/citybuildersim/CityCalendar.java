@@ -13,19 +13,23 @@ package ham.citybuildersim;
  *
  * THE EPOCH
  *
- * Month 1 is January 2000, which is where a new game starts (Game sets
- * this.month = 1). That makes the arithmetic land where a player expects:
- * month 121 is exactly January 2010, ten years on.
+ * Month 1 is January 1900, which is where a new game starts (Game sets
+ * this.month = 1; EP1, Jerus, 2026-10-30: the game starts in 1900 with today's
+ * tech; it was January 2000 until then). That makes the arithmetic land where a
+ * player expects: month 121 is exactly January 1910, ten years on.
  *
  * Month 0 and negatives are not real game states, but they are reachable from a
  * corrupt save and from any month-difference someone hands in by mistake, so
- * they floor at the epoch rather than counting backwards into 1999. A date is
+ * they floor at the epoch rather than counting backwards into 1899. A date is
  * cosmetic; crashing the status bar over one is not.
+ *
+ * The calendar is Gregorian all the way: 1900 is not a leap year (divisible by
+ * 100, not by 400), so February of the first year has 28 days and 2000's 29.
  */
 public final class CityCalendar {
 
     /** The year month 1 falls in. */
-    public static final int EPOCH_YEAR = 2000;
+    public static final int EPOCH_YEAR = 1900;
 
     private static final String[] MONTHS = {
         "January", "February", "March", "April", "May", "June",

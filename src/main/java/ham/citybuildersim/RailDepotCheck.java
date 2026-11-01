@@ -57,8 +57,8 @@ public class RailDepotCheck {
 
     static int fails = 0;
 
-    /** What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. */
-    static final double LORRY_A_TONNE = .319;
+    /** What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. Today's figure, priced at the founding's level (EP1). */
+    static final double LORRY_A_TONNE = .319 * PriceLevel.FACTOR;
 
     static void quietly(Runnable r) {
         java.io.PrintStream real = System.out;

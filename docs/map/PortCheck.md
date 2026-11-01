@@ -1,4 +1,4 @@
-# PortCheck.java - 1,185 lines · 23 methods · 10 constants · harnesses
+# PortCheck.java - 1,192 lines · 23 methods · 10 constants · harnesses
 
 `ham/citybuildersim/PortCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > Every fixture CAUSES its condition: the coast is bought (the offer nearest
 > ... (2 more lines in the source)
 
-**Uses:** [Ports](Ports.md) (323), [Good](Good.md) (93), [BoatSchedule](BoatSchedule.md) (54), [Game](Game.md) (35), [BuildingsTemplate](BuildingsTemplate.md) (33), [Traffic](Traffic.md) (32), [BuildingManager](BuildingManager.md) (18), [World](World.md) (11), [Founding](Founding.md) (8), [JobType](JobType.md) (8), [Refining](Refining.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [GameFiles](GameFiles.md) (5), [TaxPolicy](TaxPolicy.md) (5), [GoodsMarket](GoodsMarket.md) (5), [Freight](Freight.md) (4), [BuildingType](BuildingType.md) (4), [InfrastructureManager](InfrastructureManager.md) (4), [BuildCard](BuildCard.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [HeavyIndustry](HeavyIndustry.md) (3), [MoneyAudit](MoneyAudit.md) (2), [LandManager](LandManager.md) (2), [LandParcel](LandParcel.md) (2), [MiningCheck](MiningCheck.md) (2), [Sector](Sector.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [CityLand](CityLand.md) (1), [LongPlaytest](LongPlaytest.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [Ports](Ports.md) (323), [Good](Good.md) (96), [BoatSchedule](BoatSchedule.md) (54), [Game](Game.md) (35), [BuildingsTemplate](BuildingsTemplate.md) (33), [Traffic](Traffic.md) (32), [BuildingManager](BuildingManager.md) (18), [World](World.md) (11), [PriceLevel](PriceLevel.md) (10), [Founding](Founding.md) (8), [JobType](JobType.md) (8), [Refining](Refining.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [GameFiles](GameFiles.md) (5), [TaxPolicy](TaxPolicy.md) (5), [GoodsMarket](GoodsMarket.md) (5), [Freight](Freight.md) (4), [BuildingType](BuildingType.md) (4), [InfrastructureManager](InfrastructureManager.md) (4), [BuildCard](BuildCard.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [HeavyIndustry](HeavyIndustry.md) (3), [MoneyAudit](MoneyAudit.md) (2), [LandManager](LandManager.md) (2), [LandParcel](LandParcel.md) (2), [MiningCheck](MiningCheck.md) (2), [Sector](Sector.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [CityLand](CityLand.md) (1), [LongPlaytest](LongPlaytest.md) (1)... and 1 more
 
 **Used by (3):** [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [LandlordPortCheck](LandlordPortCheck.md)
 
@@ -77,13 +77,13 @@
 | 250 | 2. THE CARGO, THE SHIPS AND THE TERMINALS |
 | 362 | 2b. THE BULK BERTH (FR3) |
 | 433 | 2c. A TERMINAL OF SEVERAL BERTHS, ORDERED BY THE COUNT (SL1) |
-| 604 | 3. THE FACTOR |
-| 638 | 4. THE SHARES |
-| 713 | 5. NO PORT, THE SAME BAND |
-| 755 | 6. A PORT ON A TOWN |
-| 880 | 7. CRUDE NEEDS ROOM |
-| 997 | 8. THE BOATS |
-| 1131 | 9. THE SAVE |
+| 605 | 3. THE FACTOR |
+| 639 | 4. THE SHARES |
+| 714 | 5. NO PORT, THE SAME BAND |
+| 762 | 6. A PORT ON A TOWN |
+| 887 | 7. CRUDE NEEDS ROOM |
+| 1004 | 8. THE BOATS |
+| 1138 | 9. THE SAVE |
 
 ## Constants
 
@@ -112,7 +112,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 1110 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
+| 76 | 1117 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
 | 82 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 87 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 92 | 5 | `static void quietly(Runnable r)` |  |
@@ -147,53 +147,53 @@
 |---:|---:|---|---|
 | 364 | 68 | `static void theBulkBerth()` |  |
 
-### 2c. A TERMINAL OF SEVERAL BERTHS, ORDERED BY THE COUNT (SL1) (lines 433-603)
+### 2c. A TERMINAL OF SEVERAL BERTHS, ORDERED BY THE COUNT (SL1) (lines 433-604)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 446 | 157 | `static void terminalsOfSeveralBerths()` |  |
+| 446 | 158 | `static void terminalsOfSeveralBerths()` |  |
 
-### 3. THE FACTOR (lines 604-637)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 606 | 31 | `static void theFactor()` |  |
-
-### 4. THE SHARES (lines 638-712)
+### 3. THE FACTOR (lines 605-638)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 640 | 5 | `static double[] tonnes(Object...pairs)` |  |
-| 646 | 66 | `static void theShares()` |  |
+| 607 | 31 | `static void theFactor()` |  |
 
-### 5. NO PORT, THE SAME BAND (lines 713-754)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 715 | 39 | `static void noPortTheSameBand()` |  |
-
-### 6. A PORT ON A TOWN (lines 755-879)
+### 4. THE SHARES (lines 639-713)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 757 | 122 | `static Game aPortOnATown()` |  |
+| 641 | 5 | `static double[] tonnes(Object...pairs)` |  |
+| 647 | 66 | `static void theShares()` |  |
 
-### 7. CRUDE NEEDS ROOM (lines 880-996)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 882 | 114 | `static void crudeNeedsRoom()` |  |
-
-### 8. THE BOATS (lines 997-1130)
+### 5. NO PORT, THE SAME BAND (lines 714-761)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 999 | 113 | `static void theBoats()` |  |
-| 1114 | 16 | `static Ports monthAtSea()` | A month's trade by sea on every kind: Ports handed a month with each kind's berths taking its share. |
+| 716 | 45 | `static void noPortTheSameBand()` |  |
 
-### 9. THE SAVE (lines 1131-1185)
+### 6. A PORT ON A TOWN (lines 762-886)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1133 | 52 | `static void acrossASave(Game g) throws Exception` |  |
+| 764 | 122 | `static Game aPortOnATown()` |  |
+
+### 7. CRUDE NEEDS ROOM (lines 887-1003)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 889 | 114 | `static void crudeNeedsRoom()` |  |
+
+### 8. THE BOATS (lines 1004-1137)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1006 | 113 | `static void theBoats()` |  |
+| 1121 | 16 | `static Ports monthAtSea()` | A month's trade by sea on every kind: Ports handed a month with each kind's berths taking its share. |
+
+### 9. THE SAVE (lines 1138-1192)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1140 | 52 | `static void acrossASave(Game g) throws Exception` |  |
 

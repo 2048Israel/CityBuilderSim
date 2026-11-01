@@ -108,7 +108,7 @@ public class MoneyCheck {
                 break;
             }
         }
-        g.getGovernmentInvestor().spend(-50_000_000);
+        g.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
         g.buildStack(g.getBuildingManager().getTemplate(Mining.IRON_MINE), 2, false);
         g.buildStack(g.getBuildingManager().getTemplate(HeavyIndustry.ARC_FURNACE), 1, false);
         g.buildStack(t(g, "Memorial Cemetery"), 1, false);
@@ -189,7 +189,7 @@ public class MoneyCheck {
         assertTrue("a city that paid for land out of the vault conserves money",
                 worst.relative() < 1e-4);
         assertTrue("...and nothing moved a pool after any month's audit",
-                Math.abs(worstDrift) < .01);
+                Math.abs(worstDrift) < MoneyAudit.CENT);
 
         /* ==================== 2. a city under stress ==================== */
         System.out.println("\n--- broke, banned, taxed and importing: still nothing leaks ---");
@@ -215,7 +215,7 @@ public class MoneyCheck {
         }
         // Take the treasury to the edge so the central bank's advances are
         // drawn and repaid inside the window (emergency notes, before 0.7.0).
-        s.setCashForTest(20_000);
+        s.setCashForTest(20_000 * PriceLevel.FACTOR);   // today's figure, priced at the founding's level (EP1)
 
         worst = play("a stressed city, 180 months", s, 180, verbose);
         assertTrue("a stressed city conserves money to within 0.01% of what moved",
@@ -236,9 +236,16 @@ public class MoneyCheck {
          * audits those.
          */
         BusinessDebtManager credit = s.getEconomyManager().getBusinessDebtManager();
-        credit.issueLoan(Sectors.RETAIL, 5_000_000, s.getMonth());
+        // ...retail free to go under (EP1): in the draws of 1900 the stressed city's retail had been restructured four times and was inside its ban when
+        // the fixture came to it, and a sector inside its ban "is in the episode it started: nothing new is written off or counted"
+        // (BusinessDebtManager.restructure()), so the default the fixture causes was no new episode and retail stayed at its four for sixty months. The
+        // credit record is put back as it stood with retail's ban out (restoreCreditRecord()), and the default below is a new episode.
+        java.util.Map<String, Integer> bans = credit.getBlockedMonthsAll();
+        bans.put(Sectors.RETAIL, 0);
+        credit.restoreCreditRecord(credit.getRestructureCounts(), bans);
+        credit.issueLoan(Sectors.RETAIL, 5_000_000 * PriceLevel.FACTOR, s.getMonth());   // today's figures, priced at the founding's level (EP1)
         double retailOwnsBesidesItsTill = credit.getAssets(Sectors.RETAIL) - credit.getCash(Sectors.RETAIL);
-        s.getEconomyManager().setSectorCash(Sectors.RETAIL, -Math.max(0, retailOwnsBesidesItsTill) - 100_000);
+        s.getEconomyManager().setSectorCash(Sectors.RETAIL, -Math.max(0, retailOwnsBesidesItsTill) - 100_000 * PriceLevel.FACTOR);
         int wholeBefore = credit.getRestructureCount(Sectors.RETAIL);
 
         worst = play("through a restructure, 60 months", s, 60, verbose);
@@ -294,7 +301,7 @@ public class MoneyCheck {
         assertTrue("a city conserves money with hot money flowing", worst.relative() < 1e-4);
         System.out.printf("   worst drift after a strike: $%,.2f%s%n", worstDrift,
                 worstDriftPool.isEmpty() ? "" : " (" + worstDriftPool + ")");
-        assertTrue("...and nothing moved after the audit struck", Math.abs(worstDrift) < .01);
+        assertTrue("...and nothing moved after the audit struck", Math.abs(worstDrift) < MoneyAudit.CENT);
 
         /* ==================================================================
            4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES
@@ -502,9 +509,9 @@ public class MoneyCheck {
         // Paper sold under par: a bill, an amortizing bond, and a ten-year line at a high dial.
         ledger.setPolicyRate(.06);
         quietly(() -> {
-            paperCity.handleTBillLogic(20_000, 6, 1000);
-            paperCity.handleMediumBondLogic(30_000, 10, 1000);
-            paperCity.handleLongBondLogic(50_000, 10, 1000);
+            paperCity.handleTBillLogic(20_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR);
+            paperCity.handleMediumBondLogic(30_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
+            paperCity.handleLongBondLogic(50_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
         });
         Debt line = ledger.benchmarkLine(10);
         Debt serial = null;
@@ -525,11 +532,11 @@ public class MoneyCheck {
                 ledger.setPolicyRate(.01);
                 double carryBefore = line.carryingInCurrency(), faceBefore = line.faceInCurrency();
                 int pieces = ledger.getDebt().size();
-                quietly(() -> paperCity.handleLongBondLogic(20_000, 10, 1000));
+                quietly(() -> paperCity.handleLongBondLogic(20_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR));
                 reopenedOverPar = ledger.getDebt().size() == pieces && ledger.benchmarkLine(10) == line
                         && line.carryingInCurrency() - carryBefore > line.faceInCurrency() - faceBefore + 1;
             }
-            if (month == 8) quietly(() -> paperCity.handleTBillLogic(10_000, 6, 1000));
+            if (month == 8) quietly(() -> paperCity.handleTBillLogic(10_000 * PriceLevel.FACTOR, 6, 1000 * PriceLevel.FACTOR));
             if (month == 14 && ledger.getDebt().contains(serialBond)) {
                 gainQuoted = paperCity.repurchaseGain(serialBond);
                 boughtBackFor = paperCity.repurchaseDebt(serialBond);
@@ -566,7 +573,7 @@ public class MoneyCheck {
                 Math.abs(gainBooked - gainQuoted) < 1e-6 && gainQuoted < 0);
         assertTrue("a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month",
                 worstPaper.relative() < 1e-4);
-        assertTrue("...and nothing moved a pool after any month's audit struck", worstPaperDrift < .01);
+        assertTrue("...and nothing moved a pool after any month's audit struck", worstPaperDrift < MoneyAudit.CENT);
         assertTrue("the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool",
                 worstCouponGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));
         assertTrue("...and it is the cash coupons the budget calls its cash interest", worstCashGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));

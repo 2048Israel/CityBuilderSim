@@ -93,7 +93,7 @@ public final class WorldMarket {
     /** The Base on the full file, read and calibrated, takes at most this many milliseconds. */
     public static final double BASE_MS = 2_000;
 
-    /** The founding solve (year 2000, every good, from p-hat = 1) takes at most this many milliseconds. */
+    /** The founding solve (the calendar's first year, every good, from p-hat = 1) takes at most this many milliseconds. */
     public static final double SOLVE_COLD_MS = 600;
 
     /** A January (every good, from last year's answer) takes at most this many milliseconds. */
@@ -300,6 +300,8 @@ public final class WorldMarket {
         final double[] lat, lon, baseOutput;
         final boolean[] landlocked;
         final int baseYear;
+        /** The years the reader made before the file's first (WorldData.standInYears()): 100 for the full file. */
+        final int standInYears;
         final double radius, seaUsd, landUsd, handlingUsd, landDetour, seaDetour;
         /** US$ a tonne between nations, row-major (from * n + to), 0 on the diagonal. */
         final double[] freight;
@@ -351,6 +353,7 @@ public final class WorldMarket {
             landlocked = new boolean[n];
             baseOutput = new double[n];
             baseYear = data.tradeBaseYear();
+            standInYears = data.standInYears();
             radius = dial(data, "EARTH_RADIUS_KM", 6371);
             seaUsd = dial(data, "SEA_USD_TKM", .003);
             landUsd = dial(data, "LAND_USD_TKM", .05);
@@ -1171,6 +1174,17 @@ public final class WorldMarket {
     /** Whether the city has a berth. */
     public boolean berth() { return berth; }
 
+    /**
+     * The year growth() and level() read as the base (EP1): the trade table's year (Base.baseYear, 2019) on Historical, whose stand-in century holds the
+     * file's first year's world, so its founding ratio is what it was; on a path that is not Historical, that year less the stand-in's years (Base.standInYears,
+     * from the data: 1919). WHY: Random's path begins from the file's first year's world in the calendar's first year, 1900, not 2000, so the base year
+     * has to sit as far into the path as it did before EP1 (19 years on) or a founding city meets a world 119 years of drawn growth away from the
+     * table its flows are scaled from.
+     */
+    int baseYearRead() {
+        return nations.path() == Nations.Path.HISTORICAL ? base.baseYear : base.baseYear - base.standInYears;
+    }
+
     /* ----- the January solve ----- */
 
     /**
@@ -1181,7 +1195,7 @@ public final class WorldMarket {
     public void solveYear(int year) {
         if (year == this.year) return;
         long t0 = System.nanoTime();
-        double[] g = growth(nations, year, base.baseYear, n);
+        double[] g = growth(nations, year, baseYearRead(), n);
         int warm = this.year;
         long start = warm < 0 ? 0 : fingerprint(phat, lambda);
         SolveKey key = new SolveKey(base, nations.path(), nations.seed(), year, warm, start);
@@ -1195,7 +1209,7 @@ public final class WorldMarket {
             passes = hit.passes().clone();
         } else {
             for (int gi = 0; gi < goodCount; gi++) {
-                double target = level(nations, priceIdx[gi], year, base.baseYear);
+                double target = level(nations, priceIdx[gi], year, baseYearRead());
                 double[] slice = new double[n];
                 System.arraycopy(phat, gi * n, slice, 0, n);
                 passes[gi] = solve(base.traded[gi], g, null, true, target, SOLVE_TOL, slice, lambda, gi, work);
@@ -1565,7 +1579,7 @@ public final class WorldMarket {
         for (double s : scales) if (!(s > 0) || !Double.isFinite(s)) return false;
         phat = prices.clone();
         lambda = scales.clone();
-        gHat = growth(nations, year, base.baseYear, n);
+        gHat = growth(nations, year, baseYearRead(), n);
         this.year = year;
         Arrays.fill(passes, 0);
         deriveSolution();
@@ -1591,7 +1605,7 @@ public final class WorldMarket {
     double[] gHat() { return gHat.clone(); }
 
     /** The mean mill price's target for a good this year. */
-    double levelTarget(int gi) { return level(nations, priceIdx[gi], year, base.baseYear); }
+    double levelTarget(int gi) { return level(nations, priceIdx[gi], year, baseYearRead()); }
 
     /** A nation's use of a good this year (1-based), tonnes a year. */
     double demand(int gi, int nation) { return demand[gi][nation - 1]; }

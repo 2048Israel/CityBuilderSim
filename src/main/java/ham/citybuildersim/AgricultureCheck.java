@@ -205,12 +205,12 @@ public class AgricultureCheck {
             BuildingsTemplate t = bm.getTemplateByName(names[i]);
             assertTrue(names[i] + " exists", t != null);
             if (t == null) continue;
-            check(names[i] + ": what it grows a month, at the world's floor", atTheFloor(t), want[i][0], 1);
+            check(names[i] + ": what it grows a month, at the world's floor", atTheFloor(t), want[i][0] * PriceLevel.FACTOR, PriceLevel.FACTOR);   // the harvest's worth and the thousand dollars of tolerance: today's figures, priced at the founding's level
             check(names[i] + ": posts", jobsOf(t), want[i][1], 0);
             check(names[i] + ": the ground it stands on", t.getLandSqFt(), want[i][2], 1);
             check(names[i] + ": all-in build cost",
                     t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials(),
-                    want[i][3], 2);
+                    want[i][3] * PriceLevel.FACTOR, 2 * PriceLevel.FACTOR);
             assertTrue(names[i] + " is owned by the sector, not the city",
                     Sectors.AGRICULTURE.equals(t.getSector()));
             assertTrue(names[i] + " has a silo - a harvest keeps", t.stocks(Good.CROPS) > 0);

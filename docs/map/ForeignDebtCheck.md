@@ -1,4 +1,4 @@
-# ForeignDebtCheck.java - 1,015 lines · 12 methods · 0 constants · harnesses
+# ForeignDebtCheck.java - 1,026 lines · 12 methods · 0 constants · harnesses
 
 `ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -51,7 +51,7 @@
 >      though the world's rate before it is the lower, and a small one goes
 >      abroad once the city's own paper is dearer; quoting books nothing.
 
-**Uses:** [DebtManager](DebtManager.md) (35), [Game](Game.md) (19), [LongPlaytest](LongPlaytest.md) (15), [Debt](Debt.md) (9), [CityCalendar](CityCalendar.md) (6), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [Rollover](Rollover.md) (3), [ChartModel](ChartModel.md) (3), [DecisionLog](DecisionLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Ladder](Ladder.md) (2), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [DebtManager](DebtManager.md) (35), [PriceLevel](PriceLevel.md) (27), [Game](Game.md) (19), [LongPlaytest](LongPlaytest.md) (16), [Debt](Debt.md) (9), [CityCalendar](CityCalendar.md) (6), [GameFiles](GameFiles.md) (3), [MoneyAudit](MoneyAudit.md) (3), [DebtQuote](DebtQuote.md) (3), [Rollover](Rollover.md) (3), [ChartModel](ChartModel.md) (3), [DecisionLog](DecisionLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Ladder](Ladder.md) (2)
 
 **Used by (3):** [BuybackCheck](BuybackCheck.md), [CurveCheck](CurveCheck.md), [RestructureCheck](RestructureCheck.md)
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 959 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
+| 57 | 970 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
 | 63 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 68 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 78 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -104,11 +104,11 @@
 |---:|---:|---|---|
 | 758 | 151 | `static void theLadder(Path dir) throws Exception` | WHAT THE FINANCES TAB DRAWS THE DEBT FROM. |
 
-### 10. the test player takes the cheaper money by the quote for the sale (CC1-S) (lines 910-1015)
+### 10. the test player takes the cheaper money by the quote for the sale (CC1-S) (lines 910-1026)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 931 | 69 | `static void theCheaperMoney(Path dir) throws Exception` | The long playtest's build borrows abroad only when the quote for the sale is the cheaper. |
-| 1002 | 4 | `private static double[] books(Game g)` | What quoting must leave alone: cash, the debts at home and abroad, and the two rates. |
-| 1008 | 7 | `private static void quotes(String state, Game g, double small, double big)` | Both sales' quotes, abroad (the 20-year dollar bond, as the build asks it) and at home. |
+| 931 | 80 | `static void theCheaperMoney(Path dir) throws Exception` | The long playtest's build borrows abroad only when the quote for the sale is the cheaper. |
+| 1013 | 4 | `private static double[] books(Game g)` | What quoting must leave alone: cash, the debts at home and abroad, and the two rates. |
+| 1019 | 7 | `private static void quotes(String state, Game g, double small, double big)` | Both sales' quotes, abroad (the 20-year dollar bond, as the build asks it) and at home. |
 

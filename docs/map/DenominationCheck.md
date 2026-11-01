@@ -32,7 +32,7 @@
 > by a thousand in section 6 (B6, 0.7.47): the month's transit lines, the
 > riders at the same real fare, and the working rows' fixed bills.
 
-**Uses:** [Game](Game.md) (23), [LongPlaytest](LongPlaytest.md) (17), [Sector](Sector.md) (8), [Denomination](Denomination.md) (6), [Household](Household.md) (4), [GameFiles](GameFiles.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Currency](Currency.md) (2), [Equity](Equity.md) (2), [Good](Good.md) (2), [Founding](Founding.md) (1), [Mining](Mining.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [TempDirs](TempDirs.md) (1), [Sectors](Sectors.md) (1), [TaxPolicy](TaxPolicy.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
+**Uses:** [Game](Game.md) (23), [LongPlaytest](LongPlaytest.md) (17), [Sector](Sector.md) (8), [Denomination](Denomination.md) (6), [Household](Household.md) (4), [GameFiles](GameFiles.md) (3), [PriceLevel](PriceLevel.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Currency](Currency.md) (2), [Equity](Equity.md) (2), [Good](Good.md) (2), [Founding](Founding.md) (1), [Mining](Mining.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [TempDirs](TempDirs.md) (1), [Sectors](Sectors.md) (1), [TaxPolicy](TaxPolicy.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
 ## Sections
 

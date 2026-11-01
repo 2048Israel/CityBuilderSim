@@ -36,7 +36,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [SectorFlow](SectorFlow.md) (28), [Sector](Sector.md) (18), [Game](Game.md) (14), [Good](Good.md) (5), [GameFiles](GameFiles.md) (3), [Formats](Formats.md) (3), [BuildCard](BuildCard.md) (3), [LongPlaytest](LongPlaytest.md) (2), [Founding](Founding.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Sectors](Sectors.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [TempDirs](TempDirs.md) (1), [SectorBooks](SectorBooks.md) (1), [BuildAdvice](BuildAdvice.md) (1)
+**Uses:** [SectorFlow](SectorFlow.md) (28), [Sector](Sector.md) (18), [Game](Game.md) (14), [Good](Good.md) (5), [GameFiles](GameFiles.md) (3), [Formats](Formats.md) (3), [BuildCard](BuildCard.md) (3), [LongPlaytest](LongPlaytest.md) (2), [Founding](Founding.md) (1), [PriceLevel](PriceLevel.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Sectors](Sectors.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [TempDirs](TempDirs.md) (1), [SectorBooks](SectorBooks.md) (1), [BuildAdvice](BuildAdvice.md) (1)
 
 ## Sections
 

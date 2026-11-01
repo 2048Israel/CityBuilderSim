@@ -1172,7 +1172,10 @@ public final class RefineryView {
         for (int i = 0; i < at.length; i++) at[i] = takers.get(i).y + takers.get(i).h / 2;
         spread(at, LABEL_SPACING, 18, height - 24);
         double lx = xBuy + BUYER_W + 10;
-        words.add(new Words("WHO TOOK IT", xBuy, Math.min(mid - s4H / 2, at.length == 0 ? mid : at[0] - 15) - 16, Face.SANS_STRONG,
+        // ...its heading 16 above the first of them, but never above the picture: a stack of takers that is the tallest column begins within 25 px of the
+        // top (RefineryViewCheck's town in the draws of 1900: the heading's baseline at 5.5, its letters 4 px above the picture), so the baseline is held
+        // to the heading's size.
+        words.add(new Words("WHO TOOK IT", xBuy, Math.max(9.5, Math.min(mid - s4H / 2, at.length == 0 ? mid : at[0] - 15) - 16), Face.SANS_STRONG,
                 9.5, TEXT_3, Align.START, width - xBuy, false));
         for (int i = 0; i < takers.size(); i++) {
             Buyer b = v.buyers().get(i);

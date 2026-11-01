@@ -135,9 +135,9 @@ public class ForestryCheck {
     /** Wood's two goods, the study's 5.3: import and export price, D$ thousands a cubic metre. */
     static final Good[] GOODS = { Good.SAWLOGS, Good.PULPWOOD };
     /** ...each one's import price (pulpwood's widened from 70, the study's 1.2)... */
-    static final double[] STUDY_IMPORT = { .110, .090 };
+    static final double[] STUDY_IMPORT = PriceLevelCheck.atFounding(.110, .090); // today's figures, priced at the founding's level (EP1)
     /** ...and its export price. */
-    static final double[] STUDY_EXPORT = { .065, .035 };
+    static final double[] STUDY_EXPORT = PriceLevelCheck.atFounding(.065, .035); // today's figures, priced at the founding's level (EP1)
     /** Good.java's rule: freight three eighths of the wedge. */
     static final double FREIGHT_SHARE = .375;
     /** Green roundwood, tonnes a cubic metre (spec 2.3, est.). */
@@ -212,13 +212,13 @@ public class ForestryCheck {
     static final int[] ROWS = { Forestry.LOGGING_CAMP, Forestry.HARVESTING_OPERATION, Forestry.TREE_PLANTATION, Forestry.WOODLOT };
 
     /** The study's 5.4 for the first three: cost, D$ thousands all in. */
-    static final double[] STUDY_COSTS = { 3_000, 15_000, 2_000 };
+    static final double[] STUDY_COSTS = PriceLevelCheck.atFounding(3_000, 15_000, 2_000); // today's figures, priced at the founding's level (EP1)
     /** ...posts. */
     static final int[] STUDY_POSTS = { 11, 18, 5 };
     /** ...sawlogs a month, m3 (and as much pulpwood). */
     static final double[] STUDY_SAWLOGS = { 1_000, 6_250, 0 };
     /** ...its running cost a month, D$ thousands ("Runs"). */
-    static final double[] STUDY_RUNS = { 61, 217, 24 };
+    static final double[] STUDY_RUNS = PriceLevelCheck.atFounding(61, 217, 24); // today's figures, priced at the founding's level (EP1)
     /** The study's 5.5 table, % of the cost a month, cases A to D. */
     static final double[][] STUDY_TABLE = { { 1.3, 1.3, 4.6, 4.6 }, { 2.7, 2.7, 6.9, 6.9 }, { -1.2, -1.2, -1.2, -1.2 } };
     /** The study's rounding: its returns to a tenth of a point. */
@@ -243,10 +243,10 @@ public class ForestryCheck {
             BuildingsTemplate t = b.getTemplate(ROWS[r]);
             boolean crew = r < 2;
             double cost = t.getCashCost() + BuildingManager.MATERIALS_WORLD_PRICE * t.getConstructionMaterials();
-            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r]) + "k all in, "
+            report("the " + t.getName() + " (" + t.getId() + ") is the study's: D$" + String.format("%,.0f", STUDY_COSTS[r] / PriceLevel.FACTOR) + "k all in, "
                             + STUDY_POSTS[r] + " posts, " + (crew ? String.format("%,.0f m3 of sawlogs and as much pulpwood a month", STUDY_SAWLOGS[r])
                             : "nothing to sell") + ", no site; Forestry's, MINING, dated " + SINCE[r],
-                    cost == STUDY_COSTS[r] && t.getTotalJobs() == STUDY_POSTS[r] && t.site() == null
+                    PriceLevelCheck.sameMoney(cost, STUDY_COSTS[r]) && t.getTotalJobs() == STUDY_POSTS[r] && t.site() == null
                             && t.makes(Good.SAWLOGS) == STUDY_SAWLOGS[r] && t.makes(Good.PULPWOOD) == STUDY_SAWLOGS[r]
                             && t.goodsMade().size() == (crew ? 2 : 0) && t.goodsUsed().isEmpty()
                             && Sectors.FORESTRY.equals(t.getSector()) && t.getCategory() == BuildingType.MINING

@@ -335,8 +335,8 @@ public class InfrastructureCheck {
          * money, same ground, one city builds roads. The GDP claim never needed
          * this - it wins by 50% - but the consumption claim did.
          */
-        withRoads.getGovernmentInvestor().spend(-500000);
-        without.getGovernmentInvestor().spend(-500000);
+        withRoads.getGovernmentInvestor().spend(-500000 * PriceLevel.FACTOR);
+        without.getGovernmentInvestor().spend(-500000 * PriceLevel.FACTOR);
         withRoads.getLandManager().setOwnedSqFt(
                 withRoads.getLandManager().getOwnedSqFt() + roadNetwork.getLandSqFt() * 3);
         without.getLandManager().setOwnedSqFt(

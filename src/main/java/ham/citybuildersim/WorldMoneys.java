@@ -21,10 +21,11 @@ import java.util.Set;
  * rate moved once a year in a step, and the D$ had no world to move with. This is the study's rule, every money of the world each month.
  *
  * THE SHAPE. ln rate_k, units of money k a US dollar, is lnPPP_k(t) + b_k C(t) + r_k R(t) + T_k(t) + S_k(t) where t is the month since
- * January 2000 (the file's month 0), C the dollar cycle, R the risk-off, T the terms of trade reached and S the money's own swing. Historical
- * replays the file's rates to December 2025 and runs the rule from January 2026; Random runs it from February 2000. A city begins in January
- * 2000 on both, so a WorldMoneys is made at month 0 (the file's rates; Random's state opened from their gaps from parity) and stepped a month at
- * a time; on Historical the first 311 steps replay the file and the 311th opens the state from December 2025's gaps. Every draw is
+ * January of Nations.FIRST_YEAR (the calendar's first, 1900: the reader's month 0, WorldData's stand-in century counted in), C the dollar cycle,
+ * R the risk-off, T the terms of trade reached and S the money's own swing. Historical replays the file's rates to December 2025 and runs the rule
+ * from January 2026; Random runs it from the second month. A city begins in January of FIRST_YEAR on both, so a WorldMoneys is made at month 0
+ * (the file's rates, the first month's held through the stand-in century; Random's state opened from their gaps from parity) and stepped a month
+ * at a time; on Historical the first HISTORICAL_RULE_START - 1 steps replay the file and the last opens the state from December 2025's gaps. Every draw is
  * new Random(Nations.scramble(seed, who, t, what)), a pure function of the seed and the month, so one seed is one path and a reload continues it.
  *
  * It copies what it needs from the file and keeps no reference to it; it keeps the Nations (for the price levels, the regimes and the money of
@@ -63,10 +64,10 @@ public final class WorldMoneys {
     /** The months a January's change in the terms of trade takes to reach the rate, a third in each of the year's first (est.). */
     public static final int TOT_MONTHS = 3;
 
-    /** The first month the rule rules on Historical: January 2026, after the file's 312 months (the file's real rates are replayed before it). */
+    /** The first month the rule rules on Historical: January 2026, after the file's 1,512 months (1900-01 to 2025-12, the stand-in century's 1,200 and the file's 312; the file's real rates are replayed before it). */
     public static final int HISTORICAL_RULE_START = (Nations.HISTORY_LAST_YEAR + 1 - Nations.FIRST_YEAR) * 12;
 
-    /** The first month the rule rules on Random: February 2000, the month after the file's January 2000 it opens from. */
+    /** The first month the rule rules on Random: the second month (February of Nations.FIRST_YEAR), the month after the file's first it opens from. */
     public static final int RANDOM_RULE_START = 1;
 
     /** The boards the file's pegs include, which never break: the game keeps no nation's vault, and a board breaks only if its vault falls under its money (est., the IMF's list [R21]). */
@@ -173,7 +174,7 @@ public final class WorldMoneys {
     private double forced;
 
     /**
-     * The moneys of a world on a path and seed, standing in January 2000 (month() is 0): the file's rates of that month, and on Random the state
+     * The moneys of a world on a path and seed, standing in January of Nations.FIRST_YEAR (month() is 0): the file's rates of that month, and on Random the state
      * opened from their gaps from parity. commodityShare is each nation's share of exports in commodities, index nation - 1 (WorldMarket.Base's
      * commodityShare), null for none; the file is the nations' own. Keeps no reference to the file.
      */
@@ -182,7 +183,7 @@ public final class WorldMoneys {
         this.nations = Objects.requireNonNull(nations, "nations");
         nationCount = nations.count();
         if (file.nationCount() != nationCount) throw new IllegalArgumentException("world moneys: the file has " + file.nationCount() + " nations and the path " + nationCount);
-        if (file.firstMonth() != 0) throw new IllegalArgumentException("world moneys: the file's rates begin in month " + file.firstMonth() + ", not January 2000");
+        if (file.firstMonth() != 0) throw new IllegalArgumentException("world moneys: the file's rates begin in month " + file.firstMonth() + ", not January " + Nations.FIRST_YEAR);
         if (commodityShare != null && commodityShare.length != nationCount)
             throw new IllegalArgumentException("world moneys: " + commodityShare.length + " commodity shares for " + nationCount + " nations");
         share = commodityShare == null ? new double[nationCount] : commodityShare.clone();
@@ -265,7 +266,7 @@ public final class WorldMoneys {
         return advanced ? ADVANCED_FLOAT : EMERGING_FLOAT;
     }
 
-    /** The month index of a game month: months since January 2000, the file's month 0 (game month 1 is January 2000). */
+    /** The month index of a game month: months since January of Nations.FIRST_YEAR, the file's month 0 as the reader numbers it (game month 1 is January of it). */
     public static int monthIndex(int gameMonth) {
         return (CityCalendar.yearOf(gameMonth) - Nations.FIRST_YEAR) * 12 + CityCalendar.monthOfYear(gameMonth) - 1;
     }
@@ -312,16 +313,17 @@ public final class WorldMoneys {
 
     /**
      * The constant that anchors a money's parity on its real rate over the file's years: the mean of ln(file rate) - ln(cpi of the anchor over the
-     * US's) over the years 2000-2025 the anchor was on the money and the file has all three. So the strong dollar of 2000-2001 is a gap the swings
-     * close, not parity. A money with no such year takes its first figure's month (January 2000's if it has one), its gap there 0.
+     * US's) over the file's own years, WorldData.FILE_FIRST_YEAR to 2025 (the stand-in century before them is flat and no evidence of parity), the
+     * anchor was on the money and the file has all three. So the strong dollar of 2000-2001 is a gap the swings close, not parity. A money with no
+     * such year takes its first figure's month (the first month's if it has one), its gap there 0.
      */
     private double parityConstant(int k, WorldData file) {
         int a = anchor[k];
         if (k == dollar || a < 1) return 0;
         double sum = 0;
         int count = 0;
-        for (int y = Nations.FIRST_YEAR; y <= Nations.HISTORY_LAST_YEAR; y++) {
-            if (!code[k].equals(file.moneyAt(a, (y - Nations.FIRST_YEAR) * 12 + 11))) continue;
+        for (int y = WorldData.FILE_FIRST_YEAR; y <= Nations.HISTORY_LAST_YEAR; y++) {
+            if (!code[k].equals(file.moneyAt(a, WorldData.monthNumber(y, 12)))) continue;
             double r = file.pathValue("rate", a, y), pa = file.pathValue("cpi", a, y), pu = file.pathValue("cpi", usa, y);
             if (!(r > 0 && pa > 0 && pu > 0) || !Double.isFinite(r) || !Double.isFinite(pa) || !Double.isFinite(pu)) continue;
             sum += StrictMath.log(r) - StrictMath.log(pa / pu);
@@ -401,17 +403,17 @@ public final class WorldMoneys {
        THE MONTH
        ===================================================================== */
 
-    /** The month now, months since January 2000: 0 after the constructor. */
+    /** The month now, months since January of Nations.FIRST_YEAR: 0 after the constructor. */
     public int month() { return month; }
 
-    /** The first month the rule rules: 1 on Random, 312 on Historical. */
+    /** The first month the rule rules: 1 on Random, HISTORICAL_RULE_START on Historical. */
     public int ruleStart() { return ruleStart; }
 
     /** Whether the rule rules this month (Historical replays the file before it). */
     public boolean ruling() { return month >= ruleStart; }
 
     /**
-     * Records the terms of trade of a January the constructor could not be given (the founding's: the city begins in January 2000), as last year's
+     * Records the terms of trade of a January the constructor could not be given (the founding's: the city begins in January of Nations.FIRST_YEAR), as last year's
      * for the next January's change; steps nothing.
      */
     public void recordTermsOfTrade(double[] lnTermsOfTrade) {
@@ -567,7 +569,7 @@ public final class WorldMoneys {
         return rate(nations.year(nation, Nations.FIRST_YEAR + month / 12).money());
     }
 
-    /** A money's rate in January 2000, which both paths begin from. */
+    /** A money's rate in January of Nations.FIRST_YEAR, which both paths begin from. */
     public double rateAtStart(String c) {
         int k = at(c);
         return k < 0 ? Double.NaN : startRate[k];
@@ -692,10 +694,10 @@ public final class WorldMoneys {
     /** The nation the US dollar is the money of, the frontier (Nations.FRONTIER), 1-based: the nation whose path the game's US$ follows. */
     public int usNation() { return usa; }
 
-    /** A nation's price level in month t (months since January 2000) against its level in month 0, log-linear between Januaries: 1 in month 0. */
+    /** A nation's price level in month t (months since January of Nations.FIRST_YEAR) against its level in month 0, log-linear between Januaries: 1 in month 0. */
     public double priceLevel(int nation, int t) {
         if (nation < 1 || nation > nationCount) throw new IllegalArgumentException("world moneys: no nation numbered " + nation);
-        if (t < 0) throw new IllegalArgumentException("world moneys: no month " + t + " before January 2000");
+        if (t < 0) throw new IllegalArgumentException("world moneys: no month " + t + " before January " + Nations.FIRST_YEAR);
         return StrictMath.exp(lnPriceAt(nation, t) - lnPriceAt(nation, 0));
     }
 

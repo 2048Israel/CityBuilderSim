@@ -470,13 +470,13 @@ public class BridgeCheck {
     static void thePrice() {
         out.println("\n--- 2. the price: the deck's rate by depth, a metre by kind, a span by its steps, and the notes' three records ---");
         double base = BridgeWorks.BASE_USD_PER_M2;
-        check("the base rate is RunWorks's deck, a m2: US DOT's $250 a sq ft", same(base, RunWorks.DECK_USD_PER_M2) && same(base, 250 / LandManager.SQ_M_PER_SQ_FT));
+        check("the base rate is RunWorks's deck, a m2: US DOT's $250 a sq ft, priced at the founding's level", same(base, RunWorks.DECK_USD_PER_M2) && same(base, 250 / LandManager.SQ_M_PER_SQ_FT * PriceLevel.FACTOR));
         check("fresh water (depth 0) and any depth to BASE_DEPTH_M cost the base rate a m2", BridgeWorks.deckUsdPerM2(0) == base && BridgeWorks.deckUsdPerM2(BridgeWorks.BASE_DEPTH_M) == base
                 && BridgeWorks.deckUsdPerM2(2) == base);
         double conf = BridgeWorks.CONFEDERATION_COST_CAD * BridgeWorks.CAD_CPI_1997_TO_2025 * BridgeWorks.USD_PER_CAD_2025
-                / (BridgeWorks.CONFEDERATION_LENGTH_M * BridgeWorks.CONFEDERATION_DECK_M);
+                / (BridgeWorks.CONFEDERATION_LENGTH_M * BridgeWorks.CONFEDERATION_DECK_M) * PriceLevel.FACTOR;
         report("the rate at the Confederation's depth is its cost (C$1.3 billion x 1.79 x 0.72) over its deck (12.9 km x 11 m): about US$11,800 a m2",
-                same(BridgeWorks.deckUsdPerM2(BridgeWorks.CONFEDERATION_DEPTH_M), conf) && Math.abs(conf - 11_800) < 100, String.format("$%,.0f a m2", conf));
+                same(BridgeWorks.deckUsdPerM2(BridgeWorks.CONFEDERATION_DEPTH_M), conf) && Math.abs(conf - 11_800 * PriceLevel.FACTOR) < 100 * PriceLevel.FACTOR, String.format("$%,.0f a m2", conf));
         check("...between, linear in depth from the base at 5 m to the Confederation's at 35 m, halfway at 20 m",
                 same(BridgeWorks.deckUsdPerM2(20), (base + conf) / 2));
         check("...beyond 35 m the line goes on (taller piers in deeper water)", BridgeWorks.deckUsdPerM2(50) > conf && same(BridgeWorks.deckUsdPerM2(50), base + (conf - base) * 45 / 30));
@@ -519,16 +519,17 @@ public class BridgeCheck {
                 same(BridgeWorks.points(2_000_000, 0.5), 4_000) && BridgeWorks.points(0, 0.5) == 0 && BridgeWorks.points(1e6, 0) == 0 && BridgeWorks.points(1e6, Double.NaN) == 0);
 
         // The records of the notes, printed.
+        // The model prices a metre at the founding's level (EP1); the real Confederation Bridge is a 2025 figure, so it is put at that level too.
+        double confedCost = BridgeWorks.CONFEDERATION_COST_CAD * BridgeWorks.CAD_CPI_1997_TO_2025 * BridgeWorks.USD_PER_CAD_2025 * PriceLevel.FACTOR;
         double confedRoad = 12_900 * BridgeWorks.usdPerM(BridgeWorks.Kind.ROAD, 30);
-        out.printf("   for the record: a 12.9 km Road Bridge at 30 m is US$%,.0f against the Confederation Bridge's US$%,.0f (C$1.3 billion in 2025 US dollars, %+.1f%%)%n",
-                confedRoad, BridgeWorks.CONFEDERATION_COST_CAD * BridgeWorks.CAD_CPI_1997_TO_2025 * BridgeWorks.USD_PER_CAD_2025,
-                100 * (confedRoad / (BridgeWorks.CONFEDERATION_COST_CAD * BridgeWorks.CAD_CPI_1997_TO_2025 * BridgeWorks.USD_PER_CAD_2025) - 1));
+        out.printf("   for the record: a 12.9 km Road Bridge at 30 m is US$%,.0f against the Confederation Bridge's US$%,.0f (C$1.3 billion in 2025 US dollars, at the founding's level, %+.1f%%)%n",
+                confedRoad, confedCost, 100 * (confedRoad / confedCost - 1));
         out.printf("   for the record: a 1 km Highway Bridge at 5 m is US$%,.0f; at 5 m a Road Bridge US$%,.0f and a Rail Bridge US$%,.0f%n",
                 1000 * BridgeWorks.usdPerM(BridgeWorks.Kind.HIGHWAY, 5), 1000 * BridgeWorks.usdPerM(BridgeWorks.Kind.ROAD, 5), 1000 * BridgeWorks.usdPerM(BridgeWorks.Kind.RAIL, 5));
         out.printf("   for the record: a 36 km Highway Bridge at 10 m is US$%,.0f, against Hangzhou Bay's US$1.5 to 1.7 billion in 2008 Chinese costs (a 36 km, six-lane deck): ours is %.1f times as much - 2025 US costs and a 23.2 m deck, not fitted%n",
-                36_000 * BridgeWorks.usdPerM(BridgeWorks.Kind.HIGHWAY, 10), 36_000 * BridgeWorks.usdPerM(BridgeWorks.Kind.HIGHWAY, 10) / 1.6e9);
+                36_000 * BridgeWorks.usdPerM(BridgeWorks.Kind.HIGHWAY, 10), 36_000 * BridgeWorks.usdPerM(BridgeWorks.Kind.HIGHWAY, 10) / (1.6e9 * PriceLevel.FACTOR));
         check("the three records are in the order the model should give: a road bridge's 12.9 km at 30 m is within a quarter of the Confederation's cost, the point of the Confederation rate",
-                Math.abs(confedRoad / (BridgeWorks.CONFEDERATION_COST_CAD * BridgeWorks.CAD_CPI_1997_TO_2025 * BridgeWorks.USD_PER_CAD_2025) - 1) < 0.25);
+                Math.abs(confedRoad / confedCost - 1) < 0.25);
     }
 
     /* =====================================================================
