@@ -5309,6 +5309,10 @@ public class Game {
     private int retireWornOutWells() {
         ham.citybuildersim.sectors.Oil wells = getSectors().oil();
         int retired = 0;
+        // OV1: the vintages are struck before the retirement (a well opened this month stands in the book as its own month's) and
+        // after it (a well that opens later in the month is not netted against it), since Oil.view() nets the wells standing
+        // against the book as one figure and would drop the oldest of the old where the fresh well should be recorded.
+        wells.strikeVintages();
         // Each kind past its own life (0.7.91): the land wells at 263 months, the platforms' at 348.
         for (ham.citybuildersim.sectors.Oil.WellKind kind : ham.citybuildersim.sectors.Oil.WellKind.values()) {
             boolean land = kind == ham.citybuildersim.sectors.Oil.WellKind.LAND;
@@ -5326,6 +5330,7 @@ public class Game {
                     sectorInvestor(wells.key()), false);
             wellsWornOut += gone;
             retired += gone;
+            if (gone > 0) wells.strikeVintages();
         }
         return retired + decommissionAtSea(wells);
     }

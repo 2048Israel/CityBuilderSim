@@ -1,21 +1,11 @@
-# gate of Merge batch/TR1: replay a recorded city to film the trailer: a "Record this city" switch keeping every month and the player's input; replay with a time bar that plays both ways, nothing sticking; cinematic mode; smooth zoom and pan, A->B glides, the fly out to Earth, graphs behind the city; a ghost cursor that follows and re-enacts the player (Jerus, 2026-10-31: "top of queue", run on the side of the lanes), 0.8.92
+# gate of Merge batch/OV1: a worn-out well is retired against a well that opened the same month: `Oil.view()` nets the month's retirement against the opening and drops one oldest where two wore out, so the fresh well carries the old vintage and is retired again next month (latent on main, reproduced on 0.8.90's classes; met by WellCheck 4 on LD1's path). One line: re-strike the vintages after a retirement, `if (gone > 0) wells.strikeVintages();` in `Game.retireWornOutWells()`; WellCheck, OilCheck, OilViewCheck, ReadPathCheck and SaveFileCheck pass with it., 0.8.93
 # date: 2026-11-01
 # earth-2.bin: named
-# suite: 165 harnesses run in 2075s: 163 passed, 2 failed
-# timing: 14 harnesses run in 544s: 11 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 165 harnesses run in 1974s: 164 passed, 1 failed
+# timing: 14 harnesses run in 495s: 12 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 33.2 ms, batch 33.3 ms (+0.4%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 40.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.2 ms, batch 33.0 ms (+9.2%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | ...and is written and read back in no more than SIDECAR_MS (500 ms) each       FAIL   [main 288 ms, batch 299 ms (+3.8%), budget 500 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 9.47 ms, batch 4.86 ms (-48.6%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 27.9 ms, batch 19.8 ms (-28.8%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
 ScaleCheck | exit 1
 ScaleCheck | ...and it builds: more homes at the end than at the start                            FAIL
 ScaleCheck | 2 FAILED
-WellCheck | exit 3
-WellCheck | a month on, the two at 263 months are retired by the month's retirements, oldest first: the two younger stand FAIL  2 retired; [Vintage[month=-249, count=1, kind=LAND], Vintage[month=-87, count=2, kind=LAND]]
-WellCheck | the sector's one-well-a-month rule drills the freed sites again, one at a time                       FAIL  [3, 3, 3, 3, 3, 3, 3, 3] wells committed by month
-WellCheck | ...each new well a vintage of its own month, lifting its whole nameplate when it opened              FAIL  [Vintage[month=-87, count=2, kind=LAND], Vintage[month=21, count=1, kind=LAND]]
-WellCheck | 3 FAILED
