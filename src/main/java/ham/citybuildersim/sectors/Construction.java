@@ -678,7 +678,7 @@ public final class Construction extends Sector {
 
         if (best == null) {
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.no(sector, String.format(
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, String.format(
                         "%s months of work queued, but %s",
                         backlogMonths == Double.MAX_VALUE ? "endless" : String.format("%.1f", backlogMonths),
                         staffingHold.why(staffingHoldName)));

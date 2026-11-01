@@ -1621,6 +1621,16 @@ public class ForeignCheck {
          * premise to 1.0533. Held, the weaker city imports the programme and nothing that grows with its own size.
          */
         g.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
+        /*
+         * ...AND HEAVY INDUSTRY (LD1, 2026-10-31), the same hinge a fourth time, found where the premise read 0.9438 against a band
+         * of .05. A refused plant now prices its posts into the band's wage (WantedPosts), as far as the building can pay, and what
+         * a building can pay in local money is the currency's: at about month 72 the parity city's Blast Furnace asked 1,099 posts
+         * (the unskilled wage 1.52 for a month), passed the staffing gate and was built, and its materials landed as $16,332k of
+         * Heavy Industry imports; the weaker city's asked 111 posts, for a Mini Blast Furnace, and built nothing (none). The
+         * furnace is no part of the programme, it grows with a city's own size, and which furnace a city can staff is the rate's
+         * doing twice over. Held, both cities import the programme and the shops' and mills' lesser share, and the premise reads 0.9777.
+         */
+        g.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         g.buildStack(template(g, "House"), 500, false);
         g.buildStack(template(g, "Convenience Store"), 8, false);
         g.buildStack(template(g, "Small Grocery Store"), 3, false);

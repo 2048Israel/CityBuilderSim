@@ -1,4 +1,4 @@
-# BusinessInvestment.java - 1,325 lines · 69 methods · 12 constants · model
+# BusinessInvestment.java - 1,354 lines · 72 methods · 12 constants · model
 
 `ham/citybuildersim/BusinessInvestment.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
 
@@ -44,19 +44,19 @@
 > sector that is a factory does not. The bank's branch has its own planner
 > here because the bank is not a sector.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (33), [Sector](Sector.md) (12), [Good](Good.md) (7), [Game](Game.md) (5), [JobType](JobType.md) (4), [LandManager](LandManager.md) (3), [GoodsMarket](GoodsMarket.md) (3), [Formats](Formats.md) (3), [FamilyModel](FamilyModel.md) (3), [BuildingManager](BuildingManager.md) (2), [EconomyManager](EconomyManager.md) (2), [Bank](Bank.md) (2), [Mortgage](Mortgage.md) (1), [LandmassView](LandmassView.md) (1), [Markets](Markets.md) (1), [RealEstate](RealEstate.md) (1), [Sectors](Sectors.md) (1), [Oil](Oil.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (34), [Sector](Sector.md) (15), [Good](Good.md) (7), [Game](Game.md) (5), [JobType](JobType.md) (4), [LandManager](LandManager.md) (3), [GoodsMarket](GoodsMarket.md) (3), [Formats](Formats.md) (3), [FamilyModel](FamilyModel.md) (3), [BuildingManager](BuildingManager.md) (2), [EconomyManager](EconomyManager.md) (2), [Bank](Bank.md) (2), [Mortgage](Mortgage.md) (1), [LandmassView](LandmassView.md) (1), [Markets](Markets.md) (1), [RealEstate](RealEstate.md) (1), [Sectors](Sectors.md) (1), [Oil](Oil.md) (1)
 
-**Used by (69):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [ConstructionScreen](ConstructionScreen.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Forestry](Forestry.md), [ForestryCheck](ForestryCheck.md), [FoundingYardCheck](FoundingYardCheck.md), [Freight](Freight.md), [Game](Game.md), [HaulageCheck](HaulageCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [InvestCheck](InvestCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [MortgageCheck](MortgageCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OrderSearchCheck](OrderSearchCheck.md), [PolicyCheck](PolicyCheck.md), [PortCheck](PortCheck.md), [ProcessingSector](ProcessingSector.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [RunWorksCheck](RunWorksCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [SpreadPlanner](SpreadPlanner.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (70):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [ConstructionScreen](ConstructionScreen.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Forestry](Forestry.md), [ForestryCheck](ForestryCheck.md), [FoundingYardCheck](FoundingYardCheck.md), [Freight](Freight.md), [Game](Game.md), [HaulageCheck](HaulageCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [InvestCheck](InvestCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [MortgageCheck](MortgageCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OrderSearchCheck](OrderSearchCheck.md), [PolicyCheck](PolicyCheck.md), [PortCheck](PortCheck.md), [ProcessingSector](ProcessingSector.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [RunWorksCheck](RunWorksCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [SpreadPlanner](SpreadPlanner.md), [WantedPostsCheck](WantedPostsCheck.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 66 | SECTORS A FIXTURE HAS ASKED TO SIT OUT (2026-09-13) |
-| 484 | RETIREMENT |
-| 714 | THE MAKER'S RULE - the default Sector.plan() |
-| 1035 | THE BANK'S BRANCH - not a sector, so its planner lives here |
-| 1091 | THE BRAKE |
+| 503 | RETIREMENT |
+| 733 | THE MAKER'S RULE - the default Sector.plan() |
+| 1054 | THE BANK'S BRANCH - not a sector, so its planner lives here |
+| 1110 | THE BRAKE |
 
 ## Constants
 
@@ -69,11 +69,11 @@
 | 64 | `BusinessInvestment.MAX_CONCURRENT_ORDERS` | `1` | Never start a second order for a sector while one is still on site - every sector but the landlords, who hold work by the month (0.7.17; withinMonthsOfWork()); the refiners count no crude unit on site against it since... |
 | 113 | `BusinessInvestment.MAX_ORDER_MONTHS` | `12` | The largest order a sector will place, in months of the builders' work. |
 | 116 | `BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING` | `9` | Months of construction backlog above which the builders build themselves more capacity. |
-| 498 | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | `6` | Consecutive loss-making months before a sector starts selling capacity. |
-| 501 | `BusinessInvestment.RETIREMENT_SLACK` | `.25` | Capacity has to exceed demand by this much before any of it is spare. |
-| 504 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
-| 515 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
-| 1146 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
+| 517 | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | `6` | Consecutive loss-making months before a sector starts selling capacity. |
+| 520 | `BusinessInvestment.RETIREMENT_SLACK` | `.25` | Capacity has to exceed demand by this much before any of it is spare. |
+| 523 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
+| 534 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
+| 1175 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
 
 ## Fields (state)
 
@@ -95,22 +95,23 @@
 | 206 | `public final String reason` |  |
 | 207 | `public final boolean build` |  |
 | 213 | `public final boolean landBlocked` | True when the ONLY thing stopping this was nowhere to put it - the one refusal the player can personally clear, by annexing. |
-| 390 | `private OrderWatch orderWatch` |  |
-| 470 | `private double unlinkedFree` | THE GROUND ACROSS THE WATER (ET5, 2026-10-25). |
-| 471 | `private String unlinkedNames` |  |
-| 1149 | `private double expectedInflation` | Expected inflation, a fraction a year, as Game last handed it; 0 for the nominal test. |
-| 1160 | `private FamilyModel families` | The household mix, so a residential building can be priced on who would actually live in it. |
-| 1165 | `private Bank bank` | The bank, so the advisor can see when credit has got dear. |
-| 1253 | `private java.util.function.ToDoubleBiFunction<BuildingsTemplate, Integer> runWorksCost` | What the cuts, viaducts and tunnels of an order of a run would cost the builders' customer before the builders' tax (ET4; Game.runWorksCost(), wired by Game): the Freight sector's investor sees what a rail line costs ... |
-| 1288 | `private DeepWaterPrice deepWaterPrice` |  |
+| 221 | `public final Sector.Staffing heldForStaff` | The staffing test that refused this, when it was a hold for want of workers (Sector.Staffing), with the building and the sector it was asked of; null for every other decision. |
+| 409 | `private OrderWatch orderWatch` |  |
+| 489 | `private double unlinkedFree` | THE GROUND ACROSS THE WATER (ET5, 2026-10-25). |
+| 490 | `private String unlinkedNames` |  |
+| 1178 | `private double expectedInflation` | Expected inflation, a fraction a year, as Game last handed it; 0 for the nominal test. |
+| 1189 | `private FamilyModel families` | The household mix, so a residential building can be priced on who would actually live in it. |
+| 1194 | `private Bank bank` | The bank, so the advisor can see when credit has got dear. |
+| 1282 | `private java.util.function.ToDoubleBiFunction<BuildingsTemplate, Integer> runWorksCost` | What the cuts, viaducts and tunnels of an order of a run would cost the builders' customer before the builders' tax (ET4; Game.runWorksCost(), wired by Game): the Freight sector's investor sees what a rail line costs ... |
+| 1317 | `private DeepWaterPrice deepWaterPrice` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 1277 | **type** `public class BusinessInvestment` | Capacity planning for the private sector. |
+| 49 | 1306 | **type** `public class BusinessInvestment` | Capacity planning for the private sector. |
 
-### SECTORS A FIXTURE HAS ASKED TO SIT OUT (2026-09-13) (lines 66-483)
+### SECTORS A FIXTURE HAS ASKED TO SIT OUT (2026-09-13) (lines 66-502)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -124,86 +125,89 @@
 | 181 | 3 | `public void setZoneLand(java.util.Map<String, double[]> zones)` | Each zoned sector's {held square feet, price share} (LandManager.zoneLand()); empty or null for none. |
 | 186 | 4 | `public double zoneHeldFor(String sector)` | What a sector's zone holds for it, square feet; 0 with none. |
 | 192 | 7 | `private double zonedForOthers(String sector)` | ...and what the other sectors' zones hold: ground this one cannot have. |
-| 201 | 38 | **type** `public static class Decision` | What the engine decided, and why - surfaced on the sector screens. |
-| 215 | 4 | `public Decision(String sector, BuildingsTemplate template, int quantity, String reason, boolean build)` _(in BusinessInvestment.Decision)_ |  |
-| 220 | 9 | `public Decision(String sector, BuildingsTemplate template, int quantity, String reason, boolean build, boolean landBlocked)` _(in BusinessInvestment.Decision)_ |  |
-| 230 | 3 | `public static Decision no(String sector, String reason)` _(in BusinessInvestment.Decision)_ |  |
-| 235 | 3 | `public static Decision noLand(String sector, String reason)` _(in BusinessInvestment.Decision)_ | Wanted to build, had nowhere to put it. |
-| 240 | 4 | `public BusinessInvestment(BuildingManager buildingManager, EconomyManager economyManager)` |  |
-| 246 | 6 | `public void recordMonth(long population)` | Call once a month, before the sectors are asked what they want to build. |
-| 258 | 6 | `public double getPopulationGrowth()` | Average monthly population change over the window. |
-| 274 | 4 | `public double reachablePopulation()` | The most people this city could physically hold once everything on site is finished. |
-| 295 | 4 | `public double leadTime(BuildingsTemplate template, int quantity, double siteOutput)` | Months before an order of this building would actually open: the wait it would have at this month's shares of the site output (BuildingManager.waitFor() - everything on site plus the order, by the crew each can use, u... |
-| 314 | 30 | `public int orderSize(double shortfall, double capacityPerUnit, BuildingsTemplate template, double siteOutput)` | How many of a building to order: enough to close the gap, but no more than would open inside MAX_ORDER_MONTHS at the wait leadTime() reads (0.7.17: it was twelve months of the builders' whole output, as though the ord... |
-| 380 | 9 | **type** `public interface OrderWatch` | HARNESSES ONLY (0.7.54): told every order the three searches decide - orderSize() here, and Game.consider() and Mortgage.decide() through Game.watchOrders() - with what each was asked, so a harness can ask the countdo... |
-| 382 | 1 | `default void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead)` _(in BusinessInvestment.OrderWatch)_ | orderSize(): what it needed, at what site output, the order inside MAX_ORDER_MONTHS (0 for none), and the waits it read. |
-| 384 | 1 | `default void invested(Decision decision, double cash, double perUnitProfit, Game.Afford found)` _(in BusinessInvestment.OrderWatch)_ | Game.consider(): the order, the till it was judged on, one building's profit, and what was found. |
-| 386 | 2 | `default void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualR...` _(in BusinessInvestment.OrderWatch)_ | Game.considerOnMortgage(): what Mortgage.decide() was asked, and its answer. |
-| 393 | 1 | `public void watchOrders(OrderWatch watch)` | Harnesses only: see OrderWatch; Game.watchOrders() sets it. |
-| 428 | 7 | `public int withinMonthsOfWork(String sector, BuildingsTemplate t, int wanted, double siteOutput)` | The largest order of up to {@code wanted} buildings a sector may add to its sites and still owe no more than MAX_ORDER_MONTHS of the builders' site output, the order counted; 0 when not even one fits. |
-| 440 | 4 | `public double monthsOfWorkOnSite(String sector, double siteOutput)` | Months of the builders' site output a sector's sites owe (0.7.17): the points owed over the output. |
-| 446 | 7 | `public int plotsAvailableFor(BuildingsTemplate template)` | How many of these the city currently has room for. |
-| 455 | 8 | `public String landReason(BuildingsTemplate template)` | Why a sector could not build, when land is what stopped it - with the numbers, because the player can fix this one: "no land - needs 743 m\u00b2, 301 m\u00b2 free" (in square feet until 0.7.68; LandManager.areaWords()... |
-| 474 | 4 | `public void setUnlinkedLand(double sqFt, String names)` | The unbuilt dry ground the city owns on landmasses it has not linked, square feet, and their names for a sentence (LandManager.getUnlinkedFreeSqFt(), getUnlinkedNames()); 0 and empty for none. |
-| 480 | 3 | `public static String zonedForOthersWords(double sqFt)` | What the other sectors' zones hold, as a land refusal names it (0.7.107's words, shared since 0.7.109 with the build card's own land gate and the "Could not build" word): "55.9 km² is zoned for others". |
+| 201 | 57 | **type** `public static class Decision` | What the engine decided, and why - surfaced on the sector screens. |
+| 223 | 4 | `public Decision(String sector, BuildingsTemplate template, int quantity, String reason, boolean build)` _(in BusinessInvestment.Decision)_ |  |
+| 228 | 4 | `public Decision(String sector, BuildingsTemplate template, int quantity, String reason, boolean build, boolean landBlocked)` _(in BusinessInvestment.Decision)_ |  |
+| 233 | 10 | `private Decision(String sector, BuildingsTemplate template, int quantity, String reason, boolean build, boolean landBlocked, Se...` _(in BusinessInvestment.Decision)_ |  |
+| 244 | 3 | `public static Decision no(String sector, String reason)` _(in BusinessInvestment.Decision)_ |  |
+| 249 | 3 | `public static Decision unstaffed(String sector, Sector.Staffing held, String reason)` _(in BusinessInvestment.Decision)_ | Held back by the staffing test; the reason is the test's own words, and the test rides along (LD1). |
+| 254 | 3 | `public static Decision noLand(String sector, String reason)` _(in BusinessInvestment.Decision)_ | Wanted to build, had nowhere to put it. |
+| 259 | 4 | `public BusinessInvestment(BuildingManager buildingManager, EconomyManager economyManager)` |  |
+| 265 | 6 | `public void recordMonth(long population)` | Call once a month, before the sectors are asked what they want to build. |
+| 277 | 6 | `public double getPopulationGrowth()` | Average monthly population change over the window. |
+| 293 | 4 | `public double reachablePopulation()` | The most people this city could physically hold once everything on site is finished. |
+| 314 | 4 | `public double leadTime(BuildingsTemplate template, int quantity, double siteOutput)` | Months before an order of this building would actually open: the wait it would have at this month's shares of the site output (BuildingManager.waitFor() - everything on site plus the order, by the crew each can use, u... |
+| 333 | 30 | `public int orderSize(double shortfall, double capacityPerUnit, BuildingsTemplate template, double siteOutput)` | How many of a building to order: enough to close the gap, but no more than would open inside MAX_ORDER_MONTHS at the wait leadTime() reads (0.7.17: it was twelve months of the builders' whole output, as though the ord... |
+| 399 | 9 | **type** `public interface OrderWatch` | HARNESSES ONLY (0.7.54): told every order the three searches decide - orderSize() here, and Game.consider() and Mortgage.decide() through Game.watchOrders() - with what each was asked, so a harness can ask the countdo... |
+| 401 | 1 | `default void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead)` _(in BusinessInvestment.OrderWatch)_ | orderSize(): what it needed, at what site output, the order inside MAX_ORDER_MONTHS (0 for none), and the waits it read. |
+| 403 | 1 | `default void invested(Decision decision, double cash, double perUnitProfit, Game.Afford found)` _(in BusinessInvestment.OrderWatch)_ | Game.consider(): the order, the till it was judged on, one building's profit, and what was found. |
+| 405 | 2 | `default void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualR...` _(in BusinessInvestment.OrderWatch)_ | Game.considerOnMortgage(): what Mortgage.decide() was asked, and its answer. |
+| 412 | 1 | `public void watchOrders(OrderWatch watch)` | Harnesses only: see OrderWatch; Game.watchOrders() sets it. |
+| 447 | 7 | `public int withinMonthsOfWork(String sector, BuildingsTemplate t, int wanted, double siteOutput)` | The largest order of up to {@code wanted} buildings a sector may add to its sites and still owe no more than MAX_ORDER_MONTHS of the builders' site output, the order counted; 0 when not even one fits. |
+| 459 | 4 | `public double monthsOfWorkOnSite(String sector, double siteOutput)` | Months of the builders' site output a sector's sites owe (0.7.17): the points owed over the output. |
+| 465 | 7 | `public int plotsAvailableFor(BuildingsTemplate template)` | How many of these the city currently has room for. |
+| 474 | 8 | `public String landReason(BuildingsTemplate template)` | Why a sector could not build, when land is what stopped it - with the numbers, because the player can fix this one: "no land - needs 743 m\u00b2, 301 m\u00b2 free" (in square feet until 0.7.68; LandManager.areaWords()... |
+| 493 | 4 | `public void setUnlinkedLand(double sqFt, String names)` | The unbuilt dry ground the city owns on landmasses it has not linked, square feet, and their names for a sentence (LandManager.getUnlinkedFreeSqFt(), getUnlinkedNames()); 0 and empty for none. |
+| 499 | 3 | `public static String zonedForOthersWords(double sqFt)` | What the other sectors' zones hold, as a land refusal names it (0.7.107's words, shared since 0.7.109 with the build card's own land gate and the "Could not build" word): "55.9 km² is zoned for others". |
 
-### RETIREMENT (lines 484-713)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 518 | 7 | `public void recordSectorResult(String sector, double netIncome)` | Call once a month with each sector's net income. |
-| 538 | 3 | `public void noteOpened(String sector)` | A sector that has just opened something starts its count again. |
-| 549 | 3 | `public java.util.Map<String, Integer> getLossMonthsState()` | THE TWO HISTORIES, CARRIED. |
-| 553 | 4 | `public void restoreLossMonths(java.util.Map<String, Integer> saved)` |  |
-| 558 | 3 | `public java.util.List<Long> getPopulationHistory()` |  |
-| 562 | 6 | `public void restorePopulationHistory(java.util.List<Long> saved)` |  |
-| 569 | 3 | `public int getLossMonths(String sector)` |  |
-| 582 | 59 | `public Decision planRetirement(Sector sector, double demand, double capacity, int ordersInFlight)` | Whether a sector should sell capacity, and how much. |
-| 661 | 4 | `private static boolean makesWhatItSells(Sector sector, BuildingsTemplate template)` | WHAT A SECTOR IN DISTRESS MAY SELL IS ANYTHING IT MAKES WITH (0.7.12 round 7). |
-| 678 | 35 | `public Decision planDistressRetirement(Sector sector, double cash, int ordersInFlight)` | Whether a sector that cannot pay its way and cannot borrow should shed capacity anyway. |
-
-### THE MAKER'S RULE - the default Sector.plan() (lines 714-1034)
+### RETIREMENT (lines 503-732)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 722 | 171 | `public Decision planMaker(Sector sector, Game game)` |  |
-| 905 | 5 | `public double forecast(Sector sector, GoodsMarket market)` | The demand a maker plans against: the smaller of the trend and this month (high AND been high - see planMaker), and no more than the sector can see on its customers' books over the months the trend looks back (Good.pl... |
-| 919 | 5 | `public double growthFactor(double months)` | THE CITY'S FUTURE, READ ONE WAY (0.7.51): how much bigger demand will be in `months`, by the population trend over the window - never below today, and never past where the people could live (the cap above planMaker()'... |
-| 926 | 4 | `private double growthShare()` | The population trend as a share a month, for projecting a good's demand forward. |
-| 937 | 3 | `private static double knownCost(double raw)` | A break-even that a sector with nothing running cannot state. |
-| 960 | 3 | `public double estimatedMakerProfit(Sector sector, BuildingsTemplate t)` | What one of a maker's templates would clear a month: every good it makes, at the price it would actually get for it, less the inputs it uses at theirs, at the rate the sector's plants actually run, less what the build... |
-| 970 | 34 | `public double estimatedMakerProfit(Sector sector, BuildingsTemplate t, java.util.Map<Good, Double> made)` | ...with what the building makes given apart from its template (0.7.76): a crude unit's slate (sectors.Refining.madeBy()), whose template says only the crude it takes. |
-| 1012 | 22 | `public double standingCostOf(Sector sector, BuildingsTemplate t)` | What a building costs its owner just for standing: the repairs and the property tax, at today's prices and the sector's own rate. |
+| 537 | 7 | `public void recordSectorResult(String sector, double netIncome)` | Call once a month with each sector's net income. |
+| 557 | 3 | `public void noteOpened(String sector)` | A sector that has just opened something starts its count again. |
+| 568 | 3 | `public java.util.Map<String, Integer> getLossMonthsState()` | THE TWO HISTORIES, CARRIED. |
+| 572 | 4 | `public void restoreLossMonths(java.util.Map<String, Integer> saved)` |  |
+| 577 | 3 | `public java.util.List<Long> getPopulationHistory()` |  |
+| 581 | 6 | `public void restorePopulationHistory(java.util.List<Long> saved)` |  |
+| 588 | 3 | `public int getLossMonths(String sector)` |  |
+| 601 | 59 | `public Decision planRetirement(Sector sector, double demand, double capacity, int ordersInFlight)` | Whether a sector should sell capacity, and how much. |
+| 680 | 4 | `private static boolean makesWhatItSells(Sector sector, BuildingsTemplate template)` | WHAT A SECTOR IN DISTRESS MAY SELL IS ANYTHING IT MAKES WITH (0.7.12 round 7). |
+| 697 | 35 | `public Decision planDistressRetirement(Sector sector, double cash, int ordersInFlight)` | Whether a sector that cannot pay its way and cannot borrow should shed capacity anyway. |
 
-### THE BANK'S BRANCH - not a sector, so its planner lives here (lines 1035-1090)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1059 | 31 | `public Decision planBank()` | Whether to open another bank branch. |
-
-### THE BRAKE (lines 1091-1325)
+### THE MAKER'S RULE - the default Sector.plan() (lines 733-1053)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1110 | 8 | `public boolean servicesItsOwnDebt(double estimatedMonthlyProfit, double amountBorrowed, double annualRate)` | Whether a project can carry the debt it needs: if the new capacity cannot out-earn the interest on the money that built it, by a margin, the business declines the project even though the lender would fund it. |
-| 1141 | 3 | `public double realTestRate(double annualRate)` | The rate a project is tested at: this one less the inflation its owners expect, never under REAL_HURDLE_FLOOR of it. |
-| 1152 | 3 | `public void setExpectedInflation(double expected)` | Told each month by Game (Expectations.getExpectedInflation() once the basket is based, 0 before). |
-| 1157 | 1 | `public double getExpectedInflation()` | What servicesItsOwnDebt() takes off the rate, a fraction a year. |
-| 1161 | 1 | `public void setFamilies(FamilyModel families)` |  |
-| 1162 | 1 | `public FamilyModel families()` |  |
-| 1166 | 1 | `public void setBank(Bank bank)` |  |
-| 1169 | 9 | `public double wageBillFor(BuildingsTemplate t)` | What one of these would cost to staff, at what the city pays today. |
-| 1186 | 13 | `public double estimatedMonthlyProfit(String sector, BuildingsTemplate t)` | Rough monthly profit a finished building would add - the screening number the interest test is struck on. |
-| 1205 | 3 | `public static double operatingRateOf(double rate)` | A sector's operating rate as a planning figure: what it is, unless the sector has nothing running yet, in which case a plant that does not exist runs at nameplate on paper. |
-| 1214 | 11 | `public double runningCostOf(BuildingsTemplate t)` | Wages, power and water for a building that does not exist yet, read off the template and the current schedule rather than off a sector's income statement, because the first mine in a city has no sector to read. |
-| 1237 | 10 | `private double totalCostOf(BuildingsTemplate t, int quantity, double deepFactor)` | Cash price of a building, matching what Game charges: the builders' price for the work - its labour at today's wages (0.7.19) - plus any materials that have to be bought beyond the city's yard, at the market price, wi... |
-| 1256 | 3 | `public void setRunWorksCost(java.util.function.ToDoubleBiFunction<BuildingsTemplate, Integer> price)` | Hands in the price of a run's works on the city's slopes (Game.runWorksCost()); null clears it. |
-| 1266 | 7 | `private double groundCostOf(BuildingsTemplate t, int quantity)` | The ground under an order, as Game.buildFor() charges it: the part its sector's zone holds at the zone's price, the rest at the going price (0.7.107, LandManager.priceFor(sqFt, sector)); with no zone, the going price. |
-| 1274 | 3 | `public double getCostOf(BuildingsTemplate t, int quantity)` |  |
-| 1284 | 3 | **type** `public interface DeepWaterPrice` | What the deep-water works of an order of `quantity` of a platform or its well cost the builders' customer before the builders' tax at `factor` times a jacket's price (DW1; Game.deepWater(), wired by Game): the quote's... |
-| 1285 | 1 | `double moneyBeforeTax(BuildingsTemplate t, int quantity, double factor)` _(in BusinessInvestment.DeepWaterPrice)_ |  |
-| 1291 | 3 | `public void setDeepWaterPrice(DeepWaterPrice price)` | Hands in the price of a floating platform's deep-water works (Game.deepWater()); null clears it. |
-| 1296 | 6 | `private double deepWaterFactorOf(BuildingsTemplate t)` | How many times a jacket's price the next unit of an order of this costs at sea (DW1; sectors.Oil.deepWaterFactor()): 1 for every template but an Offshore Platform and its well, and for those in a sea a jacket stands in. |
-| 1308 | 3 | `public double getCostOfAt(BuildingsTemplate t, int quantity, double deepFactor)` | getCostOf() with the deep-water works priced at `deepFactor` times a jacket's price rather than at the depth of the next unit (DW1): the Oil planner judges a platform and its wells together, on the field it would stan... |
-| 1319 | 6 | `public int yardCovers(BuildingsTemplate t)` | How many of this building the city's yard of construction materials covers before getCostOf() buys the rest at the market - where its cost turns steeper; Integer.MAX_VALUE for a building that needs none. |
+| 741 | 171 | `public Decision planMaker(Sector sector, Game game)` |  |
+| 924 | 5 | `public double forecast(Sector sector, GoodsMarket market)` | The demand a maker plans against: the smaller of the trend and this month (high AND been high - see planMaker), and no more than the sector can see on its customers' books over the months the trend looks back (Good.pl... |
+| 938 | 5 | `public double growthFactor(double months)` | THE CITY'S FUTURE, READ ONE WAY (0.7.51): how much bigger demand will be in `months`, by the population trend over the window - never below today, and never past where the people could live (the cap above planMaker()'... |
+| 945 | 4 | `private double growthShare()` | The population trend as a share a month, for projecting a good's demand forward. |
+| 956 | 3 | `private static double knownCost(double raw)` | A break-even that a sector with nothing running cannot state. |
+| 979 | 3 | `public double estimatedMakerProfit(Sector sector, BuildingsTemplate t)` | What one of a maker's templates would clear a month: every good it makes, at the price it would actually get for it, less the inputs it uses at theirs, at the rate the sector's plants actually run, less what the build... |
+| 989 | 34 | `public double estimatedMakerProfit(Sector sector, BuildingsTemplate t, java.util.Map<Good, Double> made)` | ...with what the building makes given apart from its template (0.7.76): a crude unit's slate (sectors.Refining.madeBy()), whose template says only the crude it takes. |
+| 1031 | 22 | `public double standingCostOf(Sector sector, BuildingsTemplate t)` | What a building costs its owner just for standing: the repairs and the property tax, at today's prices and the sector's own rate. |
+
+### THE BANK'S BRANCH - not a sector, so its planner lives here (lines 1054-1109)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1078 | 31 | `public Decision planBank()` | Whether to open another bank branch. |
+
+### THE BRAKE (lines 1110-1354)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1129 | 4 | `public boolean servicesItsOwnDebt(double estimatedMonthlyProfit, double amountBorrowed, double annualRate)` | Whether a project can carry the debt it needs: if the new capacity cannot out-earn the interest on the money that built it, by a margin, the business declines the project even though the lender would fund it. |
+| 1142 | 5 | `public double interestHurdle(double amountBorrowed, double annualRate)` | The monthly profit servicesItsOwnDebt() asks for on {@code amountBorrowed} at {@code annualRate}: the interest at the real rate, times PROFIT_OVER_INTEREST; minus infinity when nothing is borrowed (anything carries it). |
+| 1170 | 3 | `public double realTestRate(double annualRate)` | The rate a project is tested at: this one less the inflation its owners expect, never under REAL_HURDLE_FLOOR of it. |
+| 1181 | 3 | `public void setExpectedInflation(double expected)` | Told each month by Game (Expectations.getExpectedInflation() once the basket is based, 0 before). |
+| 1186 | 1 | `public double getExpectedInflation()` | What servicesItsOwnDebt() takes off the rate, a fraction a year. |
+| 1190 | 1 | `public void setFamilies(FamilyModel families)` |  |
+| 1191 | 1 | `public FamilyModel families()` |  |
+| 1195 | 1 | `public void setBank(Bank bank)` |  |
+| 1198 | 9 | `public double wageBillFor(BuildingsTemplate t)` | What one of these would cost to staff, at what the city pays today. |
+| 1215 | 13 | `public double estimatedMonthlyProfit(String sector, BuildingsTemplate t)` | Rough monthly profit a finished building would add - the screening number the interest test is struck on. |
+| 1234 | 3 | `public static double operatingRateOf(double rate)` | A sector's operating rate as a planning figure: what it is, unless the sector has nothing running yet, in which case a plant that does not exist runs at nameplate on paper. |
+| 1243 | 11 | `public double runningCostOf(BuildingsTemplate t)` | Wages, power and water for a building that does not exist yet, read off the template and the current schedule rather than off a sector's income statement, because the first mine in a city has no sector to read. |
+| 1266 | 10 | `private double totalCostOf(BuildingsTemplate t, int quantity, double deepFactor)` | Cash price of a building, matching what Game charges: the builders' price for the work - its labour at today's wages (0.7.19) - plus any materials that have to be bought beyond the city's yard, at the market price, wi... |
+| 1285 | 3 | `public void setRunWorksCost(java.util.function.ToDoubleBiFunction<BuildingsTemplate, Integer> price)` | Hands in the price of a run's works on the city's slopes (Game.runWorksCost()); null clears it. |
+| 1295 | 7 | `private double groundCostOf(BuildingsTemplate t, int quantity)` | The ground under an order, as Game.buildFor() charges it: the part its sector's zone holds at the zone's price, the rest at the going price (0.7.107, LandManager.priceFor(sqFt, sector)); with no zone, the going price. |
+| 1303 | 3 | `public double getCostOf(BuildingsTemplate t, int quantity)` |  |
+| 1313 | 3 | **type** `public interface DeepWaterPrice` | What the deep-water works of an order of `quantity` of a platform or its well cost the builders' customer before the builders' tax at `factor` times a jacket's price (DW1; Game.deepWater(), wired by Game): the quote's... |
+| 1314 | 1 | `double moneyBeforeTax(BuildingsTemplate t, int quantity, double factor)` _(in BusinessInvestment.DeepWaterPrice)_ |  |
+| 1320 | 3 | `public void setDeepWaterPrice(DeepWaterPrice price)` | Hands in the price of a floating platform's deep-water works (Game.deepWater()); null clears it. |
+| 1325 | 6 | `private double deepWaterFactorOf(BuildingsTemplate t)` | How many times a jacket's price the next unit of an order of this costs at sea (DW1; sectors.Oil.deepWaterFactor()): 1 for every template but an Offshore Platform and its well, and for those in a sea a jacket stands in. |
+| 1337 | 3 | `public double getCostOfAt(BuildingsTemplate t, int quantity, double deepFactor)` | getCostOf() with the deep-water works priced at `deepFactor` times a jacket's price rather than at the depth of the next unit (DW1): the Oil planner judges a platform and its wells together, on the field it would stan... |
+| 1348 | 6 | `public int yardCovers(BuildingsTemplate t)` | How many of this building the city's yard of construction materials covers before getCostOf() buys the rest at the market - where its cost turns steeper; Integer.MAX_VALUE for a building that needs none. |
 

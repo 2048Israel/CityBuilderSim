@@ -1,0 +1,72 @@
+# WantedPosts.java - 164 lines · 17 methods · 1 constants · model
+
+`ham/citybuildersim/WantedPosts.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+
+> The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of
+> them the labour market prices as if they were offered (LD1).
+> 
+> WHY. Jerus, 2026-10-31: "my city was stuck... i had available mines but the mining industry wasnt building cause it
+> wouldnt have enough workers... and new people didnt want to come cause the wage was trash, perhaps a fix would be
+> that if the reason is not enough workers and the business can... then it raises its wage?" The loop was closed on
+> both sides. A building is ordered only if MIN_STAFFABLE_TO_ORDER of its posts can be filled from spare workers
+> (Sector.staffing()), and a wage rises only on posts that exist (LabourMarket.advanceMonth(): posts over supply per
+> band). A refused building posts no jobs, so the band it was short in never saw it: in the playtest's own founding
+> (AUTO2 seed 0, main 0.8.89) a Machine Works waited 255 months for the 34 college and 4 university workers of its
+> 173 posts while the college wage sat at 1.05-1.08x, and migrants, who come for a band's premium
+> (Migration.reach()), had little reason to.
+> 
+> THE RULE. A planner whose building the gate refused hands the refusal in with its test (Decision.heldForStaff);
+> Game.noteStaffingHold() sorts it: held for the builders' laid-off crews (IC1's trap, not a shortage a wage
+> answers), held though it would not carry its interest (no wage rise would make it worth building), or an Ask for the
+> posts of the bands it is short in, with how far the wage of those posts could rise and the building still carry its
+> interest. settle() then turns the month's asks into a latent post count per band, which Game.repriceLabour() adds
+> to the band's posts for the wage alone: the multiple is priced as if the refused posts were offered, at the
+> market's own pace (ADJUST_RATE) and cap (MAX_MULTIPLE), and the gate's own test and Migration's opportunity still
+> read only the posts that exist.
+> 
+> It decays by being rebuilt: settle() replaces the latent posts every month from that month's asks, so a building
+> the gate lets through, or a sector that stops asking, bids nothing the month after and the wage walks back.
+
+**Uses:** [WageBand](WageBand.md) (2), [LabourMarket](LabourMarket.md) (2)
+
+**Used by (3):** [Game](Game.md), [PeopleScreen](PeopleScreen.md), [WantedPostsCheck](WantedPostsCheck.md)
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 46 | `WantedPosts.MOST_OF_POSTS` | `1.0` | The most a band's refused posts may count as, as a share of the posts it has that exist. |
+
+## Fields (state)
+
+| line | field | says |
+|---:|---|---|
+| 78 | `private final List<Ask> asks` |  |
+| 79 | `private int crewsHolds, unpaidHolds` |  |
+| 80 | `private final double[] latent` |  |
+
+## Methods, in file order
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 34 | 131 | **type** `public final class WantedPosts` | The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of them the labour market prices as if they were offered (LD1). |
+| 53 | 5 | **type** `public record Ask(String sector, String building, double[] posts, double payFactor)` | One refused building's ask: its sector and building, the posts it lacks workers for per band (only in the bands it is short in), and how far the wage of those posts could rise, as a factor on today's, and the building... |
+| 54 | 3 | `{ ... }` _(in WantedPosts.Ask)_ |  |
+| 66 | 11 | `public static Ask askOf(String sector, String building, double[] wanted, double[] spare, double margin, double shortBill)` | The ask a refused building makes, or null when it would not carry its interest even at today's wage ({@code margin} is what it earns over the interest hurdle). |
+| 83 | 5 | `public void beginMonth()` | The month's start: last month's asks and counts cleared (the latent posts stay until settle() replaces them). |
+| 90 | 1 | `public void heldForCrews()` | A hold the gate put on for the builders' laid-off crews: IC1's, no shortage the wage answers. |
+| 93 | 1 | `public void heldUnpaid()` | A hold for want of workers on a building that would not carry its interest at today's wage: no ask. |
+| 96 | 3 | `public void ask(Ask a)` | A hold for want of workers on a building that would pay: it asks for its posts. |
+| 101 | 1 | `public int getHolds()` | Every staffing hold this month, whatever came of it. |
+| 103 | 1 | `public int getCrewsHolds()` |  |
+| 105 | 1 | `public int getUnpaidHolds()` |  |
+| 108 | 1 | `public int getAsked()` | The holds that asked. |
+| 111 | 1 | `public List<Ask> asks()` | This month's asks. |
+| 123 | 17 | `public void settle(double[] posts, double[] supply, double[] premium)` | Turns the month's asks into the posts per band the wage is priced on, replacing last month's. |
+| 142 | 1 | `public double[] latent()` | The posts per band the wage is priced on beyond those that exist (a copy). |
+| 144 | 1 | `public double getLatent(WageBand band)` |  |
+| 146 | 5 | `public double getTotal()` |  |
+| 153 | 1 | `public boolean any()` | Whether any band is priced on refused posts. |
+| 156 | 1 | `public double[] state()` | The latent posts as saved: they are priced next month, and cannot be rebuilt from the state this month ends in. |
+| 159 | 5 | `public void restore(double[] saved)` | Puts the saved latent posts back; null or a wrong length leaves none. |
+
