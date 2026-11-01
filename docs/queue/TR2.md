@@ -51,3 +51,25 @@ logged screens in order; a re-enacted Save, Load or Quit writes and closes
 nothing (TR1's section 4 holds the model's half); joining mid-month lands on
 the same screen as playing from the month's start. Eye checks for Jerus: the
 ghost follows and re-enacts a decision on the Policy screen.
+
+## TR1's review, left for this batch
+
+TR1's stranger's review (2026-11-01) passed it with four follow-ups, none of
+them able to touch a save slot or a city that does not record:
+
+1. **The input log after a failed write:** `InputLog.Writer.add()` keeps
+   queueing once a write has failed (line 397 sets `finished` but `add()`
+   does not read it), and the failing path leaves `out` open. Check
+   `finished` in `add()`; close `out` in a `finally`.
+2. **A recording id read from a save:** `Game.recordingDirectory()` (line
+   15735) resolves the saved `recordingId` under `recordings/` as it stands.
+   Accept only the shape the recorder writes, so a hand-edited save cannot
+   point the recorder outside that folder.
+3. **The first write after a load:** a recording loaded and played on whose
+   first month's write fails goes on with the old timeline's later months
+   still on disk; make that write's failure end the recording (or drop the
+   later months first), so one recording never holds two timelines.
+4. **Autosave months:** a recorded city snapshots twice in a month that also
+   autosaves; take the month's snapshot once and hand it to both.
+
+ReplayCheck gains one assertion for each of 1-3.
