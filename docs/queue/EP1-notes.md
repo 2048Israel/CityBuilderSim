@@ -372,3 +372,13 @@ loads it), month by month in a child at the factor and one at today's prices.
   `roundSig`, `PartnerTrade.HISTORY_ROUND`): `PartnerTrade` was found because
   `Game.cityExportPriceLevel()` reads it; whether another reader sits behind a
   display rounding is not known beyond what the twin's four cities reach.
+
+## 10. The ensemble, rerun at the gate
+
+The 80 runs were made again on fbf4d323's classes (after the cent, the trade
+history's rounding and the fourth city), 3 at once, 12 minutes, against
+0.8.91: **21/26** again. HIGH's 720-month city passes now (it failed before the
+mend) and ZERO_SLACK's final population fails (162,106 against 75% of
+236,141); SHOCK's is 16,811 against 26,598. 40,000 people at m1,276
+[872-2,012] at the median, 16/16 seeds (m1,148 before the mend, m1,033 on
+0.8.91). `docs/ensemble/EP1.md` is the rerun's.
