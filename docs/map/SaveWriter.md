@@ -1,6 +1,6 @@
 # SaveWriter.java - 269 lines · 19 methods · 3 constants · model
 
-`ham/citybuildersim/SaveWriter.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveWriter.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The one thread saves are written on, for the whole JVM: it takes a
 > finished snapshot of a city and turns it into the save, the map and the

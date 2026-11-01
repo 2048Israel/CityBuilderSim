@@ -1,6 +1,6 @@
 # WorldEconomy.java - 521 lines · 27 methods · 11 constants · model
 
-`ham/citybuildersim/WorldEconomy.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldEconomy.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The rest of the world, which has its own inflation and did not use to: the in-game US dollar's price level, which is the US's own path where the
 > city has the nations' moneys (WN4, D29; THE US DOLLAR ON THE US'S PATH below) and a seeded walk around a mean where it has no world file.

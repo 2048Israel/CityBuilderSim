@@ -1,6 +1,6 @@
 # HistorySave.java - 1,931 lines · 65 methods · 4 constants · model
 
-`ham/citybuildersim/HistorySave.java` - generated 2026-10-31 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistorySave.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > Every month the city has ever lived, one number at a time.
 > 
