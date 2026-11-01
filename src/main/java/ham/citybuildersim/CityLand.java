@@ -678,13 +678,30 @@ public final class CityLand {
      * Forest's timber is the caller's, from the ground's area.
      */
     void fieldsOn(long x0, long y0, long x1, long y1, int[] sites, double[] amounts) {
+        fieldsOn(x0, y0, x1, y1, EVERY_PLOT, sites, amounts);
+    }
+
+    /** A test of one plot, by its plot coordinates: fieldsOn()'s filter, for the fields whose centre or site plot is one the test passes. */
+    @FunctionalInterface
+    interface PlotTest {
+        boolean passes(long x, long y);
+    }
+
+    /** The test that passes every plot: fieldsOn(...) without a filter is this one (WN5: LandSellers asks for one seller's fields at a time). */
+    private static final PlotTest EVERY_PLOT = (x, y) -> true;
+
+    /**
+     * ...of the fields whose centre plot passes `keep` (a whole field), and the part field's sites whose plot passes it - fieldsOn()'s own arithmetic
+     * with a filter (WN5: the land office splits an offer's fields by the nation that sells the ground they stand on, LandSellers.split()).
+     */
+    void fieldsOn(long x0, long y0, long x1, long y1, PlotTest keep, int[] sites, double[] amounts) {
         World world = World.of(key);
         for (Resource r : Resource.values()) {
             if (!r.inFields()) continue;
             for (int cell : cellsUnder(x0, y0, x1 - 1, y1 - 1)) {
                 for (Deposit d : fields(world, cell, r)) {
                     if (d.x() < x0 || d.x() >= x1 || d.y() < y0 || d.y() >= y1) continue;
-                    if (isPart(d) || grid.owner(d.x(), d.y()) >= 0) continue;
+                    if (isPart(d) || grid.owner(d.x(), d.y()) >= 0 || !keep.passes(d.x(), d.y())) continue;
                     sites[r.ordinal()] += d.sites();
                     amounts[r.ordinal()] += d.amount();
                 }
@@ -698,7 +715,7 @@ public final class CityLand {
             for (int k = 0; k < d.sites(); k++) {
                 if (mine[k]) continue;
                 long[] at = GridConversion.sitePlot(d, k);
-                if (at[0] < x0 || at[0] >= x1 || at[1] < y0 || at[1] >= y1 || grid.owner(at[0], at[1]) >= 0) continue;
+                if (at[0] < x0 || at[0] >= x1 || at[1] < y0 || at[1] >= y1 || grid.owner(at[0], at[1]) >= 0 || !keep.passes(at[0], at[1])) continue;
                 sites[p.kind().ordinal()]++;
                 amounts[p.kind().ordinal()] += d.siteAmount(k);
             }
@@ -1002,7 +1019,7 @@ public final class CityLand {
      * How wide a count of plots is (ET1): World.CLASSES plots by class, then RELIEF_AREAS more - the dry plots by
      * relief (World.dry() classes, FLAT to VERY_STEEP) and the shallow sea's (SHALLOW), counted in the same pass.
      */
-    private static final int WIDE = World.CLASSES + RELIEF_AREAS;
+    static final int WIDE = World.CLASSES + RELIEF_AREAS;
 
     /**
      * Counts one plot: its class into `cls`, then - on dry ground - its relief into relief[from + relief], or - on
@@ -1059,7 +1076,7 @@ public final class CityLand {
     }
 
     /** ...and the same count with the dry ground's relief and the shallow sea after the classes (WIDE of them, ET1). */
-    private long[] unownedCounts(long x0, long y0, long x1, long y1) {
+    long[] unownedCounts(long x0, long y0, long x1, long y1) {
         long[] cls = new long[WIDE];
         x0 = Math.max(0, x0);
         y0 = Math.max(0, y0);

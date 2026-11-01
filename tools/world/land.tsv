@@ -1,0 +1,52 @@
+# The published farmland prices the nations' land factors start from (batch WN5, 2026-11-01; spec-nations 6.3).
+# ham.citybuildersim.tools.LandTable reads this file, the world file and the rankings' world-2025.json, fits the
+# nations that publish none, and writes src/main/resources/world/land-2024.json: every nation's land a hectare in
+# US dollars of 2024. Every source below allows use in a game that is sold (docs/studies/licences.md).
+#
+# Rows:   iso3  figure  money  per  year  source      a published price, in the money a hectare or an acre
+#         #rate  money  figure  direction  year  source    a year's average exchange rate to the US dollar
+#         #area  iso3  km2  source                    a nation's land area where the rankings carry no density
+#         #source  id  name  url  licence  downloaded
+#
+# What each figure is:
+# - eurostat: arable land, euro a hectare, 2024 (Malta's last figure is 2023), apri_lprc, every EU member that
+#   reports one (Belgium, Germany, Italy and Cyprus do not).
+# - usda: cropland, the US average value an acre, 2024 (Land Values 2026 Summary, its 2024 column).
+# - statcan: farm land and buildings, Canada's value an acre at July 1, 2024 (table 32-10-0047-01; Canada publishes
+#   no national figure for land alone, and the study took this one, 6.3). The reference: its factor is 1 (D21).
+#
+#source	eurostat	Eurostat, Agricultural land prices by region (apri_lprc), updated 2026-07-10	https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/apri_lprc?format=JSON&lang=EN	the Commission's reuse policy (CC BY 4.0); credit Eurostat and say it was changed	2026-11-01
+#source	usda	USDA NASS, Land Values 2026 Summary (July 2026)	https://esmis.nal.usda.gov/sites/default/release-files/795999/land0726.txt	US government work, public domain	2026-11-01
+#source	statcan	Statistics Canada, Table 32-10-0047-01, Value per acre of farm land and buildings at July 1	https://www150.statcan.gc.ca/n1/tbl/csv/32100047-eng.zip	Statistics Canada Open Licence	2026-11-01
+#source	fed	Federal Reserve, G.5A Foreign Exchange Rates (annual), January 5, 2026	https://www.federalreserve.gov/releases/g5a/current/default.htm	US government work, public domain	2026-11-01
+#source	fact	Taiwan's land area, a fact	-	a fact is nobody's (licences.md, The rule)	2026-11-01
+#
+#rate	EUR	1.0820	usd-per-unit	2024	fed
+#rate	CAD	1.3699	units-per-usd	2024	fed
+#area	TWN	36197	fact
+#
+AUT	37600	EUR	ha	2024	eurostat
+BGR	8679	EUR	ha	2024	eurostat
+CZE	14835	EUR	ha	2024	eurostat
+DNK	22468	EUR	ha	2024	eurostat
+EST	7033	EUR	ha	2024	eurostat
+ESP	12778	EUR	ha	2024	eurostat
+FIN	8670	EUR	ha	2024	eurostat
+FRA	6400	EUR	ha	2024	eurostat
+GRC	14312	EUR	ha	2024	eurostat
+HRV	5965	EUR	ha	2024	eurostat
+HUN	6041	EUR	ha	2024	eurostat
+IRL	50375	EUR	ha	2024	eurostat
+LTU	5590	EUR	ha	2024	eurostat
+LUX	48180	EUR	ha	2024	eurostat
+LVA	4825	EUR	ha	2024	eurostat
+MLT	268649	EUR	ha	2023	eurostat
+NLD	96608	EUR	ha	2024	eurostat
+POL	16118	EUR	ha	2024	eurostat
+PRT	76556	EUR	ha	2024	eurostat
+ROU	8700	EUR	ha	2024	eurostat
+SVK	5823	EUR	ha	2024	eurostat
+SVN	28348	EUR	ha	2024	eurostat
+SWE	10706	EUR	ha	2024	eurostat
+USA	5570	USD	acre	2024	usda
+CAN	5302	CAD	acre	2024	statcan
