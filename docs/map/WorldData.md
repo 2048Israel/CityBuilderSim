@@ -52,7 +52,7 @@
 
 **Uses:** [Freight](Freight.md) (10), [EarthData](EarthData.md) (8), [Money](Money.md) (5), [PriceLevel](PriceLevel.md) (2), [CityCalendar](CityCalendar.md) (1)
 
-**Used by (21):** [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [Nations](Nations.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [PriceLevelCheck](PriceLevelCheck.md), [RankingsCheck](RankingsCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMeasuresCheck](WorldMeasuresCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md)
+**Used by (22):** [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [Nations](Nations.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [RankingsCheck](RankingsCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMeasuresCheck](WorldMeasuresCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 

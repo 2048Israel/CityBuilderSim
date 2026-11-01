@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.96 — WN7, ships and trains to their partners — 2026-11-01, ready, see docs/queue/WN7-notes.md
+The nations line's last batch: with it WN0-WN7 are whole (the world file, the nations and their paths, the map, the
+market, the moneys, land from its nation, the screens, and this). Each boat and train now carries its partner, drawn
+from the month's tonnes of its cargo to each nation (PartnerTrade keeps them by kind; CallPartners draws), and a boat
+leaves its offing on the open exit nearest its partner's bearing: SeaRoutes gives every offing an exit per 5-degree
+bearing, the open sea on it. Trains go only to the host and nations within 2,500 km by land, on the one world line.
+Each lane forks at its offing toward the exits a twentieth of its kind's tonnes take (at most 8 a kind; 1-7 from the
+13 ports measured), and a boat or a train under the pointer names itself and its partner ("Capesize · from Brazil").
+Nothing in the model reads any of it: the playtest's eight trace files are main's to the byte, so no ensemble.
+PartnerCallsCheck (new, 9 sections); a frame's boats at 10B 0.249 ms with partners, 0.227 without (budget 0.5).
+
 ### 0.8.95 — EP1, the game starts in 1900 — 2026-11-01, ready, see docs/queue/EP1-notes.md
 Jerus, 2026-10-30: "1900 start date with todays tech", at "1900 price level". Month 1 is January 1900, and today's real
 economy is priced at 1900's level: every nominal anchor is today's figure times the US CPI's 1900 over its 2025

@@ -6115,10 +6115,11 @@ public class MapCheck {
 
     /* ----- SL1 (2026-10-28): the terminals share a lane, found once, drawn once ----- */
 
-    /** Whether two routes are the same, point for point (their berth, offing, pivot and spread too). */
+    /** Whether two routes are the same, point for point (their berth, offing, pivot, spread and exits too). */
     static boolean sameRoute(BoatSchedule.Route a, BoatSchedule.Route b) {
         return a.berth().equals(b.berth()) && a.x1() == b.x1() && a.y1() == b.y1() && Arrays.equals(a.xs(), b.xs()) && Arrays.equals(a.ys(), b.ys())
-                && Arrays.equals(a.along(), b.along()) && a.offing() == b.offing() && a.pivot() == b.pivot() && a.spread() == b.spread();
+                && Arrays.equals(a.along(), b.along()) && a.offing() == b.offing() && a.pivot() == b.pivot() && a.spread() == b.spread()
+                && Arrays.equals(a.exits(), b.exits());
     }
 
     /** Whether two lists of routes are the same, route by route. */

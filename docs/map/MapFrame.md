@@ -30,7 +30,7 @@
 
 **Uses:** [World](World.md) (15), [TileRaster](TileRaster.md) (2)
 
-**Used by (20):** [CameraPath](CameraPath.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [NationsMap](NationsMap.md), [RailDrawCheck](RailDrawCheck.md), [ReliefRenders](ReliefRenders.md), [ReplayCheck](ReplayCheck.md), [ShipShapes](ShipShapes.md), [TrainShapes](TrainShapes.md), [TruckCheck](TruckCheck.md), [TruckSchedule](TruckSchedule.md)
+**Used by (21):** [CameraPath](CameraPath.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReliefRenders](ReliefRenders.md), [ReplayCheck](ReplayCheck.md), [ShipShapes](ShipShapes.md), [TrainShapes](TrainShapes.md), [TruckCheck](TruckCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 
