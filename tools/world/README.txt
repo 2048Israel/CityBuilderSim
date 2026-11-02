@@ -5,7 +5,10 @@ Paths: --sources (default C:/Users/Jerus/Documents/world-sources, the downloads,
 <sources>/work: geo/ the geography's files, econ/ the economy's, out/ the baked file). Set PYTHONIOENCODING=utf-8.
 
 SOURCES (under --sources): naturalearth/ (v5.1.2: countries, boundary lines, populated places, ports), cerdi/ (sea
-distances, xlsx), wdi/ (countries list), and the economy's: baci/ wpp/ pwt/ maddison/ bis/. ATTRIBUTION.txt has the credits.
+distances, xlsx), wdi/ (countries list), and the economy's: baci/ wpp/ pwt/ maddison/ bis/ bls/ (LC3: the WDI's
+NY.GDP.DEFL.ZS and NY.GDP.MKTP.CN, PWT's xr and the BLS's CPI-U of 2000-2025 replace the IMF's FP.CPI.TOTL and
+PA.NUS.FCRF; ilostat/ holds the consumer prices LC3 read and left out, every figure the IMF's). ATTRIBUTION.txt has
+the credits.
 
 THE ORDER (a stage's inputs are the files named; the geography and the economy are independent until the bake)
   1. geo.py [stage ...]     stages owners nations freight raster lines meta (default all, in that order; a stage needs

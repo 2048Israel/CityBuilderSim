@@ -1,12 +1,15 @@
 """The nations' moneys, monthly exchange rates and 2000-2100 paths (batch WN0, slice E1, 2026-10-28): reads the BIS, WDI,
-WPP, PWT and Maddison downloads and moneys.tsv and writes WORK/econ/gdp-base.tsv, moneys.bin, paths.bin,
+WPP, PWT, Maddison and BLS downloads and moneys.tsv and writes WORK/econ/gdp-base.tsv, moneys.bin, paths.bin,
 nations-money.tsv, meta-paths.tsv, prices.bin and fills-paths.txt for bake.py to put into world-1.bin (FORMAT.txt, layers moneys,
 paths and prices).
 
 WHY: the leaderboard and the trade's weights need every one of the 196 nations to have a GDP, a population, a price
 level and an exchange rate in every year of 2000-2025, and WDI alone has holes for North Korea, Taiwan, Syria, Yemen and
 two dozen more; the holes are filled here, one way each, and every fill is written to fills-paths.txt so it can be
-reviewed. gdp-base.tsv is written as soon as the GDP series are filled, because econ_trade.py reads it.
+reviewed. gdp-base.tsv is written as soon as the GDP series are filled, because econ_trade.py reads it. Since LC3
+(2026-11-02) nothing here is the IMF's: the prices are the World Bank's GDP deflator, the annual rate where the BIS has
+no month PWT's xr or the Bank's GDP in local money over its GDP in US$, and the goods' prices are deflated by the BLS's
+CPI-U (docs/studies/licences.md).
 
 Run as:  python -I tools/world/econ_paths.py [--sources DIR] [--work DIR] [--gdp-only]    (about 10 seconds)
 """
@@ -37,14 +40,16 @@ DIALS = [
     ('MEAN_GROWTH_STEPS', gdp.MEAN_GROWTH_STEPS, "How many of a series' latest (or earliest) yearly steps its mean growth is taken over, where no other source grows it."),
     ('TAIWAN_TREND_FIRST', gdp.TAIWAN_TREND_FIRST, "The first year of Taiwan's trend, which the years PWT does not reach (2024, 2025) grow by."),
     ('TAIWAN_TREND_LAST', gdp.TAIWAN_TREND_LAST, "The last year of Taiwan's trend, PWT's last year."),
-    ('PRICE_BASE_YEAR', gdp.PRICE_BASE_YEAR, "The base year of WDI's constant US dollars and of the CPI's index."),
+    ('PRICE_BASE_YEAR', gdp.PRICE_BASE_YEAR, "The base year of WDI's constant US dollars and of the price index (the cpi series, the GDP deflator rebased)."),
     ('PRK_COMPARATORS', '+'.join(gdp.PRK_COMPARATORS), "North Korea's level is Maddison's times the median WDI-to-Maddison ratio of these nations, and its dollar prices follow their median (est.)."),
     ('PPP_FROM_MADDISON', ' '.join('%s:%s' % (k, '+'.join(v)) for k, v in gdp.PPP_FROM_MADDISON.items()), "Where WDI has no PPP GDP and its dollar GDP is at a rate that measures nothing, PPP GDP is Maddison's times the median PPP-to-Maddison ratio of these peers (est.)."),
     ('PPP_COMPARATORS', ' '.join('%s:%s' % (k, '+'.join(v)) for k, v in gdp.PPP_COMPARATORS.items()), "Where WDI and PWT have no PPP GDP, the ratio of 2015 US dollars to PPP dollars is the median of these nations' (est.)."),
     ('LIE_PRICE_PEER', gdp.LIE_PRICE_PEER, "Liechtenstein's real GDP is its dollar GDP deflated by this nation's dollar deflator (it uses the franc)."),
     ('SSD_PEER', gdp.SSD_PEER, "South Sudan grows with this nation (the Sudan it was part of) before PWT's 2008."),
     ('PWT_PPP_NATIONS', '+'.join(gdp.PWT_PPP_NATIONS), "Nations WDI lacks a PPP GDP for and PWT has sensibly: PPP GDP is PWT's rgdpna."),
-    ('CPI_SPLICE_SOURCE', ' '.join('%s:%s' % kv for kv in sorted(cpi.SPLICE_SOURCE.items())), "The nations whose price index, where WDI's has a gap, grows with the index of the issuer of the money they use (Somalia and Turkmenistan: a neighbour)."),
+    ('CPI_ISSUER', ' '.join('%s:%s' % kv for kv in sorted(cpi.ISSUER.items())), "The nations that use another's money, whose price index is the issuer's in every year (a micro-state's GDP deflator is its exports' prices)."),
+    ('CPI_NEIGHBOUR', ' '.join('%s:%s' % kv for kv in sorted(cpi.NEIGHBOUR.items())), "The nations whose price index, where the GDP deflator has a gap, grows with this neighbour's (their rate or real growth is no measure of prices)."),
+    ('CPI_NOT_OWN_MONEY', ' '.join('%s:%d-%d' % (k, a, b) for k, (a, b) in sorted(cpi.NOT_OWN_MONEY.items())), "The years of a nation's published GDP deflator that are not prices in its money, left to the deflator in its money (Zimbabwe's restated accounts, Liberia's in US dollars, Cuba's peso held at 1)."),
     ('PRICE_RATIO_YEAR', prc.RATIO_YEAR, "Each good's real price path is a ratio to this year's, so it is 1 there."),
     ('BGN_PER_EUR', mon.BGN_PER_EUR, "Bulgaria's lev, a currency board at this many to the euro; BIS has Bulgaria in euros."),
     ('ZWG_PER_USD_AT_LAUNCH', mon.ZWG_PER_USD_AT_LAUNCH, 'Zimbabwe Gold a US dollar at its launch, 2024-04 (Reserve Bank of Zimbabwe).'),
@@ -53,14 +58,16 @@ DIALS = [
     ('SVC_PER_USD', rat.SVC_PER_USD, "El Salvador's colones a dollar, fixed by the Monetary Integration Law of 2001."),
     ('ECS_PER_USD', mon.ECS_PER_USD, "Ecuador's sucre a dollar, fixed for dollarisation in 2000."),
     ('CUP_PER_USD', mon.CUP_PER_USD, "Cuba's peso a dollar, the CUC parity WDI's dollar GDP rests on; the unification of 2021-01 at 24 is not applied."),
-    ('KPW_PER_USD', mon.KPW_PER_USD, "North Korea's official won a dollar since the 2009 redenomination (no BIS or WDI figure)."),
+    ('KPW_PER_USD', mon.KPW_PER_USD, "North Korea's official won a dollar since the 2009 redenomination (no BIS or annual figure)."),
     ('MRU_PER_BIS_MRO', mon.UNITS['MRU'][1][0][1], "The ouguiya's new units for one of the old that BIS keeps (the 2018 redenomination)."),
     ('STN_PER_BIS_STD', mon.UNITS['STN'][1][0][1], "The dobra's new units for one of the old that BIS keeps (the 2018 redenomination)."),
     ('VES_PER_BIS_VEF', mon.UNITS['VES'][1][0][1], "Venezuela's 2021 bolivar for one of BIS's VEF units (to 2018-07)."),
     ('VES_PER_BIS_VES2018', mon.UNITS['VES'][1][1][1], "Venezuela's 2021 bolivar for one of BIS's 2018 bolivar soberano units (2018-08 to 2021-09)."),
     ('ZWN_PER_BIS_ZWR', mon.UNITS['ZWN'][1][1][1], "Zimbabwe dollars of the 2006 redenomination for one of BIS's 2008-08 redenominated dollars."),
     ('SYP_BIS_STALE_FROM', mon.month_name(mon.STALE_FROM['SYP']), "BIS's Syrian pound is the pre-war official 11.225 unchanged; its months from here on are not used."),
-    ('ZWG_WDI_YEAR', mon.WDI_ONLY_YEARS['ZWG'][0], "The one year of WDI's Zimbabwean rate that is Zimbabwe Gold's alone."),
+    ('ZWG_ANNUAL_YEAR', mon.ANNUAL_ONLY_YEARS['ZWG'][0], "The one year of Zimbabwe's annual rate that is Zimbabwe Gold's alone."),
+    ('PWT_LAST_YEAR', mon.PWT_LAST_YEAR, "The last year of PWT 11.0's xr, the annual rate where the BIS has no month of a year; after it, and where PWT has none, the World Bank's GDP in local money over its GDP in US$."),
+    ('ANNUAL_SKIP', '+'.join(mon.ANNUAL_SKIP), "The moneys never filled from the annual rate: a period-end or mixed figure (ECS ZWN ZWL SVC), Liberia's accounts in US dollars, Iran's dollar GDP at a market rate, Cuba's and Malawi's held rates."),
 ] + [('EURO_CONVERSION_' + c, v, 'Units of %s for one euro, fixed by Council Regulation.' % c) for c, v in sorted(mon.EURO_CONVERSION.items())]
 
 
@@ -138,7 +145,7 @@ def main(argv=None):
     wdi_kd = src.wdi('NY.GDP.MKTP.KD', args.sources)
     wdi_cd = src.wdi('NY.GDP.MKTP.CD', args.sources)
     wdi_pp = src.wdi('NY.GDP.MKTP.PP.KD', args.sources)
-    wdi_cpi = src.wdi('FP.CPI.TOTL', args.sources)
+    deflators = src.wdi('NY.GDP.DEFL.ZS', args.sources)
     pwt = src.pwt(args.sources)
     mad = src.maddison(args.sources)
     print('  %.1f s' % (time.time() - t0))
@@ -156,8 +163,8 @@ def main(argv=None):
     print('building the moneys')
     info = mon.read_moneys(HERE + '/moneys.tsv')
     bis = src.bis_monthly(args.sources)
-    wdi_fx = src.wdi('PA.NUS.FCRF', args.sources)
-    codes, rates, marks, active, users = mon.build_moneys(info, bis, wdi_fx)
+    annual_fx = mon.annual_rates(pwt, src.wdi('NY.GDP.MKTP.CN', args.sources), wdi_cd)
+    codes, rates, marks, active, users = mon.build_moneys(info, bis, annual_fx)
     mon.check_nations(info, codes, rates)
     size = mon.write_moneys_bin(work + '/moneys.bin', codes, rates, marks)
     nm = sum(len(active[c]) for c in codes)
@@ -168,7 +175,10 @@ def main(argv=None):
     print('building the paths')
     annual = rat.annual_rates(info, rates, marks)
     cont = rat.continuous_rates(info, rates)
-    prices = cpi.build_cpi(wdi_cpi, series, cont)
+    prices = cpi.build_cpi(deflators, series, cont)
+    gaps = cpi.own_money_gaps(deflators, series, cont)
+    print('the GDP deflator against the deflator in its money: %d of %d nations within 0.1 (log10 range); widest: %s'
+          % (sum(1 for r, n in gaps if r < 0.1), len(gaps), ' '.join('%s %.2f' % (n, r) for r, n in gaps[:8])))
     people = src.wpp_people(args.sources)
     years = common.YEARS
     table = [[None] * len(common.NATIONS) for _ in SERIES]
@@ -194,12 +204,12 @@ def main(argv=None):
     size = write_paths_bin(work + '/paths.bin', table, pmarks)
     print('wrote paths.bin: %d bytes' % size)
 
-    # the prices layer: the Pink Sheet over the US CPI, goods.tsv's goods (E2's) and prices.tsv's mapping
+    # the prices layer: the Pink Sheet over the US CPI (the BLS's CPI-U), goods.tsv's goods (E2's) and prices.tsv's mapping
     goods_path = work + '/goods.tsv'
     if os.path.exists(goods_path):
         mapping = prc.read_prices_tsv(HERE + '/prices.tsv', goods_path)
         pink = prc.read_pinksheet(args.sources + '/pinksheet/CMO-Historical-Data-Annual.xlsx')
-        names, pvals, pmk = prc.build_prices(mapping, pink, prices['USA'][0])
+        names, pvals, pmk = prc.build_prices(mapping, pink, src.bls_cpi_u(args.sources))
         size = prc.write_prices_bin(work + '/prices.bin', names, pvals, pmk)
         own = sum(1 for m in mapping if m[2] == 3)
         print('wrote prices.bin: %d goods (%d own series, %d proxies), %d bytes' % (len(mapping), own, len(mapping) - own, size))

@@ -103,6 +103,22 @@ if errorlevel 1 (
 )
 echo.
 
+rem ----------------------------- the nations -----------------------------
+rem  The nations' world, data\world-1.bin (about 9 MB), is not in git either.
+rem  Since LC3 (2026-11-02) it holds no figure a sold game may not ship, so a
+rem  build carries it: without it the game has no nations, no world market
+rem  and no partners (IR1: 0.9.0 went out so). Fetched as the Earth is.
+call "tools\earth\get-earth.bat" nopause world-1
+if errorlevel 1 (
+    echo.
+    echo   No good data\world-1.bin, so no build: without it the game would
+    echo   have no nations. The reason is above.
+    echo.
+    pause
+    exit /b 1
+)
+echo.
+
 rem ------------------------- stage a clean input dir -------------------------
 rem  jpackage copies EVERYTHING in --input into the app folder, so it gets a
 rem  directory of its own containing nothing but the one jar. Pointing it at
@@ -176,7 +192,9 @@ rem  sources' credits go with it, as their licences ask.
 mkdir "dist\%APPNAME%\data"
 copy /y "data\earth-2.bin" "dist\%APPNAME%\data\" >nul
 copy /y "tools\earth\ATTRIBUTION-2.txt" "dist\%APPNAME%\data\earth-2-ATTRIBUTION.txt" >nul
-rem  The Rankings' figures (world-2025.json) and the world fixture are in the jar: their credits go too (LC1).
+rem  The nations' world goes beside it (LC3); its credits cover the Rankings' figures (world-2025.json) and the
+rem  world fixture in the jar too (LC1).
+copy /y "data\world-1.bin" "dist\%APPNAME%\data\" >nul
 copy /y "tools\world\ATTRIBUTION.txt" "dist\%APPNAME%\data\world-ATTRIBUTION.txt" >nul
 if not exist "dist\%APPNAME%\data\earth-2.bin" (
     echo.
@@ -186,7 +204,15 @@ if not exist "dist\%APPNAME%\data\earth-2.bin" (
     pause
     exit /b 1
 )
-echo  Copied data\earth-2.bin next to the exe, with its credits and the world's.
+if not exist "dist\%APPNAME%\data\world-1.bin" (
+    echo.
+    echo   Could not copy data\world-1.bin into dist\%APPNAME%\data - stopping
+    echo   rather than leave a build without the nations.
+    echo.
+    pause
+    exit /b 1
+)
+echo  Copied data\earth-2.bin and data\world-1.bin next to the exe, with their credits.
 
 rem ------------------------------- the zip -------------------------------
 rem  What goes up as the release: the whole folder under its own name, as

@@ -1,6 +1,6 @@
 """The downloads the nations' moneys and paths are made from (batch WN0, slice E1, 2026-10-28): the World Bank's WDI,
-the UN's WPP 2024, the BIS's dollar rates, the Penn World Table 11.0 and the Maddison Project 2023, each read into
-plain dicts by the standard library alone.
+the UN's WPP 2024, the BIS's dollar rates, the Penn World Table 11.0, the Maddison Project 2023 and (LC3, 2026-11-02)
+the BLS's CPI-U, each read into plain dicts by the standard library alone.
 
 WHY: econ_paths.py is several hundred lines of fills and every fill reads one of these; keeping the readers apart
 means the fills are about the numbers and not about file formats, and the list of sources (SOURCE_ROWS, which goes to
@@ -27,22 +27,28 @@ WORK = SOURCES + '/work'
 # The day the downloads were made.
 DOWNLOADED = '2026-10-28'
 
+# The day LC3 downloaded the GDP deflator and the BLS's CPI-U of 2000-2014 (LC1 the GDP in local money, 2026-10-31):
+# the IMF's consumer prices and official rate, which a sold game may not ship (docs/studies/licences.md), left the file.
+LC3_DOWNLOADED = '2026-11-02'
+
 # The meta file's source rows: id, name and version, url, licence, downloaded.
 SOURCE_ROWS = [
-    ('wdi', 'World Bank, World Development Indicators (NY.GDP.MKTP.KD, NY.GDP.MKTP.CD, NY.GDP.MKTP.PP.KD, FP.CPI.TOTL, '
-            'PA.NUS.FCRF, SP.POP.TOTL), last updated 2026-10-08',
-     'https://api.worldbank.org/v2/country/all/indicator/', 'CC BY 4.0', DOWNLOADED),
+    ('wdi', 'World Bank, World Development Indicators (NY.GDP.MKTP.KD, NY.GDP.MKTP.CD, NY.GDP.MKTP.PP.KD, NY.GDP.MKTP.CN, '
+            'NY.GDP.DEFL.ZS), last updated 2026-10-08',
+     'https://api.worldbank.org/v2/country/all/indicator/', 'CC BY 4.0', DOWNLOADED + ', ' + LC3_DOWNLOADED),
     ('wpp', 'United Nations, World Population Prospects 2024, total population by sex, medium variant',
      'https://population.un.org/wpp/', 'CC BY 3.0 IGO', DOWNLOADED),
     ('bis', 'Bank for International Settlements, US dollar exchange rates (WS_XRU), monthly averages',
      'https://data.bis.org/topics/XRU', 'BIS terms and conditions, https://www.bis.org/terms_conditions.htm', DOWNLOADED),
-    ('pwt', 'Penn World Table 11.0 (Feenstra, Inklaar and Timmer)',
+    ('pwt', 'Penn World Table 11.0 (Feenstra, Inklaar and Timmer): output, and the exchange rate xr',
      'https://www.rug.nl/ggdc/productivity/pwt/', 'CC BY 4.0', DOWNLOADED),
     ('maddison', 'Maddison Project Database 2023',
      'https://www.rug.nl/ggdc/historicaldevelopment/maddison/', 'CC BY 4.0', DOWNLOADED),
     ('pinksheet', 'World Bank Commodity Markets, the Pink Sheet, annual prices (CMO-Historical-Data-Annual.xlsx, updated '
                   '2026-09-02): the nominal sheet and the MUV Index',
      'https://www.worldbank.org/en/research/commodity-markets', 'CC BY 4.0', DOWNLOADED),
+    ('bls', 'US Bureau of Labor Statistics, CPI-U, US city average, all items (CUUR0000SA0), annual averages',
+     'https://www.bls.gov/cpi/', 'public domain (a US government work)', LC3_DOWNLOADED),
     ('moneys', 'tools/world/moneys.tsv, authored by the game (ISO 4217 in 2025-12, euro changeover dates, the IMF '
                'exchange arrangements as of 2025)', '-', 'the game', '-'),
 ]
@@ -143,3 +149,22 @@ def maddison(sources=SOURCES):
         if y >= 1990:
             out.setdefault(r[ci], {})[y] = float(r[gi]) * float(r[pi]) * 1000.0
     return out
+
+
+# The BLS's series of the US consumer price index (all items, US city average, 1982-84 = 100): its annual averages
+# (period M13), in <sources>/bls/ as the API sends them (measures_fetch.py's 2015-2025 and LC3's 2000-2014).
+CPI_U_SERIES = 'CUUR0000SA0'
+
+
+def bls_cpi_u(sources=SOURCES):
+    """The CPI-U's annual averages 2000-2025 as a list of 26 floats, from every BLS file of the series in <sources>/bls/."""
+    out = {}
+    for name in sorted(os.listdir(sources + '/bls')):
+        if name.startswith(CPI_U_SERIES) and name.endswith('.json'):
+            with open('%s/bls/%s' % (sources, name), encoding='utf-8') as f:
+                for row in json.load(f)['Results']['series'][0]['data']:
+                    if row['period'] == 'M13':
+                        out[int(row['year'])] = float(row['value'])
+    years = range(common.FIRST_YEAR, common.LAST_DATA_YEAR + 1)
+    assert all(y in out for y in years), 'the BLS files lack a year of 2000-2025: ' + str(sorted(out))
+    return [out[y] for y in years]
