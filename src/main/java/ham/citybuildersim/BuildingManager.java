@@ -216,9 +216,10 @@ public class BuildingManager {
      * repairs - the standing city's mix, which is the work a depot does when
      * there is no queue. What a depot's profit estimate earns a point
      * (sectors.Construction.estimatedMonthlyProfit()). Zero with nothing
-     * standing and nothing on site.
+     * standing and nothing on site. Before any scarcity premium (FC1): what
+     * nonMaterialPricePerPoint() and the foreign contractor's price are struck on.
      */
-    public double nonMaterialPricePerPoint() {
+    public double basePricePerPoint() {
         double value = 0, points = 0;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
@@ -237,6 +238,17 @@ public class BuildingManager {
             points += stack.getQuantity() * (double) t.getConstructionPoints();
         }
         return points > 0 ? value / points : 0;
+    }
+
+    /**
+     * What a depot earns a point of work (FC1): basePricePerPoint() with the
+     * scarcity premium the orders pay while the builders are short
+     * (scarcityPremium()) - what Construction.estimatedMonthlyProfit() reads, so
+     * the premium pays for the builders' own depots. Never the foreign
+     * contractor's multiple: the builders do not earn its price.
+     */
+    public double nonMaterialPricePerPoint() {
+        return basePricePerPoint() * (1 + scarcityPremium());
     }
 
     public void setExchangeRate(double rate) {
@@ -5906,6 +5918,72 @@ public class BuildingManager {
 
     /** Told by Game: where the builders' month for the sites, every post offered, is read from (0.7.130). */
     public void setSitesAtEveryPost(java.util.function.DoubleSupplier sites) { this.sitesAtEveryPost = sites; }
+
+    /** The builders' whole month with every post offered, before the repairs, as Game hands it (Game.getConstructionOutputAtEveryPost(), FC1); null - a bare manager - reads none, and the premium and the foreign contractor are off. */
+    private java.util.function.DoubleSupplier outputAtEveryPost;
+
+    /** Told by Game: where the builders' whole month, every post offered, is read from (FC1). */
+    public void setOutputAtEveryPost(java.util.function.DoubleSupplier output) { this.outputAtEveryPost = output; }
+
+    /** Whether both months are known (FC1): with either unset - a bare manager in a harness - there is no premium and no foreign contractor, and every price reads what it read before. */
+    private boolean buildersMonthKnown() { return sitesAtEveryPost != null && outputAtEveryPost != null; }
+
+    /** The months of work queued at the pace the builders leave the sites (BuildersShort.monthsQueued(): the queue as it stands over the sites' month, every post offered); 0 with no month to read. */
+    public double monthsQueued() {
+        if (!buildersMonthKnown()) return 0;
+        return BuildersShort.monthsQueued(getRemainingConstructionPoints(), sitesAtEveryPost.getAsDouble());
+    }
+
+    /**
+     * The premium a point's work carries over its price for the queue as it stands (BuildersShort.premium()), as a share of
+     * the price; 0 with no month to read, and 0 while the builders have no month at all, every post offered - the founding's
+     * first, before any depot works: nobody's repairs took anything, so they are not short (as the contractor's, foreignTakesOrders()).
+     */
+    public double scarcityPremium() {
+        if (!buildersMonthKnown() || !(outputAtEveryPost.getAsDouble() > 0)) return 0;
+        return BuildersShort.premium(monthsQueued());
+    }
+
+    /** Whether the foreign contractor takes the orders: the points for the sites are under the floor of the builders' whole month (BuildersShort.foreignTakesOrders()); never with no month to read. */
+    public boolean foreignCrewsTakeOrders() {
+        return buildersMonthKnown()
+                && BuildersShort.foreignTakesOrders(sitesAtEveryPost.getAsDouble(), outputAtEveryPost.getAsDouble());
+    }
+
+    /** What an order's non-material price (the work, the foothill's preparation, a run's works, a span, deep water) is multiplied by, struck once per quote on the queue as it stands: the contractor's price while it takes orders, else one and the premium; exactly 1 with no month to read, or none worked (scarcityPremium()). Never the repairs' or a valuation's. */
+    public double orderPriceMultiplier() { return orderPriceMultiplier(0); }
+
+    /** ...with `pointsAhead` more on the queue than it holds: what the orders before this one in a run put there, which a run's invoice prices it on (Game.buildRunInvoice()). */
+    public double orderPriceMultiplier(double pointsAhead) {
+        if (!buildersMonthKnown()) return 1;
+        // Each month read once: a quote is struck often, and each read is the city's repairs worked out again.
+        double sites = sitesAtEveryPost.getAsDouble(), output = outputAtEveryPost.getAsDouble();
+        if (!(output > 0)) return 1;
+        boolean foreign = BuildersShort.foreignTakesOrders(sites, output);
+        double queue = getRemainingConstructionPoints() + Math.max(0, pointsAhead);
+        return BuildersShort.multiplier(foreign ? 0 : BuildersShort.monthsQueued(queue, sites), foreign);
+    }
+
+    /** Points still owed on the builders' own sites served first (buildersOwnOnSite()): buildings on site over their points, less progress, as basePricePerPoint() counts each stack. */
+    public double buildersOwnOwed() {
+        if (!buildersFirstOn) return 0;
+        double owed = 0;
+        for (BuildingsStacks s : stacks) {
+            int per = s.getBuilding().getConstructionPoints();
+            if (s.getUnderConstruction() <= 0 || per <= 0 || !goesFirst(s.getBuilding(), 0)) continue;
+            owed += Math.max(0, s.getUnderConstruction() * (double) per - s.getConstructionProgress());
+        }
+        return owed;
+    }
+
+    /** The points to build the builders' largest depot: the most construction points among the templates that add to their capacity (addsToTheBuilders()); 0 with none. */
+    public double largestDepotPoints() {
+        double largest = 0;
+        for (BuildingsTemplate t : templates) {
+            if (addsToTheBuilders(t)) largest = Math.max(largest, t.getConstructionPoints());
+        }
+        return largest;
+    }
 
     /**
      * Whether t's site, with `extra` more of it ordered, goes first: the rule
