@@ -29,6 +29,23 @@ public class DeathRecordCheck {
         try { work.run(); } finally { System.setOut(out); }
     }
 
+    /** Section 3's city: a founding with its houses, shops, mill and works stood free, 48 months played; a second one is its twin (same months, same path). */
+    static Game town(java.nio.file.Path root, String data, String legacy) {
+        Game g = new Game(new GameFiles(root.resolve(data), root.resolve(legacy)));
+        quietly(() -> {
+            g.run();
+            BuildingManager b = g.getBuildingManager();
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 100_000_000L);
+            b.addStack(b.getTemplateByName("House"), 600, true);
+            b.addStack(b.getTemplateByName("Convenience Store"), 14, true);
+            b.addStack(b.getTemplateByName("Industrial Bakery"), 6, true);
+            b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            g.simulateMonths(48);
+        });
+        return g;
+    }
+
     static double last(HistorySave h, String key) {
         java.util.List<? extends Number> s = h.seriesByName().get(key);
         return s == null || s.isEmpty() ? Double.NaN : s.get(s.size() - 1).doubleValue();
@@ -79,19 +96,7 @@ public class DeathRecordCheck {
         /* ============ 3. a city whose employer closes ============ */
         System.out.println("\n--- a played city, and a closing that orphans children ---");
         java.nio.file.Path root = TempDirs.create("deathrecord");
-        GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
-        Game g = new Game(files);
-        quietly(() -> {
-            g.run();
-            BuildingManager b = g.getBuildingManager();
-            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 100_000_000L);
-            b.addStack(b.getTemplateByName("House"), 600, true);
-            b.addStack(b.getTemplateByName("Convenience Store"), 14, true);
-            b.addStack(b.getTemplateByName("Industrial Bakery"), 6, true);
-            b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
-            b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
-            g.simulateMonths(48);
-        });
+        Game g = town(root, "data", "no-legacy");
         HistorySave h = g.getHistorySave();
         PopulationCohorts pyramid = g.getCohorts();
         String[] keys = {"deathsBabies", "deathsChildren", "deathsTeens",
@@ -200,8 +205,24 @@ public class DeathRecordCheck {
                 + " against the %,.2f the city had%n", wouldHaveOrphaned, orphansBefore);
         assertTrue("...and big enough that the old rule would have at least doubled the orphans",
                 wouldHaveOrphaned > orphansBefore);
+        /*
+         * FC1: AGAINST ITS TWIN, which never closes. The section drifts on its own, and under FC1 this town's drifts by far more than an
+         * orphan a month (3.18 at the closing, 8.11 the most in the year before, 17.47 at the peak - and 19.07 in the twin that keeps its
+         * mill open, so the wave is not what filled it). The claim is that the wave does not fill it, so the wave is what is measured: the
+         * same city to the month, played the same two years with the mill standing, and the orphans the closing adds over its peak. (The
+         * year before's most, 0.7.55's bound above, is still printed; a twin is the exact control it stood in for.)
+         */
+        Game open = town(root, "open-data", "open-no-legacy");
+        double[] openPeak = { open.getFamilies().getOrphansTotal() };
+        quietly(() -> {
+            for (int m = 0; m < 24; m++) {
+                open.simulateMonths(1);
+                openPeak[0] = Math.max(openPeak[0], open.getFamilies().getOrphansTotal());
+            }
+        });
+        System.out.printf("   the twin with the mill open: orphans peaked at %,.2f%n", openPeak[0]);
         assertTrue("the orphan section does not fill behind it, in any month of the two years",
-                peakOrphans[0] <= orphansLately + 1);
+                peakOrphans[0] <= openPeak[0] + 1);
         assertTrue("...because the children went with their parents",
                 g.getFamilies().getOutsideDependantsTotal() > 0);
         assertTrue("fixture: the city still has orphans for the record to count",
