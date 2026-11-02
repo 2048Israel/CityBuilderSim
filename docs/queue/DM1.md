@@ -7,5 +7,5 @@ mostly 1x1 houses and 2x2 and 2x3 mixed buildings, clustered at plots (5-14, 61-
 (34-45, 67-70). None lies on fixed ground, a run or a highway verge (one or two are beside one). DistrictPlan says
 what stands never moves, so it is a planner defect that FC1's path reaches.
 
-To do: delete MapCheck's `BuildingManager.buildersShortOn = false` line, reproduce section 2h, find why a standing
+To do: delete MapCheck's `BuildingManager.buildersShortOn` lines (off at the top of `main()`, on after section 2h), reproduce section 2h, find why a standing
 box is re-placed, and keep it. Done when MapCheck is green with FC1 on.

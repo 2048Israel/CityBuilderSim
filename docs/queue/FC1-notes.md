@@ -111,7 +111,8 @@ leave, and the price of a point did not read the queue.
     discount falls 7.06 with no named cause, and "its equity's parts are its equity" is off by 7.05 in 226 of 479
     bank-months. That is a bank statement defect (BK1's class; the money audit holds), queued as BD1.
   - MapCheck 2h: on FC1's path, 12 and 23 standing boxes move in the district plan four months after a reserve
-    (0 without FC1), though the plan says what stands never moves. A planner defect, queued as DM1.
+    (0 without FC1), though the plan says what stands never moves. A planner defect, queued as DM1. The switch covers
+    section 1's played city (2h's scenarios are cut from it) through 2h, and is back on for every later section.
 
 ## 2. The calls (★; each takes the recommended way, settled by the orchestrator on Jerus's "Run both tonight")
 
