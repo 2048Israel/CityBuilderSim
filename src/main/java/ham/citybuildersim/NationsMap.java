@@ -865,24 +865,35 @@ public final class NationsMap {
     public Card card(Nations nations, int nation, int year, double cityLat, double cityLon, double dollarsAUsd, TradeLanes.YearToDate trade, double monthRate,
             PolicyRates policy) {
         Table t = table(nations, year);
-        Nations.Year y = nations.year(nation, year);
         int i = nation - 1;
-        String of = " of " + nations.count();
-        List<Row> rows = new ArrayList<>();
-        rows.add(new Row(GDP_WORDS, usd(y.output()) + markWords(y.outputMark()), ordinal(t.rankOutput[i]) + of));
-        rows.add(new Row("People", people(y.people()) + markWords(y.peopleMark()), ordinal(t.rankPeople[i]) + of));
-        rows.add(new Row("GDP a head", "US$" + sig3(y.outputPerHead()) + markWords(Math.min(y.outputMark(), y.peopleMark())), ordinal(t.rankHead[i]) + of));
-        double growth = Math.expm1(nations.growth(nation, year)), prices = y.inflation();
-        rows.add(new Row("This year", Double.isNaN(growth) && Double.isNaN(prices) ? "-" : percent(growth, true) + " real · " + percent(prices, false) + " prices", ""));
-        rows.add(new Row("Its money", moneyWords(y, dollarsAUsd, monthRate), ""));
-        double policyRate = policy == null || y.money() == null ? Double.NaN : policy.rate(y.money());
-        if (Double.isFinite(policyRate)) rows.add(new Row(POLICY_WORDS, policyWords(policyRate), ""));
+        List<Row> rows = new ArrayList<>(figureRows(nations, nation, year, dollarsAUsd, monthRate, policy, t.rankOutput[i], t.rankPeople[i], t.rankHead[i]));
         if (trade != null && (trade.exports() > 0 || trade.imports() > 0)) {
             rows.add(new Row(BUYS_WORDS, city(trade.exports()), ""));
             rows.add(new Row(SELLS_WORDS, city(trade.imports()), ""));
             rows.add(new Row(HAUL_WORDS, haulWords(trade.tonnesOut(), trade.tonnesIn()), ""));
         }
         return new Card(nations.name(nation), region[nation] == null ? "" : region[nation], distanceWords(nation, cityLat, cityLon), List.copyOf(rows));
+    }
+
+    /**
+     * The card's figure rows, without the trade rows: GDP, People and GDP a head each with its rank of the count, This year's growth and prices, Its money,
+     * and the policy rate where the nation's money is one of the eight (card()'s rows 1-5/6, which it calls). Static and given the three ranks, so that
+     * a nation's page (PartnersView.nation(), WN6) writes the very rows the map card does and ranks by the same YearFigures; see card() for the words.
+     */
+    static List<Row> figureRows(Nations nations, int nation, int year, double dollarsAUsd, double monthRate, PolicyRates policy,
+            int rankOutput, int rankPeople, int rankHead) {
+        Nations.Year y = nations.year(nation, year);
+        String of = " of " + nations.count();
+        List<Row> rows = new ArrayList<>();
+        rows.add(new Row(GDP_WORDS, usd(y.output()) + markWords(y.outputMark()), ordinal(rankOutput) + of));
+        rows.add(new Row("People", people(y.people()) + markWords(y.peopleMark()), ordinal(rankPeople) + of));
+        rows.add(new Row("GDP a head", "US$" + sig3(y.outputPerHead()) + markWords(Math.min(y.outputMark(), y.peopleMark())), ordinal(rankHead) + of));
+        double growth = Math.expm1(nations.growth(nation, year)), prices = y.inflation();
+        rows.add(new Row("This year", Double.isNaN(growth) && Double.isNaN(prices) ? "-" : percent(growth, true) + " real · " + percent(prices, false) + " prices", ""));
+        rows.add(new Row("Its money", moneyWords(y, dollarsAUsd, monthRate), ""));
+        double policyRate = policy == null || y.money() == null ? Double.NaN : policy.rate(y.money());
+        if (Double.isFinite(policyRate)) rows.add(new Row(POLICY_WORDS, policyWords(policyRate), ""));
+        return rows;
     }
 
     /** A policy rate as the card writes it: a percent to two places, the quarter-points the banks move in, with a true minus: "4.25%", "-0.10%", "0.00%". "-" for NaN. */
@@ -893,7 +904,7 @@ public final class NationsMap {
     }
 
     /** A share as a percent to one decimal ("-" for NaN), with a sign if asked: "+1.6%". A rounded zero has no minus. */
-    private static String percent(double share, boolean signed) {
+    static String percent(double share, boolean signed) {
         if (Double.isNaN(share)) return "-";
         double pct = Math.round(share * 1000) / 10.0;
         return String.format(Locale.US, signed ? "%+.1f%%" : "%.1f%%", pct == 0 ? 0.0 : pct);
@@ -903,7 +914,7 @@ public final class NationsMap {
      * "CAD 1.37 a US$ . CAD 1 = D$0.86", the second part only if the game dollar's price is known; for the dollar itself "the US dollar . US$1 = D$1.16".
      * The rate is monthRate (this month's, WN4) where that is a number above 0, else the year's from the file.
      */
-    private static String moneyWords(Nations.Year y, double dollarsAUsd, double monthRate) {
+    static String moneyWords(Nations.Year y, double dollarsAUsd, double monthRate) {
         boolean known = dollarsAUsd > 0 && !Double.isInfinite(dollarsAUsd);
         if (Nations.DOLLAR.equals(y.money())) return "the US dollar" + (known ? " · US$1 = D$" + sig3(dollarsAUsd) : "");
         double rate = monthRate > 0 && !Double.isInfinite(monthRate) ? monthRate : y.rateToUsd();
@@ -911,7 +922,7 @@ public final class NationsMap {
         return y.money() + " " + sig3(rate) + " a US$" + (known ? " · " + y.money() + " 1 = D$" + sig3(dollarsAUsd / rate) : "");
     }
 
-    private static String markWords(int mark) {
+    static String markWords(int mark) {
         return mark == WorldData.MARK_PROJECTED ? " ◐" : mark == WorldData.MARK_ESTIMATE ? " ○" : "";
     }
 
@@ -983,7 +994,46 @@ public final class NationsMap {
        A YEAR'S FIGURES AND RANKS - computed once for a Nations and a year
        ===================================================================== */
 
-    /** The figures of a year for all the nations, and each one's rank: the count of nations strictly larger, plus one (ties share it). */
+    /**
+     * A year's output, people and output a head for all the nations (index nation - 1), and each one's rank in each: the count of nations strictly
+     * larger, plus one (ties share it), a figure that is not a number last. The ranking the card's rows and a nation's page both use (WN6: lifted out of
+     * the card's table, so that PartnersView ranks by this rule and not a second one).
+     */
+    static final class YearFigures {
+        final double[] output, people, head;
+        final int[] rankOutput, rankPeople, rankHead;
+
+        YearFigures(Nations nations, int year) {
+            int count = nations.count();
+            output = new double[count];
+            people = new double[count];
+            head = new double[count];
+            for (int i = 0; i < count; i++) {
+                Nations.Year y = nations.year(i + 1, year);
+                output[i] = y.output();
+                people[i] = y.people();
+                head[i] = y.outputPerHead();
+            }
+            rankOutput = ranks(output);
+            rankPeople = ranks(people);
+            rankHead = ranks(head);
+        }
+
+        /** A figure as it ranks: NaN last. */
+        private static double key(double v) { return Double.isNaN(v) ? Double.NEGATIVE_INFINITY : v; }
+
+        /** The rank of each figure: the count strictly larger, plus one (ties share it); NaN last. */
+        static int[] ranks(double[] v) {
+            Integer[] by = new Integer[v.length];
+            for (int i = 0; i < v.length; i++) by[i] = i;
+            Arrays.sort(by, (a, b) -> Double.compare(key(v[b]), key(v[a])));
+            int[] rank = new int[v.length];
+            for (int k = 0; k < by.length; k++) rank[by[k]] = k > 0 && key(v[by[k]]) == key(v[by[k - 1]]) ? rank[by[k - 1]] : k + 1;
+            return rank;
+        }
+    }
+
+    /** The figures of a year for all the nations, and each one's rank (YearFigures'), with the nations in order of output and each one's label. */
     private static final class Table {
         final Nations nations;
         final int year;
@@ -996,42 +1046,28 @@ public final class NationsMap {
             this.nations = nations;
             this.year = year;
             int count = nations.count();
-            output = new double[count];
-            people = new double[count];
-            head = new double[count];
+            YearFigures f = new YearFigures(nations, year);
+            output = f.output;
+            people = f.people;
+            head = f.head;
+            rankOutput = f.rankOutput;
+            rankPeople = f.rankPeople;
+            rankHead = f.rankHead;
             names = new String[count];
             figures = new String[count];
             for (int i = 0; i < count; i++) {
                 Nations.Year y = nations.year(i + 1, year);
-                output[i] = y.output();
-                people[i] = y.people();
-                head[i] = y.outputPerHead();
                 names[i] = nations.name(i + 1);
                 figures[i] = usd(y.output()) + " · " + people(y.people());
             }
-            rankOutput = ranks(output);
-            rankPeople = ranks(people);
-            rankHead = ranks(head);
             Integer[] by = new Integer[count];
             for (int i = 0; i < count; i++) by[i] = i + 1;
             Arrays.sort(by, (a, b) -> {
-                int c = Double.compare(key(output[b - 1]), key(output[a - 1]));
+                int c = Double.compare(YearFigures.key(output[b - 1]), YearFigures.key(output[a - 1]));
                 return c != 0 ? c : Integer.compare(a, b);
             });
             order = new int[count];
             for (int i = 0; i < count; i++) order[i] = by[i];
-        }
-
-        /** A figure as it ranks: NaN last. */
-        private static double key(double v) { return Double.isNaN(v) ? Double.NEGATIVE_INFINITY : v; }
-
-        private static int[] ranks(double[] v) {
-            Integer[] by = new Integer[v.length];
-            for (int i = 0; i < v.length; i++) by[i] = i;
-            Arrays.sort(by, (a, b) -> Double.compare(key(v[b]), key(v[a])));
-            int[] rank = new int[v.length];
-            for (int k = 0; k < by.length; k++) rank[by[k]] = k > 0 && key(v[by[k]]) == key(v[by[k - 1]]) ? rank[by[k - 1]] : k + 1;
-            return rank;
         }
     }
 

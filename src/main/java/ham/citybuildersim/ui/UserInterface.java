@@ -2118,6 +2118,16 @@ public class UserInterface extends Application {
     }
 
     /**
+     * The GDP tile's line in real 2015 US$ (D29, WN6), where the city has the world market and so nations to compare with. The market is
+     * asked, not getNations(), which opens the world file whenever it holds no nations, and this runs on every refresh of the header.
+     */
+    private String realGdpLine() {
+        if (game.getWorldMarket() == null) return "";
+        double year = game.realGdp2015UsdYear();
+        return Double.isFinite(year) ? "\nIn real 2015 US$, to compare with the nations: " + NationsMap.usd(year) + " a year" : "";
+    }
+
+    /**
      * One tile, as the header draws it.
      *
      * @param area   its area's colour: the label and the sparkline
@@ -2224,12 +2234,14 @@ public class UserInterface extends Application {
                 gdpLine, gdpTone, sparkSeries(h, "gdp"),
                 String.format("What the city made in a year: the last twelve months of output%s.%n"
                         + "Under it, real growth: the last twelve months against the twelve before,"
-                        + " with prices taken out%s.%nThe sparkline is the month's output. %s",
+                        + " with prices taken out%s.%nThe sparkline is the month's output. %s%s",
                         recorded > 0 && recorded < 12
                                 ? ", scaled up from the " + recorded + " month" + (recorded == 1 ? "" : "s")
                                   + " recorded so far, since the city has not lived a year"
                                 : "",
-                        Double.isNaN(grew) ? " - it needs two years of output" : "", click),
+                        Double.isNaN(grew) ? " - it needs two years of output" : "", click,
+                        // D29 (WN6): the same output in the real 2015 US$ the nations' are counted in, where the city has nations to compare with.
+                        realGdpLine()),
                 null, new String[] {"gdp"}));
 
         /* ---------------- INFLATION, against the player's target ---------------- */

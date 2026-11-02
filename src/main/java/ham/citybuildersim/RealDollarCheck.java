@@ -29,6 +29,10 @@ import java.util.function.Supplier;
  *      US$ with half the weight reads 100 x 1.1^-.5; the US alone with no trade; the weights are shares.
  *   6. THE SHOCK (WorldEconomy.shockLevel(), the ensemble's import shock): on the path it is a factor the next month keeps, saved, and permanent; on the
  *      walk it is the level times the size, which the pull then takes back, and what the old save-and-restore door did.
+ *   7. A CHANGE OF MONEY (WN6; pending row WN5-R): a nation that changed money since the first January (found in the file, in the Random town and in a
+ *      Historical one carried past a euro) is chained - RealDollar.moneyChain is [rate then / rate now] x [the US's prices then / now] x [its prices now /
+ *      then] for the year it changed - so that its real rate is held across the year; the town's real effective rate with trade on it alone is the chained
+ *      reading and not the old one; a nation that never changed reads as it did, to the bit.
  */
 public class RealDollarCheck {
 
@@ -106,6 +110,7 @@ public class RealDollarCheck {
         realGdp();
         realEffectiveRate();
         theShock();
+        changeOfMoney();
         out.printf("%nRealDollarCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -297,6 +302,7 @@ public class RealDollarCheck {
             return;
         }
         Game town = town("realdollar-effective-town", Founding.defaults().withPath(Nations.Path.RANDOM, SEED));
+        effectiveTown = town;
         quietly(() -> town.simulateMonths(30));
         WorldMoneys moneys = town.getWorldMoneys();
         Nations nations = town.getNations();
@@ -405,5 +411,141 @@ public class RealDollarCheck {
         tally("...exactly what the save-and-restore door did, level and realised inflation to the bit, 370 months on", same);
         double late = b.getPriceLevel() / a.getPriceLevel();
         assertTrue(String.format("...and the trend pull takes it back: shocked over unshocked %.4f a month on, %.4f thirty years on", early, late), early > 1.29 && late < early - .05 && late > 1);
+    }
+
+    /* ----------------------------------------------------------------- 7 */
+
+    /** The Random town section 5 played thirty months on, kept for section 7 (null until section 5 has a file to play on). */
+    static Game effectiveTown;
+
+    /**
+     * The first nation, in the file's order, whose money changed since the first January (its Year.money differs from the year before's), and the first year it
+     * did, preferring one whose rate really moved (by more than 1%: Ecuador's sucre was 1 a US$ in the file as the dollar was, and proves nothing); the first
+     * change of any sort where none moved; {0, 0} where no nation ever changed.
+     */
+    static int[] firstChange(Nations nations) {
+        int any = 0, anyYear = 0;
+        for (int n = 1; n <= nations.count(); n++) {
+            for (int y = Nations.FIRST_YEAR + 1; y <= Nations.FIRST_YEAR + 250; y++) {
+                if (nations.year(n, y).money().equals(nations.year(n, y - 1).money())) continue;
+                double was = nations.year(n, y - 1).rateToUsd(), now = nations.year(n, y).rateToUsd();
+                if (Math.abs(was / now - 1) > .01) return new int[] { n, y };
+                if (any == 0) {
+                    any = n;
+                    anyYear = y;
+                }
+                break;
+            }
+        }
+        return new int[] { any, anyYear };
+    }
+
+    /** The chain as the brief defines it, written out: the product over each year of a change in (FIRST_YEAR, year] of [rate(Y-1)/rate(Y)] x [P_US(Y-1)/P_US(Y)] x [P_n(Y)/P_n(Y-1)]. */
+    static double chainBy(Nations nations, int usa, int n, int year) {
+        double chain = 1;
+        for (int y = Nations.FIRST_YEAR + 1; y <= year; y++) {
+            if (nations.year(n, y).money().equals(nations.year(n, y - 1).money())) continue;
+            chain *= nations.year(n, y - 1).rateToUsd() / nations.year(n, y).rateToUsd()
+                    * (nations.year(usa, y - 1).priceLevel() / nations.year(usa, y).priceLevel()) * (nations.year(n, y).priceLevel() / nations.year(n, y - 1).priceLevel());
+        }
+        return chain;
+    }
+
+    /** Hands the town a finished year's trade with one nation alone, so that the real effective rate weighs it and no other (the door section 5 uses). */
+    static void tradeOnlyWith(Game town, int nation) {
+        Good good = Good.values()[0];
+        quietly(() -> town.partnerTradeForTest().restoreHistory(List.of(new PartnerTrade.Table(2001, List.of(new PartnerTrade.Cell(good, nation, 10, 5, 3_000, 1_000))))));
+    }
+
+    static void changeOfMoney() {
+        out.println("--- 7. a change of money: the partner's real rate holds across the year it changed ---");
+        Path file = WorldData.locate();
+        if (file == null || effectiveTown == null) {
+            out.println("  world-1.bin not named (-D" + WorldData.PROPERTY + "=<path>) nor at " + WorldData.DATA_FILE + ": this section did not run");
+            return;
+        }
+        oneChange("the Random town", effectiveTown);
+        Game historical = town("realdollar-change-historical", Founding.defaults().withPath(Nations.Path.HISTORICAL, SEED));
+        quietly(() -> historical.simulateMonths(1));
+        oneChange("a Historical town", historical);
+    }
+
+    static void oneChange(String label, Game town) {
+        Nations nations = town.getNations();
+        WorldMoneys moneys = town.getWorldMoneys();
+        int usa = moneys.usNation();
+        int[] first = firstChange(nations);
+        int n = first[0], changed = first[1];
+        assertTrue(label + ": the file has a nation that changed its money (" + (n == 0 ? "none" : nations.name(n) + " in " + changed + ": "
+                + nations.year(n, changed - 1).money() + " to " + nations.year(n, changed).money()) + ")", n != 0);
+        if (n == 0) return;
+        Nations.Year was = nations.year(n, changed - 1), now = nations.year(n, changed);
+        // THE CHAIN is the definition's, written out; 1 before the change and a nation that never changed
+        double c = was.rateToUsd() / now.rateToUsd() * (nations.year(usa, changed - 1).priceLevel() / nations.year(usa, changed).priceLevel())
+                * (now.priceLevel() / was.priceLevel());
+        close(label + ": the chain across the year of the change is [rate then / rate now] x [the US's prices then / now] x [its prices now / then] (" + String.format("%.6g", c) + ")",
+                RealDollar.moneyChain(nations, usa, n, changed), c, 1e-12 * Math.abs(c));
+        assertTrue(label + ": ...and 1, exactly, the year before the change", same(RealDollar.moneyChain(nations, usa, n, changed - 1), 1.0)
+                && same(RealDollar.moneyChain(nations, usa, n, Nations.FIRST_YEAR), 1.0));
+        boolean later = nations.year(n, changed + 1).money().equals(now.money());
+        if (later) assertTrue(label + ": ...and the same in the next year, which changed nothing", same(RealDollar.moneyChain(nations, usa, n, changed + 1), RealDollar.moneyChain(nations, usa, n, changed)));
+        // THE REAL RATE HOLDS: the new money's rate times the chain, with the prices of the two nations, is the old money's rate carried through the year
+        double carried = now.rateToUsd() * RealDollar.moneyChain(nations, usa, n, changed) * nations.year(usa, changed).priceLevel() / now.priceLevel();
+        double before = was.rateToUsd() * nations.year(usa, changed - 1).priceLevel() / was.priceLevel();
+        double raw = now.rateToUsd() * nations.year(usa, changed).priceLevel() / now.priceLevel();
+        close(label + ": the partner's real rate (its money a US$ x the US's prices over its own) is held across the change: " + String.format("%.6g", before) + " before, "
+                + String.format("%.6g", carried) + " after", carried, before, 1e-12 * before);
+        assertTrue(label + ": ...where read without the chain it would jump to " + String.format("%.6g", raw) + " (" + String.format("%.3g", raw / before) + " times)",
+                Math.abs(raw / before - 1) > .01);
+        chainAndGetter(label, town, n, nations, moneys, usa, true);
+        // A NATION THAT NEVER CHANGED reads as it did, to the bit
+        int stable = nations.index("DEU");
+        boolean never = true;
+        for (int y = Nations.FIRST_YEAR + 1; y <= Nations.FIRST_YEAR + 250; y++) never &= nations.year(stable, y).money().equals(nations.year(stable, Nations.FIRST_YEAR).money());
+        assertTrue(label + ": fixture: Germany never changed its money (" + nations.year(stable, Nations.FIRST_YEAR).money() + " throughout)", never);
+        chainAndGetter(label, town, stable, nations, moneys, usa, false);
+    }
+
+    /**
+     * Weights the town's trade on one nation alone, brings the moneys on to the year after a change if they are not there, and holds the getter: a nation that changed
+     * reads as the definition says (against the way it was read, which differs), one that never did as it was read, to the bit.
+     */
+    static void chainAndGetter(String label, Game town, int n, Nations nations, WorldMoneys moneys, int usa, boolean changed) {
+        if (changed) {
+            int firstChange = Nations.FIRST_YEAR + 1;
+            for (int y = Nations.FIRST_YEAR + 1; y <= Nations.FIRST_YEAR + 250; y++) {
+                if (!nations.year(n, y).money().equals(nations.year(n, y - 1).money())) {
+                    firstChange = y;
+                    break;
+                }
+            }
+            int target = (firstChange + 1 - Nations.FIRST_YEAR) * 12;
+            for (int t = moneys.month() + 1; t <= target; t++) {
+                int month = t;
+                quietly(() -> moneys.step(month, null));
+            }
+        }
+        tradeOnlyWith(town, n);
+        int t = moneys.month(), yearNow = Nations.FIRST_YEAR + t / 12;
+        double rate = town.getForeignAccounts().getRate(), index = town.getPriceIndex().getIndex(), level = town.getWorldEconomy().getPriceLevel();
+        String codeNow = nations.year(n, yearNow).money(), codeThen = nations.year(n, Nations.FIRST_YEAR).money();
+        double prices = n == usa ? level : moneys.priceLevel(n, t);
+        double chain = chainBy(nations, usa, n, yearNow);
+        double then = moneys.rateAtStart(codeThen);
+        if (Double.isNaN(then)) then = nations.year(n, Nations.FIRST_YEAR).rateToUsd();
+        double want = RealDollar.realEffectiveRate(rate, ForeignAccounts.OPENING_RATE, index, List.of(new RealDollar.Partner(4_000, moneys.rate(codeNow) * chain, then, prices)));
+        double read = RealDollar.realEffectiveRate(rate, ForeignAccounts.OPENING_RATE, index,
+                List.of(new RealDollar.Partner(4_000, moneys.rate(codeNow), moneys.rateAtStart(codeNow), prices)));
+        double got = town.realEffectiveRate();
+        String who = nations.name(n) + " (" + codeThen + (codeThen.equals(codeNow) ? "" : " to " + codeNow) + ", " + yearNow + ")";
+        if (changed) {
+            assertTrue(label + ": " + who + ": the chain is " + String.format("%.6g", chain) + " and not 1", Math.abs(chain - 1) > 1e-6);
+            close(label + ": the town's real effective rate with trade on " + nations.name(n) + " alone is the chained reading", got, want, 1e-9 * want);
+            assertTrue(label + ": ...which is not the reading without the chain (" + String.format("%.4f", read) + "): the change of money was misread by " + String.format("%.2f", got - read) + " points",
+                    Math.abs(got - read) > 1e-6 * read && Double.isFinite(got) && got > 0);
+        } else {
+            assertTrue(label + ": " + who + " never changed, so its chain is exactly 1", same(chain, 1.0) && same(RealDollar.moneyChain(nations, usa, n, yearNow), 1.0));
+            assertTrue(label + ": ...and the town's real effective rate with trade on it alone is the old reading to the bit (" + String.format("%.6f", got) + ")", same(got, read) && same(got, want));
+        }
     }
 }

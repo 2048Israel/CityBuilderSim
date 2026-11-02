@@ -36,6 +36,8 @@
 
 **Uses:** [Debt](Debt.md) (27), [Game](Game.md) (17), [DebtManager](DebtManager.md) (11), [MoneyAudit](MoneyAudit.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [DebtQuote](DebtQuote.md) (6), [WorldMoneys](WorldMoneys.md) (5), [Rollover](Rollover.md) (4), [Buyback](Buyback.md) (2), [InterestAbroadCheck](InterestAbroadCheck.md) (1), [PolicyRates](PolicyRates.md) (1), [Auction](Auction.md) (1), [ShortTermTBill](ShortTermTBill.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
+**Used by (1):** [PartnersCheck](PartnersCheck.md)
+
 ## Sections
 
 | line | section |

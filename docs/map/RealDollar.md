@@ -1,10 +1,11 @@
-# RealDollar.java - 94 lines · 7 methods · 1 constants · model
+# RealDollar.java - 131 lines · 9 methods · 1 constants · model
 
 `ham/citybuildersim/RealDollar.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
 > The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and
-> the real effective rate. Three pure functions of their inputs, and nothing in the model reads any of them: they answer "is my money dear?", which
-> the gauge against a parity made of rent answered after a fashion (docs/studies/spec-exchange-rates.md 3.9; WN6 shows them).
+> the real effective rate (and, since WN6, the chain that carries a partner's rate across a change of its money). Pure functions of their inputs, and
+> nothing in the model reads any of them: they answer "is my money dear?", which the gauge against a parity made of rent answered after a fashion
+> (docs/studies/spec-exchange-rates.md 3.9; WN6 shows them).
 > 
 > WHY THIS EXISTS. Jerus, 2026-10-21: "lets keep something, the real usd dollar, aka two us dollars, one is the in game us dollar which inflates over
 > time, and the other is the real us dollar, and that one is what real gdp is shown in, as well as an exchange rate with it, purely just for
@@ -21,7 +22,7 @@
 > Every figure is in the city's money of today, so a currency reform (Denomination) changes nothing: the caller hands the founding's rate in today's
 > units (Denomination.money(ForeignAccounts.OPENING_RATE)), and the D$ per real US$ is read in today's D$.
 
-**Uses:** [PriceLevel](PriceLevel.md) (2), [Rankings](Rankings.md) (1), [CityCalendar](CityCalendar.md) (1)
+**Uses:** [Nations](Nations.md) (7), [PriceLevel](PriceLevel.md) (2), [Rankings](Rankings.md) (1), [CityCalendar](CityCalendar.md) (1), [WorldMoneys](WorldMoneys.md) (1)
 
 **Used by (5):** [Game](Game.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RealDollarCheck](RealDollarCheck.md)
 
@@ -29,19 +30,21 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 34 | `RealDollar.BRIDGE` | `PriceLevel.usCpi(Rankings.BASE_YEAR) / PriceLevel.usCpi(CityCalendar.EPOCH_YEAR)` | Real 2015 US dollars in a founding US dollar (EP1, study call 12): the US CPI-U of Rankings.BASE_YEAR over that of the calendar's first year, the one place the pivot to 2015 is struck. |
+| 35 | `RealDollar.BRIDGE` | `PriceLevel.usCpi(Rankings.BASE_YEAR) / PriceLevel.usCpi(CityCalendar.EPOCH_YEAR)` | Real 2015 US dollars in a founding US dollar (EP1, study call 12): the US CPI-U of Rankings.BASE_YEAR over that of the calendar's first year, the one place the pivot to 2015 is struck. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 25 | 70 | **type** `public final class RealDollar` | The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and the real effective rate. |
-| 27 | 1 | `private RealDollar()` |  |
-| 41 | 5 | **type** `public record Partner(double weight, double moneyPerUsdNow, double moneyPerUsdAtFounding, double pricesSinc...` | What the city's money is worth against a partner, for the real effective rate: the weight it trades with (any positive scale: the weights are shares of their sum), the partner's money per US$ now and in the founding's... |
-| 42 | 3 | `boolean usable()` _(in RealDollar.Partner)_ |  |
-| 47 | 1 | `private static boolean positive(double v)` |  |
-| 50 | 3 | `public static List<Partner> usAlone(double usPricesSinceFounding)` | The US alone, as the one partner (w = 1): its money is the unit, so e and e0 are 1, and its prices are the in-game US$'s level since founding. |
-| 59 | 3 | `public static double dollarsPer2015Usd(double ratePerUsd, double usPricesSinceFounding)` | D$ per real 2015 US$: the rate (D$ per US$) times the US$'s price level since founding, over the bridge. |
-| 68 | 3 | `public static double realGdp2015Usd(double gdp, double priceIndex, double foundingRatePerUsd)` | The city's GDP in real 2015 US$, the World Bank's way: the GDP over the city's price index (YearBook.realGdp's division, which carries it back to the D$ of founding, and is the same through a currency reform) over the... |
-| 80 | 14 | `public static double realEffectiveRate(double ratePerUsd, double foundingRatePerUsd, double cityPricesSinceFounding, List<Partn...` | The real effective rate, the BIS's way: 100 x exp(sum of w_j x [ln(e_j / e_j0) - ln(rate / rate0) + ln P_city - ln(P_j / P_j0)]) over the partners, with e_j the partner's money per US$ (now, and in the founding's mont... |
+| 26 | 106 | **type** `public final class RealDollar` | The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and the real effective rate (and, since WN6, the chain that carries a part... |
+| 28 | 1 | `private RealDollar()` |  |
+| 42 | 5 | **type** `public record Partner(double weight, double moneyPerUsdNow, double moneyPerUsdAtFounding, double pricesSinc...` | What the city's money is worth against a partner, for the real effective rate: the weight it trades with (any positive scale: the weights are shares of their sum), the partner's money per US$ now and in the founding's... |
+| 43 | 3 | `boolean usable()` _(in RealDollar.Partner)_ |  |
+| 48 | 1 | `private static boolean positive(double v)` |  |
+| 51 | 3 | `public static List<Partner> usAlone(double usPricesSinceFounding)` | The US alone, as the one partner (w = 1): its money is the unit, so e and e0 are 1, and its prices are the in-game US$'s level since founding. |
+| 60 | 3 | `public static double dollarsPer2015Usd(double ratePerUsd, double usPricesSinceFounding)` | D$ per real 2015 US$: the rate (D$ per US$) times the US$'s price level since founding, over the bridge. |
+| 69 | 3 | `public static double realGdp2015Usd(double gdp, double priceIndex, double foundingRatePerUsd)` | The city's GDP in real 2015 US$, the World Bank's way: the GDP over the city's price index (YearBook.realGdp's division, which carries it back to the D$ of founding, and is the same through a currency reform) over the... |
+| 87 | 10 | `public static double moneyChain(Nations nations, int usNation, int nation, int year)` | What a partner's money a US$ now has to be multiplied by to stand in the units of the money its nation used in the first January (WN5-R, WN6): the product, over each year Y after Nations.FIRST_YEAR up to the year aske... |
+| 102 | 5 | `public static double moneyAtFounding(Nations nations, WorldMoneys moneys, int nation)` | A partner's money a US$ in the first January, in the money its nation used then (the one moneyChain's units are): that money's rate in the WorldMoneys' opening month, else the nation's own figure for the first year wh... |
+| 117 | 14 | `public static double realEffectiveRate(double ratePerUsd, double foundingRatePerUsd, double cityPricesSinceFounding, List<Partn...` | The real effective rate, the BIS's way: 100 x exp(sum of w_j x [ln(e_j / e_j0) - ln(rate / rate0) + ln P_city - ln(P_j / P_j0)]) over the partners, with e_j the partner's money per US$ (now, and in the founding's mont... |
 

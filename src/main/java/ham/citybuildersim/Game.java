@@ -1277,7 +1277,7 @@ public class Game {
     /** The city's trade by partner, built with the market; null with none. */
     private transient volatile PartnerTrade partnerTrade;
 
-    /** The world market of this city, or null where there is no world file (the city then plays on the goods' literals) or it has not been built yet: the first month builds it, a load builds it. The model's thread's to call into; a screen reads figures, not the solve. */
+    /** The world market of this city, or null where there is no world file (the city then plays on the goods' literals) or it has not been built yet: the first month builds it, a load builds it. The model's thread's to call into; a screen reads figures, not the solve - and the curves, WorldMarket.curve(), which are immutable snapshots safe from any thread (WN6). */
     public WorldMarket getWorldMarket() { return worldMarket; }
 
     /** The city's trade by partner as of the last month tallied - a whole, immutable snapshot, safe from any thread; null with no market. */
@@ -1866,10 +1866,18 @@ public class Game {
     }
 
     /**
+     * The city's GDP in real 2015 US$ a year, in whole US$: the last finished month's (realGdp2015Usd(), thousands) at that month's pace, times 12 and
+     * 1,000. The one figure the screens set beside a nation's output (PartnersView.nation(), the window header's GDP tile; WN6, D29).
+     */
+    public double realGdp2015UsdYear() { return realGdp2015Usd() * 12 * 1000; }
+
+    /**
      * The D$'s real effective rate, 100 at founding (RealDollar.realEffectiveRate): the weights are the city's trade with each nation over the last
-     * finished year, else the year to date, else the US alone. Each partner's money is the one its nation uses now, against that money's rate in
-     * the first January (Nations.FIRST_YEAR); the US's prices are the in-game US$'s own (the world's level, shock and all), a partner's its nation's on the path. With no
-     * world's moneys it is the D$ against the US$ alone, the US$'s prices the world's level.
+     * finished year, else the year to date, else the US alone. Each partner's money is the one its nation uses now, against the money it used in the
+     * first January (Nations.FIRST_YEAR), carried across any change of money in between so that its real rate holds through the year it changed
+     * (RealDollar.moneyChain, WN6: a nation's prices run on through a euro or a dollarisation while the new money's rate starts afresh); a nation that
+     * has not changed money reads as it always did. The US's prices are the in-game US$'s own (the world's level, shock and all), a partner's its
+     * nation's on the path. With no world's moneys it is the D$ against the US$ alone, the US$'s prices the world's level.
      */
     public double realEffectiveRate() {
         double foundingRate = denomination.money(ForeignAccounts.OPENING_RATE);
@@ -1881,9 +1889,11 @@ public class Game {
             int t = moneys.month();
             for (int nation = 1; nation < weight.length; nation++) {
                 if (!(weight[nation] > 0)) continue;
-                String code = nations.year(nation, Nations.FIRST_YEAR + t / 12).money();
+                int yearNow = Nations.FIRST_YEAR + t / 12;
+                String code = nations.year(nation, yearNow).money();
                 double prices = nation == moneys.usNation() ? us : moneys.priceLevel(nation, t);
-                RealDollar.Partner partner = new RealDollar.Partner(weight[nation], moneys.rate(code), moneys.rateAtStart(code), prices);
+                RealDollar.Partner partner = new RealDollar.Partner(weight[nation], moneys.rate(code) * RealDollar.moneyChain(nations, moneys.usNation(), nation, yearNow),
+                        RealDollar.moneyAtFounding(nations, moneys, nation), prices);
                 if (partner.usable()) partners.add(partner);
             }
         }

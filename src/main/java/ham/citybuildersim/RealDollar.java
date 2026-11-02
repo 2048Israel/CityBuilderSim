@@ -4,8 +4,9 @@ import java.util.List;
 
 /**
  * The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and
- * the real effective rate. Three pure functions of their inputs, and nothing in the model reads any of them: they answer "is my money dear?", which
- * the gauge against a parity made of rent answered after a fashion (docs/studies/spec-exchange-rates.md 3.9; WN6 shows them).
+ * the real effective rate (and, since WN6, the chain that carries a partner's rate across a change of its money). Pure functions of their inputs, and
+ * nothing in the model reads any of them: they answer "is my money dear?", which the gauge against a parity made of rent answered after a fashion
+ * (docs/studies/spec-exchange-rates.md 3.9; WN6 shows them).
  *
  * WHY THIS EXISTS. Jerus, 2026-10-21: "lets keep something, the real usd dollar, aka two us dollars, one is the in game us dollar which inflates over
  * time, and the other is the real us dollar, and that one is what real gdp is shown in, as well as an exchange rate with it, purely just for
@@ -70,12 +71,48 @@ public final class RealDollar {
     }
 
     /**
+     * What a partner's money a US$ now has to be multiplied by to stand in the units of the money its nation used in the first January (WN5-R, WN6):
+     * the product, over each year Y after Nations.FIRST_YEAR up to the year asked in which the nation changed its money (its Year.money differs from
+     * the year before's), of c(Y) = [rate(Y-1) / rate(Y)] x [P_US(Y-1) / P_US(Y)] x [P_n(Y) / P_n(Y-1)], rate being the nation's money a US$ (Year.rateToUsd)
+     * and P a price level (Year.priceLevel), the nation's n and the US's. 1 for a nation that never changed (an empty product, so its rate reads as it did,
+     * to the bit); NaN where a year's figure is missing, which leaves the partner out of the average.
+     * <p>
+     * WHY. realEffectiveRate measures a partner by its money's rate now over that money's rate in the first January, against its price level since then.
+     * A nation that has changed money since (a euro, a dollarisation, Zimbabwe's four) has a price index that runs on through the change while the new
+     * money's rate starts afresh against the old one's, so the pair misreads: Greece's drachma at 365 a US$ and its euro at 1.1 are not a 300-fold
+     * revaluation. Chained, the nation's REAL rate (its money a US$ x the US's prices over its own) is held across the year it changed money: c(Y) is the
+     * factor that makes the new money's rate in Y, multiplied by it, the old money's rate in Y-1 carried through the year's two inflations. Pending row
+     * WN5-R, the recommended fix taken (spec-nations 8, D29).
+     */
+    public static double moneyChain(Nations nations, int usNation, int nation, int year) {
+        double chain = 1;
+        for (int y = Nations.FIRST_YEAR + 1; y <= year; y++) {
+            Nations.Year was = nations.year(nation, y - 1), now = nations.year(nation, y);
+            if (java.util.Objects.equals(was.money(), now.money())) continue;
+            Nations.Year usWas = nations.year(usNation, y - 1), usNow = nations.year(usNation, y);
+            chain *= was.rateToUsd() / now.rateToUsd() * (usWas.priceLevel() / usNow.priceLevel()) * (now.priceLevel() / was.priceLevel());
+        }
+        return chain;
+    }
+
+    /**
+     * A partner's money a US$ in the first January, in the money its nation used then (the one moneyChain's units are): that money's rate in the
+     * WorldMoneys' opening month, else the nation's own figure for the first year where the moneys do not carry it. NaN where neither is there.
+     */
+    public static double moneyAtFounding(Nations nations, WorldMoneys moneys, int nation) {
+        Nations.Year first = nations.year(nation, Nations.FIRST_YEAR);
+        double rate = moneys.rateAtStart(first.money());
+        return Double.isNaN(rate) ? first.rateToUsd() : rate;
+    }
+
+    /**
      * The real effective rate, the BIS's way: 100 x exp(sum of w_j x [ln(e_j / e_j0) - ln(rate / rate0) + ln P_city - ln(P_j / P_j0)]) over the
      * partners, with e_j the partner's money per US$ (now, and in the founding's month), rate the D$ per US$ (now, and at founding), P_city the city's
      * price index since founding and P_j/P_j0 the partner's price level against its founding's. w_j are the partners' weights as shares of their sum.
      * 100 at founding; above 100 the D$ is dearer in real terms than it was (a stronger D$, the city's prices up against the partners', or both).
      * A partner that is not usable is left out; with none left, the US alone at prices of 1 (the D$ against the US$ and the city's prices only).
-     * NaN for a rate, a founding rate or a price index that is not positive.
+     * NaN for a rate, a founding rate or a price index that is not positive. A partner's money a US$ is in the units of the money its nation used
+     * at the founding: a nation that has changed money hands in its money's rate times moneyChain (WN6), so the rate runs on across the change.
      */
     public static double realEffectiveRate(double ratePerUsd, double foundingRatePerUsd, double cityPricesSinceFounding, List<Partner> partners) {
         if (!positive(ratePerUsd) || !positive(foundingRatePerUsd) || !positive(cityPricesSinceFounding)) return Double.NaN;
