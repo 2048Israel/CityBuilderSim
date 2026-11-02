@@ -19,3 +19,14 @@ nothing blocking).
 
 The checks: a split whose shares round differently reads the same on both; the
 hover's cost measured and held.
+
+## And WN6's (its gate review, 2026-11-01: SHIP, bit-exact on every path)
+
+4. **A partner whose money never changed** now counts in the real effective
+   rate (`RealDollar.java` ~105, `moneyAtFounding` uses the file's first-year
+   `rateToUsd` where main's NaN founding rate left it out). Display only
+   (TradeScreen reads `realEffectiveRate()`); say on the screen which partners
+   it weighs, and hold it in a check.
+5. **`WorldMarket.refill()` marks the fills fresh before the curves are built**
+   (~1552-1561): a `Curve` constructor that threw would leave `band()` reading
+   the previous rebuild's curve. Set `fillsFresh` after the curves are built.
