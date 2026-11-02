@@ -1,6 +1,6 @@
 # PassThroughCheck.java - 633 lines · 19 methods · 10 constants · harnesses
 
-`ham/citybuildersim/PassThroughCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PassThroughCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1,
 > 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUGH of

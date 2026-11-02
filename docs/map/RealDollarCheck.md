@@ -1,6 +1,6 @@
 # RealDollarCheck.java - 551 lines · 23 methods · 4 constants · harnesses
 
-`ham/citybuildersim/RealDollarCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RealDollarCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > The two US dollars (batch WN4, D29; spec-nations 10 item 29, spec-exchange-rates 3.9): the in-game US$ inflating on the US's path, and the real US$ of
 > 2015 the city's real GDP and a rate are shown in, for comparison only.

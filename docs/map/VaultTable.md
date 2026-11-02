@@ -1,6 +1,6 @@
 # VaultTable.java - 214 lines · 12 methods · 3 constants · interface
 
-`ham/citybuildersim/ui/VaultTable.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/VaultTable.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > The vault in eight moneys (WN6; docs/studies/spec-nations.md 8, board 3): the first card of Trade &gt; The reserves where the vault holds, or can hold,
 > more than the dollar - a table of the eight (what it holds of each in the money's own mark, what that is worth in US$, its share, how it moved against

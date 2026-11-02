@@ -1,6 +1,6 @@
 # DeathCareFirstCheck.java - 508 lines · 17 methods · 4 constants · harnesses
 
-`ham/citybuildersim/DeathCareFirstCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DeathCareFirstCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > Death care first while the dead wait (0.7.129, batch T1-B): the rule that
 > serves the city's own cemeteries and crematoria first out of its share of
@@ -55,7 +55,7 @@
 
 **Uses:** [BuildingManager](BuildingManager.md) (21), [Game](Game.md) (17), [ConstructionControl](ConstructionControl.md) (10), [Health](Health.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Healthcare](Healthcare.md) (4), [Founding](Founding.md) (3), [GameFiles](GameFiles.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [Sectors](Sectors.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TempDirs](TempDirs.md) (1), [Sector](Sector.md) (1)
 
-**Used by (1):** [BuildersFirstCheck](BuildersFirstCheck.md)
+**Used by (2):** [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
-# MortgageCheck.java - 1,234 lines · 26 methods · 2 constants · harnesses
+# MortgageCheck.java - 1,238 lines · 26 methods · 2 constants · harnesses
 
-`ham/citybuildersim/MortgageCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MortgageCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > The landlords' insured mortgages (0.7.11): the instrument, the lender's
 > tests, the city's insurance and the bank's book.
@@ -76,9 +76,9 @@
 | 593 | 7. THE BANK |
 | 715 | 8. SAVE AND LOAD |
 | 814 | 9. WHERE THE OLD RULE SAID NO |
-| 919 | 10. THE LEVERAGE RATIO (round 2) |
-| 1012 | 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) |
-| 1130 | 12. PAYOUTS AFTER PRINCIPAL (round 2) |
+| 923 | 10. THE LEVERAGE RATIO (round 2) |
+| 1016 | 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) |
+| 1134 | 12. PAYOUTS AFTER PRINCIPAL (round 2) |
 
 ## Constants
 
@@ -99,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 1160 | **type** `public class MortgageCheck` | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. |
+| 75 | 1164 | **type** `public class MortgageCheck` | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 86 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 92 | 6 | `static void same(String label, String actual, String expected)` |  |
@@ -161,29 +161,29 @@
 | 717 | 87 | `static void saveAndLoad(Path root) throws Exception` |  |
 | 806 | 7 | `static String describe(BusinessDebt loan)` | A loan's fields, to the bit, as one string. |
 
-### 9. WHERE THE OLD RULE SAID NO (lines 814-918)
+### 9. WHERE THE OLD RULE SAID NO (lines 814-922)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 816 | 102 | `static void whereTheOldRuleSaidNo(Path root)` |  |
+| 816 | 106 | `static void whereTheOldRuleSaidNo(Path root)` |  |
 
-### 10. THE LEVERAGE RATIO (round 2) (lines 919-1011)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 926 | 9 | `static Bank mortgageBank(double equity)` | A bank by hand whose business book is $1M, $900k of it insured mortgages, and whose equity is `equity`: net borrowed, so the book is everything on its sheet and the exposure is the book. |
-| 936 | 75 | `static void leverageRatio()` |  |
-
-### 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) (lines 1012-1129)
+### 10. THE LEVERAGE RATIO (round 2) (lines 923-1015)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1030 | 6 | `static void closeAMonth(Bank b, double interest, double payroll)` | One closed month of a hand-built bank: this interest, these costs. |
-| 1037 | 92 | `static void branchesClose(Path root)` |  |
+| 930 | 9 | `static Bank mortgageBank(double equity)` | A bank by hand whose business book is $1M, $900k of it insured mortgages, and whose equity is `equity`: net borrowed, so the book is everything on its sheet and the exposure is the book. |
+| 940 | 75 | `static void leverageRatio()` |  |
 
-### 12. PAYOUTS AFTER PRINCIPAL (round 2) (lines 1130-1234)
+### 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) (lines 1016-1133)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1132 | 102 | `static void payoutsAfterPrincipal(Path root)` |  |
+| 1034 | 6 | `static void closeAMonth(Bank b, double interest, double payroll)` | One closed month of a hand-built bank: this interest, these costs. |
+| 1041 | 92 | `static void branchesClose(Path root)` |  |
+
+### 12. PAYOUTS AFTER PRINCIPAL (round 2) (lines 1134-1238)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1136 | 102 | `static void payoutsAfterPrincipal(Path root)` |  |
 
