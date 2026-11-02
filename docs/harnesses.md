@@ -17977,71 +17977,71 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   B is founded at today's prices (-Dcbs.priceLevel=1, PriceLevel's one door).
 > ...
 
-- **L218 1. the series: 126 years of the US consumer price index**
-- **L221 2. the world file's US dollar, from the founding to 2025, times the factor, is one**
-- **L224 3. each funnel carries the factor**
-- **L227 4. the rankings' bridge is the series' ratio**
-  - L234 the twin runs:
-- **L238 5. the named literals and the cross-file ratios, against today's figures**
-  - L267 the series' first year is the calendar's (CityCalendar.EPOCH_YEAR)
-  - L268 ...its last is the year the literals are priced in (WorldMarket.REFERENCE_YEAR)
-  - L269 ...so it spans 126 years
-  - L275 every year has a positive index
-  - L279 a year outside the series is refused
-  - L280 1913 is the BLS's first published year, and 1912 is Rees's
-  - L281 the factor is the first year's index over the last's (8.333 / 321.943)
-  - L283 ...about a thirty-eighth (the 1900 dollar buys 38.6 of today's)
-  - L284 atFounding(x) is x times the factor
-  - L298 no fixture:
-  - L303 the file -D
-  - L347 PayTier: each of the
-  - L348 ...and the ladder's shape (each rung over the unskilled) is today's
-  - L349 LabourMarket.DEFAULT_MINIMUM_WAGE is the unskilled rung, not scaled again
-  - L350 ...and its dial's bounds are the rung's x.25 and x5
-  - L352 TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again
-  - L371 Good: the
-  - L372 ...a good that cannot be imported or exported still cannot (
-  - L373 ...and the wedge (freight and export over import) is each good's today's
-  - L374 BuildingManager.MATERIALS_WORLD_PRICE is Good.MATERIALS's import price, the one copy
-  - L389 ui.Money.unitPrice shows every one of the
-  - L393 consumption.json loads
-  - L407 consumption.json: its
-  - L408 ...to the bit what Good prices them at (ConsumptionCheck's equality)
-  - L413 buildings.json loads
-  - L437 buildings.json: the
-  - L438 ...the
+- **L219 1. the series: 126 years of the US consumer price index**
+- **L222 2. the world file's US dollar, from the founding to 2025, times the factor, is one**
+- **L225 3. each funnel carries the factor**
+- **L228 4. the rankings' bridge is the series' ratio**
+  - L235 the twin runs:
+- **L239 5. the named literals and the cross-file ratios, against today's figures**
+  - L268 the series' first year is the calendar's (CityCalendar.EPOCH_YEAR)
+  - L269 ...its last is the year the literals are priced in (WorldMarket.REFERENCE_YEAR)
+  - L270 ...so it spans 126 years
+  - L276 every year has a positive index
+  - L280 a year outside the series is refused
+  - L281 1913 is the BLS's first published year, and 1912 is Rees's
+  - L282 the factor is the first year's index over the last's (8.333 / 321.943)
+  - L284 ...about a thirty-eighth (the 1900 dollar buys 38.6 of today's)
+  - L285 atFounding(x) is x times the factor
+  - L299 no fixture:
+  - L304 the file -D
+  - L348 PayTier: each of the
+  - L349 ...and the ladder's shape (each rung over the unskilled) is today's
+  - L350 LabourMarket.DEFAULT_MINIMUM_WAGE is the unskilled rung, not scaled again
+  - L351 ...and its dial's bounds are the rung's x.25 and x5
+  - L353 TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again
+  - L372 Good: the
+  - L373 ...a good that cannot be imported or exported still cannot (
+  - L374 ...and the wedge (freight and export over import) is each good's today's
+  - L375 BuildingManager.MATERIALS_WORLD_PRICE is Good.MATERIALS's import price, the one copy
+  - L390 ui.Money.unitPrice shows every one of the
+  - L394 consumption.json loads
+  - L408 consumption.json: its
+  - L409 ...to the bit what Good prices them at (ConsumptionCheck's equality)
+  - L414 buildings.json loads
+  - L438 buildings.json: the
   - L439 ...the
-  - L440 ...and the
-  - L441 ...and the points, materials, land and capacity are the file's, untouched
-  - L447 the built-in definitions are priced at the founding's level too (the House, as the file's)
-  - L466 RealDollar.BRIDGE is the 2015 index over the founding year's (
-  - L468 ...a founding dollar is worth more than a 2015 one, because 1900's dollar bought more
-  - L469 a real 2015 dollar costs 1/BRIDGE of a founding one at the founding's rate (D$ per real US$)
-  - L470 a month's GDP over the index and the founding rate is bridged into real 2015 dollars
-  - L471 the founding game dollar is BRIDGE real ones; the factor makes the 2025 literals 1/BRIDGE-th of that again (1900 -> 2015 -> 2025)
-  - L545 the child at the factor ran with the factor (
-  - L546 the child at today's prices ran with 1
-  - L625 ...the
-  - L627 ...and the city really lived (more people at the end than the start)
-  - L981 cash
-  - L982 gdp.month
-  - L983 bank.deposits
-  - L984 retail.shelf
-  - L985 rent
-  - L986 wage.minimum
-  - L987 rate
-  - L988 world.level
-  - L989 priceIndex
-  - L990 pop
-  - L991 workforce
-  - L992 unemployed
-  - L993 homes
-  - L994 stores
-  - L996 jobs.
-  - L1008 stock.
-  - L1010 sector.
-  - L1032 h.
-  - L1037 h.
+  - L440 ...the
+  - L441 ...and the
+  - L442 ...and the points, materials, land and capacity are the file's, untouched
+  - L448 the built-in definitions are priced at the founding's level too (the House, as the file's)
+  - L467 RealDollar.BRIDGE is the 2015 index over the founding year's (
+  - L469 ...a founding dollar is worth more than a 2015 one, because 1900's dollar bought more
+  - L470 a real 2015 dollar costs 1/BRIDGE of a founding one at the founding's rate (D$ per real US$)
+  - L471 a month's GDP over the index and the founding rate is bridged into real 2015 dollars
+  - L472 the founding game dollar is BRIDGE real ones; the factor makes the 2025 literals 1/BRIDGE-th of that again (1900 -> 2015 -> 2025)
+  - L546 the child at the factor ran with the factor (
+  - L547 the child at today's prices ran with 1
+  - L626 ...the
+  - L628 ...and the city really lived (more people at the end than the start)
+  - L982 cash
+  - L983 gdp.month
+  - L984 bank.deposits
+  - L985 retail.shelf
+  - L986 rent
+  - L987 wage.minimum
+  - L988 rate
+  - L989 world.level
+  - L990 priceIndex
+  - L991 pop
+  - L992 workforce
+  - L993 unemployed
+  - L994 homes
+  - L995 stores
+  - L997 jobs.
+  - L1009 stock.
+  - L1011 sector.
+  - L1033 h.
+  - L1038 h.
 
 ## QuarryingCheck.java - 47 labelled assertions
 
