@@ -56,8 +56,8 @@ UNITS = {'MRU': ('MR', [(0, 0.1)]),
 STALE_FROM = {'SYP': month_number('2011-01')}
 
 # The 2019 RTGS dollar and the 2024 Zimbabwe Gold: the legal conversion 1 ZWG = 2498.7242 ZWL and the launch rate of
-# 13.5616 ZWG a dollar on 2024-04-05 (Reserve Bank of Zimbabwe) join ZWL's end and ZWG's start; WDI's 2025 figure
-# (26.60) is ZWG's year.
+# 13.5616 ZWG a dollar on 2024-04-05 (Reserve Bank of Zimbabwe) join ZWL's end and ZWG's start; the 2025 annual rate
+# (31.80, the World Bank's GDP in local money over its GDP in US$) is ZWG's year.
 ZWG_PER_USD_AT_LAUNCH = 13.5616
 ZWL_PER_ZWG = 2498.7242
 ANCHORS = {'ZWL': {month_number('2024-04'): ZWG_PER_USD_AT_LAUNCH * ZWL_PER_ZWG},   # ZWL's value there is only a bridge
@@ -67,25 +67,33 @@ ANCHORS = {'ZWL': {month_number('2024-04'): ZWG_PER_USD_AT_LAUNCH * ZWL_PER_ZWG}
 PARITY = {'MWK': ('USD', 1751.0)}
 
 # The sucre was fixed at 25,000 a dollar for dollarisation (the Law for the Economic Transformation of Ecuador,
-# 2000-03): BIS and WDI have nothing for it.
+# 2000-03): BIS and the annual rates have nothing for it.
 ECS_PER_USD = 25000.0
 
-# Cuba: no BIS or WDI rate. The official peso is held at 1 to the dollar, the CUC's parity that WDI's dollar GDP rests on
+# Cuba: no BIS or annual rate. The official peso is held at 1 to the dollar, the CUC's parity that WDI's dollar GDP rests on
 # to 2020 and that gdp_usd keeps after: the unification of 2021-01 at 24 (Banco Central de Cuba) is not applied, because
 # the dollar GDP would have to fall 24-fold with it and no source here says by how much.
 CUP_PER_USD = 1.0
 
-# North Korea: no BIS or WDI rate. The won's official rate has been about 100 to the dollar since the 2009 redenomination
+# North Korea: no BIS or annual rate. The won's official rate has been about 100 to the dollar since the 2009 redenomination
 # (the rate of the UN's operational exchange rates and of the Bank of Korea's estimates of the North's GNI).
 KPW_PER_USD = 100.0
 
-# The years of WDI's rate that are the money's own where only some are: Zimbabwe Gold's is 2025 (WDI's 2024 is a mix of
-# the RTGS dollar and the Gold).
-WDI_ONLY_YEARS = {'ZWG': (2025, 2025)}
+# The last year of the Penn World Table 11.0: its exchange rate xr is the annual rate up to it, the World Bank's GDP
+# in local money over its GDP in US$ after it and where PWT has no figure (LC3: the WDI's official rate, PA.NUS.FCRF,
+# is the IMF's figure, which a sold game may not ship).
+PWT_LAST_YEAR = 2023
 
-# The codes whose WDI figure is not the money's own (WDI gives the nation's money at the end of the period or a mixed
-# year), so months of these are never filled from it.
-WDI_SKIP = ('ECS', 'ZWN', 'ZWL', 'SVC')
+# The years of the annual rate that are the money's own where only some are: Zimbabwe Gold's is 2025 (the World Bank
+# restates Zimbabwe's accounts in the Gold, and its 2024 is a mix of the RTGS dollar and the Gold).
+ANNUAL_ONLY_YEARS = {'ZWG': (2025, 2025)}
+
+# The codes whose annual rate is not the money's own, so months of these are never filled from it: the sources give
+# the nation's money at the end of the period or a mixed year (the sucre, Zimbabwe's two dollars, the colon); Liberia's
+# accounts are in US dollars (its GDP in local money over its GDP in US$ is 1, PWT's xr too); Iran's dollar GDP is
+# converted at a market rate about ten times the official one the BIS gives (453,000 rials in 2024 against 42,000);
+# Cuba's peso and Malawi's kwacha are held at the rates their dials give (CUP_PER_USD, PARITY).
+ANNUAL_SKIP = ('ECS', 'ZWN', 'ZWL', 'SVC', 'LRD', 'IRR', 'CUP', 'MWK')
 
 # Names of the moneys, authored: every code any history names.
 MONEY_NAMES = {
@@ -219,8 +227,30 @@ def interior(points, months):
     return out
 
 
-def build_moneys(info, bis, wdi_fx):
-    """info from read_moneys; bis from src.bis_monthly; wdi_fx from src.wdi('PA.NUS.FCRF').
+PWT_HOW = 'PWT 11.0 xr of the year'
+BANK_HOW = 'WDI NY.GDP.MKTP.CN over NY.GDP.MKTP.CD of the year'
+
+
+def annual_rates(pwt, gdp_lcu, gdp_usd):
+    """The annual rate a nation's money is filled from in a year the BIS has no month of it: {iso3: {year: (units a
+    US$, how)}}, PWT 11.0's xr to PWT_LAST_YEAR, else the World Bank's GDP in local money over its GDP in US$ (the rate
+    the Bank converts the year's output at). pwt from src.pwt, gdp_lcu and gdp_usd from src.wdi."""
+    out = {}
+    for n in common.NATIONS:
+        row = {}
+        for y in range(common.FIRST_YEAR, common.LAST_DATA_YEAR + 1):
+            xr = pwt.get(n, {}).get(y, {}).get('xr', 0.0)
+            cn, cd = gdp_lcu.get(n, {}).get(y, 0.0), gdp_usd.get(n, {}).get(y, 0.0)
+            if y <= PWT_LAST_YEAR and xr > 0:
+                row[y] = (xr, PWT_HOW)
+            elif cn > 0 and cd > 0:
+                row[y] = (cn / cd, BANK_HOW)
+        out[n] = row
+    return out
+
+
+def build_moneys(info, bis, annual_fx):
+    """info from read_moneys; bis from src.bis_monthly; annual_fx from annual_rates.
     Returns (codes, rates, marks): codes in the layer's order (USD, then by code), rates {code: [312 floats, NaN where
     no nation used the money]}, marks {code: [312 ints]}."""
     users = {}
@@ -240,6 +270,7 @@ def build_moneys(info, bis, wdi_fx):
         got = {}                                  # month -> (value, mark)
         series = bis_values(c, bis)
         points = dict((m, v) for m, v in series.items() if m in active[c])
+        bis_years = set(common.FIRST_YEAR + m // 12 for m in points)
         for m, v in points.items():
             got[m] = (v, 3)
         anch = [m for m in ANCHORS.get(c, {}) if m in active[c]]
@@ -253,28 +284,31 @@ def build_moneys(info, bis, wdi_fx):
         for m, v in gap.items():
             got[m] = (v, 1)
         _record(c, gap, 'log-linear gap inside the BIS series')
-        # 2. no BIS figure: WDI's official rate of that year, every month of it
-        wdi = {}
-        if c not in WDI_SKIP:
+        # 2. a year with no BIS month of the money: the year's annual rate, every month of it (a year the BIS has in
+        #    part is left to the rules after, so that a year's mean never lands in its last months)
+        annual, how = {}, {}
+        if c not in ANNUAL_SKIP:
             for m in act:
-                if m in got:
-                    continue
                 y = common.FIRST_YEAR + m // 12
-                if c in WDI_ONLY_YEARS and not WDI_ONLY_YEARS[c][0] <= y <= WDI_ONLY_YEARS[c][1]:
+                if m in got or y in bis_years:
+                    continue
+                if c in ANNUAL_ONLY_YEARS and not ANNUAL_ONLY_YEARS[c][0] <= y <= ANNUAL_ONLY_YEARS[c][1]:
                     continue
                 for n in users[c]:
-                    if money_in_use(info[n]['history'], m) == c and y in wdi_fx.get(n, {}):
-                        wdi[m] = wdi_fx[n][y]
+                    if money_in_use(info[n]['history'], m) == c and y in annual_fx.get(n, {}):
+                        annual[m], h = annual_fx[n][y]
+                        how.setdefault(h, []).append(m)
                         break
-        for m, v in wdi.items():
+        for m, v in annual.items():
             got[m] = (v, 1)
-        _record(c, wdi, "WDI PA.NUS.FCRF of the year")
+        for h, ms in sorted(how.items()):
+            _record(c, ms, h)
         pts2 = dict(points)
-        pts2.update((m, v) for m, (v, k) in got.items() if k == 1 and m in wdi)
+        pts2.update((m, v) for m, (v, k) in got.items() if k == 1 and m in annual)
         gap2 = dict((m, v) for m, v in interior(pts2, act).items() if m not in got)
         for m, v in gap2.items():
             got[m] = (v, 1)
-        _record(c, gap2, 'log-linear between anchors and WDI years')
+        _record(c, gap2, 'log-linear between anchors and annual-rate years')
         # 3. a peg: the anchor's month times the parity
         if c in PARITY:
             anchor, par = PARITY[c]
@@ -305,25 +339,25 @@ def build_moneys(info, bis, wdi_fx):
         _record(c, carry, 'nearest month carried')
         rates[c] = [got[m][0] if m in got else float('nan') for m in range(common.MONTHS)]
         marks[c] = [got[m][1] if m in got else 0 for m in range(common.MONTHS)]
-        check_units(c, act, got, points, wdi)
+        check_units(c, act, got, points, annual)
     return codes, rates, marks, active, users
 
 
-def check_units(code, act, got, points, wdi):
-    """Prints a warning for a WDI-filled month whose value is more than 5x away from the nearest BIS month's: a unit
-    that changed."""
-    if not points or not wdi:
+def check_units(code, act, got, points, annual):
+    """Prints a warning for a month filled from the annual rate whose value is more than 5x away from the nearest BIS
+    month's: a unit that changed, or a rate that is not the one the BIS gives (ANNUAL_SKIP)."""
+    if not points or not annual:
         return
     ks = sorted(points)
     bad = []
-    for m in sorted(wdi):
+    for m in sorted(annual):
         near = min(ks, key=lambda k: abs(k - m))
         if abs(near - m) <= 60:
-            r = wdi[m] / points[near]
+            r = annual[m] / points[near]
             if r > 5 or r < 0.2:
                 bad.append(m)
     if bad and code != 'SYP':
-        print('  WARNING: %s: WDI months far from BIS (units?): %s' % (code, _span(bad)))
+        print('  WARNING: %s: annual-rate months far from BIS (units?): %s' % (code, _span(bad)))
 
 
 def _span(ms):

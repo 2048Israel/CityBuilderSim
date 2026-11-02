@@ -1,11 +1,12 @@
 """The prices layer of world-1.bin (batch WN0, slice E1, 2026-10-28): each traded good's real price path 2000-2025,
-the Pink Sheet's nominal annual price of the series the good follows over the US consumer price index, as a ratio to
-2025's (so 2025 is 1).
+the Pink Sheet's nominal annual price of the series the good follows over the US consumer price index (the BLS's CPI-U
+since LC3, 2026-11-02; the paths' cpi of the US before, WDI's FP.CPI.TOTL, the same figures, which are the IMF's), as a
+ratio to 2025's (so 2025 is 1).
 
 WHY: WN1 moves each good's price with the world's (spec-nations 7.1) and wants prices in the unit of the game's own
-money, which is dollars of the year, so a nominal series is deflated by the paths' CPI of the United States and
-rebased to the last year the game has data for. The Pink Sheet has no series for most of the 60 goods; prices.tsv
-names for each the one it follows and whether that is the good itself (mark 3) or a proxy (mark 1).
+money, which is dollars of the year, so a nominal series is deflated by the US consumer price index and rebased to
+the last year the game has data for. The Pink Sheet has no series for most of the 60 goods; prices.tsv names for each
+the one it follows and whether that is the good itself (mark 3) or a proxy (mark 1).
 """
 import os
 import struct
@@ -70,7 +71,7 @@ def read_prices_tsv(path, goods_path):
 
 
 def build_prices(mapping, pink, cpi_usa):
-    """mapping from read_prices_tsv, pink from read_pinksheet, cpi_usa the 26 yearly values of the paths' US CPI.
+    """mapping from read_prices_tsv, pink from read_pinksheet, cpi_usa the 26 yearly values of the US CPI-U.
     Returns (series names, values [good][26], marks [good][26])."""
     names, values, marks = [], [], []
     for key, series, mark in mapping:

@@ -163,6 +163,16 @@ import java.util.List;
  *      counted across this harness's cities and MapCheck's; a pure function;
  *      and the same districts with no log (the plan with no events) keep every
  *      check and every building, placed or left out.
+ *  18. no street piece walled in by the houses on a resource field (batch
+ *      LC3; EM1-M): a cell with a band of mine sites across it and one block
+ *      of the field in the band, the cell's houses filling the field, has its
+ *      streets west of the band and east of it in two pieces that only those
+ *      houses part - the join crosses them as it crosses any belt of houses
+ *      (DistrictPlan.wallJoinable() refused a building on a site's plots
+ *      until then, and the re-baked nations file's played city stood with two
+ *      pieces behind such a belt on its iron field, MapCheck 8 red); one
+ *      network, every check, a pure function; and the case counted across
+ *      section 17's cities and this harness's, before and after.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -366,6 +376,7 @@ public class PlanCheck {
         groundKept(types);
         farBank(types);
         walledIn(types);
+        fieldWall(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -734,23 +745,18 @@ public class PlanCheck {
      * no wider along the way than its line may bridge (an arterial's on an
      * arterial's line, a street's off it), beneath a highway or across a
      * railway, never along one, never over a mine's site. Its buildings are
-     * no part of the ground: a piece they wall in is the plan's to join -
-     * but for a building on a site (a farm on its field, a mine, a well),
-     * which the join does not cross (DistrictPlan.wallJoinable(), FW11's
-     * "a building on a site ... is not the way's to cross"). Parted there
-     * since EM1 (2026-10-29), the orchestrator's call on the batch's
-     * recommendation: its played city walled a piece in behind a farm's
-     * building on its field in district (0, 0) at months 91 and 121, where
-     * this said the ground did not part it.
+     * no part of the ground: a piece they wall in is the plan's to join,
+     * the houses on a resource field's plots among them (LC3: the join
+     * crosses them, DistrictPlan.wallJoinable(); EM1 had parted the ground
+     * at them, 2026-10-29, while the join did not, and the re-baked
+     * nations file's played city stood behind such a belt in district
+     * (0, 0), a piece MapCheck 8's walk reaches and this did not).
      */
     static boolean groundParts(DistrictPlan p, DistrictPlan.Input in, int[] lab, List<Integer> sizes) {
         int n = DistrictPlan.FRAME, area = DistrictPlan.AREA;
         int main = 0;
         for (int i = 1; i < sizes.size(); i++) if (sizes.get(i) > sizes.get(main)) main = i;
-        boolean[] seen = new boolean[area], onSite = new boolean[area];
-        for (int i = 0; i < p.buildings; i++)
-            for (int y = p.by[i]; y < p.by[i] + p.bh[i]; y++) for (int x = p.bx[i]; x < p.bx[i] + p.bw[i]; x++)
-                if (x >= 0 && y >= 0 && x < n && y < n && in.site[y * n + x] != 0) onSite[y * n + x] = true;
+        boolean[] seen = new boolean[area];
         int[] q = new int[area];
         int qh = 0, qt = 0;
         for (int i = 0; i < area; i++) if (lab[i] == main) { seen[i] = true; q[qt++] = i; }
@@ -762,7 +768,7 @@ public class PlanCheck {
                 int a = ay * n + ax;
                 if (seen[a]) continue;
                 if (lab[a] >= 0) return false;
-                if (!in.owned[a] || in.terrain[a] == World.SALT || in.site[a] == DistrictPlan.SITE_MINED || onSite[a]) continue;
+                if (!in.owned[a] || in.terrain[a] == World.SALT || in.site[a] == DistrictPlan.SITE_MINED) continue;
                 boolean horizontal = TilePainter.DY[d] == 0, arterial = horizontal ? ay % DistrictPlan.CELL == 0 : ax % DistrictPlan.CELL == 0;
                 if (in.terrain[a] == World.FRESH && waterRun(in, a, d) > (arterial ? DistrictPlan.ARTERIAL_BRIDGE : DistrictPlan.STREET_BRIDGE)) continue;
                 if (in.fixed[a] != 0 && DistrictPlan.along(in.fixed, a, horizontal)) continue;
@@ -1029,8 +1035,8 @@ public class PlanCheck {
     /** Every district of a map planned: how many keep each check, what they draw, what has no place, and what a plan costs. */
     static final class Tally {
         int districts, held, network, apart, floor, reach, onStreet, surface, beside, estate, mines, minesBeyond;
-        /** Districts planned again with the way to a piece the buildings wall in kept clear (FW11), and the plots so kept clear in them. */
-        int walled, kept;
+        /** Districts planned again with the way to a piece the buildings wall in kept clear (FW11), and the plots so kept clear in them; and those of them whose way crossed houses on a resource field's plots (LC3). */
+        int walled, kept, fieldWalled;
         long buildings, placed, overflow, overflowPlots, needPlots, streets, tracks, seams, under, surplusDistricts;
         double surplus, worstFill, worstLost;
         String worstWhere = "", firstFail = "";
@@ -1078,6 +1084,7 @@ public class PlanCheck {
             if (f.pieces <= 1) network++;
             else if (f.groundParts) apart++;
             if (p.wallTries > 0) walled++;
+            if (p.wallField > 0) fieldWalled++;
             kept += p.wallClear;
             if (f.closestPlus >= DistrictPlan.LATTICE) floor++;
             if (f.outOfReach == 0) reach++;
@@ -4476,13 +4483,20 @@ public class PlanCheck {
     /** The districts of this harness's cities (sections 5 and 6), those planned again to join a piece the buildings wall in, the plots so kept clear, and the districts still left with a piece the ground does not part (FW11). */
     static int citiesDistricts, citiesWalled, citiesKept, citiesLeft;
 
+    /** ...and, of those planned again, the districts whose way crossed houses on a resource field's plots (LC3). */
+    static int citiesField;
+
     /** A section's tally of one city added to the cities' (FW11). */
     static void count(Tally t) {
         citiesDistricts += t.districts;
         citiesWalled += t.walled;
         citiesKept += t.kept;
+        citiesField += t.fieldWalled;
         citiesLeft += t.districts - t.network - t.apart;
     }
+
+    /** Section 17's cities, kept for section 18's count (LC3): {districts, planned again, of them over a field's houses, left apart} of MapCheck's played city, and of its river fixture alone. */
+    static int[] playedCase = new int[4], riverCase = new int[4];
 
     /**
      * Every district of a map planned as the map draws it, each from its job's input, and tallied: those planned again kept in
@@ -4540,8 +4554,10 @@ public class PlanCheck {
         long[] x1 = new long[catalog.length];
         for (int k = 0; k < MapCheck.JERUS_COUNTS.length && k < x1.length; k++) x1[k] = Math.round(MapCheck.JERUS_COUNTS[k] * MapCheck.TIMES[0]);
         int playedWalled = t.walled, playedDistricts = t.districts;
+        playedCase = new int[] { t.districts, t.walled, t.fieldWalled, left };
         planDrawn(MapCheck.riverCity(catalog, Founding.DEFAULT_WORLD_SEED, x1, BuildingVisual.GRAVEL), t, walledIns, ok);
         left = t.districts - t.network - t.apart;
+        riverCase = new int[] { t.districts - playedCase[0], t.walled - playedCase[1], t.fieldWalled - playedCase[2], left - playedCase[3] };
         out.printf("      ...and MapCheck's river fixture (his x 1 at the founding river, his streets all gravel), %d district(s): planned again with the way kept clear"
                 + " in %d, where the played city's %d of %d were; %d left in all%n", t.districts - playedDistricts, t.walled - playedWalled,
                 playedWalled, playedDistricts, left);
@@ -4569,6 +4585,86 @@ public class PlanCheck {
         }
         out.printf("      ...with no log: %d district(s) of them, %d planned again, %d plots kept clear%n", n.districts, n.walled, n.kept);
         check("...the same districts planned with no log keep every check, and every building is placed or left out, once", n.allHold() && whole);
+    }
+
+    /* ----- 18. a street piece the houses on a resource field wall in (LC3, EM1-M) ----- */
+
+    /**
+     * LC3's district, built to cause the case: the hub's own cell, owned whole, with a band LATTICE - 1 plots wide across it
+     * between two of its lattice columns that is a mine's site (SITE_MINED: no street, no building, no way) on every row but one
+     * block of LATTICE - 1 rows between two lattice rows, where it is the field's free plots (SITE_FIELD). The cell's streets west
+     * of the band and east of it then meet only across those field plots; the cell's houses fill them (a resource's sites are built
+     * on last, within reach of a street) and nothing but the buildings is in the way - no unowned ground to cross, no avenue (a plan
+     * from before them, as section 7's: `latticeOnly`). The houses outnumber the cell's room, so they spill onto the field.
+     */
+    static DistrictPlan.Input fieldBelt(BuildingVisual.Type[] types, int house, int houses) {
+        int C = DistrictPlan.CELL, L = DistrictPlan.LATTICE, N = DistrictPlan.FRAME;
+        DistrictPlan.Input in = flat(types);
+        in.latticeOnly = true;
+        in.root = true;
+        Arrays.fill(in.owned, false);
+        int x0 = 3 * C, y0 = 3 * C, bx0 = x0 + L + 1, bx1 = x0 + 2 * L - 1, gy0 = y0 + L + 1, gy1 = y0 + 2 * L - 1;
+        for (int y = y0; y <= y0 + C; y++) for (int x = x0; x <= x0 + C; x++) in.owned[y * N + x] = true;
+        for (int y = y0; y <= y0 + C; y++) {
+            for (int x = bx0; x <= bx1; x++) in.site[y * N + x] = y >= gy0 && y <= gy1 ? DistrictPlan.SITE_FIELD : DistrictPlan.SITE_MINED;
+        }
+        in.mines.add(new int[] { bx0, y0, bx1, gy0 - 1 });
+        in.mines.add(new int[] { bx0, gy1 + 1, bx1, y0 + C });
+        in.counts[house] = houses;
+        return in;
+    }
+
+    /** The boxes of a plan with a plot on a resource field's plots, and those plots. */
+    static int[] housesOnField(DistrictPlan p, DistrictPlan.Input in) {
+        int n = DistrictPlan.FRAME, boxes = 0, plots = 0;
+        for (int i = 0; i < p.buildings; i++) {
+            int on = 0;
+            for (int y = p.by[i]; y < p.by[i] + p.bh[i]; y++) for (int x = p.bx[i]; x < p.bx[i] + p.bw[i]; x++) if (in.site[y * n + x] == DistrictPlan.SITE_FIELD) on++;
+            if (on > 0) { boxes++; plots += on; }
+        }
+        return new int[] { boxes, plots };
+    }
+
+    static void fieldWall(BuildingVisual.Type[] types) {
+        out.println("\n--- 18. no street piece walled in by the houses on a resource field: a band of mine sites across a cell, one block of the field in it, the houses filling the field (LC3, EM1-M) ---");
+        final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        DistrictPlan.Input in = fieldBelt(types, house, 3000);
+        DistrictPlan p = DistrictPlan.make(in), again = DistrictPlan.make(in);
+        Figures f = figures(p, in);
+        int left = f.pieces > 1 && !f.groundParts ? 1 : 0;
+        int[] onField = housesOnField(p, in);
+        // The way the join laid: its plots (ROLE_JOIN) on the field block, which only a street over the houses' plots can be.
+        int joinOnField = 0, joinPlots = 0;
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            if (p.roleAt(q) != DistrictPlan.ROLE_JOIN || p.kindAt(q) == DistrictPlan.NONE) continue;
+            joinPlots++;
+            if (in.site[q] == DistrictPlan.SITE_FIELD) joinOnField++;
+        }
+        out.printf("      the cell's %,d houses asked, %,d placed (%,d with no place); %,d of the boxes stand on the field's plots (%,d plots); the plan was made %d time(s) again with %d plots kept clear"
+                + " (%d plots of houses on the field); %d street piece(s), %d plot(s) the join laid, %d of them on the field%n", in.counts[house], p.buildings, p.overflowCount(),
+                onField[0], onField[1], p.wallTries, p.wallClear, p.wallField, f.pieces, joinPlots, joinOnField);
+        check("fixture: the cell's streets west of the band and east of it were two pieces that only the field's houses stood between"
+                + " (the plan was made again with the way across them kept clear, the way crossing houses on the field)", p.wallTries > 0 && p.wallClear > 0 && p.wallField > 0 && joinOnField > 0);
+        check("fixture: the field is built on (houses stand on its plots beside the way)", onField[0] > 0);
+        check("...the streets one network: the join crossed the houses on the field's plots as it crosses any belt of houses", f.pieces == 1);
+        check("...every check holds: one network or pieces the ground parts, the + floor, reach, none on a street, the surface", f.holds(p, in));
+        check("...the way crosses at most WALL_MOST (" + DistrictPlan.WALL_MOST + ") plots of houses, and the plan is made again at most WALL_TRIES (" + DistrictPlan.WALL_TRIES + ") times",
+                p.wallField <= DistrictPlan.WALL_MOST && p.wallTries <= DistrictPlan.WALL_TRIES);
+        check("...and a pure function: the same district, the same plan, boxes and streets", placedDigest(p) == placedDigest(again) && streetDigest(p) == streetDigest(again)
+                && p.wallTries == again.wallTries && p.wallClear == again.wallClear && p.wallField == again.wallField);
+        // The count (as FW11's): the districts that met the case in the cities of section 17 and this harness's, planned again or left apart, and those that met it
+        // over a field's houses - before LC3 the join did not cross those, so they were left apart (PlanCheck took the ground to part them there).
+        out.printf("      the case counted across the cities (a street piece only buildings, a field's houses among them, and ground the city does not own enclose; planned again, over a field's houses, left apart):%n"
+                + "      ...MapCheck's played city: %d of %d district(s) - %d planned again, %d over a field's houses, %d left apart (before LC3: %d, those over a field's houses, which the join did not cross)%n"
+                + "      ...its river fixture: %d of %d - %d planned again, %d over a field's houses, %d left apart%n"
+                + "      ...this harness's cities (sections 5 and 6): %d of %d - %d planned again, %d over a field's houses, %d left apart%n"
+                + "      ...this section's district: %d of 1 - %d planned again, %d over a field's houses, %d left apart (before LC3: %d of 1 left apart)%n",
+                playedCase[1] + playedCase[3], playedCase[0], playedCase[1], playedCase[2], playedCase[3], playedCase[2] + playedCase[3],
+                riverCase[1] + riverCase[3], riverCase[0], riverCase[1], riverCase[2], riverCase[3],
+                citiesWalled + citiesLeft, citiesDistricts, citiesWalled, citiesField, citiesLeft,
+                (p.wallTries > 0 ? 1 : 0) + left, p.wallTries > 0 ? 1 : 0, p.wallField > 0 ? 1 : 0, left, (p.wallField > 0 ? 1 : 0) + left);
+        check("...none left apart: no district of MapCheck's played city, its river fixture, sections 5 and 6, or this section's has a piece the ground does not part",
+                playedCase[3] == 0 && riverCase[3] == 0 && citiesLeft == 0 && left == 0);
     }
 
 }

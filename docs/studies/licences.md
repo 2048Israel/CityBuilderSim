@@ -2,7 +2,7 @@
 
 *2026-10-31, batch LC1. Jerus, answering LB1-U the same day: "note, this game will be for commercial use, so only use sources for the rankings that allow that". The game is sold, so the rule holds for every figure it ships. This note is the reference every later data brief reads first: before a source is used, its row here says whether it may ship; a source with no row is read and added here first.*
 
-*Every page below was read on 2026-10-31, on the provider's own site, by four research agents and checked by Opus (three pages, the IMF's, the OECD's and the BLS's, refuse plain downloads and were read through a fetch tool or a browser). The terms are given in our words, not quoted; the URL is the page read. A study may still cite any source as evidence; only its figures may not reach the game.*
+*Every page below was read on 2026-10-31, on the provider's own site, by four research agents and checked by Opus (three pages, the IMF's, the OECD's and the BLS's, refuse plain downloads and were read through a fetch tool or a browser); LC3's rows were read on 2026-11-02. The terms are given in our words, not quoted; the URL is the page read. A study may still cite any source as evidence; only its figures may not reach the game.*
 
 ## The rule
 
@@ -38,7 +38,7 @@
 | US EIA, International Energy Statistics (electricity, oil) | public domain | https://www.eia.gov/about/copyrights_reuse.php | yes | Source: U.S. Energy Information Administration, with the publication date |
 | US BLS, CPI-U (the 2015-dollar pivot) | public domain | https://www.bls.gov/opub/copyright-information.htm | yes | the BLS as the source (asked, not required) |
 
-### The world file: `world-1.bin` (not yet in the exe's folder) and its fixture `world-1-fixture.bin` (in the jar)
+### The world file: `world-1.bin` (beside the exe from LC3's build on) and its fixture `world-1-fixture.bin` (in the jar)
 
 | source | licence | read at | commercial | attribution it asks |
 |---|---|---|---|---|
@@ -46,10 +46,13 @@
 | CERDI-seadistance 1.1 | CC BY 4.0 | https://zenodo.org/records/240493 | yes | Bertoli, Goujon and Santoni (2016), CERDI Working Paper 2016/7 |
 | CEPII BACI HS22 V202601 | Etalab Open Licence 2.0 | https://www.cepii.fr/DATA_DOWNLOAD/baci/doc/baci_webpage.html | yes (BACI is built from UN Comtrade, whose terms are narrower; CEPII licenses its reconciled flows as its own, and world-1 keeps only aggregates) | the producer and the date of last update; Gaulier and Zignago (2010) |
 | WDI's NY.GDP.MKTP.KD, .CD, .PP.KD | CC BY 4.0, the Bank's own | as above | yes | as above |
-| WDI's FP.CPI.TOTL and PA.NUS.FCRF (the paths' prices; the annual rate where the BIS has no month) | the IMF's (IFS) | as above | **no** | - |
+| WDI's FP.CPI.TOTL and PA.NUS.FCRF (WN0's prices; the annual rate where the BIS has no month) | the IMF's (IFS) | as above | **no**: out of the file since LC3 | - |
+| WDI's NY.GDP.DEFL.ZS (the paths' price level since LC3, the US's excepted) and NY.GDP.MKTP.CN (over .CD, a money's annual rate where neither the BIS nor PWT has one) | CC BY 4.0, the Bank's own: each series' License_Type CC BY-4.0, its source national statistics offices and central banks, the OECD's National Accounts and the Bank's staff estimates | https://api.worldbank.org/v2/sources/2/series/NY.GDP.DEFL.ZS/metadata , .../NY.GDP.MKTP.CN/metadata | yes | as the Bank's other series |
+| ILOSTAT, consumer price indices (CPI_XCPI_COI_RT_A), LC3's first choice for the prices | the ILO's datasets published since 2023-05-03 are CC BY 4.0 (https://www.ilo.org/rights-and-permissions); ILOSTAT's own terms page sits behind a bot check and was not read | https://ilostat.ilo.org/about/terms-of-use/ ; the data and its notes through https://rplumber.ilo.org/ | **no**: every headline figure since 2000 (4,090, 198 areas) carries the note "Repository: International Monetary Fund", so by the rule above it is the IMF's | evidence only |
+| US BLS, CPI-U (since LC3 the paths' US price level and the prices layer's US CPI, 2000-2025) | public domain | https://www.bls.gov/opub/copyright-information.htm | yes | the BLS as the source (asked, not required) |
 | UN, World Population Prospects 2024 | CC BY 3.0 IGO | https://population.un.org/wpp/downloads | yes | as above |
 | BIS, US dollar exchange rates (WS_XRU) | the BIS's terms | https://data.bis.org/help/legal | yes | the BIS as the source |
-| Penn World Table 11.0 (and 10.01) | CC BY 4.0 | https://www.rug.nl/ggdc/productivity/pwt/ | yes | Feenstra, Inklaar and Timmer (2015), AER 105(10) |
+| Penn World Table 11.0 (and 10.01); since LC3 its xr too, a money's annual rate where the BIS has no month, to 2023 | CC BY 4.0, the whole table (11.0 published 2025-10-07; the page names no part as a third party's, read again 2026-11-02) | https://www.rug.nl/ggdc/productivity/pwt/ | yes | Feenstra, Inklaar and Timmer (2015), AER 105(10) |
 | Maddison Project Database 2023 | CC BY 4.0 | https://www.rug.nl/ggdc/historicaldevelopment/maddison/releases/maddison-project-database-2023 | yes | Bolt and van Zanden (2024), doi 10.1111/joes.12618; for fewer than 12 nations, also the original sources its Sources sheet names |
 | World Bank, the Pink Sheet (commodity prices) | CC BY 4.0 (catalogue entry 0038238); the Bank's own averages of quotes it buys | https://datacatalog.worldbank.org/public-licenses | yes | The World Bank: Commodity Price Data (The Pink Sheet) |
 
@@ -125,6 +128,7 @@ EP1 will bake history from 1900 (`docs/studies/spec-1900-start.md`). The verdict
 - **The Rankings:** the 17 measures whose figures are the IMF's, UNODC's, the WFE's, the WHO's, the UN IGME's or UNESCO's rank the player's cities only (`measures.tsv` says why in each `none:`): inflation, the real rate, reserves, broad money, private credit, debt, the budget balance, tax revenue, interest over revenue, the current account, bad loans, bank capital, homicides, market capitalisation, health spending, deaths under five, tertiary enrolment. The price level and the money against parity are now the World Bank's own GDP at market rates over its GDP at PPP (the same figure for nearly every nation; the six the Bank converts at another rate now agree with their GDP); the OECD's wages are divided by the Bank's GDP in local money over its GDP in US$. 7,049 figures where there were 9,643.
 - **The credits:** the world's attribution file now ships beside the exe with the Earth's, and both files' credits were brought to what each licence asks today (section 4).
 - **Queued:** the Rankings' measures back from sources that allow it (LC2), world-1.bin baked again without the IMF's figures (LC3), and a Credits page in the game (CR1).
+- **LC3 (2026-11-02):** world-1.bin and its fixture baked again with none of the IMF's figures: the paths' price level is the BLS's CPI-U for the US and the Bank's GDP deflator for every other nation (ILOSTAT's consumer prices are the IMF's, row above), a money's annual rate where the BIS has no month is PWT's xr to 2023 and then the Bank's GDP in local money over its GDP in US$, and the prices layer divides by the BLS's CPI-U. The file goes beside the exe (`Build EXE.bat`). LC2 takes the same choice for inflation: the deflator (NY.GDP.DEFL.KD.ZG).
 
 ## 4. Where the credits are, and where they belong
 
