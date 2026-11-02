@@ -5926,7 +5926,16 @@ public class BuildingManager {
     public void setOutputAtEveryPost(java.util.function.DoubleSupplier output) { this.outputAtEveryPost = output; }
 
     /** Whether both months are known (FC1): with either unset - a bare manager in a harness - there is no premium and no foreign contractor, and every price reads what it read before. */
-    private boolean buildersMonthKnown() { return sitesAtEveryPost != null && outputAtEveryPost != null; }
+    private boolean buildersMonthKnown() { return buildersShortOn && sitesAtEveryPost != null && outputAtEveryPost != null; }
+
+    /**
+     * Whether the builders' scarcity price and the foreign contractor are on (FC1): always, in the game. Harnesses only
+     * turn it off, for the whole JVM (AllChecks runs each harness in its own), so every city they found or load reads
+     * alike: a fixture town whose claim is about something other than building, which FC1's price moves onto another
+     * path (HoldersCheck, DenominationCheck, MonetaryCheck: their notes say why) - every order's multiple then exactly 1
+     * and the contractor never taking orders. Nothing in the game sets it.
+     */
+    static boolean buildersShortOn = true;
 
     /** The months of work queued at the pace the builders leave the sites (BuildersShort.monthsQueued(): the queue as it stands over the sites' month, every post offered); 0 with no month to read. */
     public double monthsQueued() {

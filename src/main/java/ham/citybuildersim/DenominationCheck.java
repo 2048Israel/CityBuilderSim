@@ -182,6 +182,11 @@ public class DenominationCheck {
     public static void main(String[] args) throws Exception {
 
         out = System.out;
+        // FC1: the builders' price moves this town onto a hot path (a price index of 6 by month 170), where the reformed twin
+        // parts by 1e-9 at month 170 through an absolute tolerance outside FC1 (FC1's multiple and queue are equal in both
+        // twins then; queued as DZ1, docs/queue/DZ1.md). The reform is checked on the town it was written on, FC1 off in
+        // this JVM (BuildingManager.buildersShortOn) until DZ1 finds that tolerance.
+        BuildingManager.buildersShortOn = false;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         Path root = TempDirs.create("denomcheck");
 

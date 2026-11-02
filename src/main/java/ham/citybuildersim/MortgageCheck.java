@@ -816,7 +816,11 @@ public class MortgageCheck {
     static void whereTheOldRuleSaidNo(Path root) {
         out.println("\n--- 9. where the old rule said no: a new landlord's own risk refused a House the lender's test passes ---");
 
-        Game g = landlordCity(root, "oldrule");
+        // FC1: three depots stand beside the founding yard (as payoutsAfterPrincipal()'s town has them), so the House is priced
+        // with the builders under their knee (BuildersShort.KNEE_MONTHS): the ordered works' founding queue at one yard's
+        // pace is hundreds of months, a premium near the ceiling, and a House at 1.5 times what this section was written against
+        // is a question the lender's test answers otherwise (0.87x against 1.29x) - not the one asked here.
+        Game g = landlordCity(root, "oldrule", true, 3);
         // Nothing ordered yet: the city is short of doors from its first month
         // and its landlords are about to order their first.
         assertTrue("fixture: the landlords have nothing on site and want to build",

@@ -2228,7 +2228,8 @@ public class Game {
      * WHAT IT BUYS.
      */
     public Founding.Buys whatItBuys(double cash, double reserveUsd) {
-        return Founding.whatItBuys(catalogue(), cash, reserveUsd);
+        // ...at this city's builders' multiple on the queue the village leaves (FC1), as its build card quotes the first works.
+        return Founding.whatItBuys(catalogue(), cash, reserveUsd, buildingManager::orderPriceMultiplier);
     }
 
     /* ============= THE CONSTRUCTION SUBSIDY - removed in 0.7.1 =============

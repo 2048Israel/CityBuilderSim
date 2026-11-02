@@ -944,7 +944,12 @@ public class NewGameCheck {
                     continue;
                 }
                 sized++;
-                DebtQuote smaller = v.quoteLongBond(q.faceValue() - Game.BUILD_BOND_GRANULE, years, Game.BUILD_BOND_GRANULE);
+                // FC1: the face one granule down is asked for by a granule and a half, so that the model's own rounding up
+                // (ceil(amount / granule) * granule) lands on that face and never back on q's: with the granule not exactly
+                // representable (2.588...), q.faceValue() - granule can be a hair above the grid point below it and round up
+                // to q's own face - which "smaller" then is, and covers the ask alike (the gap a year on moved with FC1's premium
+                // on the plant, onto two maturities where it did). Same face as before, the floating point out of it.
+                DebtQuote smaller = v.quoteLongBond(q.faceValue() - 1.5 * Game.BUILD_BOND_GRANULE, years, Game.BUILD_BOND_GRANULE);
                 if (q.cashReceived() < ask || smaller.cashReceived() >= ask) missed++;
             }
         }
