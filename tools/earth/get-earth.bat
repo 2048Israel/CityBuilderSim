@@ -11,8 +11,9 @@ rem
 rem "earth-1" or "world-1" as the second argument fetches that file instead:
 rem data\earth-1.bin (the bake's input, bake-earth-2.bat) or data\world-1.bin
 rem (the nations' world, WorldData.DATA_FILE, batch WN0; against
-rem tools\world\world-1.sha256). Nothing in the game reads world-1.bin yet, so
-rem Play CityBuilderSim.bat and Build EXE.bat do not ask for it.
+rem tools\world\world-1.sha256). Build EXE.bat asks for world-1.bin too since
+rem LC3 (2026-11-02), which baked it without the IMF's figures, and puts it
+rem beside the exe; Play CityBuilderSim.bat does not ask for it.
 rem
 rem Play CityBuilderSim.bat and Build EXE.bat call it before they start; it
 rem can be double-clicked too. With nothing to fetch it only checks the

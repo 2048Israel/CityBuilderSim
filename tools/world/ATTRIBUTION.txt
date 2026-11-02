@@ -2,8 +2,8 @@ world-1: the nations' world of CityBuilderSim (Civic Ledger)
 
 world-1.bin, and its fixture world-1-fixture.bin in the game's jar, are derived from the data sets below: their
 figures selected, converted and combined by the game, not as published. Their credits follow, each in the form its
-publisher asks for; docs/studies/licences.md has each licence as read on 2026-10-31 (LC1). This file ships beside
-the exe as data/world-ATTRIBUTION.txt.
+publisher asks for; docs/studies/licences.md has each licence as read on 2026-10-31 (LC1) and, for the sources LC3
+added, 2026-11-02. This file ships beside the exe as data/world-ATTRIBUTION.txt.
 
 Natural Earth 1:10m Cultural Vectors (5.1.2): Admin 0 - Countries, Admin 0 - Boundary Lines (land), Populated Places (simple), Ports
   Credit:  Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com.
@@ -27,13 +27,13 @@ BACI, international trade database at the product level, HS 2022, version 202601
 
 World Development Indicators (the World Bank), as of 2026-10-08
   Credit:  The World Bank, World Development Indicators: NY.GDP.MKTP.KD, NY.GDP.MKTP.CD, NY.GDP.MKTP.PP.KD,
-           FP.CPI.TOTL, PA.NUS.FCRF; and its list of economies (the regions)
-  Licence: CC BY 4.0 (https://datacatalog.worldbank.org/public-licenses)
-  Used for: the paths' output (US$ of 2015, current US$, international $ of 2021) and prices, 2000-2025; the
-           annual official rate where the BIS has no month; each nation's region
-  Not yet: FP.CPI.TOTL and PA.NUS.FCRF are the IMF's figures (International Financial Statistics), whose terms ask
-           permission for any commercial reuse: world-1.bin and its fixture are baked again without them (LC3)
-           before the file ships beside the exe
+           NY.GDP.MKTP.CN, NY.GDP.DEFL.ZS (World Bank national accounts data, and OECD National Accounts data
+           files; World Bank, International Comparison Program); and its list of economies (the regions)
+  Licence: CC BY 4.0, each series' own License_Type checked 2026-10-31 (LC1) and, for the two LC3 added, 2026-11-02
+           (https://datacatalog.worldbank.org/public-licenses)
+  Used for: the paths' output (US$ of 2015, current US$, international $ of 2021) and every nation's price level
+           but the US's (the GDP deflator), 2000-2025; a money's annual rate in a year neither the BIS nor PWT has (GDP in local money
+           over GDP in US$); each nation's region
   Source:  https://api.worldbank.org/v2/country/all/indicator/<id>?format=json&date=2000:2025
 
 World Population Prospects 2024 (United Nations, DESA, Population Division)
@@ -53,7 +53,8 @@ Penn World Table 11.0 (Groningen Growth and Development Centre)
   Credit:  Feenstra, R. C., Inklaar, R. and Timmer, M. P. (2015) The Next Generation of the Penn World Table.
            American Economic Review 105(10): 3150-3182. Data: PWT 11.0, www.ggdc.net/pwt
   Licence: CC BY 4.0
-  Used for: Taiwan's output and the years WDI lacks for a few others, marked as the game's estimates
+  Used for: Taiwan's output and the years WDI lacks for a few others, marked as the game's estimates; a money's
+           annual exchange rate (xr) in a year the BIS has no month of it, to 2023
   Source:  https://www.rug.nl/ggdc/productivity/pwt/ (DataverseNL)
 
 Maddison Project Database 2023 (Groningen Growth and Development Centre)
@@ -72,6 +73,13 @@ Commodity Markets, the Pink Sheet (the World Bank), annual prices
   Licence: CC BY 4.0 (https://datacatalog.worldbank.org/public-licenses)
   Used for: the prices layer: each good's real price path 2000-2025 (its series, or a proxy's, over the US CPI)
   Source:  https://www.worldbank.org/en/research/commodity-markets
+
+Consumer Price Index for All Urban Consumers, CPI-U (US Bureau of Labor Statistics)
+  Credit:  US Bureau of Labor Statistics, CPI-U, US city average, all items (CUUR0000SA0), annual averages
+  Licence: Public domain (a US government work)
+  Used for: the US's price level in the paths, and the US CPI the prices layer's nominal prices are divided by,
+           2000-2025
+  Source:  https://www.bls.gov/cpi/
 
 world-2025: the Rankings' measures file (LB1, 2026-10-30)
 

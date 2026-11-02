@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.1 — LC3, the nations' world without the IMF's figures — 2026-11-02, ready, see docs/queue/LC3-notes.md
+world-1.bin is baked again with no figure a sold game may not ship, so the nations can reach players (0.9.0 went out
+without them, IR1). Each nation's price path is now the World Bank's GDP deflator, and the US's is the BLS's CPI-U, the
+dollar the game's own price level is. ILOSTAT's consumer prices were the first choice, but every one of them carries
+"Repository: International Monetary Fund". A money's rate in a year the BIS has no month of it is PWT 11.0's, then the
+Bank's GDP in local money over GDP in US$, which gives Somalia, Syria and Sudan their published rates. The goods' prices
+layer divides by the CPI-U and moves under 0.2%. The new file has its fixture, sha, credits and licence rows; Build
+EXE.bat fetches it and puts it beside the exe. The playtest's trace moves, so the ensemble ran: 22 of 26 against 23.
+A latent map fault the new trajectory met is mended: houses on a resource field walled a street piece in (MapCheck 8;
+MF2's EM1-M), and PlanCheck 18 is its fixture.
+
 ### 0.9.0 — WN6, nations: the screens — 2026-11-01, ready, see docs/queue/WN6-notes.md
 Trade › Partners is new: who the city trades with, by nation, the month or the year (its money and D$ a unit, its
 central bank's rate, tonnes, distance, land), and for a chosen good where the next unit goes - what it nets against how

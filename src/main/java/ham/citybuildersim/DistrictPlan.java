@@ -984,6 +984,9 @@ public final class DistrictPlan {
     /** How many times the plan was made again with the way to a piece the buildings wall in kept clear of them (FW11, A PIECE BUILDINGS WALL IN; 0 for nearly every district), and the plots so kept clear in the plan returned. */
     public int wallTries, wallClear;
 
+    /** ...and the plots of buildings on a resource field's plots (SITE_FIELD) the ways found over all those plans crossed (LC3): what wallJoinable() refused until then, so a district with some was left with its piece apart; PlanCheck 18 counts the districts. */
+    public int wallField;
+
     /** Merges in a homes cell of a varied layout made and then undone (CL2): the stubs they left could not all be taken up, or a building near them would have lost its street within REACH. */
     public int mergesUndone;
 
@@ -1067,6 +1070,7 @@ public final class DistrictPlan {
             }
             p.wallTries = again;
             p.wallClear = b.nClear;
+            p.wallField = b.wallField;
             return p;
         } finally {
             b.finish();
@@ -6433,14 +6437,21 @@ public final class DistrictPlan {
          * has room, else they go on to the next as any building a district has
          * no place for - and the join lays the street over the free ground.
          * At most WALL_TRIES times; a piece still walled in then, or that
-         * needs more than WALL_MOST plots, is parted as before. A building on
-         * a site (a mine, a well) is not the way's to cross.
+         * needs more than WALL_MOST plots, is parted as before. A mine's or a
+         * well's site is not the way's to cross (SITE_MINED), but a house on a
+         * resource field's plots is: the field is built on last, and the houses
+         * on its plots near the streets are a belt like any other (LC3, below).
          */
 
-        /** The join's ground over a building (FW11): as groundJoinable(), on a plot a building stands on too - but not a building on a site. */
+        /**
+         * The join's ground over a building (FW11): as groundJoinable(), on a plot a building stands on too - a house on a resource
+         * field's plots (SITE_FIELD, built on last) among them, a plan's box like any other that finds another lot when the way is kept clear
+         * (LC3: until then wallJoinable() refused every plot of a site a building stood on, and the played city of the re-baked nations
+         * file stood with two street pieces behind a belt of houses on the iron field, which MapCheck 8's walk crosses and PlanCheck's
+         * did not; EM1-M); a mine's or a well's site (SITE_MINED) never.
+         */
         boolean wallJoinable(int a, boolean horizontal) {
             if (!owns[a] || in.terrain[a] == World.SALT || unfit[a] || in.site[a] == SITE_MINED) return false;
-            if (occ[a] > 0 && in.site[a] != 0) return false;
             boolean arterial = horizontal ? (a / FRAME) % CELL == 0 : (a % FRAME) % CELL == 0;
             if (World.bridgeable(in.terrain[a]) && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
             return fx[a] == 0 || (!works(fx[a]) && !along(fx, a, horizontal));
@@ -6487,6 +6498,7 @@ public final class DistrictPlan {
             for (int p = prev[hit]; p >= 0 && !((str[p] || under[p]) && lab[p] == pc); p = prev[p]) {
                 if (nWallPend == wallPend.length) wallPend = Arrays.copyOf(wallPend, nWallPend * 2);
                 wallPend[nWallPend++] = p;
+                if (occ[p] > 0 && in.site[p] == SITE_FIELD) wallField++;
             }
         }
 
@@ -6495,11 +6507,15 @@ public final class DistrictPlan {
         int nWallPend, nClear;
         final boolean[] keepClear = new boolean[AREA];
 
+        /** The plots of buildings on a field's plots the ways of this make() crossed (wallRoute()), over all its plans. */
+        int wallField;
+
         /** A make() begins with nothing kept clear. */
         void releaseClear() {
             for (int i = 0; i < nClear; i++) keepClear[clearAt[i]] = false;
             nClear = 0;
             nWallPend = 0;
+            wallField = 0;
         }
 
         /** The ways the last plan found, kept clear for the next. */

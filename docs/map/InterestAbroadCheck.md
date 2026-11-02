@@ -1,6 +1,6 @@
 # InterestAbroadCheck.java - 1,177 lines · 39 methods · 11 constants · harnesses
 
-`ham/citybuildersim/InterestAbroadCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InterestAbroadCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8,
 > Jerus's calls 9 and 11): PolicyRates' monthly rate of each bank - the real table to December 2025 on Historical (its January 2000 rate held through

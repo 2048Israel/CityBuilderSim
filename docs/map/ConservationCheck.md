@@ -1,6 +1,6 @@
 # ConservationCheck.java - 417 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ConservationCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConservationCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > Nothing is created and nothing is destroyed.
 > 

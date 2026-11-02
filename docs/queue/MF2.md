@@ -33,6 +33,12 @@ them: the model's trace does not move.
    its field is the way's to cross, as a mine and a well are not; PlanCheck
    now parts the ground there as the planner does (the orchestrator's call,
    2026-10-29), and goes back to the planner's rule if it changes.
+   **Settled by LC3 ({next}, 2026-11-02):** it is. The re-baked nations file's
+   played city walled two pieces in behind a belt of houses on its iron
+   field (MapCheck 8 red); `wallJoinable()` now bars only SITE_MINED, a
+   field's buildings are boxes like any other, PlanCheck's `groundParts`
+   is back to the planner's rule, and PlanCheck 18 is the fixture
+   (`docs/queue/LC3-notes.md` §5). Three faults are left here.
 4. **HD1-M: three Convenience Stores moved when one of their type left**
    ([HD1-notes](HD1-notes.md)): LongPlaytest's layout watch at m3,998,
    district (-1,-2), drawn 623 to 622, outside the spill; on HD1's

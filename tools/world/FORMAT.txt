@@ -47,7 +47,9 @@ LAYERS
               gdp_2015usd   US$ of 2015                   WDI NY.GDP.MKTP.KD, 2000-2025 (WN1's rule after)
               gdp_usd       current US$                   WDI NY.GDP.MKTP.CD, 2000-2025
               gdp_ppp       international $ of 2021       WDI NY.GDP.MKTP.PP.KD, 2000-2025
-              cpi           2015 = 100                    WDI FP.CPI.TOTL rebased, 2000-2025
+              cpi           2015 = 100                    the nation's price level, 2000-2025, rebased: the BLS's
+                                                          CPI-U for the US, WDI NY.GDP.DEFL.ZS (the GDP deflator)
+                                                          for the rest (LC3; WN0's FP.CPI.TOTL was the IMF's)
               rate          its money a US$, year average the mean of the nation's money's 12 months, 2000-2025
   goods     kind 2, text, a row a traded good. Columns: number, key (the Good constant's name), name, unit (the
             game's), class (bulk | processed | made), elasticity (the trade elasticity, D18), unit_value (base
@@ -83,9 +85,9 @@ LAYERS
             then n x (int lat x 100,000, int lon x 100,000): Natural Earth's admin-0 land boundary lines.
   prices    kind 2, binary (added 2026-10-28, for WN1: each good's real price path, spec 7.1): int G, int first
             year (2000), int years (26); per good (number order): UTF the Pink Sheet series it follows (its column
-            title; a proxy's too), then 26 doubles: the series' nominal annual price over the US CPI (the paths'
-            cpi of USA), as a ratio to 2025's (so 2025 is 1); then per good 26 bytes, the marks (3 the good's own
-            series, 1 a proxy's).
+            title; a proxy's too), then 26 doubles: the series' nominal annual price over the US CPI (the BLS's
+            CPI-U, CUUR0000SA0; the paths' cpi of USA before LC3), as a ratio to 2025's (so 2025 is 1); then per
+            good 26 bytes, the marks (3 the good's own series, 1 a proxy's).
 
 THE FIXTURE (src/main/resources/world/world-1-fixture.bin, WorldDataCheck's) is the full file cut by
 tools/world/fixture.py: twelve nations renumbered 1..12 in iso3 order (AUS BEL CAN CHE CHN COL DEU FRA GBR JPN NLD

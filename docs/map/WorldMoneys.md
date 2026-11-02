@@ -1,6 +1,6 @@
 # WorldMoneys.java - 800 lines · 56 methods · 31 constants · model
 
-`ham/citybuildersim/WorldMoneys.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMoneys.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > The world's moneys against the US dollar, a month at a time (WN4; spec-exchange-rates 3.7, spec-nations 5.1): each money's rate is its
 > purchasing-power path, plus its loading on the dollar cycle, on the risk-off and on its nation's terms of trade, plus its own swing, with

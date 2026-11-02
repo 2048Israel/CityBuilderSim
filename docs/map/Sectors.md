@@ -1,6 +1,6 @@
 # Sectors.java - 469 lines · 46 methods · 4 constants · model
 
-`ham/citybuildersim/Sectors.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Sectors.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > Every sector in the city, in one order, by one name.
 > 
