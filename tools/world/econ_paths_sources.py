@@ -31,11 +31,12 @@ DOWNLOADED = '2026-10-28'
 # the IMF's consumer prices and official rate, which a sold game may not ship (docs/studies/licences.md), left the file.
 LC3_DOWNLOADED = '2026-11-02'
 
-# The meta file's source rows: id, name and version, url, licence, downloaded.
+# The meta file's source rows: id, name and version, url, licence, downloaded (one day: a source downloaded over several
+# days gives its last, the name the rest).
 SOURCE_ROWS = [
-    ('wdi', 'World Bank, World Development Indicators (NY.GDP.MKTP.KD, NY.GDP.MKTP.CD, NY.GDP.MKTP.PP.KD, NY.GDP.MKTP.CN, '
-            'NY.GDP.DEFL.ZS), last updated 2026-10-08',
-     'https://api.worldbank.org/v2/country/all/indicator/', 'CC BY 4.0', DOWNLOADED + ', ' + LC3_DOWNLOADED),
+    ('wdi', 'World Bank, World Development Indicators (NY.GDP.MKTP.KD, NY.GDP.MKTP.CD, NY.GDP.MKTP.PP.KD and the list of '
+            'economies downloaded 2026-10-28, NY.GDP.MKTP.CN 2026-10-31, NY.GDP.DEFL.ZS 2026-11-02), last updated 2026-10-08',
+     'https://api.worldbank.org/v2/country/all/indicator/', 'CC BY 4.0', LC3_DOWNLOADED),
     ('wpp', 'United Nations, World Population Prospects 2024, total population by sex, medium variant',
      'https://population.un.org/wpp/', 'CC BY 3.0 IGO', DOWNLOADED),
     ('bis', 'Bank for International Settlements, US dollar exchange rates (WS_XRU), monthly averages',
