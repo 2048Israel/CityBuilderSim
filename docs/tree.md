@@ -138,6 +138,12 @@ adds its line here, not in `CLAUDE.md`.
                                    of the builders' whole month, with that death care beside it at one
                                    priority (BuildingManager, THE BUILDERS' OWN DEPOTS FIRST;
                                    BuildersFirstCheck holds it on a fixture that causes the stall)
+        BuildersShort.java         the builders short (FC1, 2026-11-02): the premium every order's work pays as the
+                                   queue outgrows what the repairs leave the sites, and the foreign contractor that
+                                   takes the orders at twice the price once they leave none, builds the builders'
+                                   own depots first and is paid abroad (BuildingManager.orderPriceMultiplier(),
+                                   Game's THE FOREIGN CREWS, Construction's book); ConstructionTrapCheck holds it
+                                   on a city whose repairs take all but a sliver of the builders' month
         StrategicReserve.java      the city's strategic reserve of crude (0.7.85): what its tanks hold and cost,
                                    the fill ordered and the release standing, the city's side of crude's
                                    clearing (Markets.CityTrader) and the month the next strike settles;
