@@ -67,9 +67,10 @@ leave, and the price of a point did not read the queue.
   - BuildersFirstCheck 6: the new town's founding months (sites 0 of a 130-point month) are now the trap in miniature,
     and the landlords do not order at ×2, so the fixture puts 10 of their Houses on site in both twins before the
     comparison, as DeathCareFirstCheck's fixture does. The claim tested is unchanged (61 homes against 59).
-  - PriceLevelCheck 9: the town's horizon goes from 55 to 35 by the header's own recipe. From month 36, today's town
-    parts from the factor's, the factor nudged by 1e-12 and today's nudged by 1e-12, which all run equal: a tie in a
-    planner's cost (`totalCostOf`, the work times the multiple), not a price the factor missed.
+  - PriceLevelCheck 9: the town's horizon goes from 55 to 34 by the header's own recipe (35 before LC3's world file,
+    which parts it a month sooner). From month 35, today's town parts from the factor's, the factor nudged by 1e-12 and
+    today's nudged by 1e-12, which all run equal: a tie in a planner's cost (`totalCostOf`, the work times the
+    multiple), not a price the factor missed.
   - ConstructionControlCheck: a restart's and a demolition's work are expected at the builders' multiple.
 - **The founding card** (`Founding.whatItBuys(..., multiple)`, through `Game.whatItBuys()`) prices the village order
   by order on the queue it builds, and each first work on the queue the village leaves, at the founded city's
@@ -113,6 +114,14 @@ leave, and the price of a point did not read the queue.
   - MapCheck 2h: on FC1's path, 12 and 23 standing boxes move in the district plan four months after a reserve
     (0 without FC1), though the plan says what stands never moves. A planner defect, queued as DM1. The switch covers
     section 1's played city (2h's scenarios are cut from it) through 2h, and is back on for every later section.
+- **After LC3 merged** (0.9.1 and its re-baked world-1.bin), the full suite on that file found two more, both FC1's
+  (green with FC1 off), and both mended as above:
+  - PriceLevelCheck 9: the same tie a month sooner, so 35 became 34.
+  - OrderSearchCheck 2: under FC1 the playtest's town grows more slowly through its founding. Its copy has 2.5M
+    people at month 524 against 10.4M with FC1 off, though both towns are near 15,000 by month 1200. The twin's
+    largest order is 4 Filling Stations, which no till trims past the counted slices. FR8 already sets the twin's
+    tills; the twin's order is now handed to the search as at least `TWIN_LEAST_ORDER` (64) of its kind. It is built
+    16 and 32 on the two tills, both the countdown's answer, and an order of 64 or more goes as the twin decided it.
 
 ## 2. The calls (★; each takes the recommended way, settled by the orchestrator on Jerus's "Run both tonight")
 
@@ -146,30 +155,43 @@ After (`FC1`, the same columns): the trap was met in **0 of 38,384** months, and
 anything. The premium was on in 27.1% of months from month 240, averaging +4.9% (median +9% when on, p90 +55%, at
 most +76%). The queue barely moved: median 2.16 months, p75 10.0, p90 21.2, p99 67.
 
-The playtest's trace moved (the premium is on through every city's founding queue), so the full ensemble ran on the
-final model against `docs/ensemble/0.8.95.md` and is committed as `docs/ensemble/FC1.md`. It passed **23/26**, the
-same three reds as the baseline, each nearer its line:
+On LC3's world file (`FC1-lc3`, the merged tree, the same columns): again **0 of 38,384**, and no foreign book. The
+premium was on in 26.1% of months from month 240, averaging +4.7% (median +9.0% when on, p90 +55%, at most +77%).
+The queue: median 1.89 months, p75 9.5, p90 21.0, p99 65.
 
-| measure | 0.8.95 | FC1 |
+The playtest's trace moved (the premium is on through every city's founding queue), so the full ensemble ran twice.
+On the world file before LC3's, against `docs/ensemble/0.8.95.md`, it passed 23/26: the baseline's three reds, each
+nearer its line (A2 20 to 13 months, S1's spell 107 to 65). After LC3 merged, on its world file, against LC3's
+`docs/ensemble/0.9.1.md` (22/26), it passed **22/26**: the baseline's four reds, three nearer their line and S1
+further. That run is committed as `docs/ensemble/FC1.md`.
+
+| measure | 0.9.1 (LC3) | FC1 |
 |---|---|---|
-| A2 (longest spell of yoy > 10% from m240) | 20 [12-44] | 13 [10-19] |
-| S1 (longest spell) | 107 | 65 |
-| R3 (seeds above +1 pt) | 3 | 3 |
-| A1 (AUTO2 seeds in band) | 14/16 | 16/16 |
-| T1 (month 40,000 people reached) | m987 | m968 |
-| T2 (AUTO2 final population) | 336,202 | 341,460 |
+| A1 (AUTO2 seeds in band; median) | 16/16, 2.40% | 16/16, 2.26% |
+| A2 (longest spell of yoy > 10% from m240) | 16 [12-33] | 14 [7-29] |
+| S1 (median excess; longest spell) | 2.03%; 86 | 2.11%; 102 |
+| R2 (unemployment minus twin, median) | -1.22 | -1.15 |
+| R3 (seeds above +1 pt) | 7 | 4 |
+| T1 (month 40,000 people reached) | m968 | m970 |
+| T2 (AUTO2 final population) | 345,461 | 335,674 |
+| young city's inflation, m240-600 | 4.16% | 3.73% |
 | M1 / F1 | 0 / 0 | 0 / 0 |
+
+For the gate's eye: S1 reads the 0% policy rate held from month 1800, long after any founding queue. On the earlier
+file FC1 moved it the other way (65 against 107), so it reads as a seed draw, not FC1's.
 
 ## 4. Checks
 
-- `./batch-check.sh`, the whole of it (the suite, the maps, Stale, the tree), on the final tree: **exit 0**. All
-  170 green in 2,025 s. Three timing assertions were soft, as every side-by-side run's are (SaveSlotCheck, MapCheck,
-  PartnerCallsCheck; timing is the gate's). Stale had 0 firm findings, and the maps are regenerated in the batch.
+- `./batch-check.sh`, the whole of it (the suite, the maps, Stale, the tree), before LC3 merged: **exit 0**. All
+  170 green in 2,025 s. On the merged tree with LC3's world file, 168 were green, and two NEW reds (PriceLevelCheck,
+  OrderSearchCheck) were proved FC1's and mended (section 1); each was then green alone. Timing assertions were
+  soft, as every side-by-side run's are (timing is the gate's). Stale had 0 firm findings, and the maps are
+  regenerated in the batch.
 - The first whole run, before the mends, found fourteen harnesses NEW red (57 lines): the towns FC1's price moves,
   section 1. Each was proved FC1's by running it with FC1 off, then mended or played without FC1 as said there.
 - ConstructionTrapCheck is new (134 assertions); README says 169 harnesses.
-- The ensemble ran on the final model (section 3). After it, only harness-side changes and `Game.whatItBuys()`
-  (read by harnesses alone) moved.
+- The ensemble's second run (section 3) ran on the merged tree's model (b4ba0e66). After it, only OrderSearchCheck
+  (a harness) moved.
 
 ## 5. For the next batches
 
