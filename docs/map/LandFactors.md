@@ -28,7 +28,7 @@
 
 **Uses:** [Nations](Nations.md) (9), [WorldData](WorldData.md) (4), [WorldMoneys](WorldMoneys.md) (1)
 
-**Used by (5):** [Game](Game.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandTable](LandTable.md)
+**Used by (7):** [Game](Game.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandTable](LandTable.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md)
 
 ## Sections
 

@@ -33,7 +33,7 @@
 
 **Uses:** [Good](Good.md) (12), [Ports](Ports.md) (4), [TradeLanes](TradeLanes.md) (3), [PriceLevel](PriceLevel.md) (1), [WorldMarket](WorldMarket.md) (1), [Nations](Nations.md) (1)
 
-**Used by (12):** [CallPartners](CallPartners.md), [DataSave](DataSave.md), [Game](Game.md), [HistorySave](HistorySave.md), [MapView](MapView.md), [PartnerCallsCheck](PartnerCallsCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [ReplayCheck](ReplayCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
+**Used by (14):** [CallPartners](CallPartners.md), [DataSave](DataSave.md), [Game](Game.md), [HistorySave](HistorySave.md), [MapView](MapView.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [ReplayCheck](ReplayCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 

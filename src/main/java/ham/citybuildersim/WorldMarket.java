@@ -49,7 +49,8 @@ import java.util.Random;
  * freight table, the nodes, the calibration. It is immutable, built once a
  * process (Base.load caches by the file's path, size and time) and shared by
  * every market on that file. A WorldMarket is one city's: its site, its berth,
- * its solved year. It is not thread-safe; the Base is.
+ * its solved year. It is not thread-safe; the Base is, and so is every Curve curve() hands out (WN6: an immutable snapshot, published through a
+ * volatile whenever the fills are rebuilt, for a screen's thread).
  *
  * Nothing in the game calls this yet (WN3's first slice): WorldMarketCheck
  * holds it, on the fixture and, when it is named, on the full file.
@@ -1084,6 +1085,53 @@ public final class WorldMarket {
         int ns, nb;
         int[] sNation, sBuyer, bNation;
         Levels sell, buy;
+
+        /**
+         * A good's floor and ceiling in US$ a tonne for x tonnes a year sold and m bought: the fills, less the world's answer within the year (x - m over
+         * the world's slope). {floor, ceiling}, with the floor never above the ceiling; NaN on a side with no buyers or no sellers. Past every sink's cap
+         * the floor is 0 (the clamp), and past every seller's output the ceiling is the scarcity bound (SCARCITY_MULTIPLE times the cheapest landed cost).
+         * The one formula: WorldMarket.band() and Curve.floorAt/ceilingAt both read it (WN6).
+         */
+        double[] model(double x, double m) {
+            double shift = slope > 0 ? (x - m) / slope : 0;
+            double floor = ns > 0 ? Math.max(0, sell.level(x) - shift) : Double.NaN;
+            double landed = nb > 0 ? -buy.level(m) : Double.NaN;
+            if (nb > 0 && !Double.isFinite(landed)) landed = SCARCITY_MULTIPLE * -buy.level(0);   // past every seller's capacity: a bound, not infinity
+            double ceiling = nb > 0 ? Math.max(Double.isNaN(floor) ? 0 : floor, landed - shift) : Double.NaN;
+            return new double[] { floor, ceiling };
+        }
+
+        /** Who took a month's exports, by nation (index nation - 1, n of them), game units: the one formula allocate() and Curve.buyersAt() read (WN6). */
+        double[] buyers(Good g, double unitsPerTonne, int n, double exportUnits) {
+            double[] to = new double[n];
+            double x = 12 * Math.max(0, exportUnits) / unitsPerTonne;
+            if (x > 0 && ns > 0 && g.exportable()) {
+                double lam = sell.level(x), sum = 0;
+                for (int k = 0; k < ns && sell.net[k] > lam; k++) {
+                    double q = sell.take(k, lam);
+                    to[sBuyer[k]] = q;
+                    sum += q;
+                }
+                scale(to, sum, exportUnits);
+            }
+            return to;
+        }
+
+        /** Who sold a month's imports, by nation (index nation - 1, n of them), game units: the one formula allocate() and Curve.sellersAt() read (WN6). */
+        double[] sellers(Good g, double unitsPerTonne, int n, double importUnits) {
+            double[] from = new double[n];
+            double m = 12 * Math.max(0, importUnits) / unitsPerTonne;
+            if (m > 0 && nb > 0 && g.importable()) {
+                double lam = buy.level(m), sum = 0;
+                for (int k = 0; k < nb && buy.net[k] > lam; k++) {
+                    double q = buy.take(k, lam);
+                    from[bNation[k]] = q;
+                    sum += q;
+                }
+                scale(from, sum, importUnits);
+            }
+            return from;
+        }
     }
 
     /** The result of a re-solve (see resolve): the month's step and the nations' answer with the city's tonnes delivered, and the price they were sold at (the served buyers' landed price before the sale, tonne-weighted), in US$ a tonne. */
@@ -1091,6 +1139,208 @@ public final class WorldMarket {
 
     /** Who took this month's exports and who sold this month's imports, by nation (index nation - 1), in game units. */
     public record Allocation(double[] exportUnitsTo, double[] importUnitsFrom) { }
+
+    /**
+     * One good's curve at the city's site, frozen when the fills were last rebuilt (WN6; docs/studies/spec-nations.md 8, the Trade screen's Partners
+     * board): everything the screen draws of "where the next tonne goes" - the export curve, what the next tonne nets against how much the city sells,
+     * the month's line and the world's, the points where each buyer joins, the buyers at what the city sells now, the band's floor and ceiling named by
+     * their nations - read from one snapshot, by a thread that is not the model's.
+     * <p>
+     * WHY. The screens had the band (two numbers) and the allocation (an array), and anything more - the sinks, where each joins, who sets the level -
+     * was in the private fills, readable only by a harness on the model's thread. Recomputing it in a screen is the failure CLAUDE.md names, and
+     * reading the live fills from another thread reads half a rebuild. So the market publishes an immutable Curve for each good through a volatile
+     * every time it rebuilds the fills (solveYear, restore, a new site or berth), and every figure here is the SAME formula band() and allocate()
+     * read - floorAt/ceilingAt are band()'s two ends and buyersAt/sellersAt are allocate()'s two arrays, to the bit, because they are the same code.
+     * <p>
+     * UNITS. Prices (netbacks, landed costs, floors, ceilings, freights, levels) are in the band's unit: thousands of world dollars a game unit, sigma
+     * times the model's US$ a tonne, what band() returns. Volumes in every method and record are game units a month, as band() and allocate() take
+     * them; a share is of the world's use of the good a year (worldUseTonnesYear). Nations are 1-based, as Nations and the map number them; the
+     * arrays of buyersAt/sellersAt are by index nation - 1, as allocate()'s are. A sink's freight is the buyer's price less its netback, and a
+     * seller's its landed cost less its mill price; both are kept. The curve does not know the city's own trade: a screen holds that and asks at a volume.
+     */
+    public static final class Curve {
+        /** Where the points() grid starts, as a share of the world's use of the good a year (WN6). */
+        public static final double POINTS_FROM_SHARE = 1e-5;
+        /** Where the points() grid stops at the latest, as a share of the world's use a year: sooner if the sale side's caps end first (WN6). */
+        public static final double POINTS_TO_SHARE = .30;
+        /** How many points() draws (WN6: the chart's resolution). */
+        public static final int POINTS = 48;
+
+        /** One sink of the sale side: a binding supplier whose best buyer takes the city's tonnes. */
+        public record Sink(int supplier, int buyer, double netback, double freight, double buyerPrice, double slopeUnits, double capUnits,
+                           double joinsAtUnits, double joinsAtShare) { }
+
+        /** One seller of the purchase side: a maker landed at the city. */
+        public record Seller(int nation, double mill, double landed, double freight, double slopeUnits, double capUnits,
+                             double joinsAtUnits, double joinsAtShare) { }
+
+        /**
+         * The level of one side at a volume, and the nation that sets it. On the sale side level is the netback every taking buyer is brought down to
+         * (levelAt), nation the buyer of the sink that joined last, supplier its binding supplier; on the purchase side level is the landed cost
+         * every taking seller is brought up to (costLevelAt), nation the seller that joined last, supplier the same. With nothing taking (a
+         * volume of 0) the level is the first sink's netback and nation names the first sink: the nation the next tonne goes to. taking is how many are
+         * taking; nation and supplier are 0 and level NaN on a side that has none. A level is -infinity (sale) or +infinity (purchase) past every cap.
+         */
+        public record Level(double level, int nation, int supplier, int taking) { }
+
+        /** One point of the chart: a share of the world's use, the same in game units a month, the month's line (netAt) and the world's line with no imports (floorAt(units, 0)). */
+        public record Point(double share, double units, double net, double world) { }
+
+        private final Good good;
+        private final double sigma, unitsPerTonne, worldUse;
+        private final int n;
+        private final Fill fill;
+        private final List<Sink> sinks;
+        private final List<Seller> sellers;
+
+        private Curve(Good good, double sigma, double unitsPerTonne, double worldUse, int n, Fill fill, double[] mill) {
+            this.good = good;
+            this.sigma = sigma;
+            this.unitsPerTonne = unitsPerTonne;
+            this.worldUse = worldUse;
+            this.n = n;
+            this.fill = fill;
+            double perMonth = unitsPerTonne / 12;
+            Sink[] s = new Sink[fill.ns];
+            for (int k = 0; k < fill.ns; k++) {
+                int j = fill.sBuyer[k];
+                double net = fill.sell.net[k], joins = fill.sell.joinAt(k);
+                s[k] = new Sink(fill.sNation[k] + 1, j + 1, sigma * net, sigma * (fill.buyerPrice[j] - net), sigma * fill.buyerPrice[j],
+                        fill.sell.slope[k] * perMonth / sigma, fill.sell.cap[k] * perMonth, joins * perMonth, worldUse > 0 ? joins / worldUse : Double.NaN);
+            }
+            sinks = List.of(s);
+            Seller[] b = new Seller[fill.nb];
+            for (int k = 0; k < fill.nb; k++) {
+                int i = fill.bNation[k];
+                double landed = -fill.buy.net[k], joins = fill.buy.joinAt(k);
+                b[k] = new Seller(i + 1, sigma * mill[i], sigma * landed, sigma * (landed - mill[i]), fill.buy.slope[k] * perMonth / sigma,
+                        fill.buy.cap[k] * perMonth, joins * perMonth, worldUse > 0 ? joins / worldUse : Double.NaN);
+            }
+            sellers = List.of(b);
+        }
+
+        public Good good() { return good; }
+
+        /** The price scale: the band's unit is sigma times US$ a tonne. */
+        public double sigma() { return sigma; }
+
+        /** Game units in a tonne. */
+        public double unitsPerTonne() { return unitsPerTonne; }
+
+        /** The world's use of the good in the year solved: every nation's demand summed (the nations' own, without the city's), tonnes a year. */
+        public double worldUseTonnesYear() { return worldUse; }
+
+        /** The world's use of the good in game units a month. */
+        public double worldUseUnitsMonth() { return worldUse * unitsPerTonne / 12; }
+
+        /** The world's answer within the year, in the model's own unit: tonnes a year (sold less bought) it takes to move the world price one US$ a tonne. */
+        public double worldSlope() { return fill.slope; }
+
+        /** The world's answer in the screen's units: game units a month (sold less bought) that move the band one unit. */
+        public double worldSlopeUnits() { return fill.slope * unitsPerTonne / 12 / sigma; }
+
+        /** A volume in game units a month as a share of the world's use a year (the share points() and the records use). */
+        public double shareOfWorldUse(double unitsMonth) { return worldUse > 0 ? 12 * unitsMonth / unitsPerTonne / worldUse : Double.NaN; }
+
+        /** What the sale side's sinks take together, game units a month (past it the floor is 0). */
+        public double saleCapacityUnits() { return fill.sell.capacity() * unitsPerTonne / 12; }
+
+        /** What the purchase side's sellers sell together, game units a month (past it the ceiling is the scarcity bound). */
+        public double purchaseCapacityUnits() { return fill.buy.capacity() * unitsPerTonne / 12; }
+
+        /** The sale side's sinks, best netback first (the order they join). */
+        public List<Sink> sinks() { return sinks; }
+
+        /** The purchase side's sellers, cheapest landed first (the order they join). */
+        public List<Seller> sellers() { return sellers; }
+
+        private double tonnes(double units) { return 12 * Math.max(0, units) / unitsPerTonne; }
+
+        /** The band, {floor, ceiling}: WorldMarket.band()'s own body (it calls this), so the two agree to the bit. */
+        double[] band(double exportUnitsMonth, double importUnitsMonth) {
+            double[] b = fill.model(tonnes(exportUnitsMonth), tonnes(importUnitsMonth));
+            return new double[] { good.exportable() ? sigma * b[0] : Double.NaN, good.importable() ? sigma * b[1] : Double.NaN };
+        }
+
+        /** The month's line: what the fills alone net at this volume of exports (the level), before the world's answer; -infinity past every cap, NaN with no buyers. */
+        public double netAt(double exportUnitsMonth) {
+            return good.exportable() && fill.ns > 0 ? sigma * fill.sell.level(tonnes(exportUnitsMonth)) : Double.NaN;
+        }
+
+        /** The band's floor at last month's exports and imports: exactly band()[0]. */
+        public double floorAt(double exportUnitsMonth, double importUnitsMonth) { return band(exportUnitsMonth, importUnitsMonth)[0]; }
+
+        /** The band's ceiling at last month's exports and imports: exactly band()[1]. */
+        public double ceilingAt(double exportUnitsMonth, double importUnitsMonth) { return band(exportUnitsMonth, importUnitsMonth)[1]; }
+
+        /** The world's answer within the year at these volumes, in the band's unit: what floorAt and ceilingAt are both lowered by, (sold - bought) over the world's slope. */
+        public double worldAnswerAt(double exportUnitsMonth, double importUnitsMonth) {
+            return fill.slope > 0 ? sigma * (tonnes(exportUnitsMonth) - tonnes(importUnitsMonth)) / fill.slope : 0;
+        }
+
+        /** Who takes this month's exports, game units by nation (index nation - 1): exactly allocate()'s exportUnitsTo. */
+        public double[] buyersAt(double exportUnitsMonth) { return fill.buyers(good, unitsPerTonne, n, exportUnitsMonth); }
+
+        /** Who sells this month's imports, game units by nation (index nation - 1): exactly allocate()'s importUnitsFrom. */
+        public double[] sellersAt(double importUnitsMonth) { return fill.sellers(good, unitsPerTonne, n, importUnitsMonth); }
+
+        /** How many sinks take at a volume of exports: the first ones in join order whose netback is above the level (the same test buyersAt makes). */
+        public int buyersTaking(double exportUnitsMonth) {
+            double x = tonnes(exportUnitsMonth);
+            if (!good.exportable() || !(x > 0) || fill.ns == 0) return 0;
+            double lam = fill.sell.level(x);
+            int k = 0;
+            while (k < fill.ns && fill.sell.net[k] > lam) k++;
+            return k;
+        }
+
+        /** The level every taking buyer nets at this volume of exports, and the buyer that joined last (what sets the floor). */
+        public Level levelAt(double exportUnitsMonth) {
+            if (!good.exportable() || fill.ns == 0) return new Level(Double.NaN, 0, 0, 0);
+            int taking = buyersTaking(exportUnitsMonth), k = Math.max(0, taking - 1);
+            return new Level(netAt(exportUnitsMonth), fill.sBuyer[k] + 1, fill.sNation[k] + 1, taking);
+        }
+
+        /** The landed cost every taking seller asks at this volume of imports, and the seller that joined last (what sets the ceiling); at 0, the cheapest landed seller. */
+        public Level costLevelAt(double importUnitsMonth) {
+            if (!good.importable() || fill.nb == 0) return new Level(Double.NaN, 0, 0, 0);
+            double m = tonnes(importUnitsMonth), lam = fill.buy.level(m);
+            int taking = 0;
+            if (m > 0) while (taking < fill.nb && fill.buy.net[taking] > lam) taking++;
+            int k = Math.max(0, taking - 1);
+            return new Level(sigma * -lam, fill.bNation[k] + 1, fill.bNation[k] + 1, taking);
+        }
+
+        /** The next k buyers not yet taking at this volume of exports, in the order they join, each with the volume (and share of the world's use) it joins at. */
+        public List<Sink> nextBuyers(double exportUnitsMonth, int k) {
+            int from = buyersTaking(exportUnitsMonth);
+            return sinks.subList(Math.min(from, sinks.size()), Math.min(sinks.size(), from + Math.max(0, k)));
+        }
+
+        /** The chart's grid, POINTS of them. */
+        public List<Point> points() { return points(POINTS); }
+
+        /**
+         * The chart's grid: count points log-spaced in the share of the world's use from POINTS_FROM_SHARE to POINTS_TO_SHARE or the sale side's
+         * capacity, whichever is less, each {share, game units a month, the month's line (netAt), the world's line with no imports (floorAt(units, 0))}.
+         * A point past the level's end (netAt not finite) is left out; empty with no buyers or no world use.
+         */
+        public List<Point> points(int count) {
+            if (!good.exportable() || fill.ns == 0 || !(worldUse > 0) || count < 1) return List.of();
+            double hi = Math.min(POINTS_TO_SHARE, fill.sell.capacity() / worldUse);
+            if (!(hi > 0)) return List.of();
+            double lo = Math.min(POINTS_FROM_SHARE, hi);
+            Point[] out = new Point[count];
+            int made = 0;
+            for (int i = 0; i < count; i++) {
+                double share = count == 1 ? hi : StrictMath.exp(StrictMath.log(lo) + (StrictMath.log(hi) - StrictMath.log(lo)) * i / (count - 1));
+                double units = share * worldUse * unitsPerTonne / 12, net = netAt(units);
+                if (!Double.isFinite(net)) continue;
+                out[made++] = new Point(share, units, net, floorAt(units, 0));
+            }
+            return List.of(Arrays.copyOf(out, made));
+        }
+    }
 
     private final Base base;
     private final Nations nations;
@@ -1104,6 +1354,8 @@ public final class WorldMarket {
     private double[][] price, demand, supply, elastic, aSolved, phiSolved;
     private Fill[] fills;
     private boolean fillsFresh;
+    /** Each good's curve (null for a good with no price scale), rebuilt with the fills and published through this field for the screen's thread (WN6). */
+    private volatile Curve[] curves;
 
     private double siteLat = REFERENCE_LAT, siteLon = REFERENCE_LON;
     private boolean berth;
@@ -1298,6 +1550,15 @@ public final class WorldMarket {
         if (year < 0 || fillsFresh) return;
         for (int gi = 0; gi < goodCount; gi++) fills[gi] = fill(gi, price[gi], demand[gi], supply[gi]);
         fillsFresh = true;
+        // THE CURVES, from the fills just made: each is immutable (a fill and its levels are never written after fill() returns), and the array is
+        // published whole, so the screen's thread reads either the last rebuild or this one, never half of one (WN6).
+        Curve[] made = new Curve[goodCount];
+        for (int gi = 0; gi < goodCount; gi++) {
+            Traded t = base.traded[gi];
+            if (Double.isNaN(t.sigma)) continue;
+            made[gi] = new Curve(t.good, t.sigma, t.unitsPerTonne, worldUse(gi), n, fills[gi], price[gi].clone());
+        }
+        curves = made;
     }
 
     /** The share a supplier k has of buyer j's composite in the solved state (its flow over the buyer's spending on the nations), 0 where the file keeps no pair. */
@@ -1412,13 +1673,7 @@ public final class WorldMarket {
     double[] model(int gi, double x, double m) {
         if (year < 0) return new double[] { Double.NaN, Double.NaN };
         refill();
-        Fill f = fills[gi];
-        double shift = f.slope > 0 ? (x - m) / f.slope : 0;
-        double floor = f.ns > 0 ? Math.max(0, f.sell.level(x) - shift) : Double.NaN;
-        double landed = f.nb > 0 ? -f.buy.level(m) : Double.NaN;
-        if (f.nb > 0 && !Double.isFinite(landed)) landed = SCARCITY_MULTIPLE * -f.buy.level(0);   // past every seller's capacity: a bound, not infinity
-        double ceiling = f.nb > 0 ? Math.max(Double.isNaN(floor) ? 0 : floor, landed - shift) : Double.NaN;
-        return new double[] { floor, ceiling };
+        return fills[gi].model(x, m);
     }
 
     /**
@@ -1434,10 +1689,8 @@ public final class WorldMarket {
     public double[] band(Good g, double exportUnitsLastMonth, double importUnitsLastMonth) {
         int gi = base.indexOf[g.ordinal()];
         if (gi < 0 || year < 0 || Double.isNaN(base.traded[gi].sigma)) return new double[] { Double.NaN, Double.NaN };
-        Traded t = base.traded[gi];
-        double x = 12 * Math.max(0, exportUnitsLastMonth) / t.unitsPerTonne, m = 12 * Math.max(0, importUnitsLastMonth) / t.unitsPerTonne;
-        double[] b = model(gi, x, m);
-        return new double[] { g.exportable() ? t.sigma * b[0] : Double.NaN, g.importable() ? t.sigma * b[1] : Double.NaN };
+        refill();
+        return curves[gi].band(exportUnitsLastMonth, importUnitsLastMonth);
     }
 
     /**
@@ -1447,32 +1700,12 @@ public final class WorldMarket {
      * they add to the volume exactly (past every cap, the caps scaled up). Zeros where a volume is 0 or the good has no buyers or no sellers.
      */
     public Allocation allocate(Good g, double exportUnits, double importUnits) {
-        double[] to = new double[n], from = new double[n];
         int gi = base.indexOf[g.ordinal()];
-        if (gi < 0 || year < 0) return new Allocation(to, from);
+        if (gi < 0 || year < 0) return new Allocation(new double[n], new double[n]);
         refill();
-        Traded t = base.traded[gi];
         Fill f = fills[gi];
-        double x = 12 * Math.max(0, exportUnits) / t.unitsPerTonne, m = 12 * Math.max(0, importUnits) / t.unitsPerTonne;
-        if (x > 0 && f.ns > 0 && g.exportable()) {
-            double lam = f.sell.level(x), sum = 0;
-            for (int k = 0; k < f.ns && f.sell.net[k] > lam; k++) {
-                double q = f.sell.take(k, lam);
-                to[f.sBuyer[k]] = q;
-                sum += q;
-            }
-            scale(to, sum, exportUnits);
-        }
-        if (m > 0 && f.nb > 0 && g.importable()) {
-            double lam = f.buy.level(m), sum = 0;
-            for (int k = 0; k < f.nb && f.buy.net[k] > lam; k++) {
-                double q = f.buy.take(k, lam);
-                from[f.bNation[k]] = q;
-                sum += q;
-            }
-            scale(from, sum, importUnits);
-        }
-        return new Allocation(to, from);
+        double upt = base.traded[gi].unitsPerTonne;
+        return new Allocation(f.buyers(g, upt, n, exportUnits), f.sellers(g, upt, n, importUnits));
     }
 
     private static void scale(double[] a, double sum, double total) {
@@ -1484,6 +1717,17 @@ public final class WorldMarket {
 
     /** Whether the market models this good and the city has a side of it. */
     public boolean trades(Good g) { return base.trades(g); }
+
+    /**
+     * A good's curve at the site (WN6): null for a good the market does not model or one with no price scale, and before a year is solved. Immutable and
+     * safe to read from the screen's thread; it is the snapshot of the last rebuild of the fills (a solved year, a restore, a new site or berth), each
+     * of which publishes the new curves before it returns, so a city just loaded has its curves before its first month.
+     */
+    public Curve curve(Good g) {
+        Curve[] c = curves;
+        int gi = base.indexOf[g.ordinal()];
+        return c == null || gi < 0 ? null : c[gi];
+    }
 
     /** How many nations there are. */
     public int nationCount() { return n; }

@@ -47,6 +47,8 @@
 
 **Uses:** [LandParcel](LandParcel.md) (81), [LandFactors](LandFactors.md) (33), [WorldData](WorldData.md) (25), [LandSellers](LandSellers.md) (21), [Nations](Nations.md) (21), [LandSellersView](LandSellersView.md) (15), [Game](Game.md) (11), [Founding](Founding.md) (9), [CityLand](CityLand.md) (8), [World](World.md) (8), [GameFiles](GameFiles.md) (7), [CityCalendar](CityCalendar.md) (6), [LandMarket](LandMarket.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [EarthData](EarthData.md) (3), [Resource](Resource.md) (2), [EarthSite](EarthSite.md) (2), [EarthProj](EarthProj.md) (2), [LandTable](LandTable.md) (1)
 
+**Used by (1):** [PartnersCheck](PartnersCheck.md)
+
 ## Sections
 
 | line | section |

@@ -25,7 +25,7 @@
 
 **Uses:** [World](World.md) (18), [CityLand](CityLand.md) (17), [WorldData](WorldData.md) (8), [EarthProj](EarthProj.md) (6), [LandFactors](LandFactors.md) (4), [LandGrid](LandGrid.md) (3), [EarthData](EarthData.md) (2), [EarthTerrain](EarthTerrain.md) (1), [GridConversion](GridConversion.md) (1)
 
-**Used by (4):** [Game](Game.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandSellersView](LandSellersView.md)
+**Used by (6):** [Game](Game.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandSellersView](LandSellersView.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md)
 
 ## Sections
 

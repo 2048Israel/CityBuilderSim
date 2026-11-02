@@ -32,7 +32,7 @@
 
 **Uses:** [WorldMoneys](WorldMoneys.md) (10), [Nations](Nations.md) (3)
 
-**Used by (9):** [DebtMoneysCheck](DebtMoneysCheck.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [NationsMap](NationsMap.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md)
+**Used by (12):** [DebtMoneysCheck](DebtMoneysCheck.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [HistorySave](HistorySave.md), [InterestAbroadCheck](InterestAbroadCheck.md), [NationsMap](NationsMap.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [TradeScreen](TradeScreen.md), [VaultView](VaultView.md)
 
 ## Sections
 
