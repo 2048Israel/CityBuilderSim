@@ -18,7 +18,7 @@
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (7), [HistorySave](HistorySave.md) (3), [Game](Game.md) (1), [PolicyRates](PolicyRates.md) (1), [DebtManager](DebtManager.md) (1), [WorldMoneys](WorldMoneys.md) (1), [Nations](Nations.md) (1)
 
-**Used by (1):** [PartnersCheck](PartnersCheck.md)
+**Used by (2):** [PartnersCheck](PartnersCheck.md), [VaultTable](VaultTable.md)
 
 ## Methods, in file order
 

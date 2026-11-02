@@ -46,7 +46,7 @@
 
 **Uses:** [Good](Good.md) (28), [WorldData](WorldData.md) (15), [Nations](Nations.md) (13), [World](World.md) (3), [Freight](Freight.md) (1)
 
-**Used by (15):** [CallPartners](CallPartners.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapView](MapView.md), [Markets](Markets.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnerTrade](PartnerTrade.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
+**Used by (16):** [CallPartners](CallPartners.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapView](MapView.md), [Markets](Markets.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnerTrade](PartnerTrade.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 

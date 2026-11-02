@@ -4649,7 +4649,17 @@ final class MapView {
             collapse(false);
             ui.rankingsScreen.openOn(iso3);
         });
-        nationBox.getChildren().setAll(head, distance, grid, allMeasures);
+        // ...and to Trade > Partners (WN6): the same, onto this nation's page, where the city has a market to trade with it by.
+        final int shown = nationShown;
+        HBox doors = new HBox(Palette.GAP_LOOSE, allMeasures);
+        doors.setAlignment(Pos.CENTER_LEFT);
+        if (g.getPartnerTrade() != null) {
+            doors.getChildren().add(door("Its trade with us", Palette.BUSINESS, () -> {
+                collapse(false);
+                ui.tradeScreen.openNation(shown);
+            }));
+        }
+        nationBox.getChildren().setAll(head, distance, grid, doors);
         nationBox.setVisible(true);
         nationBox.applyCss();
         nationBox.autosize();

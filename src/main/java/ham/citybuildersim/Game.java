@@ -1866,6 +1866,12 @@ public class Game {
     }
 
     /**
+     * The city's GDP in real 2015 US$ a year, in whole US$: the last finished month's (realGdp2015Usd(), thousands) at that month's pace, times 12 and
+     * 1,000. The one figure the screens set beside a nation's output (PartnersView.nation(), the window header's GDP tile; WN6, D29).
+     */
+    public double realGdp2015UsdYear() { return realGdp2015Usd() * 12 * 1000; }
+
+    /**
      * The D$'s real effective rate, 100 at founding (RealDollar.realEffectiveRate): the weights are the city's trade with each nation over the last
      * finished year, else the year to date, else the US alone. Each partner's money is the one its nation uses now, against the money it used in the
      * first January (Nations.FIRST_YEAR), carried across any change of money in between so that its real rate holds through the year it changed

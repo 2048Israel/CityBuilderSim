@@ -1,4 +1,4 @@
-# PartnersCheck.java - 751 lines · 17 methods · 3 constants · harnesses
+# PartnersCheck.java - 830 lines · 18 methods · 3 constants · harnesses
 
 `ham/citybuildersim/PartnersCheck.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
 
@@ -31,93 +31,104 @@
 >      the model solves sees only whole curves.
 >   7. AN EARTH CITY (where the game's Earth is here): Halifax's distances are from its own spot, and its land factors, marks and prices are the land
 >      sellers' - the branch a generated world's city (no land sellers, a stand-in's node) leaves out.
+>   8. A GOOD'S BOARD (WN6, the screens' second slice): the volumes it is asked at are the tally's month (the snapshot's, which is the live record's),
+>      its floor and ceiling the curve's at them, its conversion into the city's money the market's own rate, the goods it offers exactly those with
+>      a curve (the sold ones, by the books, largest first), the parts of a sale or a purchase the curve's allocation, adding to 1, and what moves it the
+>      curve's three differences; and Game's year of real GDP is the page's.
 
-**Uses:** [PartnersView](PartnersView.md) (38), [WorldMarket](WorldMarket.md) (28), [Game](Game.md) (19), [Good](Good.md) (14), [ForeignAccounts](ForeignAccounts.md) (12), [VaultView](VaultView.md) (11), [Nations](Nations.md) (9), [LandNationsCheck](LandNationsCheck.md) (9), [PartnerTrade](PartnerTrade.md) (8), [NationsMap](NationsMap.md) (7), [WorldData](WorldData.md) (6), [Founding](Founding.md) (2), [PolicyRates](PolicyRates.md) (2), [EarthProj](EarthProj.md) (2), [LandSellers](LandSellers.md) (2), [LandFactors](LandFactors.md) (2), [DebtMoneysCheck](DebtMoneysCheck.md) (2), [DebtManager](DebtManager.md) (2), [HistorySave](HistorySave.md) (2), [EarthSite](EarthSite.md) (2), [RealDollarCheck](RealDollarCheck.md) (1), [GameFiles](GameFiles.md) (1), [WorldMoneys](WorldMoneys.md) (1)
+**Uses:** [PartnersView](PartnersView.md) (51), [WorldMarket](WorldMarket.md) (30), [Game](Game.md) (20), [Good](Good.md) (18), [ForeignAccounts](ForeignAccounts.md) (12), [VaultView](VaultView.md) (11), [PartnerTrade](PartnerTrade.md) (10), [Nations](Nations.md) (9), [LandNationsCheck](LandNationsCheck.md) (9), [NationsMap](NationsMap.md) (7), [WorldData](WorldData.md) (6), [Founding](Founding.md) (2), [PolicyRates](PolicyRates.md) (2), [EarthProj](EarthProj.md) (2), [LandSellers](LandSellers.md) (2), [LandFactors](LandFactors.md) (2), [DebtMoneysCheck](DebtMoneysCheck.md) (2), [DebtManager](DebtManager.md) (2), [HistorySave](HistorySave.md) (2), [EarthSite](EarthSite.md) (2), [RealDollarCheck](RealDollarCheck.md) (1), [GameFiles](GameFiles.md) (1), [WorldMoneys](WorldMoneys.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Sectors](Sectors.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 122 | · 1 |
-| 295 | · 2 |
-| 333 | · 3 |
-| 437 | · 4 |
-| 563 | · 5 |
-| 644 | · 6 |
-| 714 | · 7 |
+| 127 | · 1 |
+| 300 | · 2 |
+| 338 | · 3 |
+| 442 | · 4 |
+| 568 | · 5 |
+| 649 | · 6 |
+| 719 | · 8 |
+| 793 | · 7 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 50 | `PartnersCheck.out` | `System.out` |  |
-| 51 | `PartnersCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 54 | `PartnersCheck.MONTHS` | `14` | The months the city plays before the sections look: past a January, so a year has finished and the history holds it. |
+| 54 | `PartnersCheck.out` | `System.out` |  |
+| 55 | `PartnersCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 58 | `PartnersCheck.MONTHS` | `14` | The months the city plays before the sections look: past a January, so a year has finished and the history holds it. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 49 | `static int fails` |  |
-| 68 | `int n, bad` |  |
-| 69 | `String first` |  |
+| 53 | `static int fails` |  |
+| 72 | `int n, bad` |  |
+| 73 | `String first` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 705 | **type** `public class PartnersCheck` | The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md 8, boards 2 and 3, 9, D29): each good's curve at the city's site (Wor... |
-| 56 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 62 | 3 | `static void close(String label, double got, double want, double tol)` | A figure the arithmetic gives, judged to a tolerance (relative to the larger, with an absolute floor of the tolerance). |
-| 67 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
-| 71 | 7 | `void see(boolean ok, Supplier<String> what)` _(in PartnersCheck.Tally)_ |  |
-| 80 | 6 | `static void tally(String label, Tally t)` |  |
-| 87 | 5 | `static void quietly(Runnable work)` |  |
-| 93 | 1 | `static void play(Game city)` |  |
-| 96 | 1 | `static boolean same(double a, double b)` | Two figures the same to the bit (NaN is NaN). |
-| 98 | 23 | `public static void main(String[] args)` |  |
+| 51 | 780 | **type** `public class PartnersCheck` | The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md 8, boards 2 and 3, 9, D29): each good's curve at the city's site (Wor... |
+| 60 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 66 | 3 | `static void close(String label, double got, double want, double tol)` | A figure the arithmetic gives, judged to a tolerance (relative to the larger, with an absolute floor of the tolerance). |
+| 71 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
+| 75 | 7 | `void see(boolean ok, Supplier<String> what)` _(in PartnersCheck.Tally)_ |  |
+| 84 | 6 | `static void tally(String label, Tally t)` |  |
+| 91 | 5 | `static void quietly(Runnable work)` |  |
+| 97 | 1 | `static void play(Game city)` |  |
+| 100 | 1 | `static boolean same(double a, double b)` | Two figures the same to the bit (NaN is NaN). |
+| 102 | 24 | `public static void main(String[] args)` |  |
 
-### 1 (lines 122-294)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 125 | 4 | `static double[][] volumes(double lastOut, double lastIn, double use)` | The volumes a good is asked at: last month's, none, one side alone, and shares of the world's use up to all of it (game units a month). |
-| 136 | 18 | `static int widenTheTrade(Game city)` | Gives the city's tally of the month a trade with many nations, the condition the board needs: a town of five hundred houses sells and buys at the nation next door and nowhere else (the first sink takes it all), so a f... |
-| 155 | 139 | `static void theCurveIsTheBand(Game city)` |  |
-
-### 2 (lines 295-332)
+### 1 (lines 127-299)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 297 | 35 | `static Game aLoadedCityHasItsCurves(Game city)` |  |
+| 130 | 4 | `static double[][] volumes(double lastOut, double lastIn, double use)` | The volumes a good is asked at: last month's, none, one side alone, and shares of the world's use up to all of it (game units a month). |
+| 141 | 18 | `static int widenTheTrade(Game city)` | Gives the city's tally of the month a trade with many nations, the condition the board needs: a town of five hundred houses sells and buys at the nation next door and nowhere else (the first sink takes it all), so a f... |
+| 160 | 139 | `static void theCurveIsTheBand(Game city)` |  |
 
-### 3 (lines 333-436)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 335 | 101 | `static void theTableFoots(Game city)` |  |
-
-### 4 (lines 437-562)
+### 2 (lines 300-337)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 439 | 123 | `static void aNationsPage(Game city, Path file)` |  |
+| 302 | 35 | `static Game aLoadedCityHasItsCurves(Game city)` |  |
 
-### 5 (lines 563-643)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 565 | 78 | `static void theVaultInEight(Game city)` |  |
-
-### 6 (lines 644-713)
+### 3 (lines 338-441)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 646 | 67 | `static void aPublishedCurveNeverChanges(Game city, Game back)` |  |
+| 340 | 101 | `static void theTableFoots(Game city)` |  |
 
-### 7 (lines 714-751)
+### 4 (lines 442-567)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 716 | 35 | `static void anEarthCity()` |  |
+| 444 | 123 | `static void aNationsPage(Game city, Path file)` |  |
+
+### 5 (lines 568-648)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 570 | 78 | `static void theVaultInEight(Game city)` |  |
+
+### 6 (lines 649-718)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 651 | 67 | `static void aPublishedCurveNeverChanges(Game city, Game back)` |  |
+
+### 8 (lines 719-792)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 721 | 71 | `static void aGoodsBoard(Game city)` |  |
+
+### 7 (lines 793-830)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 795 | 35 | `static void anEarthCity()` |  |
 

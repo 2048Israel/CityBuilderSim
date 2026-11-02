@@ -136,6 +136,9 @@ public final class Icons {
           + "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"
           + "M2 12h20";
 
+    /** A flag on a pole (Lucide "flag"): Trade's Partners page, the nations the city trades with (WN6). */
+    public static final String FLAG = "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22v-7";
+
     /** Scales. The two pans are absolute moves; see LAND. */
     public static final String POLICY =
             "M12 3v18 M7 21h10"

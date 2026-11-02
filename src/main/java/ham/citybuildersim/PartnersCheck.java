@@ -43,6 +43,10 @@ import java.util.function.Supplier;
  *      the model solves sees only whole curves.
  *   7. AN EARTH CITY (where the game's Earth is here): Halifax's distances are from its own spot, and its land factors, marks and prices are the land
  *      sellers' - the branch a generated world's city (no land sellers, a stand-in's node) leaves out.
+ *   8. A GOOD'S BOARD (WN6, the screens' second slice): the volumes it is asked at are the tally's month (the snapshot's, which is the live record's),
+ *      its floor and ceiling the curve's at them, its conversion into the city's money the market's own rate, the goods it offers exactly those with
+ *      a curve (the sold ones, by the books, largest first), the parts of a sale or a purchase the curve's allocation, adding to 1, and what moves it the
+ *      curve's three differences; and Game's year of real GDP is the page's.
  */
 public class PartnersCheck {
 
@@ -114,6 +118,7 @@ public class PartnersCheck {
         theVaultInEight(city);
         aPublishedCurveNeverChanges(city, back);
         anEarthCity();
+        aGoodsBoard(city);
         out.printf("%nPartnersCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -709,6 +714,80 @@ public class PartnersCheck {
         assertTrue("the years' floors differ (" + floors + "), so a torn curve could be told", expected.size() >= 2);
         assertTrue("a thread reading all the while (" + reads.get() + " reads) saw no error, and only floors of the four whole curves (" + seen.size() + " of them)",
                 failed.get() == null && !seen.isEmpty() && expected.containsAll(seen));
+    }
+
+    /* ----------------------------------------------------------------- 8 */
+
+    static void aGoodsBoard(Game city) {
+        out.println("--- 8. a good's board: the volumes are the tally's month, the band the curve's at them, the conversion the market's own, the parts the allocation's ---");
+        WorldMarket market = city.getWorldMarket();
+        PartnerTrade trade = city.partnerTradeForTest();
+        PartnerTrade.Snapshot snap = city.getPartnerTrade();
+        Tally units = new Tally(), band = new Tally(), parts = new Tally(), moves = new Tally();
+        int boards = 0, withCurve = 0;
+        for (Good g : Good.values()) {
+            WorldMarket.Curve c = market.curve(g);
+            if (c == null) {
+                assertTrue("a good with no curve (" + g + ") has no board", PartnersView.good(city, g) == null);
+                continue;
+            }
+            withCurve++;
+            PartnersView.GoodBoard b = PartnersView.good(city, g);
+            boards++;
+            double x = trade.monthExportUnits(g), m = trade.monthImportUnits(g);
+            units.see(same(b.exportUnits(), x) && same(b.importUnits(), m) && same(snap.monthExportUnits(g), x) && same(snap.monthImportUnits(g), m),
+                    () -> g + ": the board's volumes " + b.exportUnits() + " and " + b.importUnits() + " are not the tally's " + x + " and " + m);
+            GoodsMarket gm = city.getMarkets().get(g);
+            band.see(same(b.floor(), c.floorAt(x, m)) && same(b.ceiling(), c.ceilingAt(x, m)) && same(b.perUnit(), gm.getExchangeRate())
+                            && same(b.inCityMoney(1), gm.getExchangeRate()) && same(b.sellsAt(), gm.exportPrice()) && same(b.buysAt(), gm.importPrice())
+                            && b.floorNation() == c.levelAt(x).nation() && b.ceilingNation() == c.costLevelAt(m).nation(),
+                    () -> g + ": the board's band is not the curve's at the month's volumes, at the market's rate");
+            double own = c.netAt(x) - c.netAt(0);
+            PartnersView.Moves mv = b.moves();
+            moves.see(same(mv.own(), Double.isFinite(own) ? own : Double.NaN) && same(mv.world(), -c.worldAnswerAt(x, m))
+                            && same(mv.freight(), c.sinks().isEmpty() || !g.exportable() ? Double.NaN : -c.sinks().get(0).freight()),
+                    () -> g + ": what moves it is not the curve's own selling, world's answer and first sink's freight");
+            if (x > 0 && g.exportable()) {
+                List<PartnersView.Part> buyers = PartnersView.buyers(c, x);
+                double[] to = c.buyersAt(x);
+                double share = 0, units2 = 0;
+                boolean ordered = true;
+                for (int i = 0; i < buyers.size(); i++) {
+                    share += buyers.get(i).share();
+                    units2 += buyers.get(i).units();
+                    ordered &= same(buyers.get(i).units(), to[buyers.get(i).nation() - 1]) && (i == 0 || buyers.get(i - 1).units() >= buyers.get(i).units());
+                }
+                final double shareSum = share;
+                parts.see(!buyers.isEmpty() && ordered && Math.abs(shareSum - 1) < 1e-9 && Math.abs(units2 - x) <= 1e-9 * Math.max(1, x),
+                        () -> g + ": the buyers' parts add to " + shareSum + " of what was sold");
+            }
+            if (m > 0 && g.importable()) {
+                List<PartnersView.Part> sellers = PartnersView.sellers(c, m);
+                double share = 0;
+                for (PartnersView.Part p : sellers) share += p.share();
+                final double shareSum = share;
+                parts.see(!sellers.isEmpty() && Math.abs(shareSum - 1) < 1e-9, () -> g + ": the sellers' parts add to " + shareSum + " of what was bought");
+            }
+        }
+        out.printf("   %d goods have a curve and a board%n", boards);
+        tally("each board's volumes are the tally's month (the snapshot's and the live record's agree)", units);
+        tally("...its floor and ceiling the curve's at them, the rate and the prices the market's own, the nations the curve's", band);
+        tally("...what moves it the curve's own selling, the world's answer and the first sink's freight", moves);
+        tally("...the parts of a sale or a purchase the allocation's, largest first, adding to what was sold or bought", parts);
+        PartnersView.Goods goods = PartnersView.goods(city);
+        java.util.Map<Good, Sectors.GoodTrade> books = city.getTradeByGood().goods();
+        boolean ordered = true, sells = true;
+        for (int i = 0; i < goods.sold().size(); i++) {
+            Good g = goods.sold().get(i);
+            sells &= books.get(g) != null && books.get(g).sold() > 0 && !market.curve(g).sinks().isEmpty();
+            ordered &= i == 0 || books.get(goods.sold().get(i - 1)).sold() >= books.get(g).sold();
+        }
+        assertTrue("the board offers every good with a curve once (" + goods.sold().size() + " sold, " + goods.others().size() + " others of " + withCurve + ")",
+                goods.sold().size() + goods.others().size() == withCurve && new HashSet<>(goods.sold()).stream().noneMatch(goods.others()::contains));
+        assertTrue("...the sold ones those the books sold abroad, largest first", sells && ordered);
+        PartnersView.Page page = PartnersView.nation(city, snap.exportValue().length > 1 ? 2 : 1);
+        assertTrue("Game's year of real GDP is the month's times twelve in whole US$, and the nation's page sets that beside its output",
+                same(city.realGdp2015UsdYear(), city.realGdp2015Usd() * 12 * 1000) && same(page.cityGdpUsd(), city.realGdp2015UsdYear()));
     }
 
     /* ----------------------------------------------------------------- 7 */

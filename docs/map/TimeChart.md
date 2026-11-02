@@ -29,7 +29,7 @@
 
 **Uses:** [Palette](Palette.md) (94), [ChartModel](ChartModel.md) (71), [YearBook](YearBook.md) (35), [CityCalendar](CityCalendar.md) (18), [Kept](Kept.md) (11), [DecisionLog](DecisionLog.md) (5), [HistoryScreen](HistoryScreen.md) (2), [UserInterface](UserInterface.md) (1), [GameLog](GameLog.md) (1)
 
-**Used by (11):** [BankScreen](BankScreen.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (12):** [BankScreen](BankScreen.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md)
 
 ## Sections
 

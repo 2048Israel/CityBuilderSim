@@ -2,7 +2,7 @@
 
 Generated 2026-11-01 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**169 harness files, 18,494 labelled assertions.** AllChecks runs 169 of them.
+**169 harness files, 18,502 labelled assertions.** AllChecks runs 169 of them.
 
 ## Which harnesses read which class
 
@@ -127,7 +127,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GlobeFrame](map/GlobeFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
-| [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, FoodProcessingCheck, ForeignCheck, GdpCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
+| [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, FoodProcessingCheck, ForeignCheck, GdpCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
 | [GridConversion](map/GridConversion.md) | ConversionCheck, EarthTerrainCheck, LandCheck |
 | [GridOffers](map/GridOffers.md) | BuildCardCheck, ConversionCheck, GridCheck, LandCheck, LandmassCheck, MapCheck |
@@ -214,6 +214,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [OutwardInvestment](map/OutwardInvestment.md) | AuctionCheck, BondCheck, BuybackCheck, CapitalFlowCheck, ExchangeCheck, HoldersCheck, LongPlaytest, MarketCheck |
 | [Palette](map/Palette.md) | **none** |
 | [PartnerTrade](map/PartnerTrade.md) | PartnerCallsCheck, PartnersCheck, ReadPathCheck, RealDollarCheck, ReplayCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
+| [PartnersPage](map/PartnersPage.md) | **none** |
 | [PartnersView](map/PartnersView.md) | PartnersCheck |
 | [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, PriceLevelCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, TradeCostCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
@@ -266,7 +267,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, HomeRailCheck, RailCheck, SectorBooksCheck, TruckCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CapitalFlowCheck, CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PartnersCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
@@ -312,6 +313,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
 | [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, LandCheck, MapCheck, ZoningViewCheck |
 | [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, HydroCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
+| [VaultTable](map/VaultTable.md) | **none** |
 | [VaultView](map/VaultView.md) | PartnersCheck |
 | [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ScaleCheck, WantedPostsCheck, ZoningCheck |
 | [WantedPosts](map/WantedPosts.md) | WantedPostsCheck |
@@ -16781,7 +16783,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1316 fixture: forks on every view
   - L1317 a frame's forks take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and 8 districts
 
-## PartnersCheck.java - 85 labelled assertions
+## PartnersCheck.java - 93 labelled assertions
 
 > The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md 8,
 > boards 2 and 3, 9, D29): each good's curve at the city's site (WorldMarket.Curve), the partners table and a nation's page (PartnersView), and the
@@ -16797,98 +16799,107 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   1. THE CURVE IS THE BAND (a world-file city, Historical, a fixed seed, run to trade): for every good with a curve, at last month's exports and
 > ...
 
-- **L156 1. the curve is the band: floors and ceilings and allocations to the bit, the joins in order**
-  - L159 fixture: a city of
-  - L265 goods were tested:
-  - L266 a good with no curve has a band of nothing
-  - L267 floorAt equals band()'s floor to the bit, at last month's volumes and at shares of the world's use up to all of it
-  - L268 ceilingAt equals band()'s ceiling to the bit, likewise
-  - L269 buyersAt equals allocate()'s exports by nation to the bit
-  - L270 sellersAt equals allocate()'s imports by nation to the bit
-  - L271 the buyers taking are the sinks above the level, each netting at least it, and the sellers likewise; the level's nation is the last one taking
-  - L272 ...with several buyers taking at some volume, so the order is tested
-  - L273 the buyers added up are the volume sold (past the sinks' caps they are scaled up to it)
-  - L274 the joins ascend as the sinks' netbacks fall and the sellers' landed costs rise
-  - L275 the next buyers all join beyond the volume, none is taking, and there are as many as are left up to three
-  - L276 the month's line never rises with the volume
-  - L277 the grid is ascending shares up to the level's end, its lines the curve's own at the same volume
-  - L278 grids were drawn:
-  - L279 the world's line is never above the month's (nothing below nothing)
-  - L284 a market that has solved no year has no curve for any good
-  - L292 ...and a good the market does not model has none (
-- **L298 2. a loaded city has its curves before its first month, the original's to the bit**
-  - L301 saved to its scratch folder
-  - L305 the loaded city has its market, solved in the year it was saved in, and no month played since
-  - L325 curves were compared:
-  - L326 every good has a curve in the loaded city exactly where it has one in the original
-  - L327 ...with the same sinks and sellers, world use and slope, to the bit
-  - L328 ...the same grid
-  - L329 ...and the same floor and ceiling at every volume asked, which are the loaded band's
-- **L336 3. the partners table foots, both spans**
-  - L343 fixture: the city has traded this month (
-  - L350 fixture: the city stands somewhere (
-  - L353 a city with no market built has no table and no page
-  - L390 month: the no-partner remainders are the snapshot's (
-  - L392 month: the rows plus the remainders are the month's trade with the nations plus what no partner took
-  - L395 year: the tally keeps no remainder for the year, and the totals say so (NaN)
-  - L434 the year to date is at least the month, nation by nation
-- **L440 4. a nation's page: its goods foot, its years are the history's, its ranks the card's, its land Game's**
-  - L449 fixture: the world file has
-  - L455 the page of the biggest partner,
-  - L467 its goods' value out adds to the year's sold to it, thousands
-  - L468 ...and value in to the year's bought of it
-  - L469 ...with
-  - L470 its month and year figures are the snapshot's
-  - L475 fixture: the history holds
-  - L487 its finished years are the history's, oldest first (
-  - L497 its ranks (
-  - L499 its figures are the nations' for the year
-  - L507 the page's rows are the map card's rows, word for word, ranks and all (
-  - L509 ...so the page's ranks are the card's:
-  - L520 ...for every seventh nation of the
-  - L522 the world file would not open for the map:
-  - L525 its land is what Game tallied: 12.5 km2 for US$3.4M
-  - L530 its land factor now (
-  - L533 the city has no land sellers, and the page says so (NaN, no mark)
-  - L536 ...and the table's row of it says the same
-  - L539 the city's GDP in real 2015 US$ a year (the last month's, times 12 and the thousands) is
-  - L545 fixture: Germany is on the euro, the vault's second money
-  - L550 fixture: the city holds euros (
-  - L553 Germany's page holds the vault's euros, in euros and in US$, as the vault has them
-  - L554 ...and what the city owes in euros (CD8), in euros and in US$ at the vault's rate
-  - L558 a nation on a money that is none of the eight (
-  - L560 a number that is no nation has no page
-- **L566 5. the vault in eight: the worths add to the vault, the move is the history's**
-  - L571 eight rows, in the eight's order, named and marked as the vault names them
-  - L575 ...each row's code, name and mark the eight's
-  - L576 the worths add to getReservesUsd() to the bit, and the D$ worth is getReserves()
-  - L581 fixture: the vault holds US$, euros and yen now
-  - L591 each row holds what the vault holds of the money, in its own units, in US$ and in D$ at the rate
-  - L592 the worths add to the vault's US$ worth
-  - L593 ...to the bit, the total being the vault's
-  - L594 the D$ worths add to the vault's D$ worth
-  - L595 the shares add to 1
-  - L597 a vault of three moneys shows all three, their shares as their worths over the vault's (
-  - L607 what the city owes in each is DebtManager's (CD8), in its own units and in US$ (the euro bond:
-  - L608 each row's policy rate is its central bank's
-  - L624 this month's move is the history's units a US$ of last month over this month's, less one (the US$ itself 0)
-  - L625 ...and every one of the seven has one
-  - L627 the month's cross revaluation (
-  - L631 the driver's move against the US$ (
-  - L635 saved after the month
-  - L641 a loaded city shows the same month's move for each money, and holds the same balances
-- **L647 6. a published curve never changes: a curve read before a solve is the same after, and a reader sees only whole curves**
-  - L657 fixture: a good with a curve of several buyers to watch (
-  - L702 the market solved
-  - L704 the curve read before the solves is the same after them: its floor
-  - L709 the years' floors differ (
-  - L710 a thread reading all the while (
-- **L717 7. an Earth city: distances from its own spot, land factors from the land sellers**
-  - L727 fixture: the city stands on the real Earth at Halifax and its ground is sold by nations
-  - L741 each row's distance is the great circle from Halifax's own spot to the nation's node
-  - L742 ...and its land factor and mark are the land sellers' for the month
-  - L745 the host nation's (
-  - L748 ...and a distance of its node from the spot that is not nothing and not the world's width (
+- **L161 1. the curve is the band: floors and ceilings and allocations to the bit, the joins in order**
+  - L164 fixture: a city of
+  - L270 goods were tested:
+  - L271 a good with no curve has a band of nothing
+  - L272 floorAt equals band()'s floor to the bit, at last month's volumes and at shares of the world's use up to all of it
+  - L273 ceilingAt equals band()'s ceiling to the bit, likewise
+  - L274 buyersAt equals allocate()'s exports by nation to the bit
+  - L275 sellersAt equals allocate()'s imports by nation to the bit
+  - L276 the buyers taking are the sinks above the level, each netting at least it, and the sellers likewise; the level's nation is the last one taking
+  - L277 ...with several buyers taking at some volume, so the order is tested
+  - L278 the buyers added up are the volume sold (past the sinks' caps they are scaled up to it)
+  - L279 the joins ascend as the sinks' netbacks fall and the sellers' landed costs rise
+  - L280 the next buyers all join beyond the volume, none is taking, and there are as many as are left up to three
+  - L281 the month's line never rises with the volume
+  - L282 the grid is ascending shares up to the level's end, its lines the curve's own at the same volume
+  - L283 grids were drawn:
+  - L284 the world's line is never above the month's (nothing below nothing)
+  - L289 a market that has solved no year has no curve for any good
+  - L297 ...and a good the market does not model has none (
+- **L303 2. a loaded city has its curves before its first month, the original's to the bit**
+  - L306 saved to its scratch folder
+  - L310 the loaded city has its market, solved in the year it was saved in, and no month played since
+  - L330 curves were compared:
+  - L331 every good has a curve in the loaded city exactly where it has one in the original
+  - L332 ...with the same sinks and sellers, world use and slope, to the bit
+  - L333 ...the same grid
+  - L334 ...and the same floor and ceiling at every volume asked, which are the loaded band's
+- **L341 3. the partners table foots, both spans**
+  - L348 fixture: the city has traded this month (
+  - L355 fixture: the city stands somewhere (
+  - L358 a city with no market built has no table and no page
+  - L395 month: the no-partner remainders are the snapshot's (
+  - L397 month: the rows plus the remainders are the month's trade with the nations plus what no partner took
+  - L400 year: the tally keeps no remainder for the year, and the totals say so (NaN)
+  - L439 the year to date is at least the month, nation by nation
+- **L445 4. a nation's page: its goods foot, its years are the history's, its ranks the card's, its land Game's**
+  - L454 fixture: the world file has
+  - L460 the page of the biggest partner,
+  - L472 its goods' value out adds to the year's sold to it, thousands
+  - L473 ...and value in to the year's bought of it
+  - L474 ...with
+  - L475 its month and year figures are the snapshot's
+  - L480 fixture: the history holds
+  - L492 its finished years are the history's, oldest first (
+  - L502 its ranks (
+  - L504 its figures are the nations' for the year
+  - L512 the page's rows are the map card's rows, word for word, ranks and all (
+  - L514 ...so the page's ranks are the card's:
+  - L525 ...for every seventh nation of the
+  - L527 the world file would not open for the map:
+  - L530 its land is what Game tallied: 12.5 km2 for US$3.4M
+  - L535 its land factor now (
+  - L538 the city has no land sellers, and the page says so (NaN, no mark)
+  - L541 ...and the table's row of it says the same
+  - L544 the city's GDP in real 2015 US$ a year (the last month's, times 12 and the thousands) is
+  - L550 fixture: Germany is on the euro, the vault's second money
+  - L555 fixture: the city holds euros (
+  - L558 Germany's page holds the vault's euros, in euros and in US$, as the vault has them
+  - L559 ...and what the city owes in euros (CD8), in euros and in US$ at the vault's rate
+  - L563 a nation on a money that is none of the eight (
+  - L565 a number that is no nation has no page
+- **L571 5. the vault in eight: the worths add to the vault, the move is the history's**
+  - L576 eight rows, in the eight's order, named and marked as the vault names them
+  - L580 ...each row's code, name and mark the eight's
+  - L581 the worths add to getReservesUsd() to the bit, and the D$ worth is getReserves()
+  - L586 fixture: the vault holds US$, euros and yen now
+  - L596 each row holds what the vault holds of the money, in its own units, in US$ and in D$ at the rate
+  - L597 the worths add to the vault's US$ worth
+  - L598 ...to the bit, the total being the vault's
+  - L599 the D$ worths add to the vault's D$ worth
+  - L600 the shares add to 1
+  - L602 a vault of three moneys shows all three, their shares as their worths over the vault's (
+  - L612 what the city owes in each is DebtManager's (CD8), in its own units and in US$ (the euro bond:
+  - L613 each row's policy rate is its central bank's
+  - L629 this month's move is the history's units a US$ of last month over this month's, less one (the US$ itself 0)
+  - L630 ...and every one of the seven has one
+  - L632 the month's cross revaluation (
+  - L636 the driver's move against the US$ (
+  - L640 saved after the month
+  - L646 a loaded city shows the same month's move for each money, and holds the same balances
+- **L652 6. a published curve never changes: a curve read before a solve is the same after, and a reader sees only whole curves**
+  - L662 fixture: a good with a curve of several buyers to watch (
+  - L707 the market solved
+  - L709 the curve read before the solves is the same after them: its floor
+  - L714 the years' floors differ (
+  - L715 a thread reading all the while (
+- **L722 8. a good's board: the volumes are the tally's month, the band the curve's at them, the conversion the market's own, the parts the alloca...**
+  - L731 a good with no curve (
+  - L773 each board's volumes are the tally's month (the snapshot's and the live record's agree)
+  - L774 ...its floor and ceiling the curve's at them, the rate and the prices the market's own, the nations the curve's
+  - L775 ...what moves it the curve's own selling, the world's answer and the first sink's freight
+  - L776 ...the parts of a sale or a purchase the allocation's, largest first, adding to what was sold or bought
+  - L785 the board offers every good with a curve once (
+  - L787 ...the sold ones those the books sold abroad, largest first
+  - L789 Game's year of real GDP is the month's times twelve in whole US$, and the nation's page sets that beside its output
+- **L796 7. an Earth city: distances from its own spot, land factors from the land sellers**
+  - L806 fixture: the city stands on the real Earth at Halifax and its ground is sold by nations
+  - L820 each row's distance is the great circle from Halifax's own spot to the nation's node
+  - L821 ...and its land factor and mark are the land sellers' for the month
+  - L824 the host nation's (
+  - L827 ...and a distance of its node from the spot that is not nothing and not the world's width (
 
 ## PassThroughCheck.java - 52 labelled assertions
 

@@ -58,9 +58,10 @@ public final class PartnersView {
      */
     public static Table table(Game g, Span span) {
         PartnerTrade.Snapshot snap = g.getPartnerTrade();
-        Nations nations = g.getNations();
         WorldMarket market = g.getWorldMarket();
-        if (snap == null || nations == null || market == null) return null;
+        if (snap == null || market == null) return null;   // asked first: getNations() opens the world file whenever it holds none
+        Nations nations = g.getNations();
+        if (nations == null) return null;
         boolean month = span == Span.MONTH;
         double[] sold = month ? snap.exportValue() : snap.yearExportValue(), bought = month ? snap.importValue() : snap.yearImportValue();
         double[] out = month ? snap.exportTonnes() : snap.yearExportTonnes(), in = month ? snap.importTonnes() : snap.yearImportTonnes();
@@ -156,6 +157,89 @@ public final class PartnersView {
                 c.g.getLandBoughtKm2(nation), c.g.getLandBoughtUsd(nation) * 1000);
     }
 
+    /* ------------------------------------------------------------------
+       ONE GOOD'S BOARD - where the next unit goes (the Partners page's second card, its band and what moves it)
+       ------------------------------------------------------------------ */
+
+    /**
+     * The goods the Partners page offers a board for: sold are those the city sold abroad this month (its books' GoodTrade.sold() above nothing) that have
+     * a curve and a buyer, largest sold first; others every other good with a curve - the ones the city only buys among them - in the goods' order.
+     * Empty with no market.
+     */
+    public record Goods(List<Good> sold, List<Good> others) { }
+
+    /** The goods of Goods, from the market's curves and the month's books (the same books the Overview's bars read). */
+    public static Goods goods(Game g) {
+        WorldMarket market = g.getWorldMarket();
+        if (market == null) return new Goods(List.of(), List.of());
+        java.util.Map<Good, Sectors.GoodTrade> crossed = g.getTradeByGood().goods();
+        List<Good> sold = new ArrayList<>(), others = new ArrayList<>();
+        for (Good good : Good.values()) {
+            WorldMarket.Curve c = market.curve(good);
+            if (c == null) continue;
+            Sectors.GoodTrade t = crossed.get(good);
+            if (t != null && t.sold() > 0 && !c.sinks().isEmpty()) sold.add(good); else others.add(good);
+        }
+        sold.sort(Comparator.comparingDouble((Good good) -> -crossed.get(good).sold()).thenComparingInt(Good::ordinal));
+        return new Goods(List.copyOf(sold), List.copyOf(others));
+    }
+
+    /**
+     * What moves what the next unit nets, three differences in the band's unit (thousands of world dollars a game unit; GoodBoard.inCityMoney() turns one
+     * into the city's money), each as the amount it takes off (negative) or adds (positive): own is the month's line at the volume the city sells against
+     * the line at none (what its own selling has already cost it; NaN past every buyer's cap), world the world's answer by January at the month's volumes
+     * (WorldMarket.Curve.worldAnswerAt, with its sign turned: a city that sells more than it buys lowers the world's price), and freight what the haul to
+     * the first buyer takes (the first sink's freight, negative; NaN with no buyer).
+     */
+    public record Moves(double own, double world, double freight) { }
+
+    /**
+     * One good's board: its curve, the volumes of the month last tallied (game units a month; exportUnits is what the city sold the world, importUnits what
+     * it bought), the band's floor and ceiling at those volumes (Curve.floorAt and ceilingAt, the band's unit) with the nations that set them - the buyer
+     * that joined last at the volume sold (Curve.levelAt; the first buyer at none) and the seller that joined last at the volume bought (Curve.costLevelAt)
+     * - what the good's market sells it for and buys it at this month (GoodsMarket.exportPrice() and importPrice(), thousands of the city's money a unit;
+     * NaN where it does not), and Moves. perUnit is the thousands of the city's money in one of the band's units: the market's own exchange rate
+     * (GoodsMarket.getExchangeRate(), the rate its exportPrice() and importPrice() are struck at), so that no screen invents a conversion.
+     */
+    public record GoodBoard(Good good, WorldMarket.Curve curve, double perUnit, double exportUnits, double importUnits, double floor, double ceiling,
+                            int floorNation, int ceilingNation, double sellsAt, double buysAt, Moves moves) {
+        /** A figure in the band's unit as thousands of the city's money a unit, which unitD() writes: x perUnit. */
+        public double inCityMoney(double bandUnit) { return bandUnit * perUnit; }
+    }
+
+    /** A good's board; null where the city has no market or the good no curve. */
+    public static GoodBoard good(Game g, Good good) {
+        WorldMarket market = g.getWorldMarket();
+        PartnerTrade.Snapshot snap = g.getPartnerTrade();
+        GoodsMarket goodsMarket = g.getMarkets().get(good);
+        WorldMarket.Curve c = market == null ? null : market.curve(good);
+        if (c == null || snap == null || goodsMarket == null) return null;
+        double x = snap.monthExportUnits(good), m = snap.monthImportUnits(good);
+        WorldMarket.Curve.Level sells = c.levelAt(x), buys = c.costLevelAt(m);
+        double own = c.netAt(x) - c.netAt(0);
+        return new GoodBoard(good, c, goodsMarket.getExchangeRate(), x, m, c.floorAt(x, m), c.ceilingAt(x, m), sells.nation(), buys.nation(),
+                goodsMarket.exportPrice(), goodsMarket.importPrice(),
+                new Moves(Double.isFinite(own) ? own : Double.NaN, -c.worldAnswerAt(x, m), c.sinks().isEmpty() || !good.exportable() ? Double.NaN : -c.sinks().get(0).freight()));
+    }
+
+    /** One nation's part of what the city sold (or bought) of a good: game units a month, and its share of the city's volume (the parts add to 1). */
+    public record Part(int nation, double units, double share) { }
+
+    /** The nations taking what the city sold of a good (the curve's buyersAt, the market's own allocation), largest first; empty with nothing sold. */
+    public static List<Part> buyers(WorldMarket.Curve curve, double exportUnits) { return parts(curve.buyersAt(exportUnits)); }
+
+    /** ...and the nations that sold what it bought (sellersAt). */
+    public static List<Part> sellers(WorldMarket.Curve curve, double importUnits) { return parts(curve.sellersAt(importUnits)); }
+
+    private static List<Part> parts(double[] byNation) {
+        double sum = 0;
+        for (double u : byNation) if (u > 0) sum += u;
+        List<Part> out = new ArrayList<>();
+        for (int i = 0; i < byNation.length; i++) if (byNation[i] > 0) out.add(new Part(i + 1, byNation[i], byNation[i] / sum));
+        out.sort(Comparator.comparingDouble((Part p) -> -p.units()).thenComparingInt(Part::nation));
+        return List.copyOf(out);
+    }
+
     /** One finished year of the city's trade with a nation: what it sold there and bought of it, thousands of the city's money. */
     public record YearRow(int year, double valueOut, double valueIn) { }
 
@@ -188,9 +272,10 @@ public final class PartnersView {
     /** A nation's full page; null where the city has no market or the number is not a nation's. */
     public static Page nation(Game g, int nation) {
         PartnerTrade.Snapshot snap = g.getPartnerTrade();
-        Nations nations = g.getNations();
         WorldMarket market = g.getWorldMarket();
-        if (snap == null || nations == null || market == null || nation < 1 || nation > nations.count()) return null;
+        if (snap == null || market == null) return null;   // asked first: getNations() opens the world file whenever it holds none
+        Nations nations = g.getNations();
+        if (nations == null || nation < 1 || nation > nations.count()) return null;
         Ctx c = new Ctx(g, nations, market, snap);
         int i = nation - 1, year = c.year;
         Nations.Year y = nations.year(nation, year);
@@ -215,7 +300,7 @@ public final class PartnersView {
         ForeignAccounts fx = g.getForeignAccounts();
         double owedOwn = k >= 0 ? g.getDebtManager().getForeignPrincipalIn(y.money()) : Double.NaN;
         double usdPer = k >= 0 ? fx.getMoneyUsd(k) : Double.NaN;
-        double cityGdp = g.realGdp2015Usd() * 12 * 1000;
+        double cityGdp = g.realGdp2015UsdYear();
         return new Page(nation, nations.name(nation), nations.iso3(nation), year, nations.count(), List.copyOf(rows),
                 y.output(), y.outputMark(), y.people(), y.peopleMark(), y.outputPerHead(), ranks.rankOutput[i], ranks.rankPeople[i], ranks.rankHead[i],
                 Math.expm1(nations.growth(nation, year)), y.inflation(), y.money(), markOf(y.money()), units > 0 ? units : Double.NaN,

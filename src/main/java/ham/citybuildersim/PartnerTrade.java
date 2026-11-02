@@ -91,7 +91,7 @@ public final class PartnerTrade {
                            double[][] cargoExportTonnes, double[][] cargoImportTonnes,
                            double noPartnerExports, double noPartnerImports,
                            double[] yearExportValue, double[] yearImportValue, double[] yearExportTonnes, double[] yearImportTonnes,
-                           List<Cell> yearCells, List<Table> history,
+                           List<Cell> yearCells, List<Table> history, List<GoodUnits> goodUnits,
                            double standInLat, double standInLon, String[] names) implements TradeLanes.Feed {
 
         /* month(), standInLat() and standInLon() are the record's own accessors, which are the Feed's. */
@@ -112,6 +112,21 @@ public final class PartnerTrade {
 
         /** How many nations the figures are of. */
         public int nations() { return exportValue.length; }
+
+        /**
+         * What the city sold the world of a good in the month last tallied, in the good's units (WN6: the Partners page marks where the city stands on a
+         * good's curve by it; the live record's monthExportUnits() is the model's thread's, this snapshot's is safe from any). 0 for a good with no trade.
+         */
+        public double monthExportUnits(Good good) {
+            for (GoodUnits u : goodUnits) if (u.good() == good) return u.unitsOut();
+            return 0;
+        }
+
+        /** ...and what it bought of the world. */
+        public double monthImportUnits(Good good) {
+            for (GoodUnits u : goodUnits) if (u.good() == good) return u.unitsIn();
+            return 0;
+        }
 
         /**
          * The month's tonnes of one kind of cargo sold to each nation (`out`) or bought of each, indexed by the nation less one (WN7: CallPartners
@@ -346,8 +361,15 @@ public final class PartnerTrade {
                 copy(cargoExportTonnes), copy(cargoImportTonnes),
                 noPartnerExports, noPartnerImports,
                 yearExportValue.clone(), yearImportValue.clone(), yearExportTonnes.clone(), yearImportTonnes.clone(),
-                List.copyOf(cellList(false)), List.copyOf(history),
+                List.copyOf(cellList(false)), List.copyOf(history), unitsByGood(),
                 standInLat, standInLon, names);
+    }
+
+    /** The month's units by good as the snapshot keeps them, in good order. */
+    private List<GoodUnits> unitsByGood() {
+        List<GoodUnits> out = new ArrayList<>(monthUnits.size());
+        for (Map.Entry<Good, double[]> e : monthUnits.entrySet()) out.add(new GoodUnits(e.getKey(), e.getValue()[0], e.getValue()[1]));
+        return List.copyOf(out);
     }
 
     private static double[][] copy(double[][] a) {

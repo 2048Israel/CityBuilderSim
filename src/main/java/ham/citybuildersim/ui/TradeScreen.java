@@ -77,7 +77,17 @@ final class TradeScreen {
     /** The window this screen draws into: its game, its root, its clearMenu(). */
     private final UserInterface ui;
 
-    TradeScreen(UserInterface ui) { this.ui = ui; }
+    /** The Partners page and the nation's behind it (WN6): its choices - the nation, the span, the good - survive the redraw in its fields. */
+    final PartnersPage partners;
+
+    /** The reserves in eight (WN6): the vault's table of the eight moneys and the years behind it. */
+    private final VaultTable vault;
+
+    TradeScreen(UserInterface ui) {
+        this.ui = ui;
+        this.partners = new PartnersPage(ui, this);
+        this.vault = new VaultTable(ui, this);
+    }
 
     /* =====================================================================
        TRADE & THE WORLD (0.7.35): THE FRAME
@@ -93,15 +103,15 @@ final class TradeScreen {
        every page (Jerus: "both - quiet gauges plus loud blocks").
        ===================================================================== */
 
-    /** The five pages, in the strip's order. */
-    static final String OVERVIEW = "Overview", MONTH = "The month", GOODS = "What we trade",
+    /** The six pages, in the strip's order (Partners since WN6). */
+    static final String OVERVIEW = "Overview", MONTH = "The month", GOODS = "What we trade", PARTNERS = "Partners",
             CURRENCY = "The currency", RESERVES = "The reserves";
 
     /** ...as the strip lists them. */
-    static final String[] PAGES = {OVERVIEW, MONTH, GOODS, CURRENCY, RESERVES};
+    static final String[] PAGES = {OVERVIEW, MONTH, GOODS, PARTNERS, CURRENCY, RESERVES};
 
-    /** ...and each one's icon: the tiles, the coin, the lorry, the two arrows, the safe. */
-    static final String[] PAGE_ICONS = {Icons.OVERVIEW, Icons.COIN, Icons.LORRY, Icons.EXCHANGE, Icons.SAFE};
+    /** ...and each one's icon: the tiles, the coin, the lorry, the flag, the two arrows, the safe. */
+    static final String[] PAGE_ICONS = {Icons.OVERVIEW, Icons.COIN, Icons.LORRY, Icons.FLAG, Icons.EXCHANGE, Icons.SAFE};
 
     /** The page the tab opens on, and the one the rail's trade icon resets to. */
     static final String TRADE_HOME = OVERVIEW;
@@ -173,7 +183,7 @@ final class TradeScreen {
 
     /** The scroll targets a door can land on. */
     static final String EXCHANGE_CARD = "#exchange", HOLDINGS = "#holdings", FORCES = "#forces", DEBT = "#debt",
-            LEAVE = "#leave", COVER = "#cover", GOODS_CARD = "#goods";
+            LEAVE = "#leave", COVER = "#cover", GOODS_CARD = "#goods", EIGHT_CARD = "#eight";
 
     /* ------------------------ one way to write each number ------------------------ */
 
@@ -263,6 +273,7 @@ final class TradeScreen {
         switch (tradePage) {
             case MONTH    -> monthPage(page);
             case GOODS    -> goodsPage(page, fresh);
+            case PARTNERS -> partners.page(page);
             case CURRENCY -> currencyPage(page);
             case RESERVES -> reservesPage(page);
             default       -> overviewPage(page, fresh);
@@ -291,9 +302,16 @@ final class TradeScreen {
         }
     }
 
-    /** One of the five pages, at its top: a chip picked, or a door. */
+    /** One of the six pages, at its top: a chip picked, or a door. Partners opens on its table, not on the nation last looked at. */
     void open(String page) {
+        if (PARTNERS.equals(page)) partners.nation = 0;
         open(page, null);
+    }
+
+    /** A nation's page on Partners (the map card's "Its trade with us", the Overview's partners strip, a row of the table), at its top. */
+    void openNation(int nation) {
+        partners.nation = nation;
+        open(PARTNERS, null);
     }
 
     /** ...scrolled to a card on it (the doors land where the figure is taken apart). */
@@ -349,7 +367,7 @@ final class TradeScreen {
     /** The tab's (i): the landing's lead (the spec's L2), and what the Overview shows. */
     static final String LEAD_INFO = "What the city sells, what it buys, and what it owes in somebody else's money. "
             + "The Overview shows what it traded this month, good by good, beside what a US dollar costs, and the three "
-            + "readings that decide whether a shock is survivable. The four pages behind it take each one apart.";
+            + "readings that decide whether a shock is survivable. The five pages behind it take each one apart.";
 
     /** Each page's (i), in PAGES' order after the Overview: what it holds (the landing's row blurbs until 0.7.35). */
     static final String[] PAGE_INFO = {
@@ -358,12 +376,16 @@ final class TradeScreen {
                 + "holds abroad and what the world holds here. The statement is under \"details\".",
         "What the city sells abroad and what it buys, good by good or business by business, from the businesses' own "
                 + "books; the last ten years, the record since founding, and what the world pays and charges.",
+        "Which nations the city trades with, the month or the year so far, each with its money and its haul; and, for a "
+                + "good, where the next unit goes and what it nets there, the good's band this month and what moves it. A "
+                + "nation opens on a page of its own.",
         "What a US dollar costs, and what put it there: the rate against parity and against the fair level, its "
                 + "history with the city's decisions on it, what moved it this month force by force - parity's trend, the "
                 + "real rate, the balance, the vault's cover, interventions and the market - and the steps from parity to "
                 + "the rate. Then what the rate is doing to the dollar debt and the vault.",
-        "What the vault holds, whose it is and how long it would last; the money that can leave on no notice; what "
-                + "else moved the vault; and the exchange - cash into the vault, or the vault into cash.",
+        "What the vault holds in each of the eight moneys, whose it is and how long it would last; the money that "
+                + "can leave on no notice; what else moved the vault; and the exchange - cash into the vault, or the "
+                + "vault into cash.",
     };
 
     /** A page's (i) by its name. */
@@ -413,15 +435,17 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         boolean counted = fx.isMonthCounted();
         List<Cell> out = new ArrayList<>();
+        // ...and to how many nations, where the month's table of partners has them (WN6).
+        String to = partners.reachWords(true), from = partners.reachWords(false);
         out.add(counted
                 ? new Cell("SOLD ABROAD", d(fx.getExports()), fx.monthlyExports() > 0
-                        ? d(fx.monthlyExports()) + " a month on average" : "nothing yet",
+                        ? d(fx.monthlyExports()) + " a month on average" + (to == null ? "" : ", " + to) : "nothing yet",
                         Palette.TEXT_HEAD, "What we trade: every good, sold and bought")
                 : new Cell("SOLD ABROAD", NOT_COUNTED, NOT_COUNTED_NOTE, Palette.TEXT_SPENT,
                         "What we trade: every good, sold and bought"));
         out.add(counted
                 ? new Cell("BOUGHT ABROAD", d(fx.tradeImports()), fx.monthlyImports() > 0
-                        ? d(fx.monthlyImports()) + " a month on average" : "nothing yet",
+                        ? d(fx.monthlyImports()) + " a month on average" + (from == null ? "" : ", " + from) : "nothing yet",
                         Palette.TEXT_HEAD, "What we trade: every good, sold and bought")
                 : new Cell("BOUGHT ABROAD", NOT_COUNTED, NOT_COUNTED_NOTE, Palette.TEXT_SPENT,
                         "What we trade: every good, sold and bought"));
@@ -748,6 +772,9 @@ final class TradeScreen {
         HBox hero = new HBox(TILE_GAP, trade, money);
         hero.setAlignment(Pos.TOP_LEFT);
         page.getChildren().add(hero);
+        // ...and under it who the month's trade was with, the top five nations as doors to their pages (WN6); nothing where there is no partner.
+        Node strip = partners.strip();
+        if (strip != null) page.getChildren().add(strip);
         page.getChildren().add(sectionHead("WHAT DECIDES WHETHER A SHOCK IS SURVIVABLE", GAUGES_INFO,
                 quiet("the same three every month")));
         page.getChildren().add(row(coverGauge(), backingGauge(), parityGauge()));
@@ -1062,6 +1089,18 @@ final class TradeScreen {
             + "costs the same here and abroad - the city's own basket, with rent held to a third of it, against the "
             + "world's - and the currency follows its trend one for one. The real rate, the balance, the vault's cover and "
             + "the market's own swing put it above or below.";
+
+    /** The real 2015 US$'s (i) (D29): the game has two US dollars, and this is the one the nations' output is counted in. */
+    static final String REAL_USD_INFO = "The game has two US dollars. The one above is the in-game one, whose prices move with the world's. "
+            + "This is the real 2015 US$, the unit the nations' output is counted in: what one costs in the city's dollars, the rate "
+            + "times the US dollar's prices since the city was founded. It is shown to compare the city with the nations, and for "
+            + "nothing else: nothing in the city's economy reads it.";
+
+    /** The real effective rate's (i) (D29). */
+    static final String REAL_EFFECTIVE_INFO = "The city's dollar against the moneys of the nations it trades with, each weighted by how much the "
+            + "city traded with it over the last finished year, with the prices taken out of both ends. It is 100 at founding. Above 100 "
+            + "the city's dollar is dearer in real terms than it was and its goods cost the partners more; below 100, cheaper. It is "
+            + "shown to compare, and for nothing else: nothing in the city's economy reads it.";
 
     /**
      * The rate and parity on a chart: History's fxRate in the money blue and
@@ -2338,6 +2377,14 @@ final class TradeScreen {
         if (moved != null) c.getChildren().add(muted(moved));
         addRegimeLine(c);
         c.getChildren().add(muted("A rising figure is a cheaper " + sym() + ": " + Currency.FOREIGN_SYMBOL + "1 costs more of it."));
+        // D29 (WN6): the other US dollar, the real 2015 one the nations' output is counted in, and the D$'s real effective rate against the partners'.
+        double real = ui.game.dollarsPer2015Usd(), effective = ui.game.realEffectiveRate();
+        if (Double.isFinite(real)) {
+            c.getChildren().add(cardLine("A real 2015 " + Currency.FOREIGN_SYMBOL + " costs", sym() + fxRate(real), null, REAL_USD_INFO));
+        }
+        if (Double.isFinite(effective)) {
+            c.getChildren().add(cardLine("The real effective rate", String.format("%.1f", effective) + " (100 at founding)", null, REAL_EFFECTIVE_INFO));
+        }
         if (fx.isPinned()) {
             c.getChildren().add(chips(chip("held fixed", Palette.TEXT_LABEL)));
             return c;
@@ -2977,6 +3024,12 @@ final class TradeScreen {
        ===================================================================== */
 
     void reservesPage(VBox page) {
+        // The vault in eight (WN6, board 3): first, where it holds or can hold more than the dollar.
+        VBox eight = vault.eightCard();
+        if (eight != null) {
+            targets.put(EIGHT_CARD, eight);
+            page.getChildren().add(eight);
+        }
         VBox cover = coverCard();
         targets.put(COVER, cover);
         page.getChildren().add(row(whoseCard(), cover));
@@ -3296,7 +3349,7 @@ final class TradeScreen {
     /**
      * THE RESERVE MIX (WN4, D20): where a purchase of the treasury's, the strong edge's or a peg's goes - All US$ (the default), Match our
      * trade, The world's mix, or Choose - read from and written to ForeignAccounts; under Choose eight rows of the money, its share and
-     * two small buttons, the model keeping the shares at 100%; and one compact line of what the vault holds in each money. Empty where
+     * two small buttons, the model keeping the shares at 100%; (what the vault holds in each money is VaultTable's card, since WN6). Empty where
      * no money but the dollar has a rate and the vault holds nothing else: there is nothing to mix.
      */
     VBox reserveMix(ForeignAccounts fx) {
@@ -3335,18 +3388,7 @@ final class TradeScreen {
                 box.getChildren().add(row);
             }
         }
-        StringBuilder held = new StringBuilder();
-        boolean beyondTheDollar = false;
-        for (int k = 0; k < ForeignAccounts.MONEYS; k++) {
-            if (!(fx.getHolding(k) > 0)) continue;
-            if (held.length() > 0) held.append(" · ");
-            held.append(ownMoney(k, fx.getHolding(k)));
-            if (k > 0) {
-                held.append(" (").append(usd(fx.getHoldingUsd(k))).append(")");
-                beyondTheDollar = true;
-            }
-        }
-        if (beyondTheDollar) box.getChildren().add(line("held: " + held, null));
+        // The "held: ..." line this ended with is IN THE VAULT, IN EIGHT MONEYS' table now (WN6, VaultTable).
         return box;
     }
 
