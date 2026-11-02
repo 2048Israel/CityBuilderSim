@@ -171,7 +171,15 @@ final class ConstructionScreen {
         VBox material = limitCell("MATERIAL", String.format("%,d in the yard", bm.getConstructionMaterials()),
                 "the rest bought as they build; the world's at " + money(bm.getConstructionMaterialPrice())
                         + " a unit", Palette.TEXT_HEAD);
-        HBox cells = vitalsBar(builders, onSite, months, material);
+        // The price of a point (FC1): the premium the queue's months set, or the contractor's price while the city's crews are all on repairs.
+        boolean foreign = bm.foreignCrewsTakeOrders();
+        long premiumPct = Math.round(bm.scarcityPremium() * 100);
+        VBox price = limitCell("PRICE OF A POINT",
+                foreign ? String.format("×%.1f foreign", BuildersShort.FOREIGN_PRICE)
+                        : premiumPct > 0 ? String.format("+%d%%", premiumPct) : "no premium",
+                foreign ? "the city's crews are all on repairs" : "the queue's months set it",
+                foreign ? Palette.BAD : premiumPct > 0 ? Palette.WARN : Palette.TEXT_HEAD);
+        HBox cells = vitalsBar(builders, onSite, months, material, price);
 
         // The bar: the queue over two years, a mark at the landlords' twelve.
         double span = limit * 2;
@@ -193,8 +201,19 @@ final class ConstructionScreen {
                 + "every other sector waits for its one order to finish. "
                 + "The yard's material is free to the city's orders; the crews buy the rest as they build, from "
                 + "what they salvaged, then the plant, then the world - so no site in this model is ever short "
-                + "of it.", false));
+                + "of it.\n\n" + BuildScreen.buildersShortInfo(), false));
         VBox box = new VBox(6, cells, bar, scale);
+        // ...and, once a foreign contractor has built anything for the city, what it built, what it was paid and what is still its own (FC1).
+        var contractor = g.getSectors().construction();
+        double builtAbroad = contractor.getForeignPointsThisMonth(), book = contractor.getForeignBook();
+        if (foreign || builtAbroad > 0 || book > 0) {
+            Label abroad = new Label(String.format("FOREIGN CREWS: %,.0f pts built last month, %s paid abroad; %,.0f pts still theirs%s",
+                    builtAbroad, money(contractor.getForeignBillThisMonth()), book,
+                    foreign ? " - taking every new order" : book > 0 ? " - finishing what it took" : ""));
+            abroad.setWrapText(true);
+            abroad.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BAD));
+            box.getChildren().add(abroad);
+        }
         box.setStyle("-fx-padding: 10 12 10 12;" + Palette.block(Palette.PANEL, Palette.EDGE));
         box.setMaxWidth(Double.MAX_VALUE);
         HBox headLine = new HBox(Palette.GAP, sectionCaption("THE BUILDERS"), whole);

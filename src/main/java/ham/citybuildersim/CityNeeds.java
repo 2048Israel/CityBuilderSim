@@ -559,8 +559,20 @@ public final class CityNeeds {
         /* -------------------------------- the ground -------------------------------- */
         out.add(ground(game, w));
 
-        flag(out, "BUILDERS", game.isConstructionShedding() ? "being laid off" : "in work",
-                game.isConstructionShedding(), false, Kind.BUILDERS, Go.BUILDERS, 0);
+        /*
+         * THE BUILDERS SHORT (FC1, 2026-11-02): the row reads the trap Jerus found in his own city - the repairs take
+         * every crew and the sites get none - before it reads anything else, and severe, since nothing the player
+         * orders advances; a premium at half its ceiling is listed, not severe; else the row as it was.
+         */
+        BuildingManager builders = game.getBuildingManager();
+        boolean foreign = builders.foreignCrewsTakeOrders();
+        double premium = builders.scarcityPremium();
+        boolean scarce = !foreign && premium >= BuildersShort.CEILING / 2;
+        flag(out, "BUILDERS",
+                foreign ? String.format("all on repairs: foreign crews at ×%.1f", BuildersShort.FOREIGN_PRICE)
+                        : scarce ? String.format("short: +%d%% on every order", Math.round(premium * 100))
+                        : game.isConstructionShedding() ? "being laid off" : "in work",
+                foreign || scarce || game.isConstructionShedding(), foreign, Kind.BUILDERS, Go.BUILDERS, 0);
 
         /* -------------------------------- the money -------------------------------- */
         double cash = game.getCash();
