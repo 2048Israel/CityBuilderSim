@@ -7,9 +7,9 @@ WHY: the leaderboard and the trade's weights need every one of the 196 nations t
 level and an exchange rate in every year of 2000-2025, and WDI alone has holes for North Korea, Taiwan, Syria, Yemen and
 two dozen more; the holes are filled here, one way each, and every fill is written to fills-paths.txt so it can be
 reviewed. gdp-base.tsv is written as soon as the GDP series are filled, because econ_trade.py reads it. Since LC3
-(2026-11-02) nothing here is the IMF's: the prices are the World Bank's GDP deflator, the annual rate where the BIS has
-no month PWT's xr or the Bank's GDP in local money over its GDP in US$, and the goods' prices are deflated by the BLS's
-CPI-U (docs/studies/licences.md).
+(2026-11-02) nothing here is the IMF's: the prices are the BLS's CPI-U for the United States and the World Bank's GDP
+deflator for the rest, the annual rate where the BIS has no month PWT's xr or the Bank's GDP in local money over its
+GDP in US$, and the goods' prices are deflated by the CPI-U (docs/studies/licences.md).
 
 Run as:  python -I tools/world/econ_paths.py [--sources DIR] [--work DIR] [--gdp-only]    (about 10 seconds)
 """
@@ -40,7 +40,8 @@ DIALS = [
     ('MEAN_GROWTH_STEPS', gdp.MEAN_GROWTH_STEPS, "How many of a series' latest (or earliest) yearly steps its mean growth is taken over, where no other source grows it."),
     ('TAIWAN_TREND_FIRST', gdp.TAIWAN_TREND_FIRST, "The first year of Taiwan's trend, which the years PWT does not reach (2024, 2025) grow by."),
     ('TAIWAN_TREND_LAST', gdp.TAIWAN_TREND_LAST, "The last year of Taiwan's trend, PWT's last year."),
-    ('PRICE_BASE_YEAR', gdp.PRICE_BASE_YEAR, "The base year of WDI's constant US dollars and of the price index (the cpi series, the GDP deflator rebased)."),
+    ('PRICE_BASE_YEAR', gdp.PRICE_BASE_YEAR, "The base year of WDI's constant US dollars and of the price index (the cpi series: the US's CPI-U, the others' GDP deflator, rebased)."),
+    ('CPI_OWN', '+'.join(cpi.OWN_CPI), "The nations whose price index is their own consumer price index (the US's, the BLS's CPI-U), not the GDP deflator."),
     ('PRK_COMPARATORS', '+'.join(gdp.PRK_COMPARATORS), "North Korea's level is Maddison's times the median WDI-to-Maddison ratio of these nations, and its dollar prices follow their median (est.)."),
     ('PPP_FROM_MADDISON', ' '.join('%s:%s' % (k, '+'.join(v)) for k, v in gdp.PPP_FROM_MADDISON.items()), "Where WDI has no PPP GDP and its dollar GDP is at a rate that measures nothing, PPP GDP is Maddison's times the median PPP-to-Maddison ratio of these peers (est.)."),
     ('PPP_COMPARATORS', ' '.join('%s:%s' % (k, '+'.join(v)) for k, v in gdp.PPP_COMPARATORS.items()), "Where WDI and PWT have no PPP GDP, the ratio of 2015 US dollars to PPP dollars is the median of these nations' (est.)."),
@@ -175,8 +176,9 @@ def main(argv=None):
     print('building the paths')
     annual = rat.annual_rates(info, rates, marks)
     cont = rat.continuous_rates(info, rates)
-    prices = cpi.build_cpi(deflators, series, cont)
-    gaps = cpi.own_money_gaps(deflators, series, cont)
+    cpi_u = src.bls_cpi_u(args.sources)
+    prices = cpi.build_cpi(deflators, series, cont, cpi_u)
+    gaps = cpi.own_money_gaps(deflators, series, cont, cpi_u)
     print('the GDP deflator against the deflator in its money: %d of %d nations within 0.1 (log10 range); widest: %s'
           % (sum(1 for r, n in gaps if r < 0.1), len(gaps), ' '.join('%s %.2f' % (n, r) for r, n in gaps[:8])))
     people = src.wpp_people(args.sources)
@@ -209,7 +211,7 @@ def main(argv=None):
     if os.path.exists(goods_path):
         mapping = prc.read_prices_tsv(HERE + '/prices.tsv', goods_path)
         pink = prc.read_pinksheet(args.sources + '/pinksheet/CMO-Historical-Data-Annual.xlsx')
-        names, pvals, pmk = prc.build_prices(mapping, pink, src.bls_cpi_u(args.sources))
+        names, pvals, pmk = prc.build_prices(mapping, pink, cpi_u)
         size = prc.write_prices_bin(work + '/prices.bin', names, pvals, pmk)
         own = sum(1 for m in mapping if m[2] == 3)
         print('wrote prices.bin: %d goods (%d own series, %d proxies), %d bytes' % (len(mapping), own, len(mapping) - own, size))

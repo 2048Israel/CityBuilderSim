@@ -1,6 +1,6 @@
 # The dials
 
-Generated 2026-11-01 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-02 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
 **5,189 constants in 491 files.**
 

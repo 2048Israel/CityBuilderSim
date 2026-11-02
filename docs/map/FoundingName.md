@@ -1,6 +1,6 @@
 # FoundingName.java - 73 lines · 6 methods · 0 constants · model
 
-`ham/citybuildersim/FoundingName.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FoundingName.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > The city's name as the Found-a-city page holds it: blank to begin with, filled by a place searched, and the player's own once they have typed one (FN1, 2026-10-30).
 > 

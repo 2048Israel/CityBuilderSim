@@ -47,8 +47,9 @@ LAYERS
               gdp_2015usd   US$ of 2015                   WDI NY.GDP.MKTP.KD, 2000-2025 (WN1's rule after)
               gdp_usd       current US$                   WDI NY.GDP.MKTP.CD, 2000-2025
               gdp_ppp       international $ of 2021       WDI NY.GDP.MKTP.PP.KD, 2000-2025
-              cpi           2015 = 100                    WDI NY.GDP.DEFL.ZS (the GDP deflator) rebased, 2000-2025:
-                                                          the nation's price level (LC3; WN0's FP.CPI.TOTL was the IMF's)
+              cpi           2015 = 100                    the nation's price level, 2000-2025, rebased: the BLS's
+                                                          CPI-U for the US, WDI NY.GDP.DEFL.ZS (the GDP deflator)
+                                                          for the rest (LC3; WN0's FP.CPI.TOTL was the IMF's)
               rate          its money a US$, year average the mean of the nation's money's 12 months, 2000-2025
   goods     kind 2, text, a row a traded good. Columns: number, key (the Good constant's name), name, unit (the
             game's), class (bulk | processed | made), elasticity (the trade elasticity, D18), unit_value (base

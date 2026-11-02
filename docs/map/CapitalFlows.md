@@ -1,6 +1,6 @@
 # CapitalFlows.java - 871 lines · 55 methods · 17 constants · model
 
-`ham/citybuildersim/CapitalFlows.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CapitalFlows.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > Hot money: what comes in chasing a spread, and what happens when it leaves.
 > 

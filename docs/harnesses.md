@@ -1,6 +1,6 @@
 # The harnesses
 
-Generated 2026-11-01 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-02 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
 **169 harness files, 18,502 labelled assertions.** AllChecks runs 169 of them.
 

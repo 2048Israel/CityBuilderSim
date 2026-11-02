@@ -3,8 +3,8 @@
 # tile: the index entry (> 0 a blob's length in the file, <= 0 uniform at -entry). cell: tile, row, column, owner.
 # line: i, left, right, points, first latitude and first longitude as stored (degrees x 100000).
 # make: the nation's make and use of the good in thousand US$, summed over the scope's own pairs.
-fixture	file	af109529e676088b82aa9d5ee0f29769da43074845a43cb73b93d268028a8b87	253022
-fixture	of	world-1:7b720ef4235097d61b8b51585b163265e8395aaef054fc6da64d28b2fe2dd2a2
+fixture	file	6ceab623bf63a57f771fcbf5f718c4dabd8f09aab7dd664195c0165a892aae42	253063
+fixture	of	world-1:430e97f64d3e50266b894c8165855e4efd09c8968d4be488395a0bda8e8d3754
 fixture	nation	1	AUS	nation	AUD	-33.9181	151.1832	0
 fixture	nation	2	BEL	nation	EUR	50.8353	4.3314	0
 fixture	nation	3	CAN	nation	CAD	43.7019	-79.422	0
@@ -93,9 +93,9 @@ fixture	path	cpi	NLD	2000	77.47058847371521	3
 fixture	path	cpi	NLD	2015	100.0	3
 fixture	path	cpi	NLD	2025	139.6240833105498	3
 fixture	path	cpi	NLD	2100	nan	0
-fixture	path	cpi	USA	2000	74.72803188435935	3
+fixture	path	cpi	USA	2000	72.65301645029682	3
 fixture	path	cpi	USA	2015	100.0	3
-fixture	path	cpi	USA	2025	132.4979055155481	3
+fixture	path	cpi	USA	2025	135.83118510486588	3
 fixture	path	cpi	USA	2100	nan	0
 fixture	path	rate	CHE	2000	1.6889279166666666	3
 fixture	path	rate	CHE	2015	0.96255375	3
@@ -7467,7 +7467,7 @@ fixture	baci	TRUCKS	USA	FRA	2542.657
 fixture	baci	TRUCKS	USA	GBR	11328.966
 fixture	baci	TRUCKS	USA	JPN	3508.1839999999997
 fixture	baci	TRUCKS	USA	NLD	3745.173
-full	file	7b720ef4235097d61b8b51585b163265e8395aaef054fc6da64d28b2fe2dd2a2	8712878
+full	file	430e97f64d3e50266b894c8165855e4efd09c8968d4be488395a0bda8e8d3754	8712919
 full	nation	1	AFG	nation	AFN	34.5186	69.1813	1
 full	nation	2	AGO	nation	AOA	-8.8363	13.2325	0
 full	nation	3	ALB	nation	ALL	41.3178	19.4482	0
@@ -7755,9 +7755,9 @@ full	path	cpi	NLD	2000	77.47058847371521	3
 full	path	cpi	NLD	2015	100.0	3
 full	path	cpi	NLD	2025	139.6240833105498	3
 full	path	cpi	NLD	2100	nan	0
-full	path	cpi	USA	2000	74.72803188435935	3
+full	path	cpi	USA	2000	72.65301645029682	3
 full	path	cpi	USA	2015	100.0	3
-full	path	cpi	USA	2025	132.4979055155481	3
+full	path	cpi	USA	2025	135.83118510486588	3
 full	path	cpi	USA	2100	nan	0
 full	path	rate	CHE	2000	1.6889279166666666	3
 full	path	rate	CHE	2015	0.96255375	3

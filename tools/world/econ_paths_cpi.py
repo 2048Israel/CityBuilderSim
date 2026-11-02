@@ -1,18 +1,22 @@
 """The price index of the nations' paths, 2000-2025, 2015 = 100 (batch WN0, slice E1, 2026-10-28; LC3, 2026-11-02):
-the World Bank's GDP deflator, NY.GDP.DEFL.ZS, rebased where the Bank has it (mark 3), and the game's estimate for the
-years and the nations it has not (mark 1). The series keeps the name cpi (FORMAT.txt): it is the nation's price level.
+the United States' consumer price index, the BLS's CPI-U, and every other nation's GDP deflator, the World Bank's
+NY.GDP.DEFL.ZS, rebased where the Bank has it (mark 3), and the game's estimate for the years and the nations it has
+not (mark 1). The series keeps the name cpi (FORMAT.txt): it is the nation's price level.
 
 WHY: WN0 took WDI's consumer price index, FP.CPI.TOTL, which is the IMF's figure (International Financial Statistics),
 and the IMF asks permission for any commercial reuse, so a sold game may not ship it (LC1, docs/studies/licences.md).
 ILOSTAT's consumer prices were the brief's first choice, but every headline figure of theirs since 2000 is marked
 "Repository: International Monetary Fund", so they are the IMF's too; the deflator is the Bank's own national accounts
-(CC BY 4.0). It has no figure for North Korea and Taiwan, and gaps of years for a dozen more. A hole is filled by the
-growth of the nation's GDP deflator in its own money (current dollar GDP times the year's rate over constant dollar
-GDP), which sees a hyperinflation the way the exchange rate does; a micro-state that uses another's money takes that
-nation's index. Penn World Table's price level pl_c is not used for Taiwan: PWT estimates it from income across nations
-(Taiwan is not in the ICP), so it rises 25% against a flat exchange rate where Taiwan's prices rose less than America's.
-A GDP deflator carries the prices of what a nation sells abroad, so an oil exporter's swings with oil (Kuwait's, Brunei's)
-where its consumer prices did not.
+(CC BY 4.0). The United States keep their CPI, which a sold game may ship (the BLS's, public domain): it is the
+dollar the game's own price level is (PriceLevel, the US CPI-U from 1900; PriceLevelCheck holds the two together), so
+the deflator is the price level of the nations with no consumer price index the game may ship. The deflator has no
+figure for North Korea and Taiwan, and gaps of years for a dozen more. A hole is filled by the growth of the nation's
+GDP deflator in its own money (current dollar GDP times the year's rate over constant dollar GDP), which sees a
+hyperinflation the way the exchange rate does; a micro-state that uses another's money takes that nation's index. Penn
+World Table's price level pl_c is not used for Taiwan: PWT estimates it from income across nations (Taiwan is not in
+the ICP), so it rises 25% against a flat exchange rate where Taiwan's prices rose less than America's. A GDP deflator
+carries the prices of what a nation sells abroad, so an oil exporter's swings with oil (Kuwait's, Brunei's) where its
+consumer prices did not.
 """
 import math
 import os
@@ -95,18 +99,26 @@ def _splice(iso3, pub, growth):
     return vals, marks
 
 
-def published(n, deflators):
-    """The nation's published deflator {year: value} that the index is built on: none for a nation on its issuer's
-    index, and none in its NOT_OWN_MONEY years."""
+# The nations whose own consumer price index the paths take in place of the deflator: the United States' (the BLS's
+# CPI-U, given to build_cpi), the dollar every nominal figure of the game is measured in.
+OWN_CPI = ('USA',)
+
+
+def published(n, deflators, us_cpi):
+    """The published index {year: value} the nation's is built on: the US's CPI-U (us_cpi, 26 values) for OWN_CPI,
+    none for a nation on its issuer's index, the deflator but in its NOT_OWN_MONEY years for the rest."""
+    if n in OWN_CPI:
+        return dict(zip(YEARS, us_cpi))
     if n in ISSUER:
         return {}
     a, b = NOT_OWN_MONEY.get(n, (0, -1))
     return dict((y, v) for y, v in deflators.get(n, {}).items() if y in YEARS and v > 0 and not a <= y <= b)
 
 
-def build_cpi(deflators, series, cont_rate):
+def build_cpi(deflators, series, cont_rate, us_cpi):
     """{iso3: ([26 floats], [26 marks])}, 2015 = 100. deflators is src.wdi('NY.GDP.DEFL.ZS'), series build_gdp's
-    output, cont_rate rates.continuous_rates'."""
+    output, cont_rate rates.continuous_rates', us_cpi src.bls_cpi_u's 26 values."""
+    assert len(us_cpi) == len(YEARS)
     for n, (a, b) in NOT_OWN_MONEY.items():   # an excluded run inside the published years would be bridged log-linear
         assert a == YEARS[0] or b == YEARS[-1], ('NOT_OWN_MONEY must reach an end of the years', n)
     raw = {}
@@ -117,7 +129,7 @@ def build_cpi(deflators, series, cont_rate):
             growth = dict(raw[SPLICE_SOURCE[n]][0])
         else:
             growth = deflator(series['kd'][n][0], series['cd'][n][0], cont_rate[n])
-        raw[n] = _splice(n, published(n, deflators), growth)
+        raw[n] = _splice(n, published(n, deflators, us_cpi), growth)
     out = {}
     for n in common.NATIONS:
         vals, marks = raw[n]
@@ -126,14 +138,14 @@ def build_cpi(deflators, series, cont_rate):
     return out
 
 
-def own_money_gaps(deflators, series, cont_rate):
+def own_money_gaps(deflators, series, cont_rate, us_cpi):
     """[(range, iso3)], widest first: how far each nation's published deflator (the years used) strays from its
     deflator in its own money, the range over the years of log10 of the one over the other. Wide where the Bank
     converts at a rate the file does not give the money (an official rate against a market one), or where the
     published figure is not in the nation's money (NOT_OWN_MONEY): the bake prints the widest to be read."""
     out = []
     for n in common.NATIONS:
-        pub = published(n, deflators)
+        pub = published(n, deflators, us_cpi)
         own = deflator(series['kd'][n][0], series['cd'][n][0], cont_rate[n])
         r = [math.log10(pub[y] / own[y]) for y in YEARS if y in pub and y in own]
         if len(r) > 1:

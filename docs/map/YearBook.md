@@ -1,6 +1,6 @@
 # YearBook.java - 1,669 lines · 85 methods · 18 constants · model
 
-`ham/citybuildersim/YearBook.java` - generated 2026-11-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/YearBook.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
 > The run, one line a year - for READING rather than for drawing.
 > 
