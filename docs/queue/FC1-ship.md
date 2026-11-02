@@ -1,0 +1,19 @@
+## changelog
+### {next} — FC1, builders short: the price of a point rises, and foreign crews come when none are free — 2026-11-02, ready, see docs/queue/FC1-notes.md
+The price of a point of building work now reads the builders' queue. Past nine months of work at the pace the repairs
+leave the sites, every order's work carries a premium that rises smoothly to +80% with no points left for sites, each
+order priced on the queue with the orders before it; the planners see it, and a depot earns it. Once the sites get
+under 5% of the builders' month (Jerus's city, every crew repairing), a foreign contractor takes every new order at
+twice the price, builds the builders' own depots first, is paid by them as an import of services, and stops taking
+orders once the sites have points again. The build card, the Construction page's PRICE OF A POINT and NEEDS YOU's
+BUILDERS row say so. ConstructionTrapCheck (new) causes the trap: the depot is built in a month, the city out the next.
+Ensemble on LC3's world file 22/26 as main, three of its four reds nearer their line and S1 further; no seed met the
+trap before or after. Suite green. Fifteen harnesses whose new towns the premium moved were mended; five play without
+FC1 until DZ1, BD1 and DM1 (queued) mend what FC1's path reached in them.
+## pending
+| FC1-C | Eye-check FC1 ({next}). **The premium:** a played city with a queue past nine months (most cities in their first years). Look at a build card's small amber line under the price ("builders short: +NN% on the work · ≈ N months queued") and its tooltip; Build › Construction › Sites, the gauge's fifth cell PRICE OF A POINT and the gauge's (i); and NEEDS YOU's BUILDERS row once the premium passes +40%. **The foreign crews:** a city whose repairs take its builders' month. The screen-check session can make one in slot 7: a small city with one or two depots orders a hundred-odd Paved Roads and plays until they stand and their repairs leave the gauge's BUILDERS under 5% of the month (ConstructionTrapCheck traps a 458-point month with 53 roads). Look at the card's red "foreign crews: ×2.0" line, the gauge's "×2.0 foreign" cell and its red FOREIGN CREWS line (built, paid abroad, still theirs), and BUILDERS reading "all on repairs" in red. Then a month on, with the depot open, look for "finishing what it took". | needs his eye | docs/queue/FC1-notes.md §1 |
+| FC1-M | The manual's section 9 ({next}): a new subsection "When the builders are short" after "Two sites go first", the text in FC1's notes §6. The trap, the price of a point rising with the queue, and the foreign crews. The page changed, published and pulled (the docs pass). | docs pass | docs/queue/FC1-notes.md §6 |
+## queued
+| DZ1 | DenominationCheck's reformed twin parts from its town at month 170 when FC1's builders' price is on (a hot town, price index about 6): by 1e-9 at once in every sector, through an absolute tolerance outside FC1. Find it, make it scale with the unit, and turn FC1 back on in DenominationCheck (found by FC1, which plays that harness with FC1 off meanwhile) | [DZ1](docs/queue/DZ1.md) |
+| BD1 | The bank's equity parts part from its equity after it buys the city's paper (SectorStatementCheck, on FC1's path: month 135's unearned discount falls 7.06 with no named cause, off by 7.05 in 226 of 479 bank-months; BK1's class, the money audit holds). Name the release and turn FC1 back on in SectorStatementCheck (found by FC1, which plays it with FC1 off meanwhile) | [BD1](docs/queue/BD1.md) |
+| DM1 | Standing buildings move in the district plan after a reserve (MapCheck 2h, on FC1's path: 12 and 23 boxes four months on, 0 without FC1; mostly 1x1 houses and 2x2/2x3 mixed buildings, none on fixed ground). Keep what stands and turn FC1 back on in MapCheck (found by FC1, which plays it with FC1 off meanwhile) | [DM1](docs/queue/DM1.md) |
