@@ -9270,7 +9270,8 @@ public class Game {
                 if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
                 if (quote.bridgePoints > 0) billedPoints += quote.bridgePoints;
                 if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
-                getSectors().construction().bill(totalCost, billedPoints);
+                // ...the template with it (FC1): a depot the builders serve first is not on the foreign contractor's book too.
+                getSectors().construction().bill(totalCost, billedPoints, selected);
             }
 
             System.out.println(quantity + " " + selected.getName()
@@ -10115,7 +10116,8 @@ public class Game {
         if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
         if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
         if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
-        getSectors().construction().bill(totalCost - landPrice, billedPoints);
+        // ...the template with it (FC1): a depot the builders serve first is not on the foreign contractor's book too.
+        getSectors().construction().bill(totalCost - landPrice, billedPoints, template);
 
         return true;
     }

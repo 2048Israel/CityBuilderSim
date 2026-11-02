@@ -62,8 +62,8 @@ public final class BuildersShort {
         if (Double.isNaN(months) || months <= KNEE_MONTHS) return 0;
         if (Double.isInfinite(months)) return CEILING;
         double x = (months - KNEE_MONTHS) / HALF_MONTHS;
-        double x2 = x * x;
-        return Math.min(CEILING, CEILING * x2 / (1 + x2));
+        // x^2 / (1 + x^2) as 1 / (1 + 1/x^2): the same curve, and the ceiling rather than NaN where x^2 overflows.
+        return Math.min(CEILING, CEILING / (1 + 1 / (x * x)));
     }
 
     /**

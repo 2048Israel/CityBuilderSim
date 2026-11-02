@@ -275,6 +275,19 @@ public final class Construction extends Sector {
         if (points > 0 && buildings != null && buildings.foreignCrewsTakeOrders()) foreignBook += points;
     }
 
+    /**
+     * ...an order of `t` (FC1): as bill(), but a depot the builders serve first - one the contractor builds as theirs
+     * while it takes orders (Game.foreignCrewsOffer(), BuildingManager.buildersOwnOwed()) - is not put on its book too,
+     * or the contractor would build its points twice over: once as the depot, once more on the queue.
+     */
+    public void bill(double amount, double points, BuildingsTemplate t) {
+        bill(amount, points);
+        if (points > 0 && t != null && buildings != null && buildings.foreignCrewsTakeOrders()
+                && BuildingManager.addsToTheBuilders(t) && buildings.goesFirst(t, 0)) {
+            takeFromForeignBook(points);
+        }
+    }
+
     /* ===================================================================
        THE FOREIGN CONTRACTOR'S BOOK (FC1)
 
