@@ -277,6 +277,15 @@ public class OrderSearchCheck {
     static final double[] TWIN_TILLS = { .25, .5 };
 
     /**
+     * ...AT LEAST THIS MANY OF ITS KIND (FC1, 2026-11-02). The twin's largest order is past the counted slices only by its
+     * path: on LC3's world file with the builders' price on, the copy of the playtest's town is 2,512,087 people at month
+     * 524 (10,436,876 with FC1 off), and the twin's largest order is 4 Filling Stations, which no till trims by more than three. An order under
+     * this many is handed to the search at this many of its kind, which a quarter's till (TWIN_TILLS) trims by three
+     * quarters, past the counted slices; an order this large or larger is handed as the twin decided it, as before.
+     */
+    static final int TWIN_LEAST_ORDER = 4 * Game.COUNTDOWN_SLICES;
+
+    /**
      * THE TWIN'S DEEP TRIMS, CAUSED (FR8, 2026-10-28). On the rule to 0.7.112 an order is trimmed where its till stops
      * covering it, if what it earns does not carry the interest on the rest: a trim needs an order whose till is part of its
      * cost. The twin's own orders are such an order only by their path - at 0.8.37 and FW9 it had some, at FR8 one in a
@@ -287,8 +296,11 @@ public class OrderSearchCheck {
      * counted, and asked of the countdown too.
      */
     static void tillsAsTheLine(Game twin, Watch w) {
-        BusinessInvestment.Decision d = w.biggest;
-        if (d == null) return;
+        BusinessInvestment.Decision own = w.biggest;
+        if (own == null) return;
+        // FC1: an order the twin's path left under TWIN_LEAST_ORDER is handed to the search at that many of its kind.
+        BusinessInvestment.Decision d = own.quantity >= TWIN_LEAST_ORDER ? own
+                : new BusinessInvestment.Decision(own.sector, own.template, TWIN_LEAST_ORDER, own.reason, own.build);
         double whole = twin.getBusinessInvestment().getCostOf(d.template, d.quantity);
         StringBuilder built = new StringBuilder();
         for (double share : TWIN_TILLS) {
@@ -297,8 +309,9 @@ public class OrderSearchCheck {
             w.invested(d, till, 0, found);
             built.append(built.length() == 0 ? "" : ", ").append(String.format("%,d on %.0f%%", found.quantity(), share * 100));
         }
-        out.printf("      ...and its largest order (%,d %s) put to its search with a till of a share of its cost and an order that"
-                + " earns nothing: built to %s%n", d.quantity, d.template.getName(), built);
+        out.printf("      ...and its largest order (%,d %s%s) put to its search with a till of a share of its cost and an order that"
+                + " earns nothing: built to %s%n", own.quantity, d.template.getName(),
+                d == own ? "" : String.format(", handed to it at %,d", d.quantity), built);
     }
 
     /**
