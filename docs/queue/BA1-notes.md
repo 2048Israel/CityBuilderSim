@@ -1,5 +1,28 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
+**WHERE IT STANDS (paused on the orchestrator's word, 2026-11-03 11:30; no ship file):**
+1. On main at cd3a506e (FC1b 0.9.7, BD1, DM1 merged in). The model and the harness slice are committed. It compiles, and
+   the harnesses BA1 changed pass alone.
+2. **The ensemble says no yet** (section 4): 20/26 against 0.9.6's 22/26, and 25 busts against 16, with the queue's
+   p90 at 58 months. The price and the interest on the wait do not ration the orders enough. Rework the rationing
+   before mending any more fixtures.
+3. `--pick` on the gate's world files (JDK_JAVA_OPTIONS naming the main checkout's data/earth-2.bin and
+   data/world-1.bin; without them the worktree reads another world and PriceLevelCheck 6 parts on FC1b too) left
+   these reds. All are fixtures on a moved path or a known bug, except CentralBankCheck's dynamics:
+   - NewGameCheck (c): Game.solveForCash stops on a short auction one granule down;
+   - CentralBankCheck: very strict against Standard;
+   - SaveFileCheck: its full city's conditions;
+   - OilCheck: the vans' diesel;
+   - RailDepotCheck: the bulk under the sidings;
+   - MapCheck and LongPlaytest: a map building moved at month 1809, lane 2's known plan bug.
+   PriceLevelCheck's town tie is mended (TOWN_MONTHS 33).
+4. Next: read target/ensemble's AUTO2 runs (the queue and premium columns) for what floods the queue - the landlords'
+   orders, sized to the whole gap, are the first suspect - and put back a brake that reads it. Then rerun the
+   ensemble, mend the fixtures above (one Sonnet slice), run `--pick` on the world files, and write the ship file.
+5. The before: FC1-lc3 had 16 busts in 13 of 16 seeds and people at m240/600/1200 of 4,027 / 14,681 / 67,166. BA1 has
+   25 busts in 13, at 3,242 / 12,754 / 79,501 (scratchpad busts.py; a bust is people 15%+ under a running peak from
+   m120).
+
 Jerus, 2026-11-01: "why bounded? why not let contracts flow? market after is efficient, too much and contracts get
 expensive thus business stop trying to place orders until contracts arent so expensive". The brief is
 `docs/queue/BA1.md`. Built on FC1b (lane 1: LD2, FC1b, BA1, CB1).
@@ -93,7 +116,25 @@ expensive thus business stop trying to place orders until contracts arent so exp
 
 ## 4. The ensemble
 
-(filled in below when it finishes)
+Run `BA1` on 93197de5 (FC1b merged; the world files named; extra columns `queue` = monthsQueued and `premium` =
+scarcityPremium), against `docs/ensemble/0.9.6.md`. **20/26 against the baseline's 22/26.** The model is not final, so
+the run is not committed as `docs/ensemble/BA1.md`.
+
+- AUTO2 A1, inflation from m240: 2.93% [2.28 to 6.31], 8 of 16 seeds in band. FAIL; it passed on 0.9.6.
+- AUTO2 A2, the longest spell of yoy over 10%: 24 months [11 to 80], against 0.9.6's 14 [7 to 29].
+- AUTO2 A3: deflation spells up to 12 months. FAIL; it passed on 0.9.6.
+- ZERO_SLACK S1: 2.90% [0.85 to 8.85], longest spell 109 months (0.9.6: 2.11%, 102).
+- ZERO_HOT F1: 1 of 16 runs found "households with no home".
+- HIGH R2 fails as on 0.9.6. HIGH R3 now passes.
+- **Busts:** 25 in 13 of 16 seeds, against 16 in 13 on FC1-lc3.
+- **People at m240 / m600 / m1200 (median):** 3,242 / 12,754 / 79,501, against 4,027 / 14,681 / 67,166.
+- **The queue from m240:** median 5.3 months, p90 58, max 215.5.
+- **The premium from m240:** median 0, p90 0.646, max 0.789. FC1 had the premium on in 26% of months, p90 +55%.
+
+Read: the young city grows slower and swings harder. The queue's tail is far longer than FC1's (p99 65 months there,
+p90 58 here). So the price of a point at its ceiling of +80%, plus the interest over a wait at a real rate of a few
+per cent, does not stop orders before the queue runs to years. It may need a stronger brake, or orders that read the
+premium's slope.
 
 ## 5. Left for later
 
