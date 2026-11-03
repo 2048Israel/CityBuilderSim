@@ -56,7 +56,9 @@ held in both. Lane 1, after LD2.
 
 ## 3. Checks
 
-- `./batch-check.sh --pick`: RESULT.
+- `./batch-check.sh --pick` on main with LD2 (0.9.5) merged, the gate's files named (`JDK_JAVA_OPTIONS`): exit 0,
+  28 harnesses green in 397 s (the 26 that read the diff, LongPlaytest in place of Game's and BuildingManager's 221
+  readers, left to the gate), the playtest clean, Stale 0 firm. ConstructionTrapCheck 234 assertions green.
 - **The trace**: byte-identical to LD2's tip (2c3db93e), all eight CSVs, the default playtest on the gate's files
   (`-Dcbs.earth=data/earth-2.bin -Dcbs.world=data/world-1.bin`); the logs differ only in the windows' run-time
   line, and both find LD2's own red word for word (`a building on the map moved 4 time(s), months 3010-3013`,
