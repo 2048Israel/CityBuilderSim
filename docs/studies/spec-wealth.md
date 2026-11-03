@@ -242,10 +242,10 @@ The cap stays, by section 2.5's measurement. One related bug is the gold study's
 | **GV2** | The playtest's player reads the government's wealth: all three levers by the band, in place of the scripted tax steps (3.2) | small (LongPlaytest, Ensemble's copy) | moves: ensemble | GV1 |
 | **XC1** | The currency's balance pull without the 20% cap, and without the spiral (★3's answer): a study first, rerunning `fx-prototype/` uncapped on the city after the spending-side batches, then the batch | study, then medium | moves | HL1, RB1, GV2, the households and wages batches |
 
-Order, as queued at the end of the queue (Jerus, 2026-11-02): HL1, GV1, RB1, GV2, XC1. HL1 comes first because a leak is a bug. It comes after the households study's HS1 in the queue, so HS1's migrants' flows become lines of HL1's identity. GV1 moves no trace and tells you what you hold. RB1 and GV2 each move the city. XC1 comes last, because a cap can only come off once the surplus has a cure.
+Order, as queued (Jerus, 2026-11-02): HL1 just before the households study's HS1, whose row (Jerus's) says "after the wealth study's HL1": HS1's leavers' money then goes through HL1's identity. GV1, RB1, GV2 and XC1 go at the end of the queue. HL1 also comes first because a leak is a bug. GV1 moves no trace and tells you what you hold. RB1 and GV2 each move the city. XC1 comes last, because a cap can only come off once the surplus has a cure.
 
 The other studies:
-- the households study owns spending out of wealth, and its migrants carry their money through HL1's identity;
+- the households study owns spending out of wealth and the stages' targets (WEALTH_SPENT_A_MONTH's rate is kept, as agreed in the shared notes), and its HS1 waits for HL1, so its migrants' money goes through HL1's identity;
 - the wages study owns the labour share; `LS1` is already queued, and it is the largest single reason the city cannot buy what it makes;
 - the gold study owns the currency regimes and XI1.
 
