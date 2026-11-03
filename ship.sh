@@ -83,6 +83,7 @@
 #       only .md files outside docs/ensemble/ runs batch-check.sh --fast alone;
 #   10. docs/notes/gate.txt written (every gate that ran the suite) and added:
 #       "#" lines (the merge's title, the date, whether earth-2.bin was named,
+#       the last nightly's verdict (tools/nightly.sh),
 #       the suite's and the timing's summary lines, each timing red that passed
 #       "# timing red not the batch's (paired): ..." with the paired medians,
 #       each passed on his word "# timing red passed on Jerus's word ..."), then
@@ -610,6 +611,8 @@ else
         echo "# gate of $MSG"
         echo "# date: $(date +%Y-%m-%d)"
         echo "# earth-2.bin: $EARTH"
+        NIGHTLY=$HOME/.cbs-nightly.txt   # tools/nightly.sh's last verdict (GT1)
+        [ ! -f "$NIGHTLY" ] || echo "# nightly: $(head -n 1 "$NIGHTLY" | tr -d '\r')"
         echo "# suite: ${SUMMARY:-none}$PART"
         echo "# timing: ${TSUMMARY:-none}${TIMINGLINE:+; its red lines were judged side by side with main's, below}"
         sed "s/^/# timing red not the batch's (paired): /" "$T/accepted"
