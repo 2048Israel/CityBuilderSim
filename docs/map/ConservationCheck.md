@@ -1,4 +1,4 @@
-# ConservationCheck.java - 417 lines · 6 methods · 0 constants · harnesses
+# ConservationCheck.java - 298 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/ConservationCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
@@ -28,10 +28,19 @@
 > homes - and almost nothing about whether the books balance. A mechanism can be
 > perfectly correct while quietly manufacturing food.
 > 
-> So this file asserts conservation laws and nothing else. One per commodity,
-> one per money flow, plus the one that says a city is the same city after you
-> load it. They are cheap, they are unglamorous, and they are the only thing
-> that would have caught any of the three.
+> So this asserts conservation laws and nothing else. They are cheap, they
+> are unglamorous, and they are the only thing that would have caught any of
+> the three: one per commodity, one per money flow, plus the one that says a
+> city is the same city after you load it.
+> 
+> SINCE GT1 (2026-11-02) THE FOOD, ELECTRICITY AND WATER LAWS ARE ASSERTED ON
+> EVERY MONTH OF LongPlaytest (`LongPlaytest.conservation`, which `audit`
+> calls after each month `run` plays) instead of a 156-month city of this
+> file's own, founded and played only to read them (Jerus: a claim that must
+> hold in every city every month belongs on the playtest's months). Their
+> premises - bread sold, the stock moving, unbilled draw - are findings of the
+> playtest's report too, since a law a broken system also passes is not a
+> test. This file keeps the load law and the rest, below.
 > 
 > THE BLIND QUADRANT. Bug 1 was invisible BY CONSTRUCTION: every other harness
 > builds a fresh Game per case, so the same Game object is never loaded into
@@ -40,35 +49,32 @@
 > 
 > ==============================================================
 
-**Uses:** [Game](Game.md) (13), [GameFiles](GameFiles.md) (7), [Good](Good.md) (5), [Sector](Sector.md) (4), [BuildingManager](BuildingManager.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sectors](Sectors.md) (1), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [EconomyManager](EconomyManager.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Mining](Mining.md) (1)
+**Uses:** [Game](Game.md) (12), [GameFiles](GameFiles.md) (7), [BuildingManager](BuildingManager.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sectors](Sectors.md) (1), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [Mining](Mining.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 125 | · 1. FOOD |
-| 216 | · 2. ELECTRICITY |
-| 239 | · 3. WATER |
-| 248 | · 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT |
-| 317 | · 5. WHAT A RELOAD MUST NOT FORGET |
+| 129 | · 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT |
+| 198 | · 5. WHAT A RELOAD MUST NOT FORGET |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 51 | `static int fails` |  |
-| 52 | `static PrintStream out` |  |
-| 53 | `static PrintStream quiet` |  |
+| 60 | `static int fails` |  |
+| 61 | `static PrintStream out` |  |
+| 62 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 369 | **type** `public class ConservationCheck` | Nothing is created and nothing is destroyed. |
-| 58 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
-| 65 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 71 | 43 | `static Game city(Path root, String name, int months) throws Exception` | A city with something of everything in it, so every law has something to test. |
-| 115 | 281 | `public static void main(String[] args) throws Exception` |  |
-| 398 | 11 | `static double[] snapshot(Game g)` | The figures a load must not move. |
-| 410 | 7 | `static void cleanUp(Path root)` |  |
+| 58 | 241 | **type** `public class ConservationCheck` | Nothing is created and nothing is destroyed. |
+| 67 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
+| 74 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 80 | 43 | `static Game city(Path root, String name, int months) throws Exception` | A city with something of everything in it, so every law has something to test. |
+| 124 | 153 | `public static void main(String[] args) throws Exception` |  |
+| 279 | 11 | `static double[] snapshot(Game g)` | The figures a load must not move. |
+| 291 | 7 | `static void cleanUp(Path root)` |  |
 

@@ -177,6 +177,9 @@ public final class CityMap {
     /** A district's empty log: the one array every district without records shares. */
     private static final int[] NO_LOG = new int[0];
 
+    /** How many types a district notes as changed between two logs (District.touch()) before the log compares them all: 8. */
+    static final int TOUCHED_MAX = 8;
+
     /** The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5); since 0.8.0 (batch I14) coal, stone and copper after them, every resource a works on dry ground stands on. */
     static final Resource[] SITED = { Resource.IRON, Resource.OIL, Resource.COAL, Resource.STONE, Resource.COPPER };
 
@@ -282,6 +285,13 @@ public final class CityMap {
         int[] logged;
         /** Whether its counts may have moved since they were logged: set wherever they change (a new district is dirty), cleared by logChanges(). */
         boolean logDirty = true;
+        /** Whether it stands in the map's weighQueue: its version moved since the pieces last weighed it (moved()). */
+        boolean weighQueued;
+        /** The types add() has changed here since it was logged, first touchedN of them in the order they came; touchedN is -1 when more than TOUCHED_MAX came (every type is compared then). */
+        int[] touched = NO_LOG;
+        int touchedN;
+        /** The map's builtEpoch when the month's new buildings first went into it: it stands in builtInAt when this is the epoch. */
+        int builtAt;
         /** A hash of its log, kept with it: what its plan's stamp folds, so a plan is drawn again when its log moved and its counts did not. */
         long logHash;
 
@@ -303,6 +313,20 @@ public final class CityMap {
             this.key = key(dx, dy);
             this.order = order;
             this.counts = new int[types];
+        }
+
+        /** Notes that type t was changed here (add()): what logChanges() reads of a district that was logged before. */
+        void touch(int t) {
+            int n = touchedN;
+            if (n < 0) return;
+            for (int j = 0; j < n; j++) if (touched[j] == t) return;
+            if (n == TOUCHED_MAX) {
+                touchedN = -1;
+                return;
+            }
+            if (touched.length == 0) touched = new int[TOUCHED_MAX];
+            touched[n] = t;
+            touchedN = n + 1;
         }
 
         /** Its free plots (owned and buildable, its sites' plots among them). */
@@ -665,13 +689,57 @@ public final class CityMap {
         long cx = (baseDX + dx) * DISTRICT + DISTRICT / 2, cy = (baseDY + dy) * DISTRICT + DISTRICT / 2;
         double ox = cx - siteX, oy = cy - siteY;
         District d = new District(dx, dy, types.length, ox * ox + oy * oy);
+        freeOf = freeRoadOf = null;
         districts.add(d);
         d.index = districts.size() - 1;
         indexDistrict(d);
+        // A new district starts dirty and unweighed: the next log reads every district (logAll), the next weighing has it (weighQueue).
+        logAll = true;
+        d.weighQueued = true;
+        weighQueue.add(d);
         return d;
     }
 
+    /** The districts whose version moved since the pieces last weighed them, each once (District.weighQueued): what MapPieces.weigh() reads instead of every district (GT1). */
+    private final List<District> weighQueue = new ArrayList<>();
+
+    /** District d's counts or ground moved: its version bumped (what its sites' list, its plan and its weight are kept against), and it is queued for the pieces' next weighing. */
+    private void moved(District d) {
+        d.version++;
+        if (!d.weighQueued) {
+            d.weighQueued = true;
+            weighQueue.add(d);
+        }
+        if (freeOf != null) {
+            freeOf[d.index] = d.freeCells();
+            freeRoadOf[d.index] = d.freeRoad();
+        }
+    }
+
+    /**
+     * Each district's free whole plots (District.freeCells()) and free plots for roads (District.freeRoad()), by its index, kept as its counts and ground
+     * move (moved()): what the walks of place() and placeRoad() read first. A month's walk passes thousands of full districts in a city of billions,
+     * and each step read a district's object, a cache miss; a step now reads a long in an array, and the district's object only where it has room (GT1).
+     * Null when the districts were made or put in order (newDistrict(), sortDistricts()): worked out again by keepFree().
+     */
+    private long[] freeOf, freeRoadOf;
+
+    /** freeOf and freeRoadOf, current. */
+    private void keepFree() {
+        if (freeOf != null) return;
+        int n = districts.size();
+        long[] free = new long[n], road = new long[n];
+        for (int i = 0; i < n; i++) {
+            District d = districts.get(i);
+            free[i] = d.freeCells();
+            road[i] = d.freeRoad();
+        }
+        freeOf = free;
+        freeRoadOf = road;
+    }
+
     private void sortDistricts() {
+        freeOf = freeRoadOf = null;
         districts.sort(DISTRICT_ORDER);
         for (int i = 0; i < districts.size(); i++) districts.get(i).index = i;
         rangeTypes();
@@ -949,7 +1017,7 @@ public final class CityMap {
                 continue;
             }
             measure(d, own);
-            d.version++;
+            moved(d);
         }
         sortDistricts();
         if (siteIndex != null && nbx0 <= nbx1) tallySites(siteIndex, firstNew, nbx0 - 1, nby0 - 1, nbx1 + 1, nby1 + 1);
@@ -985,8 +1053,8 @@ public final class CityMap {
         int touched = 0;
         // The buildings first, then the roads, which follow them (0.7.72, ROADS FOLLOW THEIR BUILDINGS).
         roadShare = roadShareOf(model);
-        builtIn.clear();
-        builtInSet.clear();
+        builtInN = 0;
+        builtEpoch++;
         for (int roads = 0; roads < 2; roads++) {
             for (int t = 0; t < types.length; t++) {
                 // ...not the buildings at sea (0.7.91): on none of the city's dry ground, so in no district (BuildingVisual.of()'s sea flag).
@@ -1043,19 +1111,64 @@ public final class CityMap {
 
     /** ...of every district, dirty or not (all): what a sidecar is written after, so a count moved by hand (a harness's) is a record too and what is written always adds up. */
     void logChanges(boolean all) {
-        for (District d : districts) {
-            if (!all && !d.logDirty) continue;
-            d.logDirty = false;
-            int[] was = d.logged;
+        // GT1: a month's change moves a few hundred of a city of billions' 29,000 districts, and the walk through all of them to read a flag was a
+        // third of the month (10 billion people, MapCheck 5): add() queues each district it dirties, and only those are read, unless a bulk
+        // change (a new district, the canonical deal) left every district dirty (logAll). The districts' logs are independent, so the order is not.
+        if (all || logAll) {
+            for (District d : districts) logOne(d, all, false);
+            logAll = false;
+        } else {
+            for (int i = 0; i < logQueue.size(); i++) logOne(logQueue.get(i), false, true);
+        }
+        logQueue.clear();
+    }
+
+    /** The districts add() dirtied since logChanges() last ran, each once, in the order they first moved. */
+    private final List<District> logQueue = new ArrayList<>();
+
+    /** Whether the next logChanges() reads every district: a new district starts dirty and the canonical deal dirties all, and neither passes through add(). */
+    private boolean logAll = true;
+
+    /**
+     * District d's change since it was logged, into its log (a district not dirty is passed unless `all`). `queued`: d came from the logQueue, so
+     * only the types add() touched can differ from what was logged (District.touch()), and only those are read; else every type is compared.
+     */
+    private void logOne(District d, boolean all, boolean queued) {
+        if (!all && !d.logDirty) return;
+        d.logDirty = false;
+        int[] counts = d.counts, was = d.logged;
+        int touched = d.touchedN;
+        d.touchedN = 0;
+        if (was == null) {
             boolean any = false;
-            for (int t = 0; t < d.counts.length; t++) {
-                int c = d.counts[t];
-                if (c != 0) any = true;
-                int w = was == null ? 0 : was[t];
-                if (c != w) d.logAdd(month, t, c - w);
+            for (int t = 0; t < counts.length; t++) {
+                if (counts[t] == 0) continue;
+                any = true;
+                d.logAdd(month, t, counts[t]);
             }
-            if (was != null) System.arraycopy(d.counts, 0, was, 0, d.counts.length);
-            else if (any) d.logged = d.counts.clone();
+            if (any) d.logged = counts.clone();
+        } else if (queued && touched >= 0) {
+            // ...a district a month changed in a type or two: those types, in id order, and not its two arrays of 200 compared.
+            int[] tt = d.touched;
+            for (int a = 1; a < touched; a++) {
+                int v = tt[a], b = a - 1;
+                while (b >= 0 && tt[b] > v) { tt[b + 1] = tt[b]; b--; }
+                tt[b + 1] = v;
+            }
+            for (int a = 0; a < touched; a++) {
+                int t = tt[a];
+                if (counts[t] == was[t]) continue;
+                d.logAdd(month, t, counts[t] - was[t]);
+                was[t] = counts[t];
+            }
+        } else {
+            // ...a few types of the 200 moved: found by the vectorised compare, not a pass over them all.
+            for (int from = 0, i; (i = Arrays.mismatch(counts, from, counts.length, was, from, was.length)) >= 0; ) {
+                int t = from + i;
+                d.logAdd(month, t, counts[t] - was[t]);
+                from = t + 1;
+            }
+            System.arraycopy(counts, 0, was, 0, counts.length);
         }
     }
 
@@ -1124,6 +1237,8 @@ public final class CityMap {
     long buildingRoom(District d, long each) {
         long free = d.freeCells();
         if (each <= 0) return Long.MAX_VALUE;
+        // GT1: most of a walk's steps are districts too full for the size, and a district with fewer free plots than the size has room for none (free / each is under 1 by more than the 1e-9 below) - no divisions.
+        if (free < each) return 0;
         double other = d.usedCells - d.usedRoad;
         double k = Math.min(free / (double) each, (free + d.usedRoad - roadShare * other) / (each * (1 + roadShare)));
         return Math.max(0, (long) Math.floor(k + 1e-9));
@@ -1140,15 +1255,24 @@ public final class CityMap {
         return roadShare * (d.usedCells - d.usedRoad) - d.usedRoad;
     }
 
-    /** The districts the month's new buildings went into (ROADS FOLLOW THEIR BUILDINGS): where its new roads are looked for, so a month's work stays with the districts it changes. */
-    private final List<District> builtIn = new ArrayList<>();
-    private final java.util.Set<District> builtInSet = new java.util.HashSet<>();
+    /** The districts the month's new buildings went into, by index, the first change to each in order (ROADS FOLLOW THEIR BUILDINGS): where its new roads are looked for, so a month's work stays with the districts it changes. */
+    private int[] builtInAt = new int[64];
+    private int builtInN;
+
+    /** The month builtInAt was started in (a count of reconcile()s): a district stands in it when its builtAt is this (GT1: a hash set of the month's districts made a month's first change a hash and a node for each). */
+    private int builtEpoch = 1;
 
     /** Places n more roads of type t, one at a time: each into the district, of those the month's buildings went into, whose buildings lack road the most and that has room for it inside its tiles' edge rings, the nearer on a tie; the rest as a building is placed. */
     private int placeRoad(int t, long n) {
         long each = BuildingVisual.cells(types[t]);
         lackN = 0;
-        for (District d : builtIn) {
+        keepFree();
+        long[] fits = freeRoadOf;
+        for (int q = 0; q < builtInN; q++) {
+            int at = builtInAt[q];
+            // ...most have no room for the road at all: read from the array, not the district (GT1).
+            if (fits[at] < each) continue;
+            District d = districts.get(at);
             double lack = roadLacking(d);
             if (lack > 0 && d.freeRoad() >= each) lackAdd(lack, d.index);
         }
@@ -1254,7 +1378,14 @@ public final class CityMap {
         }
         int i = out ? outerCursor : innerCursor, kind = (out ? 2 : 0) | (road ? 1 : 0), first = -2;
         if (each > 0) i = passed(kind, each, i);
+        keepFree();
+        long[] fits = road ? freeRoadOf : freeOf;
         while (n > 0 && i >= 0 && i < districts.size()) {
+            // A district with fewer free plots than the building takes has room for none (GT1: read from the array, not the district).
+            if (each > 0 && fits[i] < each) {
+                i += out ? -1 : 1;
+                continue;
+            }
             District d = districts.get(i);
             long room = each > 0 ? (road ? d.freeRoad() / each : buildingRoom(d, each)) : n;
             long k = Math.min(n, room);
@@ -1484,12 +1615,20 @@ public final class CityMap {
     private void add(District d, int i, int t, long k, boolean sited) {
         d.counts[t] += (int) k;
         have[t] += k;
-        if (k > 0 && types[t].road() == BuildingVisual.NOT_A_ROAD && builtInSet.add(d)) builtIn.add(d);
+        if (k > 0 && types[t].road() == BuildingVisual.NOT_A_ROAD && d.builtAt != builtEpoch) {
+            d.builtAt = builtEpoch;
+            if (builtInN == builtInAt.length) builtInAt = Arrays.copyOf(builtInAt, builtInN * 2);
+            builtInAt[builtInN++] = d.index;
+        }
         d.usedHalf += k * 2 * types[t].sqFt();
         d.usedCells += k * BuildingVisual.cells(types[t]);
         if (types[t].road() != BuildingVisual.NOT_A_ROAD) d.usedRoad += k * BuildingVisual.cells(types[t]);
-        d.version++;
-        d.logDirty = true;
+        moved(d);
+        d.touch(t);
+        if (!d.logDirty) {
+            d.logDirty = true;
+            logQueue.add(d);
+        }
         changes++;
         if (k > 0) {
             if (i < lo[t]) lo[t] = i;
@@ -1631,9 +1770,10 @@ public final class CityMap {
             d.usedHalf = usedOf(d);
             d.usedCells = cellsOf(d);
             d.usedRoad = roadOf(d);
-            d.version++;
+            moved(d);
             // ...every district's counts were dealt here, directly: all are to be logged.
             d.logDirty = true;
+            logAll = true;
         }
         rangeTypes();
         innerCursor = 0;
@@ -1763,7 +1903,7 @@ public final class CityMap {
                 }
             }
         }
-        if (redraw != null) for (District d : redraw) d.version++;
+        if (redraw != null) for (District d : redraw) moved(d);
         if (added) {
             sortDistricts();
             if (pyramid != null) pyramid = new Pyramid(this);
@@ -2142,7 +2282,7 @@ public final class CityMap {
             runs = less.length == 0 ? null : less;
         }
         d.siteRuns[slot] = runs;
-        d.version++;
+        moved(d);
         changes++;
         minedTouched.add((baseDX + d.dx) << 32 ^ ((baseDY + d.dy) & 0xffffffffL));
     }
@@ -5904,6 +6044,9 @@ public final class CityMap {
        the first ask and kept until the ground moves.
        ===================================================================== */
 
+    /** How many chunks of the pieces' tables are kept at hand (MapPieces.cacheChunk): 256 (a city of billions keeps about 250: its 4 MB of tables in chunks of 16 KB). */
+    static final int CHUNK_CACHE = 256;
+
     /** Tiles a side of a chunk of the pieces' tables (CL5): 2^6 = 64, a table of 4,096 per chunk, and a district (8 tiles) is never split by one. */
     static final int PIECE_CHUNK_SHIFT = 6;
 
@@ -5923,6 +6066,13 @@ public final class CityMap {
         private World world;
         private int[] lastChunk;
         private long lastKey = Long.MIN_VALUE;
+        /**
+         * The chunks looked up lately, by a hash of their column and row (GT1): pieceOf() is asked of every net's hub a few times a month, and the one chunk
+         * remembered above holds for a run of neighbours only, so nearly every ask went to `labels`, whose keys (row << 32 | column) hash alike down a
+         * diagonal and had grown trees in their bins.
+         */
+        private final long[] cacheKey = new long[CHUNK_CACHE];
+        private final int[][] cacheChunk = new int[CHUNK_CACHE][];
         private int[] parent = new int[64], size = new int[64];
         private long[] first = new long[64];
         private int nLabels;
@@ -6026,6 +6176,7 @@ public final class CityMap {
                 labels.clear();
                 lastChunk = null;
                 lastKey = Long.MIN_VALUE;
+                Arrays.fill(cacheChunk, null);
                 nLabels = 0;
                 indexShore();
                 long[] box = runGround.box();
@@ -6129,8 +6280,14 @@ public final class CityMap {
             int[] c;
             if (key == lastKey) c = lastChunk;
             else {
-                c = labels.get(key);
-                if (c == null) return -1;
+                int slot = (((int) key * 73856093) ^ ((int) (key >>> 32) * 19349663)) & (CHUNK_CACHE - 1);
+                c = cacheChunk[slot];
+                if (c == null || cacheKey[slot] != key) {
+                    c = labels.get(key);
+                    if (c == null) return -1;
+                    cacheKey[slot] = key;
+                    cacheChunk[slot] = c;
+                }
                 lastKey = key;
                 lastChunk = c;
             }
@@ -6295,23 +6452,34 @@ public final class CityMap {
         private void weigh() {
             // Kept from month to month (a city of billions has 29,000 districts, and weighing every one cost MapCheck 5's month 1.5 ms): a
             // district is weighed again only when its counts moved (District.version) or the pieces were worked out again (buildId).
-            if (weighedBuild != buildId) {
+            // GT1: even the look at each district's version, to find the few that moved, was a seventh of the month at 10 billion people:
+            // the districts whose version moved since the last weighing are queued as they move (CityMap.moved()), and only those are read -
+            // all of them when the pieces were worked out again.
+            boolean every = weighedBuild != buildId;
+            if (every) {
                 Arrays.fill(weights, 0);
                 weighedBuild = buildId;
+                for (District d : districts) weighOne(d);
+            } else {
+                for (int i = 0; i < weighQueue.size(); i++) weighOne(weighQueue.get(i));
             }
-            for (District d : districts) {
-                if (d.weighedBuild == buildId && d.weighedAt == d.version) continue;
-                if (d.weighedBuild != buildId) {
-                    d.weighedBuild = buildId;
-                    d.weighedPiece = pieceOfDistrict(d);
-                    d.weighedCells = 0;
-                }
-                long built = Math.max(0, builtCells(d));
-                if (d.weighedPiece >= 0 && d.weighedPiece < weights.length) weights[d.weighedPiece] += built - d.weighedCells;
-                d.weighedCells = built;
-                d.weighedAt = d.version;
-            }
+            for (int i = 0; i < weighQueue.size(); i++) weighQueue.get(i).weighQueued = false;
+            weighQueue.clear();
             weightsValid = true;
+        }
+
+        /** District d weighed again if its counts moved or the pieces did. */
+        private void weighOne(District d) {
+            if (d.weighedBuild == buildId && d.weighedAt == d.version) return;
+            if (d.weighedBuild != buildId) {
+                d.weighedBuild = buildId;
+                d.weighedPiece = pieceOfDistrict(d);
+                d.weighedCells = 0;
+            }
+            long built = Math.max(0, builtCells(d));
+            if (d.weighedPiece >= 0 && d.weighedPiece < weights.length) weights[d.weighedPiece] += built - d.weighedCells;
+            d.weighedCells = built;
+            d.weighedAt = d.version;
         }
 
         /** The plots a district's buildings stand on: its used cells less those of its roads, highways, track and works at sea (the types a district does not draw on its ground). */
@@ -7882,7 +8050,7 @@ public final class CityMap {
         if (!measured) return;
         for (District d : districts) {
             measure(d, ownership(d.dx, d.dy));
-            d.version++;
+            moved(d);
         }
         landVersion++;
         changes++;
@@ -9083,13 +9251,34 @@ public final class CityMap {
     }
 
     /**
+     * The 64 KB arrays kindsOf() fills, kept from month to month (GT1): each month's journal made a pair for every district the runs changed, about
+     * half a megabyte a month at 10 billion people and all the garbage the month made, so the collector ran inside a timed month now and then
+     * (MapCheck 5 reads the wall clock). runs.fill() clears an array before it writes it, so a kept one is as good as a new.
+     */
+    private final java.util.ArrayDeque<byte[]> kindsPool = new java.util.ArrayDeque<>();
+
+    /** A kinds array: one kept, or a new one. */
+    private byte[] takeKinds() {
+        byte[] b = kindsPool.pollLast();
+        return b != null ? b : new byte[DISTRICT * DISTRICT];
+    }
+
+    /** An array kindsOf() gave and nothing holds any more, kept for the next month (no more than KINDS_KEPT). */
+    private void giveKinds(byte[] b) {
+        if (kindsPool.size() < KINDS_KEPT) kindsPool.addLast(b);
+    }
+
+    /** How many kinds arrays are kept: 16, eight districts' pair. */
+    static final int KINDS_KEPT = 16;
+
+    /**
      * What a district's own DISTRICT x DISTRICT plots carry in a plan's input, the interchanges' reserves left out: the runs as
      * runsInto() maps them (a railway over a highway is a highway's) with the shore's works over them as yards, the highways
      * drawn as if highwaysReach() were `reach`. Row by row; 0 or a FIXED_ code.
      */
     byte[] kindsOf(District d, boolean reach) {
         long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
-        byte[] fixed = new byte[DISTRICT * DISTRICT];
+        byte[] fixed = takeKinds();
         runs.fill(x0, y0, DISTRICT, DISTRICT, fixed, null, true, false, reach);
         for (int i = 0; i < fixed.length; i++) if (fixed[i] == CityRuns.F_RAIL_OVER) fixed[i] = DistrictPlan.FIXED_HIGHWAY;
         if (!shore.isEmpty()) shore.fill(x0, y0, DISTRICT, DISTRICT, fixed, DistrictPlan.FIXED_YARD);
@@ -9117,7 +9306,7 @@ public final class CityMap {
         List<long[]> began = reserveLaid, ended = reservesEnded(reach, changed);
         reserveLaid = ended;
         java.util.Set<Long> read = new java.util.LinkedHashSet<>(journalWas.keySet());
-        for (long[] box : reservesMoved(began, ended)) {
+        for (long[] box : reservesMovedNow != null ? reservesMovedNow : reservesMoved(began, ended)) {
             for (long wy = Math.floorDiv(box[1], DISTRICT); wy <= Math.floorDiv(box[1] + box[3] - 1, DISTRICT); wy++) {
                 for (long wx = Math.floorDiv(box[0], DISTRICT); wx <= Math.floorDiv(box[0] + box[2] - 1, DISTRICT); wx++) {
                     long dx = wx - baseDX, dy = wy - baseDY;
@@ -9130,9 +9319,13 @@ public final class CityMap {
         for (long k : read) {
             District d = districtAt(k);
             byte[] now = nowBase.get(k), was = journalWas.get(k);
+            boolean ownNow = now == null, ownWas = was == null;
             // A district only a reserve moved in: its runs are as they were.
-            if (now == null) now = kindsOf(d, reach);
-            if (was == null) was = now.clone();
+            if (ownNow) now = kindsOf(d, reach);
+            if (ownWas) {
+                was = takeKinds();
+                System.arraycopy(now, 0, was, 0, now.length);
+            }
             laidOver(was, d, began);
             laidOver(now, d, ended);
             // A month's first records need no look for a plot's own among the month's.
@@ -9144,7 +9337,11 @@ public final class CityMap {
                 else d.jAdd(month, p, was[p], now[p]);
                 from = p + 1;
             }
+            if (ownNow) giveKinds(now);
+            if (ownWas) giveKinds(was);
         }
+        for (byte[] b : journalWas.values()) giveKinds(b);
+        for (byte[] b : nowBase.values()) giveKinds(b);
         journalWas.clear();
         journalTouched.clear();
     }
@@ -9248,6 +9445,7 @@ public final class CityMap {
      * run changed there, no mine, no purchase.
      */
     private List<long[]> reservesEnded(boolean reach, List<long[]> changed) {
+        reservesMovedNow = null;
         List<long[]> began = reserveLaid, ended;
         List<CityLand.Purchase> bought = land.purchases();
         if (!reach) {
@@ -9276,15 +9474,39 @@ public final class CityMap {
             }
             if (regions.isEmpty()) {
                 ended = began;
+                reservesMovedNow = List.of();
             } else {
-                ended = new ArrayList<>();
-                java.util.Set<List<Long>> have = new java.util.HashSet<>();
+                // GT1: a city of billions lays thousands of reserves, and a key made and hashed for each of them, and again in reservesMoved(), twice a
+                // month, was a seventh of the month (10 billion people, MapCheck 5). The reserves that meet no region stand as they were, and
+                // the others are dropped and found again: only these are keyed. `began` holds no box twice (it is built through a set), so the kept
+                // need no key unless a box found again lies clear of every region, which no kept box can equal if it meets one.
+                ended = new ArrayList<>(began.size() + 8);
+                List<long[]> dropped = new ArrayList<>(), added = new ArrayList<>();
                 for (long[] b : began) {
-                    boolean in = false;
-                    for (long[] r : regions) in |= meets(b, r);
-                    if (!in && have.add(boxKey(b))) ended.add(b);
+                    if (meetsAny(b, regions)) dropped.add(b);
+                    else ended.add(b);
                 }
-                for (long[] r : regions) addLaid(runs.reservesIn(r[0], r[1], (int) r[2], (int) r[3]), ended, have);
+                int kept = ended.size();
+                java.util.Set<List<Long>> found = new java.util.HashSet<>(), keptKeys = null;
+                for (long[] r : regions) {
+                    for (InterchangeGround.Site s : runs.reservesIn(r[0], r[1], (int) r[2], (int) r[3])) {
+                        if (!s.got()) continue;
+                        long[] box = { s.x0(), s.y0(), s.w(), s.h() };
+                        List<Long> key = boxKey(box);
+                        if (!found.add(key)) continue;
+                        if (!meetsAny(box, regions)) {
+                            if (keptKeys == null) {
+                                keptKeys = new java.util.HashSet<>();
+                                for (int i = 0; i < kept; i++) keptKeys.add(boxKey(ended.get(i)));
+                            }
+                            if (keptKeys.contains(key)) continue;
+                        }
+                        ended.add(box);
+                        added.add(box);
+                    }
+                }
+                // The reserves that came or went are those dropped and not found again, and found and not dropped: what reservesMoved(began, ended) finds, from these alone.
+                reservesMovedNow = reservesMoved(dropped, added);
             }
         }
         reserveRuns = runs;
@@ -9292,6 +9514,15 @@ public final class CityMap {
         reservePurchasesSeen = bought.size();
         minedTouched.clear();
         return ended;
+    }
+
+    /** The reserves that came or went as the last month ended, when reservesEnded() knew them without comparing the whole sets; null when it did not. */
+    private List<long[]> reservesMovedNow;
+
+    /** Whether the world plot box b meets any of the boxes r. */
+    private static boolean meetsAny(long[] b, List<long[]> rs) {
+        for (long[] r : rs) if (meets(b, r)) return true;
+        return false;
     }
 
     /** The boxes in one of two sets of reserves and not the other: the reserves that came or went. */

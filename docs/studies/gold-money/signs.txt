@@ -1,0 +1,39 @@
+locale  code  home   english  place   2,600,000 at home
+ja-JP   JPY   ￥      ¥        before  ￥2,600,000
+zh-CN   CNY   ¥      CN¥      before  ¥2,600,000.00
+ko-KR   KRW   ₩      ₩        before  ₩2,600,000
+en-US   USD   $      $        before  $2,600,000.00
+en-GB   GBP   £      £        before  £2,600,000.00
+en-CA   CAD   $      CA$      before  $2,600,000.00
+fr-CA   CAD   $      CA$      after   2 600 000,00 $
+en-AU   AUD   $      A$       before  $2,600,000.00
+en-IN   INR   ₹      ₹        before  ₹2,600,000.00
+hi-IN   INR   ₹      ₹        before  ₹2,600,000.00
+de-DE   EUR   €      €        after   2.600.000,00 €
+fr-FR   EUR   €      €        after   2 600 000,00 €
+it-IT   EUR   €      €        after   2.600.000,00 €
+es-ES   EUR   €      €        after   2.600.000,00 €
+nl-NL   EUR   €      €        before  € 2.600.000,00
+en-IE   EUR   €      €        before  €2,600,000.00
+sv-SE   SEK   kr     SEK      after   2 600 000,00 kr
+nb-NO   NOK   kr     NOK      before  kr 2 600 000,00
+da-DK   DKK   kr.    DKK      after   2.600.000,00 kr.
+fi-FI   EUR   €      €        after   2 600 000,00 €
+pl-PL   PLN   zł     PLN      after   2 600 000,00 zł
+cs-CZ   CZK   Kč     CZK      after   2 600 000,00 Kč
+hu-HU   HUF   Ft     HUF      after   2 600 000,00 Ft
+ru-RU   RUB   ₽      RUB      after   2 600 000,00 ₽
+uk-UA   UAH   ₴      UAH      after   2 600 000,00 ₴
+tr-TR   TRY   ₺      TRY      before  ₺2.600.000,00
+he-IL   ILS   ₪      ₪        after   ‏2,600,000.00 ‏₪
+ar-EG   EGP   ج.م.‏  EGP      after   ‏٢٬٦٠٠٬٠٠٠٫٠٠ ج.م.‏
+th-TH   THB   ฿      THB      before  ฿2,600,000.00
+vi-VN   VND   ₫      ₫        after   2.600.000 ₫
+id-ID   IDR   Rp     IDR      before  Rp2.600.000,00
+pt-BR   BRL   R$     R$       before  R$ 2.600.000,00
+es-MX   MXN   $      MX$      before  $2,600,000.00
+es-AR   ARS   $      ARS      before  $ 2.600.000,00
+de-CH   CHF   CHF    CHF      before  CHF 2’600’000.00
+en-ZA   ZAR   R      ZAR      before  R2 600 000,00
+
+every country locale with a money (522): the sign before the number in 303, after it in 219

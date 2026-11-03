@@ -34,10 +34,19 @@ import java.nio.file.Path;
  * homes - and almost nothing about whether the books balance. A mechanism can be
  * perfectly correct while quietly manufacturing food.
  *
- * So this file asserts conservation laws and nothing else. One per commodity,
- * one per money flow, plus the one that says a city is the same city after you
- * load it. They are cheap, they are unglamorous, and they are the only thing
- * that would have caught any of the three.
+ * So this asserts conservation laws and nothing else. They are cheap, they
+ * are unglamorous, and they are the only thing that would have caught any of
+ * the three: one per commodity, one per money flow, plus the one that says a
+ * city is the same city after you load it.
+ *
+ * SINCE GT1 (2026-11-02) THE FOOD, ELECTRICITY AND WATER LAWS ARE ASSERTED ON
+ * EVERY MONTH OF LongPlaytest (`LongPlaytest.conservation`, which `audit`
+ * calls after each month `run` plays) instead of a 156-month city of this
+ * file's own, founded and played only to read them (Jerus: a claim that must
+ * hold in every city every month belongs on the playtest's months). Their
+ * premises - bread sold, the stock moving, unbilled draw - are findings of the
+ * playtest's report too, since a law a broken system also passes is not a
+ * test. This file keeps the load law and the rest, below.
  *
  * THE BLIND QUADRANT. Bug 1 was invisible BY CONSTRUCTION: every other harness
  * builds a fresh Game per case, so the same Game object is never loaded into
@@ -116,134 +125,6 @@ public class ConservationCheck {
 
         out = System.out;
         Path root = TempDirs.create("conservation");
-
-        Game g = city(root, "main", 120);
-        EconomyManager em = g.getEconomyManager();
-        Sector ih = g.getSectors().industry();
-        UtilitiesHandler uh = g.getServicesManager().getUtilitiesHandler();
-
-        /* ============ 1. FOOD ============ */
-        System.out.println("--- food: what came in equals what went out ---");
-
-        /*
-         * THE LAW: opening stock + what was made - what spoiled - what was sold
-         * - what was shipped abroad = closing stock. Exactly, every month, for
-         * as long as you care to run it.
-         *
-         * Run over many months rather than one because the failure that
-         * motivated it was a STEADY leak: stock pinned at capacity while sales
-         * were booked against it, which one month in isolation looks like a
-         * warehouse that happens to be full.
-         */
-        boolean conserved = true;
-        int worstMonth = 0;
-        double worstGap = 0;
-        double totalMade = 0, totalSold = 0, totalExported = 0, totalSpoiled = 0;
-        int lowStock = Integer.MAX_VALUE, highStock = Integer.MIN_VALUE;
-
-        for (int m = 0; m < 36; m++) {
-            /*
-              * THE WAREHOUSE HOLDS BREAD NOW. This read Good.FOOD, and the
-              * ovens stopped making it on 2026-09-15 - so every term in the
-              * law was zero, the law held perfectly, and the two assertions
-              * below (which exist precisely to catch a law satisfied by an
-              * empty warehouse) went red. They were right to: the warehouse
-              * was not conserving, it was absent.
-              */
-            double opening = ih.getStock(Good.BREAD);
-            System.setOut(quiet);
-            try { g.simulateMonths(1); } finally { System.setOut(out); }
-
-            /*
-             * What went INTO the warehouse, not what the income statement said
-             * was made. The two differ whenever a ratio moved during the month -
-             * which is the entire reason the report carries a basis - and this
-             * line used to read the report, so the law could only ever be
-             * asserted to within a unit. Sickness moves every month and pushed
-             * the gap to 1.06, which read as a leak and was a mis-measurement.
-             *
-             * Since the sector template (2026-09-11) the month's figures are
-             * the sector's own Output record for the good. The export-bound
-             * share leaves FROM THE LINE and never passes through the shed -
-             * see Sector.produceStock - so it is counted but is not a term in
-             * the warehouse's law.
-             */
-            Sector.Output o = ih.output(Good.BREAD);
-            double made = o.produced;
-            double spoiled = o.writtenOff;
-            double sold = o.soldLocal;
-            double exported = o.exported;
-
-            totalMade += made;
-            totalSpoiled += spoiled;
-            totalSold += sold;
-            totalExported += exported;
-
-            lowStock = Math.min(lowStock, (int) Math.round(ih.getStock(Good.BREAD)));
-            highStock = Math.max(highStock, (int) Math.round(ih.getStock(Good.BREAD)));
-
-            double expected = opening + made - spoiled - sold;
-            double gap = Math.abs(expected - ih.getStock(Good.BREAD));
-            if (gap > worstGap) { worstGap = gap; worstMonth = m; }
-            // Doubles now, so a few ulps of slack on a five-figure stock.
-            if (gap > 1e-6) conserved = false;
-        }
-
-        System.out.printf("   over 36 months: made %,.0f  sold %,.0f  exported %,.0f"
-                + "  spoiled %,.0f%n", totalMade, totalSold, totalExported, totalSpoiled);
-        System.out.printf("   worst monthly discrepancy: %.4f units (month %d)%n",
-                worstGap, worstMonth);
-        assertTrue("every month, food in equals food out plus the change in stock",
-                conserved);
-
-        /*
-         * AND IT ACTUALLY MOVES. The conservation law above is satisfied
-         * trivially by a warehouse where nothing ever happens - which is exactly
-         * the state the bug produced, since 0 in and 0 out balances perfectly.
-         * A law that a broken system also passes is not a test.
-         */
-        /*
-         * AND THE STOCK ACTUALLY MOVES, measured as the range it covered rather
-         * than as first-versus-last. A settled city cycles - it ends a run where
-         * it began - so comparing the two endpoints of a periodic series proves
-         * nothing and fails on a perfectly healthy warehouse. What the broken
-         * version looked like was a FLAT line, so flatness is the thing to test.
-         */
-        System.out.printf("   stock ranged %,d to %,d over the run%n", lowStock, highStock);
-        assertTrue("...and the warehouse is not simply frozen", totalSold > 0);
-        assertTrue("...and the stock level actually moves", highStock > lowStock);
-
-        /* ============ 2. ELECTRICITY ============ */
-        System.out.println("\n--- electricity: the utility books what the sectors pay ---");
-
-        double billedDraw = uh.getBilledElectricityDraw();
-        System.out.printf("   city draws %,.0f W, of which %,.0f W is invoiced to somebody%n",
-                uh.getConsumption(), billedDraw);
-
-        double charged = 0;
-        for (Sector s : g.getSectors().all()) charged += s.statement().electricity;
-
-        check("the utility's revenue is exactly what the sectors were charged",
-                uh.getElectricityRevenue(), charged, .0001);
-
-        /*
-         * The unbilled draw is real and deliberate - houses, roads, the water
-         * plant and the city's own yards all use power and nobody invoices them.
-         * What must never happen again is the utility BOOKING that draw as
-         * revenue, which is what made 73% of a city's power bill money from
-         * nowhere.
-         */
-        assertTrue("there is unbilled draw, and it is not booked as revenue",
-                uh.getUnbilledElectricityDraw() > 0);
-
-        /* ============ 3. WATER ============ */
-        System.out.println("\n--- water: the same law, which it already obeyed ---");
-
-        double waterCharged = 0;
-        for (Sector s : g.getSectors().all()) waterCharged += s.statement().water;
-
-        check("the water utility's revenue is what the sectors were charged",
-                uh.getWaterRevenue(), waterCharged, .0001);
 
         /* ============ 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT ============ */
         System.out.println("\n--- loading: the blind quadrant ---");

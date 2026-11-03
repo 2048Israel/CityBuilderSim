@@ -660,6 +660,7 @@ public class HistorySave {
      */
     public void recordMonth(Game game) {
 
+        settle();
         EconomyManager economy = game.getEconomyManager();
         NationalAccounts accounts = economy.getNationalAccounts();
         PopulationManager people = game.getPopulationManager();
@@ -941,6 +942,7 @@ public class HistorySave {
      * harness that builds a history by hand.
      */
     public void foldOldYears() {
+        settle();
         while (true) {
             int first = yearlyPoints();
             int monthly = month.size() - first;
@@ -1019,6 +1021,7 @@ public class HistorySave {
      */
     @SuppressWarnings("unchecked")
     void appendMonth(int m, java.util.function.ToDoubleFunction<String> value) {
+        settle();
         month.add(m);
         for (Map.Entry<String, List<? extends Number>> e : seriesByName().entrySet()) {
             List<Number> list = (List<Number>) e.getValue();
@@ -1077,6 +1080,7 @@ public class HistorySave {
      */
     public void restoreFrom(HistorySave loaded) {
         if (loaded == null) return;
+        settle();
 
         month = copy(loaded.month);
         // ...and how many months each folded year holds (0.7.55); none in an
@@ -1273,6 +1277,7 @@ public class HistorySave {
 
     /** Sets the finished years (Game, when a year finishes): a copy of the list; the tables are immutable. */
     public void setTradeByPartner(List<PartnerTrade.Table> years) {
+        settle();
         tradeByPartner = years == null ? new ArrayList<>() : new ArrayList<>(years);
     }
 
@@ -1331,6 +1336,64 @@ public class HistorySave {
         HistorySave copy = new HistorySave();
         copy.restoreFrom(this);
         return copy;
+    }
+
+    /*
+     * A SNAPSHOT THAT COPIES LATER (GT1, 2026-11-02). Copying every series (some 500 lists of MONTHLY_KEPT
+     * entries, 12 MB at the longest) was about a quarter of what the month that autosaves held the clock,
+     * all of it new objects on the clock's thread. The copy only has to be made before the series next
+     * change, and the series change in a few places, each of which settle()s first: so the autosave takes a
+     * Later, SaveWriter.Job.write() makes the copy on the writer's thread as its first act, and the clock
+     * waits for it only when a month is recorded before the writer has got there (a writer held by a check,
+     * a city run at 50x on a busy machine) - then it makes the copy itself, as snapshot() always did. The
+     * copy is the same either way: the series cannot change in between.
+     */
+
+    /** The snapshots taken with snapshotLater() and not yet copied; guarded by this object's monitor. */
+    private transient List<Later> owed;
+
+    /** True while {@link #owed} holds a snapshot: read by every mutator without the lock, so a city that is not being saved pays a field read. */
+    private transient volatile boolean anyOwed;
+
+    /** A snapshot of this history that is copied by whoever asks for it first (the save writer), or by the next change of the history. */
+    public Later snapshotLater() {
+        Later later = new Later();
+        synchronized (this) {
+            if (owed == null) owed = new ArrayList<>();
+            owed.add(later);
+            anyOwed = true;
+        }
+        return later;
+    }
+
+    /** Makes every copy still owed, before the series change. Called first by each method that changes them. */
+    private void settle() {
+        if (!anyOwed) return;
+        synchronized (this) {
+            while (!owed.isEmpty()) owed.get(0).get();
+        }
+    }
+
+    /** One snapshotLater(): the copy, made once, on the first get(). */
+    public final class Later {
+
+        private HistorySave copy;
+
+        private Later() { }
+
+        /** The snapshot: this history as it stood when it was asked for, copied now if nobody has yet. */
+        public HistorySave get() {
+            synchronized (HistorySave.this) {
+                if (copy == null) {
+                    HistorySave made = new HistorySave();
+                    made.restoreFrom(HistorySave.this);
+                    copy = made;
+                    owed.remove(this);
+                    anyOwed = !owed.isEmpty();
+                }
+                return copy;
+            }
+        }
     }
 
     /**
@@ -1848,6 +1911,7 @@ public class HistorySave {
      * sick rate are the same numbers in any currency - and so are headcounts.
      */
     public void redenominate(double scale) {
+        settle();
         scaleAll(scale, cash, gdp, debt, revenue, surplus, retiredGain, debtExchange,
                 totalWage, minimumWage, schoolBill,
                 foodPrice, materialsPrice, orePrice);

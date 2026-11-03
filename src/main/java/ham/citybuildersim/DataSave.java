@@ -945,9 +945,15 @@ public class DataSave implements Cloneable {
         buildings[index] = quantity;
     }
     
+    /**
+     * The one Gson the two loan lists below go through (GT1, 2026-11-02): a new Gson per fill had to build its reflective
+     * adapters for Debt and BusinessDebt again each time, about half a millisecond of the month that autosaves, on the
+     * clock. Gson is thread-safe and its adapters are the same, so the JSON is.
+     */
+    private static final Gson LOANS_GSON = new Gson();
+
     public void setDebt(List<Debt> debts) {
-        Gson gson = new Gson();
-        this.debts = gson.toJsonTree(debts).getAsJsonArray();
+        this.debts = LOANS_GSON.toJsonTree(debts).getAsJsonArray();
     }
     
     public void setProgress(double[] progress){
@@ -2659,8 +2665,7 @@ public class DataSave implements Cloneable {
     }
 
     public void setBusinessDebt(List<BusinessDebt> loans) {
-        Gson gson = new Gson();
-        this.businessDebts = gson.toJsonTree(loans).getAsJsonArray();
+        this.businessDebts = LOANS_GSON.toJsonTree(loans).getAsJsonArray();
     }
 
     public JsonArray getBusinessDebt(){
