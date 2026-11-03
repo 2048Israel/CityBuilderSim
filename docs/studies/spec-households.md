@@ -202,6 +202,7 @@ Before the pool runs, the month's own transfers move first. Each carries the per
   - an established adult's estate to the young of the tier (HS2; before HS2, the tier's own cells);
   - with no heir in the tier, to the city's established cells;
   - with none at all, to the treasury as unclaimed property: a revenue line, `estatesEscheated`.
+- **A home is the one thing sold** (the credit-and-housing study's rule, agreed 2026-11-02): the estate sells it into the month's home market, pays the mortgage first, and the heirs get the net as cash. A home is never inherited as a home; a leaver's home is sold the same way.
 - **Reference:** about 26% of Canadian families have received an inheritance; the median is $85,100 for homeowners and $29,800 for renters [S§6].
 
 ### 3.4 Two adult stages (HS2)
