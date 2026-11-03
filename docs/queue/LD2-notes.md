@@ -1,9 +1,11 @@
 # LD2 - the wanted posts' bounds and comments, after LD1 ({next}, 2026-11-02)
 
 The stranger's review at LD1's gate left four points on the wanted posts and
-one on the bank (the brief, `docs/queue/LD2.md`). The four are mended; the
-bank's failures turned out not to be LD1's, and their cause is named and
-queued (BF1, section 5). Built on FC1's tip (RL1). The probes are in
+one on the bank (the brief, `docs/queue/LD2.md`). The four are mended.
+Point 3 moves eight harnesses' young towns, which play without it until LD3
+(section 6). The bank's failures turned out not to be LD1's; their cause is
+named and queued (BF1, section 5). Built on FC1's tip (RL1), with main merged
+in once FC1 landed. The probes are in
 `docs/queue/LD2/`: `Ld2Bank` counts a hands-off city's bank failures over
 seeds, `Ld2Trace`, `Ld2Who`, `Ld2Wood` and `Ld2Shares` trace where its equity went,
 `Ld2Hook` is point 3's measurement on the ensemble's AUTO2 driver (set up as
@@ -123,11 +125,77 @@ hands-off city, which said LD1 raised the failures, now says what was found.
 
 ## 6. The checks
 
-{checks}
+Every run names the gate's files (`JDK_JAVA_OPTIONS`, `earth-2.bin` and
+`world-1.bin`, `docs/orchestrator.md`). Without them the Random path is
+never read and another set goes red (MapCheck, ReplayCheck, CreditCheck,
+PolicyPreviewCheck), none of them red with the files.
+
+**The full suite on LD2's model** (524af54a, the files named) found
+nine red harnesses beside main's recorded reds. Each was run again with
+point 3 alone switched back to LD1's supply (a bisect copy of the classes):
+all eight harnesses are green there, DeathRecordCheck to main's figures. So
+they are point 3's, and none is a fault in it. LD2's wage moves young towns,
+where LD1's asks are most frequent, onto paths their fixtures were not drawn
+on, or that reach a fault elsewhere.
+
+- **Eight play without LD2's wage**, through a JVM-wide test switch,
+  `WantedPosts.carryKeptOut` (harnesses only; FC1's `buildersShortOn`
+  shape). Off, the reprice fills against the refused posts too, as LD1 did.
+  Each has a comment with its figures. None of their claims is about wages
+  (★5):
+  - HoldersCheck: section 6's reloaded twin parts a month after the save.
+    The households settle 0.003 of the paper still owed against the live
+    city's 55.04, and their savings are 47 against 403. The labour market and
+    every cell are alike at the load, with no refused post in either. A field
+    the save does not carry, which this path reaches.
+  - ScaleCheck: the playtest player's town stalls on LD2's path (3,000 to
+    5,300 people, its homes 1,658 from m400, its treasury under nothing from
+    m750). ST2's scanner found no month of 821 (600 to 1,300, then every
+    tenth to 2,500) that holds every line; the fewest misses are three. The
+    default playtest grows faster on LD2 (41,000 people at m1073 against
+    17,000 with point 3 off; 713,000 at m4000 against 561,000), so this is the
+    one town's draw (HD2 and EM2 found it stalled too). ST3 ends it.
+  - DeskCheck: the curve's rule keeps the loss line under par through the cut
+    to the floor (515.9 against 517.7 carried).
+  - DeathRecordCheck: section 3 compares two spike heights. The closed town's
+    peak is 17.97 (17.77 with LD2 off) and the open twin's 15.53 (19.07),
+    against one orphan's allowance. The closing adds nothing before the
+    spikes (gaps of -0.5 to +0.8 to month 13).
+  - AutoBuildCheck: the twins' 36 months place no order (0).
+  - CurveCheck: section 7's steep city is flat at month 39 (1-month 2.25,
+    10-year 3.46).
+  - OrderSearchCheck: the copy at month 524 judges no order past the
+    countdown's slices.
+  - CurrencyRegimeCheck: the pegged twins' month brings no money in (the
+    vault bought US$0k), so the settlement's fixtures fail.
+  All eight are queued as **LD3**, to cause each on LD2's path and turn LD2
+  back on (ScaleCheck with ST3).
+- **One mended here, ReplayCheck** (found without the files, a fault all the
+  same): `HistorySave.cutAt()` left a series that began after the cut as an
+  empty series under its name. A company listed at m0+13 gave the cut at
+  m0+12 two series the city did not have then. A keyed series emptied by a
+  cut now goes with its name.
+- **The playtest**: one finding, "a building on the map moved", 4 times at
+  m3010-3013 (13 boxes of a district). That is DM1's class (the district
+  plan moves standing boxes; lane 2's files). LD2 does not cause it: with
+  point 3 off the playtest finds it once at m3008, and main's gate playtest
+  was clean. Left for DM1 (★4).
+- `--pick` on the final tree (1a20e45e, 33 harnesses, the files named): exit 4 on the playtest's map finding alone (★4); every other picked harness green.
+
+WantedPostsCheck green. InvestCheck, EducationCheck, CallCheck,
+CopperRefiningCheck, CreditCheck, ForeignCheck, HealthCheck,
+PolicyPreviewCheck, BankCheck and TreasuryCheck green.
 
 ## 7. The ensemble
 
-{ensemble}
+The playtest's trace moved (the supply the wage is struck against), so the
+80-run ensemble ran once on LD2's model (62156d8a, main with FC1 merged in),
+against `docs/ensemble/0.9.2.md` (FC1's, 22/26): **24/26**. The baseline's
+two lasting reds stay: A2 (the longest spell of inflation over 10% from m240,
+median 14 to 11 months, worst seed 29 to 38) and S1 (ZERO_SLACK's longest
+spell 102 to 65 months). R2 and R3 (HIGH's unemployment and inflation against
+its twin) now pass. Committed as `docs/ensemble/LD2.md`. The replay's mend
+(section 6) moves no model figure.
 
 ## 8. The calls (★, each taken the recommended way)
 
@@ -142,6 +210,17 @@ hands-off city, which said LD1 raised the failures, now says what was found.
 - ★3 **The saved field kept** for the People caption between a load and the
   next month. Alternative: drop it (the model never reads it), and a loaded
   city's caption names no priced posts until its first month.
+- ★4 **The playtest's map finding left for DM1**: "a building on the map
+  moved" at m3010-3013, DM1's class, reached with or without point 3.
+  Recommended: DM1 (lane 2) mends the district plan, which is its row. The
+  alternative is that LD2 waits on DM1, lane 2's fourth batch.
+- ★5 **Eight harnesses play without LD2's wage until LD3** (section 6),
+  FC1's precedent. Recommended: point 3 is measured and the brief's mend,
+  and each red is a fixture LD2's path does not cause or a fault elsewhere,
+  green with point 3 off. Alternatives: re-cause all eight overnight here
+  (the lane waits hours), or ship points 1, 2 and 4 alone and move point 3
+  to LD3 with its harnesses (a rerun of the ensemble and the checks, about an
+  hour, and the playtest's finding stays).
 
 ## 9. One in, one out
 
