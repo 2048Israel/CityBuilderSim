@@ -1,0 +1,21 @@
+--- 1. a package of five-year mortgages priced like a bond: price per 100 of balance ---
+  coupon 4.55%, servicing 0.25%, 25-year amortization, 60-month term, recovery 75% (est.)
+   buyer yield    CDR 0.0%    CDR 0.3%    CDR 1.0%    CDR 3.0%
+         3.50%      102.87      102.58      101.91      100.10
+         4.05%      100.89      100.61       99.98       98.27
+         4.50%       99.30       99.04       98.44       96.80
+         5.50%       95.88       95.65       95.11       93.65
+  prepayment, at a 4.05% yield and CDR 0.3%: CPR 0% 100.74, CPR 8% 100.61, CPR 20% 100.46
+--- 1b. a package of card balances: 21% rate, servicing 2%, paid 20% a month, recovery 5% ---
+  CDR 4%: price at 6% 101.99, at 9% 101.32
+  CDR 8%: price at 6% 101.09, at 9% 100.43
+  CDR 15%: price at 6%  99.44, at 9%  98.80
+--- 2. the catch: 30 years of a bank selling its new uninsured mortgages, a rate shock in year 15 ---
+  keeps everything                   losses  1.84 (bank 100%), deepest price fall 10.0%, lending at its least 100% of before, selling at its least   0%, months under half   0
+  sells half, keeps 5% of each       losses  2.80 (bank  57%), deepest price fall 10.0%, lending at its least  88% of before, selling at its least   0%, months under half  30
+  sells 95%, keeps 5% of each        losses  6.61 (bank  15%), deepest price fall 41.5%, lending at its least  13% of before, selling at its least   0%, months under half  77
+  sells 95%, must keep 20% of each   losses  4.70 (bank  34%), deepest price fall 25.9%, lending at its least  30% of before, selling at its least   0%, months under half  73
+  sells 95%, keeps nothing           losses  7.40 (bank   8%), deepest price fall 46.0%, lending at its least   6% of before, selling at its least   0%, months under half  75
+--- 2b. the same without the shock ---
+  keeps everything                   losses  1.65 (bank 100%), deepest price fall  0.0%, lending at its least 100% of before, selling at its least   0%, months under half   0
+  sells 95%, keeps 5% of each        losses  2.55 (bank  12%), deepest price fall  0.0%, lending at its least 100% of before, selling at its least  95%, months under half   0

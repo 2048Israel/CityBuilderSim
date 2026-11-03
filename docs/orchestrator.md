@@ -30,9 +30,13 @@ for a day) or off-queue.
 the orchestrator not being woken after many automated turns). A CronCreate job
 at minute 7 (`7 * * * *`) whose prompt is: run `sh tools/day.sh --due`, and if
 it prints nothing, end the turn with no other call (`--due` prints only the
-ready and the stuck branches). It lives in the session that made it, so each
-orchestrator arms its own and deletes yesterday's: left, it wakes yesterday's
-whole context hourly, and two orchestrators may gate one branch.
+ready and the stuck branches, bar the nightly below). It lives in the session
+that made it, so each orchestrator arms its own and deletes yesterday's: left,
+it wakes yesterday's whole context hourly, and two orchestrators may gate one
+branch. Between 01:00 and 07:00 `--due` also says `nightly due`, once a day: the
+check-in then runs `sh tools/nightly.sh` in the background (GT1: the gate plays
+2,400 months, the full 4,000 once a night on main's tip; a red one is in the
+next morning's `day.sh` and the next gate's `gate.txt`).
 
 **The ready-branch wait** (GP1, 2026-10-27: a gate started a median ~60
 minutes after the ship file, because the check-in was what found it). Each day,
@@ -207,7 +211,7 @@ held 5 GB by 2026-10-21 (TD1). The full suite is
 java -cp "target/classes;%USERPROFILE%\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" ham.citybuildersim.AllChecks -f
 ```
 
-(about nine minutes alone, 15-22 beside other runs; `AllChecks money bank` runs
+(one harness at a time while the commit charge is over `AllChecks.COMMIT_PCT`, 40-100 minutes on 2026-11-02; `AllChecks money bank` runs
 two).
 
 ## The Earth file

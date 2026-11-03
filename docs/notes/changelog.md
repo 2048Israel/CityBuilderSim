@@ -18,6 +18,37 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.5 — LD2, the wanted posts' bounds after LD1 — 2026-11-03, ready, see docs/queue/LD2-notes.md
+A business's bid for workers now lifts only its own band, and never past sqrt(2). LD1's refused posts were priced
+against the workers they would have taken from the band below, which bid the diploma band up by 7% on average (48% at
+most) in most months it asked nothing, and took bands that asked past LD1's own bound, to 1.9x. They are now priced
+against the workers the posts that exist give, capped on the month's own posts, and a band no migrant can come for asks
+nothing. The comments and WantedPostsCheck 9 now say the asks are priced the month they are made. A replay's history
+cut no longer keeps a company's series from before it listed. Ensemble 24/26 against 22. Eight harnesses whose young
+towns the new wage moves play without it until LD3. The hands-off bank's failures are not LD1's (5 of 12 seeds without
+its bid, 3 with); the sawmills cause them, queued as BF1.
+
+### 0.9.4 — DZ1, the trade by partner in the money of the day — 2026-11-02, ready, see docs/queue/DZ1-notes.md
+A currency reform now carries the city's trade by partner. Its history rounds each finished year to a grid in money,
+and the grid followed the price factor but not the reform's unit: after a reform by a hundred it was a hundred times
+coarser, the reformed city's cells rounded apart, and the January terms of trade, which weigh the world's prices by
+them, moved the D$ (DenominationCheck's twins parted in month 169 on the nations' file and were 5e-7 apart by month
+221, under the old millionth; a worktree has no such file, so FC1 saw it only at the gate). The grid now reads the
+Denomination's unit (exactly 1.0 until a reform, so no other city moves), and a reform divides what it never touched:
+the month's and the year's trade by nation, every (good, nation) cell, the finished years and the save's copy of them.
+DenominationCheck plays FC1's builders' price again and holds the year and the decade to 1e-9 (the twins now to
+3e-15); its section 7 proves the record on bare objects and in two cities on the twelve-nation fixture reformed in July.
+
+### 0.9.3 — GT1, faster gates: the playtest at 2,400 months, the full 4,000 nightly, main's two timing reds halved — 2026-11-02, ready, see docs/queue/GT1-notes.md
+The gate plays the long playtest for 2,400 months (81 s against 149 at 4,000; the same city through m2400). The full
+4,000 run once a night on main's tip: `tools/nightly.sh`, which the hourly check-in starts when `day.sh --due` says
+`nightly due` (01:00-07:00), its verdict in `day.sh` and the next gate's `gate.txt`. Main's two timing reds halved
+where a quiet run shows it: the month that autosaves 17.2 to 8.2 ms (the history copied on the writer's thread), the
+map's month at 10 billion 5.8-8 to 2.3-3 ms (only the districts a month changed are read). ConservationCheck's food,
+electricity and water laws ride on every month of the playtest, its own 156-month city gone. No two harnesses grow
+the same city, so none is shared. README states no harness count; `AllChecks` writes each harness's time to
+`target/checks/times.tsv`. Found: the PC's commit charge (96%) runs the gate's suite one harness at a time.
+
 ### GD0 — gold and the city's money, the study — 2026-11-02, ready, no tag (study), see docs/studies/spec-gold-money.md
 Jerus asked for gold ("would massively help fx control") and the city's money chosen at founding, defaulting to the nation's,
 sign and starting level with it. Measured on the regime harness's town pegged at founding: the vault runs short in month 49;

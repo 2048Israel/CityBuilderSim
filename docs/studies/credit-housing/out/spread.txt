@@ -1,0 +1,15 @@
+--- 1. the closed forms against 200,000 draws ---
+  mean   1.0 sigma 0.80 x  0.5: share below 0.3205 (MC 0.3211), shortfall 0.0575 (MC 0.0578), mean above 0.8973 (MC 0.8977)
+  mean   1.0 sigma 1.28 x  2.0: share below 0.8813 (MC 0.8808), shortfall 1.3018 (MC 1.3008), mean above 0.5392 (MC 0.5398)
+  mean   3.0 sigma 1.50 x  1.0: share below 0.5070 (MC 0.5070), shortfall 0.2997 (MC 0.2995), mean above 2.7927 (MC 2.7950)
+  mean   0.6 sigma 1.28 x  0.3: share below 0.5392 (MC 0.5373), shortfall 0.0905 (MC 0.0902), mean above 0.5288 (MC 0.5342)
+  mean  40.0 sigma 1.50 x  6.0: share below 0.3034 (MC 0.3031), shortfall 0.9416 (MC 0.9420), mean above 39.1214 (MC 39.4211)
+  mean   5.0 sigma 0.68 x  9.0: share below 0.8858 (MC 0.8862), shortfall 4.4720 (MC 4.4851), mean above 1.5000 (MC 1.4903)
+  worst error 0.0090 (share, or a share of x or of the mean)
+--- 2. the city's median from the cells' mixture, against a draw of 200,000 households ---
+  78 cells: median 0.0000 (MC 0.0000), among holders 0.3692 (MC 0.3695), both in 3.7 ms of Python
+  390 cells: median 0.0000 (MC 0.0000), among holders 0.5193 (MC 0.5244), both in 8.6 ms of Python
+--- 3. why the spread: one cell, three shapes ---
+  today: every household the same   : owe over 3 months   0.0%, over 6 months   0.0%
+  all hold, lognormal 1.28          : owe over 3 months  16.9%, over 6 months   6.7%
+  45% hold, lognormal 1.28          : owe over 3 months  16.6%, over 6 months   8.6%

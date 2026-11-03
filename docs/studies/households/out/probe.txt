@@ -1,0 +1,361 @@
+HOUSEHOLDS PROBE - what it measured, how, and the readings (2026-11-02; source docs/studies/households/src/ham/citybuildersim/HouseholdsProbe.java, with HhAgent/HhTimer for the exact timing)
+City: LongPlaytest.probeCity()'s (Danzik founding, UiProbe's city), played with probePlay()'s own loop month by month (the probe copies the loop so each month can be hooked; a diff of the two at month 154 was identical).
+Deterministic: seven full runs gave identical tables (only the ms columns differ). No game code changed; the city is on GameFiles.scratch(), never a numbered slot. UNITS: the model's money is $k, and every money figure here is
+$k (a take-home of 0.160 is $160 a month); a row's per-household figures are per household of the row; take-home = Household.disposable() ("wages or pension, after tax and contributions"); net worth = savings + shares at the
+exchange price + dollars abroad at the rate + city paper + bonds - debt - student debt.
+
+READINGS
+1. The brief's claim at month 21 is false in its numbers, true in its shape. The city then holds 328 people (not 55; foundings of 6/10/15/25 houses hold 98/111/127/144, so 55 was not reached). The skilled couple cell
+   (COUPLE:SKILLED, 8.6 households) takes home $160 a month (claim $281), holds $419k of shares (claim $563k), is paid $1,576 a month in dividends (claim $1,344): shares = 2,600 months of take-home, dividends = 9.9x take-home.
+   In the smaller foundings the same cell holds $213k / $307k / $591k / $287k and is paid $0 / $2,459 / $1,734 / $493 a month on a take-home of $192-202.
+2. Where it comes from: all households hold shares worth $10,345k against savings of $211k (49x). 96% of the shares are ONE stock, Construction: 1,010 founders' units, granted against a $26.2k book at $0.0259 a unit, are
+   quoted at $10.23 a unit (395x; the quote is the last trade and sits on fair value, 0.1023 vs 0.1033). Founders' grants are at most 98% of the households' holdings ($10,111k of $10,345k); the shares the offerings issued are
+   worth $236k in households' hands (and $1,139k in the world's) at today's prices. (Equity.offered is MONEY, not shares: the probe follows shares through the change in shares in issue, net of splits; unexplained issue = 0.)
+3. Retired vs working, net worth per household (full NW) at months 21/60/120/240/600/1200/2400/4000: 0.93, 0.99, 0.36, 0.37, 1.19, 1.74, 2.62, 1.63. On savings less debt alone: 0.43, 0.28, 0.13, 0.14, 0.36, 0.94, 2.48, 1.01.
+   Per grown-up: 1.71, 1.79, 0.58, 0.63, 1.73, 3.18, 3.97, 2.30. Retired net worth is 7-280 years of the retired row's take-home. From month 600 the retired are NOT poorer than the working; before it they are.
+4. Retirement in the model is turning 70 (ADULT -> SENIOR; the retired row = the four SENIOR/ELDER cells). HouseholdBalance moves money only by the NET change of each cell's household count, pooled at the losers' average and
+   matched inside the receiving cell's own stock group first. At month 600 (a city losing ~70 people a month) the retired cells GAINED households in 0 of 12 months although 104 people turned 70; at 2400 they gained in 9 of 12.
+   A household gained by the retired row was handed (2400, 12 months) 2,027 of net worth (131 from the retired's own pool, 1,896 from the city's), 521 of it savings = 29% of the working average (6,912) and 11% of the retired
+   average (18,592). 129 of the 300.6 households gained were "genuinely new" (no pool covered them: they get only the opening buffer). The copy of moveStock that the probe runs reproduces the model's own
+   HouseholdBalance.getTakenAway() (12,416.4 vs 12,416.5; 29,651.8 vs 29,651.8). The retired row's month-on-month dNW is mostly dividends and interest, not the transfer: read recv/gHH, not dNW/dHH.
+5. "Money that left the city" is the unmatched NET of the cells, not the gross leavers: at 2400 about 1,250 people depart a month, yet savLeft is 0.0 in 10 of 12 months (29,133 in one, 519 in another).
+6. COST. Mean run(g,1) over the 20 months before each checkpoint (probeMonthMs; includes the playtest's audit, Game.simulateMonths being 83-93% of it): on an idle machine 40 (month 21, JIT warm-up), 16, 14, 12, 9, 9, 8, 26 ms;
+   the same run on a shared machine was 2-5x slower (median of seven 89, 42, 23, 26, 20, 17, 14, 68), and no mean after month 21 passed 80 ms bar one loaded 239 at month 60, so 4000 is kept. Exact 100-month windows (idle, instrumented):
+   model month 8.5 / 7.5 / 8.1 / 7.8 / 21.4 ms at 300, 600, 1200, 2300, 3900 (population 7.6k to 800k). The household balance sheet (HouseholdBalance.advanceMonth, almost all of it followThePeople: moveStock over the stocks x 78 cells,
+   spread, foldEmptyCells) is 6.3-14.4% of the model month; the households' bond orders (BondMarket.postHouseholds: cells x bonds, with OrderBook.submit, Settle.settle, Household.recountBonds/setBondFace) 14-27%;
+   Exchange.postHouseholds 1-3.5%. Together 24-39% (the three do not nest). JFR agrees within its noise (1,000 months, 530 samples: advanceMonth 8.9%, postHouseholds 15.5%, a household-class top frame 11.2%).
+   Cells are fixed at 78 (35-66 non-empty); stocks grow with the bonds (bondStockIds 43-144, stocks 74-175): 5.8k-13.7k cell-stock moves a month; cell x bond 3.4k-11.2k.
+7. Odd: (a) the retired row also grows by arrivals: at 2400 promoted 3,800 minus deaths 4,346 is -546, yet retired people rose 367 (about +913 from migration/other). (b) 'Sr professional' (1.3 households at month 60) has no
+   take-home or stocks and 'Orphan' has 31 households with no grown-up. (c) Take-home per household is $0.16-0.19k a month at months 21-60 and about $18.7k (working) / $5.6k (retired) at 2400 (derived from NW / (NW per year of take-home)): money amounts grow ~100x over the run, so compare ratios across months, not levels.
+
+HouseholdsProbe: Civic Ledger household ledgers. City = LongPlaytest.probeCity()'s (Danzik founding, first builds), played with probePlay()'s loop, month by month. Units: $k (thousands of dollars).
+Checkpoints are the exact month numbers; flows are the 12 months after 600 and 2400; the probe changes no game code; the city lives on GameFiles.scratch("households-probe").
+model money is $k: a take-home of 3.5 is $3,500 a month.
+the build ended at month 19 (the probe city's first call)
+
+=== MONTH 21  population 328   mean run(g,1) over months 1..20: 40.2 ms (median 21.5, max 208.1; mean of the last 100: 40.2) (includes the first-months JIT warm-up) ===
+pyramid: Bab 32 Chi 30 Tee 21 Adu 190 Sen 39 Eld 17   | last month: births 0.8 deaths 0.2 promoted ADULT->SENIOR 0.3
+units: $k; hh, grownUps, people are TOTALS of the row; every other column is per household of the row (takeHome, dividend per MONTH); netWorth = savings+shares+abroad+paper+bonds-debt-stuDebt; NW/yrTk = netWorth / (12 x takeHome)
+row                     hh grownUps    people takeHome   savings     debt    shares   abroad  stuDebt paper+bd   netWorth dividend NW/yrTk
+Unskilled             39.5     94.6     132.4    0.180     2.685    0.000    73.635    0.591    0.000    1.621     78.531    0.266   36.27
+Skilled               27.3     64.8      92.3    0.185     2.091    0.000   142.642    0.330    0.000    0.591    145.654    0.536   65.47
+College                6.0     14.3      20.3    0.289     1.485    0.000     7.092    0.106    0.000    0.374      9.057    0.023    2.61
+Sr professional        0.5      1.1       1.5    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+RETIRED               39.3     51.0      51.0    0.052     1.002    0.000    89.161    0.177    0.000    0.296     90.636    0.336  144.42
+Orphan                 3.7      0.0       3.7    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+WORKING (6 tiers)      73.3    174.8     246.5    0.190     2.349    0.000    93.403    0.450    0.000    1.125     97.326    0.345   42.67
+ALL                  116.2    225.7     301.1    0.138     1.820    0.000    89.029    0.344    0.000    0.809     92.002    0.331   55.75
+cell COUPLE:SKILLED       8.6     17.3      17.3    0.160     4.623    0.000   419.127    0.893    0.000    1.487    426.130    1.576  222.09
+cell SENIOR_ALONE      16.0     16.0      16.0    0.040     0.818    0.000    75.232    0.146    0.000    0.235     76.431    0.283  158.04
+cell SENIOR_COUPLE       9.8     19.5      19.5    0.081     1.709    0.000   150.667    0.310    0.000    0.533    153.220    0.567  158.41
+cell ELDER_ALONE      11.6     11.6      11.6    0.040     0.772    0.000    70.367    0.135    0.000    0.225     71.500    0.265  147.85
+cell ELDER_COUPLE       1.9      3.9       3.9    0.081     0.340    0.000     6.832    0.016    0.000    0.027      7.215    0.026    7.46
+
+--- the claim: "with 55 people, a skilled couple taking home $281 a month held $563k of shares and got $1,344 a month in dividends" ---
+city population at month 21: 328.5 people; households (all rows) 116.2
+cell COUPLE:SKILLED: households 8.64, people 17.28 (2.0 each), take-home per hh 0.160 $k/mo, savings 4.623, debt 0.000, shares (mkt) 419.127, abroad 0.893, dividends 1.576 $k/mo per hh
+  as the claim phrases it: take-home $160/mo, shares $419k, dividends $1576/mo   (claim: $281, $563k, $1,344; unit $k so 0.281 = $281)
+  the whole cell (all 8.64 households together): shares 3620.6 $k, dividends 13.613 $k/mo, take-home 1.381 $k/mo
+  dividends / take-home = 9.86 ; dividend yield on its shares = 0.38% a month
+cell COUPLE:SKILLED month by month (per household; $k):  month  city pop  cell hh  cell people  takeHome  savings  shares(mkt)  dividend/mo
+      6      60.1     2.21       4.43     0.201    6.645     277.930      1.314
+     12     161.8     3.54       7.08     0.187    6.777     362.022      1.475
+     18     245.9     6.48      12.97     0.166    2.789     461.159      0.654
+     21     328.5     8.64      17.28     0.160    4.623     419.127      1.576
+all households at month 21: shares at market 10345.3 $k, savings 211.4 $k, shares / savings = 48.93; EX.marketValueOfShares() = 10345.3
+--- founders' grant vs subscriptions, tracked month by month from the register (foundedThisMonth, shares in issue, money raised) ---
+counts are in FOUNDING UNITS (a share before any split); 'unitPrice' = price x splitFactor, the price of one founding unit today; 'gain' = unitPrice / EQ.foundingPrice() (both in today's money)
+founders = the grant (EQ founded), subHome/subAbroad = shares the offerings issued, by who put the money in, cancelled = buybacks, unexpl = issued with no offering money behind it; hhHold/foreign = units held now
+company (top 8 by hh value)    price  split unitPrice    gain |  founders   subHome subAbroad cancelled  unexpl |    hhHold   foreign    hhValue
+Construction             0.1023  100.0    10.227   395.1 |    1010.4       0.0       0.0      35.2     0.0 |     975.2       0.0     9973.4
+Real Estate              0.0053    1.0     0.005     0.2 |   18051.1   37009.1       0.0       0.0     0.0 |   55060.2       0.0      289.3
+Retail                   0.0259    1.0     0.026     1.0 |    2254.3       0.0       0.0       0.0     0.0 |     970.8       0.0       25.1
+Manufacturing            0.0167    1.0     0.017     0.6 |       0.0    1421.9   18060.9       0.0     0.0 |    1421.9   18060.9       23.8
+Agriculture              0.0259    1.0     0.026     1.0 |    1397.9       0.0       0.0       0.0     0.0 |     668.8       0.0       17.3
+Luxury Retail            0.0105    1.0     0.010     0.4 |       0.0    1510.7     651.9       0.0     0.0 |    1359.6     602.1       14.2
+Restaurants              0.0030    1.0     0.003     0.1 |       0.0     717.7     658.7       0.0     0.0 |     645.9     604.1        1.9
+Freight                  0.0256    1.0     0.026     1.0 |       7.0       0.0       0.0       0.0     0.0 |       6.3       0.0        0.2
+founding price today 0.0259; companies listed 9 of 25. At today's prices, summed over all companies ($k):
+  all shares in issue 11538.6 | held by households 10345.3 | held abroad 1138.7
+  every founders' unit ever granted 10522.6 = 91% of everything in issue; of the households' 10345.3 at most 10110.9 (98%) can still be a founder's grant (sum over companies of min(founders granted, held))
+  issued at the offerings: to households 236.3, to the world 1139.4; cancelled by buybacks 359.6; issued without offering money 0.000
+  founders' units, all companies: 22720.7 ; founders' book (money, $k) 588.1 = EQ.getFoundersBook sum 588.1
+  its quote: the last trade, held over the bid; fair value per share 0.1033 (EX.fair), price 0.1023; regime GOOD
+  the largest holding, Construction: 1010 founding units issued against a book of 26.2 $k; a unit is worth 10.227 today against 0.0259 at the founding (395x); households hold 975.2 units = 9973.4 $k = 96% of all their shares
+
+=== MONTH 60  population 1430   mean run(g,1) over months 40..59: 16.0 ms (median 15.3, max 22.5; mean of the last 100: 25.0) ===
+pyramid: Bab 174 Chi 145 Tee 90 Adu 782 Sen 161 Eld 78   | last month: births 2.8 deaths 1.4 promoted ADULT->SENIOR 1.2
+row                     hh grownUps    people takeHome   savings     debt    shares   abroad  stuDebt paper+bd   netWorth dividend NW/yrTk
+Unskilled            205.9    479.1     708.3    0.165     5.906    0.000    50.621    0.038    0.000    0.521     57.086    0.098   28.78
+Skilled              109.3    253.3     375.9    0.164     3.390    0.000    64.238    0.025    0.000    0.281     67.934    0.129   34.49
+College               11.1     25.8      38.3    0.309     3.904    0.000    43.031    0.028    0.000    0.292     47.254    0.085   12.74
+Sr professional        1.3      3.1       4.6    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+RETIRED              180.5    233.1     233.1    0.054     1.390    0.000    58.160    0.014    0.000    0.121     59.684    0.118   91.43
+Orphan                31.1      0.0      31.1    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+WORKING (6 tiers)     327.7    761.3    1127.1    0.169     4.975    0.000    54.696    0.033    0.000    0.431     60.135    0.107   29.63
+ALL                  539.3    994.4    1391.4    0.121     3.488    0.000    52.699    0.025    0.000    0.302     56.514    0.105   38.93
+cell COUPLE:SKILLED      29.6     59.3      59.3    0.142     5.591    0.000   137.236    0.045    0.000    0.473    143.345    0.277   84.38
+cell SENIOR_ALONE      70.6     70.6      70.6    0.042     1.025    0.000    49.786    0.012    0.000    0.088     50.910    0.101  100.74
+cell SENIOR_COUPLE      43.1     86.2      86.2    0.084     2.720    0.000   100.418    0.025    0.000    0.241    103.404    0.204  102.31
+cell ELDER_ALONE      57.3     57.3      57.3    0.042     0.911    0.000    43.081    0.010    0.000    0.079     44.082    0.088   87.23
+cell ELDER_COUPLE       9.5     19.1      19.1    0.084     0.952    0.000    19.595    0.006    0.000    0.067     20.620    0.040   20.40
+
+=== MONTH 120  population 2150   mean run(g,1) over months 100..119: 13.7 ms (median 13.7, max 17.7; mean of the last 100: 15.7) ===
+pyramid: Bab 257 Chi 255 Tee 155 Adu 1146 Sen 231 Eld 106   | last month: births 3.7 deaths 2.2 promoted ADULT->SENIOR 1.8
+row                     hh grownUps    people takeHome   savings     debt    shares   abroad  stuDebt paper+bd   netWorth dividend NW/yrTk
+Unskilled            279.8    587.5     927.5    0.161     5.590    0.000     6.108    1.658    0.000    0.880     14.236    0.005    7.37
+Skilled              158.2    332.1     524.9    0.161     4.648    0.000     4.814    1.223    0.000    0.654     11.339    0.005    5.88
+College               22.8     47.9      75.7    0.267     8.436    0.000     5.327    2.069    0.000    0.976     16.808    0.005    5.26
+Sr professional        1.4      3.0       4.7    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+Elite                  1.5      3.1       5.2    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+RETIRED              261.7    338.9     338.9    0.058     0.712    0.002     3.670    0.220    0.000    0.112      4.713    0.004    6.72
+Unemployed           176.0    176.0     278.3    0.022     0.832    0.000     2.248    0.264    0.000    0.126      3.471    0.002   13.09
+Orphan                 1.4      0.0       1.4    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+WORKING (6 tiers)     463.8    973.7    1538.1    0.165     5.373    0.000     5.589    1.519    0.000    0.802     13.284    0.005    6.70
+ALL                  903.0   1488.6    2156.8    0.106     3.128    0.001     4.373    0.896    0.000    0.469      8.865    0.004    6.97
+cell COUPLE:SKILLED      30.2     60.3      60.3    0.153     6.629    0.000     7.465    1.870    0.000    1.024     16.989    0.007    9.24
+cell SENIOR_ALONE     104.4    104.4     104.4    0.045     0.126    0.000     2.913    0.040    0.000    0.010      3.088    0.003    5.71
+cell SENIOR_COUPLE      63.8    127.6     127.6    0.090     2.337    0.000     6.329    0.751    0.000    0.399      9.815    0.007    9.07
+cell ELDER_ALONE      80.1     80.1      80.1    0.045     0.070    0.006     2.640    0.012    0.000    0.004      2.720    0.003    5.03
+cell ELDER_COUPLE      13.4     26.7      26.7    0.090     1.389    0.000     3.070    0.342    0.000    0.193      4.995    0.004    4.61
+
+=== MONTH 240  population 3594   mean run(g,1) over months 220..239: 12.1 ms (median 12.3, max 15.2; mean of the last 100: 13.9) ===
+pyramid: Bab 385 Chi 441 Tee 301 Adu 1959 Sen 369 Eld 140   | last month: births 5.6 deaths 3.7 promoted ADULT->SENIOR 3.1
+row                     hh grownUps    people takeHome   savings     debt    shares   abroad  stuDebt paper+bd   netWorth dividend NW/yrTk
+Unskilled            561.4   1264.4    1989.8    0.274    15.299    0.000    24.152    1.331    0.000    3.938     44.721    0.033   13.59
+Skilled              267.9    603.3     949.7    0.274    14.268    0.000    19.947    1.248    0.000    3.792     39.256    0.028   11.93
+College               35.1     79.1     124.5    0.520    30.723    0.000    33.546    2.681    0.000    7.879     74.829    0.047   12.00
+Professional           0.9      2.0       3.2    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+Sr professional        1.3      3.0       4.7    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+Elite                  2.2      5.0       8.0    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+RETIRED              389.4    508.2     508.2    0.088     2.198    0.001    13.084    0.174    0.000    0.625     16.080    0.018   15.29
+Orphan                 3.2      0.0       3.2    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+WORKING (6 tiers)     868.9   1956.9    3079.9    0.283    15.526    0.000    23.111    1.353    0.000    4.032     44.022    0.032   12.98
+ALL                 1261.5   2465.1    3591.3    0.222    11.373    0.000    19.957    0.986    0.000    2.970     35.285    0.027   13.26
+cell COUPLE:SKILLED      58.0    116.1     116.1    0.243    20.296    0.000    18.829    1.866    0.000    5.221     46.212    0.025   15.82
+cell SENIOR_ALONE     165.8    165.8     165.8    0.067     0.386    0.000     9.447    0.000    0.000    0.000      9.833    0.013   12.20
+cell SENIOR_COUPLE     101.3    202.6     202.6    0.134     6.764    0.000    23.395    0.606    0.000    2.189     32.953    0.032   20.45
+cell ELDER_ALONE     104.8    104.8     104.8    0.067     0.319    0.004     9.011    0.000    0.000    0.000      9.326    0.012   11.57
+cell ELDER_COUPLE      17.5     34.9      34.9    0.134     4.198    0.000    12.240    0.357    0.000    1.233     18.029    0.016   11.19
+
+=== MONTH 600  population 9458   mean run(g,1) over months 580..599: 9.4 ms (median 9.5, max 12.1; mean of the last 100: 9.7) ===
+pyramid: Bab 832 Chi 977 Tee 709 Adu 5656 Sen 1006 Eld 278   | last month: births 13.2 deaths 11.4 promoted ADULT->SENIOR 9.1
+row                     hh grownUps    people takeHome   savings     debt    shares   abroad  stuDebt paper+bd   netWorth dividend NW/yrTk
+Unskilled           1002.2   1914.8    2765.3    0.722    52.456    0.000    38.143   14.697    0.000    6.688    111.984    0.046   12.92
+Skilled              597.5   1141.6    1648.8    0.722    51.050    0.000    38.483   14.157    0.000    6.537    110.227    0.047   12.72
+College              193.9    370.5     535.2    1.359   114.423    0.000    57.739   31.918    0.000   14.666    218.747    0.072   13.41
+Professional           5.7     10.8      15.6    1.130    90.600    0.000    17.224   23.626    0.000   10.720    142.170    0.022   10.48
+Sr professional        2.1      4.0       5.7    0.572    26.772    0.000     1.110    6.059    0.000    2.598     36.539    0.001    5.32
+Elite                  3.6      6.9      10.0    1.398   102.756    0.000    17.990   28.680    0.000   12.647    162.073    0.023    9.66
+RETIRED              979.3   1292.8    1292.8    0.224    20.978    0.001   121.340    2.865    0.000    1.434    146.617    0.072   54.53
+Unemployed          2249.0   2249.0    3250.7    0.109    15.270    0.000    15.071    3.791    0.000    1.918     36.049    0.018   27.61
+Orphan                 3.9      0.0       3.9    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+WORKING (6 tiers)    1804.9   3448.6    4980.6    0.793    58.839    0.000    40.212   16.414    0.000    7.515    122.980    0.049   12.92
+ALL                 5037.1   6990.4    9528.0    0.376    31.980    0.000    44.728    8.131    0.000    3.828     88.666    0.039   19.63
+cell COUPLE:SKILLED     148.5    297.0     297.0    0.756    55.605    0.000    28.713   15.168    0.000    6.854    106.341    0.033   11.72
+cell SENIOR_ALONE     455.8    455.8     455.8    0.170    17.859    0.001    57.656    0.000    0.000    0.001     75.514    0.038   37.08
+cell SENIOR_COUPLE     278.5    557.1     557.1    0.339    34.001    0.000   231.828    9.356    0.000    4.671    279.856    0.134   68.71
+cell ELDER_ALONE     210.0    210.0     210.0    0.170    10.400    0.001   120.200    0.000    0.000    0.000    130.600    0.068   64.13
+cell ELDER_COUPLE      35.0     70.0      70.0    0.339    21.429    0.000    78.225    5.683    0.000    2.942    108.279    0.055   26.58
+
+--- FLOWS, 12 consecutive months from month 600 (the playtest loop's own looks and builds go on between them); one row a month, $k ---
+people: retire = promoted ADULT->SENIOR (turning 70, the model's retirement); D-x = deaths by band; arr/dep = Migration's last arrivals/departures; bk = of the departures, bankruptcies
+left the city = HouseholdBalance's own last-month figures (savings; shares at the opening quote; dollars abroad); fold = cells folded. retired hh/NW = the RETIRED row's four cells, before -> after, NW at the OPENING prices (a quote moving is not money gained)
+transfer = HouseholdBalance.moveStock()'s pooling copied and run on the month's opening stocks: households the retired cells gained / lost, and what each gained household was handed (NW; savings), against the retired and the working averages (NW/hh)
+month retire D-bab D-chi D-tee  D-adu  D-sen  D-eld births    arr dep/bk |   savLeft   shrLeft  abrUSD fold |    retHH0    retHH1     dHH       dNW |  gained    lost recv/gHH  recvSav |   retAvg  workAvg  workSav
+  601    9.1   1.3   0.1   0.0    1.3    3.1    5.4   13.1      0 77/32 |    1210.1    1611.1    80.9    2 |     979.3     972.3   -6.97   -1124.5 |    0.00    6.97        -        - |    146.6    123.0     58.8
+  602    9.0   1.4   0.1   0.0    1.3    3.1    5.4   13.0      0 76/31 |    1445.1    1806.0    95.4    0 |     972.3     964.7   -7.58   -1068.6 |    0.00    7.58        -        - |    135.0    124.5     58.7
+  603    8.9   1.3   0.1   0.0    1.3    3.1    5.4   12.9      0 80/35 |    1337.5    1441.4    89.9    4 |     964.7     957.2   -7.46    -775.8 |    0.00    7.46        -        - |    100.9    125.6     59.4
+  604    8.8   1.3   0.1   0.0    1.2    3.0    5.3   12.8      0 74/35 |    1055.8    1165.9    62.6    0 |     957.2     949.4   -7.84    -624.8 |    0.00    7.84        -        - |     77.7    125.1     59.3
+  605    8.8   1.3   0.1   0.0    1.2    3.0    5.2   12.7      0 68/30 |     833.0     965.6    48.7   18 |     949.4     942.2   -7.19    -571.4 |    0.00    7.19        -        - |     78.6    127.7     59.2
+  606    8.7   1.3   0.1   0.0    1.2    3.0    5.2   12.7      0 67/30 |     894.3    1009.4    52.4   22 |     942.2     935.6   -6.64    -380.2 |    0.00    6.64        -        - |     79.2    123.1     56.4
+  607    8.7   1.2   0.1   0.0    1.2    3.0    5.2   12.6      0 67/29 |     839.8    1050.3    48.2    4 |     935.6     929.1   -6.44     439.0 |    0.00    6.44        -        - |     88.7    124.0     55.7
+  608    8.6   1.2   0.1   0.0    1.2    2.9    5.1   12.5      0 70/32 |    1132.1    1605.2    81.2    4 |     929.1     922.7   -6.46      11.1 |    0.00    6.46        -        - |    141.8    123.2     52.6
+  609    8.5   1.1   0.1   0.0    1.0    2.8    5.0   12.4      0 68/32 |     885.4    1919.5    53.4    4 |     922.7     915.9   -6.77    -211.3 |    0.00    6.77        -        - |    198.6    121.5     49.5
+  610    8.5   1.1   0.1   0.0    1.0    2.8    5.0   12.3      0 70/35 |    1100.7    2347.1    82.7    0 |     915.9     909.5   -6.45   -1068.7 |    0.00    6.45        -        - |    268.1    124.6     48.5
+  611    8.4   1.1   0.1   0.0    1.0    2.8    4.9   12.3      0 69/34 |     856.4    2755.5    47.6    4 |     909.5     902.8   -6.70   -1389.9 |    0.00    6.70        -        - |    314.0    128.0     47.5
+  612    8.3   1.1   0.1   0.0    1.0    2.7    4.9   12.2      0 69/33 |     826.3    2992.3    44.1    4 |     902.8     896.2   -6.54   -1786.6 |    0.00    6.54        -        - |    359.5    129.0     46.4
+WINDOW SUMMARY (12 months): promoted ADULT->SENIOR 104.3 people; retired deaths (sen+eld) 97.4; net change in retired people -109.8, in retired households -83.0 (1.32 people per retired household)
+  net, retired row: NW at constant prices changed -8551.7 $k = 103.0 per added household, -82.0 per person promoted. Left the city in the window: savings 12416.5, shares 20669.4, abroad 787.2 USD; cells folded 66
+  TRANSFER: the retired cells GAINED households in 0 of 12 months (0.00 in all) and lost 83.04; per household gained they were handed NW n/a (from the retired's own pool n/a, from the city's n/a), savings n/a; genuinely new households 0.00
+  against, averaged over the months' openings: retired NW/hh 165.7 (savings-debt 21.9); the six working rows NW/hh 124.9 (savings-debt 54.3); what the WORKING cells that gained households were handed per household gained: NW    67.4 (savings    28.1)
+  before each month, retired NW per household 165.7 (per grown-up 125.5), working 124.9 (per grown-up 67.4); retired/working 1.33 per household, 1.86 per grown-up
+  check of the copy: savings the copy says left the city 12416.4 vs HouseholdBalance.getTakenAway() 12416.5 (the model's also counts the city's paper sold on the way out); working rows' NW changed -3809.5 at constant prices, city households -456.0
+
+=== MONTH 1200  population 37834   mean run(g,1) over months 1180..1199: 8.6 ms (median 8.5, max 14.3; mean of the last 100: 9.7) ===
+pyramid: Bab 2963 Chi 3480 Tee 2528 Adu 23604 Sen 4228 Eld 1031   | last month: births 48.4 deaths 51.5 promoted ADULT->SENIOR 37.6
+row                     hh grownUps    people takeHome   savings     debt    shares   abroad  stuDebt paper+bd   netWorth dividend NW/yrTk
+Unskilled           5011.8  12151.0   16751.9    4.080   218.224    0.000   840.903  194.057    0.000   39.323   1292.507    1.249   26.40
+Skilled             2824.4   6846.6    9440.5    4.079   193.892    0.000   717.419  184.320    0.000   37.243   1132.875    1.048   23.14
+College              423.1   1024.9    1414.1    7.461   582.562    0.000  2486.891  606.629    0.000  119.184   3795.266    3.620   42.39
+Professional          48.9    118.6     163.6   10.193   458.625    0.000   603.489  438.347    0.000   90.984   1591.445    0.744   13.01
+Sr professional        1.7      4.0       5.5    3.538   342.459    0.000   862.953  389.120    0.000   74.920   1669.452    1.092   39.32
+Elite                 10.0     24.1      33.3   19.592   900.986    0.000  1113.365  848.511    0.000  183.586   3046.448    1.329   12.96
+RETIRED             3939.7   5222.3    5222.3    0.929   217.214    0.000  2026.618  115.384    0.000   22.991   2382.207    3.407  213.67
+Unemployed          3270.0   3270.0    4513.0    0.673    27.305    0.000   151.341   17.830    0.000    4.044    200.520    0.230   24.82
+Orphan                27.0      0.0      27.0    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+WORKING (6 tiers)    8319.8  20169.3   27809.0    4.306   230.746    0.000   881.613  213.990    0.000   43.161   1369.511    1.298   26.50
+ALL                15556.6  28661.5   37571.2    2.680   184.155    0.000  1016.554  147.413    0.000   29.756   1377.877    1.606   42.85
+cell COUPLE:SKILLED    1011.6   2023.2    2023.2    3.365   160.684    0.000   381.570  142.017    0.000   28.688    712.959    0.528   17.65
+cell SENIOR_ALONE    1889.2   1889.2    1889.2    0.701     5.120    0.000   205.411    0.101    0.000    0.085    210.717    0.354   25.05
+cell SENIOR_COUPLE    1154.5   2309.0    2309.0    1.402   477.791    0.000  3545.808  378.518    0.000   75.445   4477.563    5.865  266.18
+cell ELDER_ALONE     768.1    768.1     768.1    0.701   357.547    0.000  4095.314    0.099    0.000    0.083   4453.043    7.013  529.44
+cell ELDER_COUPLE     128.0    256.0     256.0    1.402   155.196    0.000  2790.091  135.315    0.000   25.411   3106.014    4.666  184.64
+
+=== MONTH 2400  population 300037   mean run(g,1) over months 2380..2399: 7.6 ms (median 7.4, max 8.9; mean of the last 100: 7.2) ===
+pyramid: Bab 20737 Chi 25199 Tee 18670 Adu 196365 Sen 32253 Eld 6813   | last month: births 375.7 deaths 646.3 promoted ADULT->SENIOR 314.5
+row                     hh grownUps    people takeHome   savings     debt    shares   abroad  stuDebt paper+bd   netWorth dividend NW/yrTk
+Unskilled          54684.3 110379.7  146507.7   17.876  1611.427    0.000   807.744 4521.420    0.000   15.714   6956.305    1.304   32.43
+Skilled            30664.9  61896.6   82160.3   17.876  1209.674    0.000   566.470 3467.180    0.000   11.733   5255.057    0.878   24.50
+College             3649.6   7366.6    9779.8   32.273  5138.179    0.000  3319.749 16343.813    0.000   52.676  24854.417    5.119   64.18
+Professional         510.1   1029.6    1366.9   44.752  3589.340    0.000  1697.381 10046.830    0.000   34.919  15368.470    2.584   28.62
+Sr professional        2.0      4.0       5.3   17.006  2884.802    0.000  4195.422 9411.322    0.000   29.153  16520.699    6.199   80.96
+Elite                 52.1    105.2     139.6   85.488  7560.295    0.000  3575.882 21355.350    0.000   73.615  32565.142    5.377   31.74
+RETIRED            29337.8  39056.5   39056.5    5.602  4040.734    0.000  9153.646 5558.403    0.000   17.264  18770.046   15.536  279.24
+Unemployed         15466.0  15466.0   20555.4    4.723   638.577    0.000   395.284 1424.272    0.000    4.832   2462.965    0.636   43.45
+Orphan               311.4      0.0     311.4    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+WORKING (6 tiers)   89563.0 180781.7  239959.7   18.655  1632.338    0.000   834.249 4683.584    0.000   16.001   7166.171    1.324   32.01
+ALL               134678.3 235304.1  299882.9   14.169  2039.080    0.000  2594.178 4489.033    0.000   14.956   9137.247    4.338   53.74
+cell COUPLE:SKILLED   10038.5  20076.9   20076.9   17.712  1145.080    0.000   393.594 3249.620    0.000   11.061   4799.356    0.572   22.58
+cell SENIOR_ALONE   14509.7  14509.7   14509.7    4.208   650.202    0.000  1616.872    3.021    0.000    0.009   2270.104    2.748   44.96
+cell SENIOR_COUPLE    8867.0  17734.1   17734.1    8.415  4473.711    0.000 12092.712 15233.980    0.000   47.035  31847.438   20.249  315.37
+cell ELDER_ALONE    5109.5   5109.5    5109.5    4.208 11900.684    0.000 19239.348    2.012    0.000    0.006  31142.050   33.083  616.76
+cell ELDER_COUPLE     851.6   1703.2    1703.2    8.415 10142.117    0.000 46451.653 32805.987    0.000  104.812  89504.570   79.071  886.31
+
+--- FLOWS, 12 consecutive months from month 2400 (the playtest loop's own looks and builds go on between them); one row a month, $k ---
+month retire D-bab D-chi D-tee  D-adu  D-sen  D-eld births    arr dep/bk |   savLeft   shrLeft  abrUSD fold |    retHH0    retHH1     dHH       dNW |  gained    lost recv/gHH  recvSav |   retAvg  workAvg  workSav
+ 2401  314.7 109.8  13.8   6.0  157.2  171.5  188.5  375.9   1489 1269/93 |       0.0       0.0     0.0   12 |   29337.8   29345.1    7.22  122928.2 |    7.22    0.00   1357.9    324.8 |  18770.0   7166.2   1632.3
+ 2402  314.7 109.8  13.8   6.0  157.4  171.6  188.4  375.8   2138 1248/97 |   29132.8   31458.7   696.7    2 |   29345.1   29332.3  -12.75 -130745.0 |    0.00   12.75        -        - |  18837.9   7207.3   1641.5
+ 2403  315.3 110.1  13.9   6.0  157.9  171.9  188.8  376.6   1911 1241/78 |       0.0       0.0     0.0   10 |   29332.3   29385.0   52.71  231435.5 |   52.71    0.00   2235.8    566.6 |  18841.7   7175.1   1643.4
+ 2404  315.8 110.3  13.9   6.1  158.2  172.2  189.0  377.1   1613 1253/79 |       0.0       0.0     0.0    3 |   29385.0   29416.2   31.22  177068.0 |   31.22    0.00   1374.8    335.9 |  18753.1   7069.0   1637.8
+ 2405  315.9 110.4  13.9   6.1  158.6  172.4  189.0  377.2   2153 1236/81 |       0.0       0.0     0.0    0 |   29416.2   29417.2    0.93  128098.5 |    1.93    0.99  22287.0   6573.1 |  18653.1   6980.0   1642.0
+ 2406  316.6 110.7  14.0   6.1  159.2  172.8  189.4  378.0   1898 1234/68 |       0.0       0.0     0.0   10 |   29417.2   29472.4   55.21  266709.2 |   55.21    0.00   2036.3    518.5 |  18640.2   6946.3   1643.4
+ 2407  317.0 110.8  14.0   6.1  159.5  173.0  189.5  378.5   1548 1247/68 |       0.0       0.0     0.0    3 |   29472.4   29502.8   30.39  157053.0 |   30.39    0.00   1350.9    333.0 |  18734.3   6996.3   1638.4
+ 2408  317.1 110.9  14.0   6.1  159.9  173.1  189.5  378.5   2093 1238/78 |       0.0       0.0     0.0    1 |   29502.8   29497.8   -4.99  -34930.2 |    0.00    4.99        -        - |  18529.7   6830.9   1642.2
+ 2409  317.7 111.1  14.0   6.2  160.3  173.5  189.8  379.2   1849 1233/63 |       0.0       0.0     0.0   10 |   29497.8   29546.9   49.12  311265.2 |   49.12    0.00   2109.3    557.3 |  18446.0   6762.7   1641.3
+ 2410  318.1 111.3  14.1   6.2  160.7  173.7  190.0  379.7   1513 1246/64 |       0.0       0.0     0.0    3 |   29546.9   29572.6   25.66  139268.9 |   25.66    0.00   1304.0    338.7 |  18314.4   6609.8   1633.8
+ 2411  318.1 111.4  14.1   6.2  161.1  173.8  189.9  379.7   2062 1225/62 |     519.0     361.3    14.7    1 |   29572.6   29564.1   -8.42  -61414.5 |    0.00    8.42        -        - |  18290.2   6602.9   1635.4
+ 2412  318.7 111.6  14.1   6.2  161.6  174.2  190.2  380.4   1854 1229/57 |       0.0       0.0     0.0   10 |   29564.1   29611.3   47.13  189037.3 |   47.13    0.00   2233.3    561.7 |  18300.0   6597.4   1633.8
+WINDOW SUMMARY (12 months): promoted ADULT->SENIOR 3799.8 people; retired deaths (sen+eld) 4345.8; net change in retired people +367.4, in retired households +273.4 (1.33 people per retired household)
+  net, retired row: NW at constant prices changed +1495774.2 $k = 5470.3 per added household, 393.6 per person promoted. Left the city in the window: savings 29651.8, shares 31820.0, abroad 711.3 USD; cells folded 65
+  TRANSFER: the retired cells GAINED households in 9 of 12 months (300.60 in all) and lost 27.16; per household gained they were handed NW  2027.3 (from the retired's own pool   131.3, from the city's  1896.0), savings   521.2; genuinely new households 129.28
+  against, averaged over the months' openings: retired NW/hh 18592.5 (savings-debt 4110.7); the six working rows NW/hh 6912.0 (savings-debt 1638.8); what the WORKING cells that gained households were handed per household gained: NW  5333.6 (savings  1360.0)
+  so a household that comes into the retired row is handed 29% of the working average and 11% of the retired average (full NW); on savings alone 32% and 13%
+  before each month, retired NW per household 18592.5 (per grown-up 13965.5), working 6912.0 (per grown-up 3404.1); retired/working 2.69 per household, 4.10 per grown-up
+  check of the copy: savings the copy says left the city 29651.8 vs HouseholdBalance.getTakenAway() 29651.8 (the model's also counts the city's paper sold on the way out); working rows' NW changed +11774683.9 at constant prices, city households -1402.6
+
+=== MONTH 4000  population 800102   mean run(g,1) over months 3980..3999: 25.9 ms (median 14.3, max 98.9; mean of the last 100: 16.8) ===
+pyramid: Bab 54922 Chi 65426 Tee 48083 Adu 527645 Sen 85945 Eld 18081   | last month: births 1000.3 deaths 1554.8 promoted ADULT->SENIOR 846.0
+row                     hh grownUps    people takeHome   savings     debt    shares   abroad  stuDebt paper+bd   netWorth dividend NW/yrTk
+Unskilled         158064.1 295569.4  389671.3  133.682  7761.638    0.000   226.087 22343.026    0.000   82.906  30413.656    0.209   18.96
+Skilled            99511.7 186081.6  245332.9  136.302  6703.008    0.000   121.749 18381.588    0.000   70.135  25276.480    0.097   15.45
+College             9939.6  18586.8   24506.5  264.359 21232.363    0.000   182.277 62995.687    0.000  231.109  84641.436    0.142   26.68
+Professional        1648.1   3081.9    4063.5  355.661 28409.974    0.000   217.923 82560.206    0.000  307.610 111495.713    0.182   26.12
+Sr professional        2.1      4.0       5.3  205.668 21249.473    0.000   141.477 65221.844    0.000  234.529  86847.323    0.104   35.19
+Elite                125.7    235.1     310.0  702.624 66242.588    0.000   399.252 197891.426    0.000  725.840 265259.105    0.338   31.46
+RETIRED            78163.6 104069.5  104069.5   53.586  8072.511    0.000 16656.451 26029.435    0.000   91.017  50849.414   25.530   79.08
+Unemployed         23859.0  23859.0   31475.1   28.787  3761.961    0.000   187.803 6165.904    0.000   21.874  10137.541    0.231   29.35
+Orphan               558.1      0.0     558.1    0.000     0.000    0.000     0.000    0.000    0.000    0.000      0.000    0.000    0.00
+Prison               457.6    457.6     457.6    0.000 11706.706    0.000  7775.498 9536.414    0.000    0.068  29018.687   11.659    0.00
+WORKING (6 tiers)  269291.4 503558.8  663889.6  141.098  8021.436    0.000   185.944 22830.504    0.000   85.333  31123.217    0.165   18.38
+ALL               372329.6 631944.9  800450.0  115.145  7751.715    0.000  3652.784 22383.627    0.000   82.227  33870.354    5.508   24.51
+cell COUPLE:SKILLED   30546.4  61092.7   61092.7  145.781  7537.965    0.000   119.103 20443.274    0.000   78.926  28179.269    0.100   16.11
+cell SENIOR_ALONE   38691.7  38691.7   38691.7   40.247   680.881    0.000   116.610 2094.287    0.000    6.531   2898.308    0.140    6.00
+cell SENIOR_COUPLE   23645.0  47289.9   47289.9   80.494 17433.830    0.000 43635.320 54791.133    0.000  197.373 116057.657   66.984  120.15
+cell ELDER_ALONE   13565.9  13565.9   13565.9   40.247  6092.428    0.000  6929.159 20913.382    0.000   68.988  34003.957   10.548   70.41
+cell ELDER_COUPLE    2261.0   4522.0    4522.0   80.494 48545.480    0.000 75922.987 165538.453    0.000  556.740 290563.660  116.393  300.81
+
+--- COST COUNTS: what the household code is multiplied by (HouseholdBalance.CELL_SLOTS = 47, Equity.COMPANIES.length = 25) ---
+ month  cells  nonEmpty   listed  bondStocks    stocks   cell x stock     cell x company      cell x bond
+   240     78        35       13          46        77           6006               1950             3588
+   600     78        48       13          58        89           6942               1950             4524
+  1200     78        54       17          43        74           5772               1950             3354
+  2400     78        62       19          55        86           6708               1950             4290
+  4000     78        66       21         144       175          13650               1950            11232
+
+=== RETIRED vs WORKING, net worth per household, over time (full net worth: savings+shares+abroad+paper+bonds-debt-studentDebt, $k) ===
+ month      pop     retHH    workHH |    retired    working |  ratio  sv/sv  perGU | NW per yr of take-home: retired working |   run ms
+    21      328      39.3      73.3 |     90.636     97.326 |  0.931  0.427  1.712 |                        144.42   42.67 |     40.2
+    60     1430     180.5     327.7 |     59.684     60.135 |  0.993  0.279  1.785 |                         91.43   29.63 |     16.0
+   120     2150     261.7     463.8 |      4.713     13.284 |  0.355  0.132  0.575 |                          6.72    6.70 |     13.7
+   240     3594     389.4     868.9 |     16.080     44.022 |  0.365  0.142  0.630 |                         15.29   12.98 |     12.1
+   600     9458     979.3    1804.9 |    146.617    122.980 |  1.192  0.357  1.725 |                         54.53   12.92 |      9.4
+  1200    37834    3939.7    8319.8 |   2382.207   1369.511 |  1.739  0.941  3.181 |                        213.67   26.50 |      8.6
+  2400   300037   29337.8   89563.0 |  18770.046   7166.171 |  2.619  2.475  3.971 |                        279.24   32.01 |      7.6
+  4000   800102   78163.6  269291.4 |  50849.414  31123.217 |  1.634  1.006  2.295 |                         79.08   18.38 |     25.9
+ratio = retired NW per household / working NW per household; sv/sv = the same on savings-debt only; perGU = per grown-up. run ms = mean LongPlaytest.run(g,1) over the 20 months before (includes the playtest's own audit after each month).
+
+wall time 0.8 min; ended at month 4003; mean run(g,1) over the whole run 12.3 ms
+
+=== COMPUTE COST (item 4) ===
+(a) mean LongPlaytest.run(g,1), ms, over the 20 months before each checkpoint (= probeMonthMs(m-20, m)); seven full runs of the same city (runs 1-6 on a shared, loaded machine, run 7 on an idle one: it is the run printed above):
+month        21     60    120    240    600   1200   2400   4000
+run 1      48.7  238.6   46.7   53.4   25.8   24.4   11.6   79.3
+run 2     109.1   41.5   20.9   25.6   24.9   19.2    9.0   70.5
+run 3     174.1   57.4   60.0   34.5   19.8   16.6   15.9   67.5
+run 4      89.6   62.2   42.7   46.7   30.9   33.1   19.9   65.8
+run 5      89.4   29.2   23.2   19.4   13.7   13.7   13.6   71.8
+run 6      68.5   25.5   17.6   15.2   12.0   13.1   14.8   40.6
+run 7      40.2   16.0   13.7   12.1    9.4    8.6    7.6   25.9   <- idle machine
+median     89.4   41.5   23.2   25.6   19.8   16.6   13.6   67.5
+No 20-month mean exceeds 150 ms after month 21 (the one above 80 is run 1's 239 at month 60), so 4000 stays. The slowest single month after the warm-up: 372 ms (run 3, inside the 20 before 4000).
+(b) exact time per method (HhAgent, one idle-machine run, 100-month window means; 'run' = model + the playtest's audit of each month; the instrumentation itself adds a little):
+EXACT TIME (HhAgent: inclusive wall ms per month, and that as a share of the model month = Game.simulateMonths; methods nest, so the lines do not add; a quiet machine, instrumented)
+window (months)                            300..400         600..700       1200..1300       2300..2400       3900..4000
+population                                     7583            10004            42925           300037           800102
+model month ms (run(g,1) ms)            8.5 (  9.8)      7.5 (  8.7)      8.1 (  9.5)      7.8 (  9.3)     21.4 ( 23.1)
+HouseholdBalance.advanceMonth        1.22 ( 14.4%)   0.94 ( 12.6%)   0.53 (  6.5%)   0.50 (  6.3%)   2.46 ( 11.4%)
+HouseholdBalance.followThePeople     1.20 ( 14.1%)   0.93 ( 12.3%)   0.51 (  6.3%)   0.47 (  6.1%)   2.43 ( 11.3%)
+HouseholdBalance.moveStock           0.28 (  3.3%)   0.29 (  3.9%)   0.26 (  3.1%)   0.22 (  2.8%)   1.10 (  5.1%)
+HouseholdBalance.foldEmptyCells      0.82 (  9.7%)   0.55 (  7.3%)   0.17 (  2.1%)   0.19 (  2.4%)   0.99 (  4.6%)
+HouseholdBalance.spread              0.74 (  8.8%)   0.47 (  6.3%)   0.14 (  1.7%)   0.15 (  1.9%)   0.79 (  3.7%)
+Game.updateHouseholdAccounts         1.36 ( 16.1%)   1.08 ( 14.4%)   0.68 (  8.4%)   0.66 (  8.4%)   2.65 ( 12.3%)
+BondMarket.takeMonth                 1.83 ( 21.6%)   1.89 ( 25.2%)   2.14 ( 26.2%)   1.50 ( 19.2%)   6.48 ( 30.2%)
+BondMarket.postHouseholds            1.59 ( 18.8%)   1.64 ( 21.8%)   1.74 ( 21.4%)   1.11 ( 14.2%)   5.75 ( 26.8%)
+BondMarket$Settle.settle             0.81 (  9.6%)   0.74 (  9.8%)   0.92 ( 11.3%)   0.53 (  6.8%)   2.90 ( 13.5%)
+Household.recountBonds               0.63 (  7.4%)   0.56 (  7.5%)   0.62 (  7.6%)   0.29 (  3.7%)   2.42 ( 11.3%)
+Household.setBondFace                0.59 (  7.0%)   0.51 (  6.8%)   0.59 (  7.2%)   0.28 (  3.5%)   2.18 ( 10.2%)
+OrderBook.submit                     1.43 ( 16.9%)   1.47 ( 19.6%)   1.72 ( 21.1%)   1.32 ( 16.9%)   5.05 ( 23.6%)
+Exchange.postHouseholds              0.12 (  1.4%)   0.09 (  1.2%)   0.17 (  2.1%)   0.27 (  3.5%)   0.22 (  1.0%)
+moveStock calls a month                       103.2             86.6             80.2             66.0            165.7
+Settle.settle calls a month                    1631             1393             1840             1287             3714
+OrderBook.submit calls a month                 7437             6917             7518             6351            21541
+
+(c) JFR, the brief's way (jdk.ExecutionSample, profile setting = 10 ms, stack depth 512; the same city, recorded from month 2300). The sampler delivered only ~30 samples a second here, so a 100-month recording
+    has ~45 samples (+-5 points); the 1,000-month one (months 2300-3300, 530 samples) is the better estimate. The exact figures above are the ones to use.
+  months 2300..2400 (the brief's window):
+    threads sampled: {save-writer=2, main=43, JFR Periodic Tasks=1}
+    samples 46, on the model thread (main) 43, of which under Game.simulateMonths 40 (93.0%), truncated stacks 0
+    TOP frame in HouseholdBalance/Household/*Household/FamilyModel: 6 = 13.95% of main-thread samples, 15.00% of samples under simulateMonths (6)
+    stack CONTAINS HouseholdBalance.advanceMonth: 3 = 6.98% of main-thread samples, 7.50% of samples under simulateMonths
+    stack CONTAINS any frame of those classes: 11 = 25.58% of main-thread samples, 27.50% under simulateMonths
+  months 2300..3300 (1,000 months):
+    threads sampled: {main=529, JFR Periodic Tasks=1}
+    samples 530, on the model thread (main) 529, of which under Game.simulateMonths 482 (91.1%), truncated stacks 0
+    TOP frame in HouseholdBalance/Household/*Household/FamilyModel: 59 = 11.15% of main-thread samples, 12.24% of samples under simulateMonths (59)
+    stack CONTAINS HouseholdBalance.advanceMonth: 47 = 8.88% of main-thread samples, 9.75% of samples under simulateMonths
+    stack CONTAINS any frame of those classes: 146 = 27.60% of main-thread samples, 30.29% under simulateMonths
+    top 10 methods by self samples under HouseholdBalance (all of the class's samples: 26):
+          8   1.51%  HouseholdBalance.moveStock
+          7   1.32%  HouseholdBalance.spread
+          2   0.38%  HouseholdBalance.followThePeople
+          1   0.19%  HouseholdBalance$$Lambda+0x00000237c3116218.673186785.applyAsDouble
+          1   0.19%  HouseholdBalance.splitByPeople
+          1   0.19%  HouseholdBalance.foldEmptyCells
+          1   0.19%  HouseholdBalance.luxuryBudgetOf
+          1   0.19%  HouseholdBalance.sum
+          1   0.19%  HouseholdBalance.mealsWanted
+          1   0.19%  HouseholdBalance$$Lambda+0x00000237c30d2400.1316061703.applyAsDouble
+    inclusive (stack contains), household-related, of main-thread samples:
+         82   15.5%  BondMarket.postHouseholds
+         58   11.0%  Game.updateHouseholdAccounts
+         55   10.4%  Household.recountBonds
+         52    9.8%  Household.setBondFace
+         47    8.9%  HouseholdBalance.advanceMonth
+         45    8.5%  HouseholdBalance.followThePeople
+
+(d) the claim in a smaller founding (month 21; houses as named, 1 store, 1 farm, no other build; same loop):
+houses 6: month 21 population 98; COUPLE:SKILLED hh 1.98 take-home 0.195 savings 1.557 shares(mkt) 213.0 dividends 0.000 $k/mo per hh | all hh: shares 1452.7 savings 26.6 | largest holding Construction 86% of households' shares, unit price 49.95 x founding price
+houses 10: month 21 population 111; COUPLE:SKILLED hh 2.61 take-home 0.194 savings 4.758 shares(mkt) 306.6 dividends 2.459 $k/mo per hh | all hh: shares 2418.5 savings 93.2 | largest holding Construction 91% of households' shares, unit price 89.43 x founding price
+houses 15: month 21 population 127; COUPLE:SKILLED hh 2.55 take-home 0.192 savings 11.017 shares(mkt) 590.7 dividends 1.734 $k/mo per hh | all hh: shares 4590.1 savings 246.8 | largest holding Construction 96% of households' shares, unit price 178.52 x founding price
+houses 25: month 21 population 144; COUPLE:SKILLED hh 6.30 take-home 0.202 savings 6.986 shares(mkt) 287.3 dividends 0.493 $k/mo per hh | all hh: shares 5590.5 savings 329.5 | largest holding Construction 95% of households' shares, unit price 215.34 x founding price

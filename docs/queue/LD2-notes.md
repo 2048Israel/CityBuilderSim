@@ -1,4 +1,4 @@
-# LD2 - the wanted posts' bounds and comments, after LD1 ({next}, 2026-11-02)
+# LD2 - the wanted posts' bounds and comments, after LD1 (0.9.5, 2026-11-02)
 
 The stranger's review at LD1's gate left four points on the wanted posts and
 one on the bank (the brief, `docs/queue/LD2.md`). The four are mended.

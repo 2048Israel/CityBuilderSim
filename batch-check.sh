@@ -38,27 +38,8 @@
 #  When something else failed as well, 1. --judge LOG exits as the suite's
 #  verdict does (0, 1, 3 or 4), and 2 for a usage error.
 #
-#  WHY (2026-10-13): a session paid for every line it read, and a batch's
-#  checks were a dozen calls - each re-reading the whole conversation - and
-#  their output: a line for every harness, a red one run again in full to find
-#  its assertion, Stale's report whole. This prints about ten lines when all is
-#  well and the failing assertions when it is not (AllChecks -f).
-#  BP1 (2026-10-25): a batch ran the whole suite three times (15-22 minutes
-#  each) and a person read every red to tell main's own from the batch's; now a
-#  batch runs --pick (tools/pick.sh: the harnesses that read what its diff
-#  changed), the one full suite is the gate's, and the red lines and the exit
-#  statuses 3 and 4 let the gate pass main's recorded reds, word for word, with
-#  nobody reading the log.
-#  FW7 (2026-10-25): AllChecks -q hid a second red in a harness that was already
-#  a known red, and only this script compared lines. AllChecks now reads the
-#  record too (-Dcbs.knownReds, the file written to target/checks/known-reds.txt
-#  before the suite runs) and says "known red" or "NEW red: N of M" of each
-#  failed harness, tagging the lines; this script strips the tags (the red lines
-#  are the same as before) and refuses a log whose N is not its own count, so
-#  the two judges cannot disagree unseen. --judge LOG gives the verdict on a
-#  saved log, from the folder the log is in, against the record named by
-#  $CBS_KNOWN_REDS (read only there, never in a real run): what KnownRedsCheck
-#  runs, from inside the suite, on the logs it builds.
+#  WHY (2026-10-13, BP1, FW7): a session paid for every line it read; the long story is
+#  docs/notes/batch-history.md, "The scripts' headers" (moved there in GT1).
 #
 #  On the cloud workbench (2 cores) one JVM at a time: under
 #  the lock at $CBS_JVM_LOCK (default /home/claude/jvm.lock) when its folder

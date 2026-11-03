@@ -1333,6 +1333,8 @@ public class Game {
             String[] names = new String[made.nationCount()];
             for (int i = 0; i < names.length; i++) names[i] = made.name(i + 1);
             PartnerTrade trade = new PartnerTrade(made.nationCount());
+            // The history's grid in the money of the day, read live (DZ1): a reform changes the unit, and the grid follows it.
+            trade.setMoneyUnit(denomination::getUnit);
             trade.setPlace(standLat, standLon, names);
             partnerTrade = trade;
             worldMarket = made;
@@ -15721,19 +15723,20 @@ public class Game {
     /**
      * Fills the save from the city as it stands, asks the map for its bytes
      * and stamps it; everything save() did before it wrote anything. With
-     * {@code snapshot} the job holds copies of the save and the history (the
-     * autosave's, written on another thread); without, the live objects.
+     * {@code snapshot} the job holds a copy of the save and a copy of the history
+     * that is owed (the autosave's, written on another thread; see
+     * HistorySave.snapshotLater()); without, the live objects.
      */
     private SaveWriter.Job prepareSave(int slot, String slotName, boolean snapshot){
 
         byte[] mapBytes = fillSave(slotName);
 
         // The writing itself is SaveWriter.Job.write(): the save, its map, then the history.
-        // A snapshot is taken here, on the FX thread, because this is the only place the model is safe to read.
-        return new SaveWriter.Job(gameFiles, slot,
-                snapshot ? dataSave.snapshot() : dataSave,
-                snapshot ? historySave.snapshot() : historySave,
-                mapBytes);
+        // A snapshot of the save is taken here, on the FX thread, because this is the only place the model is safe to read.
+        // The history's is owed (GT1): the writer makes the copy as its first act, and the history makes it itself
+        // before its next change if the writer has not got there (HistorySave.snapshotLater()).
+        if (!snapshot) return new SaveWriter.Job(gameFiles, slot, dataSave, historySave, mapBytes);
+        return new SaveWriter.Job(gameFiles, slot, dataSave.snapshot(), historySave.snapshotLater(), mapBytes);
     }
 
     /**
@@ -20926,6 +20929,8 @@ public class Game {
         for (int i = 0; i < rateHistory.length; i++) rateHistory[i] *= scale;
 
         if (historySave != null) historySave.redenominate(scale);
+        // DZ1: the trade by partner's money and its finished years; cityExportPriceLevel() and tradeByNation() weigh the world's prices by them.
+        if (partnerTrade != null) partnerTrade.redenominate(scale);
 
         /*
          * ...and the derived figures re-struck, so the screens are in the new

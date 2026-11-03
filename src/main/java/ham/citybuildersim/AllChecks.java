@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -125,6 +126,9 @@ public class AllChecks {
     /** Where -q and -f keep each harness's whole output. */
     static final Path LOGS = Paths.get("target", "checks");
 
+    /** Where -q and -f write each harness's seconds and exit, a line each, longest first (GT1: no gate said where its forty minutes went). */
+    static final Path TIMES = LOGS.resolve("times.tsv");
+
     /** A harness's section title, "--- what it proves ---". */
     static final Pattern SECTION = Pattern.compile("^\\s*---\\s.*\\s---\\s*$");
 
@@ -171,6 +175,7 @@ public class AllChecks {
         boolean haveFx = classpath.toLowerCase().contains("javafx");
 
         int failed = 0, ran = 0, soft = 0;
+        List<String> times = new ArrayList<>();   // "seconds<TAB>name<TAB>exit", for TIMES
         List<String> softIn = new ArrayList<>();
         List<String> knownOnly = new ArrayList<>(), newRed = new ArrayList<>();
         long started = System.currentTimeMillis();
@@ -225,6 +230,7 @@ public class AllChecks {
             int code = (int) run.get()[0];
             double seconds = run.get()[1];
             ran++;
+            times.add(String.format(Locale.ROOT, "%.1f	%s	%d", seconds, name, code));
             if (code != 0) failed++;
             if (logged) {
                 int n = softLines(log);
@@ -251,6 +257,10 @@ public class AllChecks {
             }
         }
         pool.shutdown();
+        if (logged) {
+            times.sort(Comparator.comparingDouble((String x) -> Double.parseDouble(x.substring(0, x.indexOf('	')))).reversed());
+            Files.write(TIMES, times, StandardCharsets.UTF_8);
+        }
         System.out.println();
         System.out.println(summaryLine(ran, failed, (System.currentTimeMillis() - started) / 1000.0));
         if (held.get() > 0) System.out.printf("memory: %d start(s) held until the commit charge fell under %d%% (AllChecks.COMMIT_PCT)%n", held.get(), COMMIT_PCT);

@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A city played for four thousand months, the way a person plays.
+ * A city played for 2,400 months at the gate and 4,000 once a night on main
+ * (tools/nightly.sh), the way a person plays.
  *
  * WHY NOT JUST simulateMonths(4000)
  *
@@ -27,8 +28,8 @@ import java.util.Map;
  * So this alternates. Short hands-on stretches where an advisor looks at the
  * city and does something about it, long skips where it just runs, policy
  * changes, borrowing, land purchases, demolitions, and save/reload round trips
- * partway through. Roughly the shape of a real session, repeated a hundred and
- * forty times.
+ * partway through. Roughly the shape of a real session, repeated about once
+ * every thirty months.
  *
  * WHAT IT IS LOOKING FOR
  *
@@ -45,8 +46,8 @@ public class LongPlaytest {
     /** Where the report goes. The game's own console output is discarded. */
     static PrintStream out;
 
-    /** The run's length: 4,000 months, or -Dplaytest.months=N for a short look at one mechanic (a trace of its own, not the baseline). */
-    static final int TARGET_MONTHS = Integer.getInteger("playtest.months", 4000);
+    /** The run's length: 2,400 months at the gate, 4,000 nightly (GT1, 2026-11-02: what 2026-11-01 found showed between months 1,100 and 1,800), or -Dplaytest.months=N for a look at one mechanic (a trace of its own, not the baseline). */
+    static final int TARGET_MONTHS = Integer.getInteger("playtest.months", 2400);
 
     /* ===================================================================
        FINDINGS
@@ -1234,6 +1235,96 @@ public class LongPlaytest {
     /** M0 at the last audit, so the next can say what it moved by. NaN until the first. */
     static double lastM0 = Double.NaN;
 
+    /* -------------------------------------------------------------------
+       THE CONSERVATION LAWS, ON EVERY MONTH OF THE RUN (GT1, 2026-11-02)
+
+       Three claims that hold of any city in any month - the food law, and
+       the electricity and water the utilities book against what the sectors
+       were billed - which ConservationCheck used to assert on a 156-month city
+       of its own, founded and played only to be read. Jerus (GT1, item 3): a
+       claim that must hold in every city every month "is asserted on the
+       playtest's months rather than in a city of a harness's own". They are
+       reads of a month already played; nothing here changes the game.
+
+       The food law needs the stock at the START of the month, and the player
+       acts between months (builds, demolishes, reloads), so run() takes the
+       opening stock right before it simulates the month rather than reading
+       the month before's close. A month in which the industry sector has no
+       bread line is not a case.
+       ------------------------------------------------------------------- */
+
+    /** The bread in the industry's shed before the month about to be audited ran; NaN when none is waiting. Set by run(), taken once by conservation(). */
+    static double breadOpening = Double.NaN;
+    /** Months the food law was checked, the bread made and sold over them, and the range the closing stock covered. */
+    static int foodMonths = 0;
+    static double breadMadeRun = 0, breadSoldRun = 0;
+    static double breadLow = Double.POSITIVE_INFINITY, breadHigh = Double.NEGATIVE_INFINITY;
+    /** Months the utility had draw nobody is invoiced for - the premise of the electricity law. */
+    static int unbilledMonths = 0;
+
+    static final String FOOD_BROKEN = "food was not conserved";
+    static final String POWER_BROKEN = "the utility's electricity revenue is not what the sectors were charged";
+    static final String WATER_BROKEN = "the water utility's revenue is not what the sectors were charged";
+
+    static void conservation(Game g, int month) {
+
+        /*
+         * FOOD. Opening stock + what was made - what was written off - what was
+         * sold at home = closing stock, to a few ulps. What went INTO the shed,
+         * not what the income statement said was made; the export-bound share
+         * leaves FROM THE LINE and never passes through the shed (Sector.produceStock),
+         * so it is counted by the sector and is not a term in the shed's law.
+         * The failure that motivated it was a steady leak - stock pinned at
+         * capacity while sales were booked against it - which one month alone
+         * reads as a warehouse that happens to be full.
+         */
+        Sector industry = g.getSectors().industry();
+        Sector.Output bread = industry.outputRow(Good.BREAD);
+        double opening = breadOpening;
+        breadOpening = Double.NaN;
+        if (bread != null && !Double.isNaN(opening)) {
+            double closing = industry.getStock(Good.BREAD);
+            double expected = opening + bread.produced - bread.writtenOff - bread.soldLocal;
+            double gap = Math.abs(expected - closing);
+            foodMonths++;
+            breadMadeRun += bread.produced;
+            breadSoldRun += bread.soldLocal;
+            breadLow = Math.min(breadLow, Math.round(closing));
+            breadHigh = Math.max(breadHigh, Math.round(closing));
+            if (gap > 1e-6) {
+                flag(month, FOOD_BROKEN, String.format(
+                        "opening %,.6f + made %,.6f - written off %,.6f - sold %,.6f = %,.6f, but the shed holds %,.6f",
+                        opening, bread.produced, bread.writtenOff, bread.soldLocal, expected, closing), gap);
+            }
+        }
+
+        /*
+         * ELECTRICITY AND WATER. The utility's revenue is exactly what the
+         * sectors were charged, to a ten-thousandth. The unbilled draw (houses,
+         * roads, the water plant, the city's own yards) is real and deliberate;
+         * what must never happen again is the utility BOOKING it as revenue,
+         * which made 73% of a city's power bill money from nowhere.
+         */
+        UtilitiesHandler uh = g.getServicesManager().getUtilitiesHandler();
+        double powerCharged = 0, waterCharged = 0;
+        for (Sector s : g.getSectors().all()) {
+            Sector.Statement st = s.statement();
+            powerCharged += st.electricity;
+            waterCharged += st.water;
+        }
+        double powerGap = Math.abs(uh.getElectricityRevenue() - powerCharged);
+        if (powerGap > .0001) {
+            flag(month, POWER_BROKEN, String.format("revenue %,.6f, charged %,.6f",
+                    uh.getElectricityRevenue(), powerCharged), powerGap);
+        }
+        double waterGap = Math.abs(uh.getWaterRevenue() - waterCharged);
+        if (waterGap > .0001) {
+            flag(month, WATER_BROKEN, String.format("revenue %,.6f, charged %,.6f",
+                    uh.getWaterRevenue(), waterCharged), waterGap);
+        }
+        if (uh.getUnbilledElectricityDraw() > 0) unbilledMonths++;
+    }
+
     static void audit(Game g) {
 
         int month = g.getMonth();
@@ -1357,6 +1448,9 @@ public class LongPlaytest {
                     "$%,.2f moved once the month was already reconciled, most of it in %s ($%,.2f)",
                     drift, g.getPostAuditDriftPool(), g.getPostAuditDriftWorst()));
         }
+
+        // ...and the food, electricity and water laws (GT1, from ConservationCheck): see THE CONSERVATION LAWS.
+        conservation(g, month);
 
         /*
          * Output cannot be negative. Jerus, after a hand-played city reported
@@ -5335,6 +5429,8 @@ public class LongPlaytest {
             double indexHanded = g.getPriceIndex().getIndex();
             if (WAGES && Double.isNaN(lagImplied)) lagImplied = g.getLabourMarket().getCostOfLiving();
             floatDealtBefore = g.getForeignAccounts().getDealtSinceReprice();
+            // The food law's opening stock (GT1): taken here, after the player's move and before the month runs.
+            breadOpening = g.getSectors().industry().getStock(Good.BREAD);
             g.simulateMonths(1);
             if (g.hasCityMap()) {
                 mapMonths++;
@@ -7544,6 +7640,36 @@ public class LongPlaytest {
                 byLine.length() > 0 ? " (" + byLine.substring(0, byLine.length() - 2) + ")" : "",
                 g.getArrearsRefusedLifetime(), g.getArrearsPaidLifetime(),
                 peakArrears, peakArrearsMonth);
+
+        /*
+         * THE CONSERVATION LAWS WERE EXERCISED (GT1). A law a broken system also
+         * passes is not a test - ConservationCheck's own words: a warehouse that
+         * never sold and never moved balances at 0 in, 0 out, and with no unbilled
+         * draw the utility's booking of it is never tried. So the premises are
+         * findings too, asserted over the whole run.
+         */
+        int endMonth = g.getMonth();
+        if (foodMonths == 0) {
+            flag(endMonth, "the food law was never exercised",
+                    "the industry sector had no bread line in any month played");
+        } else {
+            if (breadSoldRun <= 0) {
+                flag(endMonth, "the food law was never exercised: no bread was sold",
+                        String.format("%,d month(s) checked, made %,.0f, sold 0", foodMonths, breadMadeRun));
+            }
+            if (breadHigh <= breadLow) {
+                flag(endMonth, "the food law was never exercised: the bread stock never moved",
+                        String.format("%,d month(s) checked, the stock stayed at %,.0f", foodMonths, breadLow));
+            }
+        }
+        if (unbilledMonths == 0) {
+            flag(endMonth, "the electricity law was never exercised: there was never unbilled draw",
+                    "the utility invoiced every watt in every month played");
+        }
+        out.printf("  conservation (GT1, from ConservationCheck): bread made %,.0f sold %,.0f over %,d month(s), stock ranged %,.0f to %,.0f;"
+                        + " electricity and water revenue %s the sectors' bills every month; unbilled draw in %,d month(s)%n",
+                breadMadeRun, breadSoldRun, foodMonths, foodMonths > 0 ? breadLow : 0, foodMonths > 0 ? breadHigh : 0,
+                findings.containsKey(POWER_BROKEN) || findings.containsKey(WATER_BROKEN) ? "did NOT match" : "matched", unbilledMonths);
 
         /*
          * CREDIT, BY SECTOR. The bank's line above says what it holds; this
