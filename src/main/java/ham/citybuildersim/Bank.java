@@ -3023,11 +3023,12 @@ public class Bank {
      * moves of the book's figure happened outside the settle and nothing
      * booked them. A line reopened at a premium (Game.issueLongBond()) lets the
      * proceeds over face eat the line's discount left, the settled part's
-     * included, and the bank's share of it with it; and the desk, or the
-     * treasury's buyback or call, handed the bank the whole line's discount pro
-     * rata over the whole face (Debt.unaccretedOn()) while the book counts the
-     * settled part's over the settled face, which differ whenever a sale is
-     * unsettled. Either way the book's figure moved and the carried one did not
+     * included, and the bank's share of it with it; and the desk handed the
+     * bank the whole line's discount pro rata over the whole face
+     * (Debt.unaccretedOn()) while the book counts the settled part's over the
+     * settled face, which differ whenever a sale is unsettled (the treasury's
+     * buyback and the call are not causes: see Game.restrikeBankDiscountCarried()).
+     * Either way the book's figure moved and the carried one did not
      * follow, and the next refresh moved the bank's liability, so its equity,
      * with no cause in equityMovement(): in SectorStatementCheck on FC1's path
      * month 135's unearned discount fell 7.06 with no named cause, and "its

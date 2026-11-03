@@ -1,0 +1,15 @@
+=== Timing: ns a month, median of 7 rounds after 5 of warm-up ===
+     9 rows: 1,964 ns a month (min 1,556, max 2,833)
+    18 rows: 4,686 ns a month (min 4,216, max 5,684)
+    64 rows: 6,709 ns a month (min 5,422, max 7,663)
+   512 rows: 25,437 ns a month (min 21,863, max 29,062)
+=== Timing: ns a month, median of 7 rounds after 5 of warm-up ===
+     9 rows: 2,115 ns a month (min 1,888, max 2,440)
+    18 rows: 3,808 ns a month (min 3,217, max 4,222)
+    64 rows: 6,435 ns a month (min 5,243, max 8,381)
+   512 rows: 21,086 ns a month (min 17,915, max 23,725)
+=== Timing: ns a month, median of 7 rounds after 5 of warm-up ===
+     9 rows: 1,360 ns a month (min 1,149, max 1,515)
+    18 rows: 2,839 ns a month (min 2,698, max 3,922)
+    64 rows: 4,750 ns a month (min 4,207, max 5,122)
+   512 rows: 22,948 ns a month (min 16,319, max 26,239)

@@ -1,0 +1,38 @@
+== rule-0.csv
+STOCKS, years of GDP: money position (financial assets less debts, shares left out) and its parts
+month      pop | households businesses government  bank   CB | treasury   fund  vault  debt | hh savings hh abroad | biz tills | city's share of the companies (rescue book)
+ 1200     36691 |       3.81      -0.17       0.77  0.05 -0.01 |     1.06   0.00   0.07  0.36 |       1.62      1.85 |      0.46 |     1% (  0%)
+ 2400    204974 |      13.24       0.52       0.29  0.00 -0.05 |     0.30   0.00   0.01  0.02 |      11.19      2.04 |      0.48 |     0% (  0%)
+ 3600    543986 |      19.49       0.36       0.64  0.00 -0.03 |     0.63   0.00   0.01  0.00 |      16.15      3.32 |      0.43 |     0% (  0%)
+
+FLOWS over each period, years of the period's GDP
+period      net exports income bal  financial    CB made  audit gap     hh gap          C          I          G    revenue   spending profit tax  fund xfer treasury +    payroll    hh disp
+    0-1200       0.488     -0.014     -0.216      0.000     -0.000     -0.024      0.244      0.180      0.089      0.291      0.230      0.085      0.017      0.121      0.310      0.349
+ 1200-2400       0.569      0.223     -0.264      0.002      0.000     -0.043      0.390      0.022      0.019      0.071      0.059      0.000      0.004      0.030      0.150      0.148
+ 2400-3600       0.432      0.315     -0.138      0.001     -0.000     -0.018      0.538      0.016      0.014      0.064      0.042      0.000      0.004      0.032      0.116      0.115
+
+PRICES AND THE CURRENCY at each mark
+month   index        fx/parity  policy  unemployment  real GDP (2015 US$)
+ 1200        25.67    0.968   0.1499    0.137      1.257e+05
+ 2400        269.9    0.794   0.0000    0.097      2.284e+06
+ 3600         1284    0.917   0.0000    0.070      6.808e+06
+
+== rule-1.csv
+STOCKS, years of GDP: money position (financial assets less debts, shares left out) and its parts
+month      pop | households businesses government  bank   CB | treasury   fund  vault  debt | hh savings hh abroad | biz tills | city's share of the companies (rescue book)
+ 1200     50894 |       5.35      -0.08       0.20  0.04 -0.01 |     0.47   0.00   0.02  0.28 |       1.76      3.29 |      0.47 |     4% (  3%)
+ 2400    233539 |      13.92       0.41       0.37  0.00 -0.03 |     0.36   0.00   0.00  0.00 |      11.84      2.07 |      0.46 |     0% (  0%)
+ 3600    551464 |      19.50       0.37       0.71  0.00 -0.04 |     0.71   0.00   0.00  0.00 |      16.20      3.29 |      0.43 |     0% (  0%)
+
+FLOWS over each period, years of the period's GDP
+period      net exports income bal  financial    CB made  audit gap     hh gap          C          I          G    revenue   spending profit tax  fund xfer treasury +    payroll    hh disp
+    0-1200       0.467      0.016     -0.267      0.000     -0.000     -0.011      0.291      0.172      0.070      0.247      0.227      0.063      0.009      0.091      0.300      0.335
+ 1200-2400       0.488      0.287     -0.131      0.002      0.000     -0.002      0.465      0.028      0.019      0.073      0.055      0.000      0.004      0.033      0.147      0.146
+ 2400-3600       0.458      0.324     -0.217      0.001      0.000     -0.003      0.511      0.016      0.015      0.066      0.042      0.000      0.003      0.032      0.126      0.124
+
+PRICES AND THE CURRENCY at each mark
+month   index        fx/parity  policy  unemployment  real GDP (2015 US$)
+ 1200        25.38    1.088   0.1436    0.139      1.788e+05
+ 2400        325.6    0.859   0.0000    0.118      2.256e+06
+ 3600         1324    0.867   0.0000    0.079      6.419e+06
+
