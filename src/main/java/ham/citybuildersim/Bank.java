@@ -3005,11 +3005,49 @@ public class Bank {
      * of the pooled discount, not an economic gain, so it moves neither profit
      * nor tax nor dividends; BK2 is to remove the artifact with a per-holder
      * discount. Saved with the month's lines. A non-finite or nil gain books
-     * nothing.
+     * nothing. (Where an issue or a trade releases the discount outside the
+     * settle, restrikeCarriedDiscount() is the cause, since BD1.)
      */
     public void restrikeDiscount(double gain) {
         if (!Double.isFinite(gain) || gain == 0) return;
         discountRestruck += gain;
+    }
+
+    /**
+     * THE DISCOUNT RE-STRUCK WHERE IT HAPPENS (BD1): the gain or loss from the
+     * pooled discount moving the book's figure for the bank
+     * (DebtManager.bankUnearnedDiscount()) by more or less than the trade that
+     * moved it carried, booked as restrikeDiscount() books it - a named cause
+     * routed to retained earnings and not to income - and the carried unearned
+     * discount moved by the same at once, onto the book's figure. WHY: two
+     * moves of the book's figure happened outside the settle and nothing
+     * booked them. A line reopened at a premium (Game.issueLongBond()) lets the
+     * proceeds over face eat the line's discount left, the settled part's
+     * included, and the bank's share of it with it; and the desk handed the
+     * bank the whole line's discount pro rata over the whole face
+     * (Debt.unaccretedOn()) while the book counts the settled part's over the
+     * settled face, which differ whenever a sale is unsettled (the treasury's
+     * buyback and the call are not causes: see Game.restrikeBankDiscountCarried()).
+     * Either way the book's figure moved and the carried one did not
+     * follow, and the next refresh moved the bank's liability, so its equity,
+     * with no cause in equityMovement(): in SectorStatementCheck on FC1's path
+     * month 135's unearned discount fell 7.06 with no named cause, and "its
+     * equity's parts are its equity" was off by 7.05 in 226 of 479
+     * bank-months. It moves the carried figure here where restrikeDiscount()
+     * does not: BK1's settle is realised by the same month's refresh, with the
+     * settle's paper, but an issue between the presses, or a trade, is realised
+     * by nothing until the next month's refresh, after the month has opened on
+     * the old equity - so it moves equity where it happens, as the treasury's
+     * buyback between two presses does (sellPaperBack()). Not clamped at
+     * nothing: the gain is measured against the book, so the carried figure
+     * lands on the book's, and a clamp would open the identity it closes. A
+     * non-finite or nil gain books nothing. Saved with the month's lines
+     * (discountRestruck).
+     */
+    public void restrikeCarriedDiscount(double gain) {
+        if (!Double.isFinite(gain) || gain == 0) return;
+        discountRestruck += gain;
+        unearnedDiscount -= gain;
     }
 
     /** The month's gain or loss from the pooled discount being re-struck: a cause of the equity's movement, routed to retained earnings and outside getPaperGains(). Saved with the month's lines. */
@@ -6507,7 +6545,8 @@ public class Bank {
      * its own shares bought back and issued; the shortfall absorbed when it
      * failed; the gain on paper the treasury bought back between two
      * presses; the bank's share of a reopened line's discount, re-struck
-     * (BK1, routed to retained and not income); and the allowance an older
+     * (BK1, and since BD1 where an issue or a trade releases it; routed to
+     * retained and not income); and the allowance an older
      * save was given on load.
      * residual() is what none of them explains, and must be nothing.
      *
@@ -6582,7 +6621,8 @@ public class Bank {
      * their shares then, so what they paid in stayed paid in and the losses
      * stayed retained; the gain or loss on paper the treasury
      * bought back from it between two presses; the bank's share of a reopened
-     * line's discount, re-struck (BK1); and the allowance an older
+     * line's discount, re-struck (BK1, and since BD1 where an issue or a trade
+     * releases it); and the allowance an older
      * save was given on load.
      *
      * Those are equityMovement()'s causes, every one, each routed to one of
@@ -6623,8 +6663,9 @@ public class Bank {
      * against the losses, the preferred the hole took, less the preferred's
      * dividend. The preferred itself is its own line (preferredOutstanding()),
      * so buying or redeeming it moves neither of these. And since BK1 the
-     * bank's share of a reopened line's discount, re-struck (discountRestruck):
-     * a cause of the movement that is not income.
+     * bank's share of a reopened line's discount, re-struck (discountRestruck;
+     * since BD1 also where an issue or a trade releases it): a cause of the
+     * movement that is not income.
      */
     public double retainedThisMonth() {
         return getNetIncome() - dividendsPaid + foundingSettlement + resolutionLossThisMonth

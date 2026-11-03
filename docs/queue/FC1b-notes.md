@@ -1,4 +1,4 @@
-# FC1b - FC1's review follow-ups: a cancelled order leaves the foreign contractor's book, and overtime on the city's own crews alone ({next}, 2026-11-02)
+# FC1b - FC1's review follow-ups: a cancelled order leaves the foreign contractor's book, and overtime on the city's own crews alone (0.9.7, 2026-11-02)
 
 The stranger's review at FC1's gate (SHIP + FOLLOW-UP, `docs/queue/FC1b.md`) found two leaks in the foreign
 contractor's month. Both fire only in a city in the builders' trap, which no ensemble seed reached; the money audit
