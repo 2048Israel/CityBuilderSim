@@ -488,12 +488,14 @@ public class MapCheck {
     static final int DRAWN_EVERY = 30;
 
     public static void main(String[] args) throws Exception {
-        // FC1: on FC1's model these cities build otherwise, and in section 2h boxes of the month the reserve came move in
-        // the plan four months on (12 of 779 in the first scenario, 23 in the second; 0 of 539 without FC1): mostly 1x1
-        // houses and 2x2 and 2x3 mixed buildings at plots (5-14, 61-62), (67-69, 47-50) and (34-45, 67-70), none on fixed
-        // ground or a run. DistrictPlan says what stands never moves, so it is a planner defect FC1's path reaches (queued as
-        // DM1, docs/queue/DM1.md); sections 1 to 2h are checked on the city they were written on, FC1 off
-        // (BuildingManager.buildersShortOn) until after 2h, below, until DM1 mends the plan.
+        // FC1: on FC1's model these cities build otherwise, and boxes that stand move in the plan when a street piece the
+        // buildings wall in changes its way kept clear (DistrictPlan, A PIECE BUILDINGS WALL IN), which first-fit follows
+        // with a cascade (the figures are of a city built without the Earth file): in section 2d the arrivals four months on
+        // (9 boxes: a second piece born walled in at month 133) and the yard that goes (73: the wall its ground cured is
+        // back), in 2h the reserve month (76 moved for 71 lying: the reserve re-routes a way) and four months on (12 and 23
+        // boxes, as the way is worked out again from each month's arrivals). The way needs dating in a journal (DM2,
+        // docs/queue/DM2.md; DM1 found that dating it from the replay alone moves boxes after a land purchase, SlopeCheck 9);
+        // until then sections 1 to 2h are checked on the city they were written on, FC1 off (BuildingManager.buildersShortOn).
         BuildingManager.buildersShortOn = false;
         boolean quietRun = Arrays.asList(args).contains("-q");
         if (quietRun) out = new PrintStream(new OutputStream() { @Override public void write(int b) { } }) {
