@@ -175,6 +175,8 @@ The discussed rule: the band just above the highest band the floor holds keeps h
 
 ## 4. The calls
 
+**Answered by Jerus, 2026-11-02: all four as recommended** - C1 (b) 0.85, "0.85, Nova Scotia's"; C2 (a), "Cut the excess, honest label"; C3 (a), "After cost, not high school"; C4, "Queue all six". The batches are in `QUEUE.md`.
+
 **C1. Where the floor starts.** Options: (a) at the going rate, as today: byte-identical, and the floor holds 94% of workers; (b) at 0.85 of it, Nova Scotia's legal minimum over the labourer's median [S2][S3]: it holds 2.5% of workers (in a deep glut), unemployment 3 points lower, the median worker paid 6-11% less; (c) at 0.90: it holds 59%, unemployment 1-3 points lower, pay 6-10% lower. **Recommended: (b)**, the one sourced figure, and the only one where the dial is a protection with room under it. (Nova Scotia's minimum moves each April by last year's prices plus a point [S2]; the game's is held real, so 0.85 is the figure on the day, not a rule.)
 
 **C2. Senior care's excess, and the verdict.** Big cities in rich countries run 2.4-9% [S4]; the game's city sits near 10% because of the staffing gate (3.4), and a senior-care city near 30% because of the pull. Options: (a) 3.4's parts 1-3 (the pulls on the homes' draw, arrivals slowing past 6%, the jobless past 6% leaving): a senior-care city to 12-13%, smaller in its young decades; the verdict green 3-7%, amber to 12%, red past it; GW0 studies the gate; (b) part 1 only and the verdict: a senior-care city to 17-19%; (c) the verdict only: his cities read red at 21%; (d) neither. **Recommended: (a).** Part 4 (vacancies drawing people) is left out: measured, it did not keep the cities' size (table 2).
