@@ -1,5 +1,11 @@
 # CB1 - the central bank's strictness measured over twelve cities, not one probe city ({next}, 2026-11-02)
 
+> WIP, 2026-11-02 evening (paused on the orchestrator's word; delete this block before the ship file). Done on local
+> branch claude/cb1-311310 (built on main 37d65b2e, not pushed): the slice (d3b20601), green on main, and these notes.
+> Next: when step 0's wait says BA1 ready, `git checkout -b batch/CB1 origin/batch/BA1`, cherry-pick d3b20601 and
+> the notes, `./batch-check.sh --pick`, update probeCity()'s "0.05 to 0.74" and 2/5 with the run's figures, push the
+> branch; `sh tools/wait.sh --row BA1`, merge origin/main, then the ship file last (`{next}`, pending row CB1-L).
+
 Jerus, 2026-11-01: "queue, but after 0.9.0", from the day's question whether a check that tests one city's history
 should exist. The brief is `docs/queue/CB1.md`; EP1's notes, 11, the evidence. Lane 1's last batch on the night of
 2026-11-02, built on BA1. One slice (Sonnet 5.5, xhigh), reviewed here; the header's prose written here.
