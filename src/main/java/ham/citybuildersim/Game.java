@@ -15434,12 +15434,14 @@ public class Game {
         // multiple is at most sqrt(1 + MOST_OF_POSTS) times what the posts that exist set. pricedOn() holds the
         // latent posts to the posts as they stand now, and is the posts unchanged when there are none. The gate's
         // own test (Sector.staffing()) and Migration's opportunity still read only the posts that exist.
+        // STAFFABLE, not raw. A band is priced on the work its own
+        // members can take; the posts only a licence holder can fill
+        // are priced separately, as a licence premium on that job.
+        double[] priced = wantedPosts.pricedOn(populationManager.staffablePostsByBand());
         labourMarket.advanceMonth(
-                // STAFFABLE, not raw. A band is priced on the work its own
-                // members can take; the posts only a licence holder can fill
-                // are priced separately, as a licence premium on that job.
-                wantedPosts.pricedOn(populationManager.staffablePostsByBand()),
-                populationManager.supplyByBand(),
+                priced,
+                // (a harness may fill against the refused posts too, as LD1 did: WantedPosts.carryKeptOut)
+                WantedPosts.carryKeptOut ? populationManager.supplyByBand() : populationManager.supplyByBand(priced),
                 populationManager.getJobs(),
                 populationManager.getLicensedHeads());
         populationManager.takeWagesFrom(labourMarket);

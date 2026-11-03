@@ -1,4 +1,4 @@
-# HoldersCheck.java - 1,773 lines · 25 methods · 2 constants · harnesses
+# HoldersCheck.java - 1,779 lines · 25 methods · 2 constants · harnesses
 
 `ham/citybuildersim/HoldersCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
@@ -64,31 +64,31 @@
 >     the hot money departs and PANIC_EXIT of it in a run, when it also bids
 > ... (21 more lines in the source)
 
-**Uses:** [MoneyAudit](MoneyAudit.md) (50), [Game](Game.md) (45), [Debt](Debt.md) (32), [DebtManager](DebtManager.md) (26), [PriceLevel](PriceLevel.md) (22), [CapitalFlows](CapitalFlows.md) (18), [Sectors](Sectors.md) (15), [Bank](Bank.md) (15), [GameFiles](GameFiles.md) (10), [OutwardInvestment](OutwardInvestment.md) (8), [HouseholdBalance](HouseholdBalance.md) (7), [CentralBank](CentralBank.md) (7), [Founding](Founding.md) (5), [Household](Household.md) (5), [Buyback](Buyback.md) (3), [Auction](Auction.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [BuildingManager](BuildingManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [SectorBooks](SectorBooks.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [MoneyAudit](MoneyAudit.md) (50), [Game](Game.md) (45), [Debt](Debt.md) (32), [DebtManager](DebtManager.md) (26), [PriceLevel](PriceLevel.md) (22), [CapitalFlows](CapitalFlows.md) (18), [Sectors](Sectors.md) (15), [Bank](Bank.md) (15), [GameFiles](GameFiles.md) (10), [OutwardInvestment](OutwardInvestment.md) (8), [HouseholdBalance](HouseholdBalance.md) (7), [CentralBank](CentralBank.md) (7), [Founding](Founding.md) (5), [Household](Household.md) (5), [Buyback](Buyback.md) (3), [Auction](Auction.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [BuildingManager](BuildingManager.md) (1), [WantedPosts](WantedPosts.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [SectorBooks](SectorBooks.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 204 | · 1. at the settle |
-| 264 | · 2. the coupon |
-| 278 | · 3. the waterfall |
-| 311 | · 4. selling after the curve rose |
-| 341 | · 5. a buyback |
-| 387 | · 6. the save |
-| 431 | · 7. an old save |
-| 493 | · 8. a dollar bond bought back |
-| 532 | 9. the whole of the paper (0.7.15) |
-| 725 | 10. the businesses (CD2, slice 4, D33) |
-| 1190 | 11. the world (CD2, slice 5, D7; star 2) |
-| 1601 | 12. the pooled discount re-struck (BK1) |
+| 210 | · 1. at the settle |
+| 270 | · 2. the coupon |
+| 284 | · 3. the waterfall |
+| 317 | · 4. selling after the curve rose |
+| 347 | · 5. a buyback |
+| 393 | · 6. the save |
+| 437 | · 7. an old save |
+| 499 | · 8. a dollar bond bought back |
+| 538 | 9. the whole of the paper (0.7.15) |
+| 731 | 10. the businesses (CD2, slice 4, D33) |
+| 1196 | 11. the world (CD2, slice 5, D7; star 2) |
+| 1607 | 12. the pooled discount re-struck (BK1) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1218 | `HoldersCheck.CENT` | `.0051` | The audit's tolerance for a figure read to the cent: auditLine() reads a figure back from the audit's printed detail, which prints thousands to two places (MoneyAudit, "%,14.2f"), a step of 0.01 whatever the price lev... |
-| 1663 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", ...` |  |
+| 1224 | `HoldersCheck.CENT` | `.0051` | The audit's tolerance for a figure read to the cent: auditLine() reads a figure back from the audit's printed detail, which prints thousands to two places (MoneyAudit, "%,14.2f"), a step of 0.01 whatever the price lev... |
+| 1669 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", ...` |  |
 
 ## Fields (state)
 
@@ -103,7 +103,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 92 | 1682 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 92 | 1688 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
 | 98 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 103 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 113 | 4 | `static void quietly(Runnable r)` |  |
@@ -111,44 +111,44 @@
 | 125 | 1 | `static double savings(Game g)` |  |
 | 128 | 5 | `static boolean booksAgree(Game g)` | The two books of the households' paper agree: the cells, and the paper. |
 | 137 | 10 | `static MoneyAudit.Result play(Game g)` | A month, held to the audit. |
-| 148 | 383 | `public static void main(String[] args) throws Exception` |  |
+| 148 | 389 | `public static void main(String[] args) throws Exception` |  |
 
-### 9. the whole of the paper (0.7.15) (lines 532-724)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 535 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
-| 541 | 183 | `static void theWholeBook() throws Exception` |  |
-
-### 10. the businesses (CD2, slice 4, D33) (lines 725-1189)
+### 9. the whole of the paper (0.7.15) (lines 538-730)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 728 | 5 | `static boolean firmsAgree(Game g)` | The two books of the businesses' paper agree: the sectors', and the paper's. |
-| 735 | 5 | `static Debt newPiece(DebtManager ledger, java.util.List<Debt> before)` | The domestic piece on the books that was not there before. |
-| 742 | 5 | `static double[] tills(Game g)` | Every sector's till, in Sectors.KEYS order. |
-| 749 | 5 | `static double[] holdings(Game g)` | Every sector's paper, in Sectors.KEYS order. |
-| 756 | 8 | `static boolean booksExplain(Game g, java.util.List<String> sectors)` | True when these sectors' cash flow statements explain their tills to the cent this month (SectorBooks.SectorMonth.unexplained()). |
-| 766 | 3 | `static void near(String label, double actual, double expected)` | One close() with the tolerance a part in a billion of the figure, or a cent. |
-| 770 | 419 | `static void theBusinesses() throws Exception` |  |
+| 541 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
+| 547 | 183 | `static void theWholeBook() throws Exception` |  |
 
-### 11. the world (CD2, slice 5, D7; star 2) (lines 1190-1600)
+### 10. the businesses (CD2, slice 4, D33) (lines 731-1195)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1193 | 5 | `static boolean worldAgrees(Game g)` | The two books of the world's paper agree: CapitalFlows', and the paper's. |
-| 1200 | 12 | `static double auditLine(MoneyAudit.Result r, String label)` | One line of the month's audit by its label, to the cent: 0 when the month has none. |
-| 1220 | 380 | `static void theWorld() throws Exception` |  |
+| 734 | 5 | `static boolean firmsAgree(Game g)` | The two books of the businesses' paper agree: the sectors', and the paper's. |
+| 741 | 5 | `static Debt newPiece(DebtManager ledger, java.util.List<Debt> before)` | The domestic piece on the books that was not there before. |
+| 748 | 5 | `static double[] tills(Game g)` | Every sector's till, in Sectors.KEYS order. |
+| 755 | 5 | `static double[] holdings(Game g)` | Every sector's paper, in Sectors.KEYS order. |
+| 762 | 8 | `static boolean booksExplain(Game g, java.util.List<String> sectors)` | True when these sectors' cash flow statements explain their tills to the cent this month (SectorBooks.SectorMonth.unexplained()). |
+| 772 | 3 | `static void near(String label, double actual, double expected)` | One close() with the tolerance a part in a billion of the figure, or a cent. |
+| 776 | 419 | `static void theBusinesses() throws Exception` |  |
 
-### 12. the pooled discount re-struck (BK1) (lines 1601-1773)
+### 11. the world (CD2, slice 5, D7; star 2) (lines 1196-1606)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1604 | 1 | **type** `record Reopening(Game city, Debt line, double splitStart)` | One city of section 12 (BK1): the city, the line it sold once and settled, and its split going in. |
-| 1611 | 32 | `static Reopening reopeningFixture(String label, boolean restrikeOff) throws Exception` | Section 12's fixture, made twice: a city founded, built and played as the other sections' cities were, then a twenty-year bond sold between the presses and settled. |
-| 1645 | 2 | **type** `record Reopened(double faceBefore, double faceAfter, double perFaceBefore, double perFaceAfter, double held...` | What the reopening did to a line: its face and its discount per unit of face either side, whether it is the same line, and what the households held going in. |
-| 1649 | 13 | `static Reopened reopen(Game city, Debt line)` | The reopening, done the same way to the city and to its twin: the rates up four points and the same line sold again, to be settled the next month. |
-| 1666 | 5 | `static double[] cityFigures(Game g)` | The figures of a month that the re-strike must not move (BK1): the bank's profit, tax, dividends and gains on the city's paper, the treasury's cash and the bank's equity. |
-| 1673 | 6 | `static String firstDifference(double[] city, double[] twin)` | The first figure of the two that is not the same, bit for bit, as a sentence; empty when every one is. |
-| 1680 | 93 | `static void theReopening() throws Exception` |  |
+| 1199 | 5 | `static boolean worldAgrees(Game g)` | The two books of the world's paper agree: CapitalFlows', and the paper's. |
+| 1206 | 12 | `static double auditLine(MoneyAudit.Result r, String label)` | One line of the month's audit by its label, to the cent: 0 when the month has none. |
+| 1226 | 380 | `static void theWorld() throws Exception` |  |
+
+### 12. the pooled discount re-struck (BK1) (lines 1607-1779)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1610 | 1 | **type** `record Reopening(Game city, Debt line, double splitStart)` | One city of section 12 (BK1): the city, the line it sold once and settled, and its split going in. |
+| 1617 | 32 | `static Reopening reopeningFixture(String label, boolean restrikeOff) throws Exception` | Section 12's fixture, made twice: a city founded, built and played as the other sections' cities were, then a twenty-year bond sold between the presses and settled. |
+| 1651 | 2 | **type** `record Reopened(double faceBefore, double faceAfter, double perFaceBefore, double perFaceAfter, double held...` | What the reopening did to a line: its face and its discount per unit of face either side, whether it is the same line, and what the households held going in. |
+| 1655 | 13 | `static Reopened reopen(Game city, Debt line)` | The reopening, done the same way to the city and to its twin: the rates up four points and the same line sold again, to be settled the next month. |
+| 1672 | 5 | `static double[] cityFigures(Game g)` | The figures of a month that the re-strike must not move (BK1): the bank's profit, tax, dividends and gains on the city's paper, the treasury's cash and the bank's equity. |
+| 1679 | 6 | `static String firstDifference(double[] city, double[] twin)` | The first figure of the two that is not the same, bit for bit, as a sentence; empty when every one is. |
+| 1686 | 93 | `static void theReopening() throws Exception` |  |
 

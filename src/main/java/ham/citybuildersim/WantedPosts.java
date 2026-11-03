@@ -60,6 +60,15 @@ public final class WantedPosts {
     public static final double MOST_OF_POSTS = 1.0;
 
     /**
+     * Whether the supply the wage is struck against is the fill against the posts that exist (LD2): always, in the game.
+     * Harnesses only turn it off, for the whole JVM (AllChecks runs each harness in its own), as FC1's
+     * BuildingManager.buildersShortOn: a fixture town whose claim is not about wages, which LD2's pricing moves onto a
+     * path that reaches a fault elsewhere (each harness's comment and LD2's notes 6 say which). Off, Game.repriceLabour()
+     * fills against the posts plus the refused ones, as LD1 did. Nothing in the game sets it.
+     */
+    static boolean carryKeptOut = true;
+
+    /**
      * One refused building's ask: its sector and building, the posts it lacks workers for per band (only in the bands
      * it is short in), and how far the wage of those posts could rise, as a factor on today's, and the building
      * still carry its interest.
