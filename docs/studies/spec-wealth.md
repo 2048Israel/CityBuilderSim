@@ -21,12 +21,12 @@ Each figure is one of four kinds. **Measured** figures come from three seeds (0,
    Households sit outside the money audit by design, so no harness has seen it. **HL1** fixes it first.
 7. **The fix is a drain that reads the stock, in every sector.** The households already have one (4% of net worth a year), and so do the businesses (EM1's cushion). The government has none. So:
    - **GV1:** your screens say what the government holds, in years of its revenue, and the three ways to give it back;
-   - **GV2:** an optional rule you switch on, which steps your levers back toward a band each January;
+   - **GV2:** the playtest's player (the city LongPlaytest and the ensemble play, and Claude when it plays) steps its three levers back toward a band each January: taxes, pensions and benefits, and the fund's withdrawal (your call, 2026-11-02);
    - **RB1:** the fund holds to its own 10% of a company, selling what a buyback has pushed past it.
 8. **A prototype player who reads the government's wealth bounds it, and the pile moves to the households.** It used only your own levers: past two years of revenue, it cut the profit and sales taxes, raised pensions and drew the fund's cash. By month 3,600 the government held 0.6-0.7 years of GDP instead of 19-26, and spending rose from 33% of GDP to 51-54%. Net exports fell from 64% of GDP to 43-46%. But households went from 10-11 years of GDP to 19.5, still rising. That is your thin line, measured: bound one sector and the money arriving from abroad piles in the next. Each sector needs its drain, and the households' rate (the households study's) and the labour share (the wages study's) decide where the city settles.
-9. **Four calls**, each with a recommendation (section 4): the rule's lever, the fund's 10%, the currency's cap, and nothing new for businesses.
+9. **Your four calls, 2026-11-02** (section 4): GV2 for the playtest city only, with all three levers and no city dividend; the fund sells past its 10%; the currency's cap and the businesses left as they are, the cap to be solved later (XC1); all four batches queued.
 10. **A different blow-up past month 7,200,** found on the way and not this study's. In two seeds of three (seed 1 near month 7,390, seed 0 near 7,530), the central bank lends the bank tens of thousands of years of GDP within a year. The bank's cash goes to -1.5e17, and the treasury, the fund and the bank's equity jump a thousandfold. Every dollar is booked, so the audit closes. Nothing checks past month 4,000, and your city is at 7,871. It needs its own task (section 6).
-11. **Four batches** (section 5): HL1 (medium, the trace moves), RB1 (small, moves), GV1 (small, screens only), GV2 (medium, off by default, so the trace is byte-identical).
+11. **Five batches, queued** (section 5): HL1 (medium, the trace moves), GV1 (small, screens only), RB1 (small, moves), GV2 (small, the playtest's player, moves) and XC1 (the cap without the spiral, a study first, last).
 
 ## 2. What was measured
 
@@ -144,7 +144,7 @@ Every lever is a setter the Policy and Finances screens already call. Seeds 0 an
 (Years of GDP at month 3,600; flows over months 2,400-3,600.) By month 2,400 the rule had taken the profit tax to nought and pensions to 100%, and the government sat in its band. Spending rose by 60% (derived: 0.54 ÷ 0.33), and net exports fell by a third. The town grew to about the same size. Unemployment was 7-12% against main's 6-23%.
 
 The households' net worth rose from 13.2 to 19.5 years of GDP between months 2,400 and 3,600 and was still rising. Their take-home stayed at 12% of GDP, because a profit-tax cut reaches owners, not earners. So the rule moves the pile; on its own it does not end it. The money keeps arriving while net exports are 43% of GDP, and it settles wherever the weakest drain is. So:
-- **GV2 should pay out to every household** (★1 (a)), which raises take-home rather than profits;
+- **GV2 moves the playtest's levers** (Jerus's answer to ★1: all three, no city dividend), so the pile it moves goes to the owners and the retired first;
 - **the households study's drain** sets their level;
 - **the wages study's labour share** (payroll 12-13% of GDP, where compensation is about half of value added in the US, from the BEA's industry accounts, a federal work in the public domain, as HD1's notes cite it) sets how much of what the city makes its people can buy.
 
@@ -158,12 +158,12 @@ A stock that compounds is bounded only by a drain that reads the stock (`Househo
 | households | net worth over income | spends 4% a year of net worth (`WEALTH_SPENT_A_MONTH`) | the waterfall: savings, then credit, then hunger | built; rate kept (households study) |
 | businesses | spare cash over 6 months of costs and debt service | EM1's buyback pays it out | the bank and the bond market | built (EM1) |
 | the fund | its share of each company; idle cash | RB1: holds to its 10%, and idle cash reaches the budget | the treasury pays in | **missing** |
-| the government | cash, fund and vault less debt, over a year's revenue | GV1 says so; GV2 steps the levers back, if switched on | advances, bonds (built) | **missing** |
+| the government | cash, fund and vault less debt, over a year's revenue | GV1 tells you; GV2's playtest player steps its levers back | advances, bonds (built) | **missing** |
 | the city against the world | the overall balance over GDP | the D$ dearer, up to 20% | cheaper, up to 20% | kept (★3) |
 
 Per month the cost is one comparison per sector, plus GV2's levers moved once a year: nothing a month can feel.
 
-### 3.2 The government: the advice (GV1) and the optional rule (GV2)
+### 3.2 The government: the advice on your screens (GV1) and the playtest's player (GV2)
 **GV1, the screens.**
 - **`GovernmentView`** (a new pure model, or the Government screen's own model if it has one) gets `wealthYears()`: (treasury + fund cash + the fund's holdings at mark + the vault − the city's debt) ÷ the last twelve months' revenue. Every part is a getter that exists (`getCash`, `TreasuryFund.getCash`, the fund's marked holdings, `ForeignAccounts.getReserves`, `DebtManager.getAllPrincipal`). It also gets a band:
 
@@ -184,12 +184,17 @@ Per month the cost is one comparison per sector, plus GV2's levers moved once a 
 
 No model change, so the trace is byte-identical.
 
-**GV2, the rule, off by default** (Policy screen, "Keep the government's wealth in its band"). Each January it reads `wealthYears()`:
-- above the band's top, it moves the chosen lever one step toward giving the money back;
-- below the bottom, one step the other way;
-- inside the band, nothing.
+**GV2, the playtest's player reads the government's wealth** (Jerus, 2026-11-02: "only for the auto city, aka the city the playtests do, not the actual player, and that would be all three. like for when claude needs to play the game, not the city dividend tho").
+- **Where:** the player's moves in `LongPlaytest.main` and its copies (`tools/ensemble/Ensemble.foundAndPlay`, `WealthRun`). Nothing in the game's own model or screens: you play your city by hand.
+- **The rule, each January:** read GV1's `wealthYears()`. Past the band's top (2 years of revenue), move all three lever families one step toward giving the money back:
+  - taxes: the profit tax 5 points and the sales tax 2 points down, to nought at most;
+  - transfers: the pension's replacement and the EI benefit 5 points up, to their caps;
+  - the fund: its withdrawal to its most, so its idle cash reaches the budget.
 
-The levers are the player's own setters (`TaxPolicy.setProfitTaxRate`, `setSalesTaxRate`, `setPensionReplacement`; `TreasuryFund.setWithdrawal`), plus the one lever the game lacks, which is call ★1. Its state (on, the band, the lever) is saved (`DataSave`; `SaveFileCheck` and `ReadPathCheck`). A step a year keeps it slower than the player and visible on the Policy screen's log.
+  Under the band's bottom (half a year), move each back one step. Inside the band, do nothing.
+- **It replaces the playtest's scripted tax steps** (the income tax every 11th stop, the property tax every 17th), which would fight it.
+- **Measured as the prototype** (2.7): it holds the government to 0.6-0.7 years of GDP. Spending rises from 33% to 51-54% of GDP, net exports fall by a third, and the households' net worth goes to 19.5 years of GDP. So the batch reads its ensemble beside the households study's drain.
+- **The trace moves** (the playtest's player changes), so the batch runs the ensemble. Its AUTO2 policy is this player.
 
 ### 3.3 The fund (RB1)
 - **The fund holds to its 10%.** Today `OWNERSHIP_LIMIT` caps what the rule buys. RB1 reads it on the holding too: the part of a market-book holding past 10% of a company's shares in issue is offered into the book, a tenth of the excess a month. That uses the market book's own sale path (EM1-U's sale into a bid over fair × (1 + BAND)), so a buyback's bid takes it first. The mandate the limit cites is a limit on what the fund may hold, so this is the dial's own source read whole. A tenth a month is ★est.: fast enough that a buyback's ratchet cannot outrun it, slow enough to stay inside the book's band.
@@ -220,12 +225,12 @@ Handed over in the shared notes (`wealth.md`), and repeated here:
 ### 3.7 The currency: kept (call ★3)
 The cap stays, by section 2.5's measurement. One related bug is the gold study's (XI1: an intervention's impact unbounded, the x11,600 move in your slot 3).
 
-## 4. The calls, each with a recommendation
-- **★1 GV2's lever.** What the rule moves when the government is too rich: (a) a new **city dividend**, cash per household each month, paid into savings on one DOMESTIC line; (b) the taxes, profit tax first; (c) pensions and benefits; or (d) the player's own order of all three. **Recommended (a).** The revenue is mostly the profit tax and the fund's transfer: cutting the profit tax to nought still leaves the fund's 22-45% of GDP. Pensions reach only the retired. A dividend reaches every household, which spends some of it and 4% a year of the rest.
-- **★2 The fund's 10%.** Today the fund may buy no more than 10% of a company, but buybacks push its holding to 84-97%. Should it sell what passes 10% (a tenth of the excess a month), or keep it as today? **Recommended: sell.** It is the ratchet in 2.3. Norway's mandate, which the dial cites, limits what the fund holds.
-- **★3 The currency's cap.** Keep the 20% cap on the balance's pull, or let the pull build while a surplus lasts. **Recommended: keep.** The prototype shrank the town to a quarter or less and left net exports at 62-74% of GDP.
-- **★4 Businesses.** Nothing new (EM1's buyback stays the payout), or a special dividend when spare cash finds no seller for a year. **Recommended: nothing new.** The tills are measured inside the cushion, and you said no special dividend in 0.7.12.
-- **★5 (HL1's detail, not a question for you).** The upkeep becomes a purchase from Business Services, with a sector's usual import share going abroad. **Recommended as written;** the batch measures the shares.
+## 4. The calls, and Jerus's answers (2026-11-02)
+- **★1 GV2's lever.** Asked: a city dividend (recommended), the taxes, pensions and benefits, or all three in the player's order. **Answer:** "only for the auto city, aka the city the playtests do, not the actual player, and that would be all three. like for when claude needs to play the game, not the city dividend tho". So GV2 is the playtest player's rule, moving all three, with no new lever (3.2).
+- **★2 The fund's 10%.** **Answer: sell the excess** (as recommended): RB1.
+- **★3 The currency's cap and ★4 businesses.** **Answer:** "leave both, but we do need to later solve the cap issue, aka be able to remove cap and not have it spiral always". So the cap and EM1 stay. XC1 is queued last: a balance pull with no cap that does not spiral. It is studied after the spending-side batches, because the prototype in 2.5 spiralled on today's city, where trade follows quantities.
+- **★5 (HL1's detail, not his).** The upkeep becomes a purchase from Business Services, a sector's usual import share going abroad; the batch measures the shares.
+- **Queue:** all four, plus XC1 for the cap.
 
 ## 5. The batches, their size and their order
 
@@ -234,9 +239,10 @@ The cap stays, by section 2.5's measurement. One related bug is the gold study's
 | **HL1** | The households' books closed: the identity in the audit (3.4.1), the upkeep to a seller (3.4.2), the households' share trades and the emigrants on the balance of payments (3.4.3), migration's money as lines (3.4.4) | medium (Sonnet slice + Opus review; MoneyAudit, HouseholdBalance, Exchange, the services' upkeep) | moves: ensemble | nothing; first |
 | **RB1** | The fund holds to its 10% of a company, selling what a buyback has pushed past it; the fund's idle cash to the budget (3.3) | small | moves: ensemble | ★2 |
 | **GV1** | The government's wealth on its screens: `wealthYears()`, the band, the line, the three ways back, the notice (3.2) | small (screens) | byte-identical | nothing |
-| **GV2** | The optional rule, off by default, its lever (★1), saved (3.2) | medium (the lever if ★1 is (a), the rule, the Policy screen, the save) | byte-identical while off; an ensemble policy with it on | GV1, ★1 |
+| **GV2** | The playtest's player reads the government's wealth: all three levers by the band, in place of the scripted tax steps (3.2) | small (LongPlaytest, Ensemble's copy) | moves: ensemble | GV1 |
+| **XC1** | The currency's balance pull without the 20% cap, and without the spiral (★3's answer): a study first, rerunning `fx-prototype/` uncapped on the city after the spending-side batches, then the batch | study, then medium | moves | HL1, RB1, GV2, the households and wages batches |
 
-Order: HL1, then GV1, then RB1, then GV2. HL1 first because a leak is a bug. GV1 next because it moves no trace and tells you what you hold. RB1 and GV2 each move the city.
+Order, as queued at the end of the queue (Jerus, 2026-11-02): HL1, GV1, RB1, GV2, XC1. HL1 comes first because a leak is a bug. It comes after the households study's HS1 in the queue, so HS1's migrants' flows become lines of HL1's identity. GV1 moves no trace and tells you what you hold. RB1 and GV2 each move the city. XC1 comes last, because a cap can only come off once the surplus has a cure.
 
 The other studies:
 - the households study owns spending out of wealth, and its migrants carry their money through HL1's identity;
@@ -244,9 +250,9 @@ The other studies:
 - the gold study owns the currency regimes and XI1.
 
 ## 6. Risks, and what to measure first
-- **The prototype player is not you.** It plays the playtest's advisor, which builds less as the city matures (spending 0.32 → 0.05 of GDP). You spend more: your treasury gains 11% of GDP a year, where the advisor's gains 50-70%. The shape is the same and the speed is not. GV2's ensemble policy should be read against the advisor's runs, not against your save.
+- **The prototype player is not you.** It plays the playtest's advisor, which builds less as the city matures (spending 0.32 → 0.05 of GDP). You spend more: your treasury gains 11% of GDP a year, where the advisor's gains 50-70%. The shape is the same and the speed is not. GV2 is the playtest's player by your answer, so its runs are the advisor's, not your save.
 - **HL1 stops money vanishing**, so households end richer by up to 4% of GDP a year. The ensemble's inflation criteria may move.
 - **RB1 hands the companies' dividends back to households and the world.** That is a real change in who earns, so it waits on ★2.
-- **GV2 moves the pile to the households** (2.7). Its ensemble policy should be read beside the households study's drain, and both run on a city with the rule on.
+- **GV2 moves the pile to the households** (2.7). Its ensemble should be read beside the households study's drain.
 - **The blow-up past month 7,200** (summary 10) is not this study's. Its fixture is `WealthRun` seed 1, which reaches month 7,344 in about 6 minutes: a credit run between months 7,344 and 7,392, the central bank lending the bank 8.2e16 in the year (35,000 years of GDP), the bank's cash at -1.5e17, valuation +2.9e16 and the profit tax 2.6e16. Its own task should find the month, then the line.
 - **First, in HL1:** strike the identity on main before any fix. It must show the measured -0.1% of savings a month, as the harness's own premise: "a harness is the finding".
