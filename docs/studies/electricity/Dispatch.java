@@ -348,10 +348,17 @@ public class Dispatch {
     /** The city's demand in the scenarios, MW delivered on the year's mean. */
     static double CITY = 1000;
 
-    /** A year of the city (losses grossed up) on `ps`: prints the fleet, its year and the tariff at cost; returns the tariff. */
+    /** The wires' part a MWh delivered paid by industry: transmission alone [D: AEO2026 table 8, 1.885 cents]. */
+    static final double GRID_INDUSTRY = 18.85;
+
+    /**
+     * A year of the city (losses grossed up) on `ps`: prints the fleet and its year, the market's
+     * bills (Jerus's Q1: each half-block's clearing price on what it delivered, plus the wires at
+     * cost) and, beside them, the tariff at cost; returns the commerce bill a MWh.
+     */
     static double year(String title, Plant[] ps) {
         double mean = CITY / (1 - LOSSES);
-        double cost = 0, energy = 0, unserved = 0, asked = 0, curtailed = 0, served = 0;
+        double cost = 0, energy = 0, unserved = 0, asked = 0, curtailed = 0, served = 0, paid = 0;
         double[] fuel = new double[Fuel.values().length];
         double[] made = new double[ps.length];
         Month m = new Month();
@@ -366,6 +373,7 @@ public class Dispatch {
                 unserved += m.unserved[s] * subHours(s) * HOURS;
                 asked += m.load[s] * subHours(s) * HOURS;
                 served += (m.load[s] - m.unserved[s]) * subHours(s) * HOURS;
+                paid += (m.load[s] - m.unserved[s]) * subHours(s) * HOURS * m.price[s];
             }
             for (int i = 0; i < ps.length; i++) {
                 fuel[ps[i].fuel.ordinal()] += ps[i].fuelMJ;
@@ -373,6 +381,9 @@ public class Dispatch {
             }
         }
         double t = tariff(ps, cost, served);
+        double energyPrice = paid / served / (1 - LOSSES);            // a MWh delivered: the losses are bought too
+        double fixed = 0;
+        for (Plant p : ps) fixed += p.mw * 1000 * (p.capex * crf(R, p.life) + p.fom);
         System.out.println("--- " + title + " ---");
         StringBuilder fl = new StringBuilder("  fleet:");
         for (int i = 0; i < ps.length; i++) if (ps[i].mw > 0)
@@ -383,10 +394,12 @@ public class Dispatch {
                 f(firm(ps, mean), 0), f(needed(mean), 0), f(priceSum[0], 1), f(priceSum[1], 1), f(priceSum[2], 1), f(cost / energy, 1));
         System.out.printf(Locale.ROOT, "  unserved %s%%, curtailed %s%% of the variable rows' output; TARIFF AT COST $%s a MWh (%s cents a kWh)%n",
                 f(100 * unserved / asked, 3), f(100 * curtailed / Math.max(1, curtailed + variableMade(ps, made)), 1), f(t, 1), f(t / 10, 2));
+        System.out.printf(Locale.ROOT, "  MARKET: energy $%s a MWh delivered; commerce pays %s cents a kWh, industry %s; the margin over running pays %s%% of the plants' capital and fixed upkeep%n",
+                f(energyPrice, 1), f((energyPrice + GRID) / 10, 2), f((energyPrice + GRID_INDUSTRY) / 10, 2), f(100 * (paid - cost) / fixed, 0));
         double coalT = fuel[Fuel.COAL.ordinal()] / 25_120;
         if (coalT > 0) System.out.printf(Locale.ROOT, "  coal burned %s t a year (%s t a MWh of coal power)%n", f(coalT, 0),
                 f(coalT / made[0], 3));
-        return t;
+        return energyPrice + GRID;
     }
 
     static double variableMade(Plant[] ps, double[] made) {
@@ -446,7 +459,7 @@ public class Dispatch {
         Fuel.FUEL_OIL.perMJ *= 2.76; Fuel.DIESEL.perMJ *= 2.76; Fuel.COAL.perMJ *= 1.23;
         double shocked = year("The same fleet in the shock year", ps);
         Fuel.FUEL_OIL.perMJ = oil; Fuel.DIESEL.perMJ = die; Fuel.COAL.perMJ = coal;
-        System.out.printf(Locale.ROOT, "  the tariff moves %s%% (struck over 12 months, it reaches the bills over the year)%n", f(100 * (shocked / base - 1), 1));
+        System.out.printf(Locale.ROOT, "  commerce's bill moves %s%%%n", f(100 * (shocked / base - 1), 1));
 
         System.out.println("=== Wind alone: Rotterdam's fleet, 2.2 GW of wind farms for 1 GW (its 8.86 GW average for 4.43 GW, scaled) ===");
         Plant[] w = fleet(c); w[7].mw = 2_200;
@@ -463,7 +476,7 @@ public class Dispatch {
         Fuel.FUEL_OIL.perMJ *= 2.76; Fuel.DIESEL.perMJ *= 2.76;
         double islandShock = year("The island in the shock year (oil x2.76)", is);
         Fuel.FUEL_OIL.perMJ = oil; Fuel.DIESEL.perMJ = die;
-        System.out.printf(Locale.ROOT, "  the island's tariff moves %s%%%n", f(100 * (islandShock / islandBase - 1), 1));
+        System.out.printf(Locale.ROOT, "  the island's commerce bill moves %s%%%n", f(100 * (islandShock / islandBase - 1), 1));
 
         System.out.println("=== A town of 10 MW, today's menu ===");
         CITY = 10;
