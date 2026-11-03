@@ -1,0 +1,25 @@
+--- 1. the survey-shaped city, 20 years from no debt ---
+  base (21.35% rate, 3% minimum)               revolving  43.2%  balance  0.58 months' take-home  late  1.6% of balances  written off  2.9% a year  debt/income  2.1%
+  paydown share 0.15                           revolving  39.2%  balance  0.59 months' take-home  late  1.7% of balances  written off  3.2% a year  debt/income  1.9%
+  paydown share 0.35                           revolving  24.4%  balance  0.63 months' take-home  late  2.4% of balances  written off  4.3% a year  debt/income  1.3%
+  paydown share 0.5                            revolving  19.0%  balance  0.65 months' take-home  late  2.7% of balances  written off  4.9% a year  debt/income  1.0%
+--- 2. the levers ---
+  rate cap 12%                                 revolving  41.6%  balance  0.54 months' take-home  late  1.4% of balances  written off  2.5% a year  debt/income  1.9%
+  minimum payment 5% (Quebec)                  revolving  37.6%  balance  0.61 months' take-home  late  3.2% of balances  written off  5.8% a year  debt/income  1.9%
+  minimum payment 2%                           revolving  43.9%  balance  0.58 months' take-home  late  1.4% of balances  written off  2.6% a year  debt/income  2.1%
+  a bad decade: every take-home 15% lower      revolving  48.6%  balance  0.51 months' take-home  late  3.1% of balances  written off  5.6% a year  debt/income  2.1%
+--- 3. by tier, the base run ---
+  UNSKILLED              revolving  71.2%  behind  0.20%  shut out  0.37%  owed  0.51 months  buffer    0.5 months
+  SKILLED                revolving  51.3%  behind  0.03%  shut out  0.06%  owed  0.40 months  buffer    1.0 months
+  COLLEGE                revolving  38.5%  behind  0.01%  shut out  0.02%  owed  0.30 months  buffer    1.6 months
+  PROFESSIONAL           revolving  27.2%  behind  0.00%  shut out  0.01%  owed  0.20 months  buffer    2.6 months
+  SENIOR_PROFESSIONAL    revolving  19.0%  behind  0.00%  shut out  0.00%  owed  0.14 months  buffer    4.0 months
+  ELITE                  revolving   9.3%  behind  0.00%  shut out  0.00%  owed  0.06 months  buffer    8.0 months
+--- 4. a save's own cells (slot-07.json), their savings as they are ---
+  base                                         revolving   8.2%  balance  0.15 months' take-home  late 10.5% of balances  written off 19.0% a year  debt/income  0.1%
+  STUDENT                            households    12,817 revolving  61.6% behind 12.28% owed   0.50 months  buffer      0.0 months
+  SENIOR_ALONE                       households    57,427 revolving  61.3% behind 12.20% owed   0.44 months  buffer      0.2 months
+  LARGE_FAMILY:SKILLED               households    16,490 revolving   3.6% behind  0.00% owed   0.02 months  buffer     32.2 months
+  LARGE_FAMILY:UNSKILLED             households    23,770 revolving   3.1% behind  0.00% owed   0.01 months  buffer     36.0 months
+  SINGLE_PARENT:SKILLED              households     1,031 revolving   2.1% behind  0.00% owed   0.01 months  buffer     39.4 months
+  SINGLE_PARENT:UNSKILLED            households     1,486 revolving   1.7% behind  0.00% owed   0.01 months  buffer     45.0 months
