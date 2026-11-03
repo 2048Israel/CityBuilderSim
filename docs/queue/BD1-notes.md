@@ -1,4 +1,4 @@
-# BD1 - the bank's equity parts part from its equity after it buys the city's paper ({next}, 2026-11-02)
+# BD1 - the bank's equity parts part from its equity after it buys the city's paper (0.9.6, 2026-11-02)
 
 Found by FC1: SectorStatementCheck on FC1's path, month 134 the bank buys D$1,113M of the city's paper, month 135 its
 unearned discount falls 7.06 with no named cause, and "its equity's parts are its equity" is off by 7.05 in 226 of 479

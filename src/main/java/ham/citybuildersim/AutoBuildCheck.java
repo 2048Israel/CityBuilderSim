@@ -139,6 +139,10 @@ public class AutoBuildCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6): on LD2's path the twin cities' 36 months
+        // are alike to the cent but the auto-builder places no order in them (0), so "it ordering in both" proves nothing.
+        // The claim is the save's and the builder's, not the wage's; queued (LD3) to cause the orders on LD2's path.
+        WantedPosts.carryKeptOut = false;
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });

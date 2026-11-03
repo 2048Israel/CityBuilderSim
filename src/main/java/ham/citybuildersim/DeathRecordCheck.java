@@ -53,6 +53,14 @@ public class DeathRecordCheck {
 
     public static void main(String[] args) throws Exception {
 
+        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6). Section 3 compares the peak of the
+        // closed town's orphans with its open twin's, plus one, and both towns' orphans spike every few months by 13 to 16
+        // and decay, the closed town's a month or two sooner: the peaks are two spikes' heights. On LD2's path the closed
+        // town's is 17.97 (17.77 with LD2 off) and the twin's 15.53 (19.07), the closing adding nothing before the spikes
+        // (gaps of -0.5 to +0.8 to month 13). A measure inside the section's own noise, not the wave; queued (LD3) to
+        // measure the closing apart from the spikes and turn LD2 back on here.
+        WantedPosts.carryKeptOut = false;
+
         /* ============ 1. who among the dead ============ */
         System.out.println("--- who among the month's dead were orphans, and who had no home ---");
         int n = AgeBand.values().length;

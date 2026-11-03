@@ -18,8 +18,9 @@ import ham.citybuildersim.sectors.Construction;
  *   1. THE GATE'S HOLD CARRIES ITS BUILDING: who asked, which building, how many, its posts and the spare workers per
  *      band; and the planner's Decision carries the hold, with its reason in the hold's own words.
  *   2. ONLY THE BANDS IT IS SHORT IN ask for posts, and a building that would not carry its interest asks for none.
- *   3. THE MARKET PRICES IT: the band's multiple is struck on the posts that exist plus the refused ones, and the wage
- *      walks ADJUST_RATE of the way, while the gate's own test still reads only the posts that exist.
+ *   3. THE MARKET PRICES IT: the band's multiple is struck on the posts that exist plus the refused ones, against the
+ *      supply the posts that exist give, and the wage walks ADJUST_RATE of the way, while the gate's own test still
+ *      reads only the posts that exist.
  *   4. NEVER MORE THAN THE BAND'S OWN POSTS AGAIN: the refused posts lift a band's multiple at most sqrt(2) times,
  *      never twice, and a band with few posts - a village's - bids little.
  *   5. ONLY AS FAR AS THE BUSINESS CAN PAY: the best-paying building that wants the posts is how far they count.
@@ -27,10 +28,19 @@ import ham.citybuildersim.sectors.Construction;
  *      nothing.
  *   7. IT DECAYS: no hold, no latent posts, and the wage walks back.
  *   8. IT BRINGS THE BAND'S MIGRANTS: the premium it makes is what Migration reaches for.
- *   9. THE SAVE: the latent posts are priced next month, so a reloaded city prices it as the live one does.
+ *   9. THE SAVE: the latent posts come back from a save to the bit (the People caption reads them between a load and
+ *      the next settle), but they never reach the wage: a month's own planning settles its asks before the reprice
+ *      prices them, so a reloaded city's month is the same with the saved posts or without.
  *  10. THE WIRING: in a city played ten years every hold a planner returns is noted, sorted and priced within the rules above.
  *  11. AN IDLE BUILDER'S CREWS ARE SPARE (IC1): the posts a builder at its core crew has laid off do not hold the gate,
  *      and a working builder's still do.
+ *  12. THE CAP READS THE MONTH'S OWN POSTS (LD2): posts that fall between the settle and the reprice (completions, a
+ *      strike, retirement) leave the latent posts held, at the reprice, to MOST_OF_POSTS of the posts it prices.
+ *  13. A BAND THAT ASKED NOTHING IS PRICED AS IT WAS (LD2): a refused post is the numerator of its own band's
+ *      tightness alone, so it keeps no worker from the band below it, which is priced on the fill against the posts
+ *      that exist.
+ *  14. A BAND CLOSED TO MIGRANTS ASKS NOTHING (LD2): the wage is meant to bring migrants, so a band none can come for
+ *      has no latent posts, though the hold is still counted and the bands open to migrants still bid.
  *
  * Every fixture CAUSES its condition: a founded city given the hands and the posts of a stated shape, and every
  * expected figure comes from the model's own calls (LabourMarket.advanceMonth() on a twin of the market, tightnessAt(),
@@ -145,12 +155,17 @@ public class WantedPostsCheck {
 
     /** Puts the city's hands and the posts that exist in a stated shape (they stand until a month is played). */
     static void hands(Game g, long workforce, double[] heads, long collegePosts, long universityPosts) {
-        PopulationManager pm = g.getPopulationManager();
-        pm.restoreWorkforce(workforce);
-        pm.restoreSkilledHeads(heads);
         long[] jobs = new long[JobType.values().length];
         jobs[JobType.COLLEGE_ENGINEERING.ordinal()] = collegePosts;
         jobs[JobType.UNIV_SCIENCE.ordinal()] = universityPosts;
+        hands(g, workforce, heads, jobs);
+    }
+
+    /** hands() with the posts written job by job, for a fixture that needs a band the other one does not (the diploma's). */
+    static void hands(Game g, long workforce, double[] heads, long[] jobs) {
+        PopulationManager pm = g.getPopulationManager();
+        pm.restoreWorkforce(workforce);
+        pm.restoreSkilledHeads(heads);
         pm.updateJobs(jobs);
     }
 
@@ -164,10 +179,16 @@ public class WantedPostsCheck {
     }
 
     static Game shortCollege(Game g) {
+        atBase(g);
+        shortHands(g);
+        return g;
+    }
+
+    /** A city a month old with its labour market at its base, so no band starts under or over the going rate. */
+    static Game atBase(Game g) {
         month(g);   // the wage schedule the sectors pay is the market's, not the founding's zeros
         g.getLabourMarket().resetToBase();
         g.getPopulationManager().takeWagesFrom(g.getLabourMarket());
-        shortHands(g);
         return g;
     }
 
@@ -193,10 +214,33 @@ public class WantedPostsCheck {
 
     /** What the market does with a month against these posts, on a twin of it. */
     static LabourMarket monthOn(Game g, double[] posts) {
+        return monthOn(g, posts, posts);
+    }
+
+    /**
+     * What the market does with a month priced on {@code posts} against the supply the fill gives {@code supplyPosts}
+     * (LD2: the posts that exist; LD1 filled against the posts it priced on), on a twin of it.
+     */
+    static LabourMarket monthOn(Game g, double[] posts, double[] supplyPosts) {
         PopulationManager pm = g.getPopulationManager();
         LabourMarket t = twin(g.getLabourMarket());
-        t.advanceMonth(posts, pm.supplyByBand(posts), pm.getJobs(), pm.getLicensedHeads());
+        t.advanceMonth(posts, pm.supplyByBand(supplyPosts), pm.getJobs(), pm.getLicensedHeads());
         return t;
+    }
+
+    /** A city loaded from the harness's own save slot (never a player's: the folder is the TempDirs root's). */
+    static Game reload(GameFiles files) {
+        Game g = new Game(files);
+        System.setOut(quiet);
+        try { g.loadGameSave(GameFiles.SLOT_COUNT); } finally { System.setOut(out); }
+        return g;
+    }
+
+    /** Whether two arrays hold the same doubles to the bit. */
+    static boolean sameBits(double[] a, double[] b) {
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) if (Double.doubleToLongBits(a[i]) != Double.doubleToLongBits(b[i])) return false;
+        return true;
     }
 
     static double[] plus(double[] a, double[] b) {
@@ -205,7 +249,7 @@ public class WantedPostsCheck {
         return sum;
     }
 
-    static final int COLLEGE = WageBand.COLLEGE.ordinal(), UNIVERSITY = WageBand.UNIVERSITY.ordinal();
+    static final int DIPLOMA = WageBand.DIPLOMA.ordinal(), COLLEGE = WageBand.COLLEGE.ordinal(), UNIVERSITY = WageBand.UNIVERSITY.ordinal();
 
     /** The margin Game.noteStaffingHold() works out for a building: what it earns over the interest hurdle at prime and its record. */
     static double marginOf(Game g, Sector owner, BuildingsTemplate t) {
@@ -361,11 +405,12 @@ public class WantedPostsCheck {
         assertTrue("...no more than it asked for", latent3[COLLEGE] <= postsIn(mw3, WageBand.COLLEGE) && latent3[UNIVERSITY] <= postsIn(mw3, WageBand.UNIVERSITY));
         double[] existing = pm3.staffablePostsByBand();
         double[] seen = plus(existing, latent3);
-        LabourMarket with = monthOn(g3, seen), without = monthOn(g3, existing);
+        // ...struck against the supply the posts that exist give (LD2: the refused posts are only a numerator)
+        LabourMarket with = monthOn(g3, seen, existing), without = monthOn(g3, existing);
         double wasPremium = lm3.bandPremium(WageBand.COLLEGE);
         double gateShare = man3.staffing(mw3).share;
         g3.repriceLabour();
-        close("the college band's multiple is the market's own on the posts that exist plus the refused ones",
+        close("the college band's multiple is the market's own on the posts that exist plus the refused ones, against the supply the posts that exist give",
                 lm3.getBandMultiple(WageBand.COLLEGE), with.getBandMultiple(WageBand.COLLEGE), 1e-12);
         close("...which is the curve's at the tightness it was struck on",
                 lm3.getBandMultiple(WageBand.COLLEGE), LabourMarket.multipleAt(lm3.getTightness(WageBand.COLLEGE)), 1e-12);
@@ -631,37 +676,60 @@ public class WantedPostsCheck {
 
         // The city lives in a folder of the harness's own (the TempDirs root), saved to its last slot: no slot of
         // the player's is touched.
+        // ONE save, read back into every city below. The latent posts are saved for what shows them between a load and
+        // the next month's settle (the People caption); the wage never reads them, because a month's planning settles
+        // its asks before the reprice prices them (Game.nextMonth(): runPrivateInvestment() ends in settleWantedPosts(),
+        // SimulationEngine.updatePopulation() reprices later). LD1 described them as priced next month.
         GameFiles files9 = filesFor(root, "save");
         Game g9 = held(shortCollege(city(files9)));
         double[] latent9 = g9.getWantedPosts().latent();
         assertTrue("fixture: the city has latent posts to save", g9.getWantedPosts().any());
         GameFiles.Result saved;
-        Game back = new Game(files9);
         System.setOut(quiet);
         try {
             saved = g9.saveGame(GameFiles.SLOT_COUNT, "wantedposts");
-            back.loadGameSave(GameFiles.SLOT_COUNT);
         } finally {
             System.setOut(out);
         }
+        Game back = reload(files9);
         assertTrue("the save was written and read back", saved.ok && back.getLoadFailure() == null);
-        boolean bitForBit = back.getWantedPosts().latent().length == latent9.length;
-        for (int b = 0; b < latent9.length; b++) {
-            bitForBit &= Double.doubleToLongBits(back.getWantedPosts().latent()[b]) == Double.doubleToLongBits(latent9[b]);
+        assertTrue("(a) the latent posts come back from the save to the bit: the People caption reads them between a load and the next settle",
+                sameBits(back.getWantedPosts().latent(), latent9));
+
+        // (b) Caused from the other side: were the wage to read the saved posts, they WOULD move it. Two copies of the
+        // save in the same shape and the same cost of living (the price index's, not the wanted posts' to carry), one
+        // with the saved posts forgotten, each priced straight with repriceLabour(): an order the game never runs.
+        Game withSaved = reload(files9), forgotten = reload(files9);
+        forgotten.getWantedPosts().restore(null);
+        for (Game copy : new Game[] { withSaved, forgotten }) {
+            shortHands(copy);
+            copy.getLabourMarket().setCostOfLiving(g9.getLabourMarket().getCostOfLiving());
         }
-        assertTrue("the latent posts come back from the save to the bit", bitForBit);
-        // Both cities in the same shape, and the same month priced: the reloaded one prices it as the live one does.
-        shortHands(back);
-        // (the cost of living is the price index's, not the wanted posts' to carry: the two cities start from one)
-        back.getLabourMarket().setCostOfLiving(g9.getLabourMarket().getCostOfLiving());
-        g9.repriceLabour();
-        back.repriceLabour();
-        boolean alike = true;
-        double[] liveState = g9.getLabourMarket().state(), backState = back.getLabourMarket().state();
-        for (int i = 0; i < liveState.length; i++) alike &= Double.doubleToLongBits(liveState[i]) == Double.doubleToLongBits(backState[i]);
-        assertTrue("...and both cities price the next month alike, to the bit", alike && liveState.length == backState.length);
-        assertTrue("...which is a month priced on the refused posts: the wage is up on both",
-                g9.getLabourMarket().bandPremium(WageBand.COLLEGE) > 1 && back.getLabourMarket().bandPremium(WageBand.COLLEGE) > 1);
+        assertTrue("fixture: one copy has the saved posts and the other none",
+                sameBits(withSaved.getWantedPosts().latent(), latent9) && !forgotten.getWantedPosts().any());
+        withSaved.repriceLabour();
+        forgotten.repriceLabour();
+        out.printf("   a reprice straight after the load: college premium %.4f with the saved posts, %.4f without%n",
+                withSaved.getLabourMarket().bandPremium(WageBand.COLLEGE), forgotten.getLabourMarket().bandPremium(WageBand.COLLEGE));
+        assertTrue("(b) fixture: priced straight after the load the two copies differ, so the saved posts would move the wage if the reprice read them",
+                !sameBits(withSaved.getLabourMarket().state(), forgotten.getLabourMarket().state())
+                        && withSaved.getLabourMarket().bandPremium(WageBand.COLLEGE) > forgotten.getLabourMarket().bandPremium(WageBand.COLLEGE));
+
+        // (c) The order the game runs: a real month. The month's own planning settles its asks before the reprice, so
+        // the saved posts are gone before anything prices them.
+        Game monthWith = reload(files9), monthWithout = reload(files9);
+        monthWithout.getWantedPosts().restore(null);
+        assertTrue("(c) fixture: one copy has the saved posts and the other none, before the month",
+                sameBits(monthWith.getWantedPosts().latent(), latent9) && !monthWithout.getWantedPosts().any());
+        month(monthWith);
+        month(monthWithout);
+        out.printf("   a real month after the load: college premium %.4f with the saved posts, %.4f without; latent posts %s and %s%n",
+                monthWith.getLabourMarket().bandPremium(WageBand.COLLEGE), monthWithout.getLabourMarket().bandPremium(WageBand.COLLEGE),
+                java.util.Arrays.toString(monthWith.getWantedPosts().latent()), java.util.Arrays.toString(monthWithout.getWantedPosts().latent()));
+        assertTrue("(c) a real month after the load leaves the two labour markets alike to the bit: the saved posts never reach the wage",
+                sameBits(monthWith.getLabourMarket().state(), monthWithout.getLabourMarket().state()));
+        assertTrue("(c) ...and the latent posts alike to the bit: the month's own settle replaced the saved ones",
+                sameBits(monthWith.getWantedPosts().latent(), monthWithout.getWantedPosts().latent()));
         WantedPosts nothing = new WantedPosts();
         nothing.restore(null);
         assertTrue("a save with no wanted posts (an older one) reads as none", !nothing.any());
@@ -771,6 +839,149 @@ public class WantedPostsCheck {
         assertTrue("...though the crews-spare test passes it, as it does an idle builder's", man11.staffingWithCrewsSpare(mw11, 1).passes());
         assertTrue("...and Manufacturing's staffable count is 0 while the builders work, 1 while they stand idle",
                 countWorking == 0 && man11.staffableCount(mw11, 1) == 0);
+
+        /* ============ 12. the cap reads the month's own posts (LD2) ============ */
+        out.println("\n--- the cap reads the month's own posts (LD2) ---");
+
+        // settle() holds a band's latent posts to MOST_OF_POSTS of the posts at the end of the month's planning, and the
+        // reprice comes a few steps later in the same month, after completions, strikeBuildersCrews() and retirement
+        // have moved the posts. Here a building lacking more college posts than the band has asks, and the band's
+        // posts then FALL (hands() sets fewer, as a strike or retirement would) before the reprice.
+        Game g12 = shortCollege(root, "cap");
+        PopulationManager pm12 = g12.getPopulationManager();
+        LabourMarket lm12 = g12.getLabourMarket();
+        WantedPosts wp12 = g12.getWantedPosts();
+        double[] atSettle12 = pm12.staffablePostsByBand();
+        wp12.beginMonth();
+        wp12.ask(new WantedPosts.Ask(g12.getSectors().manufacturing().key(), MACHINE_WORKS,
+                new double[] { 0, 0, 2 * atSettle12[COLLEGE], 0 }, Double.POSITIVE_INFINITY));
+        g12.settleWantedPosts();
+        double[] settled12 = wp12.latent();
+        long fallen12 = Math.round(.6 * COLLEGE_HEADS);
+        hands(g12, WORKFORCE, new double[] { 0, DIPLOMA_HEADS, COLLEGE_HEADS, UNIVERSITY_HEADS }, fallen12, (long) UNIVERSITY_HEADS);
+        double[] now12 = pm12.staffablePostsByBand();
+        double[] heldTo12 = new double[settled12.length];
+        for (int b = 0; b < heldTo12.length; b++) heldTo12[b] = Math.min(settled12[b], WantedPosts.MOST_OF_POSTS * Math.max(now12[b], 0));
+        double rootCap12 = Math.sqrt(1 + WantedPosts.MOST_OF_POSTS);
+        LabourMarket noLatent12 = monthOn(g12, now12);
+        LabourMarket heldLatent12 = monthOn(g12, plus(now12, heldTo12), now12);
+        LabourMarket settledLatent12 = monthOn(g12, plus(now12, settled12), now12);
+        out.printf("   college posts %.0f at the settle (latent %.1f), %.0f at the reprice; multiple %.4f on the posts alone, %.4f held to the cap, %.4f on the settled latent%n",
+                atSettle12[COLLEGE], settled12[COLLEGE], now12[COLLEGE], noLatent12.getBandMultiple(WageBand.COLLEGE),
+                heldLatent12.getBandMultiple(WageBand.COLLEGE), settledLatent12.getBandMultiple(WageBand.COLLEGE));
+        assertTrue("fixture: the college posts fell between the settle and the reprice", now12[COLLEGE] == fallen12 && now12[COLLEGE] < atSettle12[COLLEGE]);
+        assertTrue("fixture: the settled college latent posts now exceed MOST_OF_POSTS of the college posts the reprice will read",
+                settled12[COLLEGE] > WantedPosts.MOST_OF_POSTS * now12[COLLEGE]);
+        assertTrue("fixture: the college band stands on the live part of the curve, off its floor, so the cap is what holds it",
+                noLatent12.getBandMultiple(WageBand.COLLEGE) > LabourMarket.MIN_MULTIPLE
+                        && settledLatent12.getBandMultiple(WageBand.COLLEGE) < LabourMarket.MAX_MULTIPLE);
+        assertTrue("fixture: priced on the settled latent posts unheld, the college multiple would pass sqrt(1 + MOST_OF_POSTS) times the posts' own",
+                settledLatent12.getBandMultiple(WageBand.COLLEGE) > rootCap12 * noLatent12.getBandMultiple(WageBand.COLLEGE));
+        g12.repriceLabour();
+        close("at the reprice the college latent posts read MOST_OF_POSTS of the posts it prices",
+                wp12.getLatent(WageBand.COLLEGE), WantedPosts.MOST_OF_POSTS * now12[COLLEGE], 0);
+        assertTrue("...held in place, so the caption and the save show the posts that were priced", sameBits(wp12.latent(), heldTo12));
+        close("the college multiple is the twin month's on the new posts plus the held latent, against the supply of the posts that exist",
+                lm12.getBandMultiple(WageBand.COLLEGE), heldLatent12.getBandMultiple(WageBand.COLLEGE), 1e-12);
+        assertTrue("...above what the posts alone set", lm12.getBandMultiple(WageBand.COLLEGE) > noLatent12.getBandMultiple(WageBand.COLLEGE));
+        assertTrue(String.format("...and at most sqrt(1 + MOST_OF_POSTS) = %.3f times it", rootCap12),
+                lm12.getBandMultiple(WageBand.COLLEGE) <= rootCap12 * noLatent12.getBandMultiple(WageBand.COLLEGE) * (1 + 1e-12));
+        double[] given = { 10, 20, 30, 40 };
+        double[] pricedBare = new WantedPosts().pricedOn(given);
+        assertTrue("with no latent posts pricedOn() is the posts unchanged, a copy", sameBits(pricedBare, given) && pricedBare != given);
+        WantedPosts overBand = new WantedPosts();
+        overBand.restore(new double[] { 50, 5, 50, 50 });
+        double[] pricedOver = overBand.pricedOn(new double[] { -3, 20, 30, 40 });
+        assertTrue("a band with no posts at the reprice (here under none) is priced on none of its latent posts",
+                overBand.getLatent(WageBand.NONE) == 0 && pricedOver[0] == -3);
+        assertTrue("...a latent under the cap is left as it was, and one over it is held to MOST_OF_POSTS of the posts",
+                overBand.getLatent(WageBand.DIPLOMA) == 5 && pricedOver[1] == 25
+                        && overBand.getLatent(WageBand.COLLEGE) == WantedPosts.MOST_OF_POSTS * 30 && pricedOver[2] == 30 + overBand.getLatent(WageBand.COLLEGE)
+                        && overBand.getLatent(WageBand.UNIVERSITY) == Math.min(50, WantedPosts.MOST_OF_POSTS * 40));
+
+        /* ============ 13. a band that asked nothing is priced as it was (LD2) ============ */
+        out.println("\n--- a band that asked nothing is priced as it was (LD2) ---");
+
+        // The fill carries a band's surplus down to the bands below (PopulationManager.fillByBand()). LD1 filled against
+        // the posts plus the refused ones, so the college band's refused posts took college workers the diploma band
+        // would have been carried, and the diploma band, which asked nothing, was priced up. Here the college band has
+        // 300 more workers than posts, and the diploma band, with few of its own, is supplied mostly by them.
+        Game g13 = atBase(city(root, "carry"));
+        PopulationManager pm13 = g13.getPopulationManager();
+        LabourMarket lm13 = g13.getLabourMarket();
+        WantedPosts wp13 = g13.getWantedPosts();
+        long[] jobs13 = new long[JobType.values().length];
+        jobs13[JobType.DIPLOMA.ordinal()] = 400;
+        jobs13[JobType.COLLEGE_ENGINEERING.ordinal()] = 400;
+        hands(g13, WORKFORCE, new double[] { 0, 200, 700, 0 }, jobs13);
+        double[] own13 = pm13.workforceByBand(), existing13 = pm13.staffablePostsByBand(), supply13 = pm13.supplyByBand();
+        assertTrue("fixture: the college band has more workers than posts, so its surplus is carried down",
+                own13[COLLEGE] > existing13[COLLEGE]);
+        assertTrue("fixture: the diploma band has posts, and its supply is mostly workers carried down to it",
+                existing13[DIPLOMA] > 0 && supply13[DIPLOMA] - own13[DIPLOMA] > own13[DIPLOMA]);
+        wp13.beginMonth();
+        wp13.ask(new WantedPosts.Ask(g13.getSectors().manufacturing().key(), MACHINE_WORKS, new double[] { 0, 0, 100, 0 }, Double.POSITIVE_INFINITY));
+        g13.settleWantedPosts();
+        double[] latent13 = wp13.latent();
+        assertTrue("fixture: the college band asked and got latent posts, the diploma band asked nothing and has none",
+                latent13[COLLEGE] == 100 && latent13[DIPLOMA] == 0);
+        double[] seen13 = plus(existing13, latent13);
+        LabourMarket ld1 = monthOn(g13, seen13), alone13 = monthOn(g13, existing13), ld2 = monthOn(g13, seen13, existing13);
+        out.printf("   diploma band: supply %.0f against %.0f posts (%.0f of it carried down); multiple %.4f on the posts that exist, %.4f priced the LD1 way%n",
+                supply13[DIPLOMA], existing13[DIPLOMA], supply13[DIPLOMA] - own13[DIPLOMA],
+                alone13.getBandMultiple(WageBand.DIPLOMA), ld1.getBandMultiple(WageBand.DIPLOMA));
+        assertTrue("fixture: priced the LD1 way (posts plus latent against the fill on them) the refused college posts absorb the carry and lift the diploma multiple",
+                ld1.getBandMultiple(WageBand.DIPLOMA) > alone13.getBandMultiple(WageBand.DIPLOMA));
+        assertTrue("fixture: the diploma band stands on the live part of the curve, off its floor and cap",
+                alone13.getBandMultiple(WageBand.DIPLOMA) > LabourMarket.MIN_MULTIPLE && ld1.getBandMultiple(WageBand.DIPLOMA) < LabourMarket.MAX_MULTIPLE);
+        g13.repriceLabour();
+        close("the diploma band, which asked nothing, is priced on the posts that exist alone, to the bit",
+                lm13.getBandMultiple(WageBand.DIPLOMA), alone13.getBandMultiple(WageBand.DIPLOMA), 0);
+        close("the college band is priced on its posts plus its refused ones against the supply of the posts that exist",
+                lm13.getBandMultiple(WageBand.COLLEGE),
+                LabourMarket.multipleAt((existing13[COLLEGE] + latent13[COLLEGE]) / Math.max(supply13[COLLEGE], 1)), 1e-12);
+        close("...which is the twin month's", lm13.getBandMultiple(WageBand.COLLEGE), ld2.getBandMultiple(WageBand.COLLEGE), 1e-12);
+        assertTrue(String.format("...above what its posts alone set, and at most sqrt(1 + MOST_OF_POSTS) = %.3f times it", Math.sqrt(1 + WantedPosts.MOST_OF_POSTS)),
+                lm13.getBandMultiple(WageBand.COLLEGE) > alone13.getBandMultiple(WageBand.COLLEGE)
+                        && lm13.getBandMultiple(WageBand.COLLEGE) <= Math.sqrt(1 + WantedPosts.MOST_OF_POSTS) * alone13.getBandMultiple(WageBand.COLLEGE) * (1 + 1e-12));
+
+        /* ============ 14. a band closed to migrants asks nothing (LD2) ============ */
+        out.println("\n--- a band closed to migrants asks nothing (LD2) ---");
+
+        // The wage is meant to bring migrants (Migration.reach()): a band no migrant can come for (Migration.admits())
+        // bids nothing, though the hold is still an ask and the bands open to migrants still bid.
+        Game closed14 = shortCollege(root, "closed");
+        closed14.getMigration().holdArrivals(WageBand.COLLEGE);
+        assertTrue("fixture: the college band is closed to migrants and the university band is not",
+                !closed14.getMigration().admits(WageBand.COLLEGE) && closed14.getMigration().admits(WageBand.UNIVERSITY));
+        held(closed14);
+        WantedPosts wp14 = closed14.getWantedPosts();
+        out.printf("   college closed: latent posts %s%n", java.util.Arrays.toString(wp14.latent()));
+        assertTrue("the hold is still counted as an ask, for the bands that are open", wp14.getAsked() == 1 && wp14.getHolds() == 1);
+        assertTrue("the closed college band settles to no latent posts", wp14.getLatent(WageBand.COLLEGE) == 0);
+        assertTrue("...while the university band, still open to migrants, bids", wp14.getLatent(WageBand.UNIVERSITY) > 0);
+        Game open14 = heldCity(root, "open");
+        assertTrue("fixture, from the other side: the same city with no hold admits migrants to the college band",
+                open14.getMigration().admits(WageBand.COLLEGE));
+        assertTrue("...and its college band settles to latent posts", open14.getWantedPosts().getLatent(WageBand.COLLEGE) > 0);
+        double[] existing14 = closed14.getPopulationManager().staffablePostsByBand();
+        LabourMarket noLatent14 = monthOn(closed14, existing14);
+        closed14.repriceLabour();
+        close("the closed college band is priced on the posts that exist alone",
+                closed14.getLabourMarket().getBandMultiple(WageBand.COLLEGE), noLatent14.getBandMultiple(WageBand.COLLEGE), 1e-12);
+        WantedPosts direct14 = new WantedPosts();
+        direct14.beginMonth();
+        direct14.ask(new WantedPosts.Ask("s", "b", new double[] { 5, 5, 5, 5 }, Double.POSITIVE_INFINITY));
+        double[] every = { 100, 100, 100, 100 };
+        direct14.settle(every, every, new double[] { 1, 1, 1, 1 }, new boolean[] { true, true, false, true });
+        assertTrue("settle() given the bands open to migrants leaves a closed band no latent posts and the others theirs",
+                direct14.getLatent(WageBand.COLLEGE) == 0 && direct14.getLatent(WageBand.NONE) > 0
+                        && direct14.getLatent(WageBand.DIPLOMA) > 0 && direct14.getLatent(WageBand.UNIVERSITY) > 0);
+        direct14.settle(every, every, new double[] { 1, 1, 1, 1 });
+        double[] threeArguments = direct14.latent();
+        assertTrue("...and the three-argument settle, for a direct call, leaves every band open", threeArguments[COLLEGE] > 0);
+        direct14.settle(every, every, new double[] { 1, 1, 1, 1 }, null);
+        assertTrue("...the same as a null for open", sameBits(direct14.latent(), threeArguments));
 
         out.println();
         if (fails == 0) {

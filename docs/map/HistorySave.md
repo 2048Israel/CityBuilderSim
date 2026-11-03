@@ -1,4 +1,4 @@
-# HistorySave.java - 1,999 lines · 69 methods · 4 constants · model
+# HistorySave.java - 2,012 lines · 70 methods · 4 constants · model
 
 `ham/citybuildersim/HistorySave.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
@@ -102,8 +102,8 @@
 | 893 | · · the new price model, read (0.7.45) |
 | 915 | · · the city's fund (0.7.39) |
 | 927 | THE FOLD (0.7.55) |
-| 1432 | READING |
-| 1560 | · a series' record, counted (0.7.9) |
+| 1445 | READING |
+| 1573 | · a series' record, counted (0.7.9) |
 
 ## Constants
 
@@ -289,7 +289,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 1936 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
+| 64 | 1949 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
 
 ### THE AXIS (lines 66-88)
 
@@ -379,7 +379,7 @@
 |---:|---:|---|---|
 | 661 | 265 | `public void recordMonth(Game game)` | One month, read off the city itself. |
 
-### THE FOLD (0.7.55) (lines 927-1431)
+### THE FOLD (0.7.55) (lines 927-1444)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -406,47 +406,48 @@
 | 1378 | 20 | **type** `public final class Later` | One snapshotLater(): the copy, made once, on the first get(). |
 | 1382 | 1 | `private Later()` _(in HistorySave.Later)_ |  |
 | 1385 | 12 | `public HistorySave get()` _(in HistorySave.Later)_ | The snapshot: this history as it stood when it was asked for, copied now if nobody has yet. |
-| 1408 | 23 | `public HistorySave cutAt(int lastMonth)` | A copy of this history as it stood at {@code lastMonth} (TR1, 2026-10-31): only the axis entries whose month is at most it, and what every series held for them. |
+| 1408 | 31 | `public HistorySave cutAt(int lastMonth)` | A copy of this history as it stood at {@code lastMonth} (TR1, 2026-10-31): only the axis entries whose month is at most it, and what every series held for them. |
+| 1441 | 3 | `private static void dropEmpty(Map<String, List<Double>> series)` | The series of a keyed map that a cut left with no point, gone with their names (cutAt()). |
 
-### READING (lines 1432-1559)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1441 | 1 | `public int months()` | How many entries the axis has - a month each, and since 0.7.55 a year each for the oldest yearlyPoints() of a history past MONTHLY_KEPT. |
-| 1444 | 1 | `public List<Integer> getMonth()` | The axis: each entry's month, and a folded year's last month (0.7.55). |
-| 1447 | 1 | `public int yearlyPoints()` | How many of the axis's entries, from the first, are folded years (0.7.55); 0 in a history of MONTHLY_KEPT months or fewer. |
-| 1450 | 3 | `public int monthsIn(int i)` | The months axis entry i holds: 1 for a month, and a folded year's months (0.7.55). |
-| 1455 | 3 | `public int firstMonthOf(int i)` | The first month axis entry i holds: its own month for a month, a folded year's first (0.7.55). |
-| 1460 | 5 | `public int monthsLived()` | How many months the city has lived: every entry's months together (0.7.55) - months() until a year folds. |
-| 1474 | 9 | `public int back(int i, int months)` | The entry `months` months before entry i (0.7.55): the month that far back, or the folded year that holds it - so "a year before" a folded year is the year before it, and before a month in the first year after the fol... |
-| 1503 | 8 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
-| 1522 | 21 | `public double[] alignedTail(String name, int n)` | The last {@code n} entries of aligned(name), and no more of it (UP2): the same figures as aligned(name)'s tail, value for value - the front padding as NaN, a folded year's flow as its monthly average where the tail re... |
-| 1545 | 14 | `public double[] raw(String name)` | A series as it is stored, padded at the front as aligned() is: a folded year's flow is the year's sum (0.7.55). |
-
-### a series' record, counted (0.7.9) (lines 1560-1999)
+### READING (lines 1445-1572)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1573 | 8 | `public int monthsUnder(String series, String line)` | Months in which both series were recorded and the first stood under the second: the bank's months under its capital target (bankCapitalRatio against bankCapitalTarget). |
-| 1583 | 6 | `public int monthsUnder(String series, double level)` | ...and under a fixed level: its months under the city's minimum. |
-| 1591 | 6 | `public int monthsRecorded(String series)` | Months a series was recorded in - a folded year's months each (0.7.55). |
-| 1599 | 5 | `public double total(String series)` | A flow added up over the months it was recorded: the stored figures, so a folded year adds its sum (0.7.55). |
-| 1612 | 7 | `public double changeOver(String series, int months)` | How far a series has moved over the last `months` months, as a share of where it stood then: the last recorded value over the one `months` entries before it, less one (0.7.35: the Trade tab's rate this month and over ... |
-| 1625 | 12 | `public double recentTotal(String series, int months)` | A flow added up over the last `months` months only, those recorded among them (0.7.35: the Trade tab's year of exports and imports). |
-| 1643 | 16 | `public double worstYear(String series)` | A flow's worst year: the largest sum of any twelve months in a row since it was first recorded - over fewer than twelve, what there is. |
-| 1661 | 13 | `private static double worstYear(double[] a)` | worstYear()'s twelve months in a row, over a run of months. |
-| 1681 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
-| 1702 | 3 | `public double[] runningTotal(String series)` | ...and a series of this history summed from its first recorded entry (0.7.55): off the stored figures, so a folded year adds its sum - what City History's running totals read. |
-| 1707 | 184 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
-| 1893 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
-| 1894 | 1 | `public List<Double> getGdp()` |  |
-| 1895 | 1 | `public List<Double> getDebt()` |  |
-| 1896 | 1 | `public List<Double> getInterestRate()` |  |
-| 1897 | 1 | `public List<Long> getJobs()` |  |
-| 1898 | 1 | `public List<Long> getWorkforce()` |  |
-| 1899 | 1 | `public List<Long> getOutOfWork()` |  |
-| 1900 | 1 | `public List<Long> getPopulation()` |  |
-| 1913 | 55 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
-| 1970 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
-| 1986 | 12 | `public HistorySave slim(java.util.Set<String> keep)` | A history with this one's axis and only the named series (LB3): every other series empty, so it reads as not recorded, a name this history has no series of ignored. |
+| 1454 | 1 | `public int months()` | How many entries the axis has - a month each, and since 0.7.55 a year each for the oldest yearlyPoints() of a history past MONTHLY_KEPT. |
+| 1457 | 1 | `public List<Integer> getMonth()` | The axis: each entry's month, and a folded year's last month (0.7.55). |
+| 1460 | 1 | `public int yearlyPoints()` | How many of the axis's entries, from the first, are folded years (0.7.55); 0 in a history of MONTHLY_KEPT months or fewer. |
+| 1463 | 3 | `public int monthsIn(int i)` | The months axis entry i holds: 1 for a month, and a folded year's months (0.7.55). |
+| 1468 | 3 | `public int firstMonthOf(int i)` | The first month axis entry i holds: its own month for a month, a folded year's first (0.7.55). |
+| 1473 | 5 | `public int monthsLived()` | How many months the city has lived: every entry's months together (0.7.55) - months() until a year folds. |
+| 1487 | 9 | `public int back(int i, int months)` | The entry `months` months before entry i (0.7.55): the month that far back, or the folded year that holds it - so "a year before" a folded year is the year before it, and before a month in the first year after the fol... |
+| 1516 | 8 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
+| 1535 | 21 | `public double[] alignedTail(String name, int n)` | The last {@code n} entries of aligned(name), and no more of it (UP2): the same figures as aligned(name)'s tail, value for value - the front padding as NaN, a folded year's flow as its monthly average where the tail re... |
+| 1558 | 14 | `public double[] raw(String name)` | A series as it is stored, padded at the front as aligned() is: a folded year's flow is the year's sum (0.7.55). |
+
+### a series' record, counted (0.7.9) (lines 1573-2012)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1586 | 8 | `public int monthsUnder(String series, String line)` | Months in which both series were recorded and the first stood under the second: the bank's months under its capital target (bankCapitalRatio against bankCapitalTarget). |
+| 1596 | 6 | `public int monthsUnder(String series, double level)` | ...and under a fixed level: its months under the city's minimum. |
+| 1604 | 6 | `public int monthsRecorded(String series)` | Months a series was recorded in - a folded year's months each (0.7.55). |
+| 1612 | 5 | `public double total(String series)` | A flow added up over the months it was recorded: the stored figures, so a folded year adds its sum (0.7.55). |
+| 1625 | 7 | `public double changeOver(String series, int months)` | How far a series has moved over the last `months` months, as a share of where it stood then: the last recorded value over the one `months` entries before it, less one (0.7.35: the Trade tab's rate this month and over ... |
+| 1638 | 12 | `public double recentTotal(String series, int months)` | A flow added up over the last `months` months only, those recorded among them (0.7.35: the Trade tab's year of exports and imports). |
+| 1656 | 16 | `public double worstYear(String series)` | A flow's worst year: the largest sum of any twelve months in a row since it was first recorded - over fewer than twelve, what there is. |
+| 1674 | 13 | `private static double worstYear(double[] a)` | worstYear()'s twelve months in a row, over a run of months. |
+| 1694 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
+| 1715 | 3 | `public double[] runningTotal(String series)` | ...and a series of this history summed from its first recorded entry (0.7.55): off the stored figures, so a folded year adds its sum - what City History's running totals read. |
+| 1720 | 184 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
+| 1906 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
+| 1907 | 1 | `public List<Double> getGdp()` |  |
+| 1908 | 1 | `public List<Double> getDebt()` |  |
+| 1909 | 1 | `public List<Double> getInterestRate()` |  |
+| 1910 | 1 | `public List<Long> getJobs()` |  |
+| 1911 | 1 | `public List<Long> getWorkforce()` |  |
+| 1912 | 1 | `public List<Long> getOutOfWork()` |  |
+| 1913 | 1 | `public List<Long> getPopulation()` |  |
+| 1926 | 55 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
+| 1983 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
+| 1999 | 12 | `public HistorySave slim(java.util.Set<String> keep)` | A history with this one's axis and only the named series (LB3): every other series empty, so it reads as not recorded, a name this history has no series of ignored. |
 

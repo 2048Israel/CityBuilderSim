@@ -18,6 +18,28 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.6 — BD1, the bank's discount re-struck where an issue or a trade releases it — 2026-11-03, ready, see docs/queue/BD1-notes.md
+The bank's equity is its parts again after it buys the city's paper. Its unearned discount on that paper is re-read
+from the debt book at every refresh, and twice the book's figure moved with nothing to book it: a line reopened at a
+premium let the proceeds over face eat the line's discount, the bank's settled share with it; and the desk handed the
+bank the whole line's discount while the book counts the settled part's, which differ whenever a sale is unsettled.
+The next refresh moved its equity with no cause (SectorStatementCheck on FC1's path: 7.06 in month 135, the parts off
+in 226 of 479 bank-months). The bank now re-strikes it where it happens (Bank.restrikeCarriedDiscount()), a named
+cause routed to retained earnings as BK1's is; not at the buyback or the call, where the settle's payment already
+cancels a piece bought back before its settle (the gate's finding). HoldersCheck 13 proves the three cases in a city
+and its twin; SectorStatementCheck plays FC1's builders' price again, 0 of 479 off. The trace moved in one row of the
+bank's; the ensemble passes 22/26, as 0.9.2.
+
+### 0.9.5 — LD2, the wanted posts' bounds after LD1 — 2026-11-03, ready, see docs/queue/LD2-notes.md
+A business's bid for workers now lifts only its own band, and never past sqrt(2). LD1's refused posts were priced
+against the workers they would have taken from the band below, which bid the diploma band up by 7% on average (48% at
+most) in most months it asked nothing, and took bands that asked past LD1's own bound, to 1.9x. They are now priced
+against the workers the posts that exist give, capped on the month's own posts, and a band no migrant can come for asks
+nothing. The comments and WantedPostsCheck 9 now say the asks are priced the month they are made. A replay's history
+cut no longer keeps a company's series from before it listed. Ensemble 24/26 against 22. Eight harnesses whose young
+towns the new wage moves play without it until LD3. The hands-off bank's failures are not LD1's (5 of 12 seeds without
+its bid, 3 with); the sawmills cause them, queued as BF1.
+
 ### 0.9.4 — DZ1, the trade by partner in the money of the day — 2026-11-02, ready, see docs/queue/DZ1-notes.md
 A currency reform now carries the city's trade by partner. Its history rounds each finished year to a grid in money,
 and the grid followed the price factor but not the reform's unit: after a reform by a hundred it was a hundred times
