@@ -2669,12 +2669,12 @@ public class LandmassCheck {
         double dry = 10;
         LandParcel mixed = new LandParcel(900, 0, 3, 0, 0, 0, 0, 0, dryArea(dry), null, new int[CityLand.KINDS], new double[CityLand.KINDS], 100, 0);
         mixed.setUnlinked(dry * 0.4, dry * 0.4, 648);
-        check("an offer partly on the island says how much: '4.00 km2 of its dry ground is on Island 2, which no port links', and its receipt the same share",
+        check("an offer partly on the island says how much: '4.00 km2 of its dry ground is on Island 2, which no port links', and its receipt the same share as a sentence of its own",
                 LandmassView.offerLine(mixed, lms).equals(LandMap.area(dry * 0.4) + " of its dry ground is on Island 2" + clause)
-                        && LandmassView.receiptWords(mixed, lms).equals(" - " + LandMap.area(dry * 0.4) + " of it on Island 2, which no port links"));
+                        && LandmassView.receiptWords(mixed, lms).equals(LandMap.area(dry * 0.4) + " of it lies on Island 2, which no port links."));
         mixed.setUnlinked(dry, dry, 648);
-        check("...and one wholly on it says 'On Island 2' and its receipt ' - on Island 2, which no port links'",
-                LandmassView.offerLine(mixed, lms).equals("On Island 2" + clause) && LandmassView.receiptWords(mixed, lms).equals(" - on Island 2, which no port links"));
+        check("...and one wholly on it says 'On Island 2' and its receipt 'It lies on Island 2, which no port links.'",
+                LandmassView.offerLine(mixed, lms).equals("On Island 2" + clause) && LandmassView.receiptWords(mixed, lms).equals("It lies on Island 2, which no port links."));
         // Several picks on the map card: one line for all of them, as one offer's tooltip says it.
         check("several picks: the map card's line says 'Their dry ground is on Island 2' for picks wholly on it, how much of it for a mixed set, and nothing for picks of home's ground",
                 LandmassView.picksLine(List.of(mixed), lms).equals("Their dry ground is on Island 2" + clause)
@@ -2689,8 +2689,8 @@ public class LandmassCheck {
         String islandReceipt = o.g.getLastLandReceipt();
         String receiptClause = LandmassView.receiptWords(isle, o.books());
         report("premise: the island offer was bought, and the city now owns Island 2 unlinked", bought[0] && o.books().anyUnlinked() && o.books().rows().size() == 2, islandReceipt);
-        check("the island offer's receipt ends with the clause, ' - on Island 2, which no port links.', and the clause names it from the books after the purchase",
-                receiptClause.equals(" - on Island 2, which no port links") && islandReceipt != null && islandReceipt.startsWith("Bought ") && islandReceipt.endsWith(receiptClause + "."));
+        check("the island offer's receipt ends with the clause as a sentence of its own, 'It lies on Island 2, which no port links.', and the clause names it from the books after the purchase",
+                receiptClause.equals("It lies on Island 2, which no port links.") && islandReceipt != null && islandReceipt.startsWith("Bought ") && islandReceipt.endsWith(" " + receiptClause));
         quietly(() -> bought[1] = o.g.buyLandParcel(near.getId()));
         String homeReceipt = o.g.getLastLandReceipt();
         check("an offer of home's ground is bought with the receipt it always had: no clause", bought[1] && homeReceipt != null && homeReceipt.startsWith("Bought ") && !homeReceipt.contains("no port links")

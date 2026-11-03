@@ -1336,6 +1336,59 @@ public class LandMarket {
     }
 
     /* ===================================================================
+       A QUOTE AWAY FROM THE SCREEN'S THREAD (WN5b, 2026-11-02)
+
+       The hover over a block the player may pick quotes it (quote()), and with sellers a quote splits the block's ground by nation
+       (LandSellers.split()): across the Detroit River one cold quote takes 17 ms at 128 plots a side, 152 ms at 512 and 419 ms at 1,024; off
+       Gibraltar's coast 76 ms at 256, 449 ms at 1,024 and 5.3 s at 4,096. The month runs ON the screen's thread, so a worker cannot read the live
+       land; the screen's thread copies it instead (CityLand.copy(), a millisecond), as the map's draft does (Game.MapDraft), and any thread
+       quotes on the copy.
+       =================================================================== */
+
+    /** The most making a quoter may take on the screen's thread, in milliseconds: a frame at 60 Hz. */
+    static final double QUOTER_MS = 16;
+
+    /**
+     * A copy of this office for quoting on another thread, or null on a bare office (no land) and where the land cannot be copied. The screen's
+     * thread only: it reads the live office. The copy holds the land field for field and the fields quote() reads - the sellers (shared, and
+     * safe to read from any thread), the month, the ground's dollar price and the world's price level - and not the landmasses (ET5's split of
+     * ground the city has not linked, which a quote's reader never asks for: the hover reads the block's area, kinds and price).
+     */
+    public Quoter quoter() {
+        if (land == null) return null;
+        CityLand copy = land.copy();
+        if (copy == null) return null;
+        LandMarket frozen = new LandMarket();
+        frozen.land = copy;
+        frozen.sellers = sellers;
+        frozen.month = month;
+        frozen.groundUsdPerSqFt = groundUsdPerSqFt;
+        frozen.usPriceLevel = usPriceLevel;
+        return new Quoter(frozen);
+    }
+
+    /**
+     * The office as it stood when quoter() was called, for quoting blocks on any thread: its answer is the office's quote() of that moment, to the
+     * bit (the same code, on a copy of the land). It never changes after it is made - a purchase made since is not seen by it, so a screen that
+     * keeps one asks for another when the city's ground moves.
+     */
+    public static final class Quoter {
+        private final LandMarket frozen;
+
+        private Quoter(LandMarket frozen) {
+            this.frozen = frozen;
+        }
+
+        /** LandMarket.quote() of the office as it stood: any thread, one call at a time (the copy's land is not made for two readers at once). */
+        public synchronized LandParcel quote(long x0, long y0, long x1, long y1) {
+            return frozen.quote(x0, y0, x1, y1);
+        }
+
+        /** The month the office priced in when it was copied. */
+        public int month() { return frozen.month; }
+    }
+
+    /* ===================================================================
        SAVE AND RESTORE
 
        The offers are written out in full, every field (DataSave's

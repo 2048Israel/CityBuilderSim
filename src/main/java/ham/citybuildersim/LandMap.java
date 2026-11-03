@@ -370,6 +370,9 @@ public final class LandMap {
     /** The hover card's line over one block that may be picked (BL1). */
     public static final String ONE_BLOCK = YOUR_GROUND + ": one block";
 
+    /** What the hover card says in place of a block's area and price while its quote is worked out away from the screen's thread (WN5b). */
+    public static final String QUOTING = "Pricing the block…";
+
     /** The hover card's first line over a picked block (BL1): what is picked in all - "Your ground - 12 blocks picked", or with offers "3 offers and 12 blocks picked". */
     public static String pickedWords(int offers, int blocks) {
         if (offers == 0) return groundTitle(blocks) + " picked";

@@ -1882,28 +1882,47 @@ public class Game {
      * first January (Nations.FIRST_YEAR), carried across any change of money in between so that its real rate holds through the year it changed
      * (RealDollar.moneyChain, WN6: a nation's prices run on through a euro or a dollarisation while the new money's rate starts afresh); a nation that
      * has not changed money reads as it always did. The US's prices are the in-game US$'s own (the world's level, shock and all), a partner's its
-     * nation's on the path. With no world's moneys it is the D$ against the US$ alone, the US$'s prices the world's level.
+     * nation's on the path. With no world's moneys it is the D$ against the US$ alone, the US$'s prices the world's level. The partners it weighs are
+     * realEffectivePartners()', which the Trade screen names (WN5b).
      */
     public double realEffectiveRate() {
         double foundingRate = denomination.money(ForeignAccounts.OPENING_RATE);
-        double us = world.getPriceLevel();
+        List<RealDollar.Partner> partners = new ArrayList<>();
+        for (RealDollar.Weighed w : realEffectivePartners()) partners.add(w.partner());
+        return RealDollar.realEffectiveRate(foreign.getRate(), foundingRate, priceIndex.getIndex(),
+                partners.isEmpty() ? RealDollar.usAlone(world.getPriceLevel()) : partners);
+    }
+
+    /**
+     * The partners the real effective rate weighs (WN5b), in nation order: every nation the city traded with over the last finished year (else the year
+     * to date) whose money, rate and prices are all there to weigh (RealDollar.Partner.usable()), each with its share of the usable partners' weights
+     * (the shares add to 1) and the Partner the rate is made of. Empty where the rate weighs the US$ alone: no world's moneys, or no trade yet. The one
+     * builder of the partners - realEffectiveRate() takes them from here, so the list a screen names is the rate's own.
+     */
+    public List<RealDollar.Weighed> realEffectivePartners() {
         WorldMoneys moneys = worldMoneys;
         double[] weight = tradeByNation();
+        if (moneys == null || weight == null) return List.of();
+        double us = world.getPriceLevel();
+        int t = moneys.month();
+        int yearNow = Nations.FIRST_YEAR + t / 12;
+        List<Integer> kept = new ArrayList<>();
         List<RealDollar.Partner> partners = new ArrayList<>();
-        if (moneys != null && weight != null) {
-            int t = moneys.month();
-            for (int nation = 1; nation < weight.length; nation++) {
-                if (!(weight[nation] > 0)) continue;
-                int yearNow = Nations.FIRST_YEAR + t / 12;
-                String code = nations.year(nation, yearNow).money();
-                double prices = nation == moneys.usNation() ? us : moneys.priceLevel(nation, t);
-                RealDollar.Partner partner = new RealDollar.Partner(weight[nation], moneys.rate(code) * RealDollar.moneyChain(nations, moneys.usNation(), nation, yearNow),
-                        RealDollar.moneyAtFounding(nations, moneys, nation), prices);
-                if (partner.usable()) partners.add(partner);
-            }
+        double total = 0;
+        for (int nation = 1; nation < weight.length; nation++) {
+            if (!(weight[nation] > 0)) continue;
+            String code = nations.year(nation, yearNow).money();
+            double prices = nation == moneys.usNation() ? us : moneys.priceLevel(nation, t);
+            RealDollar.Partner partner = new RealDollar.Partner(weight[nation], moneys.rate(code) * RealDollar.moneyChain(nations, moneys.usNation(), nation, yearNow),
+                    RealDollar.moneyAtFounding(nations, moneys, nation), prices);
+            if (!partner.usable()) continue;
+            kept.add(nation);
+            partners.add(partner);
+            total += partner.weight();
         }
-        return RealDollar.realEffectiveRate(foreign.getRate(), foundingRate, priceIndex.getIndex(),
-                partners.isEmpty() ? RealDollar.usAlone(us) : partners);
+        List<RealDollar.Weighed> out = new ArrayList<>(partners.size());
+        for (int i = 0; i < partners.size(); i++) out.add(new RealDollar.Weighed(kept.get(i), partners.get(i).weight() / total, partners.get(i)));
+        return out;
     }
 
     /** The seed of the world this city stands on (0.7.56): chosen at founding, or derived from an older save. */
@@ -2606,9 +2625,9 @@ public class Game {
         String by = soldByWords(sold);
         if (!by.isEmpty()) lastLandReceipt += " " + by;
         tallyLandBought(parcel, sold);
-        // ...and (ET5) when the ground bought lies on a landmass no port links, where: "... - on Island 2, which no port links."
+        // ...and (ET5; a sentence of its own since WN5b) when the ground bought lies on a landmass no port links: "It lies on Island 2, which no port links."
         String island = LandmassView.receiptWords(parcel, landManager.getLandmasses());
-        if (!island.isEmpty()) lastLandReceipt = lastLandReceipt.substring(0, lastLandReceipt.length() - 1) + island + ".";
+        if (!island.isEmpty()) lastLandReceipt += " " + island;
         lastLandReceiptMonth = month;
         GameLog.note(lastLandReceipt);
         return true;
@@ -2782,30 +2801,11 @@ public class Game {
      * "Sold by United States (62%, US$1.3M) and Canada (38%, C$1.1M)." - each part's share of the offer's area and its price in its own money at today's
      * rate (WorldMoneys.rate(); in US$ where the moneys are not built or the nation's money is not one of them), marked as the eight are
      * (ForeignAccounts.MONEY_MARK) and otherwise by its ISO code. Empty for an offer with no seller named, for one whose one seller is the host, and where
-     * the city has no sellers to name them from.
+     * the city has no sellers to name them from. The sentence is LandSellersView.receiptLine()'s (WN5b), whose percents are the card's own, by largest
+     * remainder; this gives it each part's price in the seller's money.
      */
     private String soldByWords(List<LandParcel.Sale> sold) {
-        LandSellers sellers = landSellers;
-        if (sold.isEmpty() || sellers == null || (sold.size() == 1 && sold.get(0).seller() == sellers.host())) return "";
-        double km2 = 0, usd = 0;
-        for (LandParcel.Sale s : sold) {
-            km2 += s.km2();
-            usd += s.usd();
-        }
-        List<String> parts = new ArrayList<>();
-        for (LandParcel.Sale s : sold) {
-            String name;
-            try {
-                name = sellers.file().nation(s.seller()).name();
-            } catch (RuntimeException e) {
-                name = "nation " + s.seller();
-            }
-            double share = km2 > 0 ? s.km2() / km2 : usd > 0 ? s.usd() / usd : 1.0 / sold.size();
-            parts.add(String.format("%s (%d%%, %s)", name, Math.round(100 * share), inSellersMoney(s)));
-        }
-        String all = parts.size() == 1 ? parts.get(0)
-                : String.join(", ", parts.subList(0, parts.size() - 1)) + " and " + parts.get(parts.size() - 1);
-        return "Sold by " + all + ".";
+        return LandSellersView.receiptLine(sold, landSellers, this::inSellersMoney);
     }
 
     /** A part's price in the seller's own money at today's rate: "C$1.1M", "MXN 2.3M"; in US$ where the money or its rate is not known. */

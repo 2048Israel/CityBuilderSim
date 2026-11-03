@@ -26,7 +26,10 @@ import java.util.function.Supplier;
  *      that many 2015 ones), and the rate over the bridge at founding.
  *   4. REAL GDP IN 2015 US$ is the GDP over the index over the founding's rate, times the bridge.
  *   5. THE REAL EFFECTIVE RATE: 100 at founding; the city's prices up 10% and nothing else moving reads 110; a partner's money 10% dearer against the
- *      US$ with half the weight reads 100 x 1.1^-.5; the US alone with no trade; the weights are shares.
+ *      US$ with half the weight reads 100 x 1.1^-.5; the US alone with no trade; the weights are shares. And (WN5b, which names the partners on the Trade
+ *      screen): a town with no trade weighs no partner to name; with a finished year's trade the partners it weighs are named in nation order with
+ *      their shares (Game.realEffectivePartners()), the rate is made of exactly those partners to the bit, and a money that never changed is weighed at
+ *      its rate in the first January, else the file's first-year figure (how many nations take the fallback is counted, not assumed).
  *   6. THE SHOCK (WorldEconomy.shockLevel(), the ensemble's import shock): on the path it is a factor the next month keeps, saved, and permanent; on the
  *      walk it is the level times the size, which the pull then takes back, and what the old save-and-restore door did.
  *   7. A CHANGE OF MONEY (WN6; pending row WN5-R): a nation that changed money since the first January (found in the file, in the Random town and in a
@@ -296,6 +299,7 @@ public class RealDollarCheck {
         Game g = new Game(GameFiles.scratch("realdollar-effective"), Founding.defaults());
         quietly(g::run);
         close("a city before its first month: the real effective rate is 100", g.realEffectiveRate(), 100, 1e-9);
+        assertTrue("...with no world's moneys built yet it weighs no partner to name: an empty list (the screen says the US$ alone)", g.getWorldMoneys() == null && g.realEffectivePartners().isEmpty());
         Path file = WorldData.locate();
         if (file == null) {
             out.println("  world-1.bin not named (-D" + WorldData.PROPERTY + "=<path>) nor at " + WorldData.DATA_FILE + ": the city's months did not run");
@@ -310,6 +314,23 @@ public class RealDollarCheck {
         double level = town.getWorldEconomy().getPriceLevel(), rate = town.getForeignAccounts().getRate(), index = town.getPriceIndex().getIndex();
         double aloneWas = RealDollar.realEffectiveRate(rate, ForeignAccounts.OPENING_RATE, index, RealDollar.usAlone(level));
         close("a town that has traded with nobody: the D$ against the US$ alone, the US$'s prices the world's level", town.realEffectiveRate(), aloneWas, 1e-9);
+        // (Its months have in fact traded with the US alone, which is why the figure is the US$ alone's: the US as the one partner is the US$ alone to the bit.)
+        List<RealDollar.Weighed> usOnly = town.realEffectivePartners();
+        assertTrue("...the partners it weighs then are the United States at a share of 1, which the screen names; the rate of the US as the one partner is the US$ alone's",
+                usOnly.size() == 1 && usOnly.get(0).nation() == usa && usOnly.get(0).share() == 1);
+        // A town with no trade at all, caused: a month played (the moneys are built then, and the town trades with the US from its first month), then its trade wiped.
+        Game idle = town("realdollar-effective-idle", Founding.defaults().withPath(Nations.Path.RANDOM, SEED));
+        play(idle);
+        boolean tradedFirst = idle.realEffectivePartners().size() == 1;
+        quietly(() -> {
+            idle.partnerTradeForTest().restore(new PartnerTrade(nations.count()).toState());
+            idle.partnerTradeForTest().restoreHistory(List.of());
+        });
+        assertTrue("premise: a town with the nations' moneys that played one month had traded with the US alone, and its trade is now wiped (no month's, no year's)",
+                tradedFirst && idle.getWorldMoneys() != null);
+        assertTrue("a town with the nations' moneys and no trade weighs no partner to name: an empty list (the screen says the US$ alone), and the rate is the US$ alone's",
+                idle.realEffectivePartners().isEmpty() && same(idle.realEffectiveRate(), RealDollar.realEffectiveRate(idle.getForeignAccounts().getRate(),
+                        idle.getDenomination().money(ForeignAccounts.OPENING_RATE), idle.getPriceIndex().getIndex(), RealDollar.usAlone(idle.getWorldEconomy().getPriceLevel()))));
         // The finished year's trade, given: Germany 4,000 and Japan 2,000 of thousands of D$ (exports plus imports), the US 2,000 - the condition caused, not read.
         Good good = Good.values()[0];
         quietly(() -> town.partnerTradeForTest().restoreHistory(List.of(new PartnerTrade.Table(2001, List.of(
@@ -331,6 +352,41 @@ public class RealDollarCheck {
                 rate, index, level, reer, aloneWas);
         close("...given a finished year's trade with Germany, Japan and the US, the getter weighs each partner's money (the one its nation uses now, against its rate in the first January) and prices", reer, want, 1e-9 * want);
         assertTrue("...which is not the US$ alone's figure: the partners' moneys and prices move it", Math.abs(reer - aloneWas) > 1e-6 && reer > 0 && Double.isFinite(reer));
+
+        // WN5b: the partners the rate weighs are named (the Trade screen's line), and the rate is made of exactly them.
+        List<RealDollar.Weighed> weighed = town.realEffectivePartners();
+        int[] byNation = { germany, japan, usa };
+        Arrays.sort(byNation);
+        boolean named = weighed.size() == byNation.length;
+        double sum = 0, worst = 0;
+        for (int i = 0; named && i < byNation.length; i++) {
+            named &= weighed.get(i).nation() == byNation[i];
+            double share = weight[byNation[i]] / 8_000;
+            worst = Math.max(worst, Math.abs(weighed.get(i).share() - share));
+            sum += weighed.get(i).share();
+        }
+        StringBuilder who = new StringBuilder();
+        for (RealDollar.Weighed w : weighed) who.append(who.length() > 0 ? ", " : "").append(nations.name(w.nation())).append(String.format(" %.4f", w.share()));
+        assertTrue("the partners it weighs are named: exactly Germany, Japan and the US in nation order with shares .5, .25 and .25 adding to 1 (" + who + ")",
+                named && worst <= 1e-12 && Math.abs(sum - 1) <= 1e-12);
+        List<RealDollar.Partner> made = new java.util.ArrayList<>();
+        for (RealDollar.Weighed w : weighed) made.add(w.partner());
+        assertTrue("the rate is its partners' own: the real effective rate is RealDollar.realEffectiveRate over the named partners' Partners, to the bit",
+                !made.isEmpty() && town.realEffectiveRate()
+                        == RealDollar.realEffectiveRate(rate, town.getDenomination().money(ForeignAccounts.OPENING_RATE), index, made));
+        // A money that never changed is weighed as before WN6: its rate in the first January where the moneys carry it, else the file's own first-year figure.
+        int yearNow = Nations.FIRST_YEAR + t / 12, fallback = 0;
+        Tally founded = new Tally();
+        for (int n = 1; n <= nations.count(); n++) {
+            Nations.Year first = nations.year(n, Nations.FIRST_YEAR);
+            if (!java.util.Objects.equals(nations.year(n, yearNow).money(), first.money())) continue;
+            double start = moneys.rateAtStart(first.money()), got = RealDollar.moneyAtFounding(nations, moneys, n);
+            if (Double.isNaN(start)) fallback++;
+            final int nation = n;
+            founded.see(same(got, Double.isNaN(start) ? first.rateToUsd() : start), () -> nations.name(nation) + " (" + first.money() + "): " + got + " against " + start + " / " + first.rateToUsd());
+        }
+        tally("a money that never changed reads as before WN6: its rate in the first January, else the file's first-year figure (" + fallback + " of " + nations.count()
+                + " nations took the fallback)", founded);
     }
 
     /* ----------------------------------------------------------------- 6 */
