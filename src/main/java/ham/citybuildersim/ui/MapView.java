@@ -5445,7 +5445,7 @@ final class MapView {
 
     /* ----- the move loaded before it runs (CM1) ----- */
 
-    /**
+    /*
      * A replay's camera move loaded before it runs (CM1, 2026-11-03): Jerus films his trailer from a replay and a glide or a fly out
      * that reaches the screen before the worker has shows half of it black. A move therefore LOADS first (ReplayCamera.LOAD): loadStep()
      * takes the camera's plan views (ReplayCamera.planView(), ReplayCamera.PLAN_HZ a second of the move's own clock) one after another
@@ -5617,13 +5617,6 @@ final class MapView {
         return rt.totalMemory() - rt.freeMemory() > limit;
     }
 
-    /**
-     * Whether the view as it stands lacks nothing: no far node, district picture or chart node is asked of WORKER and not back (but
-     * those a passed view left stuck), and everything the draw would read is in and current - on the plane at a tile level every tile
-     * in view has a picture, at FAR every node has its colours and is not a partial one still waiting for pictures it would be given;
-     * on the globe in the GROUND tier the same for the plane's nodes near the city and every chart node in range. The PICTURE tier
-     * lacks nothing.
-     */
     /** The view as it stands lacks nothing, outside a move: loadSettled() with nothing passed (ReplayMoveProbe's and ReplayCheck's wait for a still view). */
     boolean viewSettled() { return loadSettled(NO_MOVE); }
 
@@ -5645,6 +5638,13 @@ final class MapView {
 
     private long framesDrawn;
 
+    /**
+     * Whether the view as it stands lacks nothing: no far node, district picture or chart node is asked of WORKER and not back (but
+     * those a passed view left stuck), and everything the draw would read is in and current - on the plane at a tile level every tile
+     * in view has a picture, at FAR every node has its colours and is not a partial one still waiting for pictures it would be given;
+     * on the globe in the GROUND tier the same for the plane's nodes near the city and every chart node in range. The PICTURE tier
+     * lacks nothing.
+     */
     private boolean loadSettled(MoveLoad m) {
         if (tiles == null) return false;
         for (Long k : nodesAsked) if (!m.stuckNodes.contains(k)) return false;

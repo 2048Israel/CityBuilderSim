@@ -20,7 +20,7 @@
 
 **Uses:** [MapFrame](MapFrame.md) (1)
 
-**Used by (5):** [MapView](MapView.md), [ReplayCamera](ReplayCamera.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [UserInterface](UserInterface.md)
+**Used by (6):** [MapView](MapView.md), [ReplayCamera](ReplayCamera.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [ReplayMoveProbe](ReplayMoveProbe.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

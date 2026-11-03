@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**170 harness files, 18,843 labelled assertions.** AllChecks runs 170 of them.
+**170 harness files, 18,849 labelled assertions.** AllChecks runs 170 of them.
 
 ## Which harnesses read which class
 
@@ -246,6 +246,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ReplayGraphLayer](map/ReplayGraphLayer.md) | **none** |
 | [ReplayGraphs](map/ReplayGraphs.md) | ReplayCheck |
 | [ReplayMode](map/ReplayMode.md) | **none** |
+| [ReplayMoveProbe](map/ReplayMoveProbe.md) | ReplayCheck |
 | [Resource](map/Resource.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BondCheck, BuildCardCheck, BuildingDataCheck, CarCheck, ExpectationsCheck, ForeignCheck, GdpCheck, GroceryCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SupplierCreditCheck, WaterCheck |
@@ -19286,7 +19287,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L537 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
 - **L543 4. on the real Earth**
 
-## ReplayCheck.java - 99 labelled assertions
+## ReplayCheck.java - 105 labelled assertions
 
 > Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs.
 > Timing harness (Timing.HARNESSES): section 6 judges the recorder's FX-thread cost through Timing.
@@ -19302,113 +19303,120 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      recording's history cut at a month is the history the city had then, series by series, and a cut is right across the
 > ...
 
-- **L166 1. a recording writes one month each, and a rewind rewrites from the next**
-  - L169 fixture: the grown city has a map and is not recording
-  - L170 ...and a replay copy is not what it is
-  - L174 switched on, the city has an id, file-safe, and its folder is under recordings/ beside saves/
-  - L179 an id is made from the name's letters and digits, without accents, and a name with none gives city
-  - L198 fixture: the clock turned the month 24 times
-  - L204 24 months played, 24 month files: m0+1 to m0+24, none missing and none twice
-  - L205 ...first and last month are the listing's ends
-  - L206 ...the meta says whose it is: the id, the city, the build, the format, and when it was started
-  - L210 ...and the recording is listed, with the folder's id
-  - L213 ...and the history is there from the first month (written with it)
-  - L214 ...a month's file has the head, its map and its save: the map and the JSON read back for every month
-  - L222 the autosave hands the recording its history, from the snapshot it made: now through the last month
-  - L232 nothing under saves/ but the autosave's files and slot 10, the slot the check saved to
-  - L237 loaded the save from m0+12: the city is back there, recording is on again, and it is the same id
-  - L242 fixture: the income tax moved off what the recording has
-  - L250 played 3 months on: the months past m0+15 are gone, m0+1 to m0+15 are what is left
-  - L254 ...months up to m0+12 are untouched: byte for byte what they were
-  - L257 ...m0+13 to m0+15 are rewritten (the city played them again, with another rate)
-  - L260 ...and month m0+13's save carries the new rate, m0+12's the old one
-  - L266 ...and no file of the recording is a leftover .tmp: the folder holds month files, .bak copies, the meta, the history
-  - L271 switching off writes the history now: through m0+15, the month the timeline ends on
-  - L276 ...and a month played with it off is not recorded
-  - L285 a city founded after that records nothing: no switch, no id
-  - L288 ...and plays a month without adding to the old city's recording
-- **L291 replaying month N gives the figures the city had at N**
-  - L296 the replay's months are the recording's, and a month it has not is a gap: nearest() finds the closest
-  - L299 a quick step before any load does nothing
-  - L304 month m0+
-  - L308 the copy is a replay copy that never records, whatever the save it loaded said
-  - L315 a quick step to a middle month swaps the map: its count is that month's, and the copy says it is not whole
-  - L317 ...and only the map: the people are still the first month's until the month is loaded whole
-  - L320 a month with no file is not stepped to
-  - L321 ...and the month loaded whole after the step is the middle month's figures
-  - L323 ...and a month that is not in the recording is refused in words, the copy as it was
-  - L333 the recording's history cut at m0+12 is the history the city had then: the axis, and all
-  - L337 ...the master is parsed once and a cut after the last month is a whole snapshot
-  - L341 ...and the copy's charts take it: the copy's history ends at the month shown
-  - L355 fixture: a history past MONTHLY_KEPT has its oldest five years folded, and all its months
-  - L360 a cut among the months after the folded years: the five years and three months, every series their prefix
-  - L362 ...the finished years of trade are those before the month's year:
-  - L365 a cut inside a folded year drops that year whole: month 30 keeps the two years that ended by it,
-  - L369 a cut among the newest months drops them: ten fewer entries, the folded years as they were, every series as long as the axis
-  - L372 ...and a cut at the last month is a whole snapshot, the trade years too, and the history it was cut from is as it was
-- **L376 3. nothing sticks**
-  - L381 the copy lives in a folder of its own: not the player's folder, not the recording's
-  - L387 on the copy at the middle month, the rate is the recorded one
-  - L390 ...a click may change the copy
-  - L391 ...a step to the next month loads it whole
-  - L392 ...and back: the rate is the recorded one, nothing stuck
-  - L396 the copy records nothing: switching it on leaves it off
-  - L399 ...and a month played on the copy writes no month into the recording
-  - L403 the player's folder (the saves and the recording in it) is byte for byte what it was
-- **L405 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing**
-  - L412 a sitting's log is named for the moment it began, in the recording's folder naming
-  - L449 every kind written through the writer, from two threads, and closed: read back event for event
-  - L453 ...and the sitting has every kind in it
-  - L454 ...the moves and drags closer than MOVE_EVERY_MS to the last one kept are dropped, those apart are kept
-  - L457 ...the header names the sitting's start
-  - L463 the sittings of a folder are listed oldest first, and nothing else in it
-  - L466 ...a log with one event reads back that one
-  - L481 a long sitting reads back whole: 2,000 events, in about
-  - L497 a copy of the file cut mid-record reads back a prefix of what was written: five cuts, the three through the body from
-  - L501 ...a file cut inside its header, or not a log at all, or missing, reads as none and throws nothing
-  - L510 a sitting still open reads up to its last flush, a crash losing no more than the flush's two seconds: 50 events
-  - L514 ...and closed it has the last one too, and add() after close is ignored
-  - L523 a re-enacted Save, Load and Quit on the copy ran: the copy wrote into its own folder
-  - L527 ...and the player's folder, with the recording in it, is byte for byte what it was
-  - L528 ...and the recording's months are the months it had
-- **L530 5. the camera's arithmetic**
-  - L538 on the
-  - L542 ...its middle scale is the geometric mean of the ends (to 1e-9)
-  - L551 ...and the scale only ever goes one way from the start to the end
-  - L562 the ease is 0 and 1 at the ends, symmetric about the middle, monotone, and still at both ends (a slope under 1e-6 at 0 and 1)
-  - L569 the centre's share at the middle for a ratio of 4 is the formula's own, (1 - r^-e) / (1 - r^-1), 2/3
-  - L572 ...and the share is the eased share itself when the scales match
-  - L575 on the globe the middle of a glide between two points on the equator 20 degrees apart is on the equator, halfway
-  - L578 ...closing in, the globe's share is the same formula on the inverse ratio: two thirds of the way
-  - L581 ...a path of no length stays at the point at every step
-  - L583 a glide's month is linear in t, not eased: a quarter of the way from 12 to 36 is 18, and the ends are the marks'
-  - L587 a glide between a globe's view and a plane's stays at its start until the end (the kinds cannot blend)
-  - L600 the fly out at t = 1 is exactly the widest scale and the city's centre, its scale grows all the way, and the month stays
-  - L602 the time a fly takes is the doublings of the view's width over the dial: a ratio squared takes twice as long, in as out
-  - L623 five notches in: the product of the steps' zooms is ZOOM_STEP^5 to 1e-6, and the hand rests after
-  - L625 ...every step zooms no more than the one before (it eases out), the first the most, about the point the wheel was at
-  - L631 two notches out are ZOOM_STEP^-2 in the same way
-  - L653 a held key's velocity rises toward its target and, let go, falls to nothing, no step jumping more than MOST_DT_S / SMOOTH_S of the target
-  - L662 a frame of a one-second hitch moves the view no more than a MOST_DT_S step does: a pause, not a jump
-  - L675 a drift moves the ground DRIFT_STEP_PX in a second and closes in by exp(DRIFT_ZOOM_STEP) about the view's middle, until still()
-  - L679 ...and still() stops it, and the zoom still to do and the keys' velocity with it
-- **L682 5b. the graphs behind the city**
-  - L690 the population line holds the recording's months in order, from its first month to its last
-  - L692 ...it draws nothing before the first month, all of it at the last, and the head is the last point
-  - L701 ...scaled to the whole recording: its highest point is 1 and none is above it, so a line rises as the months play
-  - L708 GDP is a year of output, twelve times the mean of the last twelve months, as the header quotes it
-  - L710 a month's place across the recording runs 0 at the first to 1 at the last, and a recording of one month is at 0
-- **L715 5c. a quick step leaves most of the map's pictures as they were**
-  - L734 a quick step to the next month is another map of the same world, and its tiles read the same ground the first read
-  - L737 ...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved
-  - L749 ...a tile whose stamp is the same paints the same pixels in both maps (
-- **L752 6. recording costs the month only its fill, and changes nothing in it**
-  - L760 fixture: two cities grown the same, to the last digit
-  - L781 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
-  - L783 ...and the one that records has its 12 months on disk
-  - L788 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
-  - L806 ...and a month's file is smaller than the JSON of the save it holds
-  - L824 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
+- **L174 1. a recording writes one month each, and a rewind rewrites from the next**
+  - L177 fixture: the grown city has a map and is not recording
+  - L178 ...and a replay copy is not what it is
+  - L182 switched on, the city has an id, file-safe, and its folder is under recordings/ beside saves/
+  - L187 an id is made from the name's letters and digits, without accents, and a name with none gives city
+  - L206 fixture: the clock turned the month 24 times
+  - L212 24 months played, 24 month files: m0+1 to m0+24, none missing and none twice
+  - L213 ...first and last month are the listing's ends
+  - L214 ...the meta says whose it is: the id, the city, the build, the format, and when it was started
+  - L218 ...and the recording is listed, with the folder's id
+  - L221 ...and the history is there from the first month (written with it)
+  - L222 ...a month's file has the head, its map and its save: the map and the JSON read back for every month
+  - L230 the autosave hands the recording its history, from the snapshot it made: now through the last month
+  - L240 nothing under saves/ but the autosave's files and slot 10, the slot the check saved to
+  - L245 loaded the save from m0+12: the city is back there, recording is on again, and it is the same id
+  - L250 fixture: the income tax moved off what the recording has
+  - L258 played 3 months on: the months past m0+15 are gone, m0+1 to m0+15 are what is left
+  - L262 ...months up to m0+12 are untouched: byte for byte what they were
+  - L265 ...m0+13 to m0+15 are rewritten (the city played them again, with another rate)
+  - L268 ...and month m0+13's save carries the new rate, m0+12's the old one
+  - L274 ...and no file of the recording is a leftover .tmp: the folder holds month files, .bak copies, the meta, the history
+  - L279 switching off writes the history now: through m0+15, the month the timeline ends on
+  - L284 ...and a month played with it off is not recorded
+  - L293 a city founded after that records nothing: no switch, no id
+  - L296 ...and plays a month without adding to the old city's recording
+- **L299 replaying month N gives the figures the city had at N**
+  - L304 the replay's months are the recording's, and a month it has not is a gap: nearest() finds the closest
+  - L307 a quick step before any load does nothing
+  - L312 month m0+
+  - L316 the copy is a replay copy that never records, whatever the save it loaded said
+  - L323 a quick step to a middle month swaps the map: its count is that month's, and the copy says it is not whole
+  - L325 ...and only the map: the people are still the first month's until the month is loaded whole
+  - L328 a month with no file is not stepped to
+  - L329 ...and the month loaded whole after the step is the middle month's figures
+  - L331 ...and a month that is not in the recording is refused in words, the copy as it was
+  - L341 the recording's history cut at m0+12 is the history the city had then: the axis, and all
+  - L345 ...the master is parsed once and a cut after the last month is a whole snapshot
+  - L349 ...and the copy's charts take it: the copy's history ends at the month shown
+  - L363 fixture: a history past MONTHLY_KEPT has its oldest five years folded, and all its months
+  - L368 a cut among the months after the folded years: the five years and three months, every series their prefix
+  - L370 ...the finished years of trade are those before the month's year:
+  - L373 a cut inside a folded year drops that year whole: month 30 keeps the two years that ended by it,
+  - L377 a cut among the newest months drops them: ten fewer entries, the folded years as they were, every series as long as the axis
+  - L380 ...and a cut at the last month is a whole snapshot, the trade years too, and the history it was cut from is as it was
+- **L384 3. nothing sticks**
+  - L389 the copy lives in a folder of its own: not the player's folder, not the recording's
+  - L395 on the copy at the middle month, the rate is the recorded one
+  - L398 ...a click may change the copy
+  - L399 ...a step to the next month loads it whole
+  - L400 ...and back: the rate is the recorded one, nothing stuck
+  - L404 the copy records nothing: switching it on leaves it off
+  - L407 ...and a month played on the copy writes no month into the recording
+  - L411 the player's folder (the saves and the recording in it) is byte for byte what it was
+- **L413 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing**
+  - L420 a sitting's log is named for the moment it began, in the recording's folder naming
+  - L457 every kind written through the writer, from two threads, and closed: read back event for event
+  - L461 ...and the sitting has every kind in it
+  - L462 ...the moves and drags closer than MOVE_EVERY_MS to the last one kept are dropped, those apart are kept
+  - L465 ...the header names the sitting's start
+  - L471 the sittings of a folder are listed oldest first, and nothing else in it
+  - L474 ...a log with one event reads back that one
+  - L489 a long sitting reads back whole: 2,000 events, in about
+  - L505 a copy of the file cut mid-record reads back a prefix of what was written: five cuts, the three through the body from
+  - L509 ...a file cut inside its header, or not a log at all, or missing, reads as none and throws nothing
+  - L518 a sitting still open reads up to its last flush, a crash losing no more than the flush's two seconds: 50 events
+  - L522 ...and closed it has the last one too, and add() after close is ignored
+  - L531 a re-enacted Save, Load and Quit on the copy ran: the copy wrote into its own folder
+  - L535 ...and the player's folder, with the recording in it, is byte for byte what it was
+  - L536 ...and the recording's months are the months it had
+- **L538 5. the camera's arithmetic**
+  - L546 on the
+  - L550 ...its middle scale is the geometric mean of the ends (to 1e-9)
+  - L559 ...and the scale only ever goes one way from the start to the end
+  - L570 the ease is 0 and 1 at the ends, symmetric about the middle, monotone, and still at both ends (a slope under 1e-6 at 0 and 1)
+  - L577 the centre's share at the middle for a ratio of 4 is the formula's own, (1 - r^-e) / (1 - r^-1), 2/3
+  - L580 ...and the share is the eased share itself when the scales match
+  - L583 on the globe the middle of a glide between two points on the equator 20 degrees apart is on the equator, halfway
+  - L586 ...closing in, the globe's share is the same formula on the inverse ratio: two thirds of the way
+  - L589 ...a path of no length stays at the point at every step
+  - L591 a glide's month is linear in t, not eased: a quarter of the way from 12 to 36 is 18, and the ends are the marks'
+  - L595 a glide between a globe's view and a plane's stays at its start until the end (the kinds cannot blend)
+  - L608 the fly out at t = 1 is exactly the widest scale and the city's centre, its scale grows all the way, and the month stays
+  - L610 the time a fly takes is the doublings of the view's width over the dial: a ratio squared takes twice as long, in as out
+  - L631 five notches in: the product of the steps' zooms is ZOOM_STEP^5 to 1e-6, and the hand rests after
+  - L633 ...every step zooms no more than the one before (it eases out), the first the most, about the point the wheel was at
+  - L639 two notches out are ZOOM_STEP^-2 in the same way
+  - L661 a held key's velocity rises toward its target and, let go, falls to nothing, no step jumping more than MOST_DT_S / SMOOTH_S of the target
+  - L670 a frame of a one-second hitch moves the view no more than a MOST_DT_S step does: a pause, not a jump
+  - L683 a drift moves the ground DRIFT_STEP_PX in a second and closes in by exp(DRIFT_ZOOM_STEP) about the view's middle, until still()
+  - L687 ...and still() stops it, and the zoom still to do and the keys' velocity with it
+- **L690 5b. the graphs behind the city**
+  - L698 the population line holds the recording's months in order, from its first month to its last
+  - L700 ...it draws nothing before the first month, all of it at the last, and the head is the last point
+  - L709 ...scaled to the whole recording: its highest point is 1 and none is above it, so a line rises as the months play
+  - L716 GDP is a year of output, twelve times the mean of the last twelve months, as the header quotes it
+  - L718 a month's place across the recording runs 0 at the first to 1 at the last, and a recording of one month is at 0
+- **L723 5c. a quick step leaves most of the map's pictures as they were**
+  - L742 a quick step to the next month is another map of the same world, and its tiles read the same ground the first read
+  - L745 ...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved
+  - L757 ...a tile whose stamp is the same paints the same pixels in both maps (
+- **L760 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1)**
+  - L770 the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned
+  - L777 Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)
+- **L781 6. recording costs the month only its fill, and changes nothing in it**
+  - L789 fixture: two cities grown the same, to the last digit
+  - L810 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
+  - L812 ...and the one that records has its 12 months on disk
+  - L817 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
+  - L835 ...and a month's file is smaller than the JSON of the save it holds
+  - L853 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
+  - L876 ...and runs on
+  - L880 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
+  - L882 ...and it ran frame by frame to its end, at least
+  - L883 ...after it, no move is held and nothing is pinned
 
 ## RestaurantsCheck.java - 36 labelled assertions
 
