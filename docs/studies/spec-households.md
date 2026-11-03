@@ -24,18 +24,18 @@ The game's money is in its own thousands at its own price level (the 1900 start)
    - A retiring couple's savings stay in their pay row and go to whoever joined it.
    - At month 2,400 a household coming into the retired row got 29% of a working household's average [M]. 94% of that came from strangers leaving other rows, and 43% of the newcomers arrived with only the 1.5 months' opening buffer.
    - When one of a senior couple dies, the survivor keeps half and the other half leaves the row.
-3. **The fix (HL1): the month's own flows carry their money.** Retiring, a partner dying, dying alone and leaving each carry the average of every stock (savings, shares, money abroad, bonds, loans) from the cell they left. The census's pool stays only for the reshuffles nobody can trace. In the toy the retired go from about a ninth of the working's wealth per adult to about the same (sum in §2.6). In Canada the 65+ hold 1.04 times what the 35-64 hold per household (derived from [S§1]).
+3. **The fix (HS1): the month's own flows carry their money.** Retiring, a partner dying, dying alone and leaving each carry the average of every stock (savings, shares, money abroad, bonds, loans) from the cell they left. The census's pool stays only for the reshuffles nobody can trace. In the toy the retired go from about a ninth of the working's wealth per adult to about the same (sum in §2.6). In Canada the 65+ hold 1.04 times what the 35-64 hold per household (derived from [S§1]).
 4. **The retired keep their former tier** (24 retired cells instead of 4). An Elite couple retires rich and an unskilled widow modest.
    - **The survivor keeps everything**, as Canada's spousal rollover does.
    - **Someone dying alone leaves an estate.** It settles their debts, then goes to the established households of their former tier.
-5. **Two adult stages (HL2):** young 18-34 and established 35-69. The young form singles, couples and young families; the established hold the teens and the large families (your "large family would be older adults").
+5. **Two adult stages (HS2):** young 18-34 and established 35-69. The young form singles, couples and young families; the established hold the teens and the large families (your "large family would be older adults").
    - Ageing into established carries its money.
    - The split at 35 is where Canadian home-ownership jumps (44% to 63%) and median net worth more than doubles ($159,100 to $409,300) [S§1].
    - Retirement stays at 70 (★ call 5; Canada's average is 65.4 [S§7]).
-6. **Business owners (BO1): one founding family line.**
-   - It takes the founders' shares alone; everyone else still buys shares at offerings and on the exchange.
-   - It never retires and sells its stakes slowly (★ 5% a year).
-   - It starts as one household and grows only by its own births, so it stays a handful at any size (★ call 1).
+6. **Business owners (BO1): one founding family per listed company** (your call 1).
+   - The families take the founders' shares alone; everyone else still buys shares at offerings and on the exchange.
+   - They have no job: they live on dividends and on what they sell, slowly (★ 5% of each stake a year). They never retire.
+   - A family whose company goes broke joins the ordinary population, taking its share of the line's money.
    - Today's founders' shares are 98% of what households own at month 21 [M].
 7. **A finding for the wealth study.** The month-21 "rich skilled couple" is mostly one company. Construction is 86-96% of the households' shares in five foundings, priced 50-400 times its founding price after 21 months [M]. BO1 moves that fortune to the owners; it does not explain the price.
 8. **Taxes (HT1).**
@@ -50,11 +50,11 @@ The game's money is in its own thousands at its own price level (the 1900 start)
     - The work that grows with them, the households' books and their bond and share orders, is 24-39% of a model month today [M].
     - So expect a model month 21-33% slower: 21.4 ms becomes about 28.5 at month 4,000 on an idle machine.
     - The bond orders per cell are the largest part; §6's risk 1 has the fallback.
-11. **Five batches:** BO1, HL1, HL2, HT1 (models) and HL3 (the screen, after KP7).
-    - HL1, HL2 and HT1 bump the save format; BO1 does not.
+11. **Five batches:** BO1, HS1, HS2, HT1 (models) and HS3 (the screen, after KP7).
+    - HS1, HS2 and HT1 bump the save format; BO1 does not.
     - Every model batch moves the trace and needs the ensemble.
 
-**The calls** (§7): ★1 how many owner families; ★2 how dividends are taxed; ★3 who inherits; ★4 how much of a gain is taxed; ★5 the retirement age; ★6 adults living with their parents; ★7 the order.
+**Your answers** (§7, 2026-11-02): one owner family per listed company, with no job; dividends by integration; a taxable share of a gain, default 50%; estates to the same former tier; retirement stays at 70; no three-adult shape for now; the order BO1, HS1, HS2, HT1, HS3, queued at the end. The flows batch is HS1, not HL1: the wealth study named its households'-books fix HL1 first.
 
 ## 2. What the code does today, checked
 
@@ -143,8 +143,8 @@ Per household, retired against working, at the checkpoints [M] (`out/probe.txt`)
 | rule | retired ÷ established, per adult, years 50 / 100 / 200 |
 |---|---|
 | A, today's net-change pool | 0.11 / 0.11 / 0.11 |
-| B, flows carry their money (HL1) | 0.86 / 0.97 / 1.30 |
-| B with two stages (HL1 + HL2) | 0.83 / 0.95 / 1.28 |
+| B, flows carry their money (HS1) | 0.86 / 0.97 / 1.30 |
+| B with two stages (HS1 + HS2) | 0.83 / 0.95 / 1.28 |
 
 The toy has no founders' grant and one cell a row, so rule A's 0.11 is the mechanism alone: the retired live on what the pension lets them save, plus the money of the retired who died. The game's row average is higher only where old founders' shares and the pool's shuffles happened to land, and its largest retired cell sits near the toy's figure.
 
@@ -171,40 +171,40 @@ Exact inclusive wall time per method (HhAgent, one run on an idle machine, 100-m
 
 ## 3. The design, on the code
 
-### 3.1 Flows that carry their money (HL1, `followThePeople`)
+### 3.1 Flows that carry their money (HS1, `followThePeople`)
 The census keeps its pool, for what it is good at: the reshuffles nobody can trace. A child turns six and a `COUPLE_BABY` becomes a `COUPLE_CHILD`; the job mix moves a point of every shape up a tier; five singles take a flatshare.
 
 Before the pool runs, the month's own transfers move first. Each carries the per-grown-up average of every stock in `stocks()` from the cell it left, following `carryGraduatesLoans`' pattern: move the flow's stocks, take its households out of `before[]`, add them to the destination's. All the counts are known before the households' month (`docs/month-order.md`: `cohorts.advanceMonth` at 31, `cohorts.leave` at 41, `cohorts.migrate` at 48; the households after).
 
 | flow | people (read from) | from | to | what moves |
 |---|---|---|---|---|
-| retiring | `cohorts.getPromoted(ADULT)` (HL2: the established bucket's) | working cells by grown-ups (HL2: established) | `retired[t]`, the tier left (3.2) | the retiree's grown-up share of every stock |
+| retiring | `cohorts.getPromoted(ADULT)` (HS2: the established bucket's) | working cells by grown-ups (HS2: established) | `retired[t]`, the tier left (3.2) | the retiree's grown-up share of every stock |
 | a partner dies | the band's deaths × its coupled share | a couple cell | the alone cell of the same row | the whole household's stocks: the survivor keeps them |
 | dying alone | the band's deaths, the rest | the cell | the estate (3.3) | the grown-up share of every stock |
 | leaving | `migrate(net)` with net < 0, and `leave(band, n)` | the band's cells, pro rata | out of the city | the grown-up share; shares and bonds go as today (sold as `EMIGRANTS`, the bonds held from abroad) |
 | arriving | `migrate(net)` with net > 0 | none | the cells that grew | the opening buffer, as today |
-| ageing (HL2) | the young bucket's promoted | young cells of tier t | established of tier t | the grown-up share of every stock |
+| ageing (HS2) | the young bucket's promoted | young cells of tier t | established of tier t | the grown-up share of every stock |
 
 - **Inside a group**, a destination shape gets the flow by the census's own growth there, and by grown-ups where nothing grew. Whatever the flows put in a cell becomes part of its `before[]`, so the pool nets only what the flows did not explain.
 - **Conservation is exact by construction**: each flow subtracts what it adds. Positions clamp at zero as `moveStock` does (its 2026-09-16 header).
 - **A stock added later is carried for free.** The credit-and-housing study's mortgage, BK2's per-holder discount and HT1's basis each need only their line in `stocks()`.
 
-### 3.2 The retired keep their former tier (HL1)
+### 3.2 The retired keep their former tier (HS1)
 - `RetiredHousehold` takes a tier: 4 shapes × 6 tiers = 24 cells. `row()` stays `RETIRED_ROW`, so every sum and screen by row is unchanged.
 - `HouseholdBalance` carries the retired's tier mix per shape (24 shares, saved), moved by the flows: retirements add to their tier, and deaths and leavers take pro rata. `FamilyModel` still decides how many retired households of each shape there are, and the balance splits each shape across tiers by the mix.
 - `cell(FamilyStructure)` has three callers in `PeopleScreen` and eleven harnesses. It becomes `cells(shape)` and a sum.
 - The tier also gives an earnings-related pension (the CPP is one; the game's is flat at 45% of an unskilled wage) the cells it would need. That pension is the wage study's to propose.
 
-### 3.3 Estates (HL1)
+### 3.3 Estates (HS1)
 - **The survivor keeps everything:** the couple's whole position moves to the alone cell (Canada's spousal rollover [S§3]).
 - **Someone dying alone leaves an estate.** It settles their revolving debt from their savings, and writes off any shortfall and the student loan as today's leavers' are. The rest passes in kind (no market moves):
   - to the established working households of the dead's former tier, by grown-ups (★ call 3);
-  - an established adult's estate to the young of the tier (HL2; before HL2, the tier's own cells);
+  - an established adult's estate to the young of the tier (HS2; before HS2, the tier's own cells);
   - with no heir in the tier, to the city's established cells;
   - with none at all, to the treasury as unclaimed property: a revenue line, `estatesEscheated`.
 - **Reference:** about 26% of Canadian families have received an inheritance; the median is $85,100 for homeowners and $29,800 for renters [S§6].
 
-### 3.4 Two adult stages (HL2)
+### 3.4 Two adult stages (HS2)
 - **The pyramid:** `PopulationCohorts` stores the adults in two buckets, 18-34 and 35-69, and every existing caller reads `ADULT` as their sum (`AgeBand`'s own note: "nothing outside this package should ever assume the five buckets ARE the storage"). The young move up at 1/204 a month and the established retire at 1/420, both at the adult mortality.
   - Two compartments in a row give the adult years an Erlang spread instead of an exponential one. A city of young migrants then retires fewer people in its first decades: the pyramid's retirement flow changes, and with it the trace.
 - **The households:**
@@ -215,12 +215,18 @@ Before the pool runs, the month's own transfers move first. Each carries the per
 - **Cells:** 108 working, against 66. The full cross would be 132: teens and large families are not formed young.
 
 ### 3.5 Business owners (BO1)
-- **A row of their own**, `OWNER_ROW`, appended after `PRISON_ROW` (`padRows` pads arrays by row). One cell, `OwnerHousehold`: two established adults, no tier, no wage. Its income is dividends, coupons and what it sells.
+- **A row of their own**, `OWNER_ROW`, appended after `PRISON_ROW` (`padRows` pads arrays by row). One cell, `OwnerHousehold`, of two-adult households: no tier, no job, no wage (Jerus, 2026-11-02: "No job, lives of dividends or sells or whatever"). Its income is dividends, coupons and what it sells.
 - **The founders' shares go to it alone.** `grantFounders` credits the owner cell, at a basis of the founding price (so founding is no gain, HT1). With no owner household (a bare fixture), today's rule.
 - **Everyone else still holds shares**, as Jerus asked ("the others still have shares, they just dont get the initial ownership"): `subscribe` and the exchange are unchanged.
-- **Few:** the line starts at `OWNER_FOUNDING_HOUSEHOLDS` = 1 and grows only by its own births, at the pyramid's natural rate and never by migration (★ call 1).
-  - The census places two established adults in the line for each owner household, after the seniors and before every other shape.
+- **One family per listed company** (★ call 1, Jerus's C): the line holds one household for each company that has listed and not gone broke. 9 families in the 328-person city of month 21, at most 25 [M].
+  - A company's listing (`Equity.offer`'s founders' branch, `listIfUnlisted`) adds a family: the census places two established adults in the line, after the seniors and before every other shape, and they bring what the pool gives them.
   - The line's count is saved.
+  - **One cell, not one per company.** Each family holds an equal part of every founding stake; the screen can still name the families by company. A cell per company would show the Construction family apart, for 24 more cells: about +7-12% more on a model month by §2.7's rule (24 ÷ 78 × 24-39%), mostly the bond orders.
+- **A company that goes broke sends its family back** (Jerus: "if sector goes broke he just joins the regular pop pool"). Broke means one of two things:
+  - its equity is taken (`Equity.takeAllForCity`, a failed bank's resolution: today's only failure);
+  - or its fair value sits at the exchange's floor (`Exchange.MIN_FAIR`) for `OWNER_BROKE_MONTHS` (★ 12) running, since a sector that sheds its plant never fails on its own.
+  - The family leaves the cell for the established working cells by grown-ups (HS1's flow; before HS1, the pool). It takes its 1/N of the line's savings, money abroad and bonds, and none of its shares: the broke company's are worthless, and the other stakes stay with the families whose companies live.
+  - The census then gives the two adults a tier by the job mix.
 - **Never retires:** the line is a family, not a person. Its cell is outside the retiring and dying flows; its people age in the pyramid like anyone's.
 - **Sells slowly:** each month it offers `OWNER_SELL_A_YEAR` (★ 5% a year) of each holding on the exchange, as a new seller class `BY_OWNERS`. Its stakes also dilute at every offering.
 - **For scale:** in the US the top 1% hold 50.9% of corporate equity and 53.0% of private business equity [S§2]; founders and families ("strategic individuals") hold 8% of the world's listed market capitalisation [S§8].
@@ -232,7 +238,7 @@ Before the pool runs, the month's own transfers move first. Each carries the per
   - **Selling** realises the proceeds less basis × sold ÷ held: in `settle` when a cell sells, and on the waterfall's sales.
   - **Splits** leave the basis standing.
 - **Capital gains:** gain × the inclusion rate (★ call 4; ½ in Canada, ITA 38(a), the 2/3 proposal cancelled [S§3]) × the holder's wage-tax rate (base plus band offset; the retired, the out of work and the owners at the base).
-  - **When it is due:** at the sale; at a death (the deemed disposition, before the heirs get the rest); and on leaving (the departure tax, ITA 128.1, struck in HL1's leaving flow out of the savings the leaver takes, since the exchange sells a leaver's shares as `EMIGRANTS`, no cell's sale).
+  - **When it is due:** at the sale; at a death (the deemed disposition, before the heirs get the rest); and on leaving (the departure tax, ITA 128.1, struck in HS1's leaving flow out of the savings the leaver takes, since the exchange sells a leaver's shares as `EMIGRANTS`, no cell's sale).
   - **A survivor** takes the basis over untaxed.
   - **Losses:** a month's net loss carries forward in one more stock, `lossCarried`, and offsets later gains.
 - **Dividends, by integration** (★ call 2): the dividend tax is max(0, wage − profit) ÷ (1 − profit).
@@ -244,20 +250,20 @@ Before the pool runs, the month's own transfers move first. Each carries the per
   - one dial on the Policy tab's tax pages: the inclusion rate, 0 to 100%.
 
 ### 3.7 Spending from wealth (the wealth study's), and the retired
-- This study proposes no change to `WEALTH_SPENT_A_MONTH`. With HL1 the flat drain already gives the retired about the established's wealth (the toy: 0.97 at year 100), as Canada's 1.04 does.
+- This study proposes no change to `WEALTH_SPENT_A_MONTH`. With HS1 the flat drain already gives the retired about the established's wealth (the toy: 0.97 at year 100), as Canada's 1.04 does.
 - Three figures for the wealth study, which owns the rate:
   - the Fed's 2.7-3.3 cents and the Bank of Canada's under 0.5 for stocks [S§4];
   - RRIF minimums of 5.28% at 71 to 8.51% at 85 (withdrawals, not spending) [S§5];
   - the owners' fortune, which is all stock.
 
 ### 3.8 What the other studies need
-- **Household credit and housing:** a mortgage or home equity is a line in `stocks()`, and HL1 carries it. A mortgage at death is settled by the estate before the heirs. First-time buyers are HL2's young (Canadian ownership 44% under 35 [S§1]).
+- **Household credit and housing:** a mortgage or home equity is a line in `stocks()`, and HS1 carries it. A mortgage at death is settled by the estate before the heirs. First-time buyers are HS2's young (Canadian ownership 44% under 35 [S§1]).
 - **Where the wealth piles up:** §2.3's Construction prices, §2.6's working households at 13-32 years of take-home against Canada's 9.9, and the owners (BO1) as the top.
 - **Wages:** the retired's former tier (3.2).
 
 ## 4. The save
-- **HL1: `SAVE_FORMAT` + 1, and `OLDEST_LOADABLE_FORMAT` raised to it.** The retired cells are renamed by tier, so `restoreCells` (by name) would leave an old save's retired money in no cell: loaded wrongly, not incompletely. New: the retired's tier mix (24 figures) in `DataSave`.
-- **HL2: + 1 again.** `PopulationCohorts.restore` finds bands by name and would put every old adult in one bucket, and the working cells are renamed by stage.
+- **HS1: `SAVE_FORMAT` + 1, and `OLDEST_LOADABLE_FORMAT` raised to it.** The retired cells are renamed by tier, so `restoreCells` (by name) would leave an old save's retired money in no cell: loaded wrongly, not incompletely. New: the retired's tier mix (24 figures) in `DataSave`.
+- **HS2: + 1 again.** `PopulationCohorts.restore` finds bands by name and would put every old adult in one bucket, and the working cells are renamed by stage.
 - **BO1: no bump.** An old save loads with an empty owner line and everyone keeping the founders' shares they had: incomplete, not wrong. New: the line's count.
 - **HT1: + 1.** An old save's basis would read zero and its first sale would be taxed on the whole price. New: the basis and `lossCarried` slots appended (`CELL_SLOTS_BEFORE_BASIS`).
 - No conversion code anywhere.
@@ -268,35 +274,37 @@ Before the pool runs, the month's own transfers move first. Each carries the per
 |---|---|---|
 | HouseholdCheck, OutsideCheck | the retired as 4 cells; the pool moves every stock | 24 retired cells; flows first, the pool for the rest |
 | EquityCheck, InvestCheck | founders' shares to every cell by grown-ups | to the owner line (BO1) |
-| HouseholdMemoryCheck, PopulationCheck | one adult bucket | two (HL2); `ADULT` their sum |
+| HouseholdMemoryCheck, PopulationCheck | one adult bucket | two (HS2); `ADULT` their sum |
 | FundLedgerCheck | the only cost basis | the households' too (HT1), the same rules |
 | SaveFileCheck, ReadPathCheck | | each new saved field, both ways |
 
-- **HouseholdFlowCheck** (HL1):
+- **HouseholdFlowCheck** (HS1):
   - fixtures that cause each flow: a retirement carries the cell's average to the cent per stock; a partner's death leaves the survivor everything; an estate reaches the tier's established; a leaver takes the average out;
   - every stock conserved to the cent;
   - and, counted in a real run, how much moved by flow and how much by the pool.
 - **OwnerCheck** (BO1): the grant reaches the line only; the others buy at offerings; the line sells `OWNER_SELL_A_YEAR`; its count moves only by its births; the money audit is exact.
-- **StageCheck** (HL2): residence 204 and 420 months; ageing carries the money; no teen shape among the young; the pool's group is (tier, stage).
+- **StageCheck** (HS2): residence 204 and 420 months; ageing carries the money; no teen shape among the young; the pool's group is (tier, stage).
 - **CapitalGainsCheck** (HT1): the basis to the cent as FundLedgerCheck; a sale's gain; the deemed disposition and the departure tax; dividends untaxed at 15/15 and at (wage − profit) ÷ (1 − profit) when a band is raised; the audit holds.
 
 ## 6. Risks, and what to measure first
-1. **Time.** +21-33% on a model month (§2.7), most of it the households' bond orders per cell. HL2 measures it at its gate. Over budget (GT1's), `BondMarket.postHouseholds` posts one order per (row, stage) and splits the fills by holdings.
+1. **Time.** +21-33% on a model month (§2.7), most of it the households' bond orders per cell. HS2 measures it at its gate. Over budget (GT1's), `BondMarket.postHouseholds` posts one order per (row, stage) and splits the fills by holdings.
 2. **BO1 moves demand.** Today early dividends are 10 times a worker's take-home (§2.3). With them gone to one household, early spending falls; the owners' own spending is the drain on a fortune. The ensemble says how far.
-3. **HL1 moves wealth to the retired.** That is the point, but the working rows lose the retirees' money they hold today. Offerings, which the working rows fund, may fill more slowly.
+3. **HS1 moves wealth to the retired.** That is the point, but the working rows lose the retirees' money they hold today. Offerings, which the working rows fund, may fill more slowly.
 4. **The owners' fortune** comes from Construction's price (§2.3). If the wealth study finds that price wrong and mends it, BO1's line is less rich, not differently built.
+5. **The owners take no posts** (Jerus's call): at month 21, 9 families are 18 of the city's ~190 adults [M], so a young city's workforce is about a tenth smaller than today's. In a city of thousands it is nothing. BO1's ensemble says what it does to a founding.
+6. **HS1 and the wealth study's HL1.** HL1 puts the households in the money audit; HS1's leavers take their money through that identity. If HL1 is queued, HS1 goes after it.
 
-## 7. The calls, each with a recommendation
+## 7. The calls, each with a recommendation, and Jerus's answers (2026-11-02)
 
-| ★ | call | options | recommended, and why |
-|---|---|---|---|
-| 1 | How many owner families | A: one line that grows only by its own births; B: 1% of households; C: one per listed company | A: "few in nature and very rich" stays true at every size. Under B a 10M city has about 45,000 owner households (2.23 people a household [M]) and an ordinary fortune; under C the 328-person city of month 21 has 9 |
-| 2 | How dividends are taxed | A: by integration (zero at the defaults); B: a flat dial at 15% (taxed twice: 27.75% against a wage's 15%); C: untaxed, as today | A: the default city is unchanged, it is Canada's own principle, and a raised band reaches its dividends |
-| 3 | Who inherits | A: the established of the dead's former tier; B: every established adult alike; C: by the heirs' net worth | A: old money stays in the tier it came from. B flattens wealth each generation; C compounds the rich |
-| 4 | How much of a gain is taxed | A: half, at the holder's wage rate (Canada), as a dial; B: all of it; C: none, as today | A, the dial 0-100% at 50% |
-| 5 | Retirement age | A: keep 70 (the pyramid's senior band); B: 65, Canada's average (65.4 [S§7]) | A for these batches. B moves the workforce by a tenth of the adults and every trace; it is its own batch, with the pension (the wage study's) |
-| 6 | Adults living with their parents ("perhaps even three adults") | A: not now; the young stage covers them; B: a couple and a grown child (6 more cells; the child earns at the parents' tier) | A: B breaks "one tier per household", which `FamilyModel` rests on. In Canada 28.1% of 25-29s live with a parent [S§7] |
-| 7 | The order | A: BO1, HL1, HL2, HT1, then HL3; B: HL1 first | A: BO1 is the smallest and fixes the most visible figure. HT1 needs HL1's estates; HL3 needs KP7's kept page |
+| ★ | call | options | recommended, and why | answer |
+|---|---|---|---|---|
+| 1 | How many owner families | A: one line that grows only by its own births; B: 1% of households; C: one per listed company | A: "few in nature and very rich" stays true at every size. Under B a 10M city has about 45,000 owner households (2.23 people a household [M]) and an ordinary fortune; under C the 328-person city of month 21 has 9 | **C**, with no job; a broke company's family rejoins the population |
+| 2 | How dividends are taxed | A: by integration (zero at the defaults); B: a flat dial at 15% (taxed twice: 27.75% against a wage's 15%); C: untaxed, as today | A: the default city is unchanged, it is Canada's own principle, and a raised band reaches its dividends | A |
+| 3 | Who inherits | A: the established of the dead's former tier; B: every established adult alike; C: by the heirs' net worth | A: old money stays in the tier it came from. B flattens wealth each generation; C compounds the rich | A |
+| 4 | How much of a gain is taxed | A: half, at the holder's wage rate (Canada), as a dial; B: all of it; C: none, as today | A, the dial 0-100% at 50% | "A taxable rate, default 50%": A |
+| 5 | Retirement age | A: keep 70 (the pyramid's senior band); B: 65, Canada's average (65.4 [S§7]) | A for these batches. B moves the workforce by a tenth of the adults and every trace; it is its own batch, with the pension (the wage study's) | A |
+| 6 | Adults living with their parents ("perhaps even three adults") | A: not now; the young stage covers them; B: a couple and a grown child (6 more cells; the child earns at the parents' tier) | A: B breaks "one tier per household", which `FamilyModel` rests on. In Canada 28.1% of 25-29s live with a parent [S§7] | A |
+| 7 | The order | A: BO1, HS1, HS2, HT1, then HS3; B: HS1 first | A: BO1 is the smallest and fixes the most visible figure. HT1 needs HS1's estates; HS3 needs KP7's kept page | A, at the end of the queue |
 
 ## 8. The batches, and the ★ estimates
 
@@ -304,14 +312,14 @@ Every batch is one batch session with Sonnet slices (`docs/batch.md`); a ★ in 
 
 | batch | what | files | saved · checks | size |
 |---|---|---|---|---|
-| **BO1 ★** Business owners | the owner line; the founders' grant to it; the slow sale; the count by births | `Household.ROWS`, new `OwnerHousehold`, `HouseholdBalance` (cells, `grantFounders`, the sale), `FamilyModel` (owners after seniors), `Exchange` (`BY_OWNERS`), `HouseholdAccounts`, a People row | the line's count · OwnerCheck; EquityCheck, InvestCheck | one session, 1-2 slices, ~600 lines |
-| **HL1 ★** Money follows people | flows before the pool; the survivor; estates; leavers take theirs; the retired by former tier | `HouseholdBalance` (`followThePeople`, flows, estates), `RetiredHousehold`, `cells(shape)`, `DataSave`, the three `PeopleScreen` callers | SAVE_FORMAT + 1 · HouseholdFlowCheck; HouseholdCheck, OutsideCheck | one session, 2 slices, ~1,200 lines |
-| **HL2 ★** Two adult stages | two adult buckets; each stage's shapes; children by stage; the ageing flow; the pool by (tier, stage) | `PopulationCohorts`, `FamilyModel`, `WorkingHousehold`, `HouseholdBalance`, `HistorySave`, the pyramid on People | SAVE_FORMAT + 1 · StageCheck; PopulationCheck, HouseholdMemoryCheck; the timing of §6 risk 1 | one session, 2 slices, ~1,200 lines |
+| **BO1 ★** Business owners | one family per listed company, no job; the founders' grant to them; the slow sale; a broke company's family back into the population | `Household.ROWS`, new `OwnerHousehold`, `HouseholdBalance` (cells, `grantFounders`, the sale), `FamilyModel` (owners after seniors), `Exchange` (`BY_OWNERS`), `HouseholdAccounts`, a People row | the line's count · OwnerCheck; EquityCheck, InvestCheck | one session, 1-2 slices, ~600 lines |
+| **HS1 ★** Money follows people | flows before the pool; the survivor; estates; leavers take theirs; the retired by former tier | after the wealth study's HL1 if queued; `HouseholdBalance` (`followThePeople`, flows, estates), `RetiredHousehold`, `cells(shape)`, `DataSave`, the three `PeopleScreen` callers | SAVE_FORMAT + 1 · HouseholdFlowCheck; HouseholdCheck, OutsideCheck | one session, 2 slices, ~1,200 lines |
+| **HS2 ★** Two adult stages | two adult buckets; each stage's shapes; children by stage; the ageing flow; the pool by (tier, stage) | `PopulationCohorts`, `FamilyModel`, `WorkingHousehold`, `HouseholdBalance`, `HistorySave`, the pyramid on People | SAVE_FORMAT + 1 · StageCheck; PopulationCheck, HouseholdMemoryCheck; the timing of §6 risk 1 | one session, 2 slices, ~1,200 lines |
 | **HT1 ★** Gains and dividends taxed | the basis; realised gains at sale, death and leaving; the integration rule; the inclusion dial; two revenue lines | `Household`, `HouseholdBalance`, `Exchange.Settle`, `Equity`, `TaxPolicy`, the treasury's lines, `MoneyAudit`, `PolicyScreen` | SAVE_FORMAT + 1 · CapitalGainsCheck; FundLedgerCheck | one session, 2 slices, ~900 lines |
-| **HL3** The household money page | the page by stage, the retired by former tier, the owner line, estates and the investment taxes in the month's lines; after KP7 keeps that page | `PeopleScreen` | none · words probe | one session, Sonnet whole, ~400 lines |
+| **HS3** The household money page | the page by stage, the retired by former tier, the owner line, estates and the investment taxes in the month's lines; after KP7 keeps that page | `PeopleScreen` | none · words probe | one session, Sonnet whole, ~400 lines |
 
 The ★ estimates, each a named constant:
-- `OWNER_FOUNDING_HOUSEHOLDS` = 1: the fewest a line can be.
+- `OWNER_BROKE_MONTHS` = 12: a year at the floor, the window `Migration.DECLINE_MONTHS` gives a tier before its people give up.
 - `OWNER_SELL_A_YEAR` = .05: a founding stake falls to about a fifth in 30 years (.95³⁰ = .21) before offerings dilute it further, towards the 8% of listed market capitalisation founders and families hold [S§8]. No open-licence study of founder sell-downs was found.
 - The children's split by stage (babies ½, children ¼, teens 0 young): from the mean age at birth, 31.9 [S§7].
 - Only in the toy: a subsistence of $1,200 an adult a month and a 2% real return. Neither goes in the game.

@@ -31,7 +31,7 @@ Take-home a month by tier: [2.74, 3.56, 4.35, 6.48, 7.59, 12.33]; pension 1.557;
   190 |   3343 |              - |                  374 |               40 |                  0.11 |    2.1
   200 |   3343 |              - |                  381 |               40 |                  0.11 |    2.2
 
-== B: flows carry their money, one adult band (HL1 alone) ==
+== B: flows carry their money, one adult band (HS1 alone) ==
  year | people | young $k/adult | established $k/adult | retired $k/adult | retired / established | retired, years of pension
    10 |    129 |              - |                   43 |               19 |                  0.43 |    1.0
    20 |    445 |              - |                   51 |               26 |                  0.51 |    1.4
@@ -54,7 +54,7 @@ Take-home a month by tier: [2.74, 3.56, 4.35, 6.48, 7.59, 12.33]; pension 1.557;
   190 |   3343 |              - |                  192 |              250 |                  1.30 |   13.4
   200 |   3343 |              - |                  194 |              252 |                  1.30 |   13.5
 
-== B with stages: young 18-34 and established 35-69 (HL1 + HL2) ==
+== B with stages: young 18-34 and established 35-69 (HS1 + HS2) ==
  year | people | young $k/adult | established $k/adult | retired $k/adult | retired / established | retired, years of pension
    10 |    129 |             35 |                   49 |               20 |                  0.40 |    1.0
    20 |    448 |             40 |                   58 |               28 |                  0.48 |    1.5

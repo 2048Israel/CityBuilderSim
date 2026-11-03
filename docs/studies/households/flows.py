@@ -11,7 +11,7 @@ rows that grew draw on it (a toy row is one cell, so "within the row first" is
 the row itself); a gain nobody released arrives with OPENING_BUFFER_MONTHS of
 take-home; a release nobody claimed leaves the city.
 
-Rule B (the study, HL1): the pyramid's own transfers move their money with
+Rule B (the study, HS1): the pyramid's own transfers move their money with
 them, each at the per-adult average of the row they left:
   - retiring: an established adult of tier t into retired[t] (the retired keep
     their former tier, so estates know their lineage);
@@ -20,7 +20,7 @@ them, each at the per-adult average of the row they left:
     the established adults of the same tier;
   - leaving: an emigrant takes the row's average out; an arrival brings the
     opening buffer.
-With stages (HL2) the working row splits into young (18-34) and established
+With stages (HS2) the working row splits into young (18-34) and established
 (35-69), and ageing into established carries its money too.
 
 Run: python -I flows.py > out/flows.txt   (standard library only)
@@ -39,7 +39,7 @@ COUPLED = .55                                           # FamilyModel.COUPLED_SE
 # AgeBand: span in years and annual mortality
 TEEN_SPAN, ADULT_SPAN, SENIOR_SPAN = 5, 52, 15
 MORT = {"adult": .00225, "senior": .0290, "elder": .1277}
-YOUNG_SPAN = 17                                         # HL2: 18-34, then 35-69 (the rest of ADULT)
+YOUNG_SPAN = 17                                         # HS2: 18-34, then 35-69 (the rest of ADULT)
 
 # ---- the toy's own (★est., each with its reason) ------------------------
 SUBSISTENCE = 1.20      # ★ $k an adult a month spent whatever the income: about a basket, rent and bills at the unskilled tier
@@ -184,5 +184,5 @@ if __name__ == "__main__":
     eqr = max(0.0, .2 * (PENSION - SUBSISTENCE)) / (WEALTH_SPENT - REAL_RETURN)
     print(f"  retired on the pension alone: {eqr:7.0f} $k = {eqr / (12 * PENSION):4.1f} years of pension")
     summary("A: today's net-change pool, one adult band", run("A", False, grow, 2400), False)
-    summary("B: flows carry their money, one adult band (HL1 alone)", run("B", False, grow, 2400), False)
-    summary("B with stages: young 18-34 and established 35-69 (HL1 + HL2)", run("B", True, grow, 2400), True)
+    summary("B: flows carry their money, one adult band (HS1 alone)", run("B", False, grow, 2400), False)
+    summary("B with stages: young 18-34 and established 35-69 (HS1 + HS2)", run("B", True, grow, 2400), True)
