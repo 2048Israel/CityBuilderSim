@@ -1,9 +1,3 @@
-> **WIP, where FC1b stands (2026-11-02, stopped by the orchestrator until LD2's ship file is on origin):**
-> 1. Done on local branch `fc1b-scratch` (from FC1's tip 8c772b41, not pushed): the model fix (0e2f6962) and ConstructionTrapCheck 9-11 (231fbf13), reviewed, the harness green.
-> 2. The default playtest's log is byte-identical to FC1's tip: no ensemble. `--pick` was stopped part-way, so not yet run.
-> 3. Next: `git checkout -b batch/FC1b origin/batch/LD2`, cherry-pick the three commits, `sh tools/wait.sh --row LD2` in the background, `--pick`, fill RESULT/TRACE below, push.
-> 4. Then the ship file (draft below the notes in this commit's message) last, once LD2 is on main and merged in.
-
 # FC1b - FC1's review follow-ups: a cancelled order leaves the foreign contractor's book, and overtime on the city's own crews alone ({next}, 2026-11-02)
 
 The stranger's review at FC1's gate (SHIP + FOLLOW-UP, `docs/queue/FC1b.md`) found two leaks in the foreign
@@ -63,7 +57,11 @@ held in both. Lane 1, after LD2.
 ## 3. Checks
 
 - `./batch-check.sh --pick`: RESULT.
-- **The trace**: TRACE.
+- **The trace**: byte-identical to LD2's tip (2c3db93e), all eight CSVs, the default playtest on the gate's files
+  (`-Dcbs.earth=data/earth-2.bin -Dcbs.world=data/world-1.bin`); the logs differ only in the windows' run-time
+  line, and both find LD2's own red word for word (`a building on the map moved 4 time(s), months 3010-3013`,
+  LD2-D). No ensemble. (Without the files both find `industry stands farther out than the homes` at m4000 instead,
+  again the same in both.) On FC1's tip, before LD2, it was byte-identical as well.
 - Found on the way (section 11): a reloaded city plays its next month apart from the twin when the fixture holds its
   sectors (`DeathCareFirstCheck.city()`, `BusinessInvestment.holdSector()`), because a hold is a harness lever no save
   carries; the reloaded city is held again in the section. No saved field was missing.
