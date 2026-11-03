@@ -1,11 +1,11 @@
-# CM1 - the replay's camera loads its whole move first, then runs on a click ({next}, 2026-11-02) - WIP
+# CM1 - the replay's camera loads its whole move first, then runs on a click ({next}, 2026-11-03)
 
-**Where it stands (paused 2026-11-02 ~20:35 on the orchestrator's word: resume when WN5b's ship file is on origin):**
-1. `batch/CM1` is local only, from origin/main 37d65b2e; slice A committed (MoveTally in MapView, `ui/ReplayMoveProbe`); nothing pushed. On resume: rebase onto `origin/batch/WN5b` (or main if WN5b went to Pending), then `docs/batch.md` item 7.
-2. The measure (step 1) is done (section 1, 2026-11-03, off screen); the recording is in the scratchpad `cm1-recording` (a fresh session makes its own: the probe records one when the folder is empty).
-3. Next: slice B, the load (brief drafted in the scratchpad, `sliceB.md`): phases LOAD and READY replace the warm-up; the walk paints every plan view (240 a second of the move's clock) with the real paint, caches pinned; a month store for glides across months; the veil and "Ready - click to run".
-4. Then slice C: ReplayCheck's section (the real window off screen; skipped where there is no display), then the probe again (after), the notes, `--pick`, the ship file last.
-5. Open for the notes: the GROUND tier's coarse planet picture past the plane (pieces are asked only at rest), the globe at half resolution on the move, a whole load at a land-change month, boats' routes per month; CLAUDE.md's "forty-two files" is 43 now (the probe).
+**Where it stands (2026-11-03, 12:30):**
+1. Done and pushed on `batch/CM1` (built on `origin/batch/WN5b`, docs/batch.md 7): slices A (the tally, the probe), B (the load), C (ReplayCheck 5d); `--pick` green (exit 0: ReplayCheck 0 failures, TimingCheck); Stale 0 firm; the maps regenerated.
+2. Left: the ship file, pushed last once WN5b is on main and merged in: `git fetch -q origin && git merge origin/main`, `./batch-check.sh --pick` again, then `docs/queue/CM1-ship.md` from section 6's text, pushed. A fresh session can do this from GitHub; nothing else is open.
+3. The measure: before section 1, after section 2 (no black, no worker asks, nothing let go in any of seven moves; the globe's coarse ground left, CM2).
+4. For the gate: the stranger's review (threading, section 4); CM1-C, Jerus's eye check at 1920 x 1080, is the ship file's pending row.
+5. Calls ★1-4 below, each taken as recommended.
 
 ## 1. Measured (before)
 
@@ -44,6 +44,7 @@ No frame of any move draws black, asks the worker anything or lets a picture go;
 1. **The globe's coarse ground on a move.** Between the handoff and the planet picture's tier, a moving globe draws what lies past the plane's nodes and the charts from the 7.4 km planet picture. **Recommended: ship CM1 without it and queue CM2**: in a loaded move, widen the charts asked to the whole visible disc in the GROUND tier, so the load fetches them like the rest, measured by the same tally (coarse to 0). Alternative: fold it into CM1 now (a day more; the charts' range and their memory are the work).
 2. **Half resolution on the move.** The globe is drawn at half resolution while it moves (82-110 frames a move), for the frame rate. **Recommended: keep it in CM1; CM2 measures full resolution in a loaded move at 1920 x 1080** and takes it if the frame rate holds.
 3. **The month step's hitch.** A glide across months has one frame of about 250 ms (before and after CM1): a month's quick step. **Recommended: CM2 measures which month and why (it is the quick step, not the load), not CM1.** All three are queued as CM2 (`docs/queue/CM2.md`, in the ship file's queued row).
+4. **5d's window takes the keyboard's focus.** ReplayCheck 5d opens the real window off every screen for about 15 s, and JavaFX gives a window the focus when it opens; a key typed on the PC then lands in the replay (a key runs a Ready move, Escape stops one), which could turn 5d red. **Recommended: keep it** (the gate runs unattended; a red 5d with a move stopped is a rerun, and its line says which figure); the other way is a hidden window, which JavaFX does not draw.
 
 ## 3. What was built
 
