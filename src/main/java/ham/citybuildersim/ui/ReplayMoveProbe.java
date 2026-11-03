@@ -7,8 +7,13 @@ import ham.citybuildersim.GamePrefs;
 import ham.citybuildersim.GlobeFrame;
 import ham.citybuildersim.LongPlaytest;
 import ham.citybuildersim.Recording;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -23,6 +28,8 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
@@ -68,6 +75,9 @@ import java.util.stream.Stream;
  * every frame; it does take the keyboard's focus when it opens, until another window is clicked.
  *
  * Where JavaFX cannot start - no display, a headless JVM, the jars missing - it says so in one line and exits 0.
+ *
+ * check() is the public entry ReplayCheck 5d runs (CM1): the same window off screen on a generated world's recording, a short glide
+ * loaded and run by a click, one across months run by a key, and Esc while one loads, returned as figures (Checked) for it to assert on.
  */
 public final class ReplayMoveProbe {
 
@@ -100,7 +110,14 @@ public final class ReplayMoveProbe {
     private static ReplayCamera cam;
     private static MapView map;
     private static Canvas canvas;
+    /** The city's centre: latitude and longitude on the Earth; on a generated world (plane) the plot x and y. */
     private static double cityLat, cityLon;
+
+    /** Whether the window's map is a plane (a generated world) rather than the globe: views are then in plots and px a plot, not degrees and km a pixel. */
+    private static boolean plane;
+
+    /** Whether the probe's own waiting lines are said: not while the harness runs check() (it prints the figures itself). */
+    private static boolean silent;
 
     /** The recorded months' ends: what goTo() is given. */
     private static int firstMonth, lastMonth;
@@ -325,13 +342,13 @@ public final class ReplayMoveProbe {
 
     /** A view on the globe at the city's centre, `kmPx` km a pixel (its month is the camera's to put on: mark() takes the month on screen). */
     private static CameraPath.View at(double kmPx) {
-        return new CameraPath.View(true, cityLat, cityLon, kmPx, 0);
+        return new CameraPath.View(!plane, cityLat, cityLon, kmPx, 0);
     }
 
     /** The widest view as it stands now (its scale follows the canvas), the whole Earth facing the city. */
     private static CameraPath.View wholeNow() throws Exception {
         CameraPath.View w = fx(() -> ui.expandedMapWhole());
-        if (w == null || !w.globe()) throw new IllegalStateException("the expanded map has no globe: the city must be on the Earth");
+        if (w == null || (!plane && !w.globe())) throw new IllegalStateException("the expanded map has no globe: the city must be on the Earth");
         return w;
     }
 
@@ -357,7 +374,7 @@ public final class ReplayMoveProbe {
             same = now.equals(size) && wh[0] > 100 ? same + 1 : 0;
             size = now;
         }
-        report.printf("window: full screen %b, the map's canvas %s px%n", fx(() -> stage.isFullScreen()), size);
+        tell("window: full screen %b, the map's canvas %s px%n", fx(() -> stage.isFullScreen()), size);
     }
 
     /** Puts the recorded month nearest `month` on screen, as the camera does. */
@@ -384,6 +401,11 @@ public final class ReplayMoveProbe {
         });
     }
 
+    /** One of the probe's waiting lines, unless check() runs it. */
+    private static void tell(String format, Object... arguments) {
+        if (!silent) report.printf(format, arguments);
+    }
+
     /** Waits, at most SETTLE_MAX_S, until MapView.viewSettled() has held over two looks 100 ms apart, and prints how long it took. */
     private static void settle(String what) throws Exception {
         long t0 = System.nanoTime();
@@ -394,11 +416,11 @@ public final class ReplayMoveProbe {
             boolean idle = fx(() -> map.viewSettled());
             held = idle ? held + 1 : 0;
             if (held >= 2) {
-                report.printf("  %s settled in %.1f s%n", what, s);
+                tell("  %s settled in %.1f s%n", what, s);
                 return;
             }
             if (s >= SETTLE_MAX_S) {
-                report.printf("  %s NOT settled after %.0f s; going on%n", what, s);
+                tell("  %s NOT settled after %.0f s; going on%n", what, s);
                 return;
             }
         }
@@ -480,11 +502,310 @@ public final class ReplayMoveProbe {
             }
         }
         double took = (System.nanoTime() - t0) / 1e9;
-        report.printf("%n=== %s ===%n", heading);
         if (!ran) report.println("  the camera did not start (it was idle at once: no view marked, or nothing to move)");
         if (timedOut) report.printf("  TIMED OUT: still moving after %.0f s, stopped%n", MOVE_MAX_S);
         report.printf("  took %.1f s%n", took);
         report.print(fx(() -> tally.report()));
+    }
+
+    /* ------------------------------------------ the check ReplayCheck runs (5d) ------------------------------------------ */
+
+    /** How long a move's load is waited for in check(), in seconds, before it is stopped and said not to have reached Ready. */
+    private static final double CHECK_LOAD_MAX_S = 300;
+
+    /** The scale of the "street" on a plane in check(), in pixels a plot: a level-0 view with the big tiles (MapFrame.BIG_TILES_FROM is 6). */
+    private static final double PLANE_STREET_PX = 8;
+
+    /** The frames the normal game's map is asked to draw before the replay is entered, and the most the wait for them takes, in seconds. */
+    private static final int NORMAL_FRAMES = 30;
+    private static final double NORMAL_MAX_S = 30;
+
+    /** The normal game, before the replay is entered: the map's frames drawn, and whether a camera, a loaded move or a pinned cache exists. */
+    public record Normal(long frames, boolean camera, boolean moveHeld, int cachesPinned) { }
+
+    /**
+     * One glide, loaded and run: how long the load took and how many plan views it walked, whether it reached Ready and how many views
+     * it passed; while it waited, whether the map held the move and how many of the six caches were pinned; how it was run (the click
+     * or the key), whether the key was taken and the phase at once after; then the run's tally (frames, frames with anything
+     * unpainted, the worker's asks, the pictures let go, and the frames by where they drew) and, after the run, whether the map still
+     * held the move and how many caches were pinned (and the seconds it took to let go, -1 if it did not in 3 s).
+     */
+    public record Moved(String name, boolean ready, double loadSeconds, int planViews, int passed, boolean heldWhileReady,
+                        int pinnedWhileReady, String ranBy, boolean taken, String phaseAfterTrigger, double runSeconds,
+                        long frames, long unpaintedFrames, long asks, long evicted, Map<String, Long> levelFrames,
+                        boolean heldAfter, int pinnedAfter, double letGoAfterS) { }
+
+    /** Escape pressed while a glide loads: whether it was loading, whether the key was taken, and where the camera and the map were left. */
+    public record Cancelled(boolean wasLoading, boolean taken, String phaseAfter, boolean heldAfter, int pinnedAfter) { }
+
+    /**
+     * What check() measured. {@code cannot} is non-null, and nothing else, when JavaFX cannot start here; {@code globe} whether the
+     * window's map was the Earth's (else a generated world's plane).
+     */
+    public record Checked(String cannot, boolean globe, Normal normal, Moved zoomOut, Moved months, Cancelled escape) { }
+
+    /**
+     * CM1's check, run by ReplayCheck 5d (2026-11-03): the window off screen on a game of its own (windowFiles), first as the normal
+     * game draws its map, then in the replay of the recording at recordingFolder with the expanded map open, where it loads and runs
+     * a zoom-out glide (the street to the whole map, by a click on the map), a glide across the recording's months (by a key) and a
+     * glide cancelled with Escape while it loads, each {@code glideSeconds} long. The window is closed at the end; the toolkit is left
+     * up. Nothing is printed and the game's narration is silenced; main() is the long measure of the same, ten seconds a move.
+     */
+    public static Checked check(Path recordingFolder, GameFiles windowFiles, double glideSeconds) throws Exception {
+        String cannot = startJavaFx();
+        if (cannot != null) return new Checked(cannot, false, null, null, null, null);
+        PrintStream was = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        silent = true;
+        try {
+            bind();
+            return measureAll(recordingFolder, windowFiles, glideSeconds);
+        } finally {
+            silent = false;
+            System.setOut(was);
+            try {
+                fx(() -> {
+                    if (mode != null) ((AnimationTimer) get(field(ReplayMode.class, "timer"), mode)).stop();
+                    if (stage != null) stage.close();
+                    return null;
+                });
+            } catch (Exception ignored) {
+                // the window was not up
+            }
+            ui = null;
+            stage = null;
+            mode = null;
+            cam = null;
+            map = null;
+            canvas = null;
+            plane = false;
+        }
+    }
+
+    private static Checked measureAll(Path folder, GameFiles windowFiles, double glideSeconds) throws Exception {
+        Recording rec = Recording.at(folder);
+        int[] ms = rec.months();
+        if (rec.meta() == null || ms.length < 2) throw new IllegalStateException("fewer than two months in the recording at " + folder);
+        firstMonth = ms[0];
+        lastMonth = ms[ms.length - 1];
+
+        // The window: off every screen, on a city of its own. It is the normal game first.
+        Game game = LongPlaytest.probeCity(windowFiles, null);
+        GamePrefs prefs = GamePrefs.load(windowFiles);
+        prefs.setFullScreen(false);
+        prefs.save(windowFiles);
+        fx(() -> {
+            ui = new UserInterface(game);
+            stage = new Stage();
+            stage.initStyle(StageStyle.UNDECORATED);
+            stage.setOpacity(0);
+            ui.start(stage);
+            offScreen(stage);
+            ui.replayAnotherCity();
+            ui.replayOpenCity();
+            ui.openMapOn(null);
+            return null;
+        });
+        map = waitForMap();
+        canvas = (Canvas) get(canvasField, map);
+        waitForCanvas();
+        long t0 = System.nanoTime();
+        while (fx(() -> map.framesDrawn()) < NORMAL_FRAMES && (System.nanoTime() - t0) / 1e9 < NORMAL_MAX_S) {
+            fx(() -> {
+                call(requestDraw, map);
+                return null;
+            });
+            Thread.sleep(20);
+        }
+        Normal normal = fx(() -> new Normal(map.framesDrawn(), ui.replayCamera() != null, map.moveHeld(), map.cachesPinned()));
+
+        // The replay, with the expanded map open.
+        fx(() -> {
+            mode = (ReplayMode) call(replayMode, ui);
+            call(enter, mode, rec);
+            if (!ui.replayOn()) throw new IllegalStateException("the replay did not open on " + folder);
+            ui.replayOpenMap();
+            return null;
+        });
+        t0 = System.nanoTime();
+        CameraPath.View whole = null;
+        while (whole == null && (System.nanoTime() - t0) / 1e9 < 30) {
+            Thread.sleep(200);
+            whole = fx(() -> ui.expandedMapWhole());
+        }
+        if (whole == null) throw new IllegalStateException("the replay's expanded map did not open in 30 s");
+        plane = !whole.globe();
+        fx(() -> {
+            map = (MapView) get(panKeys, ui);
+            canvas = (Canvas) get(canvasField, map);
+            cam = ui.replayCamera();
+            cam.setGlideSeconds(glideSeconds);
+            return null;
+        });
+        waitForCanvas();
+        if (plane) {
+            CameraPath.View opening = fx(() -> ui.expandedMapCameraView());
+            cityLat = opening.a();
+            cityLon = opening.b();
+        } else {
+            cityLat = whole.a();
+            cityLon = whole.b();
+        }
+        double street = plane ? PLANE_STREET_PX : GlobeFrame.leastKmPx();
+        double handoff = GlobeFrame.HANDOFF_KM;
+        double first = plane ? PLANE_STREET_PX / 2 : handoff / 8, last = plane ? PLANE_STREET_PX : handoff / 16;
+
+        // The zoom-out glide, by a click: the street at the last month marked A, the whole map B (ReplayMoveProbe's M3).
+        goTo(lastMonth);
+        take(at(street));
+        settle("street view");
+        mark(true);
+        take(wholeNow());
+        mark(false);
+        take(at(street));
+        settle("street view");
+        Moved zoomOut = measureGlide("zoom-out", false);
+
+        // The glide across months, by a key: the first month wide, the last month near (M6).
+        markMonths(first, last);
+        Moved months = measureGlide("across months", true);
+
+        // Escape while a glide loads.
+        markMonths(first, last);
+        Cancelled escape = cancelWhileLoading();
+        return new Checked(null, !plane, normal, zoomOut, months, escape);
+    }
+
+    /** M6's marks: the last month at `last` is B, the first month at `first` is A, and the view is settled on A. */
+    private static void markMonths(double first, double last) throws Exception {
+        goTo(lastMonth);
+        take(at(last));
+        mark(false);
+        goTo(firstMonth);
+        take(at(first));
+        mark(true);
+        settle("view A");
+    }
+
+    /** Waits for the expanded map to exist on the window (the normal game's) and returns its view. */
+    private static MapView waitForMap() throws Exception {
+        long t0 = System.nanoTime();
+        while ((System.nanoTime() - t0) / 1e9 < 30) {
+            MapView m = fx(() -> (MapView) get(panKeys, ui));
+            if (m != null) return m;
+            Thread.sleep(200);
+        }
+        throw new IllegalStateException("the window showed no map in 30 s");
+    }
+
+    /**
+     * The glide set up from the marks: loaded (at most CHECK_LOAD_MAX_S), held while it waits, run by a click on the canvas's middle or
+     * by a plain key as the window sends it to ReplayMode.key(), and polled until the camera is idle; then what the map still held.
+     */
+    private static Moved measureGlide(String name, boolean byKey) throws Exception {
+        MapView.MoveTally tally = map.moveTally();
+        long t0 = System.nanoTime();
+        fx(() -> {
+            cam.glide();
+            return null;
+        });
+        String phase = fx(() -> cam.phaseName());
+        while (phase.equals("LOAD")) {
+            Thread.sleep(25);
+            phase = fx(() -> cam.phaseName());
+            if ((System.nanoTime() - t0) / 1e9 >= CHECK_LOAD_MAX_S) {
+                fx(() -> {
+                    cam.stop();
+                    return null;
+                });
+                phase = "LOAD TIMED OUT";
+            }
+        }
+        double loadS = (System.nanoTime() - t0) / 1e9;
+        int views = fx(() -> cam.planViews());
+        String words = fx(() -> cam.overlay());
+        boolean ready = phase.equals("READY");
+        int passed = 0;
+        if (words != null) {
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\((\\d+) views? could not").matcher(words);
+            if (m.find()) passed = Integer.parseInt(m.group(1));
+        }
+        String by = byKey ? "key" : "click";
+        if (!ready) return new Moved(name, false, loadS, views, passed, false, 0, by, false, phase, 0, 0, 0, 0, 0, Map.of(), false, 0, -1);
+        Thread.sleep(300);      // it waits: nothing runs it, nothing lets go of what it loaded
+        boolean held = fx(() -> map.moveHeld() && cam.ready());
+        int pinned = fx(() -> map.cachesPinned());
+
+        // Run it as the window does: the click is fired at the canvas, the key goes to ReplayMode.key() as UserInterface's filter sends it.
+        double cx = canvas.getWidth() / 2, cy = canvas.getHeight() / 2;
+        Object[] ran = fx(() -> {
+            tally.reset();
+            boolean taken = true;
+            if (byKey) {
+                taken = mode.key(new KeyEvent(KeyEvent.KEY_PRESSED, "z", "z", KeyCode.Z, false, false, false, false), false);
+            } else {
+                canvas.fireEvent(new MouseEvent(MouseEvent.MOUSE_PRESSED, cx, cy, cx, cy, MouseButton.PRIMARY, 1, false, false, false, false,
+                        true, false, false, true, false, false, null));
+            }
+            return new Object[] { taken, cam.phaseName() };
+        });
+        boolean taken = (Boolean) ran[0];
+        String after = (String) ran[1];
+        long t1 = System.nanoTime();
+        phase = after;
+        while (!phase.equals("IDLE")) {
+            Thread.sleep(25);
+            phase = fx(() -> cam.phaseName());
+            if ((System.nanoTime() - t1) / 1e9 >= MOVE_MAX_S) {
+                fx(() -> {
+                    cam.stop();
+                    return null;
+                });
+                break;
+            }
+        }
+        double runS = (System.nanoTime() - t1) / 1e9;
+        Object[] figures = fx(() -> {
+            Map<String, Long> levels = new LinkedHashMap<>();
+            for (Map.Entry<String, long[]> e : tally.byWhere.entrySet()) levels.put(e.getKey(), e.getValue()[0]);
+            return new Object[] { tally.frames, tally.unpaintedFrames, tally.asks, tally.evicted, levels };
+        });
+        // The map lets go of the move on its next frame (endMove()); give it a few seconds to have one.
+        long t2 = System.nanoTime();
+        boolean heldAfter = fx(() -> map.moveHeld());
+        while (heldAfter && (System.nanoTime() - t2) / 1e9 < 3) {
+            Thread.sleep(50);
+            heldAfter = fx(() -> map.moveHeld());
+        }
+        double letGo = heldAfter ? -1 : (System.nanoTime() - t2) / 1e9;
+        int pinnedAfter = fx(() -> map.cachesPinned());
+        @SuppressWarnings("unchecked")
+        Map<String, Long> levels = (Map<String, Long>) figures[4];
+        return new Moved(name, true, loadS, views, passed, held, pinned, by, taken, after, runS, (Long) figures[0], (Long) figures[1],
+                (Long) figures[2], (Long) figures[3], levels, heldAfter, pinnedAfter, letGo);
+    }
+
+    /** A glide set up from the marks and, once the map has begun to load it, Escape sent to ReplayMode.key(); then where it all stands. */
+    private static Cancelled cancelWhileLoading() throws Exception {
+        fx(() -> {
+            cam.glide();
+            return null;
+        });
+        long t0 = System.nanoTime();
+        while (!fx(() -> cam.loading() && map.moveHeld()) && (System.nanoTime() - t0) / 1e9 < 10) Thread.sleep(10);
+        Object[] pressed = fx(() -> {
+            boolean loading = cam.loading();
+            boolean taken = mode.key(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ESCAPE, false, false, false, false), false);
+            return new Object[] { loading, taken, cam.phaseName() };
+        });
+        long t1 = System.nanoTime();
+        boolean held = fx(() -> map.moveHeld());
+        while (held && (System.nanoTime() - t1) / 1e9 < 5) {
+            Thread.sleep(50);
+            held = fx(() -> map.moveHeld());
+        }
+        int pinned = fx(() -> map.cachesPinned());
+        return new Cancelled((Boolean) pressed[0], (Boolean) pressed[1], (String) pressed[2], held, pinned);
     }
 
     /* ------------------------------------------ the toolkit and reflection ------------------------------------------ */
@@ -495,7 +816,11 @@ public final class ReplayMoveProbe {
             if (java.awt.GraphicsEnvironment.isHeadless()) return "this JVM is headless (no display)";
             Platform.setImplicitExit(false);
             CountDownLatch up = new CountDownLatch(1);
-            Platform.startup(up::countDown);
+            try {
+                Platform.startup(up::countDown);
+            } catch (IllegalStateException alreadyUp) {      // the harness process started it before (a second check())
+                Platform.runLater(up::countDown);
+            }
             if (!up.await(60, TimeUnit.SECONDS)) return "the toolkit did not come up in 60 s";
             return null;
         } catch (Throwable t) {

@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import ham.citybuildersim.ui.ReplayMoveProbe;
+
 /**
  * Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs.
  * Timing harness (Timing.HARNESSES): section 6 judges the recorder's FX-thread cost through Timing.
@@ -41,6 +43,12 @@ import java.util.TreeSet;
  *      5b. the graphs behind the city (ReplayGraphs): the recording's months in order, scaled to its highest, a year of GDP;
  *      5c. a quick step leaves most of the map's pictures as they were: a month on, fewer than half the tiles in view have another
  *      stamp, those that have the same stamp paint the same pixels in both maps, and the new map's tiles read the ground carried over;
+ *      5d. a replay's camera move loads first and then runs (CM1): in the real window, off screen, the normal game draws its map with
+ *      no camera, no loaded move and nothing pinned; a glide from the street to the whole map reaches Ready with every plan view
+ *      loaded, holds its pins while it waits and runs on a click; a glide across months does the same and runs on a key; while
+ *      they run no frame asks the worker, draws unpainted ground or lets a picture go, over at least L0 and FAR for the first, and
+ *      afterwards nothing is pinned or held; and Esc while a glide loads leaves the camera idle with nothing held (ReplayMoveProbe.check;
+ *      skipped where JavaFX cannot start, as in the cloud);
  *   6. recording costs the month only its fill and changes nothing in it: two same cities played 12 months, one recording, agree
  *      to the last digit; the recorder's FX-thread cost per month is within SaveWriter.CLOCK_MS (printed, with the size of a month's
  *      file and of the history, and of a month at deflate level 6 and 1).
@@ -749,6 +757,27 @@ public class ReplayCheck {
         helper("...a tile whose stamp is the same paints the same pixels in both maps (" + sameStamp + " of them painted and compared), so a picture held against it is the new map's",
                 sameStamp > 0 && agree == sameStamp);
 
+        /* ====== 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1) ====== */
+        System.out.println("\n--- 5d. a replay move loads first, then runs with nothing unpainted and nothing asked (CM1) ---");
+        double glideSeconds = 2;        // short, to keep the suite quick: ReplayMoveProbe's main() measures the ten-second moves
+        ReplayMoveProbe.Checked cm = ReplayMoveProbe.check(rec.folder(), GameFiles.scratch("replaywindow"), glideSeconds);
+        if (cm.cannot() != null) {
+            System.out.println("      skipped: " + cm.cannot());
+        } else {
+            ReplayMoveProbe.Normal nm = cm.normal();
+            System.out.printf("      the %s window: normal game drew %d frames; camera %b, loaded move %b, caches pinned %d%n",
+                    cm.globe() ? "Earth" : "generated-world", nm.frames(), nm.camera(), nm.moveHeld(), nm.cachesPinned());
+            helper("the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned",
+                    nm.frames() >= 30 && !nm.camera() && !nm.moveHeld() && nm.cachesPinned() == 0);
+            movedChecks(cm.zoomOut(), glideSeconds, "click", true);
+            movedChecks(cm.months(), glideSeconds, "key", false);
+            ReplayMoveProbe.Cancelled esc = cm.escape();
+            System.out.printf("      Esc while loading: was loading %b, taken %b, camera %s after, move held %b, caches pinned %d%n",
+                    esc.wasLoading(), esc.taken(), esc.phaseAfter(), esc.heldAfter(), esc.pinnedAfter());
+            helper("Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)",
+                    esc.wasLoading() && esc.taken() && "IDLE".equals(esc.phaseAfter()) && !esc.heldAfter() && esc.pinnedAfter() == 0);
+        }
+
         /* ====== 6. recording costs the month only its fill, and changes nothing in it ====== */
         System.out.println("\n--- recording costs the month only its fill, and changes nothing in it ---");
 
@@ -827,6 +856,31 @@ public class ReplayCheck {
 
         System.out.printf("%n%s: %d failure(s)%n", ReplayCheck.class.getSimpleName(), fails);
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /**
+     * Section 5d's assertions for one glide, loaded and run in the window (ReplayMoveProbe.check()): it reached Ready with every plan
+     * view loaded, held its pins while it waited, ran on the click or the key; no frame of its run asked the worker, drew unpainted
+     * ground or let a picture go, and it ran frame by frame to its end: at least ten frames a second of the glide, since the camera
+     * steps a tenth of a second at most (over L0 and FAR where {@code acrossLevels}: a glide that never left the street proves
+     * nothing; a floor tied to the frame rate would go red on a busy PC); afterwards nothing is pinned or held.
+     */
+    static void movedChecks(ReplayMoveProbe.Moved m, double glideSeconds, String ranBy, boolean acrossLevels) {
+        System.out.printf("      %s glide: %s in %.1f s (%d plan views, %d passed); ran by a %s in %.1f s, %d frames over %s, unpainted %d, worker asks %d, pictures let go %d; "
+                        + "afterwards held %b (let go in %.2f s), pinned %d%n",
+                m.name(), m.ready() ? "ready" : "NOT ready", m.loadSeconds(), m.planViews(), m.passed(), m.ranBy(), m.runSeconds(), m.frames(),
+                m.levelFrames(), m.unpaintedFrames(), m.asks(), m.evicted(), m.heldAfter(), m.letGoAfterS(), m.pinnedAfter());
+        String what = "the " + m.name() + " glide";
+        helper(what + " loads and reaches Ready with every plan view loaded (none passed), and holds its pins while it waits (the move held, all six caches pinned)",
+                m.ready() && m.passed() == 0 && m.heldWhileReady() && m.pinnedWhileReady() == 6);
+        helper("...and runs on " + (ranBy.equals("click") ? "a click on the map" : "a plain key") + ", which leaves Ready for the glide",
+                m.ranBy().equals(ranBy) && m.taken() && "GLIDE".equals(m.phaseAfterTrigger()));
+        boolean frames = m.frames() >= glideSeconds * 10;
+        boolean levels = acrossLevels ? m.levelFrames().containsKey("L0") && m.levelFrames().containsKey("FAR") : !m.levelFrames().isEmpty();
+        helper("...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks " + m.asks() + ", unpainted frames "
+                + m.unpaintedFrames() + ", let go " + m.evicted() + ")", m.ready() && m.asks() == 0 && m.unpaintedFrames() == 0 && m.evicted() == 0);
+        helper("...and it ran frame by frame to its end, at least " + (int) (glideSeconds * 10) + " frames" + (acrossLevels ? " over at least L0 and FAR" : "") + " (" + m.frames() + ")", frames && levels);
+        helper("...after it, no move is held and nothing is pinned", m.ready() && !m.heldAfter() && m.pinnedAfter() == 0);
     }
 
     /** Whether a closed log ignores an event added to it: nothing more is read from its file. */

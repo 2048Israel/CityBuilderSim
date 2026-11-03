@@ -682,6 +682,7 @@ final class MapView {
         if (dirty) {
             dirty = false;
             draw();
+            framesDrawn++;
             if (expanded) {
                 legendNote();
                 legendFor(shownTier());
@@ -5428,7 +5429,7 @@ final class MapView {
             tallyEvicted = evictedNow();
             tallyThisFrame = true;
         }
-        return shot.more();
+        return shot.more() || move != null;      // (CM1) a move that ended is let go of on the next frame (endMove()): the pump must not stop before it, or the pins stay on an idle view
     }
 
     /** The wheel's notches in a replay: eased in by the smooth hand about the pointer, and a glide in flight let go. False outside a replay, and the wheel moves the view at once. */
@@ -5628,6 +5629,21 @@ final class MapView {
 
     /** A move with nothing passed and nothing kept, for viewSettled(). */
     private static final MoveLoad NO_MOVE = new MoveLoad(0, 0, false);
+
+    /** Whether a loaded move is held (CM1: ReplayMoveProbe.check(), which ReplayCheck 5d runs). */
+    boolean moveHeld() { return move != null; }
+
+    /** How many of the six picture caches are pinned (CM1: as moveHeld(); 6 while a move is loaded, 0 otherwise). */
+    int cachesPinned() {
+        int n = 0;
+        for (Pictures p : List.of(l0small, l0big, l1, l2, nodes, charts)) if (p.pinned) n++;
+        return n;
+    }
+
+    /** The frames tick() has drawn since this view was made (CM1: ReplayCheck 5d's "the normal game draws its map"). */
+    long framesDrawn() { return framesDrawn; }
+
+    private long framesDrawn;
 
     private boolean loadSettled(MoveLoad m) {
         if (tiles == null) return false;
