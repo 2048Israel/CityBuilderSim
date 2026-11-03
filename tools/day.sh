@@ -6,13 +6,15 @@
 #
 #      sh tools/day.sh            the whole picture, about 15 lines
 #      sh tools/day.sh --due      only the branches that need the orchestrator
-#                                 (ready to ship, or stuck): nothing printed and
+#                                 (ready to ship, or stuck; "nightly due" once a day from 01:00
+#                                 to 07:00, until tools/nightly.sh has run): nothing printed and
 #                                 exit 1 when none does - the hourly check-in's
 #                                 probe, "nothing printed: end the turn"
 #
 #  The lines, in this order:
 #      main      0.8.41 = the last version tag; merged 3 h ago: Merge batch/ET1 ...
 #      reds      MapCheck 2, EarthCheck 1 - gate of 2026-10-24, docs/notes/gate.txt
+#      nightly   <tools/nightly.sh's last verdict>; log $HOME/.cbs-nightly.log, or "none yet: sh tools/nightly.sh" (GT1)
 #      queue     14 queued, next: HY1 ET2 ET3 ET4
 #      pending   18: ET1-C PT1-M4-C ...
 #      ready     ID - ./ship.sh batch/ID  (its docs/queue/ID-ship.md is on the
@@ -33,17 +35,8 @@
 #  Exit status: 0 the picture was printed (--due: something is due); 1 --due and
 #  nothing is due; 2 not a git checkout, or no origin/main here.
 #
-#  WHY (BP1, 2026-10-24): a fresh orchestrator began each day with about ten
-#  calls - QUEUE.md, the changelog, the branch lists, the tags - and the hourly
-#  check-in needed a probe that costs one short call when nothing is due. The
-#  first draft counted the merged branches inside a pipe's subshell, where the
-#  count was lost; the loop here runs in the shell itself.
-#  RL1 (2026-10-27): the old-style ready test (a branch finished the old way, its row
-#  out of its own QUEUE.md, no ship file; ET2 was the last) is gone: no branch from
-#  before BP1 is left on origin. A branch built on an unmerged predecessor is "waiting",
-#  not "ready": ship.sh would stop it, and gating it would ship the predecessor ungated.
-#  The gate's date was the first date in any '#' line, which is often a date in
-#  the queue row's text; it is now the '# date:' line ship.sh writes for it.
+#  WHY (BP1, 2026-10-24; RL1): a fresh orchestrator began each day with about ten calls;
+#  the rest is docs/notes/batch-history.md, "The scripts' headers" (moved in GT1).
 # ---------------------------------------------------------------------------
 
 usage() { echo "usage: sh tools/day.sh [--due]" >&2; exit 2; }
@@ -57,6 +50,7 @@ esac
 git rev-parse --git-dir >/dev/null 2>&1 || { echo "day       not in a git checkout" >&2; exit 2; }
 CARRIES="$(cd "$(dirname "$0")" && pwd)/carries.sh"
 cd "$(git rev-parse --show-toplevel)" || exit 2
+NIGHTLY=$HOME/.cbs-nightly.txt   # tools/nightly.sh's last verdict (GT1)
 
 # --- origin ----------------------------------------------------------------
 FETCHMSG=
@@ -120,6 +114,10 @@ done
 if [ "$DUE" = 1 ]; then
     [ -z "$FETCHMSG" ] || echo "$FETCHMSG"
     OUT="$READY$STUCK"
+    case "$(date +%H)" in   # GT1: the nightly playtest is due once a day, 01:00 to 07:00
+        0[1-6]) [ "$(cut -d ' ' -f1 "$NIGHTLY" 2>/dev/null)" = "$(date +%Y-%m-%d)" ] ||
+                    OUT="${OUT}nightly   due - sh tools/nightly.sh, in the background$NL" ;;
+    esac
     [ -n "$OUT" ] || exit 1
     printf '%s' "$OUT"
     exit 0
@@ -146,6 +144,8 @@ if G=$(git show "$M:docs/notes/gate.txt" 2>/dev/null); then
 else
     echo "reds      no gate record yet (docs/notes/gate.txt is not on $M)"
 fi
+if [ -f "$NIGHTLY" ]; then echo "nightly   $(head -n 1 "$NIGHTLY" | tr -d '\r'); log ${NIGHTLY%.txt}.log"
+else echo "nightly   none yet: sh tools/nightly.sh"; fi
 echo "queue     $(printf '%s\n' "$QUEUED" | grep -c .) queued, next: $(printf '%s\n' "$QUEUED" | head -n 4 | tr '\n' ' ' | sed 's/ $//')"
 PEND=$(printf '%s\n' "$Q" | rows Pending)
 echo "pending   $(printf '%s\n' "$PEND" | grep -c .): $(printf '%s\n' "$PEND" | tr '\n' ' ' | sed 's/ $//')"

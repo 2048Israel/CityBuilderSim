@@ -20,8 +20,10 @@ import java.util.function.Consumer;
  * screen, and it grew with every month played (the history is 13 MB there,
  * two thirds of the cost). Only filling the save has to happen where the model
  * is safe to read; Game does that on the FX thread, hands the writer a
- * snapshot() of the save and of the history, and goes on with the month. The
- * writer never sees a live object.
+ * snapshot() of the save and a snapshot of the history that is owed (GT1:
+ * the writer makes its copy as its first act, and the history makes it
+ * itself before it next changes), and goes on with the month. The writer
+ * never sees a live object.
  *
  * ONE WRITER, ONE FILE AT A TIME. A job for a file that already has one
  * waiting replaces it - the newer city is the one worth keeping, and two
@@ -63,6 +65,7 @@ public final class SaveWriter {
         private final int slot;
         private final DataSave data;
         private final HistorySave history;
+        private final HistorySave.Later laterHistory;
         private final byte[] map;
 
         /** {@code map} is the city map's sidecar bytes, or null when the city has none. */
@@ -71,14 +74,28 @@ public final class SaveWriter {
             this.slot = slot;
             this.data = data;
             this.history = history;
+            this.laterHistory = null;
+            this.map = map;
+        }
+
+        /**
+         * An autosave's job (GT1): the history is a snapshot still owed, copied by the first of this job's write() and
+         * the history's next change to ask for it - see HistorySave.snapshotLater().
+         */
+        public Job(GameFiles files, int slot, DataSave data, HistorySave.Later history, byte[] map) {
+            this.files = files;
+            this.slot = slot;
+            this.data = data;
+            this.history = null;
+            this.laterHistory = history;
             this.map = map;
         }
 
         /** For SaveSlotCheck: the save this job writes. */
         DataSave data() { return data; }
 
-        /** For SaveSlotCheck: the history this job writes. */
-        HistorySave history() { return history; }
+        /** For SaveSlotCheck: the history this job writes (copied now, on the calling thread, if the writer has not yet). */
+        HistorySave history() { return laterHistory != null ? laterHistory.get() : history; }
 
         /** For SaveSlotCheck: the map's bytes, or null when the city has none. */
         byte[] map() { return map; }
@@ -93,6 +110,9 @@ public final class SaveWriter {
         @Override
         public GameFiles.Result write() {
 
+            // The history's copy first (GT1): the clock waits for it, if at all, only until the next month is recorded.
+            HistorySave toWrite = history();
+
             GameFiles.Result result = data.saveGame(files, slot);
 
             if (map != null && result.ok) {
@@ -104,7 +124,7 @@ public final class SaveWriter {
             // files are independent, and one of them landing is strictly better
             // than neither. The reported outcome is the save's, because that is the
             // file the player would actually mourn.
-            GameFiles.Result historyResult = history.saveHistory(files, slot);
+            GameFiles.Result historyResult = toWrite.saveHistory(files, slot);
             if (!historyResult.ok) {
                 System.out.println(historyResult.message());
             }

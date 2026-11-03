@@ -806,7 +806,7 @@ adds its line here, not in `CLAUDE.md`.
                                    and drops what it owed past one, and the speed's reading says when the city
                                    falls a tenth short of the rung; pure, no JavaFX, ClockCheck drives it on a
                                    clock of its own
-        LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
+        LongPlaytest.java          2,400 months at the gate, 4,000 nightly (GT1), audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103);
                                    since 0.7.139 it says what childcare it stands at m1,000 to m4,000, and
                                    -Dplaytest.budget=N prints the treasury's month line by line; since
