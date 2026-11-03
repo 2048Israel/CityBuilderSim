@@ -2,7 +2,7 @@
 
 Generated 2026-11-02 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**170 harness files, 18,624 labelled assertions.** AllChecks runs 170 of them.
+**170 harness files, 18,656 labelled assertions.** AllChecks runs 170 of them.
 
 ## Which harnesses read which class
 
@@ -35,7 +35,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BridgeMapCheck, BuildingDataCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, PriceLevelCheck, RailDrawCheck, SlopeCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [BuildingType](map/BuildingType.md) | BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LandmassCheck, LongPlaytest, RefineryCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck |
@@ -59,7 +59,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, KeptCheck, ReadPathCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, DebtExchangeCheck, ForeignDebtCheck, FundCheck, LandNationsCheck, OilViewCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
+| [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, ForeignDebtCheck, FundCheck, LandNationsCheck, OilViewCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
@@ -138,7 +138,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Healthcare](map/Healthcare.md) | BuildAdviceCheck, ChildcareCheck, DeathCareFirstCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, FreightViewCheck, GdpCheck, HaulageCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
 | [HistoryGrapher](map/HistoryGrapher.md) | **none** |
-| [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ClockCheck, DeathRecordCheck, DebtExchangeCheck, HistoryCheck, HouseholdMemoryCheck, InterestAbroadCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
+| [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ClockCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, HistoryCheck, HouseholdMemoryCheck, InterestAbroadCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [HistoryScreen](map/HistoryScreen.md) | **none** |
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, MarketCheck, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ShortSellingCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyPreviewCheck, ReadPathCheck |
@@ -202,7 +202,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
 | [Names](map/Names.md) | StaleCheck |
 | [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperMiningCheck, CopperRefiningCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EducationCheck, FloatLinkCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, QuarryingCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, ScaleCheck, SlopeCheck, TreasuryCheck, WoodProductsCheck |
-| [Nations](map/Nations.md) | CurrencyRegimeCheck, GlobeCheck, InterestAbroadCheck, LandNationsCheck, LongPlaytest, NationsCheck, NewGameCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMoneysCheck |
+| [Nations](map/Nations.md) | CurrencyRegimeCheck, DenominationCheck, GlobeCheck, InterestAbroadCheck, LandNationsCheck, LongPlaytest, NationsCheck, NewGameCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMoneysCheck |
 | [NationsMap](map/NationsMap.md) | GlobeCheck, MapCheck, PartnerCallsCheck, PartnersCheck |
 | [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, ConstructionControlCheck, InboxCheck, KeptCheck, LandmassCheck, LongPlaytest, PlaytestFixCheck, SaveSlotCheck |
 | [Offending](map/Offending.md) | **none** |
@@ -214,7 +214,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [OrphanHousehold](map/OrphanHousehold.md) | OutsideCheck |
 | [OutwardInvestment](map/OutwardInvestment.md) | AuctionCheck, BondCheck, BuybackCheck, CapitalFlowCheck, ExchangeCheck, HoldersCheck, LongPlaytest, MarketCheck |
 | [Palette](map/Palette.md) | **none** |
-| [PartnerTrade](map/PartnerTrade.md) | PartnerCallsCheck, PartnersCheck, ReadPathCheck, RealDollarCheck, ReplayCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
+| [PartnerTrade](map/PartnerTrade.md) | DenominationCheck, PartnerCallsCheck, PartnersCheck, ReadPathCheck, RealDollarCheck, ReplayCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [PartnersPage](map/PartnersPage.md) | **none** |
 | [PartnersView](map/PartnersView.md) | PartnersCheck |
 | [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, PriceLevelCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, TradeCostCheck, WoodProductsCheck |
@@ -322,9 +322,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
 | [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandNetCheck, JunctionCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
-| [WorldData](map/WorldData.md) | GlobeCheck, InterestAbroadCheck, LandNationsCheck, MapCheck, NationsCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
+| [WorldData](map/WorldData.md) | DenominationCheck, GlobeCheck, InterestAbroadCheck, LandNationsCheck, MapCheck, NationsCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, RealDollarCheck, SaveFileCheck, SkipReportCheck |
-| [WorldMarket](map/WorldMarket.md) | GlobeCheck, InterestAbroadCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, WorldMarketCheck, WorldMoneysCheck |
+| [WorldMarket](map/WorldMarket.md) | DenominationCheck, GlobeCheck, InterestAbroadCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, WorldMarketCheck, WorldMoneysCheck |
 | [WorldMeasures](map/WorldMeasures.md) | RankingsCheck, WorldMeasuresCheck |
 | [WorldMoneys](map/WorldMoneys.md) | DebtMoneysCheck, ExchangeRateCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, PriceLevelCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, InterestAbroadCheck, RankingsCheck, ReadPathCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
@@ -6149,7 +6149,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L487 a money with no rate this month is not offered, and the paper already on the books keeps the last good rate
   - L489 the bare ledger's exchange line moves a euro piece by the D$'s move times its US$ per unit (the US$ piece by the D$'s)
 
-## DenominationCheck.java - 52 labelled assertions
+## DenominationCheck.java - 84 labelled assertions
 
 > A currency reform is a change of units, and this is how we know.
 > 
@@ -6165,73 +6165,108 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-  - L60 the same people live there, to the person
-  - L63 the same output
-  - L65 ...and the same year of it
-  - L67 the same rent
-  - L68 the same price level
-  - L70 the same currency
-  - L72 the same treasury
-  - L73 the same shops' till
-  - L77 the same city debt
-  - L79 the same bank
-- **L193 1. THE UNIT**
-  - L197 a founding city is in founding money
-  - L198 ...and cannot reform, because nothing has inflated
-  - L200 ...nor at nine times
-  - L201 ...and can at ten
-  - L204 lopping two zeros makes a dollar a hundred old ones
-  - L205 ...so a founding price reads as a hundredth
-  - L208 ...and the money gets a new name
-  - L209 ...the city's own money's, renamed
-  - L211 ...and again
-  - L212 the unit compounds
-  - L216 it stops before a double runs out of digits
-- **L219 2. IT IS THE SAME CITY**
-- **L225 a reformed city is the same city**
-  - L230 fixture: the two cities really are identical to start with
-  - L242 the reform goes through
-  - L244 cash divided
-  - L245 the exchange rate divided
-  - L248 the shelf price divided
-  - L250 rent divided
-  - L251 the minimum wage divided
-  - L254 a House costs a hundredth as many dollars
-- **L257 ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT**
-  - L289 the desk's room in
-  - L354 fixture: there was a per-good breakdown to divide (
-  - L372 the price index did not move
-  - L374 nor the rent burden
-  - L377 nor the cost of living
-  - L380 nor the population
-- **L383 3. AND IT STAYS THE SAME CITY**
-- **L434 ...and the month after the reform is the same month**
-- **L442 ...and the same city a year later**
-- **L446 ...and the same city a decade later**
-- **L488 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING**
-- **L501 ...and no cell under half a household holds anything, reformed or not**
-  - L502 right after the reform, in either city
-  - L505 fixture: the census left cells under half a household
-  - L506 ...and after no month did one hold anything
-- **L508 4. AND NO MONEY WAS MADE OR LOST**
-- **L513 and the books still balance**
-  - L521 a reformed city conserves money like any other
-- **L523 5. AND IT SURVIVES A SAVE**
-  - L546 the unit came back
-  - L547 ...and the money with it
-  - L548 ...and the rent it was charging
-  - L549 ...and a House still costs what it cost
-- **L552 6. AND THE TRAMS (B6, 0.7.47)**
-- **L564 a reform and the buses**
-  - L568 fixture: two bus towns, identical, with riders and a transit bill and fares
-  - L571 fixture: the bus towns' builders raised the list of 400 houses they were given
-  - L580 fixture: the bus town's drivers burn fuel, struck, billed and paid
-  - L582 fixture: the reform by a thousand goes through
-  - L583 a reform scales the month's transit bill and fares
-  - L586 a reform divides the fuel struck and the fuel paid
-  - L590 ...and the fare dial's cap is the founding cap in the new unit
-  - L598 after a reform the riders are what the same real fare drew
-  - L611 no working row's income after fixed bills goes negative across a reform
+  - L75 the same people live there, to the person
+  - L78 the same output
+  - L80 ...and the same year of it
+  - L82 the same rent
+  - L83 the same price level
+  - L85 the same currency
+  - L87 the same treasury
+  - L88 the same shops' till
+  - L92 the same city debt
+  - L94 the same bank
+- **L203 1. THE UNIT**
+  - L207 a founding city is in founding money
+  - L208 ...and cannot reform, because nothing has inflated
+  - L210 ...nor at nine times
+  - L211 ...and can at ten
+  - L214 lopping two zeros makes a dollar a hundred old ones
+  - L215 ...so a founding price reads as a hundredth
+  - L218 ...and the money gets a new name
+  - L219 ...the city's own money's, renamed
+  - L221 ...and again
+  - L222 the unit compounds
+  - L226 it stops before a double runs out of digits
+- **L229 2. IT IS THE SAME CITY**
+- **L235 a reformed city is the same city**
+  - L240 fixture: the two cities really are identical to start with
+  - L256 the reform goes through
+  - L258 cash divided
+  - L259 the exchange rate divided
+  - L262 the shelf price divided
+  - L264 rent divided
+  - L265 the minimum wage divided
+  - L268 a House costs a hundredth as many dollars
+- **L271 ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT**
+  - L303 the desk's room in
+  - L368 fixture: there was a per-good breakdown to divide (
+  - L386 the price index did not move
+  - L388 nor the rent burden
+  - L391 nor the cost of living
+  - L394 nor the population
+- **L397 3. AND IT STAYS THE SAME CITY**
+- **L455 ...and the month after the reform is the same month**
+- **L463 ...and the same city a year later**
+- **L467 ...and the same city a decade later**
+- **L509 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING**
+- **L522 ...and no cell under half a household holds anything, reformed or not**
+  - L523 right after the reform, in either city
+  - L526 fixture: the census left cells under half a household
+  - L527 ...and after no month did one hold anything
+- **L529 4. AND NO MONEY WAS MADE OR LOST**
+- **L534 and the books still balance**
+  - L542 a reformed city conserves money like any other
+- **L544 5. AND IT SURVIVES A SAVE**
+  - L567 the unit came back
+  - L568 ...and the money with it
+  - L569 ...and the rent it was charging
+  - L570 ...and a House still costs what it cost
+- **L573 6. AND THE TRAMS (B6, 0.7.47)**
+- **L585 a reform and the buses**
+  - L589 fixture: two bus towns, identical, with riders and a transit bill and fares
+  - L592 fixture: the bus towns' builders raised the list of 400 houses they were given
+  - L601 fixture: the bus town's drivers burn fuel, struck, billed and paid
+  - L603 fixture: the reform by a thousand goes through
+  - L604 a reform scales the month's transit bill and fares
+  - L607 a reform divides the fuel struck and the fuel paid
+  - L611 ...and the fare dial's cap is the founding cap in the new unit
+  - L619 after a reform the riders are what the same real fare drew
+  - L632 no working row's income after fixed bills goes negative across a reform
+- **L635 7. THE TRADE BY PARTNER (DZ1, 2026-11-02)**
+- **L731 the trade by partner: its history's grid follows the unit**
+  - L738 fixture: the twelve months tallied are one calendar year and the next month is another's
+  - L751 fixture: the turn sent a year of four cells (two goods, two nations) to the history, off the grid
+  - L753 fixture: the month and the year held had trade with no partner to divide
+  - L763 a reformed record's history is the plain record's, divided: every cell's value out and in
+  - L765 ...and its units are the plain record's, exactly
+  - L784 a reform in mid-year divides the month held, with its trade that had no partner
+  - L792 ...and the year held: its exports and imports to date are the plain record's, divided
+  - L797 ...and the year it sends to the history is the plain record's, divided
+  - L804 fixture: the year is in the history before the reform
+  - L806 a reform divides the years already finished: their cells are the plain record's, divided
+  - L808 ...with the same year and the same units
+  - L816 fixture: the save's copy holds the finished year
+  - L817 a reform divides the save's trade by partner: its cells are the plain record's, divided
+- **L831 the trade by partner: a city on the world fixture, reformed in mid-year**
+  - L833 fixture: the twelve-nation world file is beside the classes
+  - L956 fixture: both cities have a world market and a trade by partner that has seen a year turn
+  - L958 fixture: the two cities are the same city before the reform
+  - L960 fixture: the year behind them has trade (
+  - L967 fixture: the reform falls in mid-year, not in a January (
+  - L971 fixture: the year held has trade by then, and so has the month
+  - L974 fixture: the two cities are still the same city
+  - L975 the reform took: a hundred old dollars to the new one
+  - L982 a reform in mid-year divides the month and the year held, by nation and with no partner
+  - L983 ...and leaves their tonnes and units as they were
+  - L985 ...and divides the years already finished (
+  - L986 ...and leaves their units as they were
+  - L989 fixture: the save's copy holds the finished year in both cities
+  - L990 ...and the save's copy of them is divided too
+  - L996 both cities finished a second year, in
+  - L1000 fixture: the year just finished has trade (
+  - L1014 the year finished on the new grid is the plain one's, divided
+  - L1015 ...and its units are the plain one's
+  - L1016 ...and so is every year behind it, the save's copy too
 
 ## DeskCheck.java - 234 labelled assertions
 

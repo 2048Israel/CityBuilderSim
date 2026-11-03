@@ -1,12 +1,5 @@
 # DZ1 - The trade by partner in the money of the day ({next}, 2026-11-02)
 
-> RESUME (paused on the orchestrator's word, 2026-11-02; delete this block before the ship file):
-> 1. Found and mended (§1): PartnerTrade's history grid now reads the Denomination's unit; the reform divides PartnerTrade and HistorySave's copy. Local WIP commit on batch/DZ1 (built on GT1's b40db6c8), not pushed.
-> 2. DenominationCheck: FC1 back on, year and decade at 1e-9, section 7 on bare PartnerTrade objects: reviewed, green in a worktree (no world file).
-> 3. Left: section 7's second part, two cities on the twelve-nation fixture (WorldData.FIXTURE, as ReadPathCheck.onTheWorldMarket) reformed in mid-year; Game's two wiring lines are proved only by it or the gate's world file.
-> 4. Then: merge GT1's tip when its ship file lands; `--pick` with JDK_JAVA_OPTIONS naming the PC's data/earth-2.bin and data/world-1.bin; fill §2 and §4; ship file last, once GT1 is on main and merged in.
-> 5. No ensemble: the playtest never reforms, and with the unit at 1 the grid multiplies by exactly 1.0, so its trace cannot move.
-
 FC1 found it (`docs/queue/DZ1.md`): with its builders' price on, DenominationCheck's reformed twin parted from its town
 in month 170, every sector's cash at once, by about 1e-9, through something in absolute money outside FC1. FC1 played
 the harness with FC1 off meanwhile.
@@ -70,4 +63,13 @@ the harness with FC1 off meanwhile.
 
 ## 4. The checks
 
-(filled at the end)
+- `./batch-check.sh --pick` with the gate's `data/earth-2.bin` and `data/world-1.bin` named in `JDK_JAVA_OPTIONS`
+  (on 72b67546, GT1's tip merged): exit 0; 24 of 170 harnesses (Game.java left to the gate, LongPlaytest in its
+  place) green in 265 s, one timing assertion SOFT (SaveSlotCheck, not counted; the PC was busy); maps regenerated;
+  Stale 0 firm. The review line names HistorySave (saves): no saved field and no format change, only the copy the
+  reform now divides, and GT1's snapshot-on-write `settle()` runs first in `redenominate`, the copy keeping lists of
+  its own.
+- DenominationCheck on the gate's world file: the twins say "trade by partner: yes"; a month, a year and a decade
+  after the reform every figure at or under 3e-15 against 1e-9; section 7 green both parts.
+- No ensemble: the playtest never reforms, and with the unit at 1 the grid multiplies by exactly 1.0, so its trace
+  cannot move.
