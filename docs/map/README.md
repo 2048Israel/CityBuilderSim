@@ -4,7 +4,7 @@ Generated 2026-11-02 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 493 files, 531,320 lines, 22,928 methods, 5,214 constants. `GameVersion.VERSION` is "0.9.2", `SAVE_FORMAT` 50.
+**The tree:** 493 files, 531,419 lines, 22,933 methods, 5,215 constants. `GameVersion.VERSION` is "0.9.2", `SAVE_FORMAT` 50.
 
 ## model (232 files)
 
@@ -62,7 +62,7 @@ Generated 2026-11-02 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CorporateBond.java](CorporateBond.md) | 248 | 29 | A corporate bond: a sector's debt to investors, issued at par through bookbuilding, paying a fixed coupon every month and its whole face at the end. | 13 |
 | [Crime.java](Crime.md) | 525 | 61 | Crime, the police who deter and catch it, and the prisons that hold who they catch. | 18 |
 | [Currency.java](Currency.md) | 263 | 21 | What the city's money is called, and how it is written. | 26 |
-| [DataSave.java](DataSave.md) | 2,702 | 424 | sections: land and ore, the shedding warning... | 11 |
+| [DataSave.java](DataSave.md) | 2,707 | 424 | sections: land and ore, the shedding warning... | 11 |
 | [Debt.java](Debt.md) | 1,264 | 105 | One piece of city paper. | 41 |
 | [DebtManager.java](DebtManager.md) | 3,386 | 271 | The city's borrowing: every bond, note and dollar bond the treasury owes, the market that prices the next one, and the policy rate every price of m... | 49 |
 | [DebtQuote.java](DebtQuote.md) | 308 | 12 | What a loan would cost, worked out BEFORE the player agrees to it. | 22 |
@@ -93,7 +93,7 @@ Generated 2026-11-02 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FuelSplit.java](FuelSplit.md) | 229 | 8 | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; ... | 2 |
 | [FundLedger.java](FundLedger.md) | 766 | 92 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 10 |
 | [FundView.java](FundView.md) | 873 | 39 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 5 |
-| [Game.java](Game.md) | 21,021 | 925 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 240 |
+| [Game.java](Game.md) | 21,022 | 925 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 240 |
 | [GameFiles.java](GameFiles.md) | 522 | 43 | Where the game keeps its files, and how it writes them. | 154 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 249 | 27 | How the player likes the window, kept between runs. | 4 |
@@ -109,7 +109,7 @@ Generated 2026-11-02 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Health.java](Health.md) | 403 | 20 | How much of the workforce is off sick this month. | 20 |
 | [Healthcare.java](Healthcare.md) | 968 | 55 | The city's healthcare service: what it costs, what it collects, and what it does with the dead. | 24 |
 | [HistoryGrapher.java](HistoryGrapher.md) | 115 | 1 |  | 1 |
-| [HistorySave.java](HistorySave.md) | 1,933 | 65 | Every month the city has ever lived, one number at a time. | 45 |
+| [HistorySave.java](HistorySave.md) | 1,997 | 69 | Every month the city has ever lived, one number at a time. | 45 |
 | [Household.java](Household.md) | 1,413 | 122 | Every household of one shape at one pay tier, as one ledger. | 39 |
 | [HouseholdAccounts.java](HouseholdAccounts.md) | 1,365 | 102 | The city's residents, treated as one household. | 14 |
 | [HouseholdBalance.java](HouseholdBalance.md) | 4,710 | 245 | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. | 55 |
@@ -185,11 +185,11 @@ Generated 2026-11-02 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [SalesTaxLedger.java](SalesTaxLedger.md) | 228 | 22 | The month's sales tax, as tax payable less input tax credits. | 5 |
 | [SaveCopy.java](SaveCopy.md) | 54 | 5 | The small copies a save's snapshot is made of: a list or map copied, with each element copied too where the elements can change. | 9 |
 | [SaveHeader.java](SaveHeader.md) | 102 | 18 | Just enough of a save to label it on the slot list. | 8 |
-| [SaveWriter.java](SaveWriter.md) | 269 | 19 | The one thread saves are written on, for the whole JVM: it takes a finished snapshot of a city and turns it into the save, the map and the history ... | 5 |
+| [SaveWriter.java](SaveWriter.md) | 289 | 20 | The one thread saves are written on, for the whole JVM: it takes a finished snapshot of a city and turns it into the save, the map and the history ... | 5 |
 | [SavedCities.java](SavedCities.md) | 256 | 19 | The player's other saved cities as the Rankings board reads them (spec-leaderboards 5, LB3): slots 1 to GameFiles.SLOT_COUNT of a GameFiles, read o... | 2 |
 | [SeaLanes.java](SeaLanes.md) | 210 | 15 | The sea lanes a map draws: every leg of every terminal's route once - a leg that many routes share, once - indexed by the district cells it reaches... | 4 |
 | [SeaRoutes.java](SeaRoutes.md) | 946 | 44 | Each sea terminal's route out to the world: found once on a grid of the sea at 480 m, pulled straight, sailed from the terminal's quay out to the o... | 6 |
-| [Sector.java](Sector.md) | 3,627 | 257 | One business in the city, and the template every sector extends. | 136 |
+| [Sector.java](Sector.md) | 3,636 | 257 | One business in the city, and the template every sector extends. | 136 |
 | [SectorBooks.java](SectorBooks.md) | 1,029 | 60 | A month of books for every business in the city, and last month's too. | 27 |
 | [SectorFlow.java](SectorFlow.md) | 261 | 17 | One business's month as a flow (0.7.30): what went in, what its plant made of it and what held the plant back, and what came out - each good's unit... | 4 |
 | [SectorState.java](SectorState.md) | 278 | 6 | One sector, as a save carries it. | 12 |

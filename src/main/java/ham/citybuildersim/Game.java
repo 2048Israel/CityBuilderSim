@@ -15716,19 +15716,20 @@ public class Game {
     /**
      * Fills the save from the city as it stands, asks the map for its bytes
      * and stamps it; everything save() did before it wrote anything. With
-     * {@code snapshot} the job holds copies of the save and the history (the
-     * autosave's, written on another thread); without, the live objects.
+     * {@code snapshot} the job holds a copy of the save and a copy of the history
+     * that is owed (the autosave's, written on another thread; see
+     * HistorySave.snapshotLater()); without, the live objects.
      */
     private SaveWriter.Job prepareSave(int slot, String slotName, boolean snapshot){
 
         byte[] mapBytes = fillSave(slotName);
 
         // The writing itself is SaveWriter.Job.write(): the save, its map, then the history.
-        // A snapshot is taken here, on the FX thread, because this is the only place the model is safe to read.
-        return new SaveWriter.Job(gameFiles, slot,
-                snapshot ? dataSave.snapshot() : dataSave,
-                snapshot ? historySave.snapshot() : historySave,
-                mapBytes);
+        // A snapshot of the save is taken here, on the FX thread, because this is the only place the model is safe to read.
+        // The history's is owed (GT1): the writer makes the copy as its first act, and the history makes it itself
+        // before its next change if the writer has not got there (HistorySave.snapshotLater()).
+        if (!snapshot) return new SaveWriter.Job(gameFiles, slot, dataSave, historySave, mapBytes);
+        return new SaveWriter.Job(gameFiles, slot, dataSave.snapshot(), historySave.snapshotLater(), mapBytes);
     }
 
     /**
