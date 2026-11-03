@@ -56,8 +56,8 @@ import java.util.stream.Stream;
  * kept for the next run, and for a run on another build, whose moves are then the same city's.
  *
  * WHAT IT PRINTS: the recording, the window's canvas, and for each move its heading, how long the view took to settle before
- * it, how long the move took (a glide: and how long its warm-up took, and whether that reached ReplayCamera.WARM_MOST_S,
- * the cap), and MoveTally.report().
+ * it, how long the move took to load (CM1: the views it walked, the Ready line's words, the heap after it) and to run,
+ * and MoveTally.report() for the run (the load's frames are not counted: the map is veiled while it loads).
  *
  * NOTHING OF JERUS'S IS TOUCHED. The cities are on GameFiles.scratch() folders, checked to lie under java.io.tmpdir and
  * deleted when the JVM exits; the replay's copy is on its own scratch folder (ReplayCity); the window's preferences are
@@ -107,7 +107,7 @@ public final class ReplayMoveProbe {
 
     /** The private members the probe reaches, found by bind() once the toolkit is up (a build that moved one fails there, naming it). */
     private static Field panKeys, canvasField;
-    private static Method replayMode, enter, applyView, requestDraw, replaySettled;
+    private static Method replayMode, enter, applyView, requestDraw;
 
     /** The window moved off every screen at the primary screen's size, then made visible: drawn as full screen would be, seen by nobody. */
     private static void offScreen(Stage s) {
@@ -129,7 +129,6 @@ public final class ReplayMoveProbe {
         enter = method(ReplayMode.class, "enter", Recording.class);
         applyView = method(MapView.class, "applyCameraView", CameraPath.View.class);
         requestDraw = method(MapView.class, "requestDraw");
-        replaySettled = method(MapView.class, "replaySettled");
     }
 
     public static void main(String[] args) {
@@ -385,14 +384,14 @@ public final class ReplayMoveProbe {
         });
     }
 
-    /** Waits, at most SETTLE_MAX_S, until MapView.replaySettled() has held over two looks 100 ms apart, and prints how long it took. */
+    /** Waits, at most SETTLE_MAX_S, until MapView.viewSettled() has held over two looks 100 ms apart, and prints how long it took. */
     private static void settle(String what) throws Exception {
         long t0 = System.nanoTime();
         int held = 0;
         while (true) {
             Thread.sleep(100);
             double s = (System.nanoTime() - t0) / 1e9;
-            boolean idle = fx(() -> (Boolean) call(replaySettled, map));
+            boolean idle = fx(() -> map.viewSettled());
             held = idle ? held + 1 : 0;
             if (held >= 2) {
                 report.printf("  %s settled in %.1f s%n", what, s);
@@ -420,19 +419,51 @@ public final class ReplayMoveProbe {
         move(heading, cam::glide, true);
     }
 
+    /** The most a move's load is waited for, in seconds, before the probe stops it and says so. */
+    private static final double LOAD_MAX_S = 900;
+
     /**
-     * Runs a move: the tally reset in the same FX task that starts it, then polled until the camera is idle (at most MOVE_MAX_S),
-     * and printed under its heading.
+     * Runs a move: started, its load waited for (at most LOAD_MAX_S) and printed, then run as a click runs it (the tally reset in the
+     * same FX task), polled until the camera is idle (at most MOVE_MAX_S), and printed under its heading. A move that does not reach
+     * Ready runs nothing.
      */
     private static void move(String heading, Runnable start, boolean glide) throws Exception {
         MapView.MoveTally tally = map.moveTally();
         long t0 = System.nanoTime();
         fx(() -> {
-            tally.reset();
             start.run();
             return null;
         });
         String phase = fx(() -> cam.phaseName());
+        while (phase.equals("LOAD")) {
+            Thread.sleep(25);
+            phase = fx(() -> cam.phaseName());
+            if ((System.nanoTime() - t0) / 1e9 >= LOAD_MAX_S) {
+                fx(() -> {
+                    cam.stop();
+                    return null;
+                });
+                phase = "LOAD TIMED OUT";
+                break;
+            }
+        }
+        double loadS = (System.nanoTime() - t0) / 1e9;
+        String words = fx(() -> cam.overlay());
+        int views = fx(() -> cam.planViews());
+        long heap = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) >> 20;
+        report.printf("%n=== %s ===%n", heading);
+        if (!phase.equals("READY")) {
+            report.printf("  the move did not reach Ready: %s after %.1f s (%d plan views); nothing run%n", phase, loadS, views);
+            return;
+        }
+        report.printf("  loaded in %.1f s, %d plan views, heap %d MB: %s%n", loadS, views, heap, words);
+        t0 = System.nanoTime();
+        fx(() -> {
+            tally.reset();
+            cam.run();
+            return null;
+        });
+        phase = fx(() -> cam.phaseName());
         boolean ran = !phase.equals("IDLE");
         boolean timedOut = false;
         while (!phase.equals("IDLE")) {

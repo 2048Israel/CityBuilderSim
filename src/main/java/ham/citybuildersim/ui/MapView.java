@@ -5623,6 +5623,12 @@ final class MapView {
      * on the globe in the GROUND tier the same for the plane's nodes near the city and every chart node in range. The PICTURE tier
      * lacks nothing.
      */
+    /** The view as it stands lacks nothing, outside a move: loadSettled() with nothing passed (ReplayMoveProbe's and ReplayCheck's wait for a still view). */
+    boolean viewSettled() { return loadSettled(NO_MOVE); }
+
+    /** A move with nothing passed and nothing kept, for viewSettled(). */
+    private static final MoveLoad NO_MOVE = new MoveLoad(0, 0, false);
+
     private boolean loadSettled(MoveLoad m) {
         if (tiles == null) return false;
         for (Long k : nodesAsked) if (!m.stuckNodes.contains(k)) return false;
