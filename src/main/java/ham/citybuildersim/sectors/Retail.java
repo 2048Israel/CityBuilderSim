@@ -692,19 +692,20 @@ public final class Retail extends Sector {
      * WITH NO RATE YET - no shops, nothing to throttle - a shop is planned at
      * full rate, as it was before: a rate of nothing would make every shop
      * add nothing, and the first would never be built.
+     *
+     * THE SHOPS ON SITE ARE SUPPLY (BA1, 2026-11-02). It held to one order of
+     * shops on site, as every sector did (BusinessInvestment's cap, gone); it
+     * may now order while shops are on site, and counts their coverage at the
+     * rate as baskets the shops will hand over (storeCoverageOnSite()), so a
+     * shortage the shops on site answer is not ordered again every month.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        // ...its shops' sites: a Filling Station on site is the forecourts' own order (0.7.83; planStations()).
-        if (buildings.underConstructionBySector(sector, t -> t.getCoverage() > 0 ? 1 : 0)
-                >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
 
         double rate = handOverRate();
-        double supply = getStoreCoverage() * rate;
+        double supply = (getStoreCoverage() + storeCoverageOnSite()) * rate;
         double atTheFloor = demandAt(game == null ? null : game.getHouseholdBalance(), getFloorPrice());
         double output = game.getBuildingOutputAtEveryPost();   // the sites' output, for the order's wait (0.7.17)
         Staffing staffingHold = null;
@@ -714,7 +715,8 @@ public final class Retail extends Sector {
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (t.getCoverage() <= 0) continue;
-            double months = plans.leadTime(t, 1, output) + BusinessInvestment.PLANNING_HORIZON;
+            double lead = plans.leadTime(t, 1, output);
+            double months = lead + BusinessInvestment.horizonFor(lead);
             // Capped at what the city could actually house - a plateaued city
             // otherwise forecasts its way to seventeen times the coverage
             // anyone can shop in - and the baskets grown with the people.
@@ -750,7 +752,7 @@ public final class Retail extends Sector {
             return BusinessInvestment.Decision.no(sector, "what the shops can hand over is ahead of what is wanted");
         }
 
-        int quantity = plans.orderSize(demandAtOpening - supply, best.getCoverage() * rate, best, output);
+        int quantity = plans.orderSize(demandAtOpening - supply, best.getCoverage() * rate, best);
         if (quantity <= 0) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
         // No more of them than the city could staff together (0.7.18).
         quantity = staffableCount(best, quantity);
@@ -906,6 +908,16 @@ public final class Retail extends Sector {
     /** ...and on site. */
     public int stationsOnSite() {
         return buildings == null ? 0 : (int) Math.round(buildings.underConstructionBySector(key(), t -> isStation(t) ? 1 : 0));
+    }
+
+    /** Litres a month the stations on site will sell at nameplate once they open (BA1, 2026-11-02; planStations()). */
+    public double stationLitresOnSite() {
+        return buildings == null ? 0 : buildings.underConstructionBySector(key(), BuildingsTemplate::pumpLitres);
+    }
+
+    /** Baskets the shops on site will cover at nameplate once they open, the stations' none (BA1, 2026-11-02; plan()). */
+    public double storeCoverageOnSite() {
+        return buildings == null ? 0 : buildings.underConstructionBySector(key(), t -> t.getCoverage() > 0 ? t.getCoverage() : 0);
     }
 
     /** Litres a month the standing stations sell at their typical throughput, at nameplate. */
@@ -1064,7 +1076,8 @@ public final class Retail extends Sector {
     public double litresForecast(BuildingsTemplate station, BusinessInvestment plans) {
         double litres = rPumpLitres + rQueueLitres;
         if (game == null || plans == null || station == null || population <= 0) return litres;
-        double months = plans.leadTime(station, 1, game.getBuildingOutputAtEveryPost()) + BusinessInvestment.PLANNING_HORIZON;
+        double lead = plans.leadTime(station, 1, game.getBuildingOutputAtEveryPost());
+        double months = lead + BusinessInvestment.horizonFor(lead);
         double projected = Math.min(population + plans.getPopulationGrowth() * months,
                 Math.max(population, plans.reachablePopulation()));
         return litres * projected / population;
@@ -1075,8 +1088,9 @@ public final class Retail extends Sector {
      * the drivers' litres outrun what its stations can sell. The litres are
      * last month's at the pump and past it, grown as the shops' baskets are
      * over the order's lead time and the planning horizon; the stations' at
-     * the operating rate, with TARGET_HEADROOM to spare. Staffed as a shop
-     * is, sized as a shop is; one station's site at a time. Asked apart from
+     * the operating rate, with TARGET_HEADROOM to spare, the stations on site
+     * counted with them (BA1, 2026-11-02: it was one station's site at a
+     * time). Staffed as a shop is, sized as a shop is. Asked apart from
      * the shops (Game's investment pass, as the bank's branch is), so a
      * station never holds a shop up.
      */
@@ -1087,12 +1101,8 @@ public final class Retail extends Sector {
             if (isStation(t) && (best == null || t.pumpLitres() > best.pumpLitres())) best = t;
         }
         if (best == null) return BusinessInvestment.Decision.no(sector, "no filling station in the catalogue");
-        if (stationsOnSite() >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "a filling station on site already");
-        }
         double rate = handOverRate();
-        double supply = stationLitres() * rate;
-        double output = game.getBuildingOutputAtEveryPost();
+        double supply = (stationLitres() + stationLitresOnSite()) * rate;
         double forecast = litresForecast(best, plans);
         if (!(forecast > supply * (1 + BusinessInvestment.TARGET_HEADROOM))) {
             return BusinessInvestment.Decision.no(sector, "the stations can sell what the drivers burn");
@@ -1102,7 +1112,7 @@ public final class Retail extends Sector {
         if (!(stationEarns(best, plans) > 0) || plans.getCostOf(best, 1) <= 0) {
             return BusinessInvestment.Decision.no(sector, "no wholesale petrol price to sell at");
         }
-        int quantity = plans.orderSize(forecast - supply, best.pumpLitres() * rate, best, output);
+        int quantity = plans.orderSize(forecast - supply, best.pumpLitres() * rate, best);
         if (quantity <= 0) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
         quantity = staffableCount(best, quantity);
         return new BusinessInvestment.Decision(sector, best, quantity,

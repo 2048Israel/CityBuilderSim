@@ -1769,19 +1769,17 @@ public final class Refining extends Sector {
     }
 
     /**
-     * Whether to build, and what (THE SPREAD PLANNER): one order in flight;
-     * of the refiners' buildings that pass the gates, the one that earns
-     * most on its cost; with none, ground if ground was all that stood in
-     * the way, else the best-fed candidate's refusal.
+     * Whether to build, and what (THE SPREAD PLANNER): of the refiners'
+     * buildings that pass the gates, the one that earns most on its cost, no
+     * crude unit while one is on site; with none, ground if ground was all
+     * that stood in the way, else the best-fed candidate's refusal. No order
+     * in flight is waited for (BA1, 2026-11-02; ONE ORDER IN FLIGHT, below).
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
         String sector = key();
-        // One order in flight, crude units on site aside (0.7.105, R3: ONE ORDER IN FLIGHT, below).
+        // No crude unit while one is on site (0.7.105, R3; ONE ORDER IN FLIGHT, below): the refiners' own count, kept in BA1.
         int crudeOnSite = crudeUnitsOnSite();
-        if (buildings.getUnderConstructionBySector(sector) - crudeOnSite >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
         Outlook o = outlook(plans);
         List<BuildingsTemplate> templates = new ArrayList<>(buildings.getTemplatesBySector(sector));
         if (crudeOnSite > 0) templates.removeIf(Refining::isCrudeUnit);
@@ -1838,6 +1836,14 @@ public final class Refining extends Sector {
      * however its sites are held (T1's nine sectors each wait behind a site
      * of their own, which counting only a sector's own orders would not
      * have freed either).
+     *
+     * BA1 (2026-11-02) took the one order off every sector (BusinessInvestment,
+     * EVERY BUSINESS MAY BUILD AHEAD), the refiners' with it: a conversion
+     * unit or a Tank Farm may be ordered while anything of theirs is on site.
+     * What is on site is counted in what the next is weighed against - the
+     * units on site in the feed and the crude of the outlook (outlook()), a
+     * Tank Farm on site in farmCandidate() - and the rule of one crude unit
+     * on site stays: it is a count of the units, not the cap on orders.
      */
 
     /** The crude units on site, anyone's order (R3). */
