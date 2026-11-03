@@ -984,9 +984,6 @@ public final class DistrictPlan {
     /** How many times the plan was made again with the way to a piece the buildings wall in kept clear of them (FW11, A PIECE BUILDINGS WALL IN; 0 for nearly every district), and the plots so kept clear in the plan returned. */
     public int wallTries, wallClear;
 
-    /** ...which plots (DM1: the way is kept the same from month to month, MapCheck 2h asks it): the plot indices of those kept clear, in order; empty for a plan with none. */
-    public int[] wallWay = new int[0];
-
     /** ...and the plots of buildings on a resource field's plots (SITE_FIELD) the ways found over all those plans crossed (LC3): what wallJoinable() refused until then, so a district with some was left with its piece apart; PlanCheck 18 counts the districts. */
     public int wallField;
 
@@ -1073,10 +1070,6 @@ public final class DistrictPlan {
             }
             p.wallTries = again;
             p.wallClear = b.nClear;
-            if (b.nClear > 0) {
-                p.wallWay = java.util.Arrays.copyOf(b.clearAt, b.nClear);
-                java.util.Arrays.sort(p.wallWay);
-            }
             p.wallField = b.wallField;
             return p;
         } finally {
@@ -1411,7 +1404,6 @@ public final class DistrictPlan {
         /** The plan of input `in` begun on this builder (KEPT): every array its plan reads of the ground filled afresh - what the constructor did until 0.7.93. */
         void start(Input in) {
             busy = true;
-            wallBatchBoxes = Integer.MAX_VALUE;
             this.in = in;
             this.proto = in.asPrototype;
             this.avOn = !proto && !in.latticeOnly;
@@ -2382,7 +2374,6 @@ public final class DistrictPlan {
             movedOff = movedOver = 0;
             // The road a move before the first event is placed on is the first batch's.
             evRoadNow = batchG + batchP + batchH;
-            int batchEnd = bPlaced;
             for (int e = 0; e < nEv; e++) {
                 // The runs this event's month has laid, and the buildings they lie across or beside moved off them (BUILDINGS MOVE OFF A RUN): before a
                 // departure too, so a plan made at a later month moves the same buildings to the same places.
@@ -2408,20 +2399,13 @@ public final class DistrictPlan {
             // Today's whole ground, for the streets to be joined on (THE GROUND BOUGHT).
             growGround(Integer.MAX_VALUE);
             // The boxes that remain, in the order placed.
-            int placed = 0, batchKept = 0;
-            int[] standingBefore = new int[bPlaced + 1];
+            int placed = 0;
             for (int k = 0; k < bPlaced; k++) {
-                standingBefore[k] = placed;
                 if (placedGone[k]) continue;
-                if (k < batchEnd) batchKept++;
                 if (placed != k) { placedX[placed] = placedX[k]; placedY[placed] = placedY[k]; placedW[placed] = placedW[k]; placedH[placed] = placedH[k]; placedT[placed] = placedT[k]; }
                 placed++;
             }
-            standingBefore[bPlaced] = placed;
-            // A cell opened in the events: the boxes that stand and were placed before it, which are the ones that stood when its streets were born.
-            for (int c = 0; c < CELLS; c++) cellBorn[c] = cellOpenBox[c] >= batchEnd ? standingBefore[cellOpenBox[c]] : 0;
             bPlaced = placed;
-            wallBatchBoxes = batchKept;
             placedGone = null;
             campusGen++;
             int squares = 0, boulevards = 0;
@@ -3054,9 +3038,6 @@ public final class DistrictPlan {
                 g0 = from.g;
                 i0 = from.i;
             }
-            // No cell is known to have opened in the events yet (THE WAY KEPT CLEAR, DATED BY WHEN THE PIECE WAS WALLED IN).
-            Arrays.fill(cellOpenBox, -1);
-            Arrays.fill(cellBorn, 0);
             // Each band's cells in the order opened (bMine): for the outer kinds, industry's first - its first bNShared - and
             // then their own (SHARED ESTATES).
             bMine = null;
@@ -3516,7 +3497,6 @@ public final class DistrictPlan {
             int ci = c % CELLS_A_SIDE, cj = c / CELLS_A_SIDE;
             int x0 = CELL * ci + 1, y0 = CELL * cj + 1, x1 = x0 + INTERIOR, y1 = y0 + INTERIOR;
             boolean across = hash.dir(ci, cj) < 0.5;
-            if (ev) cellOpenBox[c] = bPlaced;
             out.cellKind[c] = kind;
             out.cellAcross[c] = across;
             out.cellRank[c] = rank;
@@ -6477,65 +6457,12 @@ public final class DistrictPlan {
             return fx[a] == 0 || (!works(fx[a]) && !along(fx, a, horizontal));
         }
 
-        /*
-         * THE WAY KEPT CLEAR, DATED BY WHEN THE PIECE WAS WALLED IN (DM1, 2026-11-02). FW11 chose the way crossing the fewest plots of
-         * buildings, from the plan as the buildings stood with nothing yet kept clear, so every month's arrivals changed which way that
-         * was: on MapCheck's played city (FC1's builders' price on) the way kept clear was 6 plots in the month the wall came, 5 the month
-         * after and 20, then 22, four months on, as arrivals took the plots of the way the plan before had kept clear (the plan before is
-         * not what this one is made from: the ways are found on a plan that knows none). Each change moved the buildings first-fit gave those
-         * plots to the next lot, and the next lot's to the one after: 27 of 610 boxes stood elsewhere four months on, none on a run, where
-         * "what stands never moves" (CL3).
-         * Now a piece is walled in at a time, and the way costs only the buildings that stood then: a building that came after is not
-         * displaced, the plan keeps the way clear from the start, so it never lands there. The time is the later of two: when the piece was
-         * born (the cell whose streets are the latest of its plots was opened after that many boxes, cellBorn) and when the wall was
-         * complete (the latest arrival rank every way crosses a building of or before, the way that stayed open longest, found by a binary
-         * search over the ranks). A building's rank is its place in the order the boxes were placed (the first batch's all 0). The way is
-         * then the one crossing the fewest plots of buildings that stood by then, the shortest of those: the same way the month after,
-         * since the buildings that come later cost nothing and the ground does not change; it changes when the wall does (a piece joined
-         * by ground bought, another walled in) - and a piece born walled in by buildings that stand still displaces some of them, once.
-         */
-
-        /** The arrival rank of the building on each plot (rankArrivals(): 0 for the first batch's, the box's place in the order placed, from 1, after it), Integer.MAX_VALUE for a plot with none. */
-        int[] wallRank;
-
-        /** The first batch's boxes still standing, the first of the placed arrays: what ranks 0; every box when the plan has no events (set by the events' pass, start() resets it). */
-        int wallBatchBoxes = Integer.MAX_VALUE;
-
-        /** Each cell's boxes placed before it was opened in the events (-1: opened in the first batch's build, or never), and the same as arrival ranks once the boxes are placed in a row (cellBorn: 0 for a cell of the first batch). */
-        final int[] cellOpenBox = new int[CELLS], cellBorn = new int[CELLS];
-
-        /** wallRank filled from the placed boxes: for the walk of wallJoin(), when the plots a way crosses are told apart by when their buildings came. */
-        void rankArrivals() {
-            if (wallRank == null) wallRank = new int[AREA];
-            for (int p = 0; p < AREA; p++) wallRank[p] = occ[p] > 0 ? 0 : Integer.MAX_VALUE;
-            for (int k = 0; k < bPlaced; k++) {
-                int r = k < wallBatchBoxes ? 0 : k + 1;
-                for (int yy = placedY[k]; yy < placedY[k] + placedH[k]; yy++) {
-                    for (int xx = placedX[k]; xx < placedX[k] + placedW[k]; xx++) if (occ[yy * FRAME + xx] > 0) wallRank[yy * FRAME + xx] = r;
-                }
-            }
-        }
-
-        /** The rank of the last boxes placed before piece pc's latest cell was opened: boxes of that rank or before stood when the piece was born (0 where all its streets are the first batch's). */
-        int pieceBorn(int pc, int[] lab) {
-            int born = 0;
-            for (int i = pieceAt[pc]; i < nOrdered; i++) {
-                int p = ordered[i];
-                if (lab[p] != pc) continue;
-                int c = cellOfPlot(p % FRAME, p / FRAME);
-                if (c >= 0) born = Math.max(born, cellBorn[c]);
-            }
-            return born;
-        }
-
         /**
-         * One walk of wallJoin() from piece pc's plots, breadth first, to the first street of another piece, over the ground and the plots of
-         * buildings (wallJoinable()). Without `levels` only buildings of rank `least` or later may be crossed (is there a way that stayed
-         * open that long?). With `levels` any may, those of an earlier rank costing a level - the plots reached through the fewest of them
-         * come first, at most WALL_MOST of them - and a later building's plots nothing: the way is kept clear of it before it comes. That
-         * plot, the way back in prev; -1 for none.
+         * The walk of joinFromSmall()'s third way (FW11): from piece pc's plots, breadth first over the ground and the buildings' plots
+         * (wallJoinable()), the plots reached through the fewest buildings' plots first, to the first street of another piece. That plot,
+         * the way back in prev; -1 when none lies within WALL_MOST plots of buildings.
          */
-        int wallWalk(int pc, int[] lab, int[] prev, int least, boolean levels) {
+        int wallJoin(int pc, int[] lab, int[] prev) {
             int[] q = queue, next = pieceStack;
             int st = ++joinStamp;
             int qh = 0, qt = seedPiece(pc, lab, prev, q, st), nt = 0, level = 0, hit = -1;
@@ -6547,48 +6474,21 @@ public final class DistrictPlan {
                         int ax = ux + JOIN_DX[d], ay = uy + JOIN_DY[d];
                         if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
                         int a = ay * FRAME + ax;
-                        if (joinSeen[a] == st || (!levels && wallRank[a] < least) || !wallJoinable(a, JOIN_DY[d] == 0)) continue;
+                        if (joinSeen[a] == st || !wallJoinable(a, JOIN_DY[d] == 0)) continue;
                         joinSeen[a] = st;
                         prev[a] = u;
                         if ((str[a] || under[a]) && lab[a] != pc) { hit = a; break; }
-                        if (levels && wallRank[a] < least && occ[a] > 0) next[nt++] = a; else q[qt++] = a;
+                        if (occ[a] > 0) next[nt++] = a; else q[qt++] = a;
                     }
                 }
                 if (hit >= 0 || nt == 0 || ++level > WALL_MOST) break;
-                // The plots one more earlier building's plot away are the walk's front now.
+                // The plots one more building's plot away are the walk's front now.
                 System.arraycopy(next, 0, q, 0, nt);
                 qh = 0;
                 qt = nt;
                 nt = 0;
             }
             return hit;
-        }
-
-        /**
-         * The walk of joinFromSmall()'s third way (FW11): from piece pc's plots, over the ground and the buildings' plots (wallJoinable()),
-         * to the first street of another piece, by the way kept clear dated as THE WAY KEPT CLEAR, DATED BY WHEN THE PIECE WAS WALLED IN says:
-         * `least` the rank from which the buildings cost nothing - one past the piece's birth, or, when a way crosses only buildings of a
-         * later rank, the latest rank for which one does (a binary search over the ranks the plots hold) - then wallWalk() with the buildings
-         * before it counted. That plot, the way back in prev; -1 when none lies within WALL_MOST plots of buildings that stood.
-         */
-        int wallJoin(int pc, int[] lab, int[] prev) {
-            rankArrivals();
-            int least = pieceBorn(pc, lab) + 1;
-            if (wallWalk(pc, lab, prev, least, false) >= 0) {
-                boolean[] present = new boolean[bPlaced + 2];
-                for (int p = 0; p < AREA; p++) if (occ[p] > 0 && wallRank[p] > least && wallRank[p] != Integer.MAX_VALUE) present[wallRank[p]] = true;
-                int n = 0;
-                int[] ranks = new int[bPlaced + 2];
-                ranks[n++] = least;
-                for (int r = 0; r < present.length; r++) if (present[r]) ranks[n++] = r;
-                int lo = 0, hi = n - 1;
-                while (lo < hi) {
-                    int mid = (lo + hi + 1) >>> 1;
-                    if (wallWalk(pc, lab, prev, ranks[mid], false) >= 0) lo = mid; else hi = mid - 1;
-                }
-                least = ranks[lo];
-            }
-            return wallWalk(pc, lab, prev, least, true);
         }
 
         /** The way over the buildings from piece pc (wallJoin()), plot by plot, added to those make() keeps clear when it plans the district again (wallPend); none when the ground parts the piece. */

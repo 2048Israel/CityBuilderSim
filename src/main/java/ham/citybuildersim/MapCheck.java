@@ -488,13 +488,14 @@ public class MapCheck {
     static final int DRAWN_EVERY = 30;
 
     public static void main(String[] args) throws Exception {
-        // FC1: on FC1's model these cities build otherwise, and three checks meet a wall event, a street piece the buildings
-        // wall in whose way kept clear changes (DistrictPlan, A PIECE BUILDINGS WALL IN), which first-fit follows with boxes
-        // moved: 2d's arrivals four months on (9 boxes: a second piece born walled in at month 133), 2d's yard that goes (73:
-        // the wall the yard's ground cured is back) and 2h's reserve month (76 moved for 71 lying: the reserve re-routes a way).
-        // DM1 mended the other cause, the way worked out again from each month's arrivals (12 and 23 boxes moved four months
-        // on in 2h), and 2h asks that the way stays put; DM2 (docs/queue/DM2.md) dates the wall events in the sidecar. Until
-        // then sections 1 to 2h are checked on the city they were written on, FC1 off (BuildingManager.buildersShortOn).
+        // FC1: on FC1's model these cities build otherwise, and boxes that stand move in the plan when a street piece the
+        // buildings wall in changes its way kept clear (DistrictPlan, A PIECE BUILDINGS WALL IN), which first-fit follows
+        // with a cascade (the figures are of a city built without the Earth file): in section 2d the arrivals four months on
+        // (9 boxes: a second piece born walled in at month 133) and the yard that goes (73: the wall its ground cured is
+        // back), in 2h the reserve month (76 moved for 71 lying: the reserve re-routes a way) and four months on (12 and 23
+        // boxes, as the way is worked out again from each month's arrivals). The way needs dating in a journal (DM2,
+        // docs/queue/DM2.md; DM1 found that dating it from the replay alone moves boxes after a land purchase, SlopeCheck 9);
+        // until then sections 1 to 2h are checked on the city they were written on, FC1 off (BuildingManager.buildersShortOn).
         BuildingManager.buildersShortOn = false;
         boolean quietRun = Arrays.asList(args).contains("-q");
         if (quietRun) out = new PrintStream(new OutputStream() { @Override public void write(int b) { } }) {
@@ -2404,9 +2405,6 @@ public class MapCheck {
         Snap later = new Snap(m, d);
         int movedLater = after == null ? -1 : movedOf(after.boxes, later.boxes), onReserve = 0;
         for (PlanBox b : later.boxes) if (anyPlot(b, 0, p -> later.fixed[p] == DistrictPlan.FIXED_RESERVE)) onReserve++;
-        // ...the way kept clear for a street piece the buildings wall in (DM1): every plot kept clear in the reserve's month is kept clear still
-        int wayAfter = after == null ? -1 : after.plan.wallClear, wayLater = later.plan.wallClear, wayKept = 0;
-        if (after != null) for (int p : after.plan.wallWay) if (Arrays.binarySearch(later.plan.wallWay, p) >= 0) wayKept++;
         DistrictPlan.Input lastIn = m.planInput(d);
         int differ = after == null ? -1 : exactJournalDiffers(lastIn, before) + exactJournalDiffers(lastIn, after);
         // ----- the sidecar: the journal with the reserve in it written and read back -----
@@ -2439,8 +2437,6 @@ public class MapCheck {
                 + " boxes lie across, " + moved + " are not in the plan after", moved == lying && lying > 0);
         check("...where the reserve is undated (the journal as it was before UP5: the plots without a record) the plan moves more (" + control + " against " + lying + "), the fault this section stands against", control > lying);
         check("...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (" + onReserve + "), and none of those boxes has moved (" + movedLater + ")", onReserve == 0 && movedLater == 0);
-        check("...and the way kept clear for a street piece the buildings wall in stays put: the " + wayAfter + " plots kept clear in the month the reserve came are kept clear four months on (" + wayKept + " of them, " + wayLater
-                + " in all), not worked out again from each month's arrivals (DM1)", after != null && wayKept == wayAfter);
         check("...the journal worked back from today's reserve is the fixed ground the plan's input held in the months before and in the month it came (" + differ + " plots differ), and no plot's records were left out (" + m.journalDropped() + ")",
                 differ == 0 && m.journalDropped() == 0);
         check("the sidecar written after it and read back carries the journal with the reserve in it: the written map's records, the same plan (FORMAT " + CityMap.FORMAT + ")", back != null && journalRead);

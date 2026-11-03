@@ -31,15 +31,28 @@ should need no new statement; check it). So it is no small fix batch: Opus, with
 
 Done when: MapCheck is green with FC1 on - its `BuildingManager.buildersShortOn = false` at the top of `main()` and
 the `= true` after `reservesDated(city)` deleted, with their comment - the journal round trips in the sidecar, and
-the default playtest's trace is unchanged (the map is not the model's).
+SlopeCheck 9 and the playtest's layout watcher (LD2-D too) stay green, and the default playtest's trace is unchanged (the map is not the model's).
 
-What DM1 tried first, on `batch/DM1`'s history (not shipped): dating the way without a journal, from the replay alone (a
-piece's birth from the box count when its latest cell opened, the wall's completion from a binary search over the
-arrival ranks; the buildings after that cost nothing). It stops the drift in MapCheck 2h on a city built without the
-Earth file (6, 5, 20, 22 plots to the same plots; 27 moved boxes to 0), but SlopeCheck 9's Medellin run (Earth and
-world files named) moves 40 boxes of district (0,0) at m608 to m609: a land purchase re-formed the street pieces, the
-way jumped through boxes that stood, and those cost nothing under the dating. The replay cannot tell a new way from an
-old one; the journal can. Reuse `wallRank`/`rankArrivals`/`cellBorn` there, and ask SlopeCheck 9 and MapCheck 2h both.
-Also: with the Earth file named (the gate's) 2h's district has no walled piece, so 2h cannot show the drift; a fixture
-that causes a wall with arrivals after it (PlanCheck 18's `fieldBelt` with a `Log`, or PlanCheck 17's played city
-advanced a few months) is DM2's first slice.
+
+## What DM1 found and left for DM2
+
+1. **Dating from the replay alone does not work.** DM1 tried it (commit 77e40c87 on `batch/DM1`'s history, not shipped:
+   `Builder.wallRank`, `rankArrivals()`, `cellOpenBox`/`cellBorn`, `pieceBorn`, `wallWalk`, `wallJoin`): a piece's birth
+   from the box count when its latest cell opened, the wall's completion from a binary search over the arrival ranks,
+   the buildings after that costing nothing. It stops the drift in MapCheck 2h on a city built without the Earth file
+   (6, 5, 20, 22 plots to the same plots; 27 moved boxes to 0), but SlopeCheck 9's Medellin run (Earth and world
+   files named) moves 40 boxes of district (0,0) at m608 to m609: the district bought 320 plots, its street pieces
+   re-formed (a piece born at box 117 became one born at box 42), and the way jumped through boxes of rank 189, 203
+   and 204 that stood in the month before's final plan, which cost nothing under the dating. The replay cannot tell a
+   new way from an old one; the journal can. Reuse those pieces for dating the journal's entries; the walk costs
+   buildings by rank.
+2. **LD2-D, the same defect on LD2's path:** the playtest's "a building on the map moved", m3010 to m3013, 13 of
+   district (-1,-2)'s 1127 boxes (7 Lime Kilns, 6 Rod Mills); it passed at LD2's gate on Jerus's "Ship, fix next".
+   DM2 asks the playtest's layout watcher as well (LongPlaytest, THE MOVES), not only MapCheck.
+3. **The environment:** a batch session's `batch-check.sh` builds cities without the Earth and world files, unlike the
+   gate, so its MapCheck is red in 16 places on BD1's tip and its 2h shows a drift the gate's city does not have.
+   Run MapCheck, SlopeCheck and the playtest with `-Dcbs.earth=<main checkout>/data/earth-2.bin -Dcbs.world=<...>/world-1.bin`
+   (`JDK_JAVA_OPTIONS`, as the gate names them). With them, 2h's district has no walled piece, so 2h cannot show
+   the drift; the first slice is a fixture that causes a wall with arrivals after it (PlanCheck 18's `fieldBelt` with a
+   `Log`, or PlanCheck 17's played city advanced a few months with `LongPlaytest.run(g, 1)`), checked against the
+   unfixed planner so it bites.
