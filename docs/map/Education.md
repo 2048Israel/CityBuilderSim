@@ -1,6 +1,6 @@
 # Education.java - 1,098 lines · 60 methods · 7 constants · model
 
-`ham/citybuildersim/Education.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Education.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
 > Who the city teaches, what it costs, and why anybody bothers.
 > 

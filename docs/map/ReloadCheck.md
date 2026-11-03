@@ -1,6 +1,6 @@
 # ReloadCheck.java - 552 lines · 34 methods · 9 constants · harnesses
 
-`ham/citybuildersim/ReloadCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReloadCheck.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
 > Plays a city, saves it, loads the save into a second game, runs both a month
 > and compares what each would save: a reloaded city has to play its next

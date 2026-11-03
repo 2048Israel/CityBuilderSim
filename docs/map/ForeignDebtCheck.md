@@ -1,6 +1,6 @@
 # ForeignDebtCheck.java - 1,026 lines · 12 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
 > Borrowing in somebody else's money.
 > 
