@@ -5,6 +5,7 @@ import ham.citybuildersim.sectors.Mining;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -38,10 +39,15 @@ import java.nio.file.Path;
  * by a thousand in section 6 (B6, 0.7.47): the month's transit lines, the
  * riders at the same real fare, and the working rows' fixed bills.
  *
- * Section 7 (DZ1, 2026-11-02) is the trade by partner on bare PartnerTrade
- * objects, which need no world file: its history's rounding grid follows the
- * currency's unit, and a reform divides the month and the year held, the
- * finished years and the save's copy of them.
+ * Section 7 (DZ1, 2026-11-02) is the trade by partner. Its first part is on
+ * bare PartnerTrade objects, which need no world file: its history's rounding
+ * grid follows the currency's unit, and a reform divides the month and the year
+ * held, the finished years and the save's copy of them. Its second part is two
+ * cities on the repository's twelve-nation world fixture, one reformed in
+ * mid-year: the proof that Game wires the grid to the currency's unit and that
+ * Game.reformCurrency() divides the record, which the bare objects cannot show
+ * and which the twins of section 2 show only where the gate names the real
+ * world file.
  */
 public class DenominationCheck {
 
@@ -648,11 +654,19 @@ public class DenominationCheck {
                 in mid-year weighed one year's exports in two units. The twins
                 reform on a year's turn, which is why only the grid showed.
 
-           So this section is on bare PartnerTrade objects, which need no world
-           file: a plain record and its reformed copies, side by side, tallying
-           the same real trade, the copies' money divided by the factor.
+           So this section's first part is on bare PartnerTrade objects, which
+           need no world file: a plain record and its reformed copies, side by
+           side, tallying the same real trade, the copies' money divided by the
+           factor. Its second part is the Game's half: two cities on the
+           twelve-nation world fixture, one reformed in mid-year, to show that
+           Game hands the record the currency's unit (ensureWorldMarket()) and
+           divides it in a reform (reformCurrency()), the two lines the bare
+           objects cannot reach. The reform falls between two Januaries, so the
+           year held is in two units, and the next turn of the year is the
+           reformed city's first rounding on the new grid.
            ================================================================= */
         tradeByPartner();
+        tradeByPartnerInGame(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -712,7 +726,7 @@ public class DenominationCheck {
         return true;
     }
 
-    /** Section 7, on bare PartnerTrade objects. */
+    /** Section 7's first part, on bare PartnerTrade objects. */
     static void tradeByPartner() {
         out.println("\n--- the trade by partner: its history's grid follows the unit ---");
 
@@ -802,6 +816,211 @@ public class DenominationCheck {
         assertTrue("fixture: the save's copy holds the finished year", savedTables.size() == 1);
         close("a reform divides the save's trade by partner: its cells are the plain record's, divided",
                 cellGap(savedTables.get(0).cells(), plainCells, 1 / factor), 0, 1e-12);
+    }
+
+    /* ----------- section 7, second part: the Game's two lines, in a city ----------- */
+
+    /** The world seed of the second part's cities: ReadPathCheck's WN3 city's, so the fixture is one the repository already plays. */
+    static final long TRADE_WORLD_SEED = 2_026_102_8L;
+
+    /** The month of the year the reform is put in: July, the middle of the calendar year, six tallies behind it and five or six in front. */
+    static final int REFORM_MONTH_OF_YEAR = 7;
+
+    /** Section 7's second part: two cities on the twelve-nation world fixture, one reformed in mid-year (the file is named for the property while they play). */
+    static void tradeByPartnerInGame(Path root) throws Exception {
+        out.println("\n--- the trade by partner: a city on the world fixture, reformed in mid-year ---");
+        byte[] fixture = WorldDataCheck.resource(WorldData.FIXTURE);
+        assertTrue("fixture: the twelve-nation world file is beside the classes", fixture != null);
+        if (fixture == null) return;
+        Path file = root.resolve("world-fixture.bin");
+        Files.write(file, fixture);
+        // The gate names the real world file through -Dcbs.world, and the twins of section 2 have run on it: it is put back as it was found.
+        String named = System.getProperty(WorldData.PROPERTY);
+        try {
+            System.setProperty(WorldData.PROPERTY, file.toString());
+            reformedInMidYear(root);
+        } finally {
+            if (named == null) System.clearProperty(WorldData.PROPERTY);
+            else System.setProperty(WorldData.PROPERTY, named);
+        }
+    }
+
+    /** ReadPathCheck's WN3 city (120 houses, two convenience stores, a water treatment plant) on the fixture file, played until its trade by partner has finished a year. */
+    static Game worldCity(Path root, String name) {
+        Game g = new Game(new GameFiles(root.resolve(name + "-data"), root.resolve("no-legacy")));
+        quietly(() -> {
+            g.newGame(Founding.defaults().withWorldSeed(TRADE_WORLD_SEED));
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            g.buildStack(g.getBuildingManager().getTemplateByName("House"), 120, true);
+            g.buildStack(g.getBuildingManager().getTemplateByName("Convenience Store"), 2, true);
+            g.buildStack(g.getBuildingManager().getTemplateByName("Water Treatment Plant"), 1, true);
+            for (int m = 0; m < 20 && (g.partnerTradeForTest() == null || g.partnerTradeForTest().yearsFinished() < 1); m++) {
+                g.simulateMonths(1);
+            }
+        });
+        return g;
+    }
+
+    /** One month on both cities, quietly. */
+    static void monthOn(Game a, Game b) {
+        quietly(() -> { a.simulateMonths(1); b.simulateMonths(1); });
+    }
+
+    /** A city's live trade by partner, or null where it has none. */
+    static PartnerTrade tradeOf(Game g) { return g.partnerTradeForTest(); }
+
+    static double sum(double[] a) {
+        double s = 0;
+        for (double v : a) s += v;
+        return s;
+    }
+
+    /** Whether a finished year's table holds any trade in money. */
+    static boolean hasTrade(PartnerTrade.Table t) {
+        for (PartnerTrade.Cell c : t.cells()) if (c.valueOut() > 0 || c.valueIn() > 0) return true;
+        return false;
+    }
+
+    /** A worst gap measured, held to a band, and said on its line: the margin is there for a reader to see. */
+    static void gapWithin(String label, double gap, double band) {
+        boolean ok = gap <= band;
+        if (!ok) fails++;
+        out.printf("%-62s %s  (%.2g apart, %.0e allowed)%n", label, ok ? "OK" : "FAIL", gap, band);
+    }
+
+    /** The worst gap between the units of two lists of cells, relative to the expected; infinity where they are not the same cells. */
+    static double unitsGap(java.util.List<PartnerTrade.Cell> actual, java.util.List<PartnerTrade.Cell> expected) {
+        if (actual.size() != expected.size()) return Double.POSITIVE_INFINITY;
+        double worst = 0;
+        for (int i = 0; i < actual.size(); i++) {
+            PartnerTrade.Cell a = actual.get(i), e = expected.get(i);
+            if (a.good() != e.good() || a.nation() != e.nation()) return Double.POSITIVE_INFINITY;
+            worst = Math.max(worst, Math.max(gapOf(a.unitsOut(), e.unitsOut()), gapOf(a.unitsIn(), e.unitsIn())));
+        }
+        return worst;
+    }
+
+    /** The worst gap between the money of two records' state, the expected times `scale`: the month and the year to date by nation, the trade with no partner, and the year's cells. */
+    static double stateMoneyGap(PartnerTrade.State actual, PartnerTrade.State expected, double scale) {
+        double worst = Math.max(arrayGap(actual.exportValue, expected.exportValue, scale), arrayGap(actual.importValue, expected.importValue, scale));
+        worst = Math.max(worst, Math.max(arrayGap(actual.yearExportValue, expected.yearExportValue, scale),
+                arrayGap(actual.yearImportValue, expected.yearImportValue, scale)));
+        worst = Math.max(worst, Math.max(gapOf(actual.noPartnerExports, expected.noPartnerExports * scale),
+                gapOf(actual.noPartnerImports, expected.noPartnerImports * scale)));
+        return Math.max(worst, cellGap(actual.yearCells, expected.yearCells, scale));
+    }
+
+    /** The worst gap between the real figures of two records' state, nothing scaled: the tonnes by nation (month and year, cargo too) and the year's units. */
+    static double stateRealGap(PartnerTrade.State actual, PartnerTrade.State expected) {
+        double worst = Math.max(arrayGap(actual.exportTonnes, expected.exportTonnes, 1), arrayGap(actual.importTonnes, expected.importTonnes, 1));
+        worst = Math.max(worst, Math.max(arrayGap(actual.yearExportTonnes, expected.yearExportTonnes, 1),
+                arrayGap(actual.yearImportTonnes, expected.yearImportTonnes, 1)));
+        worst = Math.max(worst, Math.max(arrayGap(actual.cargoExportTonnes, expected.cargoExportTonnes, 1),
+                arrayGap(actual.cargoImportTonnes, expected.cargoImportTonnes, 1)));
+        return Math.max(worst, unitsGap(actual.yearCells, expected.yearCells));
+    }
+
+    /** The worst gap between the money of two lists of finished years, the expected times `scale`; infinity where they are not the same years. */
+    static double historyMoneyGap(java.util.List<PartnerTrade.Table> actual, java.util.List<PartnerTrade.Table> expected, double scale) {
+        if (actual.size() != expected.size()) return Double.POSITIVE_INFINITY;
+        double worst = 0;
+        for (int i = 0; i < actual.size(); i++) {
+            if (actual.get(i).year() != expected.get(i).year()) return Double.POSITIVE_INFINITY;
+            worst = Math.max(worst, cellGap(actual.get(i).cells(), expected.get(i).cells(), scale));
+        }
+        return worst;
+    }
+
+    /** ...and the units of them. */
+    static double historyUnitsGap(java.util.List<PartnerTrade.Table> actual, java.util.List<PartnerTrade.Table> expected) {
+        if (actual.size() != expected.size()) return Double.POSITIVE_INFINITY;
+        double worst = 0;
+        for (int i = 0; i < actual.size(); i++) worst = Math.max(worst, unitsGap(actual.get(i).cells(), expected.get(i).cells()));
+        return worst;
+    }
+
+    /**
+     * Two cities on the fixture world, identical until the reform, side by side: the reform is put in July of their second year, with the January
+     * behind it (a year turned, so the history holds a year in the old money) and the next in front (the turn that rounds the year held, half of it
+     * in each money, on the new grid).
+     */
+    static void reformedInMidYear(Path root) {
+        double factor = 100;
+        double band = 1e-12;
+        Game plain = worldCity(root, "trade-plain");
+        Game lopped = worldCity(root, "trade-lopped");
+
+        // 1. The fixture: two cities on the file, each with a market and a trade by partner that has seen a year turn, and trade in that year.
+        boolean ready = tradeOf(plain) != null && tradeOf(lopped) != null && plain.getWorldMarket() != null && lopped.getWorldMarket() != null
+                && tradeOf(plain).yearsFinished() == 1 && tradeOf(lopped).yearsFinished() == 1;
+        assertTrue("fixture: both cities have a world market and a trade by partner that has seen a year turn", ready);
+        if (!ready) return;
+        assertTrue("fixture: the two cities are the same city before the reform", same(plain, lopped));
+        PartnerTrade.Table first = tradeOf(plain).history().get(0);
+        assertTrue("fixture: the year behind them has trade (" + first.cells().size() + " cells), the same in both",
+                hasTrade(first) && historyMoneyGap(tradeOf(lopped).history(), tradeOf(plain).history(), 1) == 0);
+        out.printf("   the first year turned in %s%n", CityCalendar.shortMonthName(tradeOf(plain).month()));
+
+        // 2. Both on to July, with trade in the year held and in the month; the reform falls between two Januaries.
+        for (int m = 0; m < 12 && CityCalendar.monthOfYear(tradeOf(lopped).month()) != REFORM_MONTH_OF_YEAR; m++) monthOn(plain, lopped);
+        int reformMonth = tradeOf(lopped).month();
+        assertTrue("fixture: the reform falls in mid-year, not in a January (" + CityCalendar.shortMonthName(reformMonth) + ")",
+                CityCalendar.monthOfYear(reformMonth) == REFORM_MONTH_OF_YEAR && tradeOf(plain).month() == reformMonth);
+        PartnerTrade.State plainBefore = tradeOf(plain).toState();
+        java.util.List<PartnerTrade.Table> plainHistory = tradeOf(plain).history();
+        assertTrue("fixture: the year held has trade by then, and so has the month",
+                sum(plainBefore.yearExportValue) + sum(plainBefore.yearImportValue) > 0
+                        && sum(plainBefore.exportValue) + sum(plainBefore.importValue) + plainBefore.noPartnerExports + plainBefore.noPartnerImports > 0);
+        assertTrue("fixture: the two cities are still the same city", same(plain, lopped) && tradeOf(lopped).toState().year == plainBefore.year);
+        assertTrue("the reform took: a hundred old dollars to the new one",
+                force(lopped, factor) && Math.abs(lopped.getDenomination().getUnit() - factor) <= band * factor);
+
+        // 3. Right after it: the record is the plain one's, divided, and its real figures are the plain one's.
+        PartnerTrade.State after = tradeOf(lopped).toState();
+        double moneyGap = stateMoneyGap(after, plainBefore, 1 / factor);
+        double realGap = stateRealGap(after, plainBefore);
+        gapWithin("a reform in mid-year divides the month and the year held, by nation and with no partner", moneyGap, band);
+        gapWithin("...and leaves their tonnes and units as they were", realGap, band);
+        double historyGap = historyMoneyGap(tradeOf(lopped).history(), plainHistory, 1 / factor);
+        gapWithin("...and divides the years already finished (" + plainHistory.size() + " of them)", historyGap, band);
+        gapWithin("...and leaves their units as they were", historyUnitsGap(tradeOf(lopped).history(), plainHistory), band);
+        java.util.List<PartnerTrade.Table> savedPlain = plain.getHistorySave().getTradeByPartner();
+        java.util.List<PartnerTrade.Table> savedLopped = lopped.getHistorySave().getTradeByPartner();
+        assertTrue("fixture: the save's copy holds the finished year in both cities", savedPlain.size() == 1 && savedLopped.size() == 1);
+        gapWithin("...and the save's copy of them is divided too", historyMoneyGap(savedLopped, savedPlain, 1 / factor), band);
+        out.printf("   right after the reform the worst gaps: money %.2g, real %.2g, history %.2g%n", moneyGap, realGap, historyGap);
+
+        // 4. On to the next turn of the year: the first rounding on the new grid, with the half year before it in the old money divided.
+        for (int m = 0; m < 13 && tradeOf(lopped).yearsFinished() < 2; m++) monthOn(plain, lopped);
+        int turnMonth = tradeOf(lopped).month();
+        assertTrue("both cities finished a second year, in " + CityCalendar.shortMonthName(turnMonth),
+                tradeOf(lopped).yearsFinished() == 2 && tradeOf(plain).yearsFinished() == 2 && tradeOf(plain).month() == turnMonth);
+        if (tradeOf(lopped).yearsFinished() != 2 || tradeOf(plain).yearsFinished() != 2) return;
+        PartnerTrade.Table newestPlain = tradeOf(plain).history().get(1), newestLopped = tradeOf(lopped).history().get(1);
+        assertTrue("fixture: the year just finished has trade (" + newestPlain.cells().size() + " cells) and is the same calendar year in both",
+                hasTrade(newestPlain) && newestPlain.year() == newestLopped.year());
+        // What the old grid would have made of these cells: each plain figure divided, and rounded to the founding step.
+        double oldGrid = 0;
+        for (PartnerTrade.Cell c : newestPlain.cells()) {
+            for (double v : new double[] { c.valueOut(), c.valueIn() }) {
+                double want = v / factor;
+                oldGrid = Math.max(oldGrid, gapOf(Math.round(want * PartnerTrade.HISTORY_ROUND_MONEY) / PartnerTrade.HISTORY_ROUND_MONEY, want));
+            }
+        }
+        assertTrue(String.format("fixture: on the founding grid these cells would be %.3g apart, so the band below can tell the two grids apart", oldGrid),
+                oldGrid > 1e-6);
+        double newestMoney = cellGap(newestLopped.cells(), newestPlain.cells(), 1 / factor);
+        double newestUnits = unitsGap(newestLopped.cells(), newestPlain.cells());
+        gapWithin("the year finished on the new grid is the plain one's, divided", newestMoney, band);
+        gapWithin("...and its units are the plain one's", newestUnits, band);
+        gapWithin("...and so is every year behind it, the save's copy too",
+                Math.max(historyMoneyGap(tradeOf(lopped).history(), tradeOf(plain).history(), 1 / factor),
+                        historyMoneyGap(lopped.getHistorySave().getTradeByPartner(), plain.getHistorySave().getTradeByPartner(), 1 / factor)), band);
+        out.printf("   reformed in %s, the second year turned in %s: worst gaps money %.2g, units %.2g (founding grid: %.2g)%n",
+                CityCalendar.shortMonthName(reformMonth), CityCalendar.shortMonthName(turnMonth), newestMoney, newestUnits, oldGrid);
+
+        // 5. The city as a whole is still the same city.
+        sameCity(plain, lopped, factor, 1e-9);
     }
 
     /* ------------------------------ helpers ------------------------------ */

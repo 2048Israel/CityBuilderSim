@@ -34,7 +34,29 @@ the harness with FC1 off meanwhile.
 
 ## 2. What was built
 
-(filled at the review)
+- **PartnerTrade reads the unit.** `setMoneyUnit(DoubleSupplier)` (the unit at 1 until it is set), and the history's
+  grid is `HISTORY_ROUND_MONEY` times the unit: with the unit at 1 it multiplies by exactly 1.0, so no city that never
+  reformed moves. `Game.ensureWorldMarket()`, where the one PartnerTrade is made, hands it `denomination::getUnit`;
+  a load restores into that same record, and the Denomination is the Game's own for life, so the supplier follows.
+- **The reform divides the trade by partner.** `PartnerTrade.redenominate(scale)` divides the month's and the year's
+  money by nation, the no-partner figures, each (good, nation) cell and every finished year (`Table.scaled`), and
+  republishes the screen's snapshot; `Game.reformCurrency()` calls it beside `historySave.redenominate`, which now
+  divides its copy of the finished years too. Units and tonnes are left as they were.
+- **DenominationCheck** plays FC1's builders' price again (its `buildersShortOn = false` gone), holds the year and the
+  decade to 1e-9 as the month is (★), and has section 7: on bare PartnerTrade objects, a copy on the reformed unit
+  rounds as the plain one divided (1e-12), a copy left on the old unit is a step off, and a mid-year `redenominate`
+  divides the month, the year to date, the history and HistorySave's copy. Its second part is the Game's half, the
+  two lines the bare objects cannot reach: two cities on the repository's twelve-nation fixture (ReadPathCheck's WN3
+  city, the property put back as found, so section 2 still plays the gate's file), one reformed in July. Right after
+  the reform the record, the finished year and the save's copy are the plain city's divided (0.0 apart); at the next
+  January the year finished on the new grid is 2.1e-16 from the plain one's divided, its units bit-equal, where the
+  founding grid would put its cells 1.0 apart (they round to nothing); `sameCity` at 1e-9 holds to 2e-15.
+- Slices: PartnerTrade, HistorySave, Game's two lines and section 7's first part were one Sonnet 5.5 slice (xhigh);
+  the review changed one thing (the fixture's units tallied as the allocations' sums, 4 and 2, as the record's
+  contract has them). Section 7's second part was a second slice, taken as written: the slice mutated each of the
+  three wiring lines in turn (scratch copies, not the tree) and each turned the part red (Game's `setMoneyUnit`: 2
+  FAILs, 1.0 apart; Game's `redenominate`: 4, 99 apart; HistorySave's: 2, 99 apart). Its one counterfactual, the
+  founding grid's rounding written out in the harness, is there only to show the band can tell the grids apart.
 
 ## 3. The calls (★; each takes the recommended way)
 
