@@ -1,6 +1,6 @@
 # LandClassView.java - 187 lines · 16 methods · 1 constants · model
 
-`ham/citybuildersim/LandClassView.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandClassView.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
 > What the land office and the sector statements say about the CLASSES of ground (ET3, spec-earth2-terrain 5.3), in
 > words, worked out without a node: the office's prices for flat, foothill and steep ground, an offer's ground by

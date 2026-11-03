@@ -53,6 +53,17 @@ import java.util.regex.Pattern;
  *      played: no book, no points, no bill, the multiple exactly one.
  *   8. SAVED AND LOADED: the contractor's book and month come back from a save to the bit, and a city that never met
  *      the trap saves none of it.
+ *   9. A CANCEL IN THE TRAP (FC1b): the city's site ordered while he takes orders, cancelled in one of two twins, leaves
+ *      his book at the month's end by the points the order had left at the stop and nothing else of his month moves;
+ *      a restart while he still takes orders puts them on once, never twice; and a depot of the builders' that goes
+ *      first, which he never had on his book, takes none off it when it is cancelled.
+ *  10. A RUSH BESIDE THE CONTRACTOR (FC1b): in a month he builds beside the city's own crews, a rushed site's
+ *      overtime, its premium and the wages the city pays for it are struck on the part of its share the city's own
+ *      crews worked, not on his; he is paid for the points the sites took past the city's own month, the overtime
+ *      among it; and in a city with no contractor that part is the whole share, to the bit.
+ *  11. SAVED MID-TRAP, THE NEXT MONTH THE SAME: a trapped city saved and loaded plays the month after as the twin that
+ *      was never saved does - his book, points and bill, the builders' cash and order book, the points built, the
+ *      price of an order and whether he takes them, to the bit.
  *
  * Every fixture causes its condition. How often the trap is met in a real run is the ensemble's count (FC1.md).
  */
@@ -178,6 +189,9 @@ public class ConstructionTrapCheck {
         money(rows);
         Game never = never(root);
         saved(root, never);
+        cancelInTheTrap(root);
+        rushBesideTheContractor(root);
+        nextMonthTheSame(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -697,5 +711,292 @@ public class ConstructionTrapCheck {
         assertTrue("a city that never met the trap saves what it always saved: none of the contractor's keys",
                 !clean.contains("foreignBook") && !clean.contains("foreignPointsThisMonth") && !clean.contains("foreignBillThisMonth"));
         audited("in all");
+    }
+
+    /* ============================ 9. A CANCEL IN THE TRAP ============================ */
+
+    /** The Construction Depots the city orders in the trap: more points than the contractor is offered, so one is still on site when the month ends and the cancel has something to stop. */
+    static final int CITY_DEPOTS = 2;
+
+    /** The refund the month's stop made for the building of that name (ConstructionControl.Refund), or null when it stopped none. */
+    static ConstructionControl.Refund refundOf(Game g, String building) {
+        for (ConstructionControl.Refund r : g.getControlThisMonth().refunds) if (r.building().equals(building)) return r;
+        return null;
+    }
+
+    /** Two trapped cities that stand alike to the bit: the free points, the repairs, the queue, his book and the treasury's cash, and he takes orders in both. */
+    static void sameStart(String where, Game a, Game b) {
+        BuildingManager x = a.getBuildingManager(), y = b.getBuildingManager();
+        Construction cx = a.getSectors().construction(), cy = b.getSectors().construction();
+        assertTrue("fixture: the twins start the same " + where + ": the month, and the contractor takes orders in both",
+                a.getMonth() == b.getMonth() && x.foreignCrewsTakeOrders() && y.foreignCrewsTakeOrders());
+        bits("...the free points for the sites", a.getBuildingOutputAtEveryPost(), b.getBuildingOutputAtEveryPost());
+        bits("...the repairs", a.getMaintenancePoints(), b.getMaintenancePoints());
+        bits("...the queue", x.getRemainingConstructionPoints(), y.getRemainingConstructionPoints());
+        bits("...his book", cx.getForeignBook(), cy.getForeignBook());
+        bits("...and the treasury's cash", a.getCash(), b.getCash());
+    }
+
+    static void cancelInTheTrap(Path root) {
+        out.println("\n--- 9. a cancel in the trap: the order's points leave the contractor's book when it stops, and a restart puts them on once ---");
+        Game kept = trapped(root, "cancel-kept"), gone = trapped(root, "cancel-gone");
+        sameStart("at the trap", kept, gone);
+        BuildingManager bk = kept.getBuildingManager(), bg = gone.getBuildingManager();
+        Construction ck = kept.getSectors().construction(), cg = gone.getSectors().construction();
+        BuildingsTemplate university = template(kept, "University");
+        String key = ConstructionControl.keyOf(university);
+        double queueBefore = bk.getRemainingConstructionPoints(), bookBefore = ck.getForeignBook();
+        sites(kept);
+        sites(gone);
+        sameStart("with the sites ordered", kept, gone);
+        double onTheBook = ck.getForeignBook() - bookBefore;
+        out.printf("  the sites ordered in the trap: the queue %,.0f -> %,.0f, his book %,.0f -> %,.0f (the University is %,d points)%n",
+                queueBefore, bk.getRemainingConstructionPoints(), bookBefore, ck.getForeignBook(), university.getConstructionPoints());
+        assertTrue("fixture: the University is the city's own site, ordered while the contractor took orders (he takes them still)",
+                bg.isCitySite(key) && bg.foreignCrewsTakeOrders() && bk.foreignCrewsTakeOrders());
+        close("...and its points are on his book: the book gained what the queue gained, point for point", onTheBook,
+                bk.getRemainingConstructionPoints() - queueBefore, 1e-9);
+        assertTrue("...with more on it than the University's points", onTheBook >= university.getConstructionPoints());
+
+        assertTrue("the city cancels the University in one twin", gone.cancelSite(key, true) && bg.getControl().isCancelling(key)
+                && !bk.getControl().isCancelling(key));
+        List<Row> keptRows = new ArrayList<>(), goneRows = new ArrayList<>();
+        Row month = play(kept, keptRows), stoppedMonth = play(gone, goneRows);
+        ConstructionControl.Refund refund = refundOf(gone, university.getName());
+        assertTrue("fixture: the cancel stopped at the month's end, with points left on site, a depot served first it was not",
+                refund != null && refund.points() > 0 && refund.points() <= university.getConstructionPoints() && !refund.servedFirst());
+        assertTrue("...and the twin that kept it stopped nothing", refundOf(kept, university.getName()) == null);
+        ConstructionControl.Shell shell = bg.getControl().shellOf(university.getId());
+        assertTrue("...leaving its shell", shell != null && shell.buildings == refund.buildings());
+        out.printf("  the month in both: he built %,.0f points, billed %,.2f; the stop found %,.2f of the University's %,d points left;"
+                        + " his book %,.2f where it was kept, %,.2f where it was cancelled%n", month.points, month.bill, refund.points(),
+                university.getConstructionPoints(), ck.getForeignBook(), cg.getForeignBook());
+        bits("the month's advance was the same in both: the points the sites took", bg.getPointsBuilt(), bk.getPointsBuilt());
+        bits("...the contractor's points", stoppedMonth.points, month.points);
+        bits("...and his bill", stoppedMonth.bill, month.bill);
+        close("the Refund's points are the shell's: the University's points less the progress it kept", refund.points(),
+                shell.buildings * (double) university.getConstructionPoints() - shell.progress, 1e-9);
+        close("his book is the other twin's less the University's points left at the stop", cg.getForeignBook(),
+                ck.getForeignBook() - refund.points(), 1e-9);
+
+        // ...restarted while he takes orders: the shell's points go on his book once.
+        double stopped = cg.getForeignBook();
+        assertTrue("fixture: he still takes orders when the shell is restarted", bg.foreignCrewsTakeOrders());
+        boolean[] restarted = new boolean[1];
+        quietly(() -> restarted[0] = gone.restartShell(university.getId()));
+        assertTrue("fixture: the restart is booked, the University the city's own site again", restarted[0] && bg.isCitySite(key)
+                && gone.getBuildingManager().getControl().shellOf(university.getId()) == null);
+        out.printf("  restarted: his book %,.2f -> %,.2f, the twin that never cancelled %,.2f; the queue %,.0f against %,.0f%n", stopped,
+                cg.getForeignBook(), ck.getForeignBook(), bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints());
+        close("a restart puts its points on his book once: the book is the twin's that never cancelled", cg.getForeignBook(),
+                ck.getForeignBook(), 1e-9);
+        close("...by exactly the points the order had left", cg.getForeignBook() - stopped, refund.points(), 1e-9);
+        assertTrue("...and not the billed twice case: the twin's book plus the order's points, as before FC1b",
+                Math.abs(cg.getForeignBook() - (ck.getForeignBook() + refund.points())) > refund.points() / 2);
+        close("...and the queue is the twin's again", bg.getRemainingConstructionPoints(), bk.getRemainingConstructionPoints(), 1e-9);
+
+        cancelADepotFirst(root);
+        audited("including the cancel's twins");
+    }
+
+    /** A depot of the builders' ordered by the city and served first: he never had it on his book, so cancelling it takes nothing off. */
+    static void cancelADepotFirst(Path root) {
+        out.println("  a Construction Depot the city orders in the trap, served first as the builders' own, and cancelled:");
+        Game kept = trapped(root, "depot-kept"), gone = trapped(root, "depot-gone");
+        sameStart("at the trap", kept, gone);
+        sites(kept);
+        sites(gone);
+        BuildingManager bk = kept.getBuildingManager(), bg = gone.getBuildingManager();
+        Construction ck = kept.getSectors().construction(), cg = gone.getSectors().construction();
+        BuildingsTemplate depot = template(kept, DEPOT);
+        String key = ConstructionControl.keyOf(depot);
+        double bookBefore = ck.getForeignBook();
+        Game.BuildResult[] ordered = new Game.BuildResult[2];
+        quietly(() -> {
+            kept.setCashForTest(Founding.WEALTHY_CASH);
+            ordered[0] = kept.buildStack(template(kept, DEPOT), CITY_DEPOTS, false);
+            gone.setCashForTest(Founding.WEALTHY_CASH);
+            ordered[1] = gone.buildStack(template(gone, DEPOT), CITY_DEPOTS, false);
+        });
+        assertTrue("fixture: the city orders " + CITY_DEPOTS + " Construction Depots of its own in the trap, in both twins",
+                ordered[0] == Game.BuildResult.SUCCESS && ordered[1] == Game.BuildResult.SUCCESS && bk.foreignCrewsTakeOrders()
+                        && bk.underConstructionByName(DEPOT) == CITY_DEPOTS && bg.underConstructionByName(DEPOT) == CITY_DEPOTS
+                        && bg.isCitySite(key));
+        assertTrue("...served first, as the builders' own depots, in both twins", bk.goesFirst(depot, 0)
+                && bg.goesFirst(template(gone, DEPOT), 0) && bg.buildersOwnOnSite().contains(key) && bk.buildersOwnOnSite().contains(key));
+        bits("...and not on his book: the order left it as it was", ck.getForeignBook(), bookBefore);
+        Game.ForeignOffer offer = kept.foreignCrewsOffer();
+        assertTrue("fixture: the depots are more points than he is offered, and part of his offer: one is left unbuilt at the month's end",
+                offer.depotPoints() > 0 && offer.points() < CITY_DEPOTS * depot.getConstructionPoints());
+
+        assertTrue("the city cancels its depots in one twin", gone.cancelSite(key, true));
+        List<Row> keptRows = new ArrayList<>(), goneRows = new ArrayList<>();
+        Row month = play(kept, keptRows), stoppedMonth = play(gone, goneRows);
+        ConstructionControl.Refund refund = refundOf(gone, DEPOT);
+        out.printf("  the month in both: he built %,.0f points of the %,.0f offered; the stop found %,.2f of the depots' points left (served first: %s);"
+                        + " his book %,.2f kept, %,.2f cancelled%n", month.points, (double) offer.points(), refund == null ? 0 : refund.points(),
+                refund == null ? "no stop" : refund.servedFirst(), ck.getForeignBook(), cg.getForeignBook());
+        assertTrue("fixture: the cancel stopped a depot served first, with points left on site", refund != null && refund.servedFirst()
+                && refund.points() > 0);
+        assertTrue("fixture: he has a book to fall from, in both twins", ck.getForeignBook() > 0 && cg.getForeignBook() > 0);
+        bits("the month's advance was the same in both: his points", stoppedMonth.points, month.points);
+        bits("...and his bill", stoppedMonth.bill, month.bill);
+        bits("his book does not fall when the depot is cancelled: it is the twin's, a depot served first never having been on it",
+                cg.getForeignBook(), ck.getForeignBook());
+    }
+
+    /* ============================ 10. A RUSH BESIDE THE CONTRACTOR ============================ */
+
+    /** The overtime of the rushed site the month struck, with the plan it was struck in. */
+    static ConstructionControl.Overtime overtimeOf(Game g, String key) {
+        BuildingManager.Plan plan = g.getBuildingManager().getLastPlan();
+        return plan == null ? null : plan.overtimeOf(key);
+    }
+
+    static void rushBesideTheContractor(Path root) {
+        out.println("\n--- 10. a rush beside the contractor: overtime and its premium struck on the city's own crews' part of the share alone ---");
+        Game g = trapped(root, "rush");
+        sites(g);
+        BuildingManager bm = g.getBuildingManager();
+        Construction c = g.getSectors().construction();
+        int siteOutput = g.getBuildingOutput();
+        Game.ForeignOffer offer = g.foreignCrewsOffer(), again = g.foreignCrewsOffer();
+        assertTrue("fixture: the contractor builds this month (his offer is more than none) and the city's own crews have site output too",
+                offer.points() > 0 && siteOutput > 0);
+        assertTrue("...his offer read before the month is the same read twice, so reading it changes nothing",
+                again.points() == offer.points() && again.depotPoints() == offer.depotPoints()
+                        && Double.doubleToLongBits(again.pricePerPoint()) == Double.doubleToLongBits(offer.pricePerPoint()));
+        BuildingManager.Plan before = bm.plan(siteOutput + offer.points(), offer.points());
+        String key = null;
+        for (String k : bm.citySiteKeys()) {
+            if (key == null && before.shareOf(k) > 0 && before.shareOf(k) < before.owedOf(k)) key = k;
+        }
+        assertTrue("fixture: a city site whose share of the month is over none and under what it owes", key != null);
+        String rushed = key;
+        out.printf("  before the month: the city's own %,d points for the sites, his offer %,d; the plan's whole month %,.0f;"
+                        + " %s's share %,.2f of the %,.0f it owes%n", siteOutput, offer.points(), before.output, bm.nameOfSite(rushed),
+                before.shareOf(rushed), before.owedOf(rushed));
+        assertTrue("the city rushes it", g.rushSite(rushed, true) && bm.getControl().isRushed(rushed));
+        List<Row> rows = new ArrayList<>();
+        Row month = play(g, rows);
+        BuildingManager.Plan plan = bm.getLastPlan();
+        ConstructionControl.Overtime o = overtimeOf(g, rushed);
+        assertTrue("fixture: the month worked the rushed site on overtime, in a plan struck on the whole month: the city's points and his",
+                o != null && plan.output == siteOutput + offer.points());
+        double owed = plan.owedOf(rushed), overtimeOutput = ConstructionControl.overtimeOutput(o.month());
+        out.printf("  the month: share %,.3f, of it the city's own crews' %,.3f; work %,.3f (month %d on overtime, x%.4f); premium %,.4f at %.6f a point;"
+                        + " the treasury paid %,.4f%n", o.share(), o.own(), o.work(), o.month(), overtimeOutput, o.premium(), o.perPoint(),
+                g.getOvertimePaidThisMonth());
+        assertTrue("fixture: the contractor's crews worked part of the share: the city's own part is under the share and over none",
+                o.own() < o.share() && o.own() > 0);
+        assertTrue("fixture: overtime is more work than a normal month in this month of the rush, and the site did not finish on it",
+                overtimeOutput > 1 && o.work() < owed);
+        close("the city's own crews' part of the share is the share over the whole month, less his points, of it", o.own(),
+                o.share() * (plan.output - offer.points()) / plan.output, 1e-12);
+        assertTrue("fixture: the builders' wages a point are over none", o.perPoint() > 0);
+        close("the premium is the premium share of the wage bill on the city's own part alone, not on the share", o.premium(),
+                ConstructionControl.premiumShare() * o.own() * o.perPoint(), 1e-12);
+        assertTrue("...under what the whole share would have cost", o.premium() < ConstructionControl.premiumShare() * o.share() * o.perPoint());
+        close("the work is his part of the share as it is and the city's part on overtime, at most what the site owes", o.work(),
+                Math.min(owed, (o.share() - o.own()) + o.own() * overtimeOutput), 1e-12);
+        bits("...the plan's work for the site is the overtime's", plan.workOf(rushed), o.work());
+        close("the extra the month worked is the work over the share, the city's crews' hours alone", plan.overtimePoints,
+                o.work() - o.share(), 1e-12);
+        assertTrue("...under the extra the whole share would have worked", plan.overtimePoints < o.share() * (overtimeOutput - 1));
+        assertTrue("fixture: the builders were paid overtime this month", c.getOvertimeThisMonth() > 0);
+        bits("the builders' overtime is what the treasury paid", c.getOvertimeThisMonth(), g.getOvertimePaidThisMonth());
+        close("...the premium on the city's own part, with the builders' tax on it", g.getOvertimePaidThisMonth(),
+                o.premium() / (1 - Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, g.getEconomyManager().buildersSalesRate()))), 1e-9);
+        double pastTheCitysMonth = bm.getPointsBuilt() - (siteOutput + g.getControlThisMonth().overtimePoints);
+        out.printf("  the sites took %,.3f points in all: the city's own month %,d and its overtime %,.3f, and past them %,.3f;"
+                        + " he built %,.0f of his %,d and billed %,.2f%n", bm.getPointsBuilt(), siteOutput, g.getControlThisMonth().overtimePoints,
+                pastTheCitysMonth, month.points, offer.points(), month.bill);
+        bits("the month's extra points are the plan's", g.getControlThisMonth().overtimePoints, plan.overtimePoints);
+        close("he is paid for the points the sites took past the city's own month, its overtime among it (his offer, in full)",
+                month.points, Math.min(offer.points(), Math.max(0, pastTheCitysMonth)), 1e-9);
+        close("...which is what he was offered: the sites took the whole month", month.points, offer.points(), 1e-9);
+        // As section 4: the month restrikes its money constants at its top, so his price is the offer's read before it to a
+        // fraction of a percent, not to the bit.
+        close("...at FOREIGN_PRICE the base price of a point, his offer's price as the month struck it", month.bill,
+                month.points * offer.pricePerPoint(), 5e-3);
+
+        // ...and in a city with no contractor the whole share is the city's own: the month it always was.
+        Game calm = calm(root, "rush-calm");
+        BuildingManager bc = calm.getBuildingManager();
+        quietly(() -> {
+            calm.setCashForTest(Founding.WEALTHY_CASH);
+            calm.buildStack(template(calm, "University"), 1, false);
+        });
+        String calmKey = ConstructionControl.keyOf(template(calm, "University"));
+        int calmOutput = calm.getBuildingOutput();
+        BuildingManager.Plan calmBefore = bc.plan(calmOutput, 0);
+        assertTrue("fixture: the twin that never met the trap has no contractor at work, and the city's own crews have site output",
+                !bc.foreignCrewsTakeOrders() && calm.foreignCrewsOffer().points() == 0 && calmOutput > 0);
+        assertTrue("...and the University's share is over none and under what it owes", calmBefore.shareOf(calmKey) > 0
+                && calmBefore.shareOf(calmKey) < calmBefore.owedOf(calmKey));
+        assertTrue("the city rushes it there too", calm.rushSite(calmKey, true));
+        List<Row> calmRows = new ArrayList<>();
+        play(calm, calmRows);
+        ConstructionControl.Overtime co = overtimeOf(calm, calmKey);
+        assertTrue("fixture: the month worked the rushed site on overtime, and no contractor built in it",
+                co != null && calm.getSectors().construction().getForeignPointsThisMonth() == 0);
+        out.printf("  the twin with no contractor: share %,.3f, the city's own %,.3f; work %,.3f; premium %,.4f%n", co.share(), co.own(),
+                co.work(), co.premium());
+        bits("with no contractor the city's own part is the whole share, to the bit", co.own(), co.share());
+        bits("...the premium is the premium share of the wage bill on the share", co.premium(),
+                ConstructionControl.premiumShare() * co.share() * co.perPoint());
+        bits("...and the work is the share on overtime, at most what the site owes", co.work(),
+                Math.min(bc.getLastPlan().owedOf(calmKey), co.share() * ConstructionControl.overtimeOutput(co.month())));
+        audited("including the rush's twins");
+    }
+
+    /* ============================ 11. SAVED MID-TRAP, THE NEXT MONTH THE SAME ============================ */
+
+    static void nextMonthTheSame(Path root) throws Exception {
+        out.println("\n--- 11. saved mid-trap, the next month the same: the reloaded city plays the month as the twin that was never saved does ---");
+        Game g = trapped(root, "next");
+        sites(g);
+        List<Row> rows = new ArrayList<>();
+        play(g, rows);
+        play(g, rows);
+        Construction c = g.getSectors().construction();
+        assertTrue("fixture: saved mid-episode: a book, a month of points and a bill, and he takes orders still",
+                c.getForeignBook() > 0 && c.getForeignPointsThisMonth() > 0 && c.getForeignBillThisMonth() > 0
+                        && g.getBuildingManager().foreignCrewsTakeOrders());
+        quietly(() -> g.saveGame(SCRATCH_SLOT, "constructiontrapcheck-next"));
+        Game loaded = new Game(filesOf(root, "next"));
+        quietly(() -> loaded.loadGameSave(SCRATCH_SLOT));
+        // The fixture holds every sector (DeathCareFirstCheck.city()) so no planner builds but by this harness's hand; a hold is a
+        // harness lever and a save does not carry it (BusinessInvestment.holdSector()), so the reloaded city is held as the original is.
+        for (Sector s : loaded.getSectors().all()) loaded.getBusinessInvestment().holdSector(s.key());
+        BuildingManager bm = g.getBuildingManager(), bl = loaded.getBuildingManager();
+        Construction cl = loaded.getSectors().construction();
+        assertTrue("fixture: the save loaded", loaded.getMonth() == g.getMonth());
+        assertTrue("fixture: the reloaded city is held as the original is: no planner of either asks to build",
+                loaded.getSectors().all().stream().allMatch(s -> loaded.getBusinessInvestment().isHeld(s.key())
+                        && g.getBusinessInvestment().isHeld(s.key())));
+        bits("before the month: his book", cl.getForeignBook(), c.getForeignBook());
+        bits("...the builders' cash", loaded.getEconomyManager().getSectorCash(BUILDERS), g.getEconomyManager().getSectorCash(BUILDERS));
+        bits("...their order book's backlog points", cl.getBacklogPoints(), c.getBacklogPoints());
+        bits("...and its unearned revenue", cl.getUnearnedRevenue(), c.getUnearnedRevenue());
+        bits("...the price of an order", bl.orderPriceMultiplier(), bm.orderPriceMultiplier());
+        assertTrue("...and he takes orders in both", bm.foreignCrewsTakeOrders() && bl.foreignCrewsTakeOrders());
+
+        List<Row> original = new ArrayList<>(), reloaded = new ArrayList<>();
+        Row twin = play(g, original), back = play(loaded, reloaded);
+        out.printf("  the month after: the original built %,.0f points, billed %,.4f, the sites %,.3f in all, the book %,.2f;"
+                        + " the reloaded %,.0f, %,.4f, %,.3f, %,.2f%n", twin.points, twin.bill, bm.getPointsBuilt(), c.getForeignBook(),
+                back.points, back.bill, bl.getPointsBuilt(), cl.getForeignBook());
+        assertTrue("fixture: he built in the month, in the city that was never saved", twin.points > 0 && twin.bill > 0);
+        bits("the next month's contractor's book comes out the same in the reloaded city", cl.getForeignBook(), c.getForeignBook());
+        bits("...his points", back.points, twin.points);
+        bits("...his bill", back.bill, twin.bill);
+        bits("...the builders' cash", loaded.getEconomyManager().getSectorCash(BUILDERS), g.getEconomyManager().getSectorCash(BUILDERS));
+        bits("...their order book's backlog points", cl.getBacklogPoints(), c.getBacklogPoints());
+        bits("...and its unearned revenue", cl.getUnearnedRevenue(), c.getUnearnedRevenue());
+        bits("...the points the sites built", bl.getPointsBuilt(), bm.getPointsBuilt());
+        bits("...the price of an order", bl.orderPriceMultiplier(), bm.orderPriceMultiplier());
+        assertTrue("...and whether he takes orders", bl.foreignCrewsTakeOrders() == bm.foreignCrewsTakeOrders());
+        audited("including the reloaded city's");
     }
 }

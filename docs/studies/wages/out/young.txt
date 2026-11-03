@@ -1,0 +1,12 @@
+today-s0.csv   m24-240: dip=none 205/216, of which above the floor (one joined market) 33; college wage vs target: median -1.1%, >10% apart in 33 months
+today-s0.csv   m240-2400: dip=none 2116/2160, of which above the floor (one joined market) 0; college wage vs target: median -1.1%, >10% apart in 23 months
+today-s0.csv months 216: uni<col 0 (of which no sci/pol posts 0; at target 0); no sci/pol posts 123; dip=none 205; first inversion m- 
+today-s1.csv   m24-240: dip=none 205/216, of which above the floor (one joined market) 37; college wage vs target: median -0.3%, >10% apart in 35 months
+today-s1.csv   m240-2400: dip=none 1961/2160, of which above the floor (one joined market) 0; college wage vs target: median -1.3%, >10% apart in 13 months
+today-s1.csv months 216: uni<col 0 (of which no sci/pol posts 0; at target 0); no sci/pol posts 124; dip=none 205; first inversion m- 
+today-s2.csv   m24-240: dip=none 205/216, of which above the floor (one joined market) 57; college wage vs target: median -1.7%, >10% apart in 49 months
+today-s2.csv   m240-2400: dip=none 2160/2160, of which above the floor (one joined market) 0; college wage vs target: median -1.0%, >10% apart in 13 months
+today-s2.csv months 216: uni<col 0 (of which no sci/pol posts 0; at target 0); no sci/pol posts 125; dip=none 205; first inversion m- 
+today-s3.csv   m24-240: dip=none 203/216, of which above the floor (one joined market) 41; college wage vs target: median +0.3%, >10% apart in 39 months
+today-s3.csv   m240-2400: dip=none 2121/2160, of which above the floor (one joined market) 0; college wage vs target: median -1.1%, >10% apart in 0 months
+today-s3.csv months 216: uni<col 19 (of which no sci/pol posts 0; at target 15); no sci/pol posts 116; dip=none 203; first inversion m149 e.g. m149: col 0.2478 uni 0.2469 floor 0.102 mult_uni 1.09 mult_col 2.14 posts_uni 9.57 p_doc 4

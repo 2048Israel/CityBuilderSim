@@ -945,9 +945,15 @@ public class DataSave implements Cloneable {
         buildings[index] = quantity;
     }
     
+    /**
+     * The one Gson the two loan lists below go through (GT1, 2026-11-02): a new Gson per fill had to build its reflective
+     * adapters for Debt and BusinessDebt again each time, about half a millisecond of the month that autosaves, on the
+     * clock. Gson is thread-safe and its adapters are the same, so the JSON is.
+     */
+    private static final Gson LOANS_GSON = new Gson();
+
     public void setDebt(List<Debt> debts) {
-        Gson gson = new Gson();
-        this.debts = gson.toJsonTree(debts).getAsJsonArray();
+        this.debts = LOANS_GSON.toJsonTree(debts).getAsJsonArray();
     }
     
     public void setProgress(double[] progress){
@@ -2396,13 +2402,16 @@ public class DataSave implements Cloneable {
     private double[] labour;
 
     /**
-     * The posts per wage band the staffing gate refused this month that the labour market prices next month as if they
-     * were offered (LD1; WantedPosts).
+     * The posts per wage band the staffing gate refused this month that the labour market prices as if they were
+     * offered (LD1; WantedPosts).
      *
-     * A FLOW, AND A LAGGED ONE. The asks are made while the month's businesses plan, and the posts they settle into
-     * are added to the posts the wage is priced on in the next month's reprice. Nothing in the state a month ended in
-     * reproduces them - the refusals are gone with the plans - so a reloaded city that forgot them would price its
-     * next month on fewer posts than the live one, and the two would part by a wage step.
+     * A FLOW, SAVED FOR WHAT SHOWS IT. The asks are made while the month's businesses plan, and the posts they settle
+     * into are added to the posts the wage is priced on in the same month's reprice (Game.repriceLabour(), later in
+     * the same nextMonth()); the next month's settle replaces them before the next reprice reads them, so the saved
+     * posts never reach a wage. They are read between a load and that settle, by the People screen's caption
+     * (PeopleScreen.wantedNote()). Nothing in the state a month ended in reproduces them - the refusals are gone with
+     * the plans - so a reloaded city that forgot them would show none until its first month played (LD2: LD1 said they
+     * were priced next month, which they are not).
      */
     private double[] wantedPosts;
 
@@ -2659,8 +2668,7 @@ public class DataSave implements Cloneable {
     }
 
     public void setBusinessDebt(List<BusinessDebt> loans) {
-        Gson gson = new Gson();
-        this.businessDebts = gson.toJsonTree(loans).getAsJsonArray();
+        this.businessDebts = LOANS_GSON.toJsonTree(loans).getAsJsonArray();
     }
 
     public JsonArray getBusinessDebt(){

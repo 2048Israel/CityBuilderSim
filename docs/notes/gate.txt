@@ -1,11 +1,22 @@
-# gate of Merge batch/LC3: **It brings the nations to players** (IR1, 2026-11-01: 0.9.0 went to itch.io without world-1.bin, on Jerus's "Push 0.9.0 without nations (Recommended)", since the file's IMF paths allow no commercial use); with it, `Build EXE.bat` copies data\world-1.bin beside the exe and get-earth fetches "world-1", and the next itch build carries the nations. world-1.bin baked again without the IMF's figures: the paths' CPI (ILOSTAT's, else the Bank's GDP deflator) and the annual rate where the BIS has none (PWT 11.0, then the Bank's GDP in local money over its GDP in US$); the fixture re-cut, the release asset, world-2025.json re-made on it (recommended next, LC1 ★4); then the `world-1` release published from the re-baked file, as WN0's notes §2 give it (WN0-R; Jerus, 2026-10-31: "After LC3 (Recommended)"), 0.9.1
-# date: 2026-11-02
+# gate of Merge batch/LD2: the wanted posts' bounds and comments after LD1: the timing described as it runs (and WantedPostsCheck 9 stepping a real month), the 1.41x cap clamped on this month's posts, lower bands kept off the asking band's carry, a band closed to migrants asking nothing; from the stranger's review at LD1's gate; and a hands-off city's bank failing in 3-4 of 12 seeds since LD1 (EP1 notes §8), 0.9.5
+# date: 2026-11-03
 # earth-2.bin: named
-# suite: 169 harnesses run in 2454s: 169 passed, 0 failed
-# timing: 15 harnesses run in 436s: 13 passed, 2 failed; its red lines were judged side by side with main's, below
+# nightly: 2026-11-02 20:53 0.9.2 5602c6d0 4,000 months: OK in 212 s
+# suite: 170 harnesses run in 1887s: 170 passed, 0 failed
+# timing: 15 harnesses run in 813s: 11 passed, 4 failed; its red lines were judged side by side with main's, below
+# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): EarthTerrainCheck | the Earth screen: 198 tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS FAIL  88.8 ms (0.448 a tile), 17,690 buildings; the first time, its plans made, 1072 ms; the square city 121 districts a side, laid in 35037 ms; the screen 3% sea, 4% fresh   [main 46.6 ms, batch 55.8 ms (+19.8%), budget 80 ms: the batch within the budget]
+# timing red not the batch's (paired): EarthTerrainCheck | the cells pass in no more than CELLS_PASS_MS of the wall clock, its tiles read from the file the first time FAIL  1114 ms of the wall clock (this JVM cannot read a thread's CPU finely enough) the first time (1114 on the wall clock), 863 again (863 on the wall clock); the study 370-450 on the wall clock   [main 399 ms, batch 449 ms (+12.6%), budget 1000 ms: within 15% of main's]
+# timing red not the batch's (paired): EarthTerrainCheck | 2 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 26.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.4 ms, batch 27.0 ms (-1.8%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 61.0 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.5 ms, batch 28.0 ms (-5.2%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.33 ms, batch 4.38 ms (+1.1%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.72 ms, batch 3.93 ms (-16.8%), budget 5 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 18.8 ms, batch 18.4 ms (-1.9%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | 2 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | exit 3   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the kept month is within KEPT_MONTH_MS (12.0 ms)                         FAIL   [main 4.66 ms, batch 5.56 ms (+19.5%), budget 12 ms: the batch within the budget]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 4.91 ms, batch 5.12 ms (+4.2%), budget 8 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | the kept City History month is within KEPT_HISTORY_MS (13.0 ms)          FAIL   [main 5.2 ms, batch 4.76 ms (-8.4%), budget 13 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | 3 FAILED   [the harness's own count of the timing reds above]

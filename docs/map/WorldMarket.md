@@ -1,6 +1,6 @@
 # WorldMarket.java - 2,023 lines · 127 methods · 31 constants · model
 
-`ham/citybuildersim/WorldMarket.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMarket.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
 > The world market: each traded good's price in each of the 196 nations on a
 > smooth spatial equilibrium (a CES gravity model), solved once a year, and
@@ -46,7 +46,7 @@
 
 **Uses:** [Good](Good.md) (28), [WorldData](WorldData.md) (15), [Nations](Nations.md) (13), [World](World.md) (3), [Freight](Freight.md) (1)
 
-**Used by (16):** [CallPartners](CallPartners.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapView](MapView.md), [Markets](Markets.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnerTrade](PartnerTrade.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
+**Used by (17):** [CallPartners](CallPartners.md), [DenominationCheck](DenominationCheck.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [MapView](MapView.md), [Markets](Markets.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnerTrade](PartnerTrade.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 

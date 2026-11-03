@@ -1,4 +1,4 @@
-# FC1 - Builders short: the price of a point rises, and foreign crews come when none are free ({next}, 2026-11-02)
+# FC1 - Builders short: the price of a point rises, and foreign crews come when none are free (0.9.2, 2026-11-02)
 
 Jerus's report on his own city (2026-11-01, `docs/queue/FC1.md`): every crew repairing, nothing built, no way out.
 The month's repairs take the builders' points before the sites (`Game.getBuildingOutput()`); when they take them

@@ -1,6 +1,6 @@
 # WorldData.java - 1,179 lines · 109 methods · 23 constants · model
 
-`ham/citybuildersim/WorldData.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldData.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
 > The reader of world-1.bin, the nations' world as data: the 196 nations and
 > the areas no nation holds, their borders (an owner a 15" cell, and the
@@ -52,7 +52,7 @@
 
 **Uses:** [Freight](Freight.md) (10), [EarthData](EarthData.md) (8), [Money](Money.md) (5), [PriceLevel](PriceLevel.md) (2), [CityCalendar](CityCalendar.md) (1)
 
-**Used by (29):** [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LandFactors](LandFactors.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandTable](LandTable.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [Nations](Nations.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [RankingsCheck](RankingsCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMeasuresCheck](WorldMeasuresCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md)
+**Used by (30):** [DenominationCheck](DenominationCheck.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LandFactors](LandFactors.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandTable](LandTable.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [Nations](Nations.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [RankingsCheck](RankingsCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMeasuresCheck](WorldMeasuresCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 

@@ -1,0 +1,12 @@
+CreditHousingTiming, 2026-11-02, on Jerus's PC (20 threads) with five other sessions running: the CPU stood at 100%, so absolute times are high; each table's two columns ran under the same load.
+
+--- 1. the kernel a month, median of 7 rounds of 1,000 months after 2,000 to warm ---
+     78 cells: cards + homes    602.5 us, with the three medians   1336.6 us (sink 5.41e+05)
+    390 cells: cards + homes   2887.4 us, with the three medians   6646.6 us (sink 7.59e+05)
+  1,560 cells: cards + homes  11965.5 us, with the three medians  26620.7 us (sink 1.03e+06)
+--- 1b. as designed: the price by false position, the medians off a 32-point grid ---
+     78 cells: cards + homes    201.9 us, with the medians    431.2 us; grid against bisection: card -0.03%, mortgage -0.02%
+    390 cells: cards + homes    877.1 us, with the medians   1635.2 us; grid against bisection: card +0.02%, mortgage +0.08%
+  1,560 cells: cards + homes   3245.8 us, with the medians   8251.4 us; grid against bisection: card -0.03%, mortgage -0.23%
+--- 2. a real month (an earlier run of the same file, before owners' exits were added to the kernel; the kernel's own first figures were 409 us / 1,221 us at 78 cells) ---
+  month 1,260, population 334,245, 78 household cells: a month takes 28.68 ms (median of 60; the run took 75 s)

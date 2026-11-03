@@ -5322,6 +5322,15 @@ public class BuildingManager {
      * pretending that path is live.
      */
     public java.util.List<Completion> advanceConstruction(int constructionOutput) {
+        return advanceConstruction(constructionOutput, 0);
+    }
+
+    /**
+     * ...with `foreignPoints` of the month the foreign contractor's (FC1b; SimulationEngine passes his offer): the
+     * sites take the whole month as before, and a rushed site's overtime is struck on the city's own crews' part of
+     * its share alone (plan()).
+     */
+    public java.util.List<Completion> advanceConstruction(int constructionOutput, int foreignPoints) {
 
         java.util.List<Completion> finished = new java.util.ArrayList<>();
         materialsDue = 0;
@@ -5348,7 +5357,7 @@ public class BuildingManager {
             // builders' own depots off the top of the month, with that death
             // care beside them (0.7.130, THE BUILDERS' OWN DEPOTS FIRST).
             boolean planned = engaged || !deathCareFirst().isEmpty() || !buildersOwnOnSite().isEmpty();
-            if (planned) plan = lastPlan = plan(constructionOutput);
+            if (planned) plan = lastPlan = plan(constructionOutput, foreignPoints);
             double[] share = planned ? plan.work : siteShares(constructionOutput);
             for (int k = 0; k < stacks.size(); k++) {
                 BuildingsStacks stack = stacks.get(k);
@@ -5533,7 +5542,14 @@ public class BuildingManager {
      * changes nothing - the construction page shows it, the advance applies
      * it.
      */
-    public Plan plan(double siteOutput) {
+    public Plan plan(double siteOutput) { return plan(siteOutput, 0); }
+
+    /**
+     * ...with `foreignPoints` of `siteOutput` the foreign contractor's (FC1b): the shares are the whole month's, and a
+     * rushed site's overtime is struck on the city's own crews' part of its share alone - the month's own points over
+     * all of them, his crews spread over the sites as the month is (Overtime.own()).
+     */
+    public Plan plan(double siteOutput, double foreignPoints) {
         int n = stacks.size();
         java.util.List<ConstructionControl.Demolition> demolitions = control.demolitions();
         int d = demolitions.size();
@@ -5595,16 +5611,22 @@ public class BuildingManager {
         java.util.List<ConstructionControl.Overtime> overtime = new java.util.ArrayList<>();
         double extra = 0;
         double perPoint = buildersWages == null ? 0 : Math.max(0, buildersWages.perPointToday());
+        // The city's own crews' part of the month (FC1b): exactly one with no contractor beside them, so such a month
+        // is worked to the bit as it always was.
+        double ownPart = foreignPoints > 0 && siteOutput > 0
+                ? Math.max(0, Math.min(1, (siteOutput - foreignPoints) / siteOutput)) : 1;
         for (ConstructionControl.Rush r : control.rushes()) {
             if (!r.on || !city.contains(r.key)) continue;
             int i = keys.indexOf(r.key);
             // A month whose share already finishes the site, or that gives it
-            // no crews, is not worked on overtime.
-            if (i < 0 || !(share[i] > 0) || share[i] >= owed[i]) continue;
+            // no crews of the city's own, is not worked on overtime.
+            double own = i < 0 ? 0 : share[i] * ownPart;
+            if (i < 0 || !(share[i] > 0) || share[i] >= owed[i] || !(own > 0)) continue;
             int month = r.months + 1;
-            work[i] = Math.min(owed[i], share[i] * ConstructionControl.overtimeOutput(month));
+            // Only the city's crews work the extra hours: the contractor's part of the share is worked as it is.
+            work[i] = Math.min(owed[i], (share[i] - own) + own * ConstructionControl.overtimeOutput(month));
             overtime.add(new ConstructionControl.Overtime(r.key, nameOfSite(r.key), month, share[i], work[i],
-                    perPoint, ConstructionControl.premiumShare() * share[i] * perPoint));
+                    perPoint, ConstructionControl.premiumShare() * own * perPoint, own));
             extra += work[i] - share[i];
         }
         return new Plan(keys, siteOutput, owed, rule, share, work, overtime, extra,
@@ -6143,11 +6165,13 @@ public class BuildingManager {
             if (control.paving() > 0 && ConstructionControl.PAVE_TO.equals(t.getName())) continue;
             double pointsLeft = Math.max(0, s.getUnderConstruction() * (double) t.getConstructionPoints()
                     - s.getConstructionProgress());
+            // ...read while it is still on site: a depot served first was never on the contractor's book (FC1b).
+            boolean servedFirst = goesFirst(t, 0);
             double[] stopped = s.stopForShell();
             control.endRun(t.getId());
             ConstructionControl.Shell shell = control.addShell(t, (int) stopped[0], stopped[1], stopped[2], 0);
             controlEvents.refunds.add(new ConstructionControl.Refund(t.getId(), t.getName(), (int) stopped[0],
-                    stopped[3], stopped[4], pointsLeft, shell));
+                    stopped[3], stopped[4], pointsLeft, shell, servedFirst));
         }
         control.clearCancelling();
     }

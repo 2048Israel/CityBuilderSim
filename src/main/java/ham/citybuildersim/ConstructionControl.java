@@ -860,13 +860,23 @@ public final class ConstructionControl {
        THE MONTH'S EVENTS, for Game to settle. A month's flows, read once.
        --------------------------------------------------------------------- */
 
-    /** A rushed site worked on overtime this month: its share, its work, the builders' wage bill a point it was struck at, and the premium on its crews, before the tax. */
+    /**
+     * A rushed site worked on overtime this month: its share, its work, the builders' wage bill a point it was struck
+     * at, the premium on its crews, before the tax, and the part of its share the city's own crews worked (FC1b): the
+     * overtime and its premium are struck on that part alone, the whole share but in a month the foreign contractor
+     * built beside them, whose crews are not the city's to rush.
+     */
     public record Overtime(String key, String building, int month, double share, double work, double perPoint,
-                           double premium) { }
+                           double premium, double own) { }
 
-    /** An order stopped at the month's end: what comes back to the city, the material allowance in it, the points of work it was for, and the shell it left. */
+    /**
+     * An order stopped at the month's end: what comes back to the city, the material allowance in it, the points of
+     * work it was for, the shell it left, and whether it was a depot of the builders' served first
+     * (BuildingManager.goesFirst()), whose points the foreign contractor builds as theirs and never had on his book
+     * (FC1b; Construction.bill()).
+     */
     public record Refund(int templateId, String building, int buildings, double value, double allowance,
-                         double points, Shell shell) { }
+                         double points, Shell shell, boolean servedFirst) { }
 
     /**
      * A demolition finished this month - and, once Game has sold it, its

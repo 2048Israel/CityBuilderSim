@@ -1334,6 +1334,8 @@ public class Game {
             String[] names = new String[made.nationCount()];
             for (int i = 0; i < names.length; i++) names[i] = made.name(i + 1);
             PartnerTrade trade = new PartnerTrade(made.nationCount());
+            // The history's grid in the money of the day, read live (DZ1): a reform changes the unit, and the grid follows it.
+            trade.setMoneyUnit(denomination::getUnit);
             trade.setPlace(standLat, standLon, names);
             partnerTrade = trade;
             worldMarket = made;
@@ -3269,7 +3271,8 @@ public class Game {
                         sectorInvestor(sector.key()), STATIONS_SLOT);
             }
         }
-        // ...and the month's refusals for want of workers priced into next month's wage (LD1).
+        // ...and the month's refusals for want of workers settled into the posts the labour market prices in this
+        // same month's reprice (LD1; SimulationEngine.updatePopulation() runs it later in this nextMonth()).
         settleWantedPosts();
     }
 
@@ -3311,11 +3314,19 @@ public class Game {
         if (a == null) wantedPosts.heldUnpaid(); else wantedPosts.ask(a);
     }
 
-    /** The month's asks settled into the posts per band next month's wage is priced on (LD1; WantedPosts.settle()). */
+    /**
+     * The month's asks settled into the posts per band the same month's reprice prices the wage on (LD1;
+     * WantedPosts.settle()). A band no migrant can come for (Migration.admits()) asks nothing (LD2): the wage is meant
+     * to bring migrants.
+     */
     void settleWantedPosts() {
         double[] premium = new double[WageBand.values().length];
-        for (WageBand band : WageBand.values()) premium[band.ordinal()] = labourMarket.bandPremium(band);
-        wantedPosts.settle(populationManager.staffablePostsByBand(), populationManager.supplyByBand(), premium);
+        boolean[] open = new boolean[WageBand.values().length];
+        for (WageBand band : WageBand.values()) {
+            premium[band.ordinal()] = labourMarket.bandPremium(band);
+            open[band.ordinal()] = migration.admits(band);
+        }
+        wantedPosts.settle(populationManager.staffablePostsByBand(), populationManager.supplyByBand(), premium, open);
     }
 
     /** Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. */
@@ -7238,8 +7249,8 @@ public class Game {
     }
 
     /**
-     * The contractor's month, offered: its book (cut first to what is still owed on site, so a cancelled order leaves
-     * it working for nobody) and, while it takes orders, the builders' own depots on site, up to its capacity
+     * The contractor's month, offered: its book (cut first to what is still owed on site, Construction.capForeignBook();
+     * a cancelled order left it when it stopped, FC1b) and, while it takes orders, the builders' own depots on site, up to its capacity
      * (BuildersShort.foreignCapacity()); its price a point is BuildersShort.FOREIGN_PRICE times the city's price
      * before any premium. NONE with no work or no capacity. Called once a month, before the sites advance.
      */
@@ -9098,14 +9109,16 @@ public class Game {
 
         // C. The cancelled orders, stopped: the city's contract left comes
         // back out of the builders' book, the work it was for off their order
-        // book's points.
+        // book's points - and off the foreign contractor's (FC1b), but for a
+        // depot of theirs served first, which he never had on it - or a
+        // restart would put its points on his book a second time.
         for (ConstructionControl.Refund r : controlThisMonth.refunds) {
             double back = Math.max(0, r.value());
             if (back > 0) {
                 cash += back;
                 cityCapitalSpending -= back;
             }
-            builders.cancelOrder(back, r.points());
+            builders.cancelOrder(back, r.points(), r.servedFirst() ? 0 : r.points());
             r.shell().month = month;
             r.shell().refunded += back;
             GameLog.note(String.format("The city's %d %s stopped: $%,.0fk back, the shell kept.", r.buildings(),
@@ -15470,28 +15483,22 @@ public class Game {
      * not. That is the pressure that will make a medical school worth building.
      */
     public void repriceLabour() {
-        if (wantedPosts.any()) {
-            // The refused posts (LD1): the market prices a band as if the posts the staffing gate would not let a
-            // business open were offered, so the wage rises at its own pace and to its own cap, and the workers the
-            // fill gives the band are those it would have with the posts there. The gate's own test
-            // (Sector.staffing()) and Migration's opportunity still read only the posts that exist.
-            double[] posts = populationManager.staffablePostsByBand();
-            double[] latent = wantedPosts.latent();
-            for (int b = 0; b < posts.length && b < latent.length; b++) posts[b] += latent[b];
-            labourMarket.advanceMonth(
-                    posts,
-                    populationManager.supplyByBand(posts),
-                    populationManager.getJobs(),
-                    populationManager.getLicensedHeads());
-            populationManager.takeWagesFrom(labourMarket);
-            return;
-        }
+        // The refused posts (LD1): the market prices a band as if the posts the staffing gate would not let a
+        // business open were offered, so the wage rises at its own pace and to its own cap. They are the numerator
+        // of their own band's tightness and nothing else (LD2): the supply is the fill against the posts that
+        // exist, so a refused post carries no worker away from the bands below it (LD1's fill against the posts
+        // plus the refused ones priced a band that asked nothing up, by the workers a band above kept), and the
+        // multiple is at most sqrt(1 + MOST_OF_POSTS) times what the posts that exist set. pricedOn() holds the
+        // latent posts to the posts as they stand now, and is the posts unchanged when there are none. The gate's
+        // own test (Sector.staffing()) and Migration's opportunity still read only the posts that exist.
+        // STAFFABLE, not raw. A band is priced on the work its own
+        // members can take; the posts only a licence holder can fill
+        // are priced separately, as a licence premium on that job.
+        double[] priced = wantedPosts.pricedOn(populationManager.staffablePostsByBand());
         labourMarket.advanceMonth(
-                // STAFFABLE, not raw. A band is priced on the work its own
-                // members can take; the posts only a licence holder can fill
-                // are priced separately, as a licence premium on that job.
-                populationManager.staffablePostsByBand(),
-                populationManager.supplyByBand(),
+                priced,
+                // (a harness may fill against the refused posts too, as LD1 did: WantedPosts.carryKeptOut)
+                WantedPosts.carryKeptOut ? populationManager.supplyByBand() : populationManager.supplyByBand(priced),
                 populationManager.getJobs(),
                 populationManager.getLicensedHeads());
         populationManager.takeWagesFrom(labourMarket);
@@ -15769,19 +15776,20 @@ public class Game {
     /**
      * Fills the save from the city as it stands, asks the map for its bytes
      * and stamps it; everything save() did before it wrote anything. With
-     * {@code snapshot} the job holds copies of the save and the history (the
-     * autosave's, written on another thread); without, the live objects.
+     * {@code snapshot} the job holds a copy of the save and a copy of the history
+     * that is owed (the autosave's, written on another thread; see
+     * HistorySave.snapshotLater()); without, the live objects.
      */
     private SaveWriter.Job prepareSave(int slot, String slotName, boolean snapshot){
 
         byte[] mapBytes = fillSave(slotName);
 
         // The writing itself is SaveWriter.Job.write(): the save, its map, then the history.
-        // A snapshot is taken here, on the FX thread, because this is the only place the model is safe to read.
-        return new SaveWriter.Job(gameFiles, slot,
-                snapshot ? dataSave.snapshot() : dataSave,
-                snapshot ? historySave.snapshot() : historySave,
-                mapBytes);
+        // A snapshot of the save is taken here, on the FX thread, because this is the only place the model is safe to read.
+        // The history's is owed (GT1): the writer makes the copy as its first act, and the history makes it itself
+        // before its next change if the writer has not got there (HistorySave.snapshotLater()).
+        if (!snapshot) return new SaveWriter.Job(gameFiles, slot, dataSave, historySave, mapBytes);
+        return new SaveWriter.Job(gameFiles, slot, dataSave.snapshot(), historySave.snapshotLater(), mapBytes);
     }
 
     /**
@@ -20974,6 +20982,8 @@ public class Game {
         for (int i = 0; i < rateHistory.length; i++) rateHistory[i] *= scale;
 
         if (historySave != null) historySave.redenominate(scale);
+        // DZ1: the trade by partner's money and its finished years; cityExportPriceLevel() and tradeByNation() weigh the world's prices by them.
+        if (partnerTrade != null) partnerTrade.redenominate(scale);
 
         /*
          * ...and the derived figures re-struck, so the screens are in the new

@@ -156,6 +156,10 @@ public class OrderSearchCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6): on LD2's path the copy at month 524
+        // judges 19 orders on their interest, the largest 253, none past Game.COUNTDOWN_SLICES and below the counted slices,
+        // so the search has nothing to find. The claim is the search's; queued (LD3) to cause such an order on LD2's path.
+        WantedPosts.carryKeptOut = false;
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });

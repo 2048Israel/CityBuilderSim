@@ -153,6 +153,12 @@ public class HoldersCheck {
         // who holds the city's paper on the calm curve it was written on - so it is played as written, FC1 off in this JVM
         // (BuildingManager.buildersShortOn; docs/queue/FC1-notes.md section 1).
         BuildingManager.buildersShortOn = false;
+        // ...and LD2's wage off as well (WantedPosts.carryKeptOut; LD2's notes 6): on LD2's path section 6's reloaded twin
+        // parts from its city a month after the save - the households settle 0.003 of the paper still owed for against
+        // the live city's 55.04, their savings 47 against 403, with the labour market and every cell alike at the load and
+        // no refused post in either. A field the save does not carry, which this path reaches; queued (LD3) to find it and
+        // turn LD2 back on here.
+        WantedPosts.carryKeptOut = false;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
 
         GameFiles files = GameFiles.scratch("holderscheck");

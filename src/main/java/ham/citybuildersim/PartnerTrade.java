@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.DoubleSupplier;
 
 /**
  * The city's trade by partner: what it sold to each nation and bought of each this month and so far this year, by good, and every finished year's
@@ -46,6 +47,13 @@ public final class PartnerTrade {
         public Table {
             cells = cells == null ? List.of() : List.copyOf(cells);
         }
+
+        /** The same year and cells with every cell's money times `scale` (a currency reform, DZ1); the units, the good and the nation as they are. */
+        public Table scaled(double scale) {
+            List<Cell> out = new ArrayList<>(cells.size());
+            for (Cell c : cells) out.add(new Cell(c.good(), c.nation(), c.unitsOut(), c.unitsIn(), c.valueOut() * scale, c.valueIn() * scale));
+            return new Table(year, out);
+        }
     }
 
     /** A good's trade with the world in a month, in its units: what the city sold abroad and what it bought. Immutable. */
@@ -59,6 +67,11 @@ public final class PartnerTrade {
      * history is read by the model (Game.cityExportPriceLevel() weights the world's prices by the year's exports by good), and a young city sells a
      * good to a nation for a thousandth of a thousand: rounded to hundredths those cells were zero or a step apart, the weights and so the terms
      * of trade and the D$ were another's, and ScaleCheck's town parted from its twin at the January of its second year.
+     *
+     * <p>...in the money of the day (DZ1, 2026-11-02): the grid followed the price factor and not the reform's unit, so a reformed city's history
+     * rounded a hundred times coarser against its money and DenominationCheck's reformed twin parted from its plain one in the January of month 169
+     * (the terms of trade). roundMoney() now rounds to this many places times the unit (setMoneyUnit()). The units (HISTORY_ROUND) are real and do
+     * not change.
      */
     static final double HISTORY_ROUND_MONEY = HISTORY_ROUND / PriceLevel.FACTOR;
 
@@ -172,6 +185,9 @@ public final class PartnerTrade {
 
     private volatile Snapshot published;
 
+    /** The currency's unit as it stands now (Denomination.getUnit()): 1 until a reform, then the old money per new. Read live; never saved. */
+    private DoubleSupplier moneyUnit = () -> 1;
+
     /** A record for a world of `nations` nations: nothing tallied, no month. */
     public PartnerTrade(int nations) {
         if (nations < 1) throw new IllegalArgumentException("partner trade: " + nations + " nations");
@@ -191,6 +207,19 @@ public final class PartnerTrade {
 
     /** How many nations. */
     public int nations() { return n; }
+
+    /**
+     * The currency's unit, read live (DZ1): the history's money is rounded to HISTORY_ROUND_MONEY places times it, so the grid is the same real size
+     * in the money as it stands after a reform. Null reads 1, as does a unit that is not finite and positive.
+     */
+    public void setMoneyUnit(DoubleSupplier unit) {
+        moneyUnit = unit == null ? () -> 1 : unit;
+    }
+
+    private double unit() {
+        double u = moneyUnit.getAsDouble();
+        return Double.isFinite(u) && u > 0 ? u : 1;
+    }
 
     /**
      * Where the city stands, for a generated world's arrows at the edge of its map (TradeLanes.Feed.standInLat()), NaN for a city on the real Earth,
@@ -334,7 +363,11 @@ public final class PartnerTrade {
 
     private static double round(double v) { return Math.round(v * HISTORY_ROUND) / HISTORY_ROUND; }
 
-    private static double roundMoney(double v) { return Math.round(v * HISTORY_ROUND_MONEY) / HISTORY_ROUND_MONEY; }
+    /** Rounded to HISTORY_ROUND_MONEY places times the unit: hundredths of a thousand at today's prices, in the city's money as it stands now (DZ1). */
+    private double roundMoney(double v) {
+        double places = HISTORY_ROUND_MONEY * unit();
+        return Math.round(v * places) / places;
+    }
 
     /* =====================================================================
        READS - the snapshot, and the history
@@ -476,6 +509,35 @@ public final class PartnerTrade {
                 history.add(new Table(t.year(), kept));
             }
         }
+        publish();
+    }
+
+    /**
+     * A currency reform (DZ1): every money figure of the record times `scale` - the month's and the year's by nation, the trade with no partner, each
+     * cell's value out and in, and every finished year's table - then publishes. Tonnes, units and the cargo rows are not money and stay. A scale
+     * that is not finite and positive does nothing.
+     *
+     * <p>WHY. Game.reformCurrency() divided every money figure of the city but this one: the year held and the years behind it stayed in the old
+     * unit, and Game.cityExportPriceLevel() and tradeByNation() weigh the world's prices by them, so a reform in mid-year weighed one year's exports
+     * in two units and the reformed twin's terms of trade, and so its D$, parted from the plain one's.
+     */
+    public void redenominate(double scale) {
+        if (!Double.isFinite(scale) || !(scale > 0)) return;
+        for (int i = 0; i < n; i++) {
+            exportValue[i] *= scale;
+            importValue[i] *= scale;
+            yearExportValue[i] *= scale;
+            yearImportValue[i] *= scale;
+        }
+        noPartnerExports *= scale;
+        noPartnerImports *= scale;
+        for (TreeMap<Integer, double[]> byNation : cells.values()) {
+            for (double[] cell : byNation.values()) {
+                cell[2] *= scale;
+                cell[3] *= scale;
+            }
+        }
+        history.replaceAll(t -> t.scaled(scale));
         publish();
     }
 

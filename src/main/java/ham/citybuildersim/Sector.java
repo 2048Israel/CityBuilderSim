@@ -3445,17 +3445,26 @@ public abstract class Sector {
         s.exported = new LinkedHashMap<>();
         s.imported = new LinkedHashMap<>();
         s.boughtLocal = new LinkedHashMap<>();
-        for (Good g : Good.values()) {
+        s.writtenOff = new LinkedHashMap<>();
+        // Only a good the sector has a row or a carried figure for can have one to write (GT1): every good asked eight
+        // questions, for every sector, was most of what the sectors cost the month that autosaves; a sector holds a handful.
+        Good[] goods = Good.values();
+        boolean[] touched = new boolean[goods.length];
+        for (Good g : outputs.keySet()) touched[g.ordinal()] = true;
+        for (Good g : inputs.keySet()) touched[g.ordinal()] = true;
+        for (Good g : carriedExports.keySet()) touched[g.ordinal()] = true;
+        for (Good g : carriedImports.keySet()) touched[g.ordinal()] = true;
+        for (Good g : carriedBoughtLocal.keySet()) touched[g.ordinal()] = true;
+        for (Good g : carriedWrittenOff.keySet()) touched[g.ordinal()] = true;
+        for (Good g : goods) {
+            if (!touched[g.ordinal()]) continue;
             double shipped = unitsExported(g), landed = unitsImported(g);
             if (shipped > 0) s.exported.put(g.name(), shipped);
             if (landed > 0) s.imported.put(g.name(), landed);
             // ...and what it bought at home (FR2): Haulage bills the city leg of it.
             double home = unitsBoughtLocal(g);
             if (home > 0) s.boughtLocal.put(g.name(), home);
-        }
-        // ...and what the month wrote off (0.7.133), through its getter: WHAT A MONTH WROTE OFF, PAST ITS STRIKE.
-        s.writtenOff = new LinkedHashMap<>();
-        for (Good g : Good.values()) {
+            // ...and what the month wrote off (0.7.133), through its getter: WHAT A MONTH WROTE OFF, PAST ITS STRIKE.
             double lost = unitsWrittenOff(g);
             if (lost > 0) s.writtenOff.put(g.name(), lost);
         }

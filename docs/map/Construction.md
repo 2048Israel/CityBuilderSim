@@ -1,6 +1,6 @@
-# Construction.java - 1,088 lines · 63 methods · 2 constants · sectors
+# Construction.java - 1,101 lines · 63 methods · 2 constants · sectors
 
-`ham/citybuildersim/sectors/Construction.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Construction.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
 > The builders. Every build order in the city is theirs, and they bill it.
 > 
@@ -44,12 +44,12 @@
 |---:|---|
 | 259 | THE ORDER BOOK |
 | 291 | THE FOREIGN CONTRACTOR'S BOOK (FC1) |
-| 420 | · THE OVERTIME AND THE CANCELS (0.7.22; ConstructionControl, B and C) |
-| 570 | WHAT IT COSTS TO STAND |
-| 599 | MATERIALS ARE DRAWN, NOT BID FOR |
-| 667 | PLANNING - off the order book |
-| 875 | THE SCREEN |
-| 993 | SAVE |
+| 428 | · THE OVERTIME AND THE CANCELS (0.7.22; ConstructionControl, B and C) |
+| 583 | WHAT IT COSTS TO STAND |
+| 612 | MATERIALS ARE DRAWN, NOT BID FOR |
+| 680 | PLANNING - off the order book |
+| 888 | THE SCREEN |
+| 1006 | SAVE |
 
 ## Constants
 
@@ -78,16 +78,16 @@
 | 307 | `private double foreignBook` | Points the foreign contractor has taken and not yet built (FC1). |
 | 310 | `private double foreignPointsThisMonth` | Points the contractor built in the month last settled (FC1). |
 | 313 | `private double foreignBillThisMonth` | What it was paid for them, the builders' import of services in that month (FC1). |
-| 430 | `private double overtimeThisMonth` | What the city paid this month for overtime on its rushed sites, with the builders' tax in it (Game.settleConstructionControl()): earned beside the work, as the escalation is - the price of the hours the work was done ... |
-| 453 | `private double[] overtimeWages` | The overtime's wages, by job type, that the crews on the rushed sites were paid this month on top of their posts' (0.7.22): the premium, the whole of it, in a depot's mix of posts at today's wages. |
-| 515 | `private double salvageCutThisMonth` | ...this month's: booked at the month's market after recogniseWork() cleared it, named at the next strike (nameOtherRevenue()). |
-| 630 | `private double salvageCost` | What the builders paid for the salvage on hand, in money: its cost basis. |
+| 438 | `private double overtimeThisMonth` | What the city paid this month for overtime on its rushed sites, with the builders' tax in it (Game.settleConstructionControl()): earned beside the work, as the escalation is - the price of the hours the work was done ... |
+| 461 | `private double[] overtimeWages` | The overtime's wages, by job type, that the crews on the rushed sites were paid this month on top of their posts' (0.7.22): the premium, the whole of it, in a depot's mix of posts at today's wages. |
+| 528 | `private double salvageCutThisMonth` | ...this month's: booked at the month's market after recogniseWork() cleared it, named at the next strike (nameOtherRevenue()). |
+| 643 | `private double salvageCost` | What the builders paid for the salvage on hand, in money: its cost basis. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 1041 | **type** `public final class Construction extends Sector` | The builders. |
+| 48 | 1054 | **type** `public final class Construction extends Sector` | The builders. |
 | 156 | 13 | `public void strikeCrews(double work, double depots)` | Strikes the month's crews. |
 | 171 | 1 | `public double getPostsOfferedShare()` | The share of the depots' posts on offer this month. |
 | 178 | 1 | `public boolean isIdleAtCoreCrew()` | Whether the builders stand idle at the core crew: the work this month's strike saw needs no more than the core crew, so they offer IDLE_PAYROLL_FLOOR of their posts and lay the rest off (strikeCrews()). |
@@ -104,91 +104,91 @@
 | 270 | 7 | `public void bill(double amount, double points)` | Takes an order: the whole price into the order book, to be earned as the work is delivered, material and all. |
 | 283 | 7 | `public void bill(double amount, double points, BuildingsTemplate t)` | ...an order of `t` (FC1): as bill(), but a depot the builders serve first - one the contractor builds as theirs while it takes orders (Game.foreignCrewsOffer(), BuildingManager.buildersOwnOwed()) - is not put on its b... |
 
-### THE FOREIGN CONTRACTOR'S BOOK (FC1) (lines 291-419)
+### THE FOREIGN CONTRACTOR'S BOOK (FC1) (lines 291-427)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 319 | 5 | `public void payForeignCrews(double points, double bill)` | The contractor's month settled: the points it built and what the builders pay it for them, at its price. |
-| 326 | 3 | `public void takeFromForeignBook(double points)` | The contractor has built these points of its book: the book comes down by them, never below nothing. |
-| 331 | 3 | `public void capForeignBook(double owedOnSite)` | The book at most what is owed on site: an order cancelled leaves the contractor working for nobody. |
-| 336 | 1 | `public double getForeignBook()` | Points the foreign contractor has taken and not yet built. |
-| 339 | 1 | `public double getForeignPointsThisMonth()` | Points the foreign contractor built in the month last settled. |
-| 342 | 1 | `public double getForeignBillThisMonth()` | What the builders paid it for them: the import of services in the month last settled. |
-| 345 | 1 | `public double getBilledPoints()` | The construction points ever billed, from this game's start (ET2): not saved. |
-| 358 | 4 | `public void recogniseWork(double earned, double pointsDelivered)` | Recognise the month's work. |
-| 376 | 25 | `public void recogniseWork(double earned, double pointsBuilt, double pointsAvailable)` | The same, with the points the sites actually took beside the points they were offered (0.7.17). |
-| 409 | 7 | `public void recogniseEscalation(double amount)` | The owners' material escalation on the month's work (0.7.19): earned beside it, in the same month and on the same line of the accounts - it is the price of the material the work was built with - or, for a refund, give... |
-| 418 | 1 | `public double getEscalationThisMonth()` | ...this month's, for the screens. |
+| 329 | 3 | `public void takeFromForeignBook(double points)` | These points off the contractor's book, never below nothing: points he built, a depot he builds as the builders' own (bill()), or an order cancelled (cancelOrder(), FC1b). |
+| 339 | 3 | `public void capForeignBook(double owedOnSite)` | The book at most what is owed on site, before each month's offer (Game.foreignCrewsOffer()). |
+| 344 | 1 | `public double getForeignBook()` | Points the foreign contractor has taken and not yet built. |
+| 347 | 1 | `public double getForeignPointsThisMonth()` | Points the foreign contractor built in the month last settled. |
+| 350 | 1 | `public double getForeignBillThisMonth()` | What the builders paid it for them: the import of services in the month last settled. |
+| 353 | 1 | `public double getBilledPoints()` | The construction points ever billed, from this game's start (ET2): not saved. |
+| 366 | 4 | `public void recogniseWork(double earned, double pointsDelivered)` | Recognise the month's work. |
+| 384 | 25 | `public void recogniseWork(double earned, double pointsBuilt, double pointsAvailable)` | The same, with the points the sites actually took beside the points they were offered (0.7.17). |
+| 417 | 7 | `public void recogniseEscalation(double amount)` | The owners' material escalation on the month's work (0.7.19): earned beside it, in the same month and on the same line of the accounts - it is the price of the material the work was built with - or, for a refund, give... |
+| 426 | 1 | `public double getEscalationThisMonth()` | ...this month's, for the screens. |
 
-### THE OVERTIME AND THE CANCELS (0.7.22; ConstructionControl, B and C) (lines 420-569)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 433 | 6 | `public void recogniseOvertime(double amount)` | ...earned now. |
-| 440 | 1 | `public double getOvertimeThisMonth()` |  |
-| 455 | 3 | `public void setOvertimeWages(double[] byType)` |  |
-| 460 | 1 | `public double[] getOvertimeWages()` | The month's overtime wages by job type, or null. |
-| 464 | 7 | `public double[] getStaffedPayrollPerType()` | The posts' staffed payroll by tier, and the month's overtime on it. |
-| 478 | 4 | `public void cancelOrder(double refund, double points)` | A cancelled order, stopped (0.7.22; ConstructionControl, C. |
-| 491 | 7 | `public void receiveMaintenance(double amount)` | The repair order for the month, from every owner of a standing building. |
-| 508 | 5 | `public void earnSalvageCut(double amount)` | THE SALVAGE CUT'S CLEARING (0.7.138, batch I9; docs/studies/spec-materials.md 2.11, ★): the builders who cleared standing forest under a building are paid by Forestry, whose wood it is to sell, for felling and hauling... |
-| 518 | 1 | `public double getSalvageCutThisMonth()` | ...this month's, for the screens and the strike. |
-| 521 | 1 | `public double getRecognisedThisMonth()` | Building work recognised this month - the national accounts' investment. |
-| 524 | 1 | `public double getRepairsThisMonth()` | Repairs billed this month. |
-| 526 | 1 | `public double getUnearnedRevenue()` |  |
-| 527 | 1 | `public double getBacklogPoints()` |  |
-| 538 | 1 | `public double getOrderBookForAudit()` | The order book as the money audit counts it: what is still owed to the sites AND what this month's work has earned but not yet banked. |
-| 539 | 1 | `public double getUtilisation()` |  |
-| 542 | 1 | `public double getDrawnLocal()` | Materials bought from the plant in the month last struck, in units - the statement's month; NaN until a loaded older save's first strike. |
-| 545 | 1 | `public double getDrawnImported()` | ...and imported in it. |
-| 548 | 1 | `public boolean isDrawnKnown()` | Whether the month last struck's materials are known: false after loading a save from before 0.7.46, until its first strike. |
-| 557 | 5 | `protected void beforeBank()` | The materials as they stand at the strike, kept before bank() clears them (A5). |
-| 564 | 5 | `public void restoreOrderBook(double cash, double unearned, double backlog)` | The order book, put back on load. |
-
-### WHAT IT COSTS TO STAND (lines 570-598)
+### THE OVERTIME AND THE CANCELS (0.7.22; ConstructionControl, B and C) (lines 428-582)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 586 | 7 | `public double getStandingCostPerCapacity(double capacity)` | What it costs to keep one point of capacity standing for a month. |
-| 595 | 3 | `public double getConstructionCapacity()` | Points a month the depots could deliver, before staffing and roads. |
+| 441 | 6 | `public void recogniseOvertime(double amount)` | ...earned now. |
+| 448 | 1 | `public double getOvertimeThisMonth()` |  |
+| 463 | 3 | `public void setOvertimeWages(double[] byType)` |  |
+| 468 | 1 | `public double[] getOvertimeWages()` | The month's overtime wages by job type, or null. |
+| 472 | 7 | `public double[] getStaffedPayrollPerType()` | The posts' staffed payroll by tier, and the month's overtime on it. |
+| 490 | 5 | `public void cancelOrder(double refund, double points, double offTheBook)` | A cancelled order, stopped (0.7.22; ConstructionControl, C. |
+| 504 | 7 | `public void receiveMaintenance(double amount)` | The repair order for the month, from every owner of a standing building. |
+| 521 | 5 | `public void earnSalvageCut(double amount)` | THE SALVAGE CUT'S CLEARING (0.7.138, batch I9; docs/studies/spec-materials.md 2.11, ★): the builders who cleared standing forest under a building are paid by Forestry, whose wood it is to sell, for felling and hauling... |
+| 531 | 1 | `public double getSalvageCutThisMonth()` | ...this month's, for the screens and the strike. |
+| 534 | 1 | `public double getRecognisedThisMonth()` | Building work recognised this month - the national accounts' investment. |
+| 537 | 1 | `public double getRepairsThisMonth()` | Repairs billed this month. |
+| 539 | 1 | `public double getUnearnedRevenue()` |  |
+| 540 | 1 | `public double getBacklogPoints()` |  |
+| 551 | 1 | `public double getOrderBookForAudit()` | The order book as the money audit counts it: what is still owed to the sites AND what this month's work has earned but not yet banked. |
+| 552 | 1 | `public double getUtilisation()` |  |
+| 555 | 1 | `public double getDrawnLocal()` | Materials bought from the plant in the month last struck, in units - the statement's month; NaN until a loaded older save's first strike. |
+| 558 | 1 | `public double getDrawnImported()` | ...and imported in it. |
+| 561 | 1 | `public boolean isDrawnKnown()` | Whether the month last struck's materials are known: false after loading a save from before 0.7.46, until its first strike. |
+| 570 | 5 | `protected void beforeBank()` | The materials as they stand at the strike, kept before bank() clears them (A5). |
+| 577 | 5 | `public void restoreOrderBook(double cash, double unearned, double backlog)` | The order book, put back on load. |
 
-### MATERIALS ARE DRAWN, NOT BID FOR (lines 599-666)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 605 | 1 | `public double bid(Good g)` | Nothing bid: the crews draw what the month's work needs, as they build. |
-| 633 | 1 | `public double getSalvage()` | Units of scrapped plant's material on hand. |
-| 636 | 1 | `public double getSalvageCost()` | ...and what they paid for it. |
-| 639 | 5 | `public void addSalvage(double units, double paid)` | Takes material bought from plant being scrapped into the stock, at what was paid for it (nothing for the builders' own). |
-| 651 | 11 | `public double takeSalvage(double units)` | Draws from the stock, up to what it holds, and books what the units drawn cost - their share of the cost basis - as this month's input. |
-| 665 | 1 | `public double getInventoryValue()` | Its stock of scrapped plant's material at today's price; the yard is the city's and the plant is the plant's. |
-
-### PLANNING - off the order book (lines 667-874)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 706 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Everyone else's lead times are its output, so when the queue gets long it is the constraint on the whole city. |
-| 795 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
-| 831 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
-| 855 | 12 | `public boolean mayRetire(BuildingsTemplate t)` | THE LAST DEPOT IS NOT FOR SALE (PT1-M4). |
-| 870 | 4 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything: the builders have the one depot. |
-
-### THE SCREEN (lines 875-992)
+### WHAT IT COSTS TO STAND (lines 583-611)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 881 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
-| 884 | 1 | `public String inputLabel()` |  |
-| 900 | 11 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
-| 913 | 1 | `public boolean hasPlantBlock()` |  |
-| 916 | 76 | `public List<Line> ownLines(Game game)` |  |
+| 599 | 7 | `public double getStandingCostPerCapacity(double capacity)` | What it costs to keep one point of capacity standing for a month. |
+| 608 | 3 | `public double getConstructionCapacity()` | Points a month the depots could deliver, before staffing and roads. |
 
-### SAVE (lines 993-1088)
+### MATERIALS ARE DRAWN, NOT BID FOR (lines 612-679)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 998 | 32 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 1032 | 30 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 1064 | 11 | `protected void resetExtras()` |  |
-| 1078 | 10 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
+| 618 | 1 | `public double bid(Good g)` | Nothing bid: the crews draw what the month's work needs, as they build. |
+| 646 | 1 | `public double getSalvage()` | Units of scrapped plant's material on hand. |
+| 649 | 1 | `public double getSalvageCost()` | ...and what they paid for it. |
+| 652 | 5 | `public void addSalvage(double units, double paid)` | Takes material bought from plant being scrapped into the stock, at what was paid for it (nothing for the builders' own). |
+| 664 | 11 | `public double takeSalvage(double units)` | Draws from the stock, up to what it holds, and books what the units drawn cost - their share of the cost basis - as this month's input. |
+| 678 | 1 | `public double getInventoryValue()` | Its stock of scrapped plant's material at today's price; the yard is the city's and the plant is the plant's. |
+
+### PLANNING - off the order book (lines 680-887)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 719 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Everyone else's lead times are its output, so when the queue gets long it is the constraint on the whole city. |
+| 808 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
+| 844 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
+| 868 | 12 | `public boolean mayRetire(BuildingsTemplate t)` | THE LAST DEPOT IS NOT FOR SALE (PT1-M4). |
+| 883 | 4 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything: the builders have the one depot. |
+
+### THE SCREEN (lines 888-1005)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 894 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
+| 897 | 1 | `public String inputLabel()` |  |
+| 913 | 11 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
+| 926 | 1 | `public boolean hasPlantBlock()` |  |
+| 929 | 76 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE (lines 1006-1101)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1011 | 32 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 1045 | 30 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 1077 | 11 | `protected void resetExtras()` |  |
+| 1091 | 10 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
 

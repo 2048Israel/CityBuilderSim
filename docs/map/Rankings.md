@@ -1,6 +1,6 @@
 # Rankings.java - 730 lines · 38 methods · 11 constants · model
 
-`ham/citybuildersim/Rankings.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Rankings.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
 > The Rankings board as the screen draws it: a measure's table of ranked places, the active city among
 > the real world's 196 nations and 62 city regions or among the nations of its own world, in the money
