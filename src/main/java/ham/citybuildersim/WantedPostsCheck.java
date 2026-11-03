@@ -83,10 +83,21 @@ public class WantedPostsCheck {
             g.getForeignAccounts().pinRate(1.0);
             g.getWorldEconomy().pin();
             g.getLandManager().setOwnedSqFt(50_000_000);
+            noWait(g);
         } finally {
             System.setOut(out);
         }
         return g;
+    }
+
+    /**
+     * No wait read for an order's interest (BA1: BusinessInvestment.carryOf(), THE INTEREST ON THE WAIT), as in a bare
+     * fixture: these cities have no builders, so every wait would be endless and every hold unpaid - rightly, a building
+     * nobody can build carries no interest at any wage - and the posts' price is this harness's subject, not the wait.
+     * Game wires the wait again on a load, so a reloaded city is told too.
+     */
+    static void noWait(Game g) {
+        g.getBusinessInvestment().setOrderWaitOutput(null);
     }
 
     /** One month, quietly. */
@@ -233,6 +244,7 @@ public class WantedPostsCheck {
         Game g = new Game(files);
         System.setOut(quiet);
         try { g.loadGameSave(GameFiles.SLOT_COUNT); } finally { System.setOut(out); }
+        noWait(g);
         return g;
     }
 
@@ -255,8 +267,9 @@ public class WantedPostsCheck {
     static double marginOf(Game g, Sector owner, BuildingsTemplate t) {
         BusinessInvestment bi = g.getBusinessInvestment();
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
-        return bi.estimatedMonthlyProfit(owner.key(), t)
-                - bi.interestHurdle(bi.getCostOf(t, 1), credit.getPrimeRate() + credit.getRecordSurcharge(owner.key()));
+        double prime = credit.getPrimeRate() + credit.getRecordSurcharge(owner.key());
+        // ...on the cost grown over its wait, as Game.noteStaffingHold() asks it (BA1; 1 with no wait read, noWait()).
+        return bi.estimatedMonthlyProfit(owner.key(), t) - bi.interestHurdle(bi.getCostOf(t, 1) * bi.carryOf(t, 1, prime), prime);
     }
 
     /** The prime rate at which the interest hurdle on a building's cost is {@code hurdle}, found with the model's own hurdle. */
