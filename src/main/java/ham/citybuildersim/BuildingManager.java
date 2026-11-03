@@ -5879,8 +5879,8 @@ public class BuildingManager {
        why-the-builders-stall.md, section 3): its repairs took 0.81 of the
        builders' nameplate and the dead the rest, so about 420 points a month
        reached 26 sites. The builders' plan saw the queue (4,690 months of it)
-       and ordered a depot - one at a time (MAX_CONCURRENT_ORDERS then;
-       since BA1 it counts the depots on site as output to come) - and the
+       and ordered a depot - one at a time (MAX_CONCURRENT_ORDERS then; the
+       builders' own rule since BA1, sectors.Construction) - and the
        depot waited in the same queue at its crew's weight, 400 to the power
        0.70, 66.3 of 90,640: 0.4 points a month. Their gate said "already
        building" in 119 of 120 months; the new depot had 31.4 of its 400

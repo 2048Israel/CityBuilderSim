@@ -64,6 +64,13 @@ import java.util.regex.Pattern;
  *  11. SAVED MID-TRAP, THE NEXT MONTH THE SAME: a trapped city saved and loaded plays the month after as the twin that
  *      was never saved does - his book, points and bill, the builders' cash and order book, the points built, the
  *      price of an order and whether he takes them, to the bit.
+ *  12. AN ORDER'S OWN BUILDINGS (BA1): with no cap on orders an order of six hundred homes is not priced at the first's queue; each
+ *      building stands in the queue the ones before it leave, and the order pays the mean premium over them
+ *      (BuildersShort.meanPremium()). One building is FC1's price to the bit (meanPremium(from, step, 1) == premium(from),
+ *      orderPriceMultiplier(x) == orderPriceMultiplier(x, pointsEach, 1)); up to EXACT_SUM_MOST it is the explicit mean and past it
+ *      the integral within the javadoc's stated figures of the exact sum, on the grid it was measured on; never above CEILING, under
+ *      nothing or NaN; never falling as the order grows; and a quote of 600 homes on a queue near the knee costs more a home than
+ *      a quote of one (and the contractor's price is the same for any size of order).
  *
  * Every fixture causes its condition. How often the trap is met in a real run is the ensemble's count (FC1.md).
  */
@@ -192,6 +199,7 @@ public class ConstructionTrapCheck {
         cancelInTheTrap(root);
         rushBesideTheContractor(root);
         nextMonthTheSame(root);
+        ordersOwnBuildings(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -998,5 +1006,235 @@ public class ConstructionTrapCheck {
         bits("...the price of an order", bl.orderPriceMultiplier(), bm.orderPriceMultiplier());
         assertTrue("...and whether he takes orders", bl.foreignCrewsTakeOrders() == bm.foreignCrewsTakeOrders());
         audited("including the reloaded city's");
+    }
+
+    /* ============================ 12. AN ORDER'S OWN BUILDINGS (BA1) ============================ */
+
+    /** The sums an order of n buildings is priced by, in the order the model sums them (BuildersShort.meanPremium() up to EXACT_SUM_MOST). */
+    static double explicitMean(double from, double step, long n) {
+        double sum = 0;
+        for (long i = 0; i < n; i++) sum += BuildersShort.premium(from + i * step);
+        return Math.max(0, Math.min(BuildersShort.CEILING, sum / n));
+    }
+
+    /** The tolerance meanPremium()'s javadoc states for the integral past EXACT_SUM_MOST, by the step in months (its MEASURED figures). */
+    static double integralTolerance(double stepMonths) {
+        if (stepMonths < 0.1) return 1e-6;      // a home at a city's pace: a part in a million
+        if (stepMonths <= 2) return 3e-5;       // up to two months
+        if (stepMonths <= 22) return 3.4e-4;    // a materials plant behind a founding city's yard
+        return 2.8e-3;                          // a hundred
+    }
+
+    /**
+     * AN ORDER'S OWN BUILDINGS (BA1). With no cap on orders (BusinessInvestment.MAX_CONCURRENT_ORDERS and MAX_ORDER_MONTHS went),
+     * an order of six hundred homes would take years of the queue at the price of the first. Each of its buildings is priced on
+     * the queue the ones before it leave: the mean of the premium over the n queues it stands in (BuildersShort.meanPremium()).
+     * The arithmetic is asked alone, over the grid the javadoc was measured on, then on a real city's quote: one building is
+     * FC1's price to the bit; the exact sum up to EXACT_SUM_MOST and the integral past it, within the javadoc's stated figures
+     * of the exact sum; never above the ceiling, never under nothing, never NaN; rising with the order; and an order of 600
+     * homes on a queue near the knee costs more a home than one.
+     */
+    static void ordersOwnBuildings(Path root) {
+        out.println("\n--- 12. an order's own buildings (BA1) ---");
+        double knee = BuildersShort.KNEE_MONTHS, ceiling = BuildersShort.CEILING;
+        double[] froms = { 0, 5, 9, 20, 60, 200, 2000 };
+        double[] steps = { 0.05, 0.5, 2, 22, 100 };
+        long[] counts = { 65, 100, 1000, 100_000 };
+
+        // One building is FC1's price, to the bit - for any step, and for no step, and for no number of buildings.
+        boolean oneBits = true, noStepBits = true;
+        for (double from : froms) {
+            for (double step : steps) {
+                oneBits &= Double.doubleToLongBits(BuildersShort.meanPremium(from, step, 1)) == Double.doubleToLongBits(BuildersShort.premium(from));
+                oneBits &= Double.doubleToLongBits(BuildersShort.multiplier(from, step, 1, false))
+                        == Double.doubleToLongBits(BuildersShort.multiplier(from, false));
+            }
+            for (double step : new double[] { 0, -1, Double.NaN }) {
+                noStepBits &= Double.doubleToLongBits(BuildersShort.meanPremium(from, step, 1000)) == Double.doubleToLongBits(BuildersShort.premium(from));
+            }
+            noStepBits &= Double.doubleToLongBits(BuildersShort.meanPremium(from, 2, 0)) == Double.doubleToLongBits(BuildersShort.premium(from));
+        }
+        assertTrue("meanPremium(from, step, 1) is premium(from) to the bit, and multiplier(from, step, 1) is FC1's multiplier(from), on the grid"
+                + " of queues from nothing to 2,000 months and steps from a twentieth of a month to a hundred", oneBits);
+        assertTrue("...and for no step (zero, under nothing, not a number) or no building at all, whatever the order's size: premium(from) too", noStepBits);
+        bits("...a queue already endless is the ceiling, for any order", BuildersShort.meanPremium(Double.POSITIVE_INFINITY, 2, 1000), BuildersShort.premium(Double.POSITIVE_INFINITY));
+        bits("...and the ceiling itself", BuildersShort.premium(Double.POSITIVE_INFINITY), ceiling);
+
+        // Up to EXACT_SUM_MOST buildings it is the explicit mean of the premium over the queues they stand in.
+        boolean explicit = true;
+        double worstExact = 0;
+        int cases = 0;
+        for (double from : froms) {
+            for (double step : steps) {
+                for (long n : new long[] { 2, 3, 10, 33, 63, BuildersShort.EXACT_SUM_MOST }) {
+                    double mean = BuildersShort.meanPremium(from, step, n), want = explicitMean(from, step, n);
+                    explicit &= Double.doubleToLongBits(mean) == Double.doubleToLongBits(want);
+                    worstExact = Math.max(worstExact, Math.abs(mean - want));
+                    cases++;
+                }
+            }
+        }
+        assertTrue("for an order of up to EXACT_SUM_MOST (" + BuildersShort.EXACT_SUM_MOST + ") the mean premium is the explicit mean over the"
+                + " queues its buildings stand in, to the bit (" + cases + " orders, worst " + worstExact + ")", explicit);
+
+        // Past it, the integral: within the javadoc's stated figures of the exact sum, by the step.
+        boolean within = true;
+        double worst = 0;
+        String where = "";
+        int past = 0;
+        double[] worstByStep = new double[steps.length];
+        for (double from : froms) {
+            for (int s = 0; s < steps.length; s++) {
+                double step = steps[s];
+                double sum = 0;
+                long done = 0;
+                for (long n : counts) {
+                    for (; done < n; done++) sum += BuildersShort.premium(from + done * step);
+                    double exact = Math.max(0, Math.min(ceiling, sum / n));
+                    double got = BuildersShort.meanPremium(from, step, n);
+                    double miss = Math.abs(got - exact);
+                    past++;
+                    worstByStep[s] = Math.max(worstByStep[s], miss);
+                    if (miss > integralTolerance(step)) {
+                        within = false;
+                        where = String.format("from %.0f, step %.2f, n %,d: %.3e against %.3e", from, step, n, miss, integralTolerance(step));
+                    }
+                    if (miss > worst) worst = miss;
+                }
+            }
+        }
+        out.printf("  %d orders past EXACT_SUM_MOST against the exact sum: the integral misses by at most", past);
+        for (int s = 0; s < steps.length; s++) out.printf(" %.1e (step %s)", worstByStep[s], steps[s]);
+        out.printf("%n");
+        assertTrue("past EXACT_SUM_MOST the integral is within the javadoc's stated figures of the exact sum: 1e-6 for a home's step, 3e-5 up to"
+                + " two months, 3.4e-4 at 22, 2.8e-3 at a hundred (orders of 65 to 100,000 on queues of nothing to 2,000 months)"
+                + (within ? "" : " - " + where), within);
+
+        // Bounds: never above the ceiling, never under nothing, never NaN - for ordinary orders and for the extremes.
+        boolean bounded = true;
+        double[] wild = { -5, 0, 5, 9, 9.0000001, 33, 1e6, 1e300, Double.MAX_VALUE, Double.POSITIVE_INFINITY, Double.NaN };
+        double[] wildSteps = { Double.NEGATIVE_INFINITY, -1, 0, 1e-12, 0.05, 2, 100, 1e300, Double.POSITIVE_INFINITY, Double.NaN };
+        double biggest = 0, smallest = 1;
+        for (double from : wild) {
+            for (double step : wildSteps) {
+                for (long n : new long[] { Long.MIN_VALUE, -1, 0, 1, 2, 64, 65, 1000, 1_000_000_000L, Long.MAX_VALUE }) {
+                    double p = BuildersShort.meanPremium(from, step, n);
+                    bounded &= !Double.isNaN(p) && p >= 0 && p <= ceiling;
+                    biggest = Math.max(biggest, p);
+                    smallest = Math.min(smallest, p);
+                    double m = BuildersShort.multiplier(from, step, n, false);
+                    bounded &= !Double.isNaN(m) && m >= 1 && m <= 1 + ceiling;
+                    bounded &= BuildersShort.multiplier(from, step, n, true) == BuildersShort.FOREIGN_PRICE;
+                }
+            }
+        }
+        for (double from : froms) {
+            for (double step : steps) {
+                for (long n : counts) {
+                    double p = BuildersShort.meanPremium(from, step, n);
+                    bounded &= !Double.isNaN(p) && p >= 0 && p <= ceiling;
+                }
+            }
+        }
+        out.printf("  %d odd and ordinary orders: the mean premium from %s to %s, the ceiling %s%n", wild.length * wildSteps.length * 10, smallest, biggest, ceiling);
+        assertTrue("the mean premium is never above CEILING, never under nothing and never NaN - and the multiplier is between 1 and 1 + CEILING,"
+                + " or FOREIGN_PRICE where the contractor takes the order, whatever the queue, the step or the size", bounded);
+
+        // Rising with the order: more buildings stand in longer queues, so the mean never falls; across the seam at EXACT_SUM_MOST by the stated tolerance only.
+        boolean rises = true, seam = true, dearer = true;
+        for (double from : froms) {
+            for (double step : steps) {
+                double prev = BuildersShort.meanPremium(from, step, 1);
+                for (long n = 2; n <= BuildersShort.EXACT_SUM_MOST; n++) {
+                    double m = BuildersShort.meanPremium(from, step, n);
+                    rises &= m >= prev - 1e-12;
+                    prev = m;
+                }
+                double atSeam = BuildersShort.meanPremium(from, step, BuildersShort.EXACT_SUM_MOST + 1);
+                seam &= atSeam >= prev - integralTolerance(step);
+                prev = atSeam;
+                for (long n = BuildersShort.EXACT_SUM_MOST + 2; n <= 3_000; n++) {
+                    double m = BuildersShort.meanPremium(from, step, n);
+                    rises &= m >= prev - 1e-12;
+                    prev = m;
+                }
+                // ...and strictly dearer for a hundred buildings than for one wherever the queue they stand in reaches past the knee.
+                if (from + 99 * step > knee && BuildersShort.premium(from + 99 * step) - BuildersShort.premium(from) > 4 * integralTolerance(step)) {
+                    dearer &= BuildersShort.meanPremium(from, step, 100) > BuildersShort.premium(from)
+                            && BuildersShort.meanPremium(from, step, 100) < BuildersShort.premium(from + 99 * step);
+                }
+            }
+        }
+        assertTrue("the mean premium never falls as the order grows, from one building to 64 and from 65 to 3,000, for every queue and step", rises);
+        assertTrue("...across the seam at EXACT_SUM_MOST it falls by no more than the integral's stated tolerance", seam);
+        assertTrue("...and an order of a hundred standing in a queue that reaches past the knee pays more than the first building alone but less than the last",
+                dearer);
+
+        // On a real city's quote.
+        Game g = calm(root, "calm-ba1");
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate house = template(g, HOUSE);
+        double points = house.getConstructionPoints();
+        double nmc = bm.nonMaterialCost(house);
+        State s0 = state(g, "calm, free points ample");
+        assertTrue("fixture: the queue is under the knee, the contractor not taking orders", s0.months <= knee && !s0.foreign);
+
+        // The one-argument multiple is FC1's: exactly the three-argument one with one building.
+        boolean bitsEqual = true;
+        double[] aheads = { 0, 1, 100, 5_000, 250_000, 1e7 };
+        double[] eachs = { 0, points, 400, 5_000 };
+        bitsEqual &= Double.doubleToLongBits(bm.orderPriceMultiplier()) == Double.doubleToLongBits(bm.orderPriceMultiplier(0));
+        for (double ahead : aheads) {
+            for (double each : eachs) {
+                bitsEqual &= Double.doubleToLongBits(bm.orderPriceMultiplier(ahead)) == Double.doubleToLongBits(bm.orderPriceMultiplier(ahead, each, 1));
+            }
+        }
+        assertTrue("on the calm city, orderPriceMultiplier(x) is orderPriceMultiplier(x, pointsEach, 1) to the bit, for queues ahead of it from nothing to ten million points", bitsEqual);
+
+        // Just under the knee: one home carries no premium, an order of 600 reaches past the knee and pays more a home.
+        roads(g, roadsFor(g, 0.9 * knee));
+        State near = state(g, "roads: under the knee");
+        assertTrue("fixture: the queue is just under the knee and the contractor not taking orders", near.months > 0.8 * knee && near.months <= knee && !near.foreign);
+        bitsEqual = true;
+        for (double ahead : aheads) {
+            for (double each : eachs) {
+                bitsEqual &= Double.doubleToLongBits(bm.orderPriceMultiplier(ahead)) == Double.doubleToLongBits(bm.orderPriceMultiplier(ahead, each, 1));
+            }
+        }
+        assertTrue("...and the same at the queue just under the knee, to the bit", bitsEqual);
+        int homes = 600;
+        Game.BuildQuote one = g.quoteBuild(house, 1), many = g.quoteBuild(house, homes);
+        double stepMonths = points / near.sites;
+        out.printf("  a House's work is %.4f of the template's; 600 Houses' %.4f a home (the queue %.2f months, a home %.4f months of the sites')%n",
+                one.sticker / nmc, many.sticker / (homes * nmc), near.months, stepMonths);
+        assertTrue("fixture: flat ground, so a quote's work is the Houses' alone (no foothill to prepare)", one.prepCost == 0 && many.prepCost == 0);
+        assertTrue("fixture: 600 Houses reach past the knee on that queue: its months plus 599 homes' steps", near.months + (homes - 1) * stepMonths > knee);
+        close("one House's work is the template's with the premium at the queue it stands in (FC1's quote)", one.sticker / nmc, near.multiple, 1e-12);
+        close("600 Houses' work a home is the template's times the mean multiple over the queues they stand in", many.sticker / (homes * nmc),
+                bm.orderPriceMultiplier(0, points, homes), 1e-9);
+        assertTrue("A QUOTE OF 600 HOMES ON A QUEUE NEAR THE KNEE COSTS MORE A HOME THAN A QUOTE OF 1: the work a home, and the quote's total a home",
+                many.sticker / homes > one.sticker && many.total / homes > one.total);
+        assertTrue("...and the planners' cost a home with it (BusinessInvestment.getCostOf())",
+                g.getBusinessInvestment().getCostOf(house, homes) / homes > g.getBusinessInvestment().getCostOf(house, 1));
+        // ...and an order that stays under the knee is priced as one: three Houses on that queue.
+        Game.BuildQuote three = g.quoteBuild(house, 3);
+        assertTrue("fixture: three Houses stay under the knee on it", near.months + 2 * stepMonths <= knee);
+        close("an order that stays under the knee pays no premium: three Houses' work a home is one's", three.sticker / 3, one.sticker, 1e-12);
+
+        // Past the knee, and under the floor: the contractor's price is the same for any size of order.
+        roads(g, roadsFor(g, knee + 1.5 * BuildersShort.HALF_MONTHS));
+        State past2 = state(g, "roads: past the knee");
+        assertTrue("fixture: well past the knee, the contractor not yet taking orders", past2.months > knee + BuildersShort.HALF_MONTHS && !past2.foreign);
+        Game.BuildQuote oneP = g.quoteBuild(house, 1), manyP = g.quoteBuild(house, homes);
+        assertTrue("well past the knee a home of 600 still costs more than one of one, and neither is the contractor's price",
+                manyP.sticker / homes > oneP.sticker && manyP.sticker / (homes * nmc) < 1 + ceiling);
+        int steps2 = 0;
+        while (!bm.foreignCrewsTakeOrders() && steps2++ < 80) roads(g, 1);
+        assertTrue("fixture: under the floor of the builders' month the contractor takes the orders", bm.foreignCrewsTakeOrders());
+        Game.BuildQuote oneF = g.quoteBuild(house, 1), manyF = g.quoteBuild(house, homes);
+        close("...his price is the same for one home and for 600: FOREIGN_PRICE times the template's work", manyF.sticker / (homes * nmc),
+                oneF.sticker / nmc, 1e-12);
+        bits("...and it is FOREIGN_PRICE to the bit, whatever the number of buildings", bm.orderPriceMultiplier(0, points, homes), BuildersShort.FOREIGN_PRICE);
+        bits("...as the one-building multiple is", bm.orderPriceMultiplier(), BuildersShort.FOREIGN_PRICE);
     }
 }

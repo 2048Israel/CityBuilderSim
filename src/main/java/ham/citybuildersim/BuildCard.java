@@ -951,8 +951,8 @@ public final class BuildCard {
        THE INVESTORS' LINE (market cards)
 
        If investors have an order on this building's site, it says so, with
-       the count and the wait - that outranks their word, which by then is
-       often "already building". Otherwise it quotes the sector's own word
+       the count and the wait - that outranks their word, which until BA1
+       was by then often "already building". Otherwise it quotes the sector's own word
        for the month (Game.getLastInvestment()), which is filed per sector
        and can name another building - so it adds "this one:" and the first
        gate THIS building fails now, unless the word already names it: the

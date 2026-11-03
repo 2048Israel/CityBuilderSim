@@ -998,7 +998,7 @@ public class BuildAdviceCheck {
         for (int y = 0; y < BuildAdvice.LIFE_MONTHS / 12; y++) {
             double w = 0;
             for (int j = 12 * y + 1; j <= 12 * y + 12; j++) w += i > 0 ? Math.pow(1 + i, -j) : 1;
-            double months = Math.max(0, s.ahead().months() - BuildAdvice.HORIZON) + 12 * y + 6;
+            double months = BusinessInvestment.leadFor(s.ahead().months()) + 12 * y + 6;   // from its opening: the months less the horizon they plan past it (BA1; horizonFor() grows with the lead)
             BuildAdvice.Ahead a = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), s.ahead().slack());
             served += w * Math.max(0, Math.max(0, BuildAdvice.shortfall(g, m, site, a))
                     - Math.max(0, BuildAdvice.shortfall(g, m, with, a)));
@@ -1188,9 +1188,12 @@ public class BuildAdviceCheck {
      * SIZED TO THE PROJECTION (0.7.51): the short city's population history
      * rising - two per cent a month over the businesses' window to the
      * people it has - against the same history flat. Every card's growth is
-     * BusinessInvestment.growthFactor() over its wait, held to their
-     * MAX_ORDER_MONTHS, and their PLANNING_HORIZON, to the bit; and no card
-     * orders fewer than the flat history's, for the same need and building.
+     * BusinessInvestment.growthFactor() over its wait and the horizon they
+     * plan past it, to the bit: the wait as it is (BA1 took the twelve-month
+     * hold off it), and the horizon the most of PLANNING_HORIZON and the wait
+     * but never past HORIZON_MOST (horizonFor(), worked here from the two
+     * constants); and no card orders fewer than the flat history's, for the
+     * same need and building.
      */
     static void sizedToTheProjection(Path root) {
         out.println("\n--- 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon ---");
@@ -1211,9 +1214,10 @@ public class BuildAdviceCheck {
         boolean grows = !grown.isEmpty(), raised = false, compared = false;
         for (BuildAdvice.Suggestion s : grown) {
             String what = s.need().label() + ", " + s.template().getName();
-            double wait = Double.isNaN(s.lead()) ? 0 : Math.max(0, Math.min(s.lead(), BusinessInvestment.MAX_ORDER_MONTHS));
-            bits(what + ": k is growthFactor(" + String.format("%.2f", wait) + " + the horizon)", s.ahead().k(),
-                    bi.growthFactor(wait + BusinessInvestment.PLANNING_HORIZON));
+            double wait = Double.isNaN(s.lead()) ? 0 : Math.max(0, s.lead());
+            double horizon = Math.min(BusinessInvestment.HORIZON_MOST, Math.max(BusinessInvestment.PLANNING_HORIZON, wait));
+            bits(what + ": k is growthFactor(" + String.format("%.2f", wait) + " + the horizon, " + String.format("%.2f", horizon) + ")", s.ahead().k(),
+                    bi.growthFactor(wait + horizon));
             grows &= s.ahead().k() > 1;
             for (BuildAdvice.Suggestion f : still) {
                 if (f.need().kind() != s.need().kind() || f.measure().equals(s.measure()) == false || f.template() != s.template()) continue;

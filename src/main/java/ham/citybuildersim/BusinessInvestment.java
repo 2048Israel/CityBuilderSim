@@ -438,7 +438,9 @@ public class BusinessInvestment {
        rationing on top of it.
 
        The refiners' crude units keep their own count (sectors.Refining, a
-       unit count, not a cap on orders). The city's automatic orders have no
+       unit count, not a cap on orders), and the builders one depot on site at
+       a time (sectors.Construction, ONE DEPOT AT A TIME: their depots go first
+       off the top of the month, and seven sharing it opened none for years). The city's automatic orders have no
        profit test to ration them and keep their cut (AutoBuilder.ORDER_MONTHS).
        ===================================================================== */
 

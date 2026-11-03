@@ -143,10 +143,13 @@ import java.io.PrintStream;
  *      tanker its spread as in the prototype's frame, to the bit - and petrol
  *      past what the city imports at the net export price, to the bit.
  *
- *  19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (R3): the city's own
- *      Crude Unit on site does not hold the refiners' planner, which weighs
- *      its units and no other crude unit; a conversion unit on site does;
- *      and the spare-capacity rule still reads a site as building.
+ *  19. NO ORDER IN FLIGHT TO WAIT FOR, NO SECOND CRUDE UNIT ON SITE (R3; BA1):
+ *      the city's own Crude Unit on site does not hold the refiners' planner,
+ *      which weighs its units and no other crude unit; nor does a
+ *      conversion unit on site beside it (it did, "already building", until
+ *      BA1 took the one order off every sector), the planner weighing its
+ *      units as before and still no second crude unit; and the
+ *      spare-capacity rule still reads a site as building.
  */
 public class RefineryCheck {
 
@@ -1484,10 +1487,10 @@ public class RefineryCheck {
                 String.format("%,.0f L of petrol; %,.2f a month less", makes, lost));
     }
 
-    /* ============================ 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) ============================ */
+    /* ============================ 19. NO ORDER IN FLIGHT TO WAIT FOR, NO SECOND CRUDE UNIT ON SITE (0.7.105; BA1) ============================ */
 
     static void oneOrderInFlight() throws Exception {
-        out.println("\n--- 19. one order in flight, crude units on site aside: the city's Crude Unit on site does not hold the"
+        out.println("\n--- 19. no order in flight to wait for (BA1), no second crude unit on site: the city's Crude Unit on site does not hold the"
                 + " refiners' planner (0.7.105) ---");
         Game g = plannerTown("refinerycheck-r3", true);
         Refining r = g.getSectors().refining();
@@ -1512,8 +1515,14 @@ public class RefineryCheck {
             put[1] = g.buildStack(lube, 1, false);
         });
         BusinessInvestment.Decision held = r.plan(plans, g);
-        report("...and with a conversion unit on site as well it holds to one order: \"already building\"",
-                put[1] == Game.BuildResult.SUCCESS && "already building".equals(held.reason), held.reason);
+        // REWRITTEN (BA1): this asserted that a conversion unit on site held the planner to "already building" - the one order
+        // every sector was held to (BusinessInvestment.MAX_CONCURRENT_ORDERS, gone). It weighs its units with the one on site
+        // counted in the feed (Refining.outlook()); here a Reformer would lose money on it, and a second crude unit is never weighed.
+        report("...and with a conversion unit on site as well it is not held to one order either (BA1): it weighs its units, the one on site counted,"
+                        + " and still no second crude unit",
+                put[1] == Game.BuildResult.SUCCESS && b.getUnderConstructionBySector(Sectors.REFINING) == 2
+                        && !"already building".equals(held.reason) && (held.template == null || !Refining.isCrudeUnit(held.template)),
+                held.reason);
         assertTrue("...while the spare-capacity rule still reads a refiners' site as building, not shrinking",
                 !plans.planRetirement(r, 0, 1e9, b.getUnderConstructionBySector(Sectors.REFINING)).build);
     }

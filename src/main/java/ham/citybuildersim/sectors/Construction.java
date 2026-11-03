@@ -681,6 +681,9 @@ public final class Construction extends Sector {
        PLANNING - off the order book
        =================================================================== */
 
+    /** The builders' word while a depot of theirs is on site (ONE DEPOT AT A TIME, below); "already building" until BA1. */
+    public static final String ONE_DEPOT_ON_SITE = "a depot on site already";
+
     /**
      * Everyone else's lead times are its output, so when the queue gets long
      * it is the constraint on the whole city. Measured as months of backlog
@@ -703,43 +706,50 @@ public final class Construction extends Sector {
      * Automotive, Freight and Business Services use it - since 0.7.18 through
      * Sector.staffing(), the one test every planner that builds posts asks.
      *
-     * A DEPOT A MONTH, THOSE ON SITE COUNTED (BA1). The plan ordered one
-     * depot and waited while it was on site ("already building",
-     * MAX_CONCURRENT_ORDERS; since 0.7.130 a depot the crews' rule would keep
-     * on site past BACKLOG_MONTHS_BEFORE_EXPANDING is built off the top of
-     * the month - BuildingManager, THE BUILDERS' OWN DEPOTS FIRST - so the
-     * wait was a month at most). With no cap on orders (BusinessInvestment,
-     * EVERY BUSINESS MAY BUILD AHEAD) it may order while a depot is on site,
-     * and it counts every depot on site at its nameplate (getPipeline()) as
-     * output to come: the months are the points owed over what the sites get
-     * plus those depots' month, so it orders only while the queue is still
-     * over BACKLOG_MONTHS_BEFORE_EXPANDING at the output it will have. It
-     * is still one a month, never sized to the queue: ordering more at once,
-     * sized to the queue, was measured and not built (the 0.7.130 batch's
-     * notes): alone the depots sat in the queue and the city collapsed; with
-     * the depots first the builders ran away to ten times the depots. Counting
-     * those coming is what keeps a queue the first depot already answers from
-     * ordering one every month it is on site.
+     * ONE DEPOT AT A TIME, BUILT FIRST (0.7.130; the builders' own rule
+     * since BA1). The plan orders one depot and waits while it is on site,
+     * but a depot the crews' rule would keep on site past
+     * BACKLOG_MONTHS_BEFORE_EXPANDING no longer waits at its crew's weight:
+     * it is built off the top of the month (BuildingManager, THE BUILDERS'
+     * OWN DEPOTS FIRST), so the plan is held only while such a depot owes
+     * more than a month, and the next is ordered the month after it opens -
+     * at most a depot a month. Ordering more at once, sized to the queue, was
+     * measured and not built (the 0.7.130 batch's notes): alone the depots
+     * sat in the queue and the city collapsed; with the depots first the
+     * builders ran away to ten times the depots.
+     *
+     * WHY IT OUTLIVED THE CAP ON ORDERS (BA1, 2026-11-02). BA1 took the one
+     * order on site off every sector (BusinessInvestment, EVERY BUSINESS MAY
+     * BUILD AHEAD); the builders keep it as a physical rule of theirs, as
+     * Oil keeps one pipe and Haulage one truck depot. Tried without it - a
+     * depot a month, the depots on site counted at their nameplate as output
+     * to come - a stalled city whose sites got 76 points of 458 ordered a
+     * depot every month until seven were on site, all sharing the 76 points
+     * off the top: its first depot opened in month 22 where one at a time
+     * opens it inside BuildersFirstCheck's bound of 7 (sections 4 and 5),
+     * and a copy of a city K times larger stopped tracking it (ScaleCheck: K
+     * depots on site there against one here, and each ordered one more).
+     * The depots' price is not the queue's to ration either: theirs go first.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
+        // One depot on site at a time (ONE DEPOT AT A TIME, above): the builders' own rule, not the cap on orders BA1 removed.
+        if (buildings.getUnderConstructionBySector(sector) > 0) {
+            return BusinessInvestment.Decision.no(sector, ONE_DEPOT_ON_SITE);
+        }
 
         // ...at every post (0.7.17): a builder that has laid crews off for
         // want of work is not short of crews for the queue it is weighing.
         double forSites = game.getBuildingOutputAtEveryPost();
         double remaining = buildings.getRemainingConstructionPoints();
-        // ...and the depots on site at their nameplate, the output the queue will meet (BA1; A DEPOT A MONTH, above).
-        double coming = getPipeline(Good.BUILDING_WORK);
-        double pace = forSites + coming;
-        double backlogMonths = pace > 0 ? remaining / pace
+        double backlogMonths = forSites > 0 ? remaining / forSites
                 : remaining > 0 ? Double.MAX_VALUE : 0;
-        String onSite = coming > 0 ? String.format(", with %,.0f points a month on site", coming) : "";
 
         if (backlogMonths < BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING) {
             return BusinessInvestment.Decision.no(sector,
-                    String.format("%.1f months of work queued%s", backlogMonths, onSite));
+                    String.format("%.1f months of work queued", backlogMonths));
         }
 
         BuildingsTemplate best = null;
@@ -776,9 +786,9 @@ public final class Construction extends Sector {
         if (best == null) {
             if (staffingHold != null) {
                 return BusinessInvestment.Decision.unstaffed(sector, staffingHold, String.format(
-                        "%s months of work queued%s, but %s",
+                        "%s months of work queued, but %s",
                         backlogMonths == Double.MAX_VALUE ? "endless" : String.format("%.1f", backlogMonths),
-                        onSite, staffingHold.why(staffingHoldName)));
+                        staffingHold.why(staffingHoldName)));
             }
             return BusinessInvestment.Decision.no(sector, "nothing that adds capacity");
         }
@@ -791,7 +801,7 @@ public final class Construction extends Sector {
 
         return new BusinessInvestment.Decision(sector, best, 1,
                 backlogMonths == Double.MAX_VALUE ? "the repairs take every crew it has"
-                        : String.format("%.1f months of work queued%s", backlogMonths, onSite), true);
+                        : String.format("%.1f months of work queued", backlogMonths), true);
     }
 
     /**

@@ -894,7 +894,7 @@ public class BuildCardCheck {
             boolean passes = g.hasDepositFor(t, 1) && g.hasLicencesFor(t, 1) && inv.owner().staffing(t).passes()
                     && t.getLandSqFt() <= land.getAvailableSqFt() && inv.estimate() > 0
                     && (g.buysOnMortgage(owner, t) ? g.lenderTest(owner, t).passes()
-                        : g.carriesItsWholeCost(owner, inv.estimate(), g.getBusinessInvestment().getCostOf(t, 1)));
+                        : g.carriesItsWholeCost(owner, t, 1, inv.estimate(), g.getBusinessInvestment().getCostOf(t, 1)));
             if (passes) clear++;
             none &= passes == (inv.own() == null);
         }
@@ -1406,7 +1406,7 @@ public class BuildCardCheck {
             // inflation people expect, so the real rate the test reads is over it whatever the sector's spread.
             double carried = 12 * earns / (BusinessInvestment.PROFIT_OVER_INTEREST * cost);
             credit.setPrimeRate(prime + 2 * carried + plans.getExpectedInflation());
-            Game.InterestTest test = g.interestTest(bakers, earns, cost);
+            Game.InterestTest test = g.interestTest(bakers, bakery, 1, earns, cost);
             BuildCard.Investors inv = BuildCard.investors(g, bakery);
             BuildCard.Gate gate = inv.own();
             out.printf("      a Bakery: %s from the till; prime %.4f%% -> %.4f%%; earns %s a month, its interest %s a month"
@@ -1421,9 +1421,15 @@ public class BuildCardCheck {
             assertTrue("...with what one would earn and what it must: PROFIT_OVER_INTEREST times a month's interest",
                     gate != null && gate.a() == earns && gate.b() == test.needs()
                     && gate.b() == test.interest() * BusinessInvestment.PROFIT_OVER_INTEREST && gate.why() == null);
-            bits("...its interest struck on its whole cost though the till pays it all, at the real rate the test reads",
+            // ...grown over the Bakery's wait since BA1 (THE INTEREST ON THE WAIT): the carry of one at the rate it is judged at.
+            double tillRate = credit.projectRate(bakers, 0);
+            double bakeryCarry = plans.carryOf(bakery, 1, tillRate);
+            assertTrue("fixture: the Bakery waits for the builders, so its cost is grown over the wait (carry over 1, and the card's is the model's)",
+                    bakeryCarry > 1 && Double.isFinite(bakeryCarry) && test.carry() == bakeryCarry
+                            && gate != null && gate.test() != null && gate.test().carry() == bakeryCarry);
+            bits("...its interest struck on its whole cost grown over the wait though the till pays it all, at the real rate the test reads",
                     gate == null || gate.test() == null ? Double.NaN : gate.test().interest(),
-                    cost * plans.realTestRate(credit.projectRate(bakers, 0)) / 12);
+                    cost * bakeryCarry * plans.realTestRate(tillRate) / 12);
             bits("...the rate it is judged at the bakers' own, the till paying (projectRate() of nothing)",
                     gate == null || gate.test() == null ? Double.NaN : gate.test().rate(), credit.projectRate(bakers, 0));
             BuildCard.Appraisal a = BuildCard.appraise(g, bakery);

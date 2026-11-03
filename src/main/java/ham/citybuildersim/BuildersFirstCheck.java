@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Construction;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
@@ -18,7 +19,8 @@ import java.util.Locale;
  * WHY. Batch T1 traced Jerus's construction-bound city (the project's
  * why-the-builders-stall.md, section 3): repairs took 0.81 of the builders'
  * nameplate, about 420 points a month reached the sites, and the builders'
- * one depot order (BusinessInvestment.MAX_CONCURRENT_ORDERS) waited in the
+ * one depot order (one at a time; BusinessInvestment.MAX_CONCURRENT_ORDERS
+ * until BA1, sectors.Construction.ONE_DEPOT_ON_SITE since) waited in the
  * queue at its crew's weight - 0.4 points a month - so their plan said
  * "already building" in 119 of 120 months and they could not grow out of it.
  * Jerus chose option C, the depots first, as its own batch (2026-10-10), and
@@ -50,7 +52,8 @@ import java.util.Locale;
  *      one order never holds the plan past the months it expands at (and
  *      one more) - a depot the rule would open in time waits by the rule -
  *      and it ends with more nameplate; the twin without it holds its
- *      nameplate and its plan says "already building" every month.
+ *      nameplate and its plan says its depot is on site every month
+ *      ("already building" until BA1; Construction.ONE_DEPOT_ON_SITE).
  *   5. NEVER LAID OFF THE MONTH IT OPENS (the 0.7.17 failure: depots bought
  *      for rushes, then laid off): every month a depot opens the builders
  *      offer every post and their loss clock is under the retirement rule's,
@@ -257,8 +260,8 @@ public class BuildersFirstCheck {
                 bm.getRemainingConstructionPoints() / atEvery >= BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING);
         assertTrue("fixture: the builders offer every post", output == atEvery);
         assertTrue("fixture: their own plan ordered one depot", g.getLastInvestment(BUILDERS).startsWith("Built 1 " + DEPOT));
-        assertTrue("...which is on site: one, their MAX_CONCURRENT_ORDERS", bm.underConstructionByName(DEPOT)
-                == BusinessInvestment.MAX_CONCURRENT_ORDERS && bm.getUnderConstructionBySector(BUILDERS) == 1);
+        assertTrue("...which is on site: one, their one depot at a time (sectors.Construction, ONE DEPOT AT A TIME)",
+                bm.underConstructionByName(DEPOT) == 1 && bm.getUnderConstructionBySector(BUILDERS) == 1);
         assertTrue("...the builders' site, not the city's", !bm.isCitySite(key) && bm.addsToTheBuilders(key));
         assertTrue("...among other owners' sites and the city's", bm.siteKeysOnSite().size() >= 5 && bm.citySiteKeys().size() >= 4);
         double total = 0;
@@ -377,22 +380,22 @@ public class BuildersFirstCheck {
                 }
             }
             if (now < before) monthsFell++;
-            if (plan.contains("already building")) {
+            if (plan.contains(Construction.ONE_DEPOT_ON_SITE)) {
                 holdingWith++;
                 if (firstOpened > 0) streak++;
             } else {
                 streak = 0;
             }
             longestAfter = Math.max(longestAfter, streak);
-            if (without.getLastInvestment(BUILDERS).contains("already building")) holdingWithout++;
+            if (without.getLastInvestment(BUILDERS).contains(Construction.ONE_DEPOT_ON_SITE)) holdingWithout++;
             out.printf("  month %2d: %2d depots, the sites %,6d a month, owed %,9.0f | %s%n", m, now, with.getBuildingOutput(),
                     b.getRemainingConstructionPoints(), plan.length() > 110 ? plan.substring(0, 110) + "..." : plan);
         }
         long endA = a.getTotalConstructionCapacity(), endB = b.getTotalConstructionCapacity();
         out.printf("  with the rule: %d depots opened in %d months (the first in month %d), nameplate %,d -> %,d;"
-                        + " the sites %,.0f -> %,d a month; its plan held 'already building' in %d months%n",
+                        + " the sites %,.0f -> %,d a month; its plan held '" + Construction.ONE_DEPOT_ON_SITE + "' in %d months%n",
                 openings, RUN_MONTHS, firstOpened, startB, endB, trap, with.getBuildingOutput(), holdingWith);
-        out.printf("  without it: nameplate %,d -> %,d, the depot %,.1f of %,d points in; its plan held 'already building'"
+        out.printf("  without it: nameplate %,d -> %,d, the depot %,.1f of %,d points in; its plan held '" + Construction.ONE_DEPOT_ON_SITE + "'"
                         + " in %d of %d months%n", startA, endA,
                 a.stackOfKey(ConstructionControl.keyOf(template(without, DEPOT))).getConstructionProgress(), points,
                 holdingWithout, RUN_MONTHS);
@@ -411,7 +414,7 @@ public class BuildersFirstCheck {
         assertTrue("...and the sites get more than the trap's month", with.getBuildingOutput() > trap);
         bits("without the rule the builders' nameplate holds", endA, startA);
         assertTrue("...their depot still on site, not open", a.countByName(DEPOT) == depotsA && a.underConstructionByName(DEPOT) == 1);
-        assertTrue("...and their plan said 'already building' every month", holdingWithout == RUN_MONTHS);
+        assertTrue("...and their plan said its depot is on site every month", holdingWithout == RUN_MONTHS);
     }
 
     /* ============================ 5. NEVER LAID OFF ============================ */
@@ -510,17 +513,27 @@ public class BuildersFirstCheck {
         // sites get nothing of the builders' month - so the foreign contractor takes the orders at its price
         // (BuildersShort.FOREIGN_PRICE), which the landlords' own plan does not pay, and the homes this section watches
         // the town build were no longer ordered there. The fixture orders them, as DeathCareFirstCheck.sites() does,
-        // out of cash the quote itself sizes.
+        // out of cash the quote itself sizes. Since BA1 the landlords' own plan orders Houses too (it has no cap to wait
+        // on), and the twins' builders differ, so the Houses already on site are not the same in both; the check tops the
+        // twin with fewer up to the one with more (and both to LANDLORDS_HOUSES at least), so they are alike as they were.
+        String houses = ConstructionControl.keyOf(template(gated, "House"));
+        int mostHouses = LANDLORDS_HOUSES;
         for (Game g : new Game[] { gated, ungated }) {
+            BuildingsStacks s = g.getBuildingManager().stackOfKey(houses);
+            mostHouses = Math.max(mostHouses, s == null ? 0 : s.getUnderConstruction());
+        }
+        for (Game g : new Game[] { gated, ungated }) {
+            BuildingsStacks s = g.getBuildingManager().stackOfKey(houses);
+            final int topUp = mostHouses - (s == null ? 0 : s.getUnderConstruction());
+            if (topUp <= 0) continue;
             BuildingsTemplate house = template(g, "House");
-            double price = g.quoteBuild(house, LANDLORDS_HOUSES).total;
+            double price = g.quoteBuild(house, topUp).total;
             quietly(() -> {
                 g.getEconomyManager().setSectorCash(Sectors.REAL_ESTATE,
                         g.getEconomyManager().getSectorCash(Sectors.REAL_ESTATE) + price);
-                g.buildFor(g.getSectorInvestor(Sectors.REAL_ESTATE), house, LANDLORDS_HOUSES);
+                g.buildFor(g.getSectorInvestor(Sectors.REAL_ESTATE), house, topUp);
             });
         }
-        String houses = ConstructionControl.keyOf(template(gated, "House"));
         assertTrue("fixture: the landlords' Houses on site in both twins, alike",
                 bm.stackOfKey(houses) != null && bm.stackOfKey(houses).getUnderConstruction() >= LANDLORDS_HOUSES
                         && bu.stackOfKey(houses) != null

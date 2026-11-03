@@ -75,8 +75,9 @@ import java.util.regex.Pattern;
  *      whole and adding up, money conserved to RELATIVE_RESIDUAL of what
  *      moved from the first month, the city's books agreeing within
  *      MoneyAudit.tolerance() where a harness's absolute cent would not, no
- *      order reading more waits or asking the bond desk more often than its
- *      search allows, and the median month under MONTH_MEDIAN_MS; and since
+ *      order asking the bond desk more often than its search allows, an order
+ *      sized to the gap and the plots with no wait read (BA1; it was no order
+ *      reading more waits than its halving allowed), and the median month under MONTH_MEDIAN_MS; and since
  *      0.7.55, its ground priced as the city it was copied from is (the same
  *      crowding, the same premium), its rents in reach as that city's are,
  *      and homes built - where at 0.7.54 its land cost about two million
@@ -815,6 +816,7 @@ public class ScaleCheck {
                 RELATIVE_RESIDUAL, worstRelative), worstRelative < RELATIVE_RESIDUAL);
         books.verdicts();
         orders.verdicts();
+        orderSizeAtScale(g);
         // 0.7.55: the ground, the rents and the building, against the city it copies.
         out.printf("      the ground in the first month: %.1f people a km2 (the city's %.1f), premium %.4f (%.4f),"
                         + " US$%.6g a sq ft (US$%.6g)%n", firstCrowding, original.crowding,
@@ -833,8 +835,8 @@ public class ScaleCheck {
                 (Math.pow(people.getPopulation() / (double) peopleBefore, 1.0 / FREE_MONTHS) - 1) * 100,
                 (Math.pow(original.peopleAfter / (double) original.peopleBefore, 1.0 / FREE_MONTHS) - 1) * 100);
         assertTrue("...and it builds: more homes at the end than at the start", homesAfter > homesBefore);
-        assertTrue("fixture: the free copy ordered - an order sized from more than a million needed,"
-                + " and one judged on its interest", orders.largestNeeded > 1_000_000 && orders.invested > 0);
+        assertTrue("fixture: the free copy ordered - an order of more than a million buildings decided,"
+                + " and one judged on its interest", orders.largestNeeded() > 1_000_000 && orders.invested > 0);
         assertTrue(String.format("the median month is under %,.0f ms (%,.0f ms; the slowest %,.0f ms)",
                 MONTH_MEDIAN_MS, median, sorted[FREE_MONTHS - 1]), Timing.below(median, MONTH_MEDIAN_MS));
     }
@@ -1259,19 +1261,14 @@ public class ScaleCheck {
         }
     }
 
-    /** Every order the free copy decides: how big, and how many times it asked the bond desk or read a wait. */
+    /** Every order the free copy decides: how big, and how many times it asked the bond desk (the order's size reads no wait since BA1). */
     static final class Orders implements BusinessInvestment.OrderWatch {
-        int sized, invested, mortgaged, largestNeeded, largestInvested, largestMortgage, mostWaits, mostDesk;
-        int overDesk, overWaits;
+        int invested, mortgaged, largestInvested, largestMortgage, mostDesk;
+        int overDesk;
         final Lender lender = new Lender();
 
-        @Override
-        public void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead) {
-            sized++;
-            largestNeeded = Math.max(largestNeeded, needed);
-            mostWaits = Math.max(mostWaits, waitsRead);
-            if (waitsRead > 32 - Integer.numberOfLeadingZeros(Math.max(1, needed)) + 1) overWaits++;
-        }
+        /** The largest order decided, whichever way it is judged: what a sector's shortfall asked for and the plots allowed (BusinessInvestment.orderSize()), the size the old "needed" counted. */
+        int largestNeeded() { return Math.max(largestInvested, largestMortgage); }
 
         @Override
         public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found) {
@@ -1290,13 +1287,41 @@ public class ScaleCheck {
         }
 
         void verdicts() {
-            out.printf("      orders: %,d sized (the largest needed %,d, at most %d waits read), %,d judged on their"
+            out.printf("      orders: the largest decided %,d, %,d judged on their"
                     + " interest (the largest %,d, at most %d asks of the bond desk), %,d on a mortgage (the largest %,d)%n",
-                    sized, largestNeeded, mostWaits, invested, largestInvested, mostDesk, mortgaged, largestMortgage);
+                    largestNeeded(), invested, largestInvested, mostDesk, mortgaged, largestMortgage);
             lender.verdicts("the copy's");
-            same("no order sized read more waits than one a bit of what it needed, and one more", overWaits, 0);
             same("no order judged on its interest asked the bond desk more than Game.deskCallsMost() times", overDesk, 0);
         }
+    }
+
+    /**
+     * ORDER SIZE AT SCALE (BA1). orderSize() was a halving over the wait of an order, bounded by the bits of what was
+     * needed (this check's "no order read more waits than one a bit of what it needed, and one more"); it is the gap and the
+     * plots now and reads no wait, so there is no bound to hold, and what is left of the claim is that a gap in the billions
+     * is the plots - saturating at the int limit where the cast would have wrapped - and a gap that needs a million
+     * buildings is a million where the ground holds them, in the free copy at this size.
+     */
+    static void orderSizeAtScale(Game g) {
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BuildingsTemplate roomiest = null;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            // A building with a footprint: one with none (an Offshore Platform) has every plot there is, and says nothing of the ground.
+            if (t.getLandSqFt() <= 0) continue;
+            int plots = plans.plotsAvailableFor(t);
+            if (plots >= 1 && (roomiest == null || plots > plans.plotsAvailableFor(roomiest))) roomiest = t;
+        }
+        assertTrue("fixture: the free copy has ground for some building", roomiest != null);
+        if (roomiest == null) return;
+        int plots = plans.plotsAvailableFor(roomiest);
+        out.printf("      %s: room for %,d%n", roomiest.getName(), plots);
+        assertTrue("orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative: " + roomiest.getName(),
+                plans.orderSize(1e13, 1, roomiest) == plots);
+        assertTrue("...a gap of a million buildings is a million where the ground holds them, and the plots where it does not",
+                plans.orderSize(1_000_000, 1, roomiest) == Math.min(1_000_000, plots)
+                        && plans.orderSize(2_000_000, 2, roomiest) == Math.min(1_000_000, plots));
+        assertTrue("...and the same gap in a building holding more is fewer: ceil(gap / capacity)",
+                plans.orderSize(1_000_000, 40, roomiest) == Math.min(25_000, plots));
     }
 
     /**

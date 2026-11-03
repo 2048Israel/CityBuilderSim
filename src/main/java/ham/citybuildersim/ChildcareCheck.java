@@ -211,7 +211,7 @@ public class ChildcareCheck {
         for (int y = 0; y < BuildAdvice.LIFE_MONTHS / 12; y++) {
             double w = 0;
             for (int j = 12 * y + 1; j <= 12 * y + 12; j++) w += i > 0 ? Math.pow(1 + i, -j) : 1;
-            double months = Math.max(0, p.months() - BuildAdvice.HORIZON) + 12 * y + 6;
+            double months = BusinessInvestment.leadFor(p.months()) + 12 * y + 6;   // from its opening: the months less the horizon they plan past it (BA1)
             BuildAdvice.Ahead a = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), p.slack());
             double[] without = BuildAdvice.supplyDemand(g, CHILDCARE, site, a), within = BuildAdvice.supplyDemand(g, CHILDCARE, with, a);
             filled += w * Math.max(0, Math.max(0, without[1] - without[0]) - Math.max(0, within[1] - within[0]));

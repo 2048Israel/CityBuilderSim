@@ -555,8 +555,12 @@ public class CoalMiningCheck {
 
         quietly(() -> first.addStack(plant, 1, false));
         BusinessInvestment.Decision busy = coal.plan(plans, g);
-        assertTrue("with the plant on site nothing is unwashed and one order is in flight: the sector waits",
-                coal.unwashed() == 0 && !busy.build && busy.reason.contains("already building"));
+        // REWRITTEN (BA1): this asserted that "one order is in flight: the sector waits" - "already building", the one order every
+        // sector was held to (BusinessInvestment.MAX_CONCURRENT_ORDERS, gone). The plant on site is in unwashed() already, so it
+        // waits for nothing: nothing is unwashed, no second plant is wanted for the coal the first will wash, and the sector goes on
+        // to the mines' rule instead of waiting (below).
+        report("with the plant on site nothing is unwashed, so no second plant is ordered for it, and the sector is not held to one order in flight (BA1)",
+                coal.unwashed() == 0 && !(busy.build && busy.template == plant) && !busy.reason.contains("already building"), busy.reason);
         // A second town, its longwall and plant both standing and nothing on site.
         Game g2 = coalTown("coalminingcheck-plan2", 3);
         CoalMining coal2 = g2.getSectors().coalMining();
