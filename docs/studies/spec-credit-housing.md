@@ -25,7 +25,7 @@ Each figure is one of four kinds: sourced, as [S*n*] (section 3, every source's 
 10. **Cost, measured.** As designed, cards and homes take 0.2 ms a month at today's 78 cells and 0.9 ms at 390 (five age bands), on a PC whose other sessions held the CPU at 100%. A real month of the playtest city at month 1,260 takes 28.7 ms, so that is under 1% of it today. The medians take 0.2 to 0.8 ms more, struck once a year. Done the plain way, every month, the medians would cost 6.6 ms at 390 cells.
 11. **Seven batches:** HC1 cards, HC2 the debt statistics, HO1 owning and the home market, HO2 owners through life (on the households study's flows), HO3 the screens, HO4 the levers on Policy, LP1 banks selling loans. HC1 bumps the save format; HO1 and LP1 need no bump. Section 7.
 
-**Your calls** (section 5, each with a recommendation; the question boxes carry the facts): C1 the card's rate and minimum, C2 one down-payment share or Canada's tiers, C3 the landlord sells and buys homes (no new sector), C4 the rate's pass-through to the landlord, C5 who buys packages, C6 the retention rule, C7 the order against the households study.
+**Jerus's calls, answered 2026-11-02** (section 5 has the facts each was asked with): C1 21.35% and a 3% minimum; C2 one 5% share, insured under 20%, the stress test + 2 points with no floor; C3 Real Estate sells, buys and builds for sale, no new sector; C4 the Fed paper's force (pass-through 0.4); C5 the city's fund and investors abroad first, households later; C6 5% retention by default; C7 **queue nothing until the households study's batches are decided**. So the seven batches below are proposed, not queued.
 
 ## 2. The design, on the code
 
@@ -304,6 +304,8 @@ The runs shared the PC with five other sessions, which held its 20 threads at 10
 - **Packages** are a list of at most 300 live months (25 years) of a few figures each, a few thousand operations a month: not measured, and not worth it.
 
 ## 5. The calls
+All seven were asked on 2026-11-02, and Jerus took the recommendation on C1 to C6. On C7 he chose to wait: no batch is queued until the households study's batches are decided. Then this study's batches go in `QUEUE.md` in section 7's order, unless that study changes it.
+
 
 **C1. The card's rate and its minimum.**
 - Recommended: 21.35% at a neutral policy rate (Canada's banks [S2]), moving with the bank's household rate, capped at Canada's 35%.
