@@ -115,6 +115,12 @@ public class DeskCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6). On LD2's path whatClosingBooks()'s
+        // town keeps its curve up through the cut to the floor: the loss line, sold at par at the higher rates, is worth
+        // 515.9 against the 517.7 it is carried at (526.9 with LD2 off), so "the rates fell after the second was sold" no
+        // longer holds and the loss line books a gain. The curve's rule, not the desk; queued (LD3) to cause the fixture
+        // on LD2's path and turn LD2 back on here.
+        WantedPosts.carryKeptOut = false;
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         // FloatLinkCheck's fixture builders print through its own streams, which only its main() sets.

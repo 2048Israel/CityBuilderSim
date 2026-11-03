@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.5 — LD2, the wanted posts' bounds after LD1 — 2026-11-03, ready, see docs/queue/LD2-notes.md
+A business's bid for workers now lifts only its own band, and never past sqrt(2). LD1's refused posts were priced
+against the workers they would have taken from the band below, which bid the diploma band up by 7% on average (48% at
+most) in most months it asked nothing, and took bands that asked past LD1's own bound, to 1.9x. They are now priced
+against the workers the posts that exist give, capped on the month's own posts, and a band no migrant can come for asks
+nothing. The comments and WantedPostsCheck 9 now say the asks are priced the month they are made. A replay's history
+cut no longer keeps a company's series from before it listed. Ensemble 24/26 against 22. Eight harnesses whose young
+towns the new wage moves play without it until LD3. The hands-off bank's failures are not LD1's (5 of 12 seeds without
+its bid, 3 with); the sawmills cause them, queued as BF1.
+
 ### 0.9.4 — DZ1, the trade by partner in the money of the day — 2026-11-02, ready, see docs/queue/DZ1-notes.md
 A currency reform now carries the city's trade by partner. Its history rounds each finished year to a grid in money,
 and the grid followed the price factor but not the reform's unit: after a reform by a hundred it was a hundred times

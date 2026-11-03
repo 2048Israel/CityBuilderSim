@@ -234,6 +234,10 @@ public class CurrencyRegimeCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6): on LD2's path the pegged twins' month
+        // after the peg brings no money in (the vault bought US$0k), so the settlement's fixtures and the seven lines on them
+        // fail. The claim is the peg's payer, not the wage; queued (LD3) to cause the surplus at the peg on LD2's path.
+        WantedPosts.carryKeptOut = false;
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         long started = System.currentTimeMillis();

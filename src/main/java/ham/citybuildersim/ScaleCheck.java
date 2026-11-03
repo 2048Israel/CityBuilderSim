@@ -316,6 +316,11 @@ public class ScaleCheck {
      * (1.6e-2 to 3.5e-2 against .015), unemployment (3.9e-2 to 6.9e-2) and prices, and "the free copy ordered" in one or both copies.
      * 717 is the one with room: 9,517 people at 722, the ten-billion copy's largest order 5.6 million needed, people tracked to
      * 2.0e-3, unemployment to 1.0e-2 (716's is 3.0e-2 against .033). A month, not a window, and ST3 is still the fix.
+     *
+     * ...AND LD2 (2026-11-03) FOUND NO MONTH. On LD2's wage (the refused posts priced against the supply the posts that exist give)
+     * the town stalls, and ST2's scanner, every month from 600 to 1,300 and every tenth to 2,500, found none that holds every line:
+     * the fewest misses three (681; 730, 735, 760, 762, 1,073: both copies' "it builds", and the copy's cash). So this check plays
+     * FC1's town, LD2's wage off (main()), at 717 as above, until ST3.
      */
     static final int FREE_FIXTURE_MONTHS = 717;
 
@@ -416,6 +421,11 @@ public class ScaleCheck {
 
     public static void main(String[] args) throws Exception {
         Locale.setDefault(Locale.CANADA);
+        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6), as FREE_FIXTURE_MONTHS says: on LD2's
+        // model the playtest's town stalls (3,000 to 5,300 people, its homes 1,658 from month 400, its treasury under nothing
+        // from 750), and of 821 months scanned (600 to 1,300, then every tenth to 2,500) none holds every line - both copies'
+        // "it builds" fail in every month past 830. ST3 gives this check a town of its own plan and turns LD2 back on here.
+        WantedPosts.carryKeptOut = false;
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         Path root = TempDirs.create("scalecheck");

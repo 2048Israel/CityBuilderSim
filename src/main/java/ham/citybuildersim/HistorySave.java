@@ -1421,12 +1421,25 @@ public class HistorySave {
                 int drop = Math.min(dropped, list.size());
                 if (drop > 0) list.subList(list.size() - drop, list.size()).clear();
             }
+            // A company's, a sector's or a world money's series begins at its first point (computeIfAbsent), so one that
+            // began after lastMonth had no name then, and the cut leaves it none. LD2: ReplayCheck's cut at m0+12 kept,
+            // as two empty series, the share price and value of a company first listed at m0+13, which the city then had not.
+            dropEmpty(copy.sharePrice);
+            dropEmpty(copy.shareValue);
+            dropEmpty(copy.sectorNetIncome);
+            dropEmpty(copy.sectorWorkers);
+            dropEmpty(copy.worldMoney);
         }
         if (dropped > 0 && copy.tradeByPartner != null) {
             int thisYear = CityCalendar.yearOf(lastMonth);
             copy.tradeByPartner.removeIf(t -> t.year() >= thisYear);
         }
         return copy;
+    }
+
+    /** The series of a keyed map that a cut left with no point, gone with their names (cutAt()). */
+    private static void dropEmpty(Map<String, List<Double>> series) {
+        if (series != null) series.values().removeIf(s -> s == null || s.isEmpty());
     }
 
     /* ==================================================================
