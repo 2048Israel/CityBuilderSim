@@ -1,4 +1,4 @@
-# ConstructionControl.java - 901 lines · 66 methods · 11 constants · model
+# ConstructionControl.java - 911 lines · 66 methods · 11 constants · model
 
 `ham/citybuildersim/ConstructionControl.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
 
@@ -134,19 +134,19 @@
 | 541 | `public java.util.List<Run> runs` |  |
 | 543 | `public java.util.List<Paving> paving` | F. |
 | 569 | `private State state` |  |
-| 878 | `private final Demolition site` |  |
-| 879 | `private double unitsSold, paid` |  |
-| 894 | `public final java.util.List<Overtime> overtime` |  |
-| 895 | `public final java.util.List<Refund> refunds` |  |
-| 896 | `public final java.util.List<Completed> completed` |  |
-| 897 | `public final java.util.List<Paved> paved` |  |
-| 898 | `public double overtimePoints` |  |
+| 888 | `private final Demolition site` |  |
+| 889 | `private double unitsSold, paid` |  |
+| 904 | `public final java.util.List<Overtime> overtime` |  |
+| 905 | `public final java.util.List<Refund> refunds` |  |
+| 906 | `public final java.util.List<Completed> completed` |  |
+| 907 | `public final java.util.List<Paved> paved` |  |
+| 908 | `public double overtimePoints` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 862 | **type** `public final class ConstructionControl` | The player's hand on the construction queue (0.7.22): the order the city's own sites are served in, the sites it has put on overtime, the orders it has stopped and the shells they left, the buildings it is pulling dow... |
+| 40 | 872 | **type** `public final class ConstructionControl` | The player's hand on the construction queue (0.7.22): the order the city's own sites are served in, the sites it has put on overtime, the orders it has stopped and the shells they left, the buildings it is pulling dow... |
 
 ### A. PRIORITY: THE CITY'S OWN SITES, IN THE ORDER THE PLAYER SETS (lines 42-71)
 
@@ -283,19 +283,19 @@
 |---:|---:|---|---|
 | 850 | 8 | `public void redenominate(double scale)` | A currency reform: the money is money; the points, the units and the ground are not. |
 
-### THE MONTH'S EVENTS, for Game to settle. A month's flows, read once. (lines 859-901)
+### THE MONTH'S EVENTS, for Game to settle. A month's flows, read once. (lines 859-911)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 864 | 2 | **type** `public record Overtime(String key, String building, int month, double share, double work, double perPoint, ...` | A rushed site worked on overtime this month: its share, its work, the builders' wage bill a point it was struck at, and the premium on its crews, before the tax. |
-| 868 | 2 | **type** `public record Refund(int templateId, String building, int buildings, double value, double allowance, double...` | An order stopped at the month's end: what comes back to the city, the material allowance in it, the points of work it was for, and the shell it left. |
-| 877 | 11 | **type** `public static final class Completed` | A demolition finished this month - and, once Game has sold it, its own sale: the units the builders bought and what they paid, which the inbox reads off the site rather than by its name (after the docs pass: two of on... |
-| 880 | 1 | `public Completed(Demolition site)` _(in ConstructionControl.Completed)_ |  |
-| 881 | 1 | `public Demolition site()` _(in ConstructionControl.Completed)_ |  |
-| 883 | 1 | `public double unitsSold()` _(in ConstructionControl.Completed)_ | Units of its material the builders bought. |
-| 885 | 1 | `public double paid()` _(in ConstructionControl.Completed)_ | ...and what they paid for them. |
-| 886 | 1 | `void sold(double units, double money)` _(in ConstructionControl.Completed)_ |  |
-| 890 | 1 | **type** `public record Paved(int roads, double landFreedSqFt)` | F. |
-| 893 | 8 | **type** `public static final class Events` | The month's events, as the advance left them. |
-| 899 | 1 | `public boolean isEmpty()` _(in ConstructionControl.Events)_ |  |
+| 869 | 2 | **type** `public record Overtime(String key, String building, int month, double share, double work, double perPoint, ...` | A rushed site worked on overtime this month: its share, its work, the builders' wage bill a point it was struck at, the premium on its crews, before the tax, and the part of its share the city's own crews worked (FC1b... |
+| 878 | 2 | **type** `public record Refund(int templateId, String building, int buildings, double value, double allowance, double...` | An order stopped at the month's end: what comes back to the city, the material allowance in it, the points of work it was for, the shell it left, and whether it was a depot of the builders' served first (BuildingManag... |
+| 887 | 11 | **type** `public static final class Completed` | A demolition finished this month - and, once Game has sold it, its own sale: the units the builders bought and what they paid, which the inbox reads off the site rather than by its name (after the docs pass: two of on... |
+| 890 | 1 | `public Completed(Demolition site)` _(in ConstructionControl.Completed)_ |  |
+| 891 | 1 | `public Demolition site()` _(in ConstructionControl.Completed)_ |  |
+| 893 | 1 | `public double unitsSold()` _(in ConstructionControl.Completed)_ | Units of its material the builders bought. |
+| 895 | 1 | `public double paid()` _(in ConstructionControl.Completed)_ | ...and what they paid for them. |
+| 896 | 1 | `void sold(double units, double money)` _(in ConstructionControl.Completed)_ |  |
+| 900 | 1 | **type** `public record Paved(int roads, double landFreedSqFt)` | F. |
+| 903 | 8 | **type** `public static final class Events` | The month's events, as the advance left them. |
+| 909 | 1 | `public boolean isEmpty()` _(in ConstructionControl.Events)_ |  |
 

@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.7 — FC1b, the foreign contractor's book and overtime after FC1 — 2026-11-03, ready, see docs/queue/FC1b-notes.md
+In the builders' trap a cancelled order now comes off the foreign contractor's book by its points left (a depot of
+the builders' served first, never on his book, excepted). Before, he kept building a cancelled order's points at his
+price, and a cancel and restart put them on his book twice. A rushed site's overtime is now worked and paid on the
+city's own crews' part of its share alone. Before, the city paid its households overtime for hours his crews worked,
+and the builders earned points nobody worked. With no contractor the month is the same to the bit. ConstructionTrapCheck
+9-11 cause each case: the cancel and restart, the rush beside him, and a city saved mid-trap whose next month matches
+its twin's. The playtest's trace is byte-identical (no ensemble). Both fire only in a city in the trap.
+
 ### 0.9.6 — BD1, the bank's discount re-struck where an issue or a trade releases it — 2026-11-03, ready, see docs/queue/BD1-notes.md
 The bank's equity is its parts again after it buys the city's paper. Its unearned discount on that paper is re-read
 from the debt book at every refresh, and twice the book's figure moved with nothing to book it: a line reopened at a

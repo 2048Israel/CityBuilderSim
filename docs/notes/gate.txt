@@ -1,9 +1,9 @@
-# gate of Merge batch/BD1: the bank's equity parts part from its equity after it buys the city's paper (SectorStatementCheck, on FC1's path: month 135's unearned discount falls 7.06 with no named cause, off by 7.05 in 226 of 479 bank-months; BK1's class, the money audit holds). Name the release and turn FC1 back on in SectorStatementCheck (found by FC1, which plays it with FC1 off meanwhile), 0.9.6
+# gate of Merge batch/FC1b: fC1's review follow-ups (the stranger's review at FC1's gate, 2026-11-02): a cancelled order cut from the foreign contractor's book by its share (no point billed twice after a restart), and overtime struck on the city's own crews' points only, not the contractor's, 0.9.7
 # date: 2026-11-03
 # earth-2.bin: named
 # nightly: 2026-11-03 01:35 0.9.5 31f675b6 4,000 months: RED, exit 1 in 88 s: a building on the map moved 4 time(s), months 3010-3013
-# suite: 170 harnesses run in 1753s: 170 passed, 0 failed
-# timing: 15 harnesses run in 473s: 14 passed, 1 failed; its red lines were judged side by side with main's, below
+# suite: 170 harnesses run in 1977s: 170 passed, 0 failed
+# timing: 15 harnesses run in 453s: 14 passed, 1 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.9 ms, batch 27.5 ms (-8.0%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.4 ms, batch 28.9 ms (+2.1%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]

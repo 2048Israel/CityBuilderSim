@@ -322,12 +322,20 @@ public final class Construction extends Sector {
         if (bill > 0) bookImportedService(FOREIGN_CREWS, bill);
     }
 
-    /** The contractor has built these points of its book: the book comes down by them, never below nothing. */
+    /**
+     * These points off the contractor's book, never below nothing: points he built, a depot he builds as the
+     * builders' own (bill()), or an order cancelled (cancelOrder(), FC1b).
+     */
     public void takeFromForeignBook(double points) {
         foreignBook = Math.max(0, foreignBook - Math.max(0, points));
     }
 
-    /** The book at most what is owed on site: an order cancelled leaves the contractor working for nobody. */
+    /**
+     * The book at most what is owed on site, before each month's offer (Game.foreignCrewsOffer()). A cancelled order
+     * is cut from the book when it stops (cancelOrder(), FC1b); this covers what nothing cuts by name - the book's
+     * points built by the city's own crews instead, which leave it more than the sites owe only once the whole queue
+     * is smaller than it - so he never builds points nobody owes.
+     */
     public void capForeignBook(double owedOnSite) {
         foreignBook = Math.max(0, Math.min(foreignBook, Math.max(0, owedOnSite)));
     }
@@ -473,11 +481,16 @@ public final class Construction extends Sector {
      * A cancelled order, stopped (0.7.22; ConstructionControl, C. CANCEL):
      * what the city prepaid and the builders have not earned goes back out
      * of the book, and the work it was for off the order book's points.
-     * Never below nothing.
+     * Never below nothing. And (FC1b) `offTheBook` of it off the foreign
+     * contractor's book: the order's points, which bill() put there while
+     * he took orders, but nothing for a depot he builds as the builders'
+     * own. The book holds points, not orders, so an order he never had
+     * takes its points off it all the same (FC1b's notes, the calls).
      */
-    public void cancelOrder(double refund, double points) {
+    public void cancelOrder(double refund, double points, double offTheBook) {
         unearnedRevenue = Math.max(0, unearnedRevenue - Math.max(0, refund));
         backlogPoints = Math.max(0, backlogPoints - Math.max(0, points));
+        takeFromForeignBook(offTheBook);
     }
 
     /**

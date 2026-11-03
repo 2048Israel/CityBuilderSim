@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**170 harness files, 18,739 labelled assertions.** AllChecks runs 170 of them.
+**170 harness files, 18,821 labelled assertions.** AllChecks runs 170 of them.
 
 ## Which harnesses read which class
 
@@ -262,7 +262,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SavedCities](map/SavedCities.md) | RankingsCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck, PartnerCallsCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CapitalFlowCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ReloadCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorScreen](map/SectorScreen.md) | **none** |
@@ -289,7 +289,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
-| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
@@ -4326,7 +4326,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L836 ...the second its own: what the till had left
   - L839 the notice says each one's sale, not the last one's twice
 
-## ConstructionTrapCheck.java - 118 labelled assertions
+## ConstructionTrapCheck.java - 200 labelled assertions
 
 > The builders short (FC1): what an order pays a point of work as the repairs leave the builders fewer points for the
 > sites, and the foreign contractor that takes the orders, builds the builders' own depots first and is paid abroad
@@ -4342,132 +4342,217 @@ _(this harness does not label its checks through a helper - it prints its findin
 > city out: DeathCareFirstCheck's city with enough standing roads that the repairs take all but a sliver of the month.
 > ...
 
-- **L189 1. the price's shape: the premium, the contractor's floor, his price and his capacity**
-  - L191 the knee is the backlog the builders themselves expand at
-  - L192 no premium with nothing queued
-  - L193 ...none just under the knee
-  - L194 ...and none at it
-  - L195 ...a NaN reads as none
-  - L196 no jump at the knee: a millionth of a month past it, a hair of premium
-  - L207 strictly rising past the knee, at every step from a day to a thousand years past it
-  - L208 ...and under the ceiling at every one of them: the months a city can have never reach it
-  - L209 half the ceiling at the knee and HALF_MONTHS
-  - L210 exactly the ceiling with the sites at nothing (infinite months)
-  - L212 with no points for the sites the months queued are infinite, though a queue stands
-  - L214 ...and though nothing is queued
-  - L215 an empty queue over points for the sites is none
-  - L216 a queue is its points over the sites' month
-  - L217 a NaN queue reads as none
-  - L218 ...a NaN month for the sites as none of them
-  - L221 the contractor takes orders just under FOREIGN_FLOOR of the month
-  - L222 ...with the sites at nothing
-  - L223 ...not at the floor
-  - L224 ...nor over it, up to the whole month
-  - L226 ...nor with no month at all, the sites at nothing too
-  - L227 his price is above anything the city's own premium reaches: no city prefers him
-  - L236 the multiple is FOREIGN_PRICE while he takes orders, else one and the premium
-  - L239 his capacity is the depot's points when the builders' month is small
-  - L240 ...his share of a large month
-  - L241 ...the two meet where the share is the depot
-  - L244 ...never under the depot's points, at any month of the builders'
-  - L245 ...and never negative with no depot
-- **L301 2. the trap, caused: the repairs take all but a sliver of the builders' month, every post offered**
-  - L314 fixture: the repairs take more than all but FOREIGN_FLOOR of the builders' month, every post offered
-  - L316 ...so the sites get under FOREIGN_FLOOR of it
-  - L317 ...but only just: one road fewer left them at the floor or over it, the contractor not yet taking orders
-  - L320 fixture: the builders offer every post, as the trace's city did
-  - L321 fixture: the Penitentiary still owes most of its points (it keeps every post offered)
-  - L324 fixture: work owed on site, the city's own and the landlords' Houses
-  - L327 the contractor takes orders
-  - L328 ...every order's work at his price: the multiple is FOREIGN_PRICE
-  - L329 the months queued are far past the knee and the city's own premium is within a hair of its ceiling
-  - L331 fixture: nothing was on his book before the trap's sites (the Penitentiary was ordered before it)
-  - L332 the sites ordered in the trap are on his book, point for point: what the queue gained
-- **L388 3. the price rises as the free points fall: a House's quote at five states of a city that never met the trap**
-  - L396 fixture: the queue is under the knee at the points the builders have, the contractor not taking orders
-  - L398 fixture: flat ground, so the quote's work is the House's alone (no foothill to prepare)
-  - L399 no premium
-  - L400 ...so the multiple is exactly one
-  - L401 ...and the quote's sticker is the template's work to the bit
-  - L402 ...and the price a point earns the builders is the base price
-  - L420 fixture:
-  - L423 an order placed raises the next order's price
-  - L424 ...the months queued up by exactly its points over the free points
-  - L425 ...and the next is priced as an order after it in a run is: on the queue with its points ahead of it
-  - L427 ...at the premium of the queue as it now stands
-  - L441 the free points fell
-  - L442 ...past the knee, the contractor not taking orders
-  - L443 ...the multiple is one and the premium at the months queued
-  - L444 ...the quote's work over the template's is that multiple
-  - L445 ...and it is above the state before, strictly
-  - L446 ...the planners' cost with it
-  - L448 the premium's states rise in the months queued too
-  - L450 under the floor the contractor takes the orders, the state before it not
-  - L451 ...the multiple is FOREIGN_PRICE
-  - L452 ...and the quote's work is FOREIGN_PRICE times the template's
-  - L453 ...above the city's own premium at its most, and above anything it could reach
-  - L455 ...the planners' cost with it
-  - L456 ...but the builders' own price of a point is the city's premium, never the contractor's multiple
-  - L458 ...which is the base with the city's own premium: the contractor's price pays abroad, not the builders
-- **L465 4. the foreign crews take the builders' depot first: priced at his price, built out of his month as theirs, billed**
-  - L474 the depot's order is priced at the contractor's: its work FOREIGN_PRICE times the template's
-  - L484 fixture: the builders order a Construction Depot, in the trap
-  - L486 ...the builders' own depot on site, served first
-  - L488 ...owing all its points
-  - L490 its order is not put on the contractor's book too: he builds it as the builders' own depot
-  - L501 fixture: the contractor's capacity is not under a depot's points, and his work more than it
-  - L505 his offer: the points are his capacity, the work being more than it
-  - L506 ...the builders' own depot's points are the part of it served first
-  - L507 ...his price a point is FOREIGN_PRICE times the base price of a point
-  - L513 the contractor built this month: his points are more than none
-  - L514 ...what he was offered: his capacity, the depot's order the least of it
-  - L515 ...what the sites took past the city's own month
-  - L516 the depot was built first: it owed its points and took them, opened this month, owing nothing
-  - L518 ...the builders' nameplate up by its points
-  - L519 ...the contractor's month went to it: the other sites took no more than the city's own month
-  - L525 he is billed his points at FOREIGN_PRICE the base price of a point, as the month struck it
-  - L527 his book came down by what he built beyond the depot's part (the model's rule), the depot never on it
-  - L532 the builders' statement the month after carries that bill, named for the contractor, as an import
-  - L533 ...in their imports line, which the audit's TRADE scope reads
-  - L535 ...and the city climbed out in the month: its own sites at every post over the floor, the contractor not taking orders
-- **L542 5. the city climbs out and the contractor stops: depots open, the sites climb, the book is worked off**
-  - L568 the builders' own plan, released, orders depots: the plan says so
-  - L569 the builders' depots open: the nameplate is up on the trap's, by more than the depot built by hand
-  - L573 the city's own sites at every post are over FOREIGN_FLOOR of the month again
-  - L574 ...the contractor no longer takes orders
-  - L575 ...and the trap did not return in any month after the first it was over
-  - L576 the trap was met, and the contractor worked on past it, off his book
-  - L577 the run ended with the book worked off:
-  - L578 his book is empty
-  - L580 from then his points and his bill are none, month after month
-  - L590 fixture: the landlords order ten Houses more
-  - L591 no new order adds to his book: it is as it was
-  - L592 ...and the multiple is the city's own premium, under the contractor's
-  - L600 every month played
-  - L601 ...and nothing moved a pool after it
-- **L605 6. the money: his bills are the builders' imports from him, in the audit's TRADE scope; none in a month he built nothing**
-  - L628 the contractor worked and was paid: bills in some months
-  - L629 every month's statement carries the month before's bill as its import from him (struck a month on, as the sites' book is)
-  - L630 the sum of his bills is the sum of what the statements carried from him
-  - L631 it is in their imports line, every month
-  - L632 ...and in the audit's TRADE scope: its imports line for the builders is the statement's, the trade out at least that
-  - L633 nothing was paid abroad in a month he built nothing: no bill, and no line the month after
-- **L640 7. a city that never meets the trap pays nothing abroad: free points, a queue under the knee**
-  - L655 fixture: every month began with the queue under the knee and the contractor not taking orders
-  - L656 ...and the multiple exactly one in every month
-  - L657 ...and the Houses were being built: the queue is shorter
-  - L659 his book is empty
-  - L660 his points this month are none
-  - L661 his bill this month is none
-  - L662 no month's points, bill or statement line abroad in any of them, and no line for him on the builders' inputs
-- **L670 8. saved and loaded: the contractor's book and month come back to the bit; a city that never met the trap saves none**
-  - L684 fixture: saved with the contractor mid-episode: a book, a month of points, a bill
-  - L686 fixture: the save loaded
-  - L687 the book comes back to the bit
-  - L688 ...the month's points
-  - L689 ...and its bill
-  - L691 the save carries them, where the sector keeps its extras
-  - L697 a city that never met the trap saves what it always saved: none of the contractor's keys
+- **L203 1. the price's shape: the premium, the contractor's floor, his price and his capacity**
+  - L205 the knee is the backlog the builders themselves expand at
+  - L206 no premium with nothing queued
+  - L207 ...none just under the knee
+  - L208 ...and none at it
+  - L209 ...a NaN reads as none
+  - L210 no jump at the knee: a millionth of a month past it, a hair of premium
+  - L221 strictly rising past the knee, at every step from a day to a thousand years past it
+  - L222 ...and under the ceiling at every one of them: the months a city can have never reach it
+  - L223 half the ceiling at the knee and HALF_MONTHS
+  - L224 exactly the ceiling with the sites at nothing (infinite months)
+  - L226 with no points for the sites the months queued are infinite, though a queue stands
+  - L228 ...and though nothing is queued
+  - L229 an empty queue over points for the sites is none
+  - L230 a queue is its points over the sites' month
+  - L231 a NaN queue reads as none
+  - L232 ...a NaN month for the sites as none of them
+  - L235 the contractor takes orders just under FOREIGN_FLOOR of the month
+  - L236 ...with the sites at nothing
+  - L237 ...not at the floor
+  - L238 ...nor over it, up to the whole month
+  - L240 ...nor with no month at all, the sites at nothing too
+  - L241 his price is above anything the city's own premium reaches: no city prefers him
+  - L250 the multiple is FOREIGN_PRICE while he takes orders, else one and the premium
+  - L253 his capacity is the depot's points when the builders' month is small
+  - L254 ...his share of a large month
+  - L255 ...the two meet where the share is the depot
+  - L258 ...never under the depot's points, at any month of the builders'
+  - L259 ...and never negative with no depot
+- **L315 2. the trap, caused: the repairs take all but a sliver of the builders' month, every post offered**
+  - L328 fixture: the repairs take more than all but FOREIGN_FLOOR of the builders' month, every post offered
+  - L330 ...so the sites get under FOREIGN_FLOOR of it
+  - L331 ...but only just: one road fewer left them at the floor or over it, the contractor not yet taking orders
+  - L334 fixture: the builders offer every post, as the trace's city did
+  - L335 fixture: the Penitentiary still owes most of its points (it keeps every post offered)
+  - L338 fixture: work owed on site, the city's own and the landlords' Houses
+  - L341 the contractor takes orders
+  - L342 ...every order's work at his price: the multiple is FOREIGN_PRICE
+  - L343 the months queued are far past the knee and the city's own premium is within a hair of its ceiling
+  - L345 fixture: nothing was on his book before the trap's sites (the Penitentiary was ordered before it)
+  - L346 the sites ordered in the trap are on his book, point for point: what the queue gained
+- **L402 3. the price rises as the free points fall: a House's quote at five states of a city that never met the trap**
+  - L410 fixture: the queue is under the knee at the points the builders have, the contractor not taking orders
+  - L412 fixture: flat ground, so the quote's work is the House's alone (no foothill to prepare)
+  - L413 no premium
+  - L414 ...so the multiple is exactly one
+  - L415 ...and the quote's sticker is the template's work to the bit
+  - L416 ...and the price a point earns the builders is the base price
+  - L434 fixture:
+  - L437 an order placed raises the next order's price
+  - L438 ...the months queued up by exactly its points over the free points
+  - L439 ...and the next is priced as an order after it in a run is: on the queue with its points ahead of it
+  - L441 ...at the premium of the queue as it now stands
+  - L455 the free points fell
+  - L456 ...past the knee, the contractor not taking orders
+  - L457 ...the multiple is one and the premium at the months queued
+  - L458 ...the quote's work over the template's is that multiple
+  - L459 ...and it is above the state before, strictly
+  - L460 ...the planners' cost with it
+  - L462 the premium's states rise in the months queued too
+  - L464 under the floor the contractor takes the orders, the state before it not
+  - L465 ...the multiple is FOREIGN_PRICE
+  - L466 ...and the quote's work is FOREIGN_PRICE times the template's
+  - L467 ...above the city's own premium at its most, and above anything it could reach
+  - L469 ...the planners' cost with it
+  - L470 ...but the builders' own price of a point is the city's premium, never the contractor's multiple
+  - L472 ...which is the base with the city's own premium: the contractor's price pays abroad, not the builders
+- **L479 4. the foreign crews take the builders' depot first: priced at his price, built out of his month as theirs, billed**
+  - L488 the depot's order is priced at the contractor's: its work FOREIGN_PRICE times the template's
+  - L498 fixture: the builders order a Construction Depot, in the trap
+  - L500 ...the builders' own depot on site, served first
+  - L502 ...owing all its points
+  - L504 its order is not put on the contractor's book too: he builds it as the builders' own depot
+  - L515 fixture: the contractor's capacity is not under a depot's points, and his work more than it
+  - L519 his offer: the points are his capacity, the work being more than it
+  - L520 ...the builders' own depot's points are the part of it served first
+  - L521 ...his price a point is FOREIGN_PRICE times the base price of a point
+  - L527 the contractor built this month: his points are more than none
+  - L528 ...what he was offered: his capacity, the depot's order the least of it
+  - L529 ...what the sites took past the city's own month
+  - L530 the depot was built first: it owed its points and took them, opened this month, owing nothing
+  - L532 ...the builders' nameplate up by its points
+  - L533 ...the contractor's month went to it: the other sites took no more than the city's own month
+  - L539 he is billed his points at FOREIGN_PRICE the base price of a point, as the month struck it
+  - L541 his book came down by what he built beyond the depot's part (the model's rule), the depot never on it
+  - L546 the builders' statement the month after carries that bill, named for the contractor, as an import
+  - L547 ...in their imports line, which the audit's TRADE scope reads
+  - L549 ...and the city climbed out in the month: its own sites at every post over the floor, the contractor not taking orders
+- **L556 5. the city climbs out and the contractor stops: depots open, the sites climb, the book is worked off**
+  - L582 the builders' own plan, released, orders depots: the plan says so
+  - L583 the builders' depots open: the nameplate is up on the trap's, by more than the depot built by hand
+  - L587 the city's own sites at every post are over FOREIGN_FLOOR of the month again
+  - L588 ...the contractor no longer takes orders
+  - L589 ...and the trap did not return in any month after the first it was over
+  - L590 the trap was met, and the contractor worked on past it, off his book
+  - L591 the run ended with the book worked off:
+  - L592 his book is empty
+  - L594 from then his points and his bill are none, month after month
+  - L604 fixture: the landlords order ten Houses more
+  - L605 no new order adds to his book: it is as it was
+  - L606 ...and the multiple is the city's own premium, under the contractor's
+  - L614 every month played
+  - L615 ...and nothing moved a pool after it
+- **L619 6. the money: his bills are the builders' imports from him, in the audit's TRADE scope; none in a month he built nothing**
+  - L642 the contractor worked and was paid: bills in some months
+  - L643 every month's statement carries the month before's bill as its import from him (struck a month on, as the sites' book is)
+  - L644 the sum of his bills is the sum of what the statements carried from him
+  - L645 it is in their imports line, every month
+  - L646 ...and in the audit's TRADE scope: its imports line for the builders is the statement's, the trade out at least that
+  - L647 nothing was paid abroad in a month he built nothing: no bill, and no line the month after
+- **L654 7. a city that never meets the trap pays nothing abroad: free points, a queue under the knee**
+  - L669 fixture: every month began with the queue under the knee and the contractor not taking orders
+  - L670 ...and the multiple exactly one in every month
+  - L671 ...and the Houses were being built: the queue is shorter
+  - L673 his book is empty
+  - L674 his points this month are none
+  - L675 his bill this month is none
+  - L676 no month's points, bill or statement line abroad in any of them, and no line for him on the builders' inputs
+- **L684 8. saved and loaded: the contractor's book and month come back to the bit; a city that never met the trap saves none**
+  - L698 fixture: saved with the contractor mid-episode: a book, a month of points, a bill
+  - L700 fixture: the save loaded
+  - L701 the book comes back to the bit
+  - L702 ...the month's points
+  - L703 ...and its bill
+  - L705 the save carries them, where the sector keeps its extras
+  - L711 a city that never met the trap saves what it always saved: none of the contractor's keys
+  - L731 fixture: the twins start the same
+  - L733 ...the free points for the sites
+  - L734 ...the repairs
+  - L735 ...the queue
+  - L736 ...his book
+  - L737 ...and the treasury's cash
+- **L741 9. a cancel in the trap: the order's points leave the contractor's book when it stops, and a restart puts them on once**
+  - L755 fixture: the University is the city's own site, ordered while the contractor took orders (he takes them still)
+  - L757 ...and its points are on his book: the book gained what the queue gained, point for point
+  - L759 ...with more on it than the University's points
+  - L761 the city cancels the University in one twin
+  - L766 fixture: the cancel stopped at the month's end, with points left on site, a depot served first it was not
+  - L768 ...and the twin that kept it stopped nothing
+  - L770 ...leaving its shell
+  - L774 the month's advance was the same in both: the points the sites took
+  - L775 ...the contractor's points
+  - L776 ...and his bill
+  - L777 the Refund's points are the shell's: the University's points less the progress it kept
+  - L779 his book is the other twin's less the University's points left at the stop
+  - L784 fixture: he still takes orders when the shell is restarted
+  - L787 fixture: the restart is booked, the University the city's own site again
+  - L791 a restart puts its points on his book once: the book is the twin's that never cancelled
+  - L793 ...by exactly the points the order had left
+  - L794 ...and not the billed twice case: the twin's book plus the order's points, as before FC1b
+  - L796 ...and the queue is the twin's again
+  - L821 fixture: the city orders
+  - L825 ...served first, as the builders' own depots, in both twins
+  - L827 ...and not on his book: the order left it as it was
+  - L829 fixture: the depots are more points than he is offered, and part of his offer: one is left unbuilt at the month's end
+  - L832 the city cancels its depots in one twin
+  - L839 fixture: the cancel stopped a depot served first, with points left on site
+  - L841 fixture: he has a book to fall from, in both twins
+  - L842 the month's advance was the same in both: his points
+  - L843 ...and his bill
+  - L844 his book does not fall when the depot is cancelled: it is the twin's, a depot served first never having been on it
+- **L857 10. a rush beside the contractor: overtime and its premium struck on the city's own crews' part of the share alone**
+  - L864 fixture: the contractor builds this month (his offer is more than none) and the city's own crews have site output too
+  - L866 ...his offer read before the month is the same read twice, so reading it changes nothing
+  - L874 fixture: a city site whose share of the month is over none and under what it owes
+  - L879 the city rushes it
+  - L884 fixture: the month worked the rushed site on overtime, in a plan struck on the whole month: the city's points and his
+  - L890 fixture: the contractor's crews worked part of the share: the city's own part is under the share and over none
+  - L892 fixture: overtime is more work than a normal month in this month of the rush, and the site did not finish on it
+  - L894 the city's own crews' part of the share is the share over the whole month, less his points, of it
+  - L896 fixture: the builders' wages a point are over none
+  - L897 the premium is the premium share of the wage bill on the city's own part alone, not on the share
+  - L899 ...under what the whole share would have cost
+  - L900 the work is his part of the share as it is and the city's part on overtime, at most what the site owes
+  - L902 ...the plan's work for the site is the overtime's
+  - L903 the extra the month worked is the work over the share, the city's crews' hours alone
+  - L905 ...under the extra the whole share would have worked
+  - L906 fixture: the builders were paid overtime this month
+  - L907 the builders' overtime is what the treasury paid
+  - L908 ...the premium on the city's own part, with the builders' tax on it
+  - L914 the month's extra points are the plan's
+  - L915 he is paid for the points the sites took past the city's own month, its overtime among it (his offer, in full)
+  - L917 ...which is what he was offered: the sites took the whole month
+  - L920 ...at FOREIGN_PRICE the base price of a point, his offer's price as the month struck it
+  - L933 fixture: the twin that never met the trap has no contractor at work, and the city's own crews have site output
+  - L935 ...and the University's share is over none and under what it owes
+  - L937 the city rushes it there too
+  - L941 fixture: the month worked the rushed site on overtime, and no contractor built in it
+  - L945 with no contractor the city's own part is the whole share, to the bit
+  - L946 ...the premium is the premium share of the wage bill on the share
+  - L948 ...and the work is the share on overtime, at most what the site owes
+- **L956 11. saved mid-trap, the next month the same: the reloaded city plays the month as the twin that was never saved does**
+  - L963 fixture: saved mid-episode: a book, a month of points and a bill, and he takes orders still
+  - L974 fixture: the save loaded
+  - L975 fixture: the reloaded city is held as the original is: no planner of either asks to build
+  - L978 before the month: his book
+  - L979 ...the builders' cash
+  - L980 ...their order book's backlog points
+  - L981 ...and its unearned revenue
+  - L982 ...the price of an order
+  - L983 ...and he takes orders in both
+  - L990 fixture: he built in the month, in the city that was never saved
+  - L991 the next month's contractor's book comes out the same in the reloaded city
+  - L992 ...his points
+  - L993 ...his bill
+  - L994 ...the builders' cash
+  - L995 ...their order book's backlog points
+  - L996 ...and its unearned revenue
+  - L997 ...the points the sites built
+  - L998 ...the price of an order
+  - L999 ...and whether he takes orders
 
 ## ConsumptionCheck.java - 48 labelled assertions
 

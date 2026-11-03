@@ -67,7 +67,8 @@ public class SimulationEngine {
         // The foreign contractor's month beside the city's own (FC1): nothing unless the repairs took the
         // builders' points and left the sites none - see Game, THE FOREIGN CREWS.
         Game.ForeignOffer foreign = game.foreignCrewsOffer();
-        game.recordCompletions(buildingManager.advanceConstruction(siteOutput + foreign.points()));
+        // His points are in the month the sites take, and not on a rushed site's overtime (FC1b): his crews are not the city's.
+        game.recordCompletions(buildingManager.advanceConstruction(siteOutput + foreign.points(), foreign.points()));
         // ...and the material that work drew on, bought now, and the work
         // itself recognised on the same figure the sites advanced by. The
         // plant's sale, the builders' purchase and the builders' revenue are
