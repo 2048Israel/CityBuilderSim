@@ -9,7 +9,10 @@ import ham.citybuildersim.LongPlaytest;
 import ham.citybuildersim.Recording;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -60,6 +63,10 @@ import java.util.stream.Stream;
  * deleted when the JVM exits; the replay's copy is on its own scratch folder (ReplayCity); the window's preferences are
  * read from the scratch folder, never from %APPDATA%; the only file written outside is the recording folder it is given.
  *
+ * THE WINDOW IS OFF EVERY SCREEN unless -Dcbs.probe.onscreen=true: the primary screen's size, undecorated, left of the
+ * leftmost screen, so a run does not cover the PC's screen while someone works on it (CM1, 2026-11-03). It still draws
+ * every frame; it does take the keyboard's focus when it opens, until another window is clicked.
+ *
  * Where JavaFX cannot start - no display, a headless JVM, the jars missing - it says so in one line and exits 0.
  */
 public final class ReplayMoveProbe {
@@ -84,6 +91,9 @@ public final class ReplayMoveProbe {
     /** The seconds a glide takes. */
     private static final double GLIDE_S = 10;
 
+    /** Whether the window is full screen on the PC's screen (-Dcbs.probe.onscreen=true) rather than the same size off every screen. */
+    private static final boolean ON_SCREEN = Boolean.getBoolean("cbs.probe.onscreen");
+
     private static UserInterface ui;
     private static Stage stage;
     private static ReplayMode mode;
@@ -98,6 +108,19 @@ public final class ReplayMoveProbe {
     /** The private members the probe reaches, found by bind() once the toolkit is up (a build that moved one fails there, naming it). */
     private static Field panKeys, canvasField;
     private static Method replayMode, enter, applyView, requestDraw, replaySettled;
+
+    /** The window moved off every screen at the primary screen's size, then made visible: drawn as full screen would be, seen by nobody. */
+    private static void offScreen(Stage s) {
+        Rectangle2D b = Screen.getPrimary().getBounds();
+        double left = Screen.getScreens().stream().mapToDouble(x -> x.getBounds().getMinX()).min().orElse(0);
+        s.setFullScreen(false);
+        s.setMaximized(false);
+        s.setWidth(b.getWidth());
+        s.setHeight(b.getHeight());
+        s.setX(left - b.getWidth() - 200);
+        s.setY(b.getMinY());
+        s.setOpacity(1);
+    }
 
     private static void bind() {
         panKeys = field(UserInterface.class, "panKeys");
@@ -162,8 +185,13 @@ public final class ReplayMoveProbe {
         fx(() -> {
             ui = new UserInterface(game);
             stage = new Stage();
+            if (!ON_SCREEN) {
+                stage.initStyle(StageStyle.UNDECORATED);
+                stage.setOpacity(0);
+            }
             ui.start(stage);
-            stage.setFullScreen(true);
+            if (ON_SCREEN) stage.setFullScreen(true);
+            else offScreen(stage);
             mode = (ReplayMode) call(replayMode, ui);
             call(enter, mode, rec);
             if (!ui.replayOn()) throw new IllegalStateException("the replay did not open on " + folder + " (the window's list says why)");
