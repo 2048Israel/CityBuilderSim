@@ -1,0 +1,15 @@
+## changelog
+### {next} — LD2, the wanted posts' bounds after LD1 — 2026-11-03, ready, see docs/queue/LD2-notes.md
+A business's bid for workers now lifts only its own band, and never past sqrt(2). LD1's refused posts were priced
+against the workers they would have taken from the band below, which bid the diploma band up by 7% on average (48% at
+most) in most months it asked nothing, and took bands that asked past LD1's own bound, to 1.9x. They are now priced
+against the workers the posts that exist give, capped on the month's own posts, and a band no migrant can come for asks
+nothing. The comments and WantedPostsCheck 9 now say the asks are priced the month they are made. A replay's history
+cut no longer keeps a company's series from before it listed. Ensemble 24/26 against 22. Eight harnesses whose young
+towns the new wage moves play without it until LD3. The hands-off bank's failures are not LD1's (5 of 12 seeds without
+its bid, 3 with); the sawmills cause them, queued as BF1.
+## pending
+| LD2-D | The playtest's "a building on the map moved", 4 times at m3010-3013 on LD2's path ({next}): DM1's class (the district plan moves standing boxes), found with or without LD2's wage (once at m3008 with it off), main's gate playtest clean. For DM1 to take with its own (LD2's ★4) | DM1's mend | [LD2-notes §6](docs/queue/LD2-notes.md#6-the-checks) |
+## queued
+| BF1 | The hands-off bank fails on the sawmills (LD2's notes 5): in 8 of 24 Random seeds a default 1900 city's bank fails within 120 months, against 14 of 24 with LD1's bid off; in each, Wood Products borrows for a Wood Pellet Mill that never sells, closes it with its loans left (written off at once), and orders another mill the next month on new credit up to 4.4x the bank's capital, which defaults within months; and at month 50 the desk's Wood Products shares leave the register for nothing (15,206 to 2, no buyback, no split). Find why the mill never sells, why its closing leaves its debt standing on nothing, why the bank lends past its capital to a sector in default, and where the shares go; the harness counts the failures over the 24 seeds | [LD2-notes §5](docs/queue/LD2-notes.md#5-the-hands-off-bank-counted-and-not-ld1s) |
+| LD3 | LD2's wage back on in the eight harnesses that play without it (`WantedPosts.carryKeptOut`, LD2's notes 6), each caused on LD2's path: HoldersCheck's save gap (the reloaded twin's households settle 0.003 of the paper owed against 55.04: find the unsaved field), DeskCheck's loss line under par, DeathRecordCheck 3's twin measured apart from the orphans' spikes, AutoBuildCheck's orders, CurveCheck's steep city, OrderSearchCheck's order past the slices, CurrencyRegimeCheck's surplus at the peg; ScaleCheck with ST3; then the switch goes | [LD2-notes §6](docs/queue/LD2-notes.md#6-the-checks) |
