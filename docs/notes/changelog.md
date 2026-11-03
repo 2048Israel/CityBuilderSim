@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.2 — FC1, builders short: the price of a point rises, and foreign crews come when none are free — 2026-11-02, ready, see docs/queue/FC1-notes.md
+The price of a point of building work now reads the builders' queue. Past nine months of work at the pace the repairs
+leave the sites, every order's work carries a premium that rises smoothly to +80% with no points left for sites, each
+order priced on the queue with the orders before it; the planners see it, and a depot earns it. Once the sites get
+under 5% of the builders' month (Jerus's city, every crew repairing), a foreign contractor takes every new order at
+twice the price, builds the builders' own depots first, is paid by them as an import of services, and stops taking
+orders once the sites have points again. The build card, the Construction page's PRICE OF A POINT and NEEDS YOU's
+BUILDERS row say so. ConstructionTrapCheck (new) causes the trap: the depot is built in a month, the city out the next.
+Ensemble on LC3's world file 22/26 as main, three of its four reds nearer their line and S1 further; no seed met the
+trap before or after. Suite green. Fifteen harnesses whose new towns the premium moved were mended; five play without
+FC1 until DZ1, BD1 and DM1 (queued) mend what FC1's path reached in them.
+
 ### 0.9.1 — LC3, the nations' world without the IMF's figures — 2026-11-02, ready, see docs/queue/LC3-notes.md
 world-1.bin is baked again with no figure a sold game may not ship, so the nations can reach players (0.9.0 went out
 without them, IR1). Each nation's price path is now the World Bank's GDP deflator, and the US's is the BLS's CPI-U, the

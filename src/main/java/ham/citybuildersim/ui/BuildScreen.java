@@ -786,6 +786,9 @@ final class BuildScreen {
         javafx.scene.layout.FlowPane tags = cardTags(f, group);
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
         face.getChildren().addAll(heroRow(f), priceRow(f, afford));
+        // ...and (FC1), while the builders are short, why the work costs more than it did.
+        Label buildersShort = shortLine();
+        if (buildersShort != null) face.getChildren().add(buildersShort);
         face.getChildren().addAll(cardBars(f, group, m));
         // ...a sea terminal's payback, which ports never had (FR4; the advice's own read, BuildAdvice.berthPayback()).
         if (f.kind() == BuildCard.Kind.BERTHS) face.getChildren().add(paybackLine(BuildCard.payback(ui.game, template)));
@@ -1261,6 +1264,48 @@ final class BuildScreen {
         HBox row = new HBox(0, price, allIn);
         row.setAlignment(Pos.BASELINE_LEFT);
         return row;
+    }
+
+    /**
+     * The builders short (FC1), a small line under the price row: what an order's work is multiplied by when the queue
+     * has outgrown the builders' pace (the premium and the months queued, in Palette.WARN) or the city's crews are all on
+     * repairs and a foreign contractor takes the order (Palette.BAD). Every figure is the model's
+     * (BuildingManager.orderPriceMultiplier(), scarcityPremium(), monthsQueued(), foreignCrewsTakeOrders()); null when the
+     * multiplier is 1, the row as it always was - and for a premium that does not round to a whole percent, which would
+     * read "+0%".
+     */
+    Label shortLine() {
+        BuildingManager bm = ui.game.getBuildingManager();
+        if (bm.orderPriceMultiplier() == 1) return null;
+        boolean foreign = bm.foreignCrewsTakeOrders();
+        double premium = bm.scarcityPremium();
+        if (!foreign && Math.round(premium * 100) == 0) return null;
+        Label line = new Label(foreign
+                ? String.format("foreign crews: ×%.1f on the work, paid abroad · the city's crews are all on repairs",
+                        BuildersShort.FOREIGN_PRICE)
+                : String.format("builders short: +%d%% on the work · ≈ %.1f months queued",
+                        Math.round(premium * 100), bm.monthsQueued()));
+        line.setStyle(wordsAt(9.5, foreign ? Palette.BAD : Palette.WARN));
+        line.setWrapText(true);
+        line.setMinWidth(0);
+        Tooltip tip = new Tooltip(buildersShortInfo());
+        tip.setWrapText(true);
+        tip.setMaxWidth(320);
+        Tooltip.install(line, tip);
+        return line;
+    }
+
+    /**
+     * What the builders' premium and the foreign contractor are, in two sentences, from the model's own constants
+     * (BuildersShort): the build card's line says it in its tooltip, the Construction page's gauge in its (i).
+     */
+    static String buildersShortInfo() {
+        return String.format("The builders charge more for a point of work as their queue grows past %.0f months at the pace "
+                + "the repairs leave the sites, up to +%.0f%% with none left. Once the sites get under %.0f%% of the "
+                + "builders' month, a foreign contractor takes every new order at %.1f times the price, paid abroad, "
+                + "and builds the builders' own depots first.",
+                BuildersShort.KNEE_MONTHS, BuildersShort.CEILING * 100, BuildersShort.FOREIGN_FLOOR * 100,
+                BuildersShort.FOREIGN_PRICE);
     }
 
     /**

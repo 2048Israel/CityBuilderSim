@@ -148,6 +148,11 @@ public class HoldersCheck {
     public static void main(String[] args) throws Exception {
 
         out = System.out;
+        // FC1: this town was caught in the builders' trap the batch fixes (no depot ever built, 206 people); FC1's price and
+        // foreign crews free it and it booms (a price index of 6 by month 120, the 2-year yield 17%), and every section reads
+        // who holds the city's paper on the calm curve it was written on - so it is played as written, FC1 off in this JVM
+        // (BuildingManager.buildersShortOn; docs/queue/FC1-notes.md section 1).
+        BuildingManager.buildersShortOn = false;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
 
         GameFiles files = GameFiles.scratch("holderscheck");

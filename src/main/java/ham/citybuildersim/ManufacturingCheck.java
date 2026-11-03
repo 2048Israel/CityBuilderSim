@@ -418,6 +418,15 @@ public class ManufacturingCheck {
             // and simulateMonths() stopped short: 26 of the 36 months never ran.
             // Given the D$2.5B it assumed, the Wealthy preset's, explicitly.
             city.setCashForTest(Founding.WEALTHY_CASH);
+            /*
+             * FC1: NO SECTOR ASKS TO BUILD IN THIS TOWN. It has the founding's one yard and no depot, so until FC1 what the planners
+             * ordered mostly waited (the builders' trap) and the town was the one stood up by hand below: two shops, one machine works.
+             * With the foreign crews the orders are built (a Fabrication Works, a Vehicle Works, five depots, a bakery, a contact centre,
+             * a boutique, five diners in the 24 months: 5,400 tonnes of fabricating capacity where the two shops are 2,400, and 14.4 of
+             * the 197.4 it sold kept at home). The assertions below are about the shops and the machine works, so the planners are held,
+             * as section 6 holds the mills (BusinessInvestment.holdSector()).
+             */
+            for (String sector : Sectors.KEYS) city.getBusinessInvestment().holdSector(sector);
             BuildingManager b = city.getBuildingManager();
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 400_000_000L);
             b.addStack(b.getTemplateByName("House"), 2000, true);

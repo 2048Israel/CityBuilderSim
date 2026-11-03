@@ -448,8 +448,9 @@ public class ConstructionControlCheck {
         // Restart: today's quote for the remainder.
         Game.BuildQuote q = g.quoteRestart(shell);
         double pointsLeft = shell.buildings * (double) t.getConstructionPoints() - shell.progress;
-        close("a restart's work is the remainder's non-material cost at today's wages",
-                q.sticker, bm.nonMaterialCost(t) * pointsLeft / t.getConstructionPoints(), 1e-9);
+        // ...at the builders' multiple, as every order's work is since FC1 (BuildingManager.orderPriceMultiplier()).
+        close("a restart's work is the remainder's non-material cost at today's wages, at the builders' multiple",
+                q.sticker, bm.nonMaterialCost(t) * pointsLeft / t.getConstructionPoints() * bm.orderPriceMultiplier(), 1e-9);
         close("...its material what the shell has still to draw", q.materialsNeeded, shell.materialsOwed, 0);
         close("...priced by the builders' rule, the tax in it", q.total,
                 q.sticker / (1 - rB) + q.allowance, 1e-9);
@@ -479,8 +480,8 @@ public class ConstructionControlCheck {
         Game.DemolitionQuote q = g.quoteDemolition(t, 2);
         close("its work is 5% of the template's points", q.points(),
                 ConstructionControl.DEMOLITION_SHARE * t.getConstructionPoints() * 2, 0);
-        close("its price is that share of the building's work at the builders' rate today",
-                q.price().sticker, ConstructionControl.DEMOLITION_SHARE * bm.nonMaterialCost(t) * 2, 1e-12);
+        close("its price is that share of the building's work at the builders' rate today, at their multiple (FC1)",
+                q.price().sticker, ConstructionControl.DEMOLITION_SHARE * bm.nonMaterialCost(t) * 2 * bm.orderPriceMultiplier(), 1e-12);
         double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX,
                 g.getEconomyManager().getTaxPolicy().effectiveSalesRate(g.getSectors().construction())));
         close("...no material, and the tax in it", q.price().total, q.price().sticker / (1 - rB), 1e-12);

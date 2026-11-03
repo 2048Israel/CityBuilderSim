@@ -307,8 +307,17 @@ public class ScaleCheck {
      * (-Dcbs.priceLevel=1) it fails main's "...and it builds" alone. A month, not a window: the next batch that moves the
      * trace may leave it red. ST3 (docs/queue/ST3.md) is the fix that ends the re-picking: a town of this check's own
      * plan, calm and growing and small enough that K reaches a million.
+     *
+     * ...AT 717 SINCE FC1 (2026-11-02), A DRAW AGAIN. On FC1's model (the builders' scarcity price and the foreign contractor: a new
+     * town's founding queue is long, so its orders carry a premium near the ceiling) the playtest's town is another one, and 718 misses
+     * two lines: the ten-billion copy's largest order needs 332,922, not a million, and section 9's unemployment is 3.58e-2 off against
+     * .033. Scanned (ScaleCheck with the month changed, every assertion read: 600 to 700 every tenth, 710 to 725 nearly every month,
+     * 730 to 820 every fifteenth): every line holds at 716 and 717 alone; the others miss one to six, most often section 9's people
+     * (1.6e-2 to 3.5e-2 against .015), unemployment (3.9e-2 to 6.9e-2) and prices, and "the free copy ordered" in one or both copies.
+     * 717 is the one with room: 9,517 people at 722, the ten-billion copy's largest order 5.6 million needed, people tracked to
+     * 2.0e-3, unemployment to 1.0e-2 (716's is 3.0e-2 against .033). A month, not a window, and ST3 is still the fix.
      */
-    static final int FREE_FIXTURE_MONTHS = 718;
+    static final int FREE_FIXTURE_MONTHS = 717;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;

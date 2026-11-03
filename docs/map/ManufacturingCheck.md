@@ -1,4 +1,4 @@
-# ManufacturingCheck.java - 614 lines · 8 methods · 5 constants · harnesses
+# ManufacturingCheck.java - 623 lines · 8 methods · 5 constants · harnesses
 
 `ham/citybuildersim/ManufacturingCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
@@ -27,7 +27,7 @@
 > rather than waiting for a mill; the wage test moves the floor rather than
 > hoping a run drifts.
 
-**Uses:** [Good](Good.md) (70), [Game](Game.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (8), [Sectors](Sectors.md) (8), [PriceLevel](PriceLevel.md) (7), [Sector](Sector.md) (6), [JobType](JobType.md) (6), [Manufacturing](Manufacturing.md) (6), [GoodsMarket](GoodsMarket.md) (5), [BuildingManager](BuildingManager.md) (5), [GameFiles](GameFiles.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [PopulationManager](PopulationManager.md) (1), [Founding](Founding.md) (1), [SectorBooks](SectorBooks.md) (1), [Equity](Equity.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Good](Good.md) (70), [Game](Game.md) (11), [Sectors](Sectors.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [PriceLevel](PriceLevel.md) (7), [Sector](Sector.md) (6), [JobType](JobType.md) (6), [Manufacturing](Manufacturing.md) (6), [GoodsMarket](GoodsMarket.md) (5), [BuildingManager](BuildingManager.md) (5), [GameFiles](GameFiles.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [PopulationManager](PopulationManager.md) (1), [Founding](Founding.md) (1), [SectorBooks](SectorBooks.md) (1), [Equity](Equity.md) (1), [PayTier](PayTier.md) (1)
 
 ## Sections
 
@@ -39,7 +39,7 @@
 | 207 | · 3. the templates are the design's arithmetic |
 | 364 | · 4. the traps |
 | 403 | · 5. the two brakes, each caused |
-| 495 | · 6. the books, the audit, and a reload |
+| 504 | · 6. the books, the audit, and a reload |
 
 ## Constants
 
@@ -63,18 +63,18 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 579 | **type** `public class ManufacturingCheck` | The ninth sector: what the city makes out of its own steel, and ships. |
+| 36 | 588 | **type** `public class ManufacturingCheck` | The ninth sector: what the city makes out of its own steel, and ships. |
 | 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 47 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 52 | 9 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 62 | 5 | `static void quietly(Runnable r)` |  |
 
-### WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is (lines 84-614)
+### WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is (lines 84-623)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 97 | 23 | `static void costSharesAddUp(Game g)` |  |
-| 121 | 481 | `public static void main(String[] args) throws Exception` |  |
-| 603 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
-| 609 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
+| 121 | 490 | `public static void main(String[] args) throws Exception` |  |
+| 612 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
+| 618 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
 

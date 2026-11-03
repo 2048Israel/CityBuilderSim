@@ -271,7 +271,75 @@ public final class Construction extends Sector {
         unearnedRevenue += amount;
         backlogPoints += points;
         if (points > 0) billedPoints += points;
+        // ...and while the foreign contractor takes the orders (FC1) it has this one's points on its book, to build.
+        if (points > 0 && buildings != null && buildings.foreignCrewsTakeOrders()) foreignBook += points;
     }
+
+    /**
+     * ...an order of `t` (FC1): as bill(), but a depot the builders serve first - one the contractor builds as theirs
+     * while it takes orders (Game.foreignCrewsOffer(), BuildingManager.buildersOwnOwed()) - is not put on its book too,
+     * or the contractor would build its points twice over: once as the depot, once more on the queue.
+     */
+    public void bill(double amount, double points, BuildingsTemplate t) {
+        bill(amount, points);
+        if (points > 0 && t != null && buildings != null && buildings.foreignCrewsTakeOrders()
+                && BuildingManager.addsToTheBuilders(t) && buildings.goesFirst(t, 0)) {
+            takeFromForeignBook(points);
+        }
+    }
+
+    /* ===================================================================
+       THE FOREIGN CONTRACTOR'S BOOK (FC1)
+
+       While the builders have no points left for the sites a foreign
+       contractor takes every order (BuildersShort), and the builders act
+       as general contractor: the order's money is in their book as any
+       order's, they earn it as the work is delivered, and they pay the
+       contractor for the points it built at its price - an import of
+       services, the current account's line (bookImportedService()). Game
+       settles the contractor's month (Game.settleForeignCrews()).
+       =================================================================== */
+
+    /** What the contractor's price is booked under, on the builders' input line and the money audit's "- construction Imports". */
+    public static final String FOREIGN_CREWS = "Foreign crews";
+
+    /** Points the foreign contractor has taken and not yet built (FC1). Saved when there are some. */
+    private double foreignBook;
+
+    /** Points the contractor built in the month last settled (FC1). Saved when there were some. */
+    private double foreignPointsThisMonth;
+
+    /** What it was paid for them, the builders' import of services in that month (FC1). Saved when there was some. */
+    private double foreignBillThisMonth;
+
+    /**
+     * The contractor's month settled: the points it built and what the builders pay it for them, at its price. Called
+     * every month, so a month with none sets both to nothing; the bill is an import of services (FC1).
+     */
+    public void payForeignCrews(double points, double bill) {
+        foreignPointsThisMonth = Math.max(0, points);
+        foreignBillThisMonth = Math.max(0, bill);
+        if (bill > 0) bookImportedService(FOREIGN_CREWS, bill);
+    }
+
+    /** The contractor has built these points of its book: the book comes down by them, never below nothing. */
+    public void takeFromForeignBook(double points) {
+        foreignBook = Math.max(0, foreignBook - Math.max(0, points));
+    }
+
+    /** The book at most what is owed on site: an order cancelled leaves the contractor working for nobody. */
+    public void capForeignBook(double owedOnSite) {
+        foreignBook = Math.max(0, Math.min(foreignBook, Math.max(0, owedOnSite)));
+    }
+
+    /** Points the foreign contractor has taken and not yet built. */
+    public double getForeignBook() { return foreignBook; }
+
+    /** Points the foreign contractor built in the month last settled. */
+    public double getForeignPointsThisMonth() { return foreignPointsThisMonth; }
+
+    /** What the builders paid it for them: the import of services in the month last settled. */
+    public double getForeignBillThisMonth() { return foreignBillThisMonth; }
 
     /** The construction points ever billed, from this game's start (ET2): not saved. */
     public double getBilledPoints() { return billedPoints; }
@@ -943,6 +1011,10 @@ public final class Construction extends Sector {
         if (overtimeThisMonth != 0) extras.put("overtimeThisMonth", overtimeThisMonth);
         // ...and the salvage cut's clearing (0.7.138), the same way, so its strike names it after a load.
         if (salvageCutThisMonth != 0) extras.put("salvageCutThisMonth", salvageCutThisMonth);
+        // ...and the foreign contractor's (FC1), the same way: a city that never met the trap saves what it always saved.
+        if (foreignBook != 0) extras.put("foreignBook", foreignBook);
+        if (foreignPointsThisMonth != 0) extras.put("foreignPointsThisMonth", foreignPointsThisMonth);
+        if (foreignBillThisMonth != 0) extras.put("foreignBillThisMonth", foreignBillThisMonth);
         if (overtimeWages != null) {
             for (int i = 0; i < overtimeWages.length; i++) {
                 if (overtimeWages[i] != 0) extras.put("overtimeWages." + i, overtimeWages[i]);
@@ -970,6 +1042,9 @@ public final class Construction extends Sector {
         fillStruckOn = extras.getOrDefault("fillStruckOn", 1.0);
         overtimeThisMonth = extras.getOrDefault("overtimeThisMonth", 0.0);
         salvageCutThisMonth = extras.getOrDefault("salvageCutThisMonth", 0.0);
+        foreignBook = extras.getOrDefault("foreignBook", 0.0);
+        foreignPointsThisMonth = extras.getOrDefault("foreignPointsThisMonth", 0.0);
+        foreignBillThisMonth = extras.getOrDefault("foreignBillThisMonth", 0.0);
         overtimeWages = null;
         for (java.util.Map.Entry<String, Double> e : extras.entrySet()) {
             if (!e.getKey().startsWith("overtimeWages.")) continue;
@@ -993,6 +1068,7 @@ public final class Construction extends Sector {
         postsOfferedShare = crewsNeeded = fillStruckOn = 1;
         overtimeThisMonth = 0;
         overtimeWages = null;
+        foreignBook = foreignPointsThisMonth = foreignBillThisMonth = 0;
         rDrawnLocal = rDrawnImported = 0;
         drawnKnown = true;
     }
@@ -1006,6 +1082,7 @@ public final class Construction extends Sector {
         repairsThisMonth *= scale;
         salvageCost *= scale;
         overtimeThisMonth *= scale;
+        foreignBillThisMonth *= scale;
         if (overtimeWages != null) for (int i = 0; i < overtimeWages.length; i++) overtimeWages[i] *= scale;
     }
 }

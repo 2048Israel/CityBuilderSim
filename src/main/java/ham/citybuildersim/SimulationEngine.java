@@ -64,7 +64,10 @@ public class SimulationEngine {
          * Game.getBuildingOutput().
          */
         int siteOutput = game.getBuildingOutput();
-        game.recordCompletions(buildingManager.advanceConstruction(siteOutput));
+        // The foreign contractor's month beside the city's own (FC1): nothing unless the repairs took the
+        // builders' points and left the sites none - see Game, THE FOREIGN CREWS.
+        Game.ForeignOffer foreign = game.foreignCrewsOffer();
+        game.recordCompletions(buildingManager.advanceConstruction(siteOutput + foreign.points()));
         // ...and the material that work drew on, bought now, and the work
         // itself recognised on the same figure the sites advanced by. The
         // plant's sale, the builders' purchase and the builders' revenue are
@@ -77,8 +80,11 @@ public class SimulationEngine {
         // repairs, and - on the city's rushed sites (0.7.22) - the hours
         // they worked over it, or the hours a tired crew lost.
         double overtime = buildingManager.getOvertimePoints();
+        double ownMonth = overtime == 0 ? siteOutput : siteOutput + overtime;
+        // ...and the contractor is paid for what the sites took past the city's own month (FC1).
+        game.settleForeignCrews(foreign, buildingManager.getPointsBuilt() - Math.max(0, ownMonth));
         game.recogniseSiteWork(buildingManager.takeRevenueDue(), buildingManager.getPointsBuilt(),
-                overtime == 0 ? siteOutput : siteOutput + overtime);
+                ownMonth + foreign.points());
         // ...and each owner pays the material its work drew at the price it
         // was drawn at, less what its quote allowed (0.7.19): the escalation
         // clause, settled on the same month's work. See Game, MATERIAL AT THE

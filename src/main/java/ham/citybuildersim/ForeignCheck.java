@@ -1649,12 +1649,24 @@ public class ForeignCheck {
         // city by the end of the run. The programme - the plants, the roads,
         // the clinics - is still bought, and bought whole.
         g.buildStack(template(g, "Construction Depot"), 4, true);
-        g.buildStack(template(g, "Coal Power Plant"), 1, false);
-        g.buildStack(template(g, "Water Treatment Plant"), 1, false);
-        g.buildStack(template(g, "Industrial Bakery"), 2, false);
-        g.buildStack(template(g, "Paved Road"), 40, false);
-        g.buildStack(template(g, "Walk-in Clinic"), 4, false);
-        g.buildStack(template(g, "Municipal Cemetery"), 1, false);
+        // FC1: the programme is bought whole in both cities, as the notes above have it. Its work carries the builders' scarcity
+        // price (BuildersShort) now, which the treasury was never sized against, and at 1.40 the last order, the cemetery, was
+        // refused for cash (NEEDS_FUNDING with D$15k left) - a city that built less than the parity city, the premise of the
+        // comparison gone. So the treasury is made up by the model's own figure for the rest of the run, its invoice less
+        // the cash (Game.buildFundingGap()), in the city that is short of it, and the orders are asserted placed.
+        java.util.Map<BuildingsTemplate, Integer> programme = new java.util.LinkedHashMap<>();
+        programme.put(template(g, "Coal Power Plant"), 1);
+        programme.put(template(g, "Water Treatment Plant"), 1);
+        programme.put(template(g, "Industrial Bakery"), 2);
+        programme.put(template(g, "Paved Road"), 40);
+        programme.put(template(g, "Walk-in Clinic"), 4);
+        programme.put(template(g, "Municipal Cemetery"), 1);
+        g.setCashForTest(g.getCash() + g.buildFundingGap(programme));
+        boolean programmeOrdered = true;
+        for (java.util.Map.Entry<BuildingsTemplate, Integer> order : programme.entrySet()) {
+            programmeOrdered &= g.buildStack(order.getKey(), order.getValue(), false) == Game.BuildResult.SUCCESS;
+        }
+        assertTrue("fixture: every order of the programme is placed, at " + rate, programmeOrdered);
         double[] bySector = new double[Sectors.KEYS.length];
         scrappedPlantBuiltWith = 0;
         for (int m = 0; m < 180; m++) {

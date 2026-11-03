@@ -65,6 +65,11 @@ public class MonetaryCheck {
     public static void main(String[] args) throws Exception {
 
         out = System.out;
+        // FC1: the premise is a steady town, and the General Hospital the fixture orders to keep its crews busy is 52,000
+        // points at one depot's pace - every other order in the window would carry the builders' premium near its ceiling
+        // and the town would take another path (a month's delay in the hand moved the 40% row 0.134 points against the
+        // 0.100 allowance). Played as written, FC1 off in this JVM (BuildingManager.buildersShortOn; FC1-notes section 1).
+        BuildingManager.buildersShortOn = false;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
 
         /* ================= 1. the basket ================= */

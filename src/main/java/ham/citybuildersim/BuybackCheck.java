@@ -802,12 +802,21 @@ public class BuybackCheck {
 
         // Rates pushed up: the line's price falls under what the books carry it at. The city asks for all of it and
         // names the most it will pay, what the line is carried at: every slice it takes is at a gain.
-        ledger.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, ledger.getPolicyRate() + .05));
-        city.strikeTheCurve();
-        play(city);
-        city.setCashForTest(Founding.WEALTHY_CASH);
-        double carriedPer100 = bond.getCarryingValue() / bond.getOustandingPrincipal() * 100;
-        Buyback.Result quote = city.quoteBuyback(bond, 1e12, carriedPer100);
+        // FC1: five points a step until the line's price is under the books' (as one step was, on the city this was written
+        // against): FC1's builders raise a bigger town, whose line sold at a coupon one step does not take the curve over.
+        double carriedPer100;
+        Buyback.Result quote;
+        int pushes = 0;
+        do {
+            ledger.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, ledger.getPolicyRate() + .05));
+            city.strikeTheCurve();
+            play(city);
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            carriedPer100 = bond.getCarryingValue() / bond.getOustandingPrincipal() * 100;
+            quote = city.quoteBuyback(bond, 1e12, carriedPer100);
+            pushes++;
+        } while (!(quote.fairPer100() < carriedPer100) && ledger.getPolicyRate() < DebtManager.MAX_POLICY_RATE && pushes < 30);
+        out.printf("   the policy rate is %.0f%% after %d push(es) of five points%n", ledger.getPolicyRate() * 100, pushes);
         check("fixture: the line is worth less than the books carry it at", quote.fairPer100() < carriedPer100);
         check("fixture: ...and the city buys back at a gain on the carrying value", quote.takenFace() > 0 && quote.gainOnCarrying() > 0);
         out.printf("   the line is carried at %.2f per 100 and is worth %.2f: D$%,.0fk of it taken for D$%,.0fk (carried at D$%,.0fk), a gain of D$%,.0fk%n",

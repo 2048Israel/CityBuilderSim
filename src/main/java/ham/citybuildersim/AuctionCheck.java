@@ -1402,6 +1402,15 @@ public class AuctionCheck {
         out.println("--- 10. automatic building's own cap; the ask a short sale keeps open (D28, D30) ---");
 
         Game a = ChildcareCheck.town(root, "auction10-town");
+        /*
+         * FC1: THE BUILDERS ARE NOT SHORT, SO A QUOTE STANDS ACROSS THE PASSES. The town's four depots leave the sites a month that its
+         * repairs eat away (41 of 385 at month 37, 33 of 377 at 38, none of 321 at 39): from month 39 the foreign crews take orders at
+         * twice the work, and the Paved Road the ask was struck on at 442.85 is placed at 612.15 (38% over; the claim allows 2% and a
+         * granule's top-up). Eight more depots, stood free as the town's are, keep the sites' month at 557 of 903 and the price flat.
+         */
+        a.buildStack(ChildcareCheck.template(a, "Construction Depot"), 8, true);
+        assertTrue("fixture: the builders are not short - no foreign crews and the order price at its base, so a quote does not jump between the passes",
+                !a.getBuildingManager().foreignCrewsTakeOrders() && a.getBuildingManager().orderPriceMultiplier() == 1.0);
         AutoBuilder ab = a.getAutoBuilder();
         ab.setOn(true, null);
         ab.setCap(Cap.tail(0), null);

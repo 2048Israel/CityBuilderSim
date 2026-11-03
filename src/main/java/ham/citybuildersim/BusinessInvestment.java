@@ -1261,7 +1261,8 @@ public class BusinessInvestment {
      * back comes back as the work is billed, after the loan is written.
      * A highway's or a railway's cuts, viaducts and tunnels on the city's slopes (ET4) are among the builders'
      * work, taxed with it, as the quote has them (runWorksCost). A floating platform's, and its wells', deep-water works
-     * (DW1) are too, at `deepFactor` times a jacket's price (1 and no works at a depth a jacket stands in).
+     * (DW1) are too, at `deepFactor` times a jacket's price (1 and no works at a depth a jacket stands in). The work
+     * and the works carry the builders' scarcity multiple (FC1); the material and the ground do not.
      */
     private double totalCostOf(BuildingsTemplate t, int quantity, double deepFactor) {
         double stock = buildingManager.getConstructionMaterials();
@@ -1269,8 +1270,12 @@ public class BusinessInvestment {
         double shortfall = Math.max(required - stock, 0);
         double works = Game.isRun(t) ? runWorksCost.applyAsDouble(t, quantity) : 0;
         if (deepFactor > 1) works += deepWaterPrice.moneyBeforeTax(t, quantity, deepFactor);
-        return economyManager.withBuildersTax(buildingManager.nonMaterialCost(t) * quantity
-                        + shortfall * buildingManager.getConstructionMaterialPrice() + works)
+        // The work's price carries the builders' scarcity multiple (FC1; BuildersShort), as the quote does, so a planner
+        // sees what it will pay and backs off while the builders are short; the material and the ground do not.
+        double scarcity = buildingManager.orderPriceMultiplier();
+        // (Summed in the order it always was, so a multiple of one is the old price to the last bit.)
+        return economyManager.withBuildersTax(buildingManager.nonMaterialCost(t) * quantity * scarcity
+                        + shortfall * buildingManager.getConstructionMaterialPrice() + works * scarcity)
                 + groundCostOf(t, quantity);
     }
 

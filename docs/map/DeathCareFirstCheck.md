@@ -55,7 +55,7 @@
 
 **Uses:** [BuildingManager](BuildingManager.md) (21), [Game](Game.md) (17), [ConstructionControl](ConstructionControl.md) (10), [Health](Health.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Healthcare](Healthcare.md) (4), [Founding](Founding.md) (3), [GameFiles](GameFiles.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [Sectors](Sectors.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TempDirs](TempDirs.md) (1), [Sector](Sector.md) (1)
 
-**Used by (1):** [BuildersFirstCheck](BuildersFirstCheck.md)
+**Used by (2):** [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md)
 
 ## Sections
 

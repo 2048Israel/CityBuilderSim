@@ -455,6 +455,9 @@ public class BuildersFirstCheck {
      */
     static final int FOUNDING_MONTHS = 3;
 
+    /** The landlords' Houses the fixture puts on site when the founding months are over (FC1): a few months of the town's sites' work, so the twins' comparison has homes to build. */
+    static final int LANDLORDS_HOUSES = 10;
+
     static void onlyWhatItCouldStaff(Path root) {
         out.println("\n--- 6. only a depot the city could staff: a new town's founding depots, crewed by the rule ---");
         // MortgageCheck's new town: its works standing, three depots standing beside the founding yard (PT1-M4), its four
@@ -503,6 +506,25 @@ public class BuildersFirstCheck {
         assertTrue("fixture: still a new town, with depots on site that by the builders' own test it could not staff",
                 onSiteNow > 0 && bm.getTotalHomes() < 100 && !staffingNow.passes()
                         && bu.underConstructionByName(DEPOT) > 0 && bu.getTotalHomes() < 100);
+        // ...and the landlords' Houses on site in both twins (FC1): the founding months are the trap in miniature - the
+        // sites get nothing of the builders' month - so the foreign contractor takes the orders at its price
+        // (BuildersShort.FOREIGN_PRICE), which the landlords' own plan does not pay, and the homes this section watches
+        // the town build were no longer ordered there. The fixture orders them, as DeathCareFirstCheck.sites() does,
+        // out of cash the quote itself sizes.
+        for (Game g : new Game[] { gated, ungated }) {
+            BuildingsTemplate house = template(g, "House");
+            double price = g.quoteBuild(house, LANDLORDS_HOUSES).total;
+            quietly(() -> {
+                g.getEconomyManager().setSectorCash(Sectors.REAL_ESTATE,
+                        g.getEconomyManager().getSectorCash(Sectors.REAL_ESTATE) + price);
+                g.buildFor(g.getSectorInvestor(Sectors.REAL_ESTATE), house, LANDLORDS_HOUSES);
+            });
+        }
+        String houses = ConstructionControl.keyOf(template(gated, "House"));
+        assertTrue("fixture: the landlords' Houses on site in both twins, alike",
+                bm.stackOfKey(houses) != null && bm.stackOfKey(houses).getUnderConstruction() >= LANDLORDS_HOUSES
+                        && bu.stackOfKey(houses) != null
+                        && bu.stackOfKey(houses).getUnderConstruction() == bm.stackOfKey(houses).getUnderConstruction());
         long homesAtStart = bm.getTotalHomes();
         int openAtStart = bm.countByName(DEPOT), openAtStartU = bu.countByName(DEPOT);
         double floorG = Double.MAX_VALUE, floorU = Double.MAX_VALUE;

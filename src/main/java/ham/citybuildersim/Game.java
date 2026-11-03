@@ -385,6 +385,9 @@ public class Game {
         // ...and the builders' month for the sites with every post offered, which
         // says whether the crews' rule would starve a depot (0.7.130).
         buildingManager.setSitesAtEveryPost(this::getBuildingOutputAtEveryPost);
+        // ...and their whole month, every post offered, which with the sites' says how short they are:
+        // the scarcity price of a point and the foreign contractor's orders (FC1; BuildersShort).
+        buildingManager.setOutputAtEveryPost(this::getConstructionOutputAtEveryPost);
         // ...and the overtime on the city's rushed sites is wages the
         // households are paid (0.7.22; PopulationManager, THE OVERTIME ON A
         // RUSHED SITE IS WAGES), read off the builders who pay it.
@@ -2225,7 +2228,8 @@ public class Game {
      * WHAT IT BUYS.
      */
     public Founding.Buys whatItBuys(double cash, double reserveUsd) {
-        return Founding.whatItBuys(catalogue(), cash, reserveUsd);
+        // ...at this city's builders' multiple on the queue the village leaves (FC1), as its build card quotes the first works.
+        return Founding.whatItBuys(catalogue(), cash, reserveUsd, buildingManager::orderPriceMultiplier);
     }
 
     /* ============= THE CONSTRUCTION SUBSIDY - removed in 0.7.1 =============
@@ -7164,6 +7168,64 @@ public class Game {
                 Math.round(getConstructionOutput() - getMaintenancePoints()));
     }
 
+    /* ----- THE FOREIGN CREWS (FC1) -----
+       Jerus's 2026-11-01 trap: the repairs take every point the builders have, the sites advance by nothing, and the
+       builders' own depot waits for points the repairs never leave. While the points left for the sites, every post
+       offered, are under a floor of the builders' month (BuildersShort.foreignTakesOrders()) a foreign contractor takes
+       every order (Construction.bill()) and the builders' own depots on site, builds at a capacity of its own, and is
+       paid by the builders at its price as an import of services (Construction.payForeignCrews()). The month's
+       arithmetic is these two methods, called around the sites' advance by SimulationEngine.simulateMonth(). */
+
+    /**
+     * What the foreign contractor puts into the sites this month, as it was offered before the advance: the points
+     * (a whole number, as the sites' output is), how many of them are the builders' own depots' (served first), and
+     * its price a point struck now on the queue before the advance.
+     */
+    public record ForeignOffer(int points, double depotPoints, double pricePerPoint) {
+        /** No contractor at work: every figure nothing. */
+        public static final ForeignOffer NONE = new ForeignOffer(0, 0, 0);
+    }
+
+    /**
+     * The contractor's month, offered: its book (cut first to what is still owed on site, so a cancelled order leaves
+     * it working for nobody) and, while it takes orders, the builders' own depots on site, up to its capacity
+     * (BuildersShort.foreignCapacity()); its price a point is BuildersShort.FOREIGN_PRICE times the city's price
+     * before any premium. NONE with no work or no capacity. Called once a month, before the sites advance.
+     */
+    public ForeignOffer foreignCrewsOffer() {
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
+        builders.capForeignBook(buildingManager.getRemainingConstructionPoints());
+        boolean takesOrders = buildingManager.foreignCrewsTakeOrders();
+        double depots = takesOrders ? buildingManager.buildersOwnOwed() : 0;
+        double work = builders.getForeignBook() + depots;
+        double capacity = BuildersShort.foreignCapacity(getConstructionOutputAtEveryPost(),
+                buildingManager.largestDepotPoints());
+        int points = (int) Math.round(Math.min(capacity, work));
+        if (points <= 0) return ForeignOffer.NONE;
+        return new ForeignOffer(points, Math.min(depots, points),
+                BuildersShort.FOREIGN_PRICE * buildingManager.basePricePerPoint());
+    }
+
+    /**
+     * The contractor's month settled, after the sites advanced: it built what the sites took past the city's own month
+     * (`pastOwnMonth`, the points built less the builders' site output), never more than it offered. The depots'
+     * points are the builders', served first, so its book comes down by what it built beyond them; the builders pay it
+     * the points it built at its price, an import of services (Construction.payForeignCrews()); and a month with none
+     * sets the month's figures to nothing. A month it built something is one line of the log.
+     */
+    public void settleForeignCrews(ForeignOffer offer, double pastOwnMonth) {
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
+        double built = Math.max(0, Math.min(Double.isNaN(pastOwnMonth) ? 0 : pastOwnMonth, offer.points()));
+        builders.takeFromForeignBook(Math.max(0, built - offer.depotPoints()));
+        double bill = built * offer.pricePerPoint();
+        builders.payForeignCrews(built, bill);
+        if (built > 0) {
+            System.out.println(String.format("Foreign crews built %,.0f points for the builders, billed %s; %,.0f points left on their book, and they %s orders.",
+                    built, DecisionLog.money(bill), builders.getForeignBook(),
+                    buildingManager.foreignCrewsTakeOrders() ? "still take" : "no longer take"));
+        }
+    }
+
     /**
      * THE RAILWAY'S MONTH, and the band it leaves behind.
      *
@@ -7866,9 +7928,9 @@ public class Game {
         return quoteBuild(selected, quantity, yardHolds, bitumenAhead, NO_GROUND_AHEAD);
     }
 
-    /** What the orders before one in a run have taken of the ground (ET2): their square feet, the part of it works's (and, ET4, the part runs'), and the foothill their orders prepare (buildRunInvoice()). */
-    private record GroundAhead(double ground, double works, double runs, double prepared, java.util.Map<Integer, Double> islands) {
-        GroundAhead(double ground, double works, double runs, double prepared) { this(ground, works, runs, prepared, java.util.Map.of()); }
+    /** What the orders before one in a run have taken of the ground (ET2): their square feet, the part of it works's (and, ET4, the part runs'), and the foothill their orders prepare (buildRunInvoice()); and (FC1) the points they put on the queue, which the builders' scarcity price reads. */
+    private record GroundAhead(double ground, double works, double runs, double prepared, java.util.Map<Integer, Double> islands, double queue) {
+        GroundAhead(double ground, double works, double runs, double prepared) { this(ground, works, runs, prepared, java.util.Map.of(), 0); }
     }
 
     private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0, 0);
@@ -7906,21 +7968,24 @@ public class Game {
                 : landManager.foothillToPrepareSqFt(selected.getLandSqFt() * (double) quantity,
                 selected.getSector(), groundUse(selected), ahead.ground(), ahead.works(), ahead.runs(), ahead.prepared());
         double prepPoints = prepSqFt > 0 ? preparationPoints(prepSqFt) : 0;
-        double prepCost = prepPoints > 0 ? preparationCost(prepPoints) : 0;
-        double sticker = buildingManager.nonMaterialCost(selected) * quantity;
+        // The work's every part is priced at the builders' scarcity multiple (FC1; BuildersShort), struck once on the
+        // queue as it stands with the orders before this one - so the parts the quote carries still sum to its sticker.
+        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue());
+        double prepCost = (prepPoints > 0 ? preparationCost(prepPoints) : 0) * scarcity;
+        double sticker = buildingManager.nonMaterialCost(selected) * quantity * scarcity;
         if (prepCost > 0) sticker += prepCost;
         // ...and a highway's or a railway's cuts, viaducts and tunnels (ET4), priced at the city's mix of ground and owed
         // on the site like the pad; its money joins the sticker, taxed with the work. Nothing for a building, or on flat.
         RunWorksNeed need = runWorksFor(selected, quantity);
-        double worksPoints = need == null ? 0 : need.points(), worksCost = need == null ? 0 : need.cost();
+        double worksPoints = need == null ? 0 : need.points(), worksCost = need == null ? 0 : need.cost() * scarcity;
         if (worksCost > 0) sticker += worksCost;
         // ...and a long bridge's span (ET6), over the crossing the model surveyed, billed and owed on the site the same way.
         BridgeSpan span = bridgeWorksFor(selected, quantity);
-        double bridgePoints = span == null ? 0 : span.points(), bridgeCost = span == null ? 0 : span.cost();
+        double bridgePoints = span == null ? 0 : span.points(), bridgeCost = span == null ? 0 : span.cost() * scarcity;
         if (bridgeCost > 0) sticker += bridgeCost;
         // ...and a floating platform's, or its well's, deep-water works (DW1), at the depth the first of the order stands in.
         DeepWater deep = deepWater(selected, quantity);
-        double deepPoints = deep == null ? 0 : deep.points(), deepCost = deep == null ? 0 : deep.cost();
+        double deepPoints = deep == null ? 0 : deep.points(), deepCost = deep == null ? 0 : deep.cost() * scarcity;
         if (deepCost > 0) sticker += deepCost;
         return new BuildQuote(
                 quantity,
@@ -8431,7 +8496,8 @@ public class Game {
     private BuildQuote demolitionPrice(BuildingsTemplate t, double workPoints, double points, double months) {
         double perPoint = t.getConstructionPoints() > 0
                 ? buildingManager.nonMaterialCost(t) / t.getConstructionPoints() : 0;
-        double sticker = ConstructionControl.DEMOLITION_SHARE * workPoints * perPoint;
+        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
+        double sticker = ConstructionControl.DEMOLITION_SHARE * workPoints * perPoint * buildingManager.orderPriceMultiplier();
         return new BuildQuote(1, sticker, 0, 0, new Markets.Draw(0, 0, 0, 0, 0), 0,
                 buildingManager.getConstructionMaterialPrice(), 0, landManager.getAvailableSqFt(), months,
                 buildersSalesRate(), plantSalesRate());
@@ -8712,7 +8778,9 @@ public class Game {
         BuildingsTemplate t = shell == null ? null : buildingManager.getTemplate(shell.templateId);
         if (t == null || t.getConstructionPoints() <= 0) return null;
         double pointsLeft = Math.max(0, shell.buildings * (double) t.getConstructionPoints() - shell.progress);
-        double sticker = buildingManager.nonMaterialCost(t) * pointsLeft / t.getConstructionPoints();
+        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
+        double sticker = buildingManager.nonMaterialCost(t) * pointsLeft / t.getConstructionPoints()
+                * buildingManager.orderPriceMultiplier();
         double needed = Math.max(0, shell.materialsOwed);
         double yard = buildingManager.getConstructionMaterials();
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
@@ -8802,8 +8870,10 @@ public class Game {
         double needed = Math.max(0, to.getConstructionMaterials() - from.getConstructionMaterials()) * (double) n;
         double yard = buildingManager.getConstructionMaterials();
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
+        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
         double sticker = (buildingManager.nonMaterialCost(to)
-                + ConstructionControl.DEMOLITION_SHARE * buildingManager.nonMaterialCost(from)) * n;
+                + ConstructionControl.DEMOLITION_SHARE * buildingManager.nonMaterialCost(from)) * n
+                * buildingManager.orderPriceMultiplier();
         // ...and its surface's bitumen (0.7.83): a Paved Road's, the bed having none (bitumenForPaving()).
         Markets.Draw bitumen = getMarkets().quote(Good.BITUMEN, bitumenForPaving() * (double) n, getSectors());
         return new BuildQuote(n, sticker, needed, yard, boughtIn,
@@ -9201,7 +9271,8 @@ public class Game {
                 if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
                 if (quote.bridgePoints > 0) billedPoints += quote.bridgePoints;
                 if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
-                getSectors().construction().bill(totalCost, billedPoints);
+                // ...the template with it (FC1): a depot the builders serve first is not on the foreign contractor's book too.
+                getSectors().construction().bill(totalCost, billedPoints, selected);
             }
 
             System.out.println(quantity + " " + selected.getName()
@@ -10046,7 +10117,8 @@ public class Game {
         if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
         if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
         if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
-        getSectors().construction().bill(totalCost - landPrice, billedPoints);
+        // ...the template with it (FC1): a depot the builders serve first is not on the foreign contractor's book too.
+        getSectors().construction().bill(totalCost - landPrice, billedPoints, template);
 
         return true;
     }
@@ -10199,14 +10271,16 @@ public class Game {
         double total = 0, bitumenAhead = 0;
         // ...and the ground the orders before it take and the foothill they prepare, which the next is asked for after them (ET2).
         // ...and (ET4) the part of it that is runs', which take their share of every class and push buildings off the flat.
-        double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0;
+        double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0, queueAhead = 0;
         // ...and (ET5) the sea terminals ahead of it that stand on an island no port links, by island: they take its room, not the linked ground.
         java.util.Map<Integer, Double> islandsAhead = new java.util.HashMap<>();
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
             BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead,
-                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead));
+                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead, queueAhead));
             total += q.total;
+            // ...and the points the order puts on the queue, as bill() is handed them: the next is priced on the queue with them (FC1).
+            queueAhead += e.getKey().getConstructionPoints() * (double) e.getValue() + q.prepPoints + q.worksPoints + q.bridgePoints + q.deepWaterPoints;
             double land = e.getKey().getLandSqFt() * (double) e.getValue();
             LandManager.Use use = groundUse(e.getKey());
             int island = islandPortLandmass(e.getKey(), Landmasses.CHOSEN);

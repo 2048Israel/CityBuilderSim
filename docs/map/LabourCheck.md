@@ -1,4 +1,4 @@
-# LabourCheck.java - 1,206 lines · 14 methods · 4 constants · harnesses
+# LabourCheck.java - 1,213 lines · 14 methods · 4 constants · harnesses
 
 `ham/citybuildersim/LabourCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
@@ -23,7 +23,7 @@
 > Both failures produce a city that looks completely normal, which is why every
 > assertion here is about a QUANTITY rather than about a screen.
 
-**Uses:** [WageBand](WageBand.md) (48), [JobType](JobType.md) (40), [LabourMarket](LabourMarket.md) (36), [Game](Game.md) (24), [GameFiles](GameFiles.md) (10), [PriceLevel](PriceLevel.md) (8), [PayTier](PayTier.md) (6), [Migration](Migration.md) (6), [LongPlaytest](LongPlaytest.md) (6), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PopulationManager](PopulationManager.md) (3), [BuildingManager](BuildingManager.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [RealEstate](RealEstate.md) (2), [Construction](Construction.md) (2), [TempDirs](TempDirs.md) (1), [AgeBand](AgeBand.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Sectors](Sectors.md) (1), [PriceIndex](PriceIndex.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [WageBand](WageBand.md) (48), [JobType](JobType.md) (40), [LabourMarket](LabourMarket.md) (36), [Game](Game.md) (24), [GameFiles](GameFiles.md) (10), [PriceLevel](PriceLevel.md) (8), [PayTier](PayTier.md) (6), [Migration](Migration.md) (6), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PopulationManager](PopulationManager.md) (3), [BuildingManager](BuildingManager.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [RealEstate](RealEstate.md) (2), [Construction](Construction.md) (2), [TempDirs](TempDirs.md) (1), [AgeBand](AgeBand.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Sectors](Sectors.md) (1), [PriceIndex](PriceIndex.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 **Used by (1):** [LandlordPortCheck](LandlordPortCheck.md)
 
@@ -44,7 +44,7 @@
 | 592 | · · WHO MOVES IN, AND WHY (2026-09-07). |
 | 635 | · · SOME ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (0.7.18). |
 | 738 | · WAGES AGAINST THE INDEX (2026-09-21). |
-| 980 | 13. PAYROLL BY JOB TYPE (0.7.17) |
+| 987 | 13. PAYROLL BY JOB TYPE (0.7.17) |
 
 ## Constants
 
@@ -68,30 +68,30 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 32 | 1175 | **type** `public class LabourCheck` | Verifies the labour market: who can hold a job, and what it costs. |
+| 32 | 1182 | **type** `public class LabourCheck` | Verifies the labour market: who can hold a job, and what it costs. |
 | 40 | 4 | `static void quietly(Runnable work)` |  |
 | 45 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 50 | 6 | `static void close(String label, double a, double b, double tol)` |  |
 | 57 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
 | 64 | 673 | `public static void main(String[] args) throws Exception` |  |
 
-### WAGES AGAINST THE INDEX (2026-09-21). (lines 738-979)
+### WAGES AGAINST THE INDEX (2026-09-21). (lines 738-986)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 776 | 40 | **type** `static final class LagWatch` | The recurrence, checked month by month on one city: what it was handed and what it did. |
 | 782 | 33 | `void month(Game g, Runnable play)` _(in LabourCheck.LagWatch)_ | One month, played; the index and the expectation the month was handed are the ones it read at its top. |
 | 818 | 4 | `static void crawl(Game g)` | The currency one CRAWL weaker, and held there for the month. |
-| 823 | 156 | `static void wagesAgainstTheIndex()` |  |
+| 823 | 163 | `static void wagesAgainstTheIndex()` |  |
 
-### 13. PAYROLL BY JOB TYPE (0.7.17) (lines 980-1206)
+### 13. PAYROLL BY JOB TYPE (0.7.17) (lines 987-1213)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1000 | 165 | `static void payrollByJobType()` |  |
-| 1167 | 12 | `static double everyOtherEmployer(Game g)` | Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. |
-| 1180 | 5 | `static double sum(double[] a)` |  |
-| 1186 | 3 | `static double pct(double[] mix, WageBand band, double total)` |  |
-| 1190 | 8 | `static double staffed(long[] jobs, long[] vacancy, WageBand band)` |  |
-| 1199 | 7 | `static void cleanUp(Path root)` |  |
+| 1007 | 165 | `static void payrollByJobType()` |  |
+| 1174 | 12 | `static double everyOtherEmployer(Game g)` | Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. |
+| 1187 | 5 | `static double sum(double[] a)` |  |
+| 1193 | 3 | `static double pct(double[] mix, WageBand band, double total)` |  |
+| 1197 | 8 | `static double staffed(long[] jobs, long[] vacancy, WageBand band)` |  |
+| 1206 | 7 | `static void cleanUp(Path root)` |  |
 
