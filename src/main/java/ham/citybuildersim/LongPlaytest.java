@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A city played for four thousand months, the way a person plays.
+ * A city played for 2,400 months at the gate and 4,000 once a night on main
+ * (tools/nightly.sh), the way a person plays.
  *
  * WHY NOT JUST simulateMonths(4000)
  *
@@ -27,8 +28,8 @@ import java.util.Map;
  * So this alternates. Short hands-on stretches where an advisor looks at the
  * city and does something about it, long skips where it just runs, policy
  * changes, borrowing, land purchases, demolitions, and save/reload round trips
- * partway through. Roughly the shape of a real session, repeated a hundred and
- * forty times.
+ * partway through. Roughly the shape of a real session, repeated about once
+ * every thirty months.
  *
  * WHAT IT IS LOOKING FOR
  *
@@ -45,8 +46,8 @@ public class LongPlaytest {
     /** Where the report goes. The game's own console output is discarded. */
     static PrintStream out;
 
-    /** The run's length: 4,000 months, or -Dplaytest.months=N for a short look at one mechanic (a trace of its own, not the baseline). */
-    static final int TARGET_MONTHS = Integer.getInteger("playtest.months", 4000);
+    /** The run's length: 2,400 months at the gate, 4,000 nightly (GT1, 2026-11-02: what 2026-11-01 found showed between months 1,100 and 1,800), or -Dplaytest.months=N for a look at one mechanic (a trace of its own, not the baseline). */
+    static final int TARGET_MONTHS = Integer.getInteger("playtest.months", 2400);
 
     /* ===================================================================
        FINDINGS

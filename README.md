@@ -81,9 +81,11 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **169 harnesses plus the
-4,000-odd-month playtest**, which it counts as 153 run (150 where
-JavaFX is not on the classpath, which skips `BuildMenuCheck`, `KeptCheck` and `ChartFitCheck`), in about nine minutes.
+`AllChecks` runs the lot, one JVM each — **every harness in
+`AllChecks.HARNESSES` and the 2,400-month playtest** (the full 4,000 once a
+night on main, `tools/nightly.sh`); where JavaFX is not on the classpath it
+skips `BuildMenuCheck`, `KeptCheck` and `ChartFitCheck`. README states no
+count of them (GT1: two batches that each added a harness both wrote it up by one).
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
@@ -253,7 +255,7 @@ src/main/java/ham/citybuildersim/     over 450 files
     tools/                            the index generators (see below); not part of the game
     *Check.java                       the harnesses
     AllChecks.java                    the runner
-    LongPlaytest.java                 4,000-odd months, audited every one
+    LongPlaytest.java                 2,400 months at the gate, 4,000 nightly, audited every one
 src/main/resources/buildings.json     the balance file
 docs/                                 generated indexes of all of the above; the manual, the design
                                       studies (studies/), the queue's briefs (queue/) and the record's

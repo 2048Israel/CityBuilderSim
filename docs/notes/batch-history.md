@@ -54,3 +54,32 @@ Cited by letter in `docs/deepseek.md` and in the two manuals; verbatim.
   hour.
 - **The first batch after BP1** reported its token cost against BP1's
   figures; BP1-C's Pending row (1) still waits on it, and is now moot.
+
+## The scripts' headers
+
+The WHY paragraphs of `batch-check.sh` and `ship.sh`, moved here verbatim in
+GT1 (2026-11-02, one in, one out); each header keeps a one-line WHY.
+
+### batch-check.sh
+
+WHY (2026-10-13): a session paid for every line it read, and a batch's
+checks were a dozen calls - each re-reading the whole conversation - and
+their output: a line for every harness, a red one run again in full to find
+its assertion, Stale's report whole. This prints about ten lines when all is
+well and the failing assertions when it is not (AllChecks -f).
+BP1 (2026-10-25): a batch ran the whole suite three times (15-22 minutes
+each) and a person read every red to tell main's own from the batch's; now a
+batch runs --pick (tools/pick.sh: the harnesses that read what its diff
+changed), the one full suite is the gate's, and the red lines and the exit
+statuses 3 and 4 let the gate pass main's recorded reds, word for word, with
+nobody reading the log.
+FW7 (2026-10-25): AllChecks -q hid a second red in a harness that was already
+a known red, and only this script compared lines. AllChecks now reads the
+record too (-Dcbs.knownReds, the file written to target/checks/known-reds.txt
+before the suite runs) and says "known red" or "NEW red: N of M" of each
+failed harness, tagging the lines; this script strips the tags (the red lines
+are the same as before) and refuses a log whose N is not its own count, so
+the two judges cannot disagree unseen. --judge LOG gives the verdict on a
+saved log, from the folder the log is in, against the record named by
+$CBS_KNOWN_REDS (read only there, never in a real run): what KnownRedsCheck
+runs, from inside the suite, on the logs it builds.

@@ -14131,7 +14131,8 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 ## LongPlaytest.java - 0 labelled assertions
 
-> A city played for four thousand months, the way a person plays.
+> A city played for 2,400 months at the gate and 4,000 once a night on main
+> (tools/nightly.sh), the way a person plays.
 > 
 > WHY NOT JUST simulateMonths(4000)
 > 
@@ -14142,22 +14143,21 @@ _(this harness does not label its checks through a helper - it prints its findin
 > need something to be built, taxed, borrowed against, saved or reloaded partway
 > through - is invisible to it.
 > 
-> So this alternates. Short hands-on stretches where an advisor looks at the
 > ...
 
 _(this harness does not label its checks through a helper - it prints its findings; read its header and its sections)_
 
-- **L1337 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L3154 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L3209 AND EVERYTHING THAT IS A PURCHASE.**
-- **L3555 AND THE BEST OF THEM WINS.**
-- **L6008 founding: a few months at a time, by hand**
-- **L6105 then the real rhythm**
-- **L6253 the report**
-- **L6276 ==**
-- **L6362 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7572 what the advisor tried, and what happened**
-- **L7578 findings**
+- **L1338 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
+- **L3155 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L3210 AND EVERYTHING THAT IS A PURCHASE.**
+- **L3556 AND THE BEST OF THEM WINS.**
+- **L6009 founding: a few months at a time, by hand**
+- **L6106 then the real rhythm**
+- **L6254 the report**
+- **L6277 ==**
+- **L6363 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7573 what the advisor tried, and what happened**
+- **L7579 findings**
 
 ## MainLineCheck.java - 152 labelled assertions
 

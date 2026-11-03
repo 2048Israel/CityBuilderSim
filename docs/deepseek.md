@@ -127,8 +127,7 @@ What the gate sent back in the test, and what DeepSeek cannot do itself:
 - A default or a tie carries a bias from loop order (the first bearing:
   every inland city's gateway due east).
 - A file the brief did not name was touched.
-- Not DeepSeek's to do: README's harness count (StaleCheck goes red when a
-  harness is added) and the maps; the Claude session does both.
+- Not DeepSeek's to do: the maps; the Claude session regenerates them.
 
 ## Access, money and limits
 
