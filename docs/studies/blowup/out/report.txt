@@ -1,0 +1,78 @@
+1. THE FIRST MONTH: the month's overdraft forgiven, against a month's GDP
+   seed 1: month 7386, forgiven 9.74e+13 = 555 months of GDP
+      m7385  bank cash  -8.14e+09  desk   2.9e+09  window         0  deposits  1.56e+12  valuation  1.83e+05  profit tax  1.84e+10
+      m7386  bank cash  -2.49e+10  desk  3.45e+09  window         0  deposits  1.64e+14  valuation  9.74e+13  profit tax  2.21e+13
+      m7387  bank cash   5.38e+13  desk  3.28e+09  window         0  deposits  1.36e+15  valuation  1.33e+15  profit tax  1.63e+14
+      m7388  bank cash   4.23e+14  desk  2.56e+16  window         0  deposits  4.84e+15  valuation  3.87e+15  profit tax  4.77e+14
+      m7389  bank cash  -1.03e+16  desk  9.12e+16  window         0  deposits  9.28e+15  valuation  5.27e+15  profit tax  6.56e+14
+   seed 0: month 7515, forgiven 2.38e+16 = 120,160 months of GDP
+      m7514  bank cash  -5.82e+10  desk  3.19e+10  window         0  deposits   4.1e+12  valuation  6.15e+08  profit tax  1.52e+10
+      m7515  bank cash   2.58e+11  desk  3.19e+10  window         0  deposits   2.1e+16  valuation  2.38e+16  profit tax  2.86e+15
+      m7516  bank cash   4.77e+15  desk  1.76e+17  window         0  deposits   5.5e+16  valuation  3.87e+16  profit tax  4.64e+15
+      m7517  bank cash  -6.85e+16  desk  4.55e+17  window         0  deposits  8.96e+16  valuation  4.68e+16  profit tax  5.62e+15
+      m7518  bank cash  -2.09e+17  desk  7.86e+17  window         0  deposits  1.21e+17  valuation  5.04e+16  profit tax  2.77e+16
+
+2. HAULAGE, MONTH BY MONTH, AROUND IT (the price rule's terms)
+   seed 1:  month   trucks   capacity t   carried t   quote D$/t   allowed     bill
+            7382   1.5e-05      0.0454      0.0454     6.91e+09   2.01e+08   3.12e+08
+            7383  1.49e-05       0.045       0.045     6.97e+09   2.01e+08   3.11e+08
+            7384  1.48e-05      0.0447      0.0447     7.02e+09   2.01e+08   3.11e+08
+            7385       157      0.0443      0.0443     7.08e+09      2e+08   3.11e+08
+            7386       610     4.7e+05    2.96e+04     5.31e+09   2.02e+08   2.09e+14
+            7387  1.03e+03    1.83e+06     2.9e+05     3.98e+09    2.2e+08   1.54e+15
+            7388  1.45e+03     3.1e+06    1.13e+06     2.99e+09   2.51e+08   4.51e+15
+            7389  1.87e+03    4.35e+06    2.06e+06     2.24e+09   2.81e+08   6.15e+15
+   seed 0:  month   trucks   capacity t   carried t   quote D$/t   allowed     bill
+            7511  1.82e-06     0.00552     0.00552     8.06e+10   2.87e+08   4.39e+08
+            7512  1.81e-06     0.00547     0.00196     8.09e+10    2.8e+08   1.58e+08
+            7513       256     0.00542      0.0021     8.12e+10   2.79e+08    1.7e+08
+            7514       510    7.68e+05     0.00208     6.09e+10    2.9e+08   1.69e+08
+            7515       761    1.53e+06    4.44e+05     4.57e+10   3.26e+08   2.71e+16
+            7516  1.01e+03    2.28e+06    9.62e+05     3.43e+10    3.6e+08    4.4e+16
+            7517  1.26e+03    3.03e+06    1.55e+06     2.57e+10   3.99e+08   5.32e+16
+            7518   1.5e+03    3.77e+06    2.23e+06     1.93e+10   4.39e+08   5.73e+16
+
+3. THE FLEET OVER THE RUN, A ROW A CENTURY (yearly rows; the game as it is | the prototype)
+   seed 0:  month |  trucks  need tr  quote D$/t  Freight preTax |  trucks  quote D$/t
+             1200 |      371      111     0.00209      -1.48e+03 |      700     0.00166
+             2400 |      672      510      0.0241       1.79e+05 | 2.64e+03      0.0179
+             3600 |      196 3.39e+03        1.01      -4.72e+05 | 6.19e+03       0.083
+             4800 | 1.11e+03  1.1e+03        1.58      -3.08e+06 | 3.32e+03         1.3
+             6000 |    0.565 2.97e+03    2.92e+04      -1.59e+07 |     3.61    6.33e+03
+             7200 | 2.46e-05 2.05e+03    4.42e+09      -1.84e+08 | 0.000157    2.32e+05
+            under one truck at 176 year marks, first 12
+   seed 1:  month |  trucks  need tr  quote D$/t  Freight preTax |  trucks  quote D$/t
+             1200 |      544      312     0.00147      -5.62e+03 |      499     0.00138
+             2400 | 2.33e+03 2.28e+03      0.0146        1.2e+05 | 1.84e+03      0.0157
+             3600 | 6.37e+03  6.8e+03      0.0565      -9.31e+05 | 5.27e+03      0.0603
+             4800 | 3.99e+03 3.95e+03       0.683      -3.24e+06 | 3.34e+03       0.671
+             6000 |     1.58 5.01e+03    1.37e+04      -5.89e+07 |       11    1.58e+03
+             7200 | 6.89e-05 3.93e+03    1.47e+09      -1.73e+07 | 0.000478    7.29e+04
+            under one truck at 116 year marks, first 12
+   seed 2:  month |  trucks  need tr  quote D$/t  Freight preTax |  trucks  quote D$/t
+             1200 |      226      199     0.00117       2.11e+03 |      732     0.00145
+             2400 | 1.82e+03 1.82e+03      0.0113       7.05e+04 | 3.14e+03       0.018
+             3600 | 5.88e+03 5.86e+03      0.0526       -2.9e+05 |  3.7e+03       0.121
+             4800 | 3.34e+03 3.33e+03       0.988       7.09e+06 | 4.23e+03        1.53
+             6000 | 6.44e+03 6.44e+03        8.52       3.66e+07 |      1.4    2.39e+04
+             7200 | 9.31e+03 9.28e+03        73.2      -3.58e+07 | 6.09e-05    1.83e+05
+            under one truck at 6 year marks, first 12
+
+4. THE WORST YEAR AND THE WINDOW (yearly sums from WealthRun's CSV): the game as it is,
+   prototype A (re-strike and a one-truck floor), prototype B (the re-strike alone, the batch's)
+   seed  version     worst year's valuation, yrs GDP (month)  worst after m1200 (month)  window peak, yrs GDP (month)
+      0  as is                1.07e+05 (7524)           1.07e+05 (7524)              3.2e+05 (7524)
+      0  A floor                   0.1 ( 144)             0.0181 (1296)                  1.3 ( 228)
+      0  B                       0.117 ( 144)             0.0215 (6900)                0.757 ( 120)
+      1  as is                1.47e+04 (7404)           1.47e+04 (7404)             3.68e+05 (7404)
+      1  A floor                  3.09 (  84)             0.0321 (1308)                 2.35 ( 168)
+      1  B                       0.315 (  84)             0.0237 (1332)                 3.72 ( 228)
+      2  as is                   0.112 ( 648)             0.0158 (4320)                0.955 ( 492)
+      2  A floor                  2.96 (  96)             0.0325 (1284)                 1.55 (  96)
+      2  B                       0.126 ( 132)             0.0153 (6432)                 1.04 ( 120)
+
+5. A WITHERED FLEET BOUGHT BACK (a yearly row under one truck, the next at ten or more, past month 600)
+   as is    seed 0 m4704: 0.021 -> 2.15e+03 trucks, quote 8.03e+04 -> 6.2e+03 a tonne, the month's bill 3.17e+10 = 15.2 months of GDP
+   as is    seed 0 m7524: 1.8e-06 -> 1.92e+03 trucks, quote 8.09e+10 -> 3.43e+09 a tonne, the month's bill 1.65e+16 = 5.85e+04 months of GDP
+   as is    seed 1 m7392: 1.5e-05 -> 3.11e+03 trucks, quote 6.81e+09 -> 9.45e+08 a tonne, the month's bill 6.76e+15 = 3.48e+04 months of GDP
+   B        seed 1 m7296: 0.00027 -> 175 trucks, quote 4.05e+08 -> 646 a tonne, the month's bill 5.22e+07 = 0.000343 months of GDP
