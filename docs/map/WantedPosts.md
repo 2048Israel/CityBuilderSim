@@ -39,7 +39,7 @@
 
 **Uses:** [WageBand](WageBand.md) (2), [LabourMarket](LabourMarket.md) (2)
 
-**Used by (7):** [DeathRecordCheck](DeathRecordCheck.md), [DeskCheck](DeskCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [PeopleScreen](PeopleScreen.md), [ScaleCheck](ScaleCheck.md), [WantedPostsCheck](WantedPostsCheck.md)
+**Used by (11):** [AutoBuildCheck](AutoBuildCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [DeskCheck](DeskCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [PeopleScreen](PeopleScreen.md), [ScaleCheck](ScaleCheck.md), [WantedPostsCheck](WantedPostsCheck.md)
 
 ## Constants
 

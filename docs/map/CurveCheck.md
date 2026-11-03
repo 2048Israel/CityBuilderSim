@@ -1,4 +1,4 @@
-# CurveCheck.java - 748 lines · 37 methods · 11 constants · harnesses
+# CurveCheck.java - 752 lines · 37 methods · 11 constants · harnesses
 
 `ham/citybuildersim/CurveCheck.java` - generated 2026-11-02 by CodeMap; line numbers are as of that run.
 
@@ -57,41 +57,41 @@
 >      1-year and the months the dial is off the rule by more than a quarter
 >      point, over 120 months of the playtest's founding.
 
-**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (27), [Debt](Debt.md) (19), [PriceLevel](PriceLevel.md) (12), [YieldCurve](YieldCurve.md) (8), [Expectations](Expectations.md) (7), [MonetaryCheck](MonetaryCheck.md) (2), [CentralBank](CentralBank.md) (2), [DebtQuote](DebtQuote.md) (2), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [BondMarket](BondMarket.md) (1), [GameFiles](GameFiles.md) (1)
+**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (27), [Debt](Debt.md) (19), [PriceLevel](PriceLevel.md) (12), [YieldCurve](YieldCurve.md) (8), [Expectations](Expectations.md) (7), [MonetaryCheck](MonetaryCheck.md) (2), [CentralBank](CentralBank.md) (2), [DebtQuote](DebtQuote.md) (2), [WantedPosts](WantedPosts.md) (1), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [BondMarket](BondMarket.md) (1), [GameFiles](GameFiles.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 145 | · fixtures |
-| 285 | 1. calm prices as today |
-| 317 | 2. hiking inverts |
-| 353 | 3. behind is steep |
-| 370 | 4. QE bends the long end |
-| 390 | 5. the autopilot's gap is nothing |
-| 430 | 6. every payment on its month |
-| 485 | 7. the issue at the curve |
-| 561 | 8. no money pump |
-| 629 | 9. BondMarket reads it |
-| 643 | 10. the strike holds through the month and a save |
-| 693 | 11. the parts add up |
-| 709 | 12. how often it fires in a real run |
+| 149 | · fixtures |
+| 289 | 1. calm prices as today |
+| 321 | 2. hiking inverts |
+| 357 | 3. behind is steep |
+| 374 | 4. QE bends the long end |
+| 394 | 5. the autopilot's gap is nothing |
+| 434 | 6. every payment on its month |
+| 489 | 7. the issue at the curve |
+| 565 | 8. no money pump |
+| 633 | 9. BondMarket reads it |
+| 647 | 10. the strike holds through the month and a save |
+| 697 | 11. the parts add up |
+| 713 | 12. how often it fires in a real run |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 148 | `CurveCheck.TARGET` | `.02` | The target the study's cities aim at: the game's default, the figure the rule's neutral rate is struck on. |
-| 151 | `CurveCheck.GDP_YEAR` | `5.4e9, TAX_YEAR = 1.1e9, DEBT = 3.4e9` | The study's economy and debt (spec section 3.3, debt-model.py): a year's output and a year's tax, in local money, and the term paper outstanding. |
-| 154 | `CurveCheck.MONTHS` | `{ 3, 12, 24, 60, 120, 240, 360, 600 }` | The maturities section 1 asserts at, in months. |
-| 157 | `CurveCheck.ROW` | `{ 1, 12, 24, 60, 120, 240, 360, 600 }` | Section 3.3's columns: 1 month, 1, 2, 5, 10, 20, 30 and 50 years. |
-| 163 | `CurveCheck.CALM` | `new Study("calm",.03,.02,.80, 0, new double[] { 3.12, 3.12, 3.18, 3.35, 3.62,...` | The calm city: the dial at 3%, inflation at 2%, credibility .80, no holdings. |
-| 166 | `CurveCheck.HIKING` | `new Study("hiking",.07,.06,.65, 0, new double[] { 7.12, 6.85, 6.50, 6.04, 6.0...` | ...the hiking city: the dial at 7% against inflation at 6%, credibility .65. |
-| 169 | `CurveCheck.BEHIND` | `new Study("behind",.01,.05,.60, 0, new double[] { 1.12, 3.65, 4.46, 5.00, 5.3...` | ...the city behind: the dial at 1% against inflation at 5%, credibility .60. |
-| 172 | `CurveCheck.QE` | `new Study("QE",.03,.02,.80,.25, new double[] { 3.12, 3.12, 3.15, 3.24, 3.37, ...` | ...and QE: the calm city with the central bank holding a quarter of the term paper. |
-| 175 | `CurveCheck.CITIES` | `{ CALM, HIKING, BEHIND, QE }` | The four, in the study's order. |
-| 488 | `CurveCheck.ASK` | `20_000 * PriceLevel.FACTOR` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
-| 564 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
+| 152 | `CurveCheck.TARGET` | `.02` | The target the study's cities aim at: the game's default, the figure the rule's neutral rate is struck on. |
+| 155 | `CurveCheck.GDP_YEAR` | `5.4e9, TAX_YEAR = 1.1e9, DEBT = 3.4e9` | The study's economy and debt (spec section 3.3, debt-model.py): a year's output and a year's tax, in local money, and the term paper outstanding. |
+| 158 | `CurveCheck.MONTHS` | `{ 3, 12, 24, 60, 120, 240, 360, 600 }` | The maturities section 1 asserts at, in months. |
+| 161 | `CurveCheck.ROW` | `{ 1, 12, 24, 60, 120, 240, 360, 600 }` | Section 3.3's columns: 1 month, 1, 2, 5, 10, 20, 30 and 50 years. |
+| 167 | `CurveCheck.CALM` | `new Study("calm",.03,.02,.80, 0, new double[] { 3.12, 3.12, 3.18, 3.35, 3.62,...` | The calm city: the dial at 3%, inflation at 2%, credibility .80, no holdings. |
+| 170 | `CurveCheck.HIKING` | `new Study("hiking",.07,.06,.65, 0, new double[] { 7.12, 6.85, 6.50, 6.04, 6.0...` | ...the hiking city: the dial at 7% against inflation at 6%, credibility .65. |
+| 173 | `CurveCheck.BEHIND` | `new Study("behind",.01,.05,.60, 0, new double[] { 1.12, 3.65, 4.46, 5.00, 5.3...` | ...the city behind: the dial at 1% against inflation at 5%, credibility .60. |
+| 176 | `CurveCheck.QE` | `new Study("QE",.03,.02,.80,.25, new double[] { 3.12, 3.12, 3.15, 3.24, 3.37, ...` | ...and QE: the calm city with the central bank holding a quarter of the term paper. |
+| 179 | `CurveCheck.CITIES` | `{ CALM, HIKING, BEHIND, QE }` | The four, in the study's order. |
+| 492 | `CurveCheck.ASK` | `20_000 * PriceLevel.FACTOR` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
+| 568 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
 
 ## Fields (state)
 
@@ -105,108 +105,108 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 680 | **type** `public class CurveCheck` | Proves the curve from the dial the market expects (CD1, spec-city-debt.md section 3): the expected dial's path, the zero rates it compounds to, the price of every payment at its own month's factor, and every issue and... |
+| 69 | 684 | **type** `public class CurveCheck` | Proves the curve from the dial the market expects (CD1, spec-city-debt.md section 3): the expected dial's path, the zero rates it compounds to, the price of every payment at its own month's factor, and every issue and... |
 | 75 | 4 | `static void check(String label, boolean ok)` |  |
 | 80 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 92 | 10 | `static void closeRel(String label, double actual, double expected, double relTol)` | ...for a figure in money, where the tolerance is a share of it. |
 | 104 | 9 | `static void same(String label, double actual, double expected)` | Two figures that must be the same number to the bit. |
 | 114 | 4 | `static void quietly(Runnable r)` |  |
-| 119 | 25 | `public static void main(String[] args) throws Exception` |  |
+| 119 | 29 | `public static void main(String[] args) throws Exception` |  |
 
-### fixtures (lines 145-284)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 160 | 1 | **type** `record Study(String name, double dial, double inflationNow, double credibility, double centralBankShare, do...` | The study's four cities: the dial, the inflation now, the credibility, the share of the term paper the central bank holds, and section 3.3's row in per cent. |
-| 185 | 3 | `static double settle(Study s)` | Where a city expects inflation to settle: credibility x target + (1 - credibility) x pi_now. |
-| 196 | 13 | `static DebtManager bare(Study s, boolean struck)` | A bare city of the study's: the target, the bank's money free so the floor is the dial, the economy and the debt the study priced, one domestic term loan carrying it (a quarter of it moved to the central bank in the Q... |
-| 211 | 3 | `static double inflationIn(double now, double settle, double t)` | The inflation expected t months ahead: pi_inf + (pi_now - pi_inf) e^(-t / ADAPT_MONTHS), the spec's section 3.1. |
-| 216 | 8 | `static double inflationFor(DebtManager dm, double rate)` | The inflation at which the city's own rule gives this rate: bisection on advisedPolicyRate(), which rises with inflation between the target and a rate of 100%. |
-| 225 | 3 | `static String months(int m)` |  |
-| 230 | 9 | `static void row(String who, DebtManager dm, double[] study)` | Prints the model's row beside the study's and asserts each point to the hundredth of a point. |
-| 241 | 5 | `static void press(Game g)` | One press of a city, as the playtest steps it: a broke city steps rather than skips. |
-| 247 | 3 | `static void pressQuietly(Game g)` |  |
-| 252 | 3 | `static Game city(Path root, String label, int toMonth)` | The playtest's founding with the rule's hand on the dial, played on to this month. |
-| 257 | 9 | `static Game city(Path root, String label, int toMonth, boolean onLiterals)` | ...on the goods' literals where asked (Game.playOnLiterals(); see steepCity()). |
-| 268 | 3 | `static double inflationRead(Game g)` | The inflation the month's top reads: the year's, or the target before there is one (Game.strikeTheCurve()). |
-| 272 | 4 | `static Debt lastPiece(Game g)` |  |
-| 277 | 7 | `static void cleanUp(Path root)` |  |
-
-### 1. calm prices as today (lines 285-316)
+### fixtures (lines 149-288)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 286 | 30 | `static void calm()` |  |
+| 164 | 1 | **type** `record Study(String name, double dial, double inflationNow, double credibility, double centralBankShare, do...` | The study's four cities: the dial, the inflation now, the credibility, the share of the term paper the central bank holds, and section 3.3's row in per cent. |
+| 189 | 3 | `static double settle(Study s)` | Where a city expects inflation to settle: credibility x target + (1 - credibility) x pi_now. |
+| 200 | 13 | `static DebtManager bare(Study s, boolean struck)` | A bare city of the study's: the target, the bank's money free so the floor is the dial, the economy and the debt the study priced, one domestic term loan carrying it (a quarter of it moved to the central bank in the Q... |
+| 215 | 3 | `static double inflationIn(double now, double settle, double t)` | The inflation expected t months ahead: pi_inf + (pi_now - pi_inf) e^(-t / ADAPT_MONTHS), the spec's section 3.1. |
+| 220 | 8 | `static double inflationFor(DebtManager dm, double rate)` | The inflation at which the city's own rule gives this rate: bisection on advisedPolicyRate(), which rises with inflation between the target and a rate of 100%. |
+| 229 | 3 | `static String months(int m)` |  |
+| 234 | 9 | `static void row(String who, DebtManager dm, double[] study)` | Prints the model's row beside the study's and asserts each point to the hundredth of a point. |
+| 245 | 5 | `static void press(Game g)` | One press of a city, as the playtest steps it: a broke city steps rather than skips. |
+| 251 | 3 | `static void pressQuietly(Game g)` |  |
+| 256 | 3 | `static Game city(Path root, String label, int toMonth)` | The playtest's founding with the rule's hand on the dial, played on to this month. |
+| 261 | 9 | `static Game city(Path root, String label, int toMonth, boolean onLiterals)` | ...on the goods' literals where asked (Game.playOnLiterals(); see steepCity()). |
+| 272 | 3 | `static double inflationRead(Game g)` | The inflation the month's top reads: the year's, or the target before there is one (Game.strikeTheCurve()). |
+| 276 | 4 | `static Debt lastPiece(Game g)` |  |
+| 281 | 7 | `static void cleanUp(Path root)` |  |
 
-### 2. hiking inverts (lines 317-352)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 318 | 34 | `static void hiking()` |  |
-
-### 3. behind is steep (lines 353-369)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 354 | 15 | `static void behind()` |  |
-
-### 4. QE bends the long end (lines 370-389)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 371 | 18 | `static void qe()` |  |
-
-### 5. the autopilot's gap is nothing (lines 390-429)
+### 1. calm prices as today (lines 289-320)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 391 | 15 | `static void autopilot(Path root)` |  |
-| 408 | 21 | `static void autopilotMonth(Game c, String at)` | One press of the autopilot city, read against what the month's top read just before it. |
+| 290 | 30 | `static void calm()` |  |
 
-### 6. every payment on its month (lines 430-484)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 431 | 6 | `static double handSum(Debt piece, IntToDoubleFunction factor)` |  |
-| 438 | 46 | `static void pieces()` |  |
-
-### 7. the issue at the curve (lines 485-560)
+### 2. hiking inverts (lines 321-356)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 497 | 15 | `static Game steepCity(Path root, String label)` | A founded city with the rule's hand on the dial to month 38, then the dial held two points under the rule by hand and one press on: the market expects the dial to rise to the rule, so the curve is steep. |
-| 513 | 47 | `static void issueAtTheCurve(Game g)` |  |
+| 322 | 34 | `static void hiking()` |  |
 
-### 8. no money pump (lines 561-628)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 566 | 7 | `static void noMoneyPump(Path root, Game steep) throws Exception` | today's figure, priced at the founding's level (EP1) |
-| 574 | 9 | `static Game tradingCity(Path root) throws Exception` |  |
-| 585 | 21 | `static void roundTrips(String city, Game g)` | Issues each kind and buys it straight back: the city ends no richer, the piece is off the books. |
-| 607 | 21 | `static void roundTrip(String city, Game g, String kind, Runnable issue)` |  |
-
-### 9. BondMarket reads it (lines 629-642)
+### 3. behind is steep (lines 357-373)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 630 | 12 | `static void bondMarket(Game g) throws Exception` |  |
+| 358 | 15 | `static void behind()` |  |
 
-### 10. the strike holds through the month and a save (lines 643-692)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 644 | 48 | `static void theStrike(Path root, Game g) throws Exception` |  |
-
-### 11. the parts add up (lines 693-708)
+### 4. QE bends the long end (lines 374-393)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 694 | 14 | `static void theParts()` |  |
+| 375 | 18 | `static void qe()` |  |
 
-### 12. how often it fires in a real run (lines 709-748)
+### 5. the autopilot's gap is nothing (lines 394-433)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 710 | 38 | `static void howOften(Path root)` |  |
+| 395 | 15 | `static void autopilot(Path root)` |  |
+| 412 | 21 | `static void autopilotMonth(Game c, String at)` | One press of the autopilot city, read against what the month's top read just before it. |
+
+### 6. every payment on its month (lines 434-488)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 435 | 6 | `static double handSum(Debt piece, IntToDoubleFunction factor)` |  |
+| 442 | 46 | `static void pieces()` |  |
+
+### 7. the issue at the curve (lines 489-564)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 501 | 15 | `static Game steepCity(Path root, String label)` | A founded city with the rule's hand on the dial to month 38, then the dial held two points under the rule by hand and one press on: the market expects the dial to rise to the rule, so the curve is steep. |
+| 517 | 47 | `static void issueAtTheCurve(Game g)` |  |
+
+### 8. no money pump (lines 565-632)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 570 | 7 | `static void noMoneyPump(Path root, Game steep) throws Exception` | today's figure, priced at the founding's level (EP1) |
+| 578 | 9 | `static Game tradingCity(Path root) throws Exception` |  |
+| 589 | 21 | `static void roundTrips(String city, Game g)` | Issues each kind and buys it straight back: the city ends no richer, the piece is off the books. |
+| 611 | 21 | `static void roundTrip(String city, Game g, String kind, Runnable issue)` |  |
+
+### 9. BondMarket reads it (lines 633-646)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 634 | 12 | `static void bondMarket(Game g) throws Exception` |  |
+
+### 10. the strike holds through the month and a save (lines 647-696)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 648 | 48 | `static void theStrike(Path root, Game g) throws Exception` |  |
+
+### 11. the parts add up (lines 697-712)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 698 | 14 | `static void theParts()` |  |
+
+### 12. how often it fires in a real run (lines 713-752)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 714 | 38 | `static void howOften(Path root)` |  |
 
