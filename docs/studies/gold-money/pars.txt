@@ -1,0 +1,13 @@
+US$ 1900: 1.504631 g fine, so $20.6718 an ounce; 1934: 0.888671 g, $35.0000 an ounce
+a money that kept its gold through 1934 rose 69.31% against the US$
+money                       g fine  per US$ 1900  per US$ 1934  law
+Japanese yen              0.750000       2.00617        1.1849  Coinage Act 1897: 1 yen = 750 mg fine
+Swedish krona             0.403226       3.73148        2.2039  Scandinavian Monetary Union 1873: 2,480 kronor a kg fine
+British pound             7.322381       0.20548        0.1214  the sovereign: 113.0016 grains fine a pound
+German mark               0.358423       4.19792        2.4794  Coinage Act 1873: 2,790 marks a kg fine
+French franc              0.290323       5.18262        3.0610  Latin Union: 3,100 francs a kg of gold nine-tenths fine
+Russian ruble             0.774234       1.94338        1.1478  the reform of 1897
+Austro-Hungarian krone    0.304878       4.93519        2.9148  the reform of 1892: 3,280 kronen a kg fine
+Dutch guilder             0.604800       2.48782        1.4694  the law of 1875
+Indian rupee              0.488159       3.08226        1.8205  fixed at 15 a pound sterling, 1899
+Canadian dollar           1.504631       1.00000        0.5906  at par with the US$
