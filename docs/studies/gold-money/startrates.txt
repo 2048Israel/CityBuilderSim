@@ -1,0 +1,8 @@
+stand-in months 1200
+Tokyo      nation 88 money at month 0 JPY, rate 105.0991; month 1200 (2000-01) 105.0991; month 1511 (2025-12) JPY 155.8640
+Stockholm  nation 166 money at month 0 SEK, rate 8.4821; month 1200 (2000-01) 8.4821; month 1511 (2025-12) SEK 9.3059
+Amsterdam  nation 131 money at month 0 EUR, rate 0.9867; month 1200 (2000-01) 0.9867; month 1511 (2025-12) EUR 0.8541
+Berlin     nation 45 money at month 0 EUR, rate 0.9867; month 1200 (2000-01) 0.9867; month 1511 (2025-12) EUR 0.8541
+London     nation 62 money at month 0 GBP, rate 0.6100; month 1200 (2000-01) 0.6100; month 1511 (2025-12) GBP 0.7473
+Halifax    nation 30 money at month 0 CAD, rate 1.4487; month 1200 (2000-01) 1.4487; month 1511 (2025-12) CAD 1.3809
+New York   nation 186 money at month 0 USD, rate 1.0000; month 1200 (2000-01) 1.0000; month 1511 (2025-12) USD 1.0000
