@@ -4,7 +4,7 @@ Generated 2026-11-03 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 493 files, 532,429 lines, 22,975 methods, 5,222 constants. `GameVersion.VERSION` is "0.9.4", `SAVE_FORMAT` 50.
+**The tree:** 493 files, 532,503 lines, 22,977 methods, 5,222 constants. `GameVersion.VERSION` is "0.9.4", `SAVE_FORMAT` 50.
 
 ## model (232 files)
 
@@ -15,7 +15,7 @@ Generated 2026-11-03 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AuctionTally.java](AuctionTally.md) | 145 | 11 | The city's auctions counted: how many sales the treasury has booked, what they sold and what they asked, how often the stop sat more than a point o... | 4 |
 | [AutoBuilder.java](AutoBuilder.md) | 2,172 | 145 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 12 |
 | [BalanceSheet.java](BalanceSheet.md) | 201 | 30 | A simple balance sheet for one business in the city. | 6 |
-| [Bank.java](Bank.md) | 6,705 | 455 | The city's commercial bank: every loan in it, and every default. | 63 |
+| [Bank.java](Bank.md) | 6,706 | 455 | The city's commercial bank: every loan in it, and every default. | 63 |
 | [BoatSchedule.java](BoatSchedule.md) | 847 | 50 | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7... | 18 |
 | [BondMarket.java](BondMarket.md) | 2,091 | 172 | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participa... | 21 |
 | [BookDesk.java](BookDesk.md) | 184 | 20 | The debt book as a desk: every figure the book page and a line's page draw (CD6, spec-city-debt.md section 7, boards 1 and 2), a pure model of what... | 5 |
@@ -93,7 +93,7 @@ Generated 2026-11-03 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FuelSplit.java](FuelSplit.md) | 229 | 8 | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; ... | 2 |
 | [FundLedger.java](FundLedger.md) | 766 | 92 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 10 |
 | [FundView.java](FundView.md) | 873 | 39 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 5 |
-| [Game.java](Game.md) | 21,060 | 926 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 240 |
+| [Game.java](Game.md) | 21,058 | 926 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 240 |
 | [GameFiles.java](GameFiles.md) | 522 | 43 | Where the game keeps its files, and how it writes them. | 154 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 249 | 27 | How the player likes the window, kept between runs. | 4 |
@@ -405,7 +405,7 @@ Generated 2026-11-03 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HaulageCheck.java](HaulageCheck.md) | 1,635 | 43 | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the v... | 8 |
 | [HealthCheck.java](HealthCheck.md) | 1,754 | 6 | Sickness: what it moves, and - much more importantly - what it does not. | 0 |
 | [HistoryCheck.java](HistoryCheck.md) | 857 | 11 | Verifies the graph history: recording, alignment, and the round trip. | 0 |
-| [HoldersCheck.java](HoldersCheck.md) | 2,008 | 34 | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is boug... | 0 |
+| [HoldersCheck.java](HoldersCheck.md) | 2,083 | 36 | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is boug... | 0 |
 | [HomeRailCheck.java](HomeRailCheck.md) | 912 | 28 | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's... | 2 |
 | [HouseholdCheck.java](HouseholdCheck.md) | 1,700 | 7 | Verifies the residents' books and the demolition log. | 0 |
 | [HouseholdMemoryCheck.java](HouseholdMemoryCheck.md) | 278 | 6 | The households remember: the builder keeps what still fits. | 0 |
