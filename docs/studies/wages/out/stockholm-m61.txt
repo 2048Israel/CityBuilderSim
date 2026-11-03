@@ -1,0 +1,19 @@
+autosave: month 61, population 359, out of work 0.0%, price index 1.0000, cost of living 1.0000
+floor: real 0.089557, nudge +0.0%, cash 0.089557; the unit (founding rung x cost of living) 0.089557
+band             posts    supply       own   tight    mult  pinned  spare
+No diploma        93.0      87.7       3.5   2.174   1.474   false      0
+Diploma           77.0     122.9     161.3   1.285   1.134   false     84
+College           54.0      20.3      20.2   4.111   2.027   false      0
+University         1.1       1.0       1.1   1.991   1.411   false      0
+job                   posts   held       wage     target       base  w/floor      lic
+NO_DIPLOMA               93     88   0.136484   0.132034   0.089557    1.524    1.000
+DIPLOMA                  77     77   0.136511   0.132034   0.116476    1.524    1.000
+COLLEGE_HEALTH            0      0   0.226764   0.288632   0.142359    2.532    1.000
+COLLEGE_BUSINESS         53     20   0.226764   0.288632   0.142359    2.532    1.000
+COLLEGE_ENGINEERING       1      0   0.226764   0.288632   0.142359    2.532    1.000
+UNIV_DOCTOR               0      0   0.417146   0.569721   0.403782    4.658    1.000
+UNIV_LAW                  2      0   0.417146   0.569721   0.403782    4.658    1.000
+UNIV_FINANCE              8      1   0.512906   0.697960   0.248481    5.727    1.991
+UNIV_SCIENCE              0      0   0.219269   0.299469   0.212244    2.448    1.000
+UNIV_HIGHTECH_ENG         0      0   0.256705   0.350597   0.248481    2.866    1.000
+UNIV_POLICY               0      0   0.219269   0.299469   0.212244    2.448    1.000

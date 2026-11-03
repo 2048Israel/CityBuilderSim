@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wages screen mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--edge:#24354a;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--accent-light:#8cc4ff;--people:#2ec4b6;--money:#5aa9ff;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--stage);color:var(--text);font-family:var(--sans);font-size:12.5px;line-height:1.45}
+.board{max-width:1240px;margin:0 auto;padding:22px 16px 40px}
+.kicker{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+h1{font-size:23px;font-weight:600;margin:2px 0 4px}
+.lead{font-size:14px;color:var(--text2);max-width:930px;margin:0 0 6px}
+.est{font-size:11px;color:var(--text3);max-width:930px;margin:0 0 16px}
+h2{font-size:15px;font-weight:600;margin:28px 0 8px}
+.scroll{overflow-x:auto}
+.frame{width:1200px;background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:14px 16px}
+.chips{display:flex;gap:6px;margin-bottom:12px}
+.chip{border:1px solid var(--edge);border-radius:12px;padding:2px 10px;color:var(--text2);font-size:11.5px}
+.chip.on{background:var(--pinned);color:var(--text);border-color:#33475f}
+.row{display:flex;gap:12px}
+.card{background:var(--raised);border:1px solid var(--edge);border-radius:5px;padding:12px 14px;flex:1}
+.head{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.big{font-family:var(--mono);font-size:24px;font-weight:600}
+.sub{color:var(--text2);font-size:12px}
+.mono{font-family:var(--mono)}
+.muted{color:var(--text3)}
+.gauge{position:relative;height:26px;margin:22px 0 18px;border-radius:3px;overflow:visible}
+.zone{position:absolute;top:0;height:26px}
+.zones{display:flex;font-size:10.5px;color:var(--text3);margin:-10px 0 8px}.zones div{padding:0 6px 0 3px;border-left:1px solid var(--edge)}
+.tick{position:absolute;top:-8px;width:2px;height:42px;background:var(--text)}
+.tick b{position:absolute;top:-15px;left:-30px;width:62px;text-align:center;font-size:11px;font-family:var(--mono);font-weight:600}
+.tick.ghost{background:none;border-left:2px dashed var(--accent)}
+.tick.ghost b{color:var(--accent)}
+.tick.thin{width:1px;background:var(--text3);height:34px;top:-4px}
+.tick.thin b{color:var(--text3);font-weight:400;top:36px;width:90px;left:-45px}
+.band{position:absolute;top:0;height:26px;background:repeating-linear-gradient(45deg,rgba(63,185,80,.20) 0 6px,rgba(63,185,80,.10) 6px 12px);border:1px solid rgba(63,185,80,.5)}
+.stack{display:flex;height:22px;border-radius:3px;overflow:hidden;margin:8px 0 4px}
+.stack div{height:22px;font-size:10.5px;line-height:22px;padding-left:5px;color:#0b1118;white-space:nowrap;overflow:hidden}
+.line{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(36,53,74,.6)}
+.line:last-child{border-bottom:0}
+.radio{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.radio label{display:flex;gap:8px;align-items:baseline}
+.dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--text2);display:inline-block;flex:none;position:relative;top:1px}
+.dot.on{background:var(--accent);border-color:var(--accent)}
+.note{color:var(--text2);font-size:11.5px;margin-top:6px}
+.warn{color:var(--warn)} .good{color:var(--good)} .bad{color:var(--bad)} .acc{color:var(--accent)}
+.ladder{display:flex;gap:10px;align-items:flex-end;height:300px;padding:0 6px;border-bottom:1px solid var(--edge);position:relative}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
+.bar{width:46px;background:var(--money);border-radius:2px 2px 0 0;position:relative}
+.after{position:absolute;left:-8px;width:62px;border-top:2px solid var(--good)}
+.after i{position:absolute;left:66px;top:-8px;font-style:normal;font-size:10.5px;font-family:var(--mono);color:var(--good);white-space:nowrap}
+.paid{font-family:var(--mono);font-size:11px;margin-bottom:3px}
+.step.none .bar{background:#33475f}
+.labels{display:flex;gap:10px;padding:6px 6px 0}
+.labels div{flex:1;text-align:center}
+.labels b{display:block;font-size:12px}
+.labels span{display:block;font-size:10.5px;color:var(--text3)}
+.verdict{font-size:11px;margin-top:4px}
+.legend{display:flex;gap:16px;font-size:11px;color:var(--text2);margin:6px 0 10px}
+.sw{display:inline-block;width:12px;height:10px;margin-right:5px;vertical-align:-1px}
+table{border-collapse:collapse;width:100%}
+td,th{padding:4px 6px;text-align:right;border-bottom:1px solid rgba(36,53,74,.6);font-size:11.5px}
+th{color:var(--text3);font-weight:500;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}
+td:first-child,th:first-child{text-align:left}
+.tile{display:inline-block;background:var(--raised);border:1px solid var(--edge);border-radius:5px;padding:8px 12px;margin-right:10px;min-width:210px}
+</style></head>
+<body><div class="board">
+<div class="kicker">Wages study · board 1 of 1 · a mockup, not the game</div>
+<h1>Policy › Wages, redesigned</h1>
+<p class="lead">Two pages: <b>the minimum wage</b>, a real minimum read three ways (against what unskilled work goes for, against the average wage, against what living alone costs), who it holds and what moving it does; and <b>the ladder</b>, one bar per qualification with its pay after cost.</p>
+<p class="est">Every figure below is measured: the playtest city of seed 0 at month 1,200, run with the floor a real minimum at 0.85 of the going rate (WageProbe, <code>r085-s0</code>; spec-wages.md, section 5). The nations on the average-wage gauge are the OECD's 33, as the game's own world file ships them (2025). Money is the game's, in today's dollars a month.</p>
+
+<h2>1. The minimum wage</h2>
+<div class="scroll"><div class="frame">
+  <div class="chips"><span class="chip on">The minimum wage</span><span class="chip">The ladder</span><span class="chip">Taxes on pay</span></div>
+  <div class="row">
+    <div class="card" style="flex:1.25">
+      <div class="head">The minimum wage</div>
+      <div class="big">$832 <span class="sub">a month</span></div>
+      <div class="sub">$76.1 at founding prices, held there as prices move. Nobody here is paid it: unskilled work goes for $893.</div>
+
+      <div class="head" style="margin-top:16px">Against what unskilled work goes for · 85%</div>
+      <div class="gauge">
+        <div class="zone" style="left:0;width:46.7%;background:#1a2839"></div>
+        <div class="zone" style="left:46.7%;width:20%;background:#22334a"></div>
+        <div class="zone" style="left:66.7%;width:33.3%;background:#2b2a1d"></div>
+        <div class="tick thin" style="left:60.8%"><b>$893 paid</b></div>
+        <div class="tick" style="left:56.7%"><b>85%</b></div>
+        <div class="tick ghost" style="left:68.1%"><b>102%</b></div>
+      </div>
+      <div class="zones" style="margin-top:12px"><div style="width:46.7%">under 70%: never binds (the market alone stops at 70%)</div><div style="width:20%">70–100%: binds in a glut</div><div style="width:33.3%">over 100%: binds even when hands are short</div></div>
+      <div class="note">The going rate ($979) is what an unskilled post pays where there are exactly enough workers for it. Dashed: the floor as staged.</div>
+
+      <div class="head" style="margin-top:16px">Against the average wage · 89%</div>
+      <div class="gauge">
+        <div class="zone" style="left:0;width:100%;background:#1a2839"></div>
+        <div class="band" style="left:37%;width:18%"></div>
+        <div class="tick thin" style="left:17%"><b>US 17%</b></div>
+        <div class="tick thin" style="left:43%"><b>Canada 43%</b></div>
+        <div class="tick thin" style="left:69%"><b>Costa Rica 69%</b></div>
+        <div class="tick" style="left:89%"><b>89%</b></div>
+        <div class="tick ghost" style="left:96%"><b>96%</b></div>
+      </div>
+      <div class="note" style="margin-top:34px">Hatched: 28 of the 33 OECD nations, 37–55% (2025). This city reads high because 95% of its posts are unskilled or diploma posts, paid near the floor; the gauge above is the one that says whether the floor bites.</div>
+    </div>
+
+    <div class="card">
+      <div class="head">What a full-time minimum job pays for</div>
+      <div class="sub">Take-home $544 a month (34.6% off the payslip) against one adult living alone, $398:</div>
+      <div class="stack">
+        <div style="width:58.1%;background:#8cc4ff">rent $316</div>
+        <div style="width:13.0%;background:#2ec4b6">food $71</div>
+        <div style="width:2.1%;background:#a78bfa"></div>
+        <div style="width:26.8%;background:#3fb950">left over $146</div>
+      </div>
+      <div class="sub"><span class="good">Covers 137%.</span> Under 100% such workers share a home (the household books' living-alone pressure).</div>
+
+      <div class="head" style="margin-top:16px">Who is near it</div>
+      <div class="line"><span>Paid the minimum</span><span class="mono">0</span></div>
+      <div class="line"><span>Within 10% above it</span><span class="mono">33,744 · 95%</span></div>
+      <div class="line"><span class="muted">&nbsp;&nbsp;unskilled posts, $893</span><span class="mono muted">24,490</span></div>
+      <div class="line"><span class="muted">&nbsp;&nbsp;diploma posts, $890</span><span class="mono muted">9,254</span></div>
+      <div class="line"><span>Everyone else</span><span class="mono">1,706 · 5%</span></div>
+
+      <div class="head" style="margin-top:16px">Tie it to</div>
+      <div class="radio">
+        <label><span class="dot on"></span><span><b>Prices.</b> <span class="sub">It keeps what it buys (today's rule).</span></span></label>
+        <label><span class="dot"></span><span><b>The average wage, at 45%.</b> <span class="sub">It moves with what people are paid.</span></span></label>
+        <label><span class="dot"></span><span><b>Nothing.</b> <span class="sub">A dollar figure, which inflation wears down as it does a real one.</span></span></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">Staged: $1,000 (+20%)</div>
+      <div class="line"><span>Workers lifted</span><span class="mono">33,744 · 95%</span></div>
+      <div class="line"><span>Their pay</span><span class="mono">$893 → $1,000 (+12%)</span></div>
+      <div class="line"><span>The payroll, a month</span><span class="mono">+$3.6M (+11%)</span></div>
+      <div class="line"><span>Everyone above it</span><span class="mono">unchanged</span></div>
+      <div class="note">Only the floor's own move: each wage's target at the staged floor against its target now. The market's drift, where a wage is still walking to its target, is drawn apart on the ladder, never folded into this.</div>
+      <div class="note" style="margin-top:10px"><b class="warn">What a floor above the going rate cost, measured:</b> raising it 20% at month 240 held unemployment 7 to 8 points higher for twenty years and the city 10 to 24% smaller at month 480, with the median worker 20% better paid (four seeds, section 5). The surplus can't be priced away, so it leaves.</div>
+    </div>
+  </div>
+</div></div>
+
+<h2>2. The ladder</h2>
+<div class="scroll"><div class="frame">
+  <div class="chips"><span class="chip">The minimum wage</span><span class="chip on">The ladder</span><span class="chip">Taxes on pay</span></div>
+  <div class="legend"><span><span class="sw" style="background:var(--money)"></span>paid a month now</span><span><span class="sw" style="border-top:2px solid var(--good);height:0;vertical-align:3px"></span>pay after cost: over a working life from 18, less the school years, the fees, the interest and the wages given up, as a level month</span><span><span class="sw" style="background:#33475f"></span>no posts here</span></div>
+  <div class="ladder">
+    <div class="step"><div class="paid">$893</div><div class="bar" style="height:53px"><div class="after" style="top:0"><i>$893</i></div></div></div>
+    <div class="step"><div class="paid">$890</div><div class="bar" style="height:53px"><div class="after" style="top:0"><i>$887</i></div></div></div>
+    <div class="step"><div class="paid">$1,678</div><div class="bar" style="height:100px"><div class="after" style="top:11px"><i>$1,485</i></div></div></div>
+    <div class="step"><div class="paid">$2,372</div><div class="bar" style="height:141px"><div class="after" style="top:28px"><i>$1,893</i></div></div></div>
+    <div class="step"><div class="paid">$4,766</div><div class="bar" style="height:284px"><div class="after" style="top:134px"><i>$2,526</i></div></div></div>
+    <div class="step"><div class="paid">$4,513</div><div class="bar" style="height:269px"><div class="after" style="top:79px"><i>$3,183</i></div></div></div>
+    <div class="step"><div class="paid">$2,784</div><div class="bar" style="height:166px"><div class="after" style="top:45px"><i>$2,036</i></div></div></div>
+    <div class="step none"><div class="paid muted">$2,777</div><div class="bar" style="height:165px"><div class="after" style="top:64px"><i>$1,702</i></div></div></div>
+  </div>
+  <div class="labels">
+    <div><b>No diploma</b><span>24,490 posts · 12,330 hold it</span><span class="verdict acc">short: diploma holders fill it</span></div>
+    <div><b>Diploma</b><span>9,254 posts · 25,990 hold it</span><span class="verdict warn">pays nothing more: 12,160 holders work unskilled posts, 4,576 have no work</span></div>
+    <div><b>College</b><span>2 yrs · fees $984 · gives up $21,360</span><span class="verdict warn">1.7× after cost: too few seats</span></div>
+    <div><b>University</b><span>4 yrs · fees $4,291 · gives up $42,730</span><span class="verdict warn">2.1× after cost: too few seats</span></div>
+    <div><b>Medicine</b><span>+7 yrs · 40 posts · 34 held</span><span class="verdict">2.8×</span></div>
+    <div><b>Law</b><span>+3 yrs · 1 post · 0 held</span><span class="verdict">3.6×</span></div>
+    <div><b>Business</b><span>+2 yrs · 4 posts</span><span class="verdict">2.3×</span></div>
+    <div><b>Engineering</b><span>+4 yrs · no posts here</span><span class="verdict muted">nobody hires it</span></div>
+  </div>
+  <div class="note" style="margin-top:12px">How to read it. If anyone could take any step, people would keep training until the steps paid about the same after cost: a step well above the one below says the seats, the fees or the wage needed to afford them are holding people back; a step at or under the one below says few will take it, and its holders will get scarce. Steps can invert, and the ladder draws them as they are.</div>
+</div></div>
+
+<h2>3. The out-of-work verdict</h2>
+<div class="scroll"><div class="frame">
+  <span class="tile"><span class="head">Out of work · today</span><br><span class="big">11.4%</span> <span class="good">a healthy slack</span><br><span class="sub">green from 3% to 15%</span></span>
+  <span class="tile"><span class="head">Out of work · proposed</span><br><span class="big">11.4%</span> <span class="warn">high</span><br><span class="sub">green 3–7% · amber 7–12% · red past 12%</span></span>
+  <span class="tile"><span class="head">The tip, proposed</span><br><span class="sub">Big cities in rich countries: Tokyo 2.4%, New York 5.0%, London 5.5%, Halifax 5.5%, Toronto 8.0%, Madrid 9.0%. 20% is a city in crisis: Madrid 19.8% and Spain 26.1% in 2013.</span></span>
+</div></div>
+</div></body></html>
