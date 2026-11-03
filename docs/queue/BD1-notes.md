@@ -78,8 +78,11 @@ BK1, not main):
   LC3's world file as the baseline), against `docs/ensemble/0.9.2.md` (FC1's): **22/26, as the baseline**, its four
   reds the same. Every scored measure's median and range is the baseline's; only info lines moved (AUTO2's share of
   months at a 0% policy rate 28.19% -> 28.12%; ZERO_SLACK's twin figures, the twin's peak yoy 8.52% -> 9.61%), the
-  few cities where the bank's capacity is read between the release and the refresh. Committed as
-  `docs/ensemble/BD1.md`.
+  few cities where the bank's capacity is read between the release and the refresh. Run again on the mended model
+  (5880531a, section 6): its table the same, line for line, and the trace byte-identical to the first. That run is
+  committed as `docs/ensemble/BD1.md`.
+- **After the mend** (section 6): `--pick` exit 0 again, 40 harnesses (HoldersCheck's 13c among them), one timing
+  line SOFT (SaveSlotCheck 1).
 
 ## 5. For the next batches
 
