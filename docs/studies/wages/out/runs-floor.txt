@@ -1,0 +1,35 @@
+from month 240; the median over seeds
+measure                       today       r085    real825       r090     real06    today12     real12    real12r
+seeds                             4          4          4          4          4          4          4          4
+unemp %                        12.2       9.25       9.25       11.1       9.25       14.6       14.5       14.5
+unemp m1200+ %                 10.1       7.27       7.27       9.49       7.27       12.3       12.9       12.9
+pop end k                       331        306        307        340        307        307        307        307
+infl %/yr                      1.97       2.09       2.09       2.12       2.09       2.07       2.02       2.02
+floor/median                      1      0.919      0.892       0.99      0.649          1          1          1
+floor/mean                    0.953      0.875      0.849      0.925      0.618       0.95      0.966      0.966
+paid floor %                   94.3       2.47          0       58.9          0       94.2       94.3       94.3
+none pinned %                   100       3.75          0       60.2          0        100        100        100
+dip pinned %                   99.7       79.2       79.2         71       79.2        100        100        100
+dip=none %                     98.1       36.9       36.9       47.3       36.9        100        100        100
+no sci/pol posts %                0          0          0          0          0          0          0          0
+uni<col %                         0          0          0          0          0          0          0          0
+uni<col w/ posts %                0          0          0          0          0          0          0          0
+col<dip %                         0          0          0          0          0          0          0          0
+floor job covers %              158        131        127        143       92.7        198        196        196
+workers/post                   1.12       1.09       1.09       1.11       1.09       1.15       1.15       1.15
+senior pull                    1.02       1.02       1.02       1.02       1.02       1.02       1.02       1.02
+home share of draw %           29.6       29.3       29.3       29.6       29.3       29.8       29.6       29.6
+real median                       1      0.925      0.925      0.909      0.925        1.2        1.2        1.2
+departures %/yr                5.77       4.85       4.85       4.77       4.85       6.16       5.98       5.98
+Diploma after cost x          0.996      0.987      0.987      0.991      0.987      0.997      0.997      0.997
+College after cost x           1.57       1.68       1.68        1.7       1.68       1.58       1.32       1.32
+University after cost x        1.92       2.06       2.06       2.08       2.06       1.95       1.59       1.59
+
+against `today`, same seed (median over seeds): unemployment points, real median wage, population, inflation
+r085       | m240-480: u  -2.7 pt, real median  -6.2%, pop  -0.3%, infl +0.17 pt | m480-1200: u  -3.6 pt, real median -10.9%, pop  -2.1%, infl +0.26 pt | m1200-2400: u  -3.1 pt, real median  -6.3%, pop -10.1%, infl +0.01 pt
+real825    | m240-480: u  -2.7 pt, real median  -6.2%, pop  +0.9%, infl -0.07 pt | m480-1200: u  -3.9 pt, real median -10.8%, pop  +1.6%, infl +0.33 pt | m1200-2400: u  -3.1 pt, real median  -6.3%, pop -10.1%, infl -0.04 pt
+r090       | m240-480: u  -2.8 pt, real median  -5.8%, pop  -0.8%, infl +0.09 pt | m480-1200: u  -0.8 pt, real median  -9.6%, pop  -8.3%, infl +0.25 pt | m1200-2400: u  -1.3 pt, real median  -7.8%, pop  +9.5%, infl +0.09 pt
+real06     | m240-480: u  -2.7 pt, real median  -6.2%, pop  +0.9%, infl -0.07 pt | m480-1200: u  -3.9 pt, real median -10.8%, pop  +1.6%, infl +0.33 pt | m1200-2400: u  -3.1 pt, real median  -6.3%, pop -10.1%, infl -0.04 pt
+today12    | m240-480: u  +8.0 pt, real median +19.9%, pop -14.6%, infl -0.01 pt | m480-1200: u  +1.0 pt, real median +20.0%, pop -15.2%, infl +0.07 pt | m1200-2400: u  +1.8 pt, real median +20.0%, pop  -7.4%, infl +0.04 pt
+real12     | m240-480: u  +7.3 pt, real median +19.9%, pop -16.0%, infl +0.07 pt | m480-1200: u  -0.2 pt, real median +20.0%, pop -10.0%, infl +0.15 pt | m1200-2400: u  +2.2 pt, real median +20.0%, pop  -6.9%, infl -0.02 pt
+real12r    | m240-480: u  +7.3 pt, real median +19.9%, pop -16.0%, infl +0.07 pt | m480-1200: u  -0.2 pt, real median +20.0%, pop -10.0%, infl +0.15 pt | m1200-2400: u  +2.2 pt, real median +20.0%, pop  -6.9%, infl -0.02 pt

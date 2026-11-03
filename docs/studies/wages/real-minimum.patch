@@ -1,0 +1,76 @@
+--- a/src/main/java/ham/citybuildersim/LabourMarket.java	2026-11-02 21:42:58.278625200 -0400
++++ b/src/main/java/ham/citybuildersim/LabourMarket.java	2026-11-02 21:43:31.659522300 -0400
+@@ -132,6 +132,28 @@
+ 
+     private double minimumWage = DEFAULT_MINIMUM_WAGE;
+ 
++    /*
++     * STUDY PROTOTYPE (docs/studies/spec-wages.md), not game code. With
++     * -Dwages.real=true the floor is a real minimum: the ladder is anchored on
++     * the going rate - the founding unskilled rung in founding money, lifted
++     * by the cost of living as every base already is - and the floor only
++     * lifts the wages under it. -Dwages.ripple=S: the band just above the
++     * highest band the floor holds up keeps at least S of its usual step over
++     * the floor.
++     */
++    static final boolean REAL = Boolean.getBoolean("wages.real");
++    static final double RIPPLE = Double.parseDouble(System.getProperty("wages.ripple", "0"));
++    private final double goingRate = DEFAULT_MINIMUM_WAGE;
++
++    /** The lowest base among a band's ungated jobs, as a multiple of the unskilled rung. */
++    private static double lowRatio(WageBand band) {
++        double low = Double.MAX_VALUE;
++        for (JobType j : JobType.values()) {
++            if (WageBand.of(j) == band && !isGated(j)) low = Math.min(low, ratioOf(j));
++        }
++        return low == Double.MAX_VALUE ? 1 : low;
++    }
++
+     /* ===================================================================
+        THE CURVE
+        =================================================================== */
+@@ -447,7 +469,7 @@
+          * and is now indexed too. Nothing else had to change, and the player's
+          * ± % sits on top of a floor that was real all along.
+          */
+-        return minimumWage * ratioOf(job) * costOfLiving;
++        return (REAL ? goingRate : minimumWage) * ratioOf(job) * costOfLiving;
+     }
+ 
+     /* ===================================================================
+@@ -529,6 +551,26 @@
+              */
+             wage[i] = Math.max(wage[i], cashMinimumWage());
+         }
++
++        if (REAL && RIPPLE > 0) {
++            // The highest band, from the bottom, whose own market wage the floor lifts...
++            double f = cashMinimumWage();
++            int held = -1;
++            for (WageBand band : WageBand.values()) {
++                double market = goingRate * lowRatio(band) * costOfLiving * multiple[band.ordinal()];
++                if (market < f) held = band.ordinal(); else break;
++            }
++            // ...and the band above it keeps RIPPLE of its step over the floor.
++            if (held >= 0 && held + 1 < WageBand.values().length) {
++                WageBand up = WageBand.values()[held + 1];
++                double under = lowRatio(WageBand.values()[held]);
++                for (JobType job : JobType.values()) {
++                    if (WageBand.of(job) != up) continue;
++                    double keep = f * (1 + RIPPLE * (ratioOf(job) / under - 1));
++                    wage[job.ordinal()] = Math.max(wage[job.ordinal()], keep);
++                }
++            }
++        }
+     }
+ 
+     /**
+@@ -734,7 +776,7 @@
+      * which the wage itself may not have reached. Pure.
+      */
+     public double targetWageAt(JobType job, double floor) {
+-        double base = floor * ratioOf(job) * costOfLiving;
++        double base = (REAL ? goingRate : floor) * ratioOf(job) * costOfLiving;
+         double combined = Math.min(MAX_MULTIPLE,
+                 bandMultiple[WageBand.of(job).ordinal()] * licenceMultiple[job.ordinal()]);
+         return Math.max(base * combined, cashAt(floor));

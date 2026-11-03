@@ -1,0 +1,92 @@
+--- a/src/main/java/ham/citybuildersim/Migration.java	2026-11-02 21:54:55.509861100 -0400
++++ b/src/main/java/ham/citybuildersim/Migration.java	2026-11-02 22:19:18.215110700 -0400
+@@ -81,7 +81,25 @@
+        ===================================================================== */
+ 
+     /** Workers per post the city aims to have, over and above one each. */
+-    public static final double TARGET_LABOUR_SLACK = .125;
++    public static final double TARGET_LABOUR_SLACK = Double.parseDouble(System.getProperty("wages.slack", ".125"));
++
++    /*
++     * STUDY PROTOTYPE (docs/studies/spec-wages.md), not game code.
++     * -Dwages.seniorPull=1.3 holds the senior-care pull there (a city with full
++     * senior care, as Jerus's are). -Dwages.pullsOnHomes=true: the pulls raise
++     * the homes' draw only; the jobs' draw is never raised by them, only cut by
++     * a city that is dear or unsafe.
++     */
++    static final double FORCE_SENIOR_PULL = Double.parseDouble(System.getProperty("wages.seniorPull", "0"));
++    static final boolean PULLS_ON_HOMES = Boolean.getBoolean("wages.pullsOnHomes");
++    /** -Dwages.brake=.06/.12: arrivals full under the first, none over the second. */
++    static final double BRAKE_LO = Double.parseDouble(System.getProperty("wages.brake", "0/0").split("/")[0]);
++    static final double BRAKE_HI = Double.parseDouble(System.getProperty("wages.brake", "0/0").split("/")[1]);
++    /** -Dwages.leave=true: with the brake, the jobless over its first figure leave at SURPLUS_DEPARTURE_RATE a month. */
++    static final boolean LEAVE = Boolean.getBoolean("wages.leave");
++    /** -Dwages.wanted=true: the posts the staffing gate refused last month (WantedPosts.getTotal(), set by the probe) draw people as posts do. */
++    static final boolean WANTED = Boolean.getBoolean("wages.wanted");
++    static double wantedDraw;
+ 
+     /**
+      * Below this the arithmetic stops meaning anything - a city that is 10%
+@@ -816,18 +834,21 @@
+                              double seniorCoverage) {
+ 
+         lastResidentsPerJob = residentsPerJob(adultShare);
+-        double jobTarget  = totalJobs * lastResidentsPerJob;
++        double jobTarget  = (totalJobs + (WANTED ? wantedDraw : 0)) * lastResidentsPerJob;
+         double homeTarget = householdCapacity;
+         lastJobs = totalJobs;
+         lastHomeCapacity = householdCapacity;
+         lastJobDraw = JOB_WEIGHT * jobTarget;
+         lastHomeDraw = HOME_WEIGHT * homeTarget;
+ 
+-        lastSeniorPull = seniorCarePull(seniorCoverage);
++        lastSeniorPull = FORCE_SENIOR_PULL > 0 ? FORCE_SENIOR_PULL : seniorCarePull(seniorCoverage);
+         lastAffordabilityPull = affordabilityPull(rentBurden);
+         lastCrimePull = crimePull(crimeVsCanada);
+-        lastTarget = (JOB_WEIGHT * jobTarget + HOME_WEIGHT * homeTarget)
+-                * lastSeniorPull * lastAffordabilityPull * lastCrimePull;
++        lastTarget = PULLS_ON_HOMES
++                ? JOB_WEIGHT * jobTarget * Math.min(1, lastAffordabilityPull * lastCrimePull)
++                        + HOME_WEIGHT * homeTarget * lastSeniorPull * lastAffordabilityPull * lastCrimePull
++                : (JOB_WEIGHT * jobTarget + HOME_WEIGHT * homeTarget)
++                        * lastSeniorPull * lastAffordabilityPull * lastCrimePull;
+         lastArrivals = 0;
+         lastDepartures = 0;
+         lastCrimeDepartures = 0;
+@@ -928,6 +949,15 @@
+         double net = monthlyNet(population, totalJobs, householdCapacity, homes,
+                 families, adultShare, seniorCoverage);
+ 
++        // STUDY PROTOTYPE: arrivals slow as the city's own unemployment passes
++        // BRAKE_LO, and stop at BRAKE_HI (people come for the chance of a job).
++        if (BRAKE_HI > BRAKE_LO && people != null) {
++            double u = people.getUnemploymentRate();
++            double f = Math.max(0, Math.min(1, (BRAKE_HI - u) / (BRAKE_HI - BRAKE_LO)));
++            net -= lastArrivals * (1 - f);
++            lastArrivals *= f;
++        }
++
+         composeArrivals(market, people);
+ 
+         if (market == null || people == null) return net;
+@@ -957,6 +987,20 @@
+             lastDepartureMix[band.ordinal()] += leaving;
+             pushed += leaving;
+         }
++        // STUDY PROTOTYPE: past BRAKE_LO the jobless over it leave at the
++        // surplus rate, whatever their wage (less those the pin already sent).
++        if (LEAVE && BRAKE_HI > BRAKE_LO) {
++            double force = people.getWorkforceForSave();
++            double over = Math.max(0, people.getUnemploymentRate() - BRAKE_LO) * force;
++            double more = Math.max(0, over * SURPLUS_DEPARTURE_RATE - pushed);
++            if (more > 0) {
++                double[] bandShare = people.getBandShare();
++                for (WageBand band : WageBand.values()) {
++                    lastDepartureMix[band.ordinal()] += more * bandShare[band.ordinal()];
++                }
++                pushed += more;
++            }
++        }
+         double surplusPushed = pushed;
+ 
+         /*
