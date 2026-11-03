@@ -211,7 +211,7 @@ held 5 GB by 2026-10-21 (TD1). The full suite is
 java -cp "target/classes;%USERPROFILE%\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" ham.citybuildersim.AllChecks -f
 ```
 
-(about nine minutes alone, 15-22 beside other runs; `AllChecks money bank` runs
+(one harness at a time while the commit charge is over `AllChecks.COMMIT_PCT`, 40-100 minutes on 2026-11-02; `AllChecks money bank` runs
 two).
 
 ## The Earth file

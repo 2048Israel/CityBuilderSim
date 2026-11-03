@@ -109,45 +109,10 @@
 #      ## queued          table rows the batch decided, optional
 #  {next} is the version this script sets; a batch branch never writes one.
 #
-#  WHY (2026-10-13): the gate was a conversation - a dozen calls, each
-#  re-reading the session, to do the same seven things in the same order.
-#  The judgement stays the orchestrator's (whether the batch did what its
-#  brief asked, the playtest's trace); the mechanics are this.
-#  WHY (BP1, 2026-10-25): side by side, batches each took main + 1 for their
-#  version and had to re-merge, each wrote the same top of the changelog and
-#  QUEUE.md (a conflict for the second), and every ship since FW11 was
-#  finished by hand past main's known reds, a timing red compared by hand and
-#  a map conflict resolved by hand. The version, the records, those reds and
-#  that conflict are now this script's, and a dry run shows the real merge.
-#  WHY (BP1 review, 2026-10-25): a red passed with --red-ok in one of the
-#  eleven timing harnesses came back in the hard timing run and was judged
-#  against main's run, where it was never red; a timing red accepted as main's
-#  was written to gate.txt as a plain line, so a later regression on the same
-#  assertion printed the same line and passed as "recorded"; a ship file with
-#  {next} but no changelog block tagged a version with no paragraph, and one
-#  with a copied table header corrupted QUEUE.md; and an old-style branch could
-#  ship a version main had tagged already, or a --no-tag merge that moved
-#  VERSION and stopped every later ship at step 3. tools/ship-selftest.sh runs
-#  this script against a throwaway origin with a stub for the checks (no JVM):
-#  run it after changing this file.
-#  WHY (TM3, 2026-10-27): the timing was judged once on the merge and then against
-#  one run of main's, minutes later. On 2026-10-26 HY1, MS2 and CC1-S stopped on map
-#  lines main itself misses under Jerus's running game (a 59.9 ms median against 58;
-#  main's own run of it read 75.5 earlier that day), and two shipped only through a
-#  copy of this script changed by hand at that one stop. Now a timing red is timed
-#  again with main and the merge in turn, in the same minutes, and counts only if the
-#  merge is the slower by more than a margin; and --red-ok reaches that stop. And
-#  (the review of TM3, the orchestrator) his words pass only the lines he named, in the
-#  suite step and the timing step alike: he is asked after a stop, with that stop's
-#  lines in hand, and a broad --red-ok let a different flaky line go red in the rerun
-#  and pass under words given for another (CC1-S's gate). The script runs from a copy of itself: a batch that changes ship.sh
-#  (TM3 did) rewrote it under the shell that was reading it at the merge.
-#  WHY (RL1, 2026-10-27): a lane's next batch is cut from its predecessor's tip while
-#  that one is at the gate, so merging it before the predecessor would ship the
-#  predecessor ungated, with no records: the stop on a branch built on another batch
-#  main lacks. The old way (no ship file, the branch's own version and row) went with
-#  it: every batch has written a ship file since BP1, and one without stops, or ships
-#  --no-tag as an assistant's and a docs pass's do.
+#  WHY (2026-10-13; BP1, TM3, RL1): the gate was a conversation, a dozen calls doing the same
+#  steps in the same order; the long story of each step is docs/notes/batch-history.md,
+#  "The scripts' headers" (moved there in GT1). tools/ship-selftest.sh runs this script
+#  against a throwaway origin with a stub for the checks (no JVM): run it after changing this file.
 # ---------------------------------------------------------------------------
 
 # TM3: run from a copy of this script, made before anything is merged. A shell reads its script as it goes, at the

@@ -35,17 +35,8 @@
 #  Exit status: 0 the picture was printed (--due: something is due); 1 --due and
 #  nothing is due; 2 not a git checkout, or no origin/main here.
 #
-#  WHY (BP1, 2026-10-24): a fresh orchestrator began each day with about ten
-#  calls - QUEUE.md, the changelog, the branch lists, the tags - and the hourly
-#  check-in needed a probe that costs one short call when nothing is due. The
-#  first draft counted the merged branches inside a pipe's subshell, where the
-#  count was lost; the loop here runs in the shell itself.
-#  RL1 (2026-10-27): the old-style ready test (a branch finished the old way, its row
-#  out of its own QUEUE.md, no ship file; ET2 was the last) is gone: no branch from
-#  before BP1 is left on origin. A branch built on an unmerged predecessor is "waiting",
-#  not "ready": ship.sh would stop it, and gating it would ship the predecessor ungated.
-#  The gate's date was the first date in any '#' line, which is often a date in
-#  the queue row's text; it is now the '# date:' line ship.sh writes for it.
+#  WHY (BP1, 2026-10-24; RL1): a fresh orchestrator began each day with about ten calls;
+#  the rest is docs/notes/batch-history.md, "The scripts' headers" (moved in GT1).
 # ---------------------------------------------------------------------------
 
 usage() { echo "usage: sh tools/day.sh [--due]" >&2; exit 2; }

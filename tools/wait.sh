@@ -57,24 +57,9 @@
 #  is not a ship file do not. A branch the orchestrator holds with its ship file on (a gate
 #  stopped for Jerus's word) is named in --skip, or the wait ends at once every time.
 #
-#  WHY (BP1, 2026-10-24): a session that must wait for another batch's row to go
-#  ended its turn and was woken by a poll, or wrote an until-loop by hand with no
-#  deadline, which loops for ever, without a word, while a fetch keeps failing.
-#  This has a deadline when asked for one, tells a failing fetch from a quiet
-#  queue (6 failures in a row end it), and says how it ended in one line.
-#  2026-10-25, the review: the last fetch of a --for 9 call started at the
-#  deadline, and a stalled one (GIT_HTTP_LOW_SPEED_* does not cover the connect
-#  phase: curl waits 300 s) outlived the Bash tool's 10 minutes with no line;
-#  now no fetch starts in the last 75 s and each is cut off at 45. Nothing said
-#  to take origin/main after the wait either, so a successor built on its
-#  predecessor's old base: the header says it now, and the done line checks.
-#  GP1 (2026-10-27): a branch that was ready waited for the orchestrator's next
-#  hourly check-in, a median of about 60 minutes from the ship file to the merge;
-#  --ship makes the ship file itself the thing waited for. tools/wait-selftest.sh.
-#  RL1 (2026-10-27): a lane's next batch starts at its predecessor's ship file, built
-#  on its tip, so --row also ends when that tip moves on to a ready state HEAD lacks
-#  (the predecessor sent back and mended); --ship leaves a branch built on an unmerged
-#  one out. Both fetch main and the batch branches, which --row needs now.
+#  WHY (BP1, 2026-10-24; GP1, RL1): a hand-written until-loop with no deadline looped for
+#  ever while a fetch kept failing; the rest is docs/notes/batch-history.md, "The scripts'
+#  headers" (moved in GT1). tools/wait-selftest.sh tries it.
 # ---------------------------------------------------------------------------
 
 usage() { echo "usage: sh tools/wait.sh --row ID... [--for MIN] | --ship [--skip ID...] [--for MIN] | --line FILE ERE [--for MIN]" >&2; exit 2; }

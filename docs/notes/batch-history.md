@@ -83,3 +83,90 @@ the two judges cannot disagree unseen. --judge LOG gives the verdict on a
 saved log, from the folder the log is in, against the record named by
 $CBS_KNOWN_REDS (read only there, never in a real run): what KnownRedsCheck
 runs, from inside the suite, on the logs it builds.
+
+### ship.sh
+
+WHY (2026-10-13): the gate was a conversation - a dozen calls, each
+re-reading the session, to do the same seven things in the same order.
+The judgement stays the orchestrator's (whether the batch did what its
+brief asked, the playtest's trace); the mechanics are this.
+WHY (BP1, 2026-10-25): side by side, batches each took main + 1 for their
+version and had to re-merge, each wrote the same top of the changelog and
+QUEUE.md (a conflict for the second), and every ship since FW11 was
+finished by hand past main's known reds, a timing red compared by hand and
+a map conflict resolved by hand. The version, the records, those reds and
+that conflict are now this script's, and a dry run shows the real merge.
+WHY (BP1 review, 2026-10-25): a red passed with --red-ok in one of the
+eleven timing harnesses came back in the hard timing run and was judged
+against main's run, where it was never red; a timing red accepted as main's
+was written to gate.txt as a plain line, so a later regression on the same
+assertion printed the same line and passed as "recorded"; a ship file with
+{next} but no changelog block tagged a version with no paragraph, and one
+with a copied table header corrupted QUEUE.md; and an old-style branch could
+ship a version main had tagged already, or a --no-tag merge that moved
+VERSION and stopped every later ship at step 3. tools/ship-selftest.sh runs
+this script against a throwaway origin with a stub for the checks (no JVM):
+run it after changing this file.
+WHY (TM3, 2026-10-27): the timing was judged once on the merge and then against
+one run of main's, minutes later. On 2026-10-26 HY1, MS2 and CC1-S stopped on map
+lines main itself misses under Jerus's running game (a 59.9 ms median against 58;
+main's own run of it read 75.5 earlier that day), and two shipped only through a
+copy of this script changed by hand at that one stop. Now a timing red is timed
+again with main and the merge in turn, in the same minutes, and counts only if the
+merge is the slower by more than a margin; and --red-ok reaches that stop. And
+(the review of TM3, the orchestrator) his words pass only the lines he named, in the
+suite step and the timing step alike: he is asked after a stop, with that stop's
+lines in hand, and a broad --red-ok let a different flaky line go red in the rerun
+and pass under words given for another (CC1-S's gate). The script runs from a copy of itself: a batch that changes ship.sh
+(TM3 did) rewrote it under the shell that was reading it at the merge.
+WHY (RL1, 2026-10-27): a lane's next batch is cut from its predecessor's tip while
+that one is at the gate, so merging it before the predecessor would ship the
+predecessor ungated, with no records: the stop on a branch built on another batch
+main lacks. The old way (no ship file, the branch's own version and row) went with
+it: every batch has written a ship file since BP1, and one without stops, or ships
+--no-tag as an assistant's and a docs pass's do.
+
+### day.sh
+
+WHY (BP1, 2026-10-24): a fresh orchestrator began each day with about ten
+calls - QUEUE.md, the changelog, the branch lists, the tags - and the hourly
+check-in needed a probe that costs one short call when nothing is due. The
+first draft counted the merged branches inside a pipe's subshell, where the
+count was lost; the loop here runs in the shell itself.
+RL1 (2026-10-27): the old-style ready test (a branch finished the old way, its row
+out of its own QUEUE.md, no ship file; ET2 was the last) is gone: no branch from
+before BP1 is left on origin. A branch built on an unmerged predecessor is "waiting",
+not "ready": ship.sh would stop it, and gating it would ship the predecessor ungated.
+The gate's date was the first date in any '#' line, which is often a date in
+the queue row's text; it is now the '# date:' line ship.sh writes for it.
+
+### wait.sh
+
+WHY (BP1, 2026-10-24): a session that must wait for another batch's row to go
+ended its turn and was woken by a poll, or wrote an until-loop by hand with no
+deadline, which loops for ever, without a word, while a fetch keeps failing.
+This has a deadline when asked for one, tells a failing fetch from a quiet
+queue (6 failures in a row end it), and says how it ended in one line.
+2026-10-25, the review: the last fetch of a --for 9 call started at the
+deadline, and a stalled one (GIT_HTTP_LOW_SPEED_* does not cover the connect
+phase: curl waits 300 s) outlived the Bash tool's 10 minutes with no line;
+now no fetch starts in the last 75 s and each is cut off at 45. Nothing said
+to take origin/main after the wait either, so a successor built on its
+predecessor's old base: the header says it now, and the done line checks.
+GP1 (2026-10-27): a branch that was ready waited for the orchestrator's next
+hourly check-in, a median of about 60 minutes from the ship file to the merge;
+--ship makes the ship file itself the thing waited for. tools/wait-selftest.sh.
+RL1 (2026-10-27): a lane's next batch starts at its predecessor's ship file, built
+on its tip, so --row also ends when that tip moves on to a ready state HEAD lacks
+(the predecessor sent back and mended); --ship leaves a branch built on an unmerged
+one out. Both fetch main and the batch branches, which --row needs now.
+
+### pick.sh
+
+WHY (BP1, 2026-10-25): a batch ran the whole suite three times (the
+baseline, its final run, the gate's rerun, 15-22 minutes each) and the
+orchestrator read every diff for a reason to review it. docs/harnesses.md
+already says which harnesses mention which class, so the diff names the
+harnesses and the review the same way. A cap that fell back to the whole
+suite when a pick grew was left out: the pick is a floor, the gate's full
+suite is the net, and a class most harnesses read is said to be left to it.

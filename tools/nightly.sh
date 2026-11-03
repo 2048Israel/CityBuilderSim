@@ -1,34 +1,21 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
-#  The nightly long playtest: LongPlaytest for the full 4,000 months on
-#  origin/main's tip, one verdict line. The gate plays 2,400 months; this is the
-#  rest, once a night, so a fault past month 2,400 is met the next morning with
-#  only that day's ships as suspects. Writes no commit and no branch. POSIX sh.
+#  The full 4,000-month playtest once a night on origin/main's tip (the gate
+#  plays 2,400), so a fault past month 2,400 meets the next morning with only
+#  that day's ships as suspects. No commit, no branch. POSIX sh.
 #
-#      sh tools/nightly.sh     fetch origin, clone its main (from this checkout's own
-#                              repository) to $TEMP/cbs-nightly, build it, play the
-#                              months (about 5 minutes), say the verdict, delete the
-#                              clone. The orchestrator runs it in the background when
-#                              tools/day.sh --due says "nightly due"
+#      sh tools/nightly.sh     clone main to $TEMP/cbs-nightly, build, play (about
+#                              5 minutes), say the verdict, delete the clone; run in
+#                              the background when tools/day.sh --due says so
 #
-#  The verdict, one line, is printed and written over the last to
-#  $HOME/.cbs-nightly.txt (the home folder: ship.sh's temp clone on the PC reads
-#  it too); the run's whole output is $HOME/.cbs-nightly.log:
-#      2026-11-03 01:12 0.9.3 abc1234 4,000 months: OK in 152 s
-#      2026-11-03 01:12 0.9.3 abc1234 4,000 months: RED, exit 1 in 150 s: <first finding>
-#      2026-11-03 01:12 0.9.3 abc1234 4,000 months: FAILED to compile: <first error line>
-#  A RED's text is the first line under "--- findings ---", else (a crash has none)
-#  the last line of the output. tools/day.sh prints the line, ship.sh copies it into
-#  docs/notes/gate.txt. As the gate does, the run names the main working tree's
-#  data/earth-2.bin and data/world-1.bin (-Dcbs.earth, -Dcbs.world) unless
-#  JDK_JAVA_OPTIONS is set: a run without them plays a different world.
-#
-#  Exit status: 0 OK; 1 RED; 2 not a git checkout, or an unknown option; 3 a step
-#  before the run failed (fetch, clone, compile, classpath).
-#
-#  WHY (GT1, 2026-11-01, Jerus: "faster gates"): the gate's long playtest dropped
-#  from 4,000 months to 2,400; the other 1,600 are played here, once a night, on
-#  main's tip, not at every batch's gate.
+#  The verdict, one line, printed and written over $HOME/.cbs-nightly.txt (the
+#  home folder, so ship.sh's temp clone on the PC reads it for gate.txt); the
+#  whole output is $HOME/.cbs-nightly.log. "<date> <version> <commit> 4,000
+#  months: " then "OK in N s", "RED, exit N in N s: <first finding, else the last
+#  line>" or "FAILED to <step>: <first error line>". It names the main tree's
+#  data/earth-2.bin and data/world-1.bin unless JDK_JAVA_OPTIONS is set, as the gate.
+#  Exit: 0 OK, 1 RED, 2 not a checkout or an option, 3 a step before the run failed.
+#  WHY (GT1, 2026-11-01, Jerus: "do we need 4k months?"): the gate plays 2,400.
 # ---------------------------------------------------------------------------
 
 MONTHS=4000

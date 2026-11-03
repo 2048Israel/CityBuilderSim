@@ -54,13 +54,8 @@
 #  files and comment lines are not read for it. The orchestrator may add a
 #  stranger's review, never skip one this names.
 #
-#  WHY (BP1, 2026-10-25): a batch ran the whole suite three times (the
-#  baseline, its final run, the gate's rerun, 15-22 minutes each) and the
-#  orchestrator read every diff for a reason to review it. docs/harnesses.md
-#  already says which harnesses mention which class, so the diff names the
-#  harnesses and the review the same way. A cap that fell back to the whole
-#  suite when a pick grew was left out: the pick is a floor, the gate's full
-#  suite is the net, and a class most harnesses read is said to be left to it.
+#  WHY (BP1, 2026-10-25): a batch ran the whole suite three times; the rest is
+#  docs/notes/batch-history.md, "The scripts' headers" (moved in GT1).
 # ---------------------------------------------------------------------------
 
 LC_ALL=C; export LC_ALL
