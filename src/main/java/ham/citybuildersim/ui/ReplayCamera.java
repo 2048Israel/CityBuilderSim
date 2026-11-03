@@ -76,6 +76,12 @@ final class ReplayCamera {
     /** Whether a warm-up, a glide or a fly is in flight: the month does not rest, the hand's input stops it. */
     boolean busy() { return phase != Phase.IDLE; }
 
+    /** Whether a glide or a fly is under way - not the warm-up before a glide, not idle (CM1: the frames MapView tallies). */
+    boolean moving() { return phase == Phase.GLIDE || phase == Phase.FLY; }
+
+    /** The phase's name - IDLE, WARM, GLIDE or FLY (ReplayMoveProbe reads it). */
+    String phaseName() { return phase.name(); }
+
     /** What the bar says of a move in flight ("warming up the glide 7 of 25"), or null. */
     String status() { return status; }
 

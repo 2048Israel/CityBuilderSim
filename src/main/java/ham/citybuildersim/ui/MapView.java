@@ -9,8 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.geometry.HPos;
@@ -284,8 +285,8 @@ final class MapView {
     /** Who hears a click: a side, and an offer's place on it or -1. */
     interface Picker { void picked(int side, int place); }
 
-    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the minimap's (MiniMap), so the map's jobs run on one thread in the order handed out. Low priority; it dies with the window. */
-    static final ExecutorService WORKER = Executors.newSingleThreadExecutor(r -> {
+    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the minimap's (MiniMap), so the map's jobs run on one thread in the order handed out. Low priority; it dies with the window. Built as Executors.newSingleThreadExecutor() builds its own, but kept a ThreadPoolExecutor (CM1): its getTaskCount() is the camera tally's count of asks (MoveTally). */
+    static final ThreadPoolExecutor WORKER = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
         Thread t = new Thread(r, "city-map");
         t.setDaemon(true);
         t.setPriority(Thread.MIN_PRIORITY);
@@ -349,8 +350,14 @@ final class MapView {
     /** A level's pictures, the most recently drawn kept: `most` of them. */
     private static final class Pictures extends LinkedHashMap<Long, Img> {
         long most = 1;
+        /** How many pictures this level has let go for want of room, since it was made (CM1: the camera tally's evictions). */
+        long evicted;
         Pictures() { super(256, 0.75f, true); }
-        @Override protected boolean removeEldestEntry(Map.Entry<Long, Img> e) { return size() > most; }
+        @Override protected boolean removeEldestEntry(Map.Entry<Long, Img> e) {
+            boolean over = size() > most;
+            if (over) evicted++;
+            return over;
+        }
     }
 
     private final Pictures l0small = new Pictures(), l0big = new Pictures(), l1 = new Pictures(), l2 = new Pictures(),
@@ -672,6 +679,10 @@ final class MapView {
         if (globeShown() && (globeHalf || patch != null) && globeImg != null) {
             dirty = true;
             more = true;
+        }
+        if (tallyThisFrame) {       // (CM1) a frame of a replay's glide or fly: what it showed unpainted (MoveTally)
+            tallyThisFrame = false;
+            tallyMove();
         }
         // Idle: nothing to paint, nothing to draw. A draft or a far node coming back from WORKER asks again.
         paintIdle = !more && !dirty && hoverAt == null;     // (TR1) what the replay's warm-up waits for (replaySettled())
@@ -5366,9 +5377,15 @@ final class MapView {
         if (v[0] != 0 || v[1] != 0 || (pressed && moved >= CLICK_SLOP)) cam.hand();
         cam.smooth().keys(v[0], v[1]);
         cam.smooth().centre(big.width() / 2, big.height() / 2);
+        boolean wasMoving = cam.moving();       // (CM1) a move's last frame leaves the camera idle, and is tallied
         ReplayCamera.Shot shot = cam.frame(dt, this::replaySettled);
         if (shot.view() != null) applyCameraView(shot.view());
         else if (shot.move() != null) applyMove(shot.move());
+        if (wasMoving || cam.moving()) {
+            tallyTasks = WORKER.getTaskCount();
+            tallyEvicted = evictedNow();
+            tallyThisFrame = true;
+        }
         return shot.more();
     }
 
@@ -5400,5 +5417,200 @@ final class MapView {
             if (img == null || img.version != version) return false;
         }
         return true;
+    }
+
+    /* ----- CM1: what a camera move shows unpainted (MoveTally) ----- */
+
+    /**
+     * What each frame of a replay's glide or fly showed that was not painted, counted (CM1, 2026-11-02): per frame the cells (a plane
+     * tile or far node, a globe plane node or chart node, a sampled screen point on the globe) drawn as nothing (black: VOID), from a
+     * stand-in (coarse: another level's picture of the tile, or on the globe what falls to beyond() - the carried picture or the
+     * planet's), or from a picture of an older month or map (stale); plus the frames drawn at half resolution, the WORKER tasks
+     * submitted and the pictures let go (evicted) while the move ran, and the gap between frames. Totals, and the same by where the
+     * frame drew: "L0", "L1", "L2", "FAR" on the plane, "GROUND" and "PICTURE" on the globe. Taken in tallyMove(), only for frames of a
+     * replay camera's GLIDE or FLY (tick()), and read on the FX thread (ReplayMoveProbe prints report()). The tally's own lookups run
+     * in the frame it counts, so its cost is in the gaps it reports.
+     *
+     * <p>WHY IT EXISTS (CM1): Jerus films his trailer from a replay and "half the screen is black while you zoom out well". The batch
+     * loads a whole move before it runs; it measures first, so it can say which cause makes the black frames - tiles not drawn in time,
+     * the worker behind, pictures let go for room, a stand-in showing, a half-resolution draw - and its last check asserts on these
+     * figures.
+     */
+    static final class MoveTally {
+        /** Frames tallied; of them the ones with anything black, coarse or stale; and those a globe drew at half resolution. */
+        long frames, unpaintedFrames, halfFrames;
+        /** Cells drawn as nothing, from a stand-in, from an older version: each summed over the frames. */
+        long black, coarse, stale;
+        /** WORKER tasks submitted, and pictures let go by the caches, during the frames (from the camera's frame to the tally's, summed). */
+        long asks, evicted;
+        /** The gaps between consecutive tallied frames, summed and the worst, in nanoseconds (the first frame after reset() has no gap). */
+        long frameNanosSum, worstFrameNanos;
+        /** By where the frame drew: {frames, unpainted frames, black, coarse, stale}. */
+        final Map<String, long[]> byWhere = new LinkedHashMap<>();
+
+        private static final String[] WHERES = { "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" };
+        private long lastNanos;
+        private boolean timed;
+
+        /** Back to nothing counted: a move is about to begin. */
+        void reset() {
+            frames = unpaintedFrames = halfFrames = black = coarse = stale = asks = evicted = frameNanosSum = worstFrameNanos = 0;
+            byWhere.clear();
+            lastNanos = 0;
+            timed = false;
+        }
+
+        /** One frame taken at {@code now} (System.nanoTime()): what it drew from, what it showed unpainted, and what it cost the worker and the caches. */
+        void frame(long now, String where, long blackCells, long coarseCells, long staleCells, boolean half, long asked, long letGo) {
+            frames++;
+            if (timed) {
+                long gap = now - lastNanos;
+                frameNanosSum += gap;
+                worstFrameNanos = Math.max(worstFrameNanos, gap);
+            }
+            lastNanos = now;
+            timed = true;
+            boolean unpainted = blackCells + coarseCells + staleCells > 0;
+            if (unpainted) unpaintedFrames++;
+            if (half) halfFrames++;
+            black += blackCells;
+            coarse += coarseCells;
+            stale += staleCells;
+            asks += asked;
+            evicted += letGo;
+            long[] w = byWhere.computeIfAbsent(where, k -> new long[5]);
+            w[0]++;
+            if (unpainted) w[1]++;
+            w[2] += blackCells;
+            w[3] += coarseCells;
+            w[4] += staleCells;
+        }
+
+        /** The tally in a few lines: the totals, a line for each place the frames drew, and the frame rate. */
+        String report() {
+            java.util.Locale root = java.util.Locale.ROOT;
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format(root, "  frames %d, unpainted %d, half resolution %d%n", frames, unpaintedFrames, halfFrames));
+            sb.append(String.format(root, "  black %d, coarse %d, stale %d; worker asks %d, pictures let go %d%n", black, coarse, stale, asks, evicted));
+            for (String where : WHERES) {
+                long[] w = byWhere.get(where);
+                if (w != null) sb.append(String.format(root, "  %-8s frames %d, unpainted %d, black %d, coarse %d, stale %d%n", where, w[0], w[1], w[2], w[3], w[4]));
+            }
+            if (frames > 1 && frameNanosSum > 0) {
+                double meanMs = frameNanosSum / 1e6 / (frames - 1);
+                sb.append(String.format(root, "  frame gap mean %.1f ms (%.0f fps), worst %.1f ms%n", meanMs, 1000 / meanMs, worstFrameNanos / 1e6));
+            } else {
+                sb.append("  frame gap: fewer than two frames\n");
+            }
+            return sb.toString();
+        }
+    }
+
+    private final MoveTally moveTally = new MoveTally();
+
+    /** The camera move tally (CM1), for ReplayMoveProbe: reset it before a move, read it after. */
+    MoveTally moveTally() { return moveTally; }
+
+    /** Set by replayCamera() for a frame of a glide or fly, and cleared by tick() when it has tallied the frame; WORKER's task count and the caches' evictions as that frame began. */
+    private boolean tallyThisFrame;
+    private long tallyTasks, tallyEvicted;
+
+    /** Every cache's evictions summed (Pictures.evicted). */
+    private long evictedNow() {
+        return l0small.evicted + l0big.evicted + l1.evicted + l2.evicted + nodes.evicted + charts.evicted;
+    }
+
+    /**
+     * The frame tick() has just painted and drawn, counted into the move tally (CM1): its cells looked up as the draw looked them up
+     * (drawTiles(), drawNodes(), drawGlobePart()), in the draw's order, so the caches' access order is the one the draw left. It reads
+     * what the draw read and changes nothing of the view's, and asks WORKER nothing. On the globe the picture tier is the planet's own
+     * and counts only as a frame; the ground tier counts the plane's nodes and the chart nodes in range that are not in (or are
+     * stale), and the on-planet points sampled every 32 px that neither the plane nor a chart draws, which are drawn from beyond(): during
+     * a move the carried picture or the planet's coarse one.
+     */
+    private void tallyMove() {
+        long black = 0, coarse = 0, stale = 0;
+        String where;
+        boolean half = false;
+        if (onGlobe()) {
+            half = globeHalf;
+            if (globe.tier() == GlobeFrame.PICTURE) {
+                where = "PICTURE";
+            } else {
+                where = "GROUND";
+                long plots = MapFrame.nodePlotsAt(globe.planeScale());
+                long[] r = globeNodes(globe);
+                if (r != null) {
+                    for (long ny = r[3]; ny <= r[4]; ny++) {
+                        for (long nx = r[1]; nx <= r[2]; nx++) {
+                            Img img = nodes.get(nodeKey(plots, nx, ny));
+                            if (img == null || img.pixels == null) coarse++;
+                            else if (img.version != version) stale++;
+                        }
+                    }
+                }
+                long[] cr = chartNodes(globe);
+                if (cr != null) {
+                    for (long ny = cr[4]; ny <= cr[5]; ny++) {
+                        for (long nx = cr[2]; nx <= cr[3]; nx++) {
+                            Img img = charts.get(chartKey(cr[1], plots, nx, ny));
+                            if (img == null || img.pixels == null) coarse++;
+                        }
+                    }
+                }
+                double w = globe.width(), h = globe.height();
+                for (double sy = 16; sy < h; sy += 32) {
+                    for (double sx = 16; sx < w; sx += 32) {
+                        if (globe.onPlanet(sx, sy) && !(globe.drawsHold(sx, sy) || globe.chartHolds(sx, sy))) coarse++;
+                    }
+                }
+            }
+        } else {
+            MapFrame f = frame();
+            int level = f.level();
+            where = level == MapFrame.FAR ? "FAR" : level == MapFrame.L0 ? "L0" : level == MapFrame.L1 ? "L1" : "L2";
+            boolean drawn = tiles != null;      // draw() paints no map without one: every cell is VOID
+            if (level == MapFrame.FAR) {
+                long plots = f.nodePlots();
+                for (long ny = f.nodeY0(); ny <= f.nodeY1(); ny++) {
+                    for (long nx = f.nodeX0(); nx <= f.nodeX1(); nx++) {
+                        Img img = drawn ? nodes.get(nodeKey(plots, nx, ny)) : null;
+                        if (img == null || img.image == null) black++;
+                        else if (img.version != version) stale++;
+                    }
+                }
+            } else {
+                // The picture of a tile and its stand-ins, as drawTiles() builds and walks them (keep the two in step).
+                int px = MapFrame.tilePx(level, f.scale());
+                Pictures here = picturesFor(level, px);
+                List<Pictures> standIns = new ArrayList<>();
+                for (Pictures p : List.of(l2, l1, l0small, l0big)) if (p != here) standIns.add(p);
+                if (level == MapFrame.L0 && px >= MapFrame.BIG_TILE_PX) {
+                    standIns.remove(l0small);
+                    standIns.add(0, l0small);
+                }
+                for (long ty = f.tileY0(); ty <= f.tileY1(); ty++) {
+                    for (long tx = f.tileX0(); tx <= f.tileX1(); tx++) {
+                        if (!drawn) {
+                            black++;
+                            continue;
+                        }
+                        long key = MapTiles.key(tx, ty);
+                        Img img = here.get(key);
+                        boolean own = img != null;
+                        if (img == null) {
+                            for (Pictures p : standIns) {
+                                img = p.get(key);
+                                if (img != null) break;
+                            }
+                        }
+                        if (img == null || img.image == null) black++;
+                        else if (!own) coarse++;
+                        else if (img.version != version) stale++;
+                    }
+                }
+            }
+        }
+        moveTally.frame(System.nanoTime(), where, black, coarse, stale, half, WORKER.getTaskCount() - tallyTasks, evictedNow() - tallyEvicted);
     }
 }
