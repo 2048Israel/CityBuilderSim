@@ -52,3 +52,30 @@ Section 13, each part in the city and in its twin (`restrikeOffForTest`, which b
   discount while the book rose 0.0803; the 0.0755 re-struck at once; the month's settle re-struck -0.1218; the twin
   left -0.0463 unexplained. Both parts: the city's figures (net, tax, dividends, paper gains, cash, the bank's equity)
   the twin's bit for bit, at once and over the month.
+
+## 4. The checks, the trace and the ensemble
+
+- **SectorStatementCheck with FC1 on**: "its equity's parts are its equity", 479 checked, 0 off by more than a cent, on
+  both paths: the gate's (both data files named, where it was off by 0.0287) and a worktree's with none (FC1's own,
+  7.06, 226 of 479). All checks passed on both.
+- **`--pick`** (both data files named, built on DZ1's tip 61d75496): **exit 0**, 39 harnesses green; one timing line
+  SOFT (SaveSlotCheck 1), not counted. Stale: 0 firm. Game.java left to the gate's suite (142 readers).
+- **The trace**: the default playtest (2,400 months, both data files named) on BD1 and on DZ1's tip: seven of the eight
+  files byte-identical. `t-bank.csv` differs in one row of 2,404, month 133, where a reopening at a premium released
+  the bank's 0.029: its equity 68.736 -> 68.765 and the three read off it (leverage, capital ratio, capacity), because
+  BD1 books the release where it happens and DZ1 waited for the next refresh. Every row after is the same; the city's
+  path did not move.
+- **The ensemble** (the trace moved, EN1): 80 of 80 runs on BD1's model (0b04409c, both data files named, so on
+  LC3's world file as the baseline), against `docs/ensemble/0.9.2.md` (FC1's): **22/26, as the baseline**, its four
+  reds the same. Every scored measure's median and range is the baseline's; only info lines moved (AUTO2's share of
+  months at a 0% policy rate 28.19% -> 28.12%; ZERO_SLACK's twin figures, the twin's peak yoy 8.52% -> 9.61%), the
+  few cities where the bank's capacity is read between the release and the refresh. Committed as
+  `docs/ensemble/BD1.md`.
+
+## 5. For the next batches
+
+- BK2 (queued) gives each holder its own discount: both re-strikes, BK1's at the settle and BD1's at the issue and the
+  trades, are then zero, and `restrikeBankDiscountCarried()` and its six calls go with BK1's.
+- A premium reopening that sells over par: the bank, the settle's residual buyer, books what it paid over face as
+  BK1's re-strike loss at the settle (13a: -0.204), not a premium amortized over the line's life. That too is the
+  pooled discount's, and BK2's to mend.
