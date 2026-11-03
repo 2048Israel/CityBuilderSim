@@ -1,4 +1,4 @@
-# DM1 - the wall events found behind a reserve's moved boxes; the fix held for DM2 ({next}, 2026-11-03)
+# DM1 - the wall events found behind a reserve's moved boxes; the fix held for DM2 (0.9.8, 2026-11-03)
 
 FC1 found it (`docs/queue/DM1.md`): MapCheck 2h, on FC1's path, moved 12 and 23 boxes of the plan four months on
 (0 without FC1), where "what stands never moves" (CL3). DM1 found the cause, tried a planner fix, and found the fix

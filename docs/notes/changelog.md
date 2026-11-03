@@ -18,6 +18,24 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.8 — DM1, boxes moving after a reserve: the wall events found, the fix held for a journal — 2026-11-03, ready, see docs/queue/DM1-notes.md
+No change a player sees: MapCheck's comment and DM2's brief. DM1 traced FC1's moved boxes (MapCheck 2h, 12 and 23 four
+months on) to FW11's way kept clear for a street piece the buildings wall in, which is worked out again from each
+month's arrivals, so it drifts (6, 5, 20, 22 plots) and first-fit cascades each change into moved boxes. A planner fix
+that dated the way from the replay alone stopped the drift, but moved 40 boxes of a real city in SlopeCheck 9 (m608 to
+m609, after a land purchase re-formed the street pieces), so it is not shipped (it stays in the branch history, commit
+77e40c87). MapCheck keeps FC1 off through section 2h, its comment now naming the wall events (2d four months on and its
+yard that goes, 2h's reserve month) and the drift. DM2, queued, dates the ways in a journal in the map's sidecar.
+
+### 0.9.7 — FC1b, the foreign contractor's book and overtime after FC1 — 2026-11-03, ready, see docs/queue/FC1b-notes.md
+In the builders' trap a cancelled order now comes off the foreign contractor's book by its points left (a depot of
+the builders' served first, never on his book, excepted). Before, he kept building a cancelled order's points at his
+price, and a cancel and restart put them on his book twice. A rushed site's overtime is now worked and paid on the
+city's own crews' part of its share alone. Before, the city paid its households overtime for hours his crews worked,
+and the builders earned points nobody worked. With no contractor the month is the same to the bit. ConstructionTrapCheck
+9-11 cause each case: the cancel and restart, the rush beside him, and a city saved mid-trap whose next month matches
+its twin's. The playtest's trace is byte-identical (no ensemble). Both fire only in a city in the trap.
+
 ### 0.9.6 — BD1, the bank's discount re-struck where an issue or a trade releases it — 2026-11-03, ready, see docs/queue/BD1-notes.md
 The bank's equity is its parts again after it buys the city's paper. Its unearned discount on that paper is re-read
 from the debt book at every refresh, and twice the book's figure moved with nothing to book it: a line reopened at a
