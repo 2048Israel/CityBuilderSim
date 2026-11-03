@@ -1,0 +1,85 @@
+=== The merit order: each row's marginal cost, $ a MWh, at the middle of the game's bands ===
+  Coal Power Plant      31.7  (heat 8.96 MJ/kWh, efficiency 40.2%)
+  Oil-Fired Plant      140.8  (heat 11.85 MJ/kWh, efficiency 30.4%)
+  Diesel Station       195.3  (heat 11.44 MJ/kWh, efficiency 31.5%)
+  Oil-Fired Turbine    171.1  (heat 9.97 MJ/kWh, efficiency 36.1%)
+  Nuclear Plant          9.3  (heat 11.02 MJ/kWh, efficiency 32.7%)
+  Biomass Plant        144.8  (heat 14.03 MJ/kWh, efficiency 25.7%)
+  Hydro Station          1.7  (heat 0.00 MJ/kWh, efficiency -%)
+  Wind Farm              0.0  (heat 0.00 MJ/kWh, efficiency -%)
+  Solar Farm             0.0  (heat 0.00 MJ/kWh, efficiency -%)
+  today's tariff: D$10 a kW a month = $13.9 a MWh
+=== The screening: a firm kW-year, $, for each slice of the load (r = 4%) ===
+  base     (8,760 h): Coal Power Plant 576; Oil-Fired Plant 1,512; Diesel Station 1,867; Oil-Fired Turbine 1,638; Nuclear Plant 643; Biomass Plant 1,737; Hydro Station 456; -> Coal Power Plant
+  shoulder (4,380 h): Coal Power Plant 438; Oil-Fired Plant 896; Diesel Station 1,011; Oil-Fired Turbine 888; Nuclear Plant 602; Biomass Plant 1,103; Hydro Station 440; -> Coal Power Plant
+  peak     (876 h): Coal Power Plant 327; Oil-Fired Plant 402; Diesel Station 326; Oil-Fired Turbine 289; Nuclear Plant 570; Biomass Plant 596; Hydro Station 427; -> Oil-Fired Turbine
+=== A 1 GW city, its fleet planned from nothing by the two rules ===
+  (planner: Coal Power Plant (base) xN Coal Power Plant (shoulder) Oil-Fired Turbine (peak) xN Diesel Station (peak) xN)
+--- Today's menu, no hydro site ---
+  fleet: Coal Power Plant 1,625 MW (runs 65%, 100% of the energy); Diesel Station 63 MW (runs 0%, 0% of the energy); Oil-Fired Turbine 500 MW (runs 0%, 0% of the energy);
+  firm 1,888 MW against 1,875 needed; block prices a year $31.7 / 31.7 / 54.9 a MWh; fuel and running $31.8 a MWh made
+  unserved 0.000%, curtailed 0.0% of the variable rows' output; TARIFF AT COST $148.2 a MWh (14.82 cents a kWh)
+  coal burned 3,283,160 t a year (0.357 t a MWh of coal power)
+  (planner: Coal Power Plant (base) xN Coal Power Plant (shoulder) Oil-Fired Turbine (peak) xN Diesel Station (peak) xN)
+--- Coal at its import price (D$75 a t: no mine near) ---
+  fleet: Coal Power Plant 1,625 MW (runs 65%, 100% of the energy); Diesel Station 63 MW (runs 0%, 0% of the energy); Oil-Fired Turbine 500 MW (runs 0%, 0% of the energy);
+  firm 1,888 MW against 1,875 needed; block prices a year $36.1 / 36.1 / 58.6 a MWh; fuel and running $36.3 a MWh made
+  unserved 0.000%, curtailed 0.0% of the variable rows' output; TARIFF AT COST $152.9 a MWh (15.29 cents a kWh)
+  coal burned 3,283,160 t a year (0.357 t a MWh of coal power)
+  (planner: Coal Power Plant (base) xN Coal Power Plant (shoulder) Oil-Fired Turbine (peak) xN Diesel Station (peak) xN)
+--- Coal at its export price (D$50 a t: the city's own mine) ---
+  fleet: Coal Power Plant 1,625 MW (runs 65%, 100% of the energy); Diesel Station 63 MW (runs 0%, 0% of the energy); Oil-Fired Turbine 500 MW (runs 0%, 0% of the energy);
+  firm 1,888 MW against 1,875 needed; block prices a year $27.2 / 27.2 / 51.2 a MWh; fuel and running $27.4 a MWh made
+  unserved 0.000%, curtailed 0.0% of the variable rows' output; TARIFF AT COST $143.5 a MWh (14.35 cents a kWh)
+  coal burned 3,283,160 t a year (0.357 t a MWh of coal power)
+--- With 400 MW of hydro sites taken first ---
+  fleet: Coal Power Plant 975 MW (runs 70%, 65% of the energy); Diesel Station 63 MW (runs 0%, 0% of the energy); Oil-Fired Turbine 900 MW (runs 1%, 1% of the energy); Hydro Station 400 MW (runs 45%, 17% of the energy); Wind Farm 420 MW (runs 34%, 13% of the energy); Solar Farm 150 MW (runs 24%, 3% of the energy);
+  firm 2,013 MW against 1,875 needed; block prices a year $49.1 / 54.9 / 72.3 a MWh; fuel and running $22.1 a MWh made
+  unserved 0.000%, curtailed 0.0% of the variable rows' output; TARIFF AT COST $142.2 a MWh (14.22 cents a kWh)
+  coal burned 2,146,880 t a year (0.357 t a MWh of coal power)
+=== A shock on the first city's fleet: oil x2.76 and coal x1.23 for a year (2022 over 2020, EIA EPA 7.4) ===
+--- The same fleet in the shock year ---
+  fleet: Coal Power Plant 1,625 MW (runs 65%, 100% of the energy); Diesel Station 63 MW (runs 0%, 0% of the energy); Oil-Fired Turbine 500 MW (runs 0%, 0% of the energy);
+  firm 1,888 MW against 1,875 needed; block prices a year $36.8 / 36.8 / 107.6 a MWh; fuel and running $37.3 a MWh made
+  unserved 0.000%, curtailed 0.0% of the variable rows' output; TARIFF AT COST $154.0 a MWh (15.40 cents a kWh)
+  coal burned 3,283,160 t a year (0.357 t a MWh of coal power)
+  the tariff moves 3.9% (struck over 12 months, it reaches the bills over the year)
+=== Wind alone: Rotterdam's fleet, 2.2 GW of wind farms for 1 GW (its 8.86 GW average for 4.43 GW, scaled) ===
+--- 2,200 MW of wind and nothing else ---
+  fleet: Wind Farm 2,200 MW (runs 29%, 100% of the energy);
+  firm 54 MW against 1,875 needed; block prices a year $1,500.0 / 2,250.0 / 3,000.0 a MWh; fuel and running $0.0 a MWh made
+  unserved 39.021%, curtailed 13.7% of the variable rows' output; TARIFF AT COST $118.8 a MWh (11.88 cents a kWh)
+--- ...with what the reserve test then orders ---
+  fleet: Coal Power Plant 1,625 MW (runs 25%, 39% of the energy); Diesel Station 105 MW (runs 0%, 0% of the energy); Oil-Fired Turbine 400 MW (runs 0%, 0% of the energy); Wind Farm 2,200 MW (runs 29%, 61% of the energy);
+  firm 1,890 MW against 1,875 needed; block prices a year $15.8 / 23.7 / 31.7 a MWh; fuel and running $12.4 a MWh made
+  unserved 0.000%, curtailed 13.7% of the variable rows' output; TARIFF AT COST $163.2 a MWh (16.32 cents a kWh)
+  coal burned 1,282,718 t a year (0.357 t a MWh of coal power)
+=== An island with no coal: oil and what else it may build ===
+--- The island, planned ---
+  fleet: Oil-Fired Plant 1,200 MW (runs 53%, 60% of the energy); Diesel Station 63 MW (runs 0%, 0% of the energy); Oil-Fired Turbine 900 MW (runs 1%, 1% of the energy); Wind Farm 1,200 MW (runs 34%, 39% of the energy);
+  firm 1,977 MW against 1,875 needed; block prices a year $140.8 / 145.8 / 150.9 a MWh; fuel and running $86.8 a MWh made
+  unserved 0.000%, curtailed 0.0% of the variable rows' output; TARIFF AT COST $216.9 a MWh (21.69 cents a kWh)
+--- The island in the shock year (oil x2.76) ---
+  fleet: Oil-Fired Plant 1,200 MW (runs 53%, 60% of the energy); Diesel Station 63 MW (runs 0%, 0% of the energy); Oil-Fired Turbine 900 MW (runs 1%, 1% of the energy); Wind Farm 1,200 MW (runs 34%, 39% of the energy);
+  firm 1,977 MW against 1,875 needed; block prices a year $371.4 / 386.5 / 401.6 a MWh; fuel and running $229.3 a MWh made
+  unserved 0.000%, curtailed 0.0% of the variable rows' output; TARIFF AT COST $366.8 a MWh (36.68 cents a kWh)
+  the island's tariff moves 69.1%
+=== A town of 10 MW, today's menu ===
+  (planner: Diesel Station (base) Wind Farm (spread))
+--- The town, planned (a unit bigger than its need pays for its idle part) ---
+  fleet: Diesel Station 21 MW (runs 21%, 42% of the energy); Wind Farm 20 MW (runs 31%, 58% of the energy);
+  firm 19 MW against 19 needed; block prices a year $97.7 / 162.8 / 195.3 a MWh; fuel and running $81.6 a MWh made
+  unserved 0.000%, curtailed 9.4% of the variable rows' output; TARIFF AT COST $211.7 a MWh (21.17 cents a kWh)
+=== The 1900 city (Q2) ===
+  (planner: Coal Power Plant (base) xN Coal Power Plant (shoulder) Coal Power Plant (peak) Oil-Fired Plant (peak) xN)
+--- B: 1900's kinds (coal and oil steam, no hydro site) at today's figures ---
+  fleet: Coal Power Plant 1,950 MW (runs 54%, 100% of the energy); Oil-Fired Plant 300 MW (runs 0%, 0% of the energy);
+  firm 1,913 MW against 1,875 needed; block prices a year $31.7 / 31.7 / 31.7 a MWh; fuel and running $31.7 a MWh made
+  unserved 0.000%, curtailed 0.0% of the variable rows' output; TARIFF AT COST $157.5 a MWh (15.75 cents a kWh)
+  coal burned 3,287,271 t a year (0.357 t a MWh of coal power)
+  (planner: Coal Power Plant (base) xN Coal Power Plant (shoulder) Coal Power Plant (peak) xN)
+--- C: the same at 1902's heat rate (92,500 Btu/kWh), capital as today's ---
+  fleet: Coal Power Plant 2,275 MW (runs 46%, 100% of the energy);
+  firm 1,934 MW against 1,875 needed; block prices a year $252.2 / 252.2 / 252.2 a MWh; fuel and running $252.2 a MWh made
+  unserved 0.000%, curtailed 0.0% of the variable rows' output; TARIFF AT COST $390.9 a MWh (39.09 cents a kWh)
+  coal burned 35,815,377 t a year (3.885 t a MWh of coal power)
