@@ -3267,7 +3267,8 @@ public class Game {
                         sectorInvestor(sector.key()), STATIONS_SLOT);
             }
         }
-        // ...and the month's refusals for want of workers priced into next month's wage (LD1).
+        // ...and the month's refusals for want of workers settled into the posts the labour market prices in this
+        // same month's reprice (LD1; SimulationEngine.updatePopulation() runs it later in this nextMonth()).
         settleWantedPosts();
     }
 
@@ -3307,11 +3308,19 @@ public class Game {
         if (a == null) wantedPosts.heldUnpaid(); else wantedPosts.ask(a);
     }
 
-    /** The month's asks settled into the posts per band next month's wage is priced on (LD1; WantedPosts.settle()). */
+    /**
+     * The month's asks settled into the posts per band the same month's reprice prices the wage on (LD1;
+     * WantedPosts.settle()). A band no migrant can come for (Migration.admits()) asks nothing (LD2): the wage is meant
+     * to bring migrants.
+     */
     void settleWantedPosts() {
         double[] premium = new double[WageBand.values().length];
-        for (WageBand band : WageBand.values()) premium[band.ordinal()] = labourMarket.bandPremium(band);
-        wantedPosts.settle(populationManager.staffablePostsByBand(), populationManager.supplyByBand(), premium);
+        boolean[] open = new boolean[WageBand.values().length];
+        for (WageBand band : WageBand.values()) {
+            premium[band.ordinal()] = labourMarket.bandPremium(band);
+            open[band.ordinal()] = migration.admits(band);
+        }
+        wantedPosts.settle(populationManager.staffablePostsByBand(), populationManager.supplyByBand(), premium, open);
     }
 
     /** Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. */
@@ -15417,27 +15426,19 @@ public class Game {
      * not. That is the pressure that will make a medical school worth building.
      */
     public void repriceLabour() {
-        if (wantedPosts.any()) {
-            // The refused posts (LD1): the market prices a band as if the posts the staffing gate would not let a
-            // business open were offered, so the wage rises at its own pace and to its own cap, and the workers the
-            // fill gives the band are those it would have with the posts there. The gate's own test
-            // (Sector.staffing()) and Migration's opportunity still read only the posts that exist.
-            double[] posts = populationManager.staffablePostsByBand();
-            double[] latent = wantedPosts.latent();
-            for (int b = 0; b < posts.length && b < latent.length; b++) posts[b] += latent[b];
-            labourMarket.advanceMonth(
-                    posts,
-                    populationManager.supplyByBand(posts),
-                    populationManager.getJobs(),
-                    populationManager.getLicensedHeads());
-            populationManager.takeWagesFrom(labourMarket);
-            return;
-        }
+        // The refused posts (LD1): the market prices a band as if the posts the staffing gate would not let a
+        // business open were offered, so the wage rises at its own pace and to its own cap. They are the numerator
+        // of their own band's tightness and nothing else (LD2): the supply is the fill against the posts that
+        // exist, so a refused post carries no worker away from the bands below it (LD1's fill against the posts
+        // plus the refused ones priced a band that asked nothing up, by the workers a band above kept), and the
+        // multiple is at most sqrt(1 + MOST_OF_POSTS) times what the posts that exist set. pricedOn() holds the
+        // latent posts to the posts as they stand now, and is the posts unchanged when there are none. The gate's
+        // own test (Sector.staffing()) and Migration's opportunity still read only the posts that exist.
         labourMarket.advanceMonth(
                 // STAFFABLE, not raw. A band is priced on the work its own
                 // members can take; the posts only a licence holder can fill
                 // are priced separately, as a licence premium on that job.
-                populationManager.staffablePostsByBand(),
+                wantedPosts.pricedOn(populationManager.staffablePostsByBand()),
                 populationManager.supplyByBand(),
                 populationManager.getJobs(),
                 populationManager.getLicensedHeads());
