@@ -1333,6 +1333,8 @@ public class Game {
             String[] names = new String[made.nationCount()];
             for (int i = 0; i < names.length; i++) names[i] = made.name(i + 1);
             PartnerTrade trade = new PartnerTrade(made.nationCount());
+            // The history's grid in the money of the day, read live (DZ1): a reform changes the unit, and the grid follows it.
+            trade.setMoneyUnit(denomination::getUnit);
             trade.setPlace(standLat, standLon, names);
             partnerTrade = trade;
             worldMarket = made;
@@ -20921,6 +20923,8 @@ public class Game {
         for (int i = 0; i < rateHistory.length; i++) rateHistory[i] *= scale;
 
         if (historySave != null) historySave.redenominate(scale);
+        // DZ1: the trade by partner's money and its finished years; cityExportPriceLevel() and tradeByNation() weigh the world's prices by them.
+        if (partnerTrade != null) partnerTrade.redenominate(scale);
 
         /*
          * ...and the derived figures re-struck, so the screens are in the new

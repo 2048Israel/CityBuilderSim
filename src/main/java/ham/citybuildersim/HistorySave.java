@@ -1898,6 +1898,8 @@ public class HistorySave {
         if (shareValue != null) for (List<Double> s : shareValue.values()) scaleAll(scale, s);
         // A sector's net income is money; its workers are people (0.7.4).
         if (sectorNetIncome != null) for (List<Double> s : sectorNetIncome.values()) scaleAll(scale, s);
+        // The trade by partner's finished years (DZ1): each cell's value out and in is money; the tables are immutable, so the list takes the scaled ones.
+        if (tradeByPartner != null) tradeByPartner.replaceAll(t -> t.scaled(scale));
     }
 
     @SafeVarargs
