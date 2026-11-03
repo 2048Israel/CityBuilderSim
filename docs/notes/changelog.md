@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### GD0 — gold and the city's money, the study — 2026-11-02, ready, no tag (study), see docs/studies/spec-gold-money.md
+Jerus asked for gold ("would massively help fx control") and the city's money chosen at founding, defaulting to the nation's,
+sign and starting level with it. Measured on the regime harness's town pegged at founding: the vault runs short in month 49;
+40x deeper, doubt breaks it in month 56, its vault 712 months of imports at month 48, as doubt never reads it; its deficit
+(-US$753k over months 25-48) is deaf to the rate in all nine runs, so a dial defending the vault only buys capital (to month
+71, at 9-12% and 13% fewer people). His Rotterdam (slot 3): a 35-year strong-side peg, and one purchase of 4.5 years' output
+moving the D$ x11,600 in a month, the intervention unbounded. Gold's price is the statutes' and USGS's (the Pink Sheet's gold
+is the LBMA's fix: only its 4.749% a month ships, as a dial). His four calls, all as recommended (the rate first; all four
+gold batches, mines last; the city's own money styled after the nation's; the level in units per US$), queue XI1, GD1-GD4
+and FM1-FM3. No model change.
+
 ### 0.9.2 — FC1, builders short: the price of a point rises, and foreign crews come when none are free — 2026-11-02, ready, see docs/queue/FC1-notes.md
 The price of a point of building work now reads the builders' queue. Past nine months of work at the pace the repairs
 leave the sites, every order's work carries a premium that rises smoothly to +80% with no points left for sites, each

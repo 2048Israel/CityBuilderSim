@@ -243,6 +243,14 @@ Every addition is O(1) a month:
 
 ## 5. The calls
 
+**Answered, Jerus, 2026-11-02, every one the recommended way:**
+1. "Rate running away (Recommended)".
+2. "All four, mines last (Recommended)".
+3. "Its own, styled as yen (Recommended)".
+4. "Yes, units per US$ (Recommended)".
+
+The eight batches are queued in §6's order. The calls as they were put:
+
 1. **Which trouble should gold fix first?**
    - Measured: a young town's peg dies in month 49 of a thin vault. A deep one dies in month 56 of doubt, with 712 months of imports in its vault eight months before. Your Rotterdam's trouble was a rate that ran away with a full vault (×11,600 in one month after one purchase).
    - Options: the rate running away (XI1, then GD3's cover-read doubt); the reserves (GD3's dial and GD4's mines); both.
