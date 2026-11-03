@@ -362,17 +362,19 @@ public final class CoalMining extends ExtractionSector {
 
     /**
      * A preparation plant beside the coking mines (the study's 3.4: "the
-     * sector builds one beside every coking mine"): with no order in flight
-     * and raw coal standing or on site that no plant washes, the plant that
+     * sector builds one beside every coking mine"): with raw coal standing or
+     * on site that no plant, standing or on site, washes, the plant that
      * earns most on its whole cost of those it could staff and that would
      * carry the interest on it (SpreadPlanner's MONEY gate, decision A) -
      * ordered, or refused for want of ground; null when no plant is wanted
-     * or none passes, and the mines' rule decides.
+     * or none passes, and the mines' rule decides. No order in flight is
+     * waited for (BA1, 2026-11-02; it was, to the cap on orders): a plant on
+     * site is already in unwashed(), so a second is wanted only for raw coal
+     * the first will not wash.
      */
     BusinessInvestment.Decision planWash(BusinessInvestment plans, Game game) {
         String sector = key();
         if (buildings == null || game == null) return null;
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) return null;
         double unwashed = unwashed();
         if (!(unwashed > 0)) return null;
         BuildingsTemplate best = null;
@@ -383,7 +385,7 @@ public final class CoalMining extends ExtractionSector {
             if (cost <= 0) continue;
             cost += fleetCapital(t);
             double earns = estimatedMonthlyProfit(t, plans);
-            if (!planner().passesMoney(this, plans, game, earns, cost)) continue;
+            if (!planner().passesMoney(this, plans, game, t, 1, earns, cost)) continue;
             if (earns / cost > bestScore) {
                 bestScore = earns / cost;
                 best = t;

@@ -63,8 +63,11 @@ import java.util.function.ToDoubleFunction;
  *      cash paid; it stays, named, for the counterfactual. Since 0.7.113
  *      (batch I2b) Game.consider() asks every order the same, through the
  *      same piece (Game.orderGate()).
- *   5. THE ORDER (best()): the best earnings on cost of those that pass; the
- *      client holds to one order in flight (MAX_CONCURRENT_ORDERS) first.
+ *   5. THE ORDER (best()): the best earnings on cost of those that pass. No
+ *      order in flight is waited for (BA1, 2026-11-02; the client held to one
+ *      before): what the client already has on site is counted in what it
+ *      weighs next (after()), and the price of a point and the interest on the
+ *      wait (MoneyGate, carryOf()) ration the orders.
  *   6. IDLE, THEN SHED (noteMonth(), idleMonths(), mayShed()): the months
  *      each kind has stood with nothing to do, by name, saved in the
  *      client's extras ("idleMonths.<KIND>"); a kind idle IDLE_MONTHS
@@ -208,6 +211,38 @@ public final class SpreadPlanner {
         };
     }
 
+    /**
+     * The city's values for one more works after those a sector already has on
+     * site (BA1, 2026-11-02; pure in `v`): what `u` units are worth past the
+     * `comingOut` units of that good the works on site will make, and the
+     * `comingIn` units they will use. A works is valued at the month's trade -
+     * the import price for as many units as the city imported, which its
+     * output would replace; the export price for as many as it exported, which
+     * its feed would stop shipping - and the works on site are not in that
+     * tally yet. Weighed as if they were never to open, a works that pays at
+     * the import price would be ordered again every month while the first
+     * stood on site, the hog cycle BusinessInvestment.planMaker() writes out
+     * at WHAT IS ALREADY COMING COUNTS AS SUPPLY. It took one order in flight
+     * (the cap, gone) to hide it. The works on site take the first of the
+     * month's trade, at the better price, and the next one the units past
+     * them: v's cumulative worth of the coming and the new, less the coming -
+     * `imported - coming`, floored at nothing, whatever `v` wraps (the
+     * limestone carried, the old copper). With nothing coming of a good, v's
+     * own answer, to the bit.
+     */
+    public static Values after(Values v, ToDoubleFunction<Good> comingOut, ToDoubleFunction<Good> comingIn) {
+        return new Values() {
+            @Override public double out(Good g, double u) {
+                double c = comingOut.applyAsDouble(g);
+                return c > 0 ? v.out(g, c + u) - v.out(g, c) : v.out(g, u);
+            }
+            @Override public double in(Good g, double u) {
+                double c = comingIn.applyAsDouble(g);
+                return c > 0 ? v.in(g, c + u) - v.in(g, c) : v.in(g, u);
+            }
+        };
+    }
+
     /*
      * WHAT A WORKS COSTS PAST ITS WAGES, POWER AND WATER (0.7.112, batch I2;
      * spec-materials 2.5 and 2.8): its consumables, world money a month at
@@ -340,6 +375,13 @@ public final class SpreadPlanner {
         String staff(BuildingsTemplate t);
         /** Null when an order earning `earns` a month and costing `cost` passes the money gate, else why not. */
         String money(double earns, double cost);
+
+        /**
+         * ...for an order of one `t` (BA1, 2026-11-02): the gate also strikes the interest on the
+         * wait for it, which depends on the building ordered (the points it owes the builders).
+         * A frame that knows no wait (a check's own) answers money(earns, cost), as it did.
+         */
+        default String money(BuildingsTemplate t, double earns, double cost) { return money(earns, cost); }
     }
 
     /** What one building's spread on its feed earns a month once running: `gross` (at nameplate) at the rate, less its running and standing costs. */
@@ -358,7 +400,7 @@ public final class SpreadPlanner {
                                   List<BuildingsTemplate> with) {
         Map<Gate, String> refusals = new EnumMap<>(Gate.class);
         if (feed != null) refusals.put(Gate.FEED, feed);
-        String land = city.land(t), staff = city.staff(t), money = city.money(earns, cost);
+        String land = city.land(t), staff = city.staff(t), money = city.money(t, earns, cost);
         if (land != null) refusals.put(Gate.LAND, land);
         if (staff != null) refusals.put(Gate.STAFF, staff);
         if (money != null) refusals.put(Gate.MONEY, money);
@@ -457,17 +499,46 @@ public final class SpreadPlanner {
      * strikes it; 0 when it tests nothing.
      */
     public double hurdle(Sector sector, BusinessInvestment plans, Game game, double cost) {
+        return hurdle(sector, plans, game, null, 1, cost);
+    }
+
+    /**
+     * ...for an order of `n` of `t` (BA1, 2026-11-02): what the gate tests carries the
+     * interest on the order's wait (BusinessInvestment.carryOf()), so an order years out
+     * must earn it. With no `t`, the order is taken to be delivered at once and the
+     * hurdle is the plain one above.
+     */
+    public double hurdle(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n, double cost) {
         double amount = moneyGate.testedOn(cost, sector.getCash());
         if (!(amount > 0)) return 0;
         double rate = rateFor(sector, game, amount);
-        return amount * plans.realTestRate(rate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        return amount * carryOf(plans, t, n, rate) * plans.realTestRate(rate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
     }
 
     /** Whether an order earning `earns` a month and costing `cost` passes the money gate: it earns something, and servicesItsOwnDebt() on what the gate tests. */
     public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, double earns, double cost) {
+        return passesMoney(sector, plans, game, null, 1, earns, cost);
+    }
+
+    /**
+     * ...for an order of `n` of `t` (BA1, 2026-11-02): servicesItsOwnDebt() on what the gate
+     * tests grown by the wait for the building (BusinessInvestment.carryOf(), >= 1) at the
+     * rate a loan of it would be written at - an order pays up front for a building
+     * delivered when the queue reaches it, and the interest over the wait is part of its
+     * cost. The wait is what the cap on orders was standing in for. With no `t`, the plain
+     * test above (a check's frame, with no building to wait for).
+     */
+    public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n,
+                               double earns, double cost) {
         if (!(earns > 0)) return false;
         double amount = moneyGate.testedOn(cost, sector.getCash());
-        return plans.servicesItsOwnDebt(earns, amount, rateFor(sector, game, amount));
+        double rate = rateFor(sector, game, amount);
+        return plans.servicesItsOwnDebt(earns, amount * carryOf(plans, t, n, rate), rate);
+    }
+
+    /** The factor an order's cost grows by over its wait (BusinessInvestment.carryOf()); 1 for no building. */
+    private static double carryOf(BusinessInvestment plans, BuildingsTemplate t, int n, double rate) {
+        return t == null || plans == null ? 1 : plans.carryOf(t, Math.max(1, n), rate);
     }
 
     /** The rate a loan of `amount` would be written at for the sector (BusinessDebtManager.projectRate()); prime's placeholder 0 with no game. */
@@ -495,10 +566,14 @@ public final class SpreadPlanner {
                 return s.passes() ? null : s.why(t.getName());
             }
             @Override public String money(double earns, double cost) {
-                if (passesMoney(sector, plans, game, earns, cost)) return null;
+                return money(null, earns, cost);
+            }
+            // ...with the wait for the building in the interest (BA1, 2026-11-02; passesMoney()).
+            @Override public String money(BuildingsTemplate t, double earns, double cost) {
+                if (passesMoney(sector, plans, game, t, 1, earns, cost)) return null;
                 if (!(earns > 0)) return String.format("would lose $%,.1fk a month on it", -earns);
                 return String.format("would earn $%,.1fk a month on $%,.0fk, which would not clear %s ($%,.1fk)",
-                        earns, cost, moneyGate.words(), hurdle(sector, plans, game, cost));
+                        earns, cost, moneyGate.words(), hurdle(sector, plans, game, t, 1, cost));
             }
         };
     }

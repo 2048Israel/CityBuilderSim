@@ -211,14 +211,19 @@ public final class Manufacturing extends Sector {
      * bad business, estimatedMonthlyProfit() already knows: it prices the
      * inputs at today's local price, which in a city with no mills IS the
      * import ceiling the moment anybody bids.
+     *
+     * NO ORDER IN FLIGHT IS WAITED FOR (BA1, 2026-11-02; it was one, "already
+     * building"). Nothing here needs counting twice for it: the profit test
+     * prices only the home room left after what stands and what is on site
+     * (BusinessInvestment.estimatedMakerProfit(): capacity and pipeline), and
+     * the staffing test counts the posts the sector's own works on site will
+     * fill as spoken for (Sector.staffing()), so the works after one on site
+     * is ordered only if it still pays and still has people to fill it.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
 
         BuildingsTemplate best = null;
         double bestScore = 0;

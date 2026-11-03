@@ -1064,15 +1064,17 @@ public final class BuildCard {
      * one, asked through the model's door - Game.interestTest(), whose answer
      * is carriesItsWholeCost()'s - with its figures {what one would earn a
      * month, what it must: PROFIT_OVER_INTEREST times a month's interest on
-     * its whole cost} and the test itself (the interest, the cost it is
-     * struck on, the rate); null where it carries it or is not asked it
+     * its whole cost, grown since BA1 over the wait of one: the interest on the
+     * cost times the carry} and the test itself (the interest, the cost it is
+     * struck on, its carry, the rate); null where it carries it or is not asked it
      * (asksInterest()). Under a borrowing ban the test says no to a building
      * its till cannot pay for, and `why` says so in consider()'s words
      * (banWords()).
      */
     static Gate interestGate(Game game, BuildingsTemplate t, Sector owner, double estimate) {
         if (!asksInterest(game, t, owner)) return null;
-        Game.InterestTest test = game.interestTest(owner.key(), estimate, game.getBusinessInvestment().getCostOf(t, 1));
+        // ...of one, grown over the wait of one (BA1; the carry consider() puts on the cost of its slice of one).
+        Game.InterestTest test = game.interestTest(owner.key(), t, 1, estimate, game.getBusinessInvestment().getCostOf(t, 1));
         if (test.carries()) return null;
         return new Gate(GateKind.INTEREST, estimate, test.needs(), null, test.banned() ? banWords(game, owner) : null, test);
     }

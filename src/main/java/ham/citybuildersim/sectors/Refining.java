@@ -1446,8 +1446,8 @@ public final class Refining extends Sector {
     /**
      * What the planner reads of the city (spec-oil 2.4).
      *
-     * @param feed        litres a month each kind of unit standing takes, by RefineryFlow.Kind's ordinal
-     * @param crude       tonnes a month the crude units standing run
+     * @param feed        litres a month each kind of unit standing and on site takes, by RefineryFlow.Kind's ordinal (on site since BA1, 2026-11-02: outlook())
+     * @param crude       tonnes a month the crude units standing and on site run
      * @param mix         their crude mix, each grade's share in Deposit.Grade's order
      * @param values      each product's value, by Good's ordinal (cityValues())
      * @param room        litres a month of petrol and diesel the city wants on the trend past what its
@@ -1502,7 +1502,11 @@ public final class Refining extends Sector {
         double[] imports = new double[Good.values().length];
         java.util.Arrays.fill(imports, Double.POSITIVE_INFINITY);
         for (Good g : BOUGHT_HERE) imports[g.ordinal()] = importsOf(g);
-        return new Outlook(unitFeed(false), getInputAtCapacity(Good.CRUDE), crudeMix.clone(), cityValues(), room,
+        // ...the campus as it will stand once what is on site opens (BA1, 2026-11-02): the units and the crude units on site
+        // are in the feed and the crude the flow is struck on, as getPipeline() has them in the room. It read the units standing
+        // only while a sector could have one order on site; with no cap on orders a second unit of a kind would have been
+        // weighed on the stream the first is already coming to take, and a second crude unit on the gain the first is coming to make.
+        return new Outlook(unitFeed(true), getInputAtCapacity(Good.CRUDE) + crudeOnSite(), crudeMix.clone(), cityValues(), room,
                 spare, spare > 0 ? wellsGradesAhead() : MEDIUM_MIX.clone(),
                 Double.isFinite(local) ? local : 0, Double.isFinite(imported) ? imported : 0,
                 Double.isFinite(home) ? Math.max(0, home) : 0, awayValues(), imports, runPrices());

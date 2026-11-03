@@ -181,10 +181,20 @@ public final class CopperRefining extends ProcessingSector {
         return total;
     }
 
-    /** Old copper arisen in the pool's last month past what the refineries standing take at nameplate: what one more would run on. */
+    /**
+     * Tonnes of old copper its scrap refineries on site will take once they open (BA1,
+     * 2026-11-02): spareOldCopper() counted the refineries standing only while a sector
+     * could have one order on site; with no cap a second would be weighed, and ordered,
+     * on the old copper the first is already coming to take.
+     */
+    public double oldCopperOnSite() {
+        return buildings == null ? 0 : buildings.underConstructionBySector(key(), t -> t.oldMetal(Good.COPPER));
+    }
+
+    /** Old copper arisen in the pool's last month past what the refineries standing and on site take at nameplate: what one more would run on. */
     public double spareOldCopper() {
         OldMetal.Pool pool = pool();
-        return pool == null ? 0 : Math.max(0, pool.lastArisen() - oldCopperIntake());
+        return pool == null ? 0 : Math.max(0, pool.lastArisen() - oldCopperIntake() - oldCopperOnSite());
     }
 
     /** ...and what the others leave the last one standing: the pool's last month less the rest's intake at nameplate, at most its own. */

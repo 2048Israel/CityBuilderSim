@@ -208,14 +208,17 @@ public final class FoodProcessing extends Sector {
         return onePlant > 0 ? uncovered / onePlant : 0;
     }
 
+    /**
+     * A plant is financed when the city already eats what it would make (fillFor()).
+     * No order in flight is waited for (BA1, 2026-11-02; it was one): fillFor()
+     * takes what the plants on site will make off the demand (getPipeline()), so
+     * the plant after one on site is ordered only for the demand the first leaves.
+     */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
         if (buildings == null || markets == null) return BusinessInvestment.Decision.no(sector, "nothing to plan with");
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
 
         BuildingsTemplate best = null;
         double bestScore = 0;

@@ -383,20 +383,18 @@ public final class Forestry extends ExtractionSector {
     }
 
     /**
-     * Whether to put another crew on the forest (E; spec 2.11): one crew in
-     * flight (a stand being planted holds none back); the cuttable forest
-     * lasting FOREST_CREW_MONTHS of every crew's cut with it (roomFor()); of
-     * the crews that do and the city could staff, the best earnings on the
-     * whole cost - its freight in both - through the money gate
-     * (ExtractionSector's, decision A); then ground for it.
+     * Whether to put another crew on the forest (E; spec 2.11): the cuttable
+     * forest lasting FOREST_CREW_MONTHS of every crew's cut with it
+     * (roomFor()); of the crews that do and the city could staff, the best
+     * earnings on the whole cost - its freight in both - through the money
+     * gate (ExtractionSector's, decision A); then ground for it. No crew in
+     * flight is waited for (BA1, 2026-11-02; it was one, and a stand being
+     * planted held none back): the crews on site are in `committed`
+     * (crewsCut(true)), so the forest they will cut is spoken for.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
         String sector = key();
-        double coming = buildings.underConstructionBySector(sector, t -> isCrew(t) ? 1 : 0);
-        if (coming >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
         LandManager land = game.getLandManager();
         double cuttable = land.cuttableForest();
         if (!(cuttable > 0)) return BusinessInvestment.Decision.no(sector, "no forest it may cut");
@@ -425,7 +423,7 @@ public final class Forestry extends ExtractionSector {
             if (cost <= 0) continue;
             cost += fleetCapital(t);
             double earns = estimatedMonthlyProfit(t, plans);
-            if (!planner().passesMoney(this, plans, game, earns, cost)) {
+            if (!planner().passesMoney(this, plans, game, t, 1, earns, cost)) {
                 if (moneyHold == null || earns / cost > moneyEarns / moneyCost) {
                     moneyHold = t;
                     moneyEarns = earns;
@@ -442,7 +440,7 @@ public final class Forestry extends ExtractionSector {
         if (best == null) {
             if (moneyHold != null) {
                 return BusinessInvestment.Decision.no(sector, ProcessingSector.a(moneyHold.getName()) + " "
-                        + planner().city(this, plans, game).money(moneyEarns, moneyCost));
+                        + planner().city(this, plans, game).money(moneyHold, moneyEarns, moneyCost));
             }
             if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
             if (forestHold != null) return BusinessInvestment.Decision.no(sector, eWords(cuttable, committed, forestHold));

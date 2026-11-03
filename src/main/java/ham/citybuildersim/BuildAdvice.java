@@ -1070,7 +1070,7 @@ public final class BuildAdvice {
     /** The slack an order is sized with past its projection: the businesses' own headroom (BusinessInvestment.TARGET_HEADROOM). */
     public static final double SLACK = BusinessInvestment.TARGET_HEADROOM;
 
-    /** Months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); the opening's wait is held to their BusinessInvestment.MAX_ORDER_MONTHS. */
+    /** The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size theirs (BusinessInvestment.horizonFor(), since BA1). */
     public static final double HORIZON = BusinessInvestment.PLANNING_HORIZON;
 
     /**
@@ -1088,9 +1088,11 @@ public final class BuildAdvice {
 
     /**
      * The demand an order that opens after `lead` months is sized to: the
-     * wait, held to the businesses' MAX_ORDER_MONTHS (a stalled one, NaN,
-     * counts as none), plus HORIZON - the businesses' growthFactor() over
-     * those months - and SLACK past it.
+     * wait (a stalled one, NaN, counts as none), plus the businesses' horizon
+     * for a building that takes so long (BusinessInvestment.horizonFor(): HORIZON
+     * for a short wait, growing with a long one - the wait was held to twelve
+     * months here until BA1) - the businesses' growthFactor() over those
+     * months - and SLACK past it.
      */
     public static Ahead opening(Game game, double lead) {
         return opening(game, lead, SLACK);
@@ -1098,8 +1100,8 @@ public final class BuildAdvice {
 
     /** ...with another slack past it (0.7.73): automatic building's, the player's slider (AutoBuilder). */
     public static Ahead opening(Game game, double lead, double slack) {
-        double wait = Double.isNaN(lead) ? 0 : Math.max(0, Math.min(lead, BusinessInvestment.MAX_ORDER_MONTHS));
-        double months = wait + HORIZON;
+        double wait = Double.isNaN(lead) ? 0 : Math.max(0, lead);
+        double months = wait + BusinessInvestment.horizonFor(wait);
         return new Ahead(months, game.getBusinessInvestment().growthFactor(months), slack);
     }
 
@@ -1804,8 +1806,8 @@ public final class BuildAdvice {
     /**
      * What an order serves over its life, a month on average, in the
      * measure's unit (0.7.101): each of its LIFE_YEARS years read at its
-     * middle month - from its opening, `p`'s months less HORIZON, the demand
-     * today's times lifeTrend() with p's slack past it - as the shortfall
+     * middle month - from its opening, `p`'s months less the horizon
+     * (BusinessInvestment.leadFor()), the demand today's times lifeTrend() with p's slack past it - as the shortfall
      * with what stands and is on site (`site`) less the shortfall with the
      * order too (both held at nothing), each year weighted by its twelve
      * months discounted as lifeFactor() discounts them. NaN for a measure not
@@ -1815,7 +1817,7 @@ public final class BuildAdvice {
                                         Map<BuildingsTemplate, Integer> order, Ahead p) {
         if (!weighsServed(m)) return Double.NaN;
         Map<BuildingsTemplate, Integer> with = plus(site, order);
-        double opens = Math.max(0, p.months() - HORIZON);
+        double opens = BusinessInvestment.leadFor(p.months());
         double i = lifeRate(game) / 12;
         double served = 0, weights = 0;
         for (int y = 0; y < LIFE_YEARS; y++) {

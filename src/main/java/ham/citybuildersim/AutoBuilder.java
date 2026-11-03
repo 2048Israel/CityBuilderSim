@@ -98,8 +98,9 @@ import java.util.Set;
  *     once an order now opens, with the margin past it; otherwise the
  *     building the Build tab ranks first and the count that keeps it ahead.
  *   - CUT, IN TURN: to THE BUILDERS - no more than opens inside
- *     BusinessInvestment.MAX_ORDER_MONTHS, the businesses' own rule for an
- *     order the queue can deliver, and one when none would and nothing for
+ *     ORDER_MONTHS, the businesses' own rule for an order the queue can
+ *     deliver until BA1 took it off them (their price rations them now; the
+ *     city's orders have no profit test, so keep the cut), and one when none would and nothing for
  *     the measure is on site, so a slow plant is not put off for ever; to
  *     THE BUDGET, for a building the treasury runs (staff, upkeep, a line's
  *     crews) - what the year's revenue left, until 0.7.104 (THE PAYBACK
@@ -208,6 +209,12 @@ public final class AutoBuilder {
 
     /** The most of its orders the log keeps, newest kept (BuildLog's cap). */
     public static final int LOG_MOST = 40;
+
+    /**
+     * No more than opens inside this many months: the businesses' own rule for an order until BA1 (BusinessInvestment.MAX_ORDER_MONTHS,
+     * which went with the cap on orders), kept for the city's automatic orders, which have no profit test to ration them (THE BUILDERS, CUT, IN TURN).
+     */
+    public static final double ORDER_MONTHS = 12;
 
     private boolean on = false;
     private double slack = DEFAULT_SLACK;
@@ -1025,7 +1032,7 @@ public final class AutoBuilder {
      * The residents an order covers, a month on average over its life
      * (0.7.104, star P2b-2): each of its LIFE_YEARS years read at its middle
      * month as the advice reads what an order serves (servedOverLife()) -
-     * from its opening, `p`'s months less HORIZON, the demand today's times
+     * from its opening, `p`'s months less the horizon (BusinessInvestment.leadFor()), the demand today's times
      * the city's own trend (lifeTrend(), star P2-2) with p's margin past it -
      * as the share of the measure's need it takes off the shortfall (need():
      * the shortfall with what stands and is on site less the shortfall with
@@ -1038,7 +1045,7 @@ public final class AutoBuilder {
         double people = game.getPopulationManager().getPopulation();
         if (!(people > 0)) return 0;
         Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(site, order);
-        double opens = Math.max(0, p.months() - BuildAdvice.HORIZON);
+        double opens = BusinessInvestment.leadFor(p.months());
         double i = BuildAdvice.lifeRate(game) / 12;
         double covered = 0, weights = 0;
         for (int y = 0; y < BuildAdvice.LIFE_YEARS; y++) {
@@ -1162,7 +1169,7 @@ public final class AutoBuilder {
             String name = s.paving() ? ConstructionControl.PAVE_FROM + ", paved" : t.getName();
             int wanted = s.count();
 
-            // THE BUILDERS: no more than opens inside MAX_ORDER_MONTHS.
+            // THE BUILDERS: no more than opens inside ORDER_MONTHS.
             if (Double.isNaN(wait(game, s, 1))) {
                 hold(m, s, Cut.BUILDERS, wanted, m.label() + ": " + wanted + " " + name + " wanted; the builders have no"
                         + " site output to build them.", null);
@@ -1170,11 +1177,11 @@ public final class AutoBuilder {
             }
             int n = wanted;
             Cut cut = Cut.NONE;
-            if (wait(game, s, n) > BusinessInvestment.MAX_ORDER_MONTHS) {
+            if (wait(game, s, n) > ORDER_MONTHS) {
                 int lo = 0, hi = n;                      // lo opens inside, hi does not
                 while (hi - lo > 1) {
                     int mid = lo + (hi - lo) / 2;
-                    if (wait(game, s, mid) > BusinessInvestment.MAX_ORDER_MONTHS) hi = mid; else lo = mid;
+                    if (wait(game, s, mid) > ORDER_MONTHS) hi = mid; else lo = mid;
                 }
                 n = lo;
                 cut = Cut.BUILDERS;

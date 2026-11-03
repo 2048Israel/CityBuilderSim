@@ -796,9 +796,12 @@ public final class Haulage {
      * The Truck Depot to order, or null: the first of Freight's templates with
      * room for trucks, when the fleet is known, none is on site, and the fleet
      * has passed the depots' room by DEPOT_ORDER_MARGIN of a depot. One at a
-     * time, as every sector's order is (BusinessInvestment.MAX_CONCURRENT_ORDERS,
-     * which Freight.plan() tests for the railway's lines but not for this: a
-     * depot is not a line, and a depot on site is this method's own test).
+     * time, and that is this method's own rule and not a cap on orders: the
+     * room it holds the fleet against (depotRoom()) is the depots standing's
+     * only, so a second depot ordered while one is on site would be ordered
+     * for the trucks the first is coming to park (BA1, 2026-11-02: every
+     * sector's cap on orders is gone, and this one stays, as the refiners'
+     * crude units' count does).
      */
     public BuildingsTemplate depotToOrder() {
         if (!trucksKnown) return null;

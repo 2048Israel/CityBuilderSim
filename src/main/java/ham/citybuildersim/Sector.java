@@ -507,6 +507,26 @@ public abstract class Sector {
                 posts[WageBand.of(job).ordinal()] += withheld;
             }
         }
+        /*
+         * THE POSTS OF ITS OWN SITES ARE SPOKEN FOR (BA1). With one order on
+         * site at a time a sector asked for workers for a building when
+         * nothing of its own was waiting for the same workers; with no cap on
+         * orders (BusinessInvestment, EVERY BUSINESS MAY BUILD AHEAD) it may
+         * have a plant on site and ask for a second, and the second must not
+         * be staffed from the spare workers the first is already counting on.
+         * So the posts of this sector's own buildings under construction are
+         * added to the posts the city offers, band by band, before the
+         * supply is read: they are posts that will exist when the builders
+         * reach them, and the workers they need are not spare. Nothing on
+         * site, nothing added.
+         */
+        if (bm != null && bm.getUnderConstructionBySector(key()) > 0) {
+            double[] withSites = posts.clone();
+            for (JobType job : JobType.values()) {
+                withSites[WageBand.of(job).ordinal()] += bm.postsOnSite(key(), job);
+            }
+            posts = withSites;
+        }
         double[] supply = people.supplyByBand(posts);
         if (supply == null) return Staffing.ANY;
 

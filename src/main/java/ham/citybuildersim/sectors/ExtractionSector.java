@@ -274,15 +274,20 @@ public abstract class ExtractionSector extends Sector {
      * on one field of its type beside the works standing (fits()), and the
      * best earnings on its whole cost - its lorries in both - wins among
      * those; with none that fits, it says which field it lacks.
+     *
+     * NO ORDER IN FLIGHT IS WAITED FOR (BA1, 2026-11-02; it was one, "already
+     * building"). The mines on site are already counted where this asks about
+     * ground and ore: the deposits left are the sites less Game.committedOn()
+     * (standing, on site and ordered), the fields the claims beside them
+     * (fits()), and the output coming is the home room left in the profit
+     * (estimatedMonthlyProfit()). So the mine after the one on site is ordered
+     * only while a deposit is left unworked and it earns past the interest on
+     * its wait.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        int ordersInFlight = buildings.getUnderConstructionBySector(sector);
-        if (ordersInFlight >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
 
         LandManager land = game.getLandManager();
         int unminedDeposits = land.getSites(resource) - game.committedOn(resource);
@@ -323,7 +328,7 @@ public abstract class ExtractionSector extends Sector {
             cost += fleetCapital(t);
             double earns = estimatedMonthlyProfit(t, plans);
             // ...and one that would carry the interest on its whole cost (0.7.120, batch I3; spec-materials 2.6b).
-            if (!planner.passesMoney(this, plans, game, earns, cost)) {
+            if (!planner.passesMoney(this, plans, game, t, 1, earns, cost)) {
                 if (moneyHold == null || earns / cost > moneyEarns / moneyCost) {
                     moneyHold = t;
                     moneyEarns = earns;
@@ -341,7 +346,7 @@ public abstract class ExtractionSector extends Sector {
         if (best == null) {
             if (moneyHold != null) {
                 return BusinessInvestment.Decision.no(sector, ProcessingSector.a(moneyHold.getName()) + " "
-                        + planner.city(this, plans, game).money(moneyEarns, moneyCost));
+                        + planner.city(this, plans, game).money(moneyHold, moneyEarns, moneyCost));
             }
             if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
             return BusinessInvestment.Decision.no(sector, fieldHold != null ? noField(land, fieldHold) : "nothing worth sinking");

@@ -75,7 +75,7 @@ import ham.citybuildersim.Good;
  * than arose, at OldMetal.PAY_SHARE of scrap's export price, from each seller
  * pro rata (Jerus's Q8); scrap past what arose is not made (groundLimit()).
  * A yard is weighed against the pool (feedRefusal(): old steel for
- * FEED_GATE of one past what the yards standing take), on the share of its
+ * FEED_GATE of one past what the yards standing and on site take), on the share of its
  * nameplate the pool would fill (feedShare()) and paying for its old steel
  * (offMarketFeed()).
  */
@@ -146,6 +146,16 @@ public final class HeavyIndustry extends ProcessingSector {
         return buildings == null ? 0 : buildings.totalBySector(key(), t -> t.oldMetal(Good.STEEL));
     }
 
+    /**
+     * ...and what its yards on site will take once they open (BA1, 2026-11-02): the yard
+     * feed gate counted the yards standing only while a sector could have one order on
+     * site, and with no cap on orders a second yard would be ordered on the old steel the
+     * first is already coming to take, month after month; the feed gate now counts both.
+     */
+    public double oldSteelOnSite() {
+        return buildings == null ? 0 : buildings.underConstructionBySector(key(), t -> t.oldMetal(Good.STEEL));
+    }
+
     /** ...and the tonnes of old steel a tonne of their scrap takes: their intake over their scrap at nameplate (10,500 into 10,000), 0 with no yard standing. */
     public double oldSteelPerTonneOfScrap() {
         double scrap = getCapacity(Good.SCRAP);
@@ -185,9 +195,9 @@ public final class HeavyIndustry extends ProcessingSector {
         return lines;
     }
 
-    /** Old steel arisen in the pool's last month past what the yards standing take: what one more would run on. */
+    /** Old steel arisen in the pool's last month past what the yards standing and on site take: what one more would run on. */
     private double spareOldSteel(ham.citybuildersim.OldMetal pool) {
-        return Math.max(0, pool.lastArisen() - oldSteelIntake());
+        return Math.max(0, pool.lastArisen() - oldSteelIntake() - oldSteelOnSite());
     }
 
     /** Its scrap is limited by the old steel that arose (the yards make no scrap past it); every other good as Sector's. */
@@ -237,7 +247,7 @@ public final class HeavyIndustry extends ProcessingSector {
         }
     }
 
-    /** A yard is fed only while old steel for FEED_GATE of one arises past what the yards standing take; every other works buys its feed on the market. */
+    /** A yard is fed only while old steel for FEED_GATE of one arises past what the yards standing and on site take; every other works buys its feed on the market. */
     @Override
     protected String feedRefusal(ham.citybuildersim.BuildingsTemplate t) {
         double intake = t == null ? 0 : t.oldMetal(Good.STEEL);
@@ -245,11 +255,11 @@ public final class HeavyIndustry extends ProcessingSector {
         ham.citybuildersim.OldMetal pool = pool();
         double spare = pool == null ? 0 : spareOldSteel(pool);
         if (spare >= SpreadPlanner.FEED_GATE * intake) return null;
-        return String.format("too little old steel for one: %,.0f t arose last month, %,.0f t of it the yards standing take, and one takes %,.0f t",
-                pool == null ? 0 : pool.lastArisen(), oldSteelIntake(), intake);
+        return String.format("too little old steel for one: %,.0f t arose last month, %,.0f t of it the yards standing and on site take, and one takes %,.0f t",
+                pool == null ? 0 : pool.lastArisen(), oldSteelIntake() + oldSteelOnSite(), intake);
     }
 
-    /** One more yard runs on the old steel past what the yards standing take, at most its nameplate; every other works on all of it. */
+    /** One more yard runs on the old steel past what the yards standing and on site take, at most its nameplate; every other works on all of it. */
     @Override
     protected double feedShare(ham.citybuildersim.BuildingsTemplate t) {
         double intake = t == null ? 0 : t.oldMetal(Good.STEEL);

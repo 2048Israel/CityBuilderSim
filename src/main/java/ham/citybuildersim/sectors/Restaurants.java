@@ -195,6 +195,18 @@ public class Restaurants extends Sector {
     }
 
     /**
+     * ...and the meals the kitchens on site will serve once they open (BA1, 2026-11-02): plan()
+     * counted the tables standing only while a sector could have one order on site; with no
+     * cap on orders it would order the same queue again every month until the first kitchen
+     * opened (BusinessInvestment.planMaker(): WHAT IS ALREADY COMING COUNTS AS SUPPLY). seats()
+     * itself stays what stands: the pantry sizes its order on it.
+     */
+    public long seatsOnSite() {
+        return buildings == null ? 0
+                : Math.round(buildings.underConstructionBySector(key(), b -> b.getCoverage()));
+    }
+
+    /**
      * Meals the larder can actually put out: the ingredient that runs out
      * first, exactly as Retail.basketsOnShelf() asks the same question of a
      * shop's shelf. A kitchen with a tonne of grain and no meat cannot serve
@@ -359,11 +371,9 @@ public class Restaurants extends Sector {
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
 
-        long seats = seats();
+        // The tables standing and on site (BA1, 2026-11-02; seatsOnSite()).
+        long seats = seats() + seatsOnSite();
         double queue = rWanted;
         if (queue <= seats * (1 + BusinessInvestment.TARGET_HEADROOM)) {
             return BusinessInvestment.Decision.no(sector, "tables ahead of diners");
@@ -372,7 +382,6 @@ public class Restaurants extends Sector {
             return BusinessInvestment.Decision.no(sector, "no margin in it");
         }
 
-        double output = game.getBuildingOutputAtEveryPost();   // the sites' output, for the order's wait (0.7.17)
         Staffing staffingHold = null;
         String staffingHoldName = null;
         BuildingsTemplate best = null;
@@ -410,7 +419,7 @@ public class Restaurants extends Sector {
             return BusinessInvestment.Decision.no(sector, "nothing worth building");
         }
 
-        int quantity = plans.orderSize(queue - seats, best.getCoverage(), best, output);
+        int quantity = plans.orderSize(queue - seats, best.getCoverage(), best);
         if (quantity <= 0) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
         // No more of them than the city could staff together (0.7.18).
         quantity = staffableCount(best, quantity);
@@ -439,7 +448,7 @@ public class Restaurants extends Sector {
         double price = sellPrice > 0 ? sellPrice : food * MARGIN_FLOOR;
         // Only the diners the tables would actually see: a Diner in a city
         // with a thousand empty seats serves nobody.
-        double served = Math.min(t.getCoverage(), Math.max(0, rWanted - seats()));
+        double served = Math.min(t.getCoverage(), Math.max(0, rWanted - seats() - seatsOnSite()));
         if (served <= 0) served = t.getCoverage() * .5;
         return served * (price - food) - plans.runningCostOf(t);
     }

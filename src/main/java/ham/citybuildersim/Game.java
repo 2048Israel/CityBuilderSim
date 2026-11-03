@@ -353,6 +353,7 @@ public class Game {
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
+        businessInvestment.setOrderWaitOutput(this::orderWaitOutput);   // and an order's wait is read at the month the builders and their contractor can give it (BA1)
         businessInvestment.setDeepWaterPrice((t, n, factor) -> {   // and a floating platform's deep-water works (DW1)
             DeepWater works = deepWaterAt(t, n, 0, factor);
             return works == null ? 0 : works.cost();
@@ -2228,7 +2229,8 @@ public class Game {
      * WHAT IT BUYS.
      */
     public Founding.Buys whatItBuys(double cash, double reserveUsd) {
-        // ...at this city's builders' multiple on the queue the village leaves (FC1), as its build card quotes the first works.
+        // ...at this city's builders' multiple on the queue the village leaves (FC1), as its build card quotes the first works,
+        // each order's buildings on the queue the ones before them leave, as quoteBuild() prices them (BA1).
         return Founding.whatItBuys(catalogue(), cash, reserveUsd, buildingManager::orderPriceMultiplier);
     }
 
@@ -3292,8 +3294,10 @@ public class Game {
         double earns = businessInvestment.estimatedMonthlyProfit(owner.key(), t) * n;
         double cost = businessInvestment.getCostOf(t, n);
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
-        double margin = earns - businessInvestment.interestHurdle(cost,
-                credit.getPrimeRate() + credit.getRecordSurcharge(owner.key()));
+        // ...on the cost grown over the order's wait, as consider() asks it (BA1; Slices.carriesAtPrime()).
+        double prime = credit.getPrimeRate() + credit.getRecordSurcharge(owner.key());
+        double margin = earns - businessInvestment.interestHurdle(
+                grownOver(cost, businessInvestment.carryOf(t, n, prime)), prime);
         double[] wanted = free.wanted(), spare = free.spare();
         double[] rates = economyManager.getWageRates();
         double shortBill = 0;
@@ -6221,7 +6225,27 @@ public class Game {
        walks on from one kind to the next), the processing sectors' plans in
        SpreadPlanner's money gate too (ON_ITS_WHOLE_COST, 0.7.112). A
        landlord's home is not asked it: the mortgage lender's test, below.
+
+       AND THE WAIT (BA1, 2026-11-02). The cost each slice is tested on is
+       grown over the slice's wait: the order pays up front and earns nothing
+       until the builders reach it, and with no cap on orders (BusinessInvestment,
+       EVERY BUSINESS MAY BUILD AHEAD) that can be years. Slices.passes() asks
+       servicesItsOwnDebt() of the whole cost times carryOf() - (1 + i)^W for
+       W the months until the slice's last building opens, i the real test
+       rate over twelve (THE INTEREST ON THE WAIT) - and the same at prime
+       and the sector's record for the refusal. The carry is at least 1 and
+       rises with the slice (THE WAIT GROWS WITH THE ORDER), and the cost a
+       building rises with it past the yard, so the grown cost a building
+       still rises with n and the test is still a run from one: the search
+       above stands. With no wait handed in (a bare fixture) every carry is
+       exactly 1 and every slice is asked what it was. The advisor's refusal
+       words are the same; a slice years out that fails says so in them.
        ======================================================================= */
+
+    /** `on` grown by an order's carry; `on` itself where nothing is struck on it (a till that pays, under ON_ITS_BORROWING), so an endless carry never makes NaN of nothing. */
+    private static double grownOver(double on, double carry) {
+        return on > 0 ? on * carry : on;
+    }
 
     /** The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. */
     public static final int COUNTDOWN_SLICES = 16;
@@ -6354,16 +6378,19 @@ public class Game {
             if (n == decision.quantity) firstRate = at.rate();
             if (at.askedDesk()) deskCalls++;
             // ON ITS WHOLE COST (0.7.113): the interest on all the slice costs, whoever pays - until then on what it borrowed alone.
+            // ...grown over the order's wait (BA1; AND THE WAIT, below): the cost is paid now and the slice opens when the builders reach it.
             double on = orderGate.testedOn(cost, cash);
-            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, on, at.tested())) return true;
+            double carry = businessInvestment.carryOf(decision.template, n, at.tested());
+            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, grownOver(on, carry), at.tested())) return true;
             if (carriesAtPrime(n, on)) atPrime = true;
             return false;
         }
 
-        /** Whether n of them would carry the interest on `on` at prime and the sector's record - their whole cost since 0.7.113 (orderGate()). */
+        /** Whether n of them would carry the interest on `on` at prime and the sector's record - their whole cost since 0.7.113 (orderGate()), grown over the wait at that rate since BA1. */
         boolean carriesAtPrime(int n, double on) {
-            return businessInvestment.servicesItsOwnDebt(perUnitProfit * n, on,
-                    credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector));
+            double prime = credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector);
+            return businessInvestment.servicesItsOwnDebt(perUnitProfit * n,
+                    grownOver(on, businessInvestment.carryOf(decision.template, n, prime)), prime);
         }
 
         /** When none passes: whether any of the q slices would have carried it at prime - every slice to PRIME_SCAN_SLICES, the four that decide it past that, and under a ban the last the till pays for. */
@@ -6429,11 +6456,14 @@ public class Game {
      * first; false where it would borrow under a ban. The question a planner
      * asks before it walks on from one kind to the next (sectors.Oil, THE
      * OIL AT SEA), and since 0.7.122 the build card's (interestTest(), its
-     * answer with its figures). Books nothing.
+     * answer with its figures). Since BA1 the cost is grown over the wait of
+     * the order of `n` of `t` it is the cost of (THE INTEREST ON THE WAIT):
+     * the planner passes the template and the count, so it asks what
+     * consider() will. Books nothing.
      */
-    public boolean carriesItsWholeCost(String sector, double earns, double cost) {
+    public boolean carriesItsWholeCost(String sector, BuildingsTemplate t, int n, double earns, double cost) {
         if (!(earns > 0)) return false;
-        return interestTest(sector, earns, cost).carries();
+        return interestTest(sector, t, n, earns, cost).carries();
     }
 
     /**
@@ -6441,30 +6471,32 @@ public class Game {
      * for the build card's interest gate (BuildCard, INTEREST), so the card
      * says what consider() would and works none of it out itself: what the
      * order earns a month; its cost; what the interest is struck on
-     * (orderGate(), its whole cost); the rate it is judged at (the loan's at
+     * (orderGate(), its whole cost) and the carry it is grown by over the
+     * order's wait (BA1; BusinessInvestment.carryOf(), 1 with none); the rate it is judged at (the loan's at
      * the leverage it leaves, or a bond's blended with the bank's where one is
      * cheaper and raises it all) and the real rate the test reads it at
      * (BusinessInvestment.realTestRate()); a month's interest at that, as
      * servicesItsOwnDebt() strikes it; whether it would borrow under a ban;
      * and the answer. Books nothing.
      */
-    public record InterestTest(double earns, double cost, double on, double rate, double real, double interest,
-                               boolean banned, boolean carries) {
+    public record InterestTest(double earns, double cost, double on, double carry, double rate, double real,
+                               double interest, boolean banned, boolean carries) {
 
-        /** What it must earn a month to carry it: PROFIT_OVER_INTEREST times a month's interest, the bar servicesItsOwnDebt() holds it to. */
+        /** What it must earn a month to carry it: PROFIT_OVER_INTEREST times a month's interest (on the cost grown over the wait, BA1), the bar servicesItsOwnDebt() holds it to. */
         public double needs() { return interest * BusinessInvestment.PROFIT_OVER_INTEREST; }
     }
 
-    /** ...for an order by `sector` costing `cost` and earning `earns` a month, its till and what it holds abroad paying first. */
-    public InterestTest interestTest(String sector, double earns, double cost) {
+    /** ...for an order of `n` of `t` by `sector` costing `cost` and earning `earns` a month, its till and what it holds abroad paying first; the cost grown over that order's wait (BA1). */
+    public InterestTest interestTest(String sector, BuildingsTemplate t, int n, double earns, double cost) {
         double till = economyManager.getSectorCash(sector) + Math.max(0, economyManager.getForeignAssets(sector));
         double borrowed = Math.max(cost - till, 0);
         boolean banned = borrowed > 0 && economyManager.getBusinessDebtManager().isBorrowingBlocked(sector);
         double on = orderGate.testedOn(cost, till);
         double rate = judged(sector, borrowed).tested();
         double real = businessInvestment.realTestRate(rate);
-        boolean carries = earns > 0 && !banned && businessInvestment.servicesItsOwnDebt(earns, on, rate);
-        return new InterestTest(earns, cost, on, rate, real, on > 0 ? on * real / 12 : 0, banned, carries);
+        double carry = businessInvestment.carryOf(t, n, rate);
+        boolean carries = earns > 0 && !banned && businessInvestment.servicesItsOwnDebt(earns, grownOver(on, carry), rate);
+        return new InterestTest(earns, cost, on, carry, rate, real, on > 0 ? on * carry * real / 12 : 0, banned, carries);
     }
 
     /**
@@ -6595,8 +6627,10 @@ public class Game {
         double insured = economyManager.getBusinessDebtManager().getInsuredMortgageRate();
         double tested = businessInvestment.realTestRate(insured);
         java.util.function.IntToDoubleFunction costOf = n -> businessInvestment.getCostOf(t, n);
+        // ...the shortfall grown over the order's wait (BA1; carryOf() applies the real rate itself, so it is handed the insured one).
+        java.util.function.IntToDoubleFunction carryOf = n -> businessInvestment.carryOf(t, n, insured);
         double noi = perUnitRent - economyManager.housingCarry(t);
-        return new LenderReading(costOf, insured, tested, noi, Mortgage.decide(quantity, costOf, cash, noi, tested));
+        return new LenderReading(costOf, insured, tested, noi, Mortgage.decide(quantity, costOf, cash, noi, tested, carryOf));
     }
 
     /**
@@ -6605,11 +6639,13 @@ public class Game {
      * would put in (financingOf(): its till, its money abroad and what its
      * owners are asked for), the rent one would let for and the net operating
      * income left after carrying it, the insured rate a mortgage is written
-     * at and the real rate the lender tests it at, and the lender's answer -
-     * Mortgage.decide() for an order of one, which is what the order makes.
+     * at and the real rate the lender tests it at, the carry the shortfall is
+     * grown by over the wait of one (BA1; 1 with none), and the lender's
+     * answer - Mortgage.decide() for an order of one, which is what the
+     * order makes.
      */
     public record LenderTest(double cost, double cash, double rent, double noi, double insured, double tested,
-                             Mortgage.Decision decision) {
+                             double carry, Mortgage.Decision decision) {
 
         /** Whether the lender writes it (or the landlord's funds buy it outright). */
         public boolean passes() { return decision.quantity() >= 1; }
@@ -6626,12 +6662,12 @@ public class Game {
         /** What the lender lends against it: the shortfall the funds leave, once the fee is paid (Mortgage.loanFor()); nothing outright. */
         public double loan() { return outright() ? 0 : Mortgage.loanFor(cost - cash); }
 
-        /** The monthly payment the test reads, on that loan with the premium added; nothing outright. */
-        public double payment() { return outright() ? 0 : Mortgage.paymentFor(cost - cash, tested); }
+        /** The monthly payment the test reads, on that loan with the premium added, the shortfall grown over the wait by the carry (BA1); nothing outright. */
+        public double payment() { return outright() ? 0 : Mortgage.paymentFor((cost - cash) * carry, tested); }
 
         /** The rent's cover of that payment (net operating income over it), the figure the lender asks asks() of; NaN where it is not read - outright, or short of the down payment. */
         public double coverage() {
-            return outright() || shortOfDown() ? Double.NaN : Mortgage.coverage(noi, cost - cash, tested);
+            return outright() || shortOfDown() ? Double.NaN : Mortgage.coverage(noi, (cost - cash) * carry, tested);
         }
 
         /** What the lender asks of that cover: Mortgage.MORTGAGE_DEBT_COVERAGE. */
@@ -6645,7 +6681,8 @@ public class Game {
         double cash = f[1] + f[2];
         double rent = businessInvestment.estimatedMonthlyProfit(sector, t);
         LenderReading read = lenderReads(t, 1, cash, rent);
-        return new LenderTest(f[0], cash, rent, read.noi(), read.insured(), read.tested(), read.decision());
+        return new LenderTest(f[0], cash, rent, read.noi(), read.insured(), read.tested(),
+                businessInvestment.carryOf(t, 1, read.insured()), read.decision());
     }
 
     /**
@@ -7077,6 +7114,20 @@ public class Game {
     public int getBuildingOutputAtEveryPost() {
         return (int) Math.max(0,
                 Math.round(getConstructionOutputAtEveryPost() - getMaintenancePoints()));
+    }
+
+    /**
+     * The site output an order's wait is read at, for the interest on it (BA1; BusinessInvestment.carryOf(), THE INTEREST
+     * ON THE WAIT): the builders' output for the sites after the repairs, every post offered, plus the foreign
+     * contractor's month while it takes orders (BuildingManager.foreignCrewsTakeOrders()), since then it builds them
+     * (FC1; foreignCrewsOffer()). WHY the contractor: a city whose repairs take every point leaves the sites none, so
+     * every wait would read endless and every order's carry infinite, and the builders' own depot - the way out of
+     * the trap (ConstructionTrapCheck) - would fail the interest test the contractor exists to let it pass.
+     */
+    public double orderWaitOutput() {
+        double output = getBuildingOutputAtEveryPost();
+        if (!buildingManager.foreignCrewsTakeOrders()) return output;
+        return output + BuildersShort.foreignCapacity(getConstructionOutputAtEveryPost(), buildingManager.largestDepotPoints());
     }
 
     /**
@@ -7969,8 +8020,10 @@ public class Game {
                 selected.getSector(), groundUse(selected), ahead.ground(), ahead.works(), ahead.runs(), ahead.prepared());
         double prepPoints = prepSqFt > 0 ? preparationPoints(prepSqFt) : 0;
         // The work's every part is priced at the builders' scarcity multiple (FC1; BuildersShort), struck once on the
-        // queue as it stands with the orders before this one - so the parts the quote carries still sum to its sticker.
-        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue());
+        // queue as it stands with the orders before this one in a run - and, since BA1, with each building of the order
+        // on the queue the ones before it in the order leave (BuildersShort.meanPremium(): an order of six hundred is not
+        // six hundred at the price of the first) - so the parts the quote carries still sum to its sticker.
+        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), selected.getConstructionPoints(), quantity);
         double prepCost = (prepPoints > 0 ? preparationCost(prepPoints) : 0) * scarcity;
         double sticker = buildingManager.nonMaterialCost(selected) * quantity * scarcity;
         if (prepCost > 0) sticker += prepCost;

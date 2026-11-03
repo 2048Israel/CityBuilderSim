@@ -560,23 +560,34 @@ public final class Founding {
 
     /** What these two figures buy, over this catalogue. See the banner above. Every order at the builders' price with no premium. */
     public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd) {
-        return whatItBuys(catalogue, cash, reserveUsd, ahead -> 1);
+        return whatItBuys(catalogue, cash, reserveUsd, (ahead, each, n) -> 1);
+    }
+
+    /**
+     * The builders' price multiple of an order (FC1; BA1): with `pointsAhead` ordered before it on the queue, for `n`
+     * buildings of `pointsEach` points, each on the queue the ones before it leave (BuildingManager.orderPriceMultiplier(double,
+     * double, long)).
+     */
+    @FunctionalInterface
+    public interface OrderMultiple {
+        double of(double pointsAhead, double pointsEach, long n);
     }
 
     /**
      * ...on a founded city's builders (FC1): `multiple` is their price's multiple with that many points ordered ahead of
-     * an order on its queue (BuildingManager.orderPriceMultiplier(double)), so the village is priced order by order as
-     * it is placed, and each first work on the queue the village leaves - what the build card quotes it at then.
+     * an order on its queue (BuildingManager.orderPriceMultiplier(double, double, long)), so the village is priced order
+     * by order as it is placed, each order's buildings on the queue the ones before them leave (BA1), and each first
+     * work on the queue the village leaves - what the build card quotes it at then.
      */
     public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd,
-                                  java.util.function.DoubleUnaryOperator multiple) {
+                                  OrderMultiple multiple) {
         double yard = BuildingManager.BASE_MATERIALS;
         double village = 0, ahead = 0;
         for (String[] order : VILLAGE) {
             BuildingsTemplate t = find(catalogue, order[0]);
             if (t == null) continue;
             int n = Integer.parseInt(order[1]);
-            village += orderCost(t, n, yard, multiple.applyAsDouble(ahead));
+            village += orderCost(t, n, yard, multiple.of(ahead, t.getConstructionPoints(), n));
             yard = Math.max(0, yard - t.constructionMaterials * (double) n);
             ahead += t.getConstructionPoints() * (double) n;
         }
@@ -585,7 +596,7 @@ public final class Founding {
         for (String name : FIRST_WORKS) {
             BuildingsTemplate t = find(catalogue, name);
             if (t == null) continue;
-            double cost = orderCost(t, 1, yard, multiple.applyAsDouble(ahead));
+            double cost = orderCost(t, 1, yard, multiple.of(ahead, t.getConstructionPoints(), 1));
             works.add(new Work(name, cost, cost <= left, Math.max(0, cost - Math.max(0, left))));
         }
         return new Buys(village, left, works, reserveUsd, vaultSays(reserveUsd));

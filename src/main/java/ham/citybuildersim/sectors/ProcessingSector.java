@@ -53,7 +53,9 @@ import java.util.Map;
  * (BusinessInvestment.plotsAvailableFor(), its zone's held ground with it),
  * the staff and the money, which since 0.7.112 tests the whole cost whoever
  * pays (SpreadPlanner.ON_ITS_WHOLE_COST, Jerus's decision A). The one that
- * earns most on its cost is ordered, one order in flight. What Game.consider()
+ * earns most on its cost is ordered; no order in flight is waited for (BA1,
+ * 2026-11-02; it was one), because what is on site is counted in what the next
+ * is weighed against (plannedValues()). What Game.consider()
  * tests the order on is that same estimate (estimatedMonthlyProfit()).
  * The city's values a works is weighed at are values() (0.7.131, batch I7):
  * SpreadPlanner.values(), with the limestone the quarries carried into
@@ -347,11 +349,27 @@ public abstract class ProcessingSector extends Sector {
         };
     }
 
+    /**
+     * The city's values one more works of its is weighed at (BA1, 2026-11-02): values(), past
+     * what its works on site will make and use (SpreadPlanner.after()). The works are valued at
+     * the month's imports and exports, and the ones on site are not in that tally yet; weighed
+     * as if they were never to open, a works that pays at the import price would be ordered
+     * again every month while the first stood on site. The idle book and the last one standing
+     * (noteIdleWorks(), lastEarns()) read values(), the works that stand. With nothing on site,
+     * values() to the bit.
+     */
+    protected SpreadPlanner.Values plannedValues() {
+        SpreadPlanner.Values v = values();
+        if (buildings == null || buildings.getUnderConstructionBySector(key()) == 0) return v;
+        return SpreadPlanner.after(v, this::getPipeline,
+                g -> buildings.underConstructionBySector(key(), t -> t.uses(g)));
+    }
+
     /** Every building of its the planner weighs, weighed now at the city's values and the game's gates, in the catalogue's order. */
     public List<SpreadPlanner.Candidate> appraise(BusinessInvestment plans, Game game) {
         List<SpreadPlanner.Candidate> all = new ArrayList<>();
         if (buildings == null) return all;
-        SpreadPlanner.Values v = values();
+        SpreadPlanner.Values v = plannedValues();
         SpreadPlanner.City city = planner.city(this, plans, game);
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
             if (!weighs(t)) continue;
@@ -362,7 +380,7 @@ public abstract class ProcessingSector extends Sector {
 
     /** One building of its weighed now. */
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
-        return weigh(t, values(), planner.city(this, plans, game));
+        return weigh(t, plannedValues(), planner.city(this, plans, game));
     }
 
     /* ----- the plan ----- */
@@ -373,18 +391,17 @@ public abstract class ProcessingSector extends Sector {
     }
 
     /**
-     * Whether to build, and what (THE PLAN, above): one order in flight; of
-     * its works that pass the gates, the one that earns most on its cost;
-     * with none, ground if ground was all that stood in the way, else the
-     * best-fed candidate's refusal, worded by what matters most - that it
-     * would not pay, then the staff, then the ground.
+     * Whether to build, and what (THE PLAN, above): of its works that pass
+     * the gates, the one that earns most on its cost; with none, ground if
+     * ground was all that stood in the way, else the best-fed candidate's
+     * refusal, worded by what matters most - that it would not pay, then the
+     * staff, then the ground. It was "one order in flight" to BA1
+     * (2026-11-02): the works on site are now counted in the values it is
+     * weighed at (plannedValues()) and in each feed gate, as what is coming.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
         String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
         List<SpreadPlanner.Candidate> all = appraise(plans, game);
         SpreadPlanner.Candidate best = SpreadPlanner.best(all);
         if (best != null) {
