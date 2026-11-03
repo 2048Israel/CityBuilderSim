@@ -288,7 +288,7 @@ Before the pool runs, the month's own transfers move first. Each carries the per
 
 ## 6. Risks, and what to measure first
 1. **Time.** +21-33% on a model month (§2.7), most of it the households' bond orders per cell. HS2 measures it at its gate. Over budget (GT1's), `BondMarket.postHouseholds` posts one order per (row, stage) and splits the fills by holdings.
-2. **BO1 moves demand.** Today early dividends are 10 times a worker's take-home (§2.3). With them gone to one household, early spending falls; the owners' own spending is the drain on a fortune. The ensemble says how far.
+2. **BO1 moves demand.** Today early dividends are 10 times a worker's take-home (§2.3). With them gone to a few owner families, early spending falls; the owners' own spending is the drain on a fortune. The ensemble says how far.
 3. **HS1 moves wealth to the retired.** That is the point, but the working rows lose the retirees' money they hold today. Offerings, which the working rows fund, may fill more slowly.
 4. **The owners' fortune** comes from Construction's price (§2.3). If the wealth study finds that price wrong and mends it, BO1's line is less rich, not differently built.
 5. **The owners take no posts** (Jerus's call): at month 21, 9 families are 18 of the city's ~190 adults [M], so a young city's workforce is about a tenth smaller than today's. In a city of thousands it is nothing. BO1's ensemble says what it does to a founding.
