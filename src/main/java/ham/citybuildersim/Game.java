@@ -16908,8 +16908,12 @@ public class Game {
 
     /**
      * BD1: books the bank's gain or loss from a line's discount moving the book's figure outside the settle
-     * (Bank.restrikeCarriedDiscount()): a reopening at a premium, or the desk, the buyback or the call handing the
-     * bank the whole line's discount while the book counts the settled part's. The gain is what the bank's carried
+     * (Bank.restrikeCarriedDiscount()): a reopening at a premium, or the desk handing the bank the whole line's
+     * discount while the book counts the settled part's. Not at the treasury's buyback or the call: a settled piece's
+     * two figures move together there (Debt.retirePart() scales the discount with the face; canCall() takes no piece
+     * with a sale unsettled), and a piece bought back whole before its settle must not be re-struck - the settle still
+     * pays for the sale, which cancels what the bank sold back of it, as it always did (the gate's finding on BD1:
+     * a re-strike there left the piece's whole discount unexplained for good). The gain is what the bank's carried
      * unearned discount moved by, less what the book's figure for it moved by, struck from the two figures taken
      * just before any face or discount moved. The 1e-9 is BK1's numerical guard: sums of thousands of pieces.
      */
@@ -18375,8 +18379,6 @@ public class Game {
         double principal = debt.getOustandingPrincipal();
         // The unearned discount that rides on the bank's face goes with it (strike before the piece shrinks).
         double bankUnearned = debt.unaccretedOn(deal.bankFace());
-        // BD1: the book's figure and the carried one before the piece shrinks, for the re-strike after the bank's sale.
-        double carriedBefore = bank.getUnearnedDiscount(), bookBefore = debtManager.bankUnearnedDiscount();
         double price = deal.paid();
         // The whole piece: nothing is left of it but dust. (The central bank's face, which does not sell, keeps it on the books.)
         boolean whole = takesTheWholePiece(deal.takenFace(), principal);
@@ -18438,7 +18440,6 @@ public class Game {
             foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
         } else {
             if (deal.bankFace() > 0 || deal.bankPaid() > 0) bank.sellPaperBack(deal.bankPaid(), deal.bankFace(), bankUnearned);
-            restrikeBankDiscountCarried(carriedBefore, bookBefore);   // BD1: the whole line's discount went with the bank's face, the book's is the settled part's
             if (deal.householdFace() > 0) {
                 householdBalance.creditPaperBuyback(deal.householdFace(), deal.householdPaid());
                 buybackToHouseholdsUnsettled += deal.householdPaid();
@@ -18577,8 +18578,6 @@ public class Game {
         double bankFace = debt.bankPrincipal();
         double bankUnearned = debt.unaccretedOn(bankFace);
         double carried = debt.getCarryingValue();
-        // BD1: the book's figure and the carried one before the line leaves the list, for the re-strike after the bank's sale.
-        double carriedBefore = bank.getUnearnedDiscount(), bookBefore = debtManager.bankUnearnedDiscount();
         if (!debtManager.retire(debt)) return 0;   // not on the books; do not charge for it
 
         treasuryPays(TreasuryLine.BUYBACKS, price);
@@ -18591,7 +18590,6 @@ public class Game {
         // Each holder is paid its face; the bank's is what is left of the price (the faces add up to the principal).
         double bankPaid = price - hhFace - cbFace - firmFace - worldFace;
         if (bankFace > 0 || bankPaid > 0) bank.sellPaperBack(bankPaid, bankFace, bankUnearned);
-        restrikeBankDiscountCarried(carriedBefore, bookBefore);   // BD1: as the buyback's
         if (hhFace > 0) {
             householdBalance.creditPaperBuyback(hhFace, hhFace);
             buybackToHouseholdsUnsettled += hhFace;

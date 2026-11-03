@@ -88,9 +88,9 @@ import java.nio.file.Files;
  * 13. The same discount released outside the settle (BD1): a line reopened at
  *     a premium between the presses lets the proceeds over face eat the
  *     line's discount left, the settled part's and the bank's share of it
- *     included; and the desk, the buyback and the call hand the bank the
- *     whole line's discount while the book counts the settled part's, which
- *     differ whenever a sale is unsettled. Either way the book's figure for
+ *     included; and the desk hands the bank the whole line's discount while
+ *     the book counts the settled part's, which differ whenever a sale is
+ *     unsettled. Either way the book's figure for
  *     the bank moved and nothing booked it; the bank now re-strikes it where
  *     it happens (Bank.restrikeCarriedDiscount()), a named cause routed to
  *     retained earnings, so at once its unearned discount is the book's, its
@@ -98,7 +98,12 @@ import java.nio.file.Files;
  *     statement's net income, tax and gains on paper are the twin's - whose
  *     split opens by the release at the month and whose movement leaves it
  *     unexplained. The settle's own re-strike (12) and this one together
- *     leave the month whole.
+ *     leave the month whole. The twin books neither re-strike: it is main
+ *     before BK1. And a piece sold and bought back whole before its settle,
+ *     by a bank whose book covers what it sells back, is re-struck by
+ *     nothing: the settle still pays for the sale and cancels it, so two
+ *     months on the bank's split is where it began, the city's and the
+ *     twin's figures the same (the gate's finding on BD1).
  *
  * Each fixture causes its condition rather than finding a city in it.
  *
@@ -1622,7 +1627,7 @@ public class HoldersCheck {
     /**
      * Section 12's fixture, made twice: a city founded, built and played as the other sections' cities were, then
      * a twenty-year bond sold between the presses and settled. The twin (restrikeOff) is the same city with the
-     * re-strike switched off, which is what main did - it books none.
+     * re-strike switched off, which is what main did before BK1 - it books none.
      */
     static Reopening reopeningFixture(String label, boolean restrikeOff) throws Exception {
         return reopeningFixture(label, restrikeOff, 0);
@@ -1848,6 +1853,7 @@ public class HoldersCheck {
                 + " the bank's unearned discount the book's, and no figure of the city moved ---");
         thePremium();
         theDeskOnAnUnsettledLine();
+        theBuybackBeforeTheSettle();
     }
 
     /** 13a: the same line reopened at a premium between the presses releases the bank's share of its discount. */
@@ -1913,7 +1919,7 @@ public class HoldersCheck {
         close("...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), 0, afterSplitTol);
         assertTrue("...the audit closed on the month", Math.abs(settled.residual) <= MoneyAudit.tolerance(settled.moved()));
         assertTrue("...and on the twin's", Math.abs(settledTwin.residual) <= MoneyAudit.tolerance(settledTwin.moved()));
-        close("...the twin's split opened by the release and the settle's re-strike, as main's did", twinBank.equitySplitResidual(),
+        close("...the twin's split opened by the release and the settle's re-strike, as main's did before BK1", twinBank.equitySplitResidual(),
                 -(released + monthRestruck), Math.max(1e-6, 1e-9 * Math.max(released, Math.abs(twinBank.equity()))));
         close("...and its movement left both unexplained", twinMoved.residual(), released + monthRestruck,
                 Math.max(1e-6, 1e-9 * Math.max(released, twinMoved.scale())));
@@ -1995,7 +2001,7 @@ public class HoldersCheck {
         close("...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), 0, splitTolerance(bank));
         assertTrue("...the audit closed on the month", Math.abs(settled.residual) <= MoneyAudit.tolerance(settled.moved()));
         assertTrue("...and on the twin's", Math.abs(settledTwin.residual) <= MoneyAudit.tolerance(settledTwin.moved()));
-        close("...the twin's split opened by this re-strike and the settle's, as main's did", twinBank.equitySplitResidual(),
+        close("...the twin's split opened by this re-strike and the settle's, as main's did before BK1", twinBank.equitySplitResidual(),
                 -(restruckAtOnce + monthRestruck),
                 Math.max(1e-6, 1e-9 * Math.max(Math.abs(restruckAtOnce) + Math.abs(monthRestruck), Math.abs(twinBank.equity()))));
         close("...and its movement left both unexplained", twinMoved.residual(), restruckAtOnce + monthRestruck,
@@ -2004,5 +2010,74 @@ public class HoldersCheck {
         if (!apart.isEmpty()) out.println("   first figure apart: " + apart);
         assertTrue("the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,"
                 + " in the month", apart.isEmpty());
+    }
+
+    /** What 13c's round trip did: whether the piece was new and all unsettled, its face and discount, the bank's book and carried discount going into the buyback, what the buyback took and the bank's share of it, and whether the piece left the books. */
+    record UnsettledBuyback(boolean fresh, double face, double discount, double book, double carried,
+                            double taken, double bankFace, boolean gone) { }
+
+    /** 13c's round trip, done the same way to the city and to its twin: a year's bill of a fifth of the bank's book sold between the presses and bought straight back whole, before its settle. */
+    static UnsettledBuyback sellAndBuyBackBeforeTheSettle(Game city) {
+        DebtManager ledger = city.getDebtManager();
+        Bank bank = city.getBank();
+        final double ask = .2 * bank.getCityBook();
+        java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
+        quietly(() -> city.handleTBillLogic(ask, 12, PriceLevel.FACTOR));
+        Debt piece = newPiece(ledger, had);
+        if (piece == null) return new UnsettledBuyback(false, 0, 0, 0, 0, 0, 0, false);
+        double face = piece.getOustandingPrincipal();
+        boolean fresh = Math.abs(piece.unsettledFace() - face) <= 1e-9 * Math.max(1, face);
+        double discount = piece.getDiscountLeft(), book = bank.getCityBook(), carried = bank.getUnearnedDiscount();
+        Buyback.Result back = city.buyBack(piece, 1e12, Double.NaN);
+        return new UnsettledBuyback(fresh, face, discount, book, carried, back.takenFace(), back.bankFace(),
+                !ledger.getDebt().contains(piece));
+    }
+
+    /**
+     * 13c, the gate's finding on BD1: a piece bought back whole before its settle is re-struck by nothing. The bank
+     * sells back face it has not paid for, with the piece's whole discount, and the settle still pays for the sale;
+     * with a book that covers both, those cancel two months on, as they always did. A re-strike of the discount at
+     * the buyback would leave it unexplained for good.
+     */
+    static void theBuybackBeforeTheSettle() throws Exception {
+        out.println("   -- 13c. a piece sold and bought back whole before its settle, by a bank whose book covers it, in the city and in its twin");
+        Reopening fix = reopeningFixture("holderscheck-unsettled-buyback", false);
+        Reopening twinFix = reopeningFixture("holderscheck-unsettled-buyback-twin", true);
+        Game city = fix.city(), twin = twinFix.city();
+        Bank bank = city.getBank(), twinBank = twin.getBank();
+        double splitAtStart = bank.equitySplitResidual(), twinSplitAtStart = twinBank.equitySplitResidual();
+        double restruckBefore = bank.getDiscountRestruck();
+        UnsettledBuyback u = sellAndBuyBackBeforeTheSettle(city), uTwin = sellAndBuyBackBeforeTheSettle(twin);
+        double restruckAtOnce = bank.getDiscountRestruck() - restruckBefore;
+        double splitAfterBuyback = bank.equitySplitResidual() - splitAtStart, tolerance = splitTolerance(bank);
+        double faceTol = 1e-6 * Math.max(1, u.face());
+        out.printf("   a year's bill of $%,.4fk face sold with $%,.6fk of discount; the bank's book $%,.4fk, its unearned discount"
+                + " $%,.6fk; bought back whole, the bank's $%,.4fk of it, re-struck $%,.6fk%n",
+                u.face(), u.discount(), u.book(), u.carried(), u.bankFace(), restruckAtOnce);
+        assertTrue("fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance",
+                u.fresh() && u.face() > 0 && u.discount() > 100 * tolerance);
+        assertTrue("fixture: ...the bank's book covers the face it sells back, and its unearned discount the piece's",
+                u.book() >= u.face() && u.carried() >= u.discount());
+        assertTrue("fixture: ...bought straight back whole, all of it the bank's face, and off the books",
+                u.gone() && Math.abs(u.taken() - u.face()) <= faceTol && Math.abs(u.bankFace() - u.face()) <= faceTol);
+        assertTrue("fixture: ...and the twin's the same, bit for bit", u.equals(uTwin));
+
+        close("the buyback re-struck nothing", restruckAtOnce, 0, 0);
+        MoneyAudit.Result first = play(city), firstTwin = play(twin), second = play(city), secondTwin = play(twin);
+        double splitAfter = bank.equitySplitResidual() - splitAtStart, twinSplitAfter = twinBank.equitySplitResidual() - twinSplitAtStart;
+        out.printf("   the bank's split moved $%,.6fk by the buyback and $%,.6fk two months on; the twin's $%,.6fk%n",
+                splitAfterBuyback, splitAfter, twinSplitAfter);
+        close("two months on, the bank's equity's parts are its equity again, as before the sale: the settle's payment cancelled what it sold back",
+                splitAfter, 0, tolerance);
+        close("...and the twin's (main before BK1) too", twinSplitAfter, 0, tolerance);
+        boolean closed = true;
+        for (MoneyAudit.Result r : new MoneyAudit.Result[]{ first, firstTwin, second, secondTwin }) {
+            closed &= Math.abs(r.residual) <= MoneyAudit.tolerance(r.moved());
+        }
+        assertTrue("...the audit closed on both months, in the city and in the twin", closed);
+        String apart = firstDifference(cityFigures(city), cityFigures(twin));
+        if (!apart.isEmpty()) out.println("   first figure apart: " + apart);
+        assertTrue("the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,"
+                + " two months on", apart.isEmpty());
     }
 }
