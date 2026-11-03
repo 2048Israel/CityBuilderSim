@@ -1,4 +1,4 @@
-# GT1 - Faster gates ({next}, 2026-11-02)
+# GT1 - Faster gates (0.9.3, 2026-11-02)
 
 Jerus, 2026-11-01: "do we need 4k months?", and why a gate takes 45-60
 minutes. Brief: `docs/queue/GT1.md`. A process batch (one in, one out, below).
