@@ -441,7 +441,8 @@ final class ReplayMode {
      * B (the map's view and the month on screen), 3 glides from A to B over the seconds the bar's field says, time moving with it
      * when their months differ; O flies out to the whole Earth and I flies back in to where it began; Shift+W, A, S, D each add a
      * step of drift that way (DRIFT_STEP_PX a second more), R and F drift the zoom in and out, X stops every drift and move; G
-     * the graphs behind the city on and off. Esc stops a glide or fly where it is, before it is cinematic mode's.
+     * the graphs behind the city on and off. A glide or fly loads first (CM1) and then waits: the next key or a click on the map runs
+     * it. Esc stops a loading, waiting or running move where it is, before it is cinematic mode's.
      */
     boolean key(KeyEvent e, boolean typing) {
         if (!on) return false;
@@ -458,6 +459,11 @@ final class ReplayMode {
             return true;
         }
         if (typing || menuUp || e.isControlDown() || e.isAltDown() || e.isMetaDown()) return false;
+        // A loaded move waits for its click (CM1): any other key runs it, so a recording can be started first.
+        if (camera.ready() && !code.isModifierKey()) {
+            camera.run();
+            return true;
+        }
         switch (code) {
             case SPACE -> togglePlay();
             case B -> turn();
@@ -779,7 +785,7 @@ final class ReplayMode {
         Tooltip.install(glideField, new Tooltip("Seconds the glide takes, " + (int) ReplayCamera.GLIDE_S_LEAST + " to " + (int) ReplayCamera.GLIDE_S_MOST
                 + "  (Enter sets it)"));
         Button glide = camButton("Glide", "Glide from view A to view B over the seconds in the field, time moving with it when their months differ"
-                + "  (3; Esc stops it)", this::glide);
+                + "  (3; it loads first and runs on a click or a key; Esc stops it)", this::glide);
         Label seconds = new Label("s");
         seconds.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         Button out = camButton("Fly out", "Pull out from the view to the whole Earth  (O)", camera::flyOut);

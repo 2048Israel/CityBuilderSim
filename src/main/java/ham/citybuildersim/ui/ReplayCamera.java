@@ -1,36 +1,35 @@
 package ham.citybuildersim.ui;
 
 import ham.citybuildersim.CameraPath;
-import java.util.List;
 
 /**
  * The replay's camera (TR1, 2026-10-31): the two marked views and the glide between them, the fly out to the whole Earth and back,
- * the warm-up before a glide, and the smooth hand with its drift - the state of every camera move, frame by frame. The arithmetic
- * is {@link CameraPath}; ui/MapView is the toolkit's half and asks this for one {@link Shot} a frame (MapView.replayCamera()), a
- * view to take whole or a move to ease on, and applies it; ReplayMode owns this, takes the keys and the bar's camera group, and
- * is the month on screen (a glide of views with different months moves time with it, by quick steps).
+ * the load of a move before it runs (CM1), and the smooth hand with its drift - the state of every camera move, frame by frame. The
+ * arithmetic is {@link CameraPath}; ui/MapView is the toolkit's half and asks this for one {@link Shot} a frame
+ * (MapView.replayCamera()), a view to take whole or a move to ease on, and applies it; ReplayMode owns this, takes the keys and the
+ * bar's camera group, and is the month on screen (a glide of views with different months moves time with it, by quick steps).
  *
  * WHY IT EXISTS (TR1): the trailer's camera moves - the glide while the city grows, the pull-out to the whole planet - cannot be
  * made by a hand on the wheel on a screen recording. They are curves the game follows a frame at a time, and the first frame of a
  * glide must not find the map half painted: before a glide starts the camera walks its path once so every tile on it is drawn.
  *
- * <p>The warm-up walks {@link #WARM_VIEWS} views of the path a frame each, staying on one until MapView says its painting has
- * nothing left to do and nothing asked of the worker is outstanding (or {@link #WARM_VIEW_S} has passed), then returns to A and
- * starts. It warms the start month's map only: a glide across months swaps the map as it goes, each quick step keeping the
- * pictures that did not change (MapView.staleAll()), so what the glide shows of a later month is painted as it comes.
+ * <p>WHY THE LOAD (CM1, 2026-11-03): TR1's warm-up walked 25 views of a glide's path, a second a view and eight in all, the start
+ * month's map alone, and a recording of a glide or a fly out still showed the screen half black where the move arrived before the
+ * worker had. Jerus (2026-11-02): "allow the game to load up so that when it zooms or glides there is no loading, basically it could
+ * just say loading 10 seconds, then let you click to run it ... not for the normal game, only while in replaying mode."
+ *
+ * <p>A move (a glide, a fly out or a fly in) is set up here and then LOADS: it goes through {@link #PLAN_HZ} views a second of its
+ * own clock, {@link #planViews()} in all, which MapView paints one after another with no limit on the time, in every month the move
+ * crosses, keeping what it painted until the move has run (MapView.loadStep()). The bar says "Loading the move... N s", then
+ * "Ready - click to run"; a click on the map or any key runs it, so a screen recording can be started first, and Esc cancels at
+ * either point. Only a replay has this camera, so the normal game loads nothing ahead.
  *
  * <p>Everything runs on the FX thread, from MapView's frame. Nothing here touches a node.
  */
 final class ReplayCamera {
 
-    /** How many steps of the glide's path the warm-up walks: 24, so 25 views from A to B. */
-    static final int WARM_VIEWS = 24;
-
-    /** The most the warm-up stays on one view, in seconds: 1 - a view whose last tile never comes (a far node the worker cannot ground) does not hold the rest. */
-    static final double WARM_VIEW_S = 1.0;
-
-    /** The most the whole warm-up takes, in seconds: 8 - then the glide starts with what is painted. */
-    static final double WARM_MOST_S = 8;
+    /** The views a second of the move's own clock the load walks: 240 - finer than the 165 Hz this PC's screen draws at, so every frame the move runs at lies between two views it loaded. */
+    static final double PLAN_HZ = 240;
 
     /** The longest step of a glide's or fly's own clock, in seconds: 0.1 - a frame held up (a quick step of the map) is a pause in the move, not a jump ahead. */
     static final double MOST_DT_S = 0.1;
@@ -43,7 +42,9 @@ final class ReplayCamera {
         static final Shot IDLE = new Shot(null, null, false);
     }
 
-    private enum Phase { IDLE, WARM, GLIDE, FLY }
+    private enum Phase { IDLE, LOAD, READY, GLIDE, FLY }
+
+    private static final String LOADING = "Loading the move...";
 
     private final ReplayMode mode;
     private final UserInterface ui;
@@ -54,15 +55,13 @@ final class ReplayCamera {
 
     private Phase phase = Phase.IDLE;
     private String status;
-    // The warm-up.
-    private List<CameraPath.View> path;
-    private int warmAt;
-    private boolean warmApplied;
-    private double warmS, warmViewS;
-    // A glide or a fly: from where, to where, how far along (t), over how long.
+    // A move (loading, ready or running): a glide or a fly (out or in), from where, to where, how far along (t), over how long.
+    private boolean glideKind, flyingOut;
     private CameraPath.View from, to;
-    private boolean flyingOut;
     private double t, seconds;
+    // The load: when it began, and the seconds-left figure the bar showed last; and which move it is (one more each time a move is set up).
+    private long loadStartNanos;
+    private int shownLeft, serial;
     // Where the last fly out began, which the fly in goes back to.
     private CameraPath.View flyBack;
 
@@ -73,17 +72,61 @@ final class ReplayCamera {
 
     CameraPath.Smooth smooth() { return smooth; }
 
-    /** Whether a warm-up, a glide or a fly is in flight: the month does not rest, the hand's input stops it. */
+    /** Whether a move is loading, waits for its click or is in flight: the month does not rest, the hand's input stops it. */
     boolean busy() { return phase != Phase.IDLE; }
 
-    /** Whether a glide or a fly is under way - not the warm-up before a glide, not idle (CM1: the frames MapView tallies). */
+    /** Whether a glide or a fly is under way - not loading, not waiting for the click, not idle (CM1: the frames MapView tallies). */
     boolean moving() { return phase == Phase.GLIDE || phase == Phase.FLY; }
 
-    /** The phase's name - IDLE, WARM, GLIDE or FLY (ReplayMoveProbe reads it). */
+    /** Whether a move is loading (CM1: MapView walks its views). */
+    boolean loading() { return phase == Phase.LOAD; }
+
+    /** Whether a move is loaded and waits for the click (CM1). */
+    boolean ready() { return phase == Phase.READY; }
+
+    /** Which move is set up: it moves on each time one is (MapView drops what it loaded of the move before). */
+    int serial() { return serial; }
+
+    /** Whether MapView keeps what it loaded: from the move's load until it has run or been let go (CM1). */
+    boolean holdsLoad() { return phase == Phase.LOAD || phase == Phase.READY || phase == Phase.GLIDE || phase == Phase.FLY; }
+
+    /** The phase's name - IDLE, LOAD, READY, GLIDE or FLY (ReplayMoveProbe reads it). */
     String phaseName() { return phase.name(); }
 
-    /** What the bar says of a move in flight ("warming up the glide 7 of 25"), or null. */
+    /** What the bar says of a move ("Loading the move... 7 s", "Ready - click to run", "gliding 40%"), or null. */
     String status() { return status; }
+
+    /** What MapView writes over the map while a move loads or waits for its click, or null (CM1). */
+    String overlay() { return phase == Phase.LOAD || phase == Phase.READY ? status : null; }
+
+    /** The recorded month on screen (CM1: the load's month store reads it). */
+    int shownMonth() { return mode.shownMonth(); }
+
+    /** Whether the move being loaded or run takes time with it: a glide whose two ends are of different months (a fly keeps the month on screen). */
+    boolean movesTime() { return glideKind && from != null && to != null && from.month() != to.month(); }
+
+    /** The month of a plan view put on screen, as the glide does it frame by frame (by quick steps); a fly leaves the month alone (CM1: the load shows each view's month). */
+    void showMonthOf(CameraPath.View v) {
+        if (glideKind) mode.showMonth(v.month());
+    }
+
+    /** The view at a share {@code at} of the move: the glide's, the fly out's or the fly in's curve - the run's and the load's. */
+    private CameraPath.View viewAt(double at) {
+        if (glideKind) return CameraPath.glide(from, to, at);
+        if (flyingOut) return CameraPath.flyOut(from, to.scale(), to.a(), to.b(), at);
+        return CameraPath.glide(from, to, at);
+    }
+
+    private int planSteps() { return Math.max(1, (int) Math.ceil(seconds * PLAN_HZ)); }
+
+    /** How many views the load walks: PLAN_HZ of them a second of the move, and one more for its end (CM1). */
+    int planViews() { return planSteps() + 1; }
+
+    /** The k-th view of the load, k from 0 to planViews() - 1: the move's curve at k of planSteps() of its length (CM1). */
+    CameraPath.View planView(int k) { return viewAt(k / (double) planSteps()); }
+
+    /** The view the move begins at (CM1). */
+    CameraPath.View startView() { return planView(0); }
 
     CameraPath.View markA() { return markA; }
 
@@ -135,7 +178,7 @@ final class ReplayCamera {
         mode.say("view " + (a ? "A" : "B") + " marked: " + words(v));
     }
 
-    /** Starts the warm-up and then the glide from A to B over the bar's seconds. */
+    /** Sets up the glide from A to B over the bar's seconds: it loads (MapView), then waits for a click. */
     void glide() {
         if (viewOrSay() == null) return;
         if (markA == null || markB == null) {
@@ -144,15 +187,11 @@ final class ReplayCamera {
         }
         stopMove();
         smooth.still();
-        // The glide starts from A's month: its map is the one the warm-up paints.
+        // The glide starts from A's month: its map is the one the load begins with.
         mode.showMonth(markA.month());
-        path = CameraPath.path(markA, markB, WARM_VIEWS);
-        warmAt = 0;
-        warmApplied = false;
-        warmS = warmViewS = 0;
-        phase = Phase.WARM;
-        status = "warming up the glide";
-        ui.replayWake();
+        from = markA;
+        to = markB;
+        beginLoad(true, false, glideSeconds);
     }
 
     /** Flies out from the view on show to the whole Earth (or, on a generated world, the whole world), over the time the doublings of its width take. */
@@ -170,7 +209,7 @@ final class ReplayCamera {
         flyBack = now;
         from = now;
         to = new CameraPath.View(whole.globe(), whole.a(), whole.b(), whole.scale(), now.month());
-        begin(true, secs, "flying out");
+        beginLoad(false, true, secs);
     }
 
     /** Flies back in to where the last fly out began. */
@@ -190,32 +229,78 @@ final class ReplayCamera {
         smooth.still();
         from = now;
         to = flyBack;
-        begin(false, secs, "flying in");
+        beginLoad(false, false, secs);
     }
 
-    private void begin(boolean out, double secs, String words) {
-        phase = Phase.FLY;
+    /** The move set up (from, to): its load begins - MapView walks the plan's views and reports back (loading(), loadDone(), loadFailed()). */
+    private void beginLoad(boolean glide, boolean out, double secs) {
+        phase = Phase.LOAD;
+        serial++;
+        glideKind = glide;
         flyingOut = out;
         t = 0;
         seconds = secs;
-        status = words;
+        loadStartNanos = System.nanoTime();
+        shownLeft = 0;
+        status = LOADING;
         ui.replayWake();
     }
 
-    /** A glide, fly or warm-up let go where it is (Esc, a button); the smooth hand's moves go on. */
+    /**
+     * MapView's report while it loads (CM1): {@code done} of {@code of} views walked, {@code passed} of them given up. The bar says
+     * "Loading the move..." until a second has passed and ten views are walked, then the seconds left at the pace so far, rounded up;
+     * a figure up to two seconds above the last shown stays at the last, so the countdown does not jitter upward.
+     */
+    void loading(int done, int of, int passed) {
+        if (phase != Phase.LOAD) return;
+        double elapsed = (System.nanoTime() - loadStartNanos) / 1e9;
+        if (elapsed < 1 || done < 10) {
+            status = LOADING;
+            return;
+        }
+        int left = Math.max(1, (int) Math.ceil(elapsed / done * (of - done)));
+        if (shownLeft > 0 && left > shownLeft && left <= shownLeft + 2) left = shownLeft;
+        shownLeft = left;
+        status = LOADING + " " + left + " s";
+    }
+
+    /** MapView has loaded the whole move (CM1): it waits for the click. {@code passed} views could not be loaded whole and are counted. */
+    void loadDone(int passed) {
+        if (phase != Phase.LOAD) return;
+        phase = Phase.READY;
+        status = "Ready - click to run" + (passed > 0 ? " (" + passed + (passed == 1 ? " view" : " views") + " could not be loaded whole)" : "");
+        ui.replayWake();
+    }
+
+    /** MapView could not load the move (CM1): it is let go and the bar says why. */
+    void loadFailed(String why) {
+        stopMove();
+        mode.say(why);
+    }
+
+    /** The click (or a key) on a loaded move runs it (CM1); nothing from any other phase. */
+    void run() {
+        if (phase != Phase.READY) return;
+        phase = glideKind ? Phase.GLIDE : Phase.FLY;
+        t = 0;
+        status = glideKind ? "gliding 0%" : flyingOut ? "flying out 0%" : "flying in 0%";
+        ui.replayWake();
+    }
+
+    /** A move let go where it is (Esc, a button) - while it loads or waits for its click as in flight; the smooth hand's moves go on. */
     void stop() {
         if (phase == Phase.IDLE) return;
-        String was = status;
+        String was = phase == Phase.LOAD ? "loading the move" : phase == Phase.READY ? "the loaded move was not run" : status;
         stopMove();
         mode.say("stopped: " + was);
     }
 
-    /** A hand on the mouse, the wheel or W A S D takes the camera from a glide or fly: it stops where it is. */
+    /** A hand on the mouse, the wheel or W A S D takes the camera from a move: it stops where it is. */
     void hand() {
         if (phase != Phase.IDLE) stop();
     }
 
-    /** The map closed (or another screen is up) while a move was in flight. */
+    /** The map closed (or another screen is up) while a move was loading, waiting or in flight. */
     void mapGone() {
         if (phase != Phase.IDLE) {
             stopMove();
@@ -223,7 +308,7 @@ final class ReplayCamera {
         }
     }
 
-    /** X: every drift and move stopped, a glide or fly with them. */
+    /** X: every drift and move stopped, a loading or loaded move, a glide or fly with them. */
     void stillAll() {
         stopMove();
         smooth.still();
@@ -233,7 +318,6 @@ final class ReplayCamera {
     private void stopMove() {
         phase = Phase.IDLE;
         status = null;
-        path = null;
     }
 
     /** Adds to the drift: px a second across and down (the ground's, as W A S D move it) and ln of the zoom a second. */
@@ -261,14 +345,16 @@ final class ReplayCamera {
     /* ------------------------------------------ the frame ------------------------------------------ */
 
     /**
-     * One frame (MapView.replayCamera()): {@code dt} seconds since the last, {@code settled} asked (only by the warm-up) whether the
-     * view as it stands has nothing left to paint. A warm-up walks its path; a glide or a fly advances its clock and returns the view at it (the glide
-     * moving the month on screen with it); otherwise the smooth hand takes its step.
+     * One frame (MapView.replayCamera()): {@code dt} seconds since the last. A move that loads asks for the frames to go on (MapView's
+     * loader does the work) and one that waits for its click for none; a glide or a fly advances its clock and returns the view at
+     * it (the glide moving the month on screen with it); otherwise the smooth hand takes its step.
      */
-    Shot frame(double dt, java.util.function.BooleanSupplier settled) {
+    Shot frame(double dt) {
         switch (phase) {
-            case WARM:
-                return warm(dt, settled);
+            case LOAD:
+                return new Shot(null, null, true);
+            case READY:
+                return Shot.IDLE;
             case GLIDE:
             case FLY:
                 return advance(dt);
@@ -279,51 +365,19 @@ final class ReplayCamera {
         }
     }
 
-    private Shot warm(double dt, java.util.function.BooleanSupplier settled) {
-        warmS += dt;
-        if (warmS >= WARM_MOST_S || warmAt >= path.size()) return startGlide();
-        if (!warmApplied) {
-            // A view is taken, and this frame paints it; the next frame asks whether that painting is done.
-            warmApplied = true;
-            warmViewS = 0;
-            status = "warming up the glide " + (warmAt + 1) + " of " + path.size();
-            return new Shot(path.get(warmAt), null, true);
-        }
-        warmViewS += dt;
-        if (warmViewS >= WARM_VIEW_S || settled.getAsBoolean()) {
-            warmAt++;
-            warmApplied = false;
-        }
-        return new Shot(null, null, true);
-    }
-
-    private Shot startGlide() {
-        phase = Phase.GLIDE;
-        from = markA;
-        to = markB;
-        t = 0;
-        seconds = glideSeconds;
-        status = "gliding";
-        path = null;
-        return new Shot(markA, null, true);
-    }
-
     private Shot advance(double dt) {
         t = Math.min(1, t + Math.min(Math.max(0, dt), MOST_DT_S) / seconds);
-        CameraPath.View v;
-        if (phase == Phase.GLIDE) {
-            v = CameraPath.glide(markA, markB, t);
+        CameraPath.View v = viewAt(t);
+        if (glideKind) {
             mode.showMonth(v.month());
             status = String.format("gliding %.0f%%", t * 100);
         } else if (flyingOut) {
-            v = CameraPath.flyOut(from, to.scale(), to.a(), to.b(), t);
             status = String.format("flying out %.0f%%", t * 100);
         } else {
-            v = CameraPath.glide(from, to, t);
             status = String.format("flying in %.0f%%", t * 100);
         }
         if (t >= 1) {
-            boolean glided = phase == Phase.GLIDE;
+            boolean glided = glideKind;
             stopMove();
             mode.say(glided ? "the glide is done" : flyingOut ? "flown out: I flies back in" : "flown back in");
             return new Shot(v, null, false);

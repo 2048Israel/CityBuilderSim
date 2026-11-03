@@ -422,8 +422,7 @@ public final class ReplayMoveProbe {
 
     /**
      * Runs a move: the tally reset in the same FX task that starts it, then polled until the camera is idle (at most MOVE_MAX_S),
-     * and printed under its heading. For a glide also how long the warm-up took (until the phase left WARM) and whether that
-     * was the cap, ReplayCamera.WARM_MOST_S.
+     * and printed under its heading.
      */
     private static void move(String heading, Runnable start, boolean glide) throws Exception {
         MapView.MoveTally tally = map.moveTally();
@@ -434,14 +433,12 @@ public final class ReplayMoveProbe {
             return null;
         });
         String phase = fx(() -> cam.phaseName());
-        double warmS = glide && !phase.equals("WARM") ? -1 : 0;
         boolean ran = !phase.equals("IDLE");
         boolean timedOut = false;
         while (!phase.equals("IDLE")) {
             Thread.sleep(25);
             double s = (System.nanoTime() - t0) / 1e9;
             phase = fx(() -> cam.phaseName());
-            if (glide && warmS == 0 && !phase.equals("WARM")) warmS = s;
             if (s >= MOVE_MAX_S) {
                 timedOut = true;
                 fx(() -> {
@@ -456,10 +453,6 @@ public final class ReplayMoveProbe {
         if (!ran) report.println("  the camera did not start (it was idle at once: no view marked, or nothing to move)");
         if (timedOut) report.printf("  TIMED OUT: still moving after %.0f s, stopped%n", MOVE_MAX_S);
         report.printf("  took %.1f s%n", took);
-        if (glide && warmS > 0) {
-            report.printf("  warm-up %.1f s, %s the cap (WARM_MOST_S %.0f s)%n", warmS, warmS >= ReplayCamera.WARM_MOST_S ? "reached" : "short of",
-                    ReplayCamera.WARM_MOST_S);
-        }
         report.print(fx(() -> tally.report()));
     }
 
