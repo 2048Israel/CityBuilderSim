@@ -2106,8 +2106,12 @@ public class CentralBankCheck {
      * founding shapes, its sign flipping between two price levels 3e-10 apart
      * (docs/queue/EP1-notes.md, 11). So that line is read over STRICT_SHAPES,
      * this city's shape and eleven more played as this one is, at the median
-     * and in STRICT_SHARE of them; on CB1's tree all twelve hold it, very
-     * strict under Standard by 0.05 to 0.74 points a year. This city keeps
+     * and in STRICT_SHARE of them. On main the evening before CB1 all twelve
+     * held it (very strict under Standard by 0.05 to 0.74 points a year); on
+     * CB1's tree, after LD2, BD1, FC1b and DM1, ten do, the median 0.42
+     * points under, and two shapes (42 houses and 3 months, 41 and 4) run the
+     * other way by 0.43 and 0.53 - the draw the line now reads past, while
+     * this city's own twins hold it by 0.43. This city keeps
      * what is about its own twins - the very loose twin's months by its
      * target, the fourth game, the dial's stop, the last year and trust - and
      * a batch that moves its path may still re-pick it for those.
