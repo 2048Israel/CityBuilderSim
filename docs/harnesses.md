@@ -2,7 +2,7 @@
 
 Generated 2026-11-03 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**170 harness files, 18,821 labelled assertions.** AllChecks runs 170 of them.
+**170 harness files, 18,843 labelled assertions.** AllChecks runs 170 of them.
 
 ## Which harnesses read which class
 
@@ -168,7 +168,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandFactors](map/LandFactors.md) | LandNationsCheck, PartnersCheck |
 | [LandGrid](map/LandGrid.md) | ConversionCheck, GridCheck, HydroCheck, LandCheck, LandmassCheck, MapCheck |
 | [LandManager](map/LandManager.md) | AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RankingsCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
-| [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, HydroCheck, LandCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck, ZoningViewCheck |
+| [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck, ZoningViewCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
 | [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
 | [LandScreen](map/LandScreen.md) | **none** |
@@ -295,7 +295,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
 | [TimeSkipReport](map/TimeSkipReport.md) | AuctionCheck, HealthCheck, ReloadCheck, SkipReportCheck |
-| [Timing](map/Timing.md) | BridgeCheck, BridgeMapCheck, EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandNetCheck, KeptCheck, MapCheck, PartnerCallsCheck, PlanCheck, ReplayCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck, WorldMarketCheck |
+| [Timing](map/Timing.md) | BridgeCheck, BridgeMapCheck, EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandNetCheck, KeptCheck, LandNationsCheck, MapCheck, PartnerCallsCheck, PlanCheck, ReplayCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck, WorldMarketCheck |
 | [TrackCurves](map/TrackCurves.md) | GatewayCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [TradeBand](map/TradeBand.md) | TradeBandCheck |
@@ -13723,7 +13723,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1339 the game's overload says the same with the city's own mark
   - L1346 a city of flat ground has no note 11 lines, nor does a month that is not there
 
-## LandNationsCheck.java - 91 labelled assertions
+## LandNationsCheck.java - 106 labelled assertions
 
 > Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and
 > how it moves, the seller of every plot of a real-Earth world and the territorial sea, an offer's ground split by its sellers, the price each part
@@ -13739,108 +13739,124 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L194 the fixtures: Windsor, Halifax and the Strait on the real Earth, and a generated world**
-- **L230 1. the table: a line for every nation, 25 published, the rest fitted**
-  - L249 the world file has
-  - L266 tools/world/land.tsv has 25 published rows (23 Eurostat, the USDA's and Statistics Canada's)
-  - L280 ...each reads its published figure (per acre times acres a hectare, then the tsv's own rate to US$) to a millionth
-  - L282 ...with mark 3, and its source's name
-  - L283 ...and no other line is published:
-  - L285 every other line is the fit's, mark 1 (
-  - L286 ...and no fitted nation is dearer than the dearest published
-  - L288 the fit's elasticity of price on output a head is positive
-- **L296 2. Canada is 1: exactly, in every month, on every path**
-  - L298 premise: the world file has Canada
-  - L302 premise: the table's reference is Canada, and the two paths are handed
-  - L309 Canada's level and factor are 1.0 exactly in months 0, 1, 600 and 1,488, on
-  - L315 ...and a number outside 1..
-  - L319 ...while the other nations' factors do move on the Historical path (the table is not simply 1 everywhere)
-- **L327 3. the founding is the level; Historical meets the published ratio in January 2024**
-  - L330 premise: January
-  - L339 factorAt(n, 0) is level(n) for all
-  - L340 ...and so is January of
-  - L360 on the Historical path in January
-  - L363 ...nearly all of them: the bounds leave out under a tenth of the nations
-- **L371 4. a Random path moves the factors, and never past the floor or the ceiling**
-  - L386 in January
-  - L387 ...and the two seeds' differ from each other for most
-  - L388 ...while one seed drawn twice (two Nations, one seed) gives the same factors in every nation, in January and in June
-  - L407 every factor is a number between
-- **L418 5. the sellers: the host, either bank of the river, the areas, the territorial sea**
-  - L421 premise: a city on the real Earth with the world file here has sellers
-  - L423 the host at Windsor is Canada, and is the world market's host for the same city
-  - L425 ...at Halifax is Canada, and the world market's
-  - L426 ...at the Strait is the nation the world market finds (
-  - L430 a plot at Windsor sells through Canada and a plot across the Detroit River through the United States (
-  - L432 premise: the two points are two plots, not one
-  - L436 a nation's own ground is its own to sell: sellerOfOwner(1..
-  - L442 premise: none of the file's
-  - L443 ...so every area (
-  - L462 premise: the Strait city's world has a landmass layer on the owner layer's grid (240 cells a degree), and the file has Morocco
-  - L466 a walk south-west across the Strait: each of its
-  - L468 a walk due west off Larache: each of its
-  - L469 ...and that walk crossed from Morocco's sea to the host's:
-  - L472 ...and the owner layer gave Morocco every plot of the stretch that was given away (the layer's sea is a tile's nearest owner's, the rule's work is the cut)
-- **L568 6. the split: an offer across the river, a rectangle across it, a block of Canada's own ground**
-  - L576 premise: the founding's offers include some that cross the river (named by more than one seller)
-  - L596 every offer names its sellers, and the parts' areas add up to the offer's own to a part in a billion
-  - L598 ...and their dollars add up to its price (to the last bit in
-  - L602 ...an offer across the river is sold by Canada and by the United States, both
-  - L609 split() of each of the
-  - L620 a rectangle of
-  - L622 ...the larger part first (the order split() says), each with ground
-  - L623 ...and a border ran through it, so the plots of its tiles were read one by one
-  - L637 a block of Canada's own ground away from the river, three of them, is one part (Canada's) counted as CityLand counts it
-  - L638 ...and reads no plot
-- **L659 7. the price: the one-part formula to the bit where the seller is the reference, its factor times that where it is not**
-  - L661 premise: Halifax's offers stand (
-  - L665 a Halifax offer is priced as LandMarket.price() of its own ground, the same bits, for all
-  - L675 an offer at Windsor wholly Canada's is priced so too, the same bits (
-  - L677 premise: the generated world's city has no sellers, and none of its
-  - L681 a generated world's offer is priced as LandMarket.price() of its own ground, the same bits, for all of them
-  - L683 premise: the quoted block in Detroit is wholly the United States' (
-  - L688 ...and is dearer than the one-part formula by the United States' factor, to the two roundings (the formula's, the sum's)
-- **L698 8. paying: each part from the vault's holding of its seller's money, or converted at usd x rate; the receipt; the tally**
-  - L705 premise: in this month Canada's money is the C$ and the United States' the US$, both among the vault's eight, and the C$ has a rate
-  - L711 premise: two offers across the river stand (one to buy from the vault, one converting)
-  - L723 premise: the vault holds the C$ and the US$ each at many times the offer's part
-  - L729 the offer across the river is bought out of the vault
-  - L731 ...the US$ holding by the United States' part, and by nothing else
-  - L734 ...no other money's holding moved, and no cash went
-  - L736 ...the receipt says it came out of the vault and names the sellers: \"
-  - L738 ...and the tally took each part: its km2 and its dollars by nation, and none to the no-seller index
-  - L745 premise: the second offer across the river still stands
-  - L761 the second offer across the river is bought converting
-  - L762 ...the treasury paid usd x rate to a part in a billion, as it does for an offer with one seller
-  - L764 ...and the vault ended where it began
-  - L766 ...the receipt says it converted and names the sellers: \"
-  - L768 ...and the tally took its parts too
-  - L775 a Halifax offer (Canada's, the host's) is bought
-  - L776 ...its receipt names no seller: \"
-  - L777 ...and the tally took its ground and dollars for Canada
-  - L784 a generated world's offer is bought
-  - L785 ...its receipt names no seller: \"
-  - L786 ...and the tally took it at index 0, the purchase that named no seller, and at no nation's
-- **L801 9. the save: the sellers and the tally survive, a save without the keys is the host's whole, a generated city carries none**
-  - L805 premise: the Windsor city, after its purchases, saved
-  - L807 the save carries the three keys, landOffersSellers, landBoughtKm2 and landBoughtUsd
-  - L810 loaded into a fresh game in another folder it loads whole
-  - L819 ...its
-  - L824 ...and the tally is the saved one in every nation (US$
-  - L838 the same save with the three keys taken out loads: every offer is the host's whole (no seller named), at the price it was listed, and nothing is bought
-  - L845 a generated city saved carries none of the three keys
-  - L852 ...and loads with no sellers, the offers as saved, and nothing bought
-  - L924 the run played its
-  - L925 offers of both kinds were listed: the host's own, and offers sold by another nation (split or wholly foreign)
-  - L926 ...and purchases that named a foreign seller were made
-- **L943 11. the words: \"Sold by United States 62% (a middle dot) Canada 38%\"**
-  - L990 on the Windsor offers at the founding and a block of Detroit, the line is empty for the host's own and names each seller, in order, with whole percents that ...
-  - L996 an offer sold 0.62 km2 by the United States and 0.38 by Canada reads \"Sold by
-  - L1004 a three-way split whose shares round to 99 (33.3, 33.3, 33.4) still adds to 100: the largest remainder takes the point, \"
-  - L1009 ...three equal shares are 34, 33 and 33 (a tie goes to the seller that comes first)
-  - L1012 ...an offer whose parts have no area is shared by their dollars (75 and 25), and one with neither equally
-  - L1022 an offer wholly the host's says nothing, an offer wholly the United States' reads \"Sold by
-  - L1024 ...a split that includes the host is named in full, and no sellers (a generated world's) or no offer say nothing
+- **L201 the fixtures: Windsor, Halifax and the Strait on the real Earth, and a generated world**
+- **L238 1. the table: a line for every nation, 25 published, the rest fitted**
+  - L257 the world file has
+  - L274 tools/world/land.tsv has 25 published rows (23 Eurostat, the USDA's and Statistics Canada's)
+  - L288 ...each reads its published figure (per acre times acres a hectare, then the tsv's own rate to US$) to a millionth
+  - L290 ...with mark 3, and its source's name
+  - L291 ...and no other line is published:
+  - L293 every other line is the fit's, mark 1 (
+  - L294 ...and no fitted nation is dearer than the dearest published
+  - L296 the fit's elasticity of price on output a head is positive
+- **L304 2. Canada is 1: exactly, in every month, on every path**
+  - L306 premise: the world file has Canada
+  - L310 premise: the table's reference is Canada, and the two paths are handed
+  - L317 Canada's level and factor are 1.0 exactly in months 0, 1, 600 and 1,488, on
+  - L323 ...and a number outside 1..
+  - L327 ...while the other nations' factors do move on the Historical path (the table is not simply 1 everywhere)
+- **L335 3. the founding is the level; Historical meets the published ratio in January 2024**
+  - L338 premise: January
+  - L347 factorAt(n, 0) is level(n) for all
+  - L348 ...and so is January of
+  - L368 on the Historical path in January
+  - L371 ...nearly all of them: the bounds leave out under a tenth of the nations
+- **L379 4. a Random path moves the factors, and never past the floor or the ceiling**
+  - L394 in January
+  - L395 ...and the two seeds' differ from each other for most
+  - L396 ...while one seed drawn twice (two Nations, one seed) gives the same factors in every nation, in January and in June
+  - L415 every factor is a number between
+- **L426 5. the sellers: the host, either bank of the river, the areas, the territorial sea**
+  - L429 premise: a city on the real Earth with the world file here has sellers
+  - L431 the host at Windsor is Canada, and is the world market's host for the same city
+  - L433 ...at Halifax is Canada, and the world market's
+  - L434 ...at the Strait is the nation the world market finds (
+  - L438 a plot at Windsor sells through Canada and a plot across the Detroit River through the United States (
+  - L440 premise: the two points are two plots, not one
+  - L444 a nation's own ground is its own to sell: sellerOfOwner(1..
+  - L450 premise: none of the file's
+  - L451 ...so every area (
+  - L470 premise: the Strait city's world has a landmass layer on the owner layer's grid (240 cells a degree), and the file has Morocco
+  - L474 a walk south-west across the Strait: each of its
+  - L476 a walk due west off Larache: each of its
+  - L477 ...and that walk crossed from Morocco's sea to the host's:
+  - L480 ...and the owner layer gave Morocco every plot of the stretch that was given away (the layer's sea is a tile's nearest owner's, the rule's work is the cut)
+- **L576 6. the split: an offer across the river, a rectangle across it, a block of Canada's own ground**
+  - L584 premise: the founding's offers include some that cross the river (named by more than one seller)
+  - L604 every offer names its sellers, and the parts' areas add up to the offer's own to a part in a billion
+  - L606 ...and their dollars add up to its price (to the last bit in
+  - L610 ...an offer across the river is sold by Canada and by the United States, both
+  - L617 split() of each of the
+  - L628 a rectangle of
+  - L630 ...the larger part first (the order split() says), each with ground
+  - L631 ...and a border ran through it, so the plots of its tiles were read one by one
+  - L645 a block of Canada's own ground away from the river, three of them, is one part (Canada's) counted as CityLand counts it
+  - L646 ...and reads no plot
+- **L667 7. the price: the one-part formula to the bit where the seller is the reference, its factor times that where it is not**
+  - L669 premise: Halifax's offers stand (
+  - L673 a Halifax offer is priced as LandMarket.price() of its own ground, the same bits, for all
+  - L683 an offer at Windsor wholly Canada's is priced so too, the same bits (
+  - L685 premise: the generated world's city has no sellers, and none of its
+  - L689 a generated world's offer is priced as LandMarket.price() of its own ground, the same bits, for all of them
+  - L691 premise: the quoted block in Detroit is wholly the United States' (
+  - L696 ...and is dearer than the one-part formula by the United States' factor, to the two roundings (the formula's, the sum's)
+- **L706 8. paying: each part from the vault's holding of its seller's money, or converted at usd x rate; the receipt; the tally**
+  - L713 premise: in this month Canada's money is the C$ and the United States' the US$, both among the vault's eight, and the C$ has a rate
+  - L719 premise: two offers across the river stand (one to buy from the vault, one converting)
+  - L731 premise: the vault holds the C$ and the US$ each at many times the offer's part
+  - L737 the offer across the river is bought out of the vault
+  - L739 ...the US$ holding by the United States' part, and by nothing else
+  - L742 ...no other money's holding moved, and no cash went
+  - L744 ...the receipt says it came out of the vault and names the sellers: \"
+  - L746 ...and the tally took each part: its km2 and its dollars by nation, and none to the no-seller index
+  - L753 premise: the second offer across the river still stands
+  - L769 the second offer across the river is bought converting
+  - L770 ...the treasury paid usd x rate to a part in a billion, as it does for an offer with one seller
+  - L772 ...and the vault ended where it began
+  - L774 ...the receipt says it converted and names the sellers: \"
+  - L776 ...and the tally took its parts too
+  - L783 a Halifax offer (Canada's, the host's) is bought
+  - L784 ...its receipt names no seller: \"
+  - L785 ...and the tally took its ground and dollars for Canada
+  - L792 a generated world's offer is bought
+  - L793 ...its receipt names no seller: \"
+  - L794 ...and the tally took it at index 0, the purchase that named no seller, and at no nation's
+- **L809 9. the save: the sellers and the tally survive, a save without the keys is the host's whole, a generated city carries none**
+  - L813 premise: the Windsor city, after its purchases, saved
+  - L815 the save carries the three keys, landOffersSellers, landBoughtKm2 and landBoughtUsd
+  - L818 loaded into a fresh game in another folder it loads whole
+  - L827 ...its
+  - L832 ...and the tally is the saved one in every nation (US$
+  - L846 the same save with the three keys taken out loads: every offer is the host's whole (no seller named), at the price it was listed, and nothing is bought
+  - L853 a generated city saved carries none of the three keys
+  - L860 ...and loads with no sellers, the offers as saved, and nothing bought
+  - L932 the run played its
+  - L933 offers of both kinds were listed: the host's own, and offers sold by another nation (split or wholly foreign)
+  - L934 ...and purchases that named a foreign seller were made
+- **L951 11. the words: \"Sold by United States 62% (a middle dot) Canada 38%\"**
+  - L998 on the Windsor offers at the founding and a block of Detroit, the line is empty for the host's own and names each seller, in order, with whole percents that ...
+  - L1004 an offer sold 0.62 km2 by the United States and 0.38 by Canada reads \"Sold by
+  - L1012 a three-way split whose shares round to 99 (33.3, 33.3, 33.4) still adds to 100: the largest remainder takes the point, \"
+  - L1017 ...three equal shares are 34, 33 and 33 (a tie goes to the seller that comes first)
+  - L1020 ...an offer whose parts have no area is shared by their dollars (75 and 25), and one with neither equally
+  - L1030 an offer wholly the host's says nothing, an offer wholly the United States' reads \"Sold by
+  - L1032 ...a split that includes the host is named in full, and no sellers (a generated world's) or no offer say nothing
+  - L1060 premise: rounding each share on its own does not add to 100 for either split (the receipt's old way):
+  - L1061 a split whose shares round differently reads the same on the card and the receipt: the percents are percents()' own, adding to 100 (card / receipt)
+- **L1145 12. the hover's quote away from the screen's thread: a quoter made here and used on another thread gives the office's quote to the bit**
+  - L1148 premise: both offices have sellers (a quote then splits the block's ground by nation, which is what costs)
+  - L1151 premise: the block of 256 plots a side across the Detroit River at Windsor is quoted with two sellers or more
+  - L1153 premise: the block of 512 plots a side at the Strait of Gibraltar is quoted with two sellers or more
+  - L1170 the cost was measured at every level asked (9 at Windsor, 8 at the Strait), each quote a parcel with a seller
+  - L1177 a quoter is made of each office (neither is bare, and the land copies)
+  - L1184 a quoter made on this thread and quoted on another gives the office's quote to the bit: the price, every kind's area and every seller (seller, area, dollars)
+  - L1206 premise: a standing offer of the Windsor city has free ground, and a block of 256 plots a side round it
+  - L1209 premise: the block is quoted, with ground, and the old quoter's quote of it is the office's
+  - L1217 premise: the offer was bought, and the ground of it in the block is the city's: the office quotes the block with less ground than before
+  - L1219 the quoter made before the purchase quotes the block as the office did before it, to the bit: a purchase after it is not seen
+  - L1220 ...and a quoter made after it quotes the office's quote now to the bit, with less ground
+  - L1222 ...and a quoter keeps the month it was made in
+  - L1245 the map's hover quotes through a quoter on its own thread, never the office's quote() on the screen's thread
 
 ## LandlordPortCheck.java - 52 labelled assertions
 
@@ -14221,12 +14237,12 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2657 premise: the city owns nothing off home (single), and its shelf holds an offer wholly on the island and one of home's ground
   - L2663 an offer wholly on a landmass the city owns nothing on is worded 'On another landmass', and one of home's ground has no line
   - L2665 room: an island offer adds its size less its unlinked dry ground, which is less than its size; an offer of home's ground adds exactly its size
-  - L2672 an offer partly on the island says how much: '4.00 km2 of its dry ground is on Island 2, which no port links', and its receipt the same share
-  - L2676 ...and one wholly on it says 'On Island 2' and its receipt ' - on Island 2, which no port links'
+  - L2672 an offer partly on the island says how much: '4.00 km2 of its dry ground is on Island 2, which no port links', and its receipt the same share as a sentence o...
+  - L2676 ...and one wholly on it says 'On Island 2' and its receipt 'It lies on Island 2, which no port links.'
   - L2679 several picks: the map card's line says 'Their dry ground is on Island 2' for picks wholly on it, how much of it for a mixed set, and nothing for picks of ho...
   - L2684 an offer with no unlinked ground has no line, no clause and the tag is not its
   - L2691 premise: the island offer was bought, and the city now owns Island 2 unlinked
-  - L2692 the island offer's receipt ends with the clause, ' - on Island 2, which no port links.', and the clause names it from the books after the purchase
+  - L2692 the island offer's receipt ends with the clause as a sentence of its own, 'It lies on Island 2, which no port links.', and the clause names it from the books...
   - L2696 an offer of home's ground is bought with the receipt it always had: no clause
   - L2698 ...and the offer line names the island once the city owns it: 'On Island 2, which no port links ...'
   - L2702 the strip has a line for the landmass no port links: its name, what the city owns of it, what is free, and that only a port may be built
@@ -18943,7 +18959,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2210 fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn
   - L2230 reading the world market and the trade by partner fifty times changed nothing (
 
-## RealDollarCheck.java - 47 labelled assertions
+## RealDollarCheck.java - 54 labelled assertions
 
 > The two US dollars (batch WN4, D29; spec-nations 10 item 29, spec-exchange-rates 3.9): the in-game US$ inflating on the US's path, and the real US$ of
 > 2015 the city's real GDP and a rate are shown in, for comparison only.
@@ -18959,60 +18975,67 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      inflation is the level over the level a year ago; on Historical the Januaries equal the file's US CPI over 2000's; a pinned world holds; a
 > ...
 
-- **L137 1. the in-game US$ is the US's: its prices follow the nations' path**
-  - L195 Historical: the Januaries are the file's US CPI over 2000's
-  - L206 a pinned world holds still on the path: 14 months, level 1 to the bit, the path handed all the same
-- **L213 2. no world file, the walk: a city on the literals walks as WorldEconomy always did**
-  - L227 the city's level is the bare WorldEconomy's at the default mean over the same months, to the bit
-  - L228 ...and so are its headline and its realised inflation
-  - L229 ...with no world's moneys and no path: the dollar is the walk
-  - L230 ...and the walk's mean is the default's, which nothing offers a choice of now
-- **L237 3. D$ per 2015 US$ is the rate times the US$'s prices since founding, over the bridge**
-  - L238 a fixture: at 1.25 D$ a US$ and prices 1.6 times founding's, a real 2015 US$ costs 2 D$ of founding's dollars: 2 over the bridge
-  - L239 ...at founding (level 1) it is the rate over the bridge
-  - L240 ...and NaN for a rate or a level that is not a positive number
-  - L244 a city founds at ForeignAccounts.OPENING_RATE (
-  - L246 ...so at founding the D$ per 2015 US$ is that rate over the bridge
-  - L248 after 24 months it is the foreign accounts' rate times the world's level, over the bridge
-  - L250 ...a number the city's prices moved (the level is no longer 1)
-- **L256 4. real GDP in 2015 US$ is the GDP over the price index over the founding's rate, times the bridge**
-  - L257 a fixture: D$120M a month at an index of 1.2 and a founding rate of 1 is 100M founding US$, 100M times the bridge in real 2015 US$
-  - L258 ...at a founding rate of 2 D$ a US$, 50M times the bridge
-  - L259 ...at an index of 1 and OPENING_RATE it is the GDP times the bridge
-  - L260 ...and NaN for an index or a rate that is not positive
-- **L273 5. the real effective rate: 100 at founding, the BIS's way**
-  - L275 a fixture: at founding (the rate, the prices and the partners' moneys where they were) it reads 100
-  - L277 the city's prices rise 10% and nothing else moves: 110
-  - L278 ...against partners alike, whatever their weights
-  - L280 the D$ falls 10% against the US$ (the rate up by 1/.9) and nothing else moves: 90
-  - L281 a partner's money rises 10% against the US$ (its units a US$ down by 1.1) with half the weight, the US$ the other half: 100 x 1.1^-.5, the other way
-  - L284 a partner's prices rise 10% (the city's not) with a third of the weight: 100 x 1.1^-(1/3)
-  - L286 the weights are shares of their sum: 6 and 2 are .75 and .25
-  - L288 the US alone with no trade, its prices up 25% and the city's 10% up: 100 x 1.1 / 1.25
-  - L289 no usable partner (a weight of nothing, a money with no rate) is the US alone at prices of 1: the D$'s own prices only
-  - L291 a partner with no rate is left out of the average, the rest taking its weight: 110 from the one that is there
-  - L293 NaN for a rate, a founding rate or an index that is not positive
-  - L298 a city before its first month: the real effective rate is 100
-  - L312 a town that has traded with nobody: the D$ against the US$ alone, the US$'s prices the world's level
-  - L332 ...given a finished year's trade with Germany, Japan and the US, the getter weighs each partner's money (the one its nation uses now, against its rate in the...
-  - L333 ...which is not the US$ alone's figure: the partners' moneys and prices move it
-- **L345 6. the import shock: permanent on the path, pulled back on the walk**
-  - L353 fixture: before the shock, the two paths read alike
-  - L355 shockLevel(1.3): the level is 1.3 times the path's at once
-  - L356 ...the factor is 1.3
-  - L357 ...and the realised inflation reads the jump for a year (the ring is kept)
-  - L365 on the path the next 60 months keep the shock: the level is 1.3 times the path's every month, nothing pulls it back
-  - L366 ...a year on, the realised inflation is the path's again
-  - L368 the factor is saved in the slot after the mean
-  - L374 ...and a world restored from it, handed the path, steps on to the bit
-  - L380 an array without the slot (an older save's) reads a factor of 1
-  - L387 a pinned world holds the shock it is given and does not follow the path
-  - L399 on the walk shockLevel(1.3) is the level times 1.3
-  - L400 ...with no path and a factor of 1
-  - L411 ...exactly what the save-and-restore door did, level and realised inflation to the bit, 370 months on
-- **L461 7. a change of money: the partner's real rate holds across the year it changed**
-  - L467 the Random town
-  - L470 a Historical town
+- **L140 1. the in-game US$ is the US's: its prices follow the nations' path**
+  - L198 Historical: the Januaries are the file's US CPI over 2000's
+  - L209 a pinned world holds still on the path: 14 months, level 1 to the bit, the path handed all the same
+- **L216 2. no world file, the walk: a city on the literals walks as WorldEconomy always did**
+  - L230 the city's level is the bare WorldEconomy's at the default mean over the same months, to the bit
+  - L231 ...and so are its headline and its realised inflation
+  - L232 ...with no world's moneys and no path: the dollar is the walk
+  - L233 ...and the walk's mean is the default's, which nothing offers a choice of now
+- **L240 3. D$ per 2015 US$ is the rate times the US$'s prices since founding, over the bridge**
+  - L241 a fixture: at 1.25 D$ a US$ and prices 1.6 times founding's, a real 2015 US$ costs 2 D$ of founding's dollars: 2 over the bridge
+  - L242 ...at founding (level 1) it is the rate over the bridge
+  - L243 ...and NaN for a rate or a level that is not a positive number
+  - L247 a city founds at ForeignAccounts.OPENING_RATE (
+  - L249 ...so at founding the D$ per 2015 US$ is that rate over the bridge
+  - L251 after 24 months it is the foreign accounts' rate times the world's level, over the bridge
+  - L253 ...a number the city's prices moved (the level is no longer 1)
+- **L259 4. real GDP in 2015 US$ is the GDP over the price index over the founding's rate, times the bridge**
+  - L260 a fixture: D$120M a month at an index of 1.2 and a founding rate of 1 is 100M founding US$, 100M times the bridge in real 2015 US$
+  - L261 ...at a founding rate of 2 D$ a US$, 50M times the bridge
+  - L262 ...at an index of 1 and OPENING_RATE it is the GDP times the bridge
+  - L263 ...and NaN for an index or a rate that is not positive
+- **L276 5. the real effective rate: 100 at founding, the BIS's way**
+  - L278 a fixture: at founding (the rate, the prices and the partners' moneys where they were) it reads 100
+  - L280 the city's prices rise 10% and nothing else moves: 110
+  - L281 ...against partners alike, whatever their weights
+  - L283 the D$ falls 10% against the US$ (the rate up by 1/.9) and nothing else moves: 90
+  - L284 a partner's money rises 10% against the US$ (its units a US$ down by 1.1) with half the weight, the US$ the other half: 100 x 1.1^-.5, the other way
+  - L287 a partner's prices rise 10% (the city's not) with a third of the weight: 100 x 1.1^-(1/3)
+  - L289 the weights are shares of their sum: 6 and 2 are .75 and .25
+  - L291 the US alone with no trade, its prices up 25% and the city's 10% up: 100 x 1.1 / 1.25
+  - L292 no usable partner (a weight of nothing, a money with no rate) is the US alone at prices of 1: the D$'s own prices only
+  - L294 a partner with no rate is left out of the average, the rest taking its weight: 110 from the one that is there
+  - L296 NaN for a rate, a founding rate or an index that is not positive
+  - L301 a city before its first month: the real effective rate is 100
+  - L302 ...with no world's moneys built yet it weighs no partner to name: an empty list (the screen says the US$ alone)
+  - L316 a town that has traded with nobody: the D$ against the US$ alone, the US$'s prices the world's level
+  - L319 ...the partners it weighs then are the United States at a share of 1, which the screen names; the rate of the US as the one partner is the US$ alone's
+  - L329 premise: a town with the nations' moneys that played one month had traded with the US alone, and its trade is now wiped (no month's, no year's)
+  - L331 a town with the nations' moneys and no trade weighs no partner to name: an empty list (the screen says the US$ alone), and the rate is the US$ alone's
+  - L353 ...given a finished year's trade with Germany, Japan and the US, the getter weighs each partner's money (the one its nation uses now, against its rate in the...
+  - L354 ...which is not the US$ alone's figure: the partners' moneys and prices move it
+  - L370 the partners it weighs are named: exactly Germany, Japan and the US in nation order with shares .5, .25 and .25 adding to 1 (
+  - L374 the rate is its partners' own: the real effective rate is RealDollar.realEffectiveRate over the named partners' Partners, to the bit
+  - L388 a money that never changed reads as before WN6: its rate in the first January, else the file's first-year figure (
+- **L401 6. the import shock: permanent on the path, pulled back on the walk**
+  - L409 fixture: before the shock, the two paths read alike
+  - L411 shockLevel(1.3): the level is 1.3 times the path's at once
+  - L412 ...the factor is 1.3
+  - L413 ...and the realised inflation reads the jump for a year (the ring is kept)
+  - L421 on the path the next 60 months keep the shock: the level is 1.3 times the path's every month, nothing pulls it back
+  - L422 ...a year on, the realised inflation is the path's again
+  - L424 the factor is saved in the slot after the mean
+  - L430 ...and a world restored from it, handed the path, steps on to the bit
+  - L436 an array without the slot (an older save's) reads a factor of 1
+  - L443 a pinned world holds the shock it is given and does not follow the path
+  - L455 on the walk shockLevel(1.3) is the level times 1.3
+  - L456 ...with no path and a factor of 1
+  - L467 ...exactly what the save-and-restore door did, level and realised inflation to the bit, 370 months on
+- **L517 7. a change of money: the partner's real rate holds across the year it changed**
+  - L523 the Random town
+  - L526 a Historical town
 
 ## RefineryCheck.java - 108 labelled assertions
 

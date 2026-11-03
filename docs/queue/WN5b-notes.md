@@ -47,8 +47,9 @@ Item 4: on world-1.bin (LC3's), all 196 nations' first-January money has a rate 
 
 ## 4. The checks
 
-`./batch-check.sh --pick` on DM1's tip, the data files named (`JDK_JAVA_OPTIONS`, -Dcbs.earth and -Dcbs.world from the main checkout):
-exit 0: 51 of 170 harnesses (14 files changed; Game.java left to the gate, LongPlaytest in its place) green in 1,164 s, maps
+`./batch-check.sh --pick`, the data files named (`JDK_JAVA_OPTIONS`, -Dcbs.earth and -Dcbs.world from the main checkout), again after
+main was merged in (DM1 as 0.9.8, FC1b): exit 0, 51 harnesses green in 1,003 s, two timing lines soft (SaveSlotCheck 1, MapCheck 1). On
+DM1's tip first: exit 0: 51 of 170 harnesses (14 files changed; Game.java left to the gate, LongPlaytest in its place) green in 1,164 s, maps
 regenerated, Stale 0 firm. Three timing lines soft and not counted on a PC running other batches (50 starts held for memory):
 MapCheck's month of FX-side map work at 5B (22.1 ms against 19) and its median due month (33.7 against 25), SaveSlotCheck's change
 at 10B (6.0 against 5); none of them makes a quoter, which only a hover does. `--pick`'s threading review was this one (§1, 1:
