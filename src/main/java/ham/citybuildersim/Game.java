@@ -7196,8 +7196,8 @@ public class Game {
     }
 
     /**
-     * The contractor's month, offered: its book (cut first to what is still owed on site, so a cancelled order leaves
-     * it working for nobody) and, while it takes orders, the builders' own depots on site, up to its capacity
+     * The contractor's month, offered: its book (cut first to what is still owed on site, Construction.capForeignBook();
+     * a cancelled order left it when it stopped, FC1b) and, while it takes orders, the builders' own depots on site, up to its capacity
      * (BuildersShort.foreignCapacity()); its price a point is BuildersShort.FOREIGN_PRICE times the city's price
      * before any premium. NONE with no work or no capacity. Called once a month, before the sites advance.
      */
@@ -9054,14 +9054,16 @@ public class Game {
 
         // C. The cancelled orders, stopped: the city's contract left comes
         // back out of the builders' book, the work it was for off their order
-        // book's points.
+        // book's points - and off the foreign contractor's (FC1b), but for a
+        // depot of theirs served first, which he never had on it - or a
+        // restart would put its points on his book a second time.
         for (ConstructionControl.Refund r : controlThisMonth.refunds) {
             double back = Math.max(0, r.value());
             if (back > 0) {
                 cash += back;
                 cityCapitalSpending -= back;
             }
-            builders.cancelOrder(back, r.points());
+            builders.cancelOrder(back, r.points(), r.servedFirst() ? 0 : r.points());
             r.shell().month = month;
             r.shell().refunded += back;
             GameLog.note(String.format("The city's %d %s stopped: $%,.0fk back, the shell kept.", r.buildings(),
