@@ -1,4 +1,4 @@
-# DZ1 - The trade by partner in the money of the day ({next}, 2026-11-02)
+# DZ1 - The trade by partner in the money of the day (0.9.4, 2026-11-02)
 
 FC1 found it (`docs/queue/DZ1.md`): with its builders' price on, DenominationCheck's reformed twin parted from its town
 in month 170, every sector's cash at once, by about 1e-9, through something in absolute money outside FC1. FC1 played

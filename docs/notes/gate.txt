@@ -1,8 +1,9 @@
-# gate of Merge batch/GT1: faster gates (Jerus, 2026-11-01: "do we need 4k months?"): main green on timing (SaveSlotCheck's due month and MapCheck's 10-billion month inside their budgets, so a gate stops re-measuring main's own reds, ~20 min), the playtest at 2,400 months at the gate and 4,000 nightly on main, invariants asserted on the playtest's months, grown cities saved once per suite and shared where two harnesses play the same founding; a process batch (one in, one out); may run beside FC1, 0.9.3
-# date: 2026-11-02
+# gate of Merge batch/DZ1: denominationCheck's reformed twin parts from its town at month 170 when FC1's builders' price is on (a hot town, price index about 6): by 1e-9 at once in every sector, through an absolute tolerance outside FC1. Find it, make it scale with the unit, and turn FC1 back on in DenominationCheck (found by FC1, which plays that harness with FC1 off meanwhile), 0.9.4
+# date: 2026-11-03
 # earth-2.bin: named
-# suite: 170 harnesses run in 1840s: 170 passed, 0 failed
-# timing: 15 harnesses run in 436s: 14 passed, 1 failed; its red lines were judged side by side with main's, below
+# nightly: 2026-11-02 20:53 0.9.2 5602c6d0 4,000 months: OK in 212 s
+# suite: 170 harnesses run in 2273s: 170 passed, 0 failed
+# timing: 15 harnesses run in 465s: 14 passed, 1 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.3 ms, batch 28.1 ms (-4.2%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.2 ms, batch 28.7 ms (+5.5%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
