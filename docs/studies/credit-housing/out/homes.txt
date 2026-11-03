@@ -1,0 +1,34 @@
+--- 1. a city of renters (today's game) when owning opens, by year ---
+  year 1                                   owning   8.4%  price/income  4.4  mortgages/take-home  28.1%  arrears 0.31%
+  year 3                                   owning  17.7%  price/income  3.9  mortgages/take-home  64.1%  arrears 0.40%
+  year 5                                   owning  27.0%  price/income  3.1  mortgages/take-home  89.8%  arrears 0.36%
+  year 10                                  owning  43.2%  price/income  2.5  mortgages/take-home 115.6%  arrears 0.33%
+  year 20                                  owning  56.0%  price/income  2.2  mortgages/take-home  95.1%  arrears 0.28%
+  year 40                                  owning  59.2%  price/income  2.1  mortgages/take-home  33.6%  arrears 0.13%
+--- 2. by life stage and tier at year 40 (wanted share in brackets) ---
+  young:UNSKILLED              owning  14.7% (40%)  mortgage  2.6 years' gross  arrears  0.48%
+  family:UNSKILLED             owning  42.4% (66%)  mortgage  2.2 years' gross  arrears  0.30%
+  middle:UNSKILLED             owning  71.0% (76%)  mortgage  1.0 years' gross  arrears  0.11%
+  retired:UNSKILLED            owning  72.0% (80%)  mortgage  0.5 years' gross  arrears  0.42%
+  young:COLLEGE                owning  25.4% (40%)  mortgage  1.1 years' gross  arrears  0.01%
+  family:COLLEGE               owning  55.9% (66%)  mortgage  1.1 years' gross  arrears  0.00%
+  middle:COLLEGE               owning  75.7% (76%)  mortgage  0.1 years' gross  arrears  0.00%
+  retired:COLLEGE              owning  80.4% (80%)  mortgage  0.0 years' gross  arrears  0.00%
+  young:ELITE                  owning  28.8% (40%)  mortgage  0.3 years' gross  arrears  0.00%
+  family:ELITE                 owning  58.3% (66%)  mortgage  0.3 years' gross  arrears  0.00%
+  middle:ELITE                 owning  77.0% (76%)  mortgage  0.0 years' gross  arrears  0.00%
+  retired:ELITE                owning  81.8% (80%)  mortgage  0.0 years' gross  arrears  0.00%
+--- 3. the rate: the same city held 10 years at another policy rate ---
+  policy 1.00%                             owning  58.9%  price/income  2.4  mortgages/take-home  35.0%  arrears 0.14%  price +14.1%
+  policy 3.75%                             owning  59.3%  price/income  2.0  mortgages/take-home  33.2%  arrears 0.13%  price  -6.6%
+  policy 4.75%                             owning  59.4%  price/income  1.9  mortgages/take-home  32.9%  arrears 0.13%  price -12.4%
+  policy 6.75%                             owning  59.4%  price/income  1.6  mortgages/take-home  32.5%  arrears 0.14%  price -22.0%
+  policy 3.75%, cap rate pass-through 0.0  owning  58.5%  price/income  2.1  mortgages/take-home  35.1%  arrears 0.15%  price  +0.1%
+  policy 3.75%, cap rate pass-through 0.5  owning  59.5%  price/income  1.9  mortgages/take-home  32.8%  arrears 0.12%  price  -8.1%
+  policy 3.75%, cap rate pass-through 1.0  owning  60.2%  price/income  1.8  mortgages/take-home  30.7%  arrears 0.10%  price -15.0%
+--- 4. a shock: the policy rate from 2.75% to 6.75% at year 40, by year after ---
+  year 1 after                             owning  59.1%  price/income  1.8  mortgages/take-home  31.9%  arrears 0.12%  price -14.2%
+  year 2 after                             owning  59.2%  price/income  1.7  mortgages/take-home  30.5%  arrears 0.11%  price -19.1%
+  year 3 after                             owning  59.3%  price/income  1.7  mortgages/take-home  29.3%  arrears 0.11%  price -20.9%
+  year 5 after                             owning  59.5%  price/income  1.7  mortgages/take-home  27.6%  arrears 0.11%  price -21.8%
+  year 10 after                            owning  59.9%  price/income  1.6  mortgages/take-home  25.1%  arrears 0.09%  price -22.0%
