@@ -1625,6 +1625,11 @@ public class HoldersCheck {
      * re-strike switched off, which is what main did - it books none.
      */
     static Reopening reopeningFixture(String label, boolean restrikeOff) throws Exception {
+        return reopeningFixture(label, restrikeOff, 0);
+    }
+
+    /** ...its first sale made with the policy rate this much higher, so the line's coupon stands over the rates the city goes back to (13a, BD1). */
+    static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise) throws Exception {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
@@ -1648,6 +1653,10 @@ public class HoldersCheck {
             for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
         });
         DebtManager ledger = city.getDebtManager();
+        if (firstSaleRise != 0) {
+            ledger.setPolicyRate(ledger.getPolicyRate() + firstSaleRise);
+            city.strikeTheCurve();
+        }
         final double ask1 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
         quietly(() -> city.handleLongBondLogic(ask1, 20, 100 * PriceLevel.FACTOR));
@@ -1812,12 +1821,19 @@ public class HoldersCheck {
     /** What the premium reopening did to a line: whether it is the same line, the face sold, what it raised, and the line's discount left either side. */
     record Premium(boolean sameLine, double face, double proceeds, double discountBefore, double discountAfter) { }
 
-    /** The reopening of 13a, done the same way to the city and to its twin: the policy rate down four points (to its floor, at most) and the same line sold again between the presses, at a premium. */
+    /**
+     * 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. Near the floor
+     * (DebtManager.MIN_POLICY_RATE) a cut from where the city stands barely moves the twenty-year yield, less than
+     * the coupon's step (Auction.COUPON_STEP); a line struck four points up stands over the rates it comes back to.
+     */
+    static final double PREMIUM_RISE = .04;
+
+    /** The reopening of 13a, done the same way to the city and to its twin: the policy rate taken back down by PREMIUM_RISE (to its floor, at most) and the same line sold again between the presses, at a premium. */
     static Premium reopenAtAPremium(Game city, Debt line) {
         DebtManager ledger = city.getDebtManager();
         double discountBefore = line.getDiscountLeft();
         int sales = line.getSales().size();
-        ledger.setPolicyRate(ledger.getPolicyRate() - .04);
+        ledger.setPolicyRate(ledger.getPolicyRate() - PREMIUM_RISE);
         city.strikeTheCurve();
         final double ask2 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
         int pieces = ledger.getDebt().size();
@@ -1837,8 +1853,8 @@ public class HoldersCheck {
     /** 13a: the same line reopened at a premium between the presses releases the bank's share of its discount. */
     static void thePremium() throws Exception {
         out.println("   -- 13a. the same line reopened at a premium between the presses, in the city and in its twin");
-        Reopening fix = reopeningFixture("holderscheck-premium", false);
-        Reopening twinFix = reopeningFixture("holderscheck-premium-twin", true);
+        Reopening fix = reopeningFixture("holderscheck-premium", false, PREMIUM_RISE);
+        Reopening twinFix = reopeningFixture("holderscheck-premium-twin", true, PREMIUM_RISE);
         Game city = fix.city(), twin = twinFix.city();
         Bank bank = city.getBank(), twinBank = twin.getBank();
         Debt line = fix.line(), twinLine = twinFix.line();
@@ -1866,6 +1882,7 @@ public class HoldersCheck {
         /* ---- at once, before any month is played ---- */
         out.println("   -- at once, before any month is played");
         Bank.EquityMovement now = bank.equityMovement();
+        double splitNow = bank.equitySplitResidual();
         assertTrue("the release was booked where it happened: far over what the movement's tolerance would pass",
                 after.restruck() - going.restruck() > 100 * tolerance);
         close("...by exactly the book's fall", after.restruck() - going.restruck(), -(after.book() - going.book()), 1e-12);
@@ -1890,7 +1907,7 @@ public class HoldersCheck {
                         + "   the month played: the settle re-struck $%,.6fk, the residual %.9f on %,.0fk, the split %.9f;"
                         + " the twin's residual %.9f, its split %.9f%n",
                 going.book(), after.book(), going.carried(), after.carried(), after.restruck() - going.restruck(),
-                now.residual(), bank.equitySplitResidual() - (moved.closing() - moved.closing()), monthRestruck, moved.residual(),
+                now.residual(), splitNow, monthRestruck, moved.residual(),
                 moved.scale(), bank.equitySplitResidual(), twinMoved.residual(), twinBank.equitySplitResidual());
         close("the month's movement leaves nothing unexplained", moved.residual(), 0, afterTol);
         close("...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), 0, afterSplitTol);
@@ -1952,6 +1969,7 @@ public class HoldersCheck {
         /* ---- at once, before the settle ---- */
         out.println("   -- at once, before the settle");
         Bank.EquityMovement now = bank.equityMovement();
+        double splitNow = bank.equitySplitResidual();
         close("the bank's unearned discount is the book's", after.carried(), after.book(), 1e-9);
         close("...the re-strike is the difference between what the desk was handed and what the book rose by",
                 after.restruck() - going.restruck(), handed - bookRose, tolerance);
@@ -1971,7 +1989,7 @@ public class HoldersCheck {
         double restruckAtOnce = after.restruck() - going.restruck(), monthRestruck = bank.getDiscountRestruck();
         out.printf("   at once: the re-strike $%,.6fk, residual %.9f, split %.9f; the month played: the settle re-struck $%,.6fk,"
                         + " the residual %.9f on %,.0fk, the split %.9f; the twin's residual %.9f, its split %.9f%n",
-                restruckAtOnce, now.residual(), bank.equitySplitResidual() - 0, monthRestruck, moved.residual(), moved.scale(),
+                restruckAtOnce, now.residual(), splitNow, monthRestruck, moved.residual(), moved.scale(),
                 bank.equitySplitResidual(), twinMoved.residual(), twinBank.equitySplitResidual());
         close("the month's movement leaves nothing unexplained", moved.residual(), 0, movementTolerance(bank));
         close("...and its equity's two parts and the preferred add up to its equity", bank.equitySplitResidual(), 0, splitTolerance(bank));

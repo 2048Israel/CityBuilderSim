@@ -1,12 +1,9 @@
 # BD1 - the bank's equity parts part from its equity after it buys the city's paper ({next}, 2026-11-02)
 
-**WHERE IT STANDS (paused 2026-11-02 ~20:32 on the orchestrator's word; resume when DZ1's ship file is on origin):**
-1. WIP is local branch `bd1-wip` (from origin/batch/FC1 8c772b41), unpushed: FC1's switch out of SectorStatementCheck,
-   `Bank.restrikeCarriedDiscount()`, `Game.restrikeBankDiscountCarried()` at the six sites (section 2). Both drafted by Sonnet, not yet reviewed.
-2. Checked green before section 13: HoldersCheck, BankCheck, CentralBankCheck (`./batch-check.sh`, 3 of 3).
-3. HoldersCheck section 13 (13a premium reopening, 13b desk on an unsettled line) is half-written by the stopped slice: finish it, then review the whole diff.
-4. Then: `git checkout -b batch/BD1 origin/batch/DZ1` (or origin/main if DZ1 went to Pending), cherry-pick bd1-wip's WIP commit, `--pick`,
-   SectorStatementCheck with `-Dcbs.world`/`-Dcbs.earth` set to the main checkout's data/ (the gate's path), the trace against the base, the ship file last.
+Found by FC1: SectorStatementCheck on FC1's path, month 134 the bank buys D$1,113M of the city's paper, month 135 its
+unearned discount falls 7.06 with no named cause, and "its equity's parts are its equity" is off by 7.05 in 226 of 479
+bank-months (BK1's class; the money audit held). FC1 played the harness with its builders' price off meanwhile; BD1
+turns it back on (`BuildingManager.buildersShortOn = false` deleted from SectorStatementCheck).
 
 ## 1. The release, named
 
@@ -30,3 +27,28 @@ It is measured as what the bank's trade moved its carried discount by, less what
 (`Game.restrikeBankDiscountCarried()`). Sites: `issueLongBond()`'s reopen, the desk's three purchases, the treasury's
 buyback, the call. The central bank's dial is left alone: it trades only pieces with nothing owed at the settle, where
 the two figures agree. BK1's settle re-strike is unchanged: the same month's refresh realizes it with the settle's paper.
+Every other move of a line's face was read and moves nothing of the bank's figure: the central bank's trades with the
+households, firms and world leave the bank's face alone; its rolls at issue are BK1's own call; principal is paid in
+the month after the settle, when no sale is unsettled. Routed to retained earnings and not income, as BK1's (its
+javadoc's reasons: it is an artifact of the pooled discount, not an economic gain); BK2, queued, gives each holder its
+own discount and makes both re-strikes zero.
+
+No save field: the carried figure is re-derived at every refresh and on load, and `discountRestruck` is already saved
+with the month's lines. No format bump.
+
+## 3. The proof: HoldersCheck 13
+
+Section 13, each part in the city and in its twin (`restrikeOffForTest`, which books neither re-strike, as main did):
+
+- **13a, a premium reopening.** Section 12's fixture with its first sale made four points up (`PREMIUM_RISE`, a new
+  third argument; section 12 passes nothing and is unchanged): near the policy floor a cut from where the city stands
+  barely moves the twenty-year yield, less than a coupon step, and the first try sold at a discount. Taken back down,
+  the same line sells 108.71 face for 109.02; its discount left 1.862 -> 1.555, the bank's share 0.7746 -> 0.6466, the
+  0.128 re-struck at once, its unearned discount the book's, movement and split nothing, the statement's lines the
+  twin's. The month played: the settle re-struck -0.204 (the bank, the residual buyer, paid over face); residual and
+  split nothing; the twin's left -0.0762 = 0.128 - 0.204 unexplained, as main did.
+- **13b, the desk on a line with a sale unsettled** (reached by the households' `sellPaperForSpread()`, no hook): the
+  sale's discount per face 0.0357 against the settled part's 0.0119; the desk bought 6.74 face, was handed 0.1558 of
+  discount while the book rose 0.0803; the 0.0755 re-struck at once; the month's settle re-struck -0.1218; the twin
+  left -0.0463 unexplained. Both parts: the city's figures (net, tax, dividends, paper gains, cash, the bank's equity)
+  the twin's bit for bit, at once and over the month.
