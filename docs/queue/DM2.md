@@ -32,3 +32,14 @@ should need no new statement; check it). So it is no small fix batch: Opus, with
 Done when: MapCheck is green with FC1 on - its `BuildingManager.buildersShortOn = false` at the top of `main()` and
 the `= true` after `reservesDated(city)` deleted, with their comment - the journal round trips in the sidecar, and
 the default playtest's trace is unchanged (the map is not the model's).
+
+What DM1 tried first, on `batch/DM1`'s history (not shipped): dating the way without a journal, from the replay alone (a
+piece's birth from the box count when its latest cell opened, the wall's completion from a binary search over the
+arrival ranks; the buildings after that cost nothing). It stops the drift in MapCheck 2h on a city built without the
+Earth file (6, 5, 20, 22 plots to the same plots; 27 moved boxes to 0), but SlopeCheck 9's Medellin run (Earth and
+world files named) moves 40 boxes of district (0,0) at m608 to m609: a land purchase re-formed the street pieces, the
+way jumped through boxes that stood, and those cost nothing under the dating. The replay cannot tell a new way from an
+old one; the journal can. Reuse `wallRank`/`rankArrivals`/`cellBorn` there, and ask SlopeCheck 9 and MapCheck 2h both.
+Also: with the Earth file named (the gate's) 2h's district has no walled piece, so 2h cannot show the drift; a fixture
+that causes a wall with arrivals after it (PlanCheck 18's `fieldBelt` with a `Log`, or PlanCheck 17's played city
+advanced a few months) is DM2's first slice.
