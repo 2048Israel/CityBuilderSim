@@ -53,10 +53,15 @@ unmerged at the start).
   fixture; a 1900 city with no income taxes grows differently - read it at
   its cause (call 7). **The full suite has
   not run**; other reds of the same shape may remain.
-- **The finding that needs Jerus's eye: call 16** (below): a lever opening at
-  zero leaves the playtest's city untaxed for 49 years.
+- **Call 16, taken as recommended by the orchestrator (2026-11-04):** a lever
+  opening at zero leaves the playtest's city untaxed for 49 years, so the three
+  income taxes open at the founding default; pensions, EI, student aid and the
+  health premium still open at zero. Not built yet. Jerus may overturn it (the
+  other way named: open them at history's rate, 4% above $1,500 in 1917).
+  **Call 17**, the two SaveFileCheck mid-build fixtures with every lever open,
+  is kept as recommended.
 - **Next:** the full suite (`./batch-check.sh --pick`, then `AllChecks -f`),
-  each red read by call 7; call 16 answered; slice 3 (the screen: a shut
+  each red read by call 7; call 16 built; slice 3 (the screen: a shut
   lever drawn shut, "opens 1917 - an income tax, 4% above $1,500"; zoning's
   gate, call 13, not built yet); the ensemble. No ship file until CM1 is on
   main and merged in.
