@@ -468,13 +468,14 @@ public abstract class Sector {
     }
 
     /**
-     * The share of a band's supply or posts, whichever is larger, under which what the supply leaves spare of the posts is
-     * the subtraction's rounding and counts as none (staffing(); BA1, 2026-11-04). With a band all spoken for, supply less
-     * posts left a hair, 1.3e-18 of a template's posts, at today's prices and exactly nothing at the factor. A planner that
-     * keeps the template with the largest share of a held order (Manufacturing.plan()) then kept a Machine Works at one price
-     * level and a Fabrication Shop at the other, and the twin parted (PriceLevelCheck 8, month 23).
+     * The share of a building's posts the city could staff at or under which staffing() reads none: the subtraction's
+     * rounding, not a worker (BA1, 2026-11-04). With every band it wants all spoken for, supply less posts left a hair, a
+     * share of 1.3e-18, at today's prices and exactly nothing at the factor. A planner that keeps the template with the
+     * largest share of a held order (Manufacturing.plan()) then kept a Machine Works at one price level and a Fabrication
+     * Shop at the other, and the twin parted (PriceLevelCheck 8, month 23). Only the share is snapped: the bands' spares are
+     * read by their sign elsewhere, and snapping them moved SlopeCheck's and LongPlaytest's cities onto other paths.
      */
-    static final double SPARE_ROUNDING = 1e-12;
+    static final double SHARE_ROUNDING = 1e-12;
 
     /** The same test for {@code count} of these at once. */
     public Staffing staffing(BuildingsTemplate t, int count) {
@@ -558,15 +559,16 @@ public abstract class Sector {
         for (int b = bands - 1; b >= 0; b--) {
             WageBand band = WageBand.values()[b];
             spare[b] = supply[b] - posts[b];
-            // ...and a spare within rounding of the posts is none (SPARE_ROUNDING).
-            if (Math.abs(spare[b]) <= SPARE_ROUNDING * Math.max(Math.abs(supply[b]), Math.abs(posts[b]))) spare[b] = 0;
             above[b] = higher;
             higher += Math.max(0, own[b]);
             comeFor[b] = migration != null ? migration.admits(band) : band.arrivalCeiling() > 0;
             if (wanted[b] > 0) fillable += Math.min(wanted[b], Math.max(0, spare[b]));
         }
         // The lowest band nobody can fill is the one named: it is the one the fill runs out of first.
-        return new Staffing(fillable / total, wanted, spare, above, comeFor, this, t, Math.max(1, count));
+        // ...and a share within rounding of nothing is nothing (SHARE_ROUNDING).
+        double share = fillable / total;
+        if (share <= SHARE_ROUNDING) share = 0;
+        return new Staffing(share, wanted, spare, above, comeFor, this, t, Math.max(1, count));
     }
 
     /**
