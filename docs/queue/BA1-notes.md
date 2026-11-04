@@ -1,27 +1,21 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
-**WHERE IT STANDS (paused on the orchestrator's word, 2026-11-03 11:30; no ship file):**
-1. On main at cd3a506e (FC1b 0.9.7, BD1, DM1 merged in). The model and the harness slice are committed. It compiles, and
-   the harnesses BA1 changed pass alone.
-2. **The ensemble says no yet** (section 4): 20/26 against 0.9.6's 22/26, and 25 busts against 16, with the queue's
-   p90 at 58 months. The price and the interest on the wait do not ration the orders enough. Rework the rationing
-   before mending any more fixtures.
-3. `--pick` on the gate's world files (JDK_JAVA_OPTIONS naming the main checkout's data/earth-2.bin and
-   data/world-1.bin; without them the worktree reads another world and PriceLevelCheck 6 parts on FC1b too) left
-   these reds. All are fixtures on a moved path or a known bug, except CentralBankCheck's dynamics:
-   - NewGameCheck (c): Game.solveForCash stops on a short auction one granule down;
-   - CentralBankCheck: very strict against Standard;
-   - SaveFileCheck: its full city's conditions;
-   - OilCheck: the vans' diesel;
-   - RailDepotCheck: the bulk under the sidings;
-   - MapCheck and LongPlaytest: a map building moved at month 1809, lane 2's known plan bug.
-   PriceLevelCheck's town tie is mended (TOWN_MONTHS 33).
-4. Next: read target/ensemble's AUTO2 runs (the queue and premium columns) for what floods the queue - the landlords'
-   orders, sized to the whole gap, are the first suspect - and put back a brake that reads it. Then rerun the
-   ensemble, mend the fixtures above (one Sonnet slice), run `--pick` on the world files, and write the ship file.
-5. The before: FC1-lc3 had 16 busts in 13 of 16 seeds and people at m240/600/1200 of 4,027 / 14,681 / 67,166. BA1 has
-   25 busts in 13, at 3,242 / 12,754 / 79,501 (scratchpad busts.py; a bust is people 15%+ under a running peak from
-   m120).
+**WHERE IT STANDS (2026-11-04, lane 2; no ship file):**
+1. On main at 68fc54ce (CB1 0.9.9 merged in). The brake is in and committed: **dear contracts** (section 1, ★).
+2. **The ensemble holds** (section 4): `docs/ensemble/BA1.md`, **22/26, as 0.9.6's 22/26** (BA1 without the brake:
+   20/26). A1 passes again (14/16 in band) and R2 now passes. A3 fails on one seed's 13-month deflation spell (the
+   bar is 12). A2, S1 and R3 failed on 0.9.6 too. AUTO2's busts are 14 in 11 seeds (FC1-lc3 16 in 13, BA1 without the
+   brake 25). People at m240/600/1200 are 3,872 / 14,673 / 82,850 (FC1-lc3 4,027 / 14,681 / 67,166), and the final
+   population median is 616,952 (0.9.6 335,674). The queue from m240 is p50 5.2, p90 43.6, p99 79 months (58 without
+   the brake), with the premium on in 44% of months.
+3. **Left: the fixtures, then `--pick`.** Section 3 has the named run of the 14 harnesses most likely touched. The
+   reds of 2026-11-03 were NewGameCheck (c), CentralBankCheck, SaveFileCheck, OilCheck and RailDepotCheck, plus MapCheck
+   and LongPlaytest (a map building moved at month 1809: main's known plan bug, which main's own nightly shows at
+   3010-3013). Mend them in one Sonnet slice, run `./batch-check.sh --pick` on the world files (JDK_JAVA_OPTIONS
+   naming the main checkout's data/earth-2.bin and data/world-1.bin; without them PriceLevelCheck 6 and the map
+   harnesses read another world), then write the ship file.
+4. The planner line on the sector screen still names only "the price and the interest on the wait". It could name
+   dear contracts too; a word for the slice.
 
 Jerus, 2026-11-01: "why bounded? why not let contracts flow? market after is efficient, too much and contracts get
 expensive thus business stop trying to place orders until contracts arent so expensive". The brief is
@@ -42,6 +36,12 @@ expensive thus business stop trying to place orders until contracts arent so exp
   - One building is priced exactly as FC1 priced it.
   - Without this, one order of six hundred homes took years of the queue at the price before it. With it, 600 Houses
     on a queue of 8.2 months cost 1.107 times the work per home.
+- **★ Dear contracts (2026-11-04).** Every money test grows an order's cost once more by the order's own multiple on
+  the builders' price (`BusinessInvestment.dearOf()`, folded into `carryOf()`). A business can wait: an order placed
+  into a dear queue opens little sooner than one placed once the queue has run down, and that one pays no premium
+  (Jerus: "stop trying to place orders until contracts arent so expensive"). At or under the knee (9 months queued)
+  the multiple is exactly 1, so a young city's orders are FC1's. It rises with the order, so the halving searches
+  hold. Section 4 has what it was measured against.
 - **The interest on the wait.**
   - Every money test multiplies the cost by `(1 + real rate / 12)^W`, where W is the order's whole wait
     (`BusinessInvestment.carryOf()`). This covers consider()'s slices, the build card, the spread planners' money gate
@@ -116,9 +116,52 @@ expensive thus business stop trying to place orders until contracts arent so exp
 
 ## 4. The ensemble
 
+### What flooded the queue (2026-11-04)
+
+AUTO2's 16 seeds again on 0dcd714d (CB1 merged), with the queue's points split by owner (temporary getters, removed):
+
+- **Not the landlords.** Homes were 8 to 10% of the points queued, and 8% when the queue was past 24 months.
+- **The works.** Past 24 months queued, heavy industry owned the most points in most months, 26 to 49% of the queue in
+  the four seeds probed. Public works held up to 20%, and the copper and cement works 5 to 8%.
+- **Why the price did not stop them.** Their goods sell at the world's price, so a plant on site does not lower what
+  the next one earns (`SpreadPlanner.after()` moves nothing). At queues of 36 months and more, the median order that
+  passed cleared its money test by 1.6 to 2.0 times (coke ovens, the blast furnaces, the lime kiln), with the premium
+  (about +60% on the work there) and the carry (1.4 to 1.7) already in it. FC1's premium stops at +80% on the work
+  alone, so no queue length was dear enough for them.
+
+### The brake: dear contracts
+
+The test asks an order to carry its cost grown once more by its own multiple (section 1). The trials, AUTO2 only, 16
+seeds each (people at m240 / m600 / m1200, median):
+
+| run | busts (seeds) | people | queue from m240: p50 / p90 / max | A1 | A2 | A3 |
+|---|---|---|---|---|---|---|
+| FC1-lc3 (before BA1) | 16 (13) | 4,027 / 14,681 / 67,166 | 2.0 / 20.9 / - (FC1's run, KNEE_MONTHS' note) | - | - | - |
+| BA1 without it | 25 (13) | 3,242 / 12,754 / 79,501 | 5.3 / 58.1 / 216 | FAIL 8/16 | 24 [11 to 80] | FAIL |
+| the multiple once | 14 (11) | 3,872 / 14,673 / 82,850 | 5.2 / 43.6 / 120 | PASS 14/16 | 24 [13 to 47] | FAIL (13) |
+| the multiple squared | 19 (14) | 3,842 / 15,009 / 82,994 | 4.4 / 37.6 / 110 | PASS 13/16 | 22 [12 to 52] | FAIL |
+
+A bust is people 15%+ under a running peak from m120, and a new one only after a new peak (the earlier count, which
+gives 25 for BA1 without it). Once is taken. Squared shortened the queue but busted more, and with 16 seeds the two
+are within each other's noise.
+
+### The run: `docs/ensemble/BA1.md`
+
+Run `BA1` on c0c7afaa (the brake once, the world files named, the `queue` and `premium` columns), 80 of 80 runs in
+36.5 minutes at two at a time, against `docs/ensemble/0.9.6.md`. **22/26, as the baseline's 22/26.**
+
+- Fails: A2 (24 [13 to 47] months of yoy over 10%; 0.9.6 failed it at 14 [7 to 29]), A3 (one seed's deflation
+  spell of 13 months, the bar 12; median 4), S1 (2.81%, longest spell 85 months; 0.9.6 2.11%, 102), and R3 (4 seeds
+  above +1 point, as on 0.9.6).
+- Passes that 0.9.6 failed: R2 (2.72% [-6.59% to 7.73%]).
+- T2, AUTO2's final population: 616,952 [373,392 to 707,088], against 335,674. Build ahead makes larger cities.
+- The queue from m240: p50 5.2, p90 43.6, p99 79.2, max 119.9 months. The premium is on in 44% of months, p90 +54%.
+  The AUTO2 half matches the trial above to the digit (same classes, same seeds).
+
+### Before the brake (2026-11-03)
+
 Run `BA1` on 93197de5 (FC1b merged; the world files named; extra columns `queue` = monthsQueued and `premium` =
-scarcityPremium), against `docs/ensemble/0.9.6.md`. **20/26 against the baseline's 22/26.** The model is not final, so
-the run is not committed as `docs/ensemble/BA1.md`.
+scarcityPremium), against `docs/ensemble/0.9.6.md`. **20/26 against the baseline's 22/26.**
 
 - AUTO2 A1, inflation from m240: 2.93% [2.28 to 6.31], 8 of 16 seeds in band. FAIL; it passed on 0.9.6.
 - AUTO2 A2, the longest spell of yoy over 10%: 24 months [11 to 80], against 0.9.6's 14 [7 to 29].
