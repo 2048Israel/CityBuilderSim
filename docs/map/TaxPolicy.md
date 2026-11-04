@@ -1,6 +1,6 @@
 # TaxPolicy.java - 1,750 lines · 109 methods · 47 constants · model
 
-`ham/citybuildersim/TaxPolicy.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TaxPolicy.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
 > The city's tax rates - the revenue half of what the player actually decides.
 > 

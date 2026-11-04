@@ -1,6 +1,6 @@
 # DebtMoneysCheck.java - 504 lines · 17 methods · 5 constants · harnesses
 
-`ham/citybuildersim/DebtMoneysCheck.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DebtMoneysCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
 > The city's paper in any of the eight moneys (CD8, Jerus 2026-10-23): the city sells bills and bonds abroad in the euro, the yen, the pound,
 > the yuan, the Canadian and Australian dollars and the franc as well as the US$, each on ITS money's curve - that bank's policy rate (the world's

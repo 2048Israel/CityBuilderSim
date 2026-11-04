@@ -1,6 +1,6 @@
 # CityBuilderSim.java - 55 lines · 2 methods · 0 constants · interface
 
-`ham/citybuildersim/CityBuilderSim.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityBuilderSim.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
 > The way in.
 > 

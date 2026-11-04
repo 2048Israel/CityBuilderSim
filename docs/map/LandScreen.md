@@ -1,6 +1,6 @@
 # LandScreen.java - 2,415 lines · 95 methods · 22 constants · interface
 
-`ham/citybuildersim/ui/LandScreen.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/LandScreen.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
 > The land office: whether the city has room to grow, and which ground to
 > buy - since 0.7.61 round the city's map (batch J4; the project's

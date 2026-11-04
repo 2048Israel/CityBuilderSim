@@ -1,4 +1,4 @@
-# WN5b - WN5's review follow-ups ({next}, 2026-11-03)
+# WN5b - WN5's review follow-ups (0.9.10, 2026-11-03)
 
 The five items of [WN5b](WN5b.md), from the stranger's reviews at WN5's and WN6's gates. Built on DM1 (lane 2, RL1). Slices by Sonnet 5.5
 at xhigh, reviewed here; paused overnight 2026-11-02 on the orchestrator's word (ten sessions on one PC) and resumed when DM1's ship file was up.
