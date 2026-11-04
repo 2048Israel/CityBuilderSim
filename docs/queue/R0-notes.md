@@ -10,6 +10,10 @@ unmerged at the start).
 
 (Kept at the top; a session resuming from GitHub starts here.)
 
+- **2026-11-04 18:50, mid-way:** call 16 built (a685d5d3), slice 3 and zoning's gate built (198a6cbc; its PolicyDatesCheck 12-13
+  and the zoning fixtures not run yet), main (CM1, 0.9.11) merged in. The full suite ran on call 16 alone: 27 red harnesses, each
+  still to be read by call 7 (listed in the suite's entry below).
+
 - 2026-11-04 10:50: these notes written; the split and the calls below taken.
 - **Slice 1 done** (8edef28f): `PolicyDates` (the 21 levers: 12 dated, 9 open
   from founding; care subsidies, deposit insurance and the 1915 levy have no
