@@ -5455,9 +5455,12 @@ public class Game {
      * kilometres (KM2); `priceShare` 0 to 1 of the going business price,
      * what the next sale in it pays (Z3: ground already sold is not
      * re-priced). Any sector of the registry (Sectors.KEYS), Real Estate's for
-     * homes.
+     * homes. Refused, with no log line, until zoning opens (R0, call 13: PL6, 1924 on history's dates: before it everything is free and
+     * nothing is zoned or charged). The forest law and a zone's tax row stay open: the law is not the study's zoning (it gives it no date),
+     * and a tax row is the sector's own offset, held by its own tax's lever; a save from before R0 loads with every lever open, its zones standing.
      */
     public void setZone(String sector, Zoning.Size kind, double size, double priceShare) {
+        if (!isLeverOpen(PolicyDates.Lever.ZONING)) return;
         if (getSectors().byKey(sector) == null) return;
         Zoning.Zone was = landManager.getZoning().zone(sector);
         Zoning.Zone now = landManager.getZoning().set(sector, kind, size, priceShare);

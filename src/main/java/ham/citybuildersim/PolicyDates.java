@@ -199,13 +199,56 @@ public final class PolicyDates {
 
     /** The date a lever opens as the Policy screen prints it: "1917", "August 1940", or "founding" for a lever open from the start. */
     public static String openingDate(Lever lever) {
-        if (openAtFounding(lever)) return "founding";
-        return lever.monthKnown() ? CityCalendar.format(openingMonth(lever)) : Integer.toString(lever.year());
+        return dateOf(lever, openingMonth(lever));
+    }
+
+    /** A lever's opening month as a date: "founding" for month 1 or earlier, the month and year where the study dates it to a month, else the year alone. */
+    private static String dateOf(Lever lever, int openingMonth) {
+        if (openingMonth <= 1) return "founding";
+        return lever.monthKnown() ? CityCalendar.format(openingMonth) : Integer.toString(CityCalendar.yearOf(openingMonth));
+    }
+
+    /**
+     * The lever as a player reads it, with its article, lower case: "an income tax", "a profit tax", "student aid", "zoning" (the three that
+     * take none: EI, student aid and zoning). One rule for the inbox's title and the Policy screen's shut card, so they never disagree.
+     */
+    public static String named(Lever lever) {
+        String label = lever.label();
+        boolean uncountable = lever == Lever.EI || lever == Lever.STUDENT_AID || lever == Lever.ZONING;
+        if (uncountable) return label;
+        return ("AEIOUaeiou".indexOf(label.charAt(0)) >= 0 ? "an " : "a ") + label;
+    }
+
+    /**
+     * What a shut lever's card says first, on Canada's date: "Opens 1917 - an income tax: 4% above $1,500 (single) or $3,000; a supertax of
+     * 2% to 25%": when it opens, what it is, and Canada's first terms for it.
+     */
+    public static String shutLine(Lever lever) {
+        return shutLine(lever, openingMonth(lever));
+    }
+
+    /** The same on the city's own opening month (R3's finds move it earlier): the month and year where the study dates it to a month, else the year. */
+    public static String shutLine(Lever lever, int cityOpeningMonth) {
+        return "Opens " + dateOf(lever, cityOpeningMonth) + " - " + named(lever) + ": " + lever.terms();
+    }
+
+    /** What a shut lever's card says second, on Canada's date: "Canada had none until then; the tax opens at the city's founding rate, 15%." */
+    public static String shutWhy(Lever lever) {
+        return shutWhy(lever, openingMonth(lever));
+    }
+
+    /** The same for a city whose opening month a find has moved earlier: then "then" would name the wrong date, so it says history's and the find. */
+    public static String shutWhy(Lever lever, int cityOpeningMonth) {
+        String until = cityOpeningMonth == openingMonth(lever) ? "then"
+                : openingDate(lever) + ", and a find has brought it forward";
+        String opens = opensAt(lever);
+        return "Canada had none until " + until + "; " + Character.toLowerCase(opens.charAt(0)) + opens.substring(1) + ".";
     }
 
     /**
      * The inbox sentence for the month a lever opens: when Canada first had it, under what, on what terms, where it opens (an income tax at
-     * the founding rate, the minimum wage's floor at the going unskilled wage, every other dated lever at zero) and that the setting is the
+     * the founding rate, the minimum wage's floor at the going unskilled wage, zoning with no ground zoned until a zone is drawn, every other
+     * dated lever at zero) and that the setting is the
      * player's. A lever open from founding has no first day to report, so its notice is empty.
      */
     public static String notice(Lever lever) {
@@ -215,12 +258,27 @@ public final class PolicyDates {
                 + "; the setting is yours.";
     }
 
+    /**
+     * The one line under a dial that sets several levers at once ("every tax") naming the ones still shut, which it leaves alone: "Still shut, so
+     * this dial leaves them alone: profit tax (opens 1916) and sales tax (opens 1920)." Each lever's date is the city's own opening month, as
+     * the caller reads it; an empty list gives an empty line.
+     */
+    public static String stillShut(java.util.List<Lever> shut, java.util.function.ToIntFunction<Lever> cityOpeningMonth) {
+        if (shut.isEmpty()) return "";
+        java.util.List<String> parts = new java.util.ArrayList<>();
+        for (Lever l : shut) parts.add(l.label() + " (opens " + dateOf(l, cityOpeningMonth.applyAsInt(l)) + ")");
+        String list = parts.size() == 1 ? parts.get(0)
+                : String.join(", ", parts.subList(0, parts.size() - 1)) + " and " + parts.get(parts.size() - 1);
+        return "Still shut, so this dial leaves " + (shut.size() == 1 ? "it" : "them") + " alone: " + list + ".";
+    }
+
     /** Where a dated lever opens, as a sentence the notice finishes: the founding rate, the going unskilled wage, or zero. */
     static String opensAt(Lever lever) {
         if (opensAtFoundingRate(lever)) {
             return "The tax opens at the city's founding rate, " + DecisionLog.pct(TaxPolicy.DEFAULT_INCOME_TAX);
         }
         if (lever == Lever.MINIMUM_WAGE) return "The floor opens at the going unskilled wage";
+        if (lever == Lever.ZONING) return "No ground is zoned until you draw a zone";
         return "The lever opens at zero";
     }
 }

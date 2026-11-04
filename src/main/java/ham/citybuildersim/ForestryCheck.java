@@ -387,6 +387,8 @@ public class ForestryCheck {
         Game g = new Game(files);
         quietly(() -> {
             g.newGame();
+            // The premise is a zone's mechanics (Forestry's plantations stand on its zone), and a 1900 city has no zoning until 1924 (R0): zoning opened in the fixture.
+            g.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.ZONING);
             g.setCashForTest(Founding.WEALTHY_CASH);
             LandManager land = g.getLandManager();
             land.setOwnedSqFt(land.getOwnedSqFt() + LandManager.sqFt(TOWN_KM2));

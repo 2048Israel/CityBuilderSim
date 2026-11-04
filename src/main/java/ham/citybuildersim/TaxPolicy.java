@@ -211,6 +211,11 @@ public class TaxPolicy {
         held.clear();
     }
 
+    /** One lever's opening month to 1, the rest and what was held untouched: a fixture whose premise is one lever's mechanics (a tax so opened still opens at the founding rate the next month it is told). */
+    public void openNow(PolicyDates.Lever lever) {
+        opening.put(lever, 1);
+    }
+
     /** Every lever back to history's date: a new city. */
     private void resetOpenings() {
         opening.putAll(historyOpenings());

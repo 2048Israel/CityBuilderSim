@@ -56,6 +56,13 @@ import java.util.Set;
  *  11. THE TWO READERS AND THE LOANS (R0, calls 14 and 15). The founding quote of the builders' sales tax is a month-1 city's, not a bare
  *      policy's; a city's households start on the policy's pension, not the 45% default; before student aid opens a student is lent nothing
  *      and the loan rate is refused, and the household book is told so each month.
+ *  12. ZONING'S GATE (R0, call 13). Until zoning opens (PL6, 1924 on history's dates) Game.setZone() draws no zone and writes nothing to the
+ *      decision log, while the forest law takes a setting (it is not the study's zoning); a city whose zoning is moved is still refused the month
+ *      before and takes a zone in its month, where the inbox raises one notice, titled by Inbox.leverTitle() (no article, history's date);
+ *      TaxPolicy.openNow() opens one lever and no other, and an income tax so opened still opens at the founding rate when the month is told.
+ *  13. THE SHUT LEVER'S WORDS (R0, slice 3). The Policy screen's card for a shut lever is composed here and not in the screen: its first line
+ *      names the date, the lever with the article Inbox.leverTitle() uses and the terms, its second where the lever opens, and a city whose
+ *      opening a find moved is told history's date and the find.
  */
 public class PolicyDatesCheck {
 
@@ -127,6 +134,13 @@ public class PolicyDatesCheck {
             case STUDENT_AID:          return p.getGrantAmount();
             default:                   return 0;
         }
+    }
+
+    /** How many lines the city's decision log holds under the zoning kind: what a zone, or the forest law, writes when it is taken. */
+    static int zoningLines(Game g) {
+        int n = 0;
+        for (DecisionLog.Entry e : g.getDecisions().entries()) if (DecisionLog.ZONING.equals(e.kind)) n++;
+        return n;
     }
 
     /** The three income taxes, typed here as the specification of PolicyDates.opensAtFoundingRate() (call 16): the levers that fund the city. */
@@ -252,10 +266,12 @@ public class PolicyDatesCheck {
             check(l + "'s opening date prints as the Policy screen will show it", PolicyDates.openingDate(l).equals(
                     r.monthKnown() ? CityCalendar.format(PolicyDates.openingMonth(l)) : Integer.toString(r.year())));
             // Where it opens, typed here and not read from the class: an income tax at the founding rate (the percent from the model's own
-            // constant), the minimum wage's floor at the going unskilled wage (call 12), every other dated lever at zero (call 16).
+            // constant), the minimum wage's floor at the going unskilled wage (call 12), zoning with no ground zoned until a zone is drawn
+            // (call 13: it has no dial to open at zero), every other dated lever at zero (call 16).
             String opensAt = INCOME_TAXES.contains(l)
                     ? "The tax opens at the city's founding rate, " + DecisionLog.pct(TaxPolicy.DEFAULT_INCOME_TAX) + "; the setting is yours."
                     : l == Lever.MINIMUM_WAGE ? "The floor opens at the going unskilled wage; the setting is yours."
+                    : l == Lever.ZONING ? "No ground is zoned until you draw a zone; the setting is yours."
                     : "The lever opens at zero; the setting is yours.";
             check(l + "'s notice closes with where it opens: \"" + opensAt + "\"", notice.endsWith(l.terms() + ". " + opensAt));
         }
@@ -769,6 +785,119 @@ public class PolicyDatesCheck {
         monthOnePolicy.setStudentLoanRate(.05);
         check("in month 3, student aid opened, the book is told it lends and the rate takes", monthOne.getMonth() == 3
                 && monthOne.getHouseholdBalance().isStudentLoansOpen() && monthOnePolicy.getStudentLoanRate() == .05);
+
+        /* ==================== 12. zoning's gate ==================== */
+        System.out.println("\n--- zoning is shut until its date: no zone is drawn and none logged, the forest law stays open, and the inbox raises its notice ---");
+        Game zoneCity = new Game(GameFiles.scratch("r0-zoning"));
+        System.setOut(quiet);
+        try { zoneCity.run(); } finally { System.setOut(out); }
+        TaxPolicy zonePolicy = zoneCity.getEconomyManager().getTaxPolicy();
+        int zoningMonth = PolicyDates.openingMonth(Lever.ZONING);
+        int zoneMoved = 3;
+        check("fixture: zoning is shut in month 1, opens on history's month, and the month it is moved to is earlier than that",
+                zoneCity.getMonth() == 1 && !zoneCity.isLeverOpen(Lever.ZONING) && zoneCity.leverOpeningMonth(Lever.ZONING) == zoningMonth
+                        && zoneMoved < zoningMonth);
+        int zoneDecided = zoningLines(zoneCity);
+        System.setOut(quiet);
+        try { zoneCity.setZone(Sectors.RETAIL, Zoning.Size.SHARE, .05, .5); } finally { System.setOut(out); }
+        check("a zone drawn in month 1 is refused: no zone stands and nothing is written to the decision log",
+                zoneCity.getZoning().zone(Sectors.RETAIL) == null && !zoneCity.getZoning().hasZones()
+                        && zoningLines(zoneCity) == zoneDecided);
+        System.setOut(quiet);
+        try { zoneCity.setForestLaw(.10, .25); } finally { System.setOut(out); }
+        check("...while the forest law takes a setting in month 1 and logs it: it is not the study's zoning",
+                zoneCity.getZoning().protectedShare() == .10 && zoneCity.getZoning().keptShare() == .25
+                        && zoningLines(zoneCity) == zoneDecided + 1);
+
+        Map<String, Integer> zoningEarlier = new HashMap<>();
+        zoningEarlier.put(Lever.ZONING.name(), zoneMoved);
+        zonePolicy.restoreOpenings(zoningEarlier);
+        System.setOut(quiet);
+        try { zoneCity.toggleNextMonth(); zoneCity.setZone(Sectors.RETAIL, Zoning.Size.SHARE, .05, .5); } finally { System.setOut(out); }
+        check("a city whose zoning is moved is still refused in the month before it: no zone, and the decision log as it was",
+                zoneCity.getMonth() == zoneMoved - 1 && !zoneCity.isLeverOpen(Lever.ZONING) && !zoneCity.getZoning().hasZones()
+                        && zoningLines(zoneCity) == zoneDecided + 1);
+        System.setOut(quiet);
+        try { zoneCity.toggleNextMonth(); } finally { System.setOut(out); }
+        int zoneLogged = zoningLines(zoneCity);
+        System.setOut(quiet);
+        try { zoneCity.setZone(Sectors.RETAIL, Zoning.Size.SHARE, .05, .5); } finally { System.setOut(out); }
+        Zoning.Zone drawn = zoneCity.getZoning().zone(Sectors.RETAIL);
+        check("in its month zoning is open and takes the zone, logged as a zoning decision",
+                zoneCity.getMonth() == zoneMoved && zoneCity.isLeverOpen(Lever.ZONING) && drawn != null && drawn.size() == .05
+                        && drawn.priceShare() == .5 && zoningLines(zoneCity) == zoneLogged + 1);
+        int zoningNotices = 0;
+        Notice zoningNotice = null;
+        for (Notice n : zoneCity.getInbox().all()) if (n.getKey().equals("lever:" + Lever.ZONING.name())) { zoningNotices++; zoningNotice = n; }
+        check("the inbox raised zoning's opening notice once, in the month it opened, titled by Inbox.leverTitle() with no article and history's date",
+                zoningNotices == 1 && zoningNotice.getRaised() == zoneMoved && zoningNotice.getTitle().equals(Inbox.leverTitle(Lever.ZONING))
+                        && zoningNotice.getTitle().equals("Zoning: " + PolicyDates.openingDate(Lever.ZONING)));
+        check("...with Canada's first terms for its body, which say no ground is zoned until you draw a zone",
+                zoningNotice != null && String.join(" ", zoningNotice.getBody()).equals(PolicyDates.notice(Lever.ZONING))
+                        && PolicyDates.notice(Lever.ZONING).contains("No ground is zoned until you draw a zone"));
+        System.setOut(quiet);
+        try { zoneCity.toggleNextMonth(); } finally { System.setOut(out); }
+        int zoningAgain = 0;
+        for (Notice n : zoneCity.getInbox().all()) if (n.getKey().equals("lever:" + Lever.ZONING.name())) zoningAgain++;
+        check("in the month after it is still one notice, and the zone stands", zoningAgain == 1 && zoneCity.getZoning().zone(Sectors.RETAIL) != null);
+
+        // TaxPolicy.openNow(): one lever, and no other.
+        Game nowCity = new Game(GameFiles.scratch("r0-zoning-now"));
+        System.setOut(quiet);
+        try { nowCity.run(); } finally { System.setOut(out); }
+        TaxPolicy nowPolicy = nowCity.getEconomyManager().getTaxPolicy();
+        nowPolicy.openNow(Lever.ZONING);
+        boolean othersShut = true;
+        for (Lever l : TaxPolicy.GATED) othersShut &= !nowCity.isLeverOpen(l);
+        check("openNow(ZONING) opens zoning from month 1 and nothing else: the wage tax, the minimum wage and every gated lever stay shut",
+                nowCity.getMonth() == 1 && nowCity.isLeverOpen(Lever.ZONING) && nowCity.leverOpeningMonth(Lever.ZONING) == 1
+                        && !nowCity.isLeverOpen(Lever.WAGE_TAX) && !nowCity.isLeverOpen(Lever.MINIMUM_WAGE) && othersShut);
+        System.setOut(quiet);
+        try { nowCity.setZone(Sectors.RETAIL, Zoning.Size.SHARE, .05, .5); } finally { System.setOut(out); }
+        check("...and the zone is taken in month 1", nowCity.getZoning().zone(Sectors.RETAIL) != null);
+        nowPolicy.openNow(Lever.WAGE_TAX);
+        check("a tax opened so is open and, until the month is told, still reads zero", nowCity.isLeverOpen(Lever.WAGE_TAX) && nowPolicy.getWageTaxRate() == 0);
+        System.setOut(quiet);
+        try { nowCity.toggleNextMonth(); } finally { System.setOut(out); }
+        check("...and the month after it opens at the founding rate, as history's would, while the profit and sales taxes stay shut at zero",
+                nowPolicy.getWageTaxRate() == TaxPolicy.DEFAULT_INCOME_TAX && !nowCity.isLeverOpen(Lever.PROFIT_TAX)
+                        && !nowCity.isLeverOpen(Lever.SALES_TAX) && nowPolicy.getProfitTaxRate() == 0 && nowPolicy.getSalesTaxRate() == 0);
+
+        /* ==================== 13. the shut lever's words ==================== */
+        System.out.println("\n--- a shut lever's card: the date, the lever with its article and the terms; then where it opens ---");
+        boolean namesAgree = true;
+        boolean linesRead = true;
+        boolean whysRead = true;
+        for (Lever l : TaxPolicy.GATED) {
+            namesAgree &= Inbox.leverTitle(l).equals(Character.toUpperCase(PolicyDates.named(l).charAt(0)) + PolicyDates.named(l).substring(1)
+                    + ": " + PolicyDates.openingDate(l));
+            linesRead &= PolicyDates.shutLine(l).equals("Opens " + PolicyDates.openingDate(l) + " - " + PolicyDates.named(l) + ": " + l.terms())
+                    && PolicyDates.shutLine(l).equals(PolicyDates.shutLine(l, PolicyDates.openingMonth(l)));
+            whysRead &= PolicyDates.shutWhy(l).startsWith("Canada had none until then; ") && PolicyDates.shutWhy(l).endsWith(".")
+                    && PolicyDates.shutWhy(l).toLowerCase().contains(PolicyDates.opensAt(l).toLowerCase());
+        }
+        check("the inbox's title is built from the same article rule the card uses (PolicyDates.named()), for every gated lever", namesAgree);
+        check("a shut lever's first line is \"Opens <date> - <the lever>: <Canada's terms>\", and the plain form is the city on history's month", linesRead);
+        check("its second line is \"Canada had none until then; \" and where the lever opens (the founding rate, zero, or the going wage)", whysRead);
+        check("an income tax has its article and the other forms their own: an income tax, a profit tax, an old-age pension, student aid, EI, zoning",
+                PolicyDates.named(Lever.WAGE_TAX).equals("an income tax") && PolicyDates.named(Lever.PROFIT_TAX).equals("a profit tax")
+                        && PolicyDates.named(Lever.PENSION_REPLACEMENT).equals("an old-age pension")
+                        && PolicyDates.named(Lever.STUDENT_AID).equals("student aid") && PolicyDates.named(Lever.EI).equals(Lever.EI.label())
+                        && PolicyDates.named(Lever.ZONING).equals("zoning"));
+        check("an income tax's card says it opens at the city's founding rate, built from the model's constant",
+                PolicyDates.shutWhy(Lever.WAGE_TAX).contains("founding rate, " + DecisionLog.pct(TaxPolicy.DEFAULT_INCOME_TAX))
+                        && PolicyDates.shutWhy(Lever.EI).contains("opens at zero")
+                        && PolicyDates.shutWhy(Lever.MINIMUM_WAGE).contains("going unskilled wage"));
+        int ei = PolicyDates.openingMonth(Lever.EI);
+        check("a lever the study dates to a month prints it (the unemployment insurance act's month), one it dates to a year prints the year",
+                PolicyDates.shutLine(Lever.EI).startsWith("Opens " + CityCalendar.format(ei) + " - ")
+                        && PolicyDates.shutLine(Lever.WAGE_TAX).startsWith("Opens " + CityCalendar.yearOf(PolicyDates.openingMonth(Lever.WAGE_TAX)) + " - "));
+        int earlierEi = PolicyDates.earliestOpening(Lever.EI);
+        check("a city whose opening a find has moved is shown its own date, and told history's and the find where the card says \"then\"",
+                earlierEi < ei && PolicyDates.shutLine(Lever.EI, earlierEi).startsWith("Opens " + CityCalendar.format(earlierEi) + " - ")
+                        && PolicyDates.shutWhy(Lever.EI, earlierEi).startsWith("Canada had none until " + PolicyDates.openingDate(Lever.EI)
+                                + ", and a find has brought it forward; ")
+                        && PolicyDates.shutWhy(Lever.EI, ei).equals(PolicyDates.shutWhy(Lever.EI)));
 
         System.out.println(fails == 0 ? "PolicyDatesCheck: all " + passes + " ok" : "PolicyDatesCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
