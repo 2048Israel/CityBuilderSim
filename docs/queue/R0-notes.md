@@ -11,7 +11,32 @@ unmerged at the start).
 (Kept at the top; a session resuming from GitHub starts here.)
 
 - 2026-11-04 10:50: these notes written; the split and the calls below taken.
-- Next: slice 1, `PolicyDates` and `PolicyDatesCheck` (section 3).
+- **Slice 1 done** (8edef28f): `PolicyDates` (the 21 levers: 12 dated, 9 open
+  from founding; care subsidies, deposit insurance and the 1915 levy have no
+  lever in the game) and `PolicyDatesCheck` (219 ok).
+- **Slice 2a done, reviewed, committed** (the gate for the eight levers
+  `TaxPolicy` holds, `TaxPolicy.GATED`): a closed lever's dial and offsets are
+  held at 0 by `TaxPolicy.setMonth()`, its setters refuse, `copy()` keeps the
+  gate; `Game.nextMonth()` pushes the month right after `month++` (the one
+  place the month moves; `simulateMonth()` runs inside it), `buildWorld`
+  after `reset()`, and the load path after the month is read; the openings
+  saved as `DataSave.leverOpenings` by `Lever.name()` (null: every lever
+  open); `Inbox.takeLevers` raises "An income tax: 1917" once, on the month;
+  `PolicyDatesCheck` 7-9 (303 ok). `restorePolicyState` puts a save back as
+  saved (a `restoring` flag past the refusals).
+- **Red now, the ripple slice 2b mends** (`./batch-check.sh PolicyDatesCheck
+  SaveFileCheck ReadPathCheck`): ReadPathCheck 1, "doubling the rate moves the
+  very next month's commercial tax" (its fixture's `setProfitTaxRate` at month
+  1 is refused); SaveFileCheck 6: "fixture: the dial really did pay out",
+  "...the city really was paying for repairs", "...the health premium really
+  was collected", "...the index was based in those six months, in the city
+  saved" and "...and in its reload" (fixtures setting a shut lever), and
+  "something is genuinely mid-build" (not a lever's fixture: a tax-free 1900
+  city building differently, unconfirmed - read it at its cause). The full
+  suite has not run: other harnesses that set a tax in month 1 will be red
+  the same way.
+- **Next:** slice 2b (section 3), then the full suite, then slice 3 (the
+  screen), then the ensemble. No ship file until CM1 is on main and merged in.
 
 ## 1. What R0's row holds now, and where it splits
 
@@ -89,6 +114,33 @@ dates and nothing else.** R0d, R0e and R0f go in the ship file's `## queued`.
     Gson leaves it missing, which would read as "every lever open since month
     1" - incomplete, not wrong, for a city founded before R0 (its taxes were
     set). No format bump. Taken as recommended.
+11. **★ A date the study gives by the year alone** opens in January of that
+    year (profit tax 1916, income tax 1917, ...); one it gives to the month
+    opens in that month (the Advance Rate August 1914, the Bank of Canada
+    March 1935, EI August 1940, Saskatchewan January 1947, the CPP January
+    1966). Why: a month would be a claim the study does not make. Taken.
+12. **★ The minimum wage is also the ladder's anchor** (found in slice 2a's
+    reading): `LabourMarket.baseWage()` is `minimumWage x ratio x
+    costOfLiving` for every job, and the floor is the same figure
+    (`cashMinimumWage()`, applied as `Math.max(wage, floor)`). Zero would zero
+    every wage. Recommended and taken for slice 2b: before 1918 the floor does
+    not bind (the `Math.max` step skipped: an unskilled surplus can price
+    itself below the base, as 1900's could) and the dial and its nudge are
+    shut; from 1918 the floor binds at the dial, which stands at the ladder's
+    anchor, so this one lever opens at the going unskilled wage, not at zero.
+    The alternative, a legislated floor apart from the anchor, opening at 0,
+    is larger and moves LabourCheck's premises.
+13. **★ Zoning before 1924** is "everything free, the decided default" (§7.1):
+    no zone drawn and none charged until PL6's month (slice 2b reads
+    `Zoning` first).
+14. **★ Student loans before 1939:** the loans themselves are shut (no new
+    loan is made), not merely a 0% rate, which would be free money; slice 2a
+    left the loan rate alone for this reason.
+15. **★ Two readers that quote a shut lever** (found in slice 2a): 
+    `Founding.foundingBuildersRate()` quotes the 15% sales tax from a bare
+    policy while the city charges 0 in 1900, and `HouseholdAccounts` starts
+    from the 45% pension default until Game (~L3547) overwrites it each
+    month. Slice 2b points both at the city's gated policy.
 
 ## 3. The slices
 
@@ -99,12 +151,15 @@ dates and nothing else.** R0d, R0e and R0f go in the ship file's `## queued`.
    The harness: every dated lever's month is the table's; property tax and
    the open ones are open in month 1; each closed lever is closed the month
    before its date and open on it; nothing opens more than 48 months early.
-2. **The gate in the model**: the city's opening months (saved, `DataSave` out
-   and in, `SaveFileCheck`), `TaxPolicy`'s effective rates and setters, the
-   minimum wage (`LabourMarket`; it anchors the ladder in month 1, so read
-   first), zoning, EI, pensions, student aid, the health premium; the inbox
-   notice on the month; the harness fixtures that need a lever opened. Then
-   the full suite's ripple is the batch's.
+2. **The gate in the model.** 2a (done): the eight levers in `TaxPolicy`,
+   the month push, the save, the inbox. 2b (next): the minimum wage's floor
+   (call 12), zoning (13), the student loans (14), the two readers of call
+   15; then the harness ripple. A harness red because its fixture sets a
+   shut lever in month 1 opens that lever in its fixture
+   (`getTaxPolicy().openAll()`, or one lever where the premise is one), its
+   label saying so (call 7); a red that is the model's (a city with no
+   income taxes to 1916-20 grows differently) is read at its cause and never
+   re-premised. The full suite once 2b's own harnesses are green.
 3. **The screen**: a closed lever on the Policy tab drawn shut with "opens
    1917 - an income tax, 4% above $1,500" (checked by eye).
 4. **The ensemble**: the trace moves (a 1900 city without income tax for 17
@@ -113,4 +168,8 @@ dates and nothing else.** R0d, R0e and R0f go in the ship file's `## queued`.
 ## 4. Records
 
 - Ship file: not yet (CM1 is not on main; the ship file is pushed last, once
-  it is and is merged in).
+  it is and is merged in). Its `## queued` rows, decided here (call 1):
+
+  | R0d | Research: the 1901 wage ladder and the arrivals' skill mix by year - each `PayTier` rung's 1901 comparator, sourced or flagged est. (research-1900 §5.2, §12.1), switched on with R1's 1900 recipes (R0-notes call 2); arrivals' diplomas from the year's mix (1.2 university students per 1,000 in 1901, 4.7 in 1950; nurses 0.05 to 3) | [R0-notes §1-2](docs/queue/R0-notes.md), [research-1900 §5.2, §5.4](docs/studies/research-1900.md#52-wages) |
+  | R0e | Research: the household's basket by year - 1900's raw staples, lamp oil and coal, no car (after R0c's goods, and on the live demand path, not the shadow basket) | [research-1900 §4, §5.4](docs/studies/research-1900.md#54-what-batch-r0-needs-the-first-studys-q1-now-for-1900) |
+  | R0f | Research: Money on Canada's dates - the D$ on gold to Aug 1914 and Jul 1926-1931, the Advance Rate opening the policy rate in Aug 1914, the Bank of Canada the rest of Money in Mar 1935 (`PolicyDates.POLICY_RATE`, `CENTRAL_BANK`); after GD2 and FM1 | [research-1900 §7.2](docs/studies/research-1900.md#72-the-recommendation), [GD0](docs/studies/spec-gold-money.md) |
