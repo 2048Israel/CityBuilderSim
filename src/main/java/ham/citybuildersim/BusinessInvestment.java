@@ -1262,15 +1262,62 @@ public class BusinessInvestment {
 
     /**
      * The carry of an order of `n` of `t` (waitCarry() over leadTime(): the whole wait, the months until its last building
-     * opens, at this month's site output as Game hands it in), which the cost an order is tested on is multiplied by:
-     * Game.consider() on its slices, the lender's test (Mortgage.decide()), the build card's INTEREST gate. Exactly 1
-     * where no output is handed in (a bare fixture), for no template and for fewer than one.
+     * opens, at this month's site output as Game hands it in), times dearOf() while contracts are dear (DEAR CONTRACTS),
+     * which the cost an order is tested on is multiplied by: Game.consider() on its slices, the lender's test
+     * (Mortgage.decide()), the build card's INTEREST gate. Exactly 1 where no output is handed in (a bare fixture), for no
+     * template and for fewer than one.
      *
      * @param annualRate the rate the order is judged at, nominal: realTestRate() is applied here, as servicesItsOwnDebt() applies it
      */
     public double carryOf(BuildingsTemplate t, int n, double annualRate) {
         if (orderWaitOutput == null || t == null || n < 1) return 1;
-        return waitCarry(annualRate, leadTime(t, n, orderWaitOutput.getAsDouble()));
+        // ...and while contracts are dear, by what waiting for them to be cheap would save (DEAR CONTRACTS, below).
+        return waitCarry(annualRate, leadTime(t, n, orderWaitOutput.getAsDouble())) * dearOf(t, n);
+    }
+
+    /* =====================================================================
+       DEAR CONTRACTS (BA1, 2026-11-04)
+
+       Jerus, 2026-11-01: "too much and contracts get expensive thus business
+       stop trying to place orders until contracts arent so expensive". The
+       price of a point and the interest on the wait were not enough. The
+       ensemble's queue ran to 58 months at its p90 (FC1's: 21), and busts went
+       from 16 to 25. The works flooded it: heavy industry held up to half the
+       points queued past 24 months. Their steel sells at the world's price, so
+       a plant on site does not lower what the next one earns, and at queues
+       of 36 months and more their orders still cleared the money test by 1.5
+       to 2 times, with the premium (FC1's ceiling is +80% on the work) and
+       the carry (1.4 to 1.7) counted.
+
+       What was missing is "until contracts arent so expensive": a business
+       can wait. An order placed into a dear queue opens little sooner than
+       one placed once the queue has run down, and the later one pays no
+       premium. So every money test asks the order to carry its cost grown
+       once more by the order's own multiple on the builders' price
+       (dearOf(): BuildingManager.orderPriceMultiplier(), the mean over its
+       buildings, the very figure its price reads). It is folded into
+       carryOf(), so every test that reads the interest on the wait reads it:
+       consider()'s slices, the spread planners' money gate, Oil's, the build
+       card's and the landlords' lender. At or under the knee a point carries
+       no premium, the multiple is exactly 1 and nothing changes; the young
+       city's orders are FC1's. It rises with the order, as the carry does, so
+       the searches by halving still hold.
+
+       Measured on AUTO2's 16 seeds: the queue's p90 went from 58 to 44
+       months, busts from 25 in 13 seeds to 14 in 11, and people at m240,
+       m600 and m1200 from 3,242, 12,754 and 79,501 to 3,872, 14,673 and
+       82,850. The multiple squared cut the queue further (p90 38), with no
+       fewer busts (19).
+       ===================================================================== */
+
+    /**
+     * What a money test grows an order's cost by while contracts are dear (DEAR CONTRACTS): the order's own multiple on
+     * the builders' price (BuildingManager.orderPriceMultiplier() for `n` of `t`'s points), counted once more. Exactly 1 at
+     * or under the knee, with no builders' month to read (a bare fixture), for no template and for fewer than one.
+     */
+    public double dearOf(BuildingsTemplate t, int n) {
+        if (t == null || n < 1) return 1;
+        return buildingManager.orderPriceMultiplier(0, t.getConstructionPoints(), n);
     }
 
     /** The household mix, so a residential building can be priced on who would actually live in it. */
