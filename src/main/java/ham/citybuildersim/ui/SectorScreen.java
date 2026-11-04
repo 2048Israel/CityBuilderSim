@@ -3752,8 +3752,9 @@ final class SectorScreen {
                 "No business is held to one order, or to months of the builders' work. Every order pays the price of "
                         + "a point, which rises with the work queued - each building of an order priced on the queue "
                         + "the ones before it leave - and has to earn the interest on its cost over the months until "
-                        + "the builders reach it. A flood of orders makes the next one dearer and later, until the "
-                        + "orders stop."});
+                        + "the builders reach it. While contracts are dear, a business asks the premium of an order once "
+                        + "more before placing it, since it could wait for them to be cheap. A flood of orders makes the "
+                        + "next one dearer and later, until the orders stop."});
         if (sector == ui.game.getSectors().construction()) {
             out.add(new String[] {String.format("expands past %.0f months of backlog",
                             BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING),

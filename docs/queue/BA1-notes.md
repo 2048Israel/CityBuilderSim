@@ -14,8 +14,7 @@
    3010-3013). Mend them in one Sonnet slice, run `./batch-check.sh --pick` on the world files (JDK_JAVA_OPTIONS
    naming the main checkout's data/earth-2.bin and data/world-1.bin; without them PriceLevelCheck 6 and the map
    harnesses read another world), then write the ship file.
-4. The planner line on the sector screen still names only "the price and the interest on the wait". It could name
-   dear contracts too; a word for the slice.
+4. The sector screen's planner line names dear contracts too (SectorScreen, "No business is held to one order").
 
 Jerus, 2026-11-01: "why bounded? why not let contracts flow? market after is efficient, too much and contracts get
 expensive thus business stop trying to place orders until contracts arent so expensive". The brief is
@@ -69,7 +68,7 @@ expensive thus business stop trying to place orders until contracts arent so exp
   - **The builders: one depot on site** (section 2).
 - **The screens.**
   - Each sector's planner line says how many orders it has on site and how far out the last one opens, and that
-    the price and the interest on the wait ration orders.
+    the price, the interest on the wait and dear contracts ration orders.
   - The Construction tab's QUEUE mark is now the knee where the price of a point starts to rise
     (`BuildersShort.KNEE_MONTHS`, 9 months), on a bar to 33 months, where the premium is half its ceiling.
 
