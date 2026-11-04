@@ -23,7 +23,7 @@ import ham.citybuildersim.ui.ReplayMoveProbe;
  * What it has to prove (the numbers are the brief's section 7, docs/queue/TR1.md):
  *   1. a recording writes one month each, and a rewind rewrites from the next: a grown city, "Record this city" on, played 24
  *      months, has 24 month files, the meta and the history, and nothing under saves/ but the autosave's and the slot the check
- *      saved to; loaded back at month 12 (the save carries the switch and the id) and played 3 months with the income tax moved,
+ *      saved to; loaded back at month 12 (the save carries the switch and the id) and played 3 months with the property tax moved (R0: the income tax is shut until 1917, so the open dial),
  *      the months past 15 are gone, 13 to 15 are rewritten (13's save carries the new rate) and 1 to 12 are byte for byte what
  *      they were; a city founded after that records nothing; and a writer held behind by the backlog never holds the clock;
  *   2. replaying month N gives the figures the city had at N: population, cash, GDP, the price level and the map's building
@@ -244,10 +244,10 @@ public class ReplayCheck {
         g.loadGameSave(ReplayCity.SLOT);
         helper("loaded the save from m0+12: the city is back there, recording is on again, and it is the same id",
                 g.getMonth() == m0 + 12 && g.isRecording() && id.equals(g.getRecordingId()));
-        double wasRate = g.getEconomyManager().getTaxPolicy().getIncomeTaxRate();
-        g.getEconomyManager().getTaxPolicy().setIncomeTaxRate(wasRate + 0.0123);
-        double newRate = g.getEconomyManager().getTaxPolicy().getIncomeTaxRate();
-        helper("fixture: the income tax moved off what the recording has", Math.abs(newRate - wasRate) > 1e-9);
+        double wasRate = g.getEconomyManager().getTaxPolicy().getPropertyTaxRate();
+        g.getEconomyManager().getTaxPolicy().setPropertyTaxRate(wasRate + 0.0123);
+        double newRate = g.getEconomyManager().getTaxPolicy().getPropertyTaxRate();
+        helper("fixture: the property tax moved off what the recording has", Math.abs(newRate - wasRate) > 1e-9);
         for (int i = 1; i <= 3; i++) {
             clockMonth(g);
             g.awaitSaves();
@@ -266,7 +266,7 @@ public class ReplayCheck {
         DataSave at13 = new Gson().fromJson(rec.saveJsonOf(m0 + 13), DataSave.class);
         DataSave at12 = new Gson().fromJson(rec.saveJsonOf(m0 + 12), DataSave.class);
         helper("...and month m0+13's save carries the new rate, m0+12's the old one",
-                Double.compare(at13.getIncomeTaxRate(), newRate) == 0 && Double.compare(at12.getIncomeTaxRate(), wasRate) == 0);
+                Double.compare(at13.getPropertyTaxRate(), newRate) == 0 && Double.compare(at12.getPropertyTaxRate(), wasRate) == 0);
         boolean noTmp;
         try (var listing = Files.list(rec.folder())) {
             noTmp = listing.noneMatch(p -> p.getFileName().toString().endsWith(".tmp"));
@@ -393,12 +393,12 @@ public class ReplayCheck {
         replay.loadWhole(middle);
         TaxPolicy policy = replay.game().getEconomyManager().getTaxPolicy();
         helper("on the copy at the middle month, the rate is the recorded one",
-                Double.compare(policy.getIncomeTaxRate(), recordedMiddle.getIncomeTaxRate()) == 0);
-        policy.setIncomeTaxRate(policy.getIncomeTaxRate() + 0.02);
-        helper("...a click may change the copy", Math.abs(replay.game().getEconomyManager().getTaxPolicy().getIncomeTaxRate() - recordedMiddle.getIncomeTaxRate()) > 1e-9);
+                Double.compare(policy.getPropertyTaxRate(), recordedMiddle.getPropertyTaxRate()) == 0);
+        policy.setPropertyTaxRate(policy.getPropertyTaxRate() + 0.02);
+        helper("...a click may change the copy", Math.abs(replay.game().getEconomyManager().getTaxPolicy().getPropertyTaxRate() - recordedMiddle.getPropertyTaxRate()) > 1e-9);
         helper("...a step to the next month loads it whole", replay.loadWhole(middle + 1) == null && replay.shown() == middle + 1);
         helper("...and back: the rate is the recorded one, nothing stuck",
-                replay.loadWhole(middle) == null && Double.compare(replay.game().getEconomyManager().getTaxPolicy().getIncomeTaxRate(), recordedMiddle.getIncomeTaxRate()) == 0
+                replay.loadWhole(middle) == null && Double.compare(replay.game().getEconomyManager().getTaxPolicy().getPropertyTaxRate(), recordedMiddle.getPropertyTaxRate()) == 0
                         && parted(figuresOf(replay.game()), kept.get(middle)).isEmpty());
         replay.game().setRecording(true);
         helper("the copy records nothing: switching it on leaves it off", !replay.game().isRecording() && replay.game().isReplayCopy());

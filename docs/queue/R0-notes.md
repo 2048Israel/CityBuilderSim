@@ -44,9 +44,14 @@ unmerged at the start).
   PolicyPreviewCheck, FoodProcessingCheck, TreasuryCheck, ZoningCheck (a tax
   offset fixture). Each green named; LongPlaytest green (every month audited,
   every reload matched).
-- **Red, known, next:** ReplayCheck 3 (on `SaveSlotCheck.grownCity`) and
-  HomeRailCheck 1 (on `HaulageCheck.played`): shared city builders; decide
-  per builder whether its premise is a lever's (call 7). **The full suite has
+- **ReplayCheck green again** (its premise is "a dial the player moved off
+  the recording": the dial is now the property tax, open from founding, as
+  the income tax is shut in its 1904 city; the city stays on history's
+  dates).
+- **Red, known, next:** HomeRailCheck 1, "a played city whose boundary fills
+  the railway ...: home share 0" (on `HaulageCheck.played`): not a lever's
+  fixture; a 1900 city with no income taxes grows differently - read it at
+  its cause (call 7). **The full suite has
   not run**; other reds of the same shape may remain.
 - **The finding that needs Jerus's eye: call 16** (below): a lever opening at
   zero leaves the playtest's city untaxed for 49 years.

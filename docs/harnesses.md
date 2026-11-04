@@ -19402,7 +19402,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 > What it has to prove (the numbers are the brief's section 7, docs/queue/TR1.md):
 >   1. a recording writes one month each, and a rewind rewrites from the next: a grown city, "Record this city" on, played 24
 >      months, has 24 month files, the meta and the history, and nothing under saves/ but the autosave's and the slot the check
->      saved to; loaded back at month 12 (the save carries the switch and the id) and played 3 months with the income tax moved,
+>      saved to; loaded back at month 12 (the save carries the switch and the id) and played 3 months with the property tax moved (R0: the income tax is shut until 1917, so the open dial),
 >      the months past 15 are gone, 13 to 15 are rewritten (13's save carries the new rate) and 1 to 12 are byte for byte what
 >      they were; a city founded after that records nothing; and a writer held behind by the backlog never holds the clock;
 >   2. replaying month N gives the figures the city had at N: population, cash, GDP, the price level and the map's building
@@ -19425,7 +19425,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L230 the autosave hands the recording its history, from the snapshot it made: now through the last month
   - L240 nothing under saves/ but the autosave's files and slot 10, the slot the check saved to
   - L245 loaded the save from m0+12: the city is back there, recording is on again, and it is the same id
-  - L250 fixture: the income tax moved off what the recording has
+  - L250 fixture: the property tax moved off what the recording has
   - L258 played 3 months on: the months past m0+15 are gone, m0+1 to m0+15 are what is left
   - L262 ...months up to m0+12 are untouched: byte for byte what they were
   - L265 ...m0+13 to m0+15 are rewritten (the city played them again, with another rate)
