@@ -23,10 +23,14 @@
      (`DEAR CONTRACTS` multiplies `carryOf()`; the halving searches and Mortgage's down-payment edge are where 11-03's
      tie was). Do not move the months to dodge it without naming the tie.
    - **finding, ScaleCheck** "a copy 1,000 times over tracks its city": people 1.59e-2 against 1.50e-2, unemployment
-     3.80e-2 against 3.30e-2. It passes without the brake. Likely cause: the copy's orders are K times larger, so their
-     multiple reads the curve's integral (`BuildersShort.EXACT_SUM_MOST` = 64) where the city's reads the exact sum
-     (worst miss 2.6e-3, ConstructionTrapCheck 12). The brake now counts that multiple twice. Check it before
-     anything else.
+     3.80e-2 against 3.30e-2. It passes without the brake. The cause, read in `BuildersShort.meanPremium()`: building i
+     of an order is priced at the queue where it starts (`fromMonths + i * stepMonths`), one building's points a step.
+     The city's one plant pays the premium at the head of its span; the copy's thousand, each a thousandth of the step,
+     pay the mean across the same span, which is more on a rising curve. So the price was never invariant to scale for
+     a large building, and the brake counts the gap twice. The fix that keeps it invariant: price each building at its
+     own span's mean (start plus half a step, or the integral over it), which ends "one building is priced exactly as
+     FC1 priced it" (ConstructionTrapCheck 12 asserts it). A ★ call: recommended, since the queue a building's points
+     stand in is the half-step after its start.
    - not run: MapCheck and LongPlaytest (11-03: a map building moved at month 1809, main's known plan bug, which main's
      own nightly shows at 3010-3013).
    Then `./batch-check.sh --pick` on the world files (JDK_JAVA_OPTIONS naming the main checkout's data/earth-2.bin and
