@@ -24,19 +24,37 @@ unmerged at the start).
   open); `Inbox.takeLevers` raises "An income tax: 1917" once, on the month;
   `PolicyDatesCheck` 7-9 (303 ok). `restorePolicyState` puts a save back as
   saved (a `restoring` flag past the refusals).
-- **Red now, the ripple slice 2b mends** (`./batch-check.sh PolicyDatesCheck
-  SaveFileCheck ReadPathCheck`): ReadPathCheck 1, "doubling the rate moves the
-  very next month's commercial tax" (its fixture's `setProfitTaxRate` at month
-  1 is refused); SaveFileCheck 6: "fixture: the dial really did pay out",
-  "...the city really was paying for repairs", "...the health premium really
-  was collected", "...the index was based in those six months, in the city
-  saved" and "...and in its reload" (fixtures setting a shut lever), and
-  "something is genuinely mid-build" (not a lever's fixture: a tax-free 1900
-  city building differently, unconfirmed - read it at its cause). The full
-  suite has not run: other harnesses that set a tax in month 1 will be red
-  the same way.
-- **Next:** slice 2b (section 3), then the full suite, then slice 3 (the
-  screen), then the ensemble. No ship file until CM1 is on main and merged in.
+- **Slice 2b done, reviewed, committed** (03588cd6): `Game.policyHearsTheMonth()`
+  (founding, the top of each month, a load) pushes the month to the policy,
+  `LabourMarket.setFloorBinding(isOpen(MINIMUM_WAGE))` (call 12: the floor's
+  `Math.max` and `isPinned()`'s floor skipped while shut; the anchor
+  untouched) and the policy's pension to the households (call 15: month 1
+  pays none); the player's minimum-wage path is `Game.setMinimumWage` /
+  `setMinimumWageAdjustment`, refused while shut (PolicyScreen calls it;
+  `LabourMarket`'s own setter stays open for fixtures); student loans shut to
+  1939 (call 14: `HouseholdBalance.setStudentLoansOpen`, pushed with the loan
+  rate each month; `StudentHousehold` lends nothing and plans with no room);
+  `Founding.foundingBuildersRate()` quotes the month-1 gate (0); the inbox's
+  `NOTICED` adds the minimum wage. `PolicyDatesCheck` 10-11 (324 ok).
+- **Fixtures opened** (call 7; `getTaxPolicy().reset()` then `openAll()` after
+  founding, since founding has already held the rates at 0): ReadPathCheck,
+  SaveFileCheck (its lever fixtures, its `college` fixture for the loans, and
+  its `city` and `early` fixtures: call 17), LabourCheck, ChartCheck,
+  ManufacturingCheck, PolicyCheck, EducationCheck, OutsideCheck, HealthCheck,
+  PolicyPreviewCheck, FoodProcessingCheck, TreasuryCheck, ZoningCheck (a tax
+  offset fixture). Each green named; LongPlaytest green (every month audited,
+  every reload matched).
+- **Red, known, next:** ReplayCheck 3 (on `SaveSlotCheck.grownCity`) and
+  HomeRailCheck 1 (on `HaulageCheck.played`): shared city builders; decide
+  per builder whether its premise is a lever's (call 7). **The full suite has
+  not run**; other reds of the same shape may remain.
+- **The finding that needs Jerus's eye: call 16** (below): a lever opening at
+  zero leaves the playtest's city untaxed for 49 years.
+- **Next:** the full suite (`./batch-check.sh --pick`, then `AllChecks -f`),
+  each red read by call 7; call 16 answered; slice 3 (the screen: a shut
+  lever drawn shut, "opens 1917 - an income tax, 4% above $1,500"; zoning's
+  gate, call 13, not built yet); the ensemble. No ship file until CM1 is on
+  main and merged in.
 
 ## 1. What R0's row holds now, and where it splits
 
@@ -141,6 +159,37 @@ dates and nothing else.** R0d, R0e and R0f go in the ship file's `## queued`.
     policy while the city charges 0 in 1900, and `HouseholdAccounts` starts
     from the 45% pension default until Game (~L3547) overwrites it each
     month. Slice 2b points both at the city's gated policy.
+16. **★ A lever that opens at zero stays there in an untended city**
+    (measured, LongPlaytest, one run each, so noisy; the ensemble decides).
+    The playtest's player checks in every few decades and first sets the
+    income tax at m593-616 (1949-51). With R0 the city has no profit, wage or
+    sales tax until then, and only the property tax:
+
+    | | m~260 people, cash | m~600 people | m~1,050 people | m2405 people |
+    |---|---|---|---|---|
+    | CM1 (base: 15% from month 1) | 3,964, $42.5M | 11,133 | 41,074 | 372,861 |
+    | R0 as built (opens at 0) | 2,742, -$150k | 4,297 | 10,357 | 142,712 |
+    | trial: opens at the founding default (15%) | 4,064, $2.2M | 16,344 | 17,349 | 239,908 |
+
+    The R0 city's treasury is below zero from about 1921 to 1967. The
+    ensemble's people criteria (40,000 by m987 in EP1-E) will not hold.
+    **Recommended:** keep the dates and the notice, and open the three income
+    taxes at the founding default (`TaxPolicy.DEFAULT_INCOME_TAX`) instead of
+    zero, the notice saying Canada's first terms and that the rate is the
+    player's; the promises (pensions, EI, student aid, the health premium)
+    still open at zero, as they cost the city rather than fund it. Why: the
+    tutorial is the date and the notice; zero only punishes a player who has
+    not read the inbox yet, for decades. The alternative is zero, as the study
+    and "rec all" decided, with the playtest's player taught to answer an
+    opening notice, and the ensemble's people criteria re-read. Not built
+    either way: R0 still opens at zero.
+17. **★ SaveFileCheck's `city` and `early` fixtures** set no lever, but their
+    condition (something mid-build at the save; the index based in its six
+    months) failed because a 1900 city with no taxes and no floor builds
+    faster (the 20 depots finished inside a month). Slice 2b opened every
+    lever in them. Recommended: keep - their premise is the save of a
+    mid-build city, and the open levers put back the city that causes it; the
+    alternative is a fixture that causes mid-build directly.
 
 ## 3. The slices
 
