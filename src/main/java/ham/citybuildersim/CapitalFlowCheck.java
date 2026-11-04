@@ -283,6 +283,12 @@ public class CapitalFlowCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): "hot money actually arrives... in real money" below was found against a
+            // city that taxes from month 1, and a 1900 city has no income tax to 1916-17 and no sales tax to 1920: its carry draws a smaller
+            // stock (a peak of $692 in fifteen years against the 1,000 asked), though the spread and the arrivals are there. Every lever opened
+            // and the defaults put back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
             // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -718,7 +724,14 @@ public class CapitalFlowCheck {
         // difference is the coupon, with no carry in either. Its premise unmoved.
         g.quietTheWorldForTheD();
         System.setOut(quiet);
-        try { g.run(); g.simulateMonths(24); } finally { System.setOut(out); }
+        try {
+            g.run();
+            // THE PROFIT TAX OPENED IN THE FIXTURE (R0): this twin's premise is a profit tax with something to take, and a 1900 city has
+            // none until 1916 (its sectors read a tax rate of 0%). Every lever opened and the defaults put back, before a month has run.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
+            g.simulateMonths(24);
+        } finally { System.setOut(out); }
         return g;
     }
 

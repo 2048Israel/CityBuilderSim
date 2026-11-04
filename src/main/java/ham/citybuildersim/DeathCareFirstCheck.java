@@ -209,6 +209,11 @@ public class DeathCareFirstCheck {
         Game g = new Game(files);
         quietly(() -> {
             g.run();
+            // Its callers (BuildersFirstCheck, ConstructionTrapCheck) need the builders' month the fixture was sized on (a site output of
+            // 76 by month 6); on history's dates (R0) a 1900 city's builders climb 44 to 90 over six months, so every lever is opened and
+            // the defaults put back, before a month (call 17's class).
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 120_000_000L);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());

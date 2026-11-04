@@ -177,6 +177,13 @@ public class FundCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): section 3 below holds the city's shares in the bank to
+            // "what it took" through two months, and in the town this was written against (every tax open from month 1) its rule
+            // bought none of the bank's shares from the market in them; a 1900 town with no income taxes to 1916-20 plays its 72
+            // months differently and the fund bought 7.4 of them (0.02% of an issue of 32,000). Every lever opened and the
+            // defaults put back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.getForeignAccounts().pinRate(1.0);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);

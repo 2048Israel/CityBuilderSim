@@ -1099,6 +1099,13 @@ public class AutoBuildCheck {
         AutoBuilder ab = g.getAutoBuilder();
         quietly(() -> {
             g.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0): section 7 needs a young city that has outgrown its founding care by month 60 (the
+            // pass then has an order to place), and the test player's town founded in 1900 holds its income taxes, wage floor and the rest
+            // shut for 16 to 20 years: at month 60 it had 1,154 people (2,618 before R0) and its general care, retired, still gave 1,185
+            // places against a demand of 1,154. Every lever opened and the defaults put back, before a month. Section 3's decades() town
+            // is left on history's dates: it is the builder's own long run and passes there.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
             // As decades() (XR1): the rate is held where the founding leaves it, this harness measures the builder.
             g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
