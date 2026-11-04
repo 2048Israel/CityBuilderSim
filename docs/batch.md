@@ -66,13 +66,14 @@ JVM under the lock `batch-check.sh` takes) go one at a time.
    ### {next} — ID, title — date, state, see docs/queue/ID-notes.md
    <one paragraph, at most 12 lines in all>
    ## pending
-   | ID-C | ... ({next}) ... | ... | ... |
+   | ID-X | what is left undone ({next}) | why | link |
    ## queued
    | NEW | ... | ... |
    ```
 
    `## pending` and `## queued` only when it has rows for them; no other `## `
-   heading. What the batch left undone goes in `## pending`, a batch it decides
+   heading. What the batch left undone goes in `## pending` (never an eye check:
+   its notes say what to look at; Jerus, 2026-11-04), a batch it decides
    in `## queued`; `ship.sh` sets the version and files them at the merge
    (`docs/orchestrator.md`, The gate 4). **The ship file is pushed last**: on
    the branch it means "ready to ship". A branch the gate sends back first
