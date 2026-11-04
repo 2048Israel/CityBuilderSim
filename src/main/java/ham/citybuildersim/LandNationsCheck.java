@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,10 +64,15 @@ import java.util.stream.Stream;
  *  10. HOW OFTEN IT FIRES. The Windsor city played 120 months, buying the offers that name a foreign seller and the cheapest: how many offers were
  *      listed split, wholly foreign and wholly the host's, and how many purchases named a seller; the mechanic fires.
  *  11. THE WORDS. LandSellersView on the Windsor offers and on hand-made ones: the split of 62 and 38, three sellers whose rounding must still add to
- *      100, a host's own offer saying nothing, a wholly foreign offer naming its seller.
+ *      100, a host's own offer saying nothing, a wholly foreign offer naming its seller, and (WN5b) a split whose shares round differently on their
+ *      own (three equal thirds, 50.5 and 49.5) reading the same percents on the card and on the receipt (LandSellersView.receiptLine()).
+ *  12. THE HOVER'S QUOTE AWAY FROM THE SCREEN'S THREAD (WN5b). Blocks straddling the Detroit River and the Strait are quoted by two sellers or more;
+ *      the cost of a cold quote by level is measured and printed (what moved the hover's quote off the screen's thread); a LandMarket.Quoter made
+ *      here and used on another thread gives the office's quote to the bit, block by block; it is the office as it stood when it was made, a purchase
+ *      since not seen by it; making one takes no more than a frame; and the map's source quotes through one on its own thread.
  *
  * Every premise is asserted before what rests on it. Without the world file (-Dcbs.world) nothing here runs; without the Earth's data (-Dcbs.earth)
- * sections 1 to 4 run and 5 to 11 say so and are skipped. No timing is asserted (TimingCheck owns them).
+ * sections 1 to 4 run and 5 to 12 say so and are skipped. The one timing it asserts is section 12's making of a quoter (Timing.within; TimingCheck owns the mechanism).
  *
  * @author Jerus
  */
@@ -189,7 +196,7 @@ public class LandNationsCheck {
             randomMovesIt(file, hist, randA, randB);
             EarthSite.Data earth = EarthSite.gameData();
             if (!earth.here()) {
-                out.println("\nthe game's Earth is not here (" + earth.words() + "): sections 5 to 11 were not run");
+                out.println("\nthe game's Earth is not here (" + earth.words() + "): sections 5 to 12 were not run");
             } else {
                 out.println("\n--- the fixtures: Windsor, Halifax and the Strait on the real Earth, and a generated world ---");
                 City windsor = new City("land-nations-windsor", onEarth(WINDSOR_LAT, WINDSOR_LON));
@@ -211,6 +218,7 @@ public class LandNationsCheck {
                 theSave(file, windsor);
                 howOften(file);
                 theWords(file, windsor, windsorFounded, detroitQuote);
+                theHover(file, windsor, strait);
             }
         }
         finish(started);
@@ -1023,5 +1031,219 @@ public class LandNationsCheck {
                 LandSellersView.offerLine(own, sellers).isEmpty() && LandSellersView.offerLine(abroad, sellers).equals("Sold by " + america) && LandSellersView.offerLine(unnamed, sellers).isEmpty());
         check("...a split that includes the host is named in full, and no sellers (a generated world's) or no offer say nothing",
                 LandSellersView.offerLine(two, sellers).contains(canada) && LandSellersView.offerLine(two, null).isEmpty() && LandSellersView.offerLine(null, sellers).isEmpty());
+
+        // WN5b: the receipt rounded each share on its own and the card by largest remainder; both read LandSellersView.percents() now.
+        int mex = file.numberOf("MEX"), fra = file.numberOf("FRA");
+        java.util.function.Function<LandParcel.Sale, String> money = s -> "US$1.0M";
+        List<List<LandParcel.Sale>> splits = List.of(
+                List.of(new LandParcel.Sale(usa, 1, 1), new LandParcel.Sale(mex, 1, 1), new LandParcel.Sale(fra, 1, 1)),
+                List.of(new LandParcel.Sale(usa, 50.5, 1), new LandParcel.Sale(mex, 49.5, 1)));
+        String[] splitNames = { "three equal thirds", "50.5 and 49.5 km2" };
+        boolean premise = true, same = true;
+        StringBuilder sums = new StringBuilder(), lines = new StringBuilder();
+        for (int i = 0; i < splits.size(); i++) {
+            LandParcel p = new LandParcel(910 + i, 1000, 5, 0, 0);
+            p.setSellers(splits.get(i));
+            List<LandParcel.Sale> sold = p.getSellers();
+            double km2 = 0;
+            for (LandParcel.Sale s : sold) km2 += s.km2();
+            long each = 0;
+            for (LandParcel.Sale s : sold) each += Math.round(100 * (s.km2() / km2));
+            premise &= each != 100;
+            sums.append(i > 0 ? ", " : "").append(splitNames[i]).append(" ").append(each);
+            int[] want = LandSellersView.percents(sold);
+            String card = LandSellersView.offerLine(p, sellers), receipt = LandSellersView.receiptLine(sold, sellers, money);
+            int[] onCard = percentsIn(percent, card), onReceipt = percentsIn(percent, receipt);
+            same &= want.length == sold.size() && Arrays.equals(onCard, want) && Arrays.equals(onReceipt, want) && Arrays.stream(want).sum() == 100;
+            lines.append(i > 0 ? " | " : "").append(Arrays.toString(onCard)).append(" / ").append(Arrays.toString(onReceipt));
+        }
+        report("premise: rounding each share on its own does not add to 100 for either split (the receipt's old way): " + sums, premise, "sums of Math.round(100 * share) as the receipt had them");
+        report("a split whose shares round differently reads the same on the card and the receipt: the percents are percents()' own, adding to 100 (card / receipt)",
+                same, lines.toString());
+    }
+
+    /** The whole percents a line shows, in order: the digits before each "%". */
+    private static int[] percentsIn(Pattern percent, String line) {
+        Matcher m = percent.matcher(line);
+        List<Integer> found = new ArrayList<>();
+        while (m.find()) found.add(Integer.parseInt(m.group(1)));
+        return found.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    /* =====================================================================
+       12. THE HOVER'S QUOTE AWAY FROM THE SCREEN'S THREAD
+       ===================================================================== */
+
+    /** Where the hover is held: a spot on the Detroit River at Windsor, and one off the coast at the Strait of Gibraltar. */
+    static final double RIVER_LAT = 42.32, RIVER_LON = -83.04, COAST_LAT = 35.95, COAST_LON = -5.45;
+
+    /** The block of `level` holding a point, as the map's hover cuts it (LandMap.blockAt(), blockRect()): {x0, y0, x1, y1}. */
+    static long[] blockAround(World w, double lat, double lon, int level) {
+        long[] p = plotOf(w, lat, lon);
+        return LandMap.blockRect(level, LandMap.blockAt(level, p[0], p[1]));
+    }
+
+    static LandParcel quoteOf(LandMarket office, long[] r) { return office.quote(r[0], r[1], r[2], r[3]); }
+
+    static LandParcel quoteOf(LandMarket.Quoter quoter, long[] r) { return quoter.quote(r[0], r[1], r[2], r[3]); }
+
+    /** Two figures the same to the bit. */
+    static boolean bits(double a, double b) { return Double.compare(a, b) == 0; }
+
+    /** Whether two quotes of one block are the same to the bit: the price, the area of every kind, and the sellers one by one (seller, area, dollars). `parts[0]` counts the sellers compared. */
+    static boolean sameQuote(LandParcel a, LandParcel b, int[] parts) {
+        if (a == null || b == null) return a == b;
+        boolean same = bits(a.getPriceUsd(), b.getPriceUsd());
+        for (int k = 0; k < CityLand.AREAS; k++) same &= bits(a.getKm2(k), b.getKm2(k));
+        List<LandParcel.Sale> sa = a.getSellers(), sb = b.getSellers();
+        same &= sa.size() == sb.size();
+        for (int i = 0; i < Math.min(sa.size(), sb.size()); i++) {
+            same &= sa.get(i).seller() == sb.get(i).seller() && bits(sa.get(i).km2(), sb.get(i).km2()) && bits(sa.get(i).usd(), sb.get(i).usd());
+            parts[0]++;
+        }
+        return same;
+    }
+
+    /** What one cold quote of a block cost: its level, its side in km, its milliseconds, the plots the sellers read for it, and the sellers it named. */
+    record Cost(int level, double km, double ms, long plots, int sellers) { }
+
+    /** A cost as a line of the table: level L (km across): N ms, P plots read, S sellers. */
+    static String costLine(Cost c) {
+        return String.format("   level %d (%.1f km across): %.1f ms, %,d plots read, %d sellers", c.level(), c.km(), c.ms(), c.plots(), c.sellers());
+    }
+
+    /** The block of `level` round a point quoted once by the city's office, timed, with the plots LandSellers read beside it. */
+    static Cost costOf(City c, double lat, double lon, int level) {
+        long[] r = blockAround(c.g.getWorld(), lat, lon, level);
+        LandSellers s = c.sellers();
+        long before = s.plotsRead();
+        long t0 = System.nanoTime();
+        LandParcel q = quoteOf(c.office(), r);
+        double ms = (System.nanoTime() - t0) / 1e6;
+        return new Cost(level, (1L << level) * World.PLOT_M / 1000, ms, s.plotsRead() - before, q == null ? 0 : q.getSellers().size());
+    }
+
+    /** The quotes of blocks asked of a quoter on a thread of its own, in the order given; the thread is stopped after. */
+    static List<LandParcel> quotedElsewhere(LandMarket.Quoter quoter, List<long[]> blocks) throws Exception {
+        ExecutorService pool = Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "land-nations-quoter");
+            t.setDaemon(true);
+            return t;
+        });
+        try {
+            return pool.submit(() -> {
+                List<LandParcel> got = new ArrayList<>();
+                for (long[] b : blocks) got.add(quoteOf(quoter, b));
+                return got;
+            }).get();
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    static void theHover(WorldData file, City windsor, City strait) throws Exception {
+        out.println("\n--- 12. the hover's quote away from the screen's thread: a quoter made here and used on another thread gives the office's quote to the bit ---");
+        World ww = windsor.g.getWorld(), sw = strait.g.getWorld();
+        LandMarket wo = windsor.office(), so = strait.office();
+        check("premise: both offices have sellers (a quote then splits the block's ground by nation, which is what costs)", wo.getSellers() != null && so.getSellers() != null);
+        if (wo.getSellers() == null || so.getSellers() == null) return;
+        LandParcel river8 = quoteOf(wo, blockAround(ww, RIVER_LAT, RIVER_LON, 8)), coast9 = quoteOf(so, blockAround(sw, COAST_LAT, COAST_LON, 9));
+        report("premise: the block of 256 plots a side across the Detroit River at Windsor is quoted with two sellers or more", river8 != null && river8.getSellers().size() >= 2,
+                river8 == null ? "no quote" : river8.getSellers().size() + " sellers");
+        report("premise: the block of 512 plots a side at the Strait of Gibraltar is quoted with two sellers or more", coast9 != null && coast9.getSellers().size() >= 2,
+                coast9 == null ? "no quote" : coast9.getSellers().size() + " sellers");
+
+        // the cost, measured first so that each is the block's first quote of the run: what moved the hover's quote off the screen's thread
+        double frame = LandMarket.QUOTER_MS;
+        List<Cost> costs = new ArrayList<>();
+        out.println("   the cost of one cold quote by the block's level, across the Detroit River at Windsor:");
+        for (int level = 4; level <= 12; level++) costs.add(costOf(windsor, RIVER_LAT, RIVER_LON, level));
+        for (Cost c : costs) out.println(costLine(c));
+        out.println("   ...and off the coast at the Strait of Gibraltar:");
+        List<Cost> coast = new ArrayList<>();
+        for (int level = 4; level <= 11; level++) coast.add(costOf(strait, COAST_LAT, COAST_LON, level));
+        for (Cost c : coast) out.println(costLine(c));
+        costs.addAll(coast);
+        int slow = 0;
+        for (Cost c : costs) if (c.ms() > frame) slow++;
+        out.printf("   %d of the %d quotes took more than QUOTER_MS (%.0f ms): that many hovers would have held a frame on the screen's thread%n", slow, costs.size(), frame);
+        check("the cost was measured at every level asked (9 at Windsor, 8 at the Strait), each quote a parcel with a seller", costs.size() == 17 && costs.stream().allMatch(c -> c.sellers() >= 1));
+
+        // a quoter made here and quoted on another thread
+        List<long[]> riverBlocks = new ArrayList<>(), coastBlocks = new ArrayList<>();
+        for (int level = 4; level <= 10; level++) riverBlocks.add(blockAround(ww, RIVER_LAT, RIVER_LON, level));
+        for (int level = 4; level <= 9; level++) coastBlocks.add(blockAround(sw, COAST_LAT, COAST_LON, level));
+        LandMarket.Quoter wq = wo.quoter(), sq = so.quoter();
+        check("a quoter is made of each office (neither is bare, and the land copies)", wq != null && sq != null);
+        if (wq == null || sq == null) return;
+        List<LandParcel> wGot = quotedElsewhere(wq, riverBlocks), sGot = quotedElsewhere(sq, coastBlocks);
+        int[] parts = new int[1];
+        int blocks = 0, differ = 0;
+        for (int i = 0; i < riverBlocks.size(); i++, blocks++) if (!sameQuote(quoteOf(wo, riverBlocks.get(i)), wGot.get(i), parts)) differ++;
+        for (int i = 0; i < coastBlocks.size(); i++, blocks++) if (!sameQuote(quoteOf(so, coastBlocks.get(i)), sGot.get(i), parts)) differ++;
+        report("a quoter made on this thread and quoted on another gives the office's quote to the bit: the price, every kind's area and every seller (seller, area, dollars)",
+                differ == 0 && blocks == 13 && parts[0] > blocks, blocks + " blocks (Windsor levels 4 to 10, the Strait 4 to 9), " + parts[0] + " sellers compared");
+
+        // the quoter is the office as it stood: a block of 256 plots a side round some free ground of a standing offer, quoted before and after the offer is bought
+        LandMarket.Quoter old = wo.quoter();
+        long[] rect = null;
+        LandParcel offer = null;
+        int level = wo.getLevel();
+        CityLand land = windsor.g.getCityLand();
+        for (LandParcel p : windsor.offers()) {
+            for (long by = p.getY0() >> level; by <= (p.getY1() - 1) >> level && offer == null; by++) {
+                for (long bx = p.getX0() >> level; bx <= (p.getX1() - 1) >> level && offer == null; bx++) {
+                    long[] b = LandMap.blockRect(level, LandMap.blockKey(bx, by));
+                    long x0 = Math.max(b[0], p.getX0()), y0 = Math.max(b[1], p.getY0()), x1 = Math.min(b[2], p.getX1()), y1 = Math.min(b[3], p.getY1());
+                    if (x0 < x1 && y0 < y1 && land.grid().unowned(x0, y0, x1, y1) > 0) {
+                        offer = p;
+                        rect = LandMap.blockRect(8, LandMap.blockAt(8, x0, y0));
+                    }
+                }
+            }
+            if (offer != null) break;
+        }
+        check("premise: a standing offer of the Windsor city has free ground, and a block of 256 plots a side round it", offer != null && old != null);
+        if (offer == null || old == null) return;
+        LandParcel officeBefore = quoteOf(wo, rect), oldBefore = quoteOf(old, rect);
+        check("premise: the block is quoted, with ground, and the old quoter's quote of it is the office's", officeBefore != null && officeBefore.getKm2() > 0 && sameQuote(officeBefore, oldBefore, parts));
+        LandParcel toBuy = offer;
+        quietly(() -> {
+            windsor.g.setCashForTest(Founding.WEALTHY_CASH);
+            windsor.g.setLandPaidFromVault(false);
+        });
+        boolean bought = quietlyGet(() -> windsor.g.buyLandParcel(toBuy.getId()));
+        LandParcel officeAfter = quoteOf(wo, rect), oldAfter = quoteOf(old, rect), freshAfter = quoteOf(wo.quoter(), rect);
+        check("premise: the offer was bought, and the ground of it in the block is the city's: the office quotes the block with less ground than before",
+                bought && officeAfter != null && officeAfter.getKm2() < officeBefore.getKm2());
+        check("the quoter made before the purchase quotes the block as the office did before it, to the bit: a purchase after it is not seen", sameQuote(oldBefore, oldAfter, parts));
+        report("...and a quoter made after it quotes the office's quote now to the bit, with less ground", sameQuote(officeAfter, freshAfter, parts) && freshAfter.getKm2() < oldAfter.getKm2(),
+                String.format("%.4f km2 against %.4f", freshAfter == null ? Double.NaN : freshAfter.getKm2(), oldAfter == null ? Double.NaN : oldAfter.getKm2()));
+        check("...and a quoter keeps the month it was made in", old.month() == wo.quoter().month());
+
+        // the screen's thread's part: the land copied
+        boolean made = true;
+        double worstMs = 0;
+        for (int i = 0; i < 20; i++) {
+            long t0 = System.nanoTime();
+            LandMarket.Quoter q = wo.quoter();
+            worstMs = Math.max(worstMs, (System.nanoTime() - t0) / 1e6);
+            made &= q != null;
+        }
+        String frameLabel = String.format("making a quoter (the land copied) takes no more than QUOTER_MS (%.0f ms) on the screen's thread: worst %.2f ms of 20", LandMarket.QUOTER_MS, worstMs);
+        boolean framed = made && Timing.within(worstMs, LandMarket.QUOTER_MS);
+        String verdict = Timing.verdict(framed, frameLabel);
+        if (!framed) fails++;
+        out.printf("%-118s %s%n", frameLabel, verdict);
+
+        // the move, held in the source
+        Path view = Path.of("src", "main", "java", "ham", "citybuildersim", "ui", "MapView.java");
+        if (!Files.isRegularFile(view)) {
+            out.println("   " + view + " is not beside the harness (run it from the repository root): the map's source was not read");
+        } else {
+            String src = Files.readString(view, StandardCharsets.UTF_8);
+            check("the map's hover quotes through a quoter on its own thread, never the office's quote() on the screen's thread",
+                    !src.contains("market.quote(") && src.contains(".quoter()") && src.contains("QUOTES.submit("));
+        }
     }
 }

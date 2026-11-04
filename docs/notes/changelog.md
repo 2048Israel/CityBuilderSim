@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.10 — WN5b, WN5's review follow-ups: the map's hover priced off the screen's thread, and three wordings on the land and the rate — 2026-11-03, ready, see docs/queue/WN5b-notes.md
+The expanded map's hover over a block that may be picked prices it on its own thread from a copy of the land office
+(LandMarket.quoter(), under a millisecond to make), and its card says "Pricing the block…" until the price is in: since
+WN5 a quote near a foreign coast splits the block by seller, measured at 45 ms to 5.3 s by level (LandNationsCheck 12).
+A purchase's receipt names the island in a sentence of its own ("It lies on Island 2, which no port links."), and its
+sellers' shares round by largest remainder as the card's do (three thirds read 34, 33 and 33 on both). Trade's real
+effective rate names the partners it weighs ("Weighs Germany 50% · Japan 25% · United States 25%"), from the one getter
+the rate is made of (RealDollarCheck 5; WN6's fallback for a money that never changed is taken by none of 196 nations on
+today's file). WorldMarket.refill() marks its fills fresh only after the curves are built. A click that picks a block,
+and the month's re-measure of the picks, still split on the screen's thread: WN5c, queued, measures them first.
+
 ### 0.9.9 — CB1, the central bank's strictness measured over twelve cities — 2026-11-03, ready, see docs/queue/CB1-notes.md
 CentralBankCheck 21's "very strict holds prices lower than Standard" was one probe city's path, re-picked six times as
 batches moved it; it is now read over twelve founding shapes (`STRICT_SHAPES`: 40 to 43 houses, 3 to 5 months, the

@@ -1,6 +1,6 @@
-# RealDollar.java - 131 lines · 9 methods · 1 constants · model
+# RealDollar.java - 137 lines · 9 methods · 1 constants · model
 
-`ham/citybuildersim/RealDollar.java` - generated 2026-11-03 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RealDollar.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
 > The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and
 > the real effective rate (and, since WN6, the chain that carries a partner's rate across a change of its money). Pure functions of their inputs, and
@@ -24,7 +24,7 @@
 
 **Uses:** [Nations](Nations.md) (7), [PriceLevel](PriceLevel.md) (2), [Rankings](Rankings.md) (1), [CityCalendar](CityCalendar.md) (1), [WorldMoneys](WorldMoneys.md) (1)
 
-**Used by (5):** [Game](Game.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RealDollarCheck](RealDollarCheck.md)
+**Used by (6):** [Game](Game.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RealDollarCheck](RealDollarCheck.md), [TradeScreen](TradeScreen.md)
 
 ## Constants
 
@@ -36,15 +36,16 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 106 | **type** `public final class RealDollar` | The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and the real effective rate (and, since WN6, the chain that carries a part... |
+| 26 | 112 | **type** `public final class RealDollar` | The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and the real effective rate (and, since WN6, the chain that carries a part... |
 | 28 | 1 | `private RealDollar()` |  |
 | 42 | 5 | **type** `public record Partner(double weight, double moneyPerUsdNow, double moneyPerUsdAtFounding, double pricesSinc...` | What the city's money is worth against a partner, for the real effective rate: the weight it trades with (any positive scale: the weights are shares of their sum), the partner's money per US$ now and in the founding's... |
 | 43 | 3 | `boolean usable()` _(in RealDollar.Partner)_ |  |
-| 48 | 1 | `private static boolean positive(double v)` |  |
-| 51 | 3 | `public static List<Partner> usAlone(double usPricesSinceFounding)` | The US alone, as the one partner (w = 1): its money is the unit, so e and e0 are 1, and its prices are the in-game US$'s level since founding. |
-| 60 | 3 | `public static double dollarsPer2015Usd(double ratePerUsd, double usPricesSinceFounding)` | D$ per real 2015 US$: the rate (D$ per US$) times the US$'s price level since founding, over the bridge. |
-| 69 | 3 | `public static double realGdp2015Usd(double gdp, double priceIndex, double foundingRatePerUsd)` | The city's GDP in real 2015 US$, the World Bank's way: the GDP over the city's price index (YearBook.realGdp's division, which carries it back to the D$ of founding, and is the same through a currency reform) over the... |
-| 87 | 10 | `public static double moneyChain(Nations nations, int usNation, int nation, int year)` | What a partner's money a US$ now has to be multiplied by to stand in the units of the money its nation used in the first January (WN5-R, WN6): the product, over each year Y after Nations.FIRST_YEAR up to the year aske... |
-| 102 | 5 | `public static double moneyAtFounding(Nations nations, WorldMoneys moneys, int nation)` | A partner's money a US$ in the first January, in the money its nation used then (the one moneyChain's units are): that money's rate in the WorldMoneys' opening month, else the nation's own figure for the first year wh... |
-| 117 | 14 | `public static double realEffectiveRate(double ratePerUsd, double foundingRatePerUsd, double cityPricesSinceFounding, List<Partn...` | The real effective rate, the BIS's way: 100 x exp(sum of w_j x [ln(e_j / e_j0) - ln(rate / rate0) + ln P_city - ln(P_j / P_j0)]) over the partners, with e_j the partner's money per US$ (now, and in the founding's mont... |
+| 52 | 1 | **type** `public record Weighed(int nation, double share, Partner partner)` | One partner the real effective rate weighs, as the screen names it (WN5b): the nation's number, its share of the usable partners' weights (the shares of a list add to 1) and the Partner the rate is made of. |
+| 54 | 1 | `private static boolean positive(double v)` |  |
+| 57 | 3 | `public static List<Partner> usAlone(double usPricesSinceFounding)` | The US alone, as the one partner (w = 1): its money is the unit, so e and e0 are 1, and its prices are the in-game US$'s level since founding. |
+| 66 | 3 | `public static double dollarsPer2015Usd(double ratePerUsd, double usPricesSinceFounding)` | D$ per real 2015 US$: the rate (D$ per US$) times the US$'s price level since founding, over the bridge. |
+| 75 | 3 | `public static double realGdp2015Usd(double gdp, double priceIndex, double foundingRatePerUsd)` | The city's GDP in real 2015 US$, the World Bank's way: the GDP over the city's price index (YearBook.realGdp's division, which carries it back to the D$ of founding, and is the same through a currency reform) over the... |
+| 93 | 10 | `public static double moneyChain(Nations nations, int usNation, int nation, int year)` | What a partner's money a US$ now has to be multiplied by to stand in the units of the money its nation used in the first January (WN5-R, WN6): the product, over each year Y after Nations.FIRST_YEAR up to the year aske... |
+| 108 | 5 | `public static double moneyAtFounding(Nations nations, WorldMoneys moneys, int nation)` | A partner's money a US$ in the first January, in the money its nation used then (the one moneyChain's units are): that money's rate in the WorldMoneys' opening month, else the nation's own figure for the first year wh... |
+| 123 | 14 | `public static double realEffectiveRate(double ratePerUsd, double foundingRatePerUsd, double cityPricesSinceFounding, List<Partn...` | The real effective rate, the BIS's way: 100 x exp(sum of w_j x [ln(e_j / e_j0) - ln(rate / rate0) + ln P_city - ln(P_j / P_j0)]) over the partners, with e_j the partner's money per US$ (now, and in the founding's mont... |
 

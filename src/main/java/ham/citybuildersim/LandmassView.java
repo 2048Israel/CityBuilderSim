@@ -276,16 +276,18 @@ public final class LandmassView {
     public static final String SEGMENT_KEY = "free, no port links it";
 
     /**
-     * The clause a purchase's receipt ends with when it bought ground on a landmass no port links: " - on Island 2, which no
-     * port links" (" - 0.842 km² of it on Island 2, ..." when only part of it lay there). "" otherwise. Read off the offer as it
-     * stood, split before it was bought (LandParcel.getUnlinkedDryKm2()), and named by the books after it (Landmasses).
+     * The sentence a purchase's receipt ends with when it bought ground on a landmass no port links: "It lies on Island 2, which
+     * no port links." ("0.842 km² of it lies on Island 2, which no port links." when only part of it lay there). "" otherwise.
+     * A sentence of its own since WN5b (it was a clause glued on after the sellers' sentence, " - on Island 2, which no port
+     * links", with the receipt's last full stop cut to make room). Read off the offer as it stood, split before it was bought
+     * (LandParcel.getUnlinkedDryKm2()), and named by the books after it (Landmasses).
      */
     public static String receiptWords(LandParcel p, Landmasses lms) {
         double unlinked = p.getUnlinkedDryKm2();
         if (!(unlinked > 0)) return "";
         String name = landmassName(lms, p.getUnlinkedLargest());
         boolean whole = unlinked >= p.getDryKm2() - 1e-9;
-        return " - " + (whole ? "on " + name : LandMap.area(unlinked) + " of it on " + name) + ", " + NOT_LINKED_CLAUSE;
+        return (whole ? "It lies" : LandMap.area(unlinked) + " of it lies") + " on " + name + ", " + NOT_LINKED_CLAUSE + ".";
     }
 
     /* =====================================================================

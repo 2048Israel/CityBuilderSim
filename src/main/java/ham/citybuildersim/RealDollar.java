@@ -45,6 +45,12 @@ public final class RealDollar {
         }
     }
 
+    /**
+     * One partner the real effective rate weighs, as the screen names it (WN5b): the nation's number, its share of the usable partners' weights (the
+     * shares of a list add to 1) and the Partner the rate is made of. Game.realEffectivePartners() builds them, and the rate takes its partners from them.
+     */
+    public record Weighed(int nation, double share, Partner partner) { }
+
     private static boolean positive(double v) { return v > 0 && Double.isFinite(v); }
 
     /** The US alone, as the one partner (w = 1): its money is the unit, so e and e0 are 1, and its prices are the in-game US$'s level since founding. */

@@ -1549,7 +1549,6 @@ public final class WorldMarket {
     private void refill() {
         if (year < 0 || fillsFresh) return;
         for (int gi = 0; gi < goodCount; gi++) fills[gi] = fill(gi, price[gi], demand[gi], supply[gi]);
-        fillsFresh = true;
         // THE CURVES, from the fills just made: each is immutable (a fill and its levels are never written after fill() returns), and the array is
         // published whole, so the screen's thread reads either the last rebuild or this one, never half of one (WN6).
         Curve[] made = new Curve[goodCount];
@@ -1559,6 +1558,8 @@ public final class WorldMarket {
             made[gi] = new Curve(t.good, t.sigma, t.unitsPerTonne, worldUse(gi), n, fills[gi], price[gi].clone());
         }
         curves = made;
+        // Fresh only now (WN5b): marked before the curves were built, a Curve that threw would have left band() reading the last rebuild's curve as this one's.
+        fillsFresh = true;
     }
 
     /** The share a supplier k has of buyer j's composite in the solved state (its flow over the buyer's spending on the nations), 0 where the file keeps no pair. */
