@@ -99,7 +99,9 @@ import java.util.regex.Pattern;
  *      registers adding up to the households' holdings, the copy's as the
  *      city's; every sector held in both copies (SK1, IC1: a building is one
  *      size at any K, so a free copy's planners order what its city's
- *      decline, which is not scaling).
+ *      decline, which is not scaling), and both read from the grown city once
+ *      its building sites are empty (BA1: scale() consolidates a partly built
+ *      unit, which is not what a copy asks).
  */
 public class ScaleCheck {
 
@@ -343,6 +345,9 @@ public class ScaleCheck {
 
     /** The copy section 9 reads against its city: its factor, K (FW9, 2026-10-25). */
     static final long TRACK_TIMES = 1000;
+
+    /** The most months section 9 plays the grown city, its sectors held, to see its building sites empty before it is copied (BA1, 2026-11-04). */
+    static final int TRACK_SITE_MONTHS = 60;
 
     /**
      * How far the copy's people may miss K times the city's, as a share of it, in any of FREE_MONTHS. Measured on the
@@ -901,16 +906,36 @@ public class ScaleCheck {
      * the load is built in both, and the bank's branches (planBank(), apart
      * from the sectors) stay free. The TRACK_ dials are FW9's, measured with
      * the sectors free, and stay.
+     *
+     * AND THE SITES EMPTY AT THE LOAD (BA1, 2026-11-04). BA1 took the caps off
+     * a sector's construction orders, so the grown city is saved with much on
+     * site (a Paved Road, three Low-Rise Apartments, two Vehicle Works at 7,260
+     * points, an Industrial Bakery, a Construction Materials Plant at 9,000)
+     * where it was a few before. scale() multiplies a stack's progress by K,
+     * and the model holds a stack's progress against its current unit only, so
+     * the copy's one current unit held K units' worth and finished hundreds of
+     * them in its first month (1,000 roads on site became 547 after month 1,
+     * against the city's 1): the copy's buildings opened months before the
+     * city's and its people parted by 1.59e-2 against the dial's .015, its
+     * unemployment by 3.8e-2 against .033. That is the scaler consolidating a
+     * partly built unit, which "what is under way at the load is built in
+     * both" accepted while it was small, and this section asks whether the
+     * scaler copies a city. So both copies are read from the grown city once
+     * its sites are empty: it is loaded at K = 1, every sector held (no whole
+     * building is ordered), and played until nothing is under construction
+     * (emptySites()), then saved apart; the grown save itself, which section
+     * 6 reads, stays as it was.
      */
     static void tracks(Path root, GameFiles grown) throws Exception {
         out.printf("%n--- a copy %,d times over tracks its city month by month ---%n", TRACK_TIMES);
+        GameFiles sites = emptySites(root, grown);
         long[] times = { 1, TRACK_TIMES };
         Figures[][] seen = new Figures[2][FREE_MONTHS];
         double[][] registers = new double[2][FREE_MONTHS + 1];
         for (int c = 0; c < 2; c++) {
             GameFiles files = new GameFiles(root.resolve("track" + times[c]), root.resolve("track" + times[c] + "-no-legacy"));
-            scale(grown.saveFile(10), files.saveFile(10), times[c]);
-            Files.copy(grown.historyFile(10), files.historyFile(10));
+            scale(sites.saveFile(10), files.saveFile(10), times[c]);
+            Files.copy(sites.historyFile(10), files.historyFile(10));
             Game g = new Game(files);
             g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
             quietly(() -> g.loadGameSave(10));
@@ -944,6 +969,34 @@ public class ScaleCheck {
         assertTrue(String.format("...and the registers add up to their holders, the city's and the copy's, at the load and in all %d"
                 + " months (shares, of the issue; corporate bonds, the city's paper; worst %.1e of the register)", FREE_MONTHS, worstRegister),
                 worstRegister <= REGISTER_WITHIN);
+    }
+
+    /**
+     * The grown city saved again with nothing under construction (BA1, 2026-11-04; tracks() says why): its save is loaded at
+     * K = 1, every sector held, and played until its building sites are empty, at most TRACK_SITE_MONTHS, then written to a
+     * folder of its own. The fixture is asserted: the sites at the load, the months it took and none on site at the save.
+     */
+    static GameFiles emptySites(Path root, GameFiles grown) throws Exception {
+        GameFiles files = new GameFiles(root.resolve("track-sites"), root.resolve("track-sites-no-legacy"));
+        Files.createDirectories(files.saveFile(10).getParent());
+        Files.copy(grown.saveFile(10), files.saveFile(10));
+        Files.copy(grown.historyFile(10), files.historyFile(10));
+        Game g = new Game(files);
+        g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
+        quietly(() -> g.loadGameSave(10));
+        assertTrue("fixture: the grown city loads, to have its building sites emptied", g.getLoadFailure() == null);
+        for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
+        int onSite = g.getBuildingManager().getStacksUnderConstruction().size(), months = 0;
+        while (months < TRACK_SITE_MONTHS && !g.getBuildingManager().getStacksUnderConstruction().isEmpty()) {
+            quietly(() -> g.simulateMonths(1));
+            months++;
+        }
+        int left = g.getBuildingManager().getStacksUnderConstruction().size();
+        out.printf("      %d stacks on site at the load, %d after %d months with every sector held%n", onSite, left, months);
+        assertTrue("fixture: ...and nothing is under construction when the copies are taken (within " + TRACK_SITE_MONTHS
+                + " months)", left == 0);
+        quietly(() -> g.saveGame(10, "scalecheck grown, sites empty"));
+        return files;
     }
 
     /**
