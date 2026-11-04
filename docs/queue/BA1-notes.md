@@ -1,6 +1,7 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
 **WHERE IT STANDS (2026-11-04, 14:40; no ship file yet):**
+0. **Cut off at about 14:45 (the PC went offline). Not finished, rerun both:** the ensemble BA1c on b4d24000 (the final model, 80 runs) and the Sonnet slice mending ScaleCheck 9 (the copies read from the grown city with its sites empty) and MapCheck 2h. The slice's ScaleCheck edit is unreviewed and uncommitted in the worktree cm1-8dea2f, and nothing of MapCheck. Main (CM1, 0.9.11) is merged in at 9202a56f.
 1. On main at 7cfcb666 (WN5b 0.9.10 merged in). The brake is dear contracts, as the ensemble of the morning measured it
    (c0c7afaa; section 1, ★). Since then the model has changed by three rounding edges only (item 3).
 2. **★ calls (the orchestrator took both as recommended at 11:58):**
