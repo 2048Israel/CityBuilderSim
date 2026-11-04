@@ -1,73 +1,39 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
-**WHERE IT STANDS (2026-11-04, lane 2; no ship file):**
-1. On main at 68fc54ce (CB1 0.9.9 merged in). The brake is in and committed: **dear contracts** (section 1, ★).
-2. **The ensemble holds** (section 4): `docs/ensemble/BA1.md`, **22/26, as 0.9.6's 22/26** (BA1 without the brake:
-   20/26). A1 passes again (14/16 in band) and R2 now passes. A3 fails on one seed's 13-month deflation spell (the
-   bar is 12). A2, S1 and R3 failed on 0.9.6 too. AUTO2's busts are 14 in 11 seeds (FC1-lc3 16 in 13, BA1 without the
-   brake 25). People at m240/600/1200 are 3,872 / 14,673 / 82,850 (FC1-lc3 4,027 / 14,681 / 67,166), and the final
-   population median is 616,952 (0.9.6 335,674). The queue from m240 is p50 5.2, p90 43.6, p99 79 months (58 without
-   the brake), with the premium on in 44% of months.
-3. **Left: the fixtures, two findings, then `--pick`.** A named run of the 14 harnesses most likely touched, on the
-   brake and the world files (AllChecks -f, 414 s), passed 8: InvestCheck, OrderSearchCheck, BuildCardCheck,
-   WantedPostsCheck, ConstructionTrapCheck, BuildersFirstCheck, RefineryCheck and CentralBankCheck (CB1 mended it).
-   Red:
-   - **fixtures on a moved path, mended (Sonnet slice, reviewed; each green alone):**
-     - RailDepotCheck: the played city is on the goods' literals, where the plant lands ore and coal and ships pellets
-       (about 131,000 t of bulk against the sidings' 100,000). On the world file's band it ran no month, and the mines'
-       ore alone was 75,489 t.
-     - OilCheck 5 and 19: the diesel tanks are filled before the month (in 19 every fourth month). The railway, with the
-       freight orders uncapped, now draws about 1.19M L against a shelf of 0.95M, so it imported the rest and the vans
-       got none at home.
-     - SaveFileCheck: the hot money's stock is set to half last month's target before each waited month, so money
-       arrives. Its city never had the target over the stock, so the loop ran its whole 240 months to month 392, where
-       the bank had failed and the bonds and mortgages were gone. That emptied every fixture after it.
-   - **finding, NewGameCheck 11** ("by no more than one issue granule plus the fees"): not a fixture. The solver
-     returns the smallest face that covers, a granule at a time, but proceeds jump by more than a granule where the
-     coupon rounds to an eighth (the sawtooth the harness's own later comment names). This gap, 3,770.17k, lands on
-     a jump: one granule down is 9.67k short, and the face that covers is 52.43k over against a bound of 2.90k. Moving
-     the fixture off the jump would hide an overshoot of up to about 1.4% of the borrowing. ★ Taken as recommended
-     (the orchestrator, 2026-11-04 11:58; ★ calls below).
-   - **finding, PriceLevelCheck 8 and 9** (the price-level twins part). Without the brake (a switch tried and taken out)
-     only 9 parts, slightly, from month 25 (cash 5e-6 apart at month 33): the kind of tie section 6's town had, which
-     11-03 moved to TOWN_MONTHS 33. With it 8 parts too: in MapCheck's played city heavy industry's books run 6 months
-     in one twin and 3 in the other, so one order clears in one twin only. Find the test an order sits on the edge of
-     (`DEAR CONTRACTS` multiplies `carryOf()`; the halving searches and Mortgage's down-payment edge are where 11-03's
-     tie was). Do not move the months to dodge it without naming the tie.
-   - **finding, ScaleCheck** "a copy 1,000 times over tracks its city": people 1.59e-2 against 1.50e-2, unemployment
-     3.80e-2 against 3.30e-2. It passes without the brake. The cause, read in `BuildersShort.meanPremium()`: building i
-     of an order is priced at the queue where it starts (`fromMonths + i * stepMonths`), one building's points a step.
-     The city's one plant pays the premium at the head of its span; the copy's thousand, each a thousandth of the step,
-     pay the mean across the same span, which is more on a rising curve. So the price was never invariant to scale for
-     a large building, and the brake counts the gap twice. The fix that keeps it invariant: price each building at its
-     own span's mean (start plus half a step, or the integral over it), which ends "one building is priced exactly as
-     FC1 priced it" (ConstructionTrapCheck 12 asserts it). ★ Taken as recommended (the orchestrator, 2026-11-04
-     11:58; ★ calls below).
-   - not run: MapCheck and LongPlaytest (11-03: a map building moved at month 1809, main's known plan bug, which main's
-     own nightly shows at 3010-3013).
-   Then `./batch-check.sh --pick` on the world files (JDK_JAVA_OPTIONS naming the main checkout's data/earth-2.bin and
-   data/world-1.bin; without them PriceLevelCheck 6 and the map harnesses read another world), then the ship file.
-4. The sector screen's planner line names dear contracts too (SectorScreen, "No business is held to one order").
-5. Next, once the PC is back, in order:
-   - build the two ★ calls below (one Sonnet slice);
-   - rerun ScaleCheck, ConstructionTrapCheck and NewGameCheck;
-   - rerun the ensemble, since the span call moves the price of a large building, and commit it over
-     `docs/ensemble/BA1.md`;
-   - trace PriceLevelCheck 8/9's tie to its edge, with no months moved to dodge it;
-   - run `--pick` (95 of 170 harnesses, LongPlaytest for Game.java), then write the ship file. On the solver: if its
-     overshoot is a cost a player sees, a `## queued` row in the ship file.
-
-**★ calls (taken as recommended by the orchestrator, 2026-11-04 11:58; not built yet):**
-1. **NewGameCheck 11 asserts what the solver keeps:** the face one granule down does not cover. The overshoot on the
-   coupon's eighth sawtooth, up to about 1.4% of the borrowing, is written there as a known property of the solver, not
-   a bound it keeps.
-2. **Each building of an order is priced at its own span's mean** (`BuildersShort.meanPremium()`): the queue its
-   points stand in, from its start to a step past it, not the queue at its start. So the price is invariant to scale,
-   and ScaleCheck's K-times copy pays what its city pays. ConstructionTrapCheck 12's "one building is priced exactly as
-   FC1 priced it" is restated as "one building pays the mean of FC1's curve over its own span". The reason: FC1 priced
-   at the head of the span, which undercharges a large building on a rising curve. A copy of a thousand buildings,
-   each a thousandth of the span, paid the true mean. Dear contracts count that multiple twice, so the gap took
-   ScaleCheck past its tolerance.
+**WHERE IT STANDS (2026-11-04, 14:40; no ship file yet):**
+1. On main at 7cfcb666 (WN5b 0.9.10 merged in). The brake is dear contracts, as the ensemble of the morning measured it
+   (c0c7afaa; section 1, ★). Since then the model has changed by three rounding edges only (item 3).
+2. **★ calls (the orchestrator took both as recommended at 11:58):**
+   - **NewGameCheck 11: built.** It asserts what the solver keeps: the face one granule down does not cover. It prints
+     the overshoot as a known property of the solver: 52.43k over a gap of 3,770.17k, 1.39%.
+   - **Each building priced at its span's mean: built, measured, withdrawn.** It made ScaleCheck worse (people 3.72e-2
+     apart against 1.59e-2), and the 5-billion copy's "an order of more than a million buildings" fixture failed. The
+     cause of ScaleCheck's miss was never the price (item 4): its miss is the same to the digit with the brake reading
+     the queue's premium instead of the order's own. So BuildersShort and ConstructionTrapCheck 12 are as they were.
+     Withdrawn on that evidence; one building is still priced as FC1 priced it.
+3. **PriceLevelCheck traced to its edges, three of them, each a hair of rounding that one price level read and the
+   other did not. All three are fixed and no months were moved; the four twins hold to 1e-9 (worst 7e-14):**
+   - Section 8, month 23: a staffing share of 1.3e-18 at today's prices and 0 at the factor. Manufacturing keeps the held
+     template with the largest share, so it held a Machine Works at one level and a Fabrication Shop at the other. Now
+     a spare within `Sector.SPARE_ROUNDING` (1e-12) of the band's posts is none.
+   - Section 9, month 26: one cell's debt of 1.1e-16 since month 4 at today's prices, 0 at the factor. `Exchange.mayBuy()`
+     read any debt above nothing, so the cell sat out a share offering at one level only (the mechanism the harness's
+     own note describes at month 56). Now it reads a debt as `HouseholdBalance.owes()` does, above the balance's floor.
+   - Section 9, month 29: the household waterfall's tail a hair above zero (3e-21), borrowed as a debt. It was a draw of
+     the level exactly 1: the factor, the factor nudged by 1e-12 and today's nudged by 1e-12 ran equal through month 33,
+     and only 1.0 parted. Now a remainder within `Household.SHORT_ROUNDING` (1e-12) of the month's gap is covered, the
+     twin of the clamp `fundShortfall()` already had for a hair below zero.
+4. **ScaleCheck 9 is its scaler, not the brake.** `scale()` multiplies `constructionProgressById` by K, but a stack's
+   progress is held against its current unit only. So the copy's one current unit holds K units' worth and finishes
+   hundreds at once (1,000 roads on site fall to 547 in month 1, against the city's 1). Build-ahead saves the grown
+   city with far more on site. The fixture mend: read the copies from the grown city once its sites are empty, every
+   sector held (Sonnet slice, with MapCheck 2h).
+5. **`--pick` on 8d1659f8 (the morning's model, main merged; 13:53, 95 of 170 harnesses, LongPlaytest for Game.java), red only in:**
+   NewGameCheck and PriceLevelCheck (mended since), ScaleCheck (item 4), and MapCheck 2h, whose second scenario no
+   longer makes the crossing a cloverleaf site (a moved path; the same slice). LongPlaytest is green; on 11-03 a map
+   building moved at month 1809.
+6. Next: the ensemble on the final model (run BA1c, which replaces `docs/ensemble/BA1.md`), the slice's two mends
+   reviewed, `--pick` again, the ship file.
 
 Jerus, 2026-11-01: "why bounded? why not let contracts flow? market after is efficient, too much and contracts get
 expensive thus business stop trying to place orders until contracts arent so expensive". The brief is
@@ -124,6 +90,13 @@ expensive thus business stop trying to place orders until contracts arent so exp
     the price, the interest on the wait and dear contracts ration orders.
   - The Construction tab's QUEUE mark is now the knee where the price of a point starts to rise
     (`BuildersShort.KNEE_MONTHS`, 9 months), on a bar to 33 months, where the premium is half its ceiling.
+
+- **Three rounding edges the price-level twins found (2026-11-04).** Each was a hair of rounding that one price level
+  read and the other did not, the first two surfaced by build-ahead's paths:
+  - `Sector.SPARE_ROUNDING`: a spare within rounding of the posts is none.
+  - `Exchange.mayBuy()` reads a debt as `HouseholdBalance.owes()` does.
+  - `Household.SHORT_ROUNDING`: a hair still short after the waterfall is covered.
+  WHERE IT STANDS 3 has the months and the cells.
 
 ## 2. Decided here, no star
 
