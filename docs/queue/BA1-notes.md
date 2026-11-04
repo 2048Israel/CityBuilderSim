@@ -26,8 +26,8 @@
      returns the smallest face that covers, a granule at a time, but proceeds jump by more than a granule where the
      coupon rounds to an eighth (the sawtooth the harness's own later comment names). This gap, 3,770.17k, lands on
      a jump: one granule down is 9.67k short, and the face that covers is 52.43k over against a bound of 2.90k. Moving
-     the fixture off the jump would hide an overshoot of up to about 1.4% of the borrowing. A ★ call: what the
-     assertion should promise (recommended: "the face one granule down does not cover", which the solver keeps).
+     the fixture off the jump would hide an overshoot of up to about 1.4% of the borrowing. ★ Taken as recommended
+     (the orchestrator, 2026-11-04 11:58; ★ calls below).
    - **finding, PriceLevelCheck 8 and 9** (the price-level twins part). Without the brake (a switch tried and taken out)
      only 9 parts, slightly, from month 25 (cash 5e-6 apart at month 33): the kind of tie section 6's town had, which
      11-03 moved to TOWN_MONTHS 33. With it 8 parts too: in MapCheck's played city heavy industry's books run 6 months
@@ -41,16 +41,33 @@
      pay the mean across the same span, which is more on a rising curve. So the price was never invariant to scale for
      a large building, and the brake counts the gap twice. The fix that keeps it invariant: price each building at its
      own span's mean (start plus half a step, or the integral over it), which ends "one building is priced exactly as
-     FC1 priced it" (ConstructionTrapCheck 12 asserts it). A ★ call: recommended, since the queue a building's points
-     stand in is the half-step after its start.
+     FC1 priced it" (ConstructionTrapCheck 12 asserts it). ★ Taken as recommended (the orchestrator, 2026-11-04
+     11:58; ★ calls below).
    - not run: MapCheck and LongPlaytest (11-03: a map building moved at month 1809, main's known plan bug, which main's
      own nightly shows at 3010-3013).
    Then `./batch-check.sh --pick` on the world files (JDK_JAVA_OPTIONS naming the main checkout's data/earth-2.bin and
    data/world-1.bin; without them PriceLevelCheck 6 and the map harnesses read another world), then the ship file.
 4. The sector screen's planner line names dear contracts too (SectorScreen, "No business is held to one order").
-5. Next, in order: ScaleCheck's span (the ★ in item 3), PriceLevelCheck 8/9's tie, NewGameCheck 11's call, then
-   `--pick` (95 of 170 harnesses, LongPlaytest for Game.java) and the ship file. The model is final unless the span
-   fix lands. If it does, rerun the ensemble, since the price of a large building moves.
+5. Next, once the PC is back, in order:
+   - build the two ★ calls below (one Sonnet slice);
+   - rerun ScaleCheck, ConstructionTrapCheck and NewGameCheck;
+   - rerun the ensemble, since the span call moves the price of a large building, and commit it over
+     `docs/ensemble/BA1.md`;
+   - trace PriceLevelCheck 8/9's tie to its edge, with no months moved to dodge it;
+   - run `--pick` (95 of 170 harnesses, LongPlaytest for Game.java), then write the ship file. On the solver: if its
+     overshoot is a cost a player sees, a `## queued` row in the ship file.
+
+**★ calls (taken as recommended by the orchestrator, 2026-11-04 11:58; not built yet):**
+1. **NewGameCheck 11 asserts what the solver keeps:** the face one granule down does not cover. The overshoot on the
+   coupon's eighth sawtooth, up to about 1.4% of the borrowing, is written there as a known property of the solver, not
+   a bound it keeps.
+2. **Each building of an order is priced at its own span's mean** (`BuildersShort.meanPremium()`): the queue its
+   points stand in, from its start to a step past it, not the queue at its start. So the price is invariant to scale,
+   and ScaleCheck's K-times copy pays what its city pays. ConstructionTrapCheck 12's "one building is priced exactly as
+   FC1 priced it" is restated as "one building pays the mean of FC1's curve over its own span". The reason: FC1 priced
+   at the head of the span, which undercharges a large building on a rising curve. A copy of a thousand buildings,
+   each a thousandth of the span, paid the true mean. Dear contracts count that multiple twice, so the gap took
+   ScaleCheck past its tolerance.
 
 Jerus, 2026-11-01: "why bounded? why not let contracts flow? market after is efficient, too much and contracts get
 expensive thus business stop trying to place orders until contracts arent so expensive". The brief is
