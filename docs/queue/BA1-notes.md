@@ -8,13 +8,31 @@
    brake 25). People at m240/600/1200 are 3,872 / 14,673 / 82,850 (FC1-lc3 4,027 / 14,681 / 67,166), and the final
    population median is 616,952 (0.9.6 335,674). The queue from m240 is p50 5.2, p90 43.6, p99 79 months (58 without
    the brake), with the premium on in 44% of months.
-3. **Left: the fixtures, then `--pick`.** Section 3 has the named run of the 14 harnesses most likely touched. The
-   reds of 2026-11-03 were NewGameCheck (c), CentralBankCheck, SaveFileCheck, OilCheck and RailDepotCheck, plus MapCheck
-   and LongPlaytest (a map building moved at month 1809: main's known plan bug, which main's own nightly shows at
-   3010-3013). Mend them in one Sonnet slice, run `./batch-check.sh --pick` on the world files (JDK_JAVA_OPTIONS
-   naming the main checkout's data/earth-2.bin and data/world-1.bin; without them PriceLevelCheck 6 and the map
-   harnesses read another world), then write the ship file.
+3. **Left: the fixtures, two findings, then `--pick`.** A named run of the 14 harnesses most likely touched, on the
+   brake and the world files (AllChecks -f, 414 s), passed 8: InvestCheck, OrderSearchCheck, BuildCardCheck,
+   WantedPostsCheck, ConstructionTrapCheck, BuildersFirstCheck, RefineryCheck and CentralBankCheck (CB1 mended it).
+   Red:
+   - **fixtures on a moved path, as on 11-03:** RailDepotCheck (the bulk under the sidings), OilCheck 5 and 19 (the
+     railway's and the vans' diesel), SaveFileCheck (its full city's conditions, and an IndexOutOfBounds after them),
+     NewGameCheck 11 (solveForCash one granule down). A Sonnet slice took them at 11:30, time-boxed to 12:00; item 5
+     says what it left.
+   - **finding, PriceLevelCheck 8 and 9** (the price-level twins part). Without the brake (a switch tried and taken out)
+     only 9 parts, slightly, from month 25 (cash 5e-6 apart at month 33): the kind of tie section 6's town had, which
+     11-03 moved to TOWN_MONTHS 33. With it 8 parts too: in MapCheck's played city heavy industry's books run 6 months
+     in one twin and 3 in the other, so one order clears in one twin only. Find the test an order sits on the edge of
+     (`DEAR CONTRACTS` multiplies `carryOf()`; the halving searches and Mortgage's down-payment edge are where 11-03's
+     tie was). Do not move the months to dodge it without naming the tie.
+   - **finding, ScaleCheck** "a copy 1,000 times over tracks its city": people 1.59e-2 against 1.50e-2, unemployment
+     3.80e-2 against 3.30e-2. It passes without the brake. Likely cause: the copy's orders are K times larger, so their
+     multiple reads the curve's integral (`BuildersShort.EXACT_SUM_MOST` = 64) where the city's reads the exact sum
+     (worst miss 2.6e-3, ConstructionTrapCheck 12). The brake now counts that multiple twice. Check it before
+     anything else.
+   - not run: MapCheck and LongPlaytest (11-03: a map building moved at month 1809, main's known plan bug, which main's
+     own nightly shows at 3010-3013).
+   Then `./batch-check.sh --pick` on the world files (JDK_JAVA_OPTIONS naming the main checkout's data/earth-2.bin and
+   data/world-1.bin; without them PriceLevelCheck 6 and the map harnesses read another world), then the ship file.
 4. The sector screen's planner line names dear contracts too (SectorScreen, "No business is held to one order").
+5. The fixture slice: not finished at this push; its edits, if any, are uncommitted in the worktree cm1-8dea2f.
 
 Jerus, 2026-11-01: "why bounded? why not let contracts flow? market after is efficient, too much and contracts get
 expensive thus business stop trying to place orders until contracts arent so expensive". The brief is
