@@ -412,4 +412,21 @@ public final class Agriculture extends Sector {
         }
         return new double[] { demand, capacity };
     }
+
+    /**
+     * What one building contributes to the measure above: the same MONEY, at the same export floors, not the tonnes of crops the generic
+     * Sector.unitsOf() reads.
+     *
+     * WHY: retirementDemandAndCapacity() was put into money and this stayed in tonnes, so BusinessInvestment.planRetirement() divided what
+     * was spare (dollars) by what a farm is (tonnes) to say how many farms to sell. Dollars scale with PriceLevel.FACTOR and tonnes do not:
+     * at today's prices a spare farm's worth was above a farm's tonnes and the farm was sold, at the founding's it never was, so
+     * PriceLevelCheck's played city (section 8) parted from its twin at month 47 on a farm sold at one price level and kept at the other.
+     */
+    @Override
+    public double unitsOf(ham.citybuildersim.BuildingsTemplate t) {
+        if (t == null || markets == null) return 0;
+        double units = 0;
+        for (Good g : goodsMade()) units += t.makes(g) * Math.max(0, markets.get(g).netExportPrice());
+        return units;
+    }
 }

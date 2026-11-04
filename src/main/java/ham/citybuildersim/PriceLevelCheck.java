@@ -98,9 +98,12 @@ public class PriceLevelCheck {
      * stores equal to the person; the factor nudged by 1e-12 either way runs equal to today's for 120 months, and today's own nudged to
      * 1.0000001 parts from 1 at the same month with the same two values. A twin cannot hold two draws equal, so the horizon stops before it,
      * as TOWN_MONTHS does. When a later batch parts this city earlier, nudge the factor by 1e-12 first: a parting the nudge moves is a tie
-     * (the horizon goes to the month before it), one it does not move is a price the factor missed (mend it).
+     * (the horizon goes to the month before it), one it does not move is a price the factor missed (mend it). R0 (2026-11-04) did both: its
+     * city, untaxed to 1916 on history's dates, first parted at month 47 on a farm sold at today's prices and never at the factor, which the
+     * nudge did not move (a missed price: Agriculture's retirement divided money by tonnes, mended in Agriculture.unitsOf()); then at month
+     * 78 in Cement & Concrete's cash by 1.3e-9, which the nudge moves on both sides (a tie). So to month 77, past the demolition and the mine.
      */
-    static final int PLAYED_MONTHS = 105;
+    static final int PLAYED_MONTHS = 77;
 
     /** The month the played city pulls down ten houses: month 60, as when the horizon was 120 months and the demolition its half. */
     static final int PLAYED_DEMOLITION = 60;
