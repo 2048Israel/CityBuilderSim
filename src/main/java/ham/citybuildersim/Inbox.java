@@ -195,7 +195,34 @@ public class Inbox {
 
         takeIslands(game, month);
 
+        takeLevers(game, month);
+
         cull(month);
+    }
+
+    /**
+     * The Policy levers history opens (R0): in the month a lever opens, one notice of Canada's first terms for it, titled "An income
+     * tax: 1917", keyed "lever:" and its name so it is raised once. The month of a city's first day raises none (a lever open from the
+     * start has no first day to report), and nor does a save from before R0, whose levers are all open from month 1. It is settled the
+     * month after, like any one-off, and kept two years. Only the levers TaxPolicy holds; the others are raised by their own batches.
+     */
+    private void takeLevers(Game game, int month) {
+        for (PolicyDates.Lever lever : TaxPolicy.GATED) {
+            boolean opensNow = month > 1 && month == game.leverOpeningMonth(lever);
+            take(game, month, "lever:" + lever.name(),
+                    opensNow,
+                    leverTitle(lever),
+                    opensNow ? wrapped(PolicyDates.notice(lever), BODY_COLUMNS) : new ArrayList<>());
+        }
+    }
+
+    /** "An income tax: 1917", "A profit tax: 1916", "Student aid: 1939": the lever as the player reads it, and the date it opened. */
+    static String leverTitle(PolicyDates.Lever lever) {
+        String label = lever.label();
+        boolean uncountable = lever == PolicyDates.Lever.EI || lever == PolicyDates.Lever.STUDENT_AID;
+        String lead = uncountable ? "" : "AEIOUaeiou".indexOf(label.charAt(0)) >= 0 ? "An " : "A ";
+        String named = lead + label;
+        return Character.toUpperCase(named.charAt(0)) + named.substring(1) + ": " + PolicyDates.openingDate(lever);
     }
 
     /**

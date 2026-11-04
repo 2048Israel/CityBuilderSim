@@ -689,6 +689,8 @@ public class Game {
         autoSubsidy.clear();
         subsidyPaid.clear();
         economyManager.getTaxPolicy().reset();
+        // ...and the levers history has not opened yet are held at zero (R0): the city is in its first month.
+        economyManager.getTaxPolicy().setMonth(month);
         economyManager.getSalesTaxLedger().reset();
         this.constructionShedMonth = -1;
         this.constructionShedPoints = 0;
@@ -1104,6 +1106,16 @@ public class Game {
     
     public int getMonth(){
         return month;
+    }
+
+    /** Whether a Policy lever is open in this city (R0): from the month Canada first had it, or the month a find brought it to. For the screen and the inbox. */
+    public boolean isLeverOpen(PolicyDates.Lever lever) {
+        return economyManager.getTaxPolicy().isOpen(lever);
+    }
+
+    /** The game month a Policy lever opens in this city (R0): history's (PolicyDates), earlier where a find brought it forward, 1 where it is open from the start. */
+    public int leverOpeningMonth(PolicyDates.Lever lever) {
+        return economyManager.getTaxPolicy().openingMonth(lever);
     }
     public double getCash(){
         return cash;
@@ -12295,6 +12307,13 @@ public class Game {
          */
         month++;
         monthsSinceAutosave++;
+        /*
+         * THE POLICY HEARS THE MONTH FIRST (R0): each lever opens on Canada's date, and a lever still shut is held at zero
+         * before anything in this month is taxed or paid. The month number moves only here, and simulateMonth() (the one
+         * other half of the month) runs from this method, so this line is where both halves pass. See TaxPolicy, THE LEVERS
+         * ON HISTORY'S DATES.
+         */
+        economyManager.getTaxPolicy().setMonth(month);
         // The buildings the player ordered demolished between the presses
         // close now, as the month after the order starts - the first it is
         // in force for - before anything in it reads the city (0.7.22; THE
@@ -16064,6 +16083,8 @@ public class Game {
         dataSave.setLandRuns(landManager.getRunsSqFt());
         dataSave.setIncomeTaxRate(economyManager.getTaxPolicy().getIncomeTaxRate());
         dataSave.setPropertyTaxRate(economyManager.getTaxPolicy().getPropertyTaxRate());
+        // ...and the month each Policy lever opens in this city (R0): a save from before it has none, and loads with every lever open.
+        dataSave.setLeverOpenings(economyManager.getTaxPolicy().openingsForSave());
         dataSave.setNotices(inbox.all());
         dataSave.setSectorBooks(sectorBooks.thisMonth());
         dataSave.setSectorBooksBefore(sectorBooks.lastMonth());
@@ -19401,6 +19422,10 @@ public class Game {
             // Whether the array was read decides whether the one income rate
             // further down is: it carries the three bases apart since 0.7.4,
             // and the old single key would put them back together.
+            // The levers' opening months first, and the loaded month with them (R0): a save from before R0 names none and loads
+            // with every lever open; the policy state and the offsets then come back as saved, and the month holds what is shut.
+            economyManager.getTaxPolicy().restoreOpenings(loaded.getLeverOpenings());
+            economyManager.getTaxPolicy().setMonth(this.month);
             boolean taxArrayRead =
                     economyManager.getTaxPolicy().restorePolicyState(loaded.getTaxPolicyState());
             economyManager.getTaxPolicy().restoreSectorOffsets(loaded.getSectorOffsets());

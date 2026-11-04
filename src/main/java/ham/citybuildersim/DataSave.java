@@ -1464,6 +1464,15 @@ public class DataSave implements Cloneable {
     public void setTaxPolicyState(double[] state)  { this.taxPolicyState = state; }
     public double[] getTaxPolicyState()            { return taxPolicyState; }
 
+    /**
+     * The month each Policy lever opens in this city, by the lever's NAME (R0; TaxPolicy.openingsForSave()). Null on a save from before R0,
+     * which loads with every lever open: its taxes were set before there was a gate.
+     */
+    private java.util.Map<String, Integer> leverOpenings;
+
+    public void setLeverOpenings(java.util.Map<String, Integer> openings) { this.leverOpenings = openings; }
+    public java.util.Map<String, Integer> getLeverOpenings()              { return leverOpenings; }
+
     public void setHouseholdBalance(double[] state) { this.householdBalance = state; }
     public double[] getHouseholdBalance()           { return householdBalance; }
 

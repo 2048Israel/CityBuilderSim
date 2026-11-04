@@ -2,19 +2,23 @@ package ham.citybuildersim;
 
 import ham.citybuildersim.PolicyDates.Lever;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Every Policy lever opens on the date Canada first had it, and no lever may open more than the law field's four years early (R0, slice 1:
- * PolicyDates).
+ * PolicyDates), and the levers TaxPolicy holds are held shut at zero until then (R0, slice 2a: TaxPolicy.setMonth() and the setters' refusal).
  *
  * WHY. PolicyDates is pure data that the gate in the model and the Policy screen will read, and a wrong date is no error anywhere: a tax that
  * opens a year late is a city that goes untaxed for a year, and nobody sees it until the ensemble moves. So the dates are held to the study's
  * table here, row for row, with the table typed out below as the specification and not read back from the class under test; research-1900.md
- * 7.1 is the source. Rows the study dates that the game has no lever for (PL1 the 1915 workers' compensation levy, PL11 care subsidies, L1
+ * 7.1 is the source; the gate's half (sections 7 to 9) takes its dates from PolicyDates and never as a bare month number. Rows the study dates that the game has no lever for (PL1 the 1915 workers' compensation levy, PL11 care subsidies, L1
  * deposit insurance) are not here; the day the game grows one, its row is added to TABLE and to PolicyDates together.
  *
  * What it has to prove:
@@ -29,6 +33,16 @@ import java.util.Set;
  *   5. WHAT THE PLAYER IS TOLD. A dated lever has its entry key (but the policy rate: the table gives it none), its terms and a notice naming its
  *      year (and its month where the study gives one); an open lever has no key, its reason, and no notice.
  *   6. HISTORY'S ORDER. The dates run in the table's order, which is the declared order, and no two dated levers share an entry key.
+ *   7. THE GATE ON A BARE POLICY. A policy told it is month 1 holds every gated lever's dials at zero from their defaults and refuses their
+ *      setters (writing nothing to the decision log); the property tax is settable; for each gated lever the dial reads zero the month before
+ *      it opens, zero on its month, the setter takes a rate there and the rate is not held again after; "every tax" sets only the open ones;
+ *      the effective rates, the payslip and the pension read zero while shut; openAll() opens everything; a copy of a shut policy is shut.
+ *   8. A CITY. A new city founds with profit, sales and wage tax at zero and the property tax at its default, every gated lever shut in
+ *      month 1; the month is pushed to the policy each month (a lever moved to month 3 is shut in month 2 and open in month 3, where the
+ *      inbox raises its notice once, titled and worded from PolicyDates).
+ *   9. THE SAVE. The openings round-trip through a restore, keyed by the lever's name; a null or empty map opens every lever; an unknown key
+ *      is skipped; a lever the map does not name keeps history's month; a saved policy state comes back as saved into a policy that has only
+ *      heard month 1, and is held again only when the month says so; a reset policy is back on history's dates.
  */
 public class PolicyDatesCheck {
 
@@ -65,6 +79,55 @@ public class PolicyDatesCheck {
     /** The game month of a real calendar month, worked out here and not by PolicyDates. */
     static int monthOf(int year, int monthOfYear) {
         return 1 + 12 * (year - CityCalendar.EPOCH_YEAR) + monthOfYear - 1;
+    }
+
+    /* ----- the gate's fixtures ----- */
+
+    /** Every gated dial set to a non-zero setting through the setters: what stays zero is what the gate refused. */
+    static void setEveryGatedDial(TaxPolicy p) {
+        WageBand band = WageBand.values()[0];
+        p.setProfitTaxRate(.20);
+        p.setSalesTaxRate(.10);
+        p.setWageTaxRate(.12);
+        p.setWageOffset(band, .02);
+        p.setProfitOffset(TaxPolicy.FARM_SECTOR, .03);
+        p.setSalesOffset(TaxPolicy.FARM_SECTOR, .01);
+        p.setPensionReplacement(.30);
+        p.setContributionRate(.04);
+        p.setEiPremiumRate(.02);
+        p.setEiBenefitRate(.40);
+        p.setHealthPremiumRate(.03);
+        p.setGrant(TaxPolicy.GrantBasis.WAGE_SHARE, .50);
+    }
+
+    /** What one lever owns, as one number: the sum of the dials and offsets the gate holds for it (zero while it is held). */
+    static double dialOf(TaxPolicy p, Lever lever) {
+        WageBand band = WageBand.values()[0];
+        switch (lever) {
+            case WAGE_TAX:             return p.getWageTaxRate() + p.getWageOffset(band);
+            case PROFIT_TAX:           return p.getProfitTaxRate() + p.getProfitOffset(TaxPolicy.FARM_SECTOR);
+            case SALES_TAX:            return p.getSalesTaxRate() + p.getSalesOffset(TaxPolicy.FARM_SECTOR);
+            case PENSION_REPLACEMENT:  return p.getPensionReplacement();
+            case PENSION_CONTRIBUTION: return p.getContributionRate();
+            case EI:                   return p.getEiPremiumRate() + p.getEiBenefitRate();
+            case HEALTH_PREMIUM:       return p.getHealthPremiumRate();
+            case STUDENT_AID:          return p.getGrantAmount();
+            default:                   return 0;
+        }
+    }
+
+    /** Sets every gated dial on a policy and returns what the gated levers own after it, summed. */
+    static double dialsAfterSetting(TaxPolicy p) {
+        setEveryGatedDial(p);
+        double sum = 0;
+        for (Lever l : TaxPolicy.GATED) sum += dialOf(p, l);
+        return sum;
+    }
+
+    /** Tries the wage tax base at 20% and returns what it reads. */
+    static double wageRateAfterSetting(TaxPolicy p) {
+        p.setWageTaxRate(.2);
+        return p.getWageTaxRate();
     }
 
     public static void main(String[] args) {
@@ -194,6 +257,241 @@ public class PolicyDatesCheck {
         boolean labelsDistinct = true;
         for (Lever l : Lever.values()) labelsDistinct &= labels.add(l.label());
         check("no two levers share a label", labelsDistinct);
+
+        /* ==================== 7. the gate on a bare policy ==================== */
+        System.out.println("\n--- a policy that is told it is month 1 holds the gated levers at zero and refuses their setters ---");
+        TaxPolicy bare = new TaxPolicy();
+        boolean allOpen = true;
+        for (Lever l : Lever.values()) allOpen &= bare.isOpen(l) && bare.openingMonth(l) == PolicyDates.openingMonth(l);
+        check("a policy no city holds (month 0) has every lever open, each with history's opening month", allOpen);
+        TaxPolicy opened = new TaxPolicy();
+        setEveryGatedDial(opened);
+        boolean fixtureReaches = true;
+        for (Lever l : TaxPolicy.GATED) fixtureReaches &= dialOf(opened, l) > 0;
+        check("the fixture reaches every gated dial on a policy no city holds (so a zero below is the gate, not a setter that did nothing)",
+                fixtureReaches);
+
+        TaxPolicy fresh = new TaxPolicy();
+        boolean defaultsLive = true;
+        for (Lever l : TaxPolicy.GATED) defaultsLive &= dialOf(fresh, l) > 0 || l == Lever.HEALTH_PREMIUM;
+        check("before it is told a month, a fresh policy holds the founding defaults (the 15% taxes, the pension, EI, the grant; the health premium's is zero)",
+                defaultsLive);
+        DecisionLog log = new DecisionLog(() -> 1);
+        fresh.recordTo(log);
+        fresh.setMonth(1);
+        boolean allHeld = true;
+        for (Lever l : TaxPolicy.GATED) allHeld &= !fresh.isOpen(l) && dialOf(fresh, l) == 0;
+        check("told month 1, every gated lever is shut and every dial it owns reads zero: the defaults are held down", allHeld);
+        check("...and the holding wrote nothing to the decision log", log.size() == 0);
+        setEveryGatedDial(fresh);
+        boolean refused = true;
+        for (Lever l : TaxPolicy.GATED) refused &= dialOf(fresh, l) == 0;
+        check("every setter of a gated dial is refused in month 1 (every tax, the offsets, the promises, the grant)", refused);
+        check("...and a refusal wrote nothing to the decision log either", log.size() == 0);
+        WageBand band = WageBand.values()[0];
+        check("the effective rates, the payslip and the pension read zero while the levers are shut",
+                fresh.effectiveWageRate(band) == 0 && fresh.effectiveProfitRate(TaxPolicy.FARM_SECTOR) == 0
+                        && fresh.effectiveSalesRate(TaxPolicy.FARM_SECTOR) == 0 && fresh.payslipShare(band) == 0
+                        && fresh.pensionPerSenior() == 0);
+        fresh.setPropertyTaxRate(.03);
+        fresh.setPropertyOffset(TaxPolicy.FARM_SECTOR, .01);
+        fresh.setFoodAssistance(.5);
+        fresh.setTuitionScale(2);
+        check("the property tax, its offsets, food assistance and the tuition scale are open from founding and take a setting in month 1",
+                fresh.getPropertyTaxRate() == .03 && fresh.getPropertyOffset(TaxPolicy.FARM_SECTOR) == .01
+                        && fresh.getFoodAssistance() == .5 && fresh.getTuitionScale() == 2);
+        check("...and those settings were decisions, so the log is wired (a positive control for the two silences above)", log.size() >= 1);
+
+        for (Lever l : TaxPolicy.GATED) {
+            int opens = PolicyDates.openingMonth(l);
+            TaxPolicy p = new TaxPolicy();
+            p.setMonth(opens - 1);
+            check(l + ": the month before it opens (" + (opens - 1) + ") it is shut and its dials read zero from their defaults",
+                    !p.isOpen(l) && dialOf(p, l) == 0);
+            setEveryGatedDial(p);
+            check(l + ": ...and its setters refuse", dialOf(p, l) == 0);
+            p.setMonth(opens);
+            check(l + ": on its month (" + opens + ") it is open and still reads zero: it opens at zero", p.isOpen(l) && dialOf(p, l) == 0);
+            setEveryGatedDial(p);
+            check(l + ": ...and its setters take a setting", dialOf(p, l) > 0);
+            double set = dialOf(p, l);
+            p.setMonth(opens + 1);
+            p.setMonth(opens + 12);
+            check(l + ": ...which the months after do not hold again", dialOf(p, l) == set);
+        }
+
+        TaxPolicy wageDay = new TaxPolicy();
+        wageDay.setMonth(PolicyDates.openingMonth(Lever.WAGE_TAX));
+        wageDay.setIncomeTaxRate(.2);
+        check("\"every tax\" on the income tax's day sets the profit and wage bases (both open) and leaves the sales tax (shut) at zero",
+                wageDay.getProfitTaxRate() == .2 && wageDay.getWageTaxRate() == .2 && wageDay.getSalesTaxRate() == 0);
+        wageDay.setWageOffset(band, .05);
+        wageDay.setProfitOffset(TaxPolicy.FARM_SECTOR, .02);
+        wageDay.setSalesOffset(TaxPolicy.FARM_SECTOR, .02);
+        check("...and the offsets take where open (wage, profit) and not where shut (sales)",
+                wageDay.getWageOffset(band) == .05 && wageDay.getProfitOffset(TaxPolicy.FARM_SECTOR) == .02
+                        && wageDay.getSalesOffset(TaxPolicy.FARM_SECTOR) == 0);
+
+        TaxPolicy all = new TaxPolicy();
+        all.setMonth(1);
+        all.openAll();
+        boolean everyOpen = true;
+        for (Lever l : Lever.values()) everyOpen &= all.isOpen(l) && all.openingMonth(l) == 1;
+        check("openAll() opens every lever, each with opening month 1, in month 1", everyOpen);
+        setEveryGatedDial(all);
+        boolean allTake = true;
+        for (Lever l : TaxPolicy.GATED) allTake &= dialOf(all, l) > 0;
+        check("...and every gated setter then takes a setting in month 1", allTake);
+        all.setMonth(2);
+        boolean notHeld = true;
+        for (Lever l : TaxPolicy.GATED) notHeld &= dialOf(all, l) > 0;
+        check("...and the next month does not hold them", notHeld);
+
+        TaxPolicy shutCopy = fresh.copy();
+        boolean sameDates = true;
+        for (Lever l : Lever.values()) sameDates &= shutCopy.isOpen(l) == fresh.isOpen(l) && shutCopy.openingMonth(l) == fresh.openingMonth(l);
+        check("a copy of a policy that is shut in month 1 has the same dates and shut levers", sameDates && !shutCopy.isOpen(Lever.WAGE_TAX));
+        check("...and refuses as its original does (a preview of a shut lever stays shut)", dialsAfterSetting(shutCopy) == 0);
+        TaxPolicy openCopy = all.copy();
+        check("...and a copy of an open one is open, with its settings", openCopy.isOpen(Lever.WAGE_TAX) && dialOf(openCopy, Lever.WAGE_TAX) > 0
+                && openCopy.openingMonth(Lever.WAGE_TAX) == 1);
+
+        /* ==================== 8. a city ==================== */
+        System.out.println("\n--- a new city founds with its income taxes at zero, and the month is pushed to the policy ---");
+        PrintStream out = System.out;
+        PrintStream quiet = new PrintStream(new OutputStream() {
+            @Override public void write(int b) { }
+            @Override public void write(byte[] b, int off, int len) { }
+        });
+        Game city = new Game(GameFiles.scratch("r0-gate"));
+        System.setOut(quiet);
+        try { city.run(); } finally { System.setOut(out); }
+        TaxPolicy cityPolicy = city.getEconomyManager().getTaxPolicy();
+        check("the city is in month 1", city.getMonth() == 1);
+        check("profit, sales and wage tax are at zero at founding", cityPolicy.getProfitTaxRate() == 0 && cityPolicy.getSalesTaxRate() == 0
+                && cityPolicy.getWageTaxRate() == 0);
+        check("the property tax is at its default", cityPolicy.getPropertyTaxRate() == TaxPolicy.DEFAULT_PROPERTY_TAX);
+        boolean cityZero = true;
+        boolean cityShut = true;
+        for (Lever l : TaxPolicy.GATED) {
+            cityZero &= dialOf(cityPolicy, l) == 0;
+            cityShut &= !city.isLeverOpen(l) && city.leverOpeningMonth(l) == PolicyDates.openingMonth(l);
+        }
+        check("every dial a gated lever owns reads zero at founding (the pension, EI, the health premium and the grant too)", cityZero);
+        check("Game.isLeverOpen() is false for each gated lever in month 1, and Game.leverOpeningMonth() is history's", cityShut);
+        check("the income tax is shut in month 1", !city.isLeverOpen(Lever.WAGE_TAX));
+        check("the property tax lever is open from the first day", city.isLeverOpen(Lever.PROPERTY_TAX) && city.leverOpeningMonth(Lever.PROPERTY_TAX) == 1);
+        check("every gated setter is refused on the city's own policy", dialsAfterSetting(cityPolicy) == 0);
+
+        // The month reaches the policy each month: the wage tax is moved to month 3, the way a find (R3) will move it.
+        Map<String, Integer> earlier = new HashMap<>();
+        earlier.put(Lever.WAGE_TAX.name(), 3);
+        cityPolicy.restoreOpenings(earlier);
+        check("the income tax moved to month 3 is shut in month 1", !city.isLeverOpen(Lever.WAGE_TAX) && city.leverOpeningMonth(Lever.WAGE_TAX) == 3);
+        System.setOut(quiet);
+        try { city.toggleNextMonth(); } finally { System.setOut(out); }
+        check("in month 2 it is still shut, reads zero and refuses a rate", city.getMonth() == 2 && !city.isLeverOpen(Lever.WAGE_TAX)
+                && cityPolicy.getWageTaxRate() == 0 && wageRateAfterSetting(cityPolicy) == 0);
+        System.setOut(quiet);
+        try { city.toggleNextMonth(); } finally { System.setOut(out); }
+        check("in month 3, the month the city pushes, it is open, reads zero, and takes a rate", city.getMonth() == 3
+                && city.isLeverOpen(Lever.WAGE_TAX) && cityPolicy.getWageTaxRate() == 0 && wageRateAfterSetting(cityPolicy) == .2);
+        List<Notice> raised = new ArrayList<>();
+        for (Notice n : city.getInbox().all()) if (n.getKey().startsWith("lever:")) raised.add(n);
+        check("the inbox has raised exactly one lever notice by month 3, keyed to the income tax", raised.size() == 1
+                && raised.get(0).getKey().equals("lever:" + Lever.WAGE_TAX.name()));
+        if (!raised.isEmpty()) {
+            Notice n = raised.get(0);
+            check("...titled from the lever and Canada's date (\"" + n.getTitle() + "\")",
+                    n.getTitle().equals("An income tax: " + PolicyDates.openingDate(Lever.WAGE_TAX)));
+            check("...with Canada's first terms for its body, raised in the month it opened",
+                    String.join(" ", n.getBody()).equals(PolicyDates.notice(Lever.WAGE_TAX)) && n.getRaised() == 3);
+        }
+        System.setOut(quiet);
+        try { city.toggleNextMonth(); } finally { System.setOut(out); }
+        int again = 0;
+        for (Notice n : city.getInbox().all()) if (n.getKey().equals("lever:" + Lever.WAGE_TAX.name())) again++;
+        check("in month 4 it is still one notice (raised once), and the rate set in month 3 is not held again",
+                again == 1 && cityPolicy.getWageTaxRate() == .2);
+
+        /* ==================== 9. the save ==================== */
+        System.out.println("\n--- the openings are saved by name, and a save from before R0 loads with every lever open ---");
+        TaxPolicy moved = new TaxPolicy();
+        Map<String, Integer> found = new HashMap<>();
+        found.put(Lever.WAGE_TAX.name(), 100);
+        found.put(Lever.EI.name(), 40);
+        moved.restoreOpenings(found);
+        Map<String, Integer> saved = moved.openingsForSave();
+        boolean named = true;
+        int datedCount = 0;
+        for (Lever l : Lever.values()) {
+            boolean isDated = !PolicyDates.openAtFounding(l);
+            if (isDated) datedCount++;
+            named &= saved.containsKey(l.name()) == isDated;
+        }
+        check("a save names every dated lever by Lever.name() and none of the open ones (" + datedCount + " keys)", named && saved.size() == datedCount);
+        check("...with the moved months in it", saved.get(Lever.WAGE_TAX.name()) == 100 && saved.get(Lever.EI.name()) == 40);
+        boolean history = true;
+        for (Lever l : Lever.values()) {
+            if (l != Lever.WAGE_TAX && l != Lever.EI) history &= moved.openingMonth(l) == PolicyDates.openingMonth(l);
+        }
+        check("a lever the map does not name keeps history's month", history);
+        TaxPolicy back = new TaxPolicy();
+        back.restoreOpenings(saved);
+        boolean roundTrip = true;
+        for (Lever l : Lever.values()) roundTrip &= back.openingMonth(l) == moved.openingMonth(l);
+        check("the openings round-trip through restoreOpenings", roundTrip);
+
+        TaxPolicy oldSave = new TaxPolicy();
+        oldSave.restoreOpenings(null);
+        TaxPolicy emptySave = new TaxPolicy();
+        emptySave.restoreOpenings(new HashMap<>());
+        boolean everyLeverOpen = true;
+        for (Lever l : Lever.values()) everyLeverOpen &= oldSave.openingMonth(l) == 1 && emptySave.openingMonth(l) == 1;
+        check("a null map (a save from before R0) and an empty one open every lever", everyLeverOpen);
+        oldSave.setMonth(1);
+        boolean oldTakes = dialsAfterSetting(oldSave) > 0;
+        for (Lever l : TaxPolicy.GATED) oldTakes &= oldSave.isOpen(l) && dialOf(oldSave, l) > 0;
+        check("...so an old save's taxes stand, and its setters take, in month 1", oldTakes);
+
+        TaxPolicy odd = new TaxPolicy();
+        Map<String, Integer> withUnknown = new HashMap<>();
+        withUnknown.put("TIME_TRAVEL", 5);
+        withUnknown.put(Lever.WAGE_TAX.name(), 77);
+        withUnknown.put(Lever.EI.name(), 0);
+        odd.restoreOpenings(withUnknown);
+        check("a key this build does not know is skipped, the known ones are read, and a month below 1 is held at 1",
+                odd.openingMonth(Lever.WAGE_TAX) == 77 && odd.openingMonth(Lever.EI) == 1
+                        && odd.openingMonth(Lever.PROFIT_TAX) == PolicyDates.openingMonth(Lever.PROFIT_TAX));
+
+        TaxPolicy late = new TaxPolicy();
+        late.setMonth(PolicyDates.openingMonth(Lever.PENSION_CONTRIBUTION));
+        setEveryGatedDial(late);
+        double[] lateState = late.getPolicyState();
+        List<TaxPolicy.SectorOffsets> lateOffsets = late.getSectorOffsets();
+        TaxPolicy loaded = new TaxPolicy();
+        loaded.setMonth(1);   // what a new city's policy has heard when a load begins
+        loaded.restoreOpenings(late.openingsForSave());
+        loaded.restorePolicyState(lateState);
+        loaded.restoreSectorOffsets(lateOffsets);
+        boolean sameDials = true;
+        for (Lever l : TaxPolicy.GATED) sameDials &= dialOf(loaded, l) == dialOf(late, l) && dialOf(late, l) > 0;
+        check("a saved policy state and its offsets come back as saved into a policy that has only heard month 1", sameDials);
+        loaded.setMonth(PolicyDates.openingMonth(Lever.PENSION_CONTRIBUTION));
+        boolean kept = true;
+        for (Lever l : TaxPolicy.GATED) kept &= dialOf(loaded, l) == dialOf(late, l);
+        check("...and the loaded month, past every date, holds nothing back", kept);
+        loaded.setMonth(1);
+        boolean heldAgain = true;
+        for (Lever l : TaxPolicy.GATED) heldAgain &= dialOf(loaded, l) == 0;
+        check("...whereas month 1 would hold them again (the hold is the month's, not the restore's)", heldAgain);
+
+        TaxPolicy reborn = late.copy();
+        reborn.reset();
+        boolean resetDates = true;
+        for (Lever l : Lever.values()) resetDates &= reborn.openingMonth(l) == PolicyDates.openingMonth(l);
+        check("a reset policy (a new city) is back on history's dates and, hearing no month, holds the founding defaults",
+                resetDates && reborn.getWageTaxRate() == TaxPolicy.DEFAULT_INCOME_TAX && reborn.isOpen(Lever.WAGE_TAX));
 
         System.out.println(fails == 0 ? "PolicyDatesCheck: all " + passes + " ok" : "PolicyDatesCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
