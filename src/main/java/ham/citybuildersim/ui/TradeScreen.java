@@ -1100,7 +1100,29 @@ final class TradeScreen {
     static final String REAL_EFFECTIVE_INFO = "The city's dollar against the moneys of the nations it trades with, each weighted by how much the "
             + "city traded with it over the last finished year, with the prices taken out of both ends. It is 100 at founding. Above 100 "
             + "the city's dollar is dearer in real terms than it was and its goods cost the partners more; below 100, cheaper. It is "
-            + "shown to compare, and for nothing else: nothing in the city's economy reads it.";
+            + "shown to compare, and for nothing else: nothing in the city's economy reads it. The line under it names the partners it weighs.";
+
+    /** How many partners the line under the real effective rate names before it says how many more there are (WN5b). */
+    static final int WEIGHS_NAMED = 4;
+
+    /**
+     * The line under the real effective rate (WN5b): "Weighs Germany 50% · Japan 25% · United States 25%", the WEIGHS_NAMED largest shares in whole
+     * percents, most weight first and a tie by nation number, then " · 12 more" for the partners past them; where the rate weighs no partner, "Weighs
+     * the US$ alone: no nation's trade to weigh yet", or "...: this world has no nations' moneys" where it has none (no world file). The figures are
+     * the getter's (Game.realEffectivePartners()); this only orders and words them.
+     */
+    static String weighsWords(List<RealDollar.Weighed> weighed, Nations nations, boolean moneys) {
+        if (weighed.isEmpty()) return "Weighs the " + Currency.FOREIGN_SYMBOL + " alone: " + (moneys ? "no nation's trade to weigh yet" : "this world has no nations' moneys");
+        List<RealDollar.Weighed> order = new ArrayList<>(weighed);
+        order.sort((a, b) -> a.share() != b.share() ? Double.compare(b.share(), a.share()) : Integer.compare(a.nation(), b.nation()));
+        StringBuilder words = new StringBuilder("Weighs ");
+        for (int i = 0; i < Math.min(WEIGHS_NAMED, order.size()); i++) {
+            long percent = Math.round(100 * order.get(i).share());
+            words.append(i > 0 ? " · " : "").append(nations.name(order.get(i).nation())).append(' ').append(percent < 1 ? "<1" : String.valueOf(percent)).append('%');
+        }
+        if (order.size() > WEIGHS_NAMED) words.append(" · ").append(order.size() - WEIGHS_NAMED).append(" more");
+        return words.toString();
+    }
 
     /**
      * The rate and parity on a chart: History's fxRate in the money blue and
@@ -2384,6 +2406,8 @@ final class TradeScreen {
         }
         if (Double.isFinite(effective)) {
             c.getChildren().add(cardLine("The real effective rate", String.format("%.1f", effective) + " (100 at founding)", null, REAL_EFFECTIVE_INFO));
+            // ...and (WN5b) the partners it weighs, from the getter the rate is made from.
+            c.getChildren().add(muted(weighsWords(ui.game.realEffectivePartners(), ui.game.getNations(), ui.game.getWorldMoneys() != null)));
         }
         if (fx.isPinned()) {
             c.getChildren().add(chips(chip("held fixed", Palette.TEXT_LABEL)));

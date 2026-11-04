@@ -2,6 +2,7 @@ package ham.citybuildersim;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * What the land office says of who sells an offer's ground: a pure function of the offer's sellers (LandParcel.getSellers()) and the nations' names
@@ -81,6 +82,28 @@ public final class LandSellersView {
             left--;
         }
         return percent;
+    }
+
+    /**
+     * "Sold by United States (62%, US$1.3M) and Canada (38%, C$1.1M)." - the receipt's sentence for an offer bought from several nations or from one
+     * foreign nation: each part's share of the offer's area (percents(), the card's own) and its price in the money the caller gives it (Game writes
+     * each part in its seller's money at today's rate), the parts in the order the sale keeps them, joined "A, B and C". Empty for an offer with no
+     * seller named, for one whose one seller is the host, and where the city has no sellers to name them from.
+     *
+     * WHY IT LIVES HERE (WN5b). The receipt rounded each share on its own and the card by largest remainder, so a split of three equal thirds read
+     * 33, 33 and 33 on the one and 34, 33 and 33 on the other. One rounding now, written once: percents().
+     */
+    public static String receiptLine(List<LandParcel.Sale> sold, LandSellers sellers, Function<LandParcel.Sale, String> money) {
+        if (sold == null || sold.isEmpty() || sellers == null || (sold.size() == 1 && sold.get(0).seller() == sellers.host())) return "";
+        int[] percent = percents(sold);
+        List<String> parts = new ArrayList<>(sold.size());
+        for (int i = 0; i < sold.size(); i++) {
+            LandParcel.Sale s = sold.get(i);
+            parts.add(String.format("%s (%d%%, %s)", name(sellers, s.seller()), percent[i], money.apply(s)));
+        }
+        String all = parts.size() == 1 ? parts.get(0)
+                : String.join(", ", parts.subList(0, parts.size() - 1)) + " and " + parts.get(parts.size() - 1);
+        return LEAD + " " + all + ".";
     }
 
     /** A nation's name as the world file gives it, "nation N" for a number the file does not know. */

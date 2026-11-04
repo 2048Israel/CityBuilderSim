@@ -1,15 +1,15 @@
-# gate of Merge batch/CB1: the central bank's strictness measured over several cities, not one probe city re-picked six times (Jerus, 2026-11-01: "queue, but after 0.9.0"): CentralBankCheck 21's very strict against Standard at the median and in a stated share of a set of foundings (EP1: 11 of 12 shapes hold), 0.9.9
-# date: 2026-11-03
+# gate of Merge batch/WN5b: wN5's review follow-ups: the map's hover quote (`LandSellers.split` on the FX thread near a foreign coast) measured and moved off it if a hover can take a frame; the island clause its own sentence; the receipt's and the card's shares both by largest remainder; and WN6's two (a never-changed money's partner in the real effective rate, `refill()`'s freshness flag set after the curves), 0.9.10
+# date: 2026-11-04
 # earth-2.bin: named
 # nightly: 2026-11-03 01:35 0.9.5 31f675b6 4,000 months: RED, exit 1 in 88 s: a building on the map moved 4 time(s), months 3010-3013
-# suite: 170 harnesses run in 2437s: 170 passed, 0 failed
-# timing: 15 harnesses run in 622s: 12 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 170 harnesses run in 2034s: 170 passed, 0 failed
+# timing: 16 harnesses run in 478s: 13 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 28.3 ms, batch 28.9 ms (+2.2%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.8 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 34.5 ms, batch 30.1 ms (-12.8%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 17.5 ms, batch 17.1 ms (-2.0%), budget 19 ms: within 15% of main's]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 106 ms, batch 34.5 ms (-67.6%), budget 19 ms: within 15% of main's]
 # timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
 # timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 6.65 ms, batch 5.21 ms (-21.6%), budget 8 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 8.61 ms, batch 11.4 ms (+33.0%), budget 8 ms: main over the budget too]
 # timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]

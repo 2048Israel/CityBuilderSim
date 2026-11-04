@@ -292,6 +292,17 @@ final class MapView {
         return t;
     });
 
+    /** The thread a hover's block is quoted on (WN5b): its own, not WORKER's, because one quote can take seconds at a big level near a foreign coast and would hold the map's own jobs (plans, nodes, the minimap) behind it. Low priority; it dies with the window. */
+    static final ExecutorService QUOTES = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "land-quote");
+        t.setDaemon(true);
+        t.setPriority(Thread.MIN_PRIORITY);
+        return t;
+    });
+
+    /** How many blocks' quotes the hover keeps, the latest asked: 16 - a pointer that comes back to a block shows its price at once. */
+    static final int QUOTES_KEPT = 16;
+
     private final UserInterface ui;
     private final Picker picker;
     private final Runnable onClose;
@@ -2950,9 +2961,12 @@ final class MapView {
     /**
      * What the hover card says over free ground that is no offer's (BL1), on the expanded map where the offers are drawn to be
      * picked: over a block that may be picked, "Your ground: one block", its area by kind and its price in the toggle's money
-     * - the price the office would list it at today, LandMarket.quote() - and CLICK_TO_PICK last; over a picked block, the
-     * whole pick's - its offers' and its blocks' - area and price and CLICK_TO_DROP. Null elsewhere: over the city's own ground,
-     * the world's edge, and a block that is joined to nothing (the card says "Not the city's" as it did).
+     * - the price the office would list it at today, LandMarket.quote(), worked out on QUOTES from a copy of the office
+     * (LandMarket.quoter()) and not on the screen's thread (WN5b: near a foreign coast one quote takes more than a frame; the card
+     * says LandMap.QUOTING in place of the area and price until it is in, and the frame after it comes asks the hover again) - and
+     * CLICK_TO_PICK last; over a picked block, the whole pick's - its offers' and its blocks' - area and price and CLICK_TO_DROP.
+     * Null elsewhere: over the city's own ground, the world's edge, and a block that is joined to nothing (the card says "Not the
+     * city's" as it did).
      */
     private List<String> groundLines(long x, long y) {
         Game g = ui.game;
@@ -2974,14 +2988,26 @@ final class MapView {
             return out;
         }
         if (!picks.pickable(g, key)) return null;
-        // The office measures the block as it would an offer of it - its ground, fields and price - once for the pointer's stay over it.
-        String quoteKey = key + "|" + level + "|" + shapesFor + "|" + g.getMonth();
-        if (!quoteKey.equals(quotedFor)) {
-            long[] r = LandMap.blockRect(level, key);
-            quoted = market.quote(r[0], r[1], r[2], r[3]);
-            quotedFor = quoteKey;
+        // The office measures the block as it would an offer of it - its ground, fields and price - once for the pointer's stay over it,
+        // away from the screen's thread (WN5b): a block quoted before is shown at once, else the card says so and the quote is asked of QUOTES.
+        String quoteKey = key + "|" + level + "|" + shapesFor + "|" + g.getMonth() + "|" + System.identityHashCode(market);
+        quoteWanted = quoteKey;
+        if (!quotes.containsKey(quoteKey)) {
+            if (!quotesAsked.contains(quoteKey)) {
+                String quoterKey = System.identityHashCode(market) + "|" + level + "|" + shapesFor + "|" + g.getMonth();
+                if (!quoterKey.equals(quoterFor)) {
+                    quoter = market.quoter();       // the land copied here, on the screen's thread: one copy for the month and the city's ground, not one a block
+                    quoterFor = quoterKey;
+                }
+                if (quoter == null) return null;
+                askQuote(quoter, quoteKey, LandMap.blockRect(level, key));
+            }
+            out.add(LandMap.ONE_BLOCK);
+            out.add(LandMap.QUOTING);
+            out.add(LandMap.CLICK_TO_PICK);
+            return out;
         }
-        LandParcel q = quoted;
+        LandParcel q = quotes.get(quoteKey);
         if (q == null) return null;
         out.add(LandMap.ONE_BLOCK);
         out.add(LandMap.kindWords(q.getKm2(), q.getKm2(CityLand.DRY), q.getKm2(CityLand.FRESH), q.getKm2(CityLand.SEA)));
@@ -2990,9 +3016,51 @@ final class MapView {
         return out;
     }
 
-    /** The block the hover last quoted (LandMarket.quote()) and what it was for: the block, the city's level, its ground and the month. */
-    private String quotedFor = "";
-    private LandParcel quoted;
+    /* ----- the hover's quote, away from the screen's thread (WN5b, 2026-11-02) ----- */
+
+    /** The block the hover wants quoted now: its key (block, level, ground, month and office), or "" while the pointer is over none. QUOTES' queue reads it from its own thread, and drops the quote of a block the pointer has left unread. */
+    private volatile String quoteWanted = "";
+
+    /** The quotes the hover has had (LandMarket.quote(), a null for a block with none), by key, the latest asked kept (QUOTES_KEPT): the screen's thread's. */
+    private final Map<String, LandParcel> quotes = new LinkedHashMap<>(32, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<String, LandParcel> eldest) { return size() > QUOTES_KEPT; }
+    };
+
+    /** The quotes on QUOTES' queue or running and not back: a block asked once, not again for each frame the pointer stays on it. The screen's thread's. */
+    private final Set<String> quotesAsked = new HashSet<>();
+
+    /** The office as it stood (LandMarket.quoter()) for the office, level, ground and month in quoterFor, and what it was made for; null where the office has none. */
+    private LandMarket.Quoter quoter;
+    private String quoterFor = "";
+
+    /**
+     * Asks QUOTES for a block's quote, `r` the block's {x0, y0, x1, y1}. A block still queued when the pointer has left it is dropped unread
+     * (askNodes()'s rule), its key forgotten so a pointer that comes back asks again. What comes back is kept on the screen's thread, a failure
+     * or nothing as a null so it is not asked again, and when the pointer is still on the block the hover is asked for the next frame.
+     */
+    private void askQuote(LandMarket.Quoter use, String quoteKey, long[] r) {
+        quotesAsked.add(quoteKey);
+        QUOTES.submit(() -> {
+            boolean wanted = quoteKey.equals(quoteWanted);
+            LandParcel got = null;
+            if (wanted) {
+                try {
+                    got = use.quote(r[0], r[1], r[2], r[3]);
+                } catch (RuntimeException e) {
+                    System.out.println("A block's price could not be worked out: " + e);
+                }
+            }
+            final LandParcel result = got;
+            Platform.runLater(() -> {
+                quotesAsked.remove(quoteKey);
+                if (wanted) quotes.put(quoteKey, result);
+                if (quoteKey.equals(quoteWanted) && pointerAt != null) {
+                    hoverAt = pointerAt;
+                    requestDraw();
+                }
+            });
+        });
+    }
 
     /** The ground lines in the hover card where "Not the city's" stood (after its first line when the card has not that line), their last line, the blue one, at the card's foot. */
     private static void groundInto(List<String> lines, List<String> ground) {
@@ -3091,6 +3159,7 @@ final class MapView {
         canvas.setOnMouseExited(e -> {
             hoverAt = null;
             pointerAt = null;
+            quoteWanted = "";       // (WN5b) the pointer has left the map: a quote still queued is dropped
             showIf(readout, false);
             if (card != null) card.setVisible(false);
             if (overSide >= 0) {
@@ -3316,6 +3385,7 @@ final class MapView {
 
     /** What the pointer is over: the offer it lights, and the words - one line on the small map, a card on the expanded one. */
     private void hover(double sx, double sy) {
+        quoteWanted = "";       // (WN5b) wanted again below where the pointer is over a block that may be picked: a quote queued for one it has left is dropped
         if (onGlobe()) {
             globeHover(sx, sy);
             return;
