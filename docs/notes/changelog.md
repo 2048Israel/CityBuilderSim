@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.11 — CM1, the replay's camera loads its whole move first, then runs on a click — 2026-11-03, ready, see docs/queue/CM1-notes.md
+In replay mode a glide (3), a fly out (O) and a fly in (I) now load first: the map says "Loading the move... N s" while
+every view the move will show is painted, with no time cap and the map's pictures held, then "Ready - click to run", and a
+click or a key runs it (Escape cancels), so a screen recording can start first. Measured on an Andorra recording
+(`ui/ReplayMoveProbe`), black frames went from up to all of a move to none: a glide across 119 months, black in all 295
+frames and 5,256 asks of the map's worker before, ran with no frame unpainted and nothing asked; loads took 5-15 s. Left
+for CM2: the globe near the city still draws part of the planet from its coarse 7.4 km picture while it moves (blurry, not
+black), and the half resolution on the move. ReplayCheck 5d runs a move in the real window, off screen, and asserts every
+frame shows a view the load painted (a run between them asked the worker on a busy PC). The normal game is untouched.
+
 ### 0.9.10 — WN5b, WN5's review follow-ups: the map's hover priced off the screen's thread, and three wordings on the land and the rate — 2026-11-03, ready, see docs/queue/WN5b-notes.md
 The expanded map's hover over a block that may be picked prices it on its own thread from a copy of the land office
 (LandMarket.quoter(), under a millisecond to make), and its card says "Pricing the block…" until the price is in: since

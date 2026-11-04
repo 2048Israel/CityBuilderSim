@@ -1,4 +1,4 @@
-# ReplayMode.java - 982 lines · 46 methods · 6 constants · interface
+# ReplayMode.java - 988 lines · 46 methods · 6 constants · interface
 
 `ham/citybuildersim/ui/ReplayMode.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -27,7 +27,7 @@
 
 **Uses:** [Palette](Palette.md) (38), [ReplayCamera](ReplayCamera.md) (8), [Recording](Recording.md) (8), [UserInterface](UserInterface.md) (5), [CameraPath](CameraPath.md) (5), [ReplayCity](ReplayCity.md) (4), [GameVersion](GameVersion.md) (3), [CityCalendar](CityCalendar.md) (3), [ReplayGraphLayer](ReplayGraphLayer.md) (2), [Game](Game.md) (2), [Branding](Branding.md) (1)
 
-**Used by (3):** [ReplayCamera](ReplayCamera.md), [ReplayGraphLayer](ReplayGraphLayer.md), [UserInterface](UserInterface.md)
+**Used by (4):** [ReplayCamera](ReplayCamera.md), [ReplayGraphLayer](ReplayGraphLayer.md), [ReplayMoveProbe](ReplayMoveProbe.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -38,11 +38,11 @@
 | 268 | · entering and leaving |
 | 372 | · the replay's menu |
 | 428 | · the keys |
-| 533 | · the clock |
-| 548 | · moving in time |
-| 630 | · the frame |
-| 666 | · the bar |
-| 919 | · cinematic mode, the window |
+| 539 | · the clock |
+| 554 | · moving in time |
+| 636 | · the frame |
+| 672 | · the bar |
+| 925 | · cinematic mode, the window |
 
 ## Constants
 
@@ -104,7 +104,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 62 | 921 | **type** `final class ReplayMode` | Replay mode (TR1, 2026-10-31): a recorded city (Recording) shown on a throwaway copy of it (ReplayCity) in the game's own window, with a time bar across the bottom to move through the months - play either way, step, d... |
+| 62 | 927 | **type** `final class ReplayMode` | Replay mode (TR1, 2026-10-31): a recorded city (Recording) shown on a throwaway copy of it (ReplayCity) in the game's own window, with a time bar across the bottom to move through the months - play either way, step, d... |
 | 134 | 5 | `ReplayMode(UserInterface ui)` |  |
 | 140 | 1 | `boolean isOn()` |  |
 | 143 | 1 | `ReplayCamera camera()` | The replay's camera: MapView asks for it each frame (UserInterface.replayCamera()). |
@@ -140,65 +140,65 @@
 |---:|---:|---|---|
 | 378 | 49 | `boolean showMenu()` | In a replay the main menu is this one: Back to the replay, Leave the replay, Quit - no Save, Load, New city or Continue. |
 
-### the keys (lines 428-532)
+### the keys (lines 428-538)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 446 | 50 | `boolean key(KeyEvent e, boolean typing)` | The replay's keys, taken at the top of the window's key filter (UserInterface); true when one was taken, and the event is consumed there, so none reaches the clock's Space or the speed ladder's arrows. |
-| 498 | 7 | `private void drift(double across, double down, double zoom)` | A step of drift, with the map over the window; with none, the bar says so. |
-| 507 | 4 | `private void glide()` | The glide, from the key or the bar's button: the seconds the field says first. |
-| 513 | 7 | `private void toggleGraphs()` | G or the bar's button: the faint GDP and population lines behind the city on or off. |
-| 522 | 10 | `private void commitGlideSeconds()` | The bar's field of seconds read into the camera, and written back as it took it. |
+| 447 | 55 | `boolean key(KeyEvent e, boolean typing)` | The replay's keys, taken at the top of the window's key filter (UserInterface); true when one was taken, and the event is consumed there, so none reaches the clock's Space or the speed ladder's arrows. |
+| 504 | 7 | `private void drift(double across, double down, double zoom)` | A step of drift, with the map over the window; with none, the bar says so. |
+| 513 | 4 | `private void glide()` | The glide, from the key or the bar's button: the seconds the field says first. |
+| 519 | 7 | `private void toggleGraphs()` | G or the bar's button: the faint GDP and population lines behind the city on or off. |
+| 528 | 10 | `private void commitGlideSeconds()` | The bar's field of seconds read into the camera, and written back as it took it. |
 
-### the clock (lines 533-547)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 544 | 3 | `double clockMonths()` | The clock the map's boats, trains and trucks sail on (UserInterface.clockMonths()): the copy's month and the real seconds since the replay began, over the seconds a month takes - growing without wrapping, so they keep... |
-
-### moving in time (lines 548-629)
+### the clock (lines 539-553)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 550 | 4 | `private void togglePlay()` |  |
-| 555 | 5 | `private void play(int direction)` |  |
-| 561 | 4 | `private void turn()` |  |
-| 566 | 4 | `private void step(int by)` |  |
-| 571 | 4 | `private void jump(int index)` |  |
-| 576 | 3 | `private void setSpeed(int index)` |  |
-| 585 | 21 | `private void go(int index)` | Shows the month at {@code index} of the recording's months (a gap in the recording is stepped over: the index is into the months that are there): only the map, by ReplayCity.stepQuick; when the land changed between th... |
-| 608 | 10 | `private void rest()` | The month on screen has stood still: it is loaded whole, and every screen shows exactly that month. |
-| 620 | 4 | `private void afterWhole()` | A month loaded whole: the per-city reset a load does (the expanded map and its view kept), the open screen drawn again. |
-| 625 | 4 | `void say(String words)` |  |
+| 550 | 3 | `double clockMonths()` | The clock the map's boats, trains and trucks sail on (UserInterface.clockMonths()): the copy's month and the real seconds since the replay began, over the seconds a month takes - growing without wrapping, so they keep... |
 
-### the frame (lines 630-665)
+### moving in time (lines 554-635)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 632 | 18 | `private void frame(long now)` |  |
-| 652 | 13 | `private void advance(double dt)` | Play: the months due since the last frame, in the direction chosen; the end of the recording either way ends the play. |
+| 556 | 4 | `private void togglePlay()` |  |
+| 561 | 5 | `private void play(int direction)` |  |
+| 567 | 4 | `private void turn()` |  |
+| 572 | 4 | `private void step(int by)` |  |
+| 577 | 4 | `private void jump(int index)` |  |
+| 582 | 3 | `private void setSpeed(int index)` |  |
+| 591 | 21 | `private void go(int index)` | Shows the month at {@code index} of the recording's months (a gap in the recording is stepped over: the index is into the months that are there): only the map, by ReplayCity.stepQuick; when the land changed between th... |
+| 614 | 10 | `private void rest()` | The month on screen has stood still: it is loaded whole, and every screen shows exactly that month. |
+| 626 | 4 | `private void afterWhole()` | A month loaded whole: the per-city reset a load does (the expanded map and its view kept), the open screen drawn again. |
+| 631 | 4 | `void say(String words)` |  |
 
-### the bar (lines 666-918)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 668 | 71 | `private void buildBar()` |  |
-| 741 | 6 | `private Button barButton(String text, String tip, Runnable act)` | A bar button: it stops a glide or fly in flight where it is, and then does what it says. |
-| 748 | 8 | `private Button camButton(String text, String tip, Runnable act)` |  |
-| 762 | 37 | `private HBox cameraRow()` | The bar's camera group (TR1): the map button, A and B (lit when marked, their tooltips say the mark), Glide with its field of seconds, Fly out and Fly in, Graphs (lit when on), Stop - and, when a drift is set, its rea... |
-| 800 | 6 | `private static SVGPath glyph(String content)` |  |
-| 808 | 4 | `private void showBar()` | The bar laid over the bottom of the window, and the page above it given room so the bar covers no part of it. |
-| 813 | 7 | `private void hideBar()` |  |
-| 826 | 17 | `private void keepBarAbove()` | The bar's place in the window's stack, kept every frame: above the window and the expanded map's pane (which is added to the stack when it expands, after the bar), below the menu's layer and a dialog. |
-| 845 | 43 | `private void refreshBar()` | The bar's figures and lit buttons, set only when they change; the window's room for the bar. |
-| 890 | 24 | `private void refreshCamera()` | The camera group's lit buttons, their tooltips and the drift's reading, set only when they change. |
-| 915 | 3 | `private static void litButton(Button b, boolean lit)` |  |
-
-### cinematic mode, the window (lines 919-982)
+### the frame (lines 636-671)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 925 | 6 | `private void setCinematic(boolean want)` | Cinematic mode on or off: the window's chrome (UserInterface.replayCinematic()) and the time bar. |
-| 938 | 10 | `private void filmSize()` | The window set so its scene is exactly 1920 x 1080 for the screen recorder: out of full screen and not maximised, the stage sized to the picture plus the window's decoration (the stage's size less the scene's), then l... |
-| 949 | 33 | `private void fitFilm(boolean wasFull, int pass)` |  |
+| 638 | 18 | `private void frame(long now)` |  |
+| 658 | 13 | `private void advance(double dt)` | Play: the months due since the last frame, in the direction chosen; the end of the recording either way ends the play. |
+
+### the bar (lines 672-924)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 674 | 71 | `private void buildBar()` |  |
+| 747 | 6 | `private Button barButton(String text, String tip, Runnable act)` | A bar button: it stops a glide or fly in flight where it is, and then does what it says. |
+| 754 | 8 | `private Button camButton(String text, String tip, Runnable act)` |  |
+| 768 | 37 | `private HBox cameraRow()` | The bar's camera group (TR1): the map button, A and B (lit when marked, their tooltips say the mark), Glide with its field of seconds, Fly out and Fly in, Graphs (lit when on), Stop - and, when a drift is set, its rea... |
+| 806 | 6 | `private static SVGPath glyph(String content)` |  |
+| 814 | 4 | `private void showBar()` | The bar laid over the bottom of the window, and the page above it given room so the bar covers no part of it. |
+| 819 | 7 | `private void hideBar()` |  |
+| 832 | 17 | `private void keepBarAbove()` | The bar's place in the window's stack, kept every frame: above the window and the expanded map's pane (which is added to the stack when it expands, after the bar), below the menu's layer and a dialog. |
+| 851 | 43 | `private void refreshBar()` | The bar's figures and lit buttons, set only when they change; the window's room for the bar. |
+| 896 | 24 | `private void refreshCamera()` | The camera group's lit buttons, their tooltips and the drift's reading, set only when they change. |
+| 921 | 3 | `private static void litButton(Button b, boolean lit)` |  |
+
+### cinematic mode, the window (lines 925-988)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 931 | 6 | `private void setCinematic(boolean want)` | Cinematic mode on or off: the window's chrome (UserInterface.replayCinematic()) and the time bar. |
+| 944 | 10 | `private void filmSize()` | The window set so its scene is exactly 1920 x 1080 for the screen recorder: out of full screen and not maximised, the stage sized to the picture plus the window's decoration (the stage's size less the scene's), then l... |
+| 955 | 33 | `private void fitFilm(boolean wasFull, int pass)` |  |
 
