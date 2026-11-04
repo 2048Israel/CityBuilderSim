@@ -1449,6 +1449,17 @@ public class SaveFileCheck {
             full.buyForeignCurrency(1);
             ham.citybuildersim.sectors.Retail shops = full.getSectors().retail();
             shops.setStoreInventory((int) Math.min(Integer.MAX_VALUE, shops.getHouseholdWant() / 2));
+            /*
+             * ...AND THE HOT MONEY'S STOCK AT HALF OF LAST MONTH'S TARGET (BA1): the stock closes a fifth of its gap to a target that
+             * follows a year of output, and with the construction orders uncapped this city's path never once had the target over the
+             * stock in the 240 months the loop may wait (the squeeze pulls the output down and the stock is left standing over it), so
+             * the loop ran its whole bound, to month 392, and the bank failed, the bonds were repaid and the mortgages gone, and every
+             * fixture below read an empty city. Half the target put in the stock before the month is a month in which money arrives,
+             * as the do-loop's other transients are caused rather than waited for.
+             */
+            double[] hot = full.getCapitalFlows().toSaveArray();
+            hot[0] = Math.min(hot[0], full.getCapitalFlows().getTarget() / 2);
+            full.getCapitalFlows().restore(hot);
             full.simulateMonths(1);
         } while (++extraMonths < 240
                 && (full.getHealth().getHungerRate() <= 0

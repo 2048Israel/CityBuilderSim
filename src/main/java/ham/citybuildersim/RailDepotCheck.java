@@ -303,7 +303,14 @@ public class RailDepotCheck {
 
         // ---- and in a played city's months ----
         System.out.println("\n--- ...and in a played city: lines alone rail nothing, spurs rail bulk, a depot lets the rest through ---");
-        Game city = HaulageCheck.played("raildepotcheck-city", 14);
+        /*
+         * ON THE GOODS' LITERALS (BA1): the spurs must have more bulk to carry than their two sidings take, and the bulk is the ore
+         * the mines ship plus the plant's coal landed and pellets shipped. With the construction orders uncapped the played city's
+         * path moved, and on the world file's band the plant ran no month at all - the three mines' ore alone, 75,489 t a month,
+         * against the sidings' 100,000. At the literals the plant lands its ore and coal and ships its pellets every month
+         * (HaulageCheck.base()), which is the premise: bulk past two sidings.
+         */
+        Game city = HaulageCheck.played(GameFiles.scratch("raildepotcheck-city"), 14, true, true);
         Freight fr = city.getSectors().freight();
         GoodsMarket ore = city.getMarkets().get(Good.IRON);
         quietly(() -> { HaulageCheck.lay(city, "Freight Line", 4); for (int i = 0; i < 3; i++) city.toggleNextMonth(); });

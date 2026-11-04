@@ -12,10 +12,22 @@
    brake and the world files (AllChecks -f, 414 s), passed 8: InvestCheck, OrderSearchCheck, BuildCardCheck,
    WantedPostsCheck, ConstructionTrapCheck, BuildersFirstCheck, RefineryCheck and CentralBankCheck (CB1 mended it).
    Red:
-   - **fixtures on a moved path, as on 11-03:** RailDepotCheck (the bulk under the sidings), OilCheck 5 and 19 (the
-     railway's and the vans' diesel), SaveFileCheck (its full city's conditions, and an IndexOutOfBounds after them),
-     NewGameCheck 11 (solveForCash one granule down). A Sonnet slice took them at 11:30, time-boxed to 12:00; item 5
-     says what it left.
+   - **fixtures on a moved path, mended (Sonnet slice, reviewed; each green alone):**
+     - RailDepotCheck: the played city is on the goods' literals, where the plant lands ore and coal and ships pellets
+       (about 131,000 t of bulk against the sidings' 100,000). On the world file's band it ran no month, and the mines'
+       ore alone was 75,489 t.
+     - OilCheck 5 and 19: the diesel tanks are filled before the month (in 19 every fourth month). The railway, with the
+       freight orders uncapped, now draws about 1.19M L against a shelf of 0.95M, so it imported the rest and the vans
+       got none at home.
+     - SaveFileCheck: the hot money's stock is set to half last month's target before each waited month, so money
+       arrives. Its city never had the target over the stock, so the loop ran its whole 240 months to month 392, where
+       the bank had failed and the bonds and mortgages were gone. That emptied every fixture after it.
+   - **finding, NewGameCheck 11** ("by no more than one issue granule plus the fees"): not a fixture. The solver
+     returns the smallest face that covers, a granule at a time, but proceeds jump by more than a granule where the
+     coupon rounds to an eighth (the sawtooth the harness's own later comment names). This gap, 3,770.17k, lands on
+     a jump: one granule down is 9.67k short, and the face that covers is 52.43k over against a bound of 2.90k. Moving
+     the fixture off the jump would hide an overshoot of up to about 1.4% of the borrowing. A ★ call: what the
+     assertion should promise (recommended: "the face one granule down does not cover", which the solver keeps).
    - **finding, PriceLevelCheck 8 and 9** (the price-level twins part). Without the brake (a switch tried and taken out)
      only 9 parts, slightly, from month 25 (cash 5e-6 apart at month 33): the kind of tie section 6's town had, which
      11-03 moved to TOWN_MONTHS 33. With it 8 parts too: in MapCheck's played city heavy industry's books run 6 months
@@ -36,7 +48,9 @@
    Then `./batch-check.sh --pick` on the world files (JDK_JAVA_OPTIONS naming the main checkout's data/earth-2.bin and
    data/world-1.bin; without them PriceLevelCheck 6 and the map harnesses read another world), then the ship file.
 4. The sector screen's planner line names dear contracts too (SectorScreen, "No business is held to one order").
-5. The fixture slice: not finished at this push; its edits, if any, are uncommitted in the worktree cm1-8dea2f.
+5. Next, in order: ScaleCheck's span (the ★ in item 3), PriceLevelCheck 8/9's tie, NewGameCheck 11's call, then
+   `--pick` (95 of 170 harnesses, LongPlaytest for Game.java) and the ship file. The model is final unless the span
+   fix lands. If it does, rerun the ensemble, since the price of a large building moves.
 
 Jerus, 2026-11-01: "why bounded? why not let contracts flow? market after is efficient, too much and contracts get
 expensive thus business stop trying to place orders until contracts arent so expensive". The brief is
