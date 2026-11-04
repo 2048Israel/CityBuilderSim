@@ -2407,7 +2407,7 @@ final class PolicyScreen {
         return dialCard(new DialCard(Icons.STAFF, Palette.MONEY, "THE FLOOR", info,
                 moneyFull(market.cashMinimumWage()) + " a month", "Every wage in the city is a multiple of this number.",
                 null, ladder, want, effects, "Once wages have walked there, about a year.", FLOOR_CAVEAT,
-                applyFoot("floor", "Set the floor to " + moneyFull(market.cashAt(want)), () -> market.setMinimumWage(want))),
+                applyFoot("floor", "Set the floor to " + moneyFull(market.cashAt(want)), () -> ui.game.setMinimumWage(want))),
                 380, false);
     }
 

@@ -105,9 +105,9 @@ public class TaxPolicy {
        ===================================================================== */
 
     /**
-     * The levers this class holds, in the order they open. The student LOAN's rate is not here: its gate needs the loans themselves shut
-     * (R0's second half), so STUDENT_AID holds the grant alone for now. The money levers (policy rate, central bank), the minimum wage and zoning
-     * belong to other classes.
+     * The levers this class holds, in the order they open. STUDENT_AID holds the grant and the student loan's rate; the loans themselves are
+     * not made before it opens (HouseholdBalance.setStudentLoansOpen(), told by Game with the rate). The money levers (policy rate, central
+     * bank), the minimum wage and zoning belong to other classes.
      */
     public static final PolicyDates.Lever[] GATED = {
             PolicyDates.Lever.PROFIT_TAX, PolicyDates.Lever.WAGE_TAX, PolicyDates.Lever.SALES_TAX,
@@ -170,7 +170,10 @@ public class TaxPolicy {
             eiBenefitRate = 0;
         }
         if (!isOpen(PolicyDates.Lever.HEALTH_PREMIUM)) healthPremiumRate = 0;
-        if (!isOpen(PolicyDates.Lever.STUDENT_AID)) grantAmount = 0;
+        if (!isOpen(PolicyDates.Lever.STUDENT_AID)) {
+            grantAmount = 0;
+            studentLoanRate = 0;
+        }
     }
 
     /** Every lever's opening month to 1: a save from before R0, whose taxes were set before there was a gate, and a fixture whose premise is a lever's mechanics. */
@@ -767,6 +770,8 @@ public class TaxPolicy {
     }
 
     public void setStudentLoanRate(double annual) {
+        // Shut with the loans themselves (R0): the treasury makes none before student aid opens, so there is no rate to set.
+        if (closed(PolicyDates.Lever.STUDENT_AID)) return;
         double was = studentLoanRate;
         studentLoanRate = clamp(annual, MAX_STUDENT_LOAN_RATE);
         if (DecisionLog.moved(was, studentLoanRate)) {

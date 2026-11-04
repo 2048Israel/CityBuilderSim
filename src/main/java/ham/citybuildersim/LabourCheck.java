@@ -392,6 +392,9 @@ public class LabourCheck {
 
         double floorBefore = back.getLabourMarket().getMinimumWage();
         double targetBefore = rents.getRentTarget();
+        // THE MINIMUM WAGE OPENED IN THE FIXTURE (R0): the question is whether rent follows a floor that moves wages, and a city on history's
+        // dates has no floor binding any wage until 1918. Opened here (the next month's top tells the labour market) so the floor is the law.
+        back.getEconomyManager().getTaxPolicy().openAll();
         back.getLabourMarket().setMinimumWage(floorBefore * 2);
         quietly(() -> back.simulateMonths(1));
         double unskilledNow = back.getLabourMarket().getWage(JobType.NO_DIPLOMA);

@@ -535,6 +535,12 @@ public abstract class Household {
     /** The annual rate the treasury charges a graduate on the loan: the city's one policy, told to every cell by HouseholdBalance before it settles. */
     double studentLoanRate;
 
+    /**
+     * Whether the treasury makes student loans yet (R0): told to every cell with the rate, true for a cell no city holds. Before STUDENT_AID
+     * opens (1939) a student is lent nothing, and goes without as a household refused its credit does (StudentHousehold.fundShortfall()).
+     */
+    boolean studentLoansOpen = true;
+
     /** Households of this cell that lost their home this month - a count, not money. */
     double evicted;
 

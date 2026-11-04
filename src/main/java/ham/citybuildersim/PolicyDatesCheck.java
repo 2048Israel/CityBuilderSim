@@ -43,6 +43,13 @@ import java.util.Set;
  *   9. THE SAVE. The openings round-trip through a restore, keyed by the lever's name; a null or empty map opens every lever; an unknown key
  *      is skipped; a lever the map does not name keeps history's month; a saved policy state comes back as saved into a policy that has only
  *      heard month 1, and is held again only when the month says so; a reset policy is back on history's dates.
+ *  10. THE MINIMUM WAGE'S FLOOR (R0, call 12). The dial is also the wage ladder's anchor, so it is not zeroed: before the law the floor binds
+ *      no wage (a glut takes the unskilled wage under the figure, to the band's own bottom) while the anchor and every base wage stand; the
+ *      player's dial and its nudge, through Game, are refused in month 1 and taken from the opening month; a load pushes the month to the
+ *      labour market; the inbox raises the opening notice once.
+ *  11. THE TWO READERS AND THE LOANS (R0, calls 14 and 15). The founding quote of the builders' sales tax is a month-1 city's, not a bare
+ *      policy's; a city's households start on the policy's pension, not the 45% default; before student aid opens a student is lent nothing
+ *      and the loan rate is refused, and the household book is told so each month.
  */
 public class PolicyDatesCheck {
 
@@ -492,6 +499,111 @@ public class PolicyDatesCheck {
         for (Lever l : Lever.values()) resetDates &= reborn.openingMonth(l) == PolicyDates.openingMonth(l);
         check("a reset policy (a new city) is back on history's dates and, hearing no month, holds the founding defaults",
                 resetDates && reborn.getWageTaxRate() == TaxPolicy.DEFAULT_INCOME_TAX && reborn.isOpen(Lever.WAGE_TAX));
+
+        /* ==================== 10. the minimum wage's floor ==================== */
+        System.out.println("\n--- before the minimum wage is law the floor binds no wage and the dial is refused; the anchor stands ---");
+        // The labour market alone, driven straight (a claim about one function): an unskilled glut, with and without the law.
+        int bandCount = WageBand.values().length;
+        double[] gluttedPosts = new double[bandCount];
+        double[] gluttedSupply = new double[bandCount];
+        for (int b = 0; b < bandCount; b++) { gluttedPosts[b] = 1000; gluttedSupply[b] = 4000; }
+        LabourMarket bound = new LabourMarket();
+        LabourMarket unbound = new LabourMarket();
+        unbound.setFloorBinding(false);
+        check("a labour market no city holds binds its floor, as it always did", bound.isFloorBinding() && !unbound.isFloorBinding());
+        for (int m = 0; m < 200; m++) { bound.advanceMonth(gluttedPosts, gluttedSupply); unbound.advanceMonth(gluttedPosts, gluttedSupply); }
+        check("with the law, an unskilled glut is held at the floor",
+                bound.getWage(JobType.NO_DIPLOMA) >= bound.cashMinimumWage() - 1e-9 && bound.isPinned(WageBand.NONE));
+        check("...without it the same glut takes the wage to the bottom of the band's own range, under the figure that anchors the ladder",
+                unbound.getWage(JobType.NO_DIPLOMA) < unbound.cashMinimumWage() * .75
+                        && unbound.getWage(JobType.NO_DIPLOMA) >= unbound.baseWage(JobType.NO_DIPLOMA) * LabourMarket.MIN_MULTIPLE - 1e-9);
+        boolean anchored = unbound.cashMinimumWage() == bound.cashMinimumWage() && unbound.getMinimumWage() == bound.getMinimumWage();
+        for (JobType job : JobType.values()) anchored &= unbound.baseWage(job) == bound.baseWage(job) && unbound.baseWage(job) > 0;
+        check("...and the anchor, every base wage and the dial's figure are the same with and without the law (nothing is zeroed)", anchored);
+
+        // A city: the floor is not law in month 1; the dial and its nudge are refused through the player's path (Game).
+        Game floorCity = new Game(GameFiles.scratch("r0-floor"));
+        System.setOut(quiet);
+        try { floorCity.run(); } finally { System.setOut(out); }
+        LabourMarket floorMarket = floorCity.getLabourMarket();
+        double dialBefore = floorMarket.getMinimumWage();
+        double nudgeBefore = floorMarket.getMinimumWageAdjustment();
+        check("in month 1 the minimum wage is shut and the floor binds nothing",
+                floorCity.getMonth() == 1 && !floorCity.isLeverOpen(Lever.MINIMUM_WAGE) && !floorMarket.isFloorBinding());
+        check("the player's minimum-wage dial is refused in month 1, and the figure stands",
+                !floorCity.setMinimumWage(dialBefore * 2) && floorMarket.getMinimumWage() == dialBefore);
+        check("...and so is its nudge", !floorCity.setMinimumWageAdjustment(.10) && floorMarket.getMinimumWageAdjustment() == nudgeBefore);
+
+        // Moved to month 3 the way a find (R3) will move it; saved in month 2 and read back, then the month it opens.
+        Map<String, Integer> floorEarlier = new HashMap<>();
+        floorEarlier.put(Lever.MINIMUM_WAGE.name(), 3);
+        floorCity.getEconomyManager().getTaxPolicy().restoreOpenings(floorEarlier);
+        System.setOut(quiet);
+        try { floorCity.toggleNextMonth(); } finally { System.setOut(out); }
+        check("in month 2 it is still shut", floorCity.getMonth() == 2 && !floorCity.isLeverOpen(Lever.MINIMUM_WAGE) && !floorMarket.isFloorBinding());
+        System.setOut(quiet);
+        boolean floorSaved;
+        Game floorBack = new Game(floorCity.getGameFiles());
+        try {
+            floorSaved = floorCity.saveGame(1, "r0 floor").ok;
+            floorBack.loadGameSave(1);
+        } finally { System.setOut(out); }
+        check("a city saved in month 2 reads back with the floor not binding (the load pushes the month to the labour market)",
+                floorSaved && floorBack.getMonth() == 2 && !floorBack.isLeverOpen(Lever.MINIMUM_WAGE) && floorBack.leverOpeningMonth(Lever.MINIMUM_WAGE) == 3
+                        && !floorBack.getLabourMarket().isFloorBinding());
+        System.setOut(quiet);
+        try { floorCity.toggleNextMonth(); } finally { System.setOut(out); }
+        check("in month 3 the floor binds, and the dial and the nudge are taken",
+                floorCity.getMonth() == 3 && floorCity.isLeverOpen(Lever.MINIMUM_WAGE) && floorMarket.isFloorBinding()
+                        && floorCity.setMinimumWage(dialBefore * 1.2) && floorMarket.getMinimumWage() > dialBefore
+                        && floorCity.setMinimumWageAdjustment(.10) && floorMarket.getMinimumWageAdjustment() == .10);
+        int floorNotices = 0;
+        Notice floorNotice = null;
+        for (Notice n : floorCity.getInbox().all()) if (n.getKey().equals("lever:" + Lever.MINIMUM_WAGE.name())) { floorNotices++; floorNotice = n; }
+        check("the inbox raised the minimum wage's opening notice once, in month 3, titled and worded from PolicyDates",
+                floorNotices == 1 && floorNotice.getRaised() == 3
+                        && floorNotice.getTitle().equals("A minimum wage: " + PolicyDates.openingDate(Lever.MINIMUM_WAGE))
+                        && String.join(" ", floorNotice.getBody()).equals(PolicyDates.notice(Lever.MINIMUM_WAGE)));
+
+        /* ==================== 11. two readers that quoted a shut lever, and the student loans ==================== */
+        System.out.println("\n--- the builders' quote and the pensioner's first month read the shut levers; no student loan before student aid ---");
+        Game monthOne = new Game(GameFiles.scratch("r0-readers"));
+        System.setOut(quiet);
+        try { monthOne.run(); } finally { System.setOut(out); }
+        TaxPolicy monthOnePolicy = monthOne.getEconomyManager().getTaxPolicy();
+        check("fixture: a bare policy, which hears no month, still quotes the builders an open sales tax",
+                new TaxPolicy().effectiveSalesRate("Construction") > 0);
+        check("the founding quote of the builders' sales tax is the one a city in its first month charges: nothing, the tax being shut",
+                monthOne.getMonth() == 1 && !monthOne.isLeverOpen(Lever.SALES_TAX) && monthOnePolicy.effectiveSalesRate("Construction") == 0
+                        && Founding.foundingBuildersRate() == monthOnePolicy.effectiveSalesRate("Construction"));
+        check("fixture: a household book that hears nothing starts on the old pension default",
+                new HouseholdAccounts().getPensionPerSenior() > 0);
+        check("a city's households are paying no pension in month 1 (the pension is shut), before the month's own push",
+                !monthOne.isLeverOpen(Lever.PENSION_REPLACEMENT) && monthOne.getHouseholds().getPensionPerSenior() == 0);
+
+        StudentHousehold student = new StudentHousehold();
+        student.studentLoansOpen = false;
+        check("a student is lent nothing while the treasury makes no loans, and plans on none",
+                student.fundShortfall(100, 0) == 0 && student.studentBorrowed() == 0 && student.planningRoom() == 0);
+        student.studentLoansOpen = true;
+        check("...and is lent what is short, on a plan of unlimited room, once it does",
+                student.fundShortfall(100, 0) == 100 && student.studentBorrowed() == 100 && student.planningRoom() > 0);
+        check("a household book no city holds lends, as it always did", new HouseholdBalance().isStudentLoansOpen());
+
+        monthOnePolicy.setStudentLoanRate(.05);
+        check("the student loan's rate is refused while student aid is shut", monthOnePolicy.getStudentLoanRate() == 0);
+        Map<String, Integer> aidEarlier = new HashMap<>();
+        aidEarlier.put(Lever.STUDENT_AID.name(), 3);
+        monthOnePolicy.restoreOpenings(aidEarlier);
+        System.setOut(quiet);
+        try { monthOne.toggleNextMonth(); } finally { System.setOut(out); }
+        check("in month 2 the treasury still makes no student loan: the book is told so", monthOne.getMonth() == 2
+                && !monthOne.getHouseholdBalance().isStudentLoansOpen());
+        System.setOut(quiet);
+        try { monthOne.toggleNextMonth(); } finally { System.setOut(out); }
+        monthOnePolicy.setStudentLoanRate(.05);
+        check("in month 3, student aid opened, the book is told it lends and the rate takes", monthOne.getMonth() == 3
+                && monthOne.getHouseholdBalance().isStudentLoansOpen() && monthOnePolicy.getStudentLoanRate() == .05);
 
         System.out.println(fails == 0 ? "PolicyDatesCheck: all " + passes + " ok" : "PolicyDatesCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);

@@ -132,6 +132,22 @@ public class LabourMarket {
 
     private double minimumWage = DEFAULT_MINIMUM_WAGE;
 
+    /**
+     * Whether the minimum wage is law yet (R0): false in a city before the date Canada first had one (PolicyDates, MINIMUM_WAGE, 1918),
+     * and then the floor binds no wage - the max() in advanceMonth() and isPinned()'s floor are skipped. Only that. The dial is also the
+     * wage ladder's ANCHOR (baseWage() is minimumWage x ratio x costOfLiving for every job), so it is not zeroed and the base wages, the
+     * curve and everything else stand: before 1918 the wages find their own levels above and below the figure that anchors them. Game pushes
+     * it with the policy's month (the lever's opening month is the city's, and a law find may move it); true for a labour market no
+     * city holds, which behaves as it always did. Never saved: the city says.
+     */
+    private boolean floorBinding = true;
+
+    /** Whether the floor binds (see floorBinding). */
+    public boolean isFloorBinding() { return floorBinding; }
+
+    /** Game's push, with the policy's month: whether the minimum wage is law in this city yet. */
+    public void setFloorBinding(boolean binding) { floorBinding = binding; }
+
     /* ===================================================================
        THE CURVE
        =================================================================== */
@@ -527,7 +543,8 @@ public class LabourMarket {
              * real everywhere else; a bare `minimumWage` here is a legislated
              * minimum that inflation quietly removes. See cashMinimumWage().
              */
-            wage[i] = Math.max(wage[i], cashMinimumWage());
+            // ...from the date the law exists (R0): before it nobody is bound to pay the figure that anchors the ladder.
+            if (floorBinding) wage[i] = Math.max(wage[i], cashMinimumWage());
         }
     }
 
@@ -547,7 +564,8 @@ public class LabourMarket {
     public boolean isPinned(WageBand band) {
         for (JobType job : JobType.values()) {
             if (WageBand.of(job) != band) continue;
-            double floor = Math.max(baseWage(job) * MIN_MULTIPLE, cashMinimumWage());
+            // The same floor advanceMonth() holds the wage at: without the law (R0) that is the band's own, and nothing else.
+            double floor = floorBinding ? Math.max(baseWage(job) * MIN_MULTIPLE, cashMinimumWage()) : baseWage(job) * MIN_MULTIPLE;
             // One job in the band is enough to read it: they all share a
             // multiplier, so they reach their floors together.
             return wage[job.ordinal()] <= floor * (1 + PINNED_TOLERANCE);
