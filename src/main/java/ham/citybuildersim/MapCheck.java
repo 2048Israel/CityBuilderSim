@@ -2244,16 +2244,31 @@ public class MapCheck {
      */
 
     /**
-     * The block of the plots the crossing's reserve box would hold that the crossing is not in: a plot {x, y} in it, a block of its own to be handed the city last;
-     * null where the box lies in the crossing's block.
+     * The block of the plots the crossing's reserve box would hold that the crossing is not in, and that the city does not own the box's part of: a plot {x, y} in
+     * it, a block of its own to be handed the city last; null where there is none.
+     *
+     * BA1, 2026-11-04: it was the box's first corner block outside the crossing's. With the construction orders uncapped the played city owns 48 of the 64
+     * plots of that level-3 block, the 4 in the box among them: leaving it out left no plot of the box unowned, the crossing was a site with its reserve
+     * from the first month and no month was the one the block was bought in. The block is now the one the city owns least of within the box (off the highways'
+     * lines, which it owns to lay them), so that leaving it out causes a box short of ground.
      */
     static long[] reserveHole(CityLand land, long[] crossing) {
         long b = 1L << land.level(), side = InterchangeGround.CLOVERLEAF_SIDE / 2;
-        for (int k = 0; k < 4; k++) {
-            long x = crossing[0] + (k % 2 == 0 ? side : -side), y = crossing[1] + (k / 2 == 0 ? side : -side);
-            if (Math.floorDiv(x, b) != Math.floorDiv(crossing[0], b) || Math.floorDiv(y, b) != Math.floorDiv(crossing[1], b)) return new long[] { x, y, land.level() };
+        long bx0 = Math.floorDiv(crossing[0] - side, b), bx1 = Math.floorDiv(crossing[0] + side, b), by0 = Math.floorDiv(crossing[1] - side, b), by1 = Math.floorDiv(crossing[1] + side, b);
+        long[] best = null;
+        long unowned = 0;
+        for (long by = by0; by <= by1; by++) {
+            for (long bx = bx0; bx <= bx1; bx++) {
+                if (bx == Math.floorDiv(crossing[0], b) || by == Math.floorDiv(crossing[1], b)) continue;
+                long x0 = Math.max(bx * b, crossing[0] - side), y0 = Math.max(by * b, crossing[1] - side), x1 = Math.min(bx * b + b, crossing[0] + side + 1), y1 = Math.min(by * b + b, crossing[1] + side + 1);
+                long free = (x1 - x0) * (y1 - y0) - land.grid().owned(x0, y0, x1, y1);
+                if (free > unowned) {
+                    unowned = free;
+                    best = new long[] { x0, y0, land.level() };
+                }
+            }
         }
-        return null;
+        return best;
     }
 
     /** Hands the city the one block that holds plot `at` ({x, y, the block level it was found at}: the level moves as the city's ground grows, the block is the one handGroundRound() left out), between months, as 2c's blocks are, dated `month`: the plots handed. */
