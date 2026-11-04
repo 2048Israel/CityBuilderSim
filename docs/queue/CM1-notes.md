@@ -1,8 +1,8 @@
 # CM1 - the replay's camera loads its whole move first, then runs on a click ({next}, 2026-11-03)
 
-**Where it stands (2026-11-03, 12:30):**
-1. Done and pushed on `batch/CM1` (built on `origin/batch/WN5b`, docs/batch.md 7): slices A (the tally, the probe), B (the load), C (ReplayCheck 5d); `--pick` green (exit 0: ReplayCheck 0 failures, TimingCheck); Stale 0 firm; the maps regenerated.
-2. Left: the ship file, pushed last once WN5b is on main and merged in: `git fetch -q origin && git merge origin/main`, `./batch-check.sh --pick` again, then `docs/queue/CM1-ship.md` from section 6's text, pushed. A fresh session can do this from GitHub; nothing else is open.
+**Where it stands (2026-11-04, 10:40):**
+1. Ready, the ship file pushed last: slices A (the tally, the probe), B (the load), C (ReplayCheck 5d), on `batch/CM1`.
+2. origin/main merged (0.9.10, WN5b and CB1; only the generated indexes conflicted, regenerated); `--pick` with the gate's world files green after it (exit 0: ReplayCheck 0 failures, 5d's glide ready in 7.8 s, 52 frames, unpainted 0, asks 0; TimingCheck); Stale 0 firm.
 3. The measure: before section 1, after section 2 (no black, no worker asks, nothing let go in any of seven moves; the globe's coarse ground left, CM2).
 4. For the gate: the stranger's review (threading, section 4); CM1-C, Jerus's eye check at 1920 x 1080, is the ship file's pending row.
 5. Calls ★1-4 below, each taken as recommended.
