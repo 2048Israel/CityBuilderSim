@@ -5424,6 +5424,7 @@ final class MapView {
         ReplayCamera.Shot shot = cam.frame(dt);
         if (shot.view() != null) applyCameraView(shot.view());
         else if (shot.move() != null) applyMove(shot.move());
+        if (shot.view() != null && move != null && move.running && !move.planned.contains(shot.view())) moveTally.offPlan++;
         if (wasMoving || cam.moving()) {
             tallyTasks = WORKER.getTaskCount();
             tallyEvicted = evictedNow();
@@ -5490,6 +5491,8 @@ final class MapView {
         /** Month, then node key to the node's picture; and node key to the copies. */
         final HashMap<Integer, HashMap<Long, NodeCopy>> nodesAt = new HashMap<>();
         final HashMap<Long, List<NodeCopy>> nodeCopies = new HashMap<>();
+        /** Every view the load painted, so the run's tally can count a frame that showed any other (MoveTally.offPlan). */
+        final Set<CameraPath.View> planned = new HashSet<>();
 
         MoveLoad(int serial, int of, boolean months) {
             this.serial = serial;
@@ -5557,6 +5560,7 @@ final class MapView {
                 cam.showMonthOf(v);
                 keepUp();
                 applyCameraView(v);
+                m.planned.add(v);
                 m.applied = true;
             }
             long tasks = WORKER.getTaskCount();
@@ -5869,6 +5873,8 @@ final class MapView {
         long black, coarse, stale;
         /** WORKER tasks submitted, and pictures let go by the caches, during the frames (from the camera's frame to the tally's, summed). */
         long asks, evicted;
+        /** Frames of a loaded move's run that showed a view its load never painted (CM1: the run stays on the plan, at any frame rate). */
+        long offPlan;
         /** The gaps between consecutive tallied frames, summed and the worst, in nanoseconds (the first frame after reset() has no gap). */
         long frameNanosSum, worstFrameNanos;
         /** By where the frame drew: {frames, unpainted frames, black, coarse, stale}. */
@@ -5880,7 +5886,7 @@ final class MapView {
 
         /** Back to nothing counted: a move is about to begin. */
         void reset() {
-            frames = unpaintedFrames = halfFrames = black = coarse = stale = asks = evicted = frameNanosSum = worstFrameNanos = 0;
+            frames = unpaintedFrames = halfFrames = black = coarse = stale = asks = evicted = offPlan = frameNanosSum = worstFrameNanos = 0;
             byWhere.clear();
             lastNanos = 0;
             timed = false;
@@ -5917,7 +5923,7 @@ final class MapView {
             java.util.Locale root = java.util.Locale.ROOT;
             StringBuilder sb = new StringBuilder();
             sb.append(String.format(root, "  frames %d, unpainted %d, half resolution %d%n", frames, unpaintedFrames, halfFrames));
-            sb.append(String.format(root, "  black %d, coarse %d, stale %d; worker asks %d, pictures let go %d%n", black, coarse, stale, asks, evicted));
+            sb.append(String.format(root, "  black %d, coarse %d, stale %d; worker asks %d, pictures let go %d, off the plan %d%n", black, coarse, stale, asks, evicted, offPlan));
             for (String where : WHERES) {
                 long[] w = byWhere.get(where);
                 if (w != null) sb.append(String.format(root, "  %-8s frames %d, unpainted %d, black %d, coarse %d, stale %d%n", where, w[0], w[1], w[2], w[3], w[4]));

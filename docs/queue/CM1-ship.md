@@ -6,8 +6,8 @@ click or a key runs it (Escape cancels), so a screen recording can start first. 
 (`ui/ReplayMoveProbe`), black frames went from up to all of a move to none: a glide across 119 months, black in all 295
 frames and 5,256 asks of the map's worker before, ran with no frame unpainted and nothing asked; loads took 5-15 s. Left
 for CM2: the globe near the city still draws part of the planet from its coarse 7.4 km picture while it moves (blurry, not
-black), and the half resolution on the move. ReplayCheck 5d runs a move in the real window, off screen. The normal game is
-untouched.
+black), and the half resolution on the move. ReplayCheck 5d runs a move in the real window, off screen, and asserts every
+frame shows a view the load painted (a run between them asked the worker on a busy PC). The normal game is untouched.
 ## pending
 | CM1-C | Eye-check CM1 ({next}) at 1920 x 1080 on a recorded Earth city: in a replay, mark A at the street and B at the whole Earth, press 3: "Loading the move... N s", then "Ready - click to run", a click runs it with no black on the zoom out; the same with O and I, and a glide across months; Escape while it loads stops it and the view stays where the move begins | Not looked at in the running game | [CM1 notes §3](docs/queue/CM1-notes.md#3-what-was-built) |
 ## queued

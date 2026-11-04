@@ -533,7 +533,7 @@ public final class ReplayMoveProbe {
     public record Moved(String name, boolean ready, double loadSeconds, int planViews, int passed, boolean heldWhileReady,
                         int pinnedWhileReady, String ranBy, boolean taken, String phaseAfterTrigger, double runSeconds,
                         long frames, long unpaintedFrames, long asks, long evicted, Map<String, Long> levelFrames,
-                        boolean heldAfter, int pinnedAfter, double letGoAfterS) { }
+                        boolean heldAfter, int pinnedAfter, double letGoAfterS, long offPlan) { }
 
     /** Escape pressed while a glide loads: whether it was loading, whether the key was taken, and where the camera and the map were left. */
     public record Cancelled(boolean wasLoading, boolean taken, String phaseAfter, boolean heldAfter, int pinnedAfter) { }
@@ -731,7 +731,7 @@ public final class ReplayMoveProbe {
             if (m.find()) passed = Integer.parseInt(m.group(1));
         }
         String by = byKey ? "key" : "click";
-        if (!ready) return new Moved(name, false, loadS, views, passed, false, 0, by, false, phase, 0, 0, 0, 0, 0, Map.of(), false, 0, -1);
+        if (!ready) return new Moved(name, false, loadS, views, passed, false, 0, by, false, phase, 0, 0, 0, 0, 0, Map.of(), false, 0, -1, 0);
         Thread.sleep(300);      // it waits: nothing runs it, nothing lets go of what it loaded
         boolean held = fx(() -> map.moveHeld() && cam.ready());
         int pinned = fx(() -> map.cachesPinned());
@@ -768,7 +768,7 @@ public final class ReplayMoveProbe {
         Object[] figures = fx(() -> {
             Map<String, Long> levels = new LinkedHashMap<>();
             for (Map.Entry<String, long[]> e : tally.byWhere.entrySet()) levels.put(e.getKey(), e.getValue()[0]);
-            return new Object[] { tally.frames, tally.unpaintedFrames, tally.asks, tally.evicted, levels };
+            return new Object[] { tally.frames, tally.unpaintedFrames, tally.asks, tally.evicted, levels, tally.offPlan };
         });
         // The map lets go of the move on its next frame (endMove()); give it a few seconds to have one.
         long t2 = System.nanoTime();
@@ -782,7 +782,7 @@ public final class ReplayMoveProbe {
         @SuppressWarnings("unchecked")
         Map<String, Long> levels = (Map<String, Long>) figures[4];
         return new Moved(name, true, loadS, views, passed, held, pinned, by, taken, after, runS, (Long) figures[0], (Long) figures[1],
-                (Long) figures[2], (Long) figures[3], levels, heldAfter, pinnedAfter, letGo);
+                (Long) figures[2], (Long) figures[3], levels, heldAfter, pinnedAfter, letGo, (Long) figures[5]);
     }
 
     /** A glide set up from the marks and, once the map has begun to load it, Escape sent to ReplayMode.key(); then where it all stands. */
