@@ -1559,7 +1559,7 @@ public class SaveFileCheck {
             // the biggest cell carried a debt of D$0.0013 a household and was refused every share, so the buy filled nothing and no short opened.
             Household shortBuyer = null;
             for (Household h : full.getHouseholdBalance().cells()) {
-                if (!h.isEmpty() && h.households() > 0 && Exchange.mayBuy(h) && (shortBuyer == null || h.households() > shortBuyer.households())) shortBuyer = h;
+                if (!h.isEmpty() && h.households() > 0 && full.getExchange().mayBuy(h) && (shortBuyer == null || h.households() > shortBuyer.households())) shortBuyer = h;
             }
             if (shortBuyer != null) {
                 shortBuyer.savings += 1e9;
