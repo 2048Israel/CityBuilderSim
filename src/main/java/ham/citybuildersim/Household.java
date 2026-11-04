@@ -942,7 +942,18 @@ public abstract class Household {
              * is simply not funded: not a debt, not a loss to anybody - the
              * household went without, which is what next month's plan already
              * says and what the hunger measure already reads.
+             *
+             * ...AND A HAIR STILL SHORT IS NONE (BA1, 2026-11-04): the
+             * waterfall's tail can end a hair above zero as well as below it
+             * (fundShortfall(), AND NOBODY BORROWS A NEGATIVE AMOUNT), when the
+             * last sale falls short of `still` by a rounding. Borrowed, the hair
+             * is a debt of 3e-21, and a debt is read by its sign (Exchange.mayBuy,
+             * the migration pools): at today's prices exactly one cell in
+             * PriceLevelCheck 9's town borrowed it in month 29 and at the factor
+             * none did, and the town parted. So a remainder within
+             * SHORT_ROUNDING of the month's gap is covered.
              */
+            if (still <= SHORT_ROUNDING * gap) still = 0;
             unfunded = still - fundShortfall(still, disposablePer);
         } else {
             double surplus = -gap;
@@ -1170,6 +1181,9 @@ public abstract class Household {
         afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid - studentInterest;
         subsistence = baskets() * foodPricePerHead;
     }
+
+    /** The share of a month's gap under which what is still short after savings, the paper, the money abroad, the bonds and the shares is the subtractions' rounding, and nothing is borrowed for it (settle(), A HAIR STILL SHORT IS NONE). */
+    static final double SHORT_ROUNDING = 1e-12;
 
     /**
      * What is still short after savings, the city's paper, the paper abroad
