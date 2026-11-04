@@ -4421,11 +4421,11 @@ Generated 2026-11-04 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5122 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
 | 5298 | `MapView.REPLAY_FRAME_MS` | `24` | The most a frame spends painting tiles in a replay, in ms: 24 - a replay computes no month, so a frame's whole share is the picture's, and a view reached by the camera comes in over two or three fr... |
 | 5301 | `MapView.CAMERA_PAUSE_S` | `0.25` | A gap between two camera frames longer than this, in seconds, is not time the camera moved in: 0.25 - the pump stops when the view is idle and a glide or a fly must not find the minutes gone by in ... |
-| 5461 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
-| 5464 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
-| 5467 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
-| 5624 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
-| 5877 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
+| 5462 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
+| 5465 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
+| 5468 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
+| 5628 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
+| 5883 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
 
 ### MiniMap.java ([map](map/MiniMap.md))
 
@@ -4730,11 +4730,11 @@ Generated 2026-11-04 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 32 | `ReplayCamera.PLAN_HZ` | `240` | The views a second of the move's own clock the load walks: 240 - finer than the 165 Hz this PC's screen draws at, so every frame the move runs at lies between two views it loaded. |
-| 35 | `ReplayCamera.MOST_DT_S` | `0.1` | The longest step of a glide's or fly's own clock, in seconds: 0.1 - a frame held up (a quick step of the map) is a pause in the move, not a jump ahead. |
-| 38 | `ReplayCamera.GLIDE_S` | `10, GLIDE_S_LEAST = 1, GLIDE_S_MOST = 600` | The seconds a glide takes when the bar's field says nothing: 10; the field's least and most. |
-| 42 | `ReplayCamera.Shot.IDLE` | `new Shot(null, null, false)` |  |
-| 47 | `ReplayCamera.LOADING` | `"Loading the move..."` |  |
+| 35 | `ReplayCamera.PLAN_HZ` | `240` | The views a second of the move's own clock the load walks: 240 - finer than the 165 Hz this PC's screen draws at, so a frame of the run, which shows the plan's view nearest its clock (advance()), i... |
+| 38 | `ReplayCamera.MOST_DT_S` | `0.1` | The longest step of a glide's or fly's own clock, in seconds: 0.1 - a frame held up (a quick step of the map) is a pause in the move, not a jump ahead. |
+| 41 | `ReplayCamera.GLIDE_S` | `10, GLIDE_S_LEAST = 1, GLIDE_S_MOST = 600` | The seconds a glide takes when the bar's field says nothing: 10; the field's least and most. |
+| 45 | `ReplayCamera.Shot.IDLE` | `new Shot(null, null, false)` |  |
+| 50 | `ReplayCamera.LOADING` | `"Loading the move..."` |  |
 
 ### ReplayGraphLayer.java ([map](map/ReplayGraphLayer.md))
 

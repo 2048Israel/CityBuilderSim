@@ -1,4 +1,4 @@
-# MapView.java - 6,042 lines · 257 methods · 74 constants · interface
+# MapView.java - 6,048 lines · 257 methods · 74 constants · interface
 
 `ham/citybuildersim/ui/MapView.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > THE OVERLAY ON THE BLOCK GRID (0.7.69, batch M5; the project's
 > ... (136 more lines in the source)
 
-**Uses:** [Palette](Palette.md) (162), [MapFrame](MapFrame.md) (110), [LandMap](LandMap.md) (87), [NationsMap](NationsMap.md) (54), [GlobeFrame](GlobeFrame.md) (43), [World](World.md) (34), [Game](Game.md) (33), [LandParcel](LandParcel.md) (26), [CityLand](CityLand.md) (25), [CityMap](CityMap.md) (23), [MapTiles](MapTiles.md) (21), [TradeLanes](TradeLanes.md) (19), [GlobePicture](GlobePicture.md) (17), [LandMarket](LandMarket.md) (16), [ShipShapes](ShipShapes.md) (14), [TrainSchedule](TrainSchedule.md) (13), [Nations](Nations.md) (13), [CameraPath](CameraPath.md) (13), [ReplayCamera](ReplayCamera.md) (11), [CallPartners](CallPartners.md) (10), [TruckSchedule](TruckSchedule.md) (10), [TrainShapes](TrainShapes.md) (9), [BoatSchedule](BoatSchedule.md) (7), [TilePainter](TilePainter.md) (6), [TileRaster](TileRaster.md) (5), [Deposit](Deposit.md) (4), [HistoryScreen](HistoryScreen.md) (4), [TruckShapes](TruckShapes.md) (4), [LandGrid](LandGrid.md) (4), [EarthProj](EarthProj.md) (4)... and 18 more
+**Uses:** [Palette](Palette.md) (162), [MapFrame](MapFrame.md) (110), [LandMap](LandMap.md) (87), [NationsMap](NationsMap.md) (54), [GlobeFrame](GlobeFrame.md) (43), [World](World.md) (34), [Game](Game.md) (33), [LandParcel](LandParcel.md) (26), [CityLand](CityLand.md) (25), [CityMap](CityMap.md) (23), [MapTiles](MapTiles.md) (21), [TradeLanes](TradeLanes.md) (19), [GlobePicture](GlobePicture.md) (17), [LandMarket](LandMarket.md) (16), [ShipShapes](ShipShapes.md) (14), [CameraPath](CameraPath.md) (14), [TrainSchedule](TrainSchedule.md) (13), [Nations](Nations.md) (13), [ReplayCamera](ReplayCamera.md) (11), [CallPartners](CallPartners.md) (10), [TruckSchedule](TruckSchedule.md) (10), [TrainShapes](TrainShapes.md) (9), [BoatSchedule](BoatSchedule.md) (7), [TilePainter](TilePainter.md) (6), [TileRaster](TileRaster.md) (5), [Deposit](Deposit.md) (4), [HistoryScreen](HistoryScreen.md) (4), [TruckShapes](TruckShapes.md) (4), [LandGrid](LandGrid.md) (4), [EarthProj](EarthProj.md) (4)... and 18 more
 
 **Used by (4):** [LandScreen](LandScreen.md), [MiniMap](MiniMap.md), [ReplayMoveProbe](ReplayMoveProbe.md), [UserInterface](UserInterface.md)
 
@@ -101,8 +101,8 @@
 | 4813 | EXPAND: THE MAP OVER THE WHOLE WINDOW |
 | 5204 | REPLAY: CINEMATIC (TR1, 2026-10-31) |
 | 5279 | REPLAY: THE CAMERA, THE PAINT BUDGET AND THE QUICK STEP (TR1, 2026-10-31) |
-| 5446 | · the move loaded before it runs (CM1) |
-| 5848 | · CM1: what a camera move shows unpainted (MoveTally) |
+| 5447 | · the move loaded before it runs (CM1) |
+| 5852 | · CM1: what a camera move shows unpainted (MoveTally) |
 
 ## Constants
 
@@ -177,11 +177,11 @@
 | 5122 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
 | 5298 | `MapView.REPLAY_FRAME_MS` | `24` | The most a frame spends painting tiles in a replay, in ms: 24 - a replay computes no month, so a frame's whole share is the picture's, and a view reached by the camera comes in over two or three frames, not eight. |
 | 5301 | `MapView.CAMERA_PAUSE_S` | `0.25` | A gap between two camera frames longer than this, in seconds, is not time the camera moved in: 0.25 - the pump stops when the view is idle and a glide or a fly must not find the minutes gone by in its first frame. |
-| 5461 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the load is not held by it;... |
-| 5464 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
-| 5467 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
-| 5624 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
-| 5877 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
+| 5462 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the load is not held by it;... |
+| 5465 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
+| 5468 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
+| 5628 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
+| 5883 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
 
 ## Fields (state)
 
@@ -373,35 +373,37 @@
 | 5227 | `private final javafx.beans.value.ChangeListener<javafx.scene.Cursor> cursorOff` | Holds the canvas's cursor at none while cinematic mode is on, whatever cursorFor() or a press asks for. |
 | 5304 | `private boolean keepPictures` | Set while reset() runs for a replay's quick step: the pictures are kept, stale (staleAll()), not thrown out. |
 | 5307 | `private long camNanos` | When the camera's last frame was taken, for its dt (0 when it has not run). |
-| 5477 | `final int serial, of` |  |
-| 5478 | `final boolean months` |  |
-| 5480 | `int next, passed` | The plan's next view, the views passed, whether the view {@code next} is taken, and since when the worker has sat idle on it (0 for not idle). |
-| 5481 | `boolean applied` |  |
-| 5482 | `long idleSince` |  |
-| 5484 | `boolean running` | From the click's wait to the move's end: the run takes pictures from the store. |
-| 5486 | `final Set<Long> stuckNodes` | The far nodes and chart nodes that were asked and never came back, when their view was passed. |
-| 5488 | `final HashMap<Integer, HashMap<Long, TileCopy>> tilesAt` | Month, then (cache index and tile key) to the tile's picture; and (cache index and tile key) to the copies by stamp. |
-| 5489 | `final HashMap<Long, List<TileCopy>> tileCopies` |  |
-| 5491 | `final HashMap<Integer, HashMap<Long, NodeCopy>> nodesAt` | Month, then node key to the node's picture; and node key to the copies. |
-| 5492 | `final HashMap<Long, List<NodeCopy>> nodeCopies` |  |
-| 5502 | `private MoveLoad move` | The loaded move, or null (always, outside a replay's glide or fly). |
-| 5639 | `private long framesDrawn` |  |
-| 5867 | `long frames, unpaintedFrames, halfFrames` | Frames tallied; of them the ones with anything black, coarse or stale; and those a globe drew at half resolution. |
-| 5869 | `long black, coarse, stale` | Cells drawn as nothing, from a stand-in, from an older version: each summed over the frames. |
-| 5871 | `long asks, evicted` | WORKER tasks submitted, and pictures let go by the caches, during the frames (from the camera's frame to the tally's, summed). |
-| 5873 | `long frameNanosSum, worstFrameNanos` | The gaps between consecutive tallied frames, summed and the worst, in nanoseconds (the first frame after reset() has no gap). |
-| 5875 | `final Map<String, long[]> byWhere` | By where the frame drew: {frames, unpainted frames, black, coarse, stale}. |
-| 5878 | `private long lastNanos` |  |
-| 5879 | `private boolean timed` |  |
-| 5935 | `private final MoveTally moveTally` |  |
-| 5941 | `private boolean tallyThisFrame` | Set by replayCamera() for a frame of a glide or fly, and cleared by tick() when it has tallied the frame; WORKER's task count and the caches' evictions as that frame began. |
-| 5942 | `private long tallyTasks, tallyEvicted` |  |
+| 5478 | `final int serial, of` |  |
+| 5479 | `final boolean months` |  |
+| 5481 | `int next, passed` | The plan's next view, the views passed, whether the view {@code next} is taken, and since when the worker has sat idle on it (0 for not idle). |
+| 5482 | `boolean applied` |  |
+| 5483 | `long idleSince` |  |
+| 5485 | `boolean running` | From the click's wait to the move's end: the run takes pictures from the store. |
+| 5487 | `final Set<Long> stuckNodes` | The far nodes and chart nodes that were asked and never came back, when their view was passed. |
+| 5489 | `final HashMap<Integer, HashMap<Long, TileCopy>> tilesAt` | Month, then (cache index and tile key) to the tile's picture; and (cache index and tile key) to the copies by stamp. |
+| 5490 | `final HashMap<Long, List<TileCopy>> tileCopies` |  |
+| 5492 | `final HashMap<Integer, HashMap<Long, NodeCopy>> nodesAt` | Month, then node key to the node's picture; and node key to the copies. |
+| 5493 | `final HashMap<Long, List<NodeCopy>> nodeCopies` |  |
+| 5495 | `final Set<CameraPath.View> planned` | Every view the load painted, so the run's tally can count a frame that showed any other (MoveTally.offPlan). |
+| 5505 | `private MoveLoad move` | The loaded move, or null (always, outside a replay's glide or fly). |
+| 5643 | `private long framesDrawn` |  |
+| 5871 | `long frames, unpaintedFrames, halfFrames` | Frames tallied; of them the ones with anything black, coarse or stale; and those a globe drew at half resolution. |
+| 5873 | `long black, coarse, stale` | Cells drawn as nothing, from a stand-in, from an older version: each summed over the frames. |
+| 5875 | `long asks, evicted` | WORKER tasks submitted, and pictures let go by the caches, during the frames (from the camera's frame to the tally's, summed). |
+| 5877 | `long offPlan` | Frames of a loaded move's run that showed a view its load never painted (CM1: the run stays on the plan, at any frame rate). |
+| 5879 | `long frameNanosSum, worstFrameNanos` | The gaps between consecutive tallied frames, summed and the worst, in nanoseconds (the first frame after reset() has no gap). |
+| 5881 | `final Map<String, long[]> byWhere` | By where the frame drew: {frames, unpainted frames, black, coarse, stale}. |
+| 5884 | `private long lastNanos` |  |
+| 5885 | `private boolean timed` |  |
+| 5941 | `private final MoveTally moveTally` |  |
+| 5947 | `private boolean tallyThisFrame` | Set by replayCamera() for a frame of a glide or fly, and cleared by tick() when it has tallied the frame; WORKER's task count and the caches' evictions as that frame began. |
+| 5948 | `private long tallyTasks, tallyEvicted` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 240 | 5803 | **type** `final class MapView` | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, th... |
+| 240 | 5809 | **type** `final class MapView` | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, th... |
 | 288 | 1 | **type** `interface Picker` | Who hears a click: a side, and an offer's place on it or -1. |
 | 288 | 1 | `void picked(int side, int place)` _(in MapView.Picker)_ |  |
 
@@ -758,7 +760,7 @@
 | 5268 | 5 | `double[] replayView()` | The expanded map's view for the input log (InputRecorder): {1 on Earth else 0, a, b, scale, roll} - the globe's centre latitude and longitude, its km a pixel and its roll, or the plane's centre x and y, its scale and ... |
 | 5275 | 3 | `void replayChanged()` | The city's map is another object (a replay's quick step swapped it): the view draws again, and the frame's keepUp() takes the new map, so a small map in the office and the expanded one both follow. |
 
-### REPLAY: THE CAMERA, THE PAINT BUDGET AND THE QUICK STEP (TR1, 2026-10-31) (lines 5279-5445)
+### REPLAY: THE CAMERA, THE PAINT BUDGET AND THE QUICK STEP (TR1, 2026-10-31) (lines 5279-5446)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -768,50 +770,50 @@
 | 5346 | 5 | `CameraPath.View cameraWhole()` | The widest view as a camera view, what Fit shows: on Earth the whole planet facing the city, on a generated world the whole world from its middle; null when the map is not expanded. |
 | 5353 | 12 | `private void applyCameraView(CameraPath.View v)` | A view taken whole (a glide's, a fly's, or one of a move's load): the globe set to it and the plane following, or the plane set. |
 | 5367 | 13 | `private void applyMove(CameraPath.Move m)` | The smooth hand's step: the zoom about its anchor as the wheel's notch is applied, then the pan as a drag's. |
-| 5386 | 48 | `private boolean replayCamera()` | One frame of the replay's camera (tick()): W A S D's velocity to the smooth hand, then the camera's Shot applied. |
-| 5436 | 9 | `private boolean replayWheel(double sx, double sy, double notches)` | The wheel's notches in a replay: eased in by the smooth hand about the pointer, and a glide in flight let go. |
+| 5386 | 49 | `private boolean replayCamera()` | One frame of the replay's camera (tick()): W A S D's velocity to the smooth hand, then the camera's Shot applied. |
+| 5437 | 9 | `private boolean replayWheel(double sx, double sy, double notches)` | The wheel's notches in a replay: eased in by the smooth hand about the pointer, and a glide in flight let go. |
 
-### the move loaded before it runs (CM1) (lines 5446-5847)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5470 | 1 | **type** `private record TileCopy(long stamp, WritableImage image)` | A tile's picture as a month showed it: the stamp it was painted at and its own copy of the image (the cache paints a picture in place when its stamp moves). |
-| 5473 | 1 | **type** `private record NodeCopy(long stamp, boolean partial, WritableImage image, int[] pixels)` | A far node as a month showed it: the stamp and whether it was partial, and its own copies of the image and the colours. |
-| 5476 | 24 | **type** `private static final class MoveLoad` | What a loaded move holds: where the walk is, whether the run has begun, the views given up, and (for a move across months) the pictures each month showed. |
-| 5494 | 5 | `MoveLoad(int serial, int of, boolean months)` _(in MapView.MoveLoad)_ |  |
-| 5505 | 1 | `private boolean moveRunning()` | Whether a loaded move is running across months: the pictures come from its store. |
-| 5507 | 4 | `private void beginMove(ReplayCamera cam)` |  |
-| 5513 | 6 | `private void endMove()` | The move ran out, was let go, cancelled, failed or replaced: the caches are let go of for room again, down to their sizes. |
-| 5521 | 6 | `private void backToStart(ReplayCamera cam)` | A load that did not reach its click, ended: the view and the month back to where the move begins. |
-| 5528 | 6 | `private void pin(boolean on)` |  |
-| 5541 | 69 | `private boolean loadStep(ReplayCamera cam)` | One frame of the load, within REPLAY_FRAME_MS: the plan's views from the next one on, each taken (and its month shown), painted with the real paint() and left only when loadSettled() says it lacks nothing. |
-| 5612 | 7 | `private static boolean heapOver()` | Whether the heap is over LOAD_HEAP_SHARE of what the game may have, after a collection if it looked so. |
-| 5621 | 1 | `boolean viewSettled()` | The view as it stands lacks nothing, outside a move: loadSettled() with nothing passed (ReplayMoveProbe's and ReplayCheck's wait for a still view). |
-| 5627 | 1 | `boolean moveHeld()` | Whether a loaded move is held (CM1: ReplayMoveProbe.check(), which ReplayCheck 5d runs). |
-| 5630 | 5 | `int cachesPinned()` | How many of the six picture caches are pinned (CM1: as moveHeld(); 6 while a move is loaded, 0 otherwise). |
-| 5637 | 1 | `long framesDrawn()` | The frames tick() has drawn since this view was made (CM1: ReplayCheck 5d's "the normal game draws its map"). |
-| 5648 | 7 | `private boolean loadSettled(MoveLoad m)` | Whether the view as it stands lacks nothing: no far node, district picture or chart node is asked of WORKER and not back (but those a passed view left stuck), and everything the draw would read is in and current - on ... |
-| 5657 | 35 | `private boolean scanView(MoveLoad m, boolean record, int month)` | The cells of the view being loaded, as loadSettled() reads them; with {@code record} (the view settled, a move across months) each is copied into the month's store. |
-| 5694 | 18 | `private boolean nodesHold(MoveLoad m, long plots, long nx0, long nx1, long ny0, long ny1, MapFrame asker, boolean record, int m...` | The far nodes nx0 to nx1 and ny0 to ny1 at `plots` a pixel all coloured and current (and, with `record`, copied into the month's store); `asker` is the frame the pictures they lack are asked for by (paintNodes()). |
-| 5713 | 1 | `private int cacheIndex(Pictures p)` |  |
-| 5716 | 19 | `private void storeTile(MoveLoad m, int month, int cache, long key, Img img)` | A tile's picture kept as the month showed it: one copy for each stamp the tile was painted at, whatever month showed it. |
-| 5737 | 19 | `private void storeNode(MoveLoad m, int month, long key, Img img)` | A far node kept as the month showed it: one copy for each stamp (and partial or not) the node was coloured at. |
-| 5758 | 12 | `private boolean takeTile(Img img, int cacheIndex, long key)` | A stale tile picture given the month's copy from the store, current against the map; false where the store has none for it (the month on screen is the camera's). |
-| 5772 | 18 | `private boolean takeNode(Img img, long key, long picturesKept)` | ...and a stale far node given the month's colours; on a miss its image and colours are let go (they may be the store's, not to be painted over) and the node is coloured the normal way. |
-| 5795 | 12 | `private boolean drawLoading()` | The map while a move loads: nothing but the words (ReplayCamera.overlay()) on the plain ground - the walk jumps through the move's views and what it paints is not for the eye. |
-| 5809 | 6 | `private void drawReady()` | The map as usual, and over it the words of a loaded move waiting for its click ("Ready - click to run"). |
-| 5817 | 19 | `private void overWords(GraphicsContext gc, String words)` | Words in a box in the middle of the canvas. |
-| 5838 | 9 | `private boolean replayRunsOnClick()` | A press on the map while a loaded move waits for it runs the move; one while it loads does nothing (the map under the words is not the eye's; Escape cancels); nothing outside a replay. |
-
-### CM1: what a camera move shows unpainted (MoveTally) (lines 5848-6042)
+### the move loaded before it runs (CM1) (lines 5447-5851)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5865 | 69 | **type** `static final class MoveTally` | What each frame of a replay's glide or fly showed that was not painted, counted (CM1, 2026-11-02): per frame the cells (a plane tile or far node, a globe plane node or chart node, a sampled screen point on the globe) ... |
-| 5882 | 6 | `void reset()` _(in MapView.MoveTally)_ | Back to nothing counted: a move is about to begin. |
-| 5890 | 24 | `void frame(long now, String where, long blackCells, long coarseCells, long staleCells, boolean half, long asked, long letGo)` _(in MapView.MoveTally)_ | One frame taken at {@code now} (System.nanoTime()): what it drew from, what it showed unpainted, and what it cost the worker and the caches. |
-| 5916 | 17 | `String report()` _(in MapView.MoveTally)_ | The tally in a few lines: the totals, a line for each place the frames drew, and the frame rate. |
-| 5938 | 1 | `MoveTally moveTally()` | The camera move tally (CM1), for ReplayMoveProbe: reset it before a move, read it after. |
-| 5945 | 3 | `private long evictedNow()` | Every cache's evictions summed (Pictures.evicted). |
-| 5957 | 85 | `private void tallyMove()` | The frame tick() has just painted and drawn, counted into the move tally (CM1): its cells looked up as the draw looked them up (drawTiles(), drawNodes(), drawGlobePart()), in the draw's order, so the caches' access or... |
+| 5471 | 1 | **type** `private record TileCopy(long stamp, WritableImage image)` | A tile's picture as a month showed it: the stamp it was painted at and its own copy of the image (the cache paints a picture in place when its stamp moves). |
+| 5474 | 1 | **type** `private record NodeCopy(long stamp, boolean partial, WritableImage image, int[] pixels)` | A far node as a month showed it: the stamp and whether it was partial, and its own copies of the image and the colours. |
+| 5477 | 26 | **type** `private static final class MoveLoad` | What a loaded move holds: where the walk is, whether the run has begun, the views given up, and (for a move across months) the pictures each month showed. |
+| 5497 | 5 | `MoveLoad(int serial, int of, boolean months)` _(in MapView.MoveLoad)_ |  |
+| 5508 | 1 | `private boolean moveRunning()` | Whether a loaded move is running across months: the pictures come from its store. |
+| 5510 | 4 | `private void beginMove(ReplayCamera cam)` |  |
+| 5516 | 6 | `private void endMove()` | The move ran out, was let go, cancelled, failed or replaced: the caches are let go of for room again, down to their sizes. |
+| 5524 | 6 | `private void backToStart(ReplayCamera cam)` | A load that did not reach its click, ended: the view and the month back to where the move begins. |
+| 5531 | 6 | `private void pin(boolean on)` |  |
+| 5544 | 70 | `private boolean loadStep(ReplayCamera cam)` | One frame of the load, within REPLAY_FRAME_MS: the plan's views from the next one on, each taken (and its month shown), painted with the real paint() and left only when loadSettled() says it lacks nothing. |
+| 5616 | 7 | `private static boolean heapOver()` | Whether the heap is over LOAD_HEAP_SHARE of what the game may have, after a collection if it looked so. |
+| 5625 | 1 | `boolean viewSettled()` | The view as it stands lacks nothing, outside a move: loadSettled() with nothing passed (ReplayMoveProbe's and ReplayCheck's wait for a still view). |
+| 5631 | 1 | `boolean moveHeld()` | Whether a loaded move is held (CM1: ReplayMoveProbe.check(), which ReplayCheck 5d runs). |
+| 5634 | 5 | `int cachesPinned()` | How many of the six picture caches are pinned (CM1: as moveHeld(); 6 while a move is loaded, 0 otherwise). |
+| 5641 | 1 | `long framesDrawn()` | The frames tick() has drawn since this view was made (CM1: ReplayCheck 5d's "the normal game draws its map"). |
+| 5652 | 7 | `private boolean loadSettled(MoveLoad m)` | Whether the view as it stands lacks nothing: no far node, district picture or chart node is asked of WORKER and not back (but those a passed view left stuck), and everything the draw would read is in and current - on ... |
+| 5661 | 35 | `private boolean scanView(MoveLoad m, boolean record, int month)` | The cells of the view being loaded, as loadSettled() reads them; with {@code record} (the view settled, a move across months) each is copied into the month's store. |
+| 5698 | 18 | `private boolean nodesHold(MoveLoad m, long plots, long nx0, long nx1, long ny0, long ny1, MapFrame asker, boolean record, int m...` | The far nodes nx0 to nx1 and ny0 to ny1 at `plots` a pixel all coloured and current (and, with `record`, copied into the month's store); `asker` is the frame the pictures they lack are asked for by (paintNodes()). |
+| 5717 | 1 | `private int cacheIndex(Pictures p)` |  |
+| 5720 | 19 | `private void storeTile(MoveLoad m, int month, int cache, long key, Img img)` | A tile's picture kept as the month showed it: one copy for each stamp the tile was painted at, whatever month showed it. |
+| 5741 | 19 | `private void storeNode(MoveLoad m, int month, long key, Img img)` | A far node kept as the month showed it: one copy for each stamp (and partial or not) the node was coloured at. |
+| 5762 | 12 | `private boolean takeTile(Img img, int cacheIndex, long key)` | A stale tile picture given the month's copy from the store, current against the map; false where the store has none for it (the month on screen is the camera's). |
+| 5776 | 18 | `private boolean takeNode(Img img, long key, long picturesKept)` | ...and a stale far node given the month's colours; on a miss its image and colours are let go (they may be the store's, not to be painted over) and the node is coloured the normal way. |
+| 5799 | 12 | `private boolean drawLoading()` | The map while a move loads: nothing but the words (ReplayCamera.overlay()) on the plain ground - the walk jumps through the move's views and what it paints is not for the eye. |
+| 5813 | 6 | `private void drawReady()` | The map as usual, and over it the words of a loaded move waiting for its click ("Ready - click to run"). |
+| 5821 | 19 | `private void overWords(GraphicsContext gc, String words)` | Words in a box in the middle of the canvas. |
+| 5842 | 9 | `private boolean replayRunsOnClick()` | A press on the map while a loaded move waits for it runs the move; one while it loads does nothing (the map under the words is not the eye's; Escape cancels); nothing outside a replay. |
+
+### CM1: what a camera move shows unpainted (MoveTally) (lines 5852-6048)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5869 | 71 | **type** `static final class MoveTally` | What each frame of a replay's glide or fly showed that was not painted, counted (CM1, 2026-11-02): per frame the cells (a plane tile or far node, a globe plane node or chart node, a sampled screen point on the globe) ... |
+| 5888 | 6 | `void reset()` _(in MapView.MoveTally)_ | Back to nothing counted: a move is about to begin. |
+| 5896 | 24 | `void frame(long now, String where, long blackCells, long coarseCells, long staleCells, boolean half, long asked, long letGo)` _(in MapView.MoveTally)_ | One frame taken at {@code now} (System.nanoTime()): what it drew from, what it showed unpainted, and what it cost the worker and the caches. |
+| 5922 | 17 | `String report()` _(in MapView.MoveTally)_ | The tally in a few lines: the totals, a line for each place the frames drew, and the frame rate. |
+| 5944 | 1 | `MoveTally moveTally()` | The camera move tally (CM1), for ReplayMoveProbe: reset it before a move, read it after. |
+| 5951 | 3 | `private long evictedNow()` | Every cache's evictions summed (Pictures.evicted). |
+| 5963 | 85 | `private void tallyMove()` | The frame tick() has just painted and drawn, counted into the move tally (CM1): its cells looked up as the draw looked them up (drawTiles(), drawNodes(), drawGlobePart()), in the draw's order, so the caches' access or... |
 

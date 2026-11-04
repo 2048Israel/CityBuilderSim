@@ -866,10 +866,10 @@ public class ReplayCheck {
      * nothing; a floor tied to the frame rate would go red on a busy PC); afterwards nothing is pinned or held.
      */
     static void movedChecks(ReplayMoveProbe.Moved m, double glideSeconds, String ranBy, boolean acrossLevels) {
-        System.out.printf("      %s glide: %s in %.1f s (%d plan views, %d passed); ran by a %s in %.1f s, %d frames over %s, unpainted %d, worker asks %d, pictures let go %d; "
+        System.out.printf("      %s glide: %s in %.1f s (%d plan views, %d passed); ran by a %s in %.1f s, %d frames over %s, unpainted %d, worker asks %d, pictures let go %d, off the plan %d; "
                         + "afterwards held %b (let go in %.2f s), pinned %d%n",
                 m.name(), m.ready() ? "ready" : "NOT ready", m.loadSeconds(), m.planViews(), m.passed(), m.ranBy(), m.runSeconds(), m.frames(),
-                m.levelFrames(), m.unpaintedFrames(), m.asks(), m.evicted(), m.heldAfter(), m.letGoAfterS(), m.pinnedAfter());
+                m.levelFrames(), m.unpaintedFrames(), m.asks(), m.evicted(), m.offPlan(), m.heldAfter(), m.letGoAfterS(), m.pinnedAfter());
         String what = "the " + m.name() + " glide";
         helper(what + " loads and reaches Ready with every plan view loaded (none passed), and holds its pins while it waits (the move held, all six caches pinned)",
                 m.ready() && m.passed() == 0 && m.heldWhileReady() && m.pinnedWhileReady() == 6);
@@ -879,6 +879,8 @@ public class ReplayCheck {
         boolean levels = acrossLevels ? m.levelFrames().containsKey("L0") && m.levelFrames().containsKey("FAR") : !m.levelFrames().isEmpty();
         helper("...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks " + m.asks() + ", unpainted frames "
                 + m.unpaintedFrames() + ", let go " + m.evicted() + ")", m.ready() && m.asks() == 0 && m.unpaintedFrames() == 0 && m.evicted() == 0);
+        helper("...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan " + m.offPlan() + " of "
+                + m.frames() + " frames)", m.ready() && m.frames() > 0 && m.offPlan() == 0);
         helper("...and it ran frame by frame to its end, at least " + (int) (glideSeconds * 10) + " frames" + (acrossLevels ? " over at least L0 and FAR" : "") + " (" + m.frames() + ")", frames && levels);
         helper("...after it, no move is held and nothing is pinned", m.ready() && !m.heldAfter() && m.pinnedAfter() == 0);
     }

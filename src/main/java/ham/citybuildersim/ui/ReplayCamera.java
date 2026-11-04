@@ -20,7 +20,10 @@ import ham.citybuildersim.CameraPath;
  *
  * <p>A move (a glide, a fly out or a fly in) is set up here and then LOADS: it goes through {@link #PLAN_HZ} views a second of its
  * own clock, {@link #planViews()} in all, which MapView paints one after another with no limit on the time, in every month the move
- * crosses, keeping what it painted until the move has run (MapView.loadStep()). The bar says "Loading the move... N s", then
+ * crosses, keeping what it painted until the move has run (MapView.loadStep()). The run shows, frame by frame, the plan's view nearest
+ * its own clock, never one between two: a view between two loaded ones can need a tile or a node neither had, and a frame clock lands
+ * between them nearly every frame (CM1's gate, 2026-11-04: on a busy PC a glide asked the worker 7 things and drew one frame
+ * unpainted; ReplayCheck 5d counted 54 of 56 frames off the plan before this). The bar says "Loading the move... N s", then
  * "Ready - click to run"; a click on the map or any key runs it, so a screen recording can be started first, and Esc cancels at
  * either point. Only a replay has this camera, so the normal game loads nothing ahead.
  *
@@ -28,7 +31,7 @@ import ham.citybuildersim.CameraPath;
  */
 final class ReplayCamera {
 
-    /** The views a second of the move's own clock the load walks: 240 - finer than the 165 Hz this PC's screen draws at, so every frame the move runs at lies between two views it loaded. */
+    /** The views a second of the move's own clock the load walks: 240 - finer than the 165 Hz this PC's screen draws at, so a frame of the run, which shows the plan's view nearest its clock (advance()), is at most half a step (about 2 ms of the move) from where its clock is. */
     static final double PLAN_HZ = 240;
 
     /** The longest step of a glide's or fly's own clock, in seconds: 0.1 - a frame held up (a quick step of the map) is a pause in the move, not a jump ahead. */
@@ -367,7 +370,7 @@ final class ReplayCamera {
 
     private Shot advance(double dt) {
         t = Math.min(1, t + Math.min(Math.max(0, dt), MOST_DT_S) / seconds);
-        CameraPath.View v = viewAt(t);
+        CameraPath.View v = planView((int) Math.round(t * planSteps()));     // (CM1) only a view the load painted, whatever the frame clock
         if (glideKind) {
             mode.showMonth(v.month());
             status = String.format("gliding %.0f%%", t * 100);

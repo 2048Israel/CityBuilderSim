@@ -1,4 +1,4 @@
-# ReplayCheck.java - 893 lines · 13 methods · 2 constants · harnesses
+# ReplayCheck.java - 895 lines · 13 methods · 2 constants · harnesses
 
 `ham/citybuildersim/ReplayCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -68,7 +68,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 838 | **type** `public class ReplayCheck` | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs. |
+| 56 | 840 | **type** `public class ReplayCheck` | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs. |
 | 67 | 4 | `static void helper(String label, boolean ok)` | An assertion's line: Timing.verdict says OK, FAIL, or SOFT with the figure and its budget. |
 | 73 | 10 | `static double[] districtsMiddle(CityMap map)` | The middle of a map's districts in plots {x, y}: where a view of the city looks. |
 | 85 | 13 | `static long[] stampsOf(MapTiles tiles, CityMap map, List<long[]> view)` | The stamps of the tiles in a view, their district plans drawn first as the view's worker draws them (the jobs run and kept here). |
@@ -81,6 +81,6 @@
 | 150 | 9 | `static void clockMonth(Game game)` | Plays one month on the clock's path with the month's printed report silenced: the city prints its reports to the log. |
 | 160 | 5 | `static Map<Integer, byte[]> monthBytes(Recording rec) throws IOException` |  |
 | 166 | 694 | `public static void main(String[] args) throws Exception` |  |
-| 868 | 17 | `static void movedChecks(ReplayMoveProbe.Moved m, double glideSeconds, String ranBy, boolean acrossLevels)` | Section 5d's assertions for one glide, loaded and run in the window (ReplayMoveProbe.check()): it reached Ready with every plan view loaded, held its pins while it waited, ran on the click or the key; no frame of its ... |
-| 887 | 6 | `static boolean closedIgnores(InputLog.Writer closed) throws Exception` | Whether a closed log ignores an event added to it: nothing more is read from its file. |
+| 868 | 19 | `static void movedChecks(ReplayMoveProbe.Moved m, double glideSeconds, String ranBy, boolean acrossLevels)` | Section 5d's assertions for one glide, loaded and run in the window (ReplayMoveProbe.check()): it reached Ready with every plan view loaded, held its pins while it waited, ran on the click or the key; no frame of its ... |
+| 889 | 6 | `static boolean closedIgnores(InputLog.Writer closed) throws Exception` | Whether a closed log ignores an event added to it: nothing more is read from its file. |
 

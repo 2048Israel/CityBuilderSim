@@ -2,7 +2,7 @@
 
 Generated 2026-11-04 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**170 harness files, 18,850 labelled assertions.** AllChecks runs 170 of them.
+**170 harness files, 18,851 labelled assertions.** AllChecks runs 170 of them.
 
 ## Which harnesses read which class
 
@@ -19288,7 +19288,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L537 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
 - **L543 4. on the real Earth**
 
-## ReplayCheck.java - 105 labelled assertions
+## ReplayCheck.java - 106 labelled assertions
 
 > Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs.
 > Timing harness (Timing.HARNESSES): section 6 judges the recorder's FX-thread cost through Timing.
@@ -19416,8 +19416,9 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L853 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
   - L876 ...and runs on
   - L880 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
-  - L882 ...and it ran frame by frame to its end, at least
-  - L883 ...after it, no move is held and nothing is pinned
+  - L882 ...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan
+  - L884 ...and it ran frame by frame to its end, at least
+  - L885 ...after it, no move is held and nothing is pinned
 
 ## RestaurantsCheck.java - 36 labelled assertions
 
