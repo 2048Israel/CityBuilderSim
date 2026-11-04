@@ -7,8 +7,9 @@ package ham.citybuildersim;
  * WHY. Until R0 every lever was open from month 1, so a city founded in January 1900 could tax incomes 17 years before Canada did, set a
  * minimum wage 18 years early and promise old-age pensions 27 years before the country had any: the Policy screen was open in full on the
  * first day, and there was nothing in it to learn. The game's institutions are Canada's (a law, unlike a technology, does not cross borders
- * under licence), so each lever now opens at zero on the date Canada first had it, the inbox says when and on what terms, and the player
- * decides: history is the tutorial. This class is only the dates. Nothing reads it yet (R0's first slice): the gate that holds a lever shut
+ * under licence), so each lever now opens on the date Canada first had it, the inbox says when and on what terms, and the player decides:
+ * history is the tutorial. The three income taxes open at the city's founding rate and the promises (the pensions, EI, the health premium,
+ * student aid) at zero (opensAtFoundingRate(), call 16). This class is only the dates. Nothing reads it yet (R0's first slice): the gate that holds a lever shut
  * is the second slice's (TaxPolicy's effective rates and setters, the minimum wage, zoning, the save and the inbox) and the Policy screen's
  * drawing of a shut one the third's. Money's two dates are here as data; the gate on them, and the gold years between, are batch R0f's.
  *
@@ -175,6 +176,15 @@ public final class PolicyDates {
         return openingMonth(lever) <= 1;
     }
 
+    /**
+     * Whether a lever opens at the city's founding rate (TaxPolicy.DEFAULT_INCOME_TAX) and not at zero: the three income taxes, which fund the
+     * city, where a promise (a pension, EI, the health premium, student aid) costs it and opens at zero. WHY (R0 call 16): opening at zero left
+     * the playtest's untended city with no profit, wage or sales tax until about 1950, its treasury below zero from 1921 to 1967.
+     */
+    public static boolean opensAtFoundingRate(Lever lever) {
+        return lever == Lever.PROFIT_TAX || lever == Lever.WAGE_TAX || lever == Lever.SALES_TAX;
+    }
+
     /** The earliest month a law discovery may bring a lever to: MAX_EARLY_MONTHS before its opening month, never before month 1. */
     public static int earliestOpening(Lever lever) {
         return earliestFor(openingMonth(lever));
@@ -194,13 +204,23 @@ public final class PolicyDates {
     }
 
     /**
-     * The inbox sentence for the month a lever opens: when Canada first had it, under what, on what terms, and that the setting is the
+     * The inbox sentence for the month a lever opens: when Canada first had it, under what, on what terms, where it opens (an income tax at
+     * the founding rate, the minimum wage's floor at the going unskilled wage, every other dated lever at zero) and that the setting is the
      * player's. A lever open from founding has no first day to report, so its notice is empty.
      */
     public static String notice(Lever lever) {
         if (openAtFounding(lever)) return "";
         String under = lever.act().isEmpty() ? "" : " (" + lever.act() + ")";
-        return "Canada's first " + lever.label() + " came in " + openingDate(lever) + under + ": " + lever.terms()
-                + ". The lever opens at zero; the setting is yours.";
+        return "Canada's first " + lever.label() + " came in " + openingDate(lever) + under + ": " + lever.terms() + ". " + opensAt(lever)
+                + "; the setting is yours.";
+    }
+
+    /** Where a dated lever opens, as a sentence the notice finishes: the founding rate, the going unskilled wage, or zero. */
+    static String opensAt(Lever lever) {
+        if (opensAtFoundingRate(lever)) {
+            return "The tax opens at the city's founding rate, " + DecisionLog.pct(TaxPolicy.DEFAULT_INCOME_TAX);
+        }
+        if (lever == Lever.MINIMUM_WAGE) return "The floor opens at the going unskilled wage";
+        return "The lever opens at zero";
     }
 }

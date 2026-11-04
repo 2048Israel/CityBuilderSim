@@ -19455,13 +19455,15 @@ public class Game {
             // Whether the array was read decides whether the one income rate
             // further down is: it carries the three bases apart since 0.7.4,
             // and the old single key would put them back together.
-            // The levers' opening months first, and the loaded month with them (R0): a save from before R0 names none and loads
-            // with every lever open; the policy state and the offsets then come back as saved, and the month holds what is shut.
+            // The levers' opening months first (R0): a save from before R0 names none and loads with every lever open; the policy state
+            // and the offsets then come back as saved, and the loaded month is told last, so that it holds what is still shut and the
+            // policy knows which levers are shut when the next month opens one (call 16: an income tax opens at the founding rate;
+            // told before the restore, the restore emptied that memory and a city saved the month before a date lost its opening).
             economyManager.getTaxPolicy().restoreOpenings(loaded.getLeverOpenings());
-            policyHearsTheMonth();
             boolean taxArrayRead =
                     economyManager.getTaxPolicy().restorePolicyState(loaded.getTaxPolicyState());
             economyManager.getTaxPolicy().restoreSectorOffsets(loaded.getSectorOffsets());
+            policyHearsTheMonth();
 
             // Format 18 and earlier carry nothing here, and a null restores as a
             // no-op - which leaves a founding city's opening buffer, the same

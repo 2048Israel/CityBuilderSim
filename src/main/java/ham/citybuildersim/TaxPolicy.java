@@ -83,11 +83,17 @@ public class TaxPolicy {
 
        Jerus: the game starts in January 1900 and history is the tutorial.
        Each lever below opens on the date Canada first had it (PolicyDates),
-       AT ZERO, with an inbox notice of its first terms; before its date it
-       affects no monthly flow and the player cannot set it. Every city runs
-       on history's dates, harness cities too: a fixture whose premise is a
-       lever's mechanics opens it (openAll()), or builds on a policy no city
-       holds, whose month is 0 and whose every lever is open.
+       with an inbox notice of its first terms; before its date it affects no
+       monthly flow and the player cannot set it. THE THREE INCOME TAXES OPEN
+       AT THE FOUNDING RATE (DEFAULT_INCOME_TAX), THE PROMISES AT ZERO (call
+       16): a tax funds the city and a promise costs it, and a tax that
+       opened at zero left an untended city untaxed for decades (the
+       playtest's, measured: no profit, wage or sales tax until about 1950,
+       its treasury below zero 1921-1967). Their offsets open at zero.
+       Every city runs on history's dates, harness cities too: a fixture
+       whose premise is a lever's mechanics opens it (openAll()), or builds
+       on a policy no city holds, whose month is 0 and whose every lever is
+       open.
 
        THE WHY OF HOLDING AT ZERO RATHER THAN READING THROUGH A GATE. Every
        rate here is read by name from a dozen places (the month's taxes, the
@@ -98,7 +104,8 @@ public class TaxPolicy {
 
        The city tells the policy its month (Game, every month before anything
        is taxed or paid, at founding and after a load), and the policy holds
-       each closed lever at zero from then on. The lever's opening month is
+       each closed lever at zero from then on, remembering which it held
+       (held) so that it knows the month one opens. The lever's opening month is
        the city's (R3 lets a law find move it up to PolicyDates.MAX_EARLY_MONTHS
        earlier) and is saved with it; a save from before R0 has none, and
        loads with every lever open - its taxes were set before R0.
@@ -123,6 +130,13 @@ public class TaxPolicy {
     /** True while a save is being read back: what a city saved is put back as it was, whatever month the policy last heard. */
     private boolean restoring;
 
+    /**
+     * The gated levers this policy held shut at the last month it heard (setMonth()), so that the month one opens is known: the income taxes
+     * then open at the founding rate (call 16). Never saved; a restore, openAll() and reset() empty it (setMonth() fills it again with what
+     * is still shut), so a rate they put back is never overwritten by a later opening.
+     */
+    private final java.util.EnumSet<PolicyDates.Lever> held = java.util.EnumSet.noneOf(PolicyDates.Lever.class);
+
     private static java.util.EnumMap<PolicyDates.Lever, Integer> historyOpenings() {
         java.util.EnumMap<PolicyDates.Lever, Integer> m = new java.util.EnumMap<>(PolicyDates.Lever.class);
         for (PolicyDates.Lever l : PolicyDates.Lever.values()) m.put(l, PolicyDates.openingMonth(l));
@@ -146,11 +160,25 @@ public class TaxPolicy {
 
     /**
      * The city's month, told by Game at founding, after a load and at the top of every month before anything is taxed or paid. Stores it, and
-     * then HOLDS every closed lever at zero: its base rate and every offset, the promise or the grant. Writes no line to the decision log -
-     * nobody decided anything.
+     * then HOLDS every closed lever at zero: its base rate and every offset, the promise or the grant. A lever held at the last month and
+     * open now has just opened: an income tax's base rate opens at the founding rate, DEFAULT_INCOME_TAX, and every promise stays at the
+     * zero it was held at (call 16: a tax opened at zero left an untended city untaxed for decades; a promise costs the city). Writes no
+     * line to the decision log - nobody decided anything.
      */
     public void setMonth(int gameMonth) {
         month = gameMonth;
+        for (PolicyDates.Lever l : GATED) {
+            if (!isOpen(l)) {
+                held.add(l);
+            } else if (held.remove(l) && PolicyDates.opensAtFoundingRate(l)) {
+                switch (l) {
+                    case PROFIT_TAX -> profitTaxRate = DEFAULT_INCOME_TAX;
+                    case WAGE_TAX   -> wageTaxRate = DEFAULT_INCOME_TAX;
+                    case SALES_TAX  -> salesTaxRate = DEFAULT_INCOME_TAX;
+                    default         -> { }
+                }
+            }
+        }
         if (!isOpen(PolicyDates.Lever.WAGE_TAX)) {
             wageTaxRate = 0;
             java.util.Arrays.fill(wageOffset, 0);
@@ -179,6 +207,8 @@ public class TaxPolicy {
     /** Every lever's opening month to 1: a save from before R0, whose taxes were set before there was a gate, and a fixture whose premise is a lever's mechanics. */
     public void openAll() {
         for (PolicyDates.Lever l : PolicyDates.Lever.values()) opening.put(l, 1);
+        // Nothing is shut now, so nothing is about to open: a rate a fixture sets next must not be taken for the founding rate later.
+        held.clear();
     }
 
     /** Every lever back to history's date: a new city. */
@@ -1568,6 +1598,7 @@ public class TaxPolicy {
         TaxPolicy c = new TaxPolicy();
         c.month = month;
         c.opening.putAll(opening);
+        c.held.addAll(held);
         c.profitTaxRate = profitTaxRate;
         c.salesTaxRate = salesTaxRate;
         c.wageTaxRate = wageTaxRate;
@@ -1747,6 +1778,9 @@ public class TaxPolicy {
         } finally {
             restoring = false;
         }
+        // What came back is what the city had, so no lever of it is about to "open" at the founding rate and overwrite it: nothing is held
+        // until the month is told again (setMonth() holds afresh whatever is still shut; Game tells it straight after the restore).
+        held.clear();
         return true;
     }
 
@@ -1885,6 +1919,7 @@ public class TaxPolicy {
     public void reset() {
         month = 0;
         resetOpenings();
+        held.clear();
         setIncomeTaxRate(DEFAULT_INCOME_TAX);
         propertyTaxRate = DEFAULT_PROPERTY_TAX;
         transitFare = DEFAULT_TRANSIT_FARE;
