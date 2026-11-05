@@ -757,7 +757,12 @@ public class EquipmentCheck {
 
     /** Moves the city's price of coal to `target`, by the world's prices on its market: the price planners read (cityValue()) is affine in them, found from two probes and refined; false if it will not move. */
     static boolean priceCoalAt(Game g, double target) {
-        GoodsMarket m = g.getMarkets().get(Good.THERMAL_COAL);
+        return priceAt(g, Good.THERMAL_COAL, target);
+    }
+
+    /** Moves the city's price of any good to `target`, the same way (RecipeCheck moves the crops' and the bread's). */
+    static boolean priceAt(Game g, Good good, double target) {
+        GoodsMarket m = g.getMarkets().get(good);
         m.setWorldPrices(0.05, 0.05);
         double a = SpreadPlanner.cityValue(m);
         m.setWorldPrices(0.10, 0.10);

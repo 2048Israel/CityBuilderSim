@@ -1174,6 +1174,23 @@ public class DataSave implements Cloneable {
     }
 
     /**
+     * The recipes the two parts of a stack run (R1c; Recipes), by template id: [the fitted part's recipe id, the unfitted part's], written only for a
+     * template where a part runs a recipe other than the default, so only a city founded the 1900 way ever writes the key. A save without one, which
+     * is every save from before R1c and every city founded the default way, reads as every building on its default: Gson leaves a missing key alone,
+     * so no format bump.
+     */
+    private java.util.Map<Integer, java.util.List<String>> recipeChoices;
+
+    public void setRecipeChoices(java.util.Map<Integer, java.util.List<String>> byId) {
+        this.recipeChoices = byId == null || byId.isEmpty() ? null : byId;
+    }
+
+    /** The recipe choices the save carries by template id, or an empty map for a save with none (every building on its default). */
+    public java.util.Map<Integer, java.util.List<String>> getRecipeChoices() {
+        return recipeChoices == null ? java.util.Map.of() : recipeChoices;
+    }
+
+    /**
      * The fittings on site (R1b; Fittings), in the order placed, each with the template, the piece, who ordered it and the points still owed: written
      * only while there is a job, so a city with none writes no key and a save without one reads as none on site. No format bump: Gson leaves a
      * missing key alone, and a city saved before R1b had none.

@@ -818,6 +818,40 @@ public class BuildingDataCheck {
         }
         assertTrue("every gated profession has exactly one school", licences);
 
+        /* ---------- every list of recipes is one the model can run (R1c) ----------
+
+           A template may carry "recipes" (Recipe; research-design 2.1). The catalogue refuses a list with no default or two, and one that needs two
+           pieces, so that what reaches here has one default and at most one recipe piece; what only the file can get wrong is a list with nothing
+           a 1900 city can run without the piece (a part would have nothing to run and fall back on a default that needs it). A recipe may make or use a
+           good its sector does not declare: the sector declares it when a template first runs the recipe (Sector.declareRecipeGoods()). */
+        System.out.println("\n--- recipes ---");
+        int lists = 0;
+        boolean recipesOk = true;
+        for (BuildingsTemplate t : data) {
+            if (!t.hasRecipeChoice()) continue;
+            lists++;
+            int defaults = 0;
+            boolean knownWithoutPiece = false;
+            java.util.Set<String> pieces = new java.util.HashSet<>();
+            for (Recipe r : t.getRecipes()) {
+                if (r.isDefault()) defaults++;
+                if (r.knownIn(1900) && r.getNeedsEquipment() == null) knownWithoutPiece = true;
+                if (r.getNeedsEquipment() != null) {
+                    pieces.add(r.getNeedsEquipment());
+                    if (t.getEquipment(r.getNeedsEquipment()) == null) {
+                        recipesOk = false;
+                        System.out.println("  " + t.getName() + " recipe " + r.getId() + " needs " + r.getNeedsEquipment() + ", which it does not carry");
+                    }
+                }
+            }
+            if (defaults != 1 || pieces.size() > 1 || !knownWithoutPiece) {
+                recipesOk = false;
+                System.out.println("  " + t.getName() + ": " + defaults + " defaults, " + pieces.size() + " recipe pieces, a recipe known in 1900 that needs no piece: " + knownWithoutPiece);
+            }
+        }
+        assertTrue("every list of recipes (" + lists + " in the file) has one default, at most one recipe piece, and a way to run in 1900 with no piece",
+                recipesOk);
+
         /* ---------- ids are unique, which the saves depend on ---------- */
         System.out.println("\n--- ids ---");
         boolean unique = true;

@@ -89,6 +89,7 @@ public class SimulationEngine {
          * FittingCheck 1's town), and the next press parted, the treasury within two months. A city with no building unfitted that never
          * had one calls nothing.
          */
+        game.getRecipes().apply(game);   // the ways the buildings run, at the counts the month leaves (R1c): first, the steam form below weighs each building by its electricity
         game.getEquipmentForms().apply(game);
         // ...and the material that work drew on, bought now, and the work
         // itself recognised on the same figure the sites advanced by. The

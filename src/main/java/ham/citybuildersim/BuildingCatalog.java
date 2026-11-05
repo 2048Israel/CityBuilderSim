@@ -237,6 +237,9 @@ public class BuildingCatalog {
         readSite(o, template, name);
         readOldMetal(o, template, name);
         readEquipment(o, template, name);
+        // ...and the ways it runs (R1c), which need the pieces read: and then the pieces that end no form and that no recipe needs go.
+        readRecipes(o, template, name);
+        dropIdlePieces(template, name);
 
         // The file's money is today's; the template is priced at the founding's, once, here (EP1).
         return template.pricedAtFoundingLevel();
@@ -266,10 +269,12 @@ public class BuildingCatalog {
      * The equipment a building can be fitted with (R1, 2026-11-05; Equipment): "equipment": [{"id": "electric-drive",
      * "name": "Electric motor drive", "since": "1900", "ends": "STEAM", "buys": {"MACHINERY": 10.9}, "work": 114,
      * "lifeMonths": 300}] - a key permanent on its template, what the screens call it, the year it is known from (a
-     * JSON number or a string, read as text) or a catalogue code, the 1900 form it ends (an Equipment.Form), the goods
-     * fitting it buys (units at nameplate), the BUILDING_WORK points and its life. Absent, none. A piece with no id, a
-     * second of one id on a template, no "since", an unknown form, an unknown good or a life of 0 or less is reported
-     * and skipped, as an unknown good in "makes" costs only its line: the other pieces and the building are read.
+     * JSON number or a string, read as text) or a catalogue code, the 1900 form it ends (an Equipment.Form; absent or
+     * blank, none: a piece that exists to enable a recipe, R1c), the goods fitting it buys (units at nameplate), the
+     * BUILDING_WORK points and its life. Absent, none. A piece with no id, a second of one id on a template, no
+     * "since", an unknown form, an unknown good or a life of 0 or less is reported and skipped, as an unknown good in
+     * "makes" costs only its line: the other pieces and the building are read. A piece that ends no form is kept only
+     * if a recipe needs it (dropIdlePieces(), once the recipes are read).
      */
     private void readEquipment(JsonObject o, BuildingsTemplate template, String name) {
 
@@ -292,14 +297,16 @@ public class BuildingCatalog {
                         + "\"; the second skipped.");
                 continue;
             }
-            String formName = string(p, "ends");
-            Equipment.Form form;
-            try {
-                form = Equipment.Form.valueOf(formName);
-            } catch (Exception e) {
-                System.out.println(FILE_NAME + ": \"" + name + "\" piece \"" + id + "\" ends unknown form \""
-                        + formName + "\"; skipped.");
-                continue;
+            String formName = string(p, "ends").trim();
+            Equipment.Form form = null;   // none: a piece that ends no form
+            if (!formName.isEmpty()) {
+                try {
+                    form = Equipment.Form.valueOf(formName);
+                } catch (Exception e) {
+                    System.out.println(FILE_NAME + ": \"" + name + "\" piece \"" + id + "\" ends unknown form \""
+                            + formName + "\"; skipped.");
+                    continue;
+                }
             }
             java.util.Map<Good, Double> buys = new java.util.EnumMap<>(Good.class);
             boolean unknownGood = false;
@@ -346,6 +353,160 @@ public class BuildingCatalog {
         } catch (Exception e) {
             return "";
         }
+    }
+
+    /**
+     * The ways a building runs (R1c, 2026-11-05; Recipe; research-design 2.1): "recipes": [{"id": "old", "name": "Beehive ovens"},
+     * {"id": "by-product", "since": 1905, "needsEquipment": "by-product-ovens", "uses": {"COKING_COAL": 1500}, "makes": {...}, "jobs": {...},
+     * "electricity": 8000, "gen": 0, "water": 90, "consumables": 35}] - a key permanent on its template, what the screens call it, the year it is
+     * known from (a number or text) or a catalogue code, the id of a piece of equipment on the same building, and any of the seven figures. A
+     * figure a recipe does not state is the template's top level; "uses": {} states uses nothing. The ONE entry that states no figure at all is the
+     * top level, today's way, the default; a list that has none, or two, is reported and dropped, as is one whose recipes need two different pieces
+     * (a building has at most one recipe piece). An entry with no id, a second of one id, no "since", an unknown good or job type, or a piece the
+     * building does not carry is reported and skipped (the whole recipe, where an unknown good in "makes" costs a line: a recipe half read would
+     * run a building that makes something else). Absent, the building has one recipe, its top level (BuildingsTemplate.getRecipes()).
+     */
+    private void readRecipes(JsonObject o, BuildingsTemplate template, String name) {
+
+        if (!o.has("recipes") || !o.get("recipes").isJsonArray()) return;
+        List<Recipe> kept = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        int defaults = 0;
+        for (JsonElement element : o.getAsJsonArray("recipes")) {
+            if (!element.isJsonObject()) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" has a non-object recipe; skipped.");
+                continue;
+            }
+            JsonObject p = element.getAsJsonObject();
+            String id = string(p, "id").trim();
+            if (id.isEmpty()) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" has a recipe with no id; skipped.");
+                continue;
+            }
+            if (!seen.add(id)) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" has two recipes called \"" + id + "\"; the second skipped.");
+                continue;
+            }
+            Recipe recipe = readRecipe(p, id, template, name);
+            if (recipe == null) continue;
+            kept.add(recipe);
+            if (recipe.isDefault()) defaults++;
+        }
+        if (defaults != 1) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" has " + defaults + " recipes that state no figure, where its default is the one; recipes dropped.");
+            return;
+        }
+        String piece = null;
+        for (Recipe r : kept) {
+            if (r.getNeedsEquipment() == null) continue;
+            if (piece != null && !piece.equals(r.getNeedsEquipment())) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" has recipes that need two pieces of equipment (\"" + piece + "\", \""
+                        + r.getNeedsEquipment() + "\"), where it has one recipe piece at most; recipes dropped.");
+                return;
+            }
+            piece = r.getNeedsEquipment();
+        }
+        try {
+            template.setRecipes(kept);
+        } catch (IllegalArgumentException e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" recipes are no good (" + e.getMessage() + "); recipes dropped.");
+        }
+    }
+
+    /** One recipe of a list, its unstated figures the template's top level; null (reported) for one that is no good. */
+    private Recipe readRecipe(JsonObject p, String id, BuildingsTemplate template, String name) {
+
+        boolean stated = false;
+        for (String key : new String[] { "uses", "makes", "jobs", "electricity", "gen", "water", "consumables" }) stated |= p.has(key);
+        // The entry that states no figure is the default, the top level: from the start unless it says otherwise. Every other says when it is known.
+        String since = sinceText(p);
+        if (since.isEmpty() && !stated) since = Recipe.DEFAULT_SINCE;
+        if (since.isEmpty()) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" recipe \"" + id + "\" has no since; skipped.");
+            return null;
+        }
+        String needs = string(p, "needsEquipment").trim();
+        if (!needs.isEmpty() && template.getEquipment(needs) == null) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" recipe \"" + id + "\" needs equipment \"" + needs
+                    + "\", which it does not carry; skipped.");
+            return null;
+        }
+
+        java.util.Map<Good, Double> makes = recipeGoods(p, "makes", template.goodsMade(), id, name);
+        java.util.Map<Good, Double> uses = recipeGoods(p, "uses", template.goodsUsed(), id, name);
+        if (makes == null || uses == null) return null;
+
+        int[] posts = new int[JobType.values().length];
+        for (JobType type : JobType.values()) posts[type.ordinal()] = template.getJobs(type);
+        if (p.has("jobs")) {
+            if (!p.get("jobs").isJsonObject()) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" recipe \"" + id + "\" has jobs that are not an object; skipped.");
+                return null;
+            }
+            java.util.Arrays.fill(posts, 0);
+            JsonObject jobs = p.getAsJsonObject("jobs");
+            for (String key : jobs.keySet()) {
+                JobType type;
+                try {
+                    type = JobType.valueOf(key);
+                } catch (IllegalArgumentException e) {
+                    System.out.println(FILE_NAME + ": \"" + name + "\" recipe \"" + id + "\" has unknown job type \"" + key + "\"; skipped.");
+                    return null;
+                }
+                try {
+                    posts[type.ordinal()] = jobs.get(key).getAsInt();
+                } catch (Exception e) {
+                    System.out.println(FILE_NAME + ": \"" + name + "\" recipe \"" + id + "\" has posts for \"" + key + "\" that are no number; skipped.");
+                    return null;
+                }
+            }
+        }
+        int electricity = p.has("electricity") ? (int) number(p, "electricity") : template.getElectricityConsumption();
+        double gen = p.has("gen") ? number(p, "gen") : template.getGen();
+        double water = p.has("water") ? number(p, "water") : template.getWaterConsumption();
+        // In today's thousands of the world's money, as the top level's: priced at the founding's level with it (BuildingsTemplate.pricedAtFoundingLevel()).
+        double consumables = p.has("consumables") ? number(p, "consumables") : template.getConsumables();
+        try {
+            return new Recipe(id, string(p, "name"), since, needs, !stated, makes, uses, posts, electricity, gen, water, consumables);
+        } catch (IllegalArgumentException e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" recipe \"" + id + "\" is no good (" + e.getMessage() + "); skipped.");
+            return null;
+        }
+    }
+
+    /** What a recipe makes or uses: the template's own when the recipe does not state the key, else what it states (an empty object is nothing); null, reported, for an unknown good or a key that is not an object. */
+    private java.util.Map<Good, Double> recipeGoods(JsonObject p, String key, java.util.Map<Good, Double> inherited, String id, String name) {
+        if (!p.has(key)) return inherited;
+        if (!p.get(key).isJsonObject()) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" recipe \"" + id + "\" has " + key + " that are not an object; skipped.");
+            return null;
+        }
+        JsonObject stated = p.getAsJsonObject(key);
+        java.util.Map<Good, Double> goods = new java.util.EnumMap<>(Good.class);
+        for (String goodName : stated.keySet()) {
+            Good good = Good.byName(goodName);
+            if (good == null) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" recipe \"" + id + "\" " + key + " unknown good \"" + goodName + "\"; skipped.");
+                return null;
+            }
+            goods.put(good, number(stated, goodName));
+        }
+        return goods;
+    }
+
+    /** A piece that ends no form is there to enable a recipe: one that no recipe of the building needs is reported and dropped, once the recipes are read. */
+    private void dropIdlePieces(BuildingsTemplate template, String name) {
+        List<Equipment> kept = new ArrayList<>();
+        boolean dropped = false;
+        for (Equipment piece : template.getEquipment()) {
+            if (piece.getEnds() == null && !piece.getId().equals(template.recipePieceId())) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" piece \"" + piece.getId() + "\" ends no form and no recipe needs it; skipped.");
+                dropped = true;
+                continue;
+            }
+            kept.add(piece);
+        }
+        if (dropped) template.setEquipment(kept);
     }
 
     /**
