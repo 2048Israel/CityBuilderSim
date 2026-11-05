@@ -1,6 +1,6 @@
 # KP3 - Screens kept: Build and the construction page ({next}, 2026-11-05)
 
-**WHERE IT STANDS** (2026-11-05, 07:32): ready but for the ship file. The three slices are in and reviewed (A 3e46f63c, B 114cd980, C 275893a2); KP2's mended tip (217f5dc9, which carries main with BA1 and R1) merged in; `--pick` on it with the world files exit 3, MapCheck and LongPlaytest main's recorded reds, as at KP2's. KP2 is not on main yet, so the ship file waits (docs/batch.md 7): once KP2 lands, `origin/main` merged and the ship file pushed last; its text is drafted in the night line's shared notes, `KP3-2026-11-05.md`.
+**WHERE IT STANDS** (2026-11-05, 08:12): ready but for `--pick` on the merge with main and the ship file. The three slices are in and reviewed (A 3e46f63c, B 114cd980, C 275893a2); KP2 landed on main as 0.9.17 and `origin/main` is merged in (81fd9bd8, `docs/map/README.md` taken from main). `--pick` on KP2's tip before it landed: exit 3, MapCheck and LongPlaytest main's recorded reds. When the PC is back: `--pick` with the world files on this merge, the maps committed, then `docs/queue/KP3-ship.md` pushed last, its text drafted in the night line's shared notes, `KP3-2026-11-05.md`. Its gate wants a threading review (§4).
 
 The batch's record. The study's KP3 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 rules, seven since KP2) and §6 (what checks it). Lane 2 of the night line, after KP2, built on `origin/batch/KP2` at
