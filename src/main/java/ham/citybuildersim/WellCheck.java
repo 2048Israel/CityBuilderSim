@@ -958,8 +958,8 @@ public class WellCheck {
         BusinessInvestment.Decision onLand = wells.planOnLand(plans, g);
         BusinessInvestment.Decision d = quietlyGet(() -> wells.plan(plans, g));
         boolean staffs = wells.staffing(jacket).passes();
-        // ...on the package's whole cost since 0.7.113 (Game.carriesItsWholeCost(); while it earned anything until then).
-        boolean carries = c != null && g.carriesItsWholeCost(Sectors.OIL, c.earns(), c.cost());
+        // ...on the package's whole cost since 0.7.113 (Game.carriesItsWholeCost(); while it earned anything until then), grown over the jacket's wait since BA1 (the template and count the planner passes, Oil, one jacket).
+        boolean carries = c != null && g.carriesItsWholeCost(Sectors.OIL, jacket, 1, c.earns(), c.cost());
         report("with no dry site and the sea field free, the land says no and the planner weighs a jacket on it: ordered while"
                         + " the package carries the interest on its whole cost and the town can staff it",
                 !onLand.build && jacketsBefore == 0 && (d.build ? d.template == jacket && carries && staffs
@@ -977,7 +977,7 @@ public class WellCheck {
         });
         BusinessInvestment.Decision next = quietlyGet(() -> wells.plan(plans, g));
         double each = wells.estimatedMonthlyProfit(seaWell, plans);
-        boolean eachCarries = g.carriesItsWholeCost(Sectors.OIL, each, plans.getCostOf(seaWell, 1));
+        boolean eachCarries = g.carriesItsWholeCost(Sectors.OIL, seaWell, 1, each, plans.getCostOf(seaWell, 1));
         report("...with a jacket standing and its slots free, a platform well into one, while one carries the interest on its"
                         + " whole cost",
                 wells.slotsStanding() > 0 && (next.build ? next.template == seaWell && eachCarries
@@ -1333,10 +1333,12 @@ public class WellCheck {
 
         // The planner: the package at the depth it would stand in, its earnings carrying the upkeep.
         Oil.JacketCase c = wells.jacketCase(plans);
-        double wellsPremium = (wf - 1) * bm.nonMaterialCost(seaWell) * (c == null ? 0 : c.wells());
+        // ...the wells' works at the multiple of an order of that many (BA1: each well priced on the queue the ones before it leave, BuildersShort.meanPremium()); the jacket's, an order of one, at its own (the quote's).
+        double wellsPremium = (wf - 1) * bm.nonMaterialCost(seaWell) * (c == null ? 0 : c.wells())
+                * bm.orderPriceMultiplier(0, seaWell.getConstructionPoints(), c == null ? 1 : c.wells());
         double running = plans.runningCostOf(jacket);
         report("the planner judges the package at the depth it would stand in: the jacket's premium and its n wells' on that field in its cost,"
-                        + " with the builders' tax",
+                        + " with the builders' tax, the wells' at the multiple of an order of that many (BA1)",
                 c != null && shallowCase != null && c.field().depth() == deepM && c.wells() == shallowCase.wells()
                         && close(c.cost() - shallowCase.cost(), em.withBuildersTax(q.deepWaterCost + wellsPremium)),
                 c == null ? "none" : String.format("%d wells: $%,.0fk against $%,.0fk", c.wells(), c.cost(), shallowCase.cost()));
@@ -1346,7 +1348,7 @@ public class WellCheck {
         report("...and the jacket's own share of the package, by cost, is what the investors are asked",
                 c != null && close(wells.estimatedMonthlyProfit(jacket, plans), c.earns() * plans.getCostOf(jacket, 1) / c.cost()), "");
         BusinessInvestment.Decision decision = quietlyGet(() -> wells.plan(plans, g));
-        boolean carries = c != null && g.carriesItsWholeCost(Sectors.OIL, c.earns(), c.cost());
+        boolean carries = c != null && g.carriesItsWholeCost(Sectors.OIL, jacket, 1, c.earns(), c.cost());
         boolean staffs = wells.staffing(jacket).passes();
         report("...ordered only while the package carries the interest on its whole cost, in the words of a floating platform at its depth",
                 decision.build ? decision.template == jacket && carries && staffs && decision.reason.contains("floating platform")

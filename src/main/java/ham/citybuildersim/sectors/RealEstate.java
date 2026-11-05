@@ -501,11 +501,19 @@ public final class RealEstate extends Sector {
         String sector = key();
 
         /*
-         * NOT ONE ORDER AT A TIME (0.7.17): the landlords hold orders while
-         * what their sites owe is at most MAX_ORDER_MONTHS of the builders'
-         * site output, and size each one to stay inside it - see
-         * BusinessInvestment.withinMonthsOfWork(), below where the order is
-         * sized.
+         * NOT ONE ORDER AT A TIME (0.7.17), AND NO MONTHS OF WORK EITHER
+         * (BA1). The landlords held orders while what their sites owed was
+         * at most MAX_ORDER_MONTHS of the builders' site output, each order
+         * sized to stay inside it (withinMonthsOfWork()), and a smaller home
+         * tried when not one of the best fitted. None of that is left: an
+         * order is sized to the shortage and the land (BusinessInvestment,
+         * EVERY BUSINESS MAY BUILD AHEAD, Jerus: "why not let contracts
+         * flow? ... too much and contracts get expensive thus business stop
+         * trying to place orders"). What rations the landlords is what
+         * rations everyone: the price of a point, each home priced on the
+         * queue the ones before it leave (BuildersShort.meanPremium()), and
+         * the lender's test on the loan grown over the wait (Game,
+         * considerOnMortgage(); Mortgage.decide()).
          */
         // Every post, the builders' laid-off crews included (0.7.17): a post
         // laid off for want of work is a job that comes back with the work -
@@ -549,11 +557,6 @@ public final class RealEstate extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0, bestDoors = 0;
         String blocked = null;
-        // Every template that passed the tests below, with the doors it would
-        // let - what a smaller home is chosen from (0.7.17; see TRY A SMALLER
-        // HOME, where the order is sized).
-        java.util.List<BuildingsTemplate> eligible = new java.util.ArrayList<>();
-        java.util.Map<BuildingsTemplate, Double> doorsOf = new java.util.HashMap<>();
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (t.getCapacity() <= 0) continue;
@@ -579,8 +582,6 @@ public final class RealEstate extends Sector {
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             double score = income / cost;
-            eligible.add(t);
-            doorsOf.put(t, doors);
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
@@ -600,58 +601,8 @@ public final class RealEstate extends Sector {
         int plots = plans.plotsAvailableFor(best);
         if (plots < 1) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
 
-        // ...and held to MAX_ORDER_MONTHS of the builders' output for the
-        // sites, counting what the landlords already owe on site (0.7.17;
-        // BusinessInvestment.withinMonthsOfWork()), not to twelve months of
-        // the whole city's output with nothing on site (orderSize()).
-        double siteOutput = game.getBuildingOutputAtEveryPost();
-        int quantity = plans.withinMonthsOfWork(sector, best, Math.min(wanted, plots), siteOutput);
-
-        /*
-         * TRY A SMALLER HOME (0.7.17, revised to Jerus's answer: "They order
-         * the next smaller home type that does fit, instead of waiting").
-         * When not one of the best fits inside MAX_ORDER_MONTHS of the
-         * builders' site output, with what they owe on site counted, the
-         * landlords go down the templates that
-         * passed every test above - somebody would live in it, the rent
-         * clears the hurdle, it has a cost - from the next smaller down,
-         * SMALLER BY CONSTRUCTION POINTS, and order the first that fits:
-         * points are what the months are made of (what their sites owe plus
-         * the order, over the site output), so the next one down in points
-         * is the nearest thing to their own choice that the rule can take.
-         * Each is sized on its own doors and its own plots exactly as the
-         * best was, and the order goes on to every per-order gate as any
-         * order does - financing, the down payment, the lender's cover,
-         * land. None fits: they hold, as before.
-         */
-        if (quantity <= 0) {
-            int bestPoints = best.getConstructionPoints();
-            eligible.sort((a, b) -> Integer.compare(b.getConstructionPoints(), a.getConstructionPoints()));
-            for (BuildingsTemplate t : eligible) {
-                if (t.getConstructionPoints() >= bestPoints || t.getCapacity() <= 0) continue;
-                double doorsT = doorsOf.getOrDefault(t, 0.0);
-                double gapT = Math.max(byHeads, doorsT * FamilyModel.rentWeightOf(t.homeSize()));
-                int wantedT = Math.max(1, (int) Math.ceil(gapT / t.getCapacity()));
-                int plotsT = plans.plotsAvailableFor(t);
-                if (plotsT < 1) continue;
-                int fits = plans.withinMonthsOfWork(sector, t, Math.min(wantedT, plotsT), siteOutput);
-                if (fits > 0) {
-                    return new BusinessInvestment.Decision(sector, t, fits, String.format(
-                            "%s; a %s would not fit in %.0f months of work on site, a %s does",
-                            familyShortfall > 0 && headShortfall <= 0
-                                    ? String.format("%,.0f households need a door a child is allowed in", familyShortfall)
-                                    : String.format("%,.0f unhoused demand against %,d units", byHeads, housingCapacity),
-                            best.getName(), BusinessInvestment.MAX_ORDER_MONTHS, t.getName()), true);
-                }
-            }
-        }
-        if (quantity <= 0) {
-            double months = plans.monthsOfWorkOnSite(sector, siteOutput);
-            return BusinessInvestment.Decision.no(sector, Double.isNaN(months)
-                    ? String.format("a %s would not fit in %.0f months of work on site, nor anything smaller",
-                            best.getName(), BusinessInvestment.MAX_ORDER_MONTHS)
-                    : String.format("%.1f months of work on site already, of the builders' output", months));
-        }
+        // ...what the shortage needs, on the land there is: no months of the builders' work to fit it in (BA1, above).
+        int quantity = Math.min(wanted, plots);
 
         return new BusinessInvestment.Decision(sector, best, quantity,
                 familyShortfall > 0 && headShortfall <= 0

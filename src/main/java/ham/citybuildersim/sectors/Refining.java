@@ -1446,8 +1446,8 @@ public final class Refining extends Sector {
     /**
      * What the planner reads of the city (spec-oil 2.4).
      *
-     * @param feed        litres a month each kind of unit standing takes, by RefineryFlow.Kind's ordinal
-     * @param crude       tonnes a month the crude units standing run
+     * @param feed        litres a month each kind of unit standing and on site takes, by RefineryFlow.Kind's ordinal (on site since BA1, 2026-11-02: outlook())
+     * @param crude       tonnes a month the crude units standing and on site run
      * @param mix         their crude mix, each grade's share in Deposit.Grade's order
      * @param values      each product's value, by Good's ordinal (cityValues())
      * @param room        litres a month of petrol and diesel the city wants on the trend past what its
@@ -1502,7 +1502,11 @@ public final class Refining extends Sector {
         double[] imports = new double[Good.values().length];
         java.util.Arrays.fill(imports, Double.POSITIVE_INFINITY);
         for (Good g : BOUGHT_HERE) imports[g.ordinal()] = importsOf(g);
-        return new Outlook(unitFeed(false), getInputAtCapacity(Good.CRUDE), crudeMix.clone(), cityValues(), room,
+        // ...the campus as it will stand once what is on site opens (BA1, 2026-11-02): the units and the crude units on site
+        // are in the feed and the crude the flow is struck on, as getPipeline() has them in the room. It read the units standing
+        // only while a sector could have one order on site; with no cap on orders a second unit of a kind would have been
+        // weighed on the stream the first is already coming to take, and a second crude unit on the gain the first is coming to make.
+        return new Outlook(unitFeed(true), getInputAtCapacity(Good.CRUDE) + crudeOnSite(), crudeMix.clone(), cityValues(), room,
                 spare, spare > 0 ? wellsGradesAhead() : MEDIUM_MIX.clone(),
                 Double.isFinite(local) ? local : 0, Double.isFinite(imported) ? imported : 0,
                 Double.isFinite(home) ? Math.max(0, home) : 0, awayValues(), imports, runPrices());
@@ -1765,19 +1769,17 @@ public final class Refining extends Sector {
     }
 
     /**
-     * Whether to build, and what (THE SPREAD PLANNER): one order in flight;
-     * of the refiners' buildings that pass the gates, the one that earns
-     * most on its cost; with none, ground if ground was all that stood in
-     * the way, else the best-fed candidate's refusal.
+     * Whether to build, and what (THE SPREAD PLANNER): of the refiners'
+     * buildings that pass the gates, the one that earns most on its cost, no
+     * crude unit while one is on site; with none, ground if ground was all
+     * that stood in the way, else the best-fed candidate's refusal. No order
+     * in flight is waited for (BA1, 2026-11-02; ONE ORDER IN FLIGHT, below).
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
         String sector = key();
-        // One order in flight, crude units on site aside (0.7.105, R3: ONE ORDER IN FLIGHT, below).
+        // No crude unit while one is on site (0.7.105, R3; ONE ORDER IN FLIGHT, below): the refiners' own count, kept in BA1.
         int crudeOnSite = crudeUnitsOnSite();
-        if (buildings.getUnderConstructionBySector(sector) - crudeOnSite >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
         Outlook o = outlook(plans);
         List<BuildingsTemplate> templates = new ArrayList<>(buildings.getTemplatesBySector(sector));
         if (crudeOnSite > 0) templates.removeIf(Refining::isCrudeUnit);
@@ -1834,6 +1836,14 @@ public final class Refining extends Sector {
      * however its sites are held (T1's nine sectors each wait behind a site
      * of their own, which counting only a sector's own orders would not
      * have freed either).
+     *
+     * BA1 (2026-11-02) took the one order off every sector (BusinessInvestment,
+     * EVERY BUSINESS MAY BUILD AHEAD), the refiners' with it: a conversion
+     * unit or a Tank Farm may be ordered while anything of theirs is on site.
+     * What is on site is counted in what the next is weighed against - the
+     * units on site in the feed and the crude of the outlook (outlook()), a
+     * Tank Farm on site in farmCandidate() - and the rule of one crude unit
+     * on site stays: it is a count of the units, not the cap on orders.
      */
 
     /** The crude units on site, anyone's order (R3). */

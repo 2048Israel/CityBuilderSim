@@ -345,8 +345,20 @@ public class ZoningViewCheck {
                 before.zone().heldSqFt() == 0 && before.carries() == 0 && near(before.plotAtZone(), before.plotAtGoing()));
         assertTrue("after: it holds the km² (the free ground covers it), the ground free for anyone falls by as much",
                 same(after.zone().heldSqFt(), LandManager.sqFt(1)) && same(after.freeForAnyone(), anyone - LandManager.sqFt(1), anyone));
+        // The plot the sector builds most of, by ground standing and on site: a Convenience Store in this city until BA1
+        // (2026-11-02), whose shops now order a Small Grocery Store in the months the sections above play, its 40,000 ft²
+        // on site past the six stores' 30,000.
+        BuildingManager pbm = g.getBuildingManager();
+        double plotGround = -1, mostGround = 0;
+        for (BuildingsTemplate t : pbm.getTemplatesBySector(Sectors.RETAIL)) {
+            BuildingsStacks st = pbm.getStack(t);
+            double ground = st == null ? 0 : t.getLandSqFt() * (st.getQuantity() + st.getUnderConstruction());
+            mostGround = Math.max(mostGround, ground);
+            if (t == plot) plotGround = ground;
+        }
+        out.printf("   the plot: %s, %,.0f ft² of the sector's ground standing and on site%n", plot == null ? "none" : plot.getName(), plotGround);
         assertTrue("...it carries as many of the plot the sector builds most of as fit, and a plot pays half",
-                plot != null && "Convenience Store".equals(plot.getName())
+                plot != null && mostGround > 0 && plotGround == mostGround
                 && after.carries() == (long) Math.floor(LandManager.sqFt(1) / plot.getLandSqFt() + 1e-9)
                 && near(after.plotAtZone(), after.plotAtGoing() / 2));
         quietly(() -> g.setZone(Sectors.RETAIL, Zoning.Size.KM2, 1, .5));

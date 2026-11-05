@@ -1,4 +1,4 @@
-# WellCheck.java - 1,643 lines · 31 methods · 7 constants · harnesses
+# WellCheck.java - 1,645 lines · 31 methods · 7 constants · harnesses
 
 `ham/citybuildersim/WellCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -87,8 +87,8 @@
 | 939 | 12. THE PLANNER |
 | 999 | 13. THE TWO POOLS (0.7.93) |
 | 1196 | 14. DEEP WATER (DW1) |
-| 1437 | 15. THE DEEP WELLS DECLINE FASTER (DW1) |
-| 1602 | 16. A WELL OPENS THE MONTH TWO WEAR OUT |
+| 1439 | 15. THE DEEP WELLS DECLINE FASTER (DW1) |
+| 1604 | 16. A WELL OPENS THE MONTH TWO WEAR OUT |
 
 ## Constants
 
@@ -114,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 127 | 1517 | **type** `public class WellCheck` | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil 2.7, 2.11): the platforms, their wells, the shuttle tankers and ... |
+| 127 | 1519 | **type** `public class WellCheck` | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil 2.7, 2.11): the platforms, their wells, the shuttle tankers and ... |
 | 133 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 138 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 143 | 5 | `static void quietly(Runnable r)` |  |
@@ -213,22 +213,22 @@
 | 1019 | 8 | `static int untilWorkedOut(Game g, java.util.function.DoubleSupplier left, int most)` | Months played until a pool is worked out to the tonne's last bit (left == 0), at most `most`; the months played. |
 | 1028 | 167 | `static void theTwoPools() throws Exception` |  |
 
-### 14. DEEP WATER (DW1) (lines 1196-1436)
+### 14. DEEP WATER (DW1) (lines 1196-1438)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1202 | 3 | `static Deposit anotherField(Deposit d, int index, int sites)` | A field the check makes of `d`: the same place, another number in its cell and `sites` sites - another field to the platforms' records. |
-| 1206 | 230 | `static void deepWater()` |  |
+| 1206 | 232 | `static void deepWater()` |  |
 
-### 15. THE DEEP WELLS DECLINE FASTER (DW1) (lines 1437-1601)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1439 | 162 | `static void deepDecline()` |  |
-
-### 16. A WELL OPENS THE MONTH TWO WEAR OUT (lines 1602-1643)
+### 15. THE DEEP WELLS DECLINE FASTER (DW1) (lines 1439-1603)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1604 | 39 | `static void openingAsTwoWearOut()` |  |
+| 1441 | 162 | `static void deepDecline()` |  |
+
+### 16. A WELL OPENS THE MONTH TWO WEAR OUT (lines 1604-1645)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1606 | 39 | `static void openingAsTwoWearOut()` |  |
 

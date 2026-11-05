@@ -545,10 +545,9 @@ public final class Oil extends Sector {
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
-        String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
+        // No order in flight is waited for (BA1, 2026-11-02; it was one, "already building"): each kind
+        // counts its own on site below - the land wells and the platform wells committed, the jackets
+        // on site in jacketCase(), the pipe held (planAtSea()).
         BusinessInvestment.Decision onLand = planOnLand(plans, game);
         if (onLand.build && carriesItsWholeCost(onLand, plans, game)) return onLand;
         BusinessInvestment.Decision atSea = planAtSea(plans, game);
@@ -558,7 +557,7 @@ public final class Oil extends Sector {
 
     /** Whether an order carries the interest on its whole cost, as Game.consider() will ask it (0.7.113): its estimate times its count against the cost of them all. */
     private boolean carriesItsWholeCost(BusinessInvestment.Decision d, BusinessInvestment plans, Game game) {
-        return game.carriesItsWholeCost(key(), estimatedMonthlyProfit(d.template, plans) * d.quantity,
+        return game.carriesItsWholeCost(key(), d.template, d.quantity, estimatedMonthlyProfit(d.template, plans) * d.quantity,
                 plans.getCostOf(d.template, d.quantity));
     }
 
@@ -1571,9 +1570,12 @@ public final class Oil extends Sector {
     public record JacketCase(LandManager.SeaField field, int wells, double earns, double cost) { }
 
     /**
-     * ...on freeField(): min(slotsEach, its free sea sites) wells at a platform well's earnings, less the jacket's
-     * running (times upkeepFactor() at the field's depth, DW1) and standing costs; null with no field free or no
-     * templates. Its cost is the jacket's and the n wells' priced at that field's depth (BusinessInvestment.getCostOfAt():
+     * ...on freeField(), read against the jackets standing AND on site (BA1, 2026-11-02): min(slotsEach, its free sea
+     * sites) wells at a platform well's earnings, less the jacket's running (times upkeepFactor() at the field's depth,
+     * DW1) and standing costs; null with no field free or no templates. It read the jackets standing only while a
+     * sector could have one order on site, and with no cap on orders the platform after the one on site would have
+     * been judged on the same field and the same free sites, month after month, until the first opened (depthOfNext()
+     * reads the same two counts). Its cost is the jacket's and the n wells' priced at that field's depth (BusinessInvestment.getCostOfAt():
      * the deep-water premium of a floating platform, DW1), not at the slot the next standing well fills.
      */
     public JacketCase jacketCase(BusinessInvestment plans) {
@@ -1581,8 +1583,9 @@ public final class Oil extends Sector {
         if (jacket == null || well == null || plans == null || game == null) return null;
         List<LandManager.SeaField> fields = platformFields();
         if (fields.isEmpty()) return null;
-        List<Platform> ps = platformsNow();
         long[] at = site();
+        // The jackets standing and on site, none of their wells (the slots and the free sites do not read them): as depthOfNext().
+        List<Platform> ps = platformView(platforms, jacketsStanding() + jacketsOnSite(), 0, monthNow(), fields, slotsEach(), at[0], at[1]);
         int f = freeField(ps, fields, slotsEach(), at[0], at[1]);
         if (f < 0) return null;
         int n = Math.min(slotsEach(), freeSites(ps, fields, slotsEach())[f]);
@@ -1650,7 +1653,7 @@ public final class Oil extends Sector {
             double cost = plans.getCostOf(well, 1), earns = estimatedMonthlyProfit(well, plans);
             if (!staffing.passes()) {
                 held = BusinessInvestment.Decision.unstaffed(sector, staffing, staffing.why(well.getName()));
-            } else if (cost > 0 && game.carriesItsWholeCost(sector, earns, cost)) {
+            } else if (cost > 0 && game.carriesItsWholeCost(sector, well, 1, earns, cost)) {
                 return new BusinessInvestment.Decision(sector, well, 1,
                         String.format("%d platform slot(s) free at sea, %,.0fk tonnes under the sea", free, reserve / 1000), true);
             } else if (cost > 0 && earns > 0) {
@@ -1658,8 +1661,13 @@ public final class Oil extends Sector {
             }
         }
 
-        // 2. A field's pipe, where it pays.
-        PipeCase pipe = bestPipe(plans);
+        // 2. A field's pipe, where it pays - ONE PIPE ON SITE AT A TIME (BA1, 2026-11-02). That is Oil's own rule,
+        // a physical one as the refiners' crude units' count is, and not the cap on orders that went: pipeFor is one
+        // field, and the kilometres ordered this month are dealt to it (pipelineView()) until the strike writes them to
+        // the records, so a second pipe ordered with the first on site would be dealt to whichever field pipeFor named
+        // last. The pipe is held while one is on site; the jacket below is weighed all the same, and the field the
+        // pipe is held for is not ordered twice (pipeCase() takes the kilometres committed off its length).
+        PipeCase pipe = onSite(pipelineTemplate()) > 0 ? null : bestPipe(plans);
         BuildingsTemplate pipeT = pipelineTemplate();
         if (pipe != null && pipeT != null) {
             pipeFor = new Platform(pipe.field().cell(), pipe.field().index(), 0, monthNow());
@@ -1673,7 +1681,7 @@ public final class Oil extends Sector {
         if (jacket != null && c != null && game.hasDepositFor(jacket, 1)) {
             Staffing staffing = staffing(jacket);
             if (!staffing.passes()) return BusinessInvestment.Decision.unstaffed(sector, staffing, staffing.why(jacket.getName()));
-            if (game.carriesItsWholeCost(sector, c.earns(), c.cost())) {
+            if (game.carriesItsWholeCost(sector, jacket, 1, c.earns(), c.cost())) {
                 return new BusinessInvestment.Decision(sector, jacket, 1,
                         String.format("a sea field with %d site(s) free, %.0f m deep: a %splatform and %d well(s)",
                                 c.field().sites(), c.field().depth(), isFloating(c.field().depth()) ? "floating " : "", c.wells()), true);

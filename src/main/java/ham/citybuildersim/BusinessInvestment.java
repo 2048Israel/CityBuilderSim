@@ -48,20 +48,42 @@ import java.util.List;
  */
 public class BusinessInvestment {
 
-    /** Months of demand growth to build ahead of, on top of the lead time. */
+    /** The least months of demand growth to build ahead of, on top of the lead time: what a building that opens inside it plans for (horizonFor() grows it with a lead time past it, since BA1). */
     public static final double PLANNING_HORIZON = 6;
 
     /** How many months of population history to measure the trend over. */
     public static final int TREND_WINDOW = 12;
+
+    /** The furthest past an order's opening that a sector plans its demand growth: a trend read over TREND_WINDOW months is not projected further than that past the opening (BA1). */
+    public static final double HORIZON_MOST = TREND_WINDOW;
+
+    /**
+     * The months of demand growth a sector plans past an order's opening, for a building that takes {@code lead} months
+     * (BA1): a horizon that grows with how long its buildings take. PLANNING_HORIZON for a building that opens inside it,
+     * the lead itself past that, and never more than HORIZON_MOST; HORIZON_MOST for a lead that is not a number or is
+     * endless. A works that takes two years is therefore ordered for the demand a year after it opens, not six months.
+     */
+    public static double horizonFor(double lead) {
+        if (Double.isNaN(lead) || Double.isInfinite(lead)) return HORIZON_MOST;
+        return Math.min(HORIZON_MOST, Math.max(PLANNING_HORIZON, lead));
+    }
+
+    /**
+     * The lead whose demand growth is planned over {@code months} (BA1): the inverse of {@code lead + horizonFor(lead)}, which
+     * rises strictly with the lead, so a figure that only carries the sum (BuildAdvice.Ahead.months()) can say when its order
+     * opens - BuildAdvice and AutoBuilder read it where they once took the months less HORIZON. Not under nothing.
+     */
+    public static double leadFor(double months) {
+        if (months <= 2 * PLANNING_HORIZON) return Math.max(0, months - PLANNING_HORIZON);
+        if (months <= 2 * HORIZON_MOST) return months / 2;
+        return months - HORIZON_MOST;
+    }
 
     /** Below this much spare capacity (as a fraction of demand), start building. */
     public static final double TARGET_HEADROOM = .05;
 
     /** A project must clear its interest by this much to be worth doing. */
     public static final double PROFIT_OVER_INTEREST = 1.25;
-
-    /** Never start a second order for a sector while one is still on site - every sector but the landlords, who hold work by the month (0.7.17; withinMonthsOfWork()); the refiners count no crude unit on site against it since 0.7.105 (sectors.Refining, ONE ORDER IN FLIGHT). */
-    public static final int MAX_CONCURRENT_ORDERS = 1;
 
     /* =====================================================================
        SECTORS A FIXTURE HAS ASKED TO SIT OUT (2026-09-13)
@@ -99,18 +121,6 @@ public class BusinessInvestment {
 
     /** Whether a sector has been held out by a fixture. */
     public boolean isHeld(String key) { return key != null && held.contains(key); }
-
-    /**
-     * The largest order a sector will place, in months of the builders' work.
-     * Since 0.7.17 an order is no more than would open inside it at the wait
-     * leadTime() reads (orderSize(); it was months of the city's whole
-     * construction output). An order still has to be deliverable: sizing
-     * purely to the demand gap would have real estate ordering six hundred
-     * houses and monopolising the queue for decades. The landlords' since
-     * 0.7.17 is months of the builders' site output that their own sites may
-     * owe, orders on site included - see withinMonthsOfWork().
-     */
-    public static final double MAX_ORDER_MONTHS = 12;
 
     /** Months of construction backlog above which the builders build themselves more capacity. */
     public static final double BACKLOG_MONTHS_BEFORE_EXPANDING = 9;
@@ -317,56 +327,36 @@ public class BusinessInvestment {
     }
 
     /**
-     * How many of a building to order: enough to close the gap, but no more
-     * than would open inside MAX_ORDER_MONTHS at the wait leadTime() reads
-     * (0.7.17: it was twelve months of the builders' whole output, as though
-     * the order had them to itself), and never more plots than the city has
-     * land to sell. Floored at one, because a sector that has decided it is
-     * short should place an order even when the builders are backed up. Land
-     * is the exception and the only thing that can return zero.
+     * How many of a building to order: enough to close the gap, floored at one
+     * and never more plots than the city has land to sell. Since BA1 that is
+     * all: it was no more than would open inside MAX_ORDER_MONTHS at the wait
+     * leadTime() reads (0.7.17; before it twelve months of the builders' whole
+     * output), halved by the wait, and the landlords' months of work besides.
+     * A sector that is short orders what it is short of, and what rations the
+     * queue is its price (EVERY BUSINESS MAY BUILD AHEAD, below). Floored at
+     * one because a sector that has decided it is short should place an order
+     * even when the builders are backed up. Land is the exception and the only
+     * thing that can return zero.
      *
      * At a few billion people what an order needs can pass an int: the cast
      * saturates at 2,147,483,647 rather than wrapping, and the order is then
-     * what the wait and the plots allow (ScaleCheck's 5 billion copy sizes
-     * one from there).
+     * what the plots allow (ScaleCheck's 5 billion copy sizes one from there).
      */
-    public int orderSize(double shortfall, double capacityPerUnit,
-                         BuildingsTemplate template, double siteOutput) {
-
+    public int orderSize(double shortfall, double capacityPerUnit, BuildingsTemplate template) {
         int needed = (capacityPerUnit > 0) ? (int) Math.ceil(shortfall / capacityPerUnit) : 1;
-
-        // The wait only grows with the order (each building adds its points
-        // and its crew), so the largest order inside MAX_ORDER_MONTHS is
-        // found by halving - see THE WAIT GROWS WITH THE ORDER, below.
-        int deliverable = 0;
-        int waitsRead = 0;
-        if (template.getConstructionPoints() > 0 && siteOutput > 0) {
-            if (needed >= 1) {
-                int fits = 0, over = needed;   // fits: inside the months (0: none known); over: past them
-                waitsRead++;
-                if (!(leadTime(template, needed, siteOutput) > MAX_ORDER_MONTHS)) fits = needed;
-                else while (over - fits > 1) {
-                    int mid = (int) (((long) fits + over) >>> 1);
-                    waitsRead++;
-                    if (!(leadTime(template, mid, siteOutput) > MAX_ORDER_MONTHS)) fits = mid; else over = mid;
-                }
-                deliverable = fits;
-            }
-        } else {
-            deliverable = needed;
-        }
-        if (orderWatch != null) orderWatch.sized(template, needed, siteOutput, deliverable, waitsRead);
-
-        int size = Math.max(1, Math.min(needed, deliverable));
-        return Math.min(size, plotsAvailableFor(template));
+        return Math.min(Math.max(1, needed), plotsAvailableFor(template));
     }
 
     /*
-     * THE WAIT GROWS WITH THE ORDER (0.7.54). orderSize() counted up from one
-     * building, reading the wait for each, until it passed MAX_ORDER_MONTHS;
-     * the order grows with the city, and at 1.1 billion people this loop took
-     * 94% of a month (the project's spec-scale.md, section 4). It halves now,
-     * which finds the same order because the wait strictly grows with it.
+     * THE WAIT GROWS WITH THE ORDER (0.7.54; read by carryOf() since BA1).
+     * orderSize() once counted up from one building, reading the wait for
+     * each, until it passed the months an order could take; the order grows
+     * with the city, and at 1.1 billion people that loop took 94% of a month
+     * (the project's spec-scale.md, section 4), so it halved, which found the
+     * same order because the wait strictly grows with it. It reads no wait
+     * since BA1, but the proof is still why the carry of THE INTEREST ON THE
+     * WAIT rises with the order, and so why Game.consider() and
+     * Mortgage.decide() may search an order's size by halving.
      *
      * The proof, from BuildingManager.waitWith(). With u of the building on
      * site owing a = max(0, u p - progress) of its points p, the others'
@@ -384,21 +374,20 @@ public class BusinessInvestment {
      * is at least one part in (m + O / c) of itself - one in ten billion for
      * a stack of 10^9 behind the crews of 10^10 more, and more than a hundred
      * thousand times the rounding of the seven operations in it that read q.
-     * The first order past MAX_ORDER_MONTHS is therefore the one the count
-     * stopped at.
+     * The first order past any month is therefore the one the count stopped
+     * at.
      * OrderSearchCheck holds the two to the same order over a long run.
      */
 
     /**
-     * HARNESSES ONLY (0.7.54): told every order the three searches decide -
-     * orderSize() here, and Game.consider() and Mortgage.decide() through
-     * Game.watchOrders() - with what each was asked, so a harness can ask
-     * the countdown they replaced the same question at the same moment
-     * (OrderSearchCheck, ScaleCheck). Nothing in the game sets one.
+     * HARNESSES ONLY (0.7.54): told every order the searches decide -
+     * Game.consider() and Mortgage.decide() through Game.watchOrders() (and
+     * orderSize() here, until BA1 took the wait out of it) - with what each
+     * was asked, so a harness can ask the countdown they replaced the same
+     * question at the same moment (OrderSearchCheck, ScaleCheck). Nothing in
+     * the game sets one.
      */
     public interface OrderWatch {
-        /** orderSize(): what it needed, at what site output, the order inside MAX_ORDER_MONTHS (0 for none), and the waits it read. */
-        default void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead) { }
         /** Game.consider(): the order, the till it was judged on, one building's profit, and what was found. */
         default void invested(Decision decision, double cash, double perUnitProfit, Game.Afford found) { }
         /** Game.considerOnMortgage(): what Mortgage.decide() was asked, and its answer. */
@@ -408,49 +397,52 @@ public class BusinessInvestment {
 
     private OrderWatch orderWatch;
 
-    /** Harnesses only: see OrderWatch; Game.watchOrders() sets it. */
+    /** Harnesses only: see OrderWatch; Game.watchOrders() sets it (and nothing here reads it since BA1 took the wait out of orderSize(): Game tells its own). */
     public void watchOrders(OrderWatch watch) { this.orderWatch = watch; }
 
-    /*
-     * THE LANDLORDS HOLD WORK, NOT ONE ORDER (0.7.17). Jerus: "Landlords may
-     * hold orders worth a number of months of building work, instead of one
-     * order at a time sized on the whole city's output."
-     *
-     * One order at a time, sized on twelve months of the WHOLE city's output,
-     * was delivered at the pace the landlords' sites actually got: in Jerus's
-     * year-149 city a quarter of what the sites were left, about 250 homes a
-     * month, with the next order held "already building" for fifty months.
-     * So the landlords may keep ordering while the points their sites owe,
-     * the order being weighed included, are at most MAX_ORDER_MONTHS of the
-     * builders' output for the sites after the repairs - "orders worth a
-     * number of months of building work", read as he wrote it - and each
-     * order is sized to stay inside that. Every other sector keeps
-     * MAX_CONCURRENT_ORDERS.
-     *
-     * MONTHS OF THE BUILDERS' WORK, NOT OF THE LANDLORDS' PACE. An earlier
-     * reading held them to twelve months at the share their own sites got.
-     * Under a rule that shares the output by what each site still owed, that
-     * came to the whole city's queue - everything on site over the output -
-     * and in Jerus's city it held them in fifty-five months of a hundred and
-     * twenty behind forty-seven care complexes. The output is read at every
-     * post (Game.getBuildingOutputAtEveryPost()): builders who have laid
-     * crews off for want of work hire them back for the order.
-     */
+    /* =====================================================================
+       EVERY BUSINESS MAY BUILD AHEAD (BA1, 2026-11-02)
 
-    /**
-     * The largest order of up to {@code wanted} buildings a sector may add to
-     * its sites and still owe no more than MAX_ORDER_MONTHS of the builders'
-     * site output, the order counted; 0 when not even one fits.
-     *
-     * @param siteOutput the month's site output, after the repairs, at every post
-     */
-    public int withinMonthsOfWork(String sector, BuildingsTemplate t, int wanted, double siteOutput) {
-        if (t == null || wanted < 1 || siteOutput <= 0) return 0;
-        double points = t.getConstructionPoints();
-        double room = MAX_ORDER_MONTHS * siteOutput - buildingManager.pointsOwedBySector(sector);
-        if (!(points > 0)) return room >= 0 ? wanted : 0;
-        return (int) Math.max(0, Math.min(wanted, Math.floor(room / points)));
-    }
+       Jerus, 2026-11-01: "why bounded? why not let contracts flow? market
+       after is efficient, too much and contracts get expensive thus business
+       stop trying to place orders until contracts arent so expensive".
+
+       THE CAPS THAT WENT. Every sector but the landlords could hold one
+       order on site (MAX_CONCURRENT_ORDERS, "already building", since the
+       sector template), sized to open inside MAX_ORDER_MONTHS (12) of the
+       builders' work (orderSize()), and a maker refused a plant whose lead
+       time passed them. The landlords held work by the month since 0.7.17
+       (Jerus: "Landlords may hold orders worth a number of months of
+       building work, instead of one order at a time"): at most 12 months of
+       the builders' site output on their sites (withinMonthsOfWork()). All of
+       it is gone.
+
+       WHAT RATIONS THE QUEUE INSTEAD. First the price of a point (FC1,
+       BuildersShort): a premium on the builders' price that rises with the
+       months of work queued over the sites' month, which every planner pays
+       through getCostOf(). Each building of an order is priced on the queue
+       the ones before it leave (BuildersShort.meanPremium(), AN ORDER'S OWN
+       BUILDINGS), and each order of a month on the queue the orders before
+       it put there, so a month's orders cannot all take the cheap price
+       before it moves. Then the interest on the wait (THE INTEREST ON THE
+       WAIT, below): an order pays up front for a building delivered when the
+       queue reaches it, and has to earn the interest on that wait. A flood of
+       orders makes the next one dearer and later until the orders stop, which
+       is the market Jerus asked for.
+
+       WHY. One order at a time held the landlords "already building" for
+       fifty months in his year-149 city, and held a growing sector to one
+       plant on site while demand outran it. The months of work were the
+       first answer for the landlords; a price that reads the whole queue is
+       the answer for every sector, and the landlords' months were a second
+       rationing on top of it.
+
+       The refiners' crude units keep their own count (sectors.Refining, a
+       unit count, not a cap on orders), and the builders one depot on site at
+       a time (sectors.Construction, ONE DEPOT AT A TIME: their depots go first
+       off the top of the month, and seven sharing it opened none for years). The city's automatic orders have no
+       profit test to ration them and keep their cut (AutoBuilder.ORDER_MONTHS).
+       ===================================================================== */
 
     /**
      * Months of the builders' site output a sector's sites owe (0.7.17): the
@@ -459,6 +451,36 @@ public class BusinessInvestment {
     public double monthsOfWorkOnSite(String sector, double siteOutput) {
         double owed = buildingManager.pointsOwedBySector(sector);
         return owed > 0 && siteOutput > 0 ? owed / siteOutput : Double.NaN;
+    }
+
+    /**
+     * How many orders a sector holds on site (BA1): its stacks with buildings under construction. For the planner's line
+     * on the screens, which says how many orders the sector has and how far ahead it is building (monthsAheadOf()).
+     */
+    public int ordersOnSite(String sector) {
+        int orders = 0;
+        for (BuildingsStacks stack : buildingManager.getStacksUnderConstruction()) {
+            if (stack.getBuilding().getSector().equals(sector)) orders++;
+        }
+        return orders;
+    }
+
+    /**
+     * How far ahead a sector is building (BA1): the longest wait any of its stacks on site has at this month's shares of
+     * the site output (BuildingManager.waitOnSite(), the build card's "N on site"), in months. NaN with nothing on site;
+     * Double.MAX_VALUE when the sites get no output at all.
+     *
+     * @param siteOutput the builders' output for the sites after the repairs, every post offered (Game.getBuildingOutputAtEveryPost())
+     */
+    public double monthsAheadOf(String sector, double siteOutput) {
+        double longest = Double.NaN;
+        for (BuildingsStacks stack : buildingManager.getStacksUnderConstruction()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector)) continue;
+            double wait = buildingManager.waitOnSite(t, siteOutput);
+            if (Double.isNaN(longest) || wait > longest) longest = wait;
+        }
+        return longest;
     }
 
     /** How many of these the city currently has room for. */
@@ -744,10 +766,6 @@ public class BusinessInvestment {
         Good good = sector.planningGood();
         if (good == null || !good.traded()) return Decision.no(key, "nothing to plan for");
 
-        if (buildingManager.getUnderConstructionBySector(key) >= MAX_CONCURRENT_ORDERS) {
-            return Decision.no(key, "already building");
-        }
-
         GoodsMarket market = economyManager.getMarkets().get(good);
         double price = market.getLocalPrice();
         double costPerUnit = knownCost(sector.getCostPerUnit(good));
@@ -843,19 +861,23 @@ public class BusinessInvestment {
             double lead = leadTime(t, 1, output);
             if (lead == Double.MAX_VALUE) return Decision.no(key, "nobody to build it");
             /*
-             * AND NOT A PLANT THE BUILDERS COULD NOT FINISH INSIDE A YEAR.
-             * A materials plant is 9,000 points; a founding city's works
-             * yard does four hundred a month with a queue in front of it.
-             * The sector would pay interest on the whole price for two
-             * years before it earned a cent, and it did - it was written
-             * down in year four with the plant still on site. The builders
-             * expand off their own backlog (see sectors.Construction), and
-             * the city grows into the plant.
+             * A PLANT THE BUILDERS COULD NOT FINISH INSIDE A YEAR IS ASKED
+             * TO EARN ITS WAIT (BA1). A materials plant is 9,000 points; a
+             * founding city's works yard does four hundred a month with a
+             * queue in front of it. The sector would pay interest on the
+             * whole price for two years before it earned a cent, and it did
+             * - it was written down in year four with the plant still on
+             * site - so until BA1 such a plant was refused outright (more
+             * than MAX_ORDER_MONTHS of lead). Now it is asked what it was
+             * always costing: the interest on the whole price over the wait
+             * (Game.consider(), THE INTEREST ON THE WAIT), which a plant
+             * years out seldom earns, and one that does is worth building.
+             * The builders expand off their own backlog (see
+             * sectors.Construction), and the city grows into the plant. The
+             * demand it is planned for is projected over a horizon that
+             * grows with the lead (horizonFor()).
              */
-            if (lead > MAX_ORDER_MONTHS) {
-                return Decision.no(key, String.format("%s would take %.0f months to build", t.getName(), lead));
-            }
-            double months = lead + PLANNING_HORIZON;
+            double months = lead + horizonFor(lead);
             double projected = demand * growthFactor(months);
 
             if (projected <= currentOutput * (1 + TARGET_HEADROOM)) continue;
@@ -887,7 +909,7 @@ public class BusinessInvestment {
                     : Decision.no(key, "output ahead of demand");
         }
 
-        int quantity = orderSize(demandAtOpening - currentOutput, best.makes(good), best, output);
+        int quantity = orderSize(demandAtOpening - currentOutput, best.makes(good), best);
         if (quantity <= 0) return Decision.noLand(key, landReason(best));
         // No more of them than the city could staff together (0.7.18).
         quantity = sector.staffableCount(best, quantity);
@@ -1185,6 +1207,119 @@ public class BusinessInvestment {
     /** What servicesItsOwnDebt() takes off the rate, a fraction a year. */
     public double getExpectedInflation() { return expectedInflation; }
 
+    /* =====================================================================
+       THE INTEREST ON THE WAIT (BA1, 2026-11-02)
+
+       An order pays its whole cost up front and earns nothing until its
+       buildings open, which with no cap on orders can be years out: the
+       builders reach it when the queue before it is done. The brake asked an
+       order to earn the interest on its cost as though it opened tomorrow
+       (servicesItsOwnDebt()); that is the interest of an order with no wait,
+       and Jerus's "business stop trying to place orders until contracts
+       arent so expensive" needs the wait to count.
+
+       THE ARITHMETIC. A perpetuity of P a month starting W months out is
+       worth (P / i) (1 + i)^-W at a monthly rate i (the real test rate over
+       twelve, realTestRate()). It carries a cost C when that is at least C,
+       that is when
+
+           P >= C i (1 + i)^W,
+
+       the hurdle on the cost grown over the wait, and servicesItsOwnDebt()
+       already asks P of C i PROFIT_OVER_INTEREST. So the test is the old one
+       on C times the carry (1 + i)^W (waitCarry()): at no wait the carry is
+       exactly 1 and the test is what it was.
+
+       THE WAIT IS THE ORDER'S WHOLE WAIT, leadTime(): the months until its
+       LAST building opens (BuildingManager.waitFor()), not the mean of its
+       buildings' openings. That is conservative for an order of many, which
+       open one by one, and DECIDED so: it rises with the order (THE WAIT
+       GROWS WITH THE ORDER), which keeps the largest order that carries its
+       interest a run from one, so Game.consider() and Mortgage.decide() may
+       still search it by halving. The landlord's order is then asked the
+       lender's test on its shortfall grown by the same carry (Mortgage.decide()).
+       ===================================================================== */
+
+    /** The site output an order's wait is read at (Game.orderWaitOutput()); null in a bare fixture, where no wait is known and every carry is 1. */
+    private java.util.function.DoubleSupplier orderWaitOutput;
+
+    /** Hands in the site output an order's wait is read at (Game.orderWaitOutput()); null clears it, and every carry is exactly 1 again. */
+    public void setOrderWaitOutput(java.util.function.DoubleSupplier output) { this.orderWaitOutput = output; }
+
+    /**
+     * What a cost grows to over a wait of `months` at the real test rate of `annualRate`: (1 + i)^months for i the
+     * monthly real rate (realTestRate()). Exactly 1 for no wait (months at or under nothing, or NaN) and for a real
+     * rate at or under nothing; infinite for a wait that never ends (Double.MAX_VALUE, which leadTime() reads for no
+     * builders, or infinite).
+     */
+    public double waitCarry(double annualRate, double months) {
+        if (Double.isNaN(months) || !(months > 0)) return 1;
+        double monthly = realTestRate(annualRate) / 12;
+        if (!(monthly > 0)) return 1;
+        if (months >= Double.MAX_VALUE) return Double.POSITIVE_INFINITY;
+        return Math.pow(1 + monthly, months);
+    }
+
+    /**
+     * The carry of an order of `n` of `t` (waitCarry() over leadTime(): the whole wait, the months until its last building
+     * opens, at this month's site output as Game hands it in), times dearOf() while contracts are dear (DEAR CONTRACTS),
+     * which the cost an order is tested on is multiplied by: Game.consider() on its slices, the lender's test
+     * (Mortgage.decide()), the build card's INTEREST gate. Exactly 1 where no output is handed in (a bare fixture), for no
+     * template and for fewer than one.
+     *
+     * @param annualRate the rate the order is judged at, nominal: realTestRate() is applied here, as servicesItsOwnDebt() applies it
+     */
+    public double carryOf(BuildingsTemplate t, int n, double annualRate) {
+        if (orderWaitOutput == null || t == null || n < 1) return 1;
+        // ...and while contracts are dear, by what waiting for them to be cheap would save (DEAR CONTRACTS, below).
+        return waitCarry(annualRate, leadTime(t, n, orderWaitOutput.getAsDouble())) * dearOf(t, n);
+    }
+
+    /* =====================================================================
+       DEAR CONTRACTS (BA1, 2026-11-04)
+
+       Jerus, 2026-11-01: "too much and contracts get expensive thus business
+       stop trying to place orders until contracts arent so expensive". The
+       price of a point and the interest on the wait were not enough. The
+       ensemble's queue ran to 58 months at its p90 (FC1's: 21), and busts went
+       from 16 to 25. The works flooded it: heavy industry held up to half the
+       points queued past 24 months. Their steel sells at the world's price, so
+       a plant on site does not lower what the next one earns, and at queues
+       of 36 months and more their orders still cleared the money test by 1.5
+       to 2 times, with the premium (FC1's ceiling is +80% on the work) and
+       the carry (1.4 to 1.7) counted.
+
+       What was missing is "until contracts arent so expensive": a business
+       can wait. An order placed into a dear queue opens little sooner than
+       one placed once the queue has run down, and the later one pays no
+       premium. So every money test asks the order to carry its cost grown
+       once more by the order's own multiple on the builders' price
+       (dearOf(): BuildingManager.orderPriceMultiplier(), the mean over its
+       buildings, the very figure its price reads). It is folded into
+       carryOf(), so every test that reads the interest on the wait reads it:
+       consider()'s slices, the spread planners' money gate, Oil's, the build
+       card's and the landlords' lender. At or under the knee a point carries
+       no premium, the multiple is exactly 1 and nothing changes; the young
+       city's orders are FC1's. It rises with the order, as the carry does, so
+       the searches by halving still hold.
+
+       Measured on AUTO2's 16 seeds: the queue's p90 went from 58 to 44
+       months, busts from 25 in 13 seeds to 14 in 11, and people at m240,
+       m600 and m1200 from 3,242, 12,754 and 79,501 to 3,872, 14,673 and
+       82,850. The multiple squared cut the queue further (p90 38), with no
+       fewer busts (19).
+       ===================================================================== */
+
+    /**
+     * What a money test grows an order's cost by while contracts are dear (DEAR CONTRACTS): the order's own multiple on
+     * the builders' price (BuildingManager.orderPriceMultiplier() for `n` of `t`'s points), counted once more. Exactly 1 at
+     * or under the knee, with no builders' month to read (a bare fixture), for no template and for fewer than one.
+     */
+    public double dearOf(BuildingsTemplate t, int n) {
+        if (t == null || n < 1) return 1;
+        return buildingManager.orderPriceMultiplier(0, t.getConstructionPoints(), n);
+    }
+
     /** The household mix, so a residential building can be priced on who would actually live in it. */
     private FamilyModel families;
     public void setFamilies(FamilyModel families) { this.families = families; }
@@ -1262,7 +1397,8 @@ public class BusinessInvestment {
      * A highway's or a railway's cuts, viaducts and tunnels on the city's slopes (ET4) are among the builders'
      * work, taxed with it, as the quote has them (runWorksCost). A floating platform's, and its wells', deep-water works
      * (DW1) are too, at `deepFactor` times a jacket's price (1 and no works at a depth a jacket stands in). The work
-     * and the works carry the builders' scarcity multiple (FC1); the material and the ground do not.
+     * and the works carry the builders' scarcity multiple (FC1), the mean over the order's buildings, each on the queue the
+     * ones before it leave (BA1); the material and the ground do not.
      */
     private double totalCostOf(BuildingsTemplate t, int quantity, double deepFactor) {
         double stock = buildingManager.getConstructionMaterials();
@@ -1271,8 +1407,9 @@ public class BusinessInvestment {
         double works = Game.isRun(t) ? runWorksCost.applyAsDouble(t, quantity) : 0;
         if (deepFactor > 1) works += deepWaterPrice.moneyBeforeTax(t, quantity, deepFactor);
         // The work's price carries the builders' scarcity multiple (FC1; BuildersShort), as the quote does, so a planner
-        // sees what it will pay and backs off while the builders are short; the material and the ground do not.
-        double scarcity = buildingManager.orderPriceMultiplier();
+        // sees what it will pay and backs off while the builders are short; the material and the ground do not. Each building
+        // of the order is priced on the queue the ones before it leave (BA1; BuildersShort.meanPremium()), as the quote prices them.
+        double scarcity = buildingManager.orderPriceMultiplier(0, t.getConstructionPoints(), quantity);
         // (Summed in the order it always was, so a multiple of one is the old price to the last bit.)
         return economyManager.withBuildersTax(buildingManager.nonMaterialCost(t) * quantity * scarcity
                         + shortfall * buildingManager.getConstructionMaterialPrice() + works * scarcity)

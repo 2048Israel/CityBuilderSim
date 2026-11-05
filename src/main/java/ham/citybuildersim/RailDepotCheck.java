@@ -303,11 +303,19 @@ public class RailDepotCheck {
 
         // ---- and in a played city's months ----
         System.out.println("\n--- ...and in a played city: lines alone rail nothing, spurs rail bulk, a depot lets the rest through ---");
+        /*
+         * ON THE GOODS' LITERALS (BA1): the spurs must have more bulk to carry than their two sidings take, and the bulk is the ore
+         * the mines ship plus the plant's coal landed and pellets shipped. With the construction orders uncapped the played city's
+         * path moved, and on the world file's band the plant ran no month at all - the three mines' ore alone, 75,489 t a month,
+         * against the sidings' 100,000. At the literals the plant lands its ore and coal and ships its pellets every month
+         * (HaulageCheck.base()), which is the premise: bulk past two sidings.
+         */
         // THE LEVERS OPENED IN THE FIXTURE (R0, call 17's class): HaulageCheck.played() is base() and fourteen months, and the
         // fixture needs the pre-R0 city, one that taxes and pays its wage floor from its first month; a 1900 city on history's dates has neither
         // until 1916-1918, and in the suite's first read of it the spurs' month offered 56,438 t of bulk to sidings of 100,000, fewer than they hold.
         // So base() is taken, every lever opened and the defaults put back before a month, and the fourteen months played here (played()'s own body).
-        Game city = HaulageCheck.base(GameFiles.scratch("raildepotcheck-city"));
+        // ...both (BA1 merged with R0): on the literals, with the plant, and every lever opened.
+        Game city = HaulageCheck.base(GameFiles.scratch("raildepotcheck-city"), true, true);
         city.getEconomyManager().getTaxPolicy().reset();
         city.getEconomyManager().getTaxPolicy().openAll();
         quietly(() -> { for (int i = 0; i < 14; i++) city.toggleNextMonth(); });

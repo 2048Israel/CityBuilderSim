@@ -530,9 +530,13 @@ public class ManufacturingCheck {
              * Steel's planner sheds it inside two years - the furnaces stood
              * here for their tonnage would be gone before they are read. An
              * assertion whose subject is decided by a planner is an assertion
-             * about the planner.
+             * about the planner. The fabricators are held too since BA1
+             * (2026-11-02): with no cap on orders their planner, steel next door,
+             * opened more shops inside the two years, and the plants this section
+             * reads are the two shops and the machine works it stood here.
              */
             booked.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
+            booked.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
             for (int i = 0; i < 24; i++) booked.simulateMonths(1);
         });
 

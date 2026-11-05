@@ -1,4 +1,4 @@
-# CoalMiningCheck.java - 624 lines · 15 methods · 17 constants · harnesses
+# CoalMiningCheck.java - 628 lines · 15 methods · 17 constants · harnesses
 
 `ham/citybuildersim/CoalMiningCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -79,7 +79,7 @@
 | 376 | 5. the types and the fit |
 | 479 | 6. the dig by type |
 | 528 | 7. the plan |
-| 590 | 8. a played month |
+| 594 | 8. a played month |
 
 ## Constants
 
@@ -113,7 +113,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 539 | **type** `public class CoalMiningCheck` | Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md - 1.3, 1.4 and 3): the second materials chain's digging industry, on... |
+| 86 | 543 | **type** `public class CoalMiningCheck` | Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md - 1.3, 1.4 and 3): the second materials chain's digging industry, on... |
 | 94 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 99 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 104 | 5 | `static void quietly(Runnable r)` |  |
@@ -158,15 +158,15 @@
 |---:|---:|---|---|
 | 481 | 46 | `static void dig()` |  |
 
-### 7. the plan (lines 528-589)
+### 7. the plan (lines 528-593)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 530 | 59 | `static void plan()` |  |
+| 530 | 63 | `static void plan()` |  |
 
-### 8. a played month (lines 590-624)
+### 8. a played month (lines 594-628)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 592 | 32 | `static void playedMonth()` |  |
+| 596 | 32 | `static void playedMonth()` |  |
 

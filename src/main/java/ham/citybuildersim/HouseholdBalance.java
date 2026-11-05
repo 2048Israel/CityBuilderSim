@@ -3021,7 +3021,7 @@ public class HouseholdBalance {
      * founding dollar, seeded with the unit - is the arithmetic's dust and
      * not a debt, at every denomination.
      */
-    private boolean owes(Household c) { return c.debt > minMove; }
+    boolean owes(Household c) { return c.debt > minMove; }
 
     /** Local currency per dollar, this month: what the paper abroad is worth here. Set by Game before the strike. */
     private double localPerUsd = ForeignAccounts.OPENING_RATE;

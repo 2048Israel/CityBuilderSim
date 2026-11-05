@@ -75,8 +75,9 @@ import java.util.regex.Pattern;
  *      whole and adding up, money conserved to RELATIVE_RESIDUAL of what
  *      moved from the first month, the city's books agreeing within
  *      MoneyAudit.tolerance() where a harness's absolute cent would not, no
- *      order reading more waits or asking the bond desk more often than its
- *      search allows, and the median month under MONTH_MEDIAN_MS; and since
+ *      order asking the bond desk more often than its search allows, an order
+ *      sized to the gap and the plots with no wait read (BA1; it was no order
+ *      reading more waits than its halving allowed), and the median month under MONTH_MEDIAN_MS; and since
  *      0.7.55, its ground priced as the city it was copied from is (the same
  *      crowding, the same premium), its rents in reach as that city's are,
  *      and homes built - where at 0.7.54 its land cost about two million
@@ -98,7 +99,9 @@ import java.util.regex.Pattern;
  *      registers adding up to the households' holdings, the copy's as the
  *      city's; every sector held in both copies (SK1, IC1: a building is one
  *      size at any K, so a free copy's planners order what its city's
- *      decline, which is not scaling).
+ *      decline, which is not scaling), and both read from the grown city once
+ *      its building sites are empty (BA1: scale() consolidates a partly built
+ *      unit, which is not what a copy asks).
  */
 public class ScaleCheck {
 
@@ -321,8 +324,20 @@ public class ScaleCheck {
      * the town stalls, and ST2's scanner, every month from 600 to 1,300 and every tenth to 2,500, found none that holds every line:
      * the fewest misses three (681; 730, 735, 760, 762, 1,073: both copies' "it builds", and the copy's cash). So this check plays
      * FC1's town, LD2's wage off (main()), at 717 as above, until ST3.
+     *
+     * ...AT 488 SINCE BA1 + R0 (2026-11-05), WITH THE LEVERS SHUT. On BA1's path (no cap on a business's building orders, the builders'
+     * queue priced) merged with R0 (a 1900 city on Canada's policy dates) and with the builders-first test no longer counting a depot on
+     * site twice (4f66f5fd), 717 prices migrants out and its copies build no home. The town's own rents bind (at 700: the affordability
+     * pull .80, the rent burden .376 against .30), and the pull is 1 in 58 of its first 700 months, in a run of seven only before month 64
+     * and at 197 to 198. Scanned with the levers opened (R0's line, below), every month from 20 to 1,100 and the calm windows after (1,034
+     * to 1,482), by ST2Scan's loaded copies: the fewest misses are one (166 and 167, held by ScaleCheck itself: section 9's CASH, 9.7e-2
+     * against .0125 - the ten-billion-times copy's bank closes 970 of its 1,000 branches in month 1 where the city's one cannot, "never the
+     * first", and their sale is 8% of a treasury of 1,121 a K against 1,027) and two (192: cash and savings the same way). With the levers
+     * SHUT (history's dates, as the playtest plays) the loaded copies are not the live city (531 read no miss there and has 8 here; 562 read
+     * none and has 2), so each candidate they offered was run in ScaleCheck itself: of 51 months run, every line holds at 480, 484, 487,
+     * 488 and 489 alone. 488 is the middle of 487 to 489. A month, not a window; ST3 is still the fix.
      */
-    static final int FREE_FIXTURE_MONTHS = 717;
+    static final int FREE_FIXTURE_MONTHS = 488;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
@@ -342,6 +357,9 @@ public class ScaleCheck {
 
     /** The copy section 9 reads against its city: its factor, K (FW9, 2026-10-25). */
     static final long TRACK_TIMES = 1000;
+
+    /** The most months section 9 plays the grown city, its sectors held, to see its building sites empty before it is copied (BA1, 2026-11-04). */
+    static final int TRACK_SITE_MONTHS = 60;
 
     /**
      * How far the copy's people may miss K times the city's, as a share of it, in any of FREE_MONTHS. Measured on the
@@ -604,13 +622,12 @@ public class ScaleCheck {
         // K = 1 and K = 1,000 copies parted by 3.17e-2 in their people (0.015 allowed), 5.35e-3 in their prices (0.004) and 6.5e-2 in
         // their unemployment (0.033) by month 6.
         city.holdCausesOfDeathOff();
-        // THE LEVERS OPENED IN THE FIXTURE (R0): this section needs a GROWING city to copy, and the playtest's town founded in 1900 holds its
-        // income taxes, wage floor and the rest shut for 16 to 20 years and does not grow: at month 722 it had 4,500 people in 6,042
-        // household places, not more than a year before, and built no home in the six months read, so no copy of it builds either.
-        // Every lever opened and the defaults put back, straight after the founding (the constructor), before
-        // OrderSearchCheck.playtestCity() runs its months.
-        city.getEconomyManager().getTaxPolicy().reset();
-        city.getEconomyManager().getTaxPolicy().openAll();
+        // THE LEVERS ARE SHUT AGAIN HERE (BA1, 2026-11-05; R0 opened them): R0 found the playtest's town founded in 1900, with its income taxes,
+        // wage floor and the rest shut for 16 to 20 years, not growing at month 722 on main's path (4,500 people in 6,042 household places, no home built
+        // in the six months read). On BA1's path with the levers opened no month from 20 to 2,400 holds every line (the fewest misses one, at 166 and
+        // 167: the copy's cash, which the bank's closed branches take 8% of in a treasury so small - see FREE_FIXTURE_MONTHS), and with them shut the
+        // town grows, is calm and builds at 487 to 489, where this section is read. The fixture's premise, a GROWING city to copy, is the same
+        // and is still asserted below ("the city is growing", "ground free for a home", "its own rents price no migrant out").
         // WN3: the city, and every copy read against it below (free(), tracks()), play on the goods' literals, as the game did before the
         // world market: a copy K times over is read against its city to a percent, and on the world's band it cannot track it - the
         // band is struck from a city's own exports and imports against the world's (a big seller depresses its own floor), so a copy
@@ -829,6 +846,7 @@ public class ScaleCheck {
                 RELATIVE_RESIDUAL, worstRelative), worstRelative < RELATIVE_RESIDUAL);
         books.verdicts();
         orders.verdicts();
+        orderSizeAtScale(g);
         // 0.7.55: the ground, the rents and the building, against the city it copies.
         out.printf("      the ground in the first month: %.1f people a km2 (the city's %.1f), premium %.4f (%.4f),"
                         + " US$%.6g a sq ft (US$%.6g)%n", firstCrowding, original.crowding,
@@ -847,8 +865,8 @@ public class ScaleCheck {
                 (Math.pow(people.getPopulation() / (double) peopleBefore, 1.0 / FREE_MONTHS) - 1) * 100,
                 (Math.pow(original.peopleAfter / (double) original.peopleBefore, 1.0 / FREE_MONTHS) - 1) * 100);
         assertTrue("...and it builds: more homes at the end than at the start", homesAfter > homesBefore);
-        assertTrue("fixture: the free copy ordered - an order sized from more than a million needed,"
-                + " and one judged on its interest", orders.largestNeeded > 1_000_000 && orders.invested > 0);
+        assertTrue("fixture: the free copy ordered - an order of more than a million buildings decided,"
+                + " and one judged on its interest", orders.largestNeeded() > 1_000_000 && orders.invested > 0);
         assertTrue(String.format("the median month is under %,.0f ms (%,.0f ms; the slowest %,.0f ms)",
                 MONTH_MEDIAN_MS, median, sorted[FREE_MONTHS - 1]), Timing.below(median, MONTH_MEDIAN_MS));
     }
@@ -913,16 +931,36 @@ public class ScaleCheck {
      * the load is built in both, and the bank's branches (planBank(), apart
      * from the sectors) stay free. The TRACK_ dials are FW9's, measured with
      * the sectors free, and stay.
+     *
+     * AND THE SITES EMPTY AT THE LOAD (BA1, 2026-11-04). BA1 took the caps off
+     * a sector's construction orders, so the grown city is saved with much on
+     * site (a Paved Road, three Low-Rise Apartments, two Vehicle Works at 7,260
+     * points, an Industrial Bakery, a Construction Materials Plant at 9,000)
+     * where it was a few before. scale() multiplies a stack's progress by K,
+     * and the model holds a stack's progress against its current unit only, so
+     * the copy's one current unit held K units' worth and finished hundreds of
+     * them in its first month (1,000 roads on site became 547 after month 1,
+     * against the city's 1): the copy's buildings opened months before the
+     * city's and its people parted by 1.59e-2 against the dial's .015, its
+     * unemployment by 3.8e-2 against .033. That is the scaler consolidating a
+     * partly built unit, which "what is under way at the load is built in
+     * both" accepted while it was small, and this section asks whether the
+     * scaler copies a city. So both copies are read from the grown city once
+     * its sites are empty: it is loaded at K = 1, every sector held (no whole
+     * building is ordered), and played until nothing is under construction
+     * (emptySites()), then saved apart; the grown save itself, which section
+     * 6 reads, stays as it was.
      */
     static void tracks(Path root, GameFiles grown) throws Exception {
         out.printf("%n--- a copy %,d times over tracks its city month by month ---%n", TRACK_TIMES);
+        GameFiles sites = emptySites(root, grown);
         long[] times = { 1, TRACK_TIMES };
         Figures[][] seen = new Figures[2][FREE_MONTHS];
         double[][] registers = new double[2][FREE_MONTHS + 1];
         for (int c = 0; c < 2; c++) {
             GameFiles files = new GameFiles(root.resolve("track" + times[c]), root.resolve("track" + times[c] + "-no-legacy"));
-            scale(grown.saveFile(10), files.saveFile(10), times[c]);
-            Files.copy(grown.historyFile(10), files.historyFile(10));
+            scale(sites.saveFile(10), files.saveFile(10), times[c]);
+            Files.copy(sites.historyFile(10), files.historyFile(10));
             Game g = new Game(files);
             g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
             g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
@@ -957,6 +995,35 @@ public class ScaleCheck {
         assertTrue(String.format("...and the registers add up to their holders, the city's and the copy's, at the load and in all %d"
                 + " months (shares, of the issue; corporate bonds, the city's paper; worst %.1e of the register)", FREE_MONTHS, worstRegister),
                 worstRegister <= REGISTER_WITHIN);
+    }
+
+    /**
+     * The grown city saved again with nothing under construction (BA1, 2026-11-04; tracks() says why): its save is loaded at
+     * K = 1, every sector held, and played until its building sites are empty, at most TRACK_SITE_MONTHS, then written to a
+     * folder of its own. The fixture is asserted: the sites at the load, the months it took and none on site at the save.
+     */
+    static GameFiles emptySites(Path root, GameFiles grown) throws Exception {
+        GameFiles files = new GameFiles(root.resolve("track-sites"), root.resolve("track-sites-no-legacy"));
+        Files.createDirectories(files.saveFile(10).getParent());
+        Files.copy(grown.saveFile(10), files.saveFile(10));
+        Files.copy(grown.historyFile(10), files.historyFile(10));
+        Game g = new Game(files);
+        g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
+        g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
+        quietly(() -> g.loadGameSave(10));
+        assertTrue("fixture: the grown city loads, to have its building sites emptied", g.getLoadFailure() == null);
+        for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
+        int onSite = g.getBuildingManager().getStacksUnderConstruction().size(), months = 0;
+        while (months < TRACK_SITE_MONTHS && !g.getBuildingManager().getStacksUnderConstruction().isEmpty()) {
+            quietly(() -> g.simulateMonths(1));
+            months++;
+        }
+        int left = g.getBuildingManager().getStacksUnderConstruction().size();
+        out.printf("      %d stacks on site at the load, %d after %d months with every sector held%n", onSite, left, months);
+        assertTrue("fixture: ...and nothing is under construction when the copies are taken (within " + TRACK_SITE_MONTHS
+                + " months)", left == 0);
+        quietly(() -> g.saveGame(10, "scalecheck grown, sites empty"));
+        return files;
     }
 
     /**
@@ -1274,19 +1341,14 @@ public class ScaleCheck {
         }
     }
 
-    /** Every order the free copy decides: how big, and how many times it asked the bond desk or read a wait. */
+    /** Every order the free copy decides: how big, and how many times it asked the bond desk (the order's size reads no wait since BA1). */
     static final class Orders implements BusinessInvestment.OrderWatch {
-        int sized, invested, mortgaged, largestNeeded, largestInvested, largestMortgage, mostWaits, mostDesk;
-        int overDesk, overWaits;
+        int invested, mortgaged, largestInvested, largestMortgage, mostDesk;
+        int overDesk;
         final Lender lender = new Lender();
 
-        @Override
-        public void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead) {
-            sized++;
-            largestNeeded = Math.max(largestNeeded, needed);
-            mostWaits = Math.max(mostWaits, waitsRead);
-            if (waitsRead > 32 - Integer.numberOfLeadingZeros(Math.max(1, needed)) + 1) overWaits++;
-        }
+        /** The largest order decided, whichever way it is judged: what a sector's shortfall asked for and the plots allowed (BusinessInvestment.orderSize()), the size the old "needed" counted. */
+        int largestNeeded() { return Math.max(largestInvested, largestMortgage); }
 
         @Override
         public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found) {
@@ -1305,13 +1367,41 @@ public class ScaleCheck {
         }
 
         void verdicts() {
-            out.printf("      orders: %,d sized (the largest needed %,d, at most %d waits read), %,d judged on their"
+            out.printf("      orders: the largest decided %,d, %,d judged on their"
                     + " interest (the largest %,d, at most %d asks of the bond desk), %,d on a mortgage (the largest %,d)%n",
-                    sized, largestNeeded, mostWaits, invested, largestInvested, mostDesk, mortgaged, largestMortgage);
+                    largestNeeded(), invested, largestInvested, mostDesk, mortgaged, largestMortgage);
             lender.verdicts("the copy's");
-            same("no order sized read more waits than one a bit of what it needed, and one more", overWaits, 0);
             same("no order judged on its interest asked the bond desk more than Game.deskCallsMost() times", overDesk, 0);
         }
+    }
+
+    /**
+     * ORDER SIZE AT SCALE (BA1). orderSize() was a halving over the wait of an order, bounded by the bits of what was
+     * needed (this check's "no order read more waits than one a bit of what it needed, and one more"); it is the gap and the
+     * plots now and reads no wait, so there is no bound to hold, and what is left of the claim is that a gap in the billions
+     * is the plots - saturating at the int limit where the cast would have wrapped - and a gap that needs a million
+     * buildings is a million where the ground holds them, in the free copy at this size.
+     */
+    static void orderSizeAtScale(Game g) {
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BuildingsTemplate roomiest = null;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            // A building with a footprint: one with none (an Offshore Platform) has every plot there is, and says nothing of the ground.
+            if (t.getLandSqFt() <= 0) continue;
+            int plots = plans.plotsAvailableFor(t);
+            if (plots >= 1 && (roomiest == null || plots > plans.plotsAvailableFor(roomiest))) roomiest = t;
+        }
+        assertTrue("fixture: the free copy has ground for some building", roomiest != null);
+        if (roomiest == null) return;
+        int plots = plans.plotsAvailableFor(roomiest);
+        out.printf("      %s: room for %,d%n", roomiest.getName(), plots);
+        assertTrue("orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative: " + roomiest.getName(),
+                plans.orderSize(1e13, 1, roomiest) == plots);
+        assertTrue("...a gap of a million buildings is a million where the ground holds them, and the plots where it does not",
+                plans.orderSize(1_000_000, 1, roomiest) == Math.min(1_000_000, plots)
+                        && plans.orderSize(2_000_000, 2, roomiest) == Math.min(1_000_000, plots));
+        assertTrue("...and the same gap in a building holding more is fewer: ceil(gap / capacity)",
+                plans.orderSize(1_000_000, 40, roomiest) == Math.min(25_000, plots));
     }
 
     /**

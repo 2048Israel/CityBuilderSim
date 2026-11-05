@@ -470,9 +470,31 @@ public abstract class Sector {
         return lo;
     }
 
+    /**
+     * The share of a building's posts the city could staff at or under which staffing() reads none: the subtraction's
+     * rounding, not a worker (BA1, 2026-11-04). With every band it wants all spoken for, supply less posts left a hair, a
+     * share of 1.3e-18, at today's prices and exactly nothing at the factor. A planner that keeps the template with the
+     * largest share of a held order (Manufacturing.plan()) then kept a Machine Works at one price level and a Fabrication
+     * Shop at the other, and the twin parted (PriceLevelCheck 8, month 23). Only the share is snapped: the bands' spares are
+     * read by their sign elsewhere, and snapping them moved SlopeCheck's and LongPlaytest's cities onto other paths.
+     */
+    static final double SHARE_ROUNDING = 1e-12;
+
     /** The same test for {@code count} of these at once. */
     public Staffing staffing(BuildingsTemplate t, int count) {
-        return staffing(t, count, true);
+        return staffing(t, count, true, false);
+    }
+
+    /**
+     * The same test for {@code count} of these of which the ones on site are among them (BA1, 2026-11-05): their own posts
+     * are what is asked, so they are not also spoken for (THE POSTS OF ITS OWN SITES ARE SPOKEN FOR, which counts every
+     * other building of the sector on site). BuildingManager.goesFirst() asks it of the builders' depots on site and the
+     * one more: asked as staffing(), each depot on site was counted twice, taken and wanted, its share read nothing (0.00
+     * in months 8 to 10 of FoundingYardCheck's village, 0.46 to 0.76 before BA1), the builders-first rule stayed off and
+     * the village's depot opened in month 49 against main's 22.
+     */
+    public Staffing staffingWithOwnSites(BuildingsTemplate t, int count) {
+        return staffing(t, count, true, true);
     }
 
     /**
@@ -487,10 +509,10 @@ public abstract class Sector {
      * withheld posts, caused.
      */
     public Staffing staffingWithCrewsSpare(BuildingsTemplate t, int count) {
-        return staffing(t, count, false);
+        return staffing(t, count, false, false);
     }
 
-    private Staffing staffing(BuildingsTemplate t, int count, boolean crewsSpokenFor) {
+    private Staffing staffing(BuildingsTemplate t, int count, boolean crewsSpokenFor, boolean ownSitesInCount) {
         if (t == null || game == null) return Staffing.ANY;
         PopulationManager people = game.getPopulationManager();
         double[] posts  = people.staffablePostsByBand();
@@ -509,6 +531,29 @@ public abstract class Sector {
                 if (idleBuilders != null) withheld -= bm.getPostsWithheld(idleBuilders, job);
                 posts[WageBand.of(job).ordinal()] += withheld;
             }
+        }
+        /*
+         * THE POSTS OF ITS OWN SITES ARE SPOKEN FOR (BA1). With one order on
+         * site at a time a sector asked for workers for a building when
+         * nothing of its own was waiting for the same workers; with no cap on
+         * orders (BusinessInvestment, EVERY BUSINESS MAY BUILD AHEAD) it may
+         * have a plant on site and ask for a second, and the second must not
+         * be staffed from the spare workers the first is already counting on.
+         * So the posts of this sector's own buildings under construction are
+         * added to the posts the city offers, band by band, before the
+         * supply is read: they are posts that will exist when the builders
+         * reach them, and the workers they need are not spare. Nothing on
+         * site, nothing added.
+         */
+        if (bm != null && bm.getUnderConstructionBySector(key()) > 0) {
+            double[] withSites = posts.clone();
+            // ...less t's own on site where they are among the count asked (staffingWithOwnSites()).
+            BuildingsStacks own = ownSitesInCount ? bm.getStack(t) : null;
+            int ownOnSite = own == null ? 0 : Math.max(0, own.getUnderConstruction());
+            for (JobType job : JobType.values()) {
+                withSites[WageBand.of(job).ordinal()] += bm.postsOnSite(key(), job) - (double) t.getJobs(job) * ownOnSite;
+            }
+            posts = withSites;
         }
         double[] supply = people.supplyByBand(posts);
         if (supply == null) return Staffing.ANY;
@@ -538,7 +583,10 @@ public abstract class Sector {
             if (wanted[b] > 0) fillable += Math.min(wanted[b], Math.max(0, spare[b]));
         }
         // The lowest band nobody can fill is the one named: it is the one the fill runs out of first.
-        return new Staffing(fillable / total, wanted, spare, above, comeFor, this, t, Math.max(1, count));
+        // ...and a share within rounding of nothing is nothing (SHARE_ROUNDING).
+        double share = fillable / total;
+        if (share <= SHARE_ROUNDING) share = 0;
+        return new Staffing(share, wanted, spare, above, comeFor, this, t, Math.max(1, count));
     }
 
     /**

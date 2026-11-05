@@ -1921,7 +1921,7 @@ public class ReadPathCheck {
         BusinessInvestment bi = g.getBusinessInvestment();
         r.put("growthFactor(0)", bi.growthFactor(0));
         r.put("growthFactor(horizon)", bi.growthFactor(BusinessInvestment.PLANNING_HORIZON));
-        r.put("growthFactor(cap + horizon)", bi.growthFactor(BusinessInvestment.MAX_ORDER_MONTHS + BusinessInvestment.PLANNING_HORIZON));
+        r.put("growthFactor(cap + horizon)", bi.growthFactor(AutoBuilder.ORDER_MONTHS + BusinessInvestment.PLANNING_HORIZON));
         r.put("officePricePerSqFt", g.getLandManager().getOfficePricePerSqFt());
         r.put("schoolLeavers", g.getEducation().schoolLeavers(g.getCohorts(), g.getLabourMarket()));
         for (EducationType t : EducationType.values()) {

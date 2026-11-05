@@ -1,4 +1,4 @@
-# FoodProcessing.java - 567 lines · 12 methods · 1 constants · sectors
+# FoodProcessing.java - 570 lines · 12 methods · 1 constants · sectors
 
 `ham/citybuildersim/sectors/FoodProcessing.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -51,7 +51,7 @@
 > dumps above the shed's line, and ships spare nameplate abroad when the
 > world's price clears the power it costs.
 
-**Uses:** [Good](Good.md) (22), [BusinessInvestment](BusinessInvestment.md) (13), [Sector](Sector.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [GoodsMarket](GoodsMarket.md) (2), [BuildingType](BuildingType.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [Good](Good.md) (22), [BusinessInvestment](BusinessInvestment.md) (11), [Sector](Sector.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [GoodsMarket](GoodsMarket.md) (2), [BuildingType](BuildingType.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
 **Used by (2):** [FoodProcessingCheck](FoodProcessingCheck.md), [Sectors](Sectors.md)
 
@@ -61,8 +61,8 @@
 |---:|---|
 | 101 | THREE PLANTS, FIVE GOODS, AND A PLANNER THAT COULD ONLY SEE ONE |
 | 164 | · NOBODY BUILDS A FOOD PLANT ON EXPORTS |
-| 292 | WHAT A PLANT WOULD EARN, AT THE PRICE IT WILL LEAVE BEHIND |
-| 405 | · the screen |
+| 295 | WHAT A PLANT WOULD EARN, AT THE PRICE IT WILL LEAVE BEHIND |
+| 408 | · the screen |
 
 ## Constants
 
@@ -74,34 +74,34 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 505 | **type** `public final class FoodProcessing extends Sector` | The plants between the farm and the shelf. |
+| 63 | 508 | **type** `public final class FoodProcessing extends Sector` | The plants between the farm and the shelf. |
 | 65 | 27 | `public FoodProcessing()` |  |
 
 ### THREE PLANTS, FIVE GOODS, AND A PLANNER THAT COULD ONLY SEE ONE (lines 101-163)
 
-### NOBODY BUILDS A FOOD PLANT ON EXPORTS (lines 164-291)
+### NOBODY BUILDS A FOOD PLANT ON EXPORTS (lines 164-294)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 198 | 12 | `public double fillFor(BuildingsTemplate t)` | How much of one of these the city would eat today, as a share of what it makes. |
-| 212 | 79 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` |  |
+| 218 | 76 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | A plant is financed when the city already eats what it would make (fillFor()). |
 
-### WHAT A PLANT WOULD EARN, AT THE PRICE IT WILL LEAVE BEHIND (lines 292-404)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 343 | 7 | `private Sector makerOf(Good g)` | Whoever else in the city makes this, or null when only the world does. |
-| 352 | 52 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` |  |
-
-### the screen (lines 405-567)
+### WHAT A PLANT WOULD EARN, AT THE PRICE IT WILL LEAVE BEHIND (lines 295-407)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 421 | 93 | `public java.util.List<Sector.Line> ownLines(Game game)` | What the generic page cannot say: WHICH PRICE IS DECIDING THIS SECTOR. |
-| 516 | 3 | `public double getMeatDemand()` | Kilograms of meat the plants want this month, at the rate they are running. |
-| 521 | 3 | `public double getMeatPrice()` | What a kilogram is costing them - the number that decides whether a Meat Works pays here. |
-| 530 | 3 | `public double getMeatPosition()` | Where the meat price sits between a farm's export floor and the world's delivered ceiling: 0 is a city with herds and nobody else to sell to, 1 is a city with no farms at all. |
-| 535 | 4 | `public double inputShare()` | The input bill as a share of what the plants sold. |
-| 541 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
-| 556 | 11 | `public double[] retirementDemandAndCapacity(Game game)` | Spare capacity, measured in money rather than in kilograms. |
+| 346 | 7 | `private Sector makerOf(Good g)` | Whoever else in the city makes this, or null when only the world does. |
+| 355 | 52 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` |  |
+
+### the screen (lines 408-570)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 424 | 93 | `public java.util.List<Sector.Line> ownLines(Game game)` | What the generic page cannot say: WHICH PRICE IS DECIDING THIS SECTOR. |
+| 519 | 3 | `public double getMeatDemand()` | Kilograms of meat the plants want this month, at the rate they are running. |
+| 524 | 3 | `public double getMeatPrice()` | What a kilogram is costing them - the number that decides whether a Meat Works pays here. |
+| 533 | 3 | `public double getMeatPosition()` | Where the meat price sits between a farm's export floor and the world's delivered ceiling: 0 is a city with herds and nobody else to sell to, 1 is a city with no farms at all. |
+| 538 | 4 | `public double inputShare()` | The input bill as a share of what the plants sold. |
+| 544 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
+| 559 | 11 | `public double[] retirementDemandAndCapacity(Game game)` | Spare capacity, measured in money rather than in kilograms. |
 

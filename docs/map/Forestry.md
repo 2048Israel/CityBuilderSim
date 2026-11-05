@@ -1,4 +1,4 @@
-# Forestry.java - 632 lines · 35 methods · 9 constants · sectors
+# Forestry.java - 630 lines · 35 methods · 9 constants · sectors
 
 `ham/citybuildersim/sectors/Forestry.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > the zone's price, paid from Forestry's cash outside the interest test
 > ... (14 more lines in the source)
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (22), [Good](Good.md) (18), [BusinessInvestment](BusinessInvestment.md) (13), [LandManager](LandManager.md) (9), [Game](Game.md) (6), [ProcessingSector](ProcessingSector.md) (6), [Resource](Resource.md) (5), [BuildCard](BuildCard.md) (4), [Sectors](Sectors.md) (3), [Formats](Formats.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Investor](Investor.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (22), [Good](Good.md) (18), [BusinessInvestment](BusinessInvestment.md) (11), [LandManager](LandManager.md) (9), [Game](Game.md) (6), [ProcessingSector](ProcessingSector.md) (6), [Resource](Resource.md) (5), [BuildCard](BuildCard.md) (4), [Sectors](Sectors.md) (3), [Formats](Formats.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Investor](Investor.md) (1)
 
 **Used by (12):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [ForestryCheck](ForestryCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md)
 
@@ -76,11 +76,11 @@
 | 175 | · the month's cut |
 | 302 | · the month's end: the planted stands, and planting |
 | 374 | · E, and the plan |
-| 466 | · the retirement |
-| 496 | · where the forest settles (Q13) |
-| 527 | · the page |
-| 580 | · the save |
-| 619 | THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and |
+| 464 | · the retirement |
+| 494 | · where the forest settles (Q13) |
+| 525 | · the page |
+| 578 | · the save |
+| 617 | THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and |
 
 ## Constants
 
@@ -113,7 +113,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 95 | 538 | **type** `public final class Forestry extends ExtractionSector` | The crews that cut the city's forest, and the plantations they plant - Forestry (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.11 and 5's I9 row; the study's - materials-chains-research.md - 1.3, 5 and 10's... |
+| 95 | 536 | **type** `public final class Forestry extends ExtractionSector` | The crews that cut the city's forest, and the plantations they plant - Forestry (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.11 and 5's I9 row; the study's - materials-chains-research.md - 1.3, 5 and 10's... |
 | 124 | 8 | `public Forestry()` |  |
 
 ### what each building is (lines 133-174)
@@ -151,47 +151,47 @@
 | 336 | 28 | `BuildingsTemplate plant(Game game, LandManager land)` | PLANTING (Q15, B; spec 2.11): one stand a month while the month's cut exceeds the regrowth the month's end will give - the stands on site counted as grown, so a stand is not planted twice - on ground Forestry's zone h... |
 | 366 | 7 | `public BuildingsTemplate standFor(double held)` | The stand `held` square feet of Forestry's zone holds room for (★, A12): a Tree Plantation where it holds its 1,000 ha, a Woodlot where it holds 100 ha but not 1,000; null where it holds neither. |
 
-### E, and the plan (lines 374-465)
+### E, and the plan (lines 374-463)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 381 | 3 | `public static boolean roomFor(double cuttable, double committed, BuildingsTemplate t)` | E (Z13): whether the cuttable forest lasts FOREST_CREW_MONTHS of the cut of every crew - `committed` m3 a month standing and on site - and one more `t` (pure). |
-| 394 | 64 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to put another crew on the forest (E; spec 2.11): one crew in flight (a stand being planted holds none back); the cuttable forest lasting FOREST_CREW_MONTHS of every crew's cut with it (roomFor()); of the crew... |
-| 460 | 5 | `static String eWords(double cuttable, double committed, BuildingsTemplate t)` | E's refusal in words: the forest it may cut, and the months it would last with the smallest crew. |
+| 396 | 60 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to put another crew on the forest (E; spec 2.11): the cuttable forest lasting FOREST_CREW_MONTHS of every crew's cut with it (roomFor()); of the crews that do and the city could staff, the best earnings on the... |
+| 458 | 5 | `static String eWords(double cuttable, double committed, BuildingsTemplate t)` | E's refusal in words: the forest it may cut, and the months it would last with the smallest crew. |
 
-### the retirement (lines 466-495)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 470 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings contributes to the measures it is retired on: a crew's cut a month, a stand's growth. |
-| 480 | 8 | `public double[] retirementDemandAndCapacity(Game game)` | Its crews against the forest they may cut: spare past what stands to cut - all of them with none - and the distress rule only while the forest holds a month of their cut. |
-| 491 | 4 | `public boolean mayRetire(BuildingsTemplate t)` | A crew may be sold; a planted stand only once no crew stands or is coming - it is the cut's cost while there is a cut. |
-
-### where the forest settles (Q13) (lines 496-526)
+### the retirement (lines 464-493)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 510 | 8 | `public static double settlesAt(double full, double cleared, double cut, double planted, double protectedShare)` | WHERE THE FOREST SETTLES (Jerus's Q13: keep the regrowth rule, and show it; spec 2.11, spec-zoning 3.3), pure: the share of the forest's full stock `full` standing in the long run at a crews' cut of `cut` m3 a month w... |
-| 520 | 6 | `public double settlesAt()` | ...this city's, at the month's cut: its forest, cleared ground, planted growth and law. |
+| 468 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings contributes to the measures it is retired on: a crew's cut a month, a stand's growth. |
+| 478 | 8 | `public double[] retirementDemandAndCapacity(Game game)` | Its crews against the forest they may cut: spare past what stands to cut - all of them with none - and the distress rule only while the forest holds a month of their cut. |
+| 489 | 4 | `public boolean mayRetire(BuildingsTemplate t)` | A crew may be sold; a planted stand only once no crew stands or is coming - it is the cut's cost while there is a cut. |
 
-### the page (lines 527-579)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 530 | 49 | `public List<Line> ownLines(Game game)` |  |
-
-### the save (lines 580-618)
+### where the forest settles (Q13) (lines 494-524)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 583 | 7 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 592 | 9 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 603 | 1 | `public int getStandsPlanted()` | Stands planted since the city was founded. |
-| 607 | 11 | `public void reset()` | Everything back to a founding sector: no cut, no salvage, nothing planted. |
+| 508 | 8 | `public static double settlesAt(double full, double cleared, double cut, double planted, double protectedShare)` | WHERE THE FOREST SETTLES (Jerus's Q13: keep the regrowth rule, and show it; spec 2.11, spec-zoning 3.3), pure: the share of the forest's full stock `full` standing in the long run at a crews' cut of `cut` m3 a month w... |
+| 518 | 6 | `public double settlesAt()` | ...this city's, at the month's cut: its forest, cleared ground, planted growth and law. |
 
-### THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and (lines 619-632)
+### the page (lines 525-577)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 626 | 6 | `protected String groundRefusal(BuildingsTemplate t)` | A crew's ground is the forest it may cut, in plan()'s words: none at all, or E - room for 120 months of every crew's cut with one more (roomFor(), eWords()). |
+| 528 | 49 | `public List<Line> ownLines(Game game)` |  |
+
+### the save (lines 578-616)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 581 | 7 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 590 | 9 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 601 | 1 | `public int getStandsPlanted()` | Stands planted since the city was founded. |
+| 605 | 11 | `public void reset()` | Everything back to a founding sector: no cut, no salvage, nothing planted. |
+
+### THE PICTOGRAMS' READS (0.7.141, batch I11; ExtractionSector's, and (lines 617-630)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 624 | 6 | `protected String groundRefusal(BuildingsTemplate t)` | A crew's ground is the forest it may cut, in plan()'s words: none at all, or E - room for 120 months of every crew's cut with one more (roomFor(), eWords()). |
 

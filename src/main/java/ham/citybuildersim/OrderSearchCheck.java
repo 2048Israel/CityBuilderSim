@@ -8,7 +8,7 @@ import java.util.Locale;
 import java.util.function.IntToDoubleFunction;
 
 /**
- * The three order searches against the countdowns they replaced (0.7.54).
+ * The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1).
  *
  * WHY. Three loops sized an order one building at a time: the investment
  * desk's trim (Game.consider()), the landlords' mortgage (Mortgage.decide())
@@ -20,17 +20,24 @@ import java.util.function.IntToDoubleFunction;
  * Mortgage, THE LANDLORD'S ORDER IS A RUN FROM ONE). The trim's test is not,
  * so it asks the countdown's own first Game.COUNTDOWN_SLICES slices, then
  * doubles down and halves (Game, THE LARGEST SLICE, WITHOUT COUNTING TO IT).
+ * Since BA1 the size is not a search at all: orderSize() is the gap and the
+ * plots, with no wait to read (section 6), and the other two tests are asked
+ * on the cost grown over the order's wait (THE INTEREST ON THE WAIT), a
+ * carry that rises with the order, so they are still runs from one.
  *
- * THE COUNTDOWNS ARE KEPT HERE, as they stood in 0.7.53 (sizedByCount(),
- * decidedByCount(), investedByCount()), and asked the same question at the
- * same moment through BusinessInvestment.OrderWatch: every order the game
- * decides, before anything is built. The trim's question is the game's: on
- * its whole cost since 0.7.113 (investedByCount()).
+ * THE COUNTDOWNS ARE KEPT HERE, as they stood in 0.7.53 (decidedByCount(),
+ * investedByCount(); sizedByCount() is the count of BA1's formula), and asked
+ * the same question at the same moment through
+ * BusinessInvestment.OrderWatch: every order the game decides, before
+ * anything is built. The trim's question is the game's: on its whole cost
+ * since 0.7.113 (investedByCount()), grown over the wait since BA1, by the
+ * carry the game reads (BusinessInvestment.carryOf()); the lender's, on the
+ * shortfall grown by it (decidedByCount()).
  *
  * What this has to prove:
  *   1. over a long run of the playtest's city, and a stretch of it at a dear
- *      policy rate, every order is the countdown's: the same size, the same
- *      trim, and for a refusal the same rate at the whole order, the same
+ *      policy rate, every order is the countdown's: the same trim, and for a
+ *      refusal the same rate at the whole order, the same
  *      "at prime" and the same facts for one building; and no order asks the
  *      bond desk more than Game.deskCallsMost() times;
  *   2. the same in that city a thousand times over, copied at COPY_MONTH:
@@ -45,13 +52,19 @@ import java.util.function.IntToDoubleFunction;
  *      countdown would have stopped inside the counted slices, and otherwise
  *      a slice that passes with the next one failing;
  *   4. Mortgage.decide() against its count on a grid of tills, incomes,
- *      rates and costs, the yard running out part-way included;
+ *      rates and costs, the yard running out part-way included, and (BA1)
+ *      under three carries: none, and two that rise with the order;
  *   5. a window a bond opens (OS1, EP1's gate): an order whose till pays for
  *      a few slices that fail at the sector's own rate, whose first slices
  *      past the till pass on a bond's cheaper one and whose later ones are
  *      past the bank's room and fail, is trimmed to the window's last slice,
  *      the countdown's, in the playtest's city with its room set to cause it
- *      and on tests of its own.
+ *      and on tests of its own;
+ *   6. BusinessInvestment.orderSize() (BA1): the gap and the plots - the
+ *      fewest buildings whose capacity covers the shortfall, at least one and
+ *      never more plots than the city can sell - against the count up from
+ *      one, on a grid of shortfalls, capacities and templates, and the int
+ *      limit saturating where a wrap would have made a negative order.
  */
 public class OrderSearchCheck {
 
@@ -108,6 +121,9 @@ public class OrderSearchCheck {
      * (a Construction Materials Plant of 137 built to 34 on a quarter of its cost and to 68 on a half).
      */
     static final int COPY_MONTH = 500;
+
+    /** BA1: the plots of the smallest building the city is given the ground for in section 6, which the long run's builders have left it none (orderSizes()). */
+    static final int ROOM_GIVEN_PLOTS = 1000;
     /** ...how many times over it is copied... */
     static final long COPY_TIMES = 1000;
     /** ...and the months the copy plays. */
@@ -204,8 +220,14 @@ public class OrderSearchCheck {
         out.printf("      ...and %d months at a %.0f%% policy rate: month %d, %,d people%n",
                 DEAR_MONTHS, DEAR_RATE * 100, g.getMonth(), g.getPopulationManager().getPopulation());
         w.report("the long run");
-        assertTrue("fixture: the run sized orders, and judged them on their interest, refusing some",
-                w.sized > 0 && w.invested > 0 && w.refused > 0);
+        assertTrue("fixture: the run judged orders on their interest, refusing some",
+                w.invested > 0 && w.refused > 0);
+        // BA1: the carry the tests grow the cost by is what makes them differ from the old ones: some order in the run had one over 1.
+        assertTrue("fixture: ...with the wait counted - an order judged on its interest and a landlord's mortgage each had a carry over 1",
+                w.carried > 0 && w.mortgageCarried > 0);
+        assertTrue("fixture: ...and each landlord's order named its building by its costs (no two homes cost alike to the bit)",
+                w.mortgageUnnamed == 0);
+        orderSizes(g);
         assertTrue("fixture: ...and bought on a mortgage, trimmed and refused some", w.mortgaged > 0
                 && w.mortgagedTrimmed > 0 && w.mortgagedRefused > 0);
         w.verdicts("the long run");
@@ -452,10 +474,18 @@ public class OrderSearchCheck {
 
     static void grid() {
         out.println("\n--- 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs ---");
-        int cases = 0, differ = 0, trimmed = 0, refusedShort = 0, refusedTest = 0, kinked = 0;
+        int cases = 0, differ = 0, trimmed = 0, refusedShort = 0, refusedTest = 0, kinked = 0, carryBites = 0;
         long readBySearch = 0, readByCount = 0;
         String first = null;
         double premium = 1 + Mortgage.premiumRate();
+        // BA1: the shortfall is grown by the order's carry, which is at least 1 and rises with the order (BusinessInvestment,
+        // THE WAIT GROWS WITH THE ORDER): none, a gentle one that starts above nothing, and a steep one that grows with the
+        // square root of the order. The search halves because the test stays a run from one under any of them.
+        IntToDoubleFunction[] carries = {
+                n -> 1,
+                n -> Math.pow(1 + .04 / 12, 3 + .7 * n),
+                n -> Math.pow(1 + .09 / 12, 12 * Math.sqrt(n)) };
+        for (IntToDoubleFunction carryOf : carries)
         for (double a : new double[] { 300, 1234.5 })
         for (double b : new double[] { 0, 50 })
         for (double m : new double[] { 1, 3 })
@@ -473,12 +503,14 @@ public class OrderSearchCheck {
                     double noi = noiTimes * one;
                     long[] reads = { 0 };
                     IntToDoubleFunction counted = n -> { reads[0]++; return costOf.applyAsDouble(n); };
-                    Mortgage.Decision found = Mortgage.decide(asked, counted, cash, noi, rate);
+                    Mortgage.Decision found = Mortgage.decide(asked, counted, cash, noi, rate, carryOf);
                     readBySearch += reads[0];
                     reads[0] = 0;
-                    Mortgage.Decision byCount = decidedByCount(asked, counted, cash, noi, rate);
+                    Mortgage.Decision byCount = decidedByCount(asked, counted, cash, noi, rate, carryOf);
                     readByCount += reads[0];
                     cases++;
+                    // ...and the carry is what decided it: the same order without one is another answer.
+                    if (carryOf.applyAsDouble(1) > 1 && !byCount.equals(decidedByCount(asked, costOf, cash, noi, rate, n -> 1))) carryBites++;
                     if (!found.equals(byCount)) {
                         differ++;
                         if (first == null) first = String.format("asked %d, cash %.2f, noi %.4f, rate %.2f: %s against %s",
@@ -496,7 +528,9 @@ public class OrderSearchCheck {
         if (first != null) out.println("      first that differs: " + first);
         assertTrue("fixture: the grid trims, holds for the down payment, declines, and runs past the yard",
                 trimmed > 0 && refusedShort > 0 && refusedTest > 0 && kinked > 0);
-        same("every order on the grid is the count's: its size, what trimmed it and the facts for one", differ, 0);
+        out.printf("      %,d of them decided otherwise than they would with no carry (BA1)%n", carryBites);
+        assertTrue("fixture: the carry decides some order on the grid - the same order with no wait is another answer", carryBites > 0);
+        same("every order on the grid is the count's: its size, what trimmed it and the facts for one, under each carry", differ, 0);
         assertTrue("...reading fewer costs than the count", readBySearch < readByCount);
     }
 
@@ -629,16 +663,96 @@ public class OrderSearchCheck {
         same("on a test that holds on a run from one the first slice that borrows changes nothing, and asks within deskCallsMost()", wrong, 0);
     }
 
+    /* ============== 6. the order's size is the gap and the plots (BA1) ============== */
+
+    /**
+     * ORDER SIZE, A FORMULA (BA1). It was a search for the most that would open inside MAX_ORDER_MONTHS (0.7.54 halved it
+     * where 0.7.17 counted), reading a wait at every step; with no cap on orders it is the gap and the plots and reads no
+     * wait: ceil(shortfall / capacity), floored at one, capped by what the city has land to sell. Asked of the countdown
+     * that stands for it (sizedByCount(): up from one until the capacity covers the shortfall), on a grid of shortfalls
+     * and capacities that are exact in a double (whole and half numbers), for the city's templates with the most room,
+     * with the least and with none; and past the int range, where the cast saturates and the plots decide.
+     */
+    static void orderSizes(Game g) {
+        out.println("\n--- 6. orderSize() is the gap and the plots, the countdown's first cover, and reads no wait (BA1) ---");
+        BusinessInvestment plans = g.getBusinessInvestment();
+        /*
+         * THE ROOM IS GIVEN, NOT WAITED FOR (BA1, 2026-11-05). With no cap on a business's order the playtest's city builds on all of its
+         * ground: at month 1320 it owns 131 million square feet and has 67.5 of them free, so every building that has a land need has no plot
+         * (145 of the 148 templates; the other three need none and have Integer.MAX_VALUE) and the section had no building with room to
+         * tell from one with less. The ground is owned, as a city buys it, to a thousand of the smallest building's plots, and handed to
+         * the investors the way Game.refreshLand() does: the smallest then has a thousand plots, the largest has none, and the rest lie between.
+         */
+        double smallest = Double.MAX_VALUE;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getLandSqFt() > 0) smallest = Math.min(smallest, t.getLandSqFt());
+        LandManager ground = g.getLandManager();
+        ground.setOwnedSqFt(ground.getOwnedSqFt() + ROOM_GIVEN_PLOTS * smallest);
+        plans.setLandAvailable(ground.getAvailableSqFt(), ground.getPricePerSqFt());
+        plans.setLandAvailableForWorks(ground.freeForAnyone(true));
+        plans.setLandAvailableForRuns(ground.freeForAnyone(LandManager.Use.RUN));
+        BuildingsTemplate roomiest = null, tightest = null, landless = null;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            int plots = plans.plotsAvailableFor(t);
+            if (plots == 0 && landless == null) landless = t;
+            if (plots >= 1 && plots < Integer.MAX_VALUE && (roomiest == null || plots > plans.plotsAvailableFor(roomiest))) roomiest = t;
+            if (plots >= 1 && plots < Integer.MAX_VALUE && (tightest == null || plots < plans.plotsAvailableFor(tightest))) tightest = t;
+        }
+        assertTrue("fixture: the city has room for some building, and not the same room for all of them", roomiest != null && tightest != null
+                && plans.plotsAvailableFor(roomiest) > plans.plotsAvailableFor(tightest));
+        if (roomiest == null) return;
+        out.printf("      plots: %s %,d, %s %,d%s%n", roomiest.getName(), plans.plotsAvailableFor(roomiest), tightest.getName(),
+                plans.plotsAvailableFor(tightest), landless == null ? "" : ", none for " + landless.getName());
+        BuildingsTemplate[] templates = landless == null ? new BuildingsTemplate[] { roomiest, tightest }
+                : new BuildingsTemplate[] { roomiest, tightest, landless };
+        double[] capacities = { 1, 2, 3, 7, 12.5, 40, 120 };
+        double[] shortfalls = { -50, 0, .5, 1, 2, 3, 7, 12, 12.5, 13, 40, 100, 999, 1000.5, 24_000, 600 * 120, 1e6 };
+        int cases = 0, differ = 0, capped = 0, floored = 0, covers = 0;
+        String first = null;
+        for (BuildingsTemplate t : templates) {
+            int plots = plans.plotsAvailableFor(t);
+            for (double cap : capacities) {
+                for (double gap : shortfalls) {
+                    int found = plans.orderSize(gap, cap, t), byCount = sizedByCount(plans, t, gap, cap);
+                    cases++;
+                    if (found != byCount) {
+                        differ++;
+                        if (first == null) first = String.format("%s, gap %.1f of %.1f: %d against the count's %d", t.getName(), gap, cap, found, byCount);
+                    }
+                    if (plots >= 1 && found == plots && Math.ceil(gap / cap) > plots) capped++;
+                    if (plots >= 1 && gap <= 0 && found == 1) floored++;
+                    // ...and a size under the plots is the fewest that cover the gap: n of them cover it, one fewer does not.
+                    if (plots >= 1 && found < plots && gap > 0 && found * cap >= gap && (found == 1 || (found - 1) * cap < gap)) covers++;
+                }
+            }
+        }
+        out.printf("      %,d sizes asked: %,d cut to the plots, %,d floored at one for no gap, %,d the fewest that cover the gap%n",
+                cases, capped, floored, covers);
+        if (first != null) out.println("      first that differs: " + first);
+        assertTrue("fixture: the grid reaches the plots, the floor, and sizes in between", capped > 0 && floored > 0 && covers > 0);
+        same("every size on the grid is the countdown's first cover of the gap, at least one, at most the plots", differ, 0);
+        same("a shortfall that needs 600 of a building is 600 of them (or the plots, where fewer hold them): no wait cuts it",
+                plans.orderSize(600, 1, roomiest), Math.min(600, plans.plotsAvailableFor(roomiest)));
+        // Past the int range the cast saturates; the plots decide, and nothing wraps to a negative order.
+        same("a gap past the int range is the plots, not a wrapped order", plans.orderSize(1e13, 1, roomiest), plans.plotsAvailableFor(roomiest));
+        same("...and a building with no capacity to count is one (or none where there is no ground)",
+                plans.orderSize(5_000, 0, roomiest), Math.min(1, plans.plotsAvailableFor(roomiest)));
+        if (landless != null) same("a building the city has no ground for is none, whatever the gap", plans.orderSize(1e6, 1, landless), 0);
+    }
+
     /* =====================================================================
        THE WATCH: every order the game decides, asked of the countdown too
        ===================================================================== */
 
     static final class Watch implements BusinessInvestment.OrderWatch {
         final Game g;
-        int sized, sizedDiffer, largestNeeded, mostWaits;
         int invested, investedDiffer, trimmed, refused, searched, deepest, largestInvested;
         int mostDeskCalls, mostCountDeskCalls, overBound;
-        int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused;
+        int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused, largestMortgage;
+        /** BA1: orders whose whole size carried an interest over its cost's own (the carry over 1), judged on their interest and on a mortgage; the most the carry grew a cost by. */
+        int carried, mortgageCarried;
+        double mostCarry = 1;
+        /** BA1: landlords' orders whose building the hook's costs did not name to one template. */
+        int mortgageUnnamed;
         String firstDiffer;
         /** The largest order judged on its interest so far (FR8, tillsAsTheLine()). */
         BusinessInvestment.Decision biggest;
@@ -646,22 +760,15 @@ public class OrderSearchCheck {
         Watch(Game g) { this.g = g; }
 
         @Override
-        public void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead) {
-            sized++;
-            largestNeeded = Math.max(largestNeeded, needed);
-            mostWaits = Math.max(mostWaits, waitsRead);
-            int byCount = sizedByCount(g.getBusinessInvestment(), t, needed, siteOutput);
-            if (byCount != deliverable) {
-                sizedDiffer++;
-                note(String.format("month %d, %s: sized %d against the count's %d", g.getMonth(), t.getName(), deliverable, byCount));
-            }
-        }
-
-        @Override
         public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found) {
             invested++;
             largestInvested = Math.max(largestInvested, d.quantity);
             if (biggest == null || d.quantity > biggest.quantity) biggest = d;
+            BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+            double carry = g.getBusinessInvestment().carryOf(d.template, d.quantity,
+                    credit.getPrimeRate() + credit.getRecordSurcharge(d.sector));
+            if (carry > 1) carried++;
+            if (carry > mostCarry && carry < Double.POSITIVE_INFINITY) mostCarry = carry;
             Game.Afford byCount = investedByCount(g, d, cash, perUnitProfit);
             if (byCount.quantity() > 0 && byCount.quantity() < d.quantity) {
                 trimmed++;
@@ -685,7 +792,16 @@ public class OrderSearchCheck {
         public void mortgaged(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit,
                               double annualRate, Mortgage.Decision found) {
             mortgaged++;
-            Mortgage.Decision byCount = decidedByCount(asked, costOf, cash, noiPerUnit, annualRate);
+            largestMortgage = Math.max(largestMortgage, asked);
+            IntToDoubleFunction carryOf = carryOfTheOrder(asked, costOf);
+            if (carryOf == null) {
+                // ...no single building by those costs: the order is judged without a carry, and counted, for the fixture to refuse.
+                mortgageUnnamed++;
+                carryOf = n -> 1;
+            } else if (carryOf.applyAsDouble(asked) > 1) {
+                mortgageCarried++;
+            }
+            Mortgage.Decision byCount = decidedByCount(asked, costOf, cash, noiPerUnit, annualRate, carryOf);
             if (byCount.quantity() > 0 && byCount.quantity() < asked) mortgagedTrimmed++;
             if (byCount.quantity() == 0) mortgagedRefused++;
             if (!found.equals(byCount)) {
@@ -694,20 +810,43 @@ public class OrderSearchCheck {
             }
         }
 
+        /**
+         * The carry the game grew the landlord's shortfall by (Game.lenderReads(): BusinessInvestment.carryOf() of the
+         * building at the insured rate). The hook is told what n cost, not the building, so the building is the one
+         * template whose cost of one, of two and of the order is the hook's, to the bit; null where none is, or where
+         * several are that carry differently. The costs are the game's own at this moment, nothing having been built yet.
+         */
+        IntToDoubleFunction carryOfTheOrder(int asked, IntToDoubleFunction costOf) {
+            BusinessInvestment plans = g.getBusinessInvestment();
+            double insured = g.getEconomyManager().getBusinessDebtManager().getInsuredMortgageRate();
+            double one = costOf.applyAsDouble(1), two = costOf.applyAsDouble(2), all = costOf.applyAsDouble(asked);
+            BuildingsTemplate named = null;
+            for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+                if (Double.compare(plans.getCostOf(t, 1), one) != 0 || Double.compare(plans.getCostOf(t, 2), two) != 0
+                        || Double.compare(plans.getCostOf(t, asked), all) != 0) continue;
+                if (named != null && Double.compare(plans.carryOf(named, asked, insured), plans.carryOf(t, asked, insured)) != 0) return null;
+                if (named == null) named = t;
+            }
+            if (named == null) return null;
+            final BuildingsTemplate building = named;
+            return n -> plans.carryOf(building, n, insured);
+        }
+
         void note(String s) { if (firstDiffer == null) firstDiffer = s; }
 
         void report(String what) {
-            out.printf("      %s: %,d orders sized (the largest needed %,d; at most %d waits read),%n", what, sized, largestNeeded, mostWaits);
-            out.printf("      %,d judged on their interest (the largest %,d; %,d trimmed, the deepest by %,d; %,d refused;"
-                    + " %,d trimmed past the counted slices), %,d on a mortgage (%,d trimmed, %,d refused)%n",
-                    invested, largestInvested, trimmed, deepest, refused, searched, mortgaged, mortgagedTrimmed, mortgagedRefused);
+            out.printf("      %s: %,d judged on their interest (the largest %,d; %,d trimmed, the deepest by %,d; %,d refused;"
+                    + " %,d trimmed past the counted slices), %,d on a mortgage (the largest %,d; %,d trimmed, %,d refused)%n",
+                    what, invested, largestInvested, trimmed, deepest, refused, searched, mortgaged, largestMortgage,
+                    mortgagedTrimmed, mortgagedRefused);
+            out.printf("      the wait counted (BA1): %,d of the interest orders and %,d of the mortgages had a carry over 1 at their"
+                    + " whole size, the most %.4f on a judged order%n", carried, mortgageCarried, mostCarry);
             out.printf("      the bond desk asked at most %,d times an order, where the countdown asked it %,d times%n",
                     mostDeskCalls, mostCountDeskCalls);
             if (firstDiffer != null) out.println("      first that differs: " + firstDiffer);
         }
 
         void verdicts(String what) {
-            same("every order's size in " + what + " is the count's", sizedDiffer, 0);
             same("every trim and refusal in " + what + " is the countdown's, with its rate and its \"at prime\"", investedDiffer, 0);
             same("every mortgage in " + what + " is the count's, with what trimmed it and the facts for one", mortgagedDiffer, 0);
             same("no order in " + what + " asked the bond desk more than Game.deskCallsMost() times", overBound, 0);
@@ -715,26 +854,25 @@ public class OrderSearchCheck {
     }
 
     /* =====================================================================
-       THE COUNTDOWNS, AS THEY STOOD IN 0.7.53
+       THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (and the size's, as BA1's formula counts it)
        ===================================================================== */
 
-    /** BusinessInvestment.orderSize()'s count: up from one until the wait passes MAX_ORDER_MONTHS. */
-    static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, int needed, double siteOutput) {
-        int deliverable = 0;
-        if (template.getConstructionPoints() > 0 && siteOutput > 0) {
-            for (int n = 1; n <= needed; n++) {
-                if (plans.leadTime(template, n, siteOutput) > BusinessInvestment.MAX_ORDER_MONTHS) break;
-                deliverable = n;
-            }
-        } else {
-            deliverable = needed;
-        }
-        return deliverable;
+    /**
+     * BusinessInvestment.orderSize()'s count (BA1): up from one, the first number of buildings whose capacity covers the
+     * shortfall, never more than the plots, and one for a building with no capacity to count. The countdown the formula
+     * (ceil of the gap over a building's capacity, at least one, at most the plots) is the closed form of.
+     */
+    static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, double shortfall, double capacityPerUnit) {
+        int plots = plans.plotsAvailableFor(template);
+        if (!(capacityPerUnit > 0)) return Math.min(1, plots);
+        int n = 1;
+        while (n < plots && n * capacityPerUnit < shortfall) n++;
+        return Math.min(n, plots);
     }
 
-    /** Mortgage.decide()'s count: down from what was asked. */
+    /** Mortgage.decide()'s count: down from what was asked, the lender's test on the shortfall grown by the order's carry (BA1; n -> 1 for none). */
     static Mortgage.Decision decidedByCount(int asked, IntToDoubleFunction costOf,
-                                            double cash, double noiPerUnit, double annualRate) {
+                                            double cash, double noiPerUnit, double annualRate, IntToDoubleFunction carryOf) {
         String trimmedBy = null;
         double ownForOne = Double.NaN, coverageOfOne = Double.NaN;
         boolean shortForOne = false;
@@ -749,7 +887,7 @@ public class OrderSearchCheck {
                 if (trimmedBy == null) trimmedBy = Mortgage.Decision.DOWN_PAYMENT;
                 continue;
             }
-            double coverage = Mortgage.coverage(noiPerUnit * n, cost - cash, annualRate);
+            double coverage = Mortgage.coverage(noiPerUnit * n, (cost - cash) * carryOf.applyAsDouble(n), annualRate);
             if (n == 1) coverageOfOne = coverage;
             if (coverage >= Mortgage.MORTGAGE_DEBT_COVERAGE) return new Mortgage.Decision(n, trimmedBy, false, ownForOne, coverageOfOne);
             if (trimmedBy == null) trimmedBy = Mortgage.Decision.LENDERS_TEST;
@@ -786,12 +924,15 @@ public class OrderSearchCheck {
             }
             double tested = plan != null && plan.hasBond() && plan.covers() ? plan.blendedRate() : rate;
             double on = g.orderGate().testedOn(cost, cash);
-            if (plans.servicesItsOwnDebt(perUnitProfit * n, on, tested)) {
+            // ...grown over the order's wait since BA1 (BusinessInvestment.carryOf(), at the rate it is tested at; a till that pays is not grown).
+            double carry = plans.carryOf(decision.template, n, tested);
+            if (plans.servicesItsOwnDebt(perUnitProfit * n, on > 0 ? on * carry : on, tested)) {
                 affordable = n;
                 break;
             }
-            if (plans.servicesItsOwnDebt(perUnitProfit * n, on,
-                    credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector))) {
+            double prime = credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector);
+            double carryAtPrime = plans.carryOf(decision.template, n, prime);
+            if (plans.servicesItsOwnDebt(perUnitProfit * n, on > 0 ? on * carryAtPrime : on, prime)) {
                 atPrime = true;
             }
         }

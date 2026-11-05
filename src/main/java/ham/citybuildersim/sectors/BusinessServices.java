@@ -128,16 +128,23 @@ public final class BusinessServices extends Sector {
      * What gates it instead is the profit test the brake already applies, plus
      * the licence: a template the city cannot staff the core of is skipped
      * rather than ordered, because buildStack() would refuse it anyway and a
-     * sector that keeps asking is a sector that never asks for anything else
-     * (MAX_CONCURRENT_ORDERS is one).
+     * sector that keeps asking is a sector that never asks for anything else.
+     *
+     * NO CAP ON ORDERS, AND THE LICENCES ON SITE COUNT (BA1, 2026-11-02). The
+     * sector held to one order on site (BusinessInvestment's cap, gone), so
+     * its licence test never met a licence twice; it may now order every month
+     * while earlier practices are on site, and a licence holder is "spare"
+     * until a practice is staffed (PopulationManager.spareLicences()) - so a
+     * test that did not count the licences the practices on site will need
+     * would order a second practice on the licences the first is waiting for,
+     * and a third. What the sector's own practices on site have asked for
+     * comes off the spare licences. Staffing the posts is Sector.staffing()'s,
+     * which counts the sector's posts on site as spoken for.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
 
         BuildingsTemplate best = null;
         double bestScore = 0;
@@ -150,10 +157,11 @@ public final class BusinessServices extends Sector {
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
 
             JobType licence = t.getRequiresLicence();
-            if (licence != null && !game.hasLicencesFor(t, 1)) {
+            double need = licence == null ? 0
+                    : game.licencesNeededFor(t, 1) + licencesOnSite(licence, game);
+            double have = licence == null ? 0 : game.getPopulationManager().spareLicences(licence);
+            if (licence != null && have < need) {
                 sawLicenceWall = true;
-                double need = game.licencesNeededFor(t, 1);
-                double have = game.getPopulationManager().spareLicences(licence);
                 if (wanted == null || need - have < shortBy) {
                     wanted = licence;
                     shortBy = need - have;
@@ -210,6 +218,16 @@ public final class BusinessServices extends Sector {
      */
     @Override
     public double[] retirementDemandAndCapacity(Game game) { return null; }
+
+    /**
+     * The licences of one kind this sector's practices on site will ask for
+     * when they open (BA1, 2026-11-02): each one's licensed posts at the share
+     * Game.licencesNeededFor() holds the first of a kind to.
+     */
+    private double licencesOnSite(JobType licence, Game game) {
+        return buildings.underConstructionBySector(key(),
+                b -> b.getRequiresLicence() == licence ? game.licencesNeededFor(b, 1) : 0);
+    }
 
     /**
      * A licence, in words, without reaching into the UI for it - a sector must

@@ -261,9 +261,9 @@ public class AutoBuildCheck {
                         g.getLandManager().getAvailableSqFt(), ab.getSlack());
                 if (s == null) continue;
                 first[0] = s;
-                // The builders' rule, worked here: the most that opens inside MAX_ORDER_MONTHS, one when none would.
+                // The builders' rule, worked here: the most that opens inside AutoBuilder.ORDER_MONTHS (the city's own cut since BA1), one when none would.
                 int k = s.count();
-                while (k > 1 && AutoBuilder.wait(g, s, k) > BusinessInvestment.MAX_ORDER_MONTHS) k--;
+                while (k > 1 && AutoBuilder.wait(g, s, k) > AutoBuilder.ORDER_MONTHS) k--;
                 expected[0] = k;
                 return;
             }

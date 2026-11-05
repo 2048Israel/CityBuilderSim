@@ -1,4 +1,4 @@
-# RailCheck.java - 747 lines · 8 methods · 0 constants · harnesses
+# RailCheck.java - 753 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/RailCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -44,9 +44,9 @@
 | 109 | · 2. THE TWO HALVES ADD UP |
 | 175 | · 3. THE LAND, THE ROAD AND THE CATALOGUE |
 | 246 | · 4. THE SECTOR, IN A CITY |
-| 529 | · 5. AND IT SURVIVES A RELOAD |
-| 619 | · 6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46) |
-| 661 | · 7. ITS TONNES BY KIND, THE MAP'S TRAINS' (0.8.2, batch FR1) |
+| 534 | · 5. AND IT SURVIVES A RELOAD |
+| 624 | · 6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46) |
+| 667 | · 7. ITS TONNES BY KIND, THE MAP'S TRAINS' (0.8.2, batch FR1) |
 
 ## Fields (state)
 
@@ -58,13 +58,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 711 | **type** `public class RailCheck` | The railway: what it charges, who pays it, and what it does to the band. |
+| 37 | 717 | **type** `public class RailCheck` | The railway: what it charges, who pays it, and what it does to the band. |
 | 41 | 7 | `static void quietly(Runnable r)` |  |
 | 49 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 54 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 60 | 3 | `static boolean same(double a, double b)` | Bitwise, not near. |
 | 64 | 3 | `static boolean near(double a, double b, double tol)` |  |
-| 68 | 632 | `public static void main(String[] args)` |  |
-| 710 | 15 | `static void lay(Game game, String name, int count)` | Track, handed to the city rather than waited for. |
-| 731 | 16 | `static boolean allInputsAddUp(Game game)` | The goods bought, plus the services named, come to the input line - for every sector, every month. |
+| 68 | 638 | `public static void main(String[] args)` |  |
+| 716 | 15 | `static void lay(Game game, String name, int count)` | Track, handed to the city rather than waited for. |
+| 737 | 16 | `static boolean allInputsAddUp(Game game)` | The goods bought, plus the services named, come to the input line - for every sector, every month. |
 

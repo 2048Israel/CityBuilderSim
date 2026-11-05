@@ -1678,6 +1678,14 @@ public class HoldersCheck {
         city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1 on R0, 2026-11-05), as main() opens them for the other sections: 13a needs the
+            // second sale of the line to come at a premium to its coupon, and in the untaxed 1900 town on BA1's path it did not
+            // (the 20-year yield 4.151% at the first sale and 4.168% at the reopening, a sale of 165.65 face for 164.36, the
+            // line's discount left up from 1.00 to 2.29: the coupon rounds down to 4.125% and the yield stood over it). The town
+            // taxing from month 1, which these sections were written against, has the yield 3.97% at the first sale and 3.84%
+            // at the reopening, the reopening over its face and the discount down from 1.98 to 1.67.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
@@ -2053,11 +2061,25 @@ public class HoldersCheck {
     record UnsettledBuyback(boolean fresh, double face, double discount, double book, double carried,
                             double taken, double bankFace, boolean gone) { }
 
+    /** BA1: the discount a year's bill raising this cash would carry, as the quote has it: its face less the cash it brings, the fixed fee of the issue in it. */
+    static double billDiscount(Game city, double cash) {
+        DebtQuote q = city.quoteTBill(cash, 12, PriceLevel.FACTOR);
+        return q.faceValue() - q.cashReceived();
+    }
+
     /** 13c's round trip, done the same way to the city and to its twin: a year's bill of a fifth of the bank's book sold between the presses and bought straight back whole, before its settle. */
     static UnsettledBuyback sellAndBuyBackBeforeTheSettle(Game city) {
         DebtManager ledger = city.getDebtManager();
         Bank bank = city.getBank();
-        final double ask = .2 * bank.getCityBook();
+        // BA1, 2026-11-04: the section's condition is a bank whose book covers the face it sells back AND whose unearned discount covers the
+        // piece's. A fifth of the book was a bill whose discount the bank carried on main (0.678k of discount against 0.698k carried, on a
+        // book of 58.3k); under BA1 the bank's book is 30.6k and it carries 0.364k, and a fifth of it is a bill of 0.509k of discount
+        // (6.65k of face, 7.6%), of which the fixed fee of an issue is 0.311k. The bank cannot carry less than nothing, so the sale's release
+        // of the piece's whole discount clamped at what it carried, and the identity missed by the shortfall, 0.144315k to the digit. The
+        // bill is halved until its discount (the quote's face less its cash, the fee in it) is within what the bank carries.
+        double ask0 = .2 * bank.getCityBook();
+        for (int halvings = 0; halvings < 30 && billDiscount(city, ask0) > bank.getUnearnedDiscount(); halvings++) ask0 /= 2;
+        final double ask = ask0;
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
         quietly(() -> city.handleTBillLogic(ask, 12, PriceLevel.FACTOR));
         Debt piece = newPiece(ledger, had);

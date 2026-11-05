@@ -172,16 +172,21 @@ public final class Automotive extends Sector {
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
 
         double fabricated = localSupplyOf(Good.FABRICATED_STEEL, game);
         if (fabricated <= 0) {
             return BusinessInvestment.Decision.no(sector,
                     "nothing here fabricates steel, and the world will not sell a beam at any price");
         }
-        double biggestDraw = fabricated * MAX_SHARE_OF_LOCAL_SUPPLY;
+        // The plants on site will be fed from the same fabrication (BA1,
+        // 2026-11-02). The gate held one plant to a quarter of the city's
+        // fabrication and nothing more while a sector could have one order on
+        // site; with no cap on orders a string of plants each under a quarter
+        // would together want the whole, the plant after one on site judged as
+        // if the first were never to open. What the plants on site will draw
+        // comes off the quarter.
+        double drawOnSite = buildings.underConstructionBySector(sector, t -> t.uses(Good.FABRICATED_STEEL));
+        double biggestDraw = Math.max(0, fabricated * MAX_SHARE_OF_LOCAL_SUPPLY - drawOnSite);
 
         BuildingsTemplate best = null;
         double bestScore = 0;

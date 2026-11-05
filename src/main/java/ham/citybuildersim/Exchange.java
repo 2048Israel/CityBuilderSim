@@ -1285,10 +1285,19 @@ public class Exchange {
 
     /* ---------------------------------- the households ---------------------------------- */
 
-    /** Whether a cell may put money into shares at all: no debt, not locked out, not going short, investing at all. */
-    static boolean mayBuy(Household c) {
-        return !c.isEmpty() && c.canInvest() && !(c.debt > 0) && c.lockout <= 0 && !c.isGoingShort();
+    /**
+     * Whether a cell may put money into shares at all: no debt, not locked out, not going short, investing at all. A debt is
+     * read as the households' balance reads it (HouseholdBalance.owes()): one no larger than its rounding floor is the
+     * arithmetic's dust and not a debt (BA1, 2026-11-04). Read as any debt above nothing, a hair of 1e-16 left in one cell
+     * at today's prices, and exactly nothing at the factor, kept that cell out of a share offering at one price level and
+     * not the other (PriceLevelCheck 9's town parted at month 26, as it had at month 56 before FC1).
+     */
+    boolean mayBuy(Household c) {
+        return !c.isEmpty() && c.canInvest() && !owes(c) && c.lockout <= 0 && !c.isGoingShort();
     }
+
+    /** Whether a cell owes anything (mayBuy()): past the households' rounding floor where the balance is attached, else anything above nothing. */
+    private boolean owes(Household c) { return households != null ? households.owes(c) : c.debt > 0; }
 
     /** How far a cell's savings are under its cushion, every household of it: its excess over its share target (round 3). Any cell holding shares, whether or not it may buy. */
     static double shortOfCushion(Household c) {
@@ -1306,7 +1315,7 @@ public class Exchange {
     public double getLifeValueSold() { return lifeValueSold; }
 
     /** What a cell has past its cushion, in all: savings past SHARE_CUSHION_MONTHS of its take-home, every household of it. */
-    static double spareOf(Household c) {
+    double spareOf(Household c) {
         if (!mayBuy(c)) return 0;
         double excess = c.savings - HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
         return excess > 0 ? excess * c.households : 0;

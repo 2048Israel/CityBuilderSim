@@ -277,9 +277,21 @@ public class Mortgage extends BusinessDebt {
      */
     public static Decision decide(int asked, java.util.function.IntToDoubleFunction costOf,
                                   double cash, double noiPerUnit, double annualRate) {
+        return decide(asked, costOf, cash, noiPerUnit, annualRate, n -> 1);
+    }
+
+    /**
+     * ...with the interest on the wait (BA1): the lender's test reads the payment on the shortfall of n grown by
+     * {@code carryOf(n)}, what BusinessInvestment.carryOf() reads for an order of n - the cost of the building paid up
+     * front, earning nothing until the builders reach it (THE INTEREST ON THE WAIT). The down payment and the outright
+     * purchase are asked of the cost as before. {@code n -> 1} is the test without it.
+     */
+    public static Decision decide(int asked, java.util.function.IntToDoubleFunction costOf,
+                                  double cash, double noiPerUnit, double annualRate,
+                                  java.util.function.IntToDoubleFunction carryOf) {
         if (asked < 1) return new Decision(0, null, false, Double.NaN, Double.NaN);
         // What trimmed it is what failed first on the way down: the whole order.
-        Slice top = Slice.of(asked, costOf, cash, noiPerUnit, annualRate);
+        Slice top = Slice.of(asked, costOf, cash, noiPerUnit, annualRate, carryOf);
         String trimmedBy = top.failedOn();
         // The largest that passes, by halving: passing is a run from one up
         // (THE LANDLORD'S ORDER IS A RUN FROM ONE, below).
@@ -287,11 +299,11 @@ public class Mortgage extends BusinessDebt {
         if (top.passes()) pass = asked;
         else while (fail - pass > 1) {
             int mid = (int) (((long) pass + fail) >>> 1);
-            if (Slice.of(mid, costOf, cash, noiPerUnit, annualRate).passes()) pass = mid; else fail = mid;
+            if (Slice.of(mid, costOf, cash, noiPerUnit, annualRate, carryOf).passes()) pass = mid; else fail = mid;
         }
         if (pass >= 2) return new Decision(pass, trimmedBy, false, Double.NaN, Double.NaN);
         // ...and the facts for one, which the count read when it got down to one.
-        Slice one = asked == 1 ? top : Slice.of(1, costOf, cash, noiPerUnit, annualRate);
+        Slice one = asked == 1 ? top : Slice.of(1, costOf, cash, noiPerUnit, annualRate, carryOf);
         if (pass == 1 && one.outright()) return new Decision(1, trimmedBy, false, Double.NaN, Double.NaN);
         if (pass == 1) return new Decision(1, trimmedBy, false, one.own(), one.coverage());
         return new Decision(0, trimmedBy, one.shortOfDown(), one.own(), one.coverage());
@@ -323,6 +335,15 @@ public class Mortgage extends BusinessDebt {
      *     is under a trillion.
      * Outright, or the down payment and the test: a run from one either way.
      * OrderSearchCheck holds the halving to the count over a long run.
+     *
+     * AND THE WAIT (BA1). The test reads the shortfall grown by the carry of
+     * the order, k(n) = (1 + r / 12)^W(n) for W(n) the months until its last
+     * building opens (BusinessInvestment.carryOf()). W rises with n (THE WAIT
+     * GROWS WITH THE ORDER, there), so k(n) is at least 1 and rises with n,
+     * and the shortfall a building, k(n) (c(n) - cash) / n, is a product of
+     * two positive figures that each rise with n: it still rises, and the
+     * ratio n / (k(n) (c(n) - cash)) still falls, by more than before. A run
+     * from one stays a run from one.
      */
 
     /** One slice of a landlord's order, read as decide()'s count read it: bought outright, or its down payment, and the lender's test. */
@@ -330,7 +351,8 @@ public class Mortgage extends BusinessDebt {
         boolean passes() { return failedOn == null; }
 
         static Slice of(int n, java.util.function.IntToDoubleFunction costOf,
-                        double cash, double noiPerUnit, double annualRate) {
+                        double cash, double noiPerUnit, double annualRate,
+                        java.util.function.IntToDoubleFunction carryOf) {
             double cost = costOf.applyAsDouble(n);
             // Its own funds buy it outright: no lender to ask.
             if (cash >= cost) return new Slice(true, Double.NaN, false, Double.NaN, null);
@@ -339,7 +361,8 @@ public class Mortgage extends BusinessDebt {
             // the down payment exactly, and without it a ten-trillionth decided the order - one city built, its reformed twin
             // refused (DenominationCheck, FR2's notes).
             if (!(cash > 0) || cash < own * (1 - 1e-9)) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
-            double coverage = Mortgage.coverage(noiPerUnit * n, cost - cash, annualRate);
+            // ...on the shortfall grown over the wait (BA1; 1 where none is read).
+            double coverage = Mortgage.coverage(noiPerUnit * n, (cost - cash) * carryOf.applyAsDouble(n), annualRate);
             return new Slice(false, own, false, coverage,
                     coverage >= MORTGAGE_DEBT_COVERAGE ? null : Decision.LENDERS_TEST);
         }

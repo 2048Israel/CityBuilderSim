@@ -162,15 +162,15 @@ public class InvestCheck {
         assertTrue("fixture: the jobs now outrun the beds", jobs * 2.25 > beds * 1.05);
 
         /*
-         * ...AND THE BUILDERS HAVE CREWS (0.7.17). The landlords hold their
-         * orders to the months of work their sites can do (BusinessInvestment
-         * .withinMonthsOfWork()), and this city of sixty-odd people staffs its
+         * ...AND THE BUILDERS HAVE CREWS (0.7.17). The landlords held their
+         * orders to the months of work their sites could do (BusinessInvestment
+         * .withinMonthsOfWork(), until BA1 took the months out), and this city of sixty-odd people staffs its
          * ten depots at under one percent: the repairs take all of it and the
-         * sites are left nothing, so a shortage with nobody to build it now
-         * holds rather than ordering one anyway. The question here is whether
+         * sites are left nothing, so a shortage with nobody to build it held
+         * rather than ordering one anyway. The question here is whether
          * the landlords read jobs, so the builders are given their crews the
          * way section 5 gives the mills theirs - a pin, before each question
-         * the landlords are asked in this city.
+         * the landlords are asked in this city (kept since BA1: the sites' output still sets the lead time the planners read).
          */
         double[] everyPost = new double[11];
         java.util.Arrays.fill(everyPost, 1.0);
@@ -433,18 +433,18 @@ public class InvestCheck {
         double expected = (house.getCashCost()
                 + house.getConstructionMaterials() * bm.getConstructionMaterialPrice()) / (1 - rB);
         check("house, empty materials yard", quoted, expected);
-
         /* ==================== 8. order sizing ==================== */
-        System.out.println("\n--- orders size to the gap, but stay deliverable ---");
+        System.out.println("\n--- orders size to the gap and the plots, whatever the wait (BA1) ---");
 
         /*
-         * The gap in people, divided by what the CHOSEN building holds, and
-         * capped at what would open inside twelve months at the output it is
-         * handed - with nothing else on site, as here, twelve months of it
-         * (0.7.17: the wait, BuildingManager.waitFor(); section 16 asks it
-         * with a queue on site). Asked of
-         * orderSize() directly, on the template the landlords picked above,
-         * so the arithmetic is the test's and nothing else is.
+         * The gap in people, divided by what the CHOSEN building holds, rounded up - and nothing else (BA1). It was
+         * capped at what would open inside twelve months at the output it was handed (0.7.17: the wait,
+         * BuildingManager.waitFor()), and halved by that wait before; with no cap on orders a sector that is short orders
+         * what it is short of, and what rations the queue is the price of a point and the interest on the wait (EVERY
+         * BUSINESS MAY BUILD AHEAD, below). REWRITTEN: this asserted the cap, "capped at twelve months of output" and
+         * "more builders, bigger order", at the output orderSize() was handed; it is handed none now. Asked of orderSize()
+         * directly, on the template the landlords picked above, so the arithmetic is the test's and nothing else is. Land,
+         * the one thing that can still cut an order, is section 12's.
          */
         BuildingsTemplate picked = d.template == null ? house : hb.getTemplateByName("Low-Rise Apartments");
         d = landlords.plan(plansFlat, housed);
@@ -454,28 +454,38 @@ public class InvestCheck {
 
         double pickedPoints = picked.getConstructionPoints();
         int wantedForGap = (int) Math.ceil(2500.0 / picked.getCapacity());
+        int plotsOfPicked = plansFlat.plotsAvailableFor(picked);
+        assertTrue("fixture: there is ground for the whole gap's order and for a great deal more",
+                plotsOfPicked > 1_000 * wantedForGap);
 
-        double tightOutput = pickedPoints * 5 / 12;      // twelve months buys five
-        int cappedAtTight = (int) (12 * tightOutput / pickedPoints);
-        int q = plansFlat.orderSize(2500, picked.getCapacity(), picked, tightOutput);
+        int q = plansFlat.orderSize(2500, picked.getCapacity(), picked);
         assertTrue("ordered more than one", q > 1);
-        check("capped at twelve months of output", q, cappedAtTight);
+        check("the whole gap: the gap over what the chosen building holds, rounded up", q, wantedForGap);
 
-        // Ten times the construction capacity, ten times the order - until the
-        // gap itself binds, which it now does.
-        double looseOutput = tightOutput * 10;
-        q = plansFlat.orderSize(2500, picked.getCapacity(), picked, looseOutput);
-        check("more builders, bigger order",
-                q, Math.min(wantedForGap, (int) (12 * looseOutput / pickedPoints)));
+        // The builders do not come into it: the order that was cut to twelve months of their output is the gap now.
+        double buildersSites = housed.getBuildingOutputAtEveryPost();
+        int years = (int) Math.ceil(10 * 12 * buildersSites / pickedPoints);
+        q = plansFlat.orderSize(years * (double) picked.getCapacity(), picked.getCapacity(), picked);
+        check("a gap ten years of the builders' work big is ordered whole too", q, years);
+        assertTrue("...an order owing more than the months the city's own orders are still cut to (AutoBuilder.ORDER_MONTHS) of the sites' output",
+                q * pickedPoints > AutoBuilder.ORDER_MONTHS * buildersSites);
 
-        // A small gap orders small, not the cap.
-        q = plansFlat.orderSize(275, picked.getCapacity(), picked, looseOutput);
+        // A small gap orders small.
+        q = plansFlat.orderSize(275, picked.getCapacity(), picked);
         check("small gap -> small order", q, (int) Math.ceil(275.0 / picked.getCapacity()));
-        assertTrue("...and well under the cap", q < 12 * looseOutput / pickedPoints);
 
-        // Slow builders still floor at one; only land can zero an order.
-        q = plansFlat.orderSize(2500, picked.getCapacity(), picked, 1);
-        check("almost no builders -> still orders one", q, 1);
+        // Floored at one: a sector that has decided it is short places an order. Only land can zero one.
+        check("a gap of nothing still orders one", plansFlat.orderSize(0, picked.getCapacity(), picked), 1);
+        check("...a gap under one building, one", plansFlat.orderSize(picked.getCapacity() / 2.0, picked.getCapacity(), picked), 1);
+        check("...a building that holds nothing to count, one", plansFlat.orderSize(2500, 0, picked), 1);
+
+        // ...and cut by the plots: the ground for four is four, however big the gap.
+        BusinessInvestment fourPlots = new BusinessInvestment(hb, housed.getEconomyManager());
+        fourPlots.setLandAvailable(picked.getLandSqFt() * 4, 0);
+        check("the ground for four plots -> four, however big the gap", fourPlots.orderSize(2500, picked.getCapacity(), picked), 4);
+        check("...and the gap's own when it is under the plots", fourPlots.orderSize(picked.getCapacity() * 2.0, picked.getCapacity(), picked), 2);
+        fourPlots.setLandAvailable(0, 0);
+        check("...and none where there is no ground at all", fourPlots.orderSize(2500, picked.getCapacity(), picked), 0);
 
         /* ==================== 9. construction expands itself ==================== */
         System.out.println("\n--- construction watches its own backlog ---");
@@ -551,9 +561,13 @@ public class InvestCheck {
         hands.restoreWorkforce(200);
         hands.restoreSkilledHeads(new double[] { 0, 100, 0, 0 });
 
+        // One depot on site at a time: the builders' own rule, which BA1 left them when it took the one order off every
+        // other sector (sectors.Construction, ONE DEPOT AT A TIME, BUILT FIRST; WHY IT OUTLIVED THE CAP ON ORDERS).
         bb.addStack(template(building, "Construction Depot"), 1, false);
         d = crews.plan(plansBuild, building);
-        assertTrue("already expanding -> hold", !d.build);
+        System.out.println("   " + d.reason);
+        assertTrue("already expanding -> hold, saying its depot is on site", !d.build
+                && ham.citybuildersim.sectors.Construction.ONE_DEPOT_ON_SITE.equals(d.reason));
 
         /* ============ 10. construction earns as it builds ============ */
         System.out.println("\n--- construction: revenue follows the work ---");
@@ -720,42 +734,37 @@ public class InvestCheck {
         assertTrue("land no longer binding -> the order is back", d.build && d.quantity > 5);
 
         /*
-         * THE LANDLORDS HOLD WORK, NOT ONE ORDER (0.7.17). REWRITTEN: this
-         * asserted "already on site -> hold" - one order at a time, the rule
-         * Jerus replaced ("Landlords may hold orders worth a number of months
-         * of building work, instead of one order at a time"). One house on
-         * site no longer stops them; sites owing more than MAX_ORDER_MONTHS of
-         * the builders' site output does. Every other sector still holds on
-         * one order - retail's, below.
+         * THE LANDLORDS ORDER THE GAP, NOT MONTHS OF WORK (BA1). REWRITTEN: this asserted that sites owing more than
+         * MAX_ORDER_MONTHS of the builders' site output held the landlords, that an order was sized to keep what they owe
+         * inside it, and that a home that would not fit was swapped for the next smaller one - 0.7.17, Jerus: "Landlords may
+         * hold orders worth a number of months of building work, instead of one order at a time" and "They order the next
+         * smaller home type that does fit, instead of waiting". Jerus, 2026-11-01: "why bounded? why not let contracts
+         * flow? ... too much and contracts get expensive thus business stop trying to place orders until contracts arent so
+         * expensive". The months went with the one-order cap: the order is the shortage and the land (RealEstate.plan()), and
+         * what rations the landlords is what rations everyone - the price of a point, each home priced on the queue the ones
+         * before it leave, and the lender's test on the loan grown over the wait (EVERY BUSINESS MAY BUILD AHEAD, below). The
+         * three fixtures that caused the old holds are kept, and now cause the absence of them.
          */
         BuildingsTemplate aHouse = template(housed, "House");
         hb.addStack(aHouse, 1, false);
         housedBuilders.updateJobFillRate(everyPost);
         housedBuilders.updateWages(housed.getEconomyManager().getWageRates(), housedBuilders.postsPerTier());
         d = landlords.plan(tight, housed);
-        assertTrue("one house on site no longer holds the landlords", d.build);
-        // At every post (0.7.17, revised): builders who have laid crews off
-        // hire them back for an order, so the pace an order is weighed at is
-        // the builders' with every post offered.
+        assertTrue("one house on site does not hold the landlords", d.build);
+        // At every post (0.7.17, revised): builders who have laid crews off hire them back for an order, so the pace an
+        // order is weighed at is the builders' with every post offered.
         double sitesGet = housed.getBuildingOutputAtEveryPost();
         String re = landlords.key();
-        if (d.build) {
-            double owedWith = hb.pointsOwedBySector(re) + d.quantity * (double) d.template.getConstructionPoints();
-            assertTrue("...and the order keeps what their sites owe within MAX_ORDER_MONTHS of the builders' site output",
-                    owedWith <= BusinessInvestment.MAX_ORDER_MONTHS * sitesGet + 1e-6);
-        }
+        assertTrue("...and the order says nothing of the builders' months of work", d.build
+                && !d.reason.contains("months of work on site") && !d.reason.contains("would not fit in"));
 
         /*
-         * TRY A SMALLER HOME (0.7.17, revised to Jerus's answer: "They order
-         * the next smaller home type that does fit, instead of waiting"). The
-         * room is MAX_ORDER_MONTHS of the builders' site output less what the
-         * landlords owe on site, so the crews are thinned until the room is
-         * halfway between the landlords' best home and the smallest they
-         * build: less than one of the best, more than a smaller one. This
-         * city's best home is the House, the smallest there is, so a House is
-         * priced out of first place for the question (its cash cost a
-         * thousandfold) and put back after, with the crews: the landlords'
-         * best is then a bigger one.
+         * THE BEST HOME NO LONGER HAS TO FIT. The room is a year (AutoBuilder.ORDER_MONTHS, the months the city's own
+         * orders are still cut to) of the builders' site output less what the landlords owe on site, with the crews
+         * thinned until it is halfway between the landlords' best home and the smallest they build: less than one of the
+         * best, more than a smaller one - the condition that made them order the smaller. This city's best home is the
+         * House, the smallest there is, so a House is priced out of first place for the question (its cash cost a
+         * thousandfold) and put back after, with the crews: the landlords' best is then a bigger one.
          */
         double houseCash = aHouse.cashCost;
         aHouse.cashCost = houseCash * 1_000;
@@ -771,39 +780,35 @@ public class InvestCheck {
         double staffedAtFull = sitesGet + repairsNow;                 // the sites' output plus the repairs, every post filled
         double owedRe = hb.pointsOwedBySector(re);
         double wantRoom = (bestHome.getConstructionPoints() + smallest.getConstructionPoints()) / 2.0;
-        double wantOutput = (owedRe + wantRoom) / BusinessInvestment.MAX_ORDER_MONTHS;
+        double wantOutput = (owedRe + wantRoom) / AutoBuilder.ORDER_MONTHS;
         double thin = (wantOutput + repairsNow) / staffedAtFull;
         double[] thinned = new double[11];
         java.util.Arrays.fill(thinned, thin);
         housedBuilders.updateJobFillRate(thinned);
         housedBuilders.updateWages(housed.getEconomyManager().getWageRates(), housedBuilders.postsPerTier());
-        double roomLeft = BusinessInvestment.MAX_ORDER_MONTHS * housed.getBuildingOutputAtEveryPost() - owedRe;
-        System.out.printf("   crews at %.3f of their posts: %,.0f points of room, a %s is %,d and a %s %,d%n", thin, roomLeft,
+        double roomLeft = AutoBuilder.ORDER_MONTHS * housed.getBuildingOutputAtEveryPost() - owedRe;
+        System.out.printf("   crews at %.3f of their posts: %,.0f points of a year's room, a %s is %,d and a %s %,d%n", thin, roomLeft,
                 bestHome.getName(), bestHome.getConstructionPoints(), smallest.getName(), smallest.getConstructionPoints());
-        assertTrue("fixture: the room is less than one of the best home, and more than the smallest",
+        assertTrue("fixture: a year's room is less than one of the best home, and more than the smallest",
                 roomLeft < bestHome.getConstructionPoints() && roomLeft >= smallest.getConstructionPoints());
         d = landlords.plan(tight, housed);
         System.out.println("   " + d.reason);
-        assertTrue("the best home would not fit in MAX_ORDER_MONTHS of the builders' work: they order the next smaller that fits",
-                d.build && d.template.getConstructionPoints() < bestHome.getConstructionPoints());
+        assertTrue("the best home does not fit in a year of the builders' work: they order it all the same, not the next smaller",
+                d.build && d.template == bestHome);
         if (d.build) {
-            assertTrue("...sized so what their sites owe, the order included, stays within MAX_ORDER_MONTHS of it",
-                    owedRe + d.quantity * (double) d.template.getConstructionPoints()
-                            <= BusinessInvestment.MAX_ORDER_MONTHS * housed.getBuildingOutputAtEveryPost() + 1e-6);
-            assertTrue("...and it says why", d.reason.contains("would not fit in")
-                    && d.reason.contains(", a " + d.template.getName() + " does"));
+            assertTrue("...an order that owes more than the year's room, which the rule it replaces cut to what fitted", d.quantity
+                    * (double) d.template.getConstructionPoints() > roomLeft);
+            assertTrue("...and it does not say it would not fit in months of work", !d.reason.contains("would not fit in")
+                    && !d.reason.contains("months of work on site"));
         }
         aHouse.cashCost = houseCash;
         housedBuilders.updateJobFillRate(everyPost);
         housedBuilders.updateWages(housed.getEconomyManager().getWageRates(), housedBuilders.postsPerTier());
         /*
-         * Sites owing more than a year of their work, caused without the
-         * homes on them covering the jobs - which would hold the landlords
-         * for the other reason (plan(): the homes on site are supply). So the
-         * crews are thinned to a tenth of their posts, which leaves the sites
-         * a few hundred points a month, and three blocks of flats are owed:
-         * more than twelve months of that, and homes for far fewer people
-         * than the jobs could carry.
+         * SITES OWING MORE THAN A YEAR OF THEIR WORK DO NOT HOLD THEM. Caused without the homes on them covering the jobs -
+         * which would hold the landlords for the other reason (plan(): the homes on site are supply). So the crews are
+         * thinned to a tenth of their posts, which leaves the sites a few hundred points a month, and three blocks of
+         * flats are owed: more than twelve months of that, and homes for far fewer people than the jobs could carry.
          */
         double[] aTenth = new double[11];
         java.util.Arrays.fill(aTenth, .1);
@@ -811,17 +816,23 @@ public class InvestCheck {
         housedBuilders.updateWages(housed.getEconomyManager().getWageRates(), housedBuilders.postsPerTier());
         BuildingsTemplate block = template(housed, "Low-Rise Apartments");
         hb.addStack(block, 3, false);
-        assertTrue("fixture: the landlords' sites owe more than MAX_ORDER_MONTHS of what they are left, and are left something",
+        assertTrue("fixture: the landlords' sites owe more than a year of what they are left, and are left something",
                 housed.getBuildingOutputAtEveryPost() > 0 && hb.pointsOwedBySector(re)
-                        > BusinessInvestment.MAX_ORDER_MONTHS * housed.getBuildingOutputAtEveryPost());
+                        > AutoBuilder.ORDER_MONTHS * housed.getBuildingOutputAtEveryPost());
+        double monthsOwed = hb.pointsOwedBySector(re) / housed.getBuildingOutputAtEveryPost();
         d = landlords.plan(tight, housed);
-        System.out.println("   " + d.reason);
-        assertTrue("sites owing more than MAX_ORDER_MONTHS of their work -> hold", !d.build);
-        assertTrue("...and it says so in months of work", d.reason.contains("months of work on site"));
+        System.out.println("   " + d.reason + " (" + String.format("%.0f", monthsOwed) + " months owed)");
+        assertTrue("sites owing more than a year of their work do not hold the landlords: the homes on them do not cover the jobs, so they order", d.build);
+        assertTrue("...a home, on the ground there is", d.template != null && d.template.getCategory() == BuildingType.RESIDENTIAL
+                && d.quantity >= 1 && d.quantity <= tight.plotsAvailableFor(d.template));
+        assertTrue("...and it does not say anything of months of work on site", !d.reason.contains("months of work on site"));
         shops.setPopulation(1_000_000);
+        queue.households = 1_000_000;          // ...a million households who each want a basket: far more than the two stores and the one on site hand over
         hb.addStack(template(housed, "Convenience Store"), 1, false);
         d = shops.plan(tight, housed);
-        assertTrue("every other sector still holds on one order on site", !d.build && d.reason.equals("already building"));
+        System.out.println("   " + d.reason);
+        assertTrue("every other sector orders with one of its orders on site too: the shops, a store under construction", d.build
+                && hb.getUnderConstructionBySector(shops.key()) >= 1 && !"already building".equals(d.reason));
 
         /* ============ 13. land is part of what a building costs ============ */
         System.out.println("\n--- priced land shows up in the quote ---");
@@ -985,65 +996,59 @@ public class InvestCheck {
         check("...all of it on a stack with nothing on site", uniStack.getConstructionProgress(), 0);
         check("...and down to what it owes on one with work on it", depStack.getConstructionProgress(), dep.getConstructionPoints());
 
-        /* ============ 16. the landlords hold months of work ============ */
-        System.out.println("\n--- the landlords hold months of work, not one order (0.7.17) ---");
+        /* ============ 16. the landlords' order is the gap, whatever is on site (BA1) ============ */
+        System.out.println("\n--- the landlords order the gap, not months of work: nothing on site cuts the order (0.7.17, BA1) ---");
 
+        /*
+         * REWRITTEN (BA1). This asserted withinMonthsOfWork(): as many homes as the sites would build in MAX_ORDER_MONTHS of
+         * the builders' site output, less the landlords' own homes on site, and nothing for the other sectors' sites (0.7.17,
+         * "Landlords may hold orders worth a number of months of building work, instead of one order at a time"). It is gone
+         * with the cap it served (EVERY BUSINESS MAY BUILD AHEAD): a landlord orders the shortage and the plots. What stays of
+         * the premise is that what is on site - ten universities, fifty of their own houses - does not change the order, and
+         * the landlords' months of work are still counted for the screens (monthsOfWorkOnSite()).
+         */
         BuildingManager lots = new BuildingManager();
         lots.initializeTemplates();
         EconomyManager lotsEm = new EconomyManager(lots);
         BusinessInvestment landlordsPlan = new BusinessInvestment(lots, lotsEm);
+        landlordsPlan.setLandAvailable(1e12, 0);                 // land is not the question here
         String RE = Sectors.REAL_ESTATE;
         BuildingsTemplate h = lots.getTemplateByName("House");
         double hp = h.getConstructionPoints();
         double S = 1_000;
-        check("nothing on site: as many as the sites would build in MAX_ORDER_MONTHS",
-                landlordsPlan.withinMonthsOfWork(RE, h, 1_000_000, S),
-                Math.floor(BusinessInvestment.MAX_ORDER_MONTHS * S / hp));
-        check("...never more than it wanted", landlordsPlan.withinMonthsOfWork(RE, h, 5, S), 5);
-        check("...and nothing with no site output at all", landlordsPlan.withinMonthsOfWork(RE, h, 5, 0), 0);
+        double million = 1_000_000.0 * h.getCapacity();
+        assertTrue("fixture: the ground holds a million houses and more", landlordsPlan.plotsAvailableFor(h) > 2_000_000);
+        check("nothing on site: the gap, a million houses of it", landlordsPlan.orderSize(million, h.getCapacity(), h), 1_000_000);
         BuildingsTemplate u = lots.getTemplateByName("University");
         lots.addStack(u, 10, false);
-        /*
-         * REWRITTEN (0.7.17, second revision). Ten universities on site
-         * first cost the landlords ten houses (one crew a building), then
-         * everything (their pace under crews by what each site owed was the
-         * whole city's queue). The months are MAX_ORDER_MONTHS of the
-         * builders' site output, and what counts against them is what the
-         * landlords owe on site - "orders worth a number of months of
-         * building work".
-         */
-        check("ten universities on site: the landlords' room is their own, not the city's queue",
-                landlordsPlan.withinMonthsOfWork(RE, h, 1_000_000, S),
-                Math.floor(BusinessInvestment.MAX_ORDER_MONTHS * S / hp));
+        check("ten universities on site: the same order, the city's queue is not the landlords' to wait out",
+                landlordsPlan.orderSize(million, h.getCapacity(), h), 1_000_000);
         lots.addStack(h, 50, false);
-        check("fifty of their own houses on site: fifty fewer",
-                landlordsPlan.withinMonthsOfWork(RE, h, 1_000_000, S),
-                Math.floor(BusinessInvestment.MAX_ORDER_MONTHS * S / hp) - 50);
+        check("fifty of their own houses on site: the same order, a million", landlordsPlan.orderSize(million, h.getCapacity(), h), 1_000_000);
         double months = landlordsPlan.monthsOfWorkOnSite(RE, S);
-        check("months of work on site: what their sites owe over the builders' site output", months, 50 * hp / S, 1e-9 * months);
+        check("months of work on site, for the screens: what their sites owe over the builders' site output", months, 50 * hp / S, 1e-9 * months);
 
         /*
-         * AN ORDER'S REAL WAIT (0.7.17). Every other sector's lead time and
-         * order size read the wait an order would have at this month's shares
-         * (BuildingManager.waitFor()): its points over the share its crews
-         * would get of the site output, beside everything on site - here ten
-         * universities and fifty houses ahead of a bakery. With nothing on
-         * site it is the order's points over the output, as it always was
-         * (section 2). REWRITTEN (third revision) for the crews it can use:
-         * it was everything on site plus it, by size, over the output.
+         * AN ORDER'S REAL WAIT (0.7.17). Every other sector's lead time reads the wait an order would have at this month's
+         * shares (BuildingManager.waitFor()): its points over the share its crews would get of the site output, beside
+         * everything on site - here ten universities and fifty houses ahead of a bakery. With nothing on site it is the
+         * order's points over the output, as it always was (section 2). REWRITTEN for the crews it can use (third
+         * revision): it was everything on site plus it, by size, over the output. The size of the order it waits is the
+         * gap and the plots (BA1; it was held to what opens in MAX_ORDER_MONTHS of that wait).
          */
         BuildingsTemplate bakery = lots.getTemplateByName("Industrial Bakery");
         double bp = bakery.getConstructionPoints(), bw = Math.pow(bp, BuildingManager.CREW_SCALE_EXPONENT);
         double crewsAhead = 10.0 * Math.pow(u.getConstructionPoints(), BuildingManager.CREW_SCALE_EXPONENT)
                 + 50 * Math.pow(hp, BuildingManager.CREW_SCALE_EXPONENT);
         double S3 = 30_000;
-        landlordsPlan.setLandAvailable(1e12, 0);                 // land is not the question here
         check("a plant's wait: its points over its crew's share of the site output, beside everything on site",
                 landlordsPlan.leadTime(bakery, 1, S3), bp / (S3 * bw / (crewsAhead + bw)), 1e-9);
-        check("...and an order is sized to open within MAX_ORDER_MONTHS of that wait",
-                landlordsPlan.orderSize(1e9, 1, bakery, S3),
-                Math.floor(BusinessInvestment.MAX_ORDER_MONTHS * S3 / bp - crewsAhead / bw));
-        check("...but never below one, as before", landlordsPlan.orderSize(1e9, 1, bakery, 1_000), 1);
+        int bakeries = landlordsPlan.orderSize(1e9, 1, bakery);
+        check("...and an order is the gap and the plots, whatever that wait: a gap of a billion is the ground for it",
+                bakeries, Math.min(1_000_000_000, landlordsPlan.plotsAvailableFor(bakery)));
+        assertTrue("fixture: that order waits far past a year at those crews (the months the old cap held it to)",
+                landlordsPlan.leadTime(bakery, bakeries, S3) > AutoBuilder.ORDER_MONTHS);
+        check("...never below one, as before", landlordsPlan.orderSize(0, 1, bakery), 1);
 
         /* ============ 17. the builders keep what their repairs and queue need ============ */
         System.out.println("\n--- the builders keep the capacity repairs and the queue need, staffed (0.7.17) ---");
@@ -1502,6 +1507,9 @@ public class InvestCheck {
         assertTrue("an apartment building's contract is booked to get all its tax back, the Houses' the share the rule gives them",
                 lowContract19.getRecovered() == 1 && Math.abs(houseContract19.getRecovered() - houseShareAtOrder19) < 1e-12);
 
+        // EVERY BUSINESS MAY BUILD AHEAD (BA1), below.
+        buildAhead(root);
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -1519,7 +1527,11 @@ public class InvestCheck {
      * (BusinessDebtManager.projectRate() of nothing), the loan's on all of it
      * or a bond's blended with the bank's where one is cheaper and raises it
      * all (BondMarket.plan(), as Game.financeProject() asks it) - and asked
-     * of consider()'s own search (Game.sliceFor()).
+     * of consider()'s own search (Game.sliceFor()). Since BA1 the cost each bar
+     * is struck on is grown over the order's wait, by the carry the model reads
+     * (BusinessInvestment.carryOf(), at the rate the order is tested at): the
+     * Diner opens after the builders reach it, and the interest is on the whole
+     * of that. Every bar below is that bar, to the bit.
      */
     static void wholeCost(Path root) {
         System.out.println("\n--- an order is tested on its whole cost, whoever pays (0.7.113) ---");
@@ -1536,6 +1548,10 @@ public class InvestCheck {
         month(g);
         double cost = plans.getCostOf(diner, 1);
         BusinessInvestment.Decision one = new BusinessInvestment.Decision(eat, diner, 1, "the fixture's", true);
+        // The wait (BA1): a fresh city has no builders' month to read, so every wait is endless and every carry infinite. The
+        // sites are given a month a Diner takes a year of (leadTime() = points over output, nothing else on site), so the
+        // carry is a finite one over 1 and every bar below is struck on it.
+        plans.setOrderWaitOutput(() -> diner.getConstructionPoints() / 12.0);
 
         // The rate each way it could be paid for, as Slices.passes() reads it.
         double tillRate = credit.projectRate(eat, 0);
@@ -1543,12 +1559,17 @@ public class InvestCheck {
         BusinessDebtManager.Plan plan = g.getBondMarket().plan(eat, cost, loanRate, credit.projectLoanRoom(eat, cost),
                 credit.projectBondRoom(eat, cost), cost, g.getMonth());
         double loanTested = plan != null && plan.hasBond() && plan.covers() ? plan.blendedRate() : loanRate;
-        double tillBar = cost * plans.realTestRate(tillRate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
-        double loanBar = cost * plans.realTestRate(loanTested) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        // ...on the cost grown over the order's wait since BA1 (THE INTEREST ON THE WAIT): the carry at the rate each is tested at, read as the model reads it.
+        double tillCarry = plans.carryOf(diner, 1, tillRate), loanCarry = plans.carryOf(diner, 1, loanTested);
+        double tillBar = cost * tillCarry * plans.realTestRate(tillRate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        double loanBar = cost * loanCarry * plans.realTestRate(loanTested) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
         System.out.printf("   a Diner: $%,.1fk; the till's rate %.4f%%, the loan's %.4f%% (tested %.4f%%); the bar $%,.4fk"
-                + " a month from the till, $%,.4fk on a loan%n", cost, tillRate * 100, loanRate * 100, loanTested * 100, tillBar, loanBar);
+                + " a month from the till (carry %.6f), $%,.4fk on a loan (carry %.6f)%n", cost, tillRate * 100, loanRate * 100,
+                loanTested * 100, tillBar, tillCarry, loanBar, loanCarry);
         assertTrue("fixture: prime is struck, the restaurants own their till, a Diner costs something, and both bars are above nothing",
                 credit.getPrimeRate() > 0 && credit.quarterAssets(eat) > 0 && cost > 0 && tillBar > 0 && loanBar > 0);
+        assertTrue("fixture: the wait is counted (BA1) - a Diner opens after a wait, so each bar is struck on a cost grown over it (carry over 1)",
+                tillCarry > 1 && loanCarry > 1 && Double.isFinite(tillCarry) && Double.isFinite(loanCarry));
         assertTrue("fixture: the city is not under a borrowing ban for the restaurants", !credit.isBorrowingBlocked(eat));
 
         // Earning half the lower bar: something, but less than its interest on its whole cost either way.
@@ -1579,8 +1600,9 @@ public class InvestCheck {
         // "At prime" reads the same whole cost: an order whose earnings would carry the interest at prime on half its
         // cost - what it would borrow - but not on all of it, would not have carried it at prime.
         double prime = credit.getPrimeRate() + credit.getRecordSurcharge(eat);
-        double primeOnAll = cost * plans.realTestRate(prime) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
-        double primeOnHalf = (cost / 2) * plans.realTestRate(prime) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        double primeCarry = plans.carryOf(diner, 1, prime);
+        double primeOnAll = cost * primeCarry * plans.realTestRate(prime) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
+        double primeOnHalf = (cost / 2) * primeCarry * plans.realTestRate(prime) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST;
         double between = (primeOnHalf + primeOnAll) / 2;
         Game.Afford half = g.sliceFor(one, cost / 2, between);
         assertTrue("fixture: those earnings fail the order's own bar (half from the till)", half.quantity() == 0
@@ -1593,8 +1615,8 @@ public class InvestCheck {
         BuildingsTemplate boutique = template(g, "Boutique");
         double bCost = plans.getCostOf(boutique, 1), bRate = credit.projectRate(lux, bCost);
         double bPrime = credit.getPrimeRate() + credit.getRecordSurcharge(lux);
-        double bOverPrime = (bCost * plans.realTestRate(bPrime) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST
-                + bCost * plans.realTestRate(bRate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST) / 2;
+        double bOverPrime = (bCost * plans.carryOf(boutique, 1, bPrime) * plans.realTestRate(bPrime) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST
+                + bCost * plans.carryOf(boutique, 1, bRate) * plans.realTestRate(bRate) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST) / 2;
         Game.Afford priced = g.sliceFor(new BusinessInvestment.Decision(lux, boutique, 1, "the fixture's", true), 0, bOverPrime);
         System.out.printf("   a Boutique: $%,.1fk on a loan at %.4f%%, prime and the record %.4f%%%n", bCost, bRate * 100, bPrime * 100);
         assertTrue("fixture: the luxury shops own nothing, so their loan is priced past prime", credit.quarterAssets(lux) <= 0
@@ -1610,11 +1632,436 @@ public class InvestCheck {
                 credit.projectBondRoom(eat, cost3 - cost), cost3 - cost, g.getMonth());
         double tested3 = plan3 != null && plan3.hasBond() && plan3.covers() ? plan3.blendedRate() : rate3;
         // ...a part in a billion over, so three of them are not a hair under it in a double.
-        double bar3 = cost3 * plans.realTestRate(tested3) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST / 3 * (1 + 1e-9);
+        double bar3 = cost3 * plans.carryOf(diner, 3, tested3) * plans.realTestRate(tested3) / 12 * BusinessInvestment.PROFIT_OVER_INTEREST / 3 * (1 + 1e-9);
         assertTrue("an order of three, the till paying for one, earning each its share of the bar on all three's cost is"
                 + " built whole", g.sliceFor(three, cost, bar3).quantity() == 3);
         Game.Afford thinThree = g.sliceFor(three, cost, thin);
         assertTrue("...and earning half the lower bar, none of it - the slice the till pays for included",
                 thinThree.quantity() == 0);
+    }
+
+    /* =====================================================================
+       EVERY BUSINESS MAY BUILD AHEAD (BA1, 2026-11-02)
+
+       Jerus, 2026-11-01: "why bounded? why not let contracts flow? market
+       after is efficient, too much and contracts get expensive thus business
+       stop trying to place orders until contracts arent so expensive". The
+       one-order-on-site cap (MAX_CONCURRENT_ORDERS), the twelve months an
+       order could take (MAX_ORDER_MONTHS) and the landlords' months of work
+       are gone; what rations the queue is the price of a point (FC1, each
+       building of an order priced on the queue the ones before it leave) and
+       the interest on the wait (a cost grown over the months until the order
+       opens). Each planner counts its own buildings on site as supply, so a
+       shortage an order on site answers is not ordered again.
+
+       Every fixture below causes its condition: the shortage is set by the
+       check, the order on site is added by the check, and the figures asked
+       are the model's constants and the model's own functions.
+       ===================================================================== */
+
+    static void buildAhead(Path root) {
+        shopsOnSite(root);
+        sizeAndHorizon(root);
+        waitCarries();
+        theWaitCounts(root);
+        postsOnSite(root);
+        howOftenInARun(root);
+    }
+
+    /** A fixture's site taken off the queue: its buildings under construction and their progress both nothing (the order is gone, as if cancelled). */
+    static void clearSite(BuildingManager bm, BuildingsTemplate t) {
+        BuildingsStacks s = bm.getStack(t);
+        if (s == null) return;
+        s.setUnderConstruction(0);
+        s.setConstructionProgress(0);
+    }
+
+    /* ----- (a) a sector with its own order on site orders again, and counts it as supply ----- */
+
+    static void shopsOnSite(Path root) {
+        System.out.println("\n--- every business may build ahead: an order on site does not stop the next, and counts as supply (BA1) ---");
+        Game g = city(root, "ahead-shops");
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate store = template(g, "Convenience Store");
+        bm.addStack(store, 2, true);
+        month(g);
+        BusinessInvestment plans = new BusinessInvestment(bm, g.getEconomyManager());
+        plans.setLandAvailable(1e12, 0);
+        ham.citybuildersim.sectors.Retail shops = g.getSectors().retail();
+        // The city staffs a shop and the builders have their crews (as section 4 gives them), the shelf's households want 3,000 baskets.
+        PopulationManager hands = g.getPopulationManager();
+        hands.restoreWorkforce(5_000);
+        hands.restoreSkilledHeads(new double[] { 0, 2_000, 0, 0 });
+        double[] full = new double[11];
+        java.util.Arrays.fill(full, 1.0);
+        Sector builders = g.getSectors().construction();
+        builders.updateJobFillRate(full);
+        builders.updateWages(g.getEconomyManager().getWageRates(), builders.postsPerTier());
+        shops.updateJobFillRate(full);
+        shops.updateWages(g.getEconomyManager().getWageRates(), shops.postsPerTier());
+        shops.setEnergyRatio(1);
+        shops.setWaterRatio(1);
+        shops.setRoadRatio(1);
+        shops.setHealthRatio(1);
+        Household cell = g.getHouseholdBalance().cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        cell.households = 3000;
+        cell.need = 1;
+        cell.foodMoney = 100 * shops.getFloorPrice();
+        shops.setPopulation(3000);
+        assertTrue("fixture: the builders have a month for the sites, and the city could staff a store", g.getBuildingOutputAtEveryPost() > 0
+                && shops.staffing(store).passes());
+
+        BusinessInvestment.Decision empty = shops.plan(plans, g);
+        System.out.println("   " + empty.reason + " -> " + empty.quantity + " x " + (empty.template == null ? "none" : empty.template.getName()));
+        assertTrue("fixture: the shops are short by several stores, with nothing of theirs on site: they order", empty.build
+                && empty.quantity >= 3 && bm.getUnderConstructionBySector(shops.key()) == 0);
+        BuildingsTemplate ordered = empty.template;
+        int wanted = empty.quantity;
+
+        // Two short of what the shortage needs are on site (one short is covered by the margin the plan sizes with): the next order
+        // is the ones that are missing.
+        bm.addStack(ordered, wanted - 2, false);
+        BusinessInvestment.Decision more = shops.plan(plans, g);
+        System.out.println("   " + (wanted - 2) + " on site: " + more.reason + " -> " + more.quantity);
+        assertTrue("A SECTOR SHORT OF CAPACITY WITH ITS OWN ORDER ON SITE ORDERS AGAIN (the cap held it to one: \"already building\")",
+                more.build && bm.getUnderConstructionBySector(shops.key()) >= 1 && !"already building".equals(more.reason));
+        assertTrue("...the stores on site counted as baskets to come: only what is still missing is ordered, not the whole shortage again",
+                more.quantity >= 1 && more.quantity < wanted);
+
+        // The whole shortage is on site: nothing more to order.
+        bm.addStack(ordered, 2, false);
+        BusinessInvestment.Decision covered = shops.plan(plans, g);
+        System.out.println("   " + wanted + " on site: " + covered.reason);
+        assertTrue("A SECTOR WHOSE ORDER ON SITE COVERS THE SHORTAGE DOES NOT ORDER AGAIN, with the order on site",
+                !covered.build && bm.getUnderConstructionBySector(shops.key()) >= 1);
+        assertTrue("...the shops' own coverage on site is what holds it (Retail.storeCoverageOnSite())",
+                shops.storeCoverageOnSite() == wanted * (double) ordered.getCoverage());
+
+        // The kitchens count the tables on site the same way (Restaurants.seatsOnSite()); seats() itself stays what stands.
+        ham.citybuildersim.sectors.Restaurants kitchens = g.getSectors().restaurants();
+        BuildingsTemplate diner = template(g, "Diner");
+        long standing = kitchens.seats();
+        assertTrue("fixture: no kitchen on site", kitchens.seatsOnSite() == 0);
+        bm.addStack(diner, 3, false);
+        assertTrue("the kitchens' seats on site are the Diners' under construction: three Diners' tables, and the seats standing unchanged",
+                kitchens.seatsOnSite() == Math.round(3 * (double) diner.getCoverage()) && kitchens.seats() == standing
+                        && kitchens.seatsOnSite() > 0);
+    }
+
+    /* ----- (b) the order's size and (c) the horizon ----- */
+
+    static void sizeAndHorizon(Path root) {
+        System.out.println("\n--- an order is the gap and the plots; the horizon grows with the lead (BA1) ---");
+        BuildingManager lots = new BuildingManager();
+        lots.initializeTemplates();
+        EconomyManager lotsEm = new EconomyManager(lots);
+        BusinessInvestment bi = new BusinessInvestment(lots, lotsEm);
+        bi.setLandAvailable(1e12, 0);
+        BuildingsTemplate store = lots.getTemplateByName("Convenience Store");
+        double cap = store.getCoverage();
+
+        // b. a shortfall that needs 600 stores is 600, not what a wait would have cut it to; one under it is 599; floored at one; cut by the plots.
+        assertTrue("fixture: the ground holds a thousand stores", bi.plotsAvailableFor(store) >= 1_000);
+        check("a shortfall that needs 600 stores is 600", bi.orderSize(600 * cap, cap, store), 600);
+        check("...one baskets under 600 stores' is still 600 (rounded up)", bi.orderSize(599 * cap + 1, cap, store), 600);
+        check("...and 599 stores' exactly is 599", bi.orderSize(599 * cap, cap, store), 599);
+        bi.setOrderWaitOutput(() -> 1.0);
+        assertTrue("fixture: at a point of site output a store waits for years", bi.leadTime(store, 600, 1.0) > 10 * AutoBuilder.ORDER_MONTHS);
+        check("...whatever the wait: 600 stores' shortfall, its wait years long, is 600 (the cut that read the wait is gone)",
+                bi.orderSize(600 * cap, cap, store), 600);
+        bi.setOrderWaitOutput(null);
+        check("a gap of nothing orders one: floored at one", bi.orderSize(0, cap, store), 1);
+        check("...a negative gap, one", bi.orderSize(-1_000, cap, store), 1);
+        check("...a building that holds nothing to count, one", bi.orderSize(600 * cap, 0, store), 1);
+        bi.setLandAvailable(store.getLandSqFt() * 7, 0);
+        check("the ground for seven stores caps the order at seven", bi.orderSize(600 * cap, cap, store), 7);
+        check("...and the gap's own when it is under the plots", bi.orderSize(3 * cap, cap, store), 3);
+        bi.setLandAvailable(0, 0);
+        check("...and no ground, no order", bi.orderSize(600 * cap, cap, store), 0);
+
+        // c. the horizon.
+        double more = BusinessInvestment.HORIZON_MOST, least = BusinessInvestment.PLANNING_HORIZON;
+        assertTrue("fixture: the horizon starts at six months and goes no further than twelve", least == 6 && more == 12);
+        check("horizonFor(0) is the least, PLANNING_HORIZON", BusinessInvestment.horizonFor(0), least);
+        check("...(3), the least too", BusinessInvestment.horizonFor(3), least);
+        check("...(6), the least where it ends", BusinessInvestment.horizonFor(6), least);
+        check("...(9), the lead itself", BusinessInvestment.horizonFor(9), 9);
+        check("...(12), the lead itself and the most", BusinessInvestment.horizonFor(12), more);
+        check("...(20), never past HORIZON_MOST", BusinessInvestment.horizonFor(20), more);
+        check("...a lead that is not a number, HORIZON_MOST", BusinessInvestment.horizonFor(Double.NaN), more);
+        check("...an endless lead, HORIZON_MOST", BusinessInvestment.horizonFor(Double.POSITIVE_INFINITY), more);
+        check("...the longest wait Double.MAX_VALUE reads (no builders at all), HORIZON_MOST", BusinessInvestment.horizonFor(Double.MAX_VALUE), more);
+        check("...a lead under nothing, the least", BusinessInvestment.horizonFor(-5), least);
+        double worst = 0, last = -1;
+        boolean rises = true;
+        for (int i = 0; i <= 400; i++) {
+            double lead = i * .25;
+            double back = BusinessInvestment.leadFor(lead + BusinessInvestment.horizonFor(lead));
+            worst = Math.max(worst, Math.abs(back - lead));
+            rises &= lead + BusinessInvestment.horizonFor(lead) > last;
+            last = lead + BusinessInvestment.horizonFor(lead);
+        }
+        assertTrue("leadFor(lead + horizonFor(lead)) is the lead, within 1e-9, for leads from 0 to 100 by a quarter month (worst " + worst + ")", worst <= 1e-9);
+        assertTrue("...because lead + horizonFor(lead) rises strictly with the lead, so the sum says its lead", rises);
+        check("leadFor() of the least, six months, is no lead", BusinessInvestment.leadFor(least), 0);
+        check("...of anything under it, none", BusinessInvestment.leadFor(2), 0);
+
+        // BuildAdvice.opening(): the months are the lead and the horizon for that lead, the lead not clamped to twelve (it was).
+        Game g = city(root, "ahead-opening");
+        BusinessInvestment gb = g.getBusinessInvestment();
+        BuildAdvice.Ahead thirty = BuildAdvice.opening(g, 30);
+        check("a building that opens in 30 months is sized to 30 + HORIZON_MOST months (the lead was clamped to twelve until BA1)",
+                thirty.months(), 30 + more);
+        check("...its growth the businesses' growthFactor() over them", thirty.k(), gb.growthFactor(30 + more), 1e-12);
+        check("one that opens in 9: 9 + 9", BuildAdvice.opening(g, 9).months(), 18);
+        check("...in 3: 3 + the least", BuildAdvice.opening(g, 3).months(), 3 + least);
+        check("...in 0: the least", BuildAdvice.opening(g, 0).months(), least);
+        check("...a stalled one (NaN) counts as none: the least", BuildAdvice.opening(g, Double.NaN).months(), least);
+        check("...the order that opens in a year and a half is sized for the demand a year after it opens, not six months",
+                BuildAdvice.opening(g, 18).months(), 18 + more);
+    }
+
+    /* ----- (d) the interest on the wait ----- */
+
+    static void waitCarries() {
+        System.out.println("\n--- the interest on the wait: a cost grown over the months until the order opens (BA1) ---");
+        BuildingManager lots = new BuildingManager();
+        lots.initializeTemplates();
+        EconomyManager lotsEm = new EconomyManager(lots);
+        BusinessInvestment bi = new BusinessInvestment(lots, lotsEm);
+        bi.setLandAvailable(1e12, 0);
+        BuildingsTemplate store = lots.getTemplateByName("Convenience Store");
+
+        // waitCarry(): exactly 1 for no wait, for a wait that is no number, and for a real rate at or under nothing.
+        double rate = .09;
+        assertTrue("exactly 1 at no wait", Double.doubleToLongBits(bi.waitCarry(rate, 0)) == Double.doubleToLongBits(1.0));
+        assertTrue("...for a wait under nothing", Double.doubleToLongBits(bi.waitCarry(rate, -3)) == Double.doubleToLongBits(1.0));
+        assertTrue("...for a wait that is not a number", Double.doubleToLongBits(bi.waitCarry(rate, Double.NaN)) == Double.doubleToLongBits(1.0));
+        assertTrue("...for a rate of nothing, however long the wait", Double.doubleToLongBits(bi.waitCarry(0, 40)) == Double.doubleToLongBits(1.0));
+        assertTrue("...for a rate under nothing", Double.doubleToLongBits(bi.waitCarry(-.02, 40)) == Double.doubleToLongBits(1.0));
+        // (1 + i)^W otherwise, i the real test rate over twelve.
+        check("a year's wait at 9% with no inflation expected: (1 + .09 / 12)^12", bi.waitCarry(rate, 12), Math.pow(1 + .09 / 12, 12), 1e-12);
+        check("...a wait of 30 months", bi.waitCarry(rate, 30), Math.pow(1 + .09 / 12, 30), 1e-12);
+        check("...half a month, a fraction of a month's interest", bi.waitCarry(rate, .5), Math.pow(1 + .09 / 12, .5), 1e-12);
+        bi.setExpectedInflation(.05);
+        check("with 5% inflation expected the rate it grows at is the real one, 4%: (1 + .04 / 12)^12", bi.waitCarry(rate, 12),
+                Math.pow(1 + (.09 - .05) / 12, 12), 1e-12);
+        bi.setExpectedInflation(.2);
+        check("...and never under REAL_HURDLE_FLOOR of the rate, however much is expected: (1 + .09 x .25 / 12)^12", bi.waitCarry(rate, 12),
+                Math.pow(1 + .09 * BusinessInvestment.REAL_HURDLE_FLOOR / 12, 12), 1e-12);
+        bi.setExpectedInflation(0);
+        assertTrue("infinite for a wait that never ends: Double.MAX_VALUE, which leadTime() reads for no builders", bi.waitCarry(rate, Double.MAX_VALUE)
+                == Double.POSITIVE_INFINITY);
+        assertTrue("...and for an infinite one", bi.waitCarry(rate, Double.POSITIVE_INFINITY) == Double.POSITIVE_INFINITY);
+        boolean rising = true;
+        double before = 1;
+        for (int w = 1; w <= 120; w++) {
+            double c = bi.waitCarry(rate, w);
+            rising &= c > before;
+            before = c;
+        }
+        assertTrue("it rises with every month of wait, from 1", rising);
+
+        // carryOf(): 1 with no output handed in, for no template and for fewer than one; the carry of the whole wait otherwise.
+        check("with no output supplier a bare fixture's carry is exactly 1", bi.carryOf(store, 5, rate), 1);
+        bi.setOrderWaitOutput(() -> 100.0);
+        check("with one, 5 stores' carry is waitCarry() over leadTime() at that output", bi.carryOf(store, 5, rate),
+                bi.waitCarry(rate, bi.leadTime(store, 5, 100.0)), 0);
+        assertTrue("...above 1, a store waiting for the builders", bi.carryOf(store, 5, rate) > 1);
+        check("...1 for no template", bi.carryOf(null, 5, rate), 1);
+        check("...1 for fewer than one", bi.carryOf(store, 0, rate), 1);
+        bi.setOrderWaitOutput(() -> 0.0);
+        assertTrue("with the builders giving the sites nothing the wait never ends and the carry is infinite",
+                bi.carryOf(store, 1, rate) == Double.POSITIVE_INFINITY);
+        bi.setOrderWaitOutput(null);
+        check("...and 1 again once no output is handed in", bi.carryOf(store, 1, rate), 1);
+
+        // ...and rises with the order on a city with a queue: the proof of THE WAIT GROWS WITH THE ORDER, asked.
+        BuildingsTemplate university = lots.getTemplateByName("University");
+        lots.addStack(university, 25, false);
+        lots.addStack(lots.getTemplateByName("House"), 300, false);
+        bi.setOrderWaitOutput(() -> 5_000.0);
+        double prev = 1, first = bi.carryOf(store, 1, rate), lastC = first;
+        boolean nonDecreasing = true, atLeastOne = true, someRise = false;
+        for (int n = 1; n <= 200; n++) {
+            double c = bi.carryOf(store, n, rate);
+            nonDecreasing &= c >= prev;
+            atLeastOne &= c >= 1;
+            someRise |= c > prev && n > 1;
+            prev = c;
+            lastC = c;
+        }
+        System.out.printf("   with 25 universities and 300 Houses on site, 5,000 points a month: 1 store carries %.6f, 200 stores %.6f%n", first, lastC);
+        assertTrue("fixture: the carry is a finite one over 1 for a single store behind a queue", first > 1 && Double.isFinite(first));
+        assertTrue("carryOf() is never under 1 and never falls as the order grows, from 1 to 200 stores", atLeastOne && nonDecreasing);
+        assertTrue("...and does rise: 200 stores wait longer than one", someRise && lastC > first);
+    }
+
+    /* ----- (e) the wait counts ----- */
+
+    static void theWaitCounts(Path root) {
+        System.out.println("\n--- the wait counts: an order that carries its interest as though it opened tomorrow does not when the queue is long (BA1) ---");
+        Game g = city(root, "ahead-wait");
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+        BuildingManager bm = g.getBuildingManager();
+        String eat = Sectors.RESTAURANTS;
+        BuildingsTemplate diner = template(g, "Diner");
+        plans.holdSector(eat);
+        double price = plans.getCostOf(diner, 1);
+        g.getEconomyManager().setSectorCash(eat, 2 * price);
+        month(g);
+        double cost = plans.getCostOf(diner, 1);
+        double rich = 2 * cost;
+        BusinessInvestment.Decision one = new BusinessInvestment.Decision(eat, diner, 1, "the fixture's", true);
+        double rate = credit.projectRate(eat, 0);
+        // The sites get a month of 1,000 points; nothing on site, a Diner opens when its own points are done; behind forty
+        // universities it opens when the builders reach it.
+        double sites = 1_000;
+        plans.setOrderWaitOutput(() -> sites);
+        double shortWait = plans.leadTime(diner, 1, sites);
+        double shortCarry = plans.carryOf(diner, 1, rate);
+        BuildingsTemplate university = template(g, "University");
+        bm.addStack(university, 40, false);
+        double longWait = plans.leadTime(diner, 1, sites);
+        double longCarry = plans.carryOf(diner, 1, rate);
+        double costQueued = plans.getCostOf(diner, 1);
+        System.out.printf("   a Diner waits %.2f months with nothing on site (carry %.6f) and %.1f behind 40 universities (carry %.6f)%n",
+                shortWait, shortCarry, longWait, longCarry);
+        assertTrue("fixture: the queue lengthens the Diner's wait, and so its carry, and a Diner costs the same on it",
+                longWait > shortWait && longCarry > shortCarry && shortCarry >= 1 && Double.isFinite(longCarry) && costQueued == cost);
+        double noWait = plans.interestHurdle(cost, rate);
+        double barShort = plans.interestHurdle(cost * shortCarry, rate), barLong = plans.interestHurdle(cost * longCarry, rate);
+        double earns = (barShort + barLong) / 2;
+        assertTrue("fixture: it earns more than the interest on its cost as though it opened tomorrow (the test before the wait counted), under the interest on the cost grown over the long wait",
+                earns > noWait && earns < barLong && earns >= barShort);
+        assertTrue("it passes servicesItsOwnDebt() on its whole cost at carry 1", plans.servicesItsOwnDebt(earns, cost, rate));
+        Game.InterestTest queued = g.interestTest(eat, diner, 1, earns, cost);
+        assertTrue("fixture: the till pays it all and the restaurants are not under a ban", queued.on() == cost && !queued.banned());
+        assertTrue("...but behind the queue its interest test does not carry: the carry is the long wait's and the cost is grown by it",
+                queued.carry() == longCarry && !queued.carries() && queued.needs() > earns);
+        assertTrue("...and consider()'s own search refuses the same order", g.sliceFor(one, rich, earns).quantity() == 0);
+        // The queue gone: the same order, the same earnings.
+        clearSite(bm, university);
+        assertTrue("fixture: the universities' site is cleared", bm.getStack(university).getUnderConstruction() == 0);
+        Game.InterestTest cleared = g.interestTest(eat, diner, 1, earns, cost);
+        assertTrue("with the queue gone the wait is the Diner's own and the same order carries its interest",
+                cleared.carry() == shortCarry && cleared.carries() && cleared.needs() <= earns);
+        assertTrue("...and consider()'s search builds it", g.sliceFor(one, rich, earns).quantity() == 1);
+    }
+
+    /* ----- (f) the sector's own posts on site are spoken for ----- */
+
+    static void postsOnSite(Path root) {
+        System.out.println("\n--- the posts of a sector's own buildings on site are spoken for: staffing counts them (BA1) ---");
+        Game g = city(root, "ahead-posts");
+        BuildingManager bm = g.getBuildingManager();
+        ham.citybuildersim.sectors.Retail shops = g.getSectors().retail();
+        BuildingsTemplate store = template(g, "Convenience Store");
+        PopulationManager people = g.getPopulationManager();
+        month(g);
+        // Workers for one store and not two: three spare unskilled hands against a store's two posts, four with a diploma against its three.
+        long none = (long) Math.ceil(people.staffablePostsByBand()[WageBand.NONE.ordinal()]);
+        long diploma = (long) Math.ceil(people.staffablePostsByBand()[WageBand.DIPLOMA.ordinal()]);
+        people.restoreSkilledHeads(new double[] { 0, diploma + 4, 0, 0 });
+        people.restoreWorkforce(none + diploma + 3 + 4 + 100);
+        double[] spare = shops.staffing(store).spare();
+        for (int pass = 0; pass < 3; pass++) {
+            long adjust = Math.round(3 - spare[WageBand.NONE.ordinal()]);
+            people.restoreWorkforce(people.getWorkforce() + adjust);
+            spare = shops.staffing(store).spare();
+        }
+        System.out.printf("   spare unskilled %.1f (a store's posts: %.0f), with a diploma %.1f (%.0f)%n", spare[WageBand.NONE.ordinal()],
+                (double) store.getJobs(JobType.NO_DIPLOMA), spare[WageBand.DIPLOMA.ordinal()], (double) store.getJobs(JobType.DIPLOMA));
+        assertTrue("fixture: the city's spare workers are enough for one store's posts and not for two's, in both bands it uses",
+                spare[WageBand.NONE.ordinal()] >= store.getJobs(JobType.NO_DIPLOMA)
+                        && spare[WageBand.NONE.ordinal()] < 2 * store.getJobs(JobType.NO_DIPLOMA)
+                        && spare[WageBand.DIPLOMA.ordinal()] >= store.getJobs(JobType.DIPLOMA)
+                        && spare[WageBand.DIPLOMA.ordinal()] < 2 * store.getJobs(JobType.DIPLOMA));
+        assertTrue("fixture: nothing of the shops' is on site", bm.getUnderConstructionBySector(shops.key()) == 0);
+        assertTrue("with nothing of its own on site, a store passes the staffing test", shops.staffing(store).passes());
+        // Another sector's building on site is not the shops' to staff.
+        bm.addStack(template(g, "Diner"), 1, false);
+        assertTrue("...a Diner on site (another sector's) does not touch the shops' test", shops.staffing(store).passes());
+        // One store on site: its posts are spoken for, and the second fails.
+        bm.addStack(store, 1, false);
+        Sector.Staffing second = shops.staffing(store);
+        double[] afterOne = second.spare();
+        assertTrue("with a store of its own on site, the workers it will need are not spare: the second store fails the test", !second.passes());
+        // The diploma band's spare falls by the store's diploma posts; the unskilled band's by its own posts and by the diploma
+        // posts too, since the workers a diploma post takes are the ones that would have come down the ladder to fill an unskilled one.
+        assertTrue("...by the posts on site, band by band: the diploma band's spare falls by a store's diploma posts, the unskilled band's by its own and what came down to it",
+                Math.abs(spare[WageBand.DIPLOMA.ordinal()] - afterOne[WageBand.DIPLOMA.ordinal()] - store.getJobs(JobType.DIPLOMA)) < 1e-9
+                        && Math.abs(spare[WageBand.NONE.ordinal()] - afterOne[WageBand.NONE.ordinal()]
+                        - store.getJobs(JobType.NO_DIPLOMA) - store.getJobs(JobType.DIPLOMA)) < 1e-9);
+        assertTrue("...the posts the sector has on site, BuildingManager.postsOnSite(), are the store's, job by job",
+                bm.postsOnSite(shops.key(), JobType.NO_DIPLOMA) == store.getJobs(JobType.NO_DIPLOMA)
+                        && bm.postsOnSite(shops.key(), JobType.DIPLOMA) == store.getJobs(JobType.DIPLOMA));
+        // Cancelled, it is spare again.
+        clearSite(bm, store);
+        assertTrue("fixture: the store's site is cleared", bm.getUnderConstructionBySector(shops.key()) == 0);
+        assertTrue("with the order gone the posts are not spoken for and the store passes again", shops.staffing(store).passes());
+    }
+
+    /* ----- (h) how often it happens in a real run ----- */
+
+    /** Months the playtest's city is played with every order watched. */
+    static final int AHEAD_MONTHS = 360;
+
+    static final class AheadWatch implements BusinessInvestment.OrderWatch {
+        final Game g;
+        int judged, cleared, clearedAhead;
+        int largestCleared;
+        String largestSector = "";
+        final java.util.Set<Integer> monthsJudged = new java.util.TreeSet<>(), monthsDear = new java.util.TreeSet<>();
+        final java.util.Map<String, Integer> aheadBySector = new java.util.TreeMap<>();
+
+        AheadWatch(Game g) { this.g = g; }
+
+        void saw(String sector, int quantity, int built, boolean mortgage) {
+            judged++;
+            int month = g.getMonth();
+            monthsJudged.add(month);
+            if (g.getBuildingManager().scarcityPremium() > 0) monthsDear.add(month);
+            if (built < 1) return;
+            cleared++;
+            if (built > largestCleared) {
+                largestCleared = built;
+                largestSector = sector + (mortgage ? " (mortgage)" : "");
+            }
+            if (g.getBuildingManager().getUnderConstructionBySector(sector) >= 1) {
+                clearedAhead++;
+                aheadBySector.merge(sector, 1, Integer::sum);
+            }
+        }
+
+        @Override
+        public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found) {
+            saw(d.sector, d.quantity, found.quantity(), false);
+        }
+
+        @Override
+        public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit,
+                              double annualRate, Mortgage.Decision found) {
+            saw(Sectors.REAL_ESTATE, asked, found.quantity(), true);
+        }
+    }
+
+    static void howOftenInARun(Path root) {
+        System.out.println("\n--- how often a business builds ahead in a real run: " + AHEAD_MONTHS + " months of the playtest's city, every order watched (BA1) ---");
+        GameFiles files = new GameFiles(root.resolve("ahead-run"), root.resolve("ahead-run-no-legacy"));
+        Game g = new Game(files, LongPlaytest.founding());
+        AheadWatch w = new AheadWatch(g);
+        g.watchOrders(w);
+        OrderSearchCheck.playtestCity(g, AHEAD_MONTHS, quiet);
+        System.out.printf("   month %d, %,d people: %,d orders judged in %d months; %,d cleared (the largest %,d, %s); %,d cleared while the same sector already had"
+                        + " one on site%n", g.getMonth(), g.getPopulationManager().getPopulation(), w.judged, w.monthsJudged.size(), w.cleared,
+                w.largestCleared, w.largestSector, w.clearedAhead);
+        System.out.printf("   by sector: %s%n", w.aheadBySector);
+        System.out.printf("   the builders' premium was above nothing in %d of the %d months an order was judged%n", w.monthsDear.size(), w.monthsJudged.size());
+        assertTrue("fixture: the run judged orders", w.judged > 0 && w.cleared > 0);
+        assertTrue("A BUSINESS ORDERED WHILE ITS OWN SECTOR ALREADY HAD AN ORDER ON SITE in the run (the cap would have said \"already building\")",
+                w.clearedAhead > 0);
+        assertTrue("...and the largest order cleared is more than one building", w.largestCleared > 1);
     }
 }

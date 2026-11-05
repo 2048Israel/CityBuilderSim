@@ -143,7 +143,8 @@ final class ConstructionScreen {
 
     /* =====================================================================
        THE BUILDERS' GAUGE: what they do a month, everything owed on site,
-       the queue that makes in months against the landlords' twelve, and the
+       the queue that makes in months against the knee where the price of a
+       point starts to rise (FC1; BA1, the landlords' twelve before it), and the
        material - and the bar that draws the queue.
        ===================================================================== */
 
@@ -157,7 +158,8 @@ final class ConstructionScreen {
         for (BuildingsStacks s : bm.getStacksUnderConstruction()) { sites++; buildings += s.getUnderConstruction(); }
         for (ConstructionControl.Demolition d : bm.getControl().demolitions()) { sites++; buildings += d.buildings; }
         double queue = atEveryPost > 0 ? owed / atEveryPost : Double.NaN;
-        double limit = BusinessInvestment.MAX_ORDER_MONTHS;
+        // The knee of the price of a point (BuildersShort.KNEE_MONTHS): past it every order pays a premium, and the builders expand.
+        double limit = BuildersShort.KNEE_MONTHS;
         double theirs = g.getBusinessInvestment().monthsOfWorkOnSite(Sectors.REAL_ESTATE, atEveryPost);
 
         VBox builders = limitCell("BUILDERS", String.format("%,d pts", output), "a month, after the repairs",
@@ -181,14 +183,14 @@ final class ConstructionScreen {
                 foreign ? Palette.BAD : premiumPct > 0 ? Palette.WARN : Palette.TEXT_HEAD);
         HBox cells = vitalsBar(builders, onSite, months, material, price);
 
-        // The bar: the queue over two years, a mark at the landlords' twelve.
-        double span = limit * 2;
+        // The bar: the queue up to where the premium is half its ceiling, a mark at the knee.
+        double span = limit + BuildersShort.HALF_MONTHS;
         SegmentBar bar = segmentBar(List.of(Segment.of(Double.isNaN(queue) ? 1 : Math.min(1, queue / span),
                         Double.isNaN(queue) || queue > limit ? Palette.WARN : Palette.BUILDING)), 1,
                 List.of(new Tick(limit / span, Palette.TEXT_LABEL, 2, null, null)), 0, BAR_BAND);
         Label zero = caption("0");
-        Label mark = caption(String.format("%.0f months: landlords stop ordering past their own%s", limit,
-                Double.isNaN(theirs) ? "" : String.format(" (theirs ≈ %.1f)", theirs)));
+        Label mark = caption(String.format("%.0f months: the price of a point rises past it%s", limit,
+                Double.isNaN(theirs) ? "" : String.format(" (the landlords' sites ≈ %.1f)", theirs)));
         Label end = caption(String.format("%.0f months", span));
         Region a = new Region(), b = new Region();
         HBox.setHgrow(a, Priority.ALWAYS);
@@ -196,9 +198,10 @@ final class ConstructionScreen {
         HBox scale = new HBox(0, zero, a, mark, b, end);
         HBox whole = new HBox(Palette.GAP, infoButton(
                 "The queue is everything owed on site over what the builders' crews would do a month with every "
-                + "post filled, after the repairs - the reading every order's wait is quoted at. The landlords "
-                + "keep ordering homes while what their own sites owe is under " + (int) limit + " months of it; "
-                + "every other sector waits for its one order to finish. "
+                + "post filled, after the repairs - the reading every order's wait is quoted at. Past "
+                + (int) limit + " months of it the price of a point rises, and the builders build themselves "
+                + "another depot. No business is held to one order or to months of the queue: each weighs that "
+                + "price and the interest on its wait, and stops ordering when they do not pay. "
                 + "The yard's material is free to the city's orders; the crews buy the rest as they build, from "
                 + "what they salvaged, then the plant, then the world - so no site in this model is ever short "
                 + "of it.\n\n" + BuildScreen.buildersShortInfo(), false));

@@ -1,4 +1,4 @@
-# Construction.java - 1,101 lines · 63 methods · 2 constants · sectors
+# Construction.java - 1,118 lines · 63 methods · 3 constants · sectors
 
 `ham/citybuildersim/sectors/Construction.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -34,7 +34,7 @@
 > municipal works department's free points were retired at PT1-M4, and the
 > city founds with a Builders' Yard standing instead (Game.foundingYard()).
 
-**Uses:** [Good](Good.md) (19), [BusinessInvestment](BusinessInvestment.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (6), [BuildingManager](BuildingManager.md) (3), [Game](Game.md) (3), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [JobType](JobType.md) (1)
+**Uses:** [Good](Good.md) (19), [BusinessInvestment](BusinessInvestment.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (6), [BuildingManager](BuildingManager.md) (3), [Game](Game.md) (3), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [JobType](JobType.md) (1)
 
 **Used by (23):** [BankCheck](BankCheck.md), [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [FoundingYardCheck](FoundingYardCheck.md), [Game](Game.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReloadCheck](ReloadCheck.md), [RobustnessCheck](RobustnessCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [SlopeCheck](SlopeCheck.md), [UserInterface](UserInterface.md), [WantedPostsCheck](WantedPostsCheck.md)
 
@@ -48,8 +48,8 @@
 | 583 | WHAT IT COSTS TO STAND |
 | 612 | MATERIALS ARE DRAWN, NOT BID FOR |
 | 680 | PLANNING - off the order book |
-| 888 | THE SCREEN |
-| 1006 | SAVE |
+| 905 | THE SCREEN |
+| 1023 | SAVE |
 
 ## Constants
 
@@ -57,6 +57,7 @@
 |---:|---|---|---|
 | 59 | `Construction.IDLE_PAYROLL_FLOOR` | `.25` | The core crew: the smallest share of its posts construction keeps on when it has no work, and lays the rest off. |
 | 304 | `Construction.FOREIGN_CREWS` | `"Foreign crews"` | What the contractor's price is booked under, on the builders' input line and the money audit's "- construction Imports". |
+| 685 | `Construction.ONE_DEPOT_ON_SITE` | `"a depot on site already"` | The builders' word while a depot of theirs is on site (ONE DEPOT AT A TIME, below); "already building" until BA1. |
 
 ## Fields (state)
 
@@ -87,7 +88,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 1054 | **type** `public final class Construction extends Sector` | The builders. |
+| 48 | 1071 | **type** `public final class Construction extends Sector` | The builders. |
 | 156 | 13 | `public void strikeCrews(double work, double depots)` | Strikes the month's crews. |
 | 171 | 1 | `public double getPostsOfferedShare()` | The share of the depots' posts on offer this month. |
 | 178 | 1 | `public boolean isIdleAtCoreCrew()` | Whether the builders stand idle at the core crew: the work this month's strike saw needs no more than the core crew, so they offer IDLE_PAYROLL_FLOOR of their posts and lay the rest off (strikeCrews()). |
@@ -163,32 +164,32 @@
 | 664 | 11 | `public double takeSalvage(double units)` | Draws from the stock, up to what it holds, and books what the units drawn cost - their share of the cost basis - as this month's input. |
 | 678 | 1 | `public double getInventoryValue()` | Its stock of scrapped plant's material at today's price; the yard is the city's and the plant is the plant's. |
 
-### PLANNING - off the order book (lines 680-887)
+### PLANNING - off the order book (lines 680-904)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 719 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Everyone else's lead times are its output, so when the queue gets long it is the constraint on the whole city. |
-| 808 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
-| 844 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
-| 868 | 12 | `public boolean mayRetire(BuildingsTemplate t)` | THE LAST DEPOT IS NOT FOR SALE (PT1-M4). |
-| 883 | 4 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything: the builders have the one depot. |
+| 735 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Everyone else's lead times are its output, so when the queue gets long it is the constraint on the whole city. |
+| 825 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
+| 861 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
+| 885 | 12 | `public boolean mayRetire(BuildingsTemplate t)` | THE LAST DEPOT IS NOT FOR SALE (PT1-M4). |
+| 900 | 4 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything: the builders have the one depot. |
 
-### THE SCREEN (lines 888-1005)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 894 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
-| 897 | 1 | `public String inputLabel()` |  |
-| 913 | 11 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
-| 926 | 1 | `public boolean hasPlantBlock()` |  |
-| 929 | 76 | `public List<Line> ownLines(Game game)` |  |
-
-### SAVE (lines 1006-1101)
+### THE SCREEN (lines 905-1022)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1011 | 32 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 1045 | 30 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 1077 | 11 | `protected void resetExtras()` |  |
-| 1091 | 10 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
+| 911 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
+| 914 | 1 | `public String inputLabel()` |  |
+| 930 | 11 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
+| 943 | 1 | `public boolean hasPlantBlock()` |  |
+| 946 | 76 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE (lines 1023-1118)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1028 | 32 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 1062 | 30 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 1094 | 11 | `protected void resetExtras()` |  |
+| 1108 | 10 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
 

@@ -897,6 +897,16 @@ public final class Freight extends Sector {
         return buildings == null ? 0 : buildings.totalBySector(key(), BuildingsTemplate::getRailCapacity);
     }
 
+    /**
+     * ...and the track on site (BA1, 2026-11-02): what shortfalls() takes off the tonnes the
+     * lorries still carry, with the stations' and the sidings' below. It counted what stood
+     * only while a sector could have one order on site; with no cap a line would be ordered
+     * again every month for the freight the first is already coming to carry.
+     */
+    public double trackOnSite() {
+        return buildings == null ? 0 : buildings.underConstructionBySector(key(), BuildingsTemplate::getRailCapacity);
+    }
+
     /** Wagon sets owned. */
     public double fleet() { return getPantry(Good.ROLLING_STOCK); }
 
@@ -960,9 +970,19 @@ public final class Freight extends Sector {
         return buildings == null ? 0 : buildings.totalBySector(key(), BuildingsTemplate::getStationTonnes);
     }
 
+    /** ...and the stations on site (BA1, 2026-11-02; trackOnSite()). */
+    public double stationOnSite() {
+        return buildings == null ? 0 : buildings.underConstructionBySector(key(), BuildingsTemplate::getStationTonnes);
+    }
+
     /** Tonnes a month of siding standing (FR7): the Rail Spurs' track, each into one works. */
     public double sidingTonnes() {
         return buildings == null ? 0 : buildings.totalBySector(key(), t -> t.isSiding() ? t.getRailCapacity() : 0);
+    }
+
+    /** ...and the sidings on site (BA1, 2026-11-02; trackOnSite()). */
+    public double sidingOnSite() {
+        return buildings == null ? 0 : buildings.underConstructionBySector(key(), t -> t.isSiding() ? t.getRailCapacity() : 0);
     }
 
     /**
@@ -1084,11 +1104,19 @@ public final class Freight extends Sector {
      */
     public record Shortfalls(double track, double station, double siding) { }
 
-    /** The month's shortfalls against what stands now (Shortfalls). */
+    /**
+     * The month's shortfalls against what stands now and what is on site (Shortfalls; BA1,
+     * 2026-11-02: it was what stands only, while a sector could have one order on site). The
+     * track, the stations and the sidings on site are carrying the freight by the time the
+     * next order opens, so a line is ordered for the tonnes the lines already coming leave,
+     * not for the same tonnes every month until the first is built. With nothing on site,
+     * what stands, to the bit.
+     */
     public Shortfalls shortfalls() {
-        double sidings = sidingTonnes();
+        double sidings = sidingTonnes() + sidingOnSite();
         double sidingServed = Math.min(sidings, rBulkOffered);
-        return new Shortfalls(rTonnes - trackTonnes(), (rTonnes - sidingServed) - stationTonnes(), rBulkOffered - sidings);
+        return new Shortfalls(rTonnes - trackTonnes() - trackOnSite(),
+                (rTonnes - sidingServed) - stationTonnes() - stationOnSite(), rBulkOffered - sidings);
     }
 
     /** The bulk the railway was offered in the month billed (FR7): rTonnes less the goods; none after a load until the next haul. */
@@ -1596,9 +1624,11 @@ public final class Freight extends Sector {
 
         /*
          * THE TRUCKS' DEPOT FIRST (FR2, D6; spec 3.2's planner), before the
-         * "already building" test, because it is not a rail line: a Truck Depot
-         * on site is Haulage's own test (depotToOrder() orders one at a time),
-         * and a terminal being laid must not keep the trucks on the street.
+         * rail lines, because it is not a rail line: a Truck Depot on site is
+         * Haulage's own test (depotToOrder() orders one at a time, a physical
+         * rule of the depots' and not a cap on orders), and a terminal being
+         * laid must not keep the trucks on the street. (It was before the
+         * "already building" test to BA1, 2026-11-02; the test is gone.)
          * Gated as the lines are, on the staff and the ground. The trucks a
          * depot keeps are crewed by its posts; the ones past the room still
          * run, unposted, at Haulage.STREET_WEAR.
@@ -1616,9 +1646,8 @@ public final class Freight extends Sector {
                     "its trucks past the depots' room park on the street", true);
         }
 
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
+        // No line in flight is waited for (BA1, 2026-11-02; it was one): the lines on site are
+        // in the shortfalls below, and the interest on their wait in the money gate.
         if (rTonnes <= 0) {
             return BusinessInvestment.Decision.no(sector, "nothing crosses the city boundary to carry");
         }

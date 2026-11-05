@@ -1339,6 +1339,12 @@ public class OilCheck {
         });
         // ...and one month more, the litre's price at its draw (the top of the month, the last clearing's) kept.
         double atDraw = g.getMarkets().get(Good.DIESEL).getLocalPrice();
+        /*
+         * THE TANKS FULL AS THE MONTH OPENS (BA1): the railway and its trucks draw the whole shelf at the top of the month and, with the
+         * freight orders uncapped, now want more than the refinery leaves on it (1.19M L a month against a shelf of 0.95M of 3.6M), so
+         * the rest was imported. This section's premise is a shelf that covers the draw: the diesel tanks are filled to their room.
+         */
+        quietly(() -> refiners.setStock(Good.DIESEL, refiners.getStockCapacity(Good.DIESEL)));
         quietly(() -> g.simulateMonths(1));
         Freight rail = g.getSectors().freight();
         report("fixture: the railway hauls and burns diesel, with diesel in the refiners' tanks",
@@ -1371,6 +1377,9 @@ public class OilCheck {
         for (int m = 0; m < months; m++) {
             // Every few months the petrol is emptied, so some months the drivers import and some they do not.
             if (m % 4 == 1) refiners.setStock(Good.PETROL, 0);
+            // ...and every few months the diesel tanks are filled to their room, so some months the railway's draw leaves the vans
+            // theirs at home and some it takes the whole shelf and they import (BA1: the freight orders uncapped, it takes it every month).
+            if (m % 4 == 2) refiners.setStock(Good.DIESEL, refiners.getStockCapacity(Good.DIESEL));
             // The tanks as the month opens (FW5, 2026-10-25): sections 18 and 19 balance them product by product.
             java.util.Map<Good, Double> opening = new java.util.EnumMap<>(Good.class);
             for (Good p : refiners.goodsMade()) opening.put(p, refiners.getStock(p));

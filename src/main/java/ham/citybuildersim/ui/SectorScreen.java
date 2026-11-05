@@ -3717,8 +3717,11 @@ final class SectorScreen {
                             plans.realTestRate(now.rate()) * 100, now.rate() * 100,
                             BusinessInvestment.REAL_HURDLE_FLOOR * 100)});
         }
-        out.add(new String[] {String.format("plans %.0f mo ahead off a %d-mo trend",
-                BusinessInvestment.PLANNING_HORIZON, BusinessInvestment.TREND_WINDOW), null});
+        out.add(new String[] {String.format("plans %.0f-%.0f mo ahead off a %d-mo trend",
+                BusinessInvestment.PLANNING_HORIZON, BusinessInvestment.HORIZON_MOST, BusinessInvestment.TREND_WINDOW),
+                String.format("An order is sized for the demand %.0f months past its opening, or as long past it as its "
+                        + "buildings take to build, up to %.0f.", BusinessInvestment.PLANNING_HORIZON,
+                        BusinessInvestment.HORIZON_MOST)});
         /*
          * PEOPLE A MONTH, not a percentage. getPopulationGrowth() is the average
          * monthly CHANGE in headcount over the window - the first draft of this
@@ -3732,29 +3735,26 @@ final class SectorScreen {
                 + "plans is drawn against."});
         out.add(new String[] {String.format("builds to %.0f%% spare", BusinessInvestment.TARGET_HEADROOM * 100), null});
         /*
-         * THE LANDLORDS HOLD WORK, NOT ONE ORDER (0.7.17): as many orders as
-         * keep what their sites owe within MAX_ORDER_MONTHS of the builders'
-         * site output - see BusinessInvestment.withinMonthsOfWork(). Everybody
-         * else still waits for one order to open before placing the next,
-         * and sizes it to open inside MAX_ORDER_MONTHS at the share of the
-         * builders it would get (BusinessInvestment.orderSize()).
+         * EVERY BUSINESS MAY BUILD AHEAD (BA1, 2026-11-02). Until BA1 the
+         * landlords held at most twelve months of the builders' work on site
+         * and everybody else one order at a time; neither cap is left
+         * (BusinessInvestment, EVERY BUSINESS MAY BUILD AHEAD). The line says
+         * how many orders the sector holds and how far ahead the longest of
+         * them opens, both the model's (ordersOnSite(), monthsAheadOf()).
          */
-        if (landlords) {
-            double months = ui.game.getSectors().realEstate().monthsOfWorkOnSite();
-            out.add(new String[] {String.format("holds ≤ %.0f months of work on site", BusinessInvestment.MAX_ORDER_MONTHS)
-                            + (Double.isNaN(months) ? " · none now" : String.format(" · %.1f now", months)),
-                    String.format("It may keep ordering while what its sites owe, the next order included, is at most "
-                            + "%.0f months of what the builders have left after the repairs. Each order is sized "
-                            + "to stay inside that, and when its best home would not fit it orders the next "
-                            + "smaller one that does.", BusinessInvestment.MAX_ORDER_MONTHS)});
-        } else {
-            out.add(new String[] {String.format("%s, ≤ %.0f months of the builders' work",
-                            BusinessInvestment.MAX_CONCURRENT_ORDERS == 1 ? "one order at a time" : "several orders",
-                            BusinessInvestment.MAX_ORDER_MONTHS),
-                    String.format("And never more in one order than would be finished inside %.0f months at the "
-                            + "share of the builders it would get beside everything already on site — a "
-                            + "business cannot jam the queue for everybody else.", BusinessInvestment.MAX_ORDER_MONTHS)});
-        }
+        int orders = plans.ordersOnSite(sector.key());
+        double ahead = plans.monthsAheadOf(sector.key(), ui.game.getBuildingOutputAtEveryPost());
+        out.add(new String[] {orders == 0 ? "no orders on site"
+                        : String.format("%d order%s on site · %s", orders, orders == 1 ? "" : "s",
+                                Double.isNaN(ahead) ? "none waiting"
+                                        : ahead >= Double.MAX_VALUE ? "stalled"
+                                        : String.format("the last ≈ %.1f mo out", ahead)),
+                "No business is held to one order, or to months of the builders' work. Every order pays the price of "
+                        + "a point, which rises with the work queued - each building of an order priced on the queue "
+                        + "the ones before it leave - and has to earn the interest on its cost over the months until "
+                        + "the builders reach it. While contracts are dear, a business asks the premium of an order once "
+                        + "more before placing it, since it could wait for them to be cheap. A flood of orders makes the "
+                        + "next one dearer and later, until the orders stop."});
         if (sector == ui.game.getSectors().construction()) {
             out.add(new String[] {String.format("expands past %.0f months of backlog",
                             BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING),

@@ -198,6 +198,18 @@ public class LuxuryRetail extends Sector {
                 : Math.round(buildings.totalBySector(key(), b -> b.getCoverage()));
     }
 
+    /**
+     * ...and the people the shops on site will serve once they open (BA1, 2026-11-02): plan()
+     * counted the counters standing only while a sector could have one order on site; with no
+     * cap on orders it would order the same queue again every month until the first shop
+     * opened (BusinessInvestment.planMaker(): WHAT IS ALREADY COMING COUNTS AS SUPPLY).
+     * coverage() itself stays what stands, as the screens read it.
+     */
+    public long coverageOnSite() {
+        return buildings == null ? 0
+                : Math.round(buildings.underConstructionBySector(key(), b -> b.getCoverage()));
+    }
+
     /** The margin charged this month: a sixth of the way from last month's to the fixed point, in logs (0.7.43). */
     public double getMargin()    { return rMargin; }
     /** The fixed point the buyers struck this month (strikeMargin()), which the charged margin chases. */
@@ -390,11 +402,9 @@ public class LuxuryRetail extends Sector {
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
 
-        long cover = coverage();
+        // The counters standing and on site (BA1, 2026-11-02; coverageOnSite()).
+        long cover = coverage() + coverageOnSite();
         double queue = rWanted;
         if (queue <= cover * (1 + BusinessInvestment.TARGET_HEADROOM)) {
             return BusinessInvestment.Decision.no(sector, "counters ahead of customers");
@@ -403,7 +413,6 @@ public class LuxuryRetail extends Sector {
             return BusinessInvestment.Decision.no(sector, "no margin in it");
         }
 
-        double output = game.getBuildingOutputAtEveryPost();   // the sites' output, for the order's wait (0.7.17)
         Staffing staffingHold = null;
         String staffingHoldName = null;
         BuildingsTemplate best = null;
@@ -442,7 +451,7 @@ public class LuxuryRetail extends Sector {
             return BusinessInvestment.Decision.no(sector, "nothing worth building");
         }
 
-        int quantity = plans.orderSize(queue - cover, best.getCoverage(), best, output);
+        int quantity = plans.orderSize(queue - cover, best.getCoverage(), best);
         if (quantity <= 0) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
         // No more of them than the city could staff together (0.7.18).
         quantity = staffableCount(best, quantity);
@@ -474,7 +483,7 @@ public class LuxuryRetail extends Sector {
         double price = sellPrice > 0 ? sellPrice : landed * MARGIN_FLOOR;
         // Only the customers the counter would actually see: a boutique in a
         // city with a hundred spare counters sells nothing.
-        double served = Math.min(t.getCoverage(), Math.max(0, rWanted - coverage()));
+        double served = Math.min(t.getCoverage(), Math.max(0, rWanted - coverage() - coverageOnSite()));
         if (served <= 0) served = t.getCoverage() * .5;
         return served * (price - landed) - plans.runningCostOf(t);
     }

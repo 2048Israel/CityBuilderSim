@@ -517,9 +517,10 @@ public class NewGameCheck {
          10. the world is chosen at founding, at each of the screen's values;
          11. the endowment's job, against the catalogue's own costs - and the
              rest borrowed on the build screen's bond (0.7.10): quoted for the
-             gap, its cash covering it by no more than a granule and the
-             fees, landing exactly that, on the books at BUILD_BOND_YEARS, the
-             plant built; the page's note still quoted beside it.
+             gap, its cash covering it with the smallest face that does (one
+             granule down does not), landing exactly that, on the books at
+             BUILD_BOND_YEARS, the plant built; the page's note still quoted
+             beside it.
        ===================================================================== */
     static void founding(GameFiles files) throws Exception {
 
@@ -888,9 +889,9 @@ public class NewGameCheck {
          * quoteLongBondForCash() for Game.buildFundingGap(), at
          * BUILD_BOND_YEARS in BUILD_BOND_GRANULE. This used to ask
          * quoteLongBond() for the gap and five per cent, a guess: its cash
-         * passed the gap by D$1.0M. The bond is sized now, so the bound below
-         * is the model's own - a face rounded up by less than one granule, and
-         * the fees, which come out of the face and never out of the gap.
+         * passed the gap by D$1.0M. The bond is sized now, so what is asserted
+         * below is the model's own promise: the smallest face, a granule at a
+         * time, that covers the gap - one granule down does not.
          */
         quietly(() -> v.simulateMonths(12));
         BuildingsTemplate plant = template(v, "Water Treatment Plant");
@@ -925,7 +926,20 @@ public class NewGameCheck {
                 !quote.isEmpty() && "Term".equals(quote.instrument())
                         && quote.duration() == Game.BUILD_BOND_YEARS);
         assertTrue("...whose cash covers the gap", over >= 0);
-        assertTrue("...by no more than one issue granule plus the fees", over <= bound);
+        /*
+         * ...WITH THE SMALLEST FACE THAT DOES (BA1, 2026-11-04; the orchestrator's call on BA1's notes): the face one granule
+         * down does not cover the gap. This was "by no more than one issue granule plus the fees", which holds only where
+         * the gap falls between the jumps of the proceeds' sawtooth: a new line's coupon is the stop rounded down to an eighth
+         * (D2, below), so proceeds can jump by more than a granule between two faces a granule apart. BA1's gap a year on
+         * landed on a jump - one granule down 9.67k short, the face that covers 52.43k over against a bound of 2.90k - and
+         * the overshoot there, up to about 1.4% of the borrowing, is a known property of the solver: printed, not asserted.
+         */
+        DebtQuote downOne = v.quoteLongBond(quote.faceValue() - 1.5 * Game.BUILD_BOND_GRANULE, Game.BUILD_BOND_YEARS,
+                Game.BUILD_BOND_GRANULE);
+        System.out.printf("   one granule down: $%,.2fk of face brings $%,.2fk, $%,.2fk short of the gap; the bond's overshoot,"
+                        + " $%,.2fk, is %.2f%% of the gap (one granule and the fees: $%,.2fk)%n",
+                downOne.faceValue(), downOne.cashReceived(), gap - downOne.cashReceived(), over, 100 * over / gap, bound);
+        assertTrue("...with the smallest face that does: the face one granule down does not cover it", downOne.cashReceived() < gap);
         // ...and not by the luck of one size: the cent the note's proceeds
         // were rounded short by (CreditCheck section 9) is met here too.
         // CD2: a quote can be short - the bids at the cap do not reach it (the 5,000,000 asks are over the bank's

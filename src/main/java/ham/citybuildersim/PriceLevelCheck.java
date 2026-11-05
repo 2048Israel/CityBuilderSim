@@ -76,7 +76,7 @@ public class PriceLevelCheck {
     static final int BUILT_MONTHS = 120;
 
     /**
-     * ...and the town's: ScaleCheck's founded city (its section 1), to month 34 (55 until FC1, below) - EP1's gate review found that this town parts from its twin at
+     * ...and the town's: ScaleCheck's founded city (its section 1), to month 33 (55 until FC1, 34 until BA1, below) - EP1's gate review found that this town parts from its twin at
      * the factor where the three cities above did not (the second January's terms of trade, from a history that rounded a young city's exports
      * to a fixed hundredth of a thousand: PartnerTrade.HISTORY_ROUND_MONEY), and the twin holds it to the bit-level of rounding until then. It
      * stops there on purpose: in month 56 a cell's debt is a hair above zero (5e-18) at today's prices and exactly zero at the factor and at 0.5, and
@@ -86,9 +86,12 @@ public class PriceLevelCheck {
      * nudge below (35 on the world file before LC3's; on LC3's it parts a month sooner, a tie by the same nudge): the builders'
      * scarcity premium is on through the town's long founding queue, and from month 35 the town
      * at today's prices parts from every other level - the factor, the factor nudged by 1e-12 and today's nudged by 1e-12
-     * all run equal - by a tie in a planner's cost (BusinessInvestment.totalCostOf(), the work times the multiple).
+     * all run equal - by a tie in a planner's cost (BusinessInvestment.totalCostOf(), the work times the multiple). To month 33 since BA1
+     * (2026-11-03): with each building of an order priced on the queue the ones before it leave (BuildersShort.meanPremium()) the same tie
+     * comes a month sooner, at month 34 - the factor, the factor nudged by 1e-12 and today's nudged by 1e-12 run equal for 35 months on
+     * world-1.bin, and today's alone parts.
      */
-    static final int TOWN_MONTHS = 34;
+    static final int TOWN_MONTHS = 33;
 
     /**
      * ...and the played city's: past its demolition (PLAYED_DEMOLITION), its iron mine (PLAYED_IRON) and the land the advisor keeps buying ahead

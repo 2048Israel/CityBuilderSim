@@ -348,6 +348,10 @@ public class CallCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): this town was written against one that taxes from month 1
+            // (a 1900 town has no income tax to 1916-17, no sales tax to 1920). Opened and the defaults put back before a month has run, as HoldersCheck does.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
@@ -437,6 +441,10 @@ public class CallCheck {
         DebtQuote call = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, true);
         check("fixture: both sales are quoted, for the same face", !plain.isEmpty() && !call.isEmpty()
                 && plain.faceValue() == call.faceValue() && !plain.isShort() && !call.isShort());
+        // BA1, 2026-11-05: the section's premise is a sale the market takes at fair, and not stopping short is not it: in the 1900 town (no tax to 1916-20) the plain
+        // quote stopped 16 to 28 bp over its fair yield and the callable one at it, so the coupons' gap (12.5 bp) was not the option's (31.1). The tails are asserted.
+        check("fixture: the market takes both sales at their fair yields, the stop within a coupon step of fair (tails " + String.format("%.1f and %.1f bp", plain.auction().tail() * 1e4, call.auction().tail() * 1e4) + ")",
+                Math.abs(plain.auction().tail()) <= Auction.COUPON_STEP + 1e-9 && Math.abs(call.auction().tail()) <= Auction.COUPON_STEP + 1e-9);
         check("the quote says it is callable, and the plain one not", call.callable() && !plain.callable() && plain.firstCallMonth() == -1);
         check("...and when: " + CallTree.FIRST_CALL_10Y + " years on", call.firstCallMonth() == city.getMonth() + CallTree.FIRST_CALL_10Y * 12);
         double vol = city.rateVolatility();

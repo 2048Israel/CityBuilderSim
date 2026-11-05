@@ -220,6 +220,13 @@ public class CurrencyRegimeCheck {
         if (causesHeldOff) city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the peg fixtures stand on a town that taxes from month 1, whose
+            // hot money, drawn by the dial, outruns its current account's deficit so that a month at the peg is a surplus (the vault buys dollars). A 1900 town has no income
+            // tax until 1916-17 and no sales tax until 1920: with the merge the town's financial inflow at the peg is US$124k a month against a deficit on current account of
+            // US$212k (the vault sells, 0 bought), and with every lever open it is US$326k (the vault buys US$115k the month after the peg). Opened, and the defaults put
+            // back, before a month has run, as MonetaryCheck 5 and the cities of RailDepotCheck do.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             if (depotsStanding > 0) city.buildStack(ForeignCheck.template(city, "Construction Depot"), depotsStanding, true);
@@ -481,15 +488,77 @@ public class CurrencyRegimeCheck {
         return Founding.defaults().withPath(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
     }
 
-    /** A city on the default founding pegged with a surplus at the peg and the D$ a fifth over it: the doubt fixture, five months from its break at the peg's chance. */
-    static Game doubtTown(String label, long reseed) {
-        return doubtTown(label, reseed, false);
+    /**
+     * BA1, 2026-11-04: THE PEG TOWNS NO LONGER CAUSED THEIR CONDITION. Since BA1 took the caps off the businesses' orders (the price of the
+     * builders' queue rations them, with the interest on the wait) the town of 500 houses behind four depots is built for years: its
+     * sectors hold their profits instead of building and borrowing, and, owing nothing and finding the bank's deposit rate near nothing (the
+     * bank lends little), send them abroad (OutwardInvestment): D$355k in the first month at the peg beside D$0.15k on main's path, D$12,600k
+     * held abroad at month 37 beside D$121k. A month at the peg is then a deficit, not the surplus the fixtures say they stand on: with no
+     * depots standing the vault of US$569k is spent in three months (cur -14, fin -90 a month) and the peg breaks by the VAULT, in every
+     * one of 40 seeds. With builders enough the sectors build and borrow as on main's path: 9 to 15 depots standing do (6 and 30 do not), and
+     * at 12 the first month at the peg buys US$136k. Even so the hot money that comes for the dial's carry (US$2,900k in eight months) outgrows
+     * a vault of US$286k, and the peg breaks by the vault and not by doubt, so the vault is made PEG_VAULT_MONTHS of imports deeper before the
+     * peg, bought by the treasury and forgotten by the rate (a set-up, not a deal, as PassThroughCheck's twins' is): twice COMFORTABLE_COVER.
+     * The sections about doubt then read a break at the market's chance, and section 9 a surplus at the peg.
+     */
+    static final int PEG_DEPOTS = 12;
+    static final double PEG_VAULT_MONTHS = 2 * ForeignAccounts.COMFORTABLE_COVER;
+
+    /**
+     * BA1, 2026-11-04, REDONE 2026-11-05: the months past its 36 that a town played for the credibility fixture is given at most to find prices in the
+     * band where the bank's credibility climbs (a smoothed miss within TOLERANCE of the target, the gain branch of Expectations.takeMonth()).
+     * The first mend (2026-11-04) waited out a dip: on the path of that day the first price readings fell (the index read -4% at month 39 and -8% at 45)
+     * and the smoothed inflation sat under zero from month 42 to 80, so the town was played to month 81 and pegged there. THE BUILDERS-FIRST TEST THEN
+     * COUNTED A DEPOT ON SITE TWICE (4f66f5fd: Sector.staffingWithOwnSites()); with it mended the young town builds its depots first again and the dip
+     * is gone from the years the fixture reads: the smoothed inflation holds 2.0% to month 38, is 1.2% at 41 to 43, 2.1% at 49 and 2.8% at 53,
+     * and the bank's credibility climbs from 0.83 at month 37 through the peg's eight months and the six after the repeg (the miss never
+     * past TOLERANCE until the smoothed inflation passes 3% at month 54). The old rule (dip under target less two TOLERANCEs, then stand back
+     * at it) played that town to month 107 and pegged it at a smoothed -0.05%, a credibility of 0.449 falling by 0.002 a month: no climb to
+     * read, and none of the 40 seeds met section 3's twin. The town is now pegged as soon as it is in the band, which on this path is at once
+     * (month 36), and the search over seeds finds the seed whose break is the doubt's.
+     */
+    static final int CLIMB_LOOK_MONTHS = 120;
+
+    /** A trading town on the default founding as the peg fixtures need it (see PEG_DEPOTS), played its 36 months and its vault deepened: ready to be pegged. */
+    static Game pegTown(String label) {
+        return pegTown(label, false);
+    }
+
+    /** ...and, if `climbing`, played on until prices are in the band where the bank's credibility can climb (see CLIMB_LOOK_MONTHS). */
+    static Game pegTown(String label, boolean climbing) {
+        return pegTown(label, climbing, PEG_DEPOTS);
+    }
+
+    /** ...with this many depots standing (see PEG_DEPOTS, and surplusDepots() for a town that needs more). */
+    static Game pegTown(String label, boolean climbing, int depots) {
+        return pegTown(label, climbing, depots, false);
     }
 
     /** ...with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). */
-    static Game doubtTown(String label, long reseed, boolean causesHeldOff) {
-        Game g = town(label, steady(), 0, causesHeldOff);
+    static Game pegTown(String label, boolean climbing, int depots, boolean causesHeldOff) {
+        Game g = town(label, steady(), depots, causesHeldOff);
         play(g, 36);
+        if (climbing) {
+            double target = g.getDebtManager().getInflationTarget();
+            for (int past = 0; past < CLIMB_LOOK_MONTHS && Math.abs(g.getExpectations().getSmoothedInflation() - target) > Expectations.TOLERANCE; past++) {
+                play(g, 1);
+            }
+        }
+        ForeignAccounts fx = g.getForeignAccounts();
+        double bill = PEG_VAULT_MONTHS * fx.monthlyImports();
+        quietly(() -> g.buyForeignCurrency(bill));
+        fx.forgetDealing();
+        return g;
+    }
+
+    /** A city on the default founding pegged with a surplus at the peg and the D$ a fifth over it: the doubt fixture, five months from its break at the peg's chance. */
+    static Game doubtTown(String label, long reseed) {
+        return doubtTown(label, reseed, false, false);
+    }
+
+    /** ...and, if `climbing`, pegged in the month prices are back near the target (pegTown(), CLIMB_LOOK_MONTHS); with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). */
+    static Game doubtTown(String label, long reseed, boolean climbing, boolean causesHeldOff) {
+        Game g = pegTown(label, climbing, PEG_DEPOTS, causesHeldOff);
         quietly(() -> {
             g.setCurrencyRegime(PEG);
             g.getDebtManager().setPegSpread(.30);
@@ -505,7 +574,11 @@ public class CurrencyRegimeCheck {
      * under it, so that month nothing breaks by chance, and played the month.
      */
     static Game heldTwin(String label, long seed, int months, double[] start) {
-        Game b = doubtTown(label, seed);
+        return heldTwin(label, seed, months, start, false);
+    }
+
+    static Game heldTwin(String label, long seed, int months, double[] start, boolean climbing) {
+        Game b = doubtTown(label, seed, climbing, false);
         play(b, months - 1);
         start[0] = b.getExpectations().getCredibility();
         quietly(() -> b.repeg(b.getForeignAccounts().getShadowRate() * 1.5));
@@ -653,7 +726,7 @@ public class CurrencyRegimeCheck {
         final int seeds = 40;
         for (int attempt = 0; attempt < seeds && a == null; attempt++) {
             long tried = attempt == 0 ? 0 : SEED + attempt;
-            Game candidate = doubtTown("xr2-credibility-a-" + attempt, tried);
+            Game candidate = doubtTown("xr2-credibility-a-" + attempt, tried, true, false);
             int months = 0;
             boolean climbing = false;
             while (months < 40 && !candidate.getForeignAccounts().brokeThisMonth()) {
@@ -666,7 +739,7 @@ public class CurrencyRegimeCheck {
             Game twin = null;
             double[] start = new double[1];
             if (fits || attempt == seeds - 1) {
-                twin = heldTwin("xr2-credibility-b-" + attempt, tried, months, start);
+                twin = heldTwin("xr2-credibility-b-" + attempt, tried, months, start, true);
                 fits = fits && !twin.getForeignAccounts().brokeThisMonth()
                         && Math.abs(twin.getExpectations().getCredibility() - (start[0] + (Expectations.KMAX - start[0]) / Expectations.GAIN_MONTHS)) <= 1e-12;
             }
@@ -1184,10 +1257,41 @@ public class CurrencyRegimeCheck {
     /** The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). */
     static final String EDGE_BILL = "The band's or the peg's dollars";
 
+    /**
+     * BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. A month at the peg is a surplus only where the hot money the dial draws
+     * (the financial account) outruns the current account's deficit, and the two move together with the builders: with 12 depots standing
+     * the first month at the peg is US$210.8k out on current account and US$180.4k in on financial, so the vault bought nothing (0.0k) and the
+     * section's bill was 0; since the builders-first test stopped counting a depot on site twice (4f66f5fd) the town of 500 houses needs more
+     * builders than the 12 PEG_DEPOTS stood on 2026-11-04 (US$136k bought then): 18 buy US$6.8k, 19 13.2k, 20 17.1k, 22 40.0k, 24 19.7k, and
+     * 12, 16, 17, 25 and 30 nothing - a surplus that comes and goes with the count, a hair either side of a deficit. The count is therefore
+     * SEARCHED for: the first of these whose first month at the peg owes the edge's bill the section asserts on (more than 100 x
+     * PriceLevel.FACTOR of local money), found once on a trial town and kept for the cities of the section.
+     */
+    static final int[] SURPLUS_DEPOTS = { PEG_DEPOTS, 18, 20, 22, 24, 30, 36 };
+    static int surplusDepotsFound = 0;
+
+    static int surplusDepots() {
+        if (surplusDepotsFound == 0) {
+            for (int depots : SURPLUS_DEPOTS) {
+                Game trial = pegTown("xr2-surplus-trial-" + depots, false, depots);
+                quietly(() -> {
+                    trial.setCurrencyRegime(PEG);
+                    trial.getDebtManager().setPegSpread(.30);
+                });
+                play(trial, 1);
+                if (trial.getForeignAccounts().getEdgeOwedLocal() > 100 * PriceLevel.FACTOR) {
+                    surplusDepotsFound = depots;
+                    break;
+                }
+            }
+            if (surplusDepotsFound == 0) surplusDepotsFound = PEG_DEPOTS;   // none met it: section 9's own fixture assertion says so
+        }
+        return surplusDepotsFound;
+    }
+
     /** A city pegged at 36 months with a large positive spread: the dial high, money arriving, a surplus at the peg every month. */
     static Game surplusTown(String label, ForeignAccounts.EdgePayer payer) {
-        Game g = town(label, steady());
-        play(g, 36);
+        Game g = pegTown(label, false, surplusDepots());
         quietly(() -> {
             g.setCurrencyRegime(PEG);
             g.getDebtManager().setPegSpread(.30);
@@ -1389,7 +1493,7 @@ public class CurrencyRegimeCheck {
          */
         Game live = null;
         for (int attempt = 0; attempt < 6 && live == null; attempt++) {
-            Game candidate = doubtTown("xr2-save-" + attempt, attempt == 0 ? 0 : SEED + attempt, true);
+            Game candidate = doubtTown("xr2-save-" + attempt, attempt == 0 ? 0 : SEED + attempt, false, true);
             FloatLinkCheck.worldWantsPaper(candidate);
             ForeignAccounts fx = candidate.getForeignAccounts();
             for (int m = 0; m < 12 && live == null && !fx.brokeThisMonth(); m++) {

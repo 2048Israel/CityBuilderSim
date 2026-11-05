@@ -528,8 +528,18 @@ public class SaveFileCheck {
 
         // Started now and deliberately NOT finished, so the save is taken with
         // real work in progress.
-        city.buildStack(depot, depotsOrdered, false);
-        city.buildStack(store, 4, false);
+        // BA1, 2026-11-05: THE ORDER FUNDED BY ITS QUOTE. Under BA1 the builders' queue prices a contract by what is waiting on it: this
+        // city, 909 people and D$1,977 at month 91 on the path the harness plays, was quoted D$2,435 for twenty depots (D$837 at list), and
+        // the order came back NEEDS_FUNDING, nothing started, nothing mid-build to save (on a run of the same code that left it with 1,067
+        // people and D$1,690 the quote was D$1,256 and the order took). The cash is topped up by the two orders' quotes, as this harness
+        // funds its rail haul's orders further on (the money is no part of what a save has to carry), and the order is asserted.
+        final int storesOrdered = 4;
+        city.setCashForTest(city.getCash()
+                + city.quoteBuildOn(depot, depotsOrdered, Landmasses.CHOSEN).total
+                + city.quoteBuildOn(store, storesOrdered, Landmasses.CHOSEN).total);
+        Game.BuildResult depotOrder = city.buildStack(depot, depotsOrdered, false);
+        city.buildStack(store, storesOrdered, false);
+        assertTrue("fixture: the twenty depots were ordered (" + depotOrder + ")", depotOrder == Game.BuildResult.SUCCESS);
         city.simulateMonths(1);
 
         int depotsUnderWay = city.getBuildingManager().getUnderConstructionById()[depot.getId()];
@@ -1459,6 +1469,17 @@ public class SaveFileCheck {
             full.buyForeignCurrency(1);
             ham.citybuildersim.sectors.Retail shops = full.getSectors().retail();
             shops.setStoreInventory((int) Math.min(Integer.MAX_VALUE, shops.getHouseholdWant() / 2));
+            /*
+             * ...AND THE HOT MONEY'S STOCK AT HALF OF LAST MONTH'S TARGET (BA1): the stock closes a fifth of its gap to a target that
+             * follows a year of output, and with the construction orders uncapped this city's path never once had the target over the
+             * stock in the 240 months the loop may wait (the squeeze pulls the output down and the stock is left standing over it), so
+             * the loop ran its whole bound, to month 392, and the bank failed, the bonds were repaid and the mortgages gone, and every
+             * fixture below read an empty city. Half the target put in the stock before the month is a month in which money arrives,
+             * as the do-loop's other transients are caused rather than waited for.
+             */
+            double[] hot = full.getCapitalFlows().toSaveArray();
+            hot[0] = Math.min(hot[0], full.getCapitalFlows().getTarget() / 2);
+            full.getCapitalFlows().restore(hot);
             full.simulateMonths(1);
         } while (++extraMonths < 240
                 && (full.getHealth().getHungerRate() <= 0
@@ -1558,7 +1579,7 @@ public class SaveFileCheck {
             // the biggest cell carried a debt of D$0.0013 a household and was refused every share, so the buy filled nothing and no short opened.
             Household shortBuyer = null;
             for (Household h : full.getHouseholdBalance().cells()) {
-                if (!h.isEmpty() && h.households() > 0 && Exchange.mayBuy(h) && (shortBuyer == null || h.households() > shortBuyer.households())) shortBuyer = h;
+                if (!h.isEmpty() && h.households() > 0 && full.getExchange().mayBuy(h) && (shortBuyer == null || h.households() > shortBuyer.households())) shortBuyer = h;
             }
             if (shortBuyer != null) {
                 shortBuyer.savings += 1e9;

@@ -1,4 +1,4 @@
-# BusinessServices.java - 274 lines · 9 methods · 0 constants · sectors
+# BusinessServices.java - 292 lines · 10 methods · 0 constants · sectors
 
 `ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -58,7 +58,7 @@
 > shedding two thousand jobs to the Philippines and India inside a decade.
 > Boom and bleed, documented. See claude/business-services.md.
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (9), [Game](Game.md) (3), [JobType](JobType.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Formats](Formats.md) (2), [SectorStatements](SectorStatements.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (7), [Game](Game.md) (4), [JobType](JobType.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Formats](Formats.md) (2), [SectorStatements](SectorStatements.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
 **Used by (3):** [BusinessServicesCheck](BusinessServicesCheck.md), [LongPlaytest](LongPlaytest.md), [Sectors](Sectors.md)
 
@@ -67,30 +67,31 @@
 | line | section |
 |---:|---|
 | 119 | · plan |
-| 229 | · the screen |
+| 247 | · the screen |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 71 | 204 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
+| 71 | 222 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
 | 73 | 11 | `public BusinessServices()` |  |
 | 86 | 5 | `public double getSeats()` | Seats of every kind, staffed or not - the sector in one number. |
 | 99 | 3 | `public double priceOfSeat(Good g)` | What a seat-month of each kind fetches in the city's own money. |
 | 110 | 8 | `public double payrollShare()` | Payroll as a share of revenue, at the wages the city is paying now. |
 
-### plan (lines 119-228)
+### plan (lines 119-246)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 135 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the same reason Mining and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 212 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
-| 218 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
+| 145 | 68 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the same reason Mining and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 220 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 227 | 4 | `private double licencesOnSite(JobType licence, Game game)` | The licences of one kind this sector's practices on site will ask for when they open (BA1, 2026-11-02): each one's licensed posts at the share Game.licencesNeededFor() holds the first of a kind to. |
+| 236 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
 
-### the screen (lines 229-274)
+### the screen (lines 247-292)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 232 | 38 | `public List<Line> ownLines(Game game)` |  |
-| 273 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. |
+| 250 | 38 | `public List<Line> ownLines(Game game)` |  |
+| 291 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. |
 

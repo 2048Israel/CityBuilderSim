@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.16 — BA1, every business may build ahead — 2026-11-05, ready, see docs/queue/BA1-notes.md
+No business is held to one order on site, nor the landlords to twelve months of the builders' work (Jerus: "why
+bounded? why not let contracts flow?"). A sector orders whenever an order clears its test at the price of a point it
+would pay, each building priced on the queue the ones before it leave, the cost grown by the interest over the
+order's whole wait and, while contracts are dear, once more by its own multiple ("stop trying to place orders until
+contracts arent so expensive": a business can wait). The builders keep one depot on site, the refiners one crude unit.
+The ensemble scores 22/26 against 0.9.12's 24/26. A2's spell is 14 months against 27, 40,000 people come at m878
+against m1,038, and the final city is 572,286 against 323,765. A3 misses by a month in one seed, R3 in four. Known-class
+lines pass by name at the gate: LongPlaytest's map finding (Jerus: "Ship it, pass both"), MapCheck's moved boxes (DM2),
+PriceLevelCheck 8's drift (RT1, BS1) and DenominationCheck's twin, a price tie in the bond book (OB1).
+
 ### 0.9.15 — R1, equipment as data and on each building — 2026-11-05, ready, see docs/queue/R1-notes.md
 The first part of research's recipes and equipment, built off. `buildings.json` gives a building the equipment it can be fitted with:
 the electric motor drive on the 18 factories (it ends R0c's steam), the motor truck on the Truck Depot (the carts' horses) and the

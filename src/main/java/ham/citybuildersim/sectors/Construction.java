@@ -681,6 +681,9 @@ public final class Construction extends Sector {
        PLANNING - off the order book
        =================================================================== */
 
+    /** The builders' word while a depot of theirs is on site (ONE DEPOT AT A TIME, below); "already building" until BA1. */
+    public static final String ONE_DEPOT_ON_SITE = "a depot on site already";
+
     /**
      * Everyone else's lead times are its output, so when the queue gets long
      * it is the constraint on the whole city. Measured as months of backlog
@@ -703,24 +706,38 @@ public final class Construction extends Sector {
      * Automotive, Freight and Business Services use it - since 0.7.18 through
      * Sector.staffing(), the one test every planner that builds posts asks.
      *
-     * ONE DEPOT AT A TIME, BUILT FIRST (0.7.130). The plan still orders one
-     * depot and waits while it is on site (MAX_CONCURRENT_ORDERS), but a
-     * depot the crews' rule would keep on site past BACKLOG_MONTHS_BEFORE_EXPANDING
-     * no longer waits at its crew's weight: it is built off the top of the
-     * month (BuildingManager, THE BUILDERS' OWN DEPOTS FIRST), so "already
-     * building" holds the plan only while such a depot owes more than a
-     * month, and the next is ordered the month after it opens - at most a
-     * depot a month. Ordering more at once, sized to the queue, was measured and not
-     * built (the batch's notes): alone the depots sat in the queue and the
-     * city collapsed; with the depots first the builders ran away to ten
-     * times the depots.
+     * ONE DEPOT AT A TIME, BUILT FIRST (0.7.130; the builders' own rule
+     * since BA1). The plan orders one depot and waits while it is on site,
+     * but a depot the crews' rule would keep on site past
+     * BACKLOG_MONTHS_BEFORE_EXPANDING no longer waits at its crew's weight:
+     * it is built off the top of the month (BuildingManager, THE BUILDERS'
+     * OWN DEPOTS FIRST), so the plan is held only while such a depot owes
+     * more than a month, and the next is ordered the month after it opens -
+     * at most a depot a month. Ordering more at once, sized to the queue, was
+     * measured and not built (the 0.7.130 batch's notes): alone the depots
+     * sat in the queue and the city collapsed; with the depots first the
+     * builders ran away to ten times the depots.
+     *
+     * WHY IT OUTLIVED THE CAP ON ORDERS (BA1, 2026-11-02). BA1 took the one
+     * order on site off every sector (BusinessInvestment, EVERY BUSINESS MAY
+     * BUILD AHEAD); the builders keep it as a physical rule of theirs, as
+     * Oil keeps one pipe and Haulage one truck depot. Tried without it - a
+     * depot a month, the depots on site counted at their nameplate as output
+     * to come - a stalled city whose sites got 76 points of 458 ordered a
+     * depot every month until seven were on site, all sharing the 76 points
+     * off the top: its first depot opened in month 22 where one at a time
+     * opens it inside BuildersFirstCheck's bound of 7 (sections 4 and 5),
+     * and a copy of a city K times larger stopped tracking it (ScaleCheck: K
+     * depots on site there against one here, and each ordered one more).
+     * The depots' price is not the queue's to ration either: theirs go first.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
+        // One depot on site at a time (ONE DEPOT AT A TIME, above): the builders' own rule, not the cap on orders BA1 removed.
+        if (buildings.getUnderConstructionBySector(sector) > 0) {
+            return BusinessInvestment.Decision.no(sector, ONE_DEPOT_ON_SITE);
         }
 
         // ...at every post (0.7.17): a builder that has laid crews off for

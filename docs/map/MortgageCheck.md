@@ -1,4 +1,4 @@
-# MortgageCheck.java - 1,238 lines · 26 methods · 2 constants · harnesses
+# MortgageCheck.java - 1,245 lines · 26 methods · 2 constants · harnesses
 
 `ham/citybuildersim/MortgageCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -99,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 1164 | **type** `public class MortgageCheck` | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. |
+| 75 | 1171 | **type** `public class MortgageCheck` | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 86 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 92 | 6 | `static void same(String label, String actual, String expected)` |  |
@@ -181,9 +181,9 @@
 | 1034 | 6 | `static void closeAMonth(Bank b, double interest, double payroll)` | One closed month of a hand-built bank: this interest, these costs. |
 | 1041 | 92 | `static void branchesClose(Path root)` |  |
 
-### 12. PAYOUTS AFTER PRINCIPAL (round 2) (lines 1134-1238)
+### 12. PAYOUTS AFTER PRINCIPAL (round 2) (lines 1134-1245)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1136 | 102 | `static void payoutsAfterPrincipal(Path root)` |  |
+| 1136 | 109 | `static void payoutsAfterPrincipal(Path root)` |  |
 

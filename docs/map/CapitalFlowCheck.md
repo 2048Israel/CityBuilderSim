@@ -1,4 +1,4 @@
-# CapitalFlowCheck.java - 759 lines · 8 methods · 0 constants · harnesses
+# CapitalFlowCheck.java - 787 lines · 9 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -30,7 +30,7 @@
 >      and the dividend and receives none of it - while the rate moving the
 >      dollars is a revaluation, no income.
 
-**Uses:** [CapitalFlows](CapitalFlows.md) (29), [DebtManager](DebtManager.md) (12), [Game](Game.md) (12), [SectorStatements](SectorStatements.md) (10), [ForeignAccounts](ForeignAccounts.md) (6), [SectorBooks](SectorBooks.md) (6), [Bank](Bank.md) (4), [GameFiles](GameFiles.md) (4), [Sectors](Sectors.md) (4), [Sector](Sector.md) (4), [Equity](Equity.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [MoneyAudit](MoneyAudit.md) (3), [TempDirs](TempDirs.md) (2), [Statement](Statement.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [CapitalFlows](CapitalFlows.md) (29), [Game](Game.md) (14), [DebtManager](DebtManager.md) (12), [SectorStatements](SectorStatements.md) (10), [ForeignAccounts](ForeignAccounts.md) (6), [SectorBooks](SectorBooks.md) (6), [Bank](Bank.md) (4), [GameFiles](GameFiles.md) (4), [Sectors](Sectors.md) (4), [Sector](Sector.md) (4), [Equity](Equity.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [MoneyAudit](MoneyAudit.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [TempDirs](TempDirs.md) (2), [Statement](Statement.md) (2), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1), [Landmasses](Landmasses.md) (1)
 
 ## Sections
 
@@ -43,8 +43,8 @@
 | 188 | · 5. painful, never fatal |
 | 215 | · 6. it reaches the bank |
 | 276 | · 7. in a real city, and across a reload |
-| 390 | · 8. and the city's own money goes the other way |
-| 488 | · 9. the coupon abroad is profit, kept abroad (HD1, HD2) |
+| 407 | · 8. and the city's own money goes the other way |
+| 505 | · 9. the coupon abroad is profit, kept abroad (HD1, HD2) |
 
 ## Fields (state)
 
@@ -53,18 +53,20 @@
 | 38 | `static int fails` |  |
 | 39 | `static PrintStream out` |  |
 | 40 | `static PrintStream quiet` |  |
+| 771 | `static boolean fixtureListBuilt` | BA1, 2026-11-04: whether section 7's whole build list was taken (see the comment where it is ordered). |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 724 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
+| 36 | 752 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
 | 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 58 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
-| 64 | 652 | `public static void main(String[] args) throws Exception` |  |
-| 718 | 19 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
-| 739 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
-| 745 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
-| 753 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 64 | 669 | `public static void main(String[] args) throws Exception` |  |
+| 735 | 19 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
+| 756 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
+| 762 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
+| 774 | 6 | `static boolean order(Game game, String name, int quantity)` | An order paid out of cash: the treasury is raised to the order's quote if the queue's price outran it; true if the order was taken. |
+| 781 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

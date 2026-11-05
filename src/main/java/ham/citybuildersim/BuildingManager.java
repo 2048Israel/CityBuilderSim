@@ -5265,11 +5265,13 @@ public class BuildingManager {
      * What one sector's sites would get of the month's site output, with an
      * order counted as though it were already on site (0.7.17). Written as
      * the pace the landlords held their orders by; nothing reads it as
-     * shipped - their months are the builders' whole site output against
-     * what their own sites owe (BusinessInvestment.withinMonthsOfWork(),
-     * pointsOwedBySector(); see "MONTHS OF THE BUILDERS' WORK, NOT OF THE
-     * LANDLORDS' PACE" there). TODO(docs): whether it is kept for a reader
-     * to come or left over from the round's earlier reading is not said.
+     * shipped - their months were the builders' whole site output against
+     * what their own sites owed (withinMonthsOfWork(), pointsOwedBySector()),
+     * and since BA1 nothing holds their orders by the month at all: the
+     * price of a point and the interest on the wait ration them (see
+     * BusinessInvestment, EVERY BUSINESS MAY BUILD AHEAD). TODO(docs): whether
+     * it is kept for a reader to come or left over from the round's earlier
+     * reading is not said.
      */
     public double siteShareOfSector(String sector, double siteOutput, BuildingsTemplate extra, int extraCount) {
         double[] share = siteShares(siteOutput, extra, extraCount);
@@ -5877,7 +5879,8 @@ public class BuildingManager {
        why-the-builders-stall.md, section 3): its repairs took 0.81 of the
        builders' nameplate and the dead the rest, so about 420 points a month
        reached 26 sites. The builders' plan saw the queue (4,690 months of it)
-       and ordered a depot - one at a time, MAX_CONCURRENT_ORDERS - and the
+       and ordered a depot - one at a time (MAX_CONCURRENT_ORDERS then; the
+       builders' own rule since BA1, sectors.Construction) - and the
        depot waited in the same queue at its crew's weight, 400 to the power
        0.70, 66.3 of 90,640: 0.4 points a month. Their gate said "already
        building" in 119 of 120 months; the new depot had 31.4 of its 400
@@ -5986,14 +5989,23 @@ public class BuildingManager {
     public double orderPriceMultiplier() { return orderPriceMultiplier(0); }
 
     /** ...with `pointsAhead` more on the queue than it holds: what the orders before this one in a run put there, which a run's invoice prices it on (Game.buildRunInvoice()). */
-    public double orderPriceMultiplier(double pointsAhead) {
+    public double orderPriceMultiplier(double pointsAhead) { return orderPriceMultiplier(pointsAhead, 0, 1); }
+
+    /**
+     * ...for an order of `n` buildings of `pointsEach` points (BA1): each building priced on the queue the ones before it
+     * in the order leave, so the order's multiple is the mean over its buildings (BuildersShort.meanPremium(); AN ORDER'S
+     * OWN BUILDINGS), the first at the queue plus `pointsAhead`. For one building, or no points, exactly the multiple above.
+     */
+    public double orderPriceMultiplier(double pointsAhead, double pointsEach, long n) {
         if (!buildersMonthKnown()) return 1;
         // Each month read once: a quote is struck often, and each read is the city's repairs worked out again.
         double sites = sitesAtEveryPost.getAsDouble(), output = outputAtEveryPost.getAsDouble();
         if (!(output > 0)) return 1;
         boolean foreign = BuildersShort.foreignTakesOrders(sites, output);
         double queue = getRemainingConstructionPoints() + Math.max(0, pointsAhead);
-        return BuildersShort.multiplier(foreign ? 0 : BuildersShort.monthsQueued(queue, sites), foreign);
+        // (Not foreign, the sites have at least FOREIGN_FLOOR of the month: a step in months is a finite number.)
+        return BuildersShort.multiplier(foreign ? 0 : BuildersShort.monthsQueued(queue, sites),
+                foreign ? 0 : Math.max(0, pointsEach) / sites, n, foreign);
     }
 
     /** Points still owed on the builders' own sites served first (buildersOwnOnSite()): buildings on site over their points, less progress, as basePricePerPoint() counts each stack. */
@@ -7172,6 +7184,15 @@ public class BuildingManager {
             if (stack.getBuilding().getSector().equals(sector)) total += stack.getUnderConstruction();
         }
         return total;
+    }
+
+    /**
+     * The posts of one tier that a sector's buildings under construction will offer when they open: buildings on site
+     * times the template's jobs of that tier (BA1). Sector.staffing() counts them as spoken for, since with more than
+     * one order on site two of them must not be staffed from the same spare workers.
+     */
+    public double postsOnSite(String sector, JobType job) {
+        return underConstructionBySector(sector, t -> t.getJobs(job));
     }
 
     /**

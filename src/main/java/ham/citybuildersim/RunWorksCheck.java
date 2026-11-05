@@ -131,6 +131,13 @@ public class RunWorksCheck {
         // SlopeCheck's flat fixture (section 5) prints through its own streams, set here as its main sets them.
         SlopeCheck.out = out;
         SlopeCheck.quiet = quiet;
+        // BA1: the builders' price off in this JVM (BuildingManager.buildersShortOn), as HoldersCheck and MapCheck have it. This
+        // harness's subject is the works - their land, points and money - against the builders' work at its price a point, and
+        // its cities' queues are empty, which under FC1 left every quote at a multiple of one. Since BA1 an order's own
+        // buildings are priced on the queue the ones before it leave (BuildersShort, AN ORDER'S OWN BUILDINGS), so a second
+        // Freight Line or Elevated Highway in these small cities stands years queued and pays a premium the works were never
+        // asked about; ConstructionTrapCheck 12 asks it.
+        BuildingManager.buildersShortOn = false;
 
         whichAreRuns();
         spreadOverTheClasses();
