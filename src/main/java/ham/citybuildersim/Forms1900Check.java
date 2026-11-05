@@ -4,6 +4,7 @@ import ham.citybuildersim.sectors.Agriculture;
 import ham.citybuildersim.sectors.CementConcrete;
 import ham.citybuildersim.sectors.Freight;
 import ham.citybuildersim.sectors.Haulage;
+import ham.citybuildersim.sectors.Retail;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -11,11 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The farm's horses, the factory's steam and road freight's horse and wagon, as forms a share of a sector runs.
+ * The farm's horses, the factory's steam, road freight's horse and wagon and the homes' lamp oil and coal, as forms a share of a sector or of the homes runs.
  *
  * WHAT THIS HAS TO PROVE (R0c, 2026-11-05; research-1900 section 4). The mechanics are SHARES, 0 to 1, of a sector that runs the 1900 way
- * (Agriculture.setHorseShare(), Sector.setSteamShare(), Haulage.setHorseShare()); R1 will set them from each building's recipe and nothing
- * sets them in a played city yet, so what is checkable is that off the month is today's and that on each does what it says:
+ * (Agriculture.setHorseShare(), Sector.setSteamShare(), Haulage.setHorseShare()) or of the homes (HomeFuel.setLampShare(), setCoalShare()); R1 and
+ * R0e will set them and nothing sets them in a played city yet, so what is checkable is that off the month is today's and that on each does what it says:
  *
  *   1. AT 0 THE MONTH IS TODAY'S, to the bit: two twin cities, one with every share set to 0 on every sector every month (Haulage's
  *      included), agree on the treasury, every sector's books, Haulage's fleet and quote and the city's power demand for twelve months, and
@@ -37,11 +38,21 @@ import java.util.List;
  *  10. THE QUOTE PRICES THE HORSE: estimate() is the blend of today's and the teams' (feed and carters over a team's tonnes), and the
  *      reprice with a history is finite, positive and covers the feed and the carters
  *  11. THE MONEY ADDS UP, with the carts carrying every bulk tonne, every month
+ *  12. A LAMP-LIT HOME BUYS LAMP OIL: with the lamp share at 1 the JET Retail sold to the households is the homes x LAMP_OIL_LITRES_A_HOME_MONTH,
+ *      drawn on its books and sold at the pump's rule on its own wholesale with no fuel duty, and the bill is the sale's value exactly; at one
+ *      half the litres a home are half
+ *  13. A STOVE-HEATED HOME BUYS COAL: the same with the coal share, THERMAL_COAL the homes x COAL_TONNES_A_HOME_MONTH, the world's part the
+ *      bill's imported part, and the city's own stock drawn before the world's
+ *  14. THE HOUSEHOLDS PAY IT: with both shares at 1 their expenses rise by the bill over a twin with both at 0, the rows pay it by their
+ *      doors (the orphans and prisoners none), it is in the waterfall the cells are settled by and the cells' fixed bills rise by it; with
+ *      the shares back to 0 it is gone
+ *  15. THE MONEY ADDS UP, with the homes buying lamp oil and coal every month
  *
  * Every fixture CAUSES its condition: the shares are set, and the sector asked is one with buildings standing that draw power (or, for 7 to
- * 11, a city with a bulk chain at home and trade both ways: HaulageCheck.base()). The figures are asserted against the model's own constants
- * (HORSE_FEED_SHARE, HORSE_POSTS_FACTOR, STEAM_COAL_KG_A_KWH, HydroSites.KWH_PER_UNIT, Haulage.HORSES_A_TEAM, HORSE_FEED_TONNES_A_MONTH,
- * TONNES_A_TEAM_MONTH, CARTERS_A_TEAM) and its own getters, never numbers copied from the brief.
+ * 11, a city with a bulk chain at home and trade both ways: HaulageCheck.base(); for 12 to 15, a town with homes and a grocery, the lamp and
+ * coal shares set before the month). The figures are asserted against the model's own constants (HORSE_FEED_SHARE, HORSE_POSTS_FACTOR,
+ * STEAM_COAL_KG_A_KWH, HydroSites.KWH_PER_UNIT, Haulage.HORSES_A_TEAM, HORSE_FEED_TONNES_A_MONTH, TONNES_A_TEAM_MONTH, CARTERS_A_TEAM,
+ * HomeFuel.LAMP_OIL_LITRES_A_HOME_MONTH, COAL_TONNES_A_HOME_MONTH, Retail.pumpPrice()) and its own getters, never numbers copied from the brief.
  */
 public class Forms1900Check {
 
@@ -150,6 +161,21 @@ public class Forms1900Check {
         values.add(freight.haulagePayroll());
         names.add("rail payroll");
         values.add(freight.railPayroll());
+        // ...and the homes' lamp oil and coal (the home form, R0c): what the shops sold, what the households were charged, and their expenses.
+        Retail retail = g.getSectors().retail();
+        HouseholdAccounts books = g.getHouseholds();
+        names.add("retail JET sold");
+        values.add(unitsSold(retail, Good.JET));
+        names.add("retail THERMAL_COAL sold");
+        values.add(unitsSold(retail, Good.THERMAL_COAL));
+        names.add("home fuel bill held");
+        values.add(g.getHomeFuel().getBill());
+        names.add("households home fuel");
+        values.add(books.getHomeFuel());
+        names.add("households spending");
+        values.add(books.getSpending());
+        names.add("households net saving");
+        values.add(books.getNetSaving());
     }
 
     /** The first figure two cities do not agree on, to the bit, or null for none. */
@@ -183,6 +209,10 @@ public class Forms1900Check {
         sectionFive();
         sectionSix(c, a);
         sectionsSevenToEleven();
+        sectionTwelve();
+        sectionThirteen();
+        sectionFourteen();
+        sectionFifteen();
 
         out.println(fails == 0 ? "\nAll Forms1900Check assertions passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -205,6 +235,8 @@ public class Forms1900Check {
             agriB.setHorseShare(0);
             b.getSectors().freight().haulage().setHorseShare(0);
             for (Sector s : b.getSectors().all()) s.setSteamShare(0);
+            b.getHomeFuel().setLampShare(0);
+            b.getHomeFuel().setCoalShare(0);
             play(a, 1);
             play(b, 1);
             month = m;
@@ -215,6 +247,15 @@ public class Forms1900Check {
         boolean listed = true;
         for (Sector s : b.getSectors().all()) listed &= s.goodsUsed().equals(a.getSectors().byKey(s.key()).goodsUsed());
         check("...and a share of 0 puts no good on any sector's list of inputs", listed && !agriB.isUser(Good.CROPS));
+        boolean untouched = true;
+        for (Game g : new Game[] { a, b }) {
+            Retail r = g.getSectors().retail();
+            untouched &= !g.getHomeFuel().isOn() && !g.getHomeFuel().hasSale() && g.getHouseholds().getHomeFuel() == 0
+                    && r.outputRow(Good.JET) == null && r.outputRow(Good.THERMAL_COAL) == null
+                    && r.inputRow(Good.JET) == null && r.inputRow(Good.THERMAL_COAL) == null;
+        }
+        check("...and the homes' lamp oil and coal at 0 draw, book and tell nothing: no JET or coal on Retail's books, no sale held, no home fuel line on the households'",
+                untouched);
     }
 
     /* ============================ 2 and 3. the horses ============================ */
@@ -694,5 +735,260 @@ public class Forms1900Check {
         }
         check("the month's money audit closes in each of " + CART_MONTHS + " months at a share of 1", closed == CART_MONTHS, first);
         check("...the carts having run in each of them: teams hired and crops drawn", ran == CART_MONTHS, ran + " of " + CART_MONTHS);
+    }
+
+    /* ============================ 12 to 15. the homes' lamp oil and coal ============================ */
+
+    /** The units of a good a sector sold to local buyers in its last month, as its output line has them (0 for no line). */
+    static double unitsSold(Sector s, Good g) {
+        Sector.Output o = s.outputRow(g);
+        return o == null ? 0 : o.soldLocal;
+    }
+
+    /** The money a sector's statement books for the sale of a good (0 for no line). */
+    static double soldValue(Sector s, Good g) {
+        Sector.Split x = s.statement().sold.get(g);
+        return x == null ? 0 : x.total();
+    }
+
+    /** ...and for its purchase of a good, in all and from the world alone. */
+    static double boughtValue(Sector s, Good g) {
+        Sector.Split x = s.statement().bought.get(g);
+        return x == null ? 0 : x.total();
+    }
+
+    static double boughtAbroad(Sector s, Good g) {
+        Sector.Split x = s.statement().bought.get(g);
+        return x == null ? 0 : x.abroad;
+    }
+
+    /** A figure against the model's, to the bit. */
+    static void same(String label, double actual, double expected) {
+        check(label, Double.doubleToLongBits(actual) == Double.doubleToLongBits(expected), String.format("%.17g != %.17g", actual, expected));
+    }
+
+    /** What the cells of a city owe before they spend: the take-home less what is left after the fixed bills (rent, fees, interest, loans), summed over their households. */
+    static double fixedBills(Game g) {
+        double t = 0;
+        for (Household c : g.getHouseholdBalance().cells()) {
+            if (!c.isEmpty()) t += c.households() * (c.disposable() - c.afterFixed());
+        }
+        return t;
+    }
+
+    /** The home fuel bill the settled cells were handed: each row's part, by the people in the cells that settle (a cell under HouseholdBalance.EMPTY_CELL households settles nothing), as the balance splits a row's fees. */
+    static double homeFuelSettled(Game g) {
+        HouseholdAccounts books = g.getHouseholds();
+        double[] weight = new double[Household.ROWS], settles = new double[Household.ROWS];
+        for (Household c : g.getHouseholdBalance().cells()) {
+            double w = c.households() * c.headcount();
+            weight[c.row()] += w;
+            if (!c.isEmpty()) settles[c.row()] += w;
+        }
+        double t = 0;
+        for (int r = 0; r < Household.ROWS; r++) if (weight[r] > 0) t += books.getRowHomeFuel(r) * settles[r] / weight[r];
+        return t;
+    }
+
+    static void sectionTwelve() {
+        out.println("\n--- 12. a lamp-lit home buys lamp oil: JET drawn on Retail's books and sold at the pump's rule, the bill the sale's value exactly ---");
+        Game g = town("forms1900-lamp");
+        HomeFuel hf = g.getHomeFuel();
+        Retail retail = g.getSectors().retail();
+        TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
+        tax.setFuelDuty(tax.maxFuelDuty() / 2);
+        check("fixture: a town with a grocery and homes, the fuel duty on, and no share set: nothing struck",
+                retail.buildingsStanding() > 0 && tax.chargedFuelDuty() > 0 && !hf.isOn() && !hf.hasSale() && hf.getLampShare() == 0 && hf.getCoalShare() == 0);
+
+        hf.setLampShare(1);
+        play(g, 1);
+        final double perHome = HomeFuel.LAMP_OIL_LITRES_A_HOME_MONTH;
+        // The first month's sale, taken the moment it was struck; Retail's statement is the month's after the next (it is struck as the next begins).
+        final double homes = hf.getHomes(), litres = hf.getLitres(), bill = hf.getBill(), cost = hf.getCost(), imported = hf.getImported();
+        check("fixture: the month had homes to light and the shop sold them lamp oil", homes > 0 && litres > 0 && retail.getFuelDuty() > 0,
+                String.format("homes %.1f, litres %.1f, petrol duty %.6f", homes, litres, retail.getFuelDuty()));
+        near("the JET Retail sold to the households is the homes x LAMP_OIL_LITRES_A_HOME_MONTH", unitsSold(retail, Good.JET), homes * perHome, 1e-9);
+        near("...which is what HomeFuel struck", litres, homes * perHome, 1e-9);
+        check("...and no coal was asked, drawn or sold", hf.getTonnes() == 0 && retail.outputRow(Good.THERMAL_COAL) == null && retail.inputRow(Good.THERMAL_COAL) == null);
+        play(g, 1);
+        double sold = soldValue(retail, Good.JET);
+        check("Retail's statement books the sale: JET sold, a value inside what it sold the households", sold > 0 && retail.statement().salesToHouseholds >= sold,
+                String.format("JET %.6f of %.6f", sold, retail.statement().salesToHouseholds));
+        same("the bill the households are charged is the sale's value, exactly (the fuel duty, on for the petrol, is not in it)", bill, sold);
+        near("Retail paid for the lamp oil at wholesale, on its own books: its purchase of JET is what the draw cost", boughtValue(retail, Good.JET), cost, 1e-9);
+        near("...and what it paid the world is what its statement books abroad", boughtAbroad(retail, Good.JET), imported, 1e-9);
+        check("...the town having no refinery, the world sold it all", imported > 0 && imported <= cost * (1 + 1e-12), String.format("imported %.6f of %.6f", imported, cost));
+        double rate = tax.effectiveSalesRate(retail);
+        near("the price a litre is the pump's rule on its own wholesale: pumpPrice(wholesale, the sales rate)", sold / litres,
+                Retail.pumpPrice(cost / litres, rate), 1e-9);
+        check("...a margin over what it cost", sold > cost, String.format("sold %.6f, cost %.6f", sold, cost));
+
+        hf.setLampShare(0.5);
+        play(g, 1);
+        near("at a lamp share of one half the litres a home are half: LAMP_OIL_LITRES_A_HOME_MONTH / 2", unitsSold(retail, Good.JET) / hf.getHomes(), perHome / 2, 1e-9);
+
+        near("the model asks lampShare x homes x LAMP_OIL_LITRES_A_HOME_MONTH of lamp oil", hf.lampOilLitres(1000), 0.5 * 1000 * perHome, 1e-12);
+        hf.setLampShare(7);
+        boolean clamped = hf.getLampShare() == 1;
+        hf.setLampShare(-3);
+        clamped &= hf.getLampShare() == 0;
+        hf.setLampShare(Double.NaN);
+        clamped &= hf.getLampShare() == 0;
+        hf.setLampShare(1);
+        check("a share past 1 reads 1, below 0 reads 0, and not a number reads 0", clamped);
+        check("...and homes that are not a number, or below 0, ask for nothing", hf.lampOilLitres(Double.NaN) == 0 && hf.lampOilLitres(-5) == 0 && hf.coalTonnes(Double.NaN) == 0);
+
+        hf.setLampShare(0);
+        play(g, 1);
+        check("with the share back at 0 the held sale is cleared at the next strike and nothing more is sold",
+                !hf.hasSale() && hf.getBill() == 0 && unitsSold(retail, Good.JET) == 0,
+                String.format("held %b, bill %.6f, JET %.6f", hf.hasSale(), hf.getBill(), unitsSold(retail, Good.JET)));
+        play(g, 1);
+        check("...and the month after, Retail's statement books none", soldValue(retail, Good.JET) == 0 && g.getHouseholds().getHomeFuel() == 0,
+                String.format("JET %.6f, households %.6f", soldValue(retail, Good.JET), g.getHouseholds().getHomeFuel()));
+    }
+
+    static void sectionThirteen() {
+        out.println("\n--- 13. a stove-heated home buys coal: THERMAL_COAL drawn and sold the same way, the city's own stock first ---");
+        Game g = town("forms1900-coal");
+        HomeFuel hf = g.getHomeFuel();
+        Retail retail = g.getSectors().retail();
+        TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
+        hf.setCoalShare(1);
+        play(g, 1);
+        final double perHome = HomeFuel.COAL_TONNES_A_HOME_MONTH;
+        double homes = hf.getHomes();
+        // The first month's sale, taken the moment it was struck; Retail's statement is the month's after the next (it is struck as the next begins).
+        final double tonnes = hf.getTonnes(), bill = hf.getBill(), cost = hf.getCost(), imported = hf.getImported();
+        check("fixture: the month had homes to heat and the shop sold them coal", homes > 0 && tonnes > 0, String.format("homes %.1f, tonnes %.3f", homes, tonnes));
+        near("the THERMAL_COAL Retail sold to the households is the homes x COAL_TONNES_A_HOME_MONTH", unitsSold(retail, Good.THERMAL_COAL), homes * perHome, 1e-9);
+        near("...which is what HomeFuel struck", tonnes, homes * perHome, 1e-9);
+        check("...and no lamp oil was asked, drawn or sold", hf.getLitres() == 0 && retail.outputRow(Good.JET) == null && retail.inputRow(Good.JET) == null);
+        play(g, 1);
+        double sold = soldValue(retail, Good.THERMAL_COAL);
+        check("Retail's statement books the sale: coal sold, a value inside what it sold the households", sold > 0 && retail.statement().salesToHouseholds >= sold);
+        same("the bill the households are charged is the sale's value, exactly", bill, sold);
+        near("Retail's purchase of coal is what the draw cost", boughtValue(retail, Good.THERMAL_COAL), cost, 1e-9);
+        near("...and what it paid the world is what its statement books abroad: the draw's imported part is the bill's", boughtAbroad(retail, Good.THERMAL_COAL), imported, 1e-9);
+        check("...the town having no coal mine, the world sold it all", imported > 0 && imported <= cost * (1 + 1e-12), String.format("imported %.6f of %.6f", imported, cost));
+        near("the price a tonne is the pump's rule on its own wholesale", sold / tonnes, Retail.pumpPrice(cost / tonnes, tax.effectiveSalesRate(retail)), 1e-9);
+
+        hf.setCoalShare(0.5);
+        play(g, 1);
+        near("at a coal share of one half the tonnes a home are half: COAL_TONNES_A_HOME_MONTH / 2", unitsSold(retail, Good.THERMAL_COAL) / hf.getHomes(), perHome / 2, 1e-9);
+        near("the model asks coalShare x homes x COAL_TONNES_A_HOME_MONTH of coal", hf.coalTonnes(1000), 0.5 * 1000 * perHome, 1e-12);
+
+        // The city's own stock first: a maker of coal holding a quarter of what is asked, the rest from the world at the import price.
+        Sector mine = null;
+        for (Sector s : g.getSectors().all()) if (s.isMaker(Good.THERMAL_COAL)) { mine = s; break; }
+        check("fixture: the city has a sector that makes coal", mine != null);
+        if (mine != null) {
+            GoodsMarket m = g.getMarkets().get(Good.THERMAL_COAL);
+            final double asked = 100, held = 25;
+            mine.setStock(Good.THERMAL_COAL, held);
+            double localPrice = m.getLocalPrice(), importPrice = m.importPrice();
+            Retail.HomeFuelSale s = retail.sellHomeFuel(0, asked, g);
+            near("the coal is all supplied: the tonnes sold are the tonnes asked", s.tonnes(), asked, 1e-12);
+            near("the city's own coal went first: the maker's stock is drawn to nothing", mine.getStock(Good.THERMAL_COAL), 0, 1e-12);
+            near("...at the local price, and the rest from the world at the import price", s.cost(), held * localPrice + (asked - held) * importPrice, 1e-9);
+            near("...so the imported part is only the world's tonnes", s.imported(), (asked - held) * importPrice, 1e-9);
+            check("...and the bill is more than the cost (the pump's margin)", s.bill() > s.cost() && s.litres() == 0);
+            Retail.HomeFuelSale none = retail.sellHomeFuel(0, 0, g);
+            check("and nothing asked draws, books and returns nothing", none.litres() == 0 && none.tonnes() == 0 && none.bill() == 0 && none.cost() == 0 && none.imported() == 0);
+        }
+    }
+
+    static void sectionFourteen() {
+        out.println("\n--- 14. the households pay it: in their expenses, by the doors, out of the cells' cash like the drivers' fuel ---");
+        Game both = town("forms1900-home-both"), twin = town("forms1900-home-none");
+        HomeFuel hf = both.getHomeFuel();
+        HouseholdAccounts hb = both.getHouseholds(), ht = twin.getHouseholds();
+        hf.setLampShare(1);
+        hf.setCoalShare(1);
+        twin.getHomeFuel().setLampShare(0);
+        twin.getHomeFuel().setCoalShare(0);
+        play(both, 1);
+        play(twin, 1);
+        // The first month's sale, taken the moment it was struck; the households pay it the month after, and Retail's statement shows it then.
+        final double bill = hf.getBill();
+        check("fixture: the first month sold both goods and struck a bill", bill > 0 && hf.getLitres() > 0 && hf.getTonnes() > 0,
+                String.format("bill %.6f, %.1f L, %.3f t", bill, hf.getLitres(), hf.getTonnes()));
+        check("the households are told it next month, as the drivers' fuel is: their books show none yet, and spend what the twin does",
+                hb.getHomeFuel() == 0 && ht.getHomeFuel() == 0 && Double.doubleToLongBits(hb.getSpending()) == Double.doubleToLongBits(ht.getSpending()),
+                String.format("%.9g against %.9g", hb.getSpending(), ht.getSpending()));
+
+        play(both, 1);
+        play(twin, 1);
+        Retail shop = both.getSectors().retail();
+        same("the bill is the two sales' values on Retail's statement, to the bit", bill, soldValue(shop, Good.JET) + soldValue(shop, Good.THERMAL_COAL));
+        same("the month after, the households' home fuel bill is the sale's, to the bit", hb.getHomeFuel(), bill);
+        check("...and the twin pays none", ht.getHomeFuel() == 0 && ht.getRowHomeFuel(0) == 0);
+        near("their expenses rise by the bill over the twin", hb.getSpending() - ht.getSpending(), bill, 1e-9);
+        near("...the sale is a line of its own and not shopping as well: the shopping is the twin's, the shop's sales less the lamp oil and coal", hb.getShopping(), ht.getShopping(), 1e-9);
+        check("...the twin's other lines being equal: wages, rent, healthcare, tuition, fares, fuel, interest and the bank's fee",
+                hb.getWages() == ht.getWages() && hb.getRent() == ht.getRent() && hb.getHealthcare() == ht.getHealthcare()
+                        && hb.getTuition() == ht.getTuition() && hb.getFares() == ht.getFares() && hb.getFuel() == ht.getFuel()
+                        && hb.getInterest() == ht.getInterest() && hb.getAccountFees() == ht.getAccountFees(),
+                String.format("wages %.9g/%.9g, rent %.9g/%.9g, fuel %.9g/%.9g", hb.getWages(), ht.getWages(), hb.getRent(), ht.getRent(), hb.getFuel(), ht.getFuel()));
+        near("...so the saving falls by the bill: the cash they spent is gone from it", ht.getNetSaving() - hb.getNetSaving(), bill, 1e-9);
+
+        double parts = 0, doors = 0;
+        for (int r = 0; r < hb.getRowCount(); r++) {
+            parts += hb.getRowHomeFuel(r);
+            doors += hb.getRowDoors(r);
+        }
+        near("the rows' parts add to the bill", parts, bill, 1e-9);
+        boolean byDoors = doors > 0;
+        for (int r = 0; r < hb.getRowCount() && doors > 0; r++) {
+            byDoors &= Math.abs(hb.getRowHomeFuel(r) - bill * hb.getRowDoors(r) / doors) <= 1e-9 * bill;
+        }
+        check("each row pays its share of the doors, the doors the rent is split by", byDoors);
+        check("...the orphans and the prisoners, who have no door, pay none", hb.getRowDoors(HouseholdAccounts.ORPHANS) == 0 && hb.getRowDoors(HouseholdAccounts.PRISONERS) == 0
+                && hb.getRowHomeFuel(HouseholdAccounts.ORPHANS) == 0 && hb.getRowHomeFuel(HouseholdAccounts.PRISONERS) == 0);
+        near("...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on)", hf.getHomes(), doors, 0.05);
+
+        boolean waterfall = true;
+        for (int r = 0; r < hb.getRowCount(); r++) {
+            waterfall &= both.getRowFeesSettled(r) == hb.getRowHealthcare(r) + hb.getRowTuition(r) + hb.getRowFares(r) + hb.getRowFuel(r) + hb.getRowHomeFuel(r);
+        }
+        check("it is paid out of the waterfall like the clinic's fee and the drivers' fuel: each row's fees settled include it, to the bit", waterfall);
+        double settled = homeFuelSettled(both);
+        near("...and the cells' fixed bills, out of the cash they hold, rise over the twin's by the bill the settled cells were handed (the row's, by people)",
+                fixedBills(both) - fixedBills(twin), settled, 1e-6);
+        check("...which is nearly all of it: a cell too small to settle (HouseholdBalance.EMPTY_CELL) takes its part of the row's fees with it, as it does the drivers'",
+                settled > 0.9 * bill && settled <= bill * (1 + 1e-9), String.format("%.6f of %.6f", settled, bill));
+
+        // Turned back off: the held sale clears at the next strike, and the households stop paying a month after.
+        hf.setLampShare(0);
+        hf.setCoalShare(0);
+        play(both, 1);
+        play(twin, 1);
+        check("with both shares back at 0 the sale is cleared at the next strike", !hf.hasSale() && hf.getBill() == 0);
+        play(both, 1);
+        double left = 0;
+        for (int r = 0; r < hb.getRowCount(); r++) left += hb.getRowHomeFuel(r);
+        check("...and the month after, the households pay none and their books hold none", hb.getHomeFuel() == 0 && left == 0 && hb.getHomeFuelImports() == 0,
+                String.format("%.6f, rows %.6f", hb.getHomeFuel(), left));
+    }
+
+    static void sectionFifteen() {
+        out.println("\n--- 15. the money adds up with the homes buying lamp oil and coal: the audit closed every month ---");
+        Game g = town("forms1900-home-audit");
+        HomeFuel hf = g.getHomeFuel();
+        hf.setLampShare(1);
+        hf.setCoalShare(1);
+        int closed = 0, sold = 0, charged = 0;
+        String first = null;
+        for (int m = 1; m <= MONTHS; m++) {
+            play(g, 1);
+            MoneyAudit.Result r = g.getLastMoneyAudit();
+            if (r != null && Math.abs(r.residual) <= MoneyAudit.tolerance(r.moved())) closed++;
+            else if (first == null) first = r == null ? "month " + m + ": no audit" : "month " + m + ": " + r;
+            if (hf.getBill() > 0 && hf.getLitres() > 0 && hf.getTonnes() > 0) sold++;
+            if (m > 1 && g.getHouseholds().getHomeFuel() > 0) charged++;
+        }
+        check("the month's money audit closes in each of " + MONTHS + " months with the homes on lamp oil and coal", closed == MONTHS, first);
+        check("...the homes having bought both goods in each of them", sold == MONTHS, sold + " of " + MONTHS);
+        check("...and the households having paid it in each month after the first", charged == MONTHS - 1, charged + " of " + (MONTHS - 1));
     }
 }
