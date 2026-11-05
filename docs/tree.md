@@ -824,6 +824,12 @@ adds its line here, not in `CLAUDE.md`.
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under
                                    -Dcbs.timing=soft a figure over its budget says SOFT and is not counted, so
                                    two batches' suites check side by side; TimingCheck holds it
+        DeterminismCheck.java      the month reads nothing of the machine (batch DT1, 2026-11-05): three child
+                                   JVMs play FloatLinkCheck's town and the Earth city - as AllChecks gives the
+                                   machine, on the opposite machine (identity hash 1, one processor, C1 alone,
+                                   serial collector, an autosave every due month) and, the control, with no
+                                   world file, which is another city; and WorldData.locate() says on stderr
+                                   when the file is not named
         TempDirs.java              the one place a harness or a scratch city gets a temporary folder from
                                    (batch TD1, 2026-10-21): one folder per JVM under
                                    <java.io.tmpdir>/citybuildersim-tmp/<pid>, deleted by a shutdown hook

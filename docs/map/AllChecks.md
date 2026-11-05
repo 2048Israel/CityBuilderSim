@@ -64,7 +64,7 @@
 
 **Uses:** [Timing](Timing.md) (8)
 
-**Used by (3):** [KnownRedsCheck](KnownRedsCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [TimingCheck](TimingCheck.md)
+**Used by (4):** [DeterminismCheck](DeterminismCheck.md), [KnownRedsCheck](KnownRedsCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [TimingCheck](TimingCheck.md)
 
 ## Constants
 

@@ -18,6 +18,30 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.21 — KP4, Screens kept: Sectors, the list and a business's five pages — 2026-11-05, ready, see docs/queue/KP4-notes.md
+The Sectors tab is drawn over last month's nodes instead of rebuilt (study UP4's KP4): the list and every card, and a
+business's frame and five pages in both views - Operations of every kind (the plant, the tonnes, the refinery, the
+materials industries, the oil industry and its reserve, Freight by division, the shelf, what it charges), Income and
+its waterfall, the balance sheet, cash and credit, the statements, the investors - each page keyed by the business,
+the page and the view, each row that comes and goes by what it shows. The refinery's and the materials' pictures and
+Freight's legs are told their figures, not rebuilt; the reserve's dials keep the player's hand across a month. The
+count-up counts only at 1x-10x, as on People and History: faster, the month's figures are set at once, and a count
+still running is stopped. KeptCheck 47-54 compare each kept page with one built new through every sector, page,
+view, division, fold and column; the list's month fell from 22-28 ms to 7-9, a business's from 11-31 ms to 3-7
+(KEPT_SECTORS_MS 18, KEPT_SECTOR_MS 15). No ensemble: the model is untouched.
+
+### 0.9.20 — DT1, The same code, another city: what in a month reads the machine — 2026-11-05, ready, see docs/queue/DT1-notes.md
+Nothing in a month reads the machine. BA1's "the same code gave another city twice under load" was two probe runs
+started without `-Dcbs.world` in a worktree with no `data/`. With no world file the city has no world market and
+trades on the literals: another city, and nothing said so. Rerun on BA1's commit with and without the file,
+BA1's numbers come back to the digit (month 125 against 61, 1,067 people against 909). The month moved under no
+JVM setting tried, for FloatLinkCheck's town and the ensemble's city at 600 months, bit for bit: every identity
+hash one, `-Xint` and C1 alone, one or 32 processors, a common pool of one, soft references cleared at every
+collection, the serial collector, and ten autosaves against one. New: DeterminismCheck plays a town and an Earth
+city in two child JVMs set up as opposite machines and compares them to the bit. Its control, a child with no
+world file, is another city from month 2. `WorldData.locate()` now says once a run, on stderr, when no world
+file is found. Ensemble not run: the month is unchanged.
+
 ### 0.9.19 — RT1, A building counted in its sector's retirement measure — 2026-11-05, ready, see docs/queue/RT1-notes.md
 Agriculture's and Food Processing's spare-capacity rule weighed what was spare in money (each good at its export
 floor) against a building counted in tonnes or kilograms, so at the founding's price level no farm or food plant was

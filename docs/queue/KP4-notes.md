@@ -1,4 +1,4 @@
-# KP4 - Screens kept: Sectors, the list and a business's five pages ({next}, 2026-11-05)
+# KP4 - Screens kept: Sectors, the list and a business's five pages (0.9.21, 2026-11-05)
 
 **WHERE IT STANDS** (2026-11-05, 15:57): ready again, see the ship file. The four slices are in and reviewed (A 0bae2c36, B bb19f39e, C cd9e58b0, D a8e560a0) with ★B's fix (594181fa); KP3 on main at 0.9.18, merged in (905e8468); `--pick` with the world files exit 3 and the full suite 170 of 174, every red main's recorded one (§5). The gate sent it back on 0.9.19 for one of 49's fixtures, mended (§6, "By the gate"); main at 0.9.19 merged in (3062d6b9) and `--pick` exit 3 on it. The gate's threading review (§4): SHIP + FOLLOW-UP, its three low items in KP2b's row.
 

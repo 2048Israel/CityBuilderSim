@@ -387,13 +387,26 @@ public final class WorldData implements AutoCloseable {
         return new WorldData(s, cacheTiles);
     }
 
-    /** Where the harness and, one day, the game find the file: the PROPERTY if it is set, else DATA_FILE if it is there; null if neither. */
+    /**
+     * Where the harness and, one day, the game find the file: the PROPERTY if it is set, else DATA_FILE if it is there; null if neither,
+     * and then, once per JVM, one line on System.err says so (DT1); the packaged game always has the file (Build EXE.bat refuses to build without it), so a player never sees it.
+     */
     public static Path locate() {
         String named = System.getProperty(PROPERTY);
         if (named != null && !named.isBlank()) return Path.of(named);
         Path here = Path.of(DATA_FILE);
-        return Files.isRegularFile(here) ? here : null;
+        if (Files.isRegularFile(here)) return here;
+        if (NOT_NAMED_SAID.compareAndSet(false, true)) {
+            // System.err, not System.out: a check's quietly() swaps System.out, and BA1's probes silenced it, so a run with no world file said nothing
+            // while its cities traded on the literals and came out as other cities (DT1, 2026-11-05).
+            System.err.println("world-1.bin not named (-D" + PROPERTY + "=<path>) nor at " + DATA_FILE
+                    + ": the cities of this run trade on the literals, without the world market (DT1)");
+        }
+        return null;
     }
+
+    /** Whether locate() has said, in this JVM, that the file is not named: it says it once (DeterminismCheck reads it in its control's child). */
+    static final java.util.concurrent.atomic.AtomicBoolean NOT_NAMED_SAID = new java.util.concurrent.atomic.AtomicBoolean();
 
     private WorldData(Source source, int cacheTiles) throws IOException {
         this.source = source;
