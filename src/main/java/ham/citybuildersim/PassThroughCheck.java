@@ -184,6 +184,11 @@ public class PassThroughCheck {
         city.playOnLiterals();
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the ring is read in a town that taxes from month 1 and whose
+            // treasury section 4 buys the swing out of; a 1900 town has no income tax to 1916-17 and no sales tax to 1920, so its treasury had D$190k at month 240
+            // for a swing of 5% of a year's GDP (the whole bill unbought). Every lever open and the defaults put back, before a month has run (MonetaryCheck 5).
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             city.buildStack(ForeignCheck.template(city, "Construction Depot"), 2, true);

@@ -761,6 +761,12 @@ public class MonetaryCheck {
         Game g = new Game(new GameFiles(root.resolve(label), root.resolve("no-legacy")));
         if (onLiterals) g.playOnLiterals();
         g.run();
+        // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the premise is a steady town, and the founding this was written
+        // against taxes from month 1 (as section 5's city below has it opened). A 1900 town has no income tax to 1916-17 and no sales tax to 1920, and with BA1's uncapped orders
+        // the held runs took another way (the dates are the cause found; no further): inflation 9.6% a year at the founding's 3% dial, and holding the dial a month late moved the
+        // 20% row 0.125 points against the 0.100 allowance. Opened, and the defaults put back, before a month has run: 6.5%, and the largest move 0.087.
+        g.getEconomyManager().getTaxPolicy().reset();
+        g.getEconomyManager().getTaxPolicy().openAll();
         for (String sector : held) g.getBusinessInvestment().holdSector(sector);
         LongPlaytest.build(g, "House", 40);
         LongPlaytest.build(g, "Convenience Store", 3);

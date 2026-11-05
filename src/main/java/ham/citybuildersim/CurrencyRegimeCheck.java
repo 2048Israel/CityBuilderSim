@@ -214,6 +214,13 @@ public class CurrencyRegimeCheck {
         Game city = new Game(GameFiles.scratch(label), founding);
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the peg fixtures stand on a town that taxes from month 1, whose
+            // hot money, drawn by the dial, outruns its current account's deficit so that a month at the peg is a surplus (the vault buys dollars). A 1900 town has no income
+            // tax until 1916-17 and no sales tax until 1920: with the merge the town's financial inflow at the peg is US$124k a month against a deficit on current account of
+            // US$212k (the vault sells, 0 bought), and with every lever open it is US$326k (the vault buys US$115k the month after the peg). Opened, and the defaults put
+            // back, before a month has run, as MonetaryCheck 5 and the cities of RailDepotCheck do.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             if (depotsStanding > 0) city.buildStack(ForeignCheck.template(city, "Construction Depot"), depotsStanding, true);

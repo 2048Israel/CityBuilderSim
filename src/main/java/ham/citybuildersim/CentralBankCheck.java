@@ -1463,6 +1463,12 @@ public class CentralBankCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): this fixture's premise is a surplus over the last year
+            // to pay a slice with, and the town it was written against taxes from month 1. A 1900 town has no income tax to 1916-17 and no sales tax to 1920: its
+            // treasury ran D$135.7k under over months 61 to 72 (against the slice of D$5.2k), where main's path ran D$250.6k over. Every lever open and the defaults
+            // put back, before a month has run (MonetaryCheck 5).
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.getForeignAccounts().pinRate(1.0);
             // Six depots stand beside the four ordered (PT1-M4): the works department that built 400 points a month for a
             // city nobody staffed is retired, and the founding yard's 160 points built this city's houses so slowly that it
