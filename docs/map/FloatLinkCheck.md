@@ -66,7 +66,7 @@
 
 **Uses:** [Debt](Debt.md) (72), [FloatingRateNote](FloatingRateNote.md) (64), [InflationLinkedBond](InflationLinkedBond.md) (63), [PriceLevel](PriceLevel.md) (53), [Game](Game.md) (31), [DebtManager](DebtManager.md) (29), [YieldCurve](YieldCurve.md) (16), [MoneyAudit](MoneyAudit.md) (12), [Rollover](Rollover.md) (11), [NationalAccounts](NationalAccounts.md) (9), [Buyback](Buyback.md) (8), [Auction](Auction.md) (7), [DebtQuote](DebtQuote.md) (6), [CallCheck](CallCheck.md) (5), [Founding](Founding.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [TreasuryJournal](TreasuryJournal.md) (2), [GameFiles](GameFiles.md) (2), [Sectors](Sectors.md) (2), [CapitalFlows](CapitalFlows.md) (2), [LongTermBond](LongTermBond.md) (2), [ShortTermTBill](ShortTermTBill.md) (2), [CentralBank](CentralBank.md) (1), [Sector](Sector.md) (1), [Bank](Bank.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
-**Used by (4):** [CallCheck](CallCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DeskCheck](DeskCheck.md), [RestructureCheck](RestructureCheck.md)
+**Used by (5):** [CallCheck](CallCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DeskCheck](DeskCheck.md), [DeterminismCheck](DeterminismCheck.md), [RestructureCheck](RestructureCheck.md)
 
 ## Sections
 

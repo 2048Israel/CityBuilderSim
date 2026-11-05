@@ -1,4 +1,4 @@
-# WorldData.java - 1,179 lines · 109 methods · 23 constants · model
+# WorldData.java - 1,192 lines · 109 methods · 24 constants · model
 
 `ham/citybuildersim/WorldData.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -52,7 +52,7 @@
 
 **Uses:** [Freight](Freight.md) (10), [EarthData](EarthData.md) (8), [Money](Money.md) (5), [PriceLevel](PriceLevel.md) (2), [CityCalendar](CityCalendar.md) (1)
 
-**Used by (30):** [DenominationCheck](DenominationCheck.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LandFactors](LandFactors.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandTable](LandTable.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [Nations](Nations.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [RankingsCheck](RankingsCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMeasuresCheck](WorldMeasuresCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md)
+**Used by (31):** [DenominationCheck](DenominationCheck.md), [DeterminismCheck](DeterminismCheck.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GlobeCheck](GlobeCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LandFactors](LandFactors.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandTable](LandTable.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [Nations](Nations.md), [NationsCheck](NationsCheck.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PartnersPage](PartnersPage.md), [PartnersView](PartnersView.md), [PriceLevelCheck](PriceLevelCheck.md), [RankingsCheck](RankingsCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md), [WorldDataCheck](WorldDataCheck.md), [WorldMarket](WorldMarket.md), [WorldMarketCheck](WorldMarketCheck.md), [WorldMeasuresCheck](WorldMeasuresCheck.md), [WorldMoneys](WorldMoneys.md), [WorldMoneysCheck](WorldMoneysCheck.md)
 
 ## Sections
 
@@ -60,17 +60,17 @@
 |---:|---|
 | 142 | THE RECORDS - what a layer's rows come to |
 | 280 | THE FILE - where the bytes come from, the header and the layer table |
-| 549 | FIGURES AS THE FILE WRITES THEM |
-| 584 | THE STAND-IN CENTURY (EP1, 2026-10-31) |
-| 678 | META |
-| 728 | NATIONS |
-| 800 | MONEYS |
-| 864 | PATHS |
-| 930 | GOODS AND TRADE |
-| 1006 | FREIGHT |
-| 1028 | THE OWNER LAYER - a nation for every cell |
-| 1097 | THE LINES - Natural Earth's admin-0 land boundaries |
-| 1122 | PRICES - each good's real price path (WN1, spec 7.1) |
+| 562 | FIGURES AS THE FILE WRITES THEM |
+| 597 | THE STAND-IN CENTURY (EP1, 2026-10-31) |
+| 691 | META |
+| 741 | NATIONS |
+| 813 | MONEYS |
+| 877 | PATHS |
+| 943 | GOODS AND TRADE |
+| 1019 | FREIGHT |
+| 1041 | THE OWNER LAYER - a nation for every cell |
+| 1110 | THE LINES - Natural Earth's admin-0 land boundaries |
+| 1135 | PRICES - each good's real price path (WN1, spec 7.1) |
 
 ## Constants
 
@@ -99,6 +99,7 @@
 | 134 | `WorldData.KIND_NATION` | `"nation", KIND_AREA = "area"` | A nations row's kind for a nation, and for an area. |
 | 137 | `WorldData.LAND_PER_SEA` | `"LAND_PER_SEA"` | The meta dial that weighs a land km against a sea km in the freight cost (FORMAT.txt, freight). |
 | 140 | `WorldData.HEAD_BYTES` | `16 + 64 *(2 + 255 + 33)` | The first eight bytes' length, the format version, the layer count, and the room a layer's header row takes at most: the head read to find the layers. |
+| 409 | `WorldData.NOT_NAMED_SAID` | `new java.util.concurrent.atomic.AtomicBoolean()` | Whether locate() has said, in this JVM, that the file is not named: it says it once (DeterminismCheck reads it in its control's child). |
 
 ## Fields (state)
 
@@ -152,14 +153,14 @@
 | 339 | `private List<String> priceSeries` |  |
 | 340 | `private double[][] priceValues` |  |
 | 341 | `private byte[][] priceMarks` |  |
-| 654 | `final String[] header` |  |
-| 655 | `final List<String[]> rows` |  |
+| 667 | `final String[] header` |  |
+| 668 | `final List<String[]> rows` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 71 | 1109 | **type** `public final class WorldData implements AutoCloseable` | The reader of world-1.bin, the nations' world as data: the 196 nations and the areas no nation holds, their borders (an owner a 15" cell, and the lines), the base year's trade by pair and good with the solve that made... |
+| 71 | 1122 | **type** `public final class WorldData implements AutoCloseable` | The reader of world-1.bin, the nations' world as data: the 196 nations and the areas no nation holds, their borders (an owner a 15" cell, and the lines), the base year's trade by pair and good with the solve that made... |
 
 ### THE RECORDS - what a layer's rows come to (lines 142-279)
 
@@ -188,7 +189,7 @@
 | 243 | 1 | `public double cost(int i, int j)` _(in WorldData.Freight)_ | The reference cost of the cheapest route. |
 | 249 | 29 | `public static Freight closure(int n, List<Edge> edges, double landPerSea)` _(in WorldData.Freight)_ | The table recomputed from edges as FORMAT.txt says: an edge costs sea km + landPerSea x land km, both ways; Floyd-Warshall with k, then i, then j ascending, a route replaced only when strictly cheaper, its sea and lan... |
 
-### THE FILE - where the bytes come from, the header and the layer table (lines 280-548)
+### THE FILE - where the bytes come from, the header and the layer table (lines 280-561)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -202,148 +203,148 @@
 | 349 | 22 | `public static WorldData open(Path file, int cacheTiles) throws IOException` | Opens a world file with an LRU of the given number of owner tiles. |
 | 373 | 3 | `public static WorldData of(byte[] bytes) throws IOException` | Reads a file of the layout held in memory (WorldDataCheck's fixture). |
 | 378 | 11 | `public static WorldData of(byte[] bytes, int cacheTiles) throws IOException` | Reads a file of the layout held in memory, with an LRU of the given number of owner tiles. |
-| 391 | 6 | `public static Path locate()` | Where the harness and, one day, the game find the file: the PROPERTY if it is set, else DATA_FILE if it is there; null if neither. |
-| 398 | 71 | `private WorldData(Source source, int cacheTiles) throws IOException` |  |
-| 471 | 6 | `private static String utf(ByteBuffer b)` | A short-length-prefixed UTF-8 string (the header's, and a binary layer's). |
-| 479 | 1 | `public int version()` | The layout's version (FORMAT). |
-| 482 | 1 | `public List<Layer> layers()` | The layers, in the file's order. |
-| 485 | 5 | `public Layer layer(String name)` | A layer by name (LAYERS). |
-| 492 | 1 | `public boolean has(String name)` | Whether the file has a layer of that name. |
-| 495 | 1 | `public long size()` | The file's length, bytes. |
-| 498 | 4 | `public String fileName()` | The file's own name, from its meta's name row ("world-1", "world-1-fixture"; "world-1" where the row is missing), the prefix of identity(). |
-| 504 | 20 | `public synchronized String identity()` | The file's name (fileName()), a colon and the file's SHA-256 in hex. |
-| 526 | 3 | `public void close() throws IOException` |  |
-| 531 | 7 | `private byte[] whole(String name) throws IOException, DataFormatException` | A whole layer's bytes, inflated. |
-| 540 | 3 | `private ByteBuffer binary(String name) throws IOException, DataFormatException` | A whole binary layer, positioned at its start; call done() when it has been read to the end. |
-| 545 | 3 | `private static void done(String name, ByteBuffer b) throws IOException` | A layer must be read to its last byte: a layout read wrongly leaves bytes over or runs out. |
+| 394 | 13 | `public static Path locate()` | Where the harness and, one day, the game find the file: the PROPERTY if it is set, else DATA_FILE if it is there; null if neither, and then, once per JVM, one line on System.err says so (DT1); the packaged game always... |
+| 411 | 71 | `private WorldData(Source source, int cacheTiles) throws IOException` |  |
+| 484 | 6 | `private static String utf(ByteBuffer b)` | A short-length-prefixed UTF-8 string (the header's, and a binary layer's). |
+| 492 | 1 | `public int version()` | The layout's version (FORMAT). |
+| 495 | 1 | `public List<Layer> layers()` | The layers, in the file's order. |
+| 498 | 5 | `public Layer layer(String name)` | A layer by name (LAYERS). |
+| 505 | 1 | `public boolean has(String name)` | Whether the file has a layer of that name. |
+| 508 | 1 | `public long size()` | The file's length, bytes. |
+| 511 | 4 | `public String fileName()` | The file's own name, from its meta's name row ("world-1", "world-1-fixture"; "world-1" where the row is missing), the prefix of identity(). |
+| 517 | 20 | `public synchronized String identity()` | The file's name (fileName()), a colon and the file's SHA-256 in hex. |
+| 539 | 3 | `public void close() throws IOException` |  |
+| 544 | 7 | `private byte[] whole(String name) throws IOException, DataFormatException` | A whole layer's bytes, inflated. |
+| 553 | 3 | `private ByteBuffer binary(String name) throws IOException, DataFormatException` | A whole binary layer, positioned at its start; call done() when it has been read to the end. |
+| 558 | 3 | `private static void done(String name, ByteBuffer b) throws IOException` | A layer must be read to its last byte: a layout read wrongly leaves bytes over or runs out. |
 
-### FIGURES AS THE FILE WRITES THEM (lines 549-583)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 554 | 8 | `public static double number(String s)` | A figure as the file writes it, or as Python's repr writes a float: "-" (missing), "" and "nan" are NaN, "inf" and "-inf" the infinities. |
-| 564 | 3 | `private static int integer(String s)` | A whole number as the file writes it; "-" (missing) is -1. |
-| 569 | 3 | `private static String text(String s)` | A text as the file writes it: "-" (missing) is null. |
-| 574 | 3 | `public static int monthNumber(int year, int month)` | The number of month yyyy-mm counted from January of FIRST_YEAR (the calendar's first year, month 0); month is 1 to 12. |
-| 579 | 4 | `public static String monthLabel(int month)` | A month's label, "yyyy-mm", the month counted from January of FIRST_YEAR. |
-
-### THE STAND-IN CENTURY (EP1, 2026-10-31) (lines 584-677)
+### FIGURES AS THE FILE WRITES THEM (lines 562-596)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 633 | 18 | `private static void pad(double[] in, byte[] inMarks, int rows, int count, int lead, int fileFirstYear, boolean nominal, double[...` | Rows of figures with the stand-in century put in front: out holds rows of (lead + count), each row the lead and then the file's count, in that order. |
-| 653 | 24 | **type** `private static final class Table` | A text layer's lines, the first (the column names) apart: header, rows. |
-| 657 | 8 | `Table(byte[] bytes, String layer) throws IOException` _(in WorldData.Table)_ |  |
-| 666 | 3 | `private static String[] split(String line)` _(in WorldData.Table)_ |  |
-| 670 | 1 | `boolean has(String name)` _(in WorldData.Table)_ |  |
-| 672 | 4 | `int col(String name, String layer) throws IOException` _(in WorldData.Table)_ |  |
+| 567 | 8 | `public static double number(String s)` | A figure as the file writes it, or as Python's repr writes a float: "-" (missing), "" and "nan" are NaN, "inf" and "-inf" the infinities. |
+| 577 | 3 | `private static int integer(String s)` | A whole number as the file writes it; "-" (missing) is -1. |
+| 582 | 3 | `private static String text(String s)` | A text as the file writes it: "-" (missing) is null. |
+| 587 | 3 | `public static int monthNumber(int year, int month)` | The number of month yyyy-mm counted from January of FIRST_YEAR (the calendar's first year, month 0); month is 1 to 12. |
+| 592 | 4 | `public static String monthLabel(int month)` | A month's label, "yyyy-mm", the month counted from January of FIRST_YEAR. |
 
-### META (lines 678-727)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 682 | 12 | `private void readMeta() throws IOException, DataFormatException` |  |
-| 696 | 1 | `public List<String[]> metaRows()` | The meta layer's rows, each the key and its fields. |
-| 699 | 4 | `public String meta(String key)` | The first field of the first meta row with that key (name, made, of, base_year, nations, areas, moneys, goods); null if there is none. |
-| 705 | 5 | `public List<Dial> dials()` | Every dial the pipeline used. |
-| 712 | 6 | `public double dial(String name)` | A dial's value; throws if the file has no such dial. |
-| 720 | 7 | `public List<Citation> sources()` | Every source the pipeline read. |
-
-### NATIONS (lines 728-799)
+### THE STAND-IN CENTURY (EP1, 2026-10-31) (lines 597-690)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 732 | 38 | `private void readNations() throws IOException, DataFormatException` |  |
-| 772 | 1 | `public List<Nation> nations()` | The nations then the areas, in number order (the list's index is the number less one). |
-| 775 | 1 | `public int nationCount()` | The N: how many of the rows are nations (the full file's is 196); the areas follow them. |
-| 778 | 1 | `public int areaCount()` | How many rows are areas. |
-| 781 | 4 | `public Nation nation(int number)` | The nation or area with that number, 1..N+A. |
-| 787 | 4 | `public int numberOf(String iso3)` | The number of the nation or area with that iso3 code; 0 if there is none. |
-| 793 | 6 | `public String moneyAt(int nation, int month)` | The code of the money a nation uses in a month (month 0 is January of FIRST_YEAR): the latest entry of its history from that month or before, the first entry covering the stand-in century from month 0; null for an are... |
+| 646 | 18 | `private static void pad(double[] in, byte[] inMarks, int rows, int count, int lead, int fileFirstYear, boolean nominal, double[...` | Rows of figures with the stand-in century put in front: out holds rows of (lead + count), each row the lead and then the file's count, in that order. |
+| 666 | 24 | **type** `private static final class Table` | A text layer's lines, the first (the column names) apart: header, rows. |
+| 670 | 8 | `Table(byte[] bytes, String layer) throws IOException` _(in WorldData.Table)_ |  |
+| 679 | 3 | `private static String[] split(String line)` _(in WorldData.Table)_ |  |
+| 683 | 1 | `boolean has(String name)` _(in WorldData.Table)_ |  |
+| 685 | 4 | `int col(String name, String layer) throws IOException` _(in WorldData.Table)_ |  |
 
-### MONEYS (lines 800-863)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 804 | 26 | `private void readMoneys() throws IOException, DataFormatException` |  |
-| 832 | 1 | `public List<Money> moneys()` | The moneys, in number order (the list's index is the number less one). |
-| 835 | 4 | `public int moneyNumber(String code)` | The number of the money with that ISO 4217 code; 0 if there is none. |
-| 841 | 1 | `public int firstMonth()` | The first month the rates run from (0, January of FIRST_YEAR). |
-| 844 | 1 | `public int months()` | How many months the rates run, the stand-in century's and the file's (1,512 for the full file: 1900-01 to 2025-12). |
-| 847 | 1 | `public int standInMonths()` | How many of the rates' first months the stand-in century made, not the file (1,200 for the full file; 0 for a file that reaches FIRST_YEAR itself). |
-| 850 | 1 | `public double rate(int money, int month)` | A money's average rate in a month, its units a US dollar; NaN in a month no nation used it. |
-| 853 | 1 | `public double rate(String code, int month)` | The same by the money's code. |
-| 856 | 1 | `public int rateMark(int money, int month)` | A money's rate's mark in a month. |
-| 858 | 5 | `private int rateIndex(int money, int month)` |  |
-
-### PATHS (lines 864-929)
+### META (lines 691-740)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 868 | 25 | `private void readPaths() throws IOException, DataFormatException` |  |
-| 895 | 1 | `public List<String> pathSeries()` | The paths' series, in the file's order (people, gdp_2015usd, gdp_usd, gdp_ppp, cpi, rate). |
-| 898 | 1 | `public String pathUnit(String series)` | A series' unit, as the file names it. |
-| 901 | 1 | `public int pathFirstYear()` | The first year of the paths: FIRST_YEAR (1900), or the file's own if it begins earlier. |
-| 904 | 1 | `public int pathYears()` | How many years the paths run (201: 1900 to 2100, the stand-in century's 100 and the file's 101). |
-| 907 | 1 | `public int standInYears()` | How many of the paths' first years the stand-in century made, not the file (100 for the full file, which begins in FILE_FIRST_YEAR; 0 for a file that reaches FIRST_YEAR itself). |
-| 910 | 1 | `public int pathNations()` | The nations the paths hold (the N; the areas have none). |
-| 913 | 1 | `public double pathValue(String series, int nation, int year)` | A series' value for a nation (1..N) in a year; NaN where there is none. |
-| 916 | 1 | `public int pathMark(String series, int nation, int year)` | The mark of that value. |
-| 918 | 5 | `private int seriesIndex(String series)` |  |
-| 924 | 5 | `private int pathIndex(int nation, int year)` |  |
+| 695 | 12 | `private void readMeta() throws IOException, DataFormatException` |  |
+| 709 | 1 | `public List<String[]> metaRows()` | The meta layer's rows, each the key and its fields. |
+| 712 | 4 | `public String meta(String key)` | The first field of the first meta row with that key (name, made, of, base_year, nations, areas, moneys, goods); null if there is none. |
+| 718 | 5 | `public List<Dial> dials()` | Every dial the pipeline used. |
+| 725 | 6 | `public double dial(String name)` | A dial's value; throws if the file has no such dial. |
+| 733 | 7 | `public List<Citation> sources()` | Every source the pipeline read. |
 
-### GOODS AND TRADE (lines 930-1005)
+### NATIONS (lines 741-812)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 934 | 18 | `private void readGoods() throws IOException, DataFormatException` |  |
-| 953 | 31 | `private void readTrade() throws IOException, DataFormatException` |  |
-| 986 | 1 | `public List<TradedGood> goods()` | The traded goods, in number order (the list's index is the number less one). |
-| 989 | 1 | `public int goodCount()` | How many goods are traded (G). |
-| 992 | 1 | `public TradedGood good(int number)` | The good with that number, 1..G. |
-| 995 | 4 | `public int goodNumber(String key)` | The number of the good with that key (the Good constant's name); 0 if there is none. |
-| 1001 | 1 | `public int tradeBaseYear()` | The year the trade is of. |
-| 1004 | 1 | `public Flows trade(int good)` | One good's trade: its pairs, and each nation's make and use. |
+| 745 | 38 | `private void readNations() throws IOException, DataFormatException` |  |
+| 785 | 1 | `public List<Nation> nations()` | The nations then the areas, in number order (the list's index is the number less one). |
+| 788 | 1 | `public int nationCount()` | The N: how many of the rows are nations (the full file's is 196); the areas follow them. |
+| 791 | 1 | `public int areaCount()` | How many rows are areas. |
+| 794 | 4 | `public Nation nation(int number)` | The nation or area with that number, 1..N+A. |
+| 800 | 4 | `public int numberOf(String iso3)` | The number of the nation or area with that iso3 code; 0 if there is none. |
+| 806 | 6 | `public String moneyAt(int nation, int month)` | The code of the money a nation uses in a month (month 0 is January of FIRST_YEAR): the latest entry of its history from that month or before, the first entry covering the stand-in century from month 0; null for an are... |
 
-### FREIGHT (lines 1006-1027)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1010 | 11 | `private void readFreight() throws IOException, DataFormatException` |  |
-| 1023 | 1 | `public Freight freight()` | The freight table and its edges. |
-| 1026 | 1 | `public Freight closure()` | The table recomputed from the edges (Freight.closure()), with this file's LAND_PER_SEA dial: FORMAT.txt says it is the stored table. |
-
-### THE OWNER LAYER - a nation for every cell (lines 1028-1096)
+### MONEYS (lines 813-876)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1033 | 1 | `public static int tile(int lat0, int lon0)` | The number of the 1-degree tile whose south-west corner is (lat0, lon0) (EarthData's). |
-| 1036 | 1 | `public int ownerEntry(int tile)` | A tile's index entry: its blob's length when above 0; otherwise the tile is uniform, owned by minus this (0: no one). |
-| 1039 | 4 | `public int ownerUniform(int tile)` | The owner of a uniform tile; -1 where the tile has two owners or more (a blob). |
-| 1045 | 6 | `public byte[] ownerTile(int tile)` | A blob tile's 57,600 bytes, row r from the north, column c from the west at r * 240 + c, a byte an owner number (mask with 0xFF); null for a uniform tile. |
-| 1053 | 1 | `public synchronized int inflations()` | How many blobs this reader has inflated (an LRU hit inflates none). |
-| 1056 | 23 | `private synchronized byte[] blob(Layer l, int tile, int len)` | A blob, from the LRU or the file. |
-| 1081 | 6 | `public int ownerCell(int tile, int r, int c)` | The owner of the cell at row r from the north, column c from the west of a tile: 0 for no one. |
-| 1089 | 7 | `public int ownerAt(double lat, double lon)` | The owner at a point, the cell holding its north and west edges (WHERE A POINT FALLS): a nation or an area's number, 0 for no one. |
+| 817 | 26 | `private void readMoneys() throws IOException, DataFormatException` |  |
+| 845 | 1 | `public List<Money> moneys()` | The moneys, in number order (the list's index is the number less one). |
+| 848 | 4 | `public int moneyNumber(String code)` | The number of the money with that ISO 4217 code; 0 if there is none. |
+| 854 | 1 | `public int firstMonth()` | The first month the rates run from (0, January of FIRST_YEAR). |
+| 857 | 1 | `public int months()` | How many months the rates run, the stand-in century's and the file's (1,512 for the full file: 1900-01 to 2025-12). |
+| 860 | 1 | `public int standInMonths()` | How many of the rates' first months the stand-in century made, not the file (1,200 for the full file; 0 for a file that reaches FIRST_YEAR itself). |
+| 863 | 1 | `public double rate(int money, int month)` | A money's average rate in a month, its units a US dollar; NaN in a month no nation used it. |
+| 866 | 1 | `public double rate(String code, int month)` | The same by the money's code. |
+| 869 | 1 | `public int rateMark(int money, int month)` | A money's rate's mark in a month. |
+| 871 | 5 | `private int rateIndex(int money, int month)` |  |
 
-### THE LINES - Natural Earth's admin-0 land boundaries (lines 1097-1121)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1101 | 17 | `private void readLines() throws IOException, DataFormatException` |  |
-| 1120 | 1 | `public List<Border> lines()` | The border lines, in the file's order. |
-
-### PRICES - each good's real price path (WN1, spec 7.1) (lines 1122-1179)
+### PATHS (lines 877-942)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1127 | 1 | `public boolean hasPrices()` | Whether the file has the prices layer: a file baked before WN1's has none, and is read all the same (WorldDataCheck's first section says it is not FORMAT.txt's ten layers). |
-| 1129 | 23 | `private void readPrices() throws IOException, DataFormatException` |  |
-| 1154 | 1 | `public int priceFirstYear()` | The first year of the price paths: FIRST_YEAR (1900), or the file's own if it begins earlier. |
-| 1157 | 1 | `public int priceYears()` | How many years the price paths run (126: 1900 to 2025, the stand-in century's 100 and the file's 26). |
-| 1160 | 1 | `public int priceStandInYears()` | How many of the price paths' first years the stand-in century made, not the file (100 for the full file; 0 for a file that reaches FIRST_YEAR itself). |
-| 1163 | 4 | `public String priceSeries(int good)` | The Pink Sheet series a good's price follows (its column title; a proxy's too), the good numbered 1..G. |
-| 1169 | 1 | `public double price(int good, int year)` | A good's price in a year, the series' nominal annual price over the US CPI as a ratio to 2025's (so 2025 is 1); NaN where there is none. |
-| 1172 | 1 | `public int priceMark(int good, int year)` | The mark of that price: 3 the good's own series, 1 a proxy's. |
-| 1174 | 5 | `private int priceIndex(int year)` |  |
+| 881 | 25 | `private void readPaths() throws IOException, DataFormatException` |  |
+| 908 | 1 | `public List<String> pathSeries()` | The paths' series, in the file's order (people, gdp_2015usd, gdp_usd, gdp_ppp, cpi, rate). |
+| 911 | 1 | `public String pathUnit(String series)` | A series' unit, as the file names it. |
+| 914 | 1 | `public int pathFirstYear()` | The first year of the paths: FIRST_YEAR (1900), or the file's own if it begins earlier. |
+| 917 | 1 | `public int pathYears()` | How many years the paths run (201: 1900 to 2100, the stand-in century's 100 and the file's 101). |
+| 920 | 1 | `public int standInYears()` | How many of the paths' first years the stand-in century made, not the file (100 for the full file, which begins in FILE_FIRST_YEAR; 0 for a file that reaches FIRST_YEAR itself). |
+| 923 | 1 | `public int pathNations()` | The nations the paths hold (the N; the areas have none). |
+| 926 | 1 | `public double pathValue(String series, int nation, int year)` | A series' value for a nation (1..N) in a year; NaN where there is none. |
+| 929 | 1 | `public int pathMark(String series, int nation, int year)` | The mark of that value. |
+| 931 | 5 | `private int seriesIndex(String series)` |  |
+| 937 | 5 | `private int pathIndex(int nation, int year)` |  |
+
+### GOODS AND TRADE (lines 943-1018)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 947 | 18 | `private void readGoods() throws IOException, DataFormatException` |  |
+| 966 | 31 | `private void readTrade() throws IOException, DataFormatException` |  |
+| 999 | 1 | `public List<TradedGood> goods()` | The traded goods, in number order (the list's index is the number less one). |
+| 1002 | 1 | `public int goodCount()` | How many goods are traded (G). |
+| 1005 | 1 | `public TradedGood good(int number)` | The good with that number, 1..G. |
+| 1008 | 4 | `public int goodNumber(String key)` | The number of the good with that key (the Good constant's name); 0 if there is none. |
+| 1014 | 1 | `public int tradeBaseYear()` | The year the trade is of. |
+| 1017 | 1 | `public Flows trade(int good)` | One good's trade: its pairs, and each nation's make and use. |
+
+### FREIGHT (lines 1019-1040)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1023 | 11 | `private void readFreight() throws IOException, DataFormatException` |  |
+| 1036 | 1 | `public Freight freight()` | The freight table and its edges. |
+| 1039 | 1 | `public Freight closure()` | The table recomputed from the edges (Freight.closure()), with this file's LAND_PER_SEA dial: FORMAT.txt says it is the stored table. |
+
+### THE OWNER LAYER - a nation for every cell (lines 1041-1109)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1046 | 1 | `public static int tile(int lat0, int lon0)` | The number of the 1-degree tile whose south-west corner is (lat0, lon0) (EarthData's). |
+| 1049 | 1 | `public int ownerEntry(int tile)` | A tile's index entry: its blob's length when above 0; otherwise the tile is uniform, owned by minus this (0: no one). |
+| 1052 | 4 | `public int ownerUniform(int tile)` | The owner of a uniform tile; -1 where the tile has two owners or more (a blob). |
+| 1058 | 6 | `public byte[] ownerTile(int tile)` | A blob tile's 57,600 bytes, row r from the north, column c from the west at r * 240 + c, a byte an owner number (mask with 0xFF); null for a uniform tile. |
+| 1066 | 1 | `public synchronized int inflations()` | How many blobs this reader has inflated (an LRU hit inflates none). |
+| 1069 | 23 | `private synchronized byte[] blob(Layer l, int tile, int len)` | A blob, from the LRU or the file. |
+| 1094 | 6 | `public int ownerCell(int tile, int r, int c)` | The owner of the cell at row r from the north, column c from the west of a tile: 0 for no one. |
+| 1102 | 7 | `public int ownerAt(double lat, double lon)` | The owner at a point, the cell holding its north and west edges (WHERE A POINT FALLS): a nation or an area's number, 0 for no one. |
+
+### THE LINES - Natural Earth's admin-0 land boundaries (lines 1110-1134)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1114 | 17 | `private void readLines() throws IOException, DataFormatException` |  |
+| 1133 | 1 | `public List<Border> lines()` | The border lines, in the file's order. |
+
+### PRICES - each good's real price path (WN1, spec 7.1) (lines 1135-1192)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1140 | 1 | `public boolean hasPrices()` | Whether the file has the prices layer: a file baked before WN1's has none, and is read all the same (WorldDataCheck's first section says it is not FORMAT.txt's ten layers). |
+| 1142 | 23 | `private void readPrices() throws IOException, DataFormatException` |  |
+| 1167 | 1 | `public int priceFirstYear()` | The first year of the price paths: FIRST_YEAR (1900), or the file's own if it begins earlier. |
+| 1170 | 1 | `public int priceYears()` | How many years the price paths run (126: 1900 to 2025, the stand-in century's 100 and the file's 26). |
+| 1173 | 1 | `public int priceStandInYears()` | How many of the price paths' first years the stand-in century made, not the file (100 for the full file; 0 for a file that reaches FIRST_YEAR itself). |
+| 1176 | 4 | `public String priceSeries(int good)` | The Pink Sheet series a good's price follows (its column title; a proxy's too), the good numbered 1..G. |
+| 1182 | 1 | `public double price(int good, int year)` | A good's price in a year, the series' nominal annual price over the US CPI as a ratio to 2025's (so 2025 is 1); NaN where there is none. |
+| 1185 | 1 | `public int priceMark(int good, int year)` | The mark of that price: 3 the good's own series, 1 a proxy's. |
+| 1187 | 5 | `private int priceIndex(int year)` |  |
 
