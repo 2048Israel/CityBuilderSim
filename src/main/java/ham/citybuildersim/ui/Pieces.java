@@ -1514,6 +1514,18 @@ public final class Pieces {
             Kept.play(this, grow);
         }
 
+        /**
+         * The bar standing at its own figures (KP5): a growth still running from the last draw (animateFirst()) stopped
+         * and the first segment at its amount, for a draw that does not animate - a month that lands past the clock speed
+         * the figures can follow (UserInterface.countsUp()), or a redraw in the same month. Nothing happens to a bar
+         * that never grew.
+         */
+        public void stand() {
+            javafx.animation.Animation running = Kept.animationOf(this);
+            if (running != null) running.stop();
+            if (!Double.isNaN(first.get())) first.set(Double.NaN);
+        }
+
         @Override protected void layoutChildren() {
             double w = getWidth(), h = getHeight();
             double top = Math.max(0, (h - tall()) / 2);
@@ -3886,10 +3898,28 @@ public final class Pieces {
 
     /** The bar rankBars() draws for one row: a Pane that lays its track, its fill and its axis out at whatever width it is given. */
     static final class RankBar extends javafx.scene.layout.Pane {
-        private final double amount, pos, neg;
+        private double amount, pos, neg;
+        private boolean told;
         private final Region track = new Region(), fill = new Region(), axis = new Region();
 
+        /** A bar told its figures, as rankBars() makes it. */
         RankBar(double amount, double pos, double neg, String colour) {
+            this();
+            set(amount, pos, neg, colour);
+        }
+
+        /** A bar's track, fill and axis, made once in its life; the figures come with set() (KP5: BankScreen's equity parts keep one). */
+        RankBar() {
+            getChildren().addAll(track, fill);
+            setMinSize(120, RANK_BAND + 4);
+            setPrefSize(520, RANK_BAND + 4);
+            setMaxHeight(RANK_BAND + 4);
+        }
+
+        /** What the bar draws now; laid out again only where a figure the layout reads moved. */
+        void set(double amount, double pos, double neg, String colour) {
+            boolean moved = !told || amount != this.amount || pos != this.pos || neg != this.neg;
+            told = true;
             this.amount = amount;
             this.pos = pos;
             this.neg = neg;
@@ -3897,11 +3927,10 @@ public final class Pieces {
             fill.setStyle("-fx-background-color: " + (amount < 0 ? Palette.TEXT_SPENT : colour)
                     + "; -fx-background-radius: " + RANK_BAND / 2 + ";");
             axis.setStyle("-fx-background-color: " + Palette.TEXT_MUTED + ";");
-            getChildren().addAll(track, fill);
-            if (neg > 0) getChildren().add(axis);
-            setMinSize(120, RANK_BAND + 4);
-            setPrefSize(520, RANK_BAND + 4);
-            setMaxHeight(RANK_BAND + 4);
+            boolean hasAxis = getChildren().contains(axis);
+            if (neg > 0 && !hasAxis) getChildren().add(axis);
+            else if (!(neg > 0) && hasAxis) getChildren().remove(axis);
+            if (moved) requestLayout();
         }
 
         @Override protected void layoutChildren() {
@@ -4425,11 +4454,10 @@ public final class Pieces {
                 new Tick(top, Palette.TEXT_MUTED, 2, named ? share1(top) : null, null));
         SegmentBar bar = segmentBar(fill, scale, ticks, width, band);
         if (tip != null) {
-            Tooltip t = new Tooltip(tip);
-            t.setShowDelay(Duration.millis(250));
+            // Kept (KP5): the bar's own tooltip, its text set; a bar handed back with none loses last draw's.
+            Tooltip t = Kept.tip(bar, tip, 250);
             t.setWrapText(true);
             t.setMaxWidth(POPOVER_WIDTH);
-            Tooltip.install(bar, t);
         }
         return bar;
     }
@@ -4482,77 +4510,92 @@ public final class Pieces {
      */
     public static VBox rateLadder(List<Rung> rungs, double scale, double nameWidth, double rateWidth,
                                   double stepWidth) {
-        VBox ladder = new VBox(2);
-        Label head = new Label("a year");
+        // Kept (KP5): through Kept; a rung is a scope keyed by its name, so a rung that comes or goes shifts none after it.
+        VBox ladder = Kept.column(2);
+        Label head = Kept.label("a year");
         head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
         head.setMinWidth(Region.USE_PREF_SIZE);
-        HBox headRow = new HBox(head);
+        HBox headRow = Kept.row(0, head);
         headRow.setAlignment(Pos.CENTER_RIGHT);
         headRow.setPadding(new javafx.geometry.Insets(0, stepWidth + 24 + 2 * Palette.GAP, 0, 0));
         ladder.getChildren().add(headRow);
         for (Rung r : rungs) {
-            if (r.caption()) {
-                Label c = new Label(r.name());
-                c.setWrapText(true);
-                c.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 8 0 2 0;");
-                ladder.getChildren().add(c);
-                continue;
-            }
-            HBox row = new HBox(Palette.GAP);
-            row.setAlignment(Pos.CENTER_LEFT);
-            row.setMinHeight(RUNG_ROW);
-            double indent = r.indent() ? 18 : 0;
-            Region mark = r.svg() == null ? new Region() : icon(r.svg(), r.colour() == null ? Palette.TEXT_LABEL : r.colour(), 14);
-            javafx.scene.layout.StackPane box = new javafx.scene.layout.StackPane(mark);
-            box.setMinSize(20, 20);
-            box.setPrefSize(20, 20);
-            box.setMaxSize(20, 20);
-            HBox.setMargin(box, new javafx.geometry.Insets(0, 0, 0, indent));
-            Label name = new Label(r.go() == null ? r.name() : r.name() + " ›");
-            name.setWrapText(true);
-            name.setMinWidth(0);
-            // A rung's own tone over the door's accent (0.7.38): a shut-out sector stays a door, in red.
-            String ink = r.nameTone() != null ? r.nameTone() : r.go() != null ? Palette.ACCENT : Palette.TEXT_BODY;
-            String rest = Palette.words(Palette.SIZE_BODY, ink) + (r.go() != null ? " -fx-cursor: hand;" : "");
-            name.setStyle(rest);
-            if (r.go() != null) {
-                name.setOnMouseEntered(e -> name.setStyle(rest + " -fx-underline: true;"));
-                name.setOnMouseExited(e -> name.setStyle(rest));
-                name.setOnMouseClicked(e -> r.go().run());
-            }
-            HBox named = new HBox(6, name);
-            named.setAlignment(Pos.CENTER_LEFT);
-            if (r.tag() != null) named.getChildren().add(chip(r.tag(), r.tagColour() == null ? Palette.TEXT_MUTED : r.tagColour()));
-            double nw = Math.max(80, nameWidth - indent);
-            named.setMinWidth(nw);
-            named.setPrefWidth(nw);
-            named.setMaxWidth(nw);
-            SegmentBar bar = segmentBar(r.parts(), scale, r.ticks(), 0, RUNG_BAND);
-            HBox.setHgrow(bar, Priority.ALWAYS);
-            Label rate = new Label(Double.isFinite(r.rate()) ? ratePct(r.rate()) : "\u2014");
-            rate.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
-            rate.setAlignment(Pos.CENTER_RIGHT);
-            rate.setMinWidth(rateWidth);
-            rate.setPrefWidth(rateWidth);
-            HBox stepBox = new HBox();
-            stepBox.setAlignment(Pos.CENTER_LEFT);
-            stepBox.setMinWidth(stepWidth);
-            stepBox.setPrefWidth(stepWidth);
-            stepBox.setMaxWidth(stepWidth);
-            if (r.step() != null) {
+            ladder.getChildren().add(Kept.scope((r.caption() ? "caption:" : "rung:") + r.name(),
+                    () -> r.caption() ? captionRung(r) : rungRow(r, scale, nameWidth, rateWidth, stepWidth)));
+        }
+        return ladder;
+    }
+
+    /** A caption rung: a sub-heading across the rows. */
+    private static Label captionRung(Rung r) {
+        Label c = Kept.label(r.name());
+        c.setWrapText(true);
+        c.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 8 0 2 0;");
+        return c;
+    }
+
+    /** One rung's row: its icon, its name (and tag), its bar, its rate, its step and its (i). */
+    private static HBox rungRow(Rung r, double scale, double nameWidth, double rateWidth, double stepWidth) {
+        HBox row = Kept.row(Palette.GAP);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMinHeight(RUNG_ROW);
+        double indent = r.indent() ? 18 : 0;
+        Region mark = Kept.scope(r.svg() == null ? "blank" : "icon", () ->
+                r.svg() == null ? Kept.region() : icon(r.svg(), r.colour() == null ? Palette.TEXT_LABEL : r.colour(), 14));
+        javafx.scene.layout.StackPane box = Kept.stack(mark);
+        box.setMinSize(20, 20);
+        box.setPrefSize(20, 20);
+        box.setMaxSize(20, 20);
+        HBox.setMargin(box, new javafx.geometry.Insets(0, 0, 0, indent));
+        Label name = Kept.label(r.go() == null ? r.name() : r.name() + " \u203a");
+        name.setWrapText(true);
+        name.setMinWidth(0);
+        // A rung's own tone over the door's accent (0.7.38): a shut-out sector stays a door, in red.
+        String ink = r.nameTone() != null ? r.nameTone() : r.go() != null ? Palette.ACCENT : Palette.TEXT_BODY;
+        String rest = Palette.words(Palette.SIZE_BODY, ink) + (r.go() != null ? " -fx-cursor: hand;" : "");
+        // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set.
+        name.setStyle(r.go() != null && name.isHover() ? rest + " -fx-underline: true;" : rest);
+        if (r.go() != null) {
+            name.setOnMouseEntered(e -> name.setStyle(rest + " -fx-underline: true;"));
+            name.setOnMouseExited(e -> name.setStyle(rest));
+            name.setOnMouseClicked(e -> r.go().run());
+        }
+        HBox named = Kept.row(6, name);
+        named.setAlignment(Pos.CENTER_LEFT);
+        if (r.tag() != null) {
+            named.getChildren().add(Kept.scope("tag",
+                    () -> chip(r.tag(), r.tagColour() == null ? Palette.TEXT_MUTED : r.tagColour())));
+        }
+        double nw = Math.max(80, nameWidth - indent);
+        named.setMinWidth(nw);
+        named.setPrefWidth(nw);
+        named.setMaxWidth(nw);
+        SegmentBar bar = segmentBar(r.parts(), scale, r.ticks(), 0, RUNG_BAND);
+        HBox.setHgrow(bar, Priority.ALWAYS);
+        Label rate = Kept.label(Double.isFinite(r.rate()) ? ratePct(r.rate()) : "\u2014");
+        rate.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        rate.setAlignment(Pos.CENTER_RIGHT);
+        rate.setMinWidth(rateWidth);
+        rate.setPrefWidth(rateWidth);
+        HBox stepBox = Kept.row(0);
+        stepBox.setAlignment(Pos.CENTER_LEFT);
+        stepBox.setMinWidth(stepWidth);
+        stepBox.setPrefWidth(stepWidth);
+        stepBox.setMaxWidth(stepWidth);
+        if (r.step() != null) {
+            stepBox.getChildren().add(Kept.scope("step", () -> {
                 Label step = chip(r.step(), Palette.TEXT_MUTED);
                 step.setMinWidth(0);
                 step.setWrapText(true);
-                stepBox.getChildren().add(step);
-            }
-            javafx.scene.layout.StackPane dot = new javafx.scene.layout.StackPane();
-            dot.setMinWidth(24);
-            dot.setPrefWidth(24);
-            if (r.info() != null) dot.getChildren().add(infoButton(r.info(), true));
-            row.getChildren().addAll(box, named, bar, rate, stepBox, dot);
-            ladder.getChildren().add(row);
+                return step;
+            }));
         }
-        return ladder;
+        javafx.scene.layout.StackPane dot = Kept.stack();
+        dot.setMinWidth(24);
+        dot.setPrefWidth(24);
+        if (r.info() != null) dot.getChildren().add(Kept.scope("info", () -> infoButton(r.info(), true)));
+        row.getChildren().addAll(box, named, bar, rate, stepBox, dot);
+        return row;
     }
 
     /* ----------------------------- two bars on one scale ----------------------------- */
@@ -4567,22 +4610,26 @@ public final class Pieces {
     public static VBox balanceBars(String topWords, List<Segment> top, List<Tick> topTicks,
                                    String underWords, List<Segment> under, List<Tick> underTicks,
                                    double scale, double labelWidth, double band) {
-        VBox both = new VBox(10);
+        // Kept (KP5): through Kept, a row a scope of its own.
+        VBox both = Kept.column(10);
         String[] words = {topWords, underWords};
         List<List<Segment>> parts = List.of(top == null ? List.of() : top, under == null ? List.of() : under);
         List<List<Tick>> ticks = List.of(topTicks == null ? List.of() : topTicks, underTicks == null ? List.of() : underTicks);
         for (int i = 0; i < 2; i++) {
-            Label l = new Label(words[i]);
-            l.setWrapText(true);
-            l.setMinWidth(labelWidth);
-            l.setPrefWidth(labelWidth);
-            l.setMaxWidth(labelWidth);
-            l.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-            SegmentBar bar = segmentBar(parts.get(i), scale, ticks.get(i), 0, band);
-            HBox.setHgrow(bar, Priority.ALWAYS);
-            HBox row = new HBox(Palette.GAP_LOOSE, l, bar);
-            row.setAlignment(Pos.CENTER_LEFT);
-            both.getChildren().add(row);
+            final int at = i;
+            both.getChildren().add(Kept.scope("bar" + i, () -> {
+                Label l = Kept.label(words[at]);
+                l.setWrapText(true);
+                l.setMinWidth(labelWidth);
+                l.setPrefWidth(labelWidth);
+                l.setMaxWidth(labelWidth);
+                l.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+                SegmentBar bar = segmentBar(parts.get(at), scale, ticks.get(at), 0, band);
+                HBox.setHgrow(bar, Priority.ALWAYS);
+                HBox row = Kept.row(Palette.GAP_LOOSE, l, bar);
+                row.setAlignment(Pos.CENTER_LEFT);
+                return row;
+            }));
         }
         return both;
     }
@@ -4597,13 +4644,14 @@ public final class Pieces {
      * Government's and Trade's verdicts are its next readers.
      */
     public static HBox statusBanner(String word, String tone, String sentence, String svg) {
-        Label says = new Label(sentence);
+        // Kept (KP5): through Kept (a new node outside a draw).
+        Label says = Kept.label(sentence);
         says.setWrapText(true);
         says.setMinWidth(0);
         says.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
         HBox.setHgrow(says, Priority.ALWAYS);
         says.setMaxWidth(Double.MAX_VALUE);
-        HBox banner = new HBox(Palette.GAP_LOOSE, iconSquare(svg, tone, 28, 15), chip(word, tone), says);
+        HBox banner = Kept.row(Palette.GAP_LOOSE, iconSquare(svg, tone, 28, 15), chip(word, tone), says);
         banner.setAlignment(Pos.CENTER_LEFT);
         banner.setMinHeight(44);
         banner.setMaxWidth(Double.MAX_VALUE);

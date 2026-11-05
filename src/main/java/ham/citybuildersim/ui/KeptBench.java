@@ -1954,6 +1954,70 @@ public final class KeptBench {
     }
 
     /* =====================================================================
+       THE BANK (KP5): the Overview and the six pages behind it, in both views, kept and built new, the hands on what
+       reshapes them (a page and view picked, a line or a fold opened, the waterfall's year) and the real show method
+       ===================================================================== */
+
+    /** The Bank tab on its Overview: nothing opened, the waterfall on this month, the Summary view. */
+    public Page bank() {
+        return bank("the Bank Overview", null, null, false);
+    }
+
+    /**
+     * The Bank tab as a Page, as the screen draws it from its pool (the Overview when `area` is null, else the page `page` names
+     * behind it, in the Summary or the Statement view - which only Profit and Balance sheet have): it opens with nothing folded
+     * open and the waterfall on this month.
+     */
+    public Page bank(String name, String area, String page, boolean statement) {
+        BankScreen s = ui.bankScreen;
+        return new Page(name, "showBankMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.openLines.clear();
+            s.profitYear = false;
+            bankOpen(area, page, statement);
+        });
+    }
+
+    /** The six pages behind the Overview, in the chip strip's order. */
+    public static List<String> bankPages() {
+        return List.of(BankScreen.BANK_PAGE_NAMES);
+    }
+
+    /** The keys of the six pages' "details" folds, in the pages' order. */
+    public static List<String> bankFolds() {
+        return List.of("profit:statement", "sheet:statement", "lending:tables", "lending:bonds", "funding:lines", "capital:lines");
+    }
+
+    /** The screen on its Overview (`area` null), or on a page behind it in a view, as a chip or the switch would put it (the next draw shows it). */
+    public void bankOpen(String area, String page, boolean statement) {
+        BankScreen s = ui.bankScreen;
+        s.bankArea = area == null ? null : BankScreen.BANK_PAGES;
+        s.bankPage = page == null ? BankScreen.BANK_HOME : page;
+        ui.sectorScreen.statementView = statement;
+    }
+
+    /** A fold ("details"), a statement line or a borrower's sectors opened or closed, by its key, as a click on it would. */
+    public void bankLine(String key, boolean open) {
+        fold(ui.bankScreen.openLines, key, open);
+    }
+
+    /** The Profit page's waterfall on the last twelve months or on this month, as its chip would put it. */
+    public void bankYear(boolean year) {
+        ui.bankScreen.profitYear = year;
+    }
+
+    /** The Bank tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showBank() {
+        ensureWindow();
+        ui.bankScreen.showBankMenu();
+    }
+
+    /** The Bank tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetBank() {
+        ui.bankScreen.forget();
+    }
+
+    /* =====================================================================
        SECTORS (KP4): the list and a business's five pages, kept and built new, the hands on what reshapes them, the
        pictures they hold (the refinery's, a materials industry's, a leg's bar), the count-up the clock allows and the
        pointer over a card, a door and the crumb
