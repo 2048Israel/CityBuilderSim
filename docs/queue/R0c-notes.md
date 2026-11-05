@@ -2,10 +2,12 @@
 
 ## WHERE IT STANDS
 
-Started 00:41 from `batch/R0b` (R0b's ship file up, at its gate). Slices 1
-(the farm's horses, the factory's steam) and 2 (road freight's horse and
-wagon) committed; slice 3 (the homes' lamp oil and coal) with Sonnet. Then
-`--pick`, the trace against main's, R0b's merge, the ship file.
+Started 00:41 from `batch/R0b` (R0b's ship file up, at its gate). All three
+slices committed: the farm's horses and the factory's steam (895927ac), road
+freight's horse and wagon (d3d781c1), the homes' lamp oil and coal
+(4123ae7a). The default playtest's trace is identical to R0b's tip
+(67def243) but for its run-time figures, so no ensemble (batch.md 6). Then
+`--pick`, R0b's merge once it is on main, the ship file.
 
 ## 1. What it builds
 
@@ -21,7 +23,7 @@ months); only the harness sets a share.
 | horses on farms | 22% of the farm's own crop eaten captive by its horses; posts x 1/(1-0.273); a tonne's cost over the crop sold | `Agriculture.setHorseShare` | the tractor (PE14, 1917), fitted when it pays |
 | horses for cartage | Haulage's city leg carried by hired teams (10 t a team-month, two horses, one carter), the horses' feed (0.29 t a horse-month) bought as `CROPS`, the carters NO_DIPLOMA posts, no diesel, no trucks | `Haulage.setHorseShare` | the motor truck (§3, known in 1900), fitted when it pays |
 | steam in factories | no grid draw (the bill and the city's demand fall with it); `THERMAL_COAL` bought for the draw at 1.8 kg a kWh | `Sector.setSteamShare`, any sector | electric drive (§3), fitted when it pays |
-| household light and heat | slice 3 | `HomeFuel` | the grid's reach; R0e sizes it by year |
+| household light and heat | each home lit by a lamp buys 25 L of lamp oil (`JET`) a month, each heated by a stove 0.7 t of `THERMAL_COAL`, from Retail at the pump's rule, a household bill of its own split by doors | `HomeFuel.setLampShare`, `setCoalShare` | the grid's reach and the furnace; R0e sizes both by year |
 
 The farm's and the factory's forms go through paths the tree already had: a
 farm feeding its horses is CAPTIVE USE (Sector, the coke oven's own coke),
@@ -79,8 +81,44 @@ sector's buildings reach the labour market through
    buy feed; it goes to Pending for R1 or the city's own works' recipes.
 10. **★ Hydro is not this batch's.** The study's §4 gives it a new template
     needing a river and a drop on Earth's map (Q4), for the electricity run.
+11. **★ The homes' quantities are estimates, the coal's price unverified.**
+    Lamp oil: light was a fifth of a working family's fuel and light (1.06%
+    against 4.19%, [P1.15]); a fifth of §5.3's $1.50 a week at 24¢ a gallon
+    [CYB18] is about 25 L a month. Coal: the rest, about $1.20 a week, at
+    about $6.50 a short ton (unverified), 0.7 t a month over the year. R0e,
+    which sizes the basket by year, sources the coal. Wood is left out: the
+    game has no firewood good.
+12. **★ "Electrified homes buy power instead": no household power bill.**
+    Today's homes pay nothing for power (EconomyManager's comment: a household
+    utility bill "is on the list"), so a lamp-lit home buys lamp oil in place
+    of a light nobody bills, and the grid's home draw is not touched. A
+    household power bill is its own batch.
+13. **★ The homes' bill is not in the shopping.** Retail's sale of lamp oil
+    and coal is a sale to the households (`Sector`'s statement counts every
+    one in `salesToHouseholds`, which `Game.syncHouseholdAccounts()` hands the
+    households as their shopping), and it is also its own line: slice 3 takes
+    it out of the shopping, guarded, so they pay it once (Forms1900Check 14).
 
-## 3. Known reds (the orchestrator's list, 2026-11-05)
+## 3. Found on the way: the drivers' petrol may be paid twice (PD1, queued)
+
+Slice 3's review found the shape it mended already in main for the drivers'
+petrol: `Retail.sellFuel()` books each litre as a sale to `Trade.HOUSEHOLDS`,
+so it is in Retail's `salesToHouseholds` (`Sector.java` ~1763), which
+`syncHouseholdAccounts()` hands the households as `shopping`; and the same
+bill is the `fuel` line (`HouseholdAccounts.setCommute()`), in
+`getSpending()` beside the shopping (~line 413) and in each row's fees. So
+the households' spending counts petrol twice; whether the cells' cash is also
+charged twice (the audit closes every month, so perhaps it is the statement
+only) is not settled here. Not mended in R0c: it moves every city's trace.
+Queued as PD1.
+
+## 4. Checks
+
+`--pick`: below. The default playtest (2,405 months) on R0c's tip against
+R0b's tip: byte-identical but for "in 65s/66s" and the layout windows' "1.7
+s/2.1 s" (both runs on the PC, 01:36 and 01:55).
+
+## 5. Known reds (the orchestrator's list, 2026-11-05)
 
 PriceLevelCheck 8 (R0's farm retirement, RT1), ReplayCheck 5d "asks -1"
 (CM1b), MapCheck 2h and SlopeCheck's "a building on the map moved" (DM2),
