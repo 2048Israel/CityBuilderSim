@@ -1,4 +1,4 @@
-# DT1 - The same code, another city: what in a month reads the machine ({next}, 2026-11-05)
+# DT1 - The same code, another city: what in a month reads the machine (0.9.20, 2026-11-05)
 
 **WHERE IT STANDS (2026-11-05, 15:30): ready, the ship file pushed. RT1 is on main and merged in; `--pick` exit 3
 (main's recorded reds only).**
