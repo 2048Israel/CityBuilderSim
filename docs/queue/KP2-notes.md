@@ -1,11 +1,10 @@
 # KP2 - Screens kept: Land, Services and Infrastructure; the controls' rule; KP1's hover kept ({next}, 2026-11-04)
 
-**WHERE IT STANDS** (2026-11-05, 05:50): the five slices are in and reviewed; BA1's mended tip (a069746e, with R0b
-and R0c) is merged in, R0b's new causes-of-death section on Services' Health page kept at the merge (§6). The 25
-harnesses KP2 picks against BA1's tip: KeptCheck and 22 more green; the reds are BA1's, each in its notes and passed
-by name at its gate - MapCheck 2d's yard (81 of 500) and 2h's reserve (11, 21), DM2's class; LongPlaytest's "a
-building on the map moved" twice at months 2390-2393, DM1's. Waiting for BA1 to land, then `origin/main` merged and
-the ship file last.
+**WHERE IT STANDS** (2026-11-05, 07:20): ready, see the ship file. The five slices are in and reviewed; BA1's
+mended tip and then `origin/main` at 0.9.16 (97413aec) are merged in, R0b's new causes-of-death section on Services'
+Health page kept at the merge (§6). `--pick` on the merge with main, the world files named: 25 harnesses, exit 3,
+known red only (MapCheck, LongPlaytest, by `docs/notes/gate.txt`); KeptCheck green. The threading, for the gate's
+stranger review (`--pick` asks one: `ui/UserInterface.java`), is §4.
 
 The batch's record. The study's KP2 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 five rules) and §6 (what checks it); `QUEUE.md`'s row adds KP1's gate review (a kept row under a still pointer loses
