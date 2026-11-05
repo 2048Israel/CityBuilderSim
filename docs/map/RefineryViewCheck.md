@@ -51,7 +51,7 @@
 
 **Uses:** [RefineryView](RefineryView.md) (126), [Good](Good.md) (24), [Game](Game.md) (16), [Refining](Refining.md) (11), [RefineryFlow](RefineryFlow.md) (10), [GameFiles](GameFiles.md) (6), [Sector](Sector.md) (6), [BuildingManager](BuildingManager.md) (4), [Deposit](Deposit.md) (4), [Sectors](Sectors.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [SpreadPlanner](SpreadPlanner.md) (2), [Freight](Freight.md) (2), [Founding](Founding.md) (1), [LandManager](LandManager.md) (1), [Resource](Resource.md) (1), [LongPlaytest](LongPlaytest.md) (1), [Oil](Oil.md) (1), [Trade](Trade.md) (1), [Retail](Retail.md) (1)
 
-**Used by (1):** [OilViewCheck](OilViewCheck.md)
+**Used by (2):** [KeptCheck](KeptCheck.md), [OilViewCheck](OilViewCheck.md)
 
 ## Sections
 

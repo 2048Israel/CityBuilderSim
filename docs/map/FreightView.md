@@ -50,7 +50,7 @@
 
 **Uses:** [Ports](Ports.md) (11), [Haulage](Haulage.md) (10), [Freight](Freight.md) (9), [PortDivision](PortDivision.md) (6), [Game](Game.md) (5), [BuildingManager](BuildingManager.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [Good](Good.md) (3), [Sector](Sector.md) (2), [Traffic](Traffic.md) (2), [BoatSchedule](BoatSchedule.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (5):** [FreightViewCheck](FreightViewCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [SectorScreen](SectorScreen.md), [TradeBandCheck](TradeBandCheck.md), [TradeScreen](TradeScreen.md)
+**Used by (6):** [FreightViewCheck](FreightViewCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md), [TradeBandCheck](TradeBandCheck.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

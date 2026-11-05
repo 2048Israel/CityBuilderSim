@@ -21,7 +21,7 @@
 
 **Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (59), [SectorStatements](SectorStatements.md) (36), [Statement](Statement.md) (2), [SectorScreen](SectorScreen.md) (1)
 
-**Used by (2):** [BankScreen](BankScreen.md), [SectorScreen](SectorScreen.md)
+**Used by (3):** [BankScreen](BankScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

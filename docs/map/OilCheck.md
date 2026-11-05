@@ -66,7 +66,7 @@
 
 **Uses:** [Good](Good.md) (166), [Refining](Refining.md) (106), [Game](Game.md) (65), [Resource](Resource.md) (43), [Sectors](Sectors.md) (39), [Retail](Retail.md) (36), [Sector](Sector.md) (26), [BuildingsTemplate](BuildingsTemplate.md) (20), [World](World.md) (15), [Deposit](Deposit.md) (15), [TaxPolicy](TaxPolicy.md) (15), [Motoring](Motoring.md) (15), [GameFiles](GameFiles.md) (11), [BusinessInvestment](BusinessInvestment.md) (11), [FuelSplit](FuelSplit.md) (10), [Freight](Freight.md) (10), [CityLand](CityLand.md) (9), [NationalAccounts](NationalAccounts.md) (8), [LandManager](LandManager.md) (7), [BuildingManager](BuildingManager.md) (6), [LandParcel](LandParcel.md) (5), [MoneyAudit](MoneyAudit.md) (5), [SpreadPlanner](SpreadPlanner.md) (5), [Founding](Founding.md) (4), [StrategicReserve](StrategicReserve.md) (4), [Oil](Oil.md) (4), [DecisionLog](DecisionLog.md) (4), [GoodsMarket](GoodsMarket.md) (4), [MiningCheck](MiningCheck.md) (3), [PriceLevel](PriceLevel.md) (3)... and 16 more
 
-**Used by (1):** [WellCheck](WellCheck.md)
+**Used by (2):** [KeptCheck](KeptCheck.md), [WellCheck](WellCheck.md)
 
 ## Sections
 

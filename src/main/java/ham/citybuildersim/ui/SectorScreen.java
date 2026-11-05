@@ -110,7 +110,7 @@ final class SectorScreen {
     static final String[] PAGE_ICONS = {Icons.INDUSTRY, Icons.COIN, Icons.FINANCES, Icons.BANK, Icons.SECTOR};
 
     /** Which "details" folds are open - kept while the game runs, not saved (0.7.30). */
-    private final java.util.Set<String> detailsOpen = new java.util.HashSet<>();
+    final java.util.Set<String> detailsOpen = new java.util.HashSet<>();
 
     /** Which statement lines are open, by sector and then by label (0.7.30: a waterfall's bar opens its line). */
     private final java.util.Map<String, java.util.Set<String>> linesOpen = new java.util.HashMap<>();
@@ -4541,8 +4541,10 @@ final class SectorScreen {
 
     /** A division's row of the bill: its dot and door, what it was for, and the money; a dash where it billed nothing. */
     HBox billRow(FreightView.Division division, double bill, String why) {
-        // Kept (KP4): a scope a division.
-        return Kept.scope("bill:" + division, () -> {
+        // Kept (KP4): a scope a division, and another for a division that billed nothing: its line says nothing, and a wrapped label
+        // that had words and is emptied keeps the wrapping width of the words it had (KeptCheck 49's Wood Products at month 1,400:
+        // its bounds 145 wide and 20 high, where an empty label made new has none), so a row that goes empty is made new.
+        return Kept.scope("bill:" + division + (bill > 0 ? "" : ":nothing"), () -> {
             javafx.scene.shape.Circle dot = Kept.of(javafx.scene.shape.Circle.class, javafx.scene.shape.Circle::new);
             dot.setRadius(3.5);
             dot.setFill(javafx.scene.paint.Color.web(divisionColour(division)));
@@ -4686,7 +4688,7 @@ final class SectorScreen {
     static final class RefineryPicture extends javafx.scene.layout.Pane {
         private Sectors sectors;
         private RefineryView.View view;
-        private RefineryView.Picture painted;
+        RefineryView.Picture painted;
         private double drawnAt = -1;
         /** Whether the view moved since the last paint. */
         private boolean moved;
@@ -5074,7 +5076,7 @@ final class SectorScreen {
     static final class IndustryPane extends javafx.scene.layout.Pane {
         private Game game;
         private IndustryView.View view;
-        private IndustryPicture.Picture painted;
+        IndustryPicture.Picture painted;
         private double drawnAt = -1;
         /** Whether the view moved since the last paint. */
         private boolean moved;
