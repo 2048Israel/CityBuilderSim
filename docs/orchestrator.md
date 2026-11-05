@@ -77,7 +77,7 @@ recommended option on a batch's ★ calls, writes in the notes which and why, an
 the batch ships without waiting; he can overturn one later. A Pending row that
 waits only on calls with a recommendation it settles the same way. It sends
 Jerus only what is his: a call with no clear recommendation, one that moves a
-standing rule or a premise, one that spends money, an eye check of his.
+standing rule or a premise, one that spends money.
 
 ## The gate
 
