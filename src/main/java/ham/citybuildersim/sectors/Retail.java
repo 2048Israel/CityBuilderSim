@@ -1029,6 +1029,52 @@ public final class Retail extends Sector {
         return new FuelSale(took.units(), queued, took.cost(), took.importCost(), rFuelBill, dutyPaid);
     }
 
+    /** A month's sale of the homes' lamp oil and coal (sellHomeFuel()): the litres of JET and tonnes of THERMAL_COAL, the bill the households are charged (the two sales' values), what Retail paid for them at wholesale and of that the part it paid the world. */
+    public record HomeFuelSale(double litres, double tonnes, double bill, double cost, double imported) {
+        /** No sale: nothing asked, or no market or city to sell through. */
+        public static final HomeFuelSale NONE = new HomeFuelSale(0, 0, 0, 0, 0);
+    }
+
+    /**
+     * The homes' lamp oil and coal (R0c, the home form; HomeFuel): `litresJet` of JET and `tonnesCoal` of
+     * THERMAL_COAL drawn at wholesale on Retail's books, the city's refiners' and mines' stock first and the world
+     * for the rest (Markets.draw()), and sold to the households as the forecourts sell the drivers' petrol
+     * (sellFuel()): each good at the pump's rule on its own wholesale, pumpPrice(), the sales tax passed on - and
+     * NO fuel duty, which is the drivers' petrol's. The bill is the two sales' values exactly, so what the
+     * households are charged is what Retail is paid. There is no pump capacity and no queue: a home's lamp oil and
+     * coal are sold over the counter, and the pump fields sellFuel() keeps are not touched. Nothing is drawn,
+     * booked or returned when both are 0 (or not numbers), or with no market or city to sell through.
+     */
+    public HomeFuelSale sellHomeFuel(double litresJet, double tonnesCoal, Game game) {
+        boolean oil = litresJet > 0 && Double.isFinite(litresJet), coal = tonnesCoal > 0 && Double.isFinite(tonnesCoal);
+        if ((!oil && !coal) || markets == null || game == null) return HomeFuelSale.NONE;
+        double rate = salesRate(game);
+        double litres = 0, tonnes = 0, bill = 0, cost = 0, imported = 0;
+        if (oil) {
+            Markets.Draw took = markets.draw(Good.JET, this, key(), litresJet, game.getSectors());
+            if (took.units() > 0) {
+                Trade t = new Trade(Good.JET, key(), Trade.HOUSEHOLDS, took.units(), pumpPrice(took.cost() / took.units(), rate));
+                bookSale(t);
+                litres = took.units();
+                bill += t.value();
+                cost += took.cost();
+                imported += took.importCost();
+            }
+        }
+        if (coal) {
+            Markets.Draw took = markets.draw(Good.THERMAL_COAL, this, key(), tonnesCoal, game.getSectors());
+            if (took.units() > 0) {
+                Trade t = new Trade(Good.THERMAL_COAL, key(), Trade.HOUSEHOLDS, took.units(), pumpPrice(took.cost() / took.units(), rate));
+                bookSale(t);
+                tonnes = took.units();
+                bill += t.value();
+                cost += took.cost();
+                imported += took.importCost();
+            }
+        }
+        return new HomeFuelSale(litres, tonnes, bill, cost, imported);
+    }
+
     /** The month's litres sold at the pump price, and past the stations at the queue's. */
     public double getPumpLitres()  { return rPumpLitres; }
     public double getQueueLitres() { return rQueueLitres; }

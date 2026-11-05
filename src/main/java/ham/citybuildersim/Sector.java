@@ -212,6 +212,9 @@ public abstract class Sector {
         return buildings == null ? new long[11] : buildings.getJobArrayBySector(key);
     }
 
+    /** The posts per tier it runs past what postsPerTier() counts off its buildings' - for the city's own count of posts (BuildingManager.setPostsPast()); null for none, which is every sector but a farm run on horses (R0c). */
+    public long[] postsPastBuildings() { return null; }
+
     /* =======================================================================
        A FIRM DOES NOT OPEN A BUILDING IT CANNOT STAFF (2026-09-12, moved
        here from sectors.BusinessServices 2026-09-13 when the ninth sector
@@ -701,7 +704,10 @@ public abstract class Sector {
     public void setPricePerWatt(double p)       { pricePerWatt = p; }
     public void setPricePerWaterUnit(double p)  { pricePerWaterUnit = p; }
     /** Draw at nameplate, off its own buildings. Set by EconomyManager each month. */
-    public void setElectricityConsumption(double kw)  { electricity = kw; }
+    public void setElectricityConsumption(double kw)  {
+        electricityBeforeSteam = kw;
+        electricity = steamShare > 0 ? kw * (1 - steamShare) : kw;
+    }
     public void setWaterConsumption(double units)     { water = units; }
 
     public double getEnergyRatio()  { return energyRatio; }
@@ -755,6 +761,78 @@ public abstract class Sector {
 
     /** What the surplus sells for a month, at the tariff: nothing with none. */
     public double getPowerSoldValue() { return powerSurplus > 0 ? powerSurplus * pricePerWatt : 0; }
+
+    /* ===== THE STEAM FORM (R0c, 2026-11-05; research-1900 section 4, [P2.26], [P2.27])
+     *
+     * A 1900 factory turned its shafts with a steam engine burning coal on site, not with
+     * power drawn from a grid. Any sector can be given the form: a share of what it draws,
+     * 0..1, that it makes itself (setSteamShare()). At 0, the default and every played
+     * city in R0c, nothing in this block runs and the month is today's, to the bit.
+     *
+     * At share s: its grid draw is (1 - s) of what EconomyManager.setElectricityConsumption()
+     * gives it (already net of any power its own works make), so its power bill falls with
+     * it; the city's own demand falls by the same draw (ServicesManager.gridDraw(), so the
+     * grid is not sized and rationed for power nobody draws); and its THERMAL_COAL need
+     * a month rises by the coal the engine burns for the power it would have drawn
+     * (getSteamCoalAtCapacity()), bought through the ordinary input path, from the city's
+     * mines or the dock (Markets.clear()).
+     *
+     * WHY A SHARE: research-1900 section 3 says electric drive spread "when it paid", and
+     * nothing in the game needs to schedule that; R1 fits it from each building's recipe and
+     * sets the share, so the form is built here and off. Only a harness sets it in R0c, and
+     * it is not saved (nothing sets it in a played city yet).
+     * =================================================================== */
+
+    /** Coal a 1900 factory's steam engine burned for a kWh at the shaft: 1.8 kg (research-1900 section 4, [P2.26], [P2.27], est.). */
+    public static final double STEAM_COAL_KG_A_KWH = 1.8;
+
+    /** The share of its draw it turns with steam on site (the steam form): 0 until a harness or R1 sets it; not saved. */
+    private double steamShare;
+
+    /** The draw EconomyManager gave it last, before the steam share took its part off: electricity is this when no share is set. */
+    private double electricityBeforeSteam;
+
+    /** Sets the steam share, clamped to [0, 1] (not a number reads 0); above 0 it registers THERMAL_COAL as an input, once, and the grid draw it is billed on follows at once. */
+    public void setSteamShare(double s) {
+        double was = steamShare;
+        steamShare = Double.isFinite(s) ? Math.min(1, Math.max(0, s)) : 0;
+        if (steamShare > 0) uses(Good.THERMAL_COAL);
+        if (was > 0 || steamShare > 0) {
+            electricity = steamShare > 0 ? electricityBeforeSteam * (1 - steamShare) : electricityBeforeSteam;
+        }
+    }
+
+    public double getSteamShare() { return steamShare; }
+
+    /**
+     * The tonnes of THERMAL_COAL its steam engines burn a month at nameplate: the steam share of what its buildings draw
+     * (the units of electricity, HydroSites.KWH_PER_UNIT kWh a month each) in kWh, at STEAM_COAL_KG_A_KWH, in tonnes. 0 with
+     * no share set.
+     */
+    public double getSteamCoalAtCapacity() {
+        return steamShare > 0 ? steamCoal(null) : 0;
+    }
+
+    /** The steam coal of its buildings, each at the share its inputs are ordered for when `order` says (THE ORDER), else at nameplate. */
+    private double steamCoal(java.util.function.ToDoubleFunction<BuildingsTemplate> order) {
+        if (buildings == null) return 0;
+        final double perUnit = steamShare * HydroSites.KWH_PER_UNIT * STEAM_COAL_KG_A_KWH / 1000;
+        return buildings.totalBySector(key, t -> {
+            if (!BuildingsTemplate.isBilledForUtilities(t)) return 0;
+            double coal = t.powerBought() * perUnit;
+            return order == null ? coal : coal * order.applyAsDouble(t);
+        });
+    }
+
+    /**
+     * Units of an input a form of the sector (the steam engines' coal here; the farm's horses' feed in sectors.Agriculture) uses past what its
+     * buildings use, a month at nameplate - or, when `ordered`, what the month orders for (THE ORDER). 0 unless a share is set, which is every
+     * sector's month in R0c but a harness's.
+     */
+    protected double formInput(Good g, boolean ordered) {
+        if (g != Good.THERMAL_COAL || !(steamShare > 0)) return 0;
+        return steamCoal(ordered ? this::buildingOrder : null);
+    }
 
     /* -------------------------------------------------------------------
        WHAT ITS WORKS BUY ABROAD THAT IS NOT A GOOD (0.7.112, batch I2;
@@ -1355,7 +1433,11 @@ public abstract class Sector {
 
     /** Input a good needs a month at nameplate, across its buildings. */
     public double getInputAtCapacity(Good g) {
-        return buildings == null ? 0 : buildings.totalBySector(key, t -> t.uses(g));
+        if (buildings == null) return 0;
+        double base = buildings.totalBySector(key, t -> t.uses(g));
+        // ...and what a form of it (steam, horses) uses past its buildings (R0c): nothing at a share of 0, so the sum is the old one to the bit.
+        double form = formInput(g, false);
+        return form > 0 ? base + form : base;
     }
 
     /* ===================================================================
@@ -2980,7 +3062,11 @@ public abstract class Sector {
     /** Units of an input its buildings use a month at the shares they run at (THE ORDER): getInputAtCapacity(), to the bit, while every share is 1 and outside the market pass. */
     protected double inputToMake(Good g) {
         if (!ordering) return getInputAtCapacity(g);
-        return buildings == null ? 0 : buildings.totalBySector(key, t -> t.uses(g) * buildingOrder(t));
+        if (buildings == null) return 0;
+        double base = buildings.totalBySector(key, t -> t.uses(g) * buildingOrder(t));
+        // ...and a form's use of it past its buildings (R0c): this branch does not go through getInputAtCapacity(), so it adds the form itself.
+        double form = formInput(g, true);
+        return form > 0 ? base + form : base;
     }
 
     /**

@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.14 — R0c, the 1900 mechanics as forms — 2026-11-05, ready, see docs/queue/R0c-notes.md
+The 1900 mechanics of research-1900 §4 are built as forms, each a share of a sector or of the homes that runs the 1900 way, and
+all are off: 0 in every played city, so the default city's trace is unchanged, until R1 sets them from each building's recipe
+(and R0e the homes'). A farm on horses feeds them 22% of its own crop and needs 1/(1-0.273) of the hands; Freight's Haulage on
+horse and wagon carries its city leg by hired teams (10 t a team-month, two horses eating 0.29 t of crops each, one carter),
+with no diesel and no trucks; a factory on steam draws nothing from the grid and burns 1.8 kg of coal a kWh instead; a lamp-lit
+home buys 25 L of lamp oil a month and a stove-heated one 0.7 t of coal, from the grocers, a bill of its own. Forms1900Check
+holds each form, with the money's audit closed every month. Found on the way: the drivers' petrol may be counted twice in the
+households' spending (PD1, queued).
+
 ### 0.9.13 — R0b, causes of death in Health — 2026-11-05, ready, see docs/queue/R0b-notes.md
 A city's dead now have causes (`CausesOfDeath`): typhoid, babies' summer diarrhoea, the childhood outbreaks, TB, mothers at
 home births, pneumonia and the 1918 influenza, each at its 1900 rate and falling on Canada's own dates - typhoid with

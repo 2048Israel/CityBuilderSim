@@ -371,6 +371,8 @@ public class Game {
         ham.citybuildersim.sectors.Freight carrier = economyManager.getSectors().freight();
         buildingManager.setOfferedShareByType((key, type) -> key.equals(builders.key()) ? builders.getPostsOfferedShare()
                 : key.equals(carrier.key()) ? carrier.haulage().offeredShare(type) : 1);
+        // ...and a farm run on horses pays for the hands past its buildings' posts, which the labour market is offered too (R0c; BuildingManager.setPostsPast()).
+        buildingManager.setPostsPast(() -> economyManager.getSectors().postsPastBuildings());
         // ...and what their crews cost a point, today and at founding, which
         // the labour in every price follows (0.7.19; BuildingManager, THE
         // LABOUR IN A PRICE KEEPS UP WITH WAGES).
@@ -459,6 +461,11 @@ public class Game {
         // city has no rights; a load sets its own (readTheSave()).
         freshRights = 0;
         servicesManager.setFreshCapSource(this::getFreshCap);
+        // ...and the grid is not sized for the power a factory turns with steam on site (R0c; ServicesManager.setSteamShareSource()).
+        servicesManager.setSteamShareSource(key -> {
+            Sector sector = economyManager.getSectors().byKey(key);
+            return sector == null ? 0 : sector.getSteamShare();
+        });
         // ...and the city map waits to be asked for (0.7.60): THE CITY MAP.
         cityMap = null;
         mapFailures = 0;
@@ -3565,6 +3572,11 @@ public class Game {
             }
             households.setCommute(motoring.getFuelBill(), motoring.getFuelImports(), riders, drivers);
         }
+        // ...and what the homes paid for their lamp oil and coal last month (R0c, the home form; HomeFuel), told only while
+        // a share is set or a sale or bill is held, so with both shares at 0 nothing is called and the month is today's.
+        if (homeFuel.isOn() || homeFuel.hasSale() || households.getHomeFuel() > 0) {
+            households.setHomeFuel(homeFuel.getBill(), homeFuel.getImported());
+        }
         /*
          * ...AND THE BANK'S ACCOUNT FEE (0.7.7), struck here on both paths:
          * the fee at the month's price index, told to the cells that pay it
@@ -3597,6 +3609,11 @@ public class Game {
          */
         double rentPaid = getSectors().realEstate().statement().salesToHouseholds;
         double retailSales = getSectors().retail().statement().salesToHouseholds;
+        // ...LESS THE HOMES' LAMP OIL AND COAL (R0c, the home form): Retail's sale of them is in salesToHouseholds, and they are a line of
+        // their own on these books (households.setHomeFuel(), above), paid out of the cells' cash as the row's fees: left in the shopping
+        // too, the households would pay them twice. The sale held is the month the statement is of (both are last month's, struck and
+        // told here); with both shares at 0 there is none and the shopping is the shop's sales to the bit.
+        if (homeFuel.getBill() > 0) retailSales = Math.max(0, retailSales - homeFuel.getBill());
 
         if (accrue) {
             households.update(
@@ -3658,6 +3675,8 @@ public class Game {
              */
             fees[r] = households.getRowHealthcare(r) + households.getRowTuition(r)
                     + households.getRowFares(r) + households.getRowFuel(r);
+            // ...AND THE HOMES' LAMP OIL AND COAL (R0c, the home form), from the same row split, added only when the row paid any.
+            if (households.getRowHomeFuel(r) > 0) fees[r] += households.getRowHomeFuel(r);
             actualShopping[r] = households.getRowShopping(r);
         }
         System.arraycopy(fees, 0, rowFeesSettled, 0, Math.min(fees.length, rowFeesSettled.length));
@@ -3887,6 +3906,19 @@ public class Game {
 
     /** The car market, for the screens and the harnesses that read past the getters below. */
     public Motoring getMotoring() { return motoring; }
+
+    /** The homes' lamp oil and coal (R0c, the home form); both shares 0 in every played city until R0e, and then nothing in it runs. Struck beside the drivers' fuel. See HomeFuel. */
+    private final HomeFuel homeFuel = new HomeFuel();
+
+    /** The homes' lamp oil and coal, for the harnesses that set its shares and the screens that will read its sale. */
+    public HomeFuel getHomeFuel() { return homeFuel; }
+
+    /** The homes the lamp oil and the coal are asked of: the doors the households pay rent on, the sum of the rows' doors the books split the rent and the home fuel bill by (HouseholdAccounts.rowDoors). */
+    private double homeFuelHomes() {
+        double doors = 0;
+        for (double n : rowDoors()) doors += n;
+        return doors;
+    }
 
     /** Cars the households bought this month. */
     public double getHouseholdCarsBought() { return motoring.getHouseholdCarsBought(); }
@@ -14639,6 +14671,11 @@ public class Game {
                 Motoring.journeyFuel(this));
         servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());
         motoring.drawFuel(this, getInfrastructureManager().getDrivers() * TaxPolicy.JOURNEYS_A_MONTH);
+        // ...and the homes' lamp oil and coal (R0c, the home form; HomeFuel): the homes that light with a lamp and heat with a stove
+        // ask Retail for their month's JET and THERMAL_COAL, drawn and sold at the pump's rule beside the drivers' petrol
+        // (Retail.sellHomeFuel()), and the households are charged it next month, as they are charged the drivers' fuel. Only when a
+        // share is set (or a sale held that a share since set to 0 clears): both shares at 0, as in every played city, call nothing.
+        if (homeFuel.isOn() || homeFuel.hasSale()) homeFuel.strike(this, homeFuelHomes());
         // ...AND THE PORTS' REPAIRS (0.7.86, batch O9; the dockers left it in FR3
         // for Freight's payroll): a terminal's upkeep added to the bill, nothing
         // with no terminal (star O9-2).
@@ -21199,6 +21236,8 @@ public class Game {
          */
         getInfrastructureManager().redenominateFuel(scale);
         motoring.restoreFuel(motoring.getFuelBill() * scale, motoring.getFuelImports() * scale, motoring.getFuelLitres());
+        // ...and the homes' held lamp oil and coal sale (R0c), a figure in money too; nothing to divide with both shares at 0.
+        homeFuel.redenominate(scale);
 
         decisions.record(DecisionLog.CURRENCY, String.format(java.util.Locale.ROOT,
                 "Currency reformed: one new %s for %s old", getCurrency().name(), Formats.INSTANCE.count(factor)));
