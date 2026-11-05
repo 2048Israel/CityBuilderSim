@@ -1330,6 +1330,10 @@ public class HoldersCheck {
         GameFiles files = GameFiles.scratch("holderscheck-world");
         Game city = new Game(files);
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
+        // R0b call 7: the causes of 1900 held off, before a month, here and in the twins loaded from this city below. The reloaded twin
+        // is read against the city a month on, sized on today's deaths; on 1900's causes the paper the world holds stood at 0.049481 in
+        // the twin where the city's was 0.049483 ("...and hold the same", 1e-9 allowed).
+        city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
             // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): see main(). In a 1900 town the world holds $0.02k of the city's paper
@@ -1496,6 +1500,7 @@ public class HoldersCheck {
             city.saveGame(3, "the world");
             twinBox[0] = new Game(files);
             twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
+            twinBox[0].holdCausesOfDeathOff();   // R0b call 7: as the live city; the hold is not saved
             twinBox[0].loadGameSave(3);
         });
         Game twin = twinBox[0];
@@ -1530,6 +1535,7 @@ public class HoldersCheck {
         quietly(() -> {
             twinBox[0] = new Game(files);
             twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
+            twinBox[0].holdCausesOfDeathOff();   // R0b call 7: as the live city; the hold is not saved
             twinBox[0].loadGameSave(4);
         });
         Game old = twinBox[0];
@@ -1665,6 +1671,11 @@ public class HoldersCheck {
         Game city = new Game(files);
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         city.restrikeOffForTest = restrikeOff;
+        // R0b call 7: the causes of 1900 held off, before a month, in the city and its twin alike. Sections 13a to 13c reopen a line that
+        // still has discount left, or sell and buy back a piece the bank's book covers, sized on today's deaths; on 1900's causes 13a's
+        // second sale raised $79.7079k on $80.2387k of face (under par, where its fixture needs proceeds over the face) and 13c's fixture
+        // "the bank's book covers the face it sells back, and its unearned discount the piece's" failed.
+        city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).

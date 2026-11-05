@@ -1,6 +1,6 @@
-# DeskCheck.java - 1,244 lines · 31 methods · 0 constants · harnesses
+# DeskCheck.java - 1,247 lines · 31 methods · 0 constants · harnesses
 
-`ham/citybuildersim/DeskCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DeskCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > The debt desk's figures (CD6, spec-city-debt.md sections 7 and 8): the figures the
 > debt screens used to work out for themselves, held to the model that now gives
@@ -74,13 +74,13 @@
 |---:|---|
 | 145 | 1. A LINKED BOND'S LAST MONTH |
 | 214 | 2. THE INTEREST BY KIND IS THE BUDGET'S LINE |
-| 344 | 3. A BUYBACK WITH A GAIN: ITS JOURNAL, ITS HONEST LINE, AND THE CALL |
-| 413 | A HELPER FOR THE CASES THAT HOLD AT EVERY PIECE: THE WORST GAP, REPORTED ONCE |
-| 442 | 4. THE DESK IS THE MODEL'S FIGURES |
-| 639 | 5. A LINE'S NEXT SIX MONTHS ON THE BOOKS |
-| 756 | 6. A LINE REMEMBERS ITS PRICE AND ITS SALES |
-| 958 | 7. THE CURVE'S PAST |
-| 1119 | 8. WHAT CLOSING A LINE NOW WOULD BOOK, GREEN OR RED |
+| 345 | 3. A BUYBACK WITH A GAIN: ITS JOURNAL, ITS HONEST LINE, AND THE CALL |
+| 414 | A HELPER FOR THE CASES THAT HOLD AT EVERY PIECE: THE WORST GAP, REPORTED ONCE |
+| 443 | 4. THE DESK IS THE MODEL'S FIGURES |
+| 640 | 5. A LINE'S NEXT SIX MONTHS ON THE BOOKS |
+| 757 | 6. A LINE REMEMBERS ITS PRICE AND ITS SALES |
+| 960 | 7. THE CURVE'S PAST |
+| 1122 | 8. WHAT CLOSING A LINE NOW WOULD BOOK, GREEN OR RED |
 
 ## Fields (state)
 
@@ -90,15 +90,15 @@
 | 80 | `static int asserts` |  |
 | 81 | `static PrintStream out` |  |
 | 82 | `static PrintStream quiet` |  |
-| 419 | `int n` |  |
-| 420 | `double worst` |  |
-| 421 | `String at` |  |
+| 420 | `int n` |  |
+| 421 | `double worst` |  |
+| 422 | `String at` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 1168 | **type** `public class DeskCheck` | The debt desk's figures (CD6, spec-city-debt.md sections 7 and 8): the figures the debt screens used to work out for themselves, held to the model that now gives them, and what the desk, a line's page and Your rate re... |
+| 77 | 1171 | **type** `public class DeskCheck` | The debt desk's figures (CD6, spec-city-debt.md sections 7 and 8): the figures the debt screens used to work out for themselves, held to the model that now gives them, and what the desk, a line's page and Your rate re... |
 | 84 | 5 | `static void check(String label, boolean ok)` |  |
 | 90 | 10 | `static void near(String label, double actual, double expected, double tol)` |  |
 | 101 | 4 | `static void quietly(Runnable r)` |  |
@@ -112,7 +112,7 @@
 |---:|---:|---|---|
 | 149 | 64 | `static void lastMonthCoupon()` |  |
 
-### 2. THE INTEREST BY KIND IS THE BUDGET'S LINE (lines 214-343)
+### 2. THE INTEREST BY KIND IS THE BUDGET'S LINE (lines 214-344)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -120,60 +120,60 @@
 | 225 | 5 | `static double kindsSum(DebtManager dm)` | What the five kinds' interest booked add up to. |
 | 232 | 5 | `static double liveSum(DebtManager dm)` | The old sum: every piece still on the list, its last interest expense read now. |
 | 239 | 8 | `static Debt sold(Game g, String what, Runnable sale)` | Sells one piece through its handler and says whether it went on the books as a new piece. |
-| 248 | 83 | `static void interestByKind() throws Exception` |  |
-| 333 | 10 | `static boolean restoresZeros(DebtManager dm)` | DebtManager.restoreInterestByKind() with nothing and with the wrong length: zeros, not an error. |
+| 248 | 84 | `static void interestByKind() throws Exception` |  |
+| 334 | 10 | `static boolean restoresZeros(DebtManager dm)` | DebtManager.restoreInterestByKind() with nothing and with the wrong length: zeros, not an error. |
 
-### 3. A BUYBACK WITH A GAIN: ITS JOURNAL, ITS HONEST LINE, AND THE CALL (lines 344-412)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 348 | 64 | `static void buybackAndCall()` |  |
-
-### A HELPER FOR THE CASES THAT HOLD AT EVERY PIECE: THE WORST GAP, REPORTED ONCE (lines 413-441)
+### 3. A BUYBACK WITH A GAIN: ITS JOURNAL, ITS HONEST LINE, AND THE CALL (lines 345-413)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 418 | 23 | **type** `static final class Worst` | The worst gap over a set of cases, reported as one assertion with how many cases it covers. |
-| 423 | 9 | `void add(double actual, double expected, String where)` _(in DeskCheck.Worst)_ |  |
-| 433 | 7 | `void report(String label, double tol)` _(in DeskCheck.Worst)_ |  |
+| 349 | 64 | `static void buybackAndCall()` |  |
 
-### 4. THE DESK IS THE MODEL'S FIGURES (lines 442-638)
+### A HELPER FOR THE CASES THAT HOLD AT EVERY PIECE: THE WORST GAP, REPORTED ONCE (lines 414-442)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 447 | 5 | `static YieldCurve aPointHigher(YieldCurve base)` | The curve a point higher, built the way the market builds one: its forwards each up a point, the shape the same, no spread and no ceiling to bind. |
-| 453 | 4 | `static BookDesk.Line lineOf(BookDesk desk, Debt d)` |  |
-| 458 | 180 | `static void theDesk() throws Exception` |  |
+| 419 | 23 | **type** `static final class Worst` | The worst gap over a set of cases, reported as one assertion with how many cases it covers. |
+| 424 | 9 | `void add(double actual, double expected, String where)` _(in DeskCheck.Worst)_ |  |
+| 434 | 7 | `void report(String label, double tol)` _(in DeskCheck.Worst)_ |  |
 
-### 5. A LINE'S NEXT SIX MONTHS ON THE BOOKS (lines 639-755)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 643 | 112 | `static void booksAhead()` |  |
-
-### 6. A LINE REMEMBERS ITS PRICE AND ITS SALES (lines 756-957)
+### 4. THE DESK IS THE MODEL'S FIGURES (lines 443-639)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 761 | 3 | `static String saleText(Debt.Sale s)` | What a sale holds, for comparing a piece with itself before and after. |
-| 765 | 5 | `static java.util.List<String> salesText(Debt d)` |  |
-| 771 | 179 | `static void remembers() throws Exception` |  |
-| 952 | 5 | `static boolean recordedEarlier(Debt d)` | A month earlier than the path's last adds nothing to it. |
+| 448 | 5 | `static YieldCurve aPointHigher(YieldCurve base)` | The curve a point higher, built the way the market builds one: its forwards each up a point, the shape the same, no spread and no ceiling to bind. |
+| 454 | 4 | `static BookDesk.Line lineOf(BookDesk desk, Debt d)` |  |
+| 459 | 180 | `static void theDesk() throws Exception` |  |
 
-### 7. THE CURVE'S PAST (lines 958-1118)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 963 | 5 | `static double[] tenorsNow(DebtManager dm)` | The city's zero rates at the curve's tenors, read now. |
-| 969 | 5 | `static double[] worldNow(DebtManager dm)` |  |
-| 976 | 16 | `static Game twin(String label, boolean recording)` | A played city with a paper of every kind a sale can make, the book recording or not (a twin's). |
-| 994 | 5 | `static double[] fingerprint(Game g)` | The figures the month computes, for holding one city to its twin's. |
-| 1000 | 118 | `static void theCurvesPast() throws Exception` |  |
-
-### 8. WHAT CLOSING A LINE NOW WOULD BOOK, GREEN OR RED (lines 1119-1244)
+### 5. A LINE'S NEXT SIX MONTHS ON THE BOOKS (lines 640-756)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1124 | 9 | `static LongTermBond bankHeldAtPar(Game g, double face)` | A bank-held two-year line sold at par at today's curve: its coupon the curve's two-year par yield, carried at its face, settled. |
-| 1134 | 110 | `static void whatClosingBooks()` |  |
+| 644 | 112 | `static void booksAhead()` |  |
+
+### 6. A LINE REMEMBERS ITS PRICE AND ITS SALES (lines 757-959)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 762 | 3 | `static String saleText(Debt.Sale s)` | What a sale holds, for comparing a piece with itself before and after. |
+| 766 | 5 | `static java.util.List<String> salesText(Debt d)` |  |
+| 772 | 180 | `static void remembers() throws Exception` |  |
+| 954 | 5 | `static boolean recordedEarlier(Debt d)` | A month earlier than the path's last adds nothing to it. |
+
+### 7. THE CURVE'S PAST (lines 960-1121)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 965 | 5 | `static double[] tenorsNow(DebtManager dm)` | The city's zero rates at the curve's tenors, read now. |
+| 971 | 5 | `static double[] worldNow(DebtManager dm)` |  |
+| 978 | 16 | `static Game twin(String label, boolean recording)` | A played city with a paper of every kind a sale can make, the book recording or not (a twin's). |
+| 996 | 5 | `static double[] fingerprint(Game g)` | The figures the month computes, for holding one city to its twin's. |
+| 1002 | 119 | `static void theCurvesPast() throws Exception` |  |
+
+### 8. WHAT CLOSING A LINE NOW WOULD BOOK, GREEN OR RED (lines 1122-1247)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1127 | 9 | `static LongTermBond bankHeldAtPar(Game g, double face)` | A bank-held two-year line sold at par at today's curve: its coupon the curve's two-year par yield, carried at its face, settled. |
+| 1137 | 110 | `static void whatClosingBooks()` |  |
 

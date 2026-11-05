@@ -1,6 +1,6 @@
 # WorldMeasures.java - 388 lines · 46 methods · 1 constants · model
 
-`ham/citybuildersim/WorldMeasures.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMeasures.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > The Rankings' real-world figures: world-2025.json's 196 nations and city
 > regions, the 70 measures each is ranked on, every place's latest figure of

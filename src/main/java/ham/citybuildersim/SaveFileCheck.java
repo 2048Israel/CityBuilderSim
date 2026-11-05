@@ -2133,9 +2133,21 @@ public class SaveFileCheck {
         same("the dead of age", diedAgain.getLastDeathsOfAge(), died.getLastDeathsOfAge());
         same("...the killed", diedAgain.getLastKilled(), died.getLastKilled());
         same("...and the ones who aged out at 120", diedAgain.getLastAgedOut(), died.getLastAgedOut());
+        // THE CAUSES OF DEATH OF 1900 (R0b): the cohorts' count of them, and the causes' own book of the month, the year and the city.
+        assertTrue("fixture: people died of the causes of 1900 this month", died.getLastCauseDeaths() > 0);
+        same("...the dead of the causes of 1900", diedAgain.getLastCauseDeaths(), died.getLastCauseDeaths());
+        CausesOfDeath bookKept = full.getCausesOfDeath(), bookBack = back.getCausesOfDeath();
+        for (CausesOfDeath.Cause cause : CausesOfDeath.Cause.values()) {
+            same("...the dead of " + cause.label() + " last month", bookBack.getLastDeaths(cause), bookKept.getLastDeaths(cause));
+            same("...and in the last twelve months", bookBack.getYearDeaths(cause), bookKept.getYearDeaths(cause));
+            same("...and since the city began", bookBack.getTotalDeaths(cause), bookKept.getTotalDeaths(cause));
+        }
+        assertTrue("fixture: the causes' book holds the month's dead", bookKept.getLastDeaths() > 0);
+        same("...the people sick of TB", bookBack.getTbSick(), bookKept.getTbSick());
+        same("the people off sick with the influenza", back.getHealth().getInfluenzaRate(), full.getHealth().getInfluenzaRate());
         double causes = died.getLastDeathsOfAge() + died.getLastKilled() + died.getLastAgedOut()
-                + full.getSickness().getLastDeaths();
-        assertTrue("...which with illness's are the month's dead",
+                + died.getLastCauseDeaths() + full.getSickness().getLastDeaths();
+        assertTrue("...which with illness's and the causes' are the month's dead",
                 Math.abs(causes - died.getLastDeaths()) <= 1e-9 * Math.max(1, died.getLastDeaths()));
 
         HouseholdBalance fed = full.getHouseholdBalance(), fedAgain = back.getHouseholdBalance();
@@ -2176,7 +2188,7 @@ public class SaveFileCheck {
         same("a format-29 pyramid loads its people", olderPyramid.total(), died.total());
         same("...and its dead", olderPyramid.getLastDeaths(), died.getLastDeaths());
         same("...with no cause under them", olderPyramid.getLastDeathsOfAge() + olderPyramid.getLastAgedOut()
-                + olderPyramid.getLastKilled(), 0);
+                + olderPyramid.getLastKilled() + olderPyramid.getLastCauseDeaths(), 0);
         double[] rowsNow = fed.toSaveArray();
         HouseholdBalance olderRows = new HouseholdBalance();
         olderRows.restore(java.util.Arrays.copyOf(rowsNow, Household.ROWS * 8 + 3));

@@ -546,6 +546,11 @@ public class FloatLinkCheck {
     static Game playedCity(String label) {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
+        // R0b call 7: the causes of 1900 held off, before a month (for every caller of this town, DeskCheck's among them, and the twins loaded
+        // from it). The curve this town's lines are sold on, and so what they trade at against what they are carried at, is sized on today's
+        // deaths; on 1900's causes DeskCheck's second line (sold at par at the higher rates, the dial then cut to the floor) was worth 510.6
+        // against the 517.7 it is carried at, where its fixture needs it worth more.
+        city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
             // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): this town, and DeskCheck's through readyCity() (the only other
@@ -1787,6 +1792,7 @@ public class FloatLinkCheck {
         quietly(() -> ok[0] = g.saveGame(10, "floatlink").ok);
         check("fixture: the city saved to slot 10 of its scratch root", ok[0]);
         Game back = new Game(g.getGameFiles());
+        back.holdCausesOfDeathOff();   // R0b call 7: as the city (playedCity()); the hold is not saved
         quietly(() -> back.loadGameSave(10));
         DebtManager loaded = back.getDebtManager();
         check("the loaded manager is handed the city's price index, not nothing", !Double.isNaN(loaded.priceIndexLevel()));

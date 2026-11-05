@@ -1,6 +1,6 @@
 # CallPartners.java - 233 lines · 16 methods · 3 constants · model
 
-`ham/citybuildersim/CallPartners.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CallPartners.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Who each ship and train of the month calls on: a nation drawn by the month's tonnes of the call's kind of cargo, and the compass bearing
 > of its node from the city (batch WN7; docs/studies/spec-nations.md 9); immutable, pure, and safe on the screen's thread.

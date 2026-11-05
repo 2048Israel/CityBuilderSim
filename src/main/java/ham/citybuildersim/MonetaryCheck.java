@@ -758,8 +758,17 @@ public class MonetaryCheck {
      * the one whose plant on a bank loan the bank cannot carry (WN3 held Cement & Concrete in PolicyPreviewCheck).
      */
     static Game founding(Path root, String label, boolean onLiterals, String... held) {
+        return founding(root, label, onLiterals, false, held);
+    }
+
+    /**
+     * ...with the causes of 1900 held off from the first month where asked (R0b call 7): only heldRun() asks, the three harnesses that
+     * borrow this founding (CurveCheck, ExpectationsCheck, HouseholdCheck) keep the deaths of 1900.
+     */
+    static Game founding(Path root, String label, boolean onLiterals, boolean causesHeldOff, String... held) {
         Game g = new Game(new GameFiles(root.resolve(label), root.resolve("no-legacy")));
         if (onLiterals) g.playOnLiterals();
+        if (causesHeldOff) g.holdCausesOfDeathOff();
         g.run();
         for (String sector : held) g.getBusinessInvestment().holdSector(sector);
         LongPlaytest.build(g, "House", 40);
@@ -847,7 +856,11 @@ public class MonetaryCheck {
     static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city) {
         System.setOut(quiet);
         try {
-            Game g = founding(root, label, true);   // WN3: on the literals, see founding()
+            // WN3: on the literals, see founding(). R0b call 7: and the causes of 1900 held off, before a month: the rows' premise is a steady
+            // town (the founding's builders and its hospital keep every crew on, MEASUREMENT_NOISE is how far two readings of it can differ),
+            // sized on today's deaths; on 1900's causes the town was not steady: the same rows held a month late differed by 0.498 and 0.618
+            // points at 20% and 40% (0.100 allowed), with the crews all on.
+            Game g = founding(root, label, true, true);
             if (print != null) System.arraycopy(fingerprint(g), 0, print, 0, print.length);
             double indexFrom = g.getPriceIndex().getIndex();
             while (g.getMonth() <= MEASURED_MONTHS) {

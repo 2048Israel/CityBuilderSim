@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.13 — R0b, causes of death in Health — 2026-11-05, ready, see docs/queue/R0b-notes.md
+A city's dead now have causes (`CausesOfDeath`): typhoid, babies' summer diarrhoea, the childhood outbreaks, TB, mothers at
+home births, pneumonia and the 1918 influenza, each at its 1900 rate and falling on Canada's own dates - typhoid with
+chlorination by 1915, TB to 1948 and with streptomycin, mothers' deaths with sulfa and penicillin - to nothing by 1980; a city
+short of water, food or general care dies of them sooner than history did. For teens, adults and the old they add to today's
+rates; for babies and children, whose unserved rate childcare's swing already holds at 1900's, they name their share of that
+excess and history takes it away (an unserved baby dies at 21 times today's rate by 1980, where it died at 40). A 1900 city
+loses about 17 per 1,000 a year, as Canada did. The influenza kills 0.6% of the people from October 1918 and puts a quarter
+off work in its waves, with an inbox notice. Services, Health lists what people die of beside 1900's rates; People's dead gain
+the part. Twelve fixtures sized on today's deaths hold the causes off; the ensemble scores 24/26, the same two as 0.9.12's,
+both nearer. MapCheck 2h (DM2's) and ShortSellingCheck 7 (main's orphan-share fault, OH1 queued) pass by name at the gate.
+
 ### 0.9.12 — R0, the Policy levers on history's dates — 2026-11-04, ready, see docs/queue/R0-notes.md
 A city founded in January 1900 now has each Policy lever on the date Canada first had it (`PolicyDates`): the profit tax
 1916, the income tax 1917, the minimum wage's floor 1918, the sales tax 1920, zoning 1924, old-age pensions 1927, student aid
