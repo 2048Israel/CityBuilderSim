@@ -548,6 +548,15 @@ public class FloatLinkCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): this town, and DeskCheck's through readyCity() (the only other
+            // caller), was written against a city that taxes from month 1: its households' spare for paper sizes every sale, and the near-par
+            // assertions read the sale's fixed fee against that size ("the asks were too small for the fixed fee" below). A 1900 town has no
+            // income tax to 1916-17 and no sales tax to 1920, and plays another: the 2-year floater's effective rate stands 17 basis points
+            // off its coupon and the fee's share, a linker's quote for the cash it must bring does not cover it, and a five-point rise of
+            // the dial leaves a line worth more than the books carry it at (DeskCheck's fixture). Every lever opened and the defaults put
+            // back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);

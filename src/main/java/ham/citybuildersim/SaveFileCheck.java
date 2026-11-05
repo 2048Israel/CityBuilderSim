@@ -496,6 +496,11 @@ public class SaveFileCheck {
 
         Game city = new Game(cityFiles);
         city.run();
+        // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): the depots' ordered size below was found against a city
+        // that taxes and pays its wage floor from its first month (WN3: its builders' capacity at month 91), and a city on history's dates
+        // does neither until 1916-1918, so its investors have built more. Every lever opened and the defaults put back, before a month.
+        city.getEconomyManager().getTaxPolicy().reset();
+        city.getEconomyManager().getTaxPolicy().openAll();
 
         BuildingsTemplate house = template(city, "House");
         BuildingsTemplate store = template(city, "Convenience Store");
@@ -1266,6 +1271,11 @@ public class SaveFileCheck {
         Game full = new Game(new GameFiles(root.resolve("everything"), root.resolve("no-legacy")),
                 Founding.defaults().withPath(OTHER_PATH, 2_026_102_8L));
         full.run();
+        // THE LEVERS OPENED IN THE FIXTURE (R0): this city's premise is a city with its dials set - taxes paying for the repairs and the
+        // subsidies, a health premium collected, an income-tax squeeze below - and a city on history's dates has none of them in 1900-1912
+        // (every lever is held at zero and its setter refuses). Every lever is opened and the defaults put back before a month has run.
+        full.getEconomyManager().getTaxPolicy().reset();
+        full.getEconomyManager().getTaxPolicy().openAll();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
         // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -2340,6 +2350,10 @@ public class SaveFileCheck {
          */
         Game early = new Game(new GameFiles(root.resolve("early"), root.resolve("no-legacy")));
         early.run();
+        // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): the price index bases on the 24th month with a household's
+        // rent and groceries in it, and the fixture runs it 26 months; on history's dates the city has no taxes or wage floor to 1916-1918.
+        early.getEconomyManager().getTaxPolicy().reset();
+        early.getEconomyManager().getTaxPolicy().openAll();
         early.setCashForTest(Founding.WEALTHY_CASH);
         /*
          * TWO SHOPS, AND THE SHOPS' PLANNER HELD (0.7.43). Twelve stood here,
@@ -2528,6 +2542,10 @@ public class SaveFileCheck {
          */
         Game college = new Game(new GameFiles(root.resolve("college"), root.resolve("no-legacy")));
         college.run();
+        // THE LEVERS OPENED IN THE FIXTURE (R0): the students' loans are what this section carries across a save, and the treasury makes
+        // none before student aid opens (1939). Every lever opened and the defaults put back, before a month has run.
+        college.getEconomyManager().getTaxPolicy().reset();
+        college.getEconomyManager().getTaxPolicy().openAll();
         college.setCashForTest(Founding.WEALTHY_CASH);
         college.getLandManager().setOwnedSqFt(college.getLandManager().getOwnedSqFt() + 100_000_000L);
         for (String[] order : new String[][] {

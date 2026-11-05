@@ -218,6 +218,7 @@ public class TreasuryCheck {
 
         Game game = new Game(GameFiles.scratch("treasury-check"));
         game.newGame();
+        openTheLevers(game);
         nobodyPressesTheBankButton(game);
 
         System.out.println("Playing 120 months and auditing the treasury bridge.");
@@ -741,10 +742,21 @@ public class TreasuryCheck {
         check("...and the walk from EARNED takes them as a step of their own", repairsStep);
     }
 
+    /**
+     * THE LEVERS OPENED IN THE FIXTURE (R0): this harness audits the treasury's bridge with its taxes, premiums and grant flowing, and on
+     * history's dates they are shut until 1916-1966 (held at zero, their setters refusing). Every lever opened and the defaults put back,
+     * before a month has run.
+     */
+    static void openTheLevers(Game g) {
+        g.getEconomyManager().getTaxPolicy().reset();
+        g.getEconomyManager().getTaxPolicy().openAll();
+    }
+
     /** A city founded as a player founds one: newGame(), so it rolls in the same structure. */
     static Game founded(String label) {
         Game g = new Game(GameFiles.scratch(label));
         g.newGame();
+        openTheLevers(g);
         return g;
     }
 

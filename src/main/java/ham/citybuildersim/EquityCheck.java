@@ -302,6 +302,13 @@ public class EquityCheck {
         double paidHome = 0, paidAbroad = 0;
         try {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): "every share of it is held, at home or abroad" below is
+            // domestic + abroad = in issue, which holds only while the bank's desk and the fund hold none of Retail; in the city this
+            // section was written against (every tax open from month 1) they hold none when Retail first has a book, and a 1900 city
+            // with no income taxes to 1916-20 plays its months differently, so the desk holds a sliver (0.001 of a share) of it then.
+            // Every lever opened and the defaults put back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.simulateMonths(2);
             System.setOut(out);
             Equity register = city.getEquity();

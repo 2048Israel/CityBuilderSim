@@ -123,9 +123,12 @@ batch it is built on):
    (a fixed string); a harness's own `exit N` and `N FAILED` lines pass with a
    named line of it, when no other line of it is left unnamed; any other red
    stops, its lines marked `NOT NAMED`. Both the suite's and the timing step
-   read it. After a stop, show Jerus its red lines; for each he approves, copy
-   a distinctive part into `--red-line`, e.g. `./ship.sh --red-ok "ship it"
-   --red-line "EarthTerrainCheck | exit 1" batch/X`, and run again. Any other
+   read it. After a stop, show Jerus its red lines, and copy a distinctive
+   part of each he approves into `--red-line`. **A red the batch's own code
+   did not cause** (main's latent fault its path first reaches, or a known
+   class) passes so without asking, on his standing word (2026-11-04: "always,
+   if checks were not caused by its own code, then it should always pass"),
+   its cause in the notes and its fix queued. Any other
    red goes back to the batch as its failing lines (`target/checks/reds.txt`
    in the gate's clone), its ship file off first (`docs/batch.md`, 5).
 6. **Timing** (lesson d; TM3, 2026-10-27: a wall-clock budget measured once on a

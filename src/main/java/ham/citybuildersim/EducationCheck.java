@@ -88,6 +88,10 @@ public class EducationCheck {
     static Game city(GameFiles files) {
         Game g = new Game(files == null ? GameFiles.scratch("educheck") : files);
         g.newGame();
+        // THE LEVERS OPENED IN THE FIXTURE (R0): this harness is about the grant, the loans and the fees, and on history's dates the grant
+        // is shut and the treasury lends nothing until student aid opens (1939). Every lever opened and the defaults put back, before a month.
+        g.getEconomyManager().getTaxPolicy().reset();
+        g.getEconomyManager().getTaxPolicy().openAll();
         g.getGovernmentInvestor().spend(-900_000_000 * PriceLevel.FACTOR);
         /*
          * FOUR HUNDRED MILLION, NOT FOUR BILLION, since 2026-09-07.

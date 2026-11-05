@@ -512,6 +512,12 @@ public class MonetaryCheck {
         System.setOut(quiet);
         try {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): "the city based its basket" below needs a city that shops and pays
+            // rent for 24 months (PriceIndex.SETTLING_MONTHS), and the town this was written against taxes from month 1; a 1900 town has no
+            // income tax to 1916-17 and no sales tax to 1920, and this one ended its eleven years at index 1.000, its basket never based.
+            // Every lever opened and the defaults put back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
             // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.

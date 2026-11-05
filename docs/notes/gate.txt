@@ -1,12 +1,88 @@
-# gate of Merge batch/CM1: the replay's camera loads its whole move first (Jerus, 2026-11-02, for the trailer: no half-black screen on a zoom out; "Top, after tonight"): in replay mode only, every scale, tile and month a zoom, glide or fly will show is loaded with no time cap behind a "Loading the move... N s" line, then it runs on a click; the normal game untouched, 0.9.11
+# gate of Merge batch/R0: research: the 1900 economy and the calendar from 1900, 0.9.12
 # date: 2026-11-04
 # earth-2.bin: named
-# nightly: 2026-11-03 01:35 0.9.5 31f675b6 4,000 months: RED, exit 1 in 88 s: a building on the map moved 4 time(s), months 3010-3013
-# suite: 170 harnesses run in 7415s: 170 passed, 0 failed
-# timing: 16 harnesses run in 574s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the cells pass in no more than CELLS_PASS_MS of the wall clock, its tiles read from the file the first time FAIL  1006 ms of the wall clock (this JVM cannot read a thread's CPU finely enough) the first time (1006 on the wall clock), 985 again (985 on the wall clock); the study 370-450 on the wall clock   [main 675 ms, batch 891 ms (+32.0%), budget 1000 ms: the batch within the budget]
-# timing red not the batch's (paired): EarthTerrainCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# nightly: 2026-11-04 14:11 0.9.11 f7e1f6af 4,000 months: RED, exit 1 in 121 s: a building on the map moved 4 time(s), months 3010-3013
+# suite: 171 harnesses run in 2540s: 169 passed, 2 failed
+# timing: 16 harnesses run in 583s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 57.2 ms, batch 39.9 ms (-30.2%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 30.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 33.8 ms, batch 29.2 ms (-13.7%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 19.0 ms, batch 26.2 ms (+37.7%), budget 19 ms: main over the budget too]
+# timing red not the batch's (paired): MapCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): SlopeCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): SlopeCheck | 1 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL cash (nominal) month 83: 25.81567262 at the factor over the factor, -52227.53251 at today's prices (0.654 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL gdp.month (nominal) month 71: 12635.62179 at the factor over the factor, 24481.99690 at today's prices (0.484 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL bank.deposits (nominal) month 98: 242660.6160 at the factor over the factor, 397622.2960 at today's prices (0.345 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL retail.shelf (nominal) month 69: 0.5727723383 at the factor over the factor, 0.5409992110 at today's prices (0.0554 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL rent (nominal) month 75: 0.4701592983 at the factor over the factor, 0.4838453027 at today's prices (0.0264 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL rate (real) month 85: 1.186826378 at the factor , 1.252217217 at today's prices (0.0522 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL priceIndex (real) month 86: 2.093351514 at the factor , 2.138500389 at today's prices (0.0211 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL pop (real) month 54: 1081.000000 at the factor , 1141.000000 at today's prices (0.0526 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL workforce (real) month 55: 595.0000000 at the factor , 628.0000000 at today's prices (0.0525 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL unemployed (real) month 53: 136.0000000 at the factor , 0.000000000 at today's prices (1.00 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL homes (real) month 86: 598.0000000 at the factor , 672.0000000 at today's prices (0.110 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL stores (real) month 84: 7200.000000 at the factor , 5280.000000 at today's prices (0.267 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL jobs.0 (real) month 53: 276.0000000 at the factor , 379.0000000 at today's prices (0.272 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL jobs.1 (real) month 53: 136.0000000 at the factor , 180.0000000 at today's prices (0.244 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL jobs.2 (real) month 72: 15.00000000 at the factor , 20.00000000 at today's prices (0.250 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL jobs.4 (real) month 66: 0.000000000 at the factor , 5.000000000 at today's prices (1.00 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL jobs.5 (real) month 72: 6.000000000 at the factor , 8.000000000 at today's prices (0.250 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL jobs.8 (real) month 73: 0.000000000 at the factor , 1.000000000 at today's prices (1.00 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.supply (real) month 105: 1060.289744 at the factor , 714.7506602 at today's prices (0.326 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.local (nominal) month 91: 0.4908053362 at the factor over the factor, 0.4943891196 at today's prices (0.00450 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.import (nominal) month 91: 0.7186403355 at the factor over the factor, 0.7238877342 at today's prices (0.00518 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.CROPS.export (nominal) month 91: 0.4908053362 at the factor over the factor, 0.4943891196 at today's prices (0.00450 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL stock.CROPS (real) month 105: 5986.498445 at the factor , 4109.826233 at today's prices (0.313 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL mkt.GRAINS.demand (real) month 69: 1600.905685 at the factor , 4259.908225 at today's prices (0.624 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL h.sharePrice.Heavy Industry has 15 months at the factor and 13 at today's prices
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL h.shareValue.Heavy Industry has 15 months at the factor and 13 at today's prices
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | every real series equal within 1.0E-9 (worst 1.8 in h.bankReturnOnEquity)              FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | the history's 86 money series equal over the factor to the rounding they were recorded at FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 1.0 in sector.Manufacturing.cash) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | ...the pop is the same to the person in every month                                    FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | ...the workforce is the same to the person in every month                              FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | ...the homes is the same to the person in every month                                  FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | ...the stores is the same to the person in every month                                 FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | 454 FAILED
+SlopeCheck | exit 1
+SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
+SlopeCheck | 1 FAILED
+PriceLevelCheck | exit 1
+PriceLevelCheck | FAIL cash (nominal) month 83: 25.81567262 at the factor over the factor, -52227.53251 at today's prices (0.654 apart)
+PriceLevelCheck | FAIL gdp.month (nominal) month 71: 12635.62179 at the factor over the factor, 24481.99690 at today's prices (0.484 apart)
+PriceLevelCheck | FAIL bank.deposits (nominal) month 98: 242660.6160 at the factor over the factor, 397622.2960 at today's prices (0.345 apart)
+PriceLevelCheck | FAIL retail.shelf (nominal) month 69: 0.5727723383 at the factor over the factor, 0.5409992110 at today's prices (0.0554 apart)
+PriceLevelCheck | FAIL rent (nominal) month 75: 0.4701592983 at the factor over the factor, 0.4838453027 at today's prices (0.0264 apart)
+PriceLevelCheck | FAIL rate (real) month 85: 1.186826378 at the factor , 1.252217217 at today's prices (0.0522 apart)
+PriceLevelCheck | FAIL priceIndex (real) month 86: 2.093351514 at the factor , 2.138500389 at today's prices (0.0211 apart)
+PriceLevelCheck | FAIL pop (real) month 54: 1081.000000 at the factor , 1141.000000 at today's prices (0.0526 apart)
+PriceLevelCheck | FAIL workforce (real) month 55: 595.0000000 at the factor , 628.0000000 at today's prices (0.0525 apart)
+PriceLevelCheck | FAIL unemployed (real) month 53: 136.0000000 at the factor , 0.000000000 at today's prices (1.00 apart)
+PriceLevelCheck | FAIL homes (real) month 86: 598.0000000 at the factor , 672.0000000 at today's prices (0.110 apart)
+PriceLevelCheck | FAIL stores (real) month 84: 7200.000000 at the factor , 5280.000000 at today's prices (0.267 apart)
+PriceLevelCheck | FAIL jobs.0 (real) month 53: 276.0000000 at the factor , 379.0000000 at today's prices (0.272 apart)
+PriceLevelCheck | FAIL jobs.1 (real) month 53: 136.0000000 at the factor , 180.0000000 at today's prices (0.244 apart)
+PriceLevelCheck | FAIL jobs.2 (real) month 72: 15.00000000 at the factor , 20.00000000 at today's prices (0.250 apart)
+PriceLevelCheck | FAIL jobs.4 (real) month 66: 0.000000000 at the factor , 5.000000000 at today's prices (1.00 apart)
+PriceLevelCheck | FAIL jobs.5 (real) month 72: 6.000000000 at the factor , 8.000000000 at today's prices (0.250 apart)
+PriceLevelCheck | FAIL jobs.8 (real) month 73: 0.000000000 at the factor , 1.000000000 at today's prices (1.00 apart)
+PriceLevelCheck | FAIL mkt.CROPS.supply (real) month 105: 1060.289744 at the factor , 714.7506602 at today's prices (0.326 apart)
+PriceLevelCheck | FAIL mkt.CROPS.local (nominal) month 91: 0.4908053362 at the factor over the factor, 0.4943891196 at today's prices (0.00450 apart)
+PriceLevelCheck | FAIL mkt.CROPS.import (nominal) month 91: 0.7186403355 at the factor over the factor, 0.7238877342 at today's prices (0.00518 apart)
+PriceLevelCheck | FAIL mkt.CROPS.export (nominal) month 91: 0.4908053362 at the factor over the factor, 0.4943891196 at today's prices (0.00450 apart)
+PriceLevelCheck | FAIL stock.CROPS (real) month 105: 5986.498445 at the factor , 4109.826233 at today's prices (0.313 apart)
+PriceLevelCheck | FAIL mkt.GRAINS.demand (real) month 69: 1600.905685 at the factor , 4259.908225 at today's prices (0.624 apart)
+PriceLevelCheck | FAIL h.sharePrice.Heavy Industry has 15 months at the factor and 13 at today's prices
+PriceLevelCheck | FAIL h.shareValue.Heavy Industry has 15 months at the factor and 13 at today's prices
+PriceLevelCheck | every real series equal within 1.0E-9 (worst 1.8 in h.bankReturnOnEquity)              FAIL
+PriceLevelCheck | the history's 86 money series equal over the factor to the rounding they were recorded at FAIL
+PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 1.0 in sector.Manufacturing.cash) FAIL
+PriceLevelCheck | ...the pop is the same to the person in every month                                    FAIL
+PriceLevelCheck | ...the workforce is the same to the person in every month                              FAIL
+PriceLevelCheck | ...the homes is the same to the person in every month                                  FAIL
+PriceLevelCheck | ...the stores is the same to the person in every month                                 FAIL
+PriceLevelCheck | 454 FAILED

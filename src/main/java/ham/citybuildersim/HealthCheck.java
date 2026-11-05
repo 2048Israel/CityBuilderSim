@@ -803,6 +803,10 @@ public class HealthCheck {
         System.setOut(quiet);
         try {
             paid.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0): the premium is this city's subject (section 15, and the insured twin saved from it),
+            // shut until 1947 on history's dates. Every lever opened and the defaults put back, before a month has run.
+            paid.getEconomyManager().getTaxPolicy().reset();
+            paid.getEconomyManager().getTaxPolicy().openAll();
             // XR1 (2026-10-21): the books and the premium measure the health bill, not the currency. Under THE FLOAT the
             // D$ moves in these 60 months and fees at 1x price people out of care (the fee-funded twin served 65.48 of
             // childcare to the insured twin's 84.32), so the rate is held where the founding leaves it while this

@@ -184,6 +184,12 @@ public class RoadCheck {
         Game g = new Game(files);
         quietly(() -> {
             g.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0): the towns' traffic and costs are calibrated as the pre-R0 city played them (every
+            // lever open from month 1), and a city founded in 1900 holds its income taxes, wage floor and the rest shut for 16 to 20 years:
+            // its busy street carried 328 vehicles a day with a gravel road more and the gravel road was still the least over its life
+            // there, where the fixture needs the paved road. Every lever opened and the defaults put back, before a month.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());

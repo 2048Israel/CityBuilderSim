@@ -1,4 +1,4 @@
-# DeathCareFirstCheck.java - 508 lines · 17 methods · 4 constants · harnesses
+# DeathCareFirstCheck.java - 513 lines · 17 methods · 4 constants · harnesses
 
 `ham/citybuildersim/DeathCareFirstCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -63,11 +63,11 @@
 |---:|---|
 | 145 | 1. THE RULE'S ARITHMETIC |
 | 193 | 2. THE TRAP, CAUSED |
-| 297 | 3. BEFORE AND WITH |
-| 358 | 4. THE LOOP BREAKS |
-| 426 | 5. THE PLAYER'S ORDER |
-| 466 | 6. ONCE NOBODY LIES UNBURIED |
-| 498 | 7. CONSERVED |
+| 302 | 3. BEFORE AND WITH |
+| 363 | 4. THE LOOP BREAKS |
+| 431 | 5. THE PLAYER'S ORDER |
+| 471 | 6. ONCE NOBODY LIES UNBURIED |
+| 503 | 7. CONSERVED |
 
 ## Constants
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 62 | 447 | **type** `public class DeathCareFirstCheck` | Death care first while the dead wait (0.7.129, batch T1-B): the rule that serves the city's own cemeteries and crematoria first out of its share of the crews while anybody lies unburied, held on a city that is caught ... |
+| 62 | 452 | **type** `public class DeathCareFirstCheck` | Death care first while the dead wait (0.7.129, batch T1-B): the rule that serves the city's own cemeteries and crematoria first out of its share of the crews while anybody lies unburied, held on a city that is caught ... |
 | 68 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 73 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 79 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -108,41 +108,41 @@
 | 148 | 3 | `static double crew(double points, int buildings)` | A site's crew by the rule (BuildingManager.weightOf()): its buildings times one's points to CREW_SCALE_EXPONENT. |
 | 152 | 40 | `static void arithmetic()` |  |
 
-### 2. THE TRAP, CAUSED (lines 193-296)
+### 2. THE TRAP, CAUSED (lines 193-301)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 207 | 26 | `static Game city(Path root, String name)` | A city caught in the trap: works, homes, a clinic for everybody, one depot, every sector held so no planner builds or scraps anything but by this fixture's hand - the founding churchyard full and no crematorium, so th... |
-| 235 | 16 | `static void sites(Game g)` | ...and the roads and the sites: the half of the fixture that follows the trap. |
-| 252 | 44 | `static Game[] trap(Path root)` |  |
+| 207 | 31 | `static Game city(Path root, String name)` | A city caught in the trap: works, homes, a clinic for everybody, one depot, every sector held so no planner builds or scraps anything but by this fixture's hand - the founding churchyard full and no crematorium, so th... |
+| 240 | 16 | `static void sites(Game g)` | ...and the roads and the sites: the half of the fixture that follows the trap. |
+| 257 | 44 | `static Game[] trap(Path root)` |  |
 
-### 3. BEFORE AND WITH (lines 297-357)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 299 | 58 | `static void beforeAndWith(Game without, Game with)` |  |
-
-### 4. THE LOOP BREAKS (lines 358-425)
+### 3. BEFORE AND WITH (lines 302-362)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 360 | 65 | `static void loopBreaks(Game without, Game with)` |  |
+| 304 | 58 | `static void beforeAndWith(Game without, Game with)` |  |
 
-### 5. THE PLAYER'S ORDER (lines 426-465)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 428 | 37 | `static void playersOrder(Path root)` |  |
-
-### 6. ONCE NOBODY LIES UNBURIED (lines 466-497)
+### 4. THE LOOP BREAKS (lines 363-430)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 468 | 29 | `static void onceBuried(Game g)` |  |
+| 365 | 65 | `static void loopBreaks(Game without, Game with)` |  |
 
-### 7. CONSERVED (lines 498-508)
+### 5. THE PLAYER'S ORDER (lines 431-470)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 500 | 8 | `static void conserved()` |  |
+| 433 | 37 | `static void playersOrder(Path root)` |  |
+
+### 6. ONCE NOBODY LIES UNBURIED (lines 471-502)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 473 | 29 | `static void onceBuried(Game g)` |  |
+
+### 7. CONSERVED (lines 503-513)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 505 | 8 | `static void conserved()` |  |
 

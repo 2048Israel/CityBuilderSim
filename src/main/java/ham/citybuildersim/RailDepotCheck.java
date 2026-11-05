@@ -310,7 +310,15 @@ public class RailDepotCheck {
          * against the sidings' 100,000. At the literals the plant lands its ore and coal and ships its pellets every month
          * (HaulageCheck.base()), which is the premise: bulk past two sidings.
          */
-        Game city = HaulageCheck.played(GameFiles.scratch("raildepotcheck-city"), 14, true, true);
+        // THE LEVERS OPENED IN THE FIXTURE (R0, call 17's class): HaulageCheck.played() is base() and fourteen months, and the
+        // fixture needs the pre-R0 city, one that taxes and pays its wage floor from its first month; a 1900 city on history's dates has neither
+        // until 1916-1918, and in the suite's first read of it the spurs' month offered 56,438 t of bulk to sidings of 100,000, fewer than they hold.
+        // So base() is taken, every lever opened and the defaults put back before a month, and the fourteen months played here (played()'s own body).
+        // ...both (BA1 merged with R0): on the literals, with the plant, and every lever opened.
+        Game city = HaulageCheck.base(GameFiles.scratch("raildepotcheck-city"), true, true);
+        city.getEconomyManager().getTaxPolicy().reset();
+        city.getEconomyManager().getTaxPolicy().openAll();
+        quietly(() -> { for (int i = 0; i < 14; i++) city.toggleNextMonth(); });
         Freight fr = city.getSectors().freight();
         GoodsMarket ore = city.getMarkets().get(Good.IRON);
         quietly(() -> { HaulageCheck.lay(city, "Freight Line", 4); for (int i = 0; i < 3; i++) city.toggleNextMonth(); });
