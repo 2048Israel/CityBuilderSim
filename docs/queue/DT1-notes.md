@@ -112,6 +112,16 @@ Not run. The month did not change: the model's one new line is a notice on stder
   `session-export-1793894032578.zip` and `session-export-1793894034723.zip`. Nothing else needs them; they can
   be deleted.
 
+- **MapCheck's 10B map month, timed at twice main's at RT1's three gates** (5.7 against 3.2 ms, 4.15 against
+  2.07; maps built from the fixed `JERUS_COUNTS`; queued for UP8). DT1 does not explain it. DT1 held the
+  month's figures, not its times. The figures were the same under C1 alone and under the full compiler, and
+  under every other setting tried, so a time that moves while the map's input stays fixed is the compiler or the
+  collector, not the model reading the machine. The one tie DT1 saw between a map cost and the collector is
+  DistrictPlan's soft-held builder (`BUILDERS`, RD7). When it is cleared, each plan makes a new one: about
+  11.6 MB of arrays a dense plan, against 1.2 MB with it kept. That is one run for UP8: MapCheck with
+  `-XX:SoftRefLRUPolicyMSPerMB=0` (always a new builder) against a large value (always kept), on main and on
+  the batch.
+
 ## The calls
 
 - **★1 Should a check refuse to run without the world file?** Recommended: no, keep the notice. The gate names
