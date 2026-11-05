@@ -167,6 +167,24 @@
   "motor truck the depot's truckRoom in TRUCKS, life 120 months; the tractor 3 t of MACHINERY a",
   "hundred acres of the farm, life 180 months.",
   "",
+  "RECIPES (R1c; docs/studies/research-design.md 2.1, docs/queue/R1c-notes.md): a building may know",
+  "several ways to run, \"recipes\": [{\"id\": \"beehive\", \"name\": \"Beehive ovens\", \"since\": \"1900\",",
+  "\"uses\": {\"COKING_COAL\": 60420}, \"gen\": 0, ...}]. A recipe states only the figures it changes",
+  "(uses, makes, jobs, electricity, gen, water, consumables); the rest are the top level's, and",
+  "\"uses\": {} uses nothing. The one entry that states no figure IS the top level, today's way, the",
+  "default. \"needsEquipment\" names a piece on the same building (at most one a building, its recipe",
+  "piece, which may end no form): its fitted buildings run the recipes that need it, the others those",
+  "that need nothing. Only a city founded the 1900 way chooses, each month the best recipe each part",
+  "can run at its prices; every other city runs the top level. The 1900 recipes are research-1900",
+  "section 3's rows, each today's building with its piece undone, est. where R1c-notes section 3 says",
+  "so: beehive coke, pick-and-powder coal, hand-loaded pits, hand-drilled quarries and copper,",
+  "shaft-kiln cement, groundwood and sulphite pulp (kraft from 1907), rope-and-tub unloading, and",
+  "the Bessemer and open-hearth steel shop (basic oxygen since E1). A piece built into the plant buys",
+  "a quarter of its cashCost in MACHINERY (at 13.4 a tonne) and a tenth of its constructionPoints in",
+  "work; one carried in buys its machines and takes no work. The farms' DIESEL and PETROL are today's",
+  "tractors' fuel, 4% of their output at export prices, 87% of it diesel (est.); their horses' recipe",
+  "buys none.",
+  "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
   "SENIOR counts seniors, GENERAL counts everyone and is what decides how much",
@@ -650,7 +668,40 @@
     "type": "HEMATITE",
     "sites": 1,
     "dig": 1
-   }
+   },
+   "equipment": [
+    {
+     "id": "steam-shovel",
+     "name": "Steam shovel",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 40
+     },
+     "work": 0,
+     "lifeMonths": 120
+    }
+   ],
+   "recipes": [
+    {
+     "id": "shovel",
+     "name": "Shovel-loaded",
+     "since": "1900",
+     "needsEquipment": "steam-shovel"
+    },
+    {
+     "id": "hand-loaded",
+     "name": "Hand-loaded",
+     "since": "1900",
+     "uses": {
+      "DIESEL": 45000
+     },
+     "jobs": {
+      "NO_DIPLOMA": 83,
+      "DIPLOMA": 12,
+      "COLLEGE_ENGINEERING": 3
+     }
+    }
+   ]
   },
   {
    "id": 15,
@@ -1452,6 +1503,10 @@
     "DAIRY_EGGS": 5000,
     "MEAT": 1400
    },
+   "uses": {
+    "DIESEL": 1770,
+    "PETROL": 300
+   },
    "stock": 15000,
    "equipment": [
     {
@@ -1464,6 +1519,20 @@
      },
      "work": 0,
      "lifeMonths": 180
+    }
+   ],
+   "recipes": [
+    {
+     "id": "tractor",
+     "name": "Tractor",
+     "since": "PE14",
+     "needsEquipment": "tractor"
+    },
+    {
+     "id": "horses",
+     "name": "Horses",
+     "since": "1900",
+     "uses": {}
     }
    ]
   },
@@ -1486,6 +1555,10 @@
    "makes": {
     "CROPS": 500
    },
+   "uses": {
+    "DIESEL": 7080,
+    "PETROL": 1190
+   },
    "stock": 1500,
    "equipment": [
     {
@@ -1498,6 +1571,20 @@
      },
      "work": 0,
      "lifeMonths": 180
+    }
+   ],
+   "recipes": [
+    {
+     "id": "tractor",
+     "name": "Tractor",
+     "since": "PE14",
+     "needsEquipment": "tractor"
+    },
+    {
+     "id": "horses",
+     "name": "Horses",
+     "since": "1900",
+     "uses": {}
     }
    ]
   },
@@ -1544,6 +1631,10 @@
     "DAIRY_EGGS": 210000,
     "MEAT": 30000
    },
+   "uses": {
+    "DIESEL": 26850,
+    "PETROL": 4510
+   },
    "stock": 400000,
    "equipment": [
     {
@@ -1556,6 +1647,20 @@
      },
      "work": 0,
      "lifeMonths": 180
+    }
+   ],
+   "recipes": [
+    {
+     "id": "tractor",
+     "name": "Tractor",
+     "since": "PE14",
+     "needsEquipment": "tractor"
+    },
+    {
+     "id": "horses",
+     "name": "Horses",
+     "since": "1900",
+     "uses": {}
     }
    ]
   },
@@ -2554,7 +2659,37 @@
     "cargo": "DRY_BULK",
     "tonnes": 50000000,
     "ships": ["PANAMAX", "CAPESIZE"]
-   }
+   },
+   "equipment": [
+    {
+     "id": "hulett-unloader",
+     "name": "Hulett ore unloader",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 3200
+     },
+     "work": 210000,
+     "lifeMonths": 480
+    }
+   ],
+   "recipes": [
+    {
+     "id": "hulett",
+     "name": "Hulett unloaders",
+     "since": "1900",
+     "needsEquipment": "hulett-unloader"
+    },
+    {
+     "id": "hand",
+     "name": "Rope and tub",
+     "since": "1900",
+     "jobs": {
+      "NO_DIPLOMA": 668,
+      "DIPLOMA": 113,
+      "COLLEGE_ENGINEERING": 20
+     }
+    }
+   ]
   },
   {
    "id": 96,
@@ -2744,7 +2879,42 @@
    "uses": {
     "COKING_COAL": 54000
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "by-product-ovens",
+     "name": "By-product coke ovens",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 3789
+     },
+     "work": 10154,
+     "lifeMonths": 300
+    }
+   ],
+   "recipes": [
+    {
+     "id": "by-product",
+     "name": "By-product ovens",
+     "since": "1900",
+     "needsEquipment": "by-product-ovens"
+    },
+    {
+     "id": "beehive",
+     "name": "Beehive ovens",
+     "since": "1900",
+     "uses": {
+      "COKING_COAL": 60420
+     },
+     "gen": 0,
+     "electricity": 220,
+     "jobs": {
+      "NO_DIPLOMA": 308,
+      "DIPLOMA": 70,
+      "COLLEGE_ENGINEERING": 9
+     }
+    }
+   ]
   },
   {
    "id": 104,
@@ -2834,7 +3004,60 @@
     "SCRAP": 72500,
     "LIME": 17400
    },
-   "since": 1952
+   "since": 1952,
+   "equipment": [
+    {
+     "id": "open-hearth",
+     "name": "Open-hearth furnace",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 25832
+     },
+     "work": 69231,
+     "lifeMonths": 300
+    }
+   ],
+   "recipes": [
+    {
+     "id": "basic-oxygen",
+     "name": "Basic oxygen",
+     "since": "E1"
+    },
+    {
+     "id": "open-hearth",
+     "name": "Open hearth",
+     "since": "1900",
+     "needsEquipment": "open-hearth",
+     "uses": {
+      "PIG_IRON": 159500,
+      "SCRAP": 159500,
+      "LIMESTONE": 18900,
+      "THERMAL_COAL": 95700
+     },
+     "gen": 0,
+     "jobs": {
+      "NO_DIPLOMA": 1458,
+      "DIPLOMA": 630,
+      "COLLEGE_ENGINEERING": 162,
+      "UNIV_SCIENCE": 36
+     }
+    },
+    {
+     "id": "bessemer",
+     "name": "Bessemer converter",
+     "since": "1900",
+     "uses": {
+      "PIG_IRON": 319000
+     },
+     "gen": 0,
+     "jobs": {
+      "NO_DIPLOMA": 1458,
+      "DIPLOMA": 630,
+      "COLLEGE_ENGINEERING": 162,
+      "UNIV_SCIENCE": 36
+     }
+    }
+   ]
   },
   {
    "id": 107,
@@ -2894,7 +3117,41 @@
     "sites": 20,
     "dig": 1
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "steam-shovel",
+     "name": "Steam shovel",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 450
+     },
+     "work": 0,
+     "lifeMonths": 120
+    }
+   ],
+   "recipes": [
+    {
+     "id": "shovel",
+     "name": "Shovel-loaded",
+     "since": "1900",
+     "needsEquipment": "steam-shovel"
+    },
+    {
+     "id": "hand-loaded",
+     "name": "Hand-loaded",
+     "since": "1900",
+     "uses": {
+      "DIESEL": 1125000
+     },
+     "jobs": {
+      "NO_DIPLOMA": 1200,
+      "DIPLOMA": 110,
+      "COLLEGE_ENGINEERING": 40,
+      "UNIV_SCIENCE": 10
+     }
+    }
+   ]
   },
   {
    "id": 109,
@@ -3053,7 +3310,39 @@
     "sites": 1,
     "dig": 1.25
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "coal-cutter",
+     "name": "Machine coal cutter",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 250
+     },
+     "work": 0,
+     "lifeMonths": 120
+    }
+   ],
+   "recipes": [
+    {
+     "id": "machine-cut",
+     "name": "Machine-cut",
+     "since": "1900",
+     "needsEquipment": "coal-cutter"
+    },
+    {
+     "id": "hand-cut",
+     "name": "Pick and powder",
+     "since": "1900",
+     "electricity": 28100,
+     "jobs": {
+      "NO_DIPLOMA": 360,
+      "DIPLOMA": 110,
+      "COLLEGE_ENGINEERING": 40,
+      "UNIV_SCIENCE": 10
+     }
+    }
+   ]
   },
   {
    "id": 114,
@@ -3105,7 +3394,38 @@
     "sites": 1,
     "dig": 1
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "rock-drill",
+     "name": "Power rock drill",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 3
+     },
+     "work": 0,
+     "lifeMonths": 120
+    }
+   ],
+   "recipes": [
+    {
+     "id": "machine-drilled",
+     "name": "Machine-drilled",
+     "since": "1900",
+     "needsEquipment": "rock-drill"
+    },
+    {
+     "id": "hand-drilled",
+     "name": "Hand-drilled",
+     "since": "1900",
+     "electricity": 80,
+     "jobs": {
+      "NO_DIPLOMA": 52,
+      "DIPLOMA": 4,
+      "COLLEGE_ENGINEERING": 1
+     }
+    }
+   ]
   },
   {
    "id": 116,
@@ -3135,7 +3455,39 @@
     "sites": 3,
     "dig": 1
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "rock-drill",
+     "name": "Power rock drill",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 15
+     },
+     "work": 0,
+     "lifeMonths": 120
+    }
+   ],
+   "recipes": [
+    {
+     "id": "machine-drilled",
+     "name": "Machine-drilled",
+     "since": "1900",
+     "needsEquipment": "rock-drill"
+    },
+    {
+     "id": "hand-drilled",
+     "name": "Hand-drilled",
+     "since": "1900",
+     "electricity": 500,
+     "jobs": {
+      "NO_DIPLOMA": 275,
+      "DIPLOMA": 34,
+      "COLLEGE_ENGINEERING": 13,
+      "UNIV_SCIENCE": 3
+     }
+    }
+   ]
   },
   {
    "id": 117,
@@ -3194,7 +3546,44 @@
     "AGGREGATE": 3750,
     "THERMAL_COAL": 3350
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "rotary-kiln",
+     "name": "Rotary kiln",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 1722
+     },
+     "work": 4616,
+     "lifeMonths": 300
+    }
+   ],
+   "recipes": [
+    {
+     "id": "rotary",
+     "name": "Rotary kiln",
+     "since": "1900",
+     "needsEquipment": "rotary-kiln"
+    },
+    {
+     "id": "shaft-kiln",
+     "name": "Shaft kilns",
+     "since": "1900",
+     "uses": {
+      "LIMESTONE": 30000,
+      "AGGREGATE": 3750,
+      "THERMAL_COAL": 4690
+     },
+     "electricity": 2800,
+     "jobs": {
+      "NO_DIPLOMA": 53,
+      "DIPLOMA": 21,
+      "COLLEGE_ENGINEERING": 5,
+      "UNIV_SCIENCE": 1
+     }
+    }
+   ]
   },
   {
    "id": 119,
@@ -3282,7 +3671,39 @@
     "sites": 1,
     "dig": 0.341
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "rock-drill",
+     "name": "Power rock drill",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 10
+     },
+     "work": 0,
+     "lifeMonths": 120
+    }
+   ],
+   "recipes": [
+    {
+     "id": "machine-drilled",
+     "name": "Machine-drilled",
+     "since": "1900",
+     "needsEquipment": "rock-drill"
+    },
+    {
+     "id": "hand-drilled",
+     "name": "Hand-drilled",
+     "since": "1900",
+     "electricity": 5000,
+     "jobs": {
+      "NO_DIPLOMA": 330,
+      "DIPLOMA": 24,
+      "COLLEGE_ENGINEERING": 6,
+      "UNIV_SCIENCE": 0
+     }
+    }
+   ]
   },
   {
    "id": 122,
@@ -3727,7 +4148,44 @@
     "PULPWOOD": 28000,
     "RESIDUES": 21500
    },
-   "since": 1900
+   "since": 1900,
+   "recipes": [
+    {
+     "id": "kraft",
+     "name": "Kraft",
+     "since": "1907"
+    },
+    {
+     "id": "sulphite",
+     "name": "Sulphite",
+     "since": "1900",
+     "uses": {
+      "PULPWOOD": 28000,
+      "RESIDUES": 21500,
+      "THERMAL_COAL": 19250
+     },
+     "gen": 0,
+     "electricity": 6100,
+     "consumables": 450
+    },
+    {
+     "id": "groundwood",
+     "name": "Groundwood",
+     "since": "1900",
+     "uses": {
+      "PULPWOOD": 29400
+     },
+     "gen": 0,
+     "electricity": 21850,
+     "jobs": {
+      "NO_DIPLOMA": 84,
+      "DIPLOMA": 74,
+      "COLLEGE_ENGINEERING": 10,
+      "UNIV_SCIENCE": 2
+     },
+     "consumables": 150
+    }
+   ]
   },
   {
    "id": 137,
