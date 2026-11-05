@@ -11,6 +11,15 @@ its ship file up at 778fbe90, not yet on main at the start).
 
 (Kept at the top; a session resuming from GitHub starts here.)
 
+- **2026-11-05 01:00: ready, the ship file up.** R0 is on main (0.9.12) and
+  merged in (01a34042). The final `--pick` (b5653623; 39 of 172 harnesses since
+  b52be80a, LongPlaytest among them, one JVM at a time): exit 4 on MapCheck 2h
+  alone (call 9, passed by name); ShortSellingCheck 7 (call 10, OH1 queued) is
+  the gate suite's. The ensemble (2af0f13f): 24 of 26, the same two failing as
+  0.9.12's and both nearer (A2's spell 18 months against 27, S1's 83 against
+  107); every AUTO2 seed reaches 40,000, at m1,016 against m1,038; the final
+  population 331,626 against 323,765; no playtest finding, no audit month
+  failed (`docs/ensemble/R0b.md`). The screen is for the eye (section 5).
 - **2026-11-04 23:10: built; the suite's reds being read.** On `origin/batch/R0`
   (R0 not yet on main). Slices 1-3 committed: the model and its harness
   (8ba5f54f), the influenza's sick on `Health` (3afff4c2), the screen (cd4c7792),

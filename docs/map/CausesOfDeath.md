@@ -1,6 +1,6 @@
-# CausesOfDeath.java - 588 lines · 28 methods · 25 constants · model
+# CausesOfDeath.java - 603 lines · 30 methods · 25 constants · model
 
-`ham/citybuildersim/CausesOfDeath.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CausesOfDeath.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > The causes of death of 1900, and how history and the city take them away.
 > 
@@ -48,9 +48,9 @@
 | 203 | HISTORY - Canada's observed rates, as a factor of the 1900 rate |
 | 296 | RATES AND SPLITS - what a cause was in 1900, band by band |
 | 394 | · state |
-| 410 | · the month |
-| 518 | · reading it |
-| 544 | · saving |
+| 424 | · the month |
+| 533 | · reading it |
+| 559 | · saving |
 
 ## Enum constants
 
@@ -103,12 +103,13 @@
 | 402 | `private final double[] totals` | The dead of each cause since the city began. |
 | 405 | `private final double[][] ring` | The last twelve months' dead of each cause, one slot to a month, at month % 12. |
 | 408 | `private double lastTbSick` | The people sick of TB for a year or more: the long sick of TB, from the month's rates. |
+| 418 | `private boolean heldOff` | Held off: no cause kills, and the babies' and children's swing stays whole - the deaths of today, as before R0b. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 554 | **type** `public class CausesOfDeath` | The causes of death of 1900, and how history and the city take them away. |
+| 35 | 569 | **type** `public class CausesOfDeath` | The causes of death of 1900, and how history and the city take them away. |
 | 38 | 15 | **type** `public enum Cause` | The seven causes, in the order every array here is indexed. |
 | 49 | 1 | `Cause(String label)` _(in CausesOfDeath.Cause)_ |  |
 | 51 | 1 | `public String label()` _(in CausesOfDeath.Cause)_ |  |
@@ -152,32 +153,37 @@
 | 373 | 9 | `public static double conditions(Cause cause, AgeBand band, double hungry, double generalCoverage)` | What the city's conditions make of a cause: hunger for TB and summer diarrhoea, and no general care for TB, pneumonia and childbirth in the bands whose care is general care (not the swung ones); the product never more... |
 | 384 | 9 | `public static double[] bandTotals(double[][] rates)` | Each band's chance of death, the sum over causes of a [cause][band] array. |
 
-### state (lines 394-409)
-
-### the month (lines 410-517)
+### state (lines 394-423)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 433 | 54 | `public double[][] rates(int month, double[] people, double[] mortalityFactor, double pipedWater, double hungry, double generalC...` | Each cause's MONTHLY chance of death in each band this month, [cause][band]: a rate to hand PopulationCohorts as a competing risk. |
-| 495 | 22 | `public void book(int month, double[][] rates, double[] causeDeathsByBand)` | Books the month's dead by cause. |
+| 420 | 1 | `public void holdOff()` |  |
+| 422 | 1 | `public boolean isHeldOff()` |  |
 
-### reading it (lines 518-543)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 521 | 1 | `public double getLastDeaths(Cause cause)` | The dead of one cause booked last month. |
-| 524 | 5 | `public double getLastDeaths()` | The dead of every cause booked last month. |
-| 531 | 6 | `public double getYearDeaths(Cause cause)` | The dead of one cause in the last twelve months. |
-| 539 | 1 | `public double getTotalDeaths(Cause cause)` | The dead of one cause since the city began. |
-| 542 | 1 | `public double getTbSick()` | The people sick of TB for a year or more, as of the last rates() call. |
-
-### saving (lines 544-588)
+### the month (lines 424-532)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 547 | 10 | `public double[] getState()` | The state, in order: last month's dead, the totals, the ring (cause by cause), the TB sick. |
-| 563 | 10 | `public boolean restore(double[] saved)` | Puts a saved state back. |
-| 574 | 6 | `public void reset()` |  |
-| 581 | 3 | `private static double clean(double v)` |  |
-| 585 | 3 | `private static double clamp01(double v)` |  |
+| 447 | 55 | `public double[][] rates(int month, double[] people, double[] mortalityFactor, double pipedWater, double hungry, double generalC...` | Each cause's MONTHLY chance of death in each band this month, [cause][band]: a rate to hand PopulationCohorts as a competing risk. |
+| 510 | 22 | `public void book(int month, double[][] rates, double[] causeDeathsByBand)` | Books the month's dead by cause. |
+
+### reading it (lines 533-558)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 536 | 1 | `public double getLastDeaths(Cause cause)` | The dead of one cause booked last month. |
+| 539 | 5 | `public double getLastDeaths()` | The dead of every cause booked last month. |
+| 546 | 6 | `public double getYearDeaths(Cause cause)` | The dead of one cause in the last twelve months. |
+| 554 | 1 | `public double getTotalDeaths(Cause cause)` | The dead of one cause since the city began. |
+| 557 | 1 | `public double getTbSick()` | The people sick of TB for a year or more, as of the last rates() call. |
+
+### saving (lines 559-603)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 562 | 10 | `public double[] getState()` | The state, in order: last month's dead, the totals, the ring (cause by cause), the TB sick. |
+| 578 | 10 | `public boolean restore(double[] saved)` | Puts a saved state back. |
+| 589 | 6 | `public void reset()` |  |
+| 596 | 3 | `private static double clean(double v)` |  |
+| 600 | 3 | `private static double clamp01(double v)` |  |
 

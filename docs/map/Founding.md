@@ -1,6 +1,6 @@
 # Founding.java - 616 lines · 55 methods · 16 constants · model
 
-`ham/citybuildersim/Founding.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Founding.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > How a city was founded: its name, its money's name, and the treasury and the vault the founders left it.
 > 

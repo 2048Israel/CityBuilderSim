@@ -1,6 +1,6 @@
-# RoadCheck.java - 1,205 lines · 35 methods · 2 constants · harnesses
+# RoadCheck.java - 1,210 lines · 35 methods · 2 constants · harnesses
 
-`ham/citybuildersim/RoadCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RoadCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > The roads over their lives, and a gravel road paved (0.7.70, batch N1):
 > BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to
@@ -70,19 +70,19 @@
 
 | line | section |
 |---:|---|
-| 254 | 1. A ROAD'S LIFE |
-| 356 | 1b. GRAVEL'S REPAIRS RISE WITH ITS TRAFFIC |
-| 403 | 2. THE ADVICE |
-| 521 | 3. THE CARDS |
-| 558 | 4. THE PAVING'S PRICE |
-| 632 | 5. PLAYED |
-| 695 | 6. REFUSED |
-| 735 | 7. SAVE AND LOAD |
-| 798 | 8. OFFERED |
-| 868 | 9. THE TEST PLAYER |
-| 983 | 10. THE THROUGH TRIPS, WITH NO HIGHWAY |
-| 1085 | 11. A LARGE CITY'S NEEDS YOU LISTS BOTH |
-| 1164 | 12. A HIGHWAY GIVES NO ACCESS |
+| 258 | 1. A ROAD'S LIFE |
+| 360 | 1b. GRAVEL'S REPAIRS RISE WITH ITS TRAFFIC |
+| 407 | 2. THE ADVICE |
+| 525 | 3. THE CARDS |
+| 562 | 4. THE PAVING'S PRICE |
+| 636 | 5. PLAYED |
+| 699 | 6. REFUSED |
+| 739 | 7. SAVE AND LOAD |
+| 803 | 8. OFFERED |
+| 873 | 9. THE TEST PLAYER |
+| 988 | 10. THE THROUGH TRIPS, WITH NO HIGHWAY |
+| 1090 | 11. A LARGE CITY'S NEEDS YOU LISTS BOTH |
+| 1169 | 12. A HIGHWAY GIVES NO ACCESS |
 
 ## Constants
 
@@ -104,7 +104,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 115 | 1091 | **type** `public class RoadCheck` | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to their own arithmetic in a played city. |
+| 115 | 1096 | **type** `public class RoadCheck` | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to their own arithmetic in a played city. |
 | 121 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 126 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 131 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -113,96 +113,96 @@
 | 149 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
 | 165 | 6 | `static void month(Game g)` |  |
 | 177 | 3 | `static Game town(Path root, String name)` | The fixture: a town of 1,200 houses on four gravel roads, every sector held, played three years - the road past NEEDS YOU's line, and four gravel roads to pave (calibrated: scratch-n1/fix-1200.txt). |
-| 182 | 25 | `static Game town(Path root, String name, String road, int n)` | ...or on `n` roads of another kind: three Paved Roads carry what the four gravel roads do, and leave nothing to pave. |
-| 209 | 9 | `static double[][] noGroundFree(Game g)` | The same town with no ground free: every road's ground bought at the land office's price. |
-| 220 | 4 | `static void scale(Game g, double[][] base, double f)` | The land office's listing at f times its prices. |
-| 225 | 4 | `static CityNeeds.Need roadNeed(Game g)` |  |
-| 230 | 23 | `public static void main(String[] args) throws Exception` |  |
+| 182 | 29 | `static Game town(Path root, String name, String road, int n)` | ...or on `n` roads of another kind: three Paved Roads carry what the four gravel roads do, and leave nothing to pave. |
+| 213 | 9 | `static double[][] noGroundFree(Game g)` | The same town with no ground free: every road's ground bought at the land office's price. |
+| 224 | 4 | `static void scale(Game g, double[][] base, double f)` | The land office's listing at f times its prices. |
+| 229 | 4 | `static CityNeeds.Need roadNeed(Game g)` |  |
+| 234 | 23 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. A ROAD'S LIFE (lines 254-355)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 256 | 99 | `static void life(Path root)` |  |
-
-### 1b. GRAVEL'S REPAIRS RISE WITH ITS TRAFFIC (lines 356-402)
+### 1. A ROAD'S LIFE (lines 258-359)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 364 | 38 | `static void gravelWear(Path root)` | FR7 2.2 (Jerus's star 5, 2026-10-18): a Gravel Road's repairs rise with the load on its street. |
+| 260 | 99 | `static void life(Path root)` |  |
 
-### 2. THE ADVICE (lines 403-520)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 413 | 15 | `static boolean leastOrder(Game g, CityNeeds.Need need, BuildAdvice.Suggestion first)` | Whether the advice's road card is the least of its own candidates (0.7.101): the ranking walked as automatic building walks it - each card in turn left out (BuildAdvice.suggestFor()'s skip) - every card's figure its o... |
-| 430 | 15 | `static String[] least(Game g, boolean roadsOnly)` | The least over its life a trip of every road and line the advice weighs, recomputed: {its name, its figure}. |
-| 451 | 8 | `static double crossover(Game g, BuildingsTemplate a, BuildingsTemplate b)` | The land price a square foot, all of a road's ground at it, at which two roads cost the same a trip over their lives: (u_a k_b - u_b k_a) / (u_b A_a - u_a A_b), k a road's life but its ground, A its ground. |
-| 469 | 51 | `static void advice(Path root)` | FR7 (Jerus's stars 4 and 5, 2026-10-18) RETIRED THIS SECTION'S LADDER, by his decision and not to let a change through: the road was one pool with one winner, and the advice named gravel below the gravel-to-paved cros... |
-
-### 3. THE CARDS (lines 521-557)
+### 1b. GRAVEL'S REPAIRS RISE WITH ITS TRAFFIC (lines 360-406)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 523 | 34 | `static void cards(Path root)` |  |
+| 368 | 38 | `static void gravelWear(Path root)` | FR7 2.2 (Jerus's star 5, 2026-10-18): a Gravel Road's repairs rise with the load on its street. |
 
-### 4. THE PAVING'S PRICE (lines 558-631)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 560 | 71 | `static void pavePrice(Path root)` |  |
-
-### 5. PLAYED (lines 632-694)
+### 2. THE ADVICE (lines 407-524)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 634 | 60 | `static void played(Path root)` |  |
+| 417 | 15 | `static boolean leastOrder(Game g, CityNeeds.Need need, BuildAdvice.Suggestion first)` | Whether the advice's road card is the least of its own candidates (0.7.101): the ranking walked as automatic building walks it - each card in turn left out (BuildAdvice.suggestFor()'s skip) - every card's figure its o... |
+| 434 | 15 | `static String[] least(Game g, boolean roadsOnly)` | The least over its life a trip of every road and line the advice weighs, recomputed: {its name, its figure}. |
+| 455 | 8 | `static double crossover(Game g, BuildingsTemplate a, BuildingsTemplate b)` | The land price a square foot, all of a road's ground at it, at which two roads cost the same a trip over their lives: (u_a k_b - u_b k_a) / (u_b A_a - u_a A_b), k a road's life but its ground, A its ground. |
+| 473 | 51 | `static void advice(Path root)` | FR7 (Jerus's stars 4 and 5, 2026-10-18) RETIRED THIS SECTION'S LADDER, by his decision and not to let a change through: the road was one pool with one winner, and the advice named gravel below the gravel-to-paved cros... |
 
-### 6. REFUSED (lines 695-734)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 697 | 37 | `static void refused(Path root)` |  |
-
-### 7. SAVE AND LOAD (lines 735-797)
+### 3. THE CARDS (lines 525-561)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 737 | 60 | `static void saveAndLoad(Path root) throws Exception` |  |
+| 527 | 34 | `static void cards(Path root)` |  |
 
-### 8. OFFERED (lines 798-867)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 801 | 5 | `static java.util.Set<BuildingsTemplate> everyRoadAndLine(Game g)` | Every road and line in the Infrastructure category (Roads & transit until FR4): what the advice's paving-only ranking leaves out, as automatic building walks past roads the ground cannot hold. |
-| 815 | 52 | `static void offered(Path root)` | FR7 2.2 (Jerus's star 5, 2026-10-18) retired the premise of the old section 8: that paving beats a new Paved Road only past a CROSSOVER OF THE LAND PRICE above today's. |
-
-### 9. THE TEST PLAYER (lines 868-982)
+### 4. THE PAVING'S PRICE (lines 562-635)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 870 | 77 | `static void player(Path root)` |  |
-| 949 | 6 | `static BuildAdvice.Suggestion roadCard(Game g)` | The advice's card for the road, the transit lines left out of its ranking as the player leaves them: BuildAdvice.suggestFor() at its own slack, the cash and the free ground as they stand. |
-| 957 | 4 | `static int standingAndOnSite(Game g, BuildingsTemplate t)` | A building's count standing and on site. |
-| 966 | 16 | `static boolean firstRoad(Game g, double[][] base, double f, String want)` | The test player's first road move at the land office's prices x f, against the advice's ranking recomputed: the least of the three roads over its life a trip, and the paving where it beats a new Paved Road and is less. |
+| 564 | 71 | `static void pavePrice(Path root)` |  |
 
-### 10. THE THROUGH TRIPS, WITH NO HIGHWAY (lines 983-1084)
+### 5. PLAYED (lines 636-698)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 986 | 1 | `static double areaOf(double halves)` | A built-up area, in square feet, whose through share is the dials' halfway: THROUGH_HALF_AREA_KM2 times `halves`. |
-| 998 | 84 | `static void throughStrain()` | FR7 2.1 (Jerus's star 4, 2026-10-18): a city with no highway carries its through trips on the streets, and strains them. |
-| 1083 | 1 | `static boolean bitsEqual(double a, double b)` |  |
+| 638 | 60 | `static void played(Path root)` |  |
 
-### 11. A LARGE CITY'S NEEDS YOU LISTS BOTH (lines 1085-1163)
+### 6. REFUSED (lines 699-738)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1095 | 68 | `static void bothNeeds(Path root)` | FR7 2.1: the streets and the highways are two needs, each its own measure and line on NEEDS YOU, and in a large city both come up. |
+| 701 | 37 | `static void refused(Path root)` |  |
 
-### 12. A HIGHWAY GIVES NO ACCESS (lines 1164-1205)
+### 7. SAVE AND LOAD (lines 739-802)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1171 | 34 | `static void noAccess(Path root)` | FR7 2.1: a highway is a carriageway nothing fronts, so its capacity is not the streets'. |
+| 741 | 61 | `static void saveAndLoad(Path root) throws Exception` |  |
+
+### 8. OFFERED (lines 803-872)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 806 | 5 | `static java.util.Set<BuildingsTemplate> everyRoadAndLine(Game g)` | Every road and line in the Infrastructure category (Roads & transit until FR4): what the advice's paving-only ranking leaves out, as automatic building walks past roads the ground cannot hold. |
+| 820 | 52 | `static void offered(Path root)` | FR7 2.2 (Jerus's star 5, 2026-10-18) retired the premise of the old section 8: that paving beats a new Paved Road only past a CROSSOVER OF THE LAND PRICE above today's. |
+
+### 9. THE TEST PLAYER (lines 873-987)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 875 | 77 | `static void player(Path root)` |  |
+| 954 | 6 | `static BuildAdvice.Suggestion roadCard(Game g)` | The advice's card for the road, the transit lines left out of its ranking as the player leaves them: BuildAdvice.suggestFor() at its own slack, the cash and the free ground as they stand. |
+| 962 | 4 | `static int standingAndOnSite(Game g, BuildingsTemplate t)` | A building's count standing and on site. |
+| 971 | 16 | `static boolean firstRoad(Game g, double[][] base, double f, String want)` | The test player's first road move at the land office's prices x f, against the advice's ranking recomputed: the least of the three roads over its life a trip, and the paving where it beats a new Paved Road and is less. |
+
+### 10. THE THROUGH TRIPS, WITH NO HIGHWAY (lines 988-1089)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 991 | 1 | `static double areaOf(double halves)` | A built-up area, in square feet, whose through share is the dials' halfway: THROUGH_HALF_AREA_KM2 times `halves`. |
+| 1003 | 84 | `static void throughStrain()` | FR7 2.1 (Jerus's star 4, 2026-10-18): a city with no highway carries its through trips on the streets, and strains them. |
+| 1088 | 1 | `static boolean bitsEqual(double a, double b)` |  |
+
+### 11. A LARGE CITY'S NEEDS YOU LISTS BOTH (lines 1090-1168)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1100 | 68 | `static void bothNeeds(Path root)` | FR7 2.1: the streets and the highways are two needs, each its own measure and line on NEEDS YOU, and in a large city both come up. |
+
+### 12. A HIGHWAY GIVES NO ACCESS (lines 1169-1210)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1176 | 34 | `static void noAccess(Path root)` | FR7 2.1: a highway is a carriageway nothing fronts, so its capacity is not the streets'. |
 
