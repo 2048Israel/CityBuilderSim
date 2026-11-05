@@ -53,6 +53,10 @@ import java.util.Locale;
  * Since KP3 the Build screen (the Overview and every category, with the hands on a ring, an order dialled by a card's
  * stepper, a stat card pinned and automatic building), the pages a build is stopped on, the funding and fell-short pages,
  * and the construction page (its tabs, a building picked to demolish, the find box), as Pages of the same shape.
+ * Since KP4 the Sectors tab: the list and a business's five pages in both views as Pages, with the hands on a business, a page,
+ * the view, Show more, Freight's divisions, the folds and a statement's notes and columns, the pictures the pages hold (the refinery's,
+ * a materials industry's, a leg's bar), the figures that count up and the waterfall and ring that grow and sweep, the oil reserve's
+ * dials, and the card, the door and the crumb the pointer rests on.
  *
  * <p>WHY. A kept page is right only if every month's redraw over last month's nodes ends where
  * a page built new from the same city would; the one way to know is to build both and compare
@@ -724,7 +728,11 @@ public final class KeptBench {
         return spoil(new ArrayList<>(column.getChildren()));
     }
 
-    /** Every animation a draw started on the page run to its end, as a pulse would have: a scene with no window has none. */
+    /**
+     * Every animation a draw started on the page run to its end, as a pulse would have: a scene with no window has none. Its
+     * on-finished handler runs too (a pulse that reaches the end calls it; a jump and a stop do not): the glow a built tag flashes
+     * is taken off by it, and a count-up's last word set. The page is laid out again after this, not before (see KeptCheck.againstNew).
+     */
     public void finishPageAnimations() {
         each(column, KeptBench::finishOne);
     }
@@ -734,6 +742,7 @@ public final class KeptBench {
         if (a != null && a.getStatus() != javafx.animation.Animation.Status.STOPPED) {
             a.jumpTo(a.getTotalDuration());
             a.stop();
+            if (a.getOnFinished() != null) a.getOnFinished().handle(new javafx.event.ActionEvent());
         }
     }
 
@@ -1315,7 +1324,7 @@ public final class KeptBench {
         return r != null && !r.isEmpty();
     }
 
-    /** Whether the city owns ground on a second landmass, so that the office lists its ground by landmass (a table made with new: SectorScreen's cells). */
+    /** Whether the city owns ground on a second landmass, so that the office lists its ground by landmass (a table kept since KP4: SectorScreen.oilTable, whose rows are scopes). */
     public boolean landLandmasses() {
         return ui.landScreen.landmassesTable() != null;
     }
@@ -1850,7 +1859,8 @@ public final class KeptBench {
      * (Pieces.door: words and a "›"), "limitCell" (a vitals cell that is a door), "chartCardHead" (a chart card's name,
      * a click on it opens the chart), "landRow" (an offer's row), "oreCard" (the land office's ore card), "doorCard"
      * (Services' card made a door), and since KP3 Build's "jobTile" (the Overview's tile for a city category), "marketTile" (its row's tile for a market
-     * category) and "ringCard" (a small ring card that is not the one picked, on a category with many rings: Education's).
+     * category) and "ringCard" (a small ring card that is not the one picked, on a category with many rings: Education's), and since KP4 the
+     * Sectors list's "sectorCard" (a business's card).
      */
     public Node hoverTarget(String kind) {
         List<Node> found = new ArrayList<>();
@@ -1870,6 +1880,8 @@ public final class KeptBench {
                 case "marketTile" -> n instanceof HBox && n.getOnMouseClicked() != null && style.contains("-fx-padding: 8 8 8 8; -fx-background-color: " + Palette.PANEL);
                 case "ringCard" -> n instanceof HBox && n.getOnMouseClicked() != null && style.contains("-fx-padding: 8 8 8 8; -fx-background-radius: 8")
                         && style.contains("-fx-background-color: " + Palette.RAISED);
+                case "sectorCard" -> n instanceof VBox && n.getOnMouseClicked() != null
+                        && style.contains("-fx-padding: 12; -fx-cursor: hand; -fx-background-color: " + Palette.RAISED);
                 default -> throw new IllegalArgumentException(kind);
             };
             if (it) found.add(n);
@@ -1904,8 +1916,318 @@ public final class KeptBench {
         return null;
     }
 
+    /**
+     * The pointer put over the crumb on a business's page ("Sectors ›", whose hover is its tooltip), the page drawn kept again
+     * (`redraw`), and the crumb looked at; then the pointer taken off and the page drawn again. Null when each time the crumb was the
+     * same node and its tooltip the same one, with the same words, still under the pointer in the first case and not in the second;
+     * else what differed. ABSENT when the page has no crumb.
+     */
+    public String hoverCrumb(Runnable redraw) throws Exception {
+        Node crumb = crumb();
+        if (crumb == null) return ABSENT;
+        Tooltip tip = Kept.tipOf(crumb);
+        if (tip == null) return "the crumb has no tooltip to keep";
+        String words = tip.getText();
+        hover(crumb, true);
+        redraw.run();
+        passes();
+        if (crumb() != crumb) return "the crumb under the pointer was handed away or made new by the redraw";
+        if (!crumb.isHover()) return "the pointer over the crumb was lost by the redraw";
+        if (Kept.tipOf(crumb) != tip) return "the crumb's tooltip was made new by the redraw";
+        if (!java.util.Objects.equals(words, tip.getText())) return "the crumb's tooltip's words changed to " + clip(tip.getText());
+        hover(crumb, false);
+        redraw.run();
+        passes();
+        if (crumb() != crumb) return "the crumb the pointer left was handed away or made new by the redraw";
+        if (crumb.isHover()) return "the pointer gone, the redraw put it back over the crumb";
+        if (Kept.tipOf(crumb) != tip) return "the crumb's tooltip was made new by the redraw";
+        return null;
+    }
+
+    /** The crumb on a business's page: the label that goes back to the list. */
+    private Node crumb() {
+        return find(column, Label.class, l -> "Sectors".equals(l.getText()) && l.getGraphic() != null && Kept.tipOf(l) != null);
+    }
+
     private static String clip(String s) {
         return s == null ? "null" : s.length() > 120 ? s.substring(0, 120) + "..." : s;
+    }
+
+    /* =====================================================================
+       SECTORS (KP4): the list and a business's five pages, kept and built new, the hands on what reshapes them, the
+       pictures they hold (the refinery's, a materials industry's, a leg's bar), the count-up the clock allows and the
+       pointer over a card, a door and the crumb
+       ===================================================================== */
+
+    /** The list the Sectors tab opens on: folded to its first row (Show more), nothing opened, the Summary view. */
+    public Page sectors() {
+        return sectors("the Sectors list", null, SectorScreen.SECTOR_HOME, false);
+    }
+
+    /**
+     * The Sectors tab as a Page, as the screen draws it from its pool (the list when `key` is null, else the business and its page, in the
+     * Summary or the Statement view): it opens with nothing folded open or noted, the statements' two columns on and Freight on All.
+     */
+    public Page sectors(String name, String key, String page, boolean statement) {
+        SectorScreen s = ui.sectorScreen;
+        return new Page(name, "showSectorMenu", () -> s.pool, pool -> timed(pool, s::drawPage), () -> {
+            s.forget();
+            s.sectorsExpanded = false;
+            s.detailsOpen.clear();
+            for (ham.citybuildersim.Sector each : ui.game.getSectors().all()) s.linesOpen(each).clear();
+            s.showChange = true;
+            s.showShare = true;
+            s.freightDivision = ham.citybuildersim.FreightView.Division.ALL;
+            sectorsOpen(key, page, statement);
+        });
+    }
+
+    /** The five pages of a business, in the strip's order. */
+    public static List<String> sectorPages() {
+        return List.of(SectorScreen.SECTOR_PAGES);
+    }
+
+    /** Freight's divisions by the words on their chips: All, Haulage, Rail, Ports. */
+    public static List<String> freightDivisions() {
+        List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.FreightView.Division d : ham.citybuildersim.FreightView.Division.values()) out.add(d.label());
+        return out;
+    }
+
+    /** The screen on the list (`key` null), or on a business's page in a view, as a card's click, a chip or the switch would put it (the next draw shows it). */
+    public void sectorsOpen(String key, String page, boolean statement) {
+        SectorScreen s = ui.sectorScreen;
+        s.openSector = key == null ? null : ui.game.getSectors().byKey(key);
+        s.sectorPage = page;
+        s.statementView = statement;
+    }
+
+    /** The list's cards open to their second row (Show more) or folded to the first (Show less). */
+    public void sectorsMore(boolean more) {
+        ui.sectorScreen.sectorsExpanded = more;
+    }
+
+    /** Freight's Operations page on one of its divisions, by the words on its chip. */
+    public void sectorsDivision(String label) {
+        for (ham.citybuildersim.FreightView.Division d : ham.citybuildersim.FreightView.Division.values()) {
+            if (d.label().equals(label)) ui.sectorScreen.freightDivision = d;
+        }
+    }
+
+    /**
+     * One of the pages' folds opened or closed: "every" (the fold of every line, on a business's Operations page), "foods" (the goods
+     * a column folds into one row, on the shops' and the kitchens'), "book" (the order book, on the Balance sheet's owners card).
+     */
+    public void sectorsFold(String kind, String key, boolean open) {
+        String name = switch (kind) {
+            case "every" -> key + ":every";
+            case "foods" -> key + ":foods";
+            case "book" -> "book:" + ham.citybuildersim.Equity.indexOf(key);
+            default -> throw new IllegalArgumentException(kind);
+        };
+        fold(ui.sectorScreen.detailsOpen, name, open);
+    }
+
+    /** Every note of a business's four statements opened or closed, as the toolbar's "open every note" would. */
+    public void sectorsNotes(String key, boolean open) {
+        java.util.Set<String> notes = ui.sectorScreen.linesOpen(ui.game.getSectors().byKey(key));
+        for (String table : new String[]{SectorScreen.INCOME, SectorScreen.SHEET, SectorScreen.EQUITY, SectorScreen.CASH}) {
+            for (int n = 0; n <= 24; n++) fold(notes, StatementView.noteKey(table, n), open);
+        }
+    }
+
+    /** One note of one statement of a business opened or closed, as a click on its line would. */
+    public void sectorsNote(String key, String table, int note, boolean open) {
+        fold(ui.sectorScreen.linesOpen(ui.game.getSectors().byKey(key)), StatementView.noteKey(table, note), open);
+    }
+
+    /**
+     * The first note of a business's income statement a click opens on lines this month, or 0 when none does: its line drawn
+     * (shown, and not nil in the statement's columns) and its note not empty, the statement's own test for a caret. A note
+     * with nothing in it this month draws no caret and opens nothing (the revenue note of a business with one named part,
+     * Construction's on 0.9.19), so a fold check that chose it would cause nothing.
+     */
+    public int sectorsNoteOf(String key) {
+        ham.citybuildersim.Sector s = ui.game.getSectors().byKey(key);
+        ham.citybuildersim.SectorBooks books = ui.game.getSectorBooks();
+        ham.citybuildersim.SectorStatements.Table t = ui.sectorScreen.incomeTable(s, books.get(s), books.previous(s));
+        boolean millions = ham.citybuildersim.SectorStatements.inMillions(t);
+        StatementView.Columns c = ui.sectorScreen.columns("of revenue");
+        java.util.function.IntFunction<Node> notes = ui.sectorScreen.incomeNotes(s, t, millions);
+        for (ham.citybuildersim.SectorStatements.Row r : t.rows()) {
+            if (r.note() <= 0 || !r.shown() || StatementView.nil(r, t, c, millions)) continue;
+            Node detail = notes.apply(r.note());
+            if (detail == null || detail instanceof Pane p && p.getChildren().isEmpty()) continue;
+            return r.note();
+        }
+        return 0;
+    }
+
+    /** The statements' change and common-size columns on or off, as the toolbar's two chips would. */
+    public void sectorsColumns(boolean change, boolean share) {
+        ui.sectorScreen.showChange = change;
+        ui.sectorScreen.showShare = share;
+    }
+
+    /** The Sectors tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). */
+    public void showSectors() {
+        ensureWindow();
+        ui.sectorScreen.showSectorMenu();
+    }
+
+    /** The Sectors tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. */
+    public void forgetSectors() {
+        ui.sectorScreen.forget();
+    }
+
+    /* ----- the pictures ----- */
+
+    /** The refinery's picture on the page, or null. */
+    public Pane refineryPicture() {
+        return first(SectorScreen.RefineryPicture.class);
+    }
+
+    /** A materials industry's picture on the page, or null. */
+    public Pane industryPane() {
+        return first(SectorScreen.IndustryPane.class);
+    }
+
+    /** Every leg's bar on the page. */
+    public List<Pane> legBars() {
+        List<Pane> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof SectorScreen.LegBar bar) out.add(bar);
+        });
+        return out;
+    }
+
+    /** What a picture last painted, by identity (null before a first paint): another object only where the month's view moved or the width did. */
+    public static Object painted(Node picture) {
+        if (picture instanceof SectorScreen.RefineryPicture r) return r.painted;
+        if (picture instanceof SectorScreen.IndustryPane i) return i.painted;
+        return null;
+    }
+
+    /** What a picture (or a bar) holds now, in its order. */
+    public static List<Node> partsOf(Pane picture) {
+        return new ArrayList<>(picture.getChildren());
+    }
+
+    /* ----- the count-up and the sweep ----- */
+
+    /** The KEPT figure on the page now: the list's first cell, or the open business's. */
+    public Label sectorsKept() {
+        VBox cell = find(column, VBox.class, v -> v.getChildren().size() > 1 && v.getChildren().get(1) instanceof Label
+                && saysKept(v.getChildren().get(0)));
+        return cell == null ? null : (Label) cell.getChildren().get(1);
+    }
+
+    /** Whether a label says KEPT, or "KEPT  ›" (the cell that is a door says its name and a chevron). */
+    private static boolean isKept(Label l) {
+        return l.getText() != null && (l.getText().equals("KEPT") || l.getText().startsWith("KEPT  "));
+    }
+
+    /** Whether a cell's first node is its "KEPT" label, or the row that holds it beside an (i). */
+    private static boolean saysKept(Node first) {
+        if (first instanceof Label l) return isKept(l);
+        return first instanceof HBox row && !row.getChildren().isEmpty() && row.getChildren().get(0) instanceof Label l && isKept(l);
+    }
+
+    /** The net income each card on the list shows, in the order the grid has them: its figure's label. */
+    public List<Label> sectorsCardFigures() {
+        List<Label> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof VBox card && card.getOnMouseClicked() != null && card.getStyle() != null
+                    && card.getStyle().contains("-fx-padding: 12; -fx-cursor: hand; -fx-background-color: " + Palette.RAISED)
+                    && !card.getChildren().isEmpty() && card.getChildren().get(0) instanceof HBox top && top.getChildren().size() > 2
+                    && top.getChildren().get(2) instanceof VBox right && !right.getChildren().isEmpty()
+                    && right.getChildren().get(0) instanceof Label figure) out.add(figure);
+        });
+        return out;
+    }
+
+    /**
+     * The words the figures read this month, from the model as the screen reads it, with last month's beside: {the list's KEPT, then
+     * the open business's KEPT}, each as {last month's, this month's}, and the cards' as {last, this} in the card order. A business's is
+     * null when none is open (`key` null).
+     */
+    public String[][] sectorsWords(String key) {
+        ham.citybuildersim.SectorBooks books = ui.game.getSectorBooks();
+        List<ham.citybuildersim.Sector> order = ui.sectorScreen.marketOrder();
+        SectorScreen.ListFigures l = SectorScreen.listFigures(books, order);
+        List<String[]> out = new ArrayList<>();
+        out.add(new String[]{SectorScreen.m(l.before()) + "/mo", SectorScreen.m(l.kept()) + "/mo"});
+        if (key == null) {
+            out.add(null);
+        } else {
+            ham.citybuildersim.Sector s = ui.game.getSectors().byKey(key);
+            out.add(new String[]{SectorScreen.m(books.previous(s).netIncome()), SectorScreen.m(books.get(s).netIncome())});
+        }
+        for (ham.citybuildersim.Sector s : order) {
+            out.add(new String[]{SectorScreen.m(books.previous(s).netIncome()) + "/mo", SectorScreen.m(books.get(s).netIncome()) + "/mo"});
+        }
+        return out.toArray(new String[0][]);
+    }
+
+    /** Whether a count-up is running on a figure now (one was started and has not finished or been stopped). */
+    public static boolean counting(Node figure) {
+        javafx.animation.Animation a = Kept.animationOf(figure);
+        return a != null && a.getStatus() != javafx.animation.Animation.Status.STOPPED;
+    }
+
+    /** The count-up last started on a figure: the animation object, or null. */
+    public static javafx.animation.Animation countOf(Node figure) {
+        return Kept.animationOf(figure);
+    }
+
+    /** Whether the page has an income waterfall. */
+    public boolean hasFall() {
+        return first(Pieces.Waterfall.class) != null;
+    }
+
+    /** The growth last started on the page's income waterfall (a new month that animates starts one), or null. */
+    public javafx.animation.Animation fallGrowth() {
+        Pieces.Waterfall fall = first(Pieces.Waterfall.class);
+        return fall == null ? null : Kept.animationOf(fall);
+    }
+
+    /** The sweep last started on a ring of the page (the plant's), or null. */
+    public javafx.animation.Animation ringSweep() {
+        List<javafx.animation.Animation> found = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof javafx.scene.shape.Arc a && Kept.animationOf(a) != null) found.add(Kept.animationOf(a));
+        });
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    /** Whether the page has a ring with an arc to sweep (a plant that runs). */
+    public boolean hasRing() {
+        boolean[] has = {false};
+        each(column, n -> {
+            if (n instanceof javafx.scene.shape.Arc) has[0] = true;
+        });
+        return has[0];
+    }
+
+    /* ----- the controls (the two dials of the oil reserve) ----- */
+
+    /** Every slider on the page, in the page's order: the oil reserve's FILL dial first, then its RELEASE dial. */
+    public List<javafx.scene.control.Slider> sliders() {
+        List<javafx.scene.control.Slider> out = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof javafx.scene.control.Slider s) out.add(s);
+        });
+        return out;
+    }
+
+    /** What a policy dial has staged under its key ("reserveFill", "reserveRelease"), or NaN when nothing is. */
+    public double staged(String key) {
+        return ui.policyScreen.isStaged(key) ? ui.policyScreen.staged(key, Double.NaN) : Double.NaN;
+    }
+
+    /** A policy dial's staged value dropped. */
+    public void unstage(String key) {
+        ui.policyScreen.unstage(key);
     }
 
     private static Method doCSSPass, doLayoutPass;
