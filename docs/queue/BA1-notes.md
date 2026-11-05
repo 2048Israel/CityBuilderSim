@@ -81,7 +81,17 @@
   - ScaleCheck 6: R0b's causes held off, with BA1's levers shut at month 488; `emptySites()` holds them off too, as
     every copy loaded from the save does.
   - Both green alone. R0b changes main's model, not BA1's, so BA1e stands as the batch's ensemble.
-- Next: the full suite on the merged tree (03:52, alone), then the ship file.
+- **The full suite on the merged tree** (12190401, 03:52-04:28, alone): 163 of 172 passed, 9 red. R0b's causes of
+  death moved the paths once more.
+  - Known classes passing by name:
+    - PriceLevelCheck 8's drift (worst 5.8e-9).
+    - MapCheck's moved boxes (2d's yard laid across a district: 81 of 500; 2h's reserve: 11 and 21; DM2's class).
+    - LongPlaytest's one finding, "a building on the map moved", twice at months 2390-2393 (DM1's class, as LD2-D and
+      SlopeCheck's under Jerus's word).
+  - DenominationCheck: a city and its reformed twin part by 1e-9 to 6e-8 in eight lines, likely the same rounding
+    draw as PriceLevelCheck's. A slice traces it.
+  - Fixtures, with two Sonnet slices to 06:00: CallCheck, RailCheck, RefineryCheck, HealthCheck and OrderSearchCheck.
+- Next: the slices' mends brought here, the full suite (alone), then the ship file, or WHERE IT STANDS by 08:00.
 
 **WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
 - **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
