@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.12 — R0, the Policy levers on history's dates — 2026-11-04, ready, see docs/queue/R0-notes.md
+A city founded in January 1900 now has each Policy lever on the date Canada first had it (`PolicyDates`): the profit tax
+1916, the income tax 1917, the minimum wage's floor 1918, the sales tax 1920, zoning 1924, old-age pensions 1927, student aid
+1939, EI in August 1940, the health premium 1947, the pension's contribution 1966; the property tax, fees, fares, food
+assistance and the rest are open from founding. Until its date a lever is shut and refuses a setting, and the Policy screen
+draws it shut with when it opens; on its month the inbox gives Canada's first terms and the lever opens - the three income
+taxes at the founding rate (15%), the promises at zero, the wage floor at the going unskilled wage. Each city's openings are
+saved (R3's law finds will move them); a save from before R0 loads with every lever open. Harness fixtures whose premise is a
+lever, or whose condition the untaxed 1900 city does not give, open them; the playtest runs on history's dates.
+The ensemble scores 24/26 against 0.9.6's 22/26. Two lines its 1900 city is the first to reach in main's code pass by
+name at the gate (Jerus: "if checks were not caused by its own code, then it should always pass"): SlopeCheck's "a
+building on the map moved" (DM2's) and PriceLevelCheck 8's farm never retiring at 1900 prices (RT1, queued).
+
 ### 0.9.11 — CM1, the replay's camera loads its whole move first, then runs on a click — 2026-11-03, ready, see docs/queue/CM1-notes.md
 In replay mode a glide (3), a fly out (O) and a fly in (I) now load first: the map says "Loading the move... N s" while
 every view the move will show is painted, with no time cap and the map's pictures held, then "Ready - click to run", and a

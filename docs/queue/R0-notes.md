@@ -1,4 +1,4 @@
-# R0 - the Policy levers on history's dates ({next}, 2026-11-04)
+# R0 - the Policy levers on history's dates (0.9.12, 2026-11-04)
 
 The first implementation batch of research from 1900: its row is "the 1900
 economy and the calendar from 1900" (`docs/studies/research-1900.md` §5.4,
@@ -238,8 +238,8 @@ dates and nothing else.** R0d, R0e and R0f go in the ship file's `## queued`.
 - Ship file: not up. CM1 is on main (0.9.11) and merged in, but `--pick` is red on two lines that are not main's recorded reds
   (calls 20 and 21). It goes up as below once they are passed by name, as LD2-D was. Its `## pending` (no eye-check row):
 
-  | R0-S | SlopeCheck 9's layout watcher on R0's city ({next}): "a building on the map moved" once, m612, district (-1,0), 58 of its 145 boxes with the carry log unchanged - DM2's fault (the wall ways), which the 1900 city reaches inside the watcher's window; passed by name at R0's gate | DM2 mends it | [R0 notes](docs/queue/R0-notes.md) ★20 |
-  | R0-P | PriceLevelCheck 8 on R0's city ({next}): the played twins part at month 47 on a farm retired at today's prices and never at the founding's (the 1e-12 nudge does not move it: a missed price); passed by name at R0's gate | RT1 mends it | [R0 notes](docs/queue/R0-notes.md) ★21 |
+  | R0-S | SlopeCheck 9's layout watcher on R0's city (0.9.12): "a building on the map moved" once, m612, district (-1,0), 58 of its 145 boxes with the carry log unchanged - DM2's fault (the wall ways), which the 1900 city reaches inside the watcher's window; passed by name at R0's gate | DM2 mends it | [R0 notes](docs/queue/R0-notes.md) ★20 |
+  | R0-P | PriceLevelCheck 8 on R0's city (0.9.12): the played twins part at month 47 on a farm retired at today's prices and never at the founding's (the 1e-12 nudge does not move it: a missed price); passed by name at R0's gate | RT1 mends it | [R0 notes](docs/queue/R0-notes.md) ★21 |
 
   Its `## changelog` paragraph:
 
