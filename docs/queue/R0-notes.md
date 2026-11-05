@@ -10,65 +10,30 @@ unmerged at the start).
 
 (Kept at the top; a session resuming from GitHub starts here.)
 
-- **2026-11-04 18:50, mid-way:** call 16 built (a685d5d3), slice 3 and zoning's gate built (198a6cbc; its PolicyDatesCheck 12-13
-  and the zoning fixtures not run yet), main (CM1, 0.9.11) merged in. The full suite ran on call 16 alone: 27 red harnesses, each
-  still to be read by call 7 (listed in the suite's entry below).
-
-- 2026-11-04 10:50: these notes written; the split and the calls below taken.
-- **Slice 1 done** (8edef28f): `PolicyDates` (the 21 levers: 12 dated, 9 open
-  from founding; care subsidies, deposit insurance and the 1915 levy have no
-  lever in the game) and `PolicyDatesCheck` (219 ok).
-- **Slice 2a done, reviewed, committed** (the gate for the eight levers
-  `TaxPolicy` holds, `TaxPolicy.GATED`): a closed lever's dial and offsets are
-  held at 0 by `TaxPolicy.setMonth()`, its setters refuse, `copy()` keeps the
-  gate; `Game.nextMonth()` pushes the month right after `month++` (the one
-  place the month moves; `simulateMonth()` runs inside it), `buildWorld`
-  after `reset()`, and the load path after the month is read; the openings
-  saved as `DataSave.leverOpenings` by `Lever.name()` (null: every lever
-  open); `Inbox.takeLevers` raises "An income tax: 1917" once, on the month;
-  `PolicyDatesCheck` 7-9 (303 ok). `restorePolicyState` puts a save back as
-  saved (a `restoring` flag past the refusals).
-- **Slice 2b done, reviewed, committed** (03588cd6): `Game.policyHearsTheMonth()`
-  (founding, the top of each month, a load) pushes the month to the policy,
-  `LabourMarket.setFloorBinding(isOpen(MINIMUM_WAGE))` (call 12: the floor's
-  `Math.max` and `isPinned()`'s floor skipped while shut; the anchor
-  untouched) and the policy's pension to the households (call 15: month 1
-  pays none); the player's minimum-wage path is `Game.setMinimumWage` /
-  `setMinimumWageAdjustment`, refused while shut (PolicyScreen calls it;
-  `LabourMarket`'s own setter stays open for fixtures); student loans shut to
-  1939 (call 14: `HouseholdBalance.setStudentLoansOpen`, pushed with the loan
-  rate each month; `StudentHousehold` lends nothing and plans with no room);
-  `Founding.foundingBuildersRate()` quotes the month-1 gate (0); the inbox's
-  `NOTICED` adds the minimum wage. `PolicyDatesCheck` 10-11 (324 ok).
-- **Fixtures opened** (call 7; `getTaxPolicy().reset()` then `openAll()` after
-  founding, since founding has already held the rates at 0): ReadPathCheck,
-  SaveFileCheck (its lever fixtures, its `college` fixture for the loans, and
-  its `city` and `early` fixtures: call 17), LabourCheck, ChartCheck,
-  ManufacturingCheck, PolicyCheck, EducationCheck, OutsideCheck, HealthCheck,
-  PolicyPreviewCheck, FoodProcessingCheck, TreasuryCheck, ZoningCheck (a tax
-  offset fixture). Each green named; LongPlaytest green (every month audited,
-  every reload matched).
-- **ReplayCheck green again** (its premise is "a dial the player moved off
-  the recording": the dial is now the property tax, open from founding, as
-  the income tax is shut in its 1904 city; the city stays on history's
-  dates).
-- **Red, known, next:** HomeRailCheck 1, "a played city whose boundary fills
-  the railway ...: home share 0" (on `HaulageCheck.played`): not a lever's
-  fixture; a 1900 city with no income taxes grows differently - read it at
-  its cause (call 7). **The full suite has
-  not run**; other reds of the same shape may remain.
-- **Call 16, taken as recommended by the orchestrator (2026-11-04):** a lever
-  opening at zero leaves the playtest's city untaxed for 49 years, so the three
-  income taxes open at the founding default; pensions, EI, student aid and the
-  health premium still open at zero. Not built yet. Jerus may overturn it (the
-  other way named: open them at history's rate, 4% above $1,500 in 1917).
-  **Call 17**, the two SaveFileCheck mid-build fixtures with every lever open,
-  is kept as recommended.
-- **Next:** the full suite (`./batch-check.sh --pick`, then `AllChecks -f`),
-  each red read by call 7; call 16 built; slice 3 (the screen: a shut
-  lever drawn shut, "opens 1917 - an income tax, 4% above $1,500"; zoning's
-  gate, call 13, not built yet); the ensemble. No ship file until CM1 is on
-  main and merged in.
+- **2026-11-04 evening: built, the suite read.** CM1 is on main (0.9.11) and merged in. What is built:
+  - **Slices 1, 2a, 2b** (the morning): `PolicyDates` (21 levers, 12 dated); the gate on the eight levers `TaxPolicy.GATED` holds
+    (`setMonth()` holds a shut lever's dials at 0, its setters refuse, the openings saved as `DataSave.leverOpenings`); the minimum
+    wage's floor unbound to 1918 (call 12), student loans shut to 1939 (14), the two readers of call 15; the inbox's notice on the month.
+  - **Call 16** (a685d5d3): the three income taxes open at `DEFAULT_INCOME_TAX`, the promises at zero (`TaxPolicy.held`, the levers
+    held at the last month told; emptied by a restore, `openAll()` and `reset()`; the load now tells the month after the policy's
+    restore, so a city saved the month before a date keeps its opening). The notice says where each lever opens.
+  - **Slice 3** (198a6cbc): the Policy screen draws a shut lever shut - a card "Opens 1917 - an income tax: 4% above $1,500 ..." and
+    where it opens (`PolicyDates.shutLine` / `shutWhy`, the city's own opening month), its dial greyed - on Taxes (profit, sales, wage;
+    "every tax" names the shut ones), Wages, Pensions (two dials, two dates), Out of work, Health (the premium), Schools (student aid)
+    and Zoning; **zoning's gate** (call 13): `Game.setZone` refused to 1924, the forest law open (call 19), "Zoning: 1924" in the
+    inbox; `TaxPolicy.openNow(lever)` for a one-lever fixture. Checked by eye only, not yet looked at.
+  - **The suite's reds, read by call 7** (c5a2f25b; section 5): 27 red on call 16's model. 23 were fixtures, opened (a lever's
+    premise, call 7; a condition the untaxed 1900 city does not give, every lever opened, call 18); ReplayCheck was load (green
+    alone); IndustryViewCheck was main's old-metal line running past its slot, mended (call 22). **Two stay red, both main's latent
+    faults that R0's city reaches:** SlopeCheck 9 (DM2's map fault, m612: call 20) and PriceLevelCheck 8 (the farm retirement's unit
+    mix, a missed price at month 47: call 21; a mend was measured, moved six other harnesses' cities, and was reverted and queued
+    as RT1).
+- **`--pick` (80161740):** 85 of 171 harnesses, LongPlaytest among them, exit 4 on those two alone; the maps regenerated, Stale 0
+  firm, line endings clean.
+- **The ensemble:** running (2 at once, on 80161740), against 0.9.6.md.
+- **Next:** calls 20 and 21 (pass the two reds by name at R0's gate, or hold R0 for DM2 and RT1). Once they are passed, the ship
+  file goes up as section 4 drafts it (its `## pending` R0-S and R0-P, its `## queued` RT1 and R0d-f), and the screen is for the
+  eye: a 1900 city's Policy tab, each shut page's card and greyed dial, and the card gone the month its lever opens.
 
 ## 1. What R0's row holds now, and where it splits
 
@@ -195,8 +160,9 @@ dates and nothing else.** R0d, R0e and R0f go in the ship file's `## queued`.
     tutorial is the date and the notice; zero only punishes a player who has
     not read the inbox yet, for decades. The alternative is zero, as the study
     and "rec all" decided, with the playtest's player taught to answer an
-    opening notice, and the ensemble's people criteria re-read. Not built
-    either way: R0 still opens at zero.
+    opening notice, and the ensemble's people criteria re-read. Taken as
+    recommended by the orchestrator (2026-11-04) and built (a685d5d3); Jerus
+    may overturn it.
 17. **★ SaveFileCheck's `city` and `early` fixtures** set no lever, but their
     condition (something mid-build at the save; the index based in its six
     months) failed because a 1900 city with no taxes and no floor builds
@@ -204,6 +170,37 @@ dates and nothing else.** R0d, R0e and R0f go in the ship file's `## queued`.
     lever in them. Recommended: keep - their premise is the save of a
     mid-build city, and the open levers put back the city that causes it; the
     alternative is a fixture that causes mid-build directly.
+18. **★ Fixtures whose condition the untaxed 1900 city does not give** (the evening's suite; call 17's class, extended).
+    Twenty of the suite's reds were a fixture's condition - a "fixture:" line, or what a fixture sets up for its real assertions (a
+    town whose automatic builder orders, twins that stand alike, a holding steady through the measured month) - that a 1900 city with
+    no income taxes to 1916-20 does not give, in harnesses that are not about the levers. Each fixture opens every lever
+    (`reset()` then `openAll()`, before a month), its comment saying what it needs; what the 1900 city does instead is in section 5.
+    Recommended and taken: keep - the fixture causes its condition (README, The checks), the playtest, the ensemble and the ~140
+    harnesses left on history's dates keep the real path checked. The alternative is a fixture per harness that causes its condition
+    in a 1900 city directly: larger, harness by harness.
+19. **★ Zoning's gate is the zones, not the forest law.** Canada's Dominion Forest Reserves date from 1906 and the study gives the law
+    no date; a zone's tax row is the sector's own offset, already held by its tax's lever. Taken as recommended (slice 3).
+20. **★ SlopeCheck 9's red is DM2's.** Its layout watcher (`LongPlaytest.layoutCompare`) finds "a building on the map moved" once, at
+    m612: district (-1,0), 58 of its 145 boxes moved with the district's carry log unchanged (2 Studio Apartments arrived). DM2, queued,
+    is this fault (the wall ways; it names "SlopeCheck 9's m608-609 jump after a land purchase" and the playtest's m3010-3013, LD2-D);
+    R0 touches no map code, and its 1900 city reaches the fault inside the watcher's window (months 601-613), which main's city does not.
+    **Recommended:** pass it by name at R0's gate, as LD2-D was passed, DM2 mending it; the alternative is R0 waiting for DM2.
+    Needs the orchestrator's or Jerus's word: `--pick` is red on it (exit 4), so no ship file is up until then.
+21. **★ PriceLevelCheck 8's red is main's farm retirement, which R0's city first reaches.** `BusinessInvestment.planRetirement()`
+    divides what is spare by what one building is (`Sector.unitsOf()`); Agriculture measures what is spare in money (each good at its
+    export floor, `retirementDemandAndCapacity()`) but a farm in tonnes, so at the founding's price level (the factor, 0.0259) the
+    quotient is 0 and no farm has retired in any city since EP1, while at today's prices one does. R0's untaxed 1900 city is the first
+    played city with six loss months and a spare farm: its twins part at month 47 on a farm sold at today's prices and kept at the
+    factor, which the 1e-12 nudge does not move (both sides run equal to their nudged twins past month 79) - by the harness's own rule,
+    a price the factor missed. **Measured and taken out again:** a farm counted in the same money (`Agriculture.unitsOf()`, 519f8e41)
+    parts the twins only at month 78 by a tie, but the farms it retires at the factor move six other harnesses' cities (MapCheck's yard
+    and reserve fixtures, FoundingYardCheck's village, ShortSellingCheck, MonetaryCheck, ScaleCheck, and the playtest's map watcher at
+    m1204-1209): a change to how every city plays, larger than R0. Reverted (824ee04b) and queued as **RT1** (`FoodProcessing` has the
+    same unit mix: money against kilograms). **Recommended:** pass PriceLevelCheck 8 by name at R0's gate until RT1 mends it; the
+    alternative is RT1 inside R0, with its ripple read first.
+22. **★ IndustryPicture's old-metal line** said its name twice ("Old steel / the city's old steel · 1,338 t") and ran 2 px past its
+    178 px slot once a yard took 1,000 t (IndustryViewCheck's frame bound, which R0's busier yard first reached); it now reads "the
+    city's own". A screen's words, mended here; taken.
 
 ## 3. The slices
 
@@ -230,9 +227,51 @@ dates and nothing else.** R0d, R0e and R0f go in the ship file's `## queued`.
 
 ## 4. Records
 
-- Ship file: not yet (CM1 is not on main; the ship file is pushed last, once
-  it is and is merged in). Its `## queued` rows, decided here (call 1):
+- Ship file: not up. CM1 is on main (0.9.11) and merged in, but `--pick` is red on two lines that are not main's recorded reds
+  (calls 20 and 21). It goes up as below once they are passed by name, as LD2-D was. Its `## pending` (no eye-check row):
+
+  | R0-S | SlopeCheck 9's layout watcher on R0's city ({next}): "a building on the map moved" once, m612, district (-1,0), 58 of its 145 boxes with the carry log unchanged - DM2's fault (the wall ways), which the 1900 city reaches inside the watcher's window; passed by name at R0's gate | DM2 mends it | [R0 notes](docs/queue/R0-notes.md) ★20 |
+  | R0-P | PriceLevelCheck 8 on R0's city ({next}): the played twins part at month 47 on a farm retired at today's prices and never at the founding's (the 1e-12 nudge does not move it: a missed price); passed by name at R0's gate | RT1 mends it | [R0 notes](docs/queue/R0-notes.md) ★21 |
+
+  Its `## changelog` paragraph:
+
+  > A city founded in January 1900 now has each Policy lever on the date Canada first had it (`PolicyDates`): the profit tax
+  > 1916, the income tax 1917, the minimum wage's floor 1918, the sales tax 1920, zoning 1924, old-age pensions 1927, student aid
+  > 1939, EI in August 1940, the health premium 1947, the pension's contribution 1966; the property tax, fees, fares, food
+  > assistance and the rest are open from founding. Until its date a lever is shut and refuses a setting, and the Policy screen
+  > draws it shut with when it opens; on its month the inbox gives Canada's first terms and the lever opens - the three income
+  > taxes at the founding rate (15%), the promises at zero, the wage floor at the going unskilled wage. Each city's openings are
+  > saved (R3's law finds will move them); a save from before R0 loads with every lever open. Harness fixtures whose premise is a
+  > lever, or whose condition the untaxed 1900 city does not give, open them; the playtest runs on history's dates.
+
+  Its `## queued` rows: RT1, decided here (call 21), and R0d-f (call 1):
+
+  | RT1 | A building counted in its sector's retirement measure: Agriculture's and FoodProcessing's retirement measure what is spare in money and divide it by a building's tonnes or kilograms (`Sector.unitsOf()`), so at the founding's price level no farm or food plant retires; count one in the same money (R0's trial, 519f8e41, then the ripple read: MapCheck's yard and reserve fixtures, FoundingYardCheck, ShortSellingCheck, MonetaryCheck, ScaleCheck, the playtest's map watcher at m1204-1209), mending PriceLevelCheck 8 (R0-P) | [R0 notes ★21](docs/queue/R0-notes.md) |
 
   | R0d | Research: the 1901 wage ladder and the arrivals' skill mix by year - each `PayTier` rung's 1901 comparator, sourced or flagged est. (research-1900 §5.2, §12.1), switched on with R1's 1900 recipes (R0-notes call 2); arrivals' diplomas from the year's mix (1.2 university students per 1,000 in 1901, 4.7 in 1950; nurses 0.05 to 3) | [R0-notes §1-2](docs/queue/R0-notes.md), [research-1900 §5.2, §5.4](docs/studies/research-1900.md#52-wages) |
   | R0e | Research: the household's basket by year - 1900's raw staples, lamp oil and coal, no car (after R0c's goods, and on the live demand path, not the shadow basket) | [research-1900 §4, §5.4](docs/studies/research-1900.md#54-what-batch-r0-needs-the-first-studys-q1-now-for-1900) |
   | R0f | Research: Money on Canada's dates - the D$ on gold to Aug 1914 and Jul 1926-1931, the Advance Rate opening the policy rate in Aug 1914, the Bank of Canada the rest of Money in Mar 1935 (`PolicyDates.POLICY_RATE`, `CENTRAL_BANK`); after GD2 and FM1 | [research-1900 §7.2](docs/studies/research-1900.md#72-the-recommendation), [GD0](docs/studies/spec-gold-money.md) |
+
+## 5. The suite's reds, read by call 7 (2026-11-04 evening)
+
+The full suite on call 16's model (CM1's tip merged): 27 red harnesses, 190 NEW lines. Each read at its cause:
+
+| class | harnesses | what the fixture now does |
+|---|---|---|
+| a lever's premise (call 7) | InvestCheck (the builders' sales-tax quote, the landlords' rebate), CapitalFlowCheck's coupon city (the profit tax), ForeignDebtCheck 10 (its sales sized by the city's tax: `tradingCityTaxed`, as `tradingCity` is three other harnesses'), ZoningViewCheck (zones, and their profit and sales rows), ForestryCheck's `forestTown` and LandmassCheck (zones) | that lever, or every lever, opened |
+| a condition the 1900 city does not give (call 18) | EquityCheck, FundCheck, HoldersCheck (4 fixtures), CapitalFlowCheck's hot-money city, MonetaryCheck, BondCheck's `city()`, FloatLinkCheck's `playedCity` (DeskCheck's too), BuildAdviceCheck's `shortCity`, RoadCheck's `town()`, ScaleCheck, AutoBuildCheck's `youngCity`, the shared `ChildcareCheck.town` (AutoBuildCheck, AuctionCheck, HydroCheck) and `DeathCareFirstCheck.city` (BuildersFirstCheck, ConstructionTrapCheck), TradeCostCheck, RailDepotCheck, HomeRailCheck's `railed()`, CopperRefiningCheck 4 | every lever opened, the defaults put back |
+| main's latent fault, mended (call 22) | IndustryViewCheck (the old-metal line) | the words mended |
+| main's latent fault, left (calls 20, 21) | SlopeCheck 9 (DM2), PriceLevelCheck 8 (the farm retirement: RT1) | nothing |
+| load, not R0 | ReplayCheck (CM1's run under the suite's load: green alone) | nothing |
+
+What the 1900 city does instead, from the logs (the findings; the ensemble measures the playtest):
+- a young town's automatic builder ordered nothing in 24-36 months (`ChildcareCheck.town`, HydroCheck's 0 orders);
+  AutoBuildCheck's young city had 1,154 people at month 60 where its note gives 2,618 before R0;
+- ScaleCheck's playtest town at month 722 (1960): 4,500 people in 6,042 places, no more than a year before, no home built;
+- the builders' site output climbs 44 to 90 over the first six months, where DeathCareFirstCheck's city was sized on 76 by month 6
+  (the first depot opens in month 8 against a bound of 7);
+- a month's tax is the property tax's alone (D$10k in ForeignDebtCheck's trading city), so a sale sized by it quotes cheaper abroad;
+- a 90-month town's freight is 83% bulk and 17% commuters (TradeCostCheck: "mostly people" before R0);
+- the households sell paper to the desk inside a month, the businesses buy none of a two-year bond (HoldersCheck), the fund's rule
+  buys bank shares in two months (FundCheck), a sliver of Retail's shares sits on the desk (EquityCheck);
+- RoadCheck's busy street carries 328 vehicles a day on a gravel road, which stays the least over its life (paved before R0).
