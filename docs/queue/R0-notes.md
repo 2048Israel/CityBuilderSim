@@ -30,7 +30,15 @@ unmerged at the start).
     as RT1).
 - **`--pick` (80161740):** 85 of 171 harnesses, LongPlaytest among them, exit 4 on those two alone; the maps regenerated, Stale 0
   firm, line endings clean.
-- **The ensemble:** running (2 at once, on 80161740), against 0.9.6.md.
+- **The ensemble** (80161740, 80 of 80 runs, 21 min at 2 at once; `docs/ensemble/R0.md`, against 0.9.6.md): 24 of 26 criteria
+  pass, the same two failing as on 0.9.6 (A2, the longest spell of inflation over 10% from m240: 27 months [12 to 36] against
+  0.9.6's 14 [7 to 29]; S1, ZERO_SLACK's spell 107 months against 102), and HIGH's R2 and R3, red on 0.9.6, now pass. People
+  (T1): every AUTO2 seed reaches 40,000, at m1,038 [856 to 1,134] against 0.9.6's m970 [849 to 1,459]; the final population
+  323,765 [265,797 to 423,013] against 335,674 (T2, 96%). No run has a playtest finding (F1), no money-audit month failed (M1).
+  Call 16 holds: the untaxed decades cost the city about six years to 40,000, where opening at zero left the playtest a quarter
+  of its people at m1,050 (call 16's table). A2's longer
+  spell is the one criterion that moved the wrong way: the 1916-20 openings, a 15% tax arriving on an economy that grew without
+  it, are a candidate cause, not traced.
 - **Next:** calls 20 and 21 (pass the two reds by name at R0's gate, or hold R0 for DM2 and RT1). Once they are passed, the ship
   file goes up as section 4 drafts it (its `## pending` R0-S and R0-P, its `## queued` RT1 and R0d-f), and the screen is for the
   eye: a 1900 city's Policy tab, each shut page's card and greyed dial, and the card gone the month its lever opens.
