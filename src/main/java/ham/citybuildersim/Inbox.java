@@ -139,6 +139,14 @@ public class Inbox {
                 "Crime is running above Canada's",
                 crime);
 
+        // The 1918 influenza (R0b): standing for as long as it is killing, October 1918 to March 1920 in the three waves
+        // CausesOfDeath gives it, and settled the month the deaths stop, like any condition.
+        boolean fluKilling = game.getCausesOfDeath().getLastDeaths(CausesOfDeath.Cause.INFLUENZA) > 0;
+        take(game, month, "influenza",
+                fluKilling,
+                "Influenza is in the city",
+                fluKilling ? influenzaBody(game) : new ArrayList<>());
+
         // The player's hand on the queue (0.7.22): a rushed site going into
         // its third month on overtime, when a month on it starts to do LESS
         // than a normal month for more pay - said the month before, while it
@@ -198,6 +206,21 @@ public class Inbox {
         takeLevers(game, month);
 
         cull(month);
+    }
+
+    /** The influenza's notice (R0b): its dead last month and in the last twelve, and the share of the workforce off sick with it. */
+    private static List<String> influenzaBody(Game game) {
+        CausesOfDeath book = game.getCausesOfDeath();
+        return wrapped(String.format("The 1918 influenza killed %s last month and %s in the last twelve months; %.1f%% of the workforce is off sick with it.",
+                people(book.getLastDeaths(CausesOfDeath.Cause.INFLUENZA)),
+                people(book.getYearDeaths(CausesOfDeath.Cause.INFLUENZA)),
+                game.getHealth().getInfluenzaRate() * 100), BODY_COLUMNS);
+    }
+
+    /** "1 person", "41 people": a count of the dead, rounded to a whole one. */
+    private static String people(double count) {
+        long n = Math.round(count);
+        return n == 1 ? "1 person" : String.format("%,d people", n);
     }
 
     /** The levers whose opening is told: the ones TaxPolicy holds, the minimum wage (LabourMarket's floor, which TaxPolicy dates but does not hold) and zoning (Game.setZone's gate). */

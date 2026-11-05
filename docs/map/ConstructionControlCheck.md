@@ -1,4 +1,4 @@
-# ConstructionControlCheck.java - 847 lines · 21 methods · 1 constants · harnesses
+# ConstructionControlCheck.java - 851 lines · 21 methods · 1 constants · harnesses
 
 `ham/citybuildersim/ConstructionControlCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -67,16 +67,16 @@
 
 | line | section |
 |---:|---|
-| 195 | 1. THE OVERTIME TABLE |
-| 229 | 2. NO ORDER |
-| 270 | 3. PRIORITY |
-| 318 | 4. RUSH |
-| 392 | 5. CANCEL |
-| 469 | 6. DEMOLITION |
-| 568 | 7. BUY-OUT |
-| 622 | 8. CONSERVED |
-| 631 | 9. SAVE AND LOAD |
-| 722 | 10. ONE WAIT, AND THE ORDER'S LIFE |
+| 198 | 1. THE OVERTIME TABLE |
+| 232 | 2. NO ORDER |
+| 273 | 3. PRIORITY |
+| 321 | 4. RUSH |
+| 395 | 5. CANCEL |
+| 472 | 6. DEMOLITION |
+| 571 | 7. BUY-OUT |
+| 625 | 8. CONSERVED |
+| 634 | 9. SAVE AND LOAD |
+| 726 | 10. ONE WAIT, AND THE ORDER'S LIFE |
 
 ## Constants
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 773 | **type** `public class ConstructionControlCheck` | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. |
+| 75 | 777 | **type** `public class ConstructionControlCheck` | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 86 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 92 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -107,67 +107,67 @@
 | 114 | 5 | `static double pooled(Game g)` | The money in the pools the audit reads, all of them. |
 | 125 | 7 | `static void month(Game g)` | One month, audited. |
 | 134 | 5 | `static double[] handMoves(Game g, Runnable hand)` | A between-the-presses hand, and the pools before and after it. |
-| 146 | 27 | `static Game city(Path root, String name)` | A city with work on site: works standing, a population, depots, every sector held so no planner orders or scraps anything in the measurement, and on site a University, two Middle Schools and three Gravel Roads of the ... |
-| 174 | 20 | `public static void main(String[] args) throws Exception` |  |
+| 146 | 30 | `static Game city(Path root, String name)` | A city with work on site: works standing, a population, depots, every sector held so no planner orders or scraps anything in the measurement, and on site a University, two Middle Schools and three Gravel Roads of the ... |
+| 177 | 20 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE OVERTIME TABLE (lines 195-228)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 197 | 31 | `static void overtimeTable()` |  |
-
-### 2. NO ORDER (lines 229-269)
+### 1. THE OVERTIME TABLE (lines 198-231)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 231 | 38 | `static void noOrder(Path root)` |  |
+| 200 | 31 | `static void overtimeTable()` |  |
 
-### 3. PRIORITY (lines 270-317)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 272 | 45 | `static void priority(Path root)` |  |
-
-### 4. RUSH (lines 318-391)
+### 2. NO ORDER (lines 232-272)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 320 | 71 | `static void rush(Path root)` |  |
+| 234 | 38 | `static void noOrder(Path root)` |  |
 
-### 5. CANCEL (lines 392-468)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 394 | 74 | `static void cancel(Path root)` |  |
-
-### 6. DEMOLITION (lines 469-567)
+### 3. PRIORITY (lines 273-320)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 471 | 96 | `static void demolition(Path root)` |  |
+| 275 | 45 | `static void priority(Path root)` |  |
 
-### 7. BUY-OUT (lines 568-621)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 570 | 51 | `static void buyOut(Path root)` |  |
-
-### 8. CONSERVED (lines 622-630)
+### 4. RUSH (lines 321-394)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 624 | 6 | `static void conserved()` |  |
+| 323 | 71 | `static void rush(Path root)` |  |
 
-### 9. SAVE AND LOAD (lines 631-721)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 633 | 88 | `static void saveAndLoad(Path root) throws Exception` |  |
-
-### 10. ONE WAIT, AND THE ORDER'S LIFE (lines 722-847)
+### 5. CANCEL (lines 395-471)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 724 | 119 | `static void oneWaitAndTheOrder(Path root)` |  |
-| 844 | 3 | `static String fmt(double thousands)` |  |
+| 397 | 74 | `static void cancel(Path root)` |  |
+
+### 6. DEMOLITION (lines 472-570)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 474 | 96 | `static void demolition(Path root)` |  |
+
+### 7. BUY-OUT (lines 571-624)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 573 | 51 | `static void buyOut(Path root)` |  |
+
+### 8. CONSERVED (lines 625-633)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 627 | 6 | `static void conserved()` |  |
+
+### 9. SAVE AND LOAD (lines 634-725)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 636 | 89 | `static void saveAndLoad(Path root) throws Exception` |  |
+
+### 10. ONE WAIT, AND THE ORDER'S LIFE (lines 726-851)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 728 | 119 | `static void oneWaitAndTheOrder(Path root)` |  |
+| 848 | 3 | `static String fmt(double thousands)` |  |
 

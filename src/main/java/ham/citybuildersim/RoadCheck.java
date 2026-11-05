@@ -182,6 +182,10 @@ public class RoadCheck {
     static Game town(Path root, String name, String road, int n) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
+        // R0b call 7: the causes of 1900 held off, before a month. The gravel town's busy street is calibrated at the traffic today's deaths
+        // leave (section 9 needs the paving to beat a new Paved Road); on 1900's causes it carried 379 vehicles a day on its 5 gravel roads
+        // and the advice's first road move was a new gravel road, where the player's paved one.
+        g.holdCausesOfDeathOff();
         quietly(() -> {
             g.run();
             // THE LEVERS OPENED IN THE FIXTURE (R0): the towns' traffic and costs are calibrated as the pre-R0 city played them (every
@@ -752,6 +756,7 @@ public class RoadCheck {
         assertTrue("saved", saved[0]);
         GameFiles files = new GameFiles(root.resolve("saved"), root.resolve("saved-no-legacy"));
         Game back = new Game(files);
+        back.holdCausesOfDeathOff();   // R0b call 7: as the town (town()); the hold is not saved
         quietly(() -> back.loadGameSave(1));
         for (Sector s : back.getSectors().all()) back.getBusinessInvestment().holdSector(s.key());
         BuildingManager bb = back.getBuildingManager();

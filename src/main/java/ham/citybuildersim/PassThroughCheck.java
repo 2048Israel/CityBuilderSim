@@ -175,6 +175,10 @@ public class PassThroughCheck {
      */
     static Game town(String label) {
         Game city = new Game(files(label), Founding.defaults());
+        // R0b call 7: the causes of 1900 held off, before a month, here and in every twin loaded from it (load()). The ring settles on a
+        // vault the defence sells from in proportion to what it holds, sized on today's deaths; on 1900's causes the twin that bought held
+        // US$134k over the other's where it had bought US$131k, so the treasury could not sell back "the dollars the defence had not sold".
+        city.holdCausesOfDeathOff();
         // WN3: on the goods' literals, here and in every twin loaded from it (load()). The premise of the ring is a world whose prices
         // stand still (the markets' rate is the struck rate times a world level of one, section 2): the D$'s swing and the goods'
         // following are the only thing moving the twins. Measured on the world's band, one for one: the twins' D$ gap, 10% at the
@@ -212,6 +216,7 @@ public class PassThroughCheck {
     static Game load(Game base) {
         Game g = new Game(base.getGameFiles());
         g.playOnLiterals();   // WN3: as the base city (town()); the choice is not saved
+        g.holdCausesOfDeathOff();   // R0b call 7: as the base city (town()); the hold is not saved
         quietly(() -> g.loadGameSave(BASE_SLOT));
         return g;
     }

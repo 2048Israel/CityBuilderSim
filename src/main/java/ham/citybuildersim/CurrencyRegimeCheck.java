@@ -211,7 +211,13 @@ public class CurrencyRegimeCheck {
      * its one) raise the houses: 2,193 people at month 61, and the index has its rate from month 55.
      */
     static Game town(String label, Founding founding, int depotsStanding) {
+        return town(label, founding, depotsStanding, false);
+    }
+
+    /** ...with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). */
+    static Game town(String label, Founding founding, int depotsStanding, boolean causesHeldOff) {
         Game city = new Game(GameFiles.scratch(label), founding);
+        if (causesHeldOff) city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
             // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the peg fixtures stand on a town that taxes from month 1, whose
@@ -525,7 +531,12 @@ public class CurrencyRegimeCheck {
 
     /** ...with this many depots standing (see PEG_DEPOTS, and surplusDepots() for a town that needs more). */
     static Game pegTown(String label, boolean climbing, int depots) {
-        Game g = town(label, steady(), depots);
+        return pegTown(label, climbing, depots, false);
+    }
+
+    /** ...with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). */
+    static Game pegTown(String label, boolean climbing, int depots, boolean causesHeldOff) {
+        Game g = town(label, steady(), depots, causesHeldOff);
         play(g, 36);
         if (climbing) {
             double target = g.getDebtManager().getInflationTarget();
@@ -542,12 +553,12 @@ public class CurrencyRegimeCheck {
 
     /** A city on the default founding pegged with a surplus at the peg and the D$ a fifth over it: the doubt fixture, five months from its break at the peg's chance. */
     static Game doubtTown(String label, long reseed) {
-        return doubtTown(label, reseed, false);
+        return doubtTown(label, reseed, false, false);
     }
 
-    /** ...and, if `climbing`, pegged in the month prices are back near the target (pegTown(), CLIMB_LOOK_MONTHS). */
-    static Game doubtTown(String label, long reseed, boolean climbing) {
-        Game g = pegTown(label, climbing);
+    /** ...and, if `climbing`, pegged in the month prices are back near the target (pegTown(), CLIMB_LOOK_MONTHS); with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). */
+    static Game doubtTown(String label, long reseed, boolean climbing, boolean causesHeldOff) {
+        Game g = pegTown(label, climbing, PEG_DEPOTS, causesHeldOff);
         quietly(() -> {
             g.setCurrencyRegime(PEG);
             g.getDebtManager().setPegSpread(.30);
@@ -567,7 +578,7 @@ public class CurrencyRegimeCheck {
     }
 
     static Game heldTwin(String label, long seed, int months, double[] start, boolean climbing) {
-        Game b = doubtTown(label, seed, climbing);
+        Game b = doubtTown(label, seed, climbing, false);
         play(b, months - 1);
         start[0] = b.getExpectations().getCredibility();
         quietly(() -> b.repeg(b.getForeignAccounts().getShadowRate() * 1.5));
@@ -715,7 +726,7 @@ public class CurrencyRegimeCheck {
         final int seeds = 40;
         for (int attempt = 0; attempt < seeds && a == null; attempt++) {
             long tried = attempt == 0 ? 0 : SEED + attempt;
-            Game candidate = doubtTown("xr2-credibility-a-" + attempt, tried, true);
+            Game candidate = doubtTown("xr2-credibility-a-" + attempt, tried, true, false);
             int months = 0;
             boolean climbing = false;
             while (months < 40 && !candidate.getForeignAccounts().brokeThisMonth()) {
@@ -1474,9 +1485,15 @@ public class CurrencyRegimeCheck {
          * brings keep the vault above its floor to month 57, and the candidates that survive the doubt (SEED + 2 and + 3) are pegged,
          * held, in doubt and owe a purchase in the month the loop's year ends.
          */
+        /*
+         * ...ON TODAY'S DEATHS (R0b call 7). The candidates are played with the causes of 1900 held off, from their first month, and the
+         * city loaded from the one that qualifies is held too (the hold is not saved). The year's search needs a month with all four, and
+         * the first purchase owed is a month of this young town's trade, sized on today's deaths; on 1900's causes no candidate of the six
+         * was pegged, held, in doubt and owing a purchase in the twelve months it was played.
+         */
         Game live = null;
         for (int attempt = 0; attempt < 6 && live == null; attempt++) {
-            Game candidate = doubtTown("xr2-save-" + attempt, attempt == 0 ? 0 : SEED + attempt);
+            Game candidate = doubtTown("xr2-save-" + attempt, attempt == 0 ? 0 : SEED + attempt, false, true);
             FloatLinkCheck.worldWantsPaper(candidate);
             ForeignAccounts fx = candidate.getForeignAccounts();
             for (int m = 0; m < 12 && live == null && !fx.brokeThisMonth(); m++) {
@@ -1492,6 +1509,7 @@ public class CurrencyRegimeCheck {
                     fx.getDoubtShare() * 100, fx.getShadowRate(), fx.getPegRate());
             assertTrue("saved to its scratch folder", live.saveGame(2, "mid-peg").ok);
             Game back = new Game(live.getGameFiles());
+            back.holdCausesOfDeathOff();   // R0b call 7: as the candidates; the hold is not saved
             quietly(() -> back.loadGameSave(2));
             ForeignAccounts bfx = back.getForeignAccounts();
             assertTrue("the loaded city keeps the regime, the payer, the peg, the shadow, the doubt, what is owed and who owes it, to the bit",

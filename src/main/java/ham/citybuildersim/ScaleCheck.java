@@ -616,6 +616,12 @@ public class ScaleCheck {
                 + " and its player's look ---");
         GameFiles grown = new GameFiles(root.resolve("grown"), root.resolve("grown-no-legacy"));
         Game city = new Game(grown, LongPlaytest.founding());
+        // R0b call 7: the causes of 1900 held off, before a month, in this city and in every copy loaded from its save (free(), tracks()).
+        // The section reads a city that builds and tracks its K-times copy, sized on today's deaths; on 1900's causes the 5-billion copy's
+        // fixture "the free copy ordered - an order sized from more than a million needed, and one judged on its interest" failed, and the
+        // K = 1 and K = 1,000 copies parted by 3.17e-2 in their people (0.015 allowed), 5.35e-3 in their prices (0.004) and 6.5e-2 in
+        // their unemployment (0.033) by month 6.
+        city.holdCausesOfDeathOff();
         // THE LEVERS ARE SHUT AGAIN HERE (BA1, 2026-11-05; R0 opened them): R0 found the playtest's town founded in 1900, with its income taxes,
         // wage floor and the rest shut for 16 to 20 years, not growing at month 722 on main's path (4,500 people in 6,042 household places, no home built
         // in the six months read). On BA1's path with the levers opened no month from 20 to 2,400 holds every line (the fewest misses one, at 166 and
@@ -796,6 +802,7 @@ public class ScaleCheck {
         Files.copy(small.historyFile(10), files.historyFile(10));
         Game g = new Game(files);
         g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
+        g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
         quietly(() -> g.loadGameSave(10));
         assertTrue("the copy loads", g.getLoadFailure() == null);
         Orders orders = new Orders();
@@ -956,6 +963,7 @@ public class ScaleCheck {
             Files.copy(sites.historyFile(10), files.historyFile(10));
             Game g = new Game(files);
             g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
+            g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
             quietly(() -> g.loadGameSave(10));
             assertTrue("the copy at K = " + times[c] + " loads", g.getLoadFailure() == null);
             // Every sector held in both copies (SK1, above): a planner's order is a whole building, which no K scales.
@@ -1001,6 +1009,7 @@ public class ScaleCheck {
         Files.copy(grown.historyFile(10), files.historyFile(10));
         Game g = new Game(files);
         g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
+        g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
         quietly(() -> g.loadGameSave(10));
         assertTrue("fixture: the grown city loads, to have its building sites emptied", g.getLoadFailure() == null);
         for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());

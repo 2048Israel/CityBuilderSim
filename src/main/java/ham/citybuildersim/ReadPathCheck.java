@@ -1537,7 +1537,15 @@ public class ReadPathCheck {
         mig.getLastSeniorPull(); mig.getLastTarget(); mig.getLastCrowding(); mig.toSaveArray();
         PopulationCohorts pyramid = g.getCohorts();
         pyramid.getLastDeathsOfAge(); pyramid.getLastAgedOut(); pyramid.getLastKilled(); pyramid.toSaveArray();
-        for (AgeBand b : AgeBand.values()) { pyramid.share(b); PopulationCohorts.equilibriumShare(b); }
+        // ...and the causes of death of 1900 (R0b): the cohorts' count of them, and the causes' own book
+        pyramid.getLastCauseDeaths(); pyramid.getCauseDeaths();
+        for (AgeBand b : AgeBand.values()) { pyramid.share(b); PopulationCohorts.equilibriumShare(b); pyramid.getCauseDeaths(b); }
+        CausesOfDeath causeBook = g.getCausesOfDeath();
+        causeBook.getLastDeaths(); causeBook.getTbSick(); causeBook.getState();
+        for (CausesOfDeath.Cause cause : CausesOfDeath.Cause.values()) {
+            causeBook.getLastDeaths(cause); causeBook.getYearDeaths(cause); causeBook.getTotalDeaths(cause);
+        }
+        g.getHealth().getInfluenzaRate();
         HouseholdBalance people = g.getHouseholdBalance();
         people.getHungryAtFullShelves(); people.getHungryPeople(); people.getDeliveredShare(); people.toSaveArray();
         for (int r = 0; r < Household.ROWS; r++) { people.getDisposable(r); people.getFixedCosts(r); }

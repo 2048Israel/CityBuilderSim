@@ -476,6 +476,7 @@ public class Game {
         householdBalance.reset();
         unemployment.reset();
         sickness.reset();
+        causesOfDeath.reset();
         crime.reset();
         lastOrphanDeaths = 0; lastUnhousedDeaths = 0;
         studentLoansLent = 0; studentLoansRepaid = 0; studentLoansWrittenOff = 0;
@@ -14248,17 +14249,47 @@ public class Game {
         double adultsBefore = cohorts.get(AgeBand.ADULT);
         violence[AgeBand.ADULT.ordinal()] = adultsBefore > 0
                 ? Math.min(1, crime.getKilled() / adultsBefore) : 0;
-        cohorts.advanceMonth(mortalityFactors, illness, violence,
+        /*
+         * ...AND WHAT THEY DIE OF (R0b). Typhoid, the summer diarrhoea, the
+         * childhood outbreaks, TB, mothers at home births, pneumonia and, for
+         * three winters, the 1918 influenza each take their rate, a fourth
+         * competing risk beside illness and violence. CausesOfDeath says how
+         * likely each band is to die of each this month on Canada's dates,
+         * raised by the water short, the hungry and the people with no general
+         * care; the cohorts do the dying and the causes book whom they took.
+         * The babies' and children's factor is already 1900's (the swing sets
+         * it at forty times today's), so the causes SPLIT its excess instead of
+         * adding to it: what the band keeps is the part they do not name.
+         * The rates are struck on the blended factor, before it is split, so
+         * the unhoused and the orphans, whose factor is higher, die of the
+         * causes at a higher rate too; and careFactors, which
+         * Unemployment.attributeDeaths() reads below, stays the unsplit array
+         * (blendMortality returns a copy, so splitting the blend leaves it
+         * alone). Jerus took the study's calls, 2026-10-18; R0b call 2.
+         */
+        double[][] causeRates = causesOfDeath.rates(month, inBand, mortalityFactors,
+                getWaterRatio(), householdBalance.getHungerRate(), generalCoverage,
+                health.getOutbreakSeverity(), cohorts.getLastBirths());
+        double[] causeTotals = CausesOfDeath.bandTotals(causeRates);
+        // ...held off for a harness fixture (R0b call 7): no cause, and the swing whole.
+        for (AgeBand b : AgeBand.values()) {
+            if (causesOfDeath.isHeldOff()) break;
+            mortalityFactors[b.ordinal()] =
+                    CausesOfDeath.keptFactor(b, mortalityFactors[b.ordinal()]);
+        }
+        cohorts.advanceMonth(mortalityFactors, illness, violence, causeTotals,
                 Healthcare.birthFactor(childcareCoverage));
+        causesOfDeath.book(month, causeRates, cohorts.getCauseDeaths());
         sickness.setLastDeaths(cohorts.getIllnessDeaths());
         // Who among them were orphans, and who had no home - for the running
         // totals on the graphs. See Unemployment.attributeDeaths(). The killed
-        // are spread over the band as the sick are.
+        // and the causes' dead are spread over the band as the sick are.
         double[] dyingByBand = new double[AgeBand.values().length];
         for (AgeBand b : AgeBand.values()) dyingByBand[b.ordinal()] = cohorts.getDying(b);
         double[] spreadDead = cohorts.getIllnessDeaths();
         double[] killedDead = cohorts.getKilled();
-        for (int b = 0; b < spreadDead.length; b++) spreadDead[b] += killedDead[b];
+        double[] causedDead = cohorts.getCauseDeaths();
+        for (int b = 0; b < spreadDead.length; b++) spreadDead[b] += killedDead[b] + causedDead[b];
         double[] outsideDead = Unemployment.attributeDeaths(careFactors,
                 Healthcare.mortalityFactors(0, 0, 0), inBand, unhousedByBand, orphansByBand,
                 dyingByBand, spreadDead);
@@ -14277,7 +14308,8 @@ public class Game {
                 AgeBand.ADULT.getAnnualMortality()
                         * Math.max(0, mortalityFactors[AgeBand.ADULT.ordinal()]))
                 + illness[AgeBand.ADULT.ordinal()]
-                + violence[AgeBand.ADULT.ordinal()];
+                + violence[AgeBand.ADULT.ordinal()]
+                + causeTotals[AgeBand.ADULT.ordinal()];
 
         /*
          * Who works this month: the adults who were already living here, read
@@ -14825,6 +14857,21 @@ public class Game {
     /** Who has been sick how long, and who it kills. See Sickness. */
     private final Sickness sickness = new Sickness();
     public Sickness getSickness() { return sickness; }
+
+    /** What people die of: the causes of 1900 and how history takes them away (R0b). See CausesOfDeath. */
+    private final CausesOfDeath causesOfDeath = new CausesOfDeath();
+    public CausesOfDeath getCausesOfDeath() { return causesOfDeath; }
+
+    /**
+     * Today's deaths, as before R0b: no cause of 1900 kills, the swing stays
+     * whole and the influenza takes nobody off work. Only for a harness fixture
+     * whose condition was sized on them (R0b call 7); not saved, so a fixture
+     * that loads the city calls it again on the loaded one, before its first month.
+     */
+    public void holdCausesOfDeathOff() {
+        causesOfDeath.holdOff();
+        health.holdInfluenzaOff();
+    }
 
     /**
      * Crime, the police and the prisons (2026-09-11). Jerus: "crime is a
@@ -16107,6 +16154,7 @@ public class Game {
         dataSave.setSickness(sickness.getState());
         dataSave.setCrime(crime.getState());
         dataSave.setHealth(health.getState());
+        dataSave.setCausesOfDeath(causesOfDeath.getState());
         dataSave.setHealthcare(healthcare.getState());
         dataSave.setLabour(labourMarket.state());
         dataSave.setWantedPosts(wantedPosts.state());
@@ -20381,6 +20429,9 @@ public class Game {
             if (!crime.restore(restoredFlows.getCrime())) crime.reset();
             populationManager.setImprisoned(crime.prisoners());
             health.restore(restoredFlows.getHealth());
+            // ...and the causes of death of 1900 (R0b): a save from before has
+            // none, which starts them with nobody dead of them.
+            if (!causesOfDeath.restore(restoredFlows.getCausesOfDeath())) causesOfDeath.reset();
             healthcare.restore(restoredFlows.getHealthcare());
 
             labourMarket.restore(restoredFlows.getLabour());

@@ -1,4 +1,4 @@
-# PopulationCohorts.java - 604 lines · 35 methods · 2 constants · model
+# PopulationCohorts.java - 652 lines · 39 methods · 2 constants · model
 
 `ham/citybuildersim/PopulationCohorts.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -38,24 +38,24 @@
 > and leak people steadily in a large one; the pyramid is a distribution and it
 > is allowed to hold fractions. Only the DISPLAY rounds.
 
-**Uses:** [AgeBand](AgeBand.md) (37)
+**Uses:** [AgeBand](AgeBand.md) (40)
 
-**Used by (28):** [BuildAdvice](BuildAdvice.md), [CareType](CareType.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
+**Used by (29):** [BuildAdvice](BuildAdvice.md), [CareType](CareType.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 92 | · reading |
-| 149 | · ageing |
-| 446 | · saving |
+| 100 | · reading |
+| 162 | · ageing |
+| 482 | · saving |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 59 | `PopulationCohorts.BIRTHS_PER_1000_PER_YEAR` | `15.0` | Births per thousand residents per year. |
-| 488 | `PopulationCohorts.LEGACY_BANDS` | `{ "BABY", "CHILD", "TEEN", "ADULT", "SENIOR" }` | The bands a save written before names existed must be read with. |
+| 524 | `PopulationCohorts.LEGACY_BANDS` | `{ "BABY", "CHILD", "TEEN", "ADULT", "SENIOR" }` | The bands a save written before names existed must be read with. |
 
 ## Fields (state)
 
@@ -70,63 +70,69 @@
 | 70 | `private final double[] lastIllnessDeathsByBand` | ...of which sickness: the share of each band's deaths its extra rate carried. |
 | 72 | `private final double[] lastDyingByBand` | ...and of which the band's mortality at all, as opposed to ageing out of the top at 120. |
 | 74 | `private final double[] lastKilledByBand` | ...and of which violence: the killed. |
-| 86 | `private double lastKilled` | THE MONTH'S DEAD BY CAUSE, SUMMED AND SAVED (0.7.27). |
-| 87 | `private double lastDeathsOfAge` |  |
-| 88 | `private double lastAgedOut` |  |
+| 76 | `private final double[] lastCauseDeathsByBand` | ...and of which the causes of death of 1900: typhoid, TB and the rest. |
+| 88 | `private double lastKilled` | THE MONTH'S DEAD BY CAUSE, SUMMED AND SAVED (0.7.27). |
+| 89 | `private double lastDeathsOfAge` |  |
+| 90 | `private double lastAgedOut` |  |
+| 96 | `private double lastCauses` | ...and a fourth since R0b: the dead of the causes of 1900 (CausesOfDeath), every band together, saved like the killed. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 565 | **type** `public class PopulationCohorts` | The city's age pyramid, and since the switch, the city's POPULATION. |
-| 90 | 1 | `public PopulationCohorts()` |  |
+| 40 | 613 | **type** `public class PopulationCohorts` | The city's age pyramid, and since the switch, the city's POPULATION. |
+| 98 | 1 | `public PopulationCohorts()` |  |
 
-### reading (lines 92-148)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 94 | 1 | `public double get(AgeBand b)` |  |
-| 95 | 1 | `public double getLastBirths()` |  |
-| 96 | 1 | `public double getLastDeaths()` |  |
-| 97 | 1 | `public double getLastMigration()` |  |
-| 98 | 1 | `public double getPromoted(AgeBand b)` |  |
-| 99 | 1 | `public double getDeaths(AgeBand b)` |  |
-| 101 | 1 | `public double getIllnessDeaths(AgeBand b)` | Last month's deaths in a band that sickness caused. |
-| 102 | 1 | `public double[] getIllnessDeaths()` |  |
-| 104 | 1 | `public double getDying(AgeBand b)` | Last month's deaths in a band from its mortality - everything but the seniors who aged out at 120. |
-| 106 | 1 | `public double getKilled(AgeBand b)` | Last month's deaths in a band that were killings. |
-| 107 | 1 | `public double[] getKilled()` |  |
-| 109 | 1 | `public double getLastKilled()` | Last month's killings, every band together - saved, unlike the bands (0.7.27). |
-| 111 | 1 | `public double getLastDeathsOfAge()` | Last month's deaths of the bands' own mortality: the dying, less illness and violence (0.7.27). |
-| 113 | 1 | `public double getLastAgedOut()` | Last month's deaths out of the top of the pyramid at 120: the deaths that are not dying (0.7.27). |
-| 115 | 5 | `public double total()` |  |
-| 122 | 4 | `public double share(AgeBand b)` | Share of the city in this band, 0-1. |
-| 128 | 7 | `public double workingAge()` | Everyone of working age. |
-| 143 | 5 | `public double dependencyRatio()` | Children and seniors per hundred working-age adults. |
-
-### ageing (lines 149-445)
+### reading (lines 100-161)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 164 | 3 | `public void advanceMonth()` | One month of ageing. |
-| 187 | 3 | `public void advanceMonth(double[] mortalityFactor)` | The same month, with healthcare's hand on the death rate. |
-| 200 | 3 | `public void advanceMonth(double[] mortalityFactor, double birthFactor)` | The same month, with healthcare's hand on BOTH ends of a life. |
-| 217 | 3 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double birthFactor)` | The same month, with the people who stayed sick dying as well. |
-| 230 | 93 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence, double birthFactor)` | ...and the people violence killed (2026-09-11). |
-| 340 | 19 | `public void migrate(double netArrivals)` | People moving in, or out. |
-| 368 | 8 | `public double leave(AgeBand of, double people)` | People of one band leaving the city on their own account - not the proportional migration above. |
-| 405 | 7 | `private void seedFrom(long livePopulation)` | Gives an empty pyramid the shape a settled population of this size has. |
-| 424 | 6 | `public static double equilibriumShare(AgeBand of)` | What share of a settled city sits in this band, solved from the rates. |
-| 431 | 14 | `private static double[] equilibriumWeights()` |  |
+| 102 | 1 | `public double get(AgeBand b)` |  |
+| 103 | 1 | `public double getLastBirths()` |  |
+| 104 | 1 | `public double getLastDeaths()` |  |
+| 105 | 1 | `public double getLastMigration()` |  |
+| 106 | 1 | `public double getPromoted(AgeBand b)` |  |
+| 107 | 1 | `public double getDeaths(AgeBand b)` |  |
+| 109 | 1 | `public double getIllnessDeaths(AgeBand b)` | Last month's deaths in a band that sickness caused. |
+| 110 | 1 | `public double[] getIllnessDeaths()` |  |
+| 112 | 1 | `public double getDying(AgeBand b)` | Last month's deaths in a band from its mortality - everything but the seniors who aged out at 120. |
+| 114 | 1 | `public double getKilled(AgeBand b)` | Last month's deaths in a band that were killings. |
+| 115 | 1 | `public double[] getKilled()` |  |
+| 117 | 1 | `public double getLastKilled()` | Last month's killings, every band together - saved, unlike the bands (0.7.27). |
+| 119 | 1 | `public double getLastDeathsOfAge()` | Last month's deaths of the bands' own mortality: the dying, less illness and violence (0.7.27). |
+| 121 | 1 | `public double getLastAgedOut()` | Last month's deaths out of the top of the pyramid at 120: the deaths that are not dying (0.7.27). |
+| 123 | 1 | `public double getCauseDeaths(AgeBand b)` | Last month's deaths in a band that were a cause of 1900's: typhoid, TB and the rest (R0b). |
+| 124 | 1 | `public double[] getCauseDeaths()` |  |
+| 126 | 1 | `public double getLastCauseDeaths()` | Last month's deaths of the causes of 1900, every band together - saved, unlike the bands (R0b). |
+| 128 | 5 | `public double total()` |  |
+| 135 | 4 | `public double share(AgeBand b)` | Share of the city in this band, 0-1. |
+| 141 | 7 | `public double workingAge()` | Everyone of working age. |
+| 156 | 5 | `public double dependencyRatio()` | Children and seniors per hundred working-age adults. |
 
-### saving (lines 446-604)
+### ageing (lines 162-481)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 491 | 6 | `public static String[] saveBands()` | The names this build would write beside the pyramid. |
-| 498 | 12 | `public double[] toSaveArray()` |  |
-| 512 | 3 | `public void restore(double[] saved)` | A pyramid saved before the names travelled with it. |
-| 528 | 55 | `public void restore(String[] bands, double[] saved)` | Puts a saved pyramid back, each band found BY NAME. |
-| 585 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
-| 591 | 13 | `public void reset()` |  |
+| 177 | 3 | `public void advanceMonth()` | One month of ageing. |
+| 200 | 3 | `public void advanceMonth(double[] mortalityFactor)` | The same month, with healthcare's hand on the death rate. |
+| 213 | 3 | `public void advanceMonth(double[] mortalityFactor, double birthFactor)` | The same month, with healthcare's hand on BOTH ends of a life. |
+| 230 | 3 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double birthFactor)` | The same month, with the people who stayed sick dying as well. |
+| 243 | 4 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence, double birthFactor)` | ...and the people violence killed (2026-09-11). |
+| 257 | 102 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence, double[] causes, double birthFactor)` | ...and the people the causes of death of 1900 took (R0b). |
+| 376 | 19 | `public void migrate(double netArrivals)` | People moving in, or out. |
+| 404 | 8 | `public double leave(AgeBand of, double people)` | People of one band leaving the city on their own account - not the proportional migration above. |
+| 441 | 7 | `private void seedFrom(long livePopulation)` | Gives an empty pyramid the shape a settled population of this size has. |
+| 460 | 6 | `public static double equilibriumShare(AgeBand of)` | What share of a settled city sits in this band, solved from the rates. |
+| 467 | 14 | `private static double[] equilibriumWeights()` |  |
+
+### saving (lines 482-652)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 527 | 6 | `public static String[] saveBands()` | The names this build would write beside the pyramid. |
+| 534 | 14 | `public double[] toSaveArray()` |  |
+| 550 | 3 | `public void restore(double[] saved)` | A pyramid saved before the names travelled with it. |
+| 567 | 62 | `public void restore(String[] bands, double[] saved)` | Puts a saved pyramid back, each band found BY NAME. |
+| 631 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
+| 637 | 15 | `public void reset()` |  |
 
