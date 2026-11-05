@@ -565,8 +565,26 @@ public class FloatLinkCheck {
             city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(60);
             for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
+            // BA1, 2026-11-04: the sales of this harness are covered at fair by the bank's capital room (the households' bid at fair is a
+            // few points of an issue; the firms' nothing, for fair is under the world's rate). Under BA1 every sector may hold many orders
+            // on site, and the town's businesses borrow for them at once: at month 61 the bank's loans weigh 7,870 on equity of 592, its
+            // room for city paper is nothing (it was 22,000 on main), and it opens and shuts month to month. The town is played on, month
+            // by month, until the room is ROOM_FOR_SALES times the largest sale any section makes (section 2 sells six of them in one city, each
+            // taking its face from the room until it settles); readyCity() asserts that it is.
+            for (int i = 0; i < ROOM_WAIT_MONTHS && bankRoomOf(city) < ROOM_FOR_SALES * askOf(city, 1); i++) city.simulateMonths(1);
         });
         return city;
+    }
+
+    /** BA1: the most months the played city is given past its settling for the bank to have room for its sales. */
+    static final int ROOM_WAIT_MONTHS = 60;
+
+    /** BA1: the bank's room for the sales of a section, as a multiple of the largest one (the households' whole spare): section 2 sells six of them in one city and section 3 a quarter of one more, and each takes its face from the room. */
+    static final double ROOM_FOR_SALES = 8;
+
+    /** BA1: the bank's room for the city's paper, as the auction counts it (Game.auctionBidders(): equity over Bank.CAPITAL_RATIO less the weighted book, over Bank.RISK_CITY). */
+    static double bankRoomOf(Game city) {
+        return city.auctionBidders(120).bankRoomFace();
     }
 
     /** The world with an appetite for the city's paper: a tenth of the hot money it had, as early in a boom. */
@@ -589,6 +607,8 @@ public class FloatLinkCheck {
         // The cash just set is no flow: the treasury bridge opens a month with last month's closing, so it takes a month
         // to forget the difference, and the months that follow are the ones the harness holds to the bridge.
         press(city, "a month for the bridge to forget the cash set");
+        check("fixture (BA1): the bank has the room for the sales of a section, " + ROOM_FOR_SALES + " times the households' whole spare, at fair ("
+                + String.format("%,.0f for %,.0f", bankRoomOf(city), askOf(city, 1)) + ")", bankRoomOf(city) >= ROOM_FOR_SALES * askOf(city, 1));
         return city;
     }
 

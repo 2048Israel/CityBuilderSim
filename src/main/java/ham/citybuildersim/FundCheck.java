@@ -364,6 +364,19 @@ public class FundCheck {
         play(g);
         before = register.getShares(Equity.BANK);
         check("fixture: the town's fees would cover a second branch", g.getBank().branchesTheFeesCover() >= 2);
+        // BA1, 2026-11-04: the branch is paid out of the treasury, and what the resolution above left in it is a few dollars either side of
+        // nothing: +4.79k on main at month 77, -4.20k under BA1 (the town takes another course from month 1 there). The build screen then
+        // answered NEEDS_FUNDING and no second branch stood. The treasury is handed the branch's price if it
+        // holds less, as the households are handed savings above: the question here is who buys the new branch's shares, not what it cost.
+        g.setCashForTest(Math.max(g.getCash(), cheap.getCashCost()));
+        // ...AND THE FUND KEPT FROM THE MARKET (BA1, 2026-11-04). The bank pays its owners on last month's profit after tax, and the city's
+        // share of the dividend is the fund's cash: the build month's profit was +2.97k under BA1 (a dividend of 1.34k, the fund's 0.48k
+        // after it bought 6.35 shares, all from holders of the new issue, the city having held every other) and -0.40k on main (no dividend, the fund
+        // at 0.000 and buying nothing). Which side of nothing a branch's first month falls on is the town's, not this section's question,
+        // which is that the city takes no part in the issue. The withdrawal over its default (as section 9b sets it) is the fund's rule
+        // buying nothing (TreasuryFund.sellsToPay()), whatever it was paid.
+        g.setFundWithdrawal((TreasuryFund.DEFAULT_WITHDRAWAL_STEPS + 1) * TreasuryFund.WITHDRAWAL_STEP);
+        check("fixture: the fund's rule buys nothing, its withdrawal over the default", g.getFund().sellsToPay());
         final Game.BuildResult[] built = new Game.BuildResult[1];
         quietly(() -> built[0] = g.buildStack(g.getBuildingManager().getTemplateByName("Commercial Bank"), 1, true));
         check("fixture: a second branch stands", built[0] == Game.BuildResult.SUCCESS);
