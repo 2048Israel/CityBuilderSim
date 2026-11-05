@@ -1667,6 +1667,14 @@ public class HoldersCheck {
         city.restrikeOffForTest = restrikeOff;
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1 on R0, 2026-11-05), as main() opens them for the other sections: 13a needs the
+            // second sale of the line to come at a premium to its coupon, and in the untaxed 1900 town on BA1's path it did not
+            // (the 20-year yield 4.151% at the first sale and 4.168% at the reopening, a sale of 165.65 face for 164.36, the
+            // line's discount left up from 1.00 to 2.29: the coupon rounds down to 4.125% and the yield stood over it). The town
+            // taxing from month 1, which these sections were written against, has the yield 3.97% at the first sale and 3.84%
+            // at the reopening, the reopening over its face and the discount down from 1.98 to 1.67.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
