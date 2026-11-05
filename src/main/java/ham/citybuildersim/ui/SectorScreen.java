@@ -1883,15 +1883,26 @@ final class SectorScreen {
 
         SectorStatements.Table t = incomeTable(sector, now, then);
 
+        // Kept (KP4): each section of the page is a scope of its own, so what one makes shifts none of the next one's nodes.
         // The waterfall, its subtotals the statement's (D14).
-        Waterfall fall = waterfall(incomeSteps(sector, t, now), SectorScreen::m, 0, 190);
-        if (animate) fall.animate(500);
-        page.getChildren().add(card(head("WHERE A DOLLAR OF REVENUE WENT, " + CityCalendar.format(now.month()).toUpperCase(),
-                FALL_INFO, null), fall));
+        page.getChildren().add(Kept.scope("fall", () -> {
+            Waterfall fall = waterfall(incomeSteps(sector, t, now), SectorScreen::m, 0, 190);
+            // ...and a draw that does not animate (the clock past UserInterface.COUNT_UP_TOP, or a redraw in the same month) stops the
+            // growth still running from the last draw and stands the bars at this month's figures.
+            if (animate) fall.animate(500);
+            else fall.stand();
+            return card(head("WHERE A DOLLAR OF REVENUE WENT, " + CityCalendar.format(now.month()).toUpperCase(),
+                    FALL_INFO, null), fall);
+        }));
 
         // In short and the ratios; and every dollar it took, in cents.
-        page.getChildren().add(StatementView.beside(incomeShort(sector, t), incomeRatios(sector, t, now)));
-        page.getChildren().add(everyDollar(now));
+        page.getChildren().add(Kept.scope("short", () -> StatementView.beside(incomeShort(sector, t), incomeRatios(sector, t, now))));
+        page.getChildren().add(Kept.scope("every dollar", () -> everyDollar(now)));
+    }
+
+    /** A ratio's row, a scope keyed by its name (KP4): a ratio that comes and goes with the month's figures shifts no other row's nodes. */
+    private static HBox ratio(String name, String value, String colour, String info) {
+        return Kept.scope("ratio:" + name, () -> ratioRow(name, value, colour, info));
     }
 
     /** The waterfall's steps: revenue, each cost down to what it kept, the statement's subtotals between them (D14); a bar with a note opens it in the Statement view. */
@@ -1986,56 +1997,56 @@ final class SectorScreen {
         List<Node> rows = new ArrayList<>();
         if (f.gross != null) {
             double g = SectorStatements.of(t.now(SectorStatements.GROSS), rev);
-            rows.add(ratioRow("Gross margin", pctWords(g), g < 0 ? Palette.BAD : Palette.TEXT_LABEL,
+            rows.add(ratio("Gross margin", pctWords(g), g < 0 ? Palette.BAD : Palette.TEXT_LABEL,
                     "What it kept of every dollar after the sales tax and what it bought."));
         }
         double op = SectorStatements.of(t.now(SectorStatements.OPERATING), rev);
-        rows.add(ratioRow("Operating margin", pctWords(op), op < 0 ? Palette.BAD : Palette.TEXT_LABEL,
+        rows.add(ratio("Operating margin", pctWords(op), op < 0 ? Palette.BAD : Palette.TEXT_LABEL,
                 "What it kept of every dollar from trading, before the money it borrowed and its business tax."));
-        rows.add(ratioRow("Net margin", marginWords(now.margin()),
+        rows.add(ratio("Net margin", marginWords(now.margin()),
                 now.margin() < 0 ? Palette.BAD : now.margin() < .05 ? Palette.WARN : Palette.GOOD,
                 "What it kept of every dollar it took, after tax. Under 5% is thin."));
         double cover = SectorStatements.interestCover(t);
         if (Double.isFinite(cover)) {
-            rows.add(ratioRow("Interest cover", timesWords(cover),
+            rows.add(ratio("Interest cover", timesWords(cover),
                     cover < 1.5 ? Palette.BAD : cover < 3 ? Palette.WARN : Palette.GOOD,
                     "How many times over its operating profit - after its sales tax and the ground, D10 - covers its "
                     + "finance costs. Under one and it is borrowing to pay its lenders."));
         }
         double tax = SectorStatements.effectiveTax(t);
-        if (Double.isFinite(tax)) rows.add(ratioRow("Tax rate it paid", pctWords(tax), Palette.TEXT_LABEL,
+        if (Double.isFinite(tax)) rows.add(ratio("Tax rate it paid", pctWords(tax), Palette.TEXT_LABEL,
                 "Its business tax over its profit before tax. A loss pays none, and earns no refund."));
-        if (rev > 0) rows.add(ratioRow("Wages take", pctWords(now.payroll() / rev), Palette.TEXT_LABEL, null));
+        if (rev > 0) rows.add(ratio("Wages take", pctWords(now.payroll() / rev), Palette.TEXT_LABEL, null));
         SectorBooks.Shares share = ui.game.getSectorBooks().shares(sector.key());
         if (share != null && share.shares() > 0) {
             double eps = now.netIncome() / share.shares();
-            rows.add(ratioRow("Earnings a share", tightMoney(toDollars(eps), false) + " a month",
+            rows.add(ratio("Earnings a share", tightMoney(toDollars(eps), false) + " a month",
                     eps < 0 ? Palette.BAD : Palette.TEXT_LABEL, "What it kept this month over its shares."));
         }
         // ...and its format's own (spec 4.6).
         switch (f) {
             case MERCHANTS -> {
                 double turns = now.inventory() > 0 ? now.inputs() * 12 / now.inventory() : Double.NaN;
-                if (Double.isFinite(turns)) rows.add(ratioRow("Stock turns a year", timesWords(turns), Palette.TEXT_LABEL,
+                if (Double.isFinite(turns)) rows.add(ratio("Stock turns a year", timesWords(turns), Palette.TEXT_LABEL,
                         String.format("A year of what it buys at this month's rate over the stock on its shelves: %.0f days"
                                 + " of stock.", 360 / turns)));
             }
             case LANDLORDS -> {
                 double payment = ui.game.getEconomyManager().getBusinessDebtManager().getMortgagePayment(sector.key());
-                if (payment > 0) rows.add(ratioRow("Rent covers its mortgages", timesWords(t.now(SectorStatements.OPERATING) / payment),
+                if (payment > 0) rows.add(ratio("Rent covers its mortgages", timesWords(t.now(SectorStatements.OPERATING) / payment),
                         t.now(SectorStatements.OPERATING) < payment ? Palette.BAD : Palette.TEXT_LABEL,
                         "Its net operating income over its mortgages' monthly payments today, principal and interest: "
                         + "the lender's debt service cover."));
             }
             case BUILDERS -> {
                 if (sector instanceof ham.citybuildersim.sectors.Construction builders && rev > 0) {
-                    rows.add(ratioRow("Months of work booked", String.format("%.1f", builders.getUnearnedRevenue() / rev),
+                    rows.add(ratio("Months of work booked", String.format("%.1f", builders.getUnearnedRevenue() / rev),
                             Palette.TEXT_LABEL, "What its order book holds and has not yet earned, over this month's "
                             + "revenue: the work ahead of it, in months at this pace."));
                 }
             }
             case CARRIERS -> {
-                if (sector.getWorkers() > 0 && rev > 0) rows.add(ratioRow("Revenue a worker",
+                if (sector.getWorkers() > 0 && rev > 0) rows.add(ratio("Revenue a worker",
                         tightMoney(toDollars(rev / sector.getWorkers()), false) + " a month", Palette.TEXT_LABEL,
                         "This month's revenue over the workers it has today."));
             }
@@ -2070,11 +2081,13 @@ final class SectorScreen {
             double cents = parts[i] / rev * 100;
             sum += parts[i];
             bar.add(new Segment(parts[i], colours[i], false, null, null, String.format("%s  %.1f¢", names[i], cents), null));
-            keyParts.add(keyPart(colours[i], names[i], String.format("%.1f¢", cents)));
+            // Kept (KP4): a cost that comes and goes is a part keyed by its name.
+            final int at = i;
+            keyParts.add(Kept.scope("part:" + names[i], () -> keyPart(colours[at], names[at], String.format("%.1f¢", cents))));
         }
         VBox c = card(title, segmentBar(bar, Math.max(sum, rev), List.of(), 0, 14), key(keyParts));
-        if (now.netIncome() < 0) c.getChildren().add(caption(String.format("It lost %.1f¢ of every dollar it took.",
-                -now.netIncome() / rev * 100), Palette.BAD));
+        if (now.netIncome() < 0) c.getChildren().add(Kept.scope("lost", () -> caption(String.format("It lost %.1f¢ of every dollar it took.",
+                -now.netIncome() / rev * 100), Palette.BAD)));
         return c;
     }
 
@@ -2116,33 +2129,34 @@ final class SectorScreen {
         for (int i = 0; i < owns.length; i++) {
             if (!(owns[i] > 0)) continue;
             ownParts.add(new Segment(owns[i], ownsColours[i], false, null, null, ownsNames[i] + "  " + m(owns[i]), null));
-            ownKey.add(keyPart(ownsColours[i], ownsNames[i], m(owns[i])));
+            final int at = i;
+            ownKey.add(Kept.scope("own:" + ownsNames[i], () -> keyPart(ownsColours[at], ownsNames[at], m(owns[at]))));
         }
         List<Segment> owedParts = new ArrayList<>();
         List<HBox> owedKey = new ArrayList<>();
         if (now.bondsPayable() > 0) {
             owedParts.add(new Segment(now.bondsPayable(), Palette.MONEY, false, null, null, "loans and bonds  " + m(now.bondsPayable()), null));
-            owedKey.add(keyPart(Palette.MONEY, "loans and bonds", m(now.bondsPayable())));
+            owedKey.add(Kept.scope("owed:loans", () -> keyPart(Palette.MONEY, "loans and bonds", m(now.bondsPayable()))));
         }
         if (now.tradePayables() > 0) {
             owedParts.add(new Segment(now.tradePayables(), Palette.MONEY_LIGHT, false, null, null, "owed to its suppliers  " + m(now.tradePayables()), null));
-            owedKey.add(keyPart(Palette.MONEY_LIGHT, "owed to its suppliers", m(now.tradePayables())));
+            owedKey.add(Kept.scope("owed:suppliers", () -> keyPart(Palette.MONEY_LIGHT, "owed to its suppliers", m(now.tradePayables()))));
         }
         if (equity > 0) {
             owedParts.add(new Segment(equity, Palette.BUSINESS, false, null, null, "owners' equity  " + m(equity), null));
         }
-        owedKey.add(keyPart(equity < 0 ? Palette.BAD : Palette.BUSINESS, "owners' equity", m(equity)));
-        VBox sheet = card(head("WHAT IT OWNS, AND WHO HAS A CLAIM ON IT", "One scale for both bars: what it owns "
+        owedKey.add(Kept.scope("owed:equity", () -> keyPart(equity < 0 ? Palette.BAD : Palette.BUSINESS, "owners' equity", m(equity))));
+        // Kept (KP4): each section of the page is a scope of its own, so what one makes shifts none of the next one's nodes.
+        page.getChildren().add(Kept.scope("sheet", () -> card(head("WHAT IT OWNS, AND WHO HAS A CLAIM ON IT", "One scale for both bars: what it owns "
                         + "above, its lenders' claim and its owners' below. The two are equal - equity is whatever is "
                         + "left when the lenders are paid off - unless it owes more than it owns.", null),
                 sheetRow("OWNS", ownParts, scale, m(now.totalAssets()), ownKey),
-                sheetRow("OWES + EQUITY", owedParts, scale, m(now.totalLiabilities() + equity), owedKey));
-        page.getChildren().add(sheet);
+                sheetRow("OWES + EQUITY", owedParts, scale, m(now.totalLiabilities() + equity), owedKey))));
         if (equity < 0) {
-            page.getChildren().add(alertLine(Icons.ALERT, Palette.BAD, "It is worth less than it owes", String.format(
+            page.getChildren().add(Kept.scope("insolvent", () -> alertLine(Icons.ALERT, Palette.BAD, "It is worth less than it owes", String.format(
                     "Everything this business owns comes to %s and it owes %s. It is insolvent on paper and still "
                     + "trading, which the model allows: the credit side stops lending long before the accountants "
-                    + "would stop the trading.", m(now.totalAssets()), m(now.totalLiabilities())), null));
+                    + "would stop the trading.", m(now.totalAssets()), m(now.totalLiabilities())), null)));
         }
 
         // In short and the ratios; its equity's month; its owners.
@@ -2150,19 +2164,19 @@ final class SectorScreen {
         String[] ids = { SectorStatements.TOTAL_ASSETS, SectorStatements.TOTAL_LIABILITIES, SectorStatements.TOTAL_EQUITY,
                 SectorStatements.CASH };
         double[] n = nows(t, ids), p = thens(t, ids);
-        page.getChildren().add(StatementView.beside(StatementView.inShort(
+        page.getChildren().add(Kept.scope("short", () -> StatementView.beside(StatementView.inShort(
                 new String[] { "What it owns", "What it owes", "Owners' equity", "Cash", "Loans and bonds" },
                 new double[] { n[0], n[1], n[2], n[3], now.bondsPayable() },
                 new double[] { p[0], p[1], p[2], p[3], then.bondsPayable() }, t.thenKnown(),
                 "Five lines of the statement of financial position, as this month closed against last, in millions: "
                 + "the Statement view has the sheet classified, and how its equity moved."),
-                balanceRatios(sector, t, now, then)));
-        Node bridge = equityBridge(now, then);
+                balanceRatios(sector, t, now, then))));
+        Node bridge = Kept.scope("bridge", () -> equityBridge(now, then));
         if (bridge != null) page.getChildren().add(bridge);
 
         // Its owners' card is on Investors (0.7.75, D7): a door to it.
         if (ui.game.getEquity().getShares(Equity.indexOf(sector.key())) > 0) {
-            page.getChildren().add(controlDoor(Icons.EXCHANGE, OWNERS_DOOR, () -> open("Investors")));
+            page.getChildren().add(Kept.scope("owners door", () -> controlDoor(Icons.EXCHANGE, OWNERS_DOOR, () -> open("Investors"))));
         }
     }
 
@@ -2181,36 +2195,36 @@ final class SectorScreen {
         List<Node> rows = new ArrayList<>();
         double current = SectorStatements.currentRatio(t), quick = SectorStatements.quickRatio(t);
         String soon = "What falls due within a year is counted at the next month's books after a load.";
-        rows.add(ratioRow("Current ratio", Double.isFinite(current) ? String.format("%.2f", current) : "—",
+        rows.add(ratio("Current ratio", Double.isFinite(current) ? String.format("%.2f", current) : "—",
                 Double.isFinite(current) && current < 1 ? Palette.WARN : Palette.TEXT_LABEL,
                 "Its current assets - cash, stock, what its buyers owe it - over what falls due within a year. "
                 + (Double.isFinite(current) ? "Under one, a year's bills outrun what it could turn to cash." : soon)));
-        rows.add(ratioRow("Quick ratio", Double.isFinite(quick) ? String.format("%.2f", quick) : "—", Palette.TEXT_LABEL,
+        rows.add(ratio("Quick ratio", Double.isFinite(quick) ? String.format("%.2f", quick) : "—", Palette.TEXT_LABEL,
                 "The same without its stock: what it could pay at once."));
         double debtToEquity = equity > 0 ? now.bondsPayable() / equity : Double.NaN;
-        rows.add(ratioRow("Debt to equity", Double.isFinite(debtToEquity) ? String.format("%.2f", debtToEquity) : "—",
+        rows.add(ratio("Debt to equity", Double.isFinite(debtToEquity) ? String.format("%.2f", debtToEquity) : "—",
                 equity <= 0 ? Palette.BAD : Palette.TEXT_LABEL, "Its loans and bonds over its owners' equity."));
         double debtToAssets = assets > 0 ? now.bondsPayable() / assets : 0;
-        rows.add(ratioRow("Debt to assets", String.format("%.0f%%", debtToAssets * 100),
+        rows.add(ratio("Debt to assets", String.format("%.0f%%", debtToAssets * 100),
                 debtToAssets > .7 ? Palette.BAD : debtToAssets > .5 ? Palette.WARN : Palette.GOOD, null));
-        rows.add(ratioRow("Owners' share", assets > 0 ? pctWords(equity / assets) : "—", Palette.TEXT_LABEL,
+        rows.add(ratio("Owners' share", assets > 0 ? pctWords(equity / assets) : "—", Palette.TEXT_LABEL,
                 "Its owners' equity over everything it owns."));
         double roe = SectorStatements.returnOnEquity(now, then);
-        rows.add(ratioRow("Return on equity", Double.isFinite(roe) ? pctWords(roe) + " a year" : "—",
+        rows.add(ratio("Return on equity", Double.isFinite(roe) ? pctWords(roe) + " a year" : "—",
                 Double.isFinite(roe) && roe < 0 ? Palette.BAD : Palette.TEXT_LABEL,
                 "Twelve months at this month's profit, over its owners' equity averaged across the two months."));
         SectorBooks.Shares share = ui.game.getSectorBooks().shares(sector.key());
         if (share != null && share.shares() > 0) {
-            rows.add(ratioRow("Book a share", tightMoney(toDollars(equity / share.shares()), false),
+            rows.add(ratio("Book a share", tightMoney(toDollars(equity / share.shares()), false),
                     equity < 0 ? Palette.BAD : Palette.TEXT_LABEL, "Its owners' equity over its shares."));
         }
         SectorStatements.Format f = sector.statementFormat();
         if (f == SectorStatements.Format.MERCHANTS && now.inputs() > 0 && now.inventory() > 0) {
-            rows.add(ratioRow("Days of stock", String.format("%.0f", now.inventory() / (now.inputs() / 30)), Palette.TEXT_LABEL,
+            rows.add(ratio("Days of stock", String.format("%.0f", now.inventory() / (now.inputs() / 30)), Palette.TEXT_LABEL,
                     "The stock on its shelves, in days of what it bought this month."));
         }
         if (f == SectorStatements.Format.LANDLORDS && now.land() + now.buildings() > 0) {
-            rows.add(ratioRow("Loan to value", pctWords(now.bondsPayable() / (now.land() + now.buildings())), Palette.TEXT_LABEL,
+            rows.add(ratio("Loan to value", pctWords(now.bondsPayable() / (now.land() + now.buildings())), Palette.TEXT_LABEL,
                     "What it owes over its land and buildings: the mortgage lender's measure."));
         }
         return ratioColumn("READ AS RATIOS", rows.toArray(new Node[0]));
@@ -2243,20 +2257,23 @@ final class SectorScreen {
 
     /** One bar of the sheet: its name, the bar on the sheet's scale, its total, and its key under it. */
     static VBox sheetRow(String name, List<Segment> parts, double scale, String total, List<HBox> keyParts) {
-        Label n = new Label(name);
-        n.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        n.setMinWidth(110);
-        n.setPrefWidth(110);
-        SegmentBar bar = segmentBar(parts, scale > 0 ? scale : 1, List.of(), 0, 18);
-        HBox.setHgrow(bar, Priority.ALWAYS);
-        Label t = figure(total, Palette.SIZE_BODY + 2, Palette.TEXT_HEAD);
-        t.setMinWidth(90);
-        t.setAlignment(Pos.CENTER_RIGHT);
-        HBox row = new HBox(Palette.GAP_LOOSE, n, bar, t);
-        row.setAlignment(Pos.CENTER_LEFT);
-        javafx.scene.layout.FlowPane k = key(keyParts);
-        VBox.setMargin(k, new javafx.geometry.Insets(0, 0, 0, 122));
-        return new VBox(4, row, k);
+        // Kept (KP4): a bar of the sheet is a scope keyed by its name.
+        return Kept.scope("sheetRow:" + name, () -> {
+            Label n = Kept.label(name);
+            n.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            n.setMinWidth(110);
+            n.setPrefWidth(110);
+            SegmentBar bar = segmentBar(parts, scale > 0 ? scale : 1, List.of(), 0, 18);
+            HBox.setHgrow(bar, Priority.ALWAYS);
+            Label t = figure(total, Palette.SIZE_BODY + 2, Palette.TEXT_HEAD);
+            t.setMinWidth(90);
+            t.setAlignment(Pos.CENTER_RIGHT);
+            HBox row = Kept.row(Palette.GAP_LOOSE, n, bar, t);
+            row.setAlignment(Pos.CENTER_LEFT);
+            javafx.scene.layout.FlowPane k = key(keyParts);
+            VBox.setMargin(k, new javafx.geometry.Insets(0, 0, 0, 122));
+            return Kept.column(4, row, k);
+        });
     }
 
     /**
@@ -2293,12 +2310,12 @@ final class SectorScreen {
         List<Segment> held = new ArrayList<>();
         List<HBox> heldKey = new ArrayList<>();
         held.add(new Segment(home, Palette.PEOPLE, false, null, null, "the city's households  " + BuildScreen.pct(home), null));
-        heldKey.add(keyPart(Palette.PEOPLE, "the city's households", BuildScreen.pct(home)));
+        heldKey.add(Kept.scope("held:home", () -> keyPart(Palette.PEOPLE, "the city's households", BuildScreen.pct(home))));
         held.add(new Segment(abroad, Palette.ORE, false, null, null, "held abroad  " + BuildScreen.pct(abroad), null));
-        heldKey.add(keyPart(Palette.ORE, "held abroad", BuildScreen.pct(abroad)));
+        heldKey.add(Kept.scope("held:abroad", () -> keyPart(Palette.ORE, "held abroad", BuildScreen.pct(abroad))));
         if (onDesk > 0) {
             held.add(new Segment(onDesk, Palette.MONEY, false, null, null, "on the bank's trading desk  " + BuildScreen.pct(onDesk), null));
-            heldKey.add(keyPart(Palette.MONEY, "on the bank's trading desk", BuildScreen.pct(onDesk)));
+            heldKey.add(Kept.scope("held:desk", () -> keyPart(Palette.MONEY, "on the bank's trading desk", BuildScreen.pct(onDesk))));
         }
         SegmentBar heldBar = segmentBar(held, 1, List.of(), wide ? 0 : STATEMENT - 32, 14);
 
@@ -2307,7 +2324,7 @@ final class SectorScreen {
         boolean dear = price > fairValue * (1 + Exchange.BUYBACK_TOLERANCE);
         boolean cheap = price < fairValue * (1 - Exchange.BUYBACK_TOLERANCE);
         OrderBook shareBook = market.bookOf(company);
-        javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(18, 8);
+        javafx.scene.layout.FlowPane strip = Kept.flow(18, 8);
         // The price is the quote (EM2): the middle of the book, or the last trade held inside a side that stands. The bid, the ask and
         // the last trade are beside it, so a price far from the book can be seen to be one.
         strip.getChildren().add(miniFigure("QUOTE", tightMoney(toDollars(price), false), market.quoteWords(company),
@@ -2366,39 +2383,42 @@ final class SectorScreen {
                     Palette.TEXT_HEAD, null));
         }
 
-        VBox left = new VBox(Palette.GAP_LOOSE, heldBar, key(heldKey), strip);
+        VBox left = Kept.column(Palette.GAP_LOOSE, heldBar, key(heldKey), strip);
+        // Kept (KP4): a note that comes and goes is a scope of its own, so it shifts no other note's node.
         if (!market.isOpen()) {
-            left.getChildren().add(caption("The bank's desk is not posting: it has no capital to trade with. "
-                    + "Everybody else still can, and a seller with no buyer waits.", Palette.TEXT_MUTED));
+            left.getChildren().add(Kept.scope("desk closed", () -> caption("The bank's desk is not posting: it has no capital to trade with. "
+                    + "Everybody else still can, and a seller with no buyer waits.", Palette.TEXT_MUTED)));
         }
         double split = market.getSplit(company);
         if (split > 1) {
-            left.getChildren().add(caption(String.format("Split %,.0f for one this month: every holder's count by %,.0f, "
-                    + "the price by the inverse.", split, split), Palette.TEXT_MUTED));
+            left.getChildren().add(Kept.scope("split", () -> caption(String.format("Split %,.0f for one this month: every holder's count by %,.0f, "
+                    + "the price by the inverse.", split, split), Palette.TEXT_MUTED)));
         } else if (split > 0) {
-            left.getChildren().add(caption(String.format("Consolidated one for %,.0f this month: every holder's count by "
-                    + "the inverse, the price by %,.0f.", 1 / split, 1 / split), Palette.TEXT_MUTED));
+            left.getChildren().add(Kept.scope("consolidated", () -> caption(String.format("Consolidated one for %,.0f this month: every holder's count by "
+                    + "the inverse, the price by %,.0f.", 1 / split, 1 / split), Palette.TEXT_MUTED)));
         }
-        left.getChildren().add(details("book:" + company, "the order book, bids and asks, best first", detailsOpen,
-                ui::redraw, () -> orderBook(shareBook)));
+        left.getChildren().add(Kept.scope("book", () -> details("book:" + company, "the order book, bids and asks, best first", detailsOpen,
+                ui::redraw, () -> orderBook(shareBook))));
 
-        Node chart = sharePriceChart(company);
+        Node chart = Kept.scope("chart", () -> sharePriceChart(company));
         Node body;
-        if (wide && chart != null) {
-            left.setMinWidth(0);
-            HBox.setHgrow(left, Priority.ALWAYS);
-            HBox both = new HBox(24, left, chart);
-            both.setAlignment(Pos.TOP_LEFT);
-            body = both;
+        boolean beside = wide && chart != null;
+        // ...set on both sides (KP4): the column's room and grow are for the one beside the chart only.
+        left.setMinWidth(beside ? 0 : Region.USE_COMPUTED_SIZE);
+        HBox.setHgrow(left, beside ? Priority.ALWAYS : null);
+        if (beside) {
+            body = Kept.scope("both", () -> {
+                HBox both = Kept.row(24, left, chart);
+                both.setAlignment(Pos.TOP_LEFT);
+                return both;
+            });
         } else {
             if (chart != null) left.getChildren().add(chart);
             body = left;
         }
         VBox c = card(head("ITS OWNERS", ownersPolicy(company), null), body);
-        if (!wide) {
-            c.setMaxWidth(STATEMENT);
-            c.setPrefWidth(STATEMENT);
-        }
+        c.setMaxWidth(wide ? Double.MAX_VALUE : STATEMENT);
+        c.setPrefWidth(wide ? Region.USE_COMPUTED_SIZE : STATEMENT);
         return c;
     }
 
@@ -2435,43 +2455,51 @@ final class SectorScreen {
 
     /** One small figure in a strip: its name over it, a line under it, and an (i) when `info` is not null. */
     static VBox miniFigure(String name, String value, String under, String tone, String info) {
-        Label n = new Label(name);
-        n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        Node top = n;
-        if (info != null) {
-            HBox t = new HBox(Palette.GAP_TIGHT, n, infoButton(info, false));
-            t.setAlignment(Pos.CENTER_LEFT);
-            top = t;
-        }
-        VBox cell = new VBox(1, top, figure(value, Palette.SIZE_BODY + 3, tone));
-        if (under != null) cell.getChildren().add(caption(under, Palette.TEXT_MUTED));
-        cell.setMaxWidth(170);
-        return cell;
+        // Kept (KP4): a figure of a strip is a scope keyed by its name, so one that comes and goes (SHORT, BOUGHT BACK) shifts no other.
+        return Kept.scope("miniFigure:" + name, () -> {
+            Label n = Kept.label(name);
+            n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            Node top = n;
+            if (info != null) {
+                top = Kept.scope("titled", () -> {
+                    HBox t = Kept.row(Palette.GAP_TIGHT, n, infoButton(info, false));
+                    t.setAlignment(Pos.CENTER_LEFT);
+                    return t;
+                });
+            }
+            VBox cell = Kept.column(1, top, figure(value, Palette.SIZE_BODY + 3, tone));
+            if (under != null) cell.getChildren().add(caption(under, Palette.TEXT_MUTED));
+            cell.setMaxWidth(170);
+            return cell;
+        });
     }
 
     /** The order book's two sides, five levels each, as the old block's tables - in plain figures (B10). */
     VBox orderBook(OrderBook shareBook) {
-        VBox box = new VBox(6);
+        VBox box = Kept.column(6);
         for (OrderBook.Side side : OrderBook.Side.values()) {
             boolean bids = side == OrderBook.Side.BUY;
             List<OrderBook.Level> levels = shareBook.levels(side);
+            // Kept (KP4): a side is a scope keyed by which it is, the words of an empty one and the table of one that stands each their own.
             if (levels.isEmpty()) {
-                box.getChildren().add(statementLine(bids ? "Bids" : "Asks", bids ? "nobody is bidding" : "nobody is selling",
-                        Palette.TEXT_MUTED));
+                box.getChildren().add(Kept.scope(side + " empty", () -> statementLine(bids ? "Bids" : "Asks",
+                        bids ? "nobody is bidding" : "nobody is selling", Palette.TEXT_MUTED)));
                 continue;
             }
-            javafx.scene.layout.GridPane t = grid(new double[] {130, 110, 70}, rightAfterFirst(3));
-            gridHead(t, bids ? "bid, best first" : "ask, best first", "shares", "orders");
-            int line = 1;
-            for (OrderBook.Level level : levels) {
-                if (line > 5) break;
-                t.add(gridCell(tightMoney(toDollars(level.price()), false), Palette.TEXT_BODY,
-                        Palette.SIZE_CAPTION, false), 0, line);
-                t.add(gridCell(String.format("%,.0f", level.quantity()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
-                t.add(gridCell(String.valueOf(level.orders()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
-                line++;
-            }
-            box.getChildren().add(t);
+            box.getChildren().add(Kept.scope(side + " levels", () -> {
+                javafx.scene.layout.GridPane t = grid(new double[] {130, 110, 70}, rightAfterFirst(3));
+                gridHead(t, bids ? "bid, best first" : "ask, best first", "shares", "orders");
+                int line = 1;
+                for (OrderBook.Level level : levels) {
+                    if (line > 5) break;
+                    t.add(gridCell(tightMoney(toDollars(level.price()), false), Palette.TEXT_BODY,
+                            Palette.SIZE_CAPTION, false), 0, line);
+                    t.add(gridCell(String.format("%,.0f", level.quantity()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
+                    t.add(gridCell(String.valueOf(level.orders()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
+                    line++;
+                }
+                return t;
+            }));
         }
         return box;
     }
@@ -2517,7 +2545,7 @@ final class SectorScreen {
                 new String[] {"The quote", "What the register reckons"},
                 new double[][] {price, worth},
                 new String[] {Palette.BUSINESS, Palette.RAMP_REST});
-        VBox box = new VBox(4, head("WHAT A SHARE HAS BEEN WORTH", note, null), chart);
+        VBox box = Kept.column(4, head("WHAT A SHARE HAS BEEN WORTH", note, null), chart);
         box.setMinWidth(STATEMENT - 40);
         box.setMaxWidth(STATEMENT);
         return box;
@@ -2547,58 +2575,61 @@ final class SectorScreen {
         SectorStatements.Table cash = SectorStatements.cashFlow(now, then);
         SectorStatements.Table inc = incomeTable(sector, now, then);
 
+        // Kept (KP4): each section of the page is a scope of its own, so what one makes shifts none of the next one's nodes.
         // The bridge: the three sections, a step each.
         List<Step> steps = cashSteps(cash);
-        Node bridge;
-        if (steps.isEmpty()) {
-            bridge = caption("Nothing moved its cash this month.", Palette.TEXT_MUTED);
-        } else {
+        Node bridge = Kept.scope(steps.isEmpty() ? "nothing" : "steps", () -> {
+            if (steps.isEmpty()) return caption("Nothing moved its cash this month.", Palette.TEXT_MUTED);
             Waterfall fall = waterfall(steps, SectorScreen::m, 0, 170);
             HBox.setHgrow(fall, Priority.ALWAYS);
-            HBox row = new HBox(16, endFigure("AT THE START", m(now.openingCash()), Palette.TEXT_HEAD), fall,
+            HBox row = Kept.row(16, endFigure("AT THE START", m(now.openingCash()), Palette.TEXT_HEAD), fall,
                     endFigure("AT THE END", m(now.cash()), now.cash() < 0 ? Palette.BAD : Palette.TEXT_HEAD));
             row.setAlignment(Pos.CENTER_LEFT);
-            bridge = row;
-        }
-        page.getChildren().add(card(head("WHERE THE CASH WENT, " + CityCalendar.format(now.month()).toUpperCase(),
+            return row;
+        });
+        page.getChildren().add(Kept.scope("bridge", () -> card(head("WHERE THE CASH WENT, " + CityCalendar.format(now.month()).toUpperCase(),
                 "The cash it started the month with and ended it with, at the ends; between them the statement of cash "
                 + "flows' three sections - what its trading brought in, what it invested, what its lenders and owners "
                 + "put in or took out - each a step, in blue or sand; hover one for its biggest items. The Statement "
-                + "view has every line.", null), bridge));
+                + "view has every line.", null), bridge)));
         if (credit.isBorrowingBlocked(key)) {
-            page.getChildren().add(alertLine(Icons.BANK, Palette.BAD,
+            page.getChildren().add(Kept.scope("blocked", () -> alertLine(Icons.BANK, Palette.BAD,
                     "It cannot borrow for another " + credit.getBlockedMonths(key) + " months", String.format(
                     "This sector went under - it had nothing left, and its loans were written off whole - and no "
                     + "lender will write it a loan for another %d months. It can still build whatever its own cash "
                     + "covers, and nothing else — which is why a sector that goes under tends to stay small long "
-                    + "after the month that broke it.", credit.getBlockedMonths(key)), null));
+                    + "after the month that broke it.", credit.getBlockedMonths(key)), null)));
         }
 
         // Its free cash flow, what its owners took of it, and its cash in days.
         double free = cash.now(SectorStatements.FREE_CASH);
         double owners = now.dividendsPaid() + now.sharesBoughtBack();
         double days = SectorStatements.daysOfCash(now);
-        javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(28, 8);
-        strip.getChildren().addAll(
-                miniFigure("FREE CASH FLOW", m(free), "from trading, less its premises", free < 0 ? Palette.BAD : Palette.TEXT_HEAD,
-                        "What its trading brought in, less what it spent on its own premises and scrapped plant: the cash "
-                        + "it could pay its owners or its lenders without borrowing."),
-                miniFigure("PAID TO ITS OWNERS", m(owners), free > 0 && owners > 0
-                        ? String.format("%.0f%% of its free cash flow", owners / free * 100) : "dividends and buybacks",
-                        Palette.TEXT_HEAD, null),
-                miniFigure("CASH ON HAND", Double.isFinite(days) ? String.format("%,.0f days", days) : "—",
-                        "of what trading costs it", now.cash() < 0 ? Palette.BAD : Palette.TEXT_HEAD,
-                        "Its cash over a day of the month's costs - what it bought, its wages, power, water, repairs, "
-                        + "the ground, its interest and its taxes."));
-        page.getChildren().add(card(strip));
+        page.getChildren().add(Kept.scope("strip", () -> {
+            javafx.scene.layout.FlowPane strip = Kept.flow(28, 8);
+            strip.getChildren().addAll(
+                    miniFigure("FREE CASH FLOW", m(free), "from trading, less its premises", free < 0 ? Palette.BAD : Palette.TEXT_HEAD,
+                            "What its trading brought in, less what it spent on its own premises and scrapped plant: the cash "
+                            + "it could pay its owners or its lenders without borrowing."),
+                    miniFigure("PAID TO ITS OWNERS", m(owners), free > 0 && owners > 0
+                            ? String.format("%.0f%% of its free cash flow", owners / free * 100) : "dividends and buybacks",
+                            Palette.TEXT_HEAD, null),
+                    miniFigure("CASH ON HAND", Double.isFinite(days) ? String.format("%,.0f days", days) : "—",
+                            "of what trading costs it", now.cash() < 0 ? Palette.BAD : Palette.TEXT_HEAD,
+                            "Its cash over a day of the month's costs - what it bought, its wages, power, water, repairs, "
+                            + "the ground, its interest and its taxes."));
+            return card(strip);
+        }));
 
         // Can it carry what it owes; and what its borrowing costs, and when it falls due.
-        VBox pictures = creditPictures(sector, now);
-        pictures.getChildren().addAll(whenDue(sector));
-        page.getChildren().add(StatementView.beside(carryCard(sector, inc, cash, now), pictures));
+        page.getChildren().add(Kept.scope("carry", () -> {
+            VBox pictures = Kept.scope("pictures", () -> creditPictures(sector, now));
+            pictures.getChildren().addAll(Kept.scope("due", () -> whenDue(sector)));
+            return StatementView.beside(carryCard(sector, inc, cash, now), pictures);
+        }));
 
-        page.getChildren().add(sectionHead("WHAT IT BORROWS ON", null, hint("every line of its credit")));
-        page.getChildren().add(factGrid(creditLines(sector, now), 2, SectorScreen::toneColour));
+        page.getChildren().add(Kept.scope("borrows head", () -> sectionHead("WHAT IT BORROWS ON", null, hint("every line of its credit"))));
+        page.getChildren().add(Kept.scope("credit lines", () -> factGrid(creditLines(sector, now), 2, SectorScreen::toneColour)));
     }
 
     /** The bridge's steps: the cash flow statement's three sections, each with its three biggest items as its tooltip, and NOT ACCOUNTED FOR when there is any. */
@@ -2651,15 +2682,15 @@ final class SectorScreen {
         double years = SectorStatements.debtYears(cash, now);
         boolean blocked = credit.isBorrowingBlocked(sector.key());
         return ratioColumn("CAN IT CARRY WHAT IT OWES",
-                ratioRow("Interest cover", timesWords(cover), !Double.isFinite(cover) ? Palette.TEXT_LABEL
+                ratio("Interest cover", timesWords(cover), !Double.isFinite(cover) ? Palette.TEXT_LABEL
                                 : cover < 1.5 ? Palette.BAD : cover < 3 ? Palette.WARN : Palette.GOOD,
                         "How many times over its operating profit covers its finance costs; a dash when it pays none."),
-                ratioRow("Its debt, in years of trading cash", Double.isFinite(years) ? String.format("%.1f", years)
+                ratio("Its debt, in years of trading cash", Double.isFinite(years) ? String.format("%.1f", years)
                                 : now.bondsPayable() > 0 ? "never" : "—",
                         !Double.isFinite(years) && now.bondsPayable() > 0 ? Palette.WARN : Palette.TEXT_LABEL,
                         "What it owes over twelve months of what its trading brought in this month: how long it would take "
                         + "to repay at this pace, borrowing nothing more. \"Never\" when its trading brought nothing in."),
-                ratioRow("Can it borrow", blocked ? "no — " + credit.getBlockedMonths(sector.key()) + " months" : "yes",
+                ratio("Can it borrow", blocked ? "no — " + credit.getBlockedMonths(sector.key()) + " months" : "yes",
                         blocked ? Palette.BAD : Palette.GOOD,
                         blocked ? "It went under, and no lender will write it a loan until the ban runs out."
                                 : "No ban: at its own rate, within the bank's limits."));
@@ -2686,7 +2717,8 @@ final class SectorScreen {
         for (int i = 0; i < parts.length; i++) {
             if (!(parts[i] > 0)) continue;
             bar.add(new Segment(parts[i], Palette.LADDER[i], false, null, null, names[i] + "  " + m(parts[i]), null));
-            keyParts.add(keyPart(Palette.LADDER[i], names[i], m(parts[i])));
+            final int at = i;
+            keyParts.add(Kept.scope("due:" + names[i], () -> keyPart(Palette.LADDER[at], names[at], m(parts[at]))));
         }
         out.add(head("WHEN IT FALLS DUE", info, figure(m(year), Palette.SIZE_BODY + 3, Palette.TEXT_HEAD)));
         out.add(segmentBar(bar, 0, List.of(), 0, 10));
@@ -2696,12 +2728,15 @@ final class SectorScreen {
 
     /** A figure at a bridge's end: its name over it. */
     static VBox endFigure(String name, String value, String tone) {
-        Label n = new Label(name);
-        n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        VBox v = new VBox(2, n, figure(value, Palette.SIZE_LEAD, tone));
-        v.setAlignment(Pos.CENTER);
-        v.setMinWidth(Region.USE_PREF_SIZE);
-        return v;
+        // Kept (KP4): a scope of its own, keyed by its name (the bridge has two).
+        return Kept.scope("endFigure:" + name, () -> {
+            Label n = Kept.label(name);
+            n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            VBox v = Kept.column(2, n, figure(value, Palette.SIZE_LEAD, tone));
+            v.setAlignment(Pos.CENTER);
+            v.setMinWidth(Region.USE_PREF_SIZE);
+            return v;
+        });
     }
 
     /** The spread paragraph, behind the rate bar's (i) (the old page's note under "It pays"). */
@@ -2795,7 +2830,8 @@ final class SectorScreen {
         for (int i = 0; i < mixFigures.length; i++) {
             if (!(mixFigures[i] > 0)) continue;
             mix.add(new Segment(mixFigures[i], mixColours[i], false, null, null, mixNames[i] + "  " + m(mixFigures[i]), null));
-            mixKey.add(keyPart(mixColours[i], mixNames[i], m(mixFigures[i])));
+            final int kind = i;
+            mixKey.add(Kept.scope("owes:" + mixNames[i], () -> keyPart(mixColours[kind], mixNames[kind], m(mixFigures[kind]))));
         }
         BusinessDebtManager.Plan plan = credit.getShortfallPlan(key);
         String mixInfo = "It takes the cheaper of the two: the bank's rate with its fee over the loan's term, or the "
@@ -2817,8 +2853,8 @@ final class SectorScreen {
                 levBar,
                 head("WHAT IT OWES, BY KIND", mixInfo, figure(m(now.tradePayables() > 0 ? now.totalLiabilities()
                         : credit.getPrincipal(key)), Palette.SIZE_BODY + 3, Palette.TEXT_HEAD)),
-                mix.isEmpty() ? caption("it owes nothing", Palette.TEXT_MUTED) : segmentBar(mix, 0, List.of(), 0, 10),
-                mix.isEmpty() ? null : key(mixKey));
+                Kept.scope("mix", () -> mix.isEmpty() ? caption("it owes nothing", Palette.TEXT_MUTED) : segmentBar(mix, 0, List.of(), 0, 10)),
+                mix.isEmpty() ? null : Kept.scope("mix key", () -> key(mixKey)));
         c.setPrefWidth(320);
         c.setMaxWidth(360);
         return c;
@@ -3085,12 +3121,15 @@ final class SectorScreen {
             default -> null;
         };
         StatementView.Columns c = columns("of revenue");
-        VBox table = StatementView.table(t, INCOME, "this month", "last month", c, now.revenue(), then.revenue(), open,
-                notes, id -> incomeInfo(id, now), ui::redraw);
-        VBox card = StatementView.card(StatementView.titleBlock(sector.label(), t.title() + " · "
-                        + sector.statementFormat().word.toLowerCase(), period(now), millions),
-                toolbar(t, INCOME, c, open, notes), table);
-        page.getChildren().add(StatementView.beside(card, incomeRatios(sector, t, now)));
+        // Kept (KP4): the statement and its ratios are a scope of their own, so nothing else on the page shifts their nodes.
+        page.getChildren().add(Kept.scope("statement", () -> {
+            VBox table = StatementView.table(t, INCOME, "this month", "last month", c, now.revenue(), then.revenue(), open,
+                    notes, id -> incomeInfo(id, now), ui::redraw);
+            VBox card = StatementView.card(StatementView.titleBlock(sector.label(), t.title() + " · "
+                            + sector.statementFormat().word.toLowerCase(), period(now), millions),
+                    toolbar(t, INCOME, c, open, notes), table);
+            return StatementView.beside(card, incomeRatios(sector, t, now));
+        }));
     }
 
     /** An income statement row's (i), by id. */
@@ -3133,24 +3172,29 @@ final class SectorScreen {
             default -> null;
         };
         StatementView.Columns c = columns("of assets");
-        VBox table = StatementView.table(t, SHEET, "this month", "last month", c, now.totalAssets(), then.totalAssets(),
-                open, notes, id -> sheetInfo(id, now), ui::redraw);
-        VBox card = StatementView.card(StatementView.titleBlock(sector.label(), t.title(), asAt(now), millions),
-                toolbar(t, SHEET, c, open, notes), table);
-        page.getChildren().add(StatementView.beside(card, balanceRatios(sector, t, now, then)));
+        // Kept (KP4): each statement and its ratios a scope of its own, so nothing else on the page shifts their nodes.
+        page.getChildren().add(Kept.scope("statement", () -> {
+            VBox table = StatementView.table(t, SHEET, "this month", "last month", c, now.totalAssets(), then.totalAssets(),
+                    open, notes, id -> sheetInfo(id, now), ui::redraw);
+            VBox card = StatementView.card(StatementView.titleBlock(sector.label(), t.title(), asAt(now), millions),
+                    toolbar(t, SHEET, c, open, notes), table);
+            return StatementView.beside(card, balanceRatios(sector, t, now, then));
+        }));
 
         SectorStatements.Table eq = SectorStatements.equity(now, then);
         if (eq == null) {
-            page.getChildren().add(caption("How its equity moved needs last month's sheet: a month on, it is here.",
-                    Palette.TEXT_MUTED));
+            page.getChildren().add(Kept.scope("equity waits", () -> caption(
+                    "How its equity moved needs last month's sheet: a month on, it is here.", Palette.TEXT_MUTED)));
             return;
         }
-        VBox moved = StatementView.columnsTable(eq, EQUITY, EQUITY_HEADS, open,
-                n -> n == SectorStatements.OUTSIDE_NOTE ? StatementView.noteSentence(OUTSIDE_INFO) : null,
-                id -> equityInfo(id, now), ui::redraw);
-        page.getChildren().add(StatementView.card(StatementView.titleBlock(sector.label(), eq.title()
-                + (now.paidInDerived() ? " · share capital derived" : ""), period(now), SectorStatements.inMillions(eq)),
-                null, moved));
+        page.getChildren().add(Kept.scope("equity", () -> {
+            VBox moved = StatementView.columnsTable(eq, EQUITY, EQUITY_HEADS, open,
+                    n -> n == SectorStatements.OUTSIDE_NOTE ? StatementView.noteSentence(OUTSIDE_INFO) : null,
+                    id -> equityInfo(id, now), ui::redraw);
+            return StatementView.card(StatementView.titleBlock(sector.label(), eq.title()
+                    + (now.paidInDerived() ? " · share capital derived" : ""), period(now), SectorStatements.inMillions(eq)),
+                    null, moved);
+        }));
     }
 
     /** The equity statement's columns (R3). */
@@ -3213,12 +3257,15 @@ final class SectorScreen {
         java.util.Set<String> open = linesOpen(sector);
         boolean millions = SectorStatements.inMillions(t);
         StatementView.Columns c = columns(null);
-        VBox table = StatementView.table(t, CASH, "this month", "last month", c, 0, 0, open, null,
-                id -> cashInfo(id, now), ui::redraw);
-        page.getChildren().add(StatementView.card(StatementView.titleBlock(sector.label(), t.title(), period(now), millions),
-                toolbar(t, CASH, c, open, null), table));
-        page.getChildren().add(scheduleCard(sector, millions));
-        page.getChildren().add(debtCard(sector, millions));
+        // Kept (KP4): each card is a scope of its own, so what one makes shifts none of the next one's nodes.
+        page.getChildren().add(Kept.scope("statement", () -> {
+            VBox table = StatementView.table(t, CASH, "this month", "last month", c, 0, 0, open, null,
+                    id -> cashInfo(id, now), ui::redraw);
+            return StatementView.card(StatementView.titleBlock(sector.label(), t.title(), period(now), millions),
+                    toolbar(t, CASH, c, open, null), table);
+        }));
+        page.getChildren().add(Kept.scope("schedule", () -> scheduleCard(sector, millions)));
+        page.getChildren().add(Kept.scope("debt", () -> debtCard(sector, millions)));
     }
 
     /** The debt schedule's columns (R7): the kind (DEBT_KIND), five figures (DEBT_FIGURE), the rate and when the last of it falls due. */
@@ -3245,10 +3292,10 @@ final class SectorScreen {
         SectorBooks books = ui.game.getSectorBooks();
         SectorBooks.Debt now = books.debt(sector.key()), before = books.debtBefore(sector.key());
         SectorStatements.Schedule s = SectorStatements.schedule(now, before);
-        VBox c = new VBox(4, head("ITS DEBT THIS MONTH, BY KIND", SCHEDULE_INFO, null));
+        VBox c = Kept.column(4, head("ITS DEBT THIS MONTH, BY KIND", SCHEDULE_INFO, null));
         if (s == null) {
-            c.getChildren().add(caption("Not counted yet: after a load, two months have to run - one for each sheet.",
-                    Palette.TEXT_MUTED));
+            c.getChildren().add(Kept.scope("not counted", () -> caption(
+                    "Not counted yet: after a load, two months have to run - one for each sheet.", Palette.TEXT_MUTED)));
         } else {
             String head = Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL);
             c.getChildren().add(scheduleRow(new String[] { StatementView.units(millions), "at the start", "borrowed",
@@ -3271,15 +3318,16 @@ final class SectorScreen {
             c.getChildren().add(scheduleRow("Loans and bonds", total, Double.NaN, 0, millions, true));
             double rest = 0;
             for (double x : s.rest()) rest += Math.abs(x);
+            // Kept (KP4): the two notes at the foot come and go, each a scope of its own.
             if (rest >= SectorStatements.NOTICE) {
-                c.getChildren().add(caption("NOT ACCOUNTED FOR: " + m(SectorStatements.Schedule.total(s.rest()))
+                c.getChildren().add(Kept.scope("rest", () -> caption("NOT ACCOUNTED FOR: " + m(SectorStatements.Schedule.total(s.rest()))
                         + " moved what it owes and no line names it. SectorStatementCheck holds this at nothing, so this "
-                        + "is news.", Palette.BAD));
+                        + "is news.", Palette.BAD)));
             }
             double after = SectorStatements.Schedule.total(s.after());
             if (after >= SectorStatements.NOTICE) {
-                c.getChildren().add(caption("It borrowed " + m(after) + " more this month after its sheet was read, for the "
-                        + "buildings it ordered: next month's here, as on the sheet.", Palette.TEXT_MUTED));
+                c.getChildren().add(Kept.scope("after", () -> caption("It borrowed " + m(after) + " more this month after its sheet was read, for the "
+                        + "buildings it ordered: next month's here, as on the sheet.", Palette.TEXT_MUTED)));
             }
         }
         c.setMaxWidth(DEBT_KIND + 5 * DEBT_FIGURE + SCHEDULE_RATE + SCHEDULE_RUNS + 7 * Palette.GAP + 32);
@@ -3300,19 +3348,22 @@ final class SectorScreen {
     }
 
     private static HBox scheduleRow(String[] words, String labelStyle, String figureStyle) {
-        HBox row = new HBox(Palette.GAP);
-        double[] widths = { DEBT_KIND, DEBT_FIGURE, DEBT_FIGURE, DEBT_FIGURE, DEBT_FIGURE, DEBT_FIGURE, SCHEDULE_RATE,
-                SCHEDULE_RUNS };
-        for (int i = 0; i < words.length; i++) {
-            Label f = new Label(words[i]);
-            f.setMinWidth(widths[i]);
-            f.setPrefWidth(widths[i]);
-            f.setAlignment(i == 0 ? Pos.CENTER_LEFT : Pos.CENTER_RIGHT);
-            f.setStyle(i == 0 ? labelStyle : figureStyle);
-            row.getChildren().add(f);
-        }
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        // Kept (KP4): a row is a scope keyed by its first word (the kind, or the units on the heading), so a kind that comes and goes takes its own nodes.
+        return Kept.scope("scheduleRow:" + words[0], () -> {
+            HBox row = Kept.row(Palette.GAP);
+            double[] widths = { DEBT_KIND, DEBT_FIGURE, DEBT_FIGURE, DEBT_FIGURE, DEBT_FIGURE, DEBT_FIGURE, SCHEDULE_RATE,
+                    SCHEDULE_RUNS };
+            for (int i = 0; i < words.length; i++) {
+                Label f = Kept.label(words[i]);
+                f.setMinWidth(widths[i]);
+                f.setPrefWidth(widths[i]);
+                f.setAlignment(i == 0 ? Pos.CENTER_LEFT : Pos.CENTER_RIGHT);
+                f.setStyle(i == 0 ? labelStyle : figureStyle);
+                row.getChildren().add(f);
+            }
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /** A cash flow row's (i), by id. */
@@ -3351,10 +3402,10 @@ final class SectorScreen {
     VBox debtCard(Sector sector, boolean millions) {
         SectorBooks.Debt d = ui.game.getSectorBooks().debt(sector.key());
         SectorBooks.SectorMonth now = ui.game.getSectorBooks().get(sector);
-        VBox c = new VBox(4, head("ITS DEBT, BY KIND AND BY WHEN IT FALLS DUE", DUE_WORDS, null));
+        VBox c = Kept.column(4, head("ITS DEBT, BY KIND AND BY WHEN IT FALLS DUE", DUE_WORDS, null));
         if (d == null || d.owed() == null) {
-            c.getChildren().add(caption("Not counted yet: a month has to run after a load. It owes "
-                    + m(now.bondsPayable()) + " in all.", Palette.TEXT_MUTED));
+            c.getChildren().add(Kept.scope("not counted", () -> caption("Not counted yet: a month has to run after a load. It owes "
+                    + m(now.bondsPayable()) + " in all.", Palette.TEXT_MUTED)));
         } else {
             String head = Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL);
             c.getChildren().add(debtRow(new String[] { StatementView.units(millions), "owed", "within a year",
@@ -3374,7 +3425,7 @@ final class SectorScreen {
                 total[1] += now.tradePayables();
             }
             c.getChildren().add(debtRow("All it owes", total, millions, true));
-            c.getChildren().addAll(whenDue(sector));
+            c.getChildren().addAll(Kept.scope("due", () -> whenDue(sector)));
         }
         c.setMaxWidth(StatementView.TABLE + 32);
         c.setStyle("-fx-padding: 14 16 14 16; -fx-background-color: " + Palette.RAISED + ";"
@@ -3391,22 +3442,25 @@ final class SectorScreen {
     }
 
     private static HBox debtRow(String[] words, String labelStyle, String figureStyle) {
-        HBox row = new HBox(Palette.GAP);
-        Label k = new Label(words[0]);
-        k.setMinWidth(DEBT_KIND);
-        k.setPrefWidth(DEBT_KIND);
-        k.setStyle(labelStyle);
-        row.getChildren().add(k);
-        for (int i = 1; i < words.length; i++) {
-            Label f = new Label(words[i]);
-            f.setMinWidth(DEBT_FIGURE);
-            f.setPrefWidth(DEBT_FIGURE);
-            f.setAlignment(Pos.CENTER_RIGHT);
-            f.setStyle(figureStyle);
-            row.getChildren().add(f);
-        }
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        // Kept (KP4): a row is a scope keyed by its first word (the kind, or the units on the heading), so a kind that comes and goes takes its own nodes.
+        return Kept.scope("debtRow:" + words[0], () -> {
+            HBox row = Kept.row(Palette.GAP);
+            Label k = Kept.label(words[0]);
+            k.setMinWidth(DEBT_KIND);
+            k.setPrefWidth(DEBT_KIND);
+            k.setStyle(labelStyle);
+            row.getChildren().add(k);
+            for (int i = 1; i < words.length; i++) {
+                Label f = Kept.label(words[i]);
+                f.setMinWidth(DEBT_FIGURE);
+                f.setPrefWidth(DEBT_FIGURE);
+                f.setAlignment(Pos.CENTER_RIGHT);
+                f.setStyle(figureStyle);
+                row.getChildren().add(f);
+            }
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /* ------------------------------ Investors ------------------------------ */
@@ -3419,12 +3473,13 @@ final class SectorScreen {
      */
     void investorStatementView(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then,
                                BuildCard.SectorInvestors si) {
-        page.getChildren().add(shareReport(sector, now, then));
+        // Kept (KP4): each section of the page is a scope of its own, so what one makes shifts none of the next one's nodes.
+        page.getChildren().add(Kept.scope("report", () -> shareReport(sector, now, then)));
         int company = Equity.indexOf(sector.key());
-        VBox holds = whoHoldsIt(company);
-        page.getChildren().add(StatementView.beside(holds, howFinanced(company, now)));
-        page.getChildren().add(sectionHead("EVERY BUILDING AT EVERY GATE", EVERY_GATE_INFO, hint("a row opens it on Build")));
-        page.getChildren().add(everyGate(sector));
+        page.getChildren().add(Kept.scope("holds", () -> StatementView.beside(
+                Kept.scope("who", () -> whoHoldsIt(company)), Kept.scope("financed", () -> howFinanced(company, now)))));
+        page.getChildren().add(Kept.scope("gates head", () -> sectionHead("EVERY BUILDING AT EVERY GATE", EVERY_GATE_INFO, hint("a row opens it on Build"))));
+        page.getChildren().add(Kept.scope("gates", () -> everyGate(sector)));
     }
 
     /** EVERY BUILDING AT EVERY GATE's (i): since 0.7.122 the last gate the interest on its whole cost, consider()'s brake (batch C1). */
@@ -3447,12 +3502,18 @@ final class SectorScreen {
     /** Every building it owns at every gate (R4): one row each, and what it means under it. */
     VBox everyGate(Sector sector) {
         List<BuildCard.Appraisal> all = BuildCard.appraiseAll(ui.game, sector);
-        if (all.isEmpty()) return new VBox(caption("No building of its own on the Build menu.", Palette.TEXT_MUTED));
+        // Kept (KP4): the words of a sector with no building and the grid of one with buildings are each a scope of their own, since the grid's box carries a style the words' does not.
+        if (all.isEmpty()) return Kept.scope("none", () -> Kept.column(0, caption("No building of its own on the Build menu.", Palette.TEXT_MUTED)));
+        return Kept.scope("grid", () -> everyGateOf(all));
+    }
+
+    private VBox everyGateOf(List<BuildCard.Appraisal> all) {
         // ...the lender's column only for a sector that has a landlord's home (Real Estate): no other page gains a column (I13-L).
         boolean lender = false;
         for (BuildCard.Appraisal a : all) lender |= a.at(BuildCard.GateKind.LENDER) != BuildCard.Mark.NONE;
         int marks = lender ? GATE_HEADS.length : GATE_HEADS.length - 1;
-        GridPane grid = new GridPane();
+        final boolean withLender = lender;
+        GridPane grid = Kept.grid();
         grid.setHgap(12);
         grid.setVgap(0);
         List<Double> wide = new ArrayList<>();
@@ -3471,62 +3532,75 @@ final class SectorScreen {
         for (int i = 0; i < marks; i++) heading.add(GATE_HEADS[i]);
         heading.addAll(List.of("a month", "to build", "pays back", "how it would pay"));
         String[] heads = heading.toArray(new String[0]);
-        for (int i = 0; i < heads.length; i++) {
-            Label h = new Label(heads[i]);
-            h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-            grid.add(h, i, 0);
-            GridPane.setHalignment(h, i == 0 || i == heads.length - 1 ? javafx.geometry.HPos.LEFT
-                    : i <= marks ? javafx.geometry.HPos.CENTER : javafx.geometry.HPos.RIGHT);
-        }
+        // Kept (KP4): the headings are a scope of their own, and each building's rows a scope keyed by its name.
+        Kept.scope("heads", () -> {
+            for (int i = 0; i < heads.length; i++) {
+                Label h = Kept.label(heads[i]);
+                h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                grid.add(h, i, 0);
+                GridPane.setHalignment(h, i == 0 || i == heads.length - 1 ? javafx.geometry.HPos.LEFT
+                        : i <= marks ? javafx.geometry.HPos.CENTER : javafx.geometry.HPos.RIGHT);
+            }
+        });
         int row = 1;
         for (BuildCard.Appraisal a : all) {
             final BuildingsTemplate template = a.template();
-            BuildAdvice.Category cat = BuildAdvice.categoryOf(template.getCategory());
-            Label name = new Label(template.getName());
-            name.setWrapText(true);
-            name.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
-            HBox who = new HBox(8, icon(cat == null ? Icons.SECTOR : Icons.ofCategory(cat.name()), Palette.BUSINESS, 16), name);
-            who.setAlignment(Pos.CENTER_LEFT);
-            List<Node> cells = new ArrayList<>();
-            cells.add(who);
-            for (BuildCard.GateMark g : a.gates()) if (lender || g.kind() != BuildCard.GateKind.LENDER) cells.add(gateMark(g));
-            cells.add(figure(m(a.estimate()), Palette.SIZE_BODY, a.estimate() <= 0 ? Palette.BAD : Palette.TEXT_HEAD));
-            cells.add(figure(m(a.cost()), Palette.SIZE_BODY, Palette.TEXT_HEAD));
-            cells.add(figure(paybackWords(a.payback()), Palette.SIZE_BODY, Double.isFinite(a.payback()) ? Palette.TEXT_HEAD
-                    : Palette.TEXT_SPENT));
-            cells.add(caption(paysWords(a), Palette.TEXT_BODY));
-            for (int i = 0; i < cells.size(); i++) {
-                javafx.scene.layout.StackPane cell = new javafx.scene.layout.StackPane(cells.get(i));
-                javafx.scene.layout.StackPane.setAlignment(cells.get(i), i == 0 || i == cells.size() - 1 ? Pos.CENTER_LEFT
-                        : i <= marks ? Pos.CENTER : Pos.CENTER_RIGHT);
-                cell.setMinHeight(34);
-                cell.setStyle("-fx-padding: 4 0 0 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;"
-                        + " -fx-cursor: hand;");
-                cell.setOnMouseClicked(e -> {
-                    BuildAdvice.Category c = BuildAdvice.categoryOf(template.getCategory());
-                    if (c != null) ui.buildScreen.openCategory(c.name());
+            final int at = row;
+            Kept.scope("building:" + template.getName(), () -> {
+                BuildAdvice.Category cat = BuildAdvice.categoryOf(template.getCategory());
+                Label name = Kept.label(template.getName());
+                name.setWrapText(true);
+                name.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+                // ...the icon and the name in a scope of their own, so the icon's holder is no cell's (a stack like theirs, with other settings).
+                HBox who = Kept.scope("who", () -> {
+                    HBox w = Kept.row(8, icon(cat == null ? Icons.SECTOR : Icons.ofCategory(cat.name()), Palette.BUSINESS, 16), name);
+                    w.setAlignment(Pos.CENTER_LEFT);
+                    return w;
                 });
-                grid.add(cell, i, row);
-            }
-            Label so = caption(soWords(a), a.failures().isEmpty() ? Palette.TEXT_MUTED : Palette.TEXT_LABEL);
-            so.setWrapText(true);
-            so.setStyle(so.getStyle() + " -fx-padding: 0 0 6 24;");
-            grid.add(so, 0, row + 1, widths.length, 1);
+                List<Node> cells = new ArrayList<>();
+                cells.add(who);
+                for (BuildCard.GateMark g : a.gates()) if (withLender || g.kind() != BuildCard.GateKind.LENDER) cells.add(gateMark(g));
+                cells.add(figure(m(a.estimate()), Palette.SIZE_BODY, a.estimate() <= 0 ? Palette.BAD : Palette.TEXT_HEAD));
+                cells.add(figure(m(a.cost()), Palette.SIZE_BODY, Palette.TEXT_HEAD));
+                cells.add(figure(paybackWords(a.payback()), Palette.SIZE_BODY, Double.isFinite(a.payback()) ? Palette.TEXT_HEAD
+                        : Palette.TEXT_SPENT));
+                cells.add(caption(paysWords(a), Palette.TEXT_BODY));
+                for (int i = 0; i < cells.size(); i++) {
+                    javafx.scene.layout.StackPane cell = Kept.stack(cells.get(i));
+                    javafx.scene.layout.StackPane.setAlignment(cells.get(i), i == 0 || i == cells.size() - 1 ? Pos.CENTER_LEFT
+                            : i <= marks ? Pos.CENTER : Pos.CENTER_RIGHT);
+                    cell.setMinHeight(34);
+                    cell.setStyle("-fx-padding: 4 0 0 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;"
+                            + " -fx-cursor: hand;");
+                    cell.setOnMouseClicked(e -> {
+                        BuildAdvice.Category c = BuildAdvice.categoryOf(template.getCategory());
+                        if (c != null) ui.buildScreen.openCategory(c.name());
+                    });
+                    grid.add(cell, i, at);
+                }
+                Label so = caption(soWords(a), a.failures().isEmpty() ? Palette.TEXT_MUTED : Palette.TEXT_LABEL);
+                so.setWrapText(true);
+                so.setStyle(so.getStyle() + " -fx-padding: 0 0 6 24;");
+                grid.add(so, 0, at + 1, widths.length, 1);
+            });
             row += 2;
         }
-        VBox box = new VBox(grid);
+        VBox box = Kept.column(0, grid);
         box.setStyle("-fx-padding: 8 14 8 14; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;");
         return box;
     }
 
     /** One gate's mark: a tick, a cross with why behind a tooltip, or a dash where it is not one this building has. */
     Node gateMark(BuildCard.GateMark g) {
-        if (g.mark() == BuildCard.Mark.NONE) return caption("–", Palette.TEXT_SPENT);
-        if (g.mark() == BuildCard.Mark.PASS) return icon(Icons.TICK, Palette.GOOD, 13);
-        Node cross = icon(Icons.CLOSE, Palette.WARN, 13);
-        javafx.scene.layout.StackPane box = new javafx.scene.layout.StackPane(cross);
-        javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(ui.buildScreen.gateWords(g.failure())));
-        return box;
+        // Kept (KP4): a mark is a scope keyed by its gate; what it says (a dash, a tick, a cross) takes the nodes that kind uses, in the same order every time, so a gate that passes now and failed last month keeps the icon it had.
+        return Kept.scope("mark:" + g.kind(), () -> {
+            if (g.mark() == BuildCard.Mark.NONE) return caption("–", Palette.TEXT_SPENT);
+            if (g.mark() == BuildCard.Mark.PASS) return icon(Icons.TICK, Palette.GOOD, 13);
+            Node cross = icon(Icons.CLOSE, Palette.WARN, 13);
+            javafx.scene.layout.StackPane box = Kept.stack(cross);
+            Kept.tip(box, ui.buildScreen.gateWords(g.failure()), 1000);
+            return box;
+        });
     }
 
     /** The months its estimate would take to earn what one costs, in months under two years and years past them; "never" when it would not pay. */
@@ -3624,10 +3698,10 @@ final class SectorScreen {
     VBox shareReport(Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
         SectorBooks books = ui.game.getSectorBooks();
         double[] a = shareFigures(books.shares(sector.key()), now), b = shareFigures(books.sharesBefore(sector.key()), then);
-        VBox c = new VBox(4, StatementView.titleBlock(sector.label(), "Investor report", period(now)));
+        VBox c = Kept.column(4, StatementView.titleBlock(sector.label(), "Investor report", period(now)));
         if (a == null) {
-            c.getChildren().add(caption(Equity.indexOf(sector.key()) < 0 ? "It is not listed." : "Not counted yet: a month "
-                    + "has to run after a load.", Palette.TEXT_MUTED));
+            c.getChildren().add(Kept.scope("not counted", () -> caption(Equity.indexOf(sector.key()) < 0 ? "It is not listed." : "Not counted yet: a month "
+                    + "has to run after a load.", Palette.TEXT_MUTED)));
         } else {
             String head = Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL);
             c.getChildren().add(shareRow("A SHARE", "this month", "last month", Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL), head));
@@ -3662,20 +3736,23 @@ final class SectorScreen {
     static final double SHARE_LABEL = 220, SHARE_FIGURE = 120;
 
     private static HBox shareRow(String label, String now, String then, String labelStyle, String figureStyle) {
-        Label l = new Label(label);
-        l.setMinWidth(SHARE_LABEL);
-        l.setPrefWidth(SHARE_LABEL);
-        l.setStyle(labelStyle);
-        Label a = new Label(now), b = new Label(then);
-        for (Label f : new Label[] { a, b }) {
-            f.setMinWidth(SHARE_FIGURE);
-            f.setPrefWidth(SHARE_FIGURE);
-            f.setAlignment(Pos.CENTER_RIGHT);
-            f.setStyle(figureStyle);
-        }
-        HBox row = new HBox(Palette.GAP, l, a, b);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        // Kept (KP4): a row is a scope keyed by its label.
+        return Kept.scope("shareRow:" + label, () -> {
+            Label l = Kept.label(label);
+            l.setMinWidth(SHARE_LABEL);
+            l.setPrefWidth(SHARE_LABEL);
+            l.setStyle(labelStyle);
+            Label a = Kept.label(now), b = Kept.label(then);
+            for (Label f : new Label[] { a, b }) {
+                f.setMinWidth(SHARE_FIGURE);
+                f.setPrefWidth(SHARE_FIGURE);
+                f.setAlignment(Pos.CENTER_RIGHT);
+                f.setStyle(figureStyle);
+            }
+            HBox row = Kept.row(Palette.GAP, l, a, b);
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /** WHO HOLDS IT: the households, the world and the bank's desk, and what it has raised from them and paid them since founding. */
@@ -3687,14 +3764,14 @@ final class SectorScreen {
         List<Segment> held = new ArrayList<>();
         List<HBox> heldKey = new ArrayList<>();
         held.add(new Segment(home, Palette.PEOPLE, false, null, null, "the city's households  " + BuildScreen.pct(home), null));
-        heldKey.add(keyPart(Palette.PEOPLE, "the city's households", BuildScreen.pct(home)));
+        heldKey.add(Kept.scope("held:home", () -> keyPart(Palette.PEOPLE, "the city's households", BuildScreen.pct(home))));
         held.add(new Segment(abroad, Palette.ORE, false, null, null, "held abroad  " + BuildScreen.pct(abroad), null));
-        heldKey.add(keyPart(Palette.ORE, "held abroad", BuildScreen.pct(abroad)));
+        heldKey.add(Kept.scope("held:abroad", () -> keyPart(Palette.ORE, "held abroad", BuildScreen.pct(abroad))));
         if (desk > 0) {
             held.add(new Segment(desk, Palette.MONEY, false, null, null, "on the bank's desk  " + BuildScreen.pct(desk), null));
-            heldKey.add(keyPart(Palette.MONEY, "on the bank's desk", BuildScreen.pct(desk)));
+            heldKey.add(Kept.scope("held:desk", () -> keyPart(Palette.MONEY, "on the bank's desk", BuildScreen.pct(desk))));
         }
-        javafx.scene.layout.FlowPane since = new javafx.scene.layout.FlowPane(18, 8);
+        javafx.scene.layout.FlowPane since = Kept.flow(18, 8);
         since.getChildren().addAll(
                 miniFigure("RAISED AT HOME", m(register.getLifetimeRaisedHome(company)), "since founding", Palette.TEXT_HEAD, null),
                 miniFigure("RAISED ABROAD", m(register.getLifetimeRaisedAbroad(company)), "since founding", Palette.TEXT_HEAD, null),
@@ -3737,7 +3814,7 @@ final class SectorScreen {
         if (f == null || company < 0) return null;
         Equity register = ui.game.getEquity();
         double abroad = register.foreignShare(company), desk = register.deskShare(company);
-        javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(18, 8);
+        javafx.scene.layout.FlowPane strip = Kept.flow(18, 8);
         strip.getChildren().addAll(
                 miniFigure("QUOTE", shareWords(f[5], "$"), s.traded() ? "the middle of the book, as it closed" : "fair value: not traded yet",
                         Palette.TEXT_HEAD, null),
@@ -3788,72 +3865,84 @@ final class SectorScreen {
         BusinessDebtManager credit = ui.game.getEconomyManager().getBusinessDebtManager();
         String key = sector.key();
 
+        // Kept (KP4): each section of the page is a scope of its own, so what one makes shifts none of the next one's nodes.
         /* ------------------------- what it decided ------------------------- */
-        page.getChildren().add(decisionCard(si, animate));
+        page.getChildren().add(Kept.scope("decision", () -> decisionCard(si, animate)));
         if (si.landBlocked()) {
-            page.getChildren().add(alertLine(Icons.LAND, Palette.WARN, "It is waiting on ground", WAITING_INFO,
-                    doorPill("Land office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu())));
+            page.getChildren().add(Kept.scope("waiting", () -> alertLine(Icons.LAND, Palette.WARN, "It is waiting on ground", WAITING_INFO,
+                    doorPill("Land office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu()))));
         }
         // ...and for its shareholders (0.7.74, spec 4.4) - and its owners' card, moved here from the Balance sheet (0.7.75, D7).
-        VBox holders = forShareholders(sector, now);
+        VBox holders = Kept.scope("holders", () -> forShareholders(sector, now));
         if (holders != null) page.getChildren().add(holders);
-        VBox owners = ownersCard(Equity.indexOf(key), now.equity(), now.netIncome(), true);
+        VBox owners = Kept.scope("owners", () -> ownersCard(Equity.indexOf(key), now.equity(), now.netIncome(), true));
         if (owners != null) page.getChildren().add(owners);
 
         /* --------------------------- its buildings --------------------------- */
-        page.getChildren().add(sectionHead("ITS BUILDINGS", "Each building it can put up, with the first gate "
+        page.getChildren().add(Kept.scope("buildings head", () -> sectionHead("ITS BUILDINGS", "Each building it can put up, with the first gate "
                         + "investors would stop it at now - ore, a licence, staff, land, whether it pays, then whether it "
                         + "carries the interest on its whole cost - the same answer its "
                         + "build card gives. Value added is what one makes less what it uses at today's prices; the "
                         + "investors' estimate is what one would make its owner a month, after wages, at the sector's "
                         + "operating rate.",
-                hint("a row opens it on Build")));
-        page.getChildren().add(buildingsList(si));
+                hint("a row opens it on Build"))));
+        page.getChildren().add(Kept.scope("buildings", () -> buildingsList(si)));
 
         /* ------------------------- and what stops it ------------------------- */
         int lossMonths = plans.getLossMonths(key);
         int limit = BusinessInvestment.RETIREMENT_LOSS_MONTHS;
         boolean nothingToSell = sector.buildingsStanding() <= 0;
-        page.getChildren().add(sectionHead("WHAT STOPS IT", null, null));
-        GridPane tiles = equalColumns(3, Palette.GAP_LOOSE);
-        tiles.add(tile("CASH IT CAN SPEND", figure(m(now.cash()), Palette.SIZE_LEAD, now.cash() < 0 ? Palette.BAD : Palette.TEXT_HEAD),
-                now.cash() < 0 ? "overdrawn" : "its own, before it borrows", null, null), 0, 0);
-        boolean blocked = credit.isBorrowingBlocked(key);
-        tiles.add(tile("CAN IT BORROW THE REST", figure(blocked ? "no" : "yes", Palette.SIZE_LEAD, blocked ? Palette.BAD : Palette.GOOD),
-                blocked ? "ban, " + credit.getBlockedMonths(key) + " months left" : "no ban: at its own rate, within the bank's limits",
-                blocked ? Palette.BAD : null, null), 1, 0);
-        String losingWords = lossMonths == 0 ? "none"
-                : lossMonths >= limit ? (nothingToSell ? "nothing left to sell" : "selling buildings back")
-                : lossMonths + " of " + limit;
-        HBox pipRow = new HBox(10, pips(Math.min(lossMonths, limit), limit,
-                lossMonths >= limit ? Palette.BAD : Palette.WARN, 12),
-                figure(lossMonths == 0 ? "none" : lossMonths + (lossMonths == 1 ? " month" : " months"), Palette.SIZE_BODY + 3,
-                        lossMonths >= limit ? Palette.BAD : lossMonths > 0 ? Palette.WARN : Palette.TEXT_HEAD));
-        pipRow.setAlignment(Pos.CENTER_LEFT);
-        tiles.add(tile("MONTHS LOSING MONEY", pipRow, losingWords, lossMonths >= limit ? Palette.BAD : null,
-                losingInfo(lossMonths, nothingToSell)), 2, 0);
-        page.getChildren().add(tiles);
+        page.getChildren().add(Kept.scope("stops head", () -> sectionHead("WHAT STOPS IT", null, null)));
+        page.getChildren().add(Kept.scope("tiles", () -> {
+            GridPane tiles = equalColumns(3, Palette.GAP_LOOSE);
+            tiles.add(tile("CASH IT CAN SPEND", figure(m(now.cash()), Palette.SIZE_LEAD, now.cash() < 0 ? Palette.BAD : Palette.TEXT_HEAD),
+                    now.cash() < 0 ? "overdrawn" : "its own, before it borrows", null, null), 0, 0);
+            boolean blocked = credit.isBorrowingBlocked(key);
+            tiles.add(tile("CAN IT BORROW THE REST", figure(blocked ? "no" : "yes", Palette.SIZE_LEAD, blocked ? Palette.BAD : Palette.GOOD),
+                    blocked ? "ban, " + credit.getBlockedMonths(key) + " months left" : "no ban: at its own rate, within the bank's limits",
+                    blocked ? Palette.BAD : null, null), 1, 0);
+            String losingWords = lossMonths == 0 ? "none"
+                    : lossMonths >= limit ? (nothingToSell ? "nothing left to sell" : "selling buildings back")
+                    : lossMonths + " of " + limit;
+            HBox pipRow = Kept.row(10, pips(Math.min(lossMonths, limit), limit,
+                    lossMonths >= limit ? Palette.BAD : Palette.WARN, 12),
+                    figure(lossMonths == 0 ? "none" : lossMonths + (lossMonths == 1 ? " month" : " months"), Palette.SIZE_BODY + 3,
+                            lossMonths >= limit ? Palette.BAD : lossMonths > 0 ? Palette.WARN : Palette.TEXT_HEAD));
+            pipRow.setAlignment(Pos.CENTER_LEFT);
+            tiles.add(tile("MONTHS LOSING MONEY", pipRow, losingWords, lossMonths >= limit ? Palette.BAD : null,
+                    losingInfo(lossMonths, nothingToSell)), 2, 0);
+            return tiles;
+        }));
         if (lossMonths >= limit) {
-            page.getChildren().add(alertLine(Icons.ALERT, nothingToSell ? Palette.WARN : Palette.BAD,
+            page.getChildren().add(Kept.scope("scrapping", () -> alertLine(Icons.ALERT, nothingToSell ? Palette.WARN : Palette.BAD,
                     nothingToSell ? String.format("%d straight months of losses, and nothing standing to sell: it loses only its interest", lossMonths)
-                            : "It is scrapping buildings", losingInfo(lossMonths, nothingToSell), null));
+                            : "It is scrapping buildings", losingInfo(lossMonths, nothingToSell), null)));
         }
 
         /* --------------------------- the rules --------------------------- */
-        page.getChildren().add(sectionHead("THE RULES IT BUILDS BY", null, null));
-        javafx.scene.layout.FlowPane rules = new javafx.scene.layout.FlowPane(10, 8);
-        for (String[] r : rules(sector, now)) rules.getChildren().add(rule(r[0], r[1]));
-        page.getChildren().add(rules);
+        page.getChildren().add(Kept.scope("rules head", () -> sectionHead("THE RULES IT BUILDS BY", null, null)));
+        page.getChildren().add(Kept.scope("rules", () -> {
+            javafx.scene.layout.FlowPane rules = Kept.flow(10, 8);
+            // ...each rule a scope keyed by its place in the list: the list's shape is the sector's, and the words of a rule move with the month.
+            List<String[]> chips = rules(sector, now);
+            for (int i = 0; i < chips.size(); i++) {
+                final String[] r = chips.get(i);
+                rules.getChildren().add(Kept.scope("rule:" + i, () -> rule(r[0], r[1])));
+            }
+            return rules;
+        }));
 
         /* ------------------------- what you control ------------------------- */
-        page.getChildren().add(sectionHead("WHAT YOU CONTROL", CONTROL_INFO, null));
-        javafx.scene.layout.FlowPane doors = new javafx.scene.layout.FlowPane(18, 8);
-        doors.getChildren().addAll(
-                controlDoor(Icons.LAND, "the ground it can buy: Land office", () -> ui.landScreen.showLandMenu()),
-                controlDoor(Icons.POLICY, "the tax it pays: Policy › Taxes", () -> openPolicy("Taxes", "Everything")),
-                controlDoor(Icons.STAFF, "the wages it competes against: Policy › Wages", () -> openPolicy("Wages", "The floor")),
-                controlDoor(Icons.BANK, "the rate it borrows at: Policy › Money", () -> openPolicy("Money", "The policy rate")));
-        page.getChildren().add(doors);
+        page.getChildren().add(Kept.scope("control head", () -> sectionHead("WHAT YOU CONTROL", CONTROL_INFO, null)));
+        page.getChildren().add(Kept.scope("doors", () -> {
+            javafx.scene.layout.FlowPane doors = Kept.flow(18, 8);
+            doors.getChildren().addAll(
+                    controlDoor(Icons.LAND, "the ground it can buy: Land office", () -> ui.landScreen.showLandMenu()),
+                    controlDoor(Icons.POLICY, "the tax it pays: Policy › Taxes", () -> openPolicy("Taxes", "Everything")),
+                    controlDoor(Icons.STAFF, "the wages it competes against: Policy › Wages", () -> openPolicy("Wages", "The floor")),
+                    controlDoor(Icons.BANK, "the rate it borrows at: Policy › Money", () -> openPolicy("Money", "The policy rate")));
+            return doors;
+        }));
     }
 
     /** The rules it builds by, as {chip, its old note or null}: the landlords' mortgage tests or everybody else's interest test, the horizon and trend, the population, the headroom, the order rule, and the builders' exception. */
@@ -3970,91 +4059,111 @@ final class SectorScreen {
         card.setMinHeight(56);
         card.setStyle(card.getStyle().replace("-fx-padding: 6 12 6 10;", "-fx-padding: 10 14 10 12;"));
         if (si.word().isEmpty()) {
-            card.getChildren().add(caption("Every month each business decides whether to expand; the word is filed when a "
-                    + "month runs, and is not saved.", Palette.TEXT_MUTED));
+            // Kept (KP4): a note that comes and goes is a scope of its own.
+            card.getChildren().add(Kept.scope("no word", () -> caption("Every month each business decides whether to expand; the word is filed when a "
+                    + "month runs, and is not saved.", Palette.TEXT_MUTED)));
         }
         return card;
     }
 
     /** Each building it can put up: its icon and name, how many stand and are on site, its value added, the investors' estimate, and its first gate. */
     VBox buildingsList(BuildCard.SectorInvestors si) {
-        GridPane grid = new GridPane();
-        grid.setHgap(14);
-        grid.setVgap(0);
-        grid.setMaxWidth(Double.MAX_VALUE);
-        double[] widths = { 230, 130, 130, 140, -1 };
-        for (double w : widths) {
-            javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
-            if (w > 0) { c.setPrefWidth(w); c.setMinWidth(w * .7); }
-            else { c.setHgrow(Priority.ALWAYS); c.setMinWidth(160); }
-            grid.getColumnConstraints().add(c);
-        }
-        String[] heads = { "building", "standing", "value added", "investors' estimate", "the first gate it fails" };
-        for (int i = 0; i < heads.length; i++) {
-            Label h = new Label(heads[i]);
-            h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-            grid.add(h, i, 0);
-        }
-        int row = 1;
         BuildingManager bm = ui.game.getBuildingManager();
+        // The buildings the investors list that the Build menu has a template for, in their order.
+        List<BuildCard.Investors> shown = new ArrayList<>();
+        List<BuildingsTemplate> templates = new ArrayList<>();
         for (BuildCard.Investors inv : si.buildings()) {
             BuildingsTemplate t = null;
             for (BuildingsTemplate x : bm.getTemplates()) if (x.getName().equals(inv.building())) { t = x; break; }
             if (t == null) continue;
-            final BuildingsTemplate template = t;
-            BuildAdvice.Category cat = BuildAdvice.categoryOf(t.getCategory());
-            Label name = new Label(t.getName());
-            name.setWrapText(true);
-            name.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
-            HBox who = new HBox(8, icon(cat == null ? Icons.SECTOR : Icons.ofCategory(cat.name()), Palette.BUSINESS, 16), name);
-            who.setAlignment(Pos.CENTER_LEFT);
-            int owned = bm.getQuantity(t.getId());
-            VBox have = new VBox(0, caption("you have " + String.format("%,d", owned), Palette.TEXT_BODY));
-            if (inv.onSite() > 0) have.getChildren().add(caption(String.format("%,d on site", inv.onSite()), Palette.BUILDING));
-            BuildCard.Kind kind = BuildCard.kindOf(t);
-            boolean measured = kind == BuildCard.Kind.MAKER || kind == BuildCard.Kind.OFFICE;
-            double va = measured ? BuildCard.valueAdded(ui.game, t) : Double.NaN;
-            Label value = figure(measured ? m(va) + "/mo" : "—", Palette.SIZE_BODY, measured ? Palette.TEXT_HEAD : Palette.TEXT_SPENT);
-            Label estimate = figure(Double.isFinite(inv.estimate()) ? m(inv.estimate()) + "/mo" : "—", Palette.SIZE_BODY,
-                    inv.estimate() < 0 ? Palette.BAD : Palette.TEXT_HEAD);
-            Node gate;
-            if (inv.own() == null) {
-                HBox ok = new HBox(6, icon(Icons.TICK, Palette.GOOD, 13), caption("passes every gate", Palette.TEXT_LABEL));
-                ok.setAlignment(Pos.CENTER_LEFT);
-                gate = ok;
-            } else {
-                Label why = caption(ui.buildScreen.gateWords(inv.own()), Palette.WARN);
-                why.setMinWidth(0);
-                HBox no = new HBox(6, icon(gateIcon(inv.own().kind()), Palette.WARN, 13), why);
-                no.setAlignment(Pos.CENTER_LEFT);
-                gate = no;
+            shown.add(inv);
+            templates.add(t);
+        }
+        // Kept (KP4): the words of a sector with nothing on the Build menu and the grid of one with buildings are each a scope of their own,
+        // since the grid's box carries a style the words' does not.
+        if (shown.isEmpty()) return Kept.scope("none", () -> Kept.column(0, caption("No building of its own on the Build menu.", Palette.TEXT_MUTED)));
+        return Kept.scope("grid", () -> {
+            GridPane grid = Kept.grid();
+            grid.setHgap(14);
+            grid.setVgap(0);
+            grid.setMaxWidth(Double.MAX_VALUE);
+            double[] widths = { 230, 130, 130, 140, -1 };
+            for (double w : widths) {
+                javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
+                if (w > 0) { c.setPrefWidth(w); c.setMinWidth(w * .7); }
+                else { c.setHgrow(Priority.ALWAYS); c.setMinWidth(160); }
+                grid.getColumnConstraints().add(c);
             }
-            Node[] cells = { who, have, value, estimate, gate };
-            for (int i = 0; i < cells.length; i++) {
-                javafx.scene.layout.StackPane cell = new javafx.scene.layout.StackPane(cells[i]);
-                javafx.scene.layout.StackPane.setAlignment(cells[i], Pos.CENTER_LEFT);
-                cell.setMinHeight(40);
-                cell.setStyle("-fx-padding: 4 0 4 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;");
-                grid.add(cell, i, row);
-            }
-            final int r = row;
-            for (Node n : grid.getChildren()) {
-                Integer at = GridPane.getRowIndex(n);
-                if (at == null || at != r) continue;
-                n.setStyle(n.getStyle() + " -fx-cursor: hand;");
-                n.setOnMouseClicked(e -> {
-                    BuildAdvice.Category c = BuildAdvice.categoryOf(template.getCategory());
-                    if (c != null) ui.buildScreen.openCategory(c.name());
+            String[] heads = { "building", "standing", "value added", "investors' estimate", "the first gate it fails" };
+            Kept.scope("heads", () -> {
+                for (int i = 0; i < heads.length; i++) {
+                    Label h = Kept.label(heads[i]);
+                    h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                    grid.add(h, i, 0);
+                }
+            });
+            for (int n = 0; n < shown.size(); n++) {
+                final BuildCard.Investors inv = shown.get(n);
+                final BuildingsTemplate template = templates.get(n);
+                final int row = n + 1;
+                // ...each building's row a scope keyed by its name, so one that comes and goes takes its own nodes.
+                Kept.scope("building:" + template.getName(), () -> {
+                    BuildAdvice.Category cat = BuildAdvice.categoryOf(template.getCategory());
+                    Label name = Kept.label(template.getName());
+                    name.setWrapText(true);
+                    name.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+                    HBox who = Kept.scope("who", () -> {
+                        HBox w = Kept.row(8, icon(cat == null ? Icons.SECTOR : Icons.ofCategory(cat.name()), Palette.BUSINESS, 16), name);
+                        w.setAlignment(Pos.CENTER_LEFT);
+                        return w;
+                    });
+                    int owned = bm.getQuantity(template.getId());
+                    VBox have = Kept.scope("have", () -> {
+                        VBox h = Kept.column(0, caption("you have " + String.format("%,d", owned), Palette.TEXT_BODY));
+                        if (inv.onSite() > 0) {
+                            h.getChildren().add(Kept.scope("on site", () -> caption(String.format("%,d on site", inv.onSite()), Palette.BUILDING)));
+                        }
+                        return h;
+                    });
+                    BuildCard.Kind kind = BuildCard.kindOf(template);
+                    boolean measured = kind == BuildCard.Kind.MAKER || kind == BuildCard.Kind.OFFICE;
+                    double va = measured ? BuildCard.valueAdded(ui.game, template) : Double.NaN;
+                    Label value = figure(measured ? m(va) + "/mo" : "—", Palette.SIZE_BODY, measured ? Palette.TEXT_HEAD : Palette.TEXT_SPENT);
+                    Label estimate = figure(Double.isFinite(inv.estimate()) ? m(inv.estimate()) + "/mo" : "—", Palette.SIZE_BODY,
+                            inv.estimate() < 0 ? Palette.BAD : Palette.TEXT_HEAD);
+                    // ...a gate that passes and one that stops it are each a scope of their own.
+                    Node gate = Kept.scope(inv.own() == null ? "passes" : "fails", () -> {
+                        if (inv.own() == null) {
+                            HBox ok = Kept.row(6, icon(Icons.TICK, Palette.GOOD, 13), caption("passes every gate", Palette.TEXT_LABEL));
+                            ok.setAlignment(Pos.CENTER_LEFT);
+                            return ok;
+                        }
+                        Label why = caption(ui.buildScreen.gateWords(inv.own()), Palette.WARN);
+                        why.setMinWidth(0);
+                        HBox no = Kept.row(6, icon(gateIcon(inv.own().kind()), Palette.WARN, 13), why);
+                        no.setAlignment(Pos.CENTER_LEFT);
+                        return no;
+                    });
+                    Node[] cells = { who, have, value, estimate, gate };
+                    for (int i = 0; i < cells.length; i++) {
+                        javafx.scene.layout.StackPane cell = Kept.stack(cells[i]);
+                        javafx.scene.layout.StackPane.setAlignment(cells[i], Pos.CENTER_LEFT);
+                        cell.setMinHeight(40);
+                        // Kept (KP4): the whole style, the hand cursor in it, set at every draw - it was the cell's own last style with the cursor added,
+                        // which a cell handed back would have had added again.
+                        cell.setStyle("-fx-padding: 4 0 4 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0; -fx-cursor: hand;");
+                        cell.setOnMouseClicked(e -> {
+                            BuildAdvice.Category c = BuildAdvice.categoryOf(template.getCategory());
+                            if (c != null) ui.buildScreen.openCategory(c.name());
+                        });
+                        grid.add(cell, i, row);
+                    }
                 });
             }
-            row++;
-        }
-        if (row == 1) {
-            return new VBox(caption("No building of its own on the Build menu.", Palette.TEXT_MUTED));
-        }
-        VBox box = new VBox(grid);
-        box.setStyle("-fx-padding: 8 14 8 14; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;");
-        return box;
+            VBox box = Kept.column(0, grid);
+            box.setStyle("-fx-padding: 8 14 8 14; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;");
+            return box;
+        });
     }
 
     /** A gate's icon: the deposit's pick, the licence's cap, the staffing test's person, the land, the money - and the bank for the interest on its whole cost (0.7.122). */
@@ -4072,30 +4181,39 @@ final class SectorScreen {
 
     /** One of WHAT STOPS IT's tiles: its name, its figure, a line, a colour for its edge when it is the stop, and an (i). */
     static VBox tile(String name, Node figure, String line, String edge, String info) {
-        Node top = head(name, info, null);
-        VBox t = new VBox(4, top, figure, caption(line, Palette.TEXT_MUTED));
-        t.setMaxWidth(Double.MAX_VALUE);
-        t.setMinHeight(80);
-        t.setStyle("-fx-padding: 10 14 10 14; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;"
-                + " -fx-border-radius: 8; -fx-border-color: " + (edge == null ? Palette.EDGE : edge) + ";");
-        return t;
+        // Kept (KP4): a scope of its own, keyed by its name (the three tiles are three different shapes of figure).
+        return Kept.scope("tile:" + name, () -> {
+            Node top = head(name, info, null);
+            VBox t = Kept.column(4, top, figure, caption(line, Palette.TEXT_MUTED));
+            t.setMaxWidth(Double.MAX_VALUE);
+            t.setMinHeight(80);
+            t.setStyle("-fx-padding: 10 14 10 14; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;"
+                    + " -fx-border-radius: 8; -fx-border-color: " + (edge == null ? Palette.EDGE : edge) + ";");
+            return t;
+        });
     }
 
     /** A rule as a chip, with its old note behind an (i). */
     static HBox rule(String text, String info) {
-        Label c = chip(text, Palette.TEXT_LABEL);
-        c.setStyle(c.getStyle() + " -fx-font-size: " + Palette.SIZE_LABEL + "px;");
-        HBox r = new HBox(Palette.GAP_TIGHT, c);
-        if (info != null) r.getChildren().add(infoButton(info, true));
-        r.setAlignment(Pos.CENTER_LEFT);
-        return r;
+        // Kept (KP4): the row in a scope of its own, and its (i), which a rule has only sometimes, in another.
+        return Kept.scope("rule", () -> {
+            Label c = chip(text, Palette.TEXT_LABEL);
+            c.setStyle(c.getStyle() + " -fx-font-size: " + Palette.SIZE_LABEL + "px;");
+            HBox r = Kept.row(Palette.GAP_TIGHT, c);
+            if (info != null) r.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
+            r.setAlignment(Pos.CENTER_LEFT);
+            return r;
+        });
     }
 
     /** A door to a control the player holds: its icon, and where it goes. */
     static HBox controlDoor(String svg, String words, Runnable go) {
-        HBox d = new HBox(6, icon(svg, Palette.ACCENT, 14), door(words, Palette.ACCENT, go));
-        d.setAlignment(Pos.CENTER_LEFT);
-        return d;
+        // Kept (KP4): a scope of its own, keyed by its words.
+        return Kept.scope("controlDoor:" + words, () -> {
+            HBox d = Kept.row(6, icon(svg, Palette.ACCENT, 14), door(words, Palette.ACCENT, go));
+            d.setAlignment(Pos.CENTER_LEFT);
+            return d;
+        });
     }
 
     /** Policy, on one of its pages, at its top. */
