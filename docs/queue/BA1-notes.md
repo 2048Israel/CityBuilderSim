@@ -38,8 +38,22 @@
 - **Seen on the way, for a look as model behaviour:** MonetaryCheck's largest delay move is 0.087 against an allowance of
   0.100 (main's 0.049): BA1's lumpier building may make a town noisier. Not isolated.
 - **OR1 stays queued.** DeathRecordCheck passes on the merged tree, but its cause (below) is real.
-- Next: the full suite again, alone (started 01:23), the ensemble on the model with the staffing fix, then the ship
-  file.
+- **The full suite on b4bf96f4** (the staffing fix, 01:23-02:02, alone): 163 of 171 passed, 8 red. The young towns build
+  their depots first again, which moved four fixtures once more. Two Sonnet slices are on them:
+  - FloatLinkCheck, with DeskCheck, which reads its town: the bank's room is not there within ROOM_WAIT_MONTHS. The
+    effective-rate lines, 5.2 bp against 5, are to be judged once the fixture holds.
+  - CurrencyRegimeCheck 3: the credibility search finds no twin.
+  - SaveFileCheck: "something is genuinely mid-build".
+  - ScaleCheck 6: the grown city's rents price migrants out.
+- **The rest pass by name, all known classes:**
+  - LongPlaytest's one finding, "industry stands farther out than the homes" at m2400: Jerus's word, 2026-11-04.
+  - MapCheck 2d's "a yard that goes moves none of the buildings" (54 moved): DM2's class.
+  - PriceLevelCheck 8's drifts (months 101 to 105, 1e-9 to 2e-7: "at today's prices", "every real series equal
+    within", "is the same to the person"): the class the orchestrator names R0's farm retirement at 1900 prices (RT1).
+    The bond search's stop (BS1, above) is a second source of the same size.
+  - SlopeCheck and DeathRecordCheck pass on this tree.
+- The ensemble on b4bf96f4 (run BA1e, started 02:08) replaces `docs/ensemble/BA1.md` when it holds.
+- Next: the slices' mends brought here, the full suite once more, alone, then the ship file.
 
 **WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
 - **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
