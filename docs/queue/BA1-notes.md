@@ -91,7 +91,27 @@
   - DenominationCheck: a city and its reformed twin part by 1e-9 to 6e-8 in eight lines, likely the same rounding
     draw as PriceLevelCheck's. A slice traces it.
   - Fixtures, with two Sonnet slices to 06:00: CallCheck, RailCheck, RefineryCheck, HealthCheck and OrderSearchCheck.
-- Next: the slices' mends brought here, the full suite (alone), then the ship file, or WHERE IT STANDS by 08:00.
+- **The five mended** (Sonnet slices, reviewed):
+  - CallCheck and RailCheck open the levers, and RailCheck, RefineryCheck 14 and HealthCheck's twins hold 1900's causes
+    of death off (the reloaded city too).
+  - CallCheck asserts both sales clear within a coupon step of fair.
+  - OrderSearchCheck 6 hands its long-run city ground (`ROOM_GIVEN_PLOTS`): BA1's builders had left it 67 sq ft free at
+    month 1320.
+- **DenominationCheck, traced; outside BA1's diff, to pass by name** ("the same output", "...and the same year of it",
+  "the same rent", "the same price level", "the same currency", "the same treasury", "the same shops' till", "the same
+  bank", 1e-9 to 6e-8 apart). A price tie in the bond order book:
+  - Construction, Luxury Retail and Restaurants hold none of bond 3 and bid for it at a price that is mathematically the
+    same. `after` in `BondMarket.postCompanies` reduces to OUT_SPEED x share / APPETITE (0.0009) whatever a firm's
+    wealth.
+  - The computed value differs by 1e-19 between firms, so price priority takes Restaurants first in the plain city and
+    arrival order in the reformed one. 28 trades go to other firms from month 133.
+  - Not a missed constant: reforms by 10, 100, 1000 and 100.0000000001 all part from the plain city alike, and a reform
+    by 100 and one by 100(1+1e-12) never part.
+  - Rounding bid prices to 1e-12 in `submit()`, in a scratch copy, holds the twins within 1.4e-13 for 120 months.
+    BondMarket, OrderBook and OutwardInvestment are main's as they are. OB1 is queued: a price tick on bond bids.
+- **Main's R0c (0.9.14) merged in** (d29d1cbc), only the generated docs in conflict. The full suite on it started at
+  04:53, alone.
+- Next: the ship file if that suite is red only in the classes above, or WHERE IT STANDS by 08:00.
 
 **WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
 - **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
