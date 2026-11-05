@@ -1,6 +1,6 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
-**WHERE IT STANDS (2026-11-05, 01:30): main's R0 (0.9.12) merged in; the full suite on the merged tree has 10 reds.**
+**WHERE IT STANDS (2026-11-05, 03:55): main's R0 (0.9.12) and R0b (0.9.13) merged in; the last suites are red only in known classes passed by name.**
 - **The full suite on the merged tree** (67fe6cc7 + the maps, `./batch-check.sh`, all 171 harnesses, 00:02-00:36, run
   alone): 161 passed, 10 failed. (A first run at 23:20 was void. The suite of a run stopped at 23:18 had not died, ran
   beside it, and lost classes to the merge's recompile.) SlopeCheck, LongPlaytest and DeathRecordCheck pass on the
@@ -71,7 +71,17 @@
   - **The same code gave another city twice under load** (month 125 instead of 61, 1,067 people instead of 909), and
     the same in five other repeats. A model that is not deterministic under load would make every twin and fixture a
     draw. Not traced.
-- Next: the full suite once more, alone (03:11), then the ship file.
+- **The full suite on dff58326** (03:11-03:48, alone): 168 of 171 passed. The three reds are all known classes passing
+  by name: PriceLevelCheck 8's drift (months 101 to 105, the farms' food series and Manufacturing's cash: RT1's class,
+  BS1 beside it), MapCheck 2d's "a yard that goes moves none of the buildings" (54 moved, DM2's class), and
+  LongPlaytest's one finding, "industry stands farther out than the homes" at m2400 (Jerus's word).
+- **Main's R0b (0.9.13, the causes of death) merged in afterwards**, with two conflicts combined:
+  - CurrencyRegimeCheck: `doubtTown()` and `pegTown()` take both `climbing` (BA1's section 3) and `causesHeldOff`
+    (R0b's savedMidPeg()).
+  - ScaleCheck 6: R0b's causes held off, with BA1's levers shut at month 488; `emptySites()` holds them off too, as
+    every copy loaded from the save does.
+  - Both green alone. R0b changes main's model, not BA1's, so BA1e stands as the batch's ensemble.
+- Next: the full suite on the merged tree (03:52, alone), then the ship file.
 
 **WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
 - **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
