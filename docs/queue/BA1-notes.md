@@ -1,6 +1,6 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
-**WHERE IT STANDS (2026-11-05, 03:55): main's R0 (0.9.12) and R0b (0.9.13) merged in; the last suites are red only in known classes passed by name.**
+**WHERE IT STANDS (2026-11-05, 05:35): ready, the ship file pushed. Main's R0, R0b and R0c (0.9.14) merged in; the full suite red only in known classes passed by name.**
 - **The full suite on the merged tree** (67fe6cc7 + the maps, `./batch-check.sh`, all 171 harnesses, 00:02-00:36, run
   alone): 161 passed, 10 failed. (A first run at 23:20 was void. The suite of a run stopped at 23:18 had not died, ran
   beside it, and lost classes to the merge's recompile.) SlopeCheck, LongPlaytest and DeathRecordCheck pass on the
@@ -109,9 +109,15 @@
     by 100 and one by 100(1+1e-12) never part.
   - Rounding bid prices to 1e-12 in `submit()`, in a scratch copy, holds the twins within 1.4e-13 for 120 months.
     BondMarket, OrderBook and OutwardInvestment are main's as they are. OB1 is queued: a price tick on bond bids.
-- **Main's R0c (0.9.14) merged in** (d29d1cbc), only the generated docs in conflict. The full suite on it started at
-  04:53, alone.
-- Next: the ship file if that suite is red only in the classes above, or WHERE IT STANDS by 08:00.
+- **Main's R0c (0.9.14) merged in** (d29d1cbc), only the generated docs in conflict.
+- **The full suite on it** (04:53-05:30, alone, every harness, on the world files): **169 of 173 passed.** The four reds
+  are the known classes, passed by name at the gate:
+  - DenominationCheck's reformed twin ("...and the same year of it", 3.5e-9 apart: OB1).
+  - PriceLevelCheck 8's drift (worst 5.8e-9: RT1, BS1).
+  - MapCheck's moved boxes (2d's yard laid across a district, 2h's reserve months: DM2).
+  - LongPlaytest's one finding, "a building on the map moved", twice at months 2390-2393 (DM1's class, LD2-D's and
+    Jerus's word).
+- **The ship file is pushed** (05:35), last.
 
 **WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
 - **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
