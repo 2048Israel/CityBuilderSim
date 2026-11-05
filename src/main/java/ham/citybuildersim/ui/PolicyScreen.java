@@ -797,15 +797,19 @@ final class PolicyScreen {
         Pieces.ActionButton no = actionButton(Icons.CLOSE, Palette.TEXT_LABEL, ACTION_INLINE,
                 new Press(Look.CHOOSE, "Leave it as it is", null), () -> { dropProposal(); ui.redraw(); });
         no.setMinWidth(170);
-        HBox bar = new HBox(8, go, no);
+        // Kept (KP2): on a kept page (the fare, on Infrastructure) the bar and its buttons are handed back.
+        HBox bar = Kept.row(8, go, no);
         bar.setAlignment(Pos.CENTER_LEFT);
         bar.setStyle("-fx-padding: 6 0 2 0;");
         return bar;
     }
 
-    /** The foot of a card whose dial keeps its own Apply: the bar once its key is staged, nothing before. */
+    /**
+     * The foot of a card whose dial keeps its own Apply: the bar once its key is staged, nothing before. The
+     * bar is a scope of its own, keyed by the dial's key, since it comes and goes (Kept, KP2).
+     */
     List<Node> applyFoot(String key, String label, Runnable apply) {
-        return isStaged(key) ? List.of(applyBar(label, apply)) : List.of();
+        return isStaged(key) ? Kept.scope("applyBar:" + key, () -> List.<Node>of(applyBar(label, apply))) : List.of();
     }
 
     /* ----------------------------- the screen's own pieces ----------------------------- */

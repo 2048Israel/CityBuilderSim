@@ -1182,7 +1182,9 @@ public class UserInterface extends Application {
         if (!kept) pool.forget();
         // A node on the page that had the focus loses it, as it did when the page was rebuilt under
         // it: a chip clicked keeps no focus ring, and the keys go where they went (the window's).
-        if (kept && scene != null) {
+        // Kept (KP2): except a field the player is typing in - a kept field keeps its focus, and its
+        // text, across a month (Kept.text).
+        if (kept && scene != null && !(scene.getFocusOwner() instanceof javafx.scene.control.TextInputControl)) {
             for (javafx.scene.Node n = scene.getFocusOwner(); n != null; n = n.getParent()) {
                 if (n == rootMenu) {
                     scene.getRoot().requestFocus();
@@ -3944,6 +3946,9 @@ public class UserInterface extends Application {
         peopleScreen.forget();
         // ...and City History (KP1): its kept page is the last city's.
         historyScreen.forget();
+        // ...and Infrastructure and Services (KP2): theirs too.
+        infrastructureScreen.forget();
+        servicesScreen.forget();
         // ...and the header and the rail hand the next city none of this one's nodes (UP2).
         forgetChrome();
     }
@@ -5551,18 +5556,19 @@ public class UserInterface extends Application {
      * menus - has no swatch. Every screen's title is made here.
      */
     Label pageTitle(String text) {
-        Label title = new Label(text);
-        title.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+        // Kept (KP2): through Kept as Pieces.pageHead is; the graphic is null where the screen has no area.
         String area = areaOf(tabFor(currentScreen));
-        if (area != null) {
-            Region swatch = new Region();
-            swatch.setMinSize(10, 10);
-            swatch.setPrefSize(10, 10);
-            swatch.setMaxSize(10, 10);
-            swatch.setStyle("-fx-background-color: " + area + "; -fx-background-radius: 3;");
-            title.setGraphic(swatch);
-            title.setGraphicTextGap(10);
-        }
+        Region swatch = area == null ? null : Kept.scope("pageTitle.swatch", () -> {
+            Region s = Kept.region();
+            s.setMinSize(10, 10);
+            s.setPrefSize(10, 10);
+            s.setMaxSize(10, 10);
+            s.setStyle("-fx-background-color: " + area + "; -fx-background-radius: 3;");
+            return s;
+        });
+        Label title = Kept.label(text, swatch);
+        title.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+        title.setGraphicTextGap(area != null ? 10 : 4);
         return title;
     }
 

@@ -58,6 +58,14 @@ import static ham.citybuildersim.ui.Levers.*;
  * rate, the clinic's break-even); words the reading says before the dial is
  * moved (idle() - "three rates", where a figure would be one of three and
  * read as the whole: the Policy spec's B1); and the onTrack() above.
+ *
+ * KEPT, THE FIRST CONTROL (KP2). On a kept page (Infrastructure's fare) the
+ * slider is handed back month after month, and a month can land while the
+ * player has the thumb in hand. So the thumb and the range are set only
+ * where they differ and never while Kept.held() says the player holds it,
+ * the listener is added once and reads the ladder of the latest build from
+ * the slider's properties, and shown() tells a dial card what value to
+ * draw its effects at: the held thumb's, not the staged one.
  */
 public final class Ladder {
 
@@ -74,7 +82,10 @@ public final class Ladder {
     private final DoubleFunction<String> reads;
     private DoubleFunction<String> stepReads;
     private double current;
-    private double shown = Double.NaN;
+    /** Where the thumb is asked to sit (showing()), NaN: at the city's value. */
+    private double placed = Double.NaN;
+    /** The value the dial showed at the last build(): see shown(). NaN before the first build. */
+    private double drawn = Double.NaN;
     private DoubleConsumer stage, apply;
     private boolean offAtCurrent;
     private String itIs;
@@ -107,7 +118,7 @@ public final class Ladder {
     public Ladder current(double value) { current = value; return this; }
 
     /** Where the thumb sits when that is not the current value - a staged one. */
-    public Ladder showing(double value) { shown = value; return this; }
+    public Ladder showing(double value) { placed = value; return this; }
 
     /** Staged: every move hands the value to this, which stages it (or unstages it) and redraws. */
     public Ladder stages(DoubleConsumer to) { stage = to; return this; }
@@ -148,16 +159,24 @@ public final class Ladder {
     /** What the reading says, in grey, while the thumb sits on the current value and nothing is staged (0.7.36): "three rates" for a dial whose current is one of several. */
     public Ladder idle(String words) { idle = words; return this; }
 
+    /** The keys a slider keeps the latest build's ladder and reading label under, for the listener added once to read. */
+    private static final String LADDER = "kept.ladder", READING_LABEL = "kept.reading";
+
     /** The dial: the row of −, slider, + and reading over the ends line. */
     public VBox build() {
 
         if ((stage == null) == (apply == null)) {
             throw new IllegalStateException("a ladder either stages or applies at once - exactly one callback");
         }
-        double at = bounded(Double.isNaN(shown) ? current : shown);
+        double at = bounded(Double.isNaN(placed) ? current : placed);
         boolean off = moved(at, current, step) || offAtCurrent;
 
-        Slider bar = new Slider(min, max, at);
+        // Kept (KP2): the first control on a kept page. The slider is handed back with the player's hand
+        // on it left alone: while it is held (a month landed mid-drag) neither its range nor its thumb
+        // is set, and the reading says what the listener would for the thumb's own snapped value.
+        Slider bar = Kept.of(Slider.class, () -> new Slider(min, max, at));
+        Kept.grip(bar);
+        bar.getProperties().put(LADDER, this);
         bar.setBlockIncrement(step);
         bar.setMajorTickUnit(Math.max(step, 1e-9));
         bar.setMinorTickCount(0);
@@ -166,35 +185,35 @@ public final class Ladder {
         bar.setPrefWidth(slider);
         bar.setMaxWidth(slider);
         bar.setDisable(greyed);
+        boolean held = Kept.held(bar);
+        double thumb = held ? bounded(snapped(bar.getValue(), min, step)) : at;
+        if (!held) settle(bar, min, max, at);
+        drawn = thumb;
 
-        Label reading = new Label(reads.apply(at));
+        Label reading = Kept.label("");
         reading.setPrefWidth(READING);
         reading.setMinWidth(READING);
         reading.setAlignment(Pos.CENTER_RIGHT);
         reading.setWrapText(true);
-        reading.setStyle(Palette.figure(Palette.SIZE_BODY, tone(off)));
-        if (!off && idle != null) {
-            reading.setText(idle);
-            reading.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
-        }
+        bar.getProperties().put(READING_LABEL, reading);
+        read(reading, thumb, held ? moved(thumb, current, step) : off);
 
-        bar.valueProperty().addListener((o, was, now) -> {
-            double v = bounded(snapped(now.doubleValue(), min, step));
-            boolean away = moved(v, current, step);
-            if (!away && idle != null) {
-                reading.setText(idle);
-                reading.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
-            } else {
-                reading.setText(reads.apply(v));
-                reading.setStyle(Palette.figure(Palette.SIZE_BODY, tone(away)));
-            }
-            if (track != null) track.accept(v);
-        });
+        // Added once, and it reads the ladder and the reading of the latest build: what the first build
+        // captured is last month's. The ladder's own sets at a draw are not the player's, and say nothing.
+        if (Kept.isNew(bar)) {
+            bar.valueProperty().addListener((o, was, now) -> {
+                if (Kept.drawing()) return;
+                Ladder l = (Ladder) bar.getProperties().get(LADDER);
+                double v = l.bounded(snapped(now.doubleValue(), l.min, l.step));
+                l.read((Label) bar.getProperties().get(READING_LABEL), v, moved(v, l.current, l.step));
+                if (l.track != null) l.track.accept(v);
+            });
+        }
         Runnable commit = () -> hand(bar.getValue());
         bar.setOnMouseReleased(e -> commit.run());
         bar.setOnKeyReleased(e -> commit.run());
 
-        HBox row = new HBox(GAP,
+        HBox row = Kept.row(GAP,
                 stepButton("−", !greyed && at - step >= min - 1e-12, () -> hand(at - step)),
                 bar,
                 stepButton("+", !greyed && at + step <= max + 1e-12, () -> hand(at + step)),
@@ -202,17 +221,18 @@ public final class Ladder {
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMaxWidth(wide);
 
-        Label ends = new Label(reads.apply(min) + " to " + reads.apply(max)
+        Label ends = Kept.label(reads.apply(min) + " to " + reads.apply(max)
                 + "   ·   one step is " + stepReads.apply(step)
                 + (off ? "   ·   it is " + (itIs != null ? itIs : reads.apply(current)) : "")
                 + (apply != null ? "   ·   set at once" : ""));
         ends.setStyle(Palette.words(Palette.SIZE_CAPTION,
                 greyed ? Palette.TEXT_SPENT : off ? Palette.ACCENT : Palette.TEXT_SPENT));
 
-        VBox box = new VBox(1, row);
+        VBox box = Kept.column(1, row);
         if (markAt.length > 0) {
-            Marks under = new Marks(min, this.max, markAt, markNames, slider);
-            HBox lane = new HBox(under);
+            Marks under = Kept.of(Marks.class, Marks::new);
+            under.set(min, this.max, markAt, markNames, slider);
+            HBox lane = Kept.row(0, under);
             lane.setPadding(new javafx.geometry.Insets(0, 0, 0, BUTTON + GAP));
             lane.setMaxWidth(wide);
             box.getChildren().add(lane);
@@ -220,8 +240,42 @@ public final class Ladder {
         box.getChildren().add(ends);
         box.setMaxWidth(wide);
         box.setStyle("-fx-padding: 6 0 10 0;");
-        if (greyed) box.setOpacity(.55);
+        box.setOpacity(greyed ? .55 : 1);
         return box;
+    }
+
+    /**
+     * The value the dial shows once build() has run: the thumb's own snapped value when it was held at
+     * the draw (a month landed under the player's hand and the thumb was left where it was), else the
+     * value the build set - the staged one, or the city's. What a dial card's effects are drawn at.
+     */
+    public double shown() {
+        return Double.isNaN(drawn) ? bounded(Double.isNaN(placed) ? current : placed) : drawn;
+    }
+
+    /** What the reading says for a thumb at v: the figure, in accent off the city's value, or the idle words in grey. */
+    private void read(Label reading, double v, boolean away) {
+        if (!away && idle != null) {
+            reading.setText(idle);
+            reading.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
+        } else {
+            reading.setText(reads.apply(v));
+            reading.setStyle(Palette.figure(Palette.SIZE_BODY, tone(away)));
+        }
+    }
+
+    /**
+     * A slider's range and value made these, only where they differ, in an order that never clamps the
+     * value through a passing range: the range widened to hold both the old and the new first, then the
+     * value, then the range narrowed to the new one - the value is inside the range at every step.
+     */
+    private static void settle(Slider bar, double min, double max, double at) {
+        double lo = Math.min(bar.getMin(), min), hi = Math.max(bar.getMax(), max);
+        if (bar.getMin() != lo) bar.setMin(lo);
+        if (bar.getMax() != hi) bar.setMax(hi);
+        if (bar.getValue() != at) bar.setValue(at);
+        if (bar.getMin() != min) bar.setMin(min);
+        if (bar.getMax() != max) bar.setMax(max);
     }
 
     /**
@@ -229,31 +283,59 @@ public final class Ladder {
      * on the track - the thumb's travel, inset by half the thumb at either
      * end - and its name under it, a name that would touch the one before
      * dropped a line, to the third at most. As wide as the slider.
+     *
+     * Kept (KP2): a picture told its figures by set(), which keeps its ticks and names while their
+     * count holds and makes them afresh when it changes, and asks for a layout only when a figure the
+     * layout reads moved.
      */
     static final class Marks extends javafx.scene.layout.Pane {
         /** Half the slider's thumb: the track's travel starts and ends this far in. */
         static final double INSET = 8;
-        private final double min, max;
-        private final double[] at;
+        private double min, max;
+        private double[] at = new double[0];
         private final java.util.List<javafx.scene.layout.Region> ticks = new java.util.ArrayList<>();
         private final java.util.List<Label> names = new java.util.ArrayList<>();
+        private boolean told;
 
-        Marks(double min, double max, double[] at, String[] names, double width) {
+        Marks() { }
+
+        /** What the marks show now: the dial's ends, where each mark sits and what it is called, and the width. */
+        void set(double min, double max, double[] at, String[] names, double width) {
+            boolean moved = !told || this.min != min || this.max != max || !java.util.Arrays.equals(this.at, at);
+            told = true;
             this.min = min;
             this.max = max;
-            this.at = at;
+            this.at = at.clone();
+            boolean built = false;
+            if (ticks.size() != at.length) {
+                built = true;
+                ticks.clear();
+                this.names.clear();
+                java.util.List<javafx.scene.Node> all = new java.util.ArrayList<>();
+                for (int i = 0; i < at.length; i++) {
+                    javafx.scene.layout.Region t = new javafx.scene.layout.Region();
+                    t.setStyle("-fx-background-color: " + Palette.TEXT_LABEL + ";");
+                    ticks.add(t);
+                    Label n = new Label();
+                    n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                    this.names.add(n);
+                    all.add(t);
+                    all.add(n);
+                }
+                getChildren().setAll(all);
+            }
             for (int i = 0; i < at.length; i++) {
-                javafx.scene.layout.Region t = new javafx.scene.layout.Region();
-                t.setStyle("-fx-background-color: " + Palette.TEXT_LABEL + ";");
-                ticks.add(t);
-                Label n = new Label(i < names.length && names[i] != null ? names[i] : "");
-                n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-                this.names.add(n);
-                getChildren().addAll(t, n);
+                String name = i < names.length && names[i] != null ? names[i] : "";
+                Label n = this.names.get(i);
+                if (!name.equals(n.getText())) {
+                    n.setText(name);
+                    moved = true;
+                }
             }
             setMinWidth(width);
             setPrefWidth(width);
             setMaxWidth(width);
+            if (moved || built) requestLayout();
         }
 
         private double x(double v, double w) {
@@ -338,7 +420,9 @@ public final class Ladder {
      * after the build card's buttons and the shell's round ones.
      */
     static Button stepButton(String glyph, boolean live, Runnable go) {
-        Button button = new Button(glyph);
+        // Kept (KP2): the button handed back, its text set; its action set at every draw, since Kept clears it.
+        Button button = Kept.of(Button.class, Button::new);
+        button.setText(glyph);
         button.setMinSize(BUTTON, BUTTON);
         button.setPrefSize(BUTTON, BUTTON);
         button.setMaxSize(BUTTON, BUTTON);

@@ -1,32 +1,12 @@
-# gate of Merge batch/BA1: every business may build ahead (Jerus, 2026-11-01: "letting the market build more than that, even years ahead"): no cap on orders (one on site at a time and the landlords' months both go): a sector orders whenever an order clears its test at FC1's price of a point, which rises with all the work queued, and the interest on the wait counts; a horizon that grows with how long its buildings take (Jerus: "why bounded? why not let contracts flow?"); after FC1, 0.9.16
+# gate of Merge batch/KP2: screens kept: Land, Services and Infrastructure, and the controls' rule (sliders and fields on a kept page); and KP1's hover kept: a kept row, door, strip cell or pin name under a still pointer loses its hover look at each month's draw (HistoryScreen `rowGoes`, Pieces `limitCell`, `door`, `chartCardHead`: the draw resets the style and no mouse-entered comes), so the style is chosen from `isHover()` where it is set (KP1's gate review, 2026-10-31); and `Pieces.ScaleRows` a picture told its rows, as KP1 left it (KP1-N), 0.9.17
 # date: 2026-11-05
 # earth-2.bin: named
 # nightly: 2026-11-05 01:27 0.9.12 b52be80a 4,000 months: OK in 96 s
-# suite: 174 harnesses run in 1912s: 170 passed, 4 failed
+# suite: 174 harnesses run in 1915s: 170 passed, 4 failed
 # timing: 16 harnesses run in 482s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 26.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 25.8 ms, batch 28.7 ms (+11.4%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 27.2 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 27.0 ms, batch 27.2 ms (+0.9%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | exit 1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same output                                                FAIL  16.3871627943 != 16.3871628238  (1.80e-09 apart)
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | ...and the same year of it                                     FAIL  178.0274716763 != 178.0274723045  (3.53e-09 apart)
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same rent                                                  FAIL  0.0003825520 != 0.0003825520  (1.75e-09 apart)
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same price level                                           FAIL  6.3136552187 != 6.3136552018  (2.67e-09 apart)
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same currency                                              FAIL  0.0385926452 != 0.0385926442  (2.63e-08 apart)
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same treasury                                              FAIL  818.0252712281 != 818.0252687731  (3.00e-09 apart)
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same shops' till                                           FAIL  1.3189259763 != 1.3189258944  (6.21e-08 apart)
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same bank                                                  FAIL  289.4969501824 != 289.4969532124  (1.05e-08 apart)
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | 8 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL sector.Manufacturing.cash (nominal) month 86: 1409.319315 at the factor over the factor, 1409.319335 at today's prices (5.77e-09 apart)
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 5.8e-09 in sector.Manufacturing.cash) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | 1 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 74 of the plan before's 500 boxes lie under the yard and the railway, and 81 are not in the plan after (each of the rest stands where it stood) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 74 boxes left a district in the yard's month because a run laid in it lies across them, 7 are counted as moved FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (0), and none of those boxes has moved (11) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (0), and none of those boxes has moved (21) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | 4 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | exit 1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | (no FAIL line)
 DenominationCheck | exit 1
 DenominationCheck | the same output                                                FAIL  16.3871627943 != 16.3871628238  (1.80e-09 apart)
 DenominationCheck | ...and the same year of it                                     FAIL  178.0274716763 != 178.0274723045  (3.53e-09 apart)

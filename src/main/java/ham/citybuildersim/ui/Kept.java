@@ -10,7 +10,11 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -79,6 +83,11 @@ import java.util.function.Supplier;
  * column constraints, style classes) is set, never added to; a listener or event handler added
  * to a node is added once ({@link #isNew}) or through {@link #play}/{@link #tip}; and the page
  * reaches the window through UserInterface.setPage(), not rootMenu.getChildren().add().
+ * Two more since KP2: a style a hover changes is chosen from {@code isHover()} where the draw sets
+ * it, since a pointer that has not moved stays over a kept node but sends no mouse-entered, and a
+ * style set back to rest at the draw would lose the hover look; and a control keeps the player's
+ * hand ({@link #held}, {@link #text}): a slider's value is set only where it differs and never
+ * while the player holds it, a field's text only where it differs and never while it has the focus.
  */
 public final class Kept {
 
@@ -616,5 +625,54 @@ public final class Kept {
         Object was = owner.getProperties().put(ANIMATION, a);
         if (was instanceof Animation old) old.stop();
         a.play();
+    }
+
+    /* =====================================================================
+       THE PLAYER'S HAND (KP2): a control on a kept page is not set under it
+       ===================================================================== */
+
+    /** The key grip() keeps a node's "held" flag under, and the marker that it has been gripped. */
+    private static final String HELD = "kept.held";
+    private static final String GRIP = "kept.grip";
+
+    /**
+     * Makes {@link #held} true for this node between a primary-button press on it and the release
+     * that ends the press. Two event filters, added once in the node's life (a marker in its
+     * properties, not {@link #isNew}, so it works outside a draw too): filters run before the node's
+     * own handlers, so the release clears the flag before the release handler commits the value
+     * and redraws - and that redraw is free to set the value.
+     */
+    static void grip(Node n) {
+        if (n.getProperties().putIfAbsent(GRIP, Boolean.TRUE) != null) return;
+        n.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getButton() == MouseButton.PRIMARY) n.getProperties().put(HELD, Boolean.TRUE);
+        });
+        n.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            if (e.getButton() == MouseButton.PRIMARY) n.getProperties().remove(HELD);
+        });
+        // A node taken off the scene mid-press never hears its release: it is let go with the scene.
+        n.sceneProperty().addListener((o, was, now) -> {
+            if (now == null) n.getProperties().remove(HELD);
+        });
+    }
+
+    /**
+     * Whether the player holds this node now (see {@link #grip}); a slider also counts as held while
+     * its value is changing. A kept control's value is never set while this is true: a month that
+     * lands mid-drag must not move the thumb under the player's hand.
+     */
+    static boolean held(Node n) {
+        if (n.getProperties().get(HELD) == Boolean.TRUE) return true;
+        return n instanceof Slider s && s.isValueChanging();
+    }
+
+    /**
+     * A field's text set only where it differs and never while the field has the focus: a set marks
+     * the field edited and moves its caret, and the player typing owns it.
+     */
+    static void text(TextInputControl f, String text) {
+        if (f.isFocused()) return;
+        String want = text == null ? "" : text;
+        if (!want.equals(f.getText())) f.setText(want);
     }
 }

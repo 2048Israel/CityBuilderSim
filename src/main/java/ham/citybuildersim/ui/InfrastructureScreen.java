@@ -56,7 +56,21 @@ final class InfrastructureScreen {
         }
         infraPage = page;
         ui.innerScrollAt.remove("showInfrastructureMenu:body");
+        // Kept (KP2): a page opened is at its top, as the rebuilt page was; the kept scroller of the same
+        // page is still where the player left it, so the show method sends it up.
+        toTop = true;
         showInfrastructureMenu();
+    }
+
+    /** The Infrastructure tab's kept nodes (Kept; study UP4, KP2): the page is drawn over them on each redraw. */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** A page was opened (open()): the page's scroller goes to its top once drawn. */
+    private boolean toTop;
+
+    /** A new city or a load: nothing of the last city's page is kept. */
+    void forget() {
+        pool.forget();
     }
 
     /* =====================================================================
@@ -122,8 +136,8 @@ final class InfrastructureScreen {
     /** Which of the Freight page's divisions is open - All, Haulage or Rail; the Ports are a page of their own - kept while the game runs, not saved (FR4, as detailsOpen). */
     String freightDivision = "All";
 
-    /** Which "details" folds are open, by page - kept while the game runs, not saved (0.7.29). */
-    private final java.util.Set<String> detailsOpen = new java.util.HashSet<>();
+    /** Which "details" folds are open, by page - kept while the game runs, not saved (0.7.29). Not private: KeptBench flips them (KP2). */
+    final java.util.Set<String> detailsOpen = new java.util.HashSet<>();
 
     /** The page's scroller, for a part of a picture that scrolls the page to where it is decided (Transit's fare). */
     private javafx.scene.control.ScrollPane body;
@@ -169,8 +183,6 @@ final class InfrastructureScreen {
     }
 
     void showInfrastructureMenu() {
-        ui.clearMenu("showInfrastructureMenu", () -> showInfrastructureMenu());
-
         if ("The railway".equals(infraPage)) {
             freightDivision = "Rail";
             infraPage = "Freight";
@@ -182,39 +194,68 @@ final class InfrastructureScreen {
 
         List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
 
-        VBox page = widePage();
-        switch (infraPage) {
-            case "Transit" -> transitPage(page);
-            case "Freight" -> {
-                switch (freightDivision) {
-                    case "Haulage" -> haulagePage(page);
-                    case "Rail"    -> railwayPage(page);
-                    default        -> freightPage(page);
-                }
-            }
-            case "Ports"   -> portsPage(page);
-            default        -> roadsPage(page, all);
+        // Kept (study UP4, KP2): the page is drawn over last time's nodes on a redraw, each page in a scope of its own.
+        ui.keepMenu("showInfrastructureMenu", () -> showInfrastructureMenu(), pool, () -> drawPage(all));
+        if (toTop) {
+            toTop = false;
+            if (body != null && body.getVvalue() != 0) body.setVvalue(0);
         }
-
-        javafx.scene.layout.FlowPane strip =
-                chipStrip(INFRA_PAGES, INFRA_ICONS, infraPage, Palette.SIZE_LABEL, name -> open(name));
-
-        boolean freight = "Freight".equals(infraPage) || "Ports".equals(infraPage);
-        VBox frame = freight ? new VBox(Palette.GAP, head(), vitals(all), strip, divisionStrip())
-                             : new VBox(Palette.GAP, head(), vitals(all), strip);
-        frame.setMaxWidth(PAGE_WIDE);
-        frame.setFillWidth(true);
-        frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
-
-        // THE FRAME DOES NOT SCROLL (as Services' since 0.7.28): the head, the
-        // five figures and the pages stay put; only the page under them moves.
-        body = ui.scrolled(page, FRAME_CHROME + (freight ? DIVISION_CHROME : 0));
-        final javafx.scene.control.ScrollPane scroller = body;
-        page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
-                scroller.viewportBoundsProperty()));
-        ui.rootMenu.getChildren().addAll(frame, body);
     }
+
+    /**
+     * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the
+     * pool, and what KeptBench runs kept and built new for KeptCheck, at the page `infraPage` (and, on
+     * Freight, the division `freightDivision`) names. `all`: CityNeeds.measure(game, SummaryScreen.WORDS).
+     */
+    void drawPage(List<CityNeeds.Need> all) {
+        boolean freight = "Freight".equals(infraPage) || "Ports".equals(infraPage);
+        // Kept (KP2): each page is a scope keyed by its name (Freight's by its division too), so nothing of one
+        // page is handed to another, and a page opened has a scroller of its own, at its top.
+        Kept.scope("Freight".equals(infraPage) ? "Freight/" + freightDivision : infraPage, () -> {
+            VBox page = widePage();
+            switch (infraPage) {
+                case "Transit" -> transitPage(page);
+                case "Freight" -> {
+                    switch (freightDivision) {
+                        case "Haulage" -> haulagePage(page);
+                        case "Rail"    -> railwayPage(page);
+                        default        -> freightPage(page);
+                    }
+                }
+                case "Ports"   -> portsPage(page);
+                default        -> roadsPage(page, all);
+            }
+
+            javafx.scene.layout.FlowPane strip = Kept.scope("pages",
+                    () -> chipStrip(INFRA_PAGES, INFRA_ICONS, infraPage, Palette.SIZE_LABEL, name -> open(name)));
+
+            VBox frame = freight
+                    ? Kept.column(Palette.GAP, Kept.scope("head", this::head), Kept.scope("vitals", () -> vitals(all)), strip,
+                            Kept.scope("divisions", this::divisionStrip))
+                    : Kept.column(Palette.GAP, Kept.scope("head", this::head), Kept.scope("vitals", () -> vitals(all)), strip);
+            frame.setMaxWidth(PAGE_WIDE);
+            frame.setFillWidth(true);
+            frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+
+            // THE FRAME DOES NOT SCROLL (as Services' since 0.7.28): the head, the
+            // five figures and the pages stay put; only the page under them moves.
+            body = ui.scrolled(page, FRAME_CHROME + (freight ? DIVISION_CHROME : 0));
+            final javafx.scene.control.ScrollPane scroller = body;
+            // Kept (KP2): the page is bound to its scroller once; a kept page is handed back each draw with the
+            // scroller it is already bound to.
+            if (page.getProperties().get(BOUND_TO_SCROLLER) != scroller) {
+                page.prefWidthProperty().unbind();
+                page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                        () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
+                        scroller.viewportBoundsProperty()));
+                page.getProperties().put(BOUND_TO_SCROLLER, scroller);
+            }
+            ui.setPage(frame, scroller);
+        });
+    }
+
+    /** The key in a kept page's properties for the scroller its width is bound to (drawPage()). */
+    private static final String BOUND_TO_SCROLLER = "infrastructure.scroller";
 
     /**
      * The head: "Infrastructure" with the people teal's swatch, and at its
@@ -248,12 +289,12 @@ final class InfrastructureScreen {
      * page, which remembers its division (freightDivision).
      */
     HBox divisionStrip() {
-        Label cap = new Label("DIVISION");
+        Label cap = Kept.label("DIVISION");
         cap.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
         cap.setMinWidth(Region.USE_PREF_SIZE);
         String current = "Ports".equals(infraPage) ? "Ports" : freightDivision;
         javafx.scene.layout.FlowPane chips = chipStrip(DIVISIONS, current, Palette.SIZE_CAPTION, name -> openDivision(name));
-        HBox strip = new HBox(10, cap, chips);
+        HBox strip = Kept.row(10, cap, chips);
         strip.setAlignment(Pos.CENTER_LEFT);
         return strip;
     }
@@ -282,32 +323,39 @@ final class InfrastructureScreen {
         // In today's money (0.7.45; the UI spec's B7, D13): what a rider is charged, the dial at the struck level.
         double fare = ui.game.getEconomyManager().getTaxPolicy().chargedFare();
 
-        VBox full = limitCell("SERVED", CityNeeds.servedPct(served.share()),
+        // Kept (KP2): each cell a scope of its own; FLOW's change on last month comes and goes inside its cell's.
+        VBox full = Kept.scope("served", () -> limitCell("SERVED", CityNeeds.servedPct(served.share()),
                 BuildScreen.servedWords(served) + ": its capacity over the trips on it", tone,
-                "The road: how much of its traffic it serves, and what it lets through", () -> open("Roads"));
-        VBox flow = limitCell("FLOW", pct(roads.getThroughputRatio()), flowWords(roads), tone,
-                "The road: what every business gets through it", () -> open("Roads"));
-        String change = flowChange();
-        if (change != null) {
-            Label c = new Label(change);
-            c.setWrapText(true);
-            c.setMaxWidth(LIMIT_CELL - 28);
-            c.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            flow.getChildren().add(c);
-        }
-        VBox riding = limitCell("ON TRANSIT", pct(commuters > 0 ? roads.getTransitRiders() / commuters : 0),
+                "The road: how much of its traffic it serves, and what it lets through", () -> open("Roads")));
+        VBox flow = Kept.scope("flow", () -> {
+            VBox cell = limitCell("FLOW", pct(roads.getThroughputRatio()), flowWords(roads), tone,
+                    "The road: what every business gets through it", () -> open("Roads"));
+            String change = flowChange();
+            if (change != null) {
+                cell.getChildren().add(Kept.scope("change", () -> {
+                    Label c = Kept.label(change);
+                    c.setWrapText(true);
+                    c.setMaxWidth(LIMIT_CELL - 28);
+                    c.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                    return c;
+                }));
+            }
+            return cell;
+        });
+        VBox riding = Kept.scope("riding", () -> limitCell("ON TRANSIT",
+                pct(commuters > 0 ? roads.getTransitRiders() / commuters : 0),
                 roads.getTransitCapacity() <= 0 ? "nothing built"
                         : fare <= 0 ? "of commuters · riding free" : "of commuters · at " + unitPrice(fare) + " a ride",
                 roads.getTransitCapacity() <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_HEAD,
-                "Transit: who rides, and the fare", () -> open("Transit"));
-        VBox cars = limitCell("CARS", pct(owned),
+                "Transit: who rides, and the fare", () -> open("Transit")));
+        VBox cars = Kept.scope("cars", () -> limitCell("CARS", pct(owned),
                 owned <= 0 ? "nobody drives" : String.format("per household · %.2f× on the commute", roads.carRoadFactor()),
-                Palette.TEXT_HEAD, "The road: what the cars add to it", () -> open("Roads"));
-        VBox byRail = limitCell("BY RAIL", pct(roads.getRailShare(Traffic.BULK)),
+                Palette.TEXT_HEAD, "The road: what the cars add to it", () -> open("Roads")));
+        VBox byRail = Kept.scope("by rail", () -> limitCell("BY RAIL", pct(roads.getRailShare(Traffic.BULK)),
                 rail.trackTonnes() <= 0 ? "no track"
                         : "of bulk · quoting " + pct(rail.getQuote()) + " of a lorry",
                 rail.trackTonnes() <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_HEAD,
-                "The railway", () -> open("The railway"));
+                "The railway", () -> open("The railway")));
         return vitalsBar(full, flow, riding, cars, byRail);
     }
 
@@ -351,15 +399,18 @@ final class InfrastructureScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setWrapText(true);
+        // Kept (KP2): a label handed back from a figure() has its minimum width set on both sides.
+        l.setMinWidth(Region.USE_COMPUTED_SIZE);
         l.setStyle(BuildScreen.wordsAt(size, tone));
         return l;
     }
 
     /** A figure that is never cut, at a size, in a colour. */
     static Label figure(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
+        l.setWrapText(false);
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setStyle(BuildScreen.figureAt(size, tone));
         return l;
@@ -367,10 +418,10 @@ final class InfrastructureScreen {
 
     /** A picture's caption: a few words in capitals, with an (i) after them when `info` is not null. */
     static HBox caption(String text, String info) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         l.setMinWidth(Region.USE_PREF_SIZE);
-        HBox row = new HBox(Palette.GAP, l);
+        HBox row = Kept.row(Palette.GAP, l);
         if (info != null) row.getChildren().add(infoButton(info, true));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
@@ -378,7 +429,7 @@ final class InfrastructureScreen {
 
     /** "62% served → 56% flow" ("162% full" until 0.7.41): the two figures at 28 px, the words between them smaller. */
     static javafx.scene.layout.FlowPane pairLine(String a, String aTone, String aWords, String b, String bTone, String bWords) {
-        javafx.scene.layout.FlowPane line = new javafx.scene.layout.FlowPane(6, 0);
+        javafx.scene.layout.FlowPane line = Kept.flow(6, 0);
         line.setPrefWrapLength(280);
         line.setAlignment(Pos.BASELINE_LEFT);
         line.setRowValignment(javafx.geometry.VPos.BASELINE);
@@ -389,10 +440,10 @@ final class InfrastructureScreen {
 
     /** A card's head: its icon in a square tinted in its colour, its name, and its (i). */
     static HBox cardHead(String svg, String colour, String name, String info) {
-        Label n = new Label(name);
+        Label n = Kept.label(name);
         n.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         n.setWrapText(true);
-        HBox head = new HBox(8, iconSquare(svg, colour, 28, 15), n);
+        HBox head = Kept.row(8, iconSquare(svg, colour, 28, 15), n);
         if (info != null) head.getChildren().add(infoButton(info, true));
         head.setAlignment(Pos.CENTER_LEFT);
         return head;
@@ -400,7 +451,7 @@ final class InfrastructureScreen {
 
     /** A line of figures and words that wraps: "102k trips · 135k on the road". */
     static javafx.scene.layout.FlowPane figureLine(Object... parts) {
-        javafx.scene.layout.FlowPane line = new javafx.scene.layout.FlowPane(4, 0);
+        javafx.scene.layout.FlowPane line = Kept.flow(4, 0);
         line.setRowValignment(javafx.geometry.VPos.BASELINE);
         for (int i = 0; i < parts.length; i++) {
             String p = String.valueOf(parts[i]);
@@ -412,7 +463,7 @@ final class InfrastructureScreen {
 
     /** A statement column, for a fold: the old rows at their old width. */
     static VBox column(Node... rows) {
-        VBox c = new VBox(0);
+        VBox c = Kept.column(0);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(STATEMENT);
         return c;
@@ -448,12 +499,14 @@ final class InfrastructureScreen {
         InfrastructureManager roads = ui.game.getInfrastructureManager();
         InfrastructureManager.RoadBreakdown walk = roads.roadBreakdown();
 
-        page.getChildren().add(heroCard(roadHeroLeft(roads, all), 340, roadWalk(roads, walk)));
-        page.getChildren().add(sectionHead("WHAT IS ON IT", null, hint("a card opens the page that takes it off the road")));
-        page.getChildren().add(streamCards(roads, walk));
-        page.getChildren().add(networkStrip(roads));
-        page.getChildren().add(details("roads", "the network, the streams and the cars, line by line", detailsOpen,
-                ui::redraw, () -> roadsStatement(roads, walk)));
+        // Kept (KP2): each part of the page a scope of its own, so what comes and goes inside one shifts nothing after it.
+        page.getChildren().add(Kept.scope("hero", () -> heroCard(roadHeroLeft(roads, all), 340, roadWalk(roads, walk))));
+        page.getChildren().add(Kept.scope("on it head",
+                () -> sectionHead("WHAT IS ON IT", null, hint("a card opens the page that takes it off the road"))));
+        page.getChildren().add(Kept.scope("streams", () -> streamCards(roads, walk)));
+        page.getChildren().add(Kept.scope("network", () -> networkStrip(roads)));
+        page.getChildren().add(Kept.scope("details", () -> details("roads", "the network, the streams and the cars, line by line",
+                detailsOpen, ui::redraw, () -> roadsStatement(roads, walk))));
     }
 
     /** The hero's left: THE ROAD, both figures as a pair, what the flow costs, the status chip, the curve and what is on site. */
@@ -462,7 +515,7 @@ final class InfrastructureScreen {
         String tone = BuildScreen.servedTone(served);
         double flow = roads.getThroughputRatio();
 
-        VBox left = new VBox(6, caption("THE ROAD", null),
+        VBox left = Kept.column(6, caption("THE ROAD", null),
                 pairLine(CityNeeds.servedPct(served.share()), tone, BuildScreen.servedWords(served) + "  →",
                         pct(flow), Palette.TEXT_HEAD, "flow"));
         left.getChildren().add(infoLine(flow < 1
@@ -470,20 +523,32 @@ final class InfrastructureScreen {
                         : "flowing freely: every shop, plant and site works at its full output",
                 FLOW_INFO + (roads.isCongested() ? "\n\n" + congestedWords(flow) : ""), true,
                 Palette.SIZE_BODY, Palette.TEXT_LABEL, 340));
-        if (!"Clear".equals(roads.getStatus())) left.getChildren().add(chip(roads.getStatus().toUpperCase(), tone));
+        // Kept (KP2): the status chip and the site line come and go, each a scope of its own.
+        if (!"Clear".equals(roads.getStatus())) {
+            left.getChildren().add(Kept.scope("status", () -> chip(roads.getStatus().toUpperCase(), tone)));
+        }
 
         // The hollow dot: where the road sites on site would leave it, by Build's own figure - served (0.7.41).
         BuildAdvice.Measure m = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
         BuildScreen.RingWords ring = ui.buildScreen.ringWords(m, all);
         double then = ring.units() > 0 ? BuildAdvice.served(ui.game, m, BuildAdvice.onSite(ui.game, m)) : Double.NaN;
-        left.getChildren().add(new FlowCurve(served.share(), then, tone));
+        left.getChildren().add(flowCurve(served.share(), then, tone));
         if (ring.units() > 0) {
-            HBox site = new HBox(6, icon(Icons.CRANE, Palette.BUILDING, 13),
-                    words(ring.onSite() + " · the hollow dot is where they leave it", Palette.SIZE_LABEL, Palette.BUILDING));
-            site.setAlignment(Pos.CENTER_LEFT);
-            left.getChildren().add(site);
+            left.getChildren().add(Kept.scope("site", () -> {
+                HBox site = Kept.row(6, icon(Icons.CRANE, Palette.BUILDING, 13),
+                        words(ring.onSite() + " · the hollow dot is where they leave it", Palette.SIZE_LABEL, Palette.BUILDING));
+                site.setAlignment(Pos.CENTER_LEFT);
+                return site;
+            }));
         }
         return left;
+    }
+
+    /** The flow curve, made once and told its figures (Kept; a curve outside a draw is a new one). */
+    static FlowCurve flowCurve(double served, double then, String tone) {
+        FlowCurve curve = Kept.of(FlowCurve.class, FlowCurve::new);
+        curve.set(served, then, tone);
+        return curve;
     }
 
     /** The flow's (i): the old page's paragraph under its big figure, said in served since 0.7.41. */
@@ -551,12 +616,14 @@ final class InfrastructureScreen {
                 new Rule(roads.getFreeFlowLoad(), Palette.TEXT_MUTED, true, "slows past " + shortNumber(roads.getFreeFlowLoad()),
                         "Past " + pct(InfrastructureManager.FREE_FLOW) + " of capacity the traffic slows, and the flow falls", null));
 
-        VBox box = new VBox(8, caption("FROM TRIPS TO THE ROAD", WALK_INFO),
+        VBox box = Kept.column(8, caption("FROM TRIPS TO THE ROAD", WALK_INFO),
                 scaleRows(rows, scale, rules, 170, 84, 14));
-        HBox key = new HBox(Palette.GAP_LOOSE);
-        for (Traffic s : Traffic.values()) key.getChildren().add(keySwatch(streamColour(s), s.label().toLowerCase()));
-        key.getChildren().add(keySwatch(Palette.PEOPLE_LIGHT, "what the cars add"));
-        Label hollow = new Label("hollow: taken off");
+        HBox key = Kept.row(Palette.GAP_LOOSE);
+        for (Traffic s : Traffic.values()) {
+            key.getChildren().add(Kept.scope(s, () -> keySwatch(streamColour(s), s.label().toLowerCase())));
+        }
+        key.getChildren().add(Kept.scope("cars", () -> keySwatch(Palette.PEOPLE_LIGHT, "what the cars add")));
+        Label hollow = Kept.label("hollow: taken off");
         hollow.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         key.getChildren().add(hollow);
         key.setAlignment(Pos.CENTER_LEFT);
@@ -609,27 +676,32 @@ final class InfrastructureScreen {
         javafx.scene.layout.GridPane grid = equalColumns(3, TILE_GAP);
         int col = 0;
         for (Traffic s : Traffic.values()) {
-            int i = s.ordinal();
-            String colour = streamColour(s);
-            VBox card = ServicesScreen.card(cardHead(streamIcon(s), colour, s.label(), null),
-                    figureLine(shortNumber(walk.raw()[i]), "trips made ·", shortNumber(walk.onRoad()[i]), "on the road"));
-            double gets = roads.throughputOf(s);
-            SegmentBar bar = segmentBar(List.of(Segment.of(gets, colour)), 1, List.of(), 0, 8);
-            card.getChildren().add(new VBox(3, bar, words("gets through " + pct(gets), Palette.SIZE_LABEL, Palette.TEXT_LABEL)));
-            card.getChildren().add(infoLine(String.format("costs the road %.2f× a trip", walk.costPerTrip(s)),
-                    COSTS_INFO, true, Palette.SIZE_BODY, Palette.TEXT_HEAD, 400));
-            String relief;
-            if (s == Traffic.COMMUTERS) {
-                relief = (walk.transitOff() > 0 ? shortNumber(walk.transitOff()) + " ride transit" : "nobody rides transit")
-                        + " · " + (walk.carsAdd() > 0 ? "cars add " + shortNumber(walk.carsAdd()) : "nobody drives a car");
-            } else {
-                relief = (roads.getRailShare(s) > 0 ? "rail carries " + pct(roads.getRailShare(s)) : "no rail")
-                        + " · rail and highways take " + shortNumber(walk.freightOff()[i]) + " trips off";
-            }
-            card.getChildren().add(words(relief, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            ServicesScreen.doorCard(card, () -> open(reliefPage(s)),
-                    s == Traffic.COMMUTERS ? "Transit: who rides, and what the cars cost" : "The railway: what it carries");
-            grid.add(card, col++, 0);
+            // Kept (KP2): a card a stream, keyed by the stream.
+            final int at = col++;
+            VBox card = Kept.scope(s, () -> {
+                int i = s.ordinal();
+                String colour = streamColour(s);
+                VBox c = ServicesScreen.card(cardHead(streamIcon(s), colour, s.label(), null),
+                        figureLine(shortNumber(walk.raw()[i]), "trips made ·", shortNumber(walk.onRoad()[i]), "on the road"));
+                double gets = roads.throughputOf(s);
+                SegmentBar bar = segmentBar(List.of(Segment.of(gets, colour)), 1, List.of(), 0, 8);
+                c.getChildren().add(Kept.column(3, bar, words("gets through " + pct(gets), Palette.SIZE_LABEL, Palette.TEXT_LABEL)));
+                c.getChildren().add(infoLine(String.format("costs the road %.2f× a trip", walk.costPerTrip(s)),
+                        COSTS_INFO, true, Palette.SIZE_BODY, Palette.TEXT_HEAD, 400));
+                String relief;
+                if (s == Traffic.COMMUTERS) {
+                    relief = (walk.transitOff() > 0 ? shortNumber(walk.transitOff()) + " ride transit" : "nobody rides transit")
+                            + " · " + (walk.carsAdd() > 0 ? "cars add " + shortNumber(walk.carsAdd()) : "nobody drives a car");
+                } else {
+                    relief = (roads.getRailShare(s) > 0 ? "rail carries " + pct(roads.getRailShare(s)) : "no rail")
+                            + " · rail and highways take " + shortNumber(walk.freightOff()[i]) + " trips off";
+                }
+                c.getChildren().add(words(relief, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                ServicesScreen.doorCard(c, () -> open(reliefPage(s)),
+                        s == Traffic.COMMUTERS ? "Transit: who rides, and what the cars cost" : "The railway: what it carries");
+                return c;
+            });
+            grid.add(card, at, 0);
         }
         return grid;
     }
@@ -638,17 +710,17 @@ final class InfrastructureScreen {
     HBox networkStrip(InfrastructureManager roads) {
         double owned = roads.getCarOwnership();
         HBox strip = vitalsBar(
-                limitCell("CAPACITY", people(roads.getCapacity()),
+                Kept.scope("capacity", () -> limitCell("CAPACITY", people(roads.getCapacity()),
                         "trips a month · " + people(roads.getBuiltCapacity()) + " built + "
-                        + people(InfrastructureManager.BASE_CAPACITY) + " always there", Palette.TEXT_HEAD),
-                limitCell("ROOM BEFORE IT SLOWS", people(roads.getHeadroom()),
+                        + people(InfrastructureManager.BASE_CAPACITY) + " always there", Palette.TEXT_HEAD)),
+                Kept.scope("room", () -> limitCell("ROOM BEFORE IT SLOWS", people(roads.getHeadroom()),
                         roads.getHeadroom() > 0 ? "trips, on the load the curve reads" : "none: past the free-flow line",
-                        Palette.TEXT_HEAD),
-                limitCell("BUILT FOR LORRIES", pct(roads.getHighwayShare()), "of the network is grade-separated",
-                        Palette.TEXT_HEAD),
-                limitCell("CARS PER HOUSEHOLD", pct(owned),
+                        Palette.TEXT_HEAD)),
+                Kept.scope("lorries", () -> limitCell("BUILT FOR LORRIES", pct(roads.getHighwayShare()),
+                        "of the network is grade-separated", Palette.TEXT_HEAD)),
+                Kept.scope("cars", () -> limitCell("CARS PER HOUSEHOLD", pct(owned),
                         owned <= 0 ? "nobody drives" : String.format("a driver asks %.2f trips of road", roads.carRoadFactor()),
-                        Palette.TEXT_HEAD));
+                        Palette.TEXT_HEAD)));
         strip.setAlignment(Pos.CENTER_LEFT);
         return strip;
     }
@@ -687,10 +759,11 @@ final class InfrastructureScreen {
 
         double owned = roads.getCarOwnership();
         c.getChildren().add(statementHead("And the cars"));
+        // Kept (KP2): the cars' lines come and go with the cars, a scope each.
         if (owned <= 0) {
-            c.getChildren().add(statementNote(NO_CARS_INFO));
+            c.getChildren().add(Kept.scope("no cars", () -> statementNote(NO_CARS_INFO)));
         } else {
-            c.getChildren().addAll(
+            c.getChildren().addAll(Kept.scope("cars", () -> List.<Node>of(
                     statementLine("Cars per household", String.format("%.0f%%", owned * 100)),
                     statementLine("What one driving commuter now costs the road", String.format("%.2f trips", walk.carFactor())),
                     statementLine("Commuters still driving",
@@ -699,7 +772,7 @@ final class InfrastructureScreen {
                     statementLine("Commuters on a tram", String.format("%,.0f", walk.transitOff())),
                     statementTotal("What the road would carry with nobody driving",
                             String.format("%,.0f trips", walk.withoutCars()), Palette.TEXT_HEAD),
-                    statementNote(CARS_INFO));
+                    statementNote(CARS_INFO))));
         }
         return c;
     }
@@ -714,100 +787,76 @@ final class InfrastructureScreen {
      * dot on it with its two figures dropped to the axes, and, with road sites
      * on site, a hollow pink dot where they would leave it. A dot past the
      * scale sits at its edge with a "›".
+     *
+     * <p>Kept (KP2): a picture made once, with its parts, and told each
+     * month's figures by set(); it asks for a layout only when the served
+     * share moved. Its constructor makes its parts with new, never through Kept.
      */
     static final class FlowCurve extends javafx.scene.layout.Pane {
         /** The plot's size, and the room for the axes' figures at its left and under it. */
         private static final double W = 270, H = 104, LEFT = 38, TOP = 10, BOTTOM = 18, RIGHT = 16, DOT = 5;
         private final Label useLabel, flowLabel, xLow, xHigh, yHigh, yLow, over;
+        private final javafx.scene.shape.Line xAxis, yAxis, down, across;
+        private final Region[] bands = new Region[3];
+        private final Tooltip[] bandTips = new Tooltip[3];
+        private final javafx.scene.shape.Polyline curve;
+        private final javafx.scene.shape.Circle hollow, dot;
+        private final Tooltip hollowTip, dotTip;
         /** Where the dot's drops meet the axes. */
-        private final double dotX, dotY;
+        private double dotX, dotY;
+        /** What the curve was last told: the road's served share, the lines it was drawn against, the dot's colour. */
+        private double served = Double.NaN;
+        private double[] lines;
+        private String tone;
+        /** Whether the hollow dot is among the children, and whether the curve has been told anything yet. */
+        private boolean hollowShown, told;
 
-        FlowCurve(double served, double then, String tone) {
-            double u = Double.isNaN(served) ? 0 : Math.max(0, served);
-            double f = InfrastructureManager.throughputAtServed(u);
-            double span = 1 - InfrastructureManager.MIN_THROUGHPUT;
-            double[] lines = CityNeeds.servedLines(CityNeeds.Kind.ROADS, CareType.NONE);
-
-            javafx.scene.shape.Line xAxis = new javafx.scene.shape.Line(LEFT, TOP + H + .5, LEFT + W, TOP + H + .5);
-            javafx.scene.shape.Line yAxis = new javafx.scene.shape.Line(LEFT - .5, TOP, LEFT - .5, TOP + H);
+        /** Its parts, made once in its life (Kept: a kept curve is told each month's figures by set()). */
+        FlowCurve() {
+            xAxis = new javafx.scene.shape.Line(LEFT, TOP + H + .5, LEFT + W, TOP + H + .5);
+            yAxis = new javafx.scene.shape.Line(LEFT - .5, TOP, LEFT - .5, TOP + H);
             for (javafx.scene.shape.Line l : new javafx.scene.shape.Line[] {xAxis, yAxis}) {
                 l.setStroke(javafx.scene.paint.Color.web(Palette.EDGE));
             }
-            getChildren().addAll(xAxis, yAxis);
-
-            // The one verdict's lines along the foot (0.7.41; NEEDS YOU's on the load, as the band meter drew them, since 0.30).
-            double[] cuts = {0, lines[1], lines[0], CURVE_MAX};
-            String[] tones = {Palette.BAD, Palette.WARN, Palette.GOOD};
             for (int k = 0; k < 3; k++) {
-                Region band = new Region();
-                band.setStyle("-fx-background-color: " + tint(tones[k], .30) + ";");
-                band.relocate(x(cuts[k]), TOP + H - 5);
-                band.setPrefSize(x(cuts[k + 1]) - x(cuts[k]), 5);
-                band.resize(x(cuts[k + 1]) - x(cuts[k]), 5);
-                Tooltip.install(band, new Tooltip(k == 0 ? CityNeeds.servedPct(lines[1]) + " " + CityNeeds.SERVED
-                                   + " or less: congested, the flow falls"
-                        : k == 1 ? CityNeeds.servedPct(lines[1]) + " to " + CityNeeds.servedPct(lines[0])
-                                   + ": NEEDS YOU lists the road"
-                        : "past " + CityNeeds.servedPct(lines[0]) + ": clear"));
-                getChildren().add(band);
+                bands[k] = new Region();
+                bandTips[k] = new Tooltip();
+                Tooltip.install(bands[k], bandTips[k]);
             }
-
-            javafx.scene.shape.Polyline curve = new javafx.scene.shape.Polyline();
-            int n = 130;
-            for (int k = 0; k <= n; k++) {
-                double at = CURVE_MAX * k / n;
-                // The knee where free flow ends, drawn on the line rather than between two samples.
-                if (k > 0 && CURVE_MAX * (k - 1) / n < lines[1] && at > lines[1]) {
-                    curve.getPoints().addAll(x(lines[1]), y(1, span));
-                }
-                curve.getPoints().addAll(x(at), y(InfrastructureManager.throughputAtServed(at), span));
-            }
+            curve = new javafx.scene.shape.Polyline();
             curve.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_LABEL));
             curve.setStrokeWidth(2);
             curve.setFill(null);
             curve.setMouseTransparent(true);
-            getChildren().add(curve);
 
-            double dx = x(Math.min(u, CURVE_MAX)), dy = y(f, span);
-            dotX = dx;
-            dotY = dy;
-            javafx.scene.shape.Line down = new javafx.scene.shape.Line(dx, dy, dx, TOP + H);
-            javafx.scene.shape.Line across = new javafx.scene.shape.Line(LEFT, dy, dx, dy);
+            down = new javafx.scene.shape.Line();
+            across = new javafx.scene.shape.Line();
             for (javafx.scene.shape.Line l : new javafx.scene.shape.Line[] {down, across}) {
                 l.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED));
                 l.getStrokeDashArray().addAll(3.0, 3.0);
                 l.setMouseTransparent(true);
             }
-            getChildren().addAll(down, across);
 
-            if (!Double.isNaN(then) && Math.abs(Math.min(then, CURVE_MAX) - Math.min(u, CURVE_MAX)) > .005) {
-                double t = Math.max(0, then);
-                javafx.scene.shape.Circle hollow = new javafx.scene.shape.Circle(x(Math.min(t, CURVE_MAX)),
-                        y(InfrastructureManager.throughputAtServed(t), span), DOT);
-                hollow.setFill(null);
-                hollow.setStroke(javafx.scene.paint.Color.web(Palette.BUILDING));
-                hollow.setStrokeWidth(1.5);
-                Tooltip.install(hollow, new Tooltip("With the road sites on site finished: " + CityNeeds.servedPct(t) + " "
-                        + CityNeeds.SERVED + " · " + pct(InfrastructureManager.throughputAtServed(t)) + " flow"));
-                getChildren().add(hollow);
-            }
+            hollow = new javafx.scene.shape.Circle(DOT);
+            hollow.setFill(null);
+            hollow.setStroke(javafx.scene.paint.Color.web(Palette.BUILDING));
+            hollow.setStrokeWidth(1.5);
+            hollowTip = new Tooltip();
+            Tooltip.install(hollow, hollowTip);
 
-            javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(dx, dy, DOT);
+            dot = new javafx.scene.shape.Circle(DOT);
             dot.setFill(javafx.scene.paint.Color.web(Palette.TEXT_HEAD));
-            dot.setStroke(javafx.scene.paint.Color.web(tone));
             dot.setStrokeWidth(2);
-            Tooltip.install(dot, new Tooltip("Today: " + CityNeeds.servedPct(u) + " " + CityNeeds.SERVED + " · " + pct(f) + " flow"));
-            getChildren().add(dot);
+            dotTip = new Tooltip();
+            Tooltip.install(dot, dotTip);
 
-            useLabel = label(CityNeeds.servedPct(u), Palette.TEXT_HEAD);
-            flowLabel = label(pct(f), Palette.TEXT_HEAD);
-            xLow = label("0%", Palette.TEXT_MUTED);
-            xHigh = label(pct(CURVE_MAX), Palette.TEXT_MUTED);
-            yHigh = label("100%", Palette.TEXT_MUTED);
-            yLow = label(pct(InfrastructureManager.MIN_THROUGHPUT), Palette.TEXT_MUTED);
-            over = label("›", Palette.TEXT_HEAD);
-            over.setVisible(u > CURVE_MAX);
-            getChildren().addAll(xLow, xHigh, yHigh, yLow, useLabel, flowLabel, over);
+            useLabel = label(Palette.TEXT_HEAD);
+            flowLabel = label(Palette.TEXT_HEAD);
+            xLow = label(Palette.TEXT_MUTED);
+            xHigh = label(Palette.TEXT_MUTED);
+            yHigh = label(Palette.TEXT_MUTED);
+            yLow = label(Palette.TEXT_MUTED);
+            over = label(Palette.TEXT_HEAD);
 
             double wide = LEFT + W + RIGHT, tall = TOP + H + BOTTOM;
             setMinSize(wide, tall);
@@ -815,8 +864,113 @@ final class InfrastructureScreen {
             setMaxSize(wide, tall);
         }
 
-        private static Label label(String text, String tone) {
-            Label l = new Label(text);
+        /**
+         * What the curve draws now: the road's served share, the served share the road sites on site
+         * would leave it at (NaN with none), and the colour of the verdict on the dot. Laid out again
+         * only when the served share moved, since only that moves the dot and its figures.
+         */
+        void set(double served, double then, String tone) {
+            double u = Double.isNaN(served) ? 0 : Math.max(0, served);
+            double f = InfrastructureManager.throughputAtServed(u);
+            double span = 1 - InfrastructureManager.MIN_THROUGHPUT;
+            double[] lines = CityNeeds.servedLines(CityNeeds.Kind.ROADS, CareType.NONE);
+
+            // The one verdict's lines along the foot (0.7.41; NEEDS YOU's on the load, as the band meter drew them, since 0.30)
+            // and the curve over them: drawn from the lines alone, so told again only if the lines moved.
+            if (this.lines == null || !java.util.Arrays.equals(lines, this.lines)) {
+                this.lines = lines.clone();
+                double[] cuts = {0, lines[1], lines[0], CURVE_MAX};
+                String[] tones = {Palette.BAD, Palette.WARN, Palette.GOOD};
+                for (int k = 0; k < 3; k++) {
+                    Region band = bands[k];
+                    band.setStyle("-fx-background-color: " + tint(tones[k], .30) + ";");
+                    band.relocate(x(cuts[k]), TOP + H - 5);
+                    band.setPrefSize(x(cuts[k + 1]) - x(cuts[k]), 5);
+                    band.resize(x(cuts[k + 1]) - x(cuts[k]), 5);
+                    bandTips[k].setText(k == 0 ? CityNeeds.servedPct(lines[1]) + " " + CityNeeds.SERVED
+                                       + " or less: congested, the flow falls"
+                            : k == 1 ? CityNeeds.servedPct(lines[1]) + " to " + CityNeeds.servedPct(lines[0])
+                                       + ": NEEDS YOU lists the road"
+                            : "past " + CityNeeds.servedPct(lines[0]) + ": clear");
+                }
+                List<Double> points = new ArrayList<>();
+                int n = 130;
+                for (int k = 0; k <= n; k++) {
+                    double at = CURVE_MAX * k / n;
+                    // The knee where free flow ends, drawn on the line rather than between two samples.
+                    if (k > 0 && CURVE_MAX * (k - 1) / n < lines[1] && at > lines[1]) {
+                        points.add(x(lines[1]));
+                        points.add(y(1, span));
+                    }
+                    points.add(x(at));
+                    points.add(y(InfrastructureManager.throughputAtServed(at), span));
+                }
+                curve.getPoints().setAll(points);
+            }
+
+            double dx = x(Math.min(u, CURVE_MAX)), dy = y(f, span);
+            boolean moved = !told || u != this.served;
+            this.served = u;
+            dotX = dx;
+            dotY = dy;
+            down.setStartX(dx);
+            down.setStartY(dy);
+            down.setEndX(dx);
+            down.setEndY(TOP + H);
+            across.setStartX(LEFT);
+            across.setStartY(dy);
+            across.setEndX(dx);
+            across.setEndY(dy);
+
+            boolean showHollow = !Double.isNaN(then)
+                    && Math.abs(Math.min(then, CURVE_MAX) - Math.min(u, CURVE_MAX)) > .005;
+            if (showHollow) {
+                double t = Math.max(0, then);
+                hollow.setCenterX(x(Math.min(t, CURVE_MAX)));
+                hollow.setCenterY(y(InfrastructureManager.throughputAtServed(t), span));
+                hollowTip.setText("With the road sites on site finished: " + CityNeeds.servedPct(t) + " "
+                        + CityNeeds.SERVED + " · " + pct(InfrastructureManager.throughputAtServed(t)) + " flow");
+            }
+
+            dot.setCenterX(dx);
+            dot.setCenterY(dy);
+            // Only when it moved: a Color made again is a new value to the property, and a repaint.
+            if (!tone.equals(this.tone)) {
+                this.tone = tone;
+                dot.setStroke(javafx.scene.paint.Color.web(tone));
+            }
+            dotTip.setText("Today: " + CityNeeds.servedPct(u) + " " + CityNeeds.SERVED + " · " + pct(f) + " flow");
+
+            useLabel.setText(CityNeeds.servedPct(u));
+            flowLabel.setText(pct(f));
+            xLow.setText("0%");
+            xHigh.setText(pct(CURVE_MAX));
+            yHigh.setText("100%");
+            yLow.setText(pct(InfrastructureManager.MIN_THROUGHPUT));
+            over.setText("›");
+            over.setVisible(u > CURVE_MAX);
+
+            // The hollow dot is a child only while it is drawn, as it was when each month built the curve afresh.
+            if (!told || showHollow != hollowShown) {
+                List<Node> parts = new ArrayList<>();
+                parts.add(xAxis);
+                parts.add(yAxis);
+                parts.addAll(java.util.Arrays.asList(bands));
+                parts.add(curve);
+                parts.add(down);
+                parts.add(across);
+                if (showHollow) parts.add(hollow);
+                parts.add(dot);
+                parts.addAll(List.of(xLow, xHigh, yHigh, yLow, useLabel, flowLabel, over));
+                Kept.set(getChildren(), parts);
+                hollowShown = showHollow;
+            }
+            told = true;
+            if (moved) requestLayout();
+        }
+
+        private static Label label(String tone) {
+            Label l = new Label();
             l.setStyle(Palette.figure(Palette.SIZE_CAPTION, tone));
             l.setMinWidth(Region.USE_PREF_SIZE);
             l.setMouseTransparent(true);
@@ -877,35 +1031,41 @@ final class InfrastructureScreen {
         double fare = policy.chargedFare();   // today's money (0.7.45)
         BuildAdvice.Measure transit = BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT);
 
-        VBox fareCard = fareCard(roads, econ, policy);
+        // Kept (KP2): each part of the page a scope of its own; the hero is two different cards, keyed by which.
+        VBox fareCard = Kept.scope("fare", () -> fareCard(roads, econ, policy));
 
         if (stock <= 0) {
-            VBox left = new VBox(8, caption("WHO RIDES", null), figure("nobody", 28, Palette.TEXT_HEAD),
-                    infoLine("No transit yet: a Bus Network is the cheap rung, a Metro Line carries a city.",
-                            NO_TRANSIT_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300),
-                    doorPill("Build transit", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openOn(transit)));
-            List<ScaleRow> rows = List.of(ScaleRow.of("Commuters", people(commuters),
-                    List.of(Run.of(0, commuters, Palette.PEOPLE + "59"))).strong());
-            page.getChildren().add(heroCard(left, 300, new VBox(8, caption("FROM COMMUTERS TO RIDERS", null),
-                    scaleRows(rows, Math.max(1, commuters), List.of(), 230, 84, 14))));
+            page.getChildren().add(Kept.scope("hero none", () -> {
+                VBox left = Kept.column(8, caption("WHO RIDES", null), figure("nobody", 28, Palette.TEXT_HEAD),
+                        infoLine("No transit yet: a Bus Network is the cheap rung, a Metro Line carries a city.",
+                                NO_TRANSIT_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300),
+                        doorPill("Build transit", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openOn(transit)));
+                List<ScaleRow> rows = List.of(ScaleRow.of("Commuters", people(commuters),
+                        List.of(Run.of(0, commuters, Palette.PEOPLE + "59"))).strong());
+                return heroCard(left, 300, Kept.column(8, caption("FROM COMMUTERS TO RIDERS", null),
+                        scaleRows(rows, Math.max(1, commuters), List.of(), 230, 84, 14)));
+            }));
         } else {
-            VBox left = new VBox(4, caption("WHO RIDES", null),
-                    pairLine(people(riders), Palette.TEXT_HEAD, "ride", null, null, null),
-                    words(pct(commuters > 0 ? riders / commuters : 0) + " of the city's commuters",
-                            Palette.SIZE_BODY + 1, Palette.TEXT_HEAD),
-                    words("driving, they would add " + shortNumber(walk.ridersAsDrivers()) + " trips to the road",
-                            Palette.SIZE_BODY, Palette.TEXT_LABEL),
-                    words(fare <= 0 ? "free to ride" : unitPrice(fare) + " a ride · " + money(policy.monthlyFare()) + " a month",
-                            Palette.SIZE_BODY, Palette.TEXT_LABEL));
-            page.getChildren().add(heroCard(left, 300, transitFunnel(roads, policy, transit)));
+            page.getChildren().add(Kept.scope("hero", () -> {
+                VBox left = Kept.column(4, caption("WHO RIDES", null),
+                        pairLine(people(riders), Palette.TEXT_HEAD, "ride", null, null, null),
+                        words(pct(commuters > 0 ? riders / commuters : 0) + " of the city's commuters",
+                                Palette.SIZE_BODY + 1, Palette.TEXT_HEAD),
+                        words("driving, they would add " + shortNumber(walk.ridersAsDrivers()) + " trips to the road",
+                                Palette.SIZE_BODY, Palette.TEXT_LABEL),
+                        words(fare <= 0 ? "free to ride" : unitPrice(fare) + " a ride · " + money(policy.monthlyFare()) + " a month",
+                                Palette.SIZE_BODY, Palette.TEXT_LABEL));
+                return heroCard(left, 300, transitFunnel(roads, policy, transit));
+            }));
         }
 
         javafx.scene.layout.GridPane cards = equalColumns(2, TILE_GAP);
-        cards.add(transitBooks(econ), 0, 0);
+        cards.add(Kept.scope("books", () -> transitBooks(econ)), 0, 0);
         cards.add(fareCard, 1, 0);
         page.getChildren().add(cards);
-        page.getChildren().add(details("transit", "the ceilings, the riders by reason, the books and the fare, line by line",
-                detailsOpen, ui::redraw, () -> transitStatement(roads, econ, policy)));
+        page.getChildren().add(Kept.scope("details", () -> details("transit",
+                "the ceilings, the riders by reason, the books and the fare, line by line",
+                detailsOpen, ui::redraw, () -> transitStatement(roads, econ, policy))));
     }
 
     /** The no-transit card's (i) (P6). */
@@ -964,8 +1124,8 @@ final class InfrastructureScreen {
         }
         rows.addAll(ridersByReason(roads, policy));
 
-        VBox box = new VBox(8, caption("FROM COMMUTERS TO RIDERS", null), scaleRows(rows, scale, List.of(), 230, 84, 14));
-        HBox ring = new HBox(Palette.GAP_LOOSE,
+        VBox box = Kept.column(8, caption("FROM COMMUTERS TO RIDERS", null), scaleRows(rows, scale, List.of(), 230, 84, 14));
+        HBox ring = Kept.row(Palette.GAP_LOOSE,
                 words("Build's transit ring reads " + CityNeeds.servedPct(roads.getTransitServed()) + " " + CityNeeds.SERVED
                         + ": room on the stock for " + CityNeeds.servedPct(roads.getTransitServed()) + " of commuters. "
                         + pct(commuters > 0 ? roads.getTransitRiders() / commuters : 0)
@@ -1210,45 +1370,53 @@ final class InfrastructureScreen {
         InfrastructureManager roads = ui.game.getInfrastructureManager();
         double track = rail.trackTonnes();
 
-        VBox left;
-        if (track <= 0) {
-            left = new VBox(8, caption("WHAT THE RAILWAY CHARGES", null), figure("no track", 28, Palette.TEXT_MUTED),
-                    infoLine("Nobody has laid a line: every tonne leaves by lorry, and the freight is paid to the world.",
-                            NO_TRACK_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300),
-                    doorPill("Freight on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
-        } else {
-            double quote = rail.getQuote();
-            SegmentBar gauge = segmentBar(List.of(Segment.of(Math.min(1, quote), Palette.BUSINESS)), 1,
-                    List.of(new Tick(ham.citybuildersim.sectors.Freight.RAIL_FLOOR, Palette.TEXT_MUTED, 1,
-                                    "its floor " + pct(ham.citybuildersim.sectors.Freight.RAIL_FLOOR),
-                                    "It never quotes under this: freight needs profit"),
-                            new Tick(1, Palette.TEXT_HEAD, 2, "a lorry", "It can never charge more than a lorry")),
-                    260, 10);
-            left = new VBox(8, caption("WHAT THE RAILWAY CHARGES", null),
-                    pairLine(pct(quote), Palette.TEXT_HEAD, "of a lorry", null, null, null),
-                    gauge,
-                    infoLine(String.format("set monthly from its costs + %.1f%% on its track",
-                                    ham.citybuildersim.sectors.Freight.TARGET_RETURN * 100),
-                            QUOTE_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300));
-        }
-        page.getChildren().add(heroCard(left, 300, freightBill(rail)));
+        // Kept (KP2): the hero is two different cards, keyed by which; the cards come and go with the track.
+        page.getChildren().add(Kept.scope(track <= 0 ? "hero none" : "hero", () -> {
+            VBox left;
+            if (track <= 0) {
+                left = Kept.column(8, caption("WHAT THE RAILWAY CHARGES", null), figure("no track", 28, Palette.TEXT_MUTED),
+                        infoLine("Nobody has laid a line: every tonne leaves by lorry, and the freight is paid to the world.",
+                                NO_TRACK_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300),
+                        doorPill("Freight on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
+            } else {
+                double quote = rail.getQuote();
+                SegmentBar gauge = segmentBar(List.of(Segment.of(Math.min(1, quote), Palette.BUSINESS)), 1,
+                        List.of(new Tick(ham.citybuildersim.sectors.Freight.RAIL_FLOOR, Palette.TEXT_MUTED, 1,
+                                        "its floor " + pct(ham.citybuildersim.sectors.Freight.RAIL_FLOOR),
+                                        "It never quotes under this: freight needs profit"),
+                                new Tick(1, Palette.TEXT_HEAD, 2, "a lorry", "It can never charge more than a lorry")),
+                        260, 10);
+                left = Kept.column(8, caption("WHAT THE RAILWAY CHARGES", null),
+                        pairLine(pct(quote), Palette.TEXT_HEAD, "of a lorry", null, null, null),
+                        gauge,
+                        infoLine(String.format("set monthly from its costs + %.1f%% on its track",
+                                        ham.citybuildersim.sectors.Freight.TARGET_RETURN * 100),
+                                QUOTE_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300));
+            }
+            return heroCard(left, 300, freightBill(rail));
+        }));
 
         if (track > 0) {
-            javafx.scene.layout.GridPane cards = equalColumns(3, TILE_GAP);
-            cards.add(trackCard(rail), 0, 0);
-            cards.add(haulsCard(rail), 1, 0);
-            cards.add(businessCard(rail), 2, 0);
-            page.getChildren().add(cards);
+            page.getChildren().add(Kept.scope("cards", () -> {
+                javafx.scene.layout.GridPane cards = equalColumns(3, TILE_GAP);
+                cards.add(Kept.scope("track", () -> trackCard(rail)), 0, 0);
+                cards.add(Kept.scope("hauls", () -> haulsCard(rail)), 1, 0);
+                cards.add(Kept.scope("business", () -> businessCard(rail)), 2, 0);
+                return cards;
+            }));
         }
-        HBox rule = new HBox(Palette.GAP_LOOSE, infoLine(String.format("It will not lay a line it cannot fill to %.0f%%, "
-                                + "which is why a town does not get a spur.",
-                        ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION * 100),
-                LINE_RULE_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_MUTED, 600),
-                doorPill("Freight on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
-        rule.setAlignment(Pos.CENTER_LEFT);
-        page.getChildren().add(rule);
-        page.getChildren().add(details("railway", "the track, the hauling and the business, line by line",
-                detailsOpen, ui::redraw, () -> railwayStatement(rail, roads)));
+        page.getChildren().add(Kept.scope("rule", () -> {
+            HBox rule = Kept.row(Palette.GAP_LOOSE, infoLine(String.format("It will not lay a line it cannot fill to %.0f%%, "
+                                    + "which is why a town does not get a spur.",
+                            ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION * 100),
+                    LINE_RULE_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_MUTED, 600),
+                    doorPill("Freight on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
+            rule.setAlignment(Pos.CENTER_LEFT);
+            return rule;
+        }));
+        page.getChildren().add(Kept.scope("details", () -> details("railway",
+                "the track, the hauling and the business, line by line",
+                detailsOpen, ui::redraw, () -> railwayStatement(rail, roads))));
     }
 
     /** The quote's (i) (P12). */
@@ -1293,24 +1461,28 @@ final class InfrastructureScreen {
                     "paid abroad or kept: " + UNKNOWN_YET, null));
         }
         SegmentBar bar = segmentBar(parts, truck > 0 ? truck : 1, List.of(), 0, 22);
-        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(Palette.GAP_LOOSE, 4);
-        key.getChildren().add(keySwatch(Palette.BUSINESS, "billed at home " + money(home)));
+        // Kept (KP2): the key's swatches and the two lines at the foot come and go, a scope each.
+        javafx.scene.layout.FlowPane key = Kept.flow(Palette.GAP_LOOSE, 4);
+        key.getChildren().add(Kept.scope("home", () -> keySwatch(Palette.BUSINESS, "billed at home " + money(home))));
         if (split) {
-            key.getChildren().addAll(keySwatch(Palette.ORE, "paid abroad " + money(abroad)),
-                    keySwatch(Palette.MONEY, "kept " + money(kept)));
+            key.getChildren().addAll(Kept.scope("abroad", () -> keySwatch(Palette.ORE, "paid abroad " + money(abroad))),
+                    Kept.scope("kept", () -> keySwatch(Palette.MONEY, "kept " + money(kept))));
         } else {
-            key.getChildren().add(keySwatch(Palette.TEXT_SPENT, "paid abroad or kept: " + UNKNOWN_YET));
+            key.getChildren().add(Kept.scope("unsplit", () -> keySwatch(Palette.TEXT_SPENT, "paid abroad or kept: " + UNKNOWN_YET)));
         }
-        VBox box = new VBox(8, caption("THE MONTH'S FREIGHT BILL, THREE WAYS", BILL_INFO),
+        VBox box = Kept.column(8, caption("THE MONTH'S FREIGHT BILL, THREE WAYS", BILL_INFO),
                 figureLine(String.format("%,.0f t", rail.getTradeTonnes()), "crossed the boundary · by lorry it would have cost",
                         money(truck), ""),
                 bar, key);
         if (rail.getFuelBill() > 0) {
-            box.getChildren().add(words(money(rail.getFuelBill()) + " of the railway's own bill is diesel"
+            box.getChildren().add(Kept.scope("diesel", () -> words(money(rail.getFuelBill()) + " of the railway's own bill is diesel"
                     + abroadWords(rail.getFuelBill(), rail.getFuelImported(), " bought abroad"),
-                    Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                    Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
         }
-        if (truck <= 0) box.getChildren().add(words("Nothing crossed the boundary last month.", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        if (truck <= 0) {
+            box.getChildren().add(Kept.scope("nothing", () -> words("Nothing crossed the boundary last month.",
+                    Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
+        }
         return box;
     }
 
@@ -1323,25 +1495,29 @@ final class InfrastructureScreen {
                         String.format("%,.1f wagon sets of %,.1f needed", fleet, needs), 0, 10),
                 words(String.format("%,.0f of %,.0f wagon sets · carries %,.0f t a month", fleet, needs, rail.getCapacityTonnes()),
                         Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        // Kept (KP2): the card's last line is one of two, a scope each.
         if (shortBy > 1e-9) {
-            HBox line = new HBox(Palette.GAP, chip(String.format("%,.1f sets short", shortBy), Palette.WARN),
-                    infoButton(String.format(
-                            "Track with no locomotives carries nothing. This railway is holding "
-                            + "%,.0f tonnes of line it cannot run, because a wagon set moves %,.0f "
-                            + "tonnes a month and it is %,.1f sets short. It buys them like any "
-                            + "other capital good - from a Locomotive Works if the city has one, "
-                            + "and from the world if it does not.",
-                            rail.trackTonnes() - rail.getCapacityTonnes(),
-                            ham.citybuildersim.sectors.Freight.TONNES_PER_SET, shortBy), true));
-            line.setAlignment(Pos.CENTER_LEFT);
-            card.getChildren().add(line);
+            card.getChildren().add(Kept.scope("short", () -> {
+                HBox line = Kept.row(Palette.GAP, chip(String.format("%,.1f sets short", shortBy), Palette.WARN),
+                        infoButton(String.format(
+                                "Track with no locomotives carries nothing. This railway is holding "
+                                + "%,.0f tonnes of line it cannot run, because a wagon set moves %,.0f "
+                                + "tonnes a month and it is %,.1f sets short. It buys them like any "
+                                + "other capital good - from a Locomotive Works if the city has one, "
+                                + "and from the world if it does not.",
+                                rail.trackTonnes() - rail.getCapacityTonnes(),
+                                ham.citybuildersim.sectors.Freight.TONNES_PER_SET, shortBy), true));
+                line.setAlignment(Pos.CENTER_LEFT);
+                return line;
+            }));
         } else {
-            card.getChildren().add(infoLine(String.format("%,.2f replacement sets a month", rail.replacementSets()),
+            card.getChildren().add(Kept.scope("replacement", () -> infoLine(
+                    String.format("%,.2f replacement sets a month", rail.replacementSets()),
                     String.format("A set lasts %.0f years, so this fleet asks for about %,.2f replacement "
                             + "sets a month for ever - which is what makes a Locomotive Works a "
                             + "business rather than a single sale.",
                             ham.citybuildersim.sectors.Freight.SET_LIFE_MONTHS / 12, rail.replacementSets()),
-                    true, Palette.SIZE_LABEL, Palette.TEXT_LABEL, 360));
+                    true, Palette.SIZE_LABEL, Palette.TEXT_LABEL, 360)));
         }
         return card;
     }
@@ -1352,11 +1528,11 @@ final class InfrastructureScreen {
         double[] carried = rail.getCarried();
         SegmentBar bar = supplyBar(crossed, crossed, hauled, Palette.BUSINESS, null, null,
                 String.format("%,.0f of %,.0f tonnes by rail", hauled, crossed), 0, 10);
-        javafx.scene.layout.FlowPane chips = new javafx.scene.layout.FlowPane(Palette.GAP_TIGHT, Palette.GAP_TIGHT);
+        javafx.scene.layout.FlowPane chips = Kept.flow(Palette.GAP_TIGHT, Palette.GAP_TIGHT);
         for (Traffic s : new Traffic[] {Traffic.BULK, Traffic.GOODS, Traffic.COMMUTERS}) {
             double share = s.ordinal() < carried.length ? carried[s.ordinal()] : 0;
-            chips.getChildren().add(chip(s.label().toLowerCase() + " " + (s.isFreight() ? pct(share) : "never"),
-                    s.isFreight() ? streamColour(s) : Palette.TEXT_MUTED));
+            chips.getChildren().add(Kept.scope(s, () -> chip(s.label().toLowerCase() + " " + (s.isFreight() ? pct(share) : "never"),
+                    s.isFreight() ? streamColour(s) : Palette.TEXT_MUTED)));
         }
         return ServicesScreen.card(cardHead(Icons.LORRY, Palette.ORE, "What it hauls", null),
                 figureLine(String.format("%,.0f t", crossed), "crossed · rail took",
@@ -1379,7 +1555,7 @@ final class InfrastructureScreen {
         double billed = rail.getHaulageBilled(), allowed = rail.getAllowedRevenue();
         double net = rail.statement().netIncome;
         // Red only below zero, as Sectors colours it: a business losing money (D20).
-        HBox netLine = new HBox(6, figure(signedTight(Math.abs(net), net < 0), Palette.SIZE_BODY + 3,
+        HBox netLine = Kept.row(6, figure(signedTight(Math.abs(net), net < 0), Palette.SIZE_BODY + 3,
                 net < 0 ? Palette.BAD : Palette.TEXT_HEAD), words("net income a month", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         netLine.setAlignment(Pos.BASELINE_LEFT);
         VBox card = ServicesScreen.card(cardHead(Icons.COIN, Palette.BUSINESS, "The business", null),
@@ -1392,12 +1568,14 @@ final class InfrastructureScreen {
                 words("track " + money(rail.getBuildingsValue()) + " and land " + money(rail.getLandValue()) + " on its books",
                         Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         if (rail.trackTonnes() > 0 && billed < allowed * .75) {
-            HBox line = new HBox(Palette.GAP, chip("bigger than its city", Palette.WARN), infoButton(BIGGER_INFO, true));
-            line.setAlignment(Pos.CENTER_LEFT);
-            card.getChildren().add(line);
+            card.getChildren().add(Kept.scope("bigger", () -> {
+                HBox line = Kept.row(Palette.GAP, chip("bigger than its city", Palette.WARN), infoButton(BIGGER_INFO, true));
+                line.setAlignment(Pos.CENTER_LEFT);
+                return line;
+            }));
         }
-        card.getChildren().add(door("its books on Sectors", Palette.BUSINESS,
-                () -> ui.sectorScreen.openSectorBooks(rail, "Income")));
+        card.getChildren().add(Kept.scope("books", () -> door("its books on Sectors", Palette.BUSINESS,
+                () -> ui.sectorScreen.openSectorBooks(rail, "Income"))));
         return card;
     }
 
@@ -1465,32 +1643,35 @@ final class InfrastructureScreen {
 
         ham.citybuildersim.sectors.Freight rail = ui.game.getSectors().freight();
 
-        page.getChildren().add(heroCard(new VBox(8, caption("WHAT MOVING IT ADDS TO EACH GOOD'S PRICE", null),
+        // Kept (KP2): each part of the page a scope of its own.
+        page.getChildren().add(Kept.scope("hero", () -> heroCard(Kept.column(8,
+                        caption("WHAT MOVING IT ADDS TO EACH GOOD'S PRICE", null),
                         infoLine("A railway takes freight out of the band and bills it at home.", BAND_INFO, true,
                                 Palette.SIZE_BODY, Palette.TEXT_LABEL, 230),
-                        bandKey()), 230, goodsBars()));
+                        bandKey()), 230, Kept.scope("bars", this::goodsBars))));
 
-        page.getChildren().add(sectionHead("THE MONTH'S FREIGHT BILL", BILL_INFO, hint("each figure opens the railway")));
-        HBox strip = vitalsBar(
-                limitCell("CROSSED", String.format("%,.0f t", rail.getTradeTonnes()), "the boundary, both ways",
-                        Palette.TEXT_HEAD, "The railway", () -> open("The railway")),
-                limitCell("BY LORRY", money(rail.getTruckBill()), "what it would all have cost",
-                        Palette.TEXT_HEAD, "The railway", () -> open("The railway")),
-                limitCell("BILLED AT HOME", money(rail.getHaulageBilled()), "by the railway: stays in the city",
-                        Palette.TEXT_HEAD, "The railway", () -> open("The railway")),
-                limitCell("PAID ABROAD", moneyOr(rail.getPaidAbroad()), Double.isFinite(rail.getPaidAbroad())
-                                ? "to lorries and ships: leaves with the cargo" : UNKNOWN_YET,
-                        Palette.TEXT_HEAD, "The railway", () -> open("The railway")),
-                limitCell("KEPT", moneyOr(rail.getKept()), Double.isFinite(rail.getKept())
-                                ? "what neither is paid" : UNKNOWN_YET,
-                        Palette.TEXT_HEAD, "The railway", () -> open("The railway")));
+        page.getChildren().add(Kept.scope("bill head",
+                () -> sectionHead("THE MONTH'S FREIGHT BILL", BILL_INFO, hint("each figure opens the railway"))));
+        HBox strip = Kept.scope("bill", () -> vitalsBar(
+                Kept.scope("crossed", () -> limitCell("CROSSED", String.format("%,.0f t", rail.getTradeTonnes()),
+                        "the boundary, both ways", Palette.TEXT_HEAD, "The railway", () -> open("The railway"))),
+                Kept.scope("by lorry", () -> limitCell("BY LORRY", money(rail.getTruckBill()), "what it would all have cost",
+                        Palette.TEXT_HEAD, "The railway", () -> open("The railway"))),
+                Kept.scope("billed", () -> limitCell("BILLED AT HOME", money(rail.getHaulageBilled()),
+                        "by the railway: stays in the city", Palette.TEXT_HEAD, "The railway", () -> open("The railway"))),
+                Kept.scope("abroad", () -> limitCell("PAID ABROAD", moneyOr(rail.getPaidAbroad()),
+                        Double.isFinite(rail.getPaidAbroad()) ? "to lorries and ships: leaves with the cargo" : UNKNOWN_YET,
+                        Palette.TEXT_HEAD, "The railway", () -> open("The railway"))),
+                Kept.scope("kept", () -> limitCell("KEPT", moneyOr(rail.getKept()),
+                        Double.isFinite(rail.getKept()) ? "what neither is paid" : UNKNOWN_YET,
+                        Palette.TEXT_HEAD, "The railway", () -> open("The railway")))));
         strip.setAlignment(Pos.CENTER_LEFT);
         page.getChildren().add(strip);
 
-        page.getChildren().add(sectionHead("AND WHO HAS THE LORRIES TO DO IT", null, null));
-        page.getChildren().add(lorriesCard());
-        page.getChildren().add(details("freight", "the band and the lorries, as grids", detailsOpen, ui::redraw,
-                this::freightStatement));
+        page.getChildren().add(Kept.scope("lorries head", () -> sectionHead("AND WHO HAS THE LORRIES TO DO IT", null, null)));
+        page.getChildren().add(Kept.scope("lorries", this::lorriesCard));
+        page.getChildren().add(Kept.scope("details", () -> details("freight", "the band and the lorries, as grids",
+                detailsOpen, ui::redraw, this::freightStatement)));
     }
 
     /** The bars' (i) (P18 and P20, for bars rather than a grid). */
@@ -1509,17 +1690,17 @@ final class InfrastructureScreen {
 
     /** The bars' key. */
     VBox bandKey() {
-        VBox key = new VBox(4, keySwatch(Palette.TEXT_SPENT, "the world's margin"),
+        VBox key = Kept.column(4, keySwatch(Palette.TEXT_SPENT, "the world's margin"),
                 keySwatch(Palette.ORE, "freight paid abroad"),
                 keySwatch(Palette.BUSINESS, "the railway's charge"));
-        Region mark = new Region();
+        Region mark = Kept.region();
         mark.setMinSize(2, 12);
         mark.setPrefSize(2, 12);
         mark.setMaxSize(2, 12);
         mark.setStyle("-fx-background-color: " + Palette.TEXT_HEAD + ";");
-        Label by = new Label("by lorry");
+        Label by = Kept.label("by lorry");
         by.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        HBox lorry = new HBox(9, mark, by);
+        HBox lorry = Kept.row(9, mark, by);
         lorry.setAlignment(Pos.CENTER_LEFT);
         lorry.setStyle("-fx-padding: 0 0 0 4;");
         key.getChildren().add(lorry);
@@ -1559,11 +1740,12 @@ final class InfrastructureScreen {
     Node goodsBars() {
         List<GoodBar> bars = goodBars();
         if (bars.isEmpty()) {
-            return words("Nothing this city trades has both a world buyer and a world seller yet, "
-                    + "so there is no band to show.", Palette.SIZE_BODY, Palette.TEXT_MUTED);
+            return Kept.scope("none", () -> words("Nothing this city trades has both a world buyer and a world seller yet, "
+                    + "so there is no band to show.", Palette.SIZE_BODY, Palette.TEXT_MUTED));
         }
-        double scale = 1;
-        for (GoodBar b : bars) scale = Math.max(scale, Math.max(b.byLorry(), b.delivered()));
+        double widest = 1;
+        for (GoodBar b : bars) widest = Math.max(widest, Math.max(b.byLorry(), b.delivered()));
+        final double scale = widest;
         List<ScaleRow> rows = new ArrayList<>();
         boolean bulkHead = false, goodsHead = false;
         for (GoodBar b : bars) {
@@ -1577,7 +1759,7 @@ final class InfrastructureScreen {
                     .marks(List.of(new Tick(b.byLorry(), Palette.TEXT_HEAD, 2, null, "by lorry " + pct(b.byLorry()))))
                     .icon(bulk ? Icons.INDUSTRY : Icons.SHOPS).tip(b.tip()));
         }
-        return scaleRows(rows, scale, List.of(), 170, 184, 10);
+        return Kept.scope("rows", () -> scaleRows(rows, scale, List.of(), 170, 184, 10));
     }
 
     /** The lorries: one line while nobody is short; a bar a short sector otherwise. */
@@ -1592,42 +1774,52 @@ final class InfrastructureScreen {
             needed += Math.round(s.vansNeeded());
             if (s.getVanRatio() < 1) shortOf.add(s);
         }
+        // Kept (KP2): the card is one of three, a scope each; a short sector's row is a scope keyed by the sector.
+        final long ownedNow = owned, neededNow = needed;
+        final int sectorsNow = sectors;
         VBox card;
         if (sectors == 0) {
-            card = ServicesScreen.card(cardHead(Icons.LORRY, Palette.ORE, "The lorries", null),
+            card = Kept.scope("none", () -> ServicesScreen.card(cardHead(Icons.LORRY, Palette.ORE, "The lorries", null),
                     words("Nothing standing in this city moves a tonne of anything yet, so nobody "
-                            + "needs a lorry. The first farm, mine or mill changes that.", Palette.SIZE_BODY, Palette.TEXT_LABEL));
+                            + "needs a lorry. The first farm, mine or mill changes that.", Palette.SIZE_BODY, Palette.TEXT_LABEL)));
         } else if (shortOf.isEmpty()) {
-            HBox line = new HBox(Palette.GAP, icon(Icons.TICK, Palette.GOOD, 16),
-                    infoLine(String.format("Every sector has its lorries: %,d owned, %,d needed, across %d sectors",
-                            owned, needed, sectors), LORRY_INFO, true, Palette.SIZE_BODY, Palette.TEXT_HEAD, 760));
-            line.setAlignment(Pos.CENTER_LEFT);
-            card = ServicesScreen.card(line);
+            card = Kept.scope("in hand", () -> {
+                HBox line = Kept.row(Palette.GAP, icon(Icons.TICK, Palette.GOOD, 16),
+                        infoLine(String.format("Every sector has its lorries: %,d owned, %,d needed, across %d sectors",
+                                ownedNow, neededNow, sectorsNow), LORRY_INFO, true, Palette.SIZE_BODY, Palette.TEXT_HEAD, 760));
+                line.setAlignment(Pos.CENTER_LEFT);
+                return ServicesScreen.card(line);
+            });
         } else {
-            card = ServicesScreen.card(cardHead(Icons.LORRY, Palette.ORE, "The lorries", LORRY_INFO));
-            for (Sector s : shortOf) {
-                Label name = words(s.label(), Palette.SIZE_LABEL, Palette.TEXT_LABEL);
-                name.setMinWidth(150);
-                name.setPrefWidth(150);
-                name.setMaxWidth(150);
-                SegmentBar bar = supplyBar(s.vansNeeded(), s.vanFleet(), s.vanFleet(), Palette.WARN, "needed", null,
-                        String.format("%,.0f of %,.0f lorries", s.vanFleet(), s.vansNeeded()), 0, 10);
-                HBox.setHgrow(bar, Priority.ALWAYS);
-                Label at = figure("running at " + pct(s.getVanRatio()), Palette.SIZE_LABEL, Palette.WARN);
-                HBox row = new HBox(Palette.GAP, name, bar, at);
-                row.setAlignment(Pos.CENTER_LEFT);
-                card.getChildren().add(row);
-            }
-            HBox chipLine = new HBox(Palette.GAP, chip("short of lorries", Palette.WARN), infoButton(String.format(
-                    "A sector cannot put a whole fleet on the road in a month "
-                    + "- it takes about %.0f - so anything that has just built a factory is "
-                    + "running below nameplate until the vehicles arrive. It is not stopped: "
-                    + "a firm short of its own lorries hires haulage and sends fuller loads, "
-                    + "which is worth %.0f%% of nameplate however bad it gets. If this never "
-                    + "clears, the city is not making or importing enough of them.",
-                    Sector.FLEET_DELIVERY_MONTHS, Sector.MIN_VAN_RATE * 100), true));
-            chipLine.setAlignment(Pos.CENTER_LEFT);
-            card.getChildren().add(chipLine);
+            card = Kept.scope("short", () -> {
+                VBox c = ServicesScreen.card(cardHead(Icons.LORRY, Palette.ORE, "The lorries", LORRY_INFO));
+                for (Sector s : shortOf) {
+                    c.getChildren().add(Kept.scope(s.key(), () -> {
+                        Label name = words(s.label(), Palette.SIZE_LABEL, Palette.TEXT_LABEL);
+                        name.setMinWidth(150);
+                        name.setPrefWidth(150);
+                        name.setMaxWidth(150);
+                        SegmentBar bar = supplyBar(s.vansNeeded(), s.vanFleet(), s.vanFleet(), Palette.WARN, "needed", null,
+                                String.format("%,.0f of %,.0f lorries", s.vanFleet(), s.vansNeeded()), 0, 10);
+                        HBox.setHgrow(bar, Priority.ALWAYS);
+                        Label at = figure("running at " + pct(s.getVanRatio()), Palette.SIZE_LABEL, Palette.WARN);
+                        HBox row = Kept.row(Palette.GAP, name, bar, at);
+                        row.setAlignment(Pos.CENTER_LEFT);
+                        return row;
+                    }));
+                }
+                HBox chipLine = Kept.row(Palette.GAP, chip("short of lorries", Palette.WARN), infoButton(String.format(
+                        "A sector cannot put a whole fleet on the road in a month "
+                        + "- it takes about %.0f - so anything that has just built a factory is "
+                        + "running below nameplate until the vehicles arrive. It is not stopped: "
+                        + "a firm short of its own lorries hires haulage and sends fuller loads, "
+                        + "which is worth %.0f%% of nameplate however bad it gets. If this never "
+                        + "clears, the city is not making or importing enough of them.",
+                        Sector.FLEET_DELIVERY_MONTHS, Sector.MIN_VAN_RATE * 100), true));
+                chipLine.setAlignment(Pos.CENTER_LEFT);
+                c.getChildren().add(chipLine);
+                return c;
+            });
         }
         return card;
     }
@@ -1654,38 +1846,49 @@ final class InfrastructureScreen {
     /** The old Freight page's two grids, in its fold. */
     VBox freightStatement() {
         VBox c = column(statementHead("The band, good by good"));
-        javafx.scene.layout.GridPane band = grid(new double[] {150, 95, 95, 95, 95}, rightAfterFirst(5));
-        gridHead(band, "", "world pays", "world asks", "in the band", "delivered");
-        int line = 1;
-        for (GoodBar b : goodBars()) {
-            GoodsMarket m = ui.game.getMarkets().get(b.good());
-            band.add(gridCell(b.good().label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            band.add(gridCell(unitPrice(m.exportPrice()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, line);
-            band.add(gridCell(unitPrice(m.importPrice()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
-            band.add(gridCell(pct(b.band()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, line);
-            band.add(gridCell(b.rail() > 0 ? pct(b.delivered()) : "—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 4, line);
-            line++;
-        }
-        c.getChildren().add(line == 1 ? statementNote("Nothing this city trades has both a world buyer and a world "
-                + "seller yet, so there is no band to show.") : band);
+        // Kept (KP2): the two tables are a scope each, and a row of either a scope keyed by its good or its sector.
+        c.getChildren().add(Kept.<Node>scope("band", () -> {
+            javafx.scene.layout.GridPane band = grid(new double[] {150, 95, 95, 95, 95}, rightAfterFirst(5));
+            gridHead(band, "", "world pays", "world asks", "in the band", "delivered");
+            int line = 1;
+            for (GoodBar b : goodBars()) {
+                final int at = line++;
+                Kept.scope(b.good(), () -> {
+                    GoodsMarket m = ui.game.getMarkets().get(b.good());
+                    band.add(gridCell(b.good().label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                    band.add(gridCell(unitPrice(m.exportPrice()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, at);
+                    band.add(gridCell(unitPrice(m.importPrice()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, at);
+                    band.add(gridCell(pct(b.band()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 3, at);
+                    band.add(gridCell(b.rail() > 0 ? pct(b.delivered()) : "—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 4, at);
+                });
+            }
+            if (line > 1) return band;
+            return Kept.scope("none", () -> statementNote("Nothing this city trades has both a world buyer and a world "
+                    + "seller yet, so there is no band to show."));
+        }));
         c.getChildren().add(statementHead("And who has the lorries to do it"));
-        javafx.scene.layout.GridPane fleets = grid(new double[] {150, 110, 90, 90, 90}, rightAfterFirst(5));
-        gridHead(fleets, "", "tonnes/mo", "needs", "owns", "running at");
-        line = 1;
-        for (Sector s : ui.game.getSectors().all()) {
-            if (!shownFleet(s)) continue;
-            double ratio = s.getVanRatio();
-            fleets.add(gridCell(s.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            fleets.add(gridCell(String.format("%,.0f", s.tonnesMoved()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
-            fleets.add(gridCell(String.format("%,.0f", s.vansNeeded()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
-            fleets.add(gridCell(String.format("%,.0f", s.vanFleet()),
-                    s.vanFleet() + 1e-9 >= s.vansNeeded() ? Palette.TEXT_HEAD : Palette.WARN, Palette.SIZE_CAPTION, true), 3, line);
-            fleets.add(gridCell(String.format("%.0f%%", ratio * 100), ratio >= 1 ? Palette.TEXT_MUTED : Palette.WARN,
-                    Palette.SIZE_CAPTION, true), 4, line);
-            line++;
-        }
-        c.getChildren().add(line == 1 ? statementNote("Nothing standing in this city moves a tonne of anything yet, so "
-                + "nobody needs a lorry. The first farm, mine or mill changes that.") : fleets);
+        c.getChildren().add(Kept.<Node>scope("fleets", () -> {
+            javafx.scene.layout.GridPane fleets = grid(new double[] {150, 110, 90, 90, 90}, rightAfterFirst(5));
+            gridHead(fleets, "", "tonnes/mo", "needs", "owns", "running at");
+            int line = 1;
+            for (Sector s : ui.game.getSectors().all()) {
+                if (!shownFleet(s)) continue;
+                final int at = line++;
+                Kept.scope(s.key(), () -> {
+                    double ratio = s.getVanRatio();
+                    fleets.add(gridCell(s.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                    fleets.add(gridCell(String.format("%,.0f", s.tonnesMoved()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, at);
+                    fleets.add(gridCell(String.format("%,.0f", s.vansNeeded()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, at);
+                    fleets.add(gridCell(String.format("%,.0f", s.vanFleet()),
+                            s.vanFleet() + 1e-9 >= s.vansNeeded() ? Palette.TEXT_HEAD : Palette.WARN, Palette.SIZE_CAPTION, true), 3, at);
+                    fleets.add(gridCell(String.format("%.0f%%", ratio * 100), ratio >= 1 ? Palette.TEXT_MUTED : Palette.WARN,
+                            Palette.SIZE_CAPTION, true), 4, at);
+                });
+            }
+            if (line > 1) return fleets;
+            return Kept.scope("none", () -> statementNote("Nothing standing in this city moves a tonne of anything yet, so "
+                    + "nobody needs a lorry. The first farm, mine or mill changes that."));
+        }));
         c.getChildren().add(statementNote(LORRY_INFO));
         return c;
     }
@@ -1779,31 +1982,38 @@ final class InfrastructureScreen {
         FreightView.HaulagePage h = FreightView.of(ui.game).haulage();
         FreightView.Quote q = h.quote();
 
-        VBox left = new VBox(8, caption("WHAT HAULAGE CHARGES", HAULAGE_QUOTE_INFO),
-                pairLine(unitPrice(q.quote()), Palette.TEXT_HEAD, "a tonne, the city leg", null, null, null),
-                infoLine(q.known() ? "set monthly from its costs + " + String.format("%.1f%%", ham.citybuildersim.sectors.Freight.TARGET_RETURN * 100)
-                                + " on its trucks and depots"
-                        : "an estimate: no month has struck a price yet",
-                        HAULAGE_QUOTE_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300));
-        if (q.target().isPresent()) {
-            left.getChildren().add(words("the rule asks " + unitPrice(q.target().getAsDouble()) + " a tonne"
-                    + (h.tightness() > 1e-9 ? ", dearer for the trucks it is short of" : ""), Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        }
+        // Kept (KP2): the hero and each card a scope of its own; the lines that come and go inside the hero a scope each.
+        page.getChildren().add(Kept.scope("hero", () -> {
+            VBox left = Kept.column(8, caption("WHAT HAULAGE CHARGES", HAULAGE_QUOTE_INFO),
+                    pairLine(unitPrice(q.quote()), Palette.TEXT_HEAD, "a tonne, the city leg", null, null, null),
+                    infoLine(q.known() ? "set monthly from its costs + " + String.format("%.1f%%", ham.citybuildersim.sectors.Freight.TARGET_RETURN * 100)
+                                    + " on its trucks and depots"
+                            : "an estimate: no month has struck a price yet",
+                            HAULAGE_QUOTE_INFO, true, Palette.SIZE_BODY, Palette.TEXT_LABEL, 300));
+            if (q.target().isPresent()) {
+                left.getChildren().add(Kept.scope("target", () -> words("the rule asks " + unitPrice(q.target().getAsDouble())
+                        + " a tonne" + (h.tightness() > 1e-9 ? ", dearer for the trucks it is short of" : ""),
+                        Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
+            }
 
-        VBox right = new VBox(8, caption("THE CITY LEG THIS MONTH", null),
-                figureLine(String.format("%,.0f t", h.legTonnes()), "of city leg · trucks carried",
-                        h.legTonnes() > 0 ? pct(h.carried() / h.legTonnes()) : "none", ""),
-                supplyBar(h.legTonnes(), h.legTonnes(), h.carried(), Palette.BUSINESS, null, null,
-                        String.format("%,.0f of %,.0f tonnes by truck", h.carried(), h.legTonnes()), 0, 10),
-                words(String.format("%,.0f loads of %,.0f t · the rest the shippers' own vans, and the sidings",
-                        h.loads(), ham.citybuildersim.sectors.Haulage.TONNES_A_LOAD), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        if (h.legTonnes() <= 0) right.getChildren().add(words("No city leg was billed last month.", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        page.getChildren().add(heroCard(left, 300, right));
+            VBox right = Kept.column(8, caption("THE CITY LEG THIS MONTH", null),
+                    figureLine(String.format("%,.0f t", h.legTonnes()), "of city leg · trucks carried",
+                            h.legTonnes() > 0 ? pct(h.carried() / h.legTonnes()) : "none", ""),
+                    supplyBar(h.legTonnes(), h.legTonnes(), h.carried(), Palette.BUSINESS, null, null,
+                            String.format("%,.0f of %,.0f tonnes by truck", h.carried(), h.legTonnes()), 0, 10),
+                    words(String.format("%,.0f loads of %,.0f t · the rest the shippers' own vans, and the sidings",
+                            h.loads(), ham.citybuildersim.sectors.Haulage.TONNES_A_LOAD), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            if (h.legTonnes() <= 0) {
+                right.getChildren().add(Kept.scope("no leg", () -> words("No city leg was billed last month.",
+                        Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
+            }
+            return heroCard(left, 300, right);
+        }));
 
         javafx.scene.layout.GridPane cards = equalColumns(3, TILE_GAP);
-        cards.add(trucksCard(h), 0, 0);
-        cards.add(depotsCard(h), 1, 0);
-        cards.add(haulageBusinessCard(freight, h), 2, 0);
+        cards.add(Kept.scope("trucks", () -> trucksCard(h)), 0, 0);
+        cards.add(Kept.scope("depots", () -> depotsCard(h)), 1, 0);
+        cards.add(Kept.scope("business", () -> haulageBusinessCard(freight, h)), 2, 0);
         page.getChildren().add(cards);
     }
 
@@ -1815,9 +2025,17 @@ final class InfrastructureScreen {
                         String.format("%,.1f trucks of %,.1f needed", h.trucks(), h.needed()), 0, 10),
                 words(String.format("%,.1f of %,.1f needed · %,.1f asked with the plant on site",
                         h.trucks(), h.needed(), h.asked()), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        javafx.scene.layout.FlowPane chips = new javafx.scene.layout.FlowPane(Palette.GAP_TIGHT, Palette.GAP_TIGHT);
-        if (h.shortBy() > 1e-9) chips.getChildren().add(chip(String.format("%,.1f trucks short", h.shortBy()), Palette.WARN));
-        if (h.worn() > 1e-9) chips.getChildren().add(chip(String.format("%,.1f worn out last month", h.worn()), Palette.TEXT_MUTED));
+        // Kept (KP2): the chips come and go, a scope each; their line is on the card only with one in it.
+        javafx.scene.layout.FlowPane chips = Kept.scope("chips", () -> {
+            javafx.scene.layout.FlowPane line = Kept.flow(Palette.GAP_TIGHT, Palette.GAP_TIGHT);
+            if (h.shortBy() > 1e-9) {
+                line.getChildren().add(Kept.scope("short", () -> chip(String.format("%,.1f trucks short", h.shortBy()), Palette.WARN)));
+            }
+            if (h.worn() > 1e-9) {
+                line.getChildren().add(Kept.scope("worn", () -> chip(String.format("%,.1f worn out last month", h.worn()), Palette.TEXT_MUTED)));
+            }
+            return line;
+        });
         if (!chips.getChildren().isEmpty()) card.getChildren().add(chips);
         return card;
     }
@@ -1831,10 +2049,10 @@ final class InfrastructureScreen {
                 words(String.format("room for %,.0f trucks · %,.0f spare", h.depotRoom(), h.spareRoom()),
                         Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         if (h.onStreet() > 1e-9) {
-            card.getChildren().add(chip(String.format("%,.0f on the street", h.onStreet()), Palette.WARN));
+            card.getChildren().add(Kept.scope("street", () -> chip(String.format("%,.0f on the street", h.onStreet()), Palette.WARN)));
         }
-        card.getChildren().add(doorPill("Freight on Build", Icons.BUILD, Palette.BUILDING,
-                () -> ui.buildScreen.openCategory(BuildAdvice.RAIL)));
+        card.getChildren().add(Kept.scope("build", () -> doorPill("Freight on Build", Icons.BUILD, Palette.BUILDING,
+                () -> ui.buildScreen.openCategory(BuildAdvice.RAIL))));
         return card;
     }
 
@@ -1846,8 +2064,8 @@ final class InfrastructureScreen {
                 words("diesel " + money(h.diesel()) + " a month", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
                 words("its trucks reach " + pct(h.share()) + " of the city leg", Palette.SIZE_LABEL,
                         h.share() + 1e-9 >= 1 ? Palette.TEXT_LABEL : Palette.WARN));
-        card.getChildren().add(door("its books on Sectors", Palette.BUSINESS,
-                () -> ui.sectorScreen.openSectorBooks(freight, "Income")));
+        card.getChildren().add(Kept.scope("books", () -> door("its books on Sectors", Palette.BUSINESS,
+                () -> ui.sectorScreen.openSectorBooks(freight, "Income"))));
         return card;
     }
 
@@ -1859,29 +2077,34 @@ final class InfrastructureScreen {
         ham.citybuildersim.sectors.Freight freight = ui.game.getSectors().freight();
         FreightView.PortsPage p = FreightView.of(ui.game).ports();
 
-        VBox left = new VBox(8, caption("THE PORTS' MONTH", PORTS_INFO),
-                pairLine(money(p.handlingBilled()), Palette.TEXT_HEAD, "handling billed", money(p.duesPaid()), Palette.TEXT_HEAD, "dues to the city"),
-                figureLine(String.format("%,.0f t", p.tonnes()), "put across the berths · calls",
-                        String.format("%,d", p.calls()), "ships"),
-                words(p.berths() <= 0 ? "No sea terminal stands: every tonne goes by lorry or by train."
-                        : String.format("%,d berths · %,.0f t a month of room · dues at %.2f× the default", p.berths(), p.capacity(), p.dial()),
-                        Palette.SIZE_LABEL, p.berths() <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_LABEL));
+        // Kept (KP2): the hero, each card and the doors a scope of their own; a berth's row is keyed by its kind.
+        page.getChildren().add(Kept.scope("hero", () -> {
+            VBox left = Kept.column(8, caption("THE PORTS' MONTH", PORTS_INFO),
+                    pairLine(money(p.handlingBilled()), Palette.TEXT_HEAD, "handling billed", money(p.duesPaid()), Palette.TEXT_HEAD, "dues to the city"),
+                    figureLine(String.format("%,.0f t", p.tonnes()), "put across the berths · calls",
+                            String.format("%,d", p.calls()), "ships"),
+                    words(p.berths() <= 0 ? "No sea terminal stands: every tonne goes by lorry or by train."
+                            : String.format("%,d berths · %,.0f t a month of room · dues at %.2f× the default", p.berths(), p.capacity(), p.dial()),
+                            Palette.SIZE_LABEL, p.berths() <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_LABEL));
 
-        VBox right = new VBox(10, caption("THE BERTHS, BY KIND", BERTHS_INFO));
-        for (FreightView.Berth b : p.kinds()) right.getChildren().add(berthRow(b));
-        page.getChildren().add(heroCard(left, 300, right));
+            VBox right = Kept.column(10, caption("THE BERTHS, BY KIND", BERTHS_INFO));
+            for (FreightView.Berth b : p.kinds()) right.getChildren().add(Kept.scope(b.kind(), () -> berthRow(b)));
+            return heroCard(left, 300, right);
+        }));
 
         javafx.scene.layout.GridPane cards = equalColumns(2, TILE_GAP);
-        cards.add(portBillCard(p), 0, 0);
-        cards.add(shipsCard(p), 1, 0);
+        cards.add(Kept.scope("bill", () -> portBillCard(p)), 0, 0);
+        cards.add(Kept.scope("ships", () -> shipsCard(p)), 1, 0);
         page.getChildren().add(cards);
 
-        HBox doors = new HBox(Palette.GAP_LOOSE,
-                door("The ships on the map", Palette.ACCENT, this::openMapAtPort),
-                door("its books on Sectors", Palette.BUSINESS, () -> ui.sectorScreen.openSectorBooks(freight, "Income")),
-                doorPill("Berths on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.ROADS)));
-        doors.setAlignment(Pos.CENTER_LEFT);
-        page.getChildren().add(doors);
+        page.getChildren().add(Kept.scope("doors", () -> {
+            HBox doors = Kept.row(Palette.GAP_LOOSE,
+                    door("The ships on the map", Palette.ACCENT, this::openMapAtPort),
+                    door("its books on Sectors", Palette.BUSINESS, () -> ui.sectorScreen.openSectorBooks(freight, "Income")),
+                    doorPill("Berths on Build", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(BuildAdvice.ROADS)));
+            doors.setAlignment(Pos.CENTER_LEFT);
+            return doors;
+        }));
     }
 
     /** One kind of berth: its name, how many stand and the room they are, and the month's tonnes against it. */
@@ -1889,13 +2112,15 @@ final class InfrastructureScreen {
         String colour = cargoColour(b.kind());
         String says = b.berths() <= 0 ? "no berth" : String.format("%,d %s · %,.0f t a month", b.berths(), b.berths() == 1 ? "berth" : "berths", b.capacity());
         if (b.onSite() > 0) says += String.format(" · %,.0f t more on site", b.onSite());
-        VBox row = new VBox(3, new HBox(8, keySwatch(colour, b.kind().label()), words(says, Palette.SIZE_LABEL,
+        VBox row = Kept.column(3, Kept.row(8, keySwatch(colour, b.kind().label()), words(says, Palette.SIZE_LABEL,
                 b.berths() <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_LABEL)));
+        // Kept (KP2): the bar or the line under the name is one of two, or none.
         if (b.capacity() > 0) {
-            row.getChildren().add(bulletBar(b.tonnes(), b.capacity(), colour, 0,
-                    String.format("%,.0f t handled of %,.0f t · %s", b.tonnes(), b.capacity(), pct(b.use()))));
+            row.getChildren().add(Kept.scope("bar", () -> bulletBar(b.tonnes(), b.capacity(), colour, 0,
+                    String.format("%,.0f t handled of %,.0f t · %s", b.tonnes(), b.capacity(), pct(b.use())))));
         } else if (b.tonnes() > 0) {
-            row.getChildren().add(words(String.format("%,.0f t handled", b.tonnes()), Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            row.getChildren().add(Kept.scope("handled", () -> words(String.format("%,.0f t handled", b.tonnes()),
+                    Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
         }
         return row;
     }
@@ -1906,14 +2131,17 @@ final class InfrastructureScreen {
         gridHead(table, "", "handled", "a tonne", "billed", "dues");
         int line = 1;
         for (FreightView.Berth b : p.kinds()) {
-            boolean any = b.berths() > 0 || b.tonnes() > 0;
-            String tone = any ? Palette.TEXT_HEAD : Palette.TEXT_MUTED;
-            table.add(gridCell(b.kind().label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            table.add(gridCell(any ? String.format("%,.0f t", b.tonnes()) : "—", tone, Palette.SIZE_CAPTION, true), 1, line);
-            table.add(gridCell(b.quote().known() ? unitPrice(b.quote().quote()) : "—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
-            table.add(gridCell(any ? money(b.handlingBilled()) : "—", tone, Palette.SIZE_CAPTION, true), 3, line);
-            table.add(gridCell(any ? money(b.dues()) : "—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 4, line);
-            line++;
+            final int at = line++;
+            // Kept (KP2): a row a kind of berth, keyed by the kind.
+            Kept.scope(b.kind(), () -> {
+                boolean any = b.berths() > 0 || b.tonnes() > 0;
+                String tone = any ? Palette.TEXT_HEAD : Palette.TEXT_MUTED;
+                table.add(gridCell(b.kind().label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                table.add(gridCell(any ? String.format("%,.0f t", b.tonnes()) : "—", tone, Palette.SIZE_CAPTION, true), 1, at);
+                table.add(gridCell(b.quote().known() ? unitPrice(b.quote().quote()) : "—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, at);
+                table.add(gridCell(any ? money(b.handlingBilled()) : "—", tone, Palette.SIZE_CAPTION, true), 3, at);
+                table.add(gridCell(any ? money(b.dues()) : "—", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 4, at);
+            });
         }
         table.add(gridCell("All", Palette.TEXT_LABEL, Palette.SIZE_CAPTION, false), 0, line);
         table.add(gridCell(String.format("%,.0f t", p.tonnes()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
@@ -1929,25 +2157,30 @@ final class InfrastructureScreen {
     VBox shipsCard(FreightView.PortsPage p) {
         java.util.Map<Ports.Ship, Integer> byShip = callsByShip();
         VBox card = ServicesScreen.card(cardHead(Icons.TANKER, Palette.ACCENT, "The ships that called", null));
+        // Kept (KP2): the note or the table, a scope each; a table's row a scope keyed by its ship class, which come and go.
         if (byShip.isEmpty()) {
-            card.getChildren().add(words(p.berths() <= 0 ? "No ship can call: there is no berth."
-                    : "No ship called last month.", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            card.getChildren().add(Kept.scope("none", () -> words(p.berths() <= 0 ? "No ship can call: there is no berth."
+                    : "No ship called last month.", Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
             return card;
         }
-        javafx.scene.layout.GridPane table = grid(new double[] {150, 60, 100, 110}, rightAfterFirst(4));
-        gridHead(table, "", "calls", "a call carries", "kind");
-        int line = 1;
-        for (java.util.Map.Entry<Ports.Ship, Integer> e : byShip.entrySet()) {
-            Ports.Ship s = e.getKey();
-            table.add(gridCell(s.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            table.add(gridCell(String.format("%,d", e.getValue()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
-            table.add(gridCell(String.format("%,.0f t", s.tonnes()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
-            table.add(gridCell(s.cargo().label(), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 3, line);
-            line++;
-        }
-        card.getChildren().add(table);
-        card.getChildren().add(words(String.format("%,d calls in the month, the ships of the map", p.calls()),
-                Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        card.getChildren().add(Kept.scope("table", () -> {
+            javafx.scene.layout.GridPane table = grid(new double[] {150, 60, 100, 110}, rightAfterFirst(4));
+            gridHead(table, "", "calls", "a call carries", "kind");
+            int line = 1;
+            for (java.util.Map.Entry<Ports.Ship, Integer> e : byShip.entrySet()) {
+                final int at = line++;
+                Kept.scope(e.getKey(), () -> {
+                    Ports.Ship s = e.getKey();
+                    table.add(gridCell(s.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                    table.add(gridCell(String.format("%,d", e.getValue()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, at);
+                    table.add(gridCell(String.format("%,.0f t", s.tonnes()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, at);
+                    table.add(gridCell(s.cargo().label(), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 3, at);
+                });
+            }
+            return table;
+        }));
+        card.getChildren().add(Kept.scope("calls", () -> words(String.format("%,d calls in the month, the ships of the map", p.calls()),
+                Palette.SIZE_CAPTION, Palette.TEXT_MUTED)));
         return card;
     }
 

@@ -6,12 +6,10 @@ import java.util.List;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 import static ham.citybuildersim.ui.Money.*;
 import static ham.citybuildersim.ui.Statement.*;
 import static ham.citybuildersim.ui.Pieces.*;
@@ -117,8 +115,8 @@ final class ServicesScreen {
         return serviceAreas()[0];
     }
 
-    /** Which "details" folds are open, by name - remembered while the game runs, not saved. */
-    private final java.util.Set<String> detailsOpen = new java.util.HashSet<>();
+    /** Which "details" folds are open, by name - remembered while the game runs, not saved. Not private: KeptBench flips them (KP2). */
+    final java.util.Set<String> detailsOpen = new java.util.HashSet<>();
 
     /** The events whose system has been opened since they happened, so their "!" goes (by kind and month). */
     private final java.util.Set<String> seen = new java.util.HashSet<>();
@@ -135,9 +133,19 @@ final class ServicesScreen {
     /** How much of the stage the fixed frame takes above the page's scroller: the head, the systems, the four figures with their sparklines and changes, the pages, and their gaps. */
     static final double FRAME_CHROME = 268;
 
-    void showServicesStatsMenu() {
-        ui.clearMenu("showServicesStatsMenu", () -> showServicesStatsMenu());
+    /**
+     * The services tab's kept nodes (Kept; study UP4, KP2): the page is drawn over last month's on each
+     * redraw, each system's sub-page a scope of its own. Another screen, or another city (forget()), lets
+     * them go.
+     */
+    final Kept.Pool pool = new Kept.Pool();
 
+    /** A new city or a load: nothing of the last city's page is kept. */
+    void forget() {
+        pool.forget();
+    }
+
+    void showServicesStatsMenu() {
         ServiceArea area = currentArea();
 
         // A page name left over from another area would render nothing at all,
@@ -151,21 +159,54 @@ final class ServicesScreen {
         // Opening a system is seeing its news: its "!" goes.
         for (Event e : events) if (e.area().equals(serviceArea)) seen.add(e.key());
 
-        VBox page = widePage();
-        switch (serviceArea) {
-            case "Education" -> educationPage(page, all, events);
-            case "Utilities" -> utilityPage(page, all, events);
-            case "Safety"    -> safetyPage(page, all, events);
-            default          -> healthPage(page, all, events);
+        // Kept (study UP4, KP2): the page is drawn over last month's nodes on a redraw, a system's sub-page
+        // in a scope of its own, every card and row in one inside it.
+        ui.keepMenu("showServicesStatsMenu", () -> showServicesStatsMenu(), pool, () -> drawPage(all, events));
+
+        // A page the player just picked opens at the top of itself (openPage()): the scroller is kept now,
+        // so forgetting where it was (the scroll memory) no longer puts it there.
+        if (atTop) {
+            atTop = false;
+            if (scroller != null) scroller.setVvalue(0);
         }
+    }
 
-        javafx.scene.layout.FlowPane pages = chipStrip(area.pages(), servicePage, Palette.SIZE_LABEL, name -> {
-            servicePage = name;
-            openPage();
+    /** Whether the page just drawn was picked by the player and opens at its top; and the scroller drawPage() last made. */
+    private boolean atTop;
+    private javafx.scene.control.ScrollPane scroller;
+
+    /**
+     * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the
+     * pool, and what KeptBench runs kept and built new for KeptCheck. `all` is CityNeeds.measure() of the
+     * month and `events` is events(), as showServicesStatsMenu() reads them; the area and sub-page drawn
+     * are serviceArea and servicePage, which must be one of the area's pages.
+     */
+    void drawPage(List<CityNeeds.Need> all, List<Event> events) {
+        ServiceArea area = currentArea();
+
+        VBox page = widePage();
+        // Kept (KP2): a system's sub-page is a scope keyed by both, so nothing of one is handed to another.
+        Kept.scope(serviceArea + "/" + servicePage, () -> {
+            switch (serviceArea) {
+                case "Education" -> educationPage(page, all, events);
+                case "Utilities" -> utilityPage(page, all, events);
+                case "Safety"    -> safetyPage(page, all, events);
+                default          -> healthPage(page, all, events);
+            }
         });
-        pages.setAlignment(Pos.CENTER_LEFT);
 
-        VBox frame = new VBox(Palette.GAP, head(), areaStrip(all, events), areaVitals(all), pages);
+        javafx.scene.layout.FlowPane pages = Kept.scope("pages", () -> {
+            javafx.scene.layout.FlowPane strip = chipStrip(area.pages(), servicePage, Palette.SIZE_LABEL, name -> {
+                servicePage = name;
+                openPage();
+            });
+            strip.setAlignment(Pos.CENTER_LEFT);
+            return strip;
+        });
+
+        VBox frame = Kept.column(Palette.GAP, Kept.scope("head", this::head),
+                Kept.scope("systems", () -> areaStrip(all, events)),
+                Kept.scope("figures", () -> areaVitals(all)), pages);
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
         frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
@@ -179,11 +220,21 @@ final class ServicesScreen {
          * wide as the scroller shows, up to PAGE_WIDE (0.7.28).
          */
         javafx.scene.control.ScrollPane body = ui.scrolled(page, FRAME_CHROME);
-        page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.min(PAGE_WIDE, Math.max(320, body.getViewportBounds().getWidth())),
-                body.viewportBoundsProperty()));
-        ui.rootMenu.getChildren().addAll(frame, body);
+        // Kept (KP2): scrolled() hands back the scroller the last draw made, so the page's width is bound to
+        // it once, and again only if the scroller is another (as HistoryScreen.frameOver does).
+        if (page.getProperties().get(BOUND_TO_SCROLLER) != body) {
+            page.prefWidthProperty().unbind();
+            page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.min(PAGE_WIDE, Math.max(320, body.getViewportBounds().getWidth())),
+                    body.viewportBoundsProperty()));
+            page.getProperties().put(BOUND_TO_SCROLLER, body);
+        }
+        scroller = body;
+        ui.setPage(frame, body);
     }
+
+    /** The key in the page's properties for the scroller its width is bound to (drawPage()). */
+    private static final String BOUND_TO_SCROLLER = "services.scroller";
 
     /**
      * Draw a page the player just picked, at the top of itself.
@@ -197,6 +248,7 @@ final class ServicesScreen {
 
     void openPage() {
         ui.innerScrollAt.remove(ui.currentScreen + ":body");
+        atTop = true;
         showServicesStatsMenu();
     }
 
@@ -205,6 +257,7 @@ final class ServicesScreen {
         serviceArea = area;
         servicePage = page;
         ui.innerScrollAt.remove("showServicesStatsMenu:body");
+        atTop = true;
         showServicesStatsMenu();
     }
 
@@ -290,38 +343,42 @@ final class ServicesScreen {
      * A click opens the system's Overview. Left, as Build's strip is.
      */
     javafx.scene.layout.FlowPane areaStrip(List<CityNeeds.Need> all, List<Event> events) {
-        javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(6, 6);
+        javafx.scene.layout.FlowPane strip = Kept.flow(6, 6);
         strip.setAlignment(Pos.CENTER_LEFT);
+        List<Node> chips = new ArrayList<>();
         for (ServiceArea a : serviceAreas()) {
-            boolean on = a.name().equals(serviceArea);
-            CityNeeds.Need worst = areaWorst(a.name(), all);
-            int level = worst == null ? 0 : worst.verdictLevel();
-            boolean news = false;
-            for (Event e : events) if (e.area().equals(a.name()) && !seen.contains(e.key())) news = true;
+            // Kept (KP2): a system's chip is a scope keyed by its name, so the "!" that comes and goes on one
+            // does not move another's labels.
+            chips.add(Kept.scope(a.name(), () -> {
+                boolean on = a.name().equals(serviceArea);
+                CityNeeds.Need worst = areaWorst(a.name(), all);
+                int level = worst == null ? 0 : worst.verdictLevel();
+                boolean news = false;
+                for (Event e : events) if (e.area().equals(a.name()) && !seen.contains(e.key())) news = true;
 
-            Label name = new Label(a.name());
-            name.setStyle(Palette.words(Palette.SIZE_BODY, on ? Palette.TEXT_HEAD : Palette.TEXT_BODY));
-            name.setMinWidth(Region.USE_PREF_SIZE);
-            Region dot = new Region();
-            dot.setMinSize(7, 7);
-            dot.setPrefSize(7, 7);
-            dot.setMaxSize(7, 7);
-            dot.setStyle("-fx-background-color: " + BuildScreen.verdict(level) + "; -fx-background-radius: 4;");
-            HBox inside = new HBox(6, icon(areaIcon(a.name()), on ? Palette.PEOPLE : Palette.TEXT_LABEL, 14), name, dot);
-            inside.setAlignment(Pos.CENTER_LEFT);
-            if (news) inside.getChildren().add(chip("!", Palette.WARN));
-            inside.setStyle("-fx-padding: 5 12 5 10; -fx-cursor: hand;"
-                    + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
-                    + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
-                    + " -fx-border-color: " + (on ? Palette.ACCENT : "transparent") + "; -fx-border-width: 0 0 2 0;");
-            Tooltip tip = new Tooltip(a.name() + (worst == null || worst.verdictLevel() == 0
-                    ? ": nothing near its line" : ": " + worst.label().toLowerCase() + " · " + worst.reading())
-                    + (news ? "\nSomething happened here this month." : ""));
-            tip.setShowDelay(Duration.millis(300));
-            Tooltip.install(inside, tip);
-            inside.setOnMouseClicked(e -> open(a.name(), OVERVIEW));
-            strip.getChildren().add(inside);
+                Label name = Kept.label(a.name());
+                name.setStyle(Palette.words(Palette.SIZE_BODY, on ? Palette.TEXT_HEAD : Palette.TEXT_BODY));
+                name.setMinWidth(Region.USE_PREF_SIZE);
+                Region dot = Kept.region();
+                dot.setMinSize(7, 7);
+                dot.setPrefSize(7, 7);
+                dot.setMaxSize(7, 7);
+                dot.setStyle("-fx-background-color: " + BuildScreen.verdict(level) + "; -fx-background-radius: 4;");
+                HBox inside = Kept.row(6, icon(areaIcon(a.name()), on ? Palette.PEOPLE : Palette.TEXT_LABEL, 14), name, dot);
+                inside.setAlignment(Pos.CENTER_LEFT);
+                if (news) inside.getChildren().add(Kept.scope("news", () -> chip("!", Palette.WARN)));
+                inside.setStyle("-fx-padding: 5 12 5 10; -fx-cursor: hand;"
+                        + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
+                        + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
+                        + " -fx-border-color: " + (on ? Palette.ACCENT : "transparent") + "; -fx-border-width: 0 0 2 0;");
+                Kept.tip(inside, a.name() + (worst == null || worst.verdictLevel() == 0
+                        ? ": nothing near its line" : ": " + worst.label().toLowerCase() + " · " + worst.reading())
+                        + (news ? "\nSomething happened here this month." : ""), 300);
+                inside.setOnMouseClicked(e -> open(a.name(), OVERVIEW));
+                return inside;
+            }));
         }
+        strip.getChildren().setAll(chips);
         return strip;
     }
 
@@ -350,7 +407,11 @@ final class ServicesScreen {
     HBox areaVitals(List<CityNeeds.Need> all) {
         List<Kpi> kpis = kpis(serviceArea, all);
         VBox[] cells = new VBox[kpis.size()];
-        for (int i = 0; i < cells.length; i++) cells[i] = kpiCell(kpis.get(i));
+        // Kept (KP2): each of the four is a scope keyed by its label (the third of Health's is the unburied or the ground).
+        for (int i = 0; i < cells.length; i++) {
+            Kpi k = kpis.get(i);
+            cells[i] = Kept.scope(k.label(), () -> kpiCell(k));
+        }
         return vitalsBar(cells);
     }
 
@@ -370,18 +431,20 @@ final class ServicesScreen {
         HistorySave history = ui.game.getHistorySave();
         Node figure = cell.getChildren().get(1);
         cell.getChildren().remove(1);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox top = new HBox(6, figure, gap, sparkline(history.aligned(k.series()), history.getMonth(), Palette.PEOPLE, 64, 16));
+        HBox top = Kept.row(6, figure, gap, sparkline(history.aligned(k.series()), history.getMonth(), Palette.PEOPLE, 64, 16));
         top.setAlignment(Pos.CENTER_LEFT);
         cell.getChildren().add(1, top);
         String d = change(k.series(), k.change());
         if (d != null) {
-            Label change = new Label(d);
-            change.setWrapText(true);
-            change.setMaxWidth(LIMIT_CELL - 28);
-            change.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            cell.getChildren().add(change);
+            cell.getChildren().add(Kept.scope("change", () -> {
+                Label change = Kept.label(d);
+                change.setWrapText(true);
+                change.setMaxWidth(LIMIT_CELL - 28);
+                change.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                return change;
+            }));
         }
         return cell;
     }
@@ -488,13 +551,13 @@ final class ServicesScreen {
 
     /** An event, or a state worth a line: a tinted line with its icon, its words wrapping, and its (i). */
     HBox eventLine(String words, String whole, String tone) {
-        Label says = new Label(words);
+        Label says = Kept.label(words);
         says.setWrapText(true);
         says.setStyle(Palette.words(Palette.SIZE_BODY, tone.equals(Palette.BAD) ? Palette.BAD_TEXT : Palette.TEXT_HEAD));
         HBox.setHgrow(says, Priority.ALWAYS);
         says.setMaxWidth(Double.MAX_VALUE);
-        HBox line = new HBox(Palette.GAP, icon(tone.equals(Palette.GOOD) ? Icons.TICK : Icons.ALERT, tone, 15), says);
-        if (whole != null) line.getChildren().add(infoButton(whole, false));
+        HBox line = Kept.row(Palette.GAP, icon(tone.equals(Palette.GOOD) ? Icons.TICK : Icons.ALERT, tone, 15), says);
+        if (whole != null) line.getChildren().add(Kept.scope("whole", () -> infoButton(whole, false)));
         line.setAlignment(Pos.CENTER_LEFT);
         line.setMinHeight(28);
         line.setStyle("-fx-padding: 4 10 4 10; -fx-background-color: " + tint(tone, .10) + ";"
@@ -504,22 +567,34 @@ final class ServicesScreen {
 
     /** This system's events as lines. */
     void eventLines(VBox page, String area, List<Event> events) {
-        for (Event e : events) if (e.area().equals(area)) page.getChildren().add(eventLine(e.words(), e.whole(), e.tone()));
+        for (Event e : events) if (e.area().equals(area)) page.getChildren().add(eventScope(e));
+    }
+
+    /**
+     * One event's line, in a scope keyed by its kind (its key less the month it began in, "outbreak:412"
+     * being "outbreak"), so a line that comes and goes does not move the others' nodes.
+     */
+    HBox eventScope(Event e) {
+        int colon = e.key().indexOf(':');
+        return Kept.scope("event " + (colon < 0 ? e.key() : e.key().substring(0, colon)),
+                () -> eventLine(e.words(), e.whole(), e.tone()));
     }
 
     /* ----------------------------- the screen's own pieces ----------------------------- */
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setWrapText(true);
+        l.setMinWidth(Region.USE_COMPUTED_SIZE);
         l.setStyle(BuildScreen.wordsAt(size, tone));
         return l;
     }
 
     /** A figure that is never cut, at a size, in a colour. */
     static Label figure(String text, double size, String tone) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
+        l.setWrapText(false);
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setStyle(BuildScreen.figureAt(size, tone));
         return l;
@@ -527,7 +602,7 @@ final class ServicesScreen {
 
     /** A card on the Build ground: raised, rounded, a hairline edge. */
     static VBox card(Node... children) {
-        VBox c = new VBox(8);
+        VBox c = Kept.column(8);
         for (Node n : children) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(Double.MAX_VALUE);
         c.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.RAISED + ";"
@@ -538,28 +613,26 @@ final class ServicesScreen {
     /** ...made a door: a hand, an accent edge under the pointer, a click anywhere opens `go`; its tooltip says where. */
     static VBox doorCard(VBox c, Runnable go, String where) {
         String rest = c.getStyle() + " -fx-cursor: hand;";
-        c.setStyle(rest);
-        c.setOnMouseEntered(e -> c.setStyle(rest.replace("-fx-border-color: " + Palette.EDGE, "-fx-border-color: " + Palette.ACCENT)));
+        String over = rest.replace("-fx-border-color: " + Palette.EDGE, "-fx-border-color: " + Palette.ACCENT);
+        // Kept (KP2, rule 6): a card under a still pointer stays hovered across a draw and no mouse-entered comes.
+        c.setStyle(c.isHover() ? over : rest);
+        c.setOnMouseEntered(e -> c.setStyle(over));
         c.setOnMouseExited(e -> c.setStyle(rest));
         c.setOnMouseClicked(e -> go.run());
-        if (where != null) {
-            Tooltip tip = new Tooltip(where);
-            tip.setShowDelay(Duration.millis(300));
-            Tooltip.install(c, tip);
-        }
+        if (where != null) Kept.tip(c, where, 300);
         return c;
     }
 
     /** A card's head: its icon in a teal square, its name, and its (i) at the right. */
     static HBox cardHead(String svg, String name, String info, Node right) {
-        Label n = new Label(name);
+        Label n = Kept.label(name);
         n.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         n.setWrapText(true);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox head = new HBox(8, iconSquare(svg, Palette.PEOPLE, 28, 15), n, gap);
+        HBox head = Kept.row(8, iconSquare(svg, Palette.PEOPLE, 28, 15), n, gap);
         if (right != null) head.getChildren().add(right);
-        if (info != null) head.getChildren().add(infoButton(info, false));
+        if (info != null) head.getChildren().add(Kept.scope("info", () -> infoButton(info, false)));
         head.setAlignment(Pos.CENTER_LEFT);
         return head;
     }
@@ -569,25 +642,33 @@ final class ServicesScreen {
      * remembered by name while the game runs (the land office's and the
      * People page's way). The old statements live in these, verbatim but for
      * the fixes, so nothing the screen said before 0.7.28 is gone.
+     *
+     * Kept (KP2): the fold is a scope keyed by its name, and what is inside is made by `inside` only while it
+     * is open, in a scope of its own, so a closed fold keeps and updates no table it does not show; opening
+     * one redraws, as it did.
      */
-    VBox details(String name, String caption, Node... inside) {
-        boolean open = detailsOpen.contains(name);
-        Label toggle = new Label((open ? "details ▾  " : "details ▸  ") + caption);
-        toggle.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
-        toggle.setWrapText(true);
-        VBox box = new VBox(4, toggle);
-        if (open) for (Node n : inside) if (n != null) box.getChildren().add(n);
-        toggle.setOnMouseClicked(e -> {
-            if (!detailsOpen.remove(name)) detailsOpen.add(name);
-            ui.redraw();
+    VBox details(String name, String caption, java.util.function.Supplier<Node[]> inside) {
+        return Kept.scope("fold " + name, () -> {
+            boolean open = detailsOpen.contains(name);
+            Label toggle = Kept.label((open ? "details ▾  " : "details ▸  ") + caption);
+            toggle.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
+            toggle.setWrapText(true);
+            VBox box = Kept.column(4, toggle);
+            if (open) {
+                for (Node n : Kept.scope("open", inside)) if (n != null) box.getChildren().add(n);
+            }
+            toggle.setOnMouseClicked(e -> {
+                if (!detailsOpen.remove(name)) detailsOpen.add(name);
+                ui.redraw();
+            });
+            box.setStyle("-fx-padding: 4 0 0 0;");
+            return box;
         });
-        box.setStyle("-fx-padding: 4 0 0 0;");
-        return box;
     }
 
     /** A statement column, for a fold: the old rows at their old width. */
     static VBox column(Node... rows) {
-        VBox c = new VBox(0);
+        VBox c = Kept.column(0);
         for (Node n : rows) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(STATEMENT);
         return c;
@@ -595,7 +676,7 @@ final class ServicesScreen {
 
     /** "fee $10 a visit · Set the fee ›": a price, and the door to the dial on the Policy tab. */
     HBox priceLine(String text, String whole, String door, String policyPage) {
-        HBox line = new HBox(Palette.GAP, infoLine(text, whole, false, Palette.SIZE_BODY, Palette.TEXT_LABEL, 700),
+        HBox line = Kept.row(Palette.GAP, infoLine(text, whole, false, Palette.SIZE_BODY, Palette.TEXT_LABEL, 700),
                 Pieces.door(door, Palette.MONEY, () -> {
                     ui.policyScreen.policyArea = "Promises";
                     ui.policyScreen.policyPage = policyPage;
@@ -617,14 +698,15 @@ final class ServicesScreen {
         for (Slice s : top) a += Math.max(0, s.amount());
         for (Slice s : bottom) b += Math.max(0, s.amount());
         double scale = Math.max(a, b);
-        VBox bars = new VBox(6, moneyRow(topName, top, a, scale), moneyRow(bottomName, bottom, b, scale));
-        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(Palette.GAP_LOOSE, 4);
-        for (Slice s : top) key.getChildren().add(keySwatch(s.colour(), s.name()));
-        for (Slice s : bottom) key.getChildren().add(keySwatch(s.colour(), s.name()));
+        VBox bars = Kept.column(6, moneyRow(topName, top, a, scale), moneyRow(bottomName, bottom, b, scale));
+        javafx.scene.layout.FlowPane key = Kept.flow(Palette.GAP_LOOSE, 4);
+        // Kept (KP2): each swatch a scope keyed by its part's name, as the parts come and go with the books.
+        for (Slice s : top) key.getChildren().add(Kept.scope("key " + s.name(), () -> keySwatch(s.colour(), s.name())));
+        for (Slice s : bottom) key.getChildren().add(Kept.scope("key " + s.name(), () -> keySwatch(s.colour(), s.name())));
         bars.getChildren().add(key);
         HBox.setHgrow(bars, Priority.ALWAYS);
         bars.setMaxWidth(Double.MAX_VALUE);
-        HBox row = new HBox(24, bars);
+        HBox row = Kept.row(24, bars);
         if (right != null) row.getChildren().add(right);
         row.setAlignment(Pos.CENTER_LEFT);
         return card(row);
@@ -644,15 +726,15 @@ final class ServicesScreen {
         SegmentBar bar = segmentBar(segs, scale > 0 ? scale : 1, List.of(), 0, 16);
         HBox.setHgrow(bar, Priority.ALWAYS);
         Label t = figure(money(total), Palette.SIZE_BODY, Palette.TEXT_HEAD);
-        HBox row = new HBox(Palette.GAP, n, bar, t);
+        HBox row = Kept.row(Palette.GAP, n, bar, t);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
 
     /** The bottom line beside a books card: a figure, its name and a line under. */
     static VBox bottomLine(String value, String name, String line, String tone) {
-        VBox box = new VBox(1, figure(value, 20, tone), words(name, Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        if (line != null) box.getChildren().add(words(line, Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        VBox box = Kept.column(1, figure(value, 20, tone), words(name, Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        if (line != null) box.getChildren().add(Kept.scope("line", () -> words(line, Palette.SIZE_CAPTION, Palette.TEXT_MUTED)));
         box.setMinWidth(180);
         box.setMaxWidth(220);
         return box;
@@ -789,22 +871,23 @@ final class ServicesScreen {
         eventLines(page, "Health", events);
         deathNotices(page);
 
-        page.getChildren().add(sectionHead("WHERE THE SICK RATE COMES FROM", SICK_INFO,
-                hint("a part opens where it is fixed")));
-        page.getChildren().add(sickCard());
+        // Kept (KP2): every part of the page a scope of its own, each care card one keyed by its kind.
+        page.getChildren().add(Kept.scope("sick head", () -> sectionHead("WHERE THE SICK RATE COMES FROM", SICK_INFO,
+                hint("a part opens where it is fixed"))));
+        page.getChildren().add(Kept.scope("sick", this::sickCard));
 
-        page.getChildren().add(sectionHead("THE CARE THE CITY RUNS", null, careScarceNote()));
+        page.getChildren().add(Kept.scope("care head", () -> sectionHead("THE CARE THE CITY RUNS", null, careScarceNote())));
         javafx.scene.layout.GridPane cards = equalColumns(4, TILE_GAP);
         int i = 0;
         for (CareType care : new CareType[]{CareType.GENERAL, CareType.CHILDCARE, CareType.SENIOR}) {
-            cards.add(careCard(careWords(care, all)), i++, 0);
+            cards.add(Kept.scope(care, () -> careCard(careWords(care, all))), i++, 0);
         }
-        cards.add(careCard(deathWords(all)), i, 0);
+        cards.add(Kept.scope("death", () -> careCard(deathWords(all))), i, 0);
         page.getChildren().add(cards);
 
         causesOfDeathSection(page);
 
-        page.getChildren().add(details("health:sick", "the sick rate, line by line", sickStatement()));
+        page.getChildren().add(details("health:sick", "the sick rate, line by line", () -> new Node[] {sickStatement()}));
     }
 
     /** The sick rate's (i): what the bar is, its floor and its cap, and why it is a cost of output and not of wages. */
@@ -876,27 +959,28 @@ final class ServicesScreen {
         Health h = ui.game.getHealth();
         double sick = h.getSickRate();
         String tone = BuildScreen.verdict(CityNeeds.level(sick, CityNeeds.SICK_YELLOW, CityNeeds.SICK_RED, true));
-        VBox left = new VBox(2, figure(String.format("%.1f%%", sick * 100), 30, tone),
+        VBox left = Kept.column(2, figure(String.format("%.1f%%", sick * 100), 30, tone),
                 words("off sick · " + people(ui.game.getPopulationManager().getWorkforce() * sick) + " workers",
                         Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         String d = change("sickRate", ServicesScreen::points);
-        if (d != null) left.getChildren().add(words(d, Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        if (d != null) left.getChildren().add(Kept.scope("change", () -> words(d, Palette.SIZE_CAPTION, Palette.TEXT_MUTED)));
         left.setMinWidth(210);
         left.setPrefWidth(210);
         left.setMaxWidth(210);
 
-        VBox right = new VBox(4, causeBar(sickParts(), 0, 24, ServicesScreen::points));
+        // Kept (KP2): the bar's parts come and go (the unaccounted one), so it is a scope of its own.
+        VBox right = Kept.column(4, Kept.scope("bar", () -> causeBar(sickParts(), 0, 24, ServicesScreen::points)));
         HBox.setHgrow(right, Priority.ALWAYS);
         right.setMaxWidth(Double.MAX_VALUE);
         double trimmed = sickTrimmed();
         if (trimmed > 0) {
-            right.getChildren().add(words("The parts come to " + points(sick + trimmed) + "; the cap at "
-                    + pct(Health.MAX_SICK_RATE) + " trimmed " + points(trimmed) + ".", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            right.getChildren().add(Kept.scope("trimmed", () -> words("The parts come to " + points(sick + trimmed) + "; the cap at "
+                    + pct(Health.MAX_SICK_RATE) + " trimmed " + points(trimmed) + ".", Palette.SIZE_CAPTION, Palette.TEXT_MUTED)));
         }
-        HBox row = new HBox(18, left, right);
+        HBox row = Kept.row(18, left, right);
         row.setAlignment(Pos.TOP_LEFT);
         VBox c = card(row);
-        HBox holder = new HBox(c);
+        HBox holder = Kept.row(0, c);
         HBox.setHgrow(c, Priority.ALWAYS);
         return holder;
     }
@@ -930,8 +1014,8 @@ final class ServicesScreen {
         }
         double gap = health.getSickRate() - named(health);
         if (Math.abs(gap) > .0005) {
-            col.getChildren().add(statementLine(gap > 0 ? "Not accounted for" : "Trimmed by the cap",
-                    String.format("%+.1f pts", gap * 100), Palette.WARN));
+            col.getChildren().add(Kept.scope("gap", () -> statementLine(gap > 0 ? "Not accounted for" : "Trimmed by the cap",
+                    String.format("%+.1f pts", gap * 100), Palette.WARN)));
         }
         double sick = health.getSickRate();
         col.getChildren().add(statementTotal("Off sick", String.format("%.1f%%", sick * 100),
@@ -967,8 +1051,10 @@ final class ServicesScreen {
 
     /** The section: its heading, and the table of the seven causes in a card. */
     void causesOfDeathSection(VBox page) {
-        page.getChildren().add(sectionHead("WHAT PEOPLE DIE OF", CAUSES_OF_DEATH_INFO, hint("the last twelve months")));
-        page.getChildren().add(card(causesOfDeathTable(), causesOfDeathNotes()));
+        // Kept (KP2): the heading and the card each a scope; the table's seven rows always seven, so in one.
+        page.getChildren().add(Kept.scope("causes head",
+                () -> sectionHead("WHAT PEOPLE DIE OF", CAUSES_OF_DEATH_INFO, hint("the last twelve months"))));
+        page.getChildren().add(Kept.scope("causes", () -> card(causesOfDeathTable(), causesOfDeathNotes())));
     }
 
     /**
@@ -998,7 +1084,7 @@ final class ServicesScreen {
             } else {
                 then = String.format("1900: %,.1f", CausesOfDeath.RATE_1900[cause.ordinal()]);
             }
-            VBox name = new VBox(0, gridCell(cause.label(), tone, Palette.SIZE_CAPTION, false),
+            VBox name = Kept.column(0, gridCell(cause.label(), tone, Palette.SIZE_CAPTION, false),
                     words(lowers(cause), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
             table.add(name, 0, row);
             table.add(gridCell(flowText(dead), tone, Palette.SIZE_CAPTION, true), 1, row);
@@ -1012,7 +1098,7 @@ final class ServicesScreen {
     /** Under the table: the TB sick, and, when nobody died of any of them, that the diseases of 1900 are gone. */
     VBox causesOfDeathNotes() {
         double tb = ui.game.getCausesOfDeath().getTbSick();
-        VBox notes = new VBox(4, words("Sick of TB a year or more: " + people(tb)
+        VBox notes = Kept.column(4, words("Sick of TB a year or more: " + people(tb)
                 + (Math.round(tb) == 1 ? " person." : " people."), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         if (diseasesGone()) {
             notes.getChildren().add(words("The diseases of 1900 are gone; people die of age, illness and violence.",
@@ -1192,21 +1278,23 @@ final class ServicesScreen {
 
     /** One care card: head, ring and what it buys, its places as a supply bar, and its two doors. */
     VBox careCard(CareWords w) {
-        VBox body = new VBox(1, new javafx.scene.text.TextFlow(textRun(w.buys(), 15, Palette.TEXT_HEAD, true),
-                        textRun(w.buysWords(), Palette.SIZE_LABEL, Palette.TEXT_LABEL, false)),
-                words(w.range(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        // Kept (KP2): a TextFlow is not one of Kept's boxes, so its runs are set where they differ (Kept.set).
+        javafx.scene.text.TextFlow runs = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        Kept.set(runs.getChildren(), List.of(textRun(w.buys(), 15, Palette.TEXT_HEAD, true),
+                textRun(w.buysWords(), Palette.SIZE_LABEL, Palette.TEXT_LABEL, false)));
+        VBox body = Kept.column(1, runs, words(w.range(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         body.setMinWidth(0);
         HBox.setHgrow(body, Priority.ALWAYS);
-        HBox middle = new HBox(10, ring(w.arc(), w.tone(), 64, 6, w.ring(), 13), body);
+        HBox middle = Kept.row(10, ring(w.arc(), w.tone(), 64, 6, w.ring(), 13), body);
         middle.setAlignment(Pos.CENTER_LEFT);
 
         SegmentBar bar = supplyBar(w.serve(), w.built(), w.staffed(), Palette.PEOPLE, null, null, w.caption(), 0, 8);
-        Region push = new Region();
+        Region push = Kept.region();
         HBox.setHgrow(push, Priority.ALWAYS);
-        HBox foot = new HBox(Palette.GAP, door("details", Palette.ACCENT, () -> open("Health", w.page())), push,
+        HBox foot = Kept.row(Palette.GAP, door("details", Palette.ACCENT, () -> open("Health", w.page())), push,
                 buildFor(w.measure()));
         foot.setAlignment(Pos.CENTER_LEFT);
-        Region grow = new Region();
+        Region grow = Kept.region();
         VBox.setVgrow(grow, Priority.ALWAYS);
         VBox c = card(cardHead(w.icon(), w.name(), w.info(), null), middle, bar,
                 words(w.caption(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED), grow, foot);
@@ -1216,7 +1304,8 @@ final class ServicesScreen {
 
     /** A run of text in a flow: a figure in mono, or words. */
     static javafx.scene.text.Text textRun(String text, double size, String tone, boolean mono) {
-        javafx.scene.text.Text t = new javafx.scene.text.Text(text);
+        javafx.scene.text.Text t = Kept.of(javafx.scene.text.Text.class, javafx.scene.text.Text::new);
+        t.setText(text);
         t.setStyle((mono ? Palette.Fonts.monoSemiBold() : "-fx-font-family: " + Palette.Fonts.sans() + ";")
                 + " -fx-font-size: " + size + "px; -fx-fill: " + tone + ";");
         return t;
@@ -1235,52 +1324,53 @@ final class ServicesScreen {
         Healthcare service = ui.game.getHealthcare();
         Sickness sickness = ui.game.getSickness();
         PopulationCohorts cohorts = ui.game.getCohorts();
-        for (Event e : events) if (e.key().startsWith("outbreak:")) page.getChildren().add(eventLine(e.words(), e.whole(), e.tone()));
+        for (Event e : events) if (e.key().startsWith("outbreak:")) page.getChildren().add(eventScope(e));
         if (ui.game.getHealth().isOutbreak() && events.stream().noneMatch(e -> e.key().startsWith("outbreak:"))) {
-            page.getChildren().add(eventLine("An outbreak is running: " + points(ui.game.getHealth().getOutbreakSeverity())
-                    + " on the sick rate.", outbreakWhole(), Palette.BAD));
+            page.getChildren().add(Kept.scope("event running", () -> eventLine("An outbreak is running: "
+                    + points(ui.game.getHealth().getOutbreakSeverity()) + " on the sick rate.", outbreakWhole(), Palette.BAD)));
         }
 
-        page.getChildren().add(sectionHead("THE SICK, BY HOW LONG THEY HAVE BEEN ILL", LONG_SICK_INFO,
-                hint("from two months on, they can die of it")));
-        double[] slots = longSick();
-        VBox left = new VBox(2,
-                figure(people(sickness.peopleSick(cohorts)), 22, Palette.TEXT_HEAD),
-                words("sick this month", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
-                figure(people(sickness.peoplePastTwoMonths(cohorts)), 15, Palette.TEXT_HEAD),
-                words("past two months", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
-                figure(flowText(sickness.getLastDeaths()), 15, Palette.TEXT_HEAD),
-                words("died of it last month", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-        left.setMinWidth(230);
-        left.setPrefWidth(230);
-        CohortBars bars = cohortBars(slots, 0, 120, Palette.PEOPLE, Sickness.DEADLY_FROM, Palette.PEOPLE_DARK,
-                "can die from here", "under a month", "a year or more", Money::people,
-                k -> k == Sickness.RING - 1 ? "ill a year or more" : k == 0 ? "ill under a month" : "ill " + k + (k == 1 ? " month" : " months"));
-        HBox.setHgrow(bars, Priority.ALWAYS);
-        HBox top = new HBox(18, left, bars);
-        top.setAlignment(Pos.CENTER_LEFT);
-        page.getChildren().add(card(top));
+        page.getChildren().add(Kept.scope("long head", () -> sectionHead("THE SICK, BY HOW LONG THEY HAVE BEEN ILL", LONG_SICK_INFO,
+                hint("from two months on, they can die of it"))));
+        page.getChildren().add(Kept.scope("long sick", () -> {
+            double[] slots = longSick();
+            VBox left = Kept.column(2,
+                    figure(people(sickness.peopleSick(cohorts)), 22, Palette.TEXT_HEAD),
+                    words("sick this month", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+                    figure(people(sickness.peoplePastTwoMonths(cohorts)), 15, Palette.TEXT_HEAD),
+                    words("past two months", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+                    figure(flowText(sickness.getLastDeaths()), 15, Palette.TEXT_HEAD),
+                    words("died of it last month", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            left.setMinWidth(230);
+            left.setPrefWidth(230);
+            CohortBars bars = cohortBars(slots, 0, 120, Palette.PEOPLE, Sickness.DEADLY_FROM, Palette.PEOPLE_DARK,
+                    "can die from here", "under a month", "a year or more", Money::people,
+                    k -> k == Sickness.RING - 1 ? "ill a year or more" : k == 0 ? "ill under a month" : "ill " + k + (k == 1 ? " month" : " months"));
+            HBox.setHgrow(bars, Priority.ALWAYS);
+            HBox top = Kept.row(18, left, bars);
+            top.setAlignment(Pos.CENTER_LEFT);
+            return card(top);
+        }));
 
         double cover = service.getCoverage(CareType.GENERAL);
         javafx.scene.layout.GridPane two = equalColumns(2, TILE_GAP);
-        VBox cures = card(cardHead(Icons.HEALTH, "What care cures", RECOVERY_INFO, null),
+        two.add(Kept.scope("cures", () -> card(cardHead(Icons.HEALTH, "What care cures", RECOVERY_INFO, null),
                 effectScale("", sickness.getLastRecovery(), Sickness.RECOVERY_UNTREATED, Sickness.RECOVERY_SERVED,
                         false, ServicesScreen::pct, Palette.PEOPLE, 0,
                         words(CityNeeds.servedPct(cover) + " " + CityNeeds.SERVED, Palette.SIZE_LABEL, Palette.TEXT_LABEL), 90),
                 words("of the sick get better each month: " + pct(Sickness.RECOVERY_UNTREATED)
                         + " with nobody served, " + pct(Sickness.RECOVERY_SERVED) + " with everybody.",
-                        Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        two.add(cures, 0, 0);
-        two.add(card(cardHead(Icons.STAFF, "Who gets a doctor", careInfo(CareType.GENERAL, cover), null),
-                careFunnel(CareType.GENERAL)), 1, 0);
+                        Palette.SIZE_CAPTION, Palette.TEXT_MUTED))), 0, 0);
+        two.add(Kept.scope("doctor", () -> card(cardHead(Icons.STAFF, "Who gets a doctor", careInfo(CareType.GENERAL, cover), null),
+                careFunnel(CareType.GENERAL))), 1, 0);
         page.getChildren().add(two);
 
-        page.getChildren().add(feeLine(CareType.GENERAL, "a visit"));
+        page.getChildren().add(Kept.scope("fee", () -> feeLine(CareType.GENERAL, "a visit")));
         page.getChildren().add(details("health:general", "death chances by age, and the sick rate",
-                deathChances(), column(statementLine("The sick rate",
+                () -> new Node[] {deathChances(), column(statementLine("The sick rate",
                         String.format("%.1f%%", ui.game.getHealth().getSickRate() * 100)),
                         statementNote(String.format("With nobody covered it is %.0f%%; fully covered it settles near %.0f%%.",
-                                Health.UNTREATED_RATE * 100, Health.WELL_SERVED_RATE * 100)))));
+                                Health.UNTREATED_RATE * 100, Health.WELL_SERVED_RATE * 100)))}));
     }
 
     /** The long sick, a bar a slot: everybody ill under a month to a year or more, in people (Sickness.peopleInSlot()). */
@@ -1334,7 +1424,8 @@ final class ServicesScreen {
         BuildingManager bm = ui.game.getBuildingManager();
         double served = care.populationServed(ui.game.getCohorts());
         double staffed = bm.getStaffedCareCapacity(care, ui.game.getPopulationManager().getJobFillRate());
-        VBox box = funnel(careSteps(care), 0, -1, Palette.PEOPLE);
+        // Kept (KP2): the funnel's steps come and go (the priced-out one), so it is a scope of its own.
+        VBox box = Kept.scope("funnel", () -> funnel(careSteps(care), 0, -1, Palette.PEOPLE));
         double built = bm.getCareCapacity(care);
         /*
          * STAFFED, NOT BUILT, and the gap is worth its own line. Pouring
@@ -1343,9 +1434,9 @@ final class ServicesScreen {
          * way to find out that nobody is in them.
          */
         if (built - staffed > .5) {
-            box.getChildren().add(infoLine(people(built - staffed) + " places stand empty for want of staff",
+            box.getChildren().add(Kept.scope("empty", () -> infoLine(people(built - staffed) + " places stand empty for want of staff",
                     "A ward with no doctors treats nobody — check the professions table on the People screen.",
-                    false, Palette.SIZE_LABEL, Palette.TEXT_HEAD, 560));
+                    false, Palette.SIZE_LABEL, Palette.TEXT_HEAD, 560)));
         }
         double gap = Math.max(0, served - staffed);
         box.getChildren().add(words(gap >= .5 ? "short by " + people(gap) + (care.countsPlaces() ? " places" : " people")
@@ -1412,46 +1503,48 @@ final class ServicesScreen {
      */
     void livingCarePage(VBox page, CareType care, List<CityNeeds.Need> all) {
         double c = ui.game.getHealthcare().getCoverage(care);
-        page.getChildren().add(sectionHead("WHAT " + care.getLabel().toUpperCase() + " BUYS", null,
-                hint(CityNeeds.servedPct(c) + " " + CityNeeds.SERVED + ": the dot is today, the ends nobody served and everybody")));
-        VBox scales = new VBox(10);
-        if (care == CareType.CHILDCARE) {
-            scales.getChildren().add(scaleRow("Infant deaths", Healthcare.mortalityFactor(AgeBand.BABY, c, .5, 0),
-                    Healthcare.mortalityFactor(AgeBand.BABY, 0, .5, 0), Healthcare.mortalityFactor(AgeBand.BABY, 1, .5, 0),
-                    true, "The largest single effect in the health model — an uncovered city loses babies at many "
-                    + "times the rate a covered one does."));
-            scales.getChildren().add(scaleRow("How often babies fall ill", 1 + Sickness.EXTRA_SICKNESS * (1 - c),
-                    1 + Sickness.EXTRA_SICKNESS, 1, false,
-                    "Babies get sick twice as often as everybody else with no childcare, and no more often with "
-                    + "enough of it — and a baby ill for more than two months can die of it."));
-            scales.getChildren().add(scaleRow("Births", Healthcare.birthFactor(c), Healthcare.birthFactor(0),
-                    Healthcare.birthFactor(1), false, "Nurseries make a city somewhere people are willing to have children."));
-        } else {
-            scales.getChildren().add(scaleRow("Senior deaths", Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, c),
-                    Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, 0), Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, 1),
-                    false, "The seniors' death rate (70-84), as a multiple of the band's own rate - what half covered gives it."));
-            scales.getChildren().add(scaleRow("Elder deaths", Healthcare.mortalityFactor(AgeBand.ELDER, 0, .5, c),
-                    Healthcare.mortalityFactor(AgeBand.ELDER, 0, .5, 0), Healthcare.mortalityFactor(AgeBand.ELDER, 0, .5, 1),
-                    false, "The elders' death rate (85 and over), which senior care moves further than the seniors'."));
-            scales.getChildren().add(scaleRow("How often seniors fall ill", 1 + Sickness.EXTRA_SICKNESS * (1 - c),
-                    1 + Sickness.EXTRA_SICKNESS, 1, false,
-                    "Seniors and elders get sick twice as often as everybody else with no senior care, and no more "
-                    + "often with enough of it."));
-            HBox pull = effectScale("Draw on newcomers", Migration.seniorCarePull(c), Migration.seniorCarePull(0),
-                    Migration.seniorCarePull(1), false, v -> String.format("%+.1f%%", (v - 1) * 100), Palette.PEOPLE, 220,
-                    infoLine(String.format("%+.1f%% now", (Migration.seniorCarePull(c) - 1) * 100),
-                            "Somewhere to grow old is a reason to move here. It is the only care type that pulls "
-                            + "people rather than just keeping them alive.", false, Palette.SIZE_BODY, Palette.TEXT_HEAD, 250), 250);
-            scales.getChildren().add(pull);
-        }
-        page.getChildren().add(card(scales));
+        page.getChildren().add(Kept.scope("buys head", () -> sectionHead("WHAT " + care.getLabel().toUpperCase() + " BUYS", null,
+                hint(CityNeeds.servedPct(c) + " " + CityNeeds.SERVED + ": the dot is today, the ends nobody served and everybody"))));
+        page.getChildren().add(Kept.scope("buys", () -> {
+            VBox scales = Kept.column(10);
+            if (care == CareType.CHILDCARE) {
+                scales.getChildren().add(scaleRow("Infant deaths", Healthcare.mortalityFactor(AgeBand.BABY, c, .5, 0),
+                        Healthcare.mortalityFactor(AgeBand.BABY, 0, .5, 0), Healthcare.mortalityFactor(AgeBand.BABY, 1, .5, 0),
+                        true, "The largest single effect in the health model — an uncovered city loses babies at many "
+                        + "times the rate a covered one does."));
+                scales.getChildren().add(scaleRow("How often babies fall ill", 1 + Sickness.EXTRA_SICKNESS * (1 - c),
+                        1 + Sickness.EXTRA_SICKNESS, 1, false,
+                        "Babies get sick twice as often as everybody else with no childcare, and no more often with "
+                        + "enough of it — and a baby ill for more than two months can die of it."));
+                scales.getChildren().add(scaleRow("Births", Healthcare.birthFactor(c), Healthcare.birthFactor(0),
+                        Healthcare.birthFactor(1), false, "Nurseries make a city somewhere people are willing to have children."));
+            } else {
+                scales.getChildren().add(scaleRow("Senior deaths", Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, c),
+                        Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, 0), Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, 1),
+                        false, "The seniors' death rate (70-84), as a multiple of the band's own rate - what half covered gives it."));
+                scales.getChildren().add(scaleRow("Elder deaths", Healthcare.mortalityFactor(AgeBand.ELDER, 0, .5, c),
+                        Healthcare.mortalityFactor(AgeBand.ELDER, 0, .5, 0), Healthcare.mortalityFactor(AgeBand.ELDER, 0, .5, 1),
+                        false, "The elders' death rate (85 and over), which senior care moves further than the seniors'."));
+                scales.getChildren().add(scaleRow("How often seniors fall ill", 1 + Sickness.EXTRA_SICKNESS * (1 - c),
+                        1 + Sickness.EXTRA_SICKNESS, 1, false,
+                        "Seniors and elders get sick twice as often as everybody else with no senior care, and no more "
+                        + "often with enough of it."));
+                HBox pull = effectScale("Draw on newcomers", Migration.seniorCarePull(c), Migration.seniorCarePull(0),
+                        Migration.seniorCarePull(1), false, v -> String.format("%+.1f%%", (v - 1) * 100), Palette.PEOPLE, 220,
+                        infoLine(String.format("%+.1f%% now", (Migration.seniorCarePull(c) - 1) * 100),
+                                "Somewhere to grow old is a reason to move here. It is the only care type that pulls "
+                                + "people rather than just keeping them alive.", false, Palette.SIZE_BODY, Palette.TEXT_HEAD, 250), 250);
+                scales.getChildren().add(pull);
+            }
+            return card(scales);
+        }));
 
         javafx.scene.layout.GridPane two = equalColumns(2, TILE_GAP);
-        two.add(card(cardHead(care == CareType.CHILDCARE ? Icons.CHILD : Icons.CANE, "Who it reaches",
-                careInfo(care, c), null), careFunnel(care)), 0, 0);
+        two.add(Kept.scope("reaches", () -> card(cardHead(care == CareType.CHILDCARE ? Icons.CHILD : Icons.CANE, "Who it reaches",
+                careInfo(care, c), null), careFunnel(care))), 0, 0);
         page.getChildren().add(two);
-        page.getChildren().add(feeLine(care, "a month"));
-        page.getChildren().add(details("health:" + care.name(), "the places, as a statement", careStatement(care)));
+        page.getChildren().add(Kept.scope("fee", () -> feeLine(care, "a month")));
+        page.getChildren().add(details("health:" + care.name(), "the places, as a statement", () -> new Node[] {careStatement(care)}));
     }
 
     /** One effect: its name, the scale, and today's figure with the old note behind its (i). */
@@ -1475,10 +1568,10 @@ final class ServicesScreen {
                 statementLine("Places built", people(built)),
                 statementLine("Places staffed", people(staffed), staffed < built * .95 ? Palette.WARN : null));
         if (built - staffed > .5) {
-            col.getChildren().add(statementNote(String.format(
+            col.getChildren().add(Kept.scope("empty", () -> statementNote(String.format(
                     "%s places stand empty for want of staff. A ward with no doctors "
                     + "treats nobody — check the professions table on the People screen.",
-                    people(built - staffed))));
+                    people(built - staffed)))));
         }
         col.getChildren().add(statementTotal("Short by",
                 served - staffed < .5 ? "nothing" : people(Math.max(0, served - staffed)), null));
@@ -1501,7 +1594,7 @@ final class ServicesScreen {
         double[] staffing = ui.game.getPopulationManager().getJobFillRate();
         for (Event e : events) {
             if (e.key().startsWith("ground:") || e.key().startsWith("unburied:")) {
-                page.getChildren().add(eventLine(e.words(), e.whole(), e.tone()));
+                page.getChildren().add(eventScope(e));
             }
         }
         deathNotices(page);
@@ -1513,38 +1606,36 @@ final class ServicesScreen {
 
         javafx.scene.layout.GridPane two = equalColumns(2, TILE_GAP);
         String g = groundWords();
-        VBox ground = card(cardHead(Icons.DEATH, "The ground", PLOTS_INFO, null),
-                new HBox(8, figure(g.endsWith(" mo") ? g.replace(" mo", " months") : g, 22, Palette.TEXT_HEAD),
+        two.add(Kept.scope("ground", () -> card(cardHead(Icons.DEATH, "The ground", PLOTS_INFO, null),
+                Kept.row(8, figure(g.endsWith(" mo") ? g.replace(" mo", " months") : g, 22, Palette.TEXT_HEAD),
                         words(g.endsWith(" mo") || g.equals("100+ years") ? "left at this rate" : groundNote(),
                                 Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
                 supplyBar(0, plots, used, Palette.PEOPLE, null, null,
                         people(used) + " plots used of " + people(plots), 0, 10),
                 words(people(left) + " plots free · " + flowText(service.getBurials()) + " buried a month · "
-                        + pct(service.getPlotUtilisation()) + " full", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        two.add(ground, 0, 0);
+                        + pct(service.getPlotUtilisation()) + " full", Palette.SIZE_CAPTION, Palette.TEXT_MUTED))), 0, 0);
         List<Part> dead = List.of(Part.of("buried", service.getBurials(), Palette.PEOPLE),
                 Part.of("cremated", service.getCremations(), Palette.PEOPLE_LIGHT),
                 Part.of("lying unburied", service.getUnburied(), Palette.BUILDING));
-        VBox month = card(cardHead(Icons.DEATH, "This month's dead", BURIAL_INFO, null),
-                new HBox(8, figure(flowText(service.getDeaths()), 22, Palette.TEXT_HEAD),
+        two.add(Kept.scope("month", () -> card(cardHead(Icons.DEATH, "This month's dead", BURIAL_INFO, null),
+                Kept.row(8, figure(flowText(service.getDeaths()), 22, Palette.TEXT_HEAD),
                         words("died · " + String.format("%.1f%%", service.getDeathCareRatio() * 100) + " dealt with",
                                 Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
-                causeBar(dead, 0, 14, Pieces::flowText));
-        two.add(month, 1, 0);
+                causeBar(dead, 0, 14, Pieces::flowText))), 1, 0);
         page.getChildren().add(two);
 
-        page.getChildren().add(sectionHead("THE CREMATORIA", CREMATORIA_INFO, hint(people(ovens) + " a month · "
-                + pct(service.getCremationUtilisation()) + " used")));
-        page.getChildren().add(card(supplyBar(0, ovens, service.getCremations(), Palette.PEOPLE, null, null,
-                flowText(service.getCremations()) + " cremated of " + people(ovens) + " the staffed ovens take", 0, 8)));
+        page.getChildren().add(Kept.scope("crematoria head", () -> sectionHead("THE CREMATORIA", CREMATORIA_INFO,
+                hint(people(ovens) + " a month · " + pct(service.getCremationUtilisation()) + " used"))));
+        page.getChildren().add(Kept.scope("crematoria", () -> card(supplyBar(0, ovens, service.getCremations(), Palette.PEOPLE, null, null,
+                flowText(service.getCremations()) + " cremated of " + people(ovens) + " the staffed ovens take", 0, 8))));
 
-        page.getChildren().add(priceLine("a burial " + cash(service.feeNow(CareType.BURIAL)) + " · a cremation "
+        page.getChildren().add(Kept.scope("fee", () -> priceLine("a burial " + cash(service.feeNow(CareType.BURIAL)) + " · a cremation "
                         + cash(service.feeNow(CareType.CREMATION)) + " · funeral fees "
                         + tightMoney(toDollars(service.getFuneralFees()), false) + " this month",
                 "The funeral fees are not on the dial: the Policy tab's Health page scales the three care fees, and the "
                 + "cemetery against the crematorium is its own design.",
-                "Set the fee", "Health"));
-        page.getChildren().add(details("health:death", "the dead and the ground, as a statement", deathStatement()));
+                "Set the fee", "Health")));
+        page.getChildren().add(details("health:death", "the dead and the ground, as a statement", () -> new Node[] {deathStatement()}));
     }
 
     /** Plots are permanent (the ground's note). */
@@ -1562,7 +1653,7 @@ final class ServicesScreen {
         double plots = ui.game.getBuildingManager().getCareCapacity(CareType.BURIAL);
         double left = Healthcare.plotsRemaining(plots, service.getPlotsUsed());
         if (service.getUnburied() > 0) {
-            page.getChildren().add(eventLine(String.format("Nowhere to bury them: %s people are lying unburied, adding %s to the sick rate.",
+            page.getChildren().add(Kept.scope("nowhere to bury", () -> eventLine(String.format("Nowhere to bury them: %s people are lying unburied, adding %s to the sick rate.",
                     people(service.getUnburied()), points(health.getUnburiedRate())), String.format(
                     "%s people are lying unburied, adding %.1f points to the sick rate — "
                     + "a health problem, not a decency one, and it does not go away on its "
@@ -1572,16 +1663,16 @@ final class ServicesScreen {
                     left <= 0 && plots > 0
                             ? "Every plot in the city is full, so a cemetery or a crematorium."
                             : "Build a cemetery or a crematorium.",
-                    Healthcare.MAX_BACKLOG_MONTHS), Palette.BAD));
+                    Healthcare.MAX_BACKLOG_MONTHS), Palette.BAD)));
         } else if (service.isStrained()) {
-            page.getChildren().add(eventLine("Death care is filling up.",
+            page.getChildren().add(Kept.scope("filling up", () -> eventLine("Death care is filling up.",
                     service.getCremationUtilisation() >= Healthcare.STRAINED
                         ? String.format("The crematoria are at %.0f%% of what they can handle. "
                                 + "Past full, the overflow has nowhere to go but the ground.",
                                 service.getCremationUtilisation() * 100)
                         : String.format("The ground runs out in about %,.0f months at this "
                                 + "rate, and it is fine until the month it is not.",
-                                service.monthsOfPlotsLeft(plots)), Palette.WARN));
+                                service.monthsOfPlotsLeft(plots)), Palette.WARN)));
         }
     }
 
@@ -1697,11 +1788,11 @@ final class ServicesScreen {
     void educationPage(VBox page, List<CityNeeds.Need> all, List<Event> events) {
 
         if (educationNotRunYet()) {
-            page.getChildren().add(eventLine("Nothing measured yet: advance a month and this fills in.",
+            page.getChildren().add(Kept.scope("not run", () -> eventLine("Nothing measured yet: advance a month and this fills in.",
                     "This city was loaded and no month has run since. The schools carry "
                     + "their students and their running totals through a save; coverage, "
                     + "enrolment and the bill are worked out fresh each month, so they read "
-                    + "as nothing until you advance one. Press the arrow and this fills in.", Palette.WARN));
+                    + "as nothing until you advance one. Press the arrow and this fills in.", Palette.WARN)));
         }
 
         switch (servicePage) {
@@ -1796,47 +1887,57 @@ final class ServicesScreen {
         eventLines(page, "Education", events);
         Education schools = ui.game.getEducation();
 
-        page.getChildren().add(sectionHead("THE BASIC LADDER", LADDER_INFO,
-                hint("every child, elementary to high school: the ladder is as wide as its narrowest stage")));
-        HBox basic = new HBox(6);
-        basic.setAlignment(Pos.CENTER_LEFT);
-        EducationType[] stages = {EducationType.ELEMENTARY, EducationType.MIDDLE, EducationType.HIGH};
-        for (EducationType t : stages) {
-            basic.getChildren().addAll(node(schoolNode(t, all)), chevron());
-        }
-        basic.getChildren().add(diplomaNode());
-        page.getChildren().add(lane(basic));
+        // Kept (KP2): each lane's school nodes a scope keyed by the school, the chevrons between them by theirs.
+        page.getChildren().add(Kept.scope("ladder head", () -> sectionHead("THE BASIC LADDER", LADDER_INFO,
+                hint("every child, elementary to high school: the ladder is as wide as its narrowest stage"))));
+        page.getChildren().add(Kept.scope("ladder", () -> {
+            List<Node> basic = new ArrayList<>();
+            EducationType[] stages = {EducationType.ELEMENTARY, EducationType.MIDDLE, EducationType.HIGH};
+            for (EducationType t : stages) {
+                basic.add(Kept.scope(t, () -> node(schoolNode(t, all))));
+                basic.add(Kept.scope("chevron " + t, ServicesScreen::chevron));
+            }
+            basic.add(Kept.scope("diplomas", this::diplomaNode));
+            return lane(basic);
+        }));
 
-        page.getChildren().add(sectionHead("ADULT STUDY", null,
-                hint("the diploma-holders go on to college or to university")));
-        HBox adult = new HBox(6, node(schoolNode(EducationType.COLLEGE, all)), chevron(),
-                node(schoolNode(EducationType.UNIVERSITY, all)));
-        adult.setAlignment(Pos.CENTER_LEFT);
-        page.getChildren().add(lane(adult));
+        page.getChildren().add(Kept.scope("adult head", () -> sectionHead("ADULT STUDY", null,
+                hint("the diploma-holders go on to college or to university"))));
+        page.getChildren().add(Kept.scope("adult", () -> {
+            List<Node> adult = new ArrayList<>();
+            adult.add(Kept.scope(EducationType.COLLEGE, () -> node(schoolNode(EducationType.COLLEGE, all))));
+            adult.add(Kept.scope("chevron", ServicesScreen::chevron));
+            adult.add(Kept.scope(EducationType.UNIVERSITY, () -> node(schoolNode(EducationType.UNIVERSITY, all))));
+            return lane(adult);
+        }));
 
-        page.getChildren().add(sectionHead("THE LICENSED PROFESSIONS", PROFESSIONS_INFO,
-                hint("from university: each licenses a job no other school can")));
-        HBox pro = new HBox(6);
-        pro.setAlignment(Pos.CENTER_LEFT);
-        for (EducationType t : EducationType.values()) {
-            if (t.isProfessional()) pro.getChildren().add(node(schoolNode(t, all)));
-        }
-        page.getChildren().add(lane(pro));
-        page.getChildren().add(words(people(sum(schools.getStudying())) + " adults are in class, out of the workforce until they finish.",
-                Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        page.getChildren().add(Kept.scope("professions head", () -> sectionHead("THE LICENSED PROFESSIONS", PROFESSIONS_INFO,
+                hint("from university: each licenses a job no other school can"))));
+        page.getChildren().add(Kept.scope("professions", () -> {
+            List<Node> pro = new ArrayList<>();
+            for (EducationType t : EducationType.values()) {
+                if (t.isProfessional()) pro.add(Kept.scope(t, () -> node(schoolNode(t, all))));
+            }
+            return lane(pro);
+        }));
+        page.getChildren().add(Kept.scope("in class", () -> words(people(sum(schools.getStudying())) + " adults are in class, out of the workforce until they finish.",
+                Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
     }
 
-    /** A lane of nodes that wraps rather than overflowing a narrow window. */
-    static Node lane(HBox row) {
-        javafx.scene.layout.FlowPane flow = new javafx.scene.layout.FlowPane(6, 8);
-        // A copy: each node leaves the row as it joins the flow.
-        flow.getChildren().addAll(new ArrayList<>(row.getChildren()));
+    /**
+     * A lane of nodes that wraps rather than overflowing a narrow window. Kept (KP2): given the nodes, not
+     * a row to take them from, which a kept row would hold as children too and the two would take them
+     * from each other every draw.
+     */
+    static Node lane(List<? extends Node> nodes) {
+        javafx.scene.layout.FlowPane flow = Kept.flow(6, 8);
+        flow.getChildren().addAll(nodes);
         flow.setAlignment(Pos.CENTER_LEFT);
         return flow;
     }
 
     static Label chevron() {
-        Label c = new Label("›");
+        Label c = Kept.label("›");
         c.setStyle(Palette.words(18, Palette.TEXT_MUTED));
         c.setMinWidth(Region.USE_PREF_SIZE);
         return c;
@@ -1844,12 +1945,12 @@ final class ServicesScreen {
 
     /** One node of the pipeline: icon, name and ring; two lines; the gate as a chip. A click opens its page. */
     VBox node(SchoolNode n) {
-        Label name = new Label(n.type().getLabel());
+        Label name = Kept.label(n.type().getLabel());
         name.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
         name.setWrapText(true);
         name.setMinWidth(0);
         HBox.setHgrow(name, Priority.ALWAYS);
-        HBox head = new HBox(8, iconSquare(Icons.EDUCATION, Palette.PEOPLE, 24, 13), name,
+        HBox head = Kept.row(8, iconSquare(Icons.EDUCATION, Palette.PEOPLE, 24, 13), name,
                 ring(n.arc(), n.ringTone(), 40, 5, n.ring(), 10));
         head.setAlignment(Pos.CENTER_LEFT);
         VBox c = card(head, words(n.line1(), Palette.SIZE_LABEL, Palette.TEXT_LABEL),
@@ -1858,10 +1959,12 @@ final class ServicesScreen {
         if (n.gate() != null) {
             // Since 0.7.51 a school not built says the posts for its graduates too, past the node's
             // 228 with a five-figure intake ("not built: 24,395 would come, 133 posts for them"): it wraps.
-            Label gate = chip(n.gate(), n.gateTone());
-            gate.setWrapText(true);
-            gate.setMinWidth(0);
-            c.getChildren().add(gate);
+            c.getChildren().add(Kept.scope("gate", () -> {
+                Label gate = chip(n.gate(), n.gateTone());
+                gate.setWrapText(true);
+                gate.setMinWidth(0);
+                return gate;
+            }));
         }
         c.setMinWidth(228);
         c.setPrefWidth(228);
@@ -1873,12 +1976,13 @@ final class ServicesScreen {
     /** The ladder's end: the diplomas the school leavers took this month (Education.getNewDiplomas(), gross), or "not recorded yet" after a load. */
     VBox diplomaNode() {
         double d = ui.game.getEducation().getNewDiplomas();
-        Label name = new Label("Diplomas");
+        Label name = Kept.label("Diplomas");
         name.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
-        HBox head = new HBox(8, iconSquare(Icons.ARRIVE, Palette.PEOPLE, 24, 13), name);
+        HBox head = Kept.row(8, iconSquare(Icons.ARRIVE, Palette.PEOPLE, 24, 13), name);
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox c = card(head, Double.isFinite(d) ? figure(flowText(d), 18, Palette.TEXT_HEAD)
-                        : words("not recorded yet", Palette.SIZE_LABEL, Palette.TEXT_MUTED),
+        VBox c = card(head, Kept.scope(Double.isFinite(d) ? "figure" : "words", () -> Double.isFinite(d)
+                        ? figure(flowText(d), 18, Palette.TEXT_HEAD)
+                        : words("not recorded yet", Palette.SIZE_LABEL, Palette.TEXT_MUTED)),
                 infoLine("diplomas this month", DIPLOMA_INFO, false, Palette.SIZE_CAPTION, Palette.TEXT_MUTED, 200));
         c.setSpacing(4);
         c.setMinWidth(170);
@@ -1927,48 +2031,52 @@ final class ServicesScreen {
         double[] staffed = bm.getStaffedEducationPlaces(staffing);
         double[] built = bm.getBuiltEducationPlaces();
 
-        page.getChildren().add(sectionHead("THE BASIC LADDER · " + CityNeeds.servedPct(schools.basicCoverage()) + " "
+        page.getChildren().add(Kept.scope("ladder head", () -> sectionHead("THE BASIC LADDER · " + CityNeeds.servedPct(schools.basicCoverage()) + " "
                 + CityNeeds.SERVED, LADDER_INFO,
-                hint("held up by " + schools.basicBottleneck().getLabel().toLowerCase())));
-        VBox rows = new VBox(12);
-        for (EducationType stage : new EducationType[]{EducationType.ELEMENTARY, EducationType.MIDDLE, EducationType.HIGH}) {
-            double[] sd = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.school(stage), java.util.Map.of());
-            double cover = schools.getCoverage(stage);
-            // Served (0.7.41), in the one verdict on the stage's own coverage.
-            CityNeeds.Served v = CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE, cover);
-            Label name = words(stage.getLabel(), Palette.SIZE_BODY, Palette.TEXT_HEAD);
-            name.setMinWidth(150);
-            name.setPrefWidth(150);
-            Label figure = figure(CityNeeds.servedPct(cover), Palette.SIZE_SECTION, BuildScreen.servedTone(v));
-            figure.setMinWidth(54);
-            SegmentBar bar = supplyBar(sd[1], built[stage.ordinal()], staffed[stage.ordinal()], Palette.PEOPLE,
-                    "to teach", List.of(new Tick(schools.getEnrolled(stage), Palette.PEOPLE_LIGHT, 2, null, "in class")),
-                    null, 0, 10);
-            HBox.setHgrow(bar, Priority.ALWAYS);
-            HBox top = new HBox(Palette.GAP_LOOSE, name, figure, bar);
-            top.setAlignment(Pos.CENTER_LEFT);
-            Label line = words(people(built[stage.ordinal()]) + " seats · " + people(staffed[stage.ordinal()]) + " staffed · "
-                    + people(schools.getEnrolled(stage)) + " in class · " + people(sd[1]) + " to teach"
-                    + (stage == schools.basicBottleneck() ? " · the narrowest stage" : ""),
-                    Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
-            VBox.setMargin(line, new javafx.geometry.Insets(0, 0, 0, 150 + 54 + 2 * Palette.GAP_LOOSE));
-            rows.getChildren().add(new VBox(2, top, line));
-        }
-        page.getChildren().add(card(rows));
+                hint("held up by " + schools.basicBottleneck().getLabel().toLowerCase()))));
+        page.getChildren().add(Kept.scope("ladder", () -> {
+            VBox rows = Kept.column(12);
+            for (EducationType stage : new EducationType[]{EducationType.ELEMENTARY, EducationType.MIDDLE, EducationType.HIGH}) {
+                rows.getChildren().add(Kept.scope(stage, () -> {
+                    double[] sd = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.school(stage), java.util.Map.of());
+                    double cover = schools.getCoverage(stage);
+                    // Served (0.7.41), in the one verdict on the stage's own coverage.
+                    CityNeeds.Served v = CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE, cover);
+                    Label name = words(stage.getLabel(), Palette.SIZE_BODY, Palette.TEXT_HEAD);
+                    name.setMinWidth(150);
+                    name.setPrefWidth(150);
+                    Label figure = figure(CityNeeds.servedPct(cover), Palette.SIZE_SECTION, BuildScreen.servedTone(v));
+                    figure.setMinWidth(54);
+                    SegmentBar bar = supplyBar(sd[1], built[stage.ordinal()], staffed[stage.ordinal()], Palette.PEOPLE,
+                            "to teach", List.of(new Tick(schools.getEnrolled(stage), Palette.PEOPLE_LIGHT, 2, null, "in class")),
+                            null, 0, 10);
+                    HBox.setHgrow(bar, Priority.ALWAYS);
+                    HBox top = Kept.row(Palette.GAP_LOOSE, name, figure, bar);
+                    top.setAlignment(Pos.CENTER_LEFT);
+                    Label line = words(people(built[stage.ordinal()]) + " seats · " + people(staffed[stage.ordinal()]) + " staffed · "
+                            + people(schools.getEnrolled(stage)) + " in class · " + people(sd[1]) + " to teach"
+                            + (stage == schools.basicBottleneck() ? " · the narrowest stage" : ""),
+                            Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
+                    VBox.setMargin(line, new javafx.geometry.Insets(0, 0, 0, 150 + 54 + 2 * Palette.GAP_LOOSE));
+                    return Kept.column(2, top, line);
+                }));
+            }
+            return card(rows);
+        }));
 
         double d = schools.getNewDiplomas();
-        page.getChildren().add(infoLine(Double.isFinite(d) ? flowText(d) + " diplomas this month, from the school leavers"
+        page.getChildren().add(Kept.scope("diplomas", () -> infoLine(Double.isFinite(d) ? flowText(d) + " diplomas this month, from the school leavers"
                 : "Diplomas this month: not recorded yet — advance a month.", DIPLOMA_INFO, false,
-                Palette.SIZE_BODY, Palette.TEXT_HEAD, 700));
-        page.getChildren().add(tuitionLine(EducationType.HIGH));
+                Palette.SIZE_BODY, Palette.TEXT_HEAD, 700)));
+        page.getChildren().add(Kept.scope("tuition", () -> tuitionLine(EducationType.HIGH)));
         page.getChildren().add(details("education:ladder", "the ladder as a table, and the diplomas since the founding",
-                ladderTable(), column(
+                () -> new Node[] {ladderTable(), column(
                         statementTotal("The ladder serves", CityNeeds.servedPct(schools.basicCoverage()), null),
                         statementLine("Diploma-holders gained since the founding",
                                 people(schools.getEverGraduated()[WageBand.DIPLOMA.ordinal()])),
                         statementNote("A running total of the months the diploma band grew, net of those who "
                                 + "finished college or university - the months it shrank are not taken off, and the "
-                                + "months it grew count only the growth. Not a count of diplomas handed out."))));
+                                + "months it grew count only the growth. Not a count of diplomas handed out."))}));
     }
 
     /** The old ladder table: stage, to teach, seats, staffed, in class, served ("covered" until 0.7.41). */
@@ -2007,11 +2115,11 @@ final class ServicesScreen {
      * gauges; under it everybody part way through, a bar a month.
      */
     void coursePage(VBox page, EducationType course, List<CityNeeds.Need> all) {
-        page.getChildren().add(sectionHead(course.getLabel().toUpperCase() + " · " + courseHead(course), GATES_INFO,
-                chip(gate(course).words(), schoolNode(course, all).gateTone())));
-        page.getChildren().add(courseView(course, false));
-        page.getChildren().add(tuitionLine(course));
-        page.getChildren().add(details("education:" + course.name(), "the course as a statement", courseStatement(course)));
+        page.getChildren().add(Kept.scope("head", () -> sectionHead(course.getLabel().toUpperCase() + " · " + courseHead(course), GATES_INFO,
+                chip(gate(course).words(), schoolNode(course, all).gateTone()))));
+        page.getChildren().add(Kept.scope("course", () -> courseView(course, false)));
+        page.getChildren().add(Kept.scope("tuition", () -> tuitionLine(course)));
+        page.getChildren().add(details("education:" + course.name(), "the course as a statement", () -> new Node[] {courseStatement(course)}));
     }
 
     /** A course's heading line: its length and who it takes. */
@@ -2042,51 +2150,59 @@ final class ServicesScreen {
         double back = schools.studyReturn(course, market);
         double afford = schools.studyAffordability(course, market);
 
-        HBox gauges = new HBox(compact ? 10 : 18,
-                gauge(back, "wage return", RETURN_INFO_PREFIX + returnNote(course, market, back), compact ? 72 : 96),
-                gauge(afford, "can afford it", affordNote(afford), compact ? 72 : 96));
-        gauges.setAlignment(Pos.CENTER_LEFT);
+        HBox gauges = Kept.scope("gauges", () -> {
+            HBox row = Kept.row(compact ? 10 : 18,
+                    gauge(back, "wage return", RETURN_INFO_PREFIX + returnNote(course, market, back), compact ? 72 : 96),
+                    gauge(afford, "can afford it", affordNote(afford), compact ? 72 : 96));
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
 
+        // Kept (KP2): the course not built and the course running are two pages in scopes of their own.
         if (seats <= 0 && inFlight <= 0) {
-            VBox none = new VBox(8, words(built > 0
-                    ? "The building is up and nobody is teaching in it — every seat here is "
-                      + "discounted by how much of the staff turned up, and none of them did."
-                    : "The city has not built one. " + (course.requires() == null ? ""
-                      : "It would take " + course.requires().label().toLowerCase()
-                        + "-holders as students, and the city has " + people(eligible) + " of them."),
-                    Palette.SIZE_BODY, Palette.TEXT_LABEL),
-                    new HBox(Palette.GAP, figure(people(CityNeeds.wouldCome(ui.game, course)), 18, Palette.TEXT_HEAD),
-                            words("would come, at today's wages and tuition", Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
-                    gauges,
-                    words("Both read off live wages, so they answer the question before the money is spent: a "
-                            + "school built where neither of these is above zero teaches nobody.",
-                            Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
-                    buildFor(BuildAdvice.Measure.school(course)));
-            return compact ? none : card(none);
+            return Kept.scope("unbuilt", () -> {
+                VBox none = Kept.column(8, words(built > 0
+                        ? "The building is up and nobody is teaching in it — every seat here is "
+                          + "discounted by how much of the staff turned up, and none of them did."
+                        : "The city has not built one. " + (course.requires() == null ? ""
+                          : "It would take " + course.requires().label().toLowerCase()
+                            + "-holders as students, and the city has " + people(eligible) + " of them."),
+                        Palette.SIZE_BODY, Palette.TEXT_LABEL),
+                        Kept.row(Palette.GAP, figure(people(CityNeeds.wouldCome(ui.game, course)), 18, Palette.TEXT_HEAD),
+                                words("would come, at today's wages and tuition", Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
+                        gauges,
+                        words("Both read off live wages, so they answer the question before the money is spent: a "
+                                + "school built where neither of these is above zero teaches nobody.",
+                                Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
+                        buildFor(BuildAdvice.Measure.school(course)));
+                return compact ? none : card(none);
+            });
         }
 
-        List<FunnelStep> steps = courseSteps(course);
-        boolean seatsBind = gate(course).binding().equals("seats");
-        VBox funnel = funnel(steps, 0, seatsBind ? 3 : 2, Palette.PEOPLE);
-        HBox.setHgrow(funnel, Priority.ALWAYS);
+        return Kept.scope("built", () -> {
+            List<FunnelStep> steps = courseSteps(course);
+            boolean seatsBind = gate(course).binding().equals("seats");
+            VBox funnel = funnel(steps, 0, seatsBind ? 3 : 2, Palette.PEOPLE);
+            HBox.setHgrow(funnel, Priority.ALWAYS);
 
-        CohortBars bars = cohortBars(queue, 0, compact ? 44 : 90, Palette.PEOPLE, -1, null, null,
-                "finish next month", "just enrolled", Pieces::flowText,
-                k -> k == 0 ? "finishes next month" : "finishes in " + (k + 1) + " months");
-        String line = "in class " + people(inFlight) + " of " + people(seats) + " staffed seats"
-                + (built - seats > .5 ? " (" + people(built) + " built)" : "") + " · "
-                + (queue.length > 0 && queue[0] > 0 ? flowText(queue[0]) + " finish next month" : "nobody finishes next month");
-        if (built - seats > .5) {
-            funnel.getChildren().add(infoLine(people(built - seats) + " seats stand empty for want of teachers",
-                    "A school with no teachers teaches nobody, exactly as a hospital with no doctors treats nobody.",
-                    false, Palette.SIZE_LABEL, Palette.TEXT_HEAD, 560));
-        }
-        if (compact) {
-            return new VBox(8, funnel, gauges, bars, words(line, Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        }
-        HBox top = new HBox(24, funnel, gauges);
-        top.setAlignment(Pos.CENTER_LEFT);
-        return card(top, sectionHead("EVERYBODY PART WAY THROUGH", null, hint(line)), bars);
+            CohortBars bars = cohortBars(queue, 0, compact ? 44 : 90, Palette.PEOPLE, -1, null, null,
+                    "finish next month", "just enrolled", Pieces::flowText,
+                    k -> k == 0 ? "finishes next month" : "finishes in " + (k + 1) + " months");
+            String line = "in class " + people(inFlight) + " of " + people(seats) + " staffed seats"
+                    + (built - seats > .5 ? " (" + people(built) + " built)" : "") + " · "
+                    + (queue.length > 0 && queue[0] > 0 ? flowText(queue[0]) + " finish next month" : "nobody finishes next month");
+            if (built - seats > .5) {
+                funnel.getChildren().add(Kept.scope("empty", () -> infoLine(people(built - seats) + " seats stand empty for want of teachers",
+                        "A school with no teachers teaches nobody, exactly as a hospital with no doctors treats nobody.",
+                        false, Palette.SIZE_LABEL, Palette.TEXT_HEAD, 560)));
+            }
+            if (compact) {
+                return Kept.column(8, funnel, gauges, bars, words(line, Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            }
+            HBox top = Kept.row(24, funnel, gauges);
+            top.setAlignment(Pos.CENTER_LEFT);
+            return card(top, sectionHead("EVERYBODY PART WAY THROUGH", null, hint(line)), bars);
+        });
     }
 
     /**
@@ -2186,29 +2302,42 @@ final class ServicesScreen {
     static VBox gauge(double share, String name, String info, double size) {
         double s = Double.isFinite(share) ? Math.max(0, Math.min(1, share)) : 0;
         double r = size / 2 - 5;
-        javafx.scene.shape.Arc track = new javafx.scene.shape.Arc(size / 2, size / 2, r, r, 180, -180);
+        // Kept (KP2): an Arc's constructor arguments are its setters, set every draw.
+        javafx.scene.shape.Arc track = Kept.of(javafx.scene.shape.Arc.class, javafx.scene.shape.Arc::new);
+        track.setCenterX(size / 2);
+        track.setCenterY(size / 2);
+        track.setRadiusX(r);
+        track.setRadiusY(r);
+        track.setStartAngle(180);
+        track.setLength(-180);
         track.setType(javafx.scene.shape.ArcType.OPEN);
         track.setFill(null);
         track.setStroke(javafx.scene.paint.Color.web(Palette.EDGE));
         track.setStrokeWidth(8);
-        javafx.scene.shape.Arc fill = new javafx.scene.shape.Arc(size / 2, size / 2, r, r, 180, -180 * s);
+        javafx.scene.shape.Arc fill = Kept.of(javafx.scene.shape.Arc.class, javafx.scene.shape.Arc::new);
+        fill.setCenterX(size / 2);
+        fill.setCenterY(size / 2);
+        fill.setRadiusX(r);
+        fill.setRadiusY(r);
+        fill.setStartAngle(180);
+        fill.setLength(-180 * s);
         fill.setType(javafx.scene.shape.ArcType.OPEN);
         fill.setFill(null);
         fill.setStroke(javafx.scene.paint.Color.web(Palette.PEOPLE));
         fill.setStrokeWidth(8);
-        javafx.scene.layout.Pane arcs = new javafx.scene.layout.Pane(track);
+        javafx.scene.layout.Pane arcs = Kept.plain(track);
         if (s > 0) arcs.getChildren().add(fill);
         arcs.setMinSize(size, size / 2 + 6);
         arcs.setPrefSize(size, size / 2 + 6);
         arcs.setMaxSize(size, size / 2 + 6);
         Label figure = figure(pct(share), size >= 90 ? 15 : 12, Palette.TEXT_HEAD);
-        javafx.scene.layout.StackPane drawn = new javafx.scene.layout.StackPane(arcs, figure);
+        javafx.scene.layout.StackPane drawn = Kept.stack(arcs, figure);
         javafx.scene.layout.StackPane.setAlignment(figure, Pos.BOTTOM_CENTER);
         drawn.setMinSize(size, size / 2 + 6);
         drawn.setMaxSize(size, size / 2 + 6);
-        HBox label = new HBox(Palette.GAP_TIGHT, words(name, Palette.SIZE_CAPTION, Palette.TEXT_LABEL), infoButton(info, false));
+        HBox label = Kept.row(Palette.GAP_TIGHT, words(name, Palette.SIZE_CAPTION, Palette.TEXT_LABEL), infoButton(info, false));
         label.setAlignment(Pos.CENTER);
-        VBox box = new VBox(3, drawn, label);
+        VBox box = Kept.column(3, drawn, label);
         box.setAlignment(Pos.TOP_CENTER);
         box.setMinWidth(size + 20);
         return box;
@@ -2216,23 +2345,24 @@ final class ServicesScreen {
 
     /** The four schools that gate a job rather than raise a level, two by two. */
     void professionsPage(VBox page, List<CityNeeds.Need> all) {
-        page.getChildren().add(sectionHead("THE LICENSED PROFESSIONS", PROFESSIONS_INFO,
-                hint("which licence is the city short of, and why")));
+        page.getChildren().add(Kept.scope("head", () -> sectionHead("THE LICENSED PROFESSIONS", PROFESSIONS_INFO,
+                hint("which licence is the city short of, and why"))));
         javafx.scene.layout.GridPane grid = equalColumns(2, TILE_GAP);
         int i = 0;
         for (EducationType course : EducationType.values()) {
             if (!course.isProfessional()) continue;
-            SchoolNode n = schoolNode(course, all);
-            VBox c = card(cardHead(Icons.EDUCATION, course.getLabel(), null, chip(n.gate(), n.gateTone())),
-                    words(courseHead(course), Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
-                    courseView(course, true), tuitionLine(course));
-            grid.add(c, i % 2, i / 2);
+            grid.add(Kept.scope(course, () -> {
+                SchoolNode n = schoolNode(course, all);
+                return card(cardHead(Icons.EDUCATION, course.getLabel(), null, chip(n.gate(), n.gateTone())),
+                        words(courseHead(course), Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
+                        courseView(course, true), tuitionLine(course));
+            }), i % 2, i / 2);
             i++;
         }
         page.getChildren().add(grid);
         page.getChildren().add(details("education:professions", "the four courses as statements",
-                courseStatement(EducationType.MEDICAL), courseStatement(EducationType.LAW),
-                courseStatement(EducationType.BUSINESS), courseStatement(EducationType.ENGINEERING)));
+                () -> new Node[] {courseStatement(EducationType.MEDICAL), courseStatement(EducationType.LAW),
+                        courseStatement(EducationType.BUSINESS), courseStatement(EducationType.ENGINEERING)}));
     }
 
     /** The old course block's lines - the pipeline, the gates, the two things that move it - as they were. */
@@ -2252,7 +2382,7 @@ final class ServicesScreen {
         double intake = Math.min(free, wanted);
         return column(statementHead(course.getLabel()),
                 statementLine("Seats", people(built)),
-                built - seats > .5 ? statementLine("...staffed", people(seats)) : null,
+                built - seats > .5 ? Kept.scope("staffed", () -> statementLine("...staffed", people(seats))) : null,
                 statementLine("Course length", String.format("%d months  (%.0f years)", course.months(), course.months() / 12.0)),
                 statementLine("In class now", people(inFlight)),
                 statementLine("Graduating next month", queue.length > 0 ? flowText(queue[0]) : "nobody"),
@@ -2342,10 +2472,11 @@ final class ServicesScreen {
             return;
         }
         eventLines(page, "Utilities", events);
-        page.getChildren().add(sectionHead("IS THERE ENOUGH FOR WHAT THE CITY DRAWS", null,
-                hint("the bar: now solid, at full staff light, the city's ask the white tick")));
-        for (UtilityRow r : utilityRows(all)) page.getChildren().add(utilityCard(r));
-        page.getChildren().add(roadCard(all));
+        page.getChildren().add(Kept.scope("enough head", () -> sectionHead("IS THERE ENOUGH FOR WHAT THE CITY DRAWS", null,
+                hint("the bar: now solid, at full staff light, the city's ask the white tick"))));
+        // Kept (KP2): each capacity row a scope keyed by what it is (UtilityRow.key(): power, water).
+        for (UtilityRow r : utilityRows(all)) page.getChildren().add(Kept.scope(r.key(), () -> utilityCard(r)));
+        page.getChildren().add(Kept.scope("road", () -> roadCard(all)));
     }
 
     /**
@@ -2360,16 +2491,16 @@ final class ServicesScreen {
         InfrastructureManager roads = ui.game.getServicesManager().getInfrastructureManager();
         CityNeeds.Served served = CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, roads.getServed());
         String tone = BuildScreen.servedTone(served);
-        Label name = new Label("The road");
+        Label name = Kept.label("The road");
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox titled = new HBox(8, iconSquare(Icons.ROADS, Palette.PEOPLE, 28, 15), name);
+        HBox titled = Kept.row(8, iconSquare(Icons.ROADS, Palette.PEOPLE, 28, 15), name);
         titled.setAlignment(Pos.CENTER_LEFT);
-        HBox pair = new HBox(6, figure(CityNeeds.servedPct(served.share()), 24, tone),
+        HBox pair = Kept.row(6, figure(CityNeeds.servedPct(served.share()), 24, tone),
                 words(BuildScreen.servedWords(served) + " ·", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
                 figure(pct(roads.getThroughputRatio()), 24, Palette.TEXT_HEAD),
                 words("flow", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         pair.setAlignment(Pos.BASELINE_LEFT);
-        VBox left = new VBox(4, titled, pair);
+        VBox left = Kept.column(4, titled, pair);
         left.setMinWidth(220);
         Label says = words("How much of its traffic the road serves - its capacity over the trips on it - and what every "
                 + "business gets through it. What is on it, the curve that links the two and what the cars and transit "
@@ -2378,7 +2509,7 @@ final class ServicesScreen {
         HBox.setHgrow(says, Priority.ALWAYS);
         says.setMaxWidth(Double.MAX_VALUE);
         Label go = door("Infrastructure › Roads", Palette.PEOPLE, () -> ui.infrastructureScreen.open("Roads"));
-        HBox row = new HBox(18, left, says, go);
+        HBox row = Kept.row(18, left, says, go);
         row.setAlignment(Pos.CENTER_LEFT);
         return doorCard(card(row), () -> ui.infrastructureScreen.open("Roads"), "Infrastructure › Roads");
     }
@@ -2455,13 +2586,14 @@ final class ServicesScreen {
 
     /** One capacity row: the name and its verdict figure; the bar with who draws it under it; how short, and the door. */
     VBox utilityCard(UtilityRow r) {
-        Label name = new Label(r.name());
+        Label name = Kept.label(r.name());
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox titled = new HBox(8, iconSquare(r.icon(), Palette.PEOPLE, 28, 15), name, infoButton(r.info(), false));
+        HBox titled = Kept.row(8, iconSquare(r.icon(), Palette.PEOPLE, 28, 15), name, infoButton(r.info(), false));
         titled.setAlignment(Pos.CENTER_LEFT);
-        VBox left = new VBox(4, titled, new HBox(6, figure(r.figure(), 24, r.tone()),
-                words(r.figureWords(), Palette.SIZE_LABEL, Palette.TEXT_LABEL)));
-        ((HBox) left.getChildren().get(1)).setAlignment(Pos.BASELINE_LEFT);
+        HBox reading = Kept.row(6, figure(r.figure(), 24, r.tone()),
+                words(r.figureWords(), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        reading.setAlignment(Pos.BASELINE_LEFT);
+        VBox left = Kept.column(4, titled, reading);
         left.setMinWidth(220);
         left.setPrefWidth(220);
         left.setMaxWidth(220);
@@ -2475,23 +2607,23 @@ final class ServicesScreen {
         SegmentBar bar = segmentBar(segs, scale > 0 ? scale : 1, ticks, 0, 14);
         String says = "now " + r.unit().apply(r.now()) + " · at full staff " + r.unit().apply(r.could())
                 + " · the city asks " + r.unit().apply(r.asked());
-        VBox middle = new VBox(4, bar, words(says, Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
+        VBox middle = Kept.column(4, bar, words(says, Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
                 causeBar(r.draws(), 0, 6, r.unit()));
         // ...and the limit holding the plants back, in amber under the bar (0.7.59).
-        if (r.limit() != null) middle.getChildren().add(1, words(r.limit(), Palette.SIZE_CAPTION, Palette.WARN));
+        if (r.limit() != null) middle.getChildren().add(1, Kept.scope("limit", () -> words(r.limit(), Palette.SIZE_CAPTION, Palette.WARN)));
         HBox.setHgrow(middle, Priority.ALWAYS);
         middle.setMaxWidth(Double.MAX_VALUE);
 
         Label shortLine = words(r.shortWords(), Palette.SIZE_BODY, Palette.TEXT_HEAD);
-        VBox right = new VBox(8, shortLine, doorPill(r.goWords(), Icons.BUILD, Palette.BUILDING, r.go()));
+        VBox right = Kept.column(8, shortLine, doorPill(r.goWords(), Icons.BUILD, Palette.BUILDING, r.go()));
         right.setMinWidth(254);
         right.setPrefWidth(254);
         right.setMaxWidth(254);
 
-        HBox row = new HBox(18, left, middle, right);
+        HBox row = Kept.row(18, left, middle, right);
         row.setAlignment(Pos.TOP_LEFT);
         return card(row, details("utilities:" + r.key(), "price, billed, unbilled and staff turnout",
-                utilityStatement(r.key())));
+                () -> new Node[] {utilityStatement(r.key())}));
     }
 
     /** The power row's (i): the unit, the staff discount, one workforce, who is billed. */
@@ -2625,84 +2757,89 @@ final class ServicesScreen {
         double vs = crime.getRateVsCanada();
         String tone = tone(need(all, CityNeeds.Kind.CRIME, null, null));
 
-        page.getChildren().add(sectionHead("WHERE THE CRIME COMES FROM", CAUSES_INFO,
-                hint("police take a share off all of it; only work, homes and money take the reasons away")));
-        double top = Math.max(2, Math.ceil(vs * 2) / 2);
-        SegmentBar scale = segmentBar(List.of(new Segment(Math.min(vs, top), tone, false, null, null,
-                        String.format("%.2fx Canada's rate", vs), null)), top,
-                List.of(new Tick(1, Palette.TEXT_HEAD, 2, "Canada", "Canada's rate"),
-                        new Tick(CityNeeds.CRIME_YELLOW, Palette.TEXT_MUTED, 1, null, "NEEDS YOU lists crime from here"),
-                        new Tick(CityNeeds.CRIME_RED, Palette.TEXT_MUTED, 1, null, "...and it is red from here")), 190, 8);
-        VBox left = new VBox(2, figure(flowText(crime.getCrimes()), 30, Palette.TEXT_HEAD),
-                words("crimes a month · " + String.format("%.2fx", vs) + " Canada's", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
-                infoLine(people(crime.getRatePer100k()) + " a year per 100,000",
-                        String.format("This city is at %.2f times Canada's rate (%s a year per 100,000). Above it, "
-                                + "fewer people move here and some leave.", vs, people(Crime.CANADA_CRIMES_PER_100K)),
-                        false, Palette.SIZE_CAPTION, Palette.TEXT_MUTED, 210),
-                scale);
-        String d = change("crimeRate", Money::people);
-        if (d != null) left.getChildren().add(words(d + " (a year per 100,000)", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        left.setMinWidth(210);
-        left.setPrefWidth(210);
-        left.setMaxWidth(210);
-        VBox right = new VBox(4, causeBar(crimeParts(), 0, 24, v -> String.format("%,.1f", v)));
-        HBox.setHgrow(right, Priority.ALWAYS);
-        right.setMaxWidth(Double.MAX_VALUE);
-        HBox row = new HBox(18, left, right);
-        page.getChildren().add(card(row));
+        page.getChildren().add(Kept.scope("causes head", () -> sectionHead("WHERE THE CRIME COMES FROM", CAUSES_INFO,
+                hint("police take a share off all of it; only work, homes and money take the reasons away"))));
+        page.getChildren().add(Kept.scope("causes", () -> {
+            double top = Math.max(2, Math.ceil(vs * 2) / 2);
+            SegmentBar scale = segmentBar(List.of(new Segment(Math.min(vs, top), tone, false, null, null,
+                            String.format("%.2fx Canada's rate", vs), null)), top,
+                    List.of(new Tick(1, Palette.TEXT_HEAD, 2, "Canada", "Canada's rate"),
+                            new Tick(CityNeeds.CRIME_YELLOW, Palette.TEXT_MUTED, 1, null, "NEEDS YOU lists crime from here"),
+                            new Tick(CityNeeds.CRIME_RED, Palette.TEXT_MUTED, 1, null, "...and it is red from here")), 190, 8);
+            VBox left = Kept.column(2, figure(flowText(crime.getCrimes()), 30, Palette.TEXT_HEAD),
+                    words("crimes a month · " + String.format("%.2fx", vs) + " Canada's", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+                    infoLine(people(crime.getRatePer100k()) + " a year per 100,000",
+                            String.format("This city is at %.2f times Canada's rate (%s a year per 100,000). Above it, "
+                                    + "fewer people move here and some leave.", vs, people(Crime.CANADA_CRIMES_PER_100K)),
+                            false, Palette.SIZE_CAPTION, Palette.TEXT_MUTED, 210),
+                    scale);
+            String d = change("crimeRate", Money::people);
+            if (d != null) left.getChildren().add(Kept.scope("change", () -> words(d + " (a year per 100,000)", Palette.SIZE_CAPTION, Palette.TEXT_MUTED)));
+            left.setMinWidth(210);
+            left.setPrefWidth(210);
+            left.setMaxWidth(210);
+            VBox right = Kept.column(4, causeBar(crimeParts(), 0, 24, v -> String.format("%,.1f", v)));
+            HBox.setHgrow(right, Priority.ALWAYS);
+            right.setMaxWidth(Double.MAX_VALUE);
+            HBox row = Kept.row(18, left, right);
+            return card(row);
+        }));
 
-        page.getChildren().add(sectionHead("THE POLICE, THE CELLS, AND WHAT IT DID", null, null));
+        page.getChildren().add(Kept.scope("cards head", () -> sectionHead("THE POLICE, THE CELLS, AND WHAT IT DID", null, null)));
         javafx.scene.layout.GridPane three = equalColumns(3, TILE_GAP);
-        double[] police = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.of(BuildAdvice.Kind.POLICE), java.util.Map.of());
-        double without = crime.crimesWithoutPolice();
-        VBox p = card(cardHead(Icons.SAFETY, "Police", OFFICERS_INFO.apply(crime), null),
-                new HBox(8, figure(without > 0 ? pct(1 - crime.getCrimes() / without) : "—", 22, Palette.TEXT_HEAD),
-                        words("of the crime taken off", Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
-                supplyBar(police[1], bm.getSafetyCapacity(SafetyType.POLICE), police[0], Palette.PEOPLE, "full cover",
-                        null, people(police[0]) + " on shift of " + people(bm.getSafetyCapacity(SafetyType.POLICE))
-                        + " the stations hold · " + people(police[1]) + " for full cover", 0, 8),
-                words(people(police[0]) + " on shift · " + people(police[1]) + " for full cover · " + pct(crime.getCoverage()),
-                        Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
-                footDoors("Police", BuildAdvice.Measure.of(BuildAdvice.Kind.POLICE)));
-        three.add(doorCard(p, () -> open("Safety", "Police"), "The police: click for their page."), 0, 0);
-        double[] cells = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.of(BuildAdvice.Kind.CELLS), java.util.Map.of());
-        VBox c = card(cardHead(Icons.CELL, "Cells", CAUGHT_INFO, null),
-                new HBox(8, figure(people(crime.getNotHeld()), 22, crime.getNotHeld() >= .5
-                                ? tone(need(all, CityNeeds.Kind.CELLS, null, null)) : Palette.TEXT_HEAD),
-                        words("caught, not held", Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
-                supplyBar(cells[1], bm.getSafetyCapacity(SafetyType.PRISON), cells[0], Palette.PEOPLE, "needed",
-                        null, people(cells[0]) + " staffed cells of " + people(bm.getSafetyCapacity(SafetyType.PRISON))
-                        + " built · " + people(cells[1]) + " needed: six months of the caught", 0, 8),
-                words(people(crime.prisoners()) + " in prison · " + people(cells[0]) + " staffed cells · "
-                        + people(cells[1]) + " needed", Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
-                footDoors("Prisons", BuildAdvice.Measure.of(BuildAdvice.Kind.CELLS)));
-        three.add(doorCard(c, () -> open("Safety", "Prisons"), "The prisons: click for their page."), 1, 0);
-        VBox did = card(cardHead(Icons.ALERT, "What it did", STOLEN_INFO, null),
+        three.add(Kept.scope("police", () -> {
+            double[] police = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.of(BuildAdvice.Kind.POLICE), java.util.Map.of());
+            double without = crime.crimesWithoutPolice();
+            VBox p = card(cardHead(Icons.SAFETY, "Police", OFFICERS_INFO.apply(crime), null),
+                    Kept.row(8, figure(without > 0 ? pct(1 - crime.getCrimes() / without) : "—", 22, Palette.TEXT_HEAD),
+                            words("of the crime taken off", Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
+                    supplyBar(police[1], bm.getSafetyCapacity(SafetyType.POLICE), police[0], Palette.PEOPLE, "full cover",
+                            null, people(police[0]) + " on shift of " + people(bm.getSafetyCapacity(SafetyType.POLICE))
+                            + " the stations hold · " + people(police[1]) + " for full cover", 0, 8),
+                    words(people(police[0]) + " on shift · " + people(police[1]) + " for full cover · " + pct(crime.getCoverage()),
+                            Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
+                    footDoors("Police", BuildAdvice.Measure.of(BuildAdvice.Kind.POLICE)));
+            return doorCard(p, () -> open("Safety", "Police"), "The police: click for their page.");
+        }), 0, 0);
+        three.add(Kept.scope("cells", () -> {
+            double[] cells = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.of(BuildAdvice.Kind.CELLS), java.util.Map.of());
+            VBox c = card(cardHead(Icons.CELL, "Cells", CAUGHT_INFO, null),
+                    Kept.row(8, figure(people(crime.getNotHeld()), 22, crime.getNotHeld() >= .5
+                                    ? tone(need(all, CityNeeds.Kind.CELLS, null, null)) : Palette.TEXT_HEAD),
+                            words("caught, not held", Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
+                    supplyBar(cells[1], bm.getSafetyCapacity(SafetyType.PRISON), cells[0], Palette.PEOPLE, "needed",
+                            null, people(cells[0]) + " staffed cells of " + people(bm.getSafetyCapacity(SafetyType.PRISON))
+                            + " built · " + people(cells[1]) + " needed: six months of the caught", 0, 8),
+                    words(people(crime.prisoners()) + " in prison · " + people(cells[0]) + " staffed cells · "
+                            + people(cells[1]) + " needed", Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
+                    footDoors("Prisons", BuildAdvice.Measure.of(BuildAdvice.Kind.CELLS)));
+            return doorCard(c, () -> open("Safety", "Prisons"), "The prisons: click for their page.");
+        }), 1, 0);
+        three.add(Kept.scope("did", () -> card(cardHead(Icons.ALERT, "What it did", STOLEN_INFO, null),
                 didLine("violent", String.format("%,.1f", crime.getViolent()), String.format("%.2f%% of the city injured, off work", crime.getInjuredShare() * 100)),
                 didLine("killed", String.format("%,.2f", crime.getKilled()), "next month's deaths among the adults"),
                 didLine("property", String.format("%,.1f", crime.getProperty()),
                         money(crime.getStolenFromHouseholds()) + " from households · " + money(crime.getStolenFromBusinesses()) + " from businesses"),
                 words("Since the founding: " + people(crime.getEverCrimes()) + " crimes, " + people(crime.getEverKilled())
-                        + " killed, " + money(crime.getEverStolen()) + " stolen", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        three.add(did, 2, 0);
+                        + " killed, " + money(crime.getEverStolen()) + " stolen", Palette.SIZE_CAPTION, Palette.TEXT_MUTED))), 2, 0);
         page.getChildren().add(three);
-        page.getChildren().add(details("safety:causes", "the reasons as a table", causesTable()));
+        page.getChildren().add(details("safety:causes", "the reasons as a table", () -> new Node[] {causesTable()}));
     }
 
     /** A card's two doors: its page, and Build on its ring. */
     HBox footDoors(String pageName, BuildAdvice.Measure m) {
-        Region push = new Region();
+        Region push = Kept.region();
         HBox.setHgrow(push, Priority.ALWAYS);
-        HBox foot = new HBox(Palette.GAP, door("details", Palette.ACCENT, () -> open("Safety", pageName)), push, buildFor(m));
+        HBox foot = Kept.row(Palette.GAP, door("details", Palette.ACCENT, () -> open("Safety", pageName)), push, buildFor(m));
         foot.setAlignment(Pos.CENTER_LEFT);
         return foot;
     }
 
     /** One line of what the crime did: a count, its name, and a smaller line. */
     static VBox didLine(String name, String value, String line) {
-        HBox top = new HBox(6, figure(value, Palette.SIZE_SECTION, Palette.TEXT_HEAD), words(name, Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        HBox top = Kept.row(6, figure(value, Palette.SIZE_SECTION, Palette.TEXT_HEAD), words(name, Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         top.setAlignment(Pos.BASELINE_LEFT);
-        return new VBox(0, top, words(line, Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        return Kept.column(0, top, words(line, Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
     }
 
     /** The causes' (i). */
@@ -2739,11 +2876,15 @@ final class ServicesScreen {
             double adults = cause.isGroup() ? crime.getPressure(cause) / cause.weight() : crime.getAdultsAtLiberty();
             double weight = cause.isGroup() ? cause.weight() : cause.weight() * (1 - crime.getCoverage());
             if (adults < .5 && crimes < .05) continue;
-            from.add(gridCell(cause.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            from.add(gridCell(people(adults), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, line);
-            from.add(gridCell(String.format("%.2f", weight), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
-            from.add(gridCell(String.format("%,.1f", crimes),
-                    cause == Crime.Cause.NO_CAUSE ? Palette.TEXT_MUTED : Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
+            // Kept (KP2): a reason that drops out of the table takes its own four cells with it.
+            final int at = line;
+            Kept.scope(cause, () -> {
+                from.add(gridCell(cause.label(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                from.add(gridCell(people(adults), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, at);
+                from.add(gridCell(String.format("%.2f", weight), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, at);
+                from.add(gridCell(String.format("%,.1f", crimes),
+                        cause == Crime.Cause.NO_CAUSE ? Palette.TEXT_MUTED : Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, at);
+            });
             line++;
         }
         return column(from, statementNote(CAUSES_INFO));
@@ -2757,38 +2898,41 @@ final class ServicesScreen {
         double without = crime.crimesWithoutPolice();
         double[] police = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.of(BuildAdvice.Kind.POLICE), java.util.Map.of());
 
-        page.getChildren().add(sectionHead("WHAT THE POLICE TAKE OFF", null,
-                hint(without > 0 ? pct(1 - crime.getCrimes() / without) + " of the crime the reasons make" : "")));
+        page.getChildren().add(Kept.scope("take off head", () -> sectionHead("WHAT THE POLICE TAKE OFF", null,
+                hint(without > 0 ? pct(1 - crime.getCrimes() / without) + " of the crime the reasons make" : ""))));
         double scale = Math.max(without, crime.getCrimes());
-        VBox bars = new VBox(6, crimeRow("with no police at all", without, scale, Palette.RAMP_REST),
-                crimeRow("with these police", crime.getCrimes(), scale, Palette.PEOPLE),
-                words(String.format("caught and sentenced: %,.1f (%.1f%% of crimes)", crime.getCaught(),
-                        100 * Crime.caughtShare(crime.getCoverage())), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        page.getChildren().add(card(bars));
+        page.getChildren().add(Kept.scope("take off", () -> {
+            VBox bars = Kept.column(6, crimeRow("with no police at all", without, scale, Palette.RAMP_REST),
+                    crimeRow("with these police", crime.getCrimes(), scale, Palette.PEOPLE),
+                    words(String.format("caught and sentenced: %,.1f (%.1f%% of crimes)", crime.getCaught(),
+                            100 * Crime.caughtShare(crime.getCoverage())), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            return card(bars);
+        }));
 
-        page.getChildren().add(sectionHead("THE OFFICERS", OFFICERS_INFO.apply(crime), hint(pct(crime.getCoverage()) + " of full cover")));
-        page.getChildren().add(card(supplyBar(police[1], bm.getSafetyCapacity(SafetyType.POLICE), police[0], Palette.PEOPLE,
+        page.getChildren().add(Kept.scope("officers head", () -> sectionHead("THE OFFICERS", OFFICERS_INFO.apply(crime),
+                hint(pct(crime.getCoverage()) + " of full cover"))));
+        page.getChildren().add(Kept.scope("officers", () -> card(supplyBar(police[1], bm.getSafetyCapacity(SafetyType.POLICE), police[0], Palette.PEOPLE,
                         "full cover", null, null, 0, 12),
                 words(people(police[0]) + " on shift · " + people(bm.getSafetyCapacity(SafetyType.POLICE))
                         + " the stations hold · " + people(police[1]) + " for full cover", Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
-                buildFor(BuildAdvice.Measure.of(BuildAdvice.Kind.POLICE))));
+                buildFor(BuildAdvice.Measure.of(BuildAdvice.Kind.POLICE)))));
 
         BuildingsTemplate station = bm.getTemplateByName("Police Station");
         if (station != null && population > 0) {
             double more = Crime.coverageOf(crime.getOfficers() + station.getCapacity(), population);
-            page.getChildren().add(infoLine(String.format("One more police station: coverage %.0f%% → %.0f%%, crimes a month %,.1f → %,.1f",
+            page.getChildren().add(Kept.scope("one more", () -> infoLine(String.format("One more police station: coverage %.0f%% → %.0f%%, crimes a month %,.1f → %,.1f",
                             crime.getCoverage() * 100, more * 100, crime.getCrimes(), crime.crimesAt(more)),
                     "Past full coverage another station adds nothing: the rest of the crime is the city's reasons.",
-                    false, Palette.SIZE_BODY, Palette.TEXT_HEAD, 900));
+                    false, Palette.SIZE_BODY, Palette.TEXT_HEAD, 900)));
         }
-        page.getChildren().add(details("safety:police", "the police as a statement", column(
+        page.getChildren().add(details("safety:police", "the police as a statement", () -> new Node[] {column(
                 statementLine("Officers the buildings hold", people(bm.getSafetyCapacity(SafetyType.POLICE))),
                 statementLine("...on shift, with the staff the city has", people(crime.getOfficers())),
                 statementLine("Full coverage for this city", people(police[1])),
                 statementTotal("Coverage", pct(crime.getCoverage()), null),
                 statementLine("Crimes with no police at all", String.format("%,.1f", without)),
                 statementLine("Crimes with these police", String.format("%,.1f", crime.getCrimes())),
-                statementTotal("Taken off", without > 0 ? pct(1 - crime.getCrimes() / without) : "—", null))));
+                statementTotal("Taken off", without > 0 ? pct(1 - crime.getCrimes() / without) : "—", null))}));
     }
 
     /** One of the police page's two bars: its name, the bar on the shared scale, the crimes a month. */
@@ -2798,7 +2942,7 @@ final class ServicesScreen {
         n.setPrefWidth(150);
         SegmentBar bar = segmentBar(List.of(Segment.of(crimes, colour)), scale > 0 ? scale : 1, List.of(), 0, 16);
         HBox.setHgrow(bar, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP, n, bar, figure(String.format("%,.1f", crimes) + " a month", Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        HBox row = Kept.row(Palette.GAP, n, bar, figure(String.format("%,.1f", crimes) + " a month", Palette.SIZE_BODY, Palette.TEXT_HEAD));
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -2809,42 +2953,47 @@ final class ServicesScreen {
         BuildingManager bm = ui.game.getBuildingManager();
         double[] cells = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.of(BuildAdvice.Kind.CELLS), java.util.Map.of());
 
-        page.getChildren().add(sectionHead("CAN THE CITY HOLD WHO THE POLICE CATCH", CAUGHT_INFO,
+        page.getChildren().add(Kept.scope("hold head", () -> sectionHead("CAN THE CITY HOLD WHO THE POLICE CATCH", CAUGHT_INFO,
                 hint(people(crime.prisoners()) + " in prison · " + people(crime.getPrisonersPer100k())
-                        + " per 100,000 · Canada holds about " + people(Crime.CANADA_PRISONERS_PER_100K))));
-        page.getChildren().add(card(supplyBar(cells[1], bm.getSafetyCapacity(SafetyType.PRISON), cells[0], Palette.PEOPLE,
+                        + " per 100,000 · Canada holds about " + people(Crime.CANADA_PRISONERS_PER_100K)))));
+        page.getChildren().add(Kept.scope("hold", () -> card(supplyBar(cells[1], bm.getSafetyCapacity(SafetyType.PRISON), cells[0], Palette.PEOPLE,
                         "needed", null, null, 0, 12),
                 words(people(cells[0]) + " staffed cells of " + people(bm.getSafetyCapacity(SafetyType.PRISON)) + " built · "
                         + people(cells[1]) + " needed: six months of the caught", Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
-                buildFor(BuildAdvice.Measure.of(BuildAdvice.Kind.CELLS))));
+                buildFor(BuildAdvice.Measure.of(BuildAdvice.Kind.CELLS)))));
 
-        page.getChildren().add(sectionHead("BY MONTHS SERVED", null, hint("the newest at the left; each month they move one along")));
-        double[] months = new double[Crime.SENTENCE_MONTHS];
-        for (int m = 0; m < months.length; m++) months[m] = crime.cohort(m);
-        page.getChildren().add(card(cohortBars(months, 0, 90, Palette.PEOPLE, -1, null, null, "went in this month",
-                "out next month", v -> String.format("%,.1f", v), m -> m == 0 ? "went in this month" : "month " + (m + 1))));
+        page.getChildren().add(Kept.scope("months head", () -> sectionHead("BY MONTHS SERVED", null,
+                hint("the newest at the left; each month they move one along"))));
+        page.getChildren().add(Kept.scope("months", () -> {
+            double[] months = new double[Crime.SENTENCE_MONTHS];
+            for (int m = 0; m < months.length; m++) months[m] = crime.cohort(m);
+            return card(cohortBars(months, 0, 90, Palette.PEOPLE, -1, null, null, "went in this month",
+                    "out next month", v -> String.format("%,.1f", v), m -> m == 0 ? "went in this month" : "month " + (m + 1)));
+        }));
 
-        page.getChildren().add(infoLine(String.format("This month: %,.1f caught · %,.1f sent down · %,.1f caught and not held · "
+        page.getChildren().add(Kept.scope("this month", () -> infoLine(String.format("This month: %,.1f caught · %,.1f sent down · %,.1f caught and not held · "
                         + "%,.1f released, sentence served", crime.getCaught(), crime.getAdmitted(), crime.getNotHeld(), crime.getReleased())
                         + (crime.getReleasedEarly() > .05 ? String.format(" · %,.1f released early, no staffed cell", crime.getReleasedEarly()) : ""),
-                CAUGHT_INFO, false, Palette.SIZE_BODY, Palette.TEXT_HEAD, 1000));
+                CAUGHT_INFO, false, Palette.SIZE_BODY, Palette.TEXT_HEAD, 1000)));
         PrisonerHousehold ledger = ui.game.getHouseholdBalance().prisoners();
-        page.getChildren().add(infoLine("The prisoners' ledger: " + money(ledger.totalSavings()) + " of savings held · "
+        page.getChildren().add(Kept.scope("ledger", () -> infoLine("The prisoners' ledger: " + money(ledger.totalSavings()) + " of savings held · "
                         + money(ledger.totalDebt()) + " of debt, frozen",
                 "A prisoner's money waits for them: no interest runs on the debt, nothing is"
-                + " invested, and it goes back out with them.", false, Palette.SIZE_BODY, Palette.TEXT_LABEL, 900));
-        javafx.scene.layout.GridPane ring = grid(new double[] {120, 90}, rightAfterFirst(2));
-        gridHead(ring, "month", "prisoners");
-        for (int m = 0; m < Crime.SENTENCE_MONTHS; m++) {
-            ring.add(gridCell(m == 0 ? "went in this month" : "month " + (m + 1), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, m + 1);
-            ring.add(gridCell(String.format("%,.1f", crime.cohort(m)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, m + 1);
-        }
-        page.getChildren().add(details("safety:prisons", "the prisons as a statement", column(
-                statementLine("Cells the buildings hold", people(bm.getSafetyCapacity(SafetyType.PRISON))),
-                statementLine("...staffed", people(crime.getCells())),
-                statementTotal("In prison", people(crime.prisoners()), null),
-                statementNote(String.format("%s per 100,000 people. Canada holds about %s.",
-                        people(crime.getPrisonersPer100k()), people(Crime.CANADA_PRISONERS_PER_100K)))), ring));
+                + " invested, and it goes back out with them.", false, Palette.SIZE_BODY, Palette.TEXT_LABEL, 900)));
+        page.getChildren().add(details("safety:prisons", "the prisons as a statement", () -> {
+            javafx.scene.layout.GridPane ring = grid(new double[] {120, 90}, rightAfterFirst(2));
+            gridHead(ring, "month", "prisoners");
+            for (int m = 0; m < Crime.SENTENCE_MONTHS; m++) {
+                ring.add(gridCell(m == 0 ? "went in this month" : "month " + (m + 1), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, m + 1);
+                ring.add(gridCell(String.format("%,.1f", crime.cohort(m)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, m + 1);
+            }
+            return new Node[] {column(
+                    statementLine("Cells the buildings hold", people(bm.getSafetyCapacity(SafetyType.PRISON))),
+                    statementLine("...staffed", people(crime.getCells())),
+                    statementTotal("In prison", people(crime.prisoners()), null),
+                    statementNote(String.format("%s per 100,000 people. Canada holds about %s.",
+                            people(crime.getPrisonersPer100k()), people(Crime.CANADA_PRISONERS_PER_100K)))), ring};
+        }));
     }
 
     /* =====================================================================
@@ -2876,21 +3025,21 @@ final class ServicesScreen {
 
     void healthBooksPage(VBox page) {
         Healthcare service = ui.game.getHealthcare();
-        page.getChildren().add(sectionHead("WHAT CARE COSTS, AND WHAT COMES BACK", null,
-                hint("fees cover " + pct(service.getCostRecovery()) + " of it")));
-        page.getChildren().add(moneyBars("it costs",
+        page.getChildren().add(Kept.scope("cost head", () -> sectionHead("WHAT CARE COSTS, AND WHAT COMES BACK", null,
+                hint("fees cover " + pct(service.getCostRecovery()) + " of it"))));
+        page.getChildren().add(Kept.scope("cost", () -> moneyBars("it costs",
                 List.of(new Slice("wages", service.getPayroll(), Palette.MONEY),
                         new Slice("buildings", service.getUpkeep(), Palette.MONEY_LIGHT)),
                 "fees back",
                 List.of(new Slice("treatment fees", service.getTreatmentFees(), Palette.PEOPLE),
                         new Slice("funeral fees", service.getFuneralFees(), Palette.PEOPLE_LIGHT)),
                 bottomLine(tightMoney(toDollars(-service.getNetCost())), "net cost to the city a month",
-                        pct(service.getCostRecovery()) + " comes back in fees", Palette.TEXT_HEAD)));
-        page.getChildren().add(infoLine(service.getPricedOutTotal() > 0
+                        pct(service.getCostRecovery()) + " comes back in fees", Palette.TEXT_HEAD))));
+        page.getChildren().add(Kept.scope("priced out", () -> infoLine(service.getPricedOutTotal() > 0
                         ? people(service.getPricedOutTotal()) + " priced out of care this month"
                         : "nobody priced out of care this month", pricedOutWords(), false,
-                Palette.SIZE_BODY, Palette.TEXT_HEAD, 900));
-        page.getChildren().add(details("books:health", "every line and table", healthBooksStatement()));
+                Palette.SIZE_BODY, Palette.TEXT_HEAD, 900)));
+        page.getChildren().add(details("books:health", "every line and table", () -> new Node[] {healthBooksStatement()}));
     }
 
     /** ...and who the price turned away (2026-09-19): the dial is on the Policy tab's Health page; this line says what it did. */
@@ -2950,9 +3099,9 @@ final class ServicesScreen {
                 Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
         column.getChildren().add(earns);
         if (!measured) {
-            column.getChildren().add(statementNote("This city was loaded and no month has run since: who was "
+            column.getChildren().add(Kept.scope("not measured", () -> statementNote("This city was loaded and no month has run since: who was "
                     + "treated is counted when a month runs, so \"seen\" and \"raised\" wait for it. The month's "
-                    + "treatment fees below were kept by the save."));
+                    + "treatment fees below were kept by the save.")));
         }
 
         column.getChildren().add(bookRow("Treatment fees", service.getTreatmentFees(), null));
@@ -2988,12 +3137,16 @@ final class ServicesScreen {
                     : care == CareType.CREMATION ? service.getCremations() * service.feeNow(care)
                     : service.feesFrom(care);
             double net = pay + keep - back;
-            split.add(gridCell(care.getLabel(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            split.add(gridCell(people(bm.getCareCapacity(care)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, line);
-            split.add(gridCell(tightMoney(toDollars(pay)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 2, line);
-            split.add(gridCell(tightMoney(toDollars(keep)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
-            split.add(gridCell(measured || care == CareType.BURIAL || care == CareType.CREMATION
-                    ? tightMoney(toDollars(-net)) : "—", Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 4, line);
+            // Kept (KP2): a kind of care that drops out of the table takes its own cells with it.
+            final int at = line;
+            Kept.scope(care, () -> {
+                split.add(gridCell(care.getLabel(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                split.add(gridCell(people(bm.getCareCapacity(care)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, at);
+                split.add(gridCell(tightMoney(toDollars(pay)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 2, at);
+                split.add(gridCell(tightMoney(toDollars(keep)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, at);
+                split.add(gridCell(measured || care == CareType.BURIAL || care == CareType.CREMATION
+                        ? tightMoney(toDollars(-net)) : "—", Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 4, at);
+            });
             line++;
         }
         column.getChildren().add(split);
@@ -3010,12 +3163,12 @@ final class ServicesScreen {
          */
         double gap = service.getGrossCost() - namedCost;
         if (Math.abs(toDollars(gap)) > 1) {
-            column.getChildren().add(statementLine("Not in the table above", tightMoney(toDollars(gap), false), Palette.TEXT_MUTED));
-            column.getChildren().add(statementNote(
+            column.getChildren().add(Kept.scope("gap", () -> statementLine("Not in the table above", tightMoney(toDollars(gap), false), Palette.TEXT_MUTED)));
+            column.getChildren().add(Kept.scope("gap note", () -> statementNote(
                     "Healthcare buildings that provide no care type of their own, and the "
                     + "doctor, nursery, almshouse and churchyard the city was founded with "
                     + "— those have capacity and no payroll, which is why the coverage "
-                    + "pages count them and this table does not."));
+                    + "pages count them and this table does not.")));
         }
         return column;
     }
@@ -3024,23 +3177,23 @@ final class ServicesScreen {
 
     void educationBooksPage(VBox page) {
         Education schools = ui.game.getEducation();
-        page.getChildren().add(sectionHead("WHAT THE SCHOOLS COST, AND WHO PAYS THE TUITION", null,
-                hint("the subsidy dial is at " + pct(schools.getTuitionSubsidy()))));
-        page.getChildren().add(moneyBars("they cost",
+        page.getChildren().add(Kept.scope("cost head", () -> sectionHead("WHAT THE SCHOOLS COST, AND WHO PAYS THE TUITION", null,
+                hint("the subsidy dial is at " + pct(schools.getTuitionSubsidy())))));
+        page.getChildren().add(Kept.scope("cost", () -> moneyBars("they cost",
                 List.of(new Slice("teachers", schools.getPayroll(), Palette.MONEY),
                         new Slice("buildings", schools.getUpkeep(), Palette.MONEY_LIGHT)),
                 "tuition billed",
                 List.of(new Slice("households paid", schools.getFees(), Palette.PEOPLE),
                         new Slice("the city forgave", schools.getSubsidy(), Palette.RAMP_REST)),
                 bottomLine(tightMoney(toDollars(-schools.getNetCost())), "net cost to the city a month",
-                        pct(schools.getCostRecovery()) + " comes back in tuition", Palette.TEXT_HEAD)));
-        page.getChildren().add(infoLine("What the city forgave is tuition it did not charge, not a cost: "
+                        pct(schools.getCostRecovery()) + " comes back in tuition", Palette.TEXT_HEAD))));
+        page.getChildren().add(Kept.scope("forgave", () -> infoLine("What the city forgave is tuition it did not charge, not a cost: "
                         + money(schools.getSubsidy()) + " this month",
                 "The schools ARE the city, so the subsidy is the city declining to bill itself - forgone revenue, "
                 + "not a second cheque. It is not in the cost (Education.getGrossCost() is staff and buildings); a "
                 + "higher subsidy means less tuition collected, so the city recovers less of the same cost.",
-                false, Palette.SIZE_BODY, Palette.TEXT_LABEL, 900));
-        page.getChildren().add(details("books:education", "every line and table", educationBooksStatement()));
+                false, Palette.SIZE_BODY, Palette.TEXT_LABEL, 900)));
+        page.getChildren().add(details("books:education", "every line and table", () -> new Node[] {educationBooksStatement()}));
     }
 
     /**
@@ -3069,15 +3222,19 @@ final class ServicesScreen {
             if (students < .5) continue;
             double charge = schools.feeFor(course) * students;
             billed += charge;
-            fees.add(gridCell(course.getLabel(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            fees.add(gridCell(people(students), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, line);
-            fees.add(gridCell(cash(schools.feeFor(course)), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, line);
-            fees.add(gridCell(tightMoney(toDollars(charge * (1 - subsidy))), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
-            fees.add(gridCell(tightMoney(toDollars(charge * subsidy)), Palette.ACCENT, Palette.SIZE_CAPTION, true), 4, line);
+            // Kept (KP2): a course that empties takes its own cells with it.
+            final int at = line;
+            Kept.scope("fees " + course, () -> {
+                fees.add(gridCell(course.getLabel(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                fees.add(gridCell(people(students), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, at);
+                fees.add(gridCell(cash(schools.feeFor(course)), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, at);
+                fees.add(gridCell(tightMoney(toDollars(charge * (1 - subsidy))), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, at);
+                fees.add(gridCell(tightMoney(toDollars(charge * subsidy)), Palette.ACCENT, Palette.SIZE_CAPTION, true), 4, at);
+            });
             line++;
         }
         if (line == 1) {
-            column.getChildren().add(sentence("Nobody is in a classroom this month, so nothing was billed.", Palette.TEXT_MUTED));
+            column.getChildren().add(Kept.scope("nobody", () -> sentence("Nobody is in a classroom this month, so nothing was billed.", Palette.TEXT_MUTED)));
         } else {
             column.getChildren().add(fees);
         }
@@ -3109,11 +3266,14 @@ final class ServicesScreen {
             if (pay <= 0 && keep <= 0) continue;
             double back = schools.feeFor(course) * schools.getEnrolled(course) * (1 - subsidy);
             double net = pay + keep - back;
-            split.add(gridCell(course.getLabel(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
-            split.add(gridCell(people(bm.getBuiltEducationPlaces()[course.ordinal()]), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, line);
-            split.add(gridCell(tightMoney(toDollars(pay)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 2, line);
-            split.add(gridCell(tightMoney(toDollars(keep)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
-            split.add(gridCell(tightMoney(toDollars(-net)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 4, line);
+            final int at = line;
+            Kept.scope("split " + course, () -> {
+                split.add(gridCell(course.getLabel(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, at);
+                split.add(gridCell(people(bm.getBuiltEducationPlaces()[course.ordinal()]), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 1, at);
+                split.add(gridCell(tightMoney(toDollars(pay)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 2, at);
+                split.add(gridCell(tightMoney(toDollars(keep)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, at);
+                split.add(gridCell(tightMoney(toDollars(-net)), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 4, at);
+            });
             line++;
         }
         if (line > 1) column.getChildren().add(split);
@@ -3133,26 +3293,26 @@ final class ServicesScreen {
         double net = ui.game.getServicesManager().getServiceNetIncome();
         double roadUpkeep = roadUpkeep();
 
-        page.getChildren().add(sectionHead("DO THE PLANTS PAY FOR THEMSELVES", null,
-                hint("the city's own plants: what they sell less their wages is the city's")));
-        page.getChildren().add(moneyBars("power: sales",
+        page.getChildren().add(Kept.scope("plants head", () -> sectionHead("DO THE PLANTS PAY FOR THEMSELVES", null,
+                hint("the city's own plants: what they sell less their wages is the city's"))));
+        page.getChildren().add(Kept.scope("power", () -> moneyBars("power: sales",
                 List.of(new Slice("power sales", elecSales, Palette.PEOPLE)),
                 "power: wages",
                 List.of(new Slice("power wages", elecPay, Palette.MONEY)),
                 bottomLine(tightMoney(toDollars(elecSales - elecPay)), "power's net income",
                         power(uh.getBilledElectricityDraw()) + " billed, " + pct(billedShare(uh.getBilledElectricityDraw(), uh.getConsumption())) + " of the draw",
-                        Palette.TEXT_HEAD)));
-        page.getChildren().add(moneyBars("water: sales",
+                        Palette.TEXT_HEAD))));
+        page.getChildren().add(Kept.scope("water", () -> moneyBars("water: sales",
                 List.of(new Slice("water sales", waterSales, Palette.PEOPLE)),
                 "water: wages",
                 List.of(new Slice("water wages", waterPay, Palette.MONEY)),
                 bottomLine(tightMoney(toDollars(waterSales - waterPay)), "water's net income",
                         pct(billedShare(uh.getBilledWaterDraw(), uh.getWaterConsumption())) + " of it billed",
-                        Palette.TEXT_HEAD)));
-        page.getChildren().add(new HBox(24,
+                        Palette.TEXT_HEAD))));
+        page.getChildren().add(Kept.scope("both", () -> Kept.row(24,
                 bottomLine(tightMoney(toDollars(net)), "both together, a month", "staff turnout " + pct(uh.getAverageUtilityFill()), Palette.TEXT_HEAD),
-                bottomLine(tightMoney(toDollars(-roadUpkeep)), "the roads' upkeep, a month", "nobody is tolled", Palette.TEXT_HEAD)));
-        page.getChildren().add(details("books:utilities", "every line", utilityBooksStatement()));
+                bottomLine(tightMoney(toDollars(-roadUpkeep)), "the roads' upkeep, a month", "nobody is tolled", Palette.TEXT_HEAD))));
+        page.getChildren().add(details("books:utilities", "every line", () -> new Node[] {utilityBooksStatement()}));
     }
 
     /**
@@ -3247,33 +3407,33 @@ final class ServicesScreen {
         double prisonPay = bm.getSafetyPayroll(SafetyType.PRISON, wages, staffing);
         double prisonKeep = bm.getSafetyUpkeep(SafetyType.PRISON);
 
-        page.getChildren().add(sectionHead("WHAT SAFETY COSTS", null, hint("no fees: the city pays all of it")));
-        page.getChildren().add(moneyBars("the police",
+        page.getChildren().add(Kept.scope("cost head", () -> sectionHead("WHAT SAFETY COSTS", null, hint("no fees: the city pays all of it"))));
+        page.getChildren().add(Kept.scope("cost", () -> moneyBars("the police",
                 List.of(new Slice("police wages", policePay, Palette.MONEY),
                         new Slice("police buildings", policeKeep, Palette.MONEY_LIGHT)),
                 "the prisons",
                 List.of(new Slice("prison wages", prisonPay, Palette.PEOPLE),
                         new Slice("prison upkeep, food included", prisonKeep, Palette.PEOPLE_LIGHT)),
                 bottomLine(tightMoney(toDollars(-crime.getGrossCost())), "cost to the city a month", perHead(crime,
-                        policePay + policeKeep, prisonPay + prisonKeep), Palette.TEXT_HEAD)));
-        page.getChildren().add(infoLine("Crime took " + money(crime.getStolenFromHouseholds()) + " from households and "
+                        policePay + policeKeep, prisonPay + prisonKeep), Palette.TEXT_HEAD))));
+        page.getChildren().add(Kept.scope("stolen", () -> infoLine("Crime took " + money(crime.getStolenFromHouseholds()) + " from households and "
                         + money(crime.getStolenFromBusinesses()) + " from businesses this month",
                 "A theft moves money; it does not destroy it. What the businesses lose shows on"
-                + " their cash flow as its own line.", false, Palette.SIZE_BODY, Palette.TEXT_LABEL, 900));
-        page.getChildren().add(details("books:safety", "every line", column(
+                + " their cash flow as its own line.", false, Palette.SIZE_BODY, Palette.TEXT_LABEL, 900)));
+        page.getChildren().add(details("books:safety", "every line", () -> new Node[] {column(
                 statementHead("What it costs"),
                 bookRow("Police wages", -policePay, null),
                 bookRow("Police buildings", -policeKeep, null),
                 bookRow("Prison wages", -prisonPay, null),
                 bookRow("Prison upkeep, food included", -prisonKeep, null),
                 statementTotal("Cost to the city", tightMoney(toDollars(-crime.getGrossCost()), false), null),
-                crime.getOfficers() > 0 ? statementNote(perHead(crime, policePay + policeKeep, prisonPay + prisonKeep) + ".") : null,
+                crime.getOfficers() > 0 ? Kept.scope("per head", () -> statementNote(perHead(crime, policePay + policeKeep, prisonPay + prisonKeep) + ".")) : null,
                 statementHead("What crime cost the city's people"),
                 bookRow("Stolen from households", -crime.getStolenFromHouseholds(), null),
                 bookRow("Stolen from businesses", -crime.getStolenFromBusinesses(), null),
                 bookRow("...handed to the offenders' households", crime.getStolen(), null),
                 statementNote("A theft moves money; it does not destroy it. What the businesses lose shows on"
-                        + " their cash flow as its own line."))));
+                        + " their cash flow as its own line."))}));
     }
 
     /** "$X an officer on shift a year, and $Y a prisoner a year" - the officers past the founding constabulary, which costs nothing. */
