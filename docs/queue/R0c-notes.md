@@ -114,7 +114,11 @@ Queued as PD1.
 
 ## 4. Checks
 
-`--pick`: below. The default playtest (2,405 months) on R0c's tip against
+`--pick` on 754f3a25 (46 harnesses and LongPlaytest, against R0b's tip):
+exit 4, MapCheck alone, its section 2h's seven lines ("its reserve is laid in
+a month (-1)", 0 plots) - R0b-M word for word, DM2's, passed by name at R0b's
+gate and NEW here only while R0b is not on main; R0c's diff touches no map
+code, and at its shares of 0 no figure of the month. The default playtest (2,405 months) on R0c's tip against
 R0b's tip: byte-identical but for "in 65s/66s" and the layout windows' "1.7
 s/2.1 s" (both runs on the PC, 01:36 and 01:55).
 
