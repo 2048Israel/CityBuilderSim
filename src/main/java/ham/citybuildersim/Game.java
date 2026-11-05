@@ -698,6 +698,10 @@ public class Game {
         autoSubsidy.clear();
         subsidyPaid.clear();
         economyManager.getTaxPolicy().reset();
+        // ...and the forms the last city's counts drove are forgotten (R1b), before the policy says the month: this Game's EquipmentForms outlives
+        // buildWorld() (the field is final), and a city founded or loaded into a Game that played another city with counts must start as one in a
+        // fresh process does, setting no share to 0 that it never drove.
+        equipmentForms.clear();
         // ...and the levers history has not opened yet are held at zero (R0): the city is in its first month.
         policyHearsTheMonth();
         economyManager.getSalesTaxLedger().reset();
@@ -800,6 +804,8 @@ public class Game {
         initialize();
         foundingBank();
         foundingYard();
+        // ...and, when the city is founded the 1900 way (R1b), every building the founding stood up without the equipment its template offers.
+        if (choices.isUnfitted()) unfitTheFounding();
 
         /*
          * A NEW GAME FOUNDS ON THE AUTOPILOT, AND ROLLS WHAT FALLS DUE (0.7.13).
@@ -1148,6 +1154,53 @@ public class Game {
 
     /** The 1900 forms' driver, for the harnesses that read which shares the counts hold (R1). */
     public EquipmentForms getEquipmentForms() { return equipmentForms; }
+
+    /* ===== THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6) =====
+     *
+     * R1 made a piece of equipment a count of the buildings still without it, empty in every played city: a building that finishes came
+     * fitted. A city founded the 1900 way (Founding.isUnfitted(), off by default until R1d) starts with every piece its buildings can carry
+     * unfitted, and a building that finishes in it comes with a piece only where the piece pays for a new building. A city founded the
+     * default way calls nothing here: every building finishes fitted, as it did. */
+
+    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): false for every city a player or a harness founds until R1d. */
+    public boolean foundedUnfitted() { return founding.isUnfitted(); }
+
+    /**
+     * Every building standing without every piece of equipment its template carries, and the forms set from it, so that the first month opens on
+     * them (R1b): on every stack, each piece's unfitted count is the stack. The tractor's too: a 1900 farm cannot have one before its discovery
+     * (its "since" is a catalogue code, NOT_KNOWN and never paying in this build), so its farms stay on horses. newGame() calls it after the
+     * buildings the founding stands up are placed (the bank, the yard: neither carries a piece, so today it sets nothing); package-private so that a
+     * harness, which places its village by hand after newGame() as the playtest does, can say it over that village.
+     */
+    void unfitTheFounding() {
+        for (BuildingsStacks stack : buildingManager.getStacksView()) {
+            for (Equipment piece : stack.getBuilding().getEquipment()) stack.setUnfitted(piece.getId(), stack.getQuantity());
+        }
+        equipmentForms.apply(this);
+    }
+
+    /**
+     * What a new building comes with (R1b; research-design 2.2 step 6), at the finish and not at the order, so the order's cost stays the template's:
+     * in a city founded the 1900 way, each piece of equipment a finished building's template carries whose verdict for a new building is not PAYS
+     * (EquipmentFit.verdictForNew(): NOT_YET, or NOT_KNOWN like the tractor's always) is left off those buildings, and the stack's unfitted count of it
+     * rises by the number that finished. The pieces that pay come with them: the count is as it was. Nothing in a city founded the default way.
+     * Not hooked: a building placed without construction (buildStack(t, n, true), the harnesses' and the playtest's village), which comes as placed.
+     *
+     * Read from the month's own completions and not from the stacks' getLastFinished(), which keeps last month's number in a month that advances
+     * no site (BuildingManager.advanceConstruction() skips every stack when none is on site).
+     */
+    void fitWhatFinished(java.util.List<BuildingManager.Completion> finished) {
+        if (finished == null || !founding.isUnfitted()) return;
+        for (BuildingManager.Completion done : finished) {
+            BuildingsTemplate t = buildingManager.getTemplateByName(done.building);
+            BuildingsStacks stack = t == null || t.getEquipment().isEmpty() ? null : buildingManager.getStack(t);
+            if (stack == null || done.quantity <= 0) continue;
+            for (Equipment piece : t.getEquipment()) {
+                if (EquipmentFit.verdictForNew(this, t, piece).kind() == EquipmentFit.Kind.PAYS) continue;
+                stack.setUnfitted(piece.getId(), stack.getUnfitted(piece.getId()) + done.quantity);
+            }
+        }
+    }
 
     /**
      * The player's hand on the minimum-wage dial (R0): refused until the lever opens (1918 on history's dates), because the dial is also the

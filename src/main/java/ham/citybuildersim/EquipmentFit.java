@@ -23,7 +23,8 @@ import java.util.function.ToDoubleFunction;
  *   4. it passes the money gate as a building does: g is at least the interest hurdle on its WHOLE cost.
  *
  * Both of 3 and 4 must hold, and a gain of nothing never pays. The verdict (Verdict, Kind) is a record the screens print and R1b ranks;
- * nothing in Game's month calls any of this, and it books, buys and fits nothing (call 10). T is the piece's own life, not the lesser of that
+ * nothing in a played city's month calls any of this (since R1b only a city founded the 1900 way reads verdictForNew(), when a building opens:
+ * Game.fitWhatFinished()), and it books, buys and fits nothing (call 10). T is the piece's own life, not the lesser of that
  * and the building's remaining life, because a stack keeps no building's age (call 11).
  *
  * Two layers: a pure core (annuityFactor(), steamGain(), cartGain(), cost(), judge()) that takes its prices as arguments, so a harness can move
@@ -173,9 +174,22 @@ public final class EquipmentFit {
      * judged at a rate of 0. Reads, prices and books nothing; the month never calls it.
      */
     public static Verdict verdict(Game game, BuildingsStacks stack, Equipment piece) {
-        BuildingsTemplate t = stack.getBuilding();
+        return priced(game, stack.getBuilding(), piece, stack.getUnfitted(piece.getId()));
+    }
+
+    /**
+     * The verdict on a NEW building for a piece (R1b; research-design 2.2 step 6, "New buildings come with every piece that pays"): the same
+     * figures and the same judgement as verdict() for one building that lacks the piece whatever a stack holds, so FITTED never comes back,
+     * only NOT_KNOWN, PAYS or NOT_YET. Game.fitWhatFinished() reads it when a building opens in a city founded the 1900 way. Reads, prices and
+     * books nothing.
+     */
+    public static Verdict verdictForNew(Game game, BuildingsTemplate t, Equipment piece) {
+        return priced(game, t, piece, 1);
+    }
+
+    /** verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). */
+    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted) {
         int year = CityCalendar.yearOf(game.getMonth());
-        int unfitted = stack.getUnfitted(piece.getId());
         if (settled(piece, year, unfitted) != null) return judge(piece, t, year, unfitted, Double.NaN, Double.NaN, 0, 0);
 
         double gain = gainOf(game, t, piece);

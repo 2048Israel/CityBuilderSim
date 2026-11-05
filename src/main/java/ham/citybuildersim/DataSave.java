@@ -84,6 +84,13 @@ public class DataSave implements Cloneable {
     private String worldPath;
     private Long pathSeed;
 
+    /*
+     * ...AND WHETHER IT WAS FOUNDED THE 1900 WAY (R1b; Founding.isUnfitted()): written only for a city that was, so a city founded the default
+     * way writes no key and a save without one reads false (getFounding()). Boxed for that reason. No format bump: Gson leaves a missing key
+     * alone, and an older save was founded the default way.
+     */
+    private Boolean foundedUnfitted;
+
     //save variables
     private double cash;
     private int[] buildings;
@@ -673,6 +680,8 @@ public class DataSave implements Cloneable {
         // ...and the path of the world beyond the city (WN1).
         worldPath = f.getPath().name();
         pathSeed = f.getPathSeed();
+        // ...and the 1900 way (R1b): a key only where it is so.
+        foundedUnfitted = f.isUnfitted() ? Boolean.TRUE : null;
     }
 
     /**
@@ -716,6 +725,8 @@ public class DataSave implements Cloneable {
             }
         }
         f = f.withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED);
+        // The 1900 way (R1b): a save without the key was founded the default way.
+        if (Boolean.TRUE.equals(foundedUnfitted)) f = f.withUnfitted(true);
         return f;
     }
 

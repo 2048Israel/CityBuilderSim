@@ -68,7 +68,27 @@ public class SimulationEngine {
         // builders' points and left the sites none - see Game, THE FOREIGN CREWS.
         Game.ForeignOffer foreign = game.foreignCrewsOffer();
         // His points are in the month the sites take, and not on a rushed site's overtime (FC1b): his crews are not the city's.
-        game.recordCompletions(buildingManager.advanceConstruction(siteOutput + foreign.points(), foreign.points()));
+        java.util.List<BuildingManager.Completion> opened = buildingManager.advanceConstruction(siteOutput + foreign.points(), foreign.points());
+        game.recordCompletions(opened);
+        // ...and what the buildings that opened come with (R1b): in a city founded the 1900 way, only the equipment that pays for a new building;
+        // nothing in a city founded the default way, where every building opens fitted.
+        game.fitWhatFinished(opened);
+        /*
+         * ...AND THE 1900 FORMS AT REST (R1b; R1's stranger's review, 2026-11-05): the shares the counts set, said again now that the month has
+         * changed the counts' weights. The top of the month said them (Game.policyHearsTheMonth()) before the investment pass scrapped anything
+         * and before the sites finished a building, so a building that finished or was scrapped on a stack with buildings unfitted moved its
+         * sector's unfitted share after that, and a city rested in the gap between two presses in the month's TOP shares while a save written
+         * there, read back, sets them from the month's END counts (the load path). The twins then parted on the next press: its first
+         * statement, the auto-builder's pass, reads the shares. It follows the last change the month makes to a stack's quantity or its counts
+         * (the scrapping is above, in the investment pass; the sites, and what opened on them, just now), and it is here and not at the end of
+         * Game.nextMonth() because everything the month derives from the buildings and the shares
+         * (the road network, the posts, the sectors' grid draw, the city's power demand and the ratio it gives) is derived below, and the load
+         * re-derives all of it from the counts at rest (rebuildSimulationState()): said at the end of Game.nextMonth() instead, the unbroken
+         * city kept the power demand struck at the top's shares and the loaded one the demand at the end's (2,734 against 2,748 units in
+         * FittingCheck 1's town), and the next press parted, the treasury within two months. A city with no building unfitted that never
+         * had one calls nothing.
+         */
+        game.getEquipmentForms().apply(game);
         // ...and the material that work drew on, bought now, and the work
         // itself recognised on the same figure the sites advanced by. The
         // plant's sale, the builders' purchase and the builders' revenue are

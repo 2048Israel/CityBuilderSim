@@ -46,7 +46,8 @@ import java.util.TreeMap;
  *   6. THE COUNT FOLLOWS THE STACK: a count set above what stands is what stands; a scrapped building is an unfitted one first; a building
  *      finished (bought, increased, or built on site) leaves the count as it was
  *   7. THE SAVE: a city with none unfitted writes no key; a city with counts writes them by template id, and the one loaded from it has the
- *      same counts and, before any month is played, the shares the counts set, equal to the saved city's
+ *      same counts and, before any month is played, the shares the counts set, equal to the saved city's (no hand says the forms after the
+ *      saved city's month: the month does, after its sites advance, R1b), and one more month on each leaves the shares equal
  *
  * R1 slice B (EquipmentFit, research-design 2.2 steps 1 to 4: what a piece adds a month, what it costs, whether it pays over its life and
  * passes the money gate; each piece's verdict, read on demand, never in the month):
@@ -561,9 +562,9 @@ public class EquipmentCheck {
         stack(g, "Bakery").setUnfitted(DRIVE, 1);
         stack(g, "Industrial Bakery").setUnfitted(DRIVE, industrialSet);
         stack(g, "Grain Farm").setUnfitted(TRACTOR, grainSet);
+        // ...and the shares at rest are the counts' as the month ended on them: the month says the forms once more after its sites advance
+        // (SimulationEngine.simulateMonth(), R1b), so that the saved city's shares are its counts' and not the month's top's, with no hand to say it here.
         play(g, 1);
-        // ...and the forms said once more from the stacks as they stand now, so that the saved city's shares are its counts' and not the month's top's.
-        g.getEquipmentForms().apply(g);
         check("fixture: the counts stand after the month and the forms are up", anyUnfitted(g) && g.getSectors().industry().getSteamShare() > 0
                 && g.getSectors().agriculture().getHorseShare() > 0);
         Map<Integer, Map<String, Integer>> saved = g.getBuildingManager().getUnfittedById();
@@ -595,6 +596,15 @@ public class EquipmentCheck {
                 && back.getSectors().agriculture().getHorseShare() > 0);
         check("...with no other sector's steam set, nor Haulage's horses", maxSteamExcept(back, back.getSectors().industry().key()) == 0
                 && back.getSectors().freight().haulage().getHorseShare() == 0);
+        // ...and one more month on each (R1b): the saved city and the loaded one rest in the same shares after it, as before it.
+        play(g, 1);
+        play(back, 1);
+        check("one more month on the saved city and on the loaded one leaves the same steam share and the same horse shares",
+                back.getSectors().industry().getSteamShare() == g.getSectors().industry().getSteamShare()
+                        && back.getSectors().agriculture().getHorseShare() == g.getSectors().agriculture().getHorseShare()
+                        && back.getSectors().freight().haulage().getHorseShare() == g.getSectors().freight().haulage().getHorseShare(),
+                back.getSectors().industry().getSteamShare() + " vs " + g.getSectors().industry().getSteamShare() + " / "
+                        + back.getSectors().agriculture().getHorseShare() + " vs " + g.getSectors().agriculture().getHorseShare());
 
         // ...and the city that saved no key loads as every building fitted, the way an older save does (no format bump: Gson leaves the key alone).
         Game fitted = new Game(files);
