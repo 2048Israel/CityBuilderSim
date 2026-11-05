@@ -105,6 +105,12 @@ import java.nio.file.Files;
  *     months on the bank's split is where it began, the city's and the
  *     twin's figures the same (the gate's finding on BD1).
  *
+ * 14. A holder left within a hair of the face moved holds none (RT1): the desk's pro-rata take of the businesses' paper came out an ulp
+ *     short and left them 4.4e-16 of a piece at today's prices and none at the founding's, which firmBookRatio() read as paper worth
+ *     0.93 of face at one level and 1 at the other. Debt.moved() snaps a remainder within HOLDING_ROUNDING of the face moved to nothing,
+ *     in every holder's move and the buyback's; a part-sale's rest and a remainder ten times the floor are kept; and the floor is a
+ *     share of the face moved, so the founding's scale is the same.
+ *
  * Each fixture causes its condition rather than finding a city in it.
  *
  * @author Jerus
@@ -555,6 +561,7 @@ public class HoldersCheck {
         theWorld();
         theReopening();
         theDiscountReleased();
+        theHoldingFloor();
 
         assertTrue(String.format("every month this harness played closed the audit (%d)",
                 closedMonths + brokenMonths), brokenMonths == 0);
@@ -2138,5 +2145,71 @@ public class HoldersCheck {
         if (!apart.isEmpty()) out.println("   first figure apart: " + apart);
         assertTrue("the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,"
                 + " two months on", apart.isEmpty());
+    }
+
+    /* ================= 14. the rounding floor on a holder's face (RT1) ================= */
+
+    /** A piece of term paper by itself, sold to nobody: 1,000 of face, all of it the bank's, for the moves below to take from and give back to. */
+    static LongTermBond loosePiece() { return new LongTermBond(1_000, 120, 1, .05); }
+
+    static void theHoldingFloor() {
+        out.println("\n--- 14. a holder left within HOLDING_ROUNDING of the face moved holds none, and one left more holds it (RT1) ---");
+        // The businesses' holding and the desk's take as Game.desksBuysFirmPaper() struck them, pro rata: an ulp or two apart.
+        final double held = 1.9513822214670675, taken = 1.951382221467067;
+        final double hair = Math.max(0, held - taken);             // what the rule before RT1, Math.max(0, held + face), left them
+        out.printf("   the desk took %s of the businesses' %s: the old rule left them %.3g of face, the floor on a take that size is %.3g%n",
+                taken, held, hair, Debt.HOLDING_ROUNDING * taken);
+        LongTermBond piece = loosePiece();
+        piece.moveToHouseholds(200); piece.moveToCentralBank(100); piece.moveToWorld(50); piece.moveToFirms(held);
+        final double bankBefore = piece.bankPrincipal();
+        assertTrue("fixture: the businesses hold exactly the face the desk takes all but an ulp or two of", piece.firmPrincipal() == held);
+        assertTrue("fixture: the old rule would have left them a hair above nothing, and the hair is under the floor on the face moved",
+                hair > 0 && hair <= Debt.HOLDING_ROUNDING * taken);
+        piece.moveToFirms(-taken);
+        assertTrue("a sale meant to take all a holder holds, struck an ulp short, leaves it none", piece.firmPrincipal() == 0);
+        double principal = piece.getOustandingPrincipal();
+        double sum = piece.householdPrincipal() + piece.centralBankPrincipal() + piece.firmPrincipal() + piece.worldPrincipal() + piece.bankPrincipal();
+        assertTrue("...and the face it held is the bank's: the holders' faces and the bank's still add up to the piece, to a part in HOLDING_ROUNDING",
+                Math.abs(sum - principal) <= Debt.HOLDING_ROUNDING * principal
+                        && Math.abs((piece.bankPrincipal() - bankBefore) - held) <= Debt.HOLDING_ROUNDING * principal);
+
+        LongTermBond half = loosePiece();
+        half.moveToFirms(held);
+        half.moveToFirms(-held / 2);
+        assertTrue("a sale of part of a holding leaves the rest, exactly: not snapped", half.firmPrincipal() == held / 2);
+
+        // From above the floor a remainder is the holder's; both figures are built from the constant, not typed.
+        final double above = 10 * Debt.HOLDING_ROUNDING * taken, below = .5 * Debt.HOLDING_ROUNDING * taken;
+        LongTermBond kept = loosePiece(), snapped = loosePiece();
+        kept.moveToFirms(taken + above);
+        kept.moveToFirms(-taken);
+        snapped.moveToFirms(taken + below);
+        snapped.moveToFirms(-taken);
+        assertTrue("a remainder of ten times the floor stays: above nothing, and within an ulp of the " + above + " it was built as (the sum rounds)",
+                kept.firmPrincipal() > 0 && Math.abs(kept.firmPrincipal() - above) <= Math.ulp(taken));
+        assertTrue("...and one of half the floor, built the same way, is snapped to none", below > 0 && snapped.firmPrincipal() == 0);
+
+        // Every holder's move goes through the same rule, and so does the buyback's.
+        LongTermBond hh = loosePiece(), cb = loosePiece(), world = loosePiece(), bought = loosePiece();
+        hh.moveToHouseholds(held);    hh.moveToHouseholds(-taken);
+        cb.moveToCentralBank(held);   cb.moveToCentralBank(-taken);
+        world.moveToWorld(held);      world.moveToWorld(-taken);
+        bought.moveToFirms(held);     bought.retirePart(0, 0, taken, 0);
+        assertTrue("the same holds for the households", hh.householdPrincipal() == 0);
+        assertTrue("...and the central bank", cb.centralBankPrincipal() == 0);
+        assertTrue("...and the world", world.worldPrincipal() == 0);
+        assertTrue("...and for a buyback that takes the businesses' paper by the same ulp-short face (retirePart)", bought.firmPrincipal() == 0);
+
+        // At the founding's price level the same sale is FACTOR times the figure, and the floor is a share of the face moved.
+        final double heldF = held * PriceLevel.FACTOR, takenF = taken * PriceLevel.FACTOR, aboveF = 10 * Debt.HOLDING_ROUNDING * takenF;
+        LongTermBond founding = new LongTermBond(1_000 * PriceLevel.FACTOR, 120, 1, .05);
+        founding.moveToFirms(heldF);
+        assertTrue("fixture: scaled by the founding's FACTOR the old rule still leaves a hair above nothing", Math.max(0, heldF - takenF) > 0);
+        founding.moveToFirms(-takenF);
+        assertTrue("at the founding's price level as at today's, the ulp-short sale leaves the businesses none: the floor is a share of the face moved",
+                founding.firmPrincipal() == 0);
+        assertTrue("fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped",
+                aboveF < Debt.HOLDING_ROUNDING);
+        assertTrue("...yet it stays, because the floor is a share of the face moved", Debt.moved(takenF + aboveF, -takenF) > 0);
     }
 }
