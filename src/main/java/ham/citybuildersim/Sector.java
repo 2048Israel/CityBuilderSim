@@ -479,7 +479,19 @@ public abstract class Sector {
 
     /** The same test for {@code count} of these at once. */
     public Staffing staffing(BuildingsTemplate t, int count) {
-        return staffing(t, count, true);
+        return staffing(t, count, true, false);
+    }
+
+    /**
+     * The same test for {@code count} of these of which the ones on site are among them (BA1, 2026-11-05): their own posts
+     * are what is asked, so they are not also spoken for (THE POSTS OF ITS OWN SITES ARE SPOKEN FOR, which counts every
+     * other building of the sector on site). BuildingManager.goesFirst() asks it of the builders' depots on site and the
+     * one more: asked as staffing(), each depot on site was counted twice, taken and wanted, its share read nothing (0.00
+     * in months 8 to 10 of FoundingYardCheck's village, 0.46 to 0.76 before BA1), the builders-first rule stayed off and
+     * the village's depot opened in month 49 against main's 22.
+     */
+    public Staffing staffingWithOwnSites(BuildingsTemplate t, int count) {
+        return staffing(t, count, true, true);
     }
 
     /**
@@ -494,10 +506,10 @@ public abstract class Sector {
      * withheld posts, caused.
      */
     public Staffing staffingWithCrewsSpare(BuildingsTemplate t, int count) {
-        return staffing(t, count, false);
+        return staffing(t, count, false, false);
     }
 
-    private Staffing staffing(BuildingsTemplate t, int count, boolean crewsSpokenFor) {
+    private Staffing staffing(BuildingsTemplate t, int count, boolean crewsSpokenFor, boolean ownSitesInCount) {
         if (t == null || game == null) return Staffing.ANY;
         PopulationManager people = game.getPopulationManager();
         double[] posts  = people.staffablePostsByBand();
@@ -532,8 +544,11 @@ public abstract class Sector {
          */
         if (bm != null && bm.getUnderConstructionBySector(key()) > 0) {
             double[] withSites = posts.clone();
+            // ...less t's own on site where they are among the count asked (staffingWithOwnSites()).
+            BuildingsStacks own = ownSitesInCount ? bm.getStack(t) : null;
+            int ownOnSite = own == null ? 0 : Math.max(0, own.getUnderConstruction());
             for (JobType job : JobType.values()) {
-                withSites[WageBand.of(job).ordinal()] += bm.postsOnSite(key(), job);
+                withSites[WageBand.of(job).ordinal()] += bm.postsOnSite(key(), job) - (double) t.getJobs(job) * ownOnSite;
             }
             posts = withSites;
         }

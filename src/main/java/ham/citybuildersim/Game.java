@@ -382,7 +382,7 @@ public class Game {
         // ...and whether the city could staff the builders' depots, by their own
         // plan's test, which a depot on site must pass to be built first (0.7.130;
         // BuildingManager, THE BUILDERS' OWN DEPOTS FIRST).
-        buildingManager.setBuildersCouldStaff((t, n) -> economyManager.getSectors().construction().staffing(t, n).passes());
+        buildingManager.setBuildersCouldStaff((t, n) -> economyManager.getSectors().construction().staffingWithOwnSites(t, n).passes());
         // ...and the builders' month for the sites with every post offered, which
         // says whether the crews' rule would starve a depot (0.7.130).
         buildingManager.setSitesAtEveryPost(this::getBuildingOutputAtEveryPost);
