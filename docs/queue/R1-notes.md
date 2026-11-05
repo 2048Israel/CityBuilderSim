@@ -2,10 +2,11 @@
 
 ## WHERE IT STANDS
 
-**Building** (03:10). Branch `batch/R1` from `batch/R0c`'s ship file (R0c at
-its gate, not yet on main). The notes are first; slice A (the data, the
-count on each building, the forms set from it, the save) is next, then
-slice B (the payback rule's verdicts).
+**Both slices built** (04:15). Branch `batch/R1` from `batch/R0c`'s ship
+file; main (0.9.14, R0c in, e668e9cf) merged at 7e98567a. Slice A (the
+data, the count on each building, the forms set from it, the save) is
+bfd75c17, slice B (the payback rule's verdicts) 5ccd06ef. `--pick` on the
+merge is running; §4 has the result.
 
 ## 1. What R1 is, and where it splits
 
@@ -91,7 +92,8 @@ city's trace:
    electricity; fitting work a tenth of its construction points; a life of
    300 months (est.). The motor truck: the depot's truck room in `TRUCKS`;
    fitting work 0; a truck's life (Haulage's). The tractor: 3 t of
-   `MACHINERY` a farm (a 1917 Fordson was about 1.2 t; est.), 180 months.
+   `MACHINERY` a hundred acres of the farm's land (a 1917 Fordson was about
+   1.2 t; est.), 180 months.
    All marked est. in `buildings.json`'s readme; R1d judges them on a 1900
    city.
 10. **★ The verdict is read on demand, never in the month.** Research-design
@@ -108,8 +110,39 @@ city's trace:
 
 | slice | what | state |
 |---|---|---|
-| A | `Equipment` (the piece, read from `buildings.json`), the stack's unfitted counts, `EquipmentForms` setting R0c's shares, the save; `EquipmentCheck` 1-7 | next |
-| B | `EquipmentFit` (§2.2 steps 1-4, pure) and each piece's verdict at the city's prices; `EquipmentCheck` 8-11 | |
+| A | `Equipment` (the piece, read from `buildings.json`), the stack's unfitted counts, `EquipmentForms` setting R0c's shares, the save; `EquipmentCheck` 1-7 | bfd75c17 |
+| B | `EquipmentFit` (§2.2 steps 1-4, pure) and each piece's verdict at the city's prices; `EquipmentCheck` 8-11 | 5ccd06ef |
+
+Both drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews found
+and what the slices decided:
+
+- **The load says the forms twice.** `policyHearsTheMonth()` runs in the
+  load about 350 lines before the stacks stand, so the load path restores
+  the counts after `orderStacks()` and calls `EquipmentForms.apply()` again
+  there, before `rebuildSimulationState()` re-derives the factories' grid
+  draw (EquipmentCheck 7 fails without it).
+- **A scrapped building is an unfitted one first** (★4): with 2 of 5
+  unfitted, scrapping one leaves 1 of 4.
+- **The steam gain** reads the building's billed draw (`powerBought()`, as
+  R0c's `steamCoal()` does), the coal at `SpreadPlanner.cityValue()` and the
+  power at the grid's price a unit; **the cart gain** a depot's truck room x
+  `TONNES_A_TRUCK_MONTH` x (`horseEstimate()` less the new
+  `Haulage.truckRunningEstimate()`: `estimate()`'s diesel and drivers, the
+  trucks' wear and return left out, since the trucks are the cost); **the
+  cost** each good at the city's price and the work at the builders' price
+  a point; **the rate and hurdle** a building order of the whole cost would
+  get (SpreadPlanner's own hurdle, to the bit; the annuity at BuildAdvice's
+  convention).
+
+### Found: the electric drive's fitting work is most of its cost (for R1d)
+
+At the fixture town's prices in 1900 a Bakery's electric drive does not pay
+yet: over its life it earns back about 5.4 of its 8.9 (thousands), and 8.8
+of the 8.9 is the fitting work (a tenth of the building's construction
+points, ★9), not the motors. The depot's motor truck pays easily. Both are
+estimates on a city that is not a 1900 city yet (today's wages beside 1900
+prices); R1d, with the 1901 ladder, judges them, and the work's tenth is the
+first figure to look at.
 
 ## 4. Checks
 

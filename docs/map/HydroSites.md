@@ -31,7 +31,7 @@
 
 **Uses:** [World](World.md) (8), [EarthData](EarthData.md) (4), [EarthProj](EarthProj.md) (3), [EarthTerrain](EarthTerrain.md) (2), [CityLand](CityLand.md) (1), [LandGrid](LandGrid.md) (1), [Landmasses](Landmasses.md) (1)
 
-**Used by (5):** [BuildCard](BuildCard.md), [Forms1900Check](Forms1900Check.md), [HydroCheck](HydroCheck.md), [LandManager](LandManager.md), [Sector](Sector.md)
+**Used by (7):** [BuildCard](BuildCard.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [Forms1900Check](Forms1900Check.md), [HydroCheck](HydroCheck.md), [LandManager](LandManager.md), [Sector](Sector.md)
 
 ## Sections
 
