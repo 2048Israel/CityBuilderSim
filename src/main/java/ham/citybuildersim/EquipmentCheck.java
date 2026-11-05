@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import ham.citybuildersim.sectors.Agriculture;
 import ham.citybuildersim.sectors.Haulage;
+import ham.citybuildersim.sectors.SpreadPlanner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
@@ -15,12 +16,14 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Equipment as data, the count of buildings still without it on each stack, and R0c's 1900 forms set from that count.
+ * Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece
+ * would earn and cost and whether it pays, read on demand.
  *
  * WHAT THIS HAS TO PROVE (R1 slice A, 2026-11-05; docs/queue/R1-notes.md calls 2 to 9; research-design 2.1-2.2). R0c built the steam, the
  * farms' horses and the carts' horses as shares of a sector that nothing sets; R1 fits equipment building by building, and "the forms read one
@@ -44,6 +47,24 @@ import java.util.TreeMap;
  *      finished (bought, increased, or built on site) leaves the count as it was
  *   7. THE SAVE: a city with none unfitted writes no key; a city with counts writes them by template id, and the one loaded from it has the
  *      same counts and, before any month is played, the shares the counts set, equal to the saved city's
+ *
+ * R1 slice B (EquipmentFit, research-design 2.2 steps 1 to 4: what a piece adds a month, what it costs, whether it pays over its life and
+ * passes the money gate; each piece's verdict, read on demand, never in the month):
+ *
+ *   8. THE RULE'S ARITHMETIC: the annuity factor is the months at a rate of 0 and the closed form (and the sum, and BuildAdvice's own factor)
+ *      at a positive one; a gain just over cost / factor pays and just under does not, a gain just over the hurdle passes the gate and just
+ *      under does not, each with the other step comfortably met; a gain of nothing never pays; FITTED and NOT_KNOWN price nothing; the cost is
+ *      the goods at their prices and the work at the point's; the steam gain is the coal less the power, and crosses 0 at the price where
+ *      they are equal
+ *   9. THE STEAM VERDICT AT THE CITY'S PRICES: with a Bakery unfitted, the verdict's gain and cost are the pure core's at the prices the
+ *      model's getters give, its rate and hurdle the debt manager's and the investment's on the whole cost, its kind what judge() says; a
+ *      coal price just over the break-even (solved from the verdict's own figures) pays and just under does not, in the core and in the city
+ *  10. THE TRUCK'S, THE TRACTOR'S AND THE RANK: a depot unfitted has a finite gain from Haulage's teams less its trucks' running costs (the
+ *      trucks' capital left out) and a cost of its trucks at the city's price; an unfitted Grain Farm's tractor is NOT_KNOWN; a stack with none
+ *      unfitted is FITTED; rank() lists the pieces that pay and no other, best earnings on cost first, ties by template then piece id in any
+ *      order they come, and a sector with none unfitted ranks none
+ *  11. THE VERDICT CHANGES NOTHING: twin cities with the same counts, one asked every verdict and every rank every month for six months,
+ *      are equal to the bit in the treasury, every sector's books and rates, the trucks, the shares and the counts
  *
  * Every fixture CAUSES its condition: the counts are set on stacks that stand, in the towns Forms1900Check builds (farms and bakeries) and in
  * HaulageCheck's city with a depot built. The figures are asserted against the stacks' own quantities and the templates' own getters, never
@@ -159,6 +180,12 @@ public class EquipmentCheck {
         sectionFive(played);
         sectionSix(counted);
         sectionSeven(counted, played);
+        sectionEight(played);
+        Game steam = Forms1900Check.town("equipment-fit-steam");
+        sectionNine(steam);
+        Game fitCarts = cartTown("equipment-fit-carts");
+        sectionTen(steam, fitCarts);
+        sectionEleven();
 
         out.println(fails == 0 ? "\nAll EquipmentCheck assertions passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -573,5 +600,488 @@ public class EquipmentCheck {
                 && fitted.getBuildingManager().getUnfittedById().isEmpty() && !anyUnfitted(fitted) && maxSteam(fitted) == 0
                 && fitted.getSectors().agriculture().getHorseShare() == 0 && fitted.getSectors().freight().haulage().getHorseShare() == 0,
                 String.valueOf(fitted.getLoadFailure()));
+    }
+
+    /* ================== R1 slice B: the payback rule and each piece's verdict (EquipmentFit) ================== */
+
+    /** The city's price of a good, as the planners read it. */
+    static double cityPrice(Game g, Good good) { return SpreadPlanner.cityValue(g.getMarkets().get(good)); }
+
+    /** A piece for a pure-core fixture: it buys what it is given, its work and its life are the figures asked about. */
+    static Equipment piece(String since, Equipment.Form ends, Map<Good, Double> buys, double work, int life) {
+        return new Equipment("test-piece", "Test piece", since, ends, buys, work, life);
+    }
+
+    /** The year a game's month is in, as the verdict reads it. */
+    static int yearOf(Game g) { return CityCalendar.yearOf(g.getMonth()); }
+
+    /* ============================ 8. the rule's arithmetic ============================ */
+
+    static void sectionEight(Game g) {
+        out.println("\n--- 8. the rule's arithmetic: the annuity, both steps either side of the line, a gain of nothing, the cost and the steam gain ---");
+        check("the annuity factor at a rate of 0 is the months, and for a rate less than 0 or not a number or not finite too",
+                EquipmentFit.annuityFactor(300, 0) == 300 && EquipmentFit.annuityFactor(120, -0.05) == 120
+                        && EquipmentFit.annuityFactor(60, Double.NaN) == 60 && EquipmentFit.annuityFactor(60, Double.POSITIVE_INFINITY) == 60);
+        check("...and no months is no factor", EquipmentFit.annuityFactor(0, 0.06) == 0 && EquipmentFit.annuityFactor(-5, 0.06) == 0);
+        boolean closed = true, summed = true;
+        String first = null;
+        for (int n : new int[]{1, 12, 120, 300, 1200}) {
+            for (double r : new double[]{0.01, 0.05, 0.12, 0.40}) {
+                double i = r / 12, sum = 0;
+                for (int t = 1; t <= n; t++) sum += Math.pow(1 + i, -t);
+                double f = EquipmentFit.annuityFactor(n, r);
+                boolean c = Math.abs(f - (1 - Math.pow(1 + i, -n)) / i) <= 1e-12 * Math.max(1, f);
+                boolean s = Math.abs(f - sum) <= 1e-9 * Math.max(1, f);
+                closed &= c;
+                summed &= s;
+                if ((!c || !s) && first == null) first = n + " months at " + r + ": " + f + " vs " + (1 - Math.pow(1 + i, -n)) / i + " / " + sum;
+            }
+        }
+        check("at a positive rate it is the closed form (1 - (1 + i)^-n) / i, i the rate over 12, for lives of 1 to 1200 months", closed, first);
+        check("...and the sum of 1 / (1 + i)^t over the months", summed, first);
+        check("...a month is worth 1 / (1 + i); more months are worth more and a higher rate less, but never as much as the months themselves",
+                Math.abs(EquipmentFit.annuityFactor(1, 0.12) - 1 / 1.01) <= 1e-12 && EquipmentFit.annuityFactor(121, 0.05) > EquipmentFit.annuityFactor(120, 0.05)
+                        && EquipmentFit.annuityFactor(120, 0.10) < EquipmentFit.annuityFactor(120, 0.05) && EquipmentFit.annuityFactor(120, 0.05) < 120);
+        double lifeRate = BuildAdvice.lifeRate(g);
+        check("...and it is BuildAdvice's own factor: over LIFE_MONTHS at the rate lifeRate() gives, to the bit",
+                lifeRate > 0 && EquipmentFit.annuityFactor(BuildAdvice.LIFE_MONTHS, lifeRate) == BuildAdvice.lifeFactor(g),
+                EquipmentFit.annuityFactor(BuildAdvice.LIFE_MONTHS, lifeRate) + " vs " + BuildAdvice.lifeFactor(g));
+
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate bakery = bm.getTemplateByName("Bakery"), farm = bm.getTemplateByName("Grain Farm");
+        Equipment drive = bakery.getEquipment(DRIVE), tractor = farm.getEquipment(TRACTOR);
+        final int life = drive.getLifeMonths();
+
+        // Step 3 alone: no hurdle, a gain either side of cost / factor.
+        double r = 0.06, cost = 100;
+        double factor = EquipmentFit.annuityFactor(life, r), line = cost / factor;
+        EquipmentFit.Verdict over = EquipmentFit.judge(drive, bakery, 1900, 1, line * (1 + 1e-6), cost, r, 0);
+        EquipmentFit.Verdict under = EquipmentFit.judge(drive, bakery, 1900, 1, line * (1 - 1e-6), cost, r, 0);
+        check("a gain a millionth over cost / factor pays: over its life it earns back its cost", over.kind() == EquipmentFit.Kind.PAYS && over.earnsBack() >= cost,
+                over.toString());
+        check("...a millionth under does not: it earns back less than its cost, with no hurdle in the way",
+                under.kind() == EquipmentFit.Kind.NOT_YET && under.earnsBack() < cost && under.gain() > under.hurdle(), under.toString());
+        check("the verdict carries the figures it was struck on: ids, life, rate, factor, earns back (gain x factor), earnings on cost (gain over cost)",
+                over.templateId() == bakery.getId() && over.pieceId().equals(DRIVE) && over.lifeMonths() == life && over.realRate() == r && over.factor() == factor
+                        && over.earnsBack() == over.gain() * factor && over.earningsOnCost() == over.gain() / cost && over.cost() == cost && over.hurdle() == 0);
+
+        // Step 4 alone: the cost is a unit and the hurdle ten, so the life earns its cost back many times over; a gain either side of the hurdle.
+        double hurdle = 10;
+        EquipmentFit.Verdict gateOver = EquipmentFit.judge(drive, bakery, 1900, 1, hurdle * (1 + 1e-6), 1, r, hurdle);
+        EquipmentFit.Verdict gateUnder = EquipmentFit.judge(drive, bakery, 1900, 1, hurdle * (1 - 1e-6), 1, r, hurdle);
+        check("a gain a millionth over the hurdle passes the gate", gateOver.kind() == EquipmentFit.Kind.PAYS, gateOver.toString());
+        check("...a millionth under does not, though it earns back many times its cost over its life: the gate alone decides",
+                gateUnder.kind() == EquipmentFit.Kind.NOT_YET && gateUnder.earnsBack() > 100 * gateUnder.cost(), gateUnder.toString());
+        double exactCost = hurdle * factor;
+        check("a gain exactly at both lines pays (at least: g x factor >= C and g >= the hurdle)",
+                EquipmentFit.judge(drive, bakery, 1900, 1, hurdle, exactCost, r, hurdle).kind() == EquipmentFit.Kind.PAYS);
+
+        boolean never = true;
+        for (double gain : new double[]{0, -1e-9, -50, Double.NEGATIVE_INFINITY, Double.NaN}) {
+            for (double c : new double[]{0, 1, 100}) {
+                never &= EquipmentFit.judge(drive, bakery, 1900, 1, gain, c, r, Double.NEGATIVE_INFINITY).kind() == EquipmentFit.Kind.NOT_YET
+                        && EquipmentFit.judge(drive, bakery, 1900, 1, gain, c, 0, 0).kind() == EquipmentFit.Kind.NOT_YET;
+            }
+        }
+        check("a gain of nothing, less than nothing or not a number never pays, whatever the cost, the hurdle or the rate", never);
+        check("a cost that is not a number never pays",
+                EquipmentFit.judge(drive, bakery, 1900, 1, 50, Double.NaN, r, 0).kind() == EquipmentFit.Kind.NOT_YET);
+        EquipmentFit.Verdict free = EquipmentFit.judge(drive, bakery, 1900, 1, 0.5, 0, r, 0);
+        check("a piece that costs nothing and adds something pays, its earnings on cost infinite; one that adds nothing earns 0 on it",
+                free.kind() == EquipmentFit.Kind.PAYS && free.earningsOnCost() == Double.POSITIVE_INFINITY
+                        && EquipmentFit.judge(drive, bakery, 1900, 1, 0, 0, r, 0).earningsOnCost() == 0);
+        check("at a rate of 0 a life is worth its months: g x the life is what it earns back, and a hurdle of 0 asks nothing more",
+                EquipmentFit.judge(drive, bakery, 1900, 1, 2, 2.0 * life, 0, 0).kind() == EquipmentFit.Kind.PAYS
+                        && EquipmentFit.judge(drive, bakery, 1900, 1, 2, 2.0 * life + 1e-6, 0, 0).kind() == EquipmentFit.Kind.NOT_YET);
+
+        // The two verdicts that price nothing.
+        EquipmentFit.Verdict fitted = EquipmentFit.judge(drive, bakery, 1900, 0, 99, 1, r, 0);
+        EquipmentFit.Verdict unknown = EquipmentFit.judge(drive, bakery, 1899, 3, 99, 1, r, 0);
+        check("no building unfitted is FITTED however much it would add, and prices nothing",
+                fitted.kind() == EquipmentFit.Kind.FITTED && Double.isNaN(fitted.gain()) && Double.isNaN(fitted.cost()) && Double.isNaN(fitted.earningsOnCost())
+                        && fitted.lifeMonths() == life && fitted.pieceId().equals(DRIVE) && fitted.templateId() == bakery.getId(), fitted.toString());
+        check("...and FITTED comes before NOT_KNOWN: a fitted piece before its year is fitted",
+                EquipmentFit.judge(drive, bakery, 1850, 0, 99, 1, r, 0).kind() == EquipmentFit.Kind.FITTED);
+        check("a piece not yet known in the city's year is NOT_KNOWN, in 1899 and not in 1900; and prices nothing",
+                unknown.kind() == EquipmentFit.Kind.NOT_KNOWN && Double.isNaN(unknown.gain()) && Double.isNaN(unknown.cost())
+                        && EquipmentFit.judge(drive, bakery, 1900, 3, 99, 1, r, 0).kind() == EquipmentFit.Kind.PAYS, unknown.toString());
+        boolean tractorNever = true;
+        for (int y : new int[]{1900, 1917, 1950, 2025, 2200}) tractorNever &= EquipmentFit.judge(tractor, farm, y, 2, 1e9, 1, 0, 0).kind() == EquipmentFit.Kind.NOT_KNOWN;
+        check("the tractor, whose since is a code, is NOT_KNOWN in every year and whatever it would add", tractorNever);
+
+        // Step 2: the goods at their prices and the work at a point's.
+        Map<Good, Double> buys = new java.util.EnumMap<>(Good.class);
+        buys.put(Good.MACHINERY, 2.0);
+        buys.put(Good.TRUCKS, 3.0);
+        Equipment bought = piece("1900", Equipment.Form.STEAM, buys, 10, 100);
+        Map<Good, Double> prices = Map.of(Good.MACHINERY, 5.0, Good.TRUCKS, 7.0);
+        near("the cost is each good's units at its price, plus the work at the point's price", EquipmentFit.cost(bought, prices::get, 0.5), 2 * 5.0 + 3 * 7.0 + 10 * 0.5, 1e-12);
+        check("...nothing bought and no work costs nothing, and a price that is not a number makes the cost one",
+                EquipmentFit.cost(piece("1900", Equipment.Form.STEAM, Map.of(), 0, 10), x -> Double.NaN, 3) == 0
+                        && Double.isNaN(EquipmentFit.cost(bought, x -> Double.NaN, 0.5)));
+
+        // Step 1, the steam: the coal its engine would burn at nameplate less the grid power it would draw instead.
+        double units = bakery.powerBought();
+        double coalTonnes = units * HydroSites.KWH_PER_UNIT * Sector.STEAM_COAL_KG_A_KWH / 1000;
+        near("a building's steam coal a month is its draw in kWh at the engine's kilogrammes a kWh, in tonnes", EquipmentFit.steamCoalTonnes(bakery), coalTonnes, 1e-12);
+        double power = 0.37, coalEven = power * units / coalTonnes;
+        near("the steam gain is the coal at its price less the power at its price", EquipmentFit.steamGain(bakery, 0.91, power), coalTonnes * 0.91 - units * power, 1e-12);
+        check("...it is nothing at the price of coal where the two cost the same, more above it and less below",
+                Math.abs(EquipmentFit.steamGain(bakery, coalEven, power)) <= 1e-9 && EquipmentFit.steamGain(bakery, coalEven * 1.01, power) > 0
+                        && EquipmentFit.steamGain(bakery, coalEven * 0.99, power) < 0);
+        BuildingsTemplate house = bm.getTemplateByName("House");
+        check("...a building no utility bills (a House) burns no coal and draws no billed power: it adds nothing at any price",
+                EquipmentFit.steamCoalTonnes(house) == 0 && EquipmentFit.steamGain(house, 5, 5) == 0);
+
+        // Step 1, the carts: tonnes at the teams' price less the trucks'.
+        double room = 100;
+        near("the carts' gain is the room's tonnes a month at the teams' price a tonne less the trucks' running price",
+                EquipmentFit.cartGain(room, 0.0128, 0.0001), room * Haulage.TONNES_A_TRUCK_MONTH * (0.0128 - 0.0001), 1e-12);
+        check("...less than nothing where the trucks cost more to run than the teams", EquipmentFit.cartGain(room, 0.0001, 0.0128) < 0);
+    }
+
+    /* ============================ 9. the steam verdict at the city's prices ============================ */
+
+    /** Moves the city's price of coal to `target`, by the world's prices on its market: the price planners read (cityValue()) is affine in them, found from two probes and refined; false if it will not move. */
+    static boolean priceCoalAt(Game g, double target) {
+        GoodsMarket m = g.getMarkets().get(Good.THERMAL_COAL);
+        m.setWorldPrices(0.05, 0.05);
+        double a = SpreadPlanner.cityValue(m);
+        m.setWorldPrices(0.10, 0.10);
+        double b = SpreadPlanner.cityValue(m);
+        if (!(b > a)) return false;
+        double p = 0.05 + (target - a) / (b - a) * 0.05;
+        for (int i = 0; i < 6; i++) {
+            m.setWorldPrices(p, p);
+            double v = SpreadPlanner.cityValue(m);
+            if (Math.abs(v - target) <= 1e-12 * Math.abs(target)) return true;
+            p += (target - v) / (b - a) * 0.05;
+        }
+        return Math.abs(SpreadPlanner.cityValue(m) - target) <= 1e-9 * Math.abs(target);
+    }
+
+    /** The gain a verdict's piece needs to pay: the greater of the line (cost over factor) and the hurdle. */
+    static double gainNeeded(EquipmentFit.Verdict v) { return Math.max(v.cost() / v.factor(), v.hurdle()); }
+
+    /** The coal price at which a drive on this building just pays, from a verdict's own figures. */
+    static double breakEvenCoal(Game g, BuildingsTemplate t, EquipmentFit.Verdict v) {
+        return (gainNeeded(v) + t.powerBought() * g.getEconomyManager().getPricePerWatt()) / EquipmentFit.steamCoalTonnes(t);
+    }
+
+    static void sectionNine(Game g) {
+        out.println("\n--- 9. the steam verdict at the city's prices: the gain, the cost, the rate and the hurdle from the model's getters, and the coal price that pays ---");
+        Sector industry = g.getSectors().industry();
+        BuildingsStacks bakery = stack(g, "Bakery");
+        BuildingsTemplate t = bakery.getBuilding();
+        Equipment drive = t.getEquipment(DRIVE);
+        bakery.setUnfitted(DRIVE, 1);
+        play(g, 1);
+        check("fixture: a Bakery is unfitted, a month is played, and it is 1900", bakery.getUnfitted(DRIVE) == 1 && yearOf(g) == 1900 && drive.knownIn(yearOf(g)), "year " + yearOf(g));
+
+        double coal = cityPrice(g, Good.THERMAL_COAL), power = g.getEconomyManager().getPricePerWatt(), point = g.getBuildingManager().nonMaterialPricePerPoint();
+        EquipmentFit.Verdict v = EquipmentFit.verdict(g, bakery, drive);
+        check("fixture: the prices are real (coal, power, machinery and a building point all more than nothing)",
+                coal > 0 && power > 0 && cityPrice(g, Good.MACHINERY) > 0 && point > 0, coal + " / " + power + " / " + cityPrice(g, Good.MACHINERY) + " / " + point);
+        check("the verdict is for this building and this piece, with the piece's life, and is priced (PAYS or NOT_YET)",
+                v.templateId() == t.getId() && v.pieceId().equals(DRIVE) && v.lifeMonths() == drive.getLifeMonths()
+                        && (v.kind() == EquipmentFit.Kind.PAYS || v.kind() == EquipmentFit.Kind.NOT_YET), v.toString());
+        check("its gain is steamGain() at the city's coal price and the grid's price a unit, to the bit",
+                v.gain() == EquipmentFit.steamGain(t, coal, power), v.gain() + " vs " + EquipmentFit.steamGain(t, coal, power));
+        double units = t.powerBought();
+        near("...which is the coal its engine would burn at nameplate at the coal price less the power it would draw instead",
+                v.gain(), units * HydroSites.KWH_PER_UNIT * Sector.STEAM_COAL_KG_A_KWH / 1000 * coal - units * power, 1e-12);
+        double expectedCost = 0;
+        for (Map.Entry<Good, Double> e : drive.getBuys().entrySet()) expectedCost += e.getValue() * cityPrice(g, e.getKey());
+        expectedCost += drive.getWork() * point;
+        check("its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, to the bit",
+                v.cost() == EquipmentFit.cost(drive, good -> cityPrice(g, good), point), v.cost() + " vs " + expectedCost);
+        near("...and the same written out here", v.cost(), expectedCost, 1e-12);
+        check("fixture: the fitting buys machinery and has work, so both halves of the cost are in it", drive.getBuys().containsKey(Good.MACHINERY) && drive.getWork() > 0
+                && v.cost() > drive.getWork() * point);
+
+        // The rate and the hurdle: the debt manager's on the whole cost, the investment's real rate and hurdle.
+        BusinessInvestment plans = g.getBusinessInvestment();
+        double amount = g.orderGate().testedOn(v.cost(), industry.getCash());
+        double nominal = g.getEconomyManager().getBusinessDebtManager().projectRate(industry.key(), amount);
+        check("fixture: the gate tests the whole cost, whatever the sector holds", amount == v.cost() && v.cost() > 0);
+        check("the rate is the real rate of what a loan of the whole cost is written at for the sector, to the bit",
+                v.realRate() == plans.realTestRate(nominal) && nominal > 0 && v.realRate() > 0, v.realRate() + " vs " + plans.realTestRate(nominal));
+        check("the factor is the annuity of the life at that rate", v.factor() == EquipmentFit.annuityFactor(drive.getLifeMonths(), v.realRate()));
+        check("the hurdle is the investment's on the whole cost at that loan rate, and PROFIT_OVER_INTEREST times a month's interest at the real rate",
+                v.hurdle() == plans.interestHurdle(v.cost(), nominal)
+                        && Math.abs(v.hurdle() - v.cost() * v.realRate() / 12 * BusinessInvestment.PROFIT_OVER_INTEREST) <= 1e-12 * v.hurdle());
+        check("...and the same hurdle SpreadPlanner strikes for an order of that cost by that sector",
+                Math.abs(v.hurdle() - new SpreadPlanner().hurdle(industry, plans, g, v.cost())) <= 1e-12 * v.hurdle());
+        boolean pays = v.gain() > 0 && v.gain() * v.factor() >= v.cost() && v.gain() >= v.hurdle();
+        check("the kind follows the four steps from those figures (pays: g x factor >= C and g >= the hurdle)",
+                (v.kind() == EquipmentFit.Kind.PAYS) == pays && v.earnsBack() == v.gain() * v.factor() && v.earningsOnCost() == v.gain() / v.cost(), v.toString());
+        check("...and judge() on them says the same verdict",
+                EquipmentFit.judge(drive, t, yearOf(g), 1, v.gain(), v.cost(), v.realRate(), v.hurdle()).equals(v));
+
+        // The steam coal, against the sector's own: at a share of 1 its buildings burn what the stacks' templates say.
+        double tonnes = 0;
+        for (BuildingsStacks s : g.getBuildingManager().getStacksView()) {
+            if (industry.key().equals(s.getBuilding().getSector())) tonnes += s.getQuantity() * EquipmentFit.steamCoalTonnes(s.getBuilding());
+        }
+        double was = industry.getSteamShare();
+        industry.setSteamShare(1);
+        double model = industry.getSteamCoalAtCapacity();
+        industry.setSteamShare(was);
+        near("steamCoalTonnes() added over Industry's stacks is the coal Industry's own steam form buys at a share of 1", tonnes, model, 1e-9);
+        check("fixture: that share was put back, and the form buys some coal", industry.getSteamShare() == was && model > 0);
+
+        // The break-even, solved from the verdict's own figures.
+        double even = breakEvenCoal(g, t, v);
+        check("fixture: the break-even price of coal is a price", even > 0 && Double.isFinite(even), "is " + even);
+        EquipmentFit.Verdict above = EquipmentFit.judge(drive, t, yearOf(g), 1, EquipmentFit.steamGain(t, even * 1.001, power), v.cost(), v.realRate(), v.hurdle());
+        EquipmentFit.Verdict below = EquipmentFit.judge(drive, t, yearOf(g), 1, EquipmentFit.steamGain(t, even * 0.999, power), v.cost(), v.realRate(), v.hurdle());
+        check("in the pure core a coal price a thousandth above the break-even pays", above.kind() == EquipmentFit.Kind.PAYS, above.toString());
+        check("...and one a thousandth below does not", below.kind() == EquipmentFit.Kind.NOT_YET, below.toString());
+        near("...the gain crossing its line there: at the break-even the gain is the greater of cost / factor and the hurdle",
+                EquipmentFit.steamGain(t, even, power), gainNeeded(v), 1e-9);
+
+        // ...and in the city: the market's own price moved across it, the verdict read from the model.
+        boolean movedUp = priceCoalAt(g, even * 1.01);
+        EquipmentFit.Verdict cityAbove = EquipmentFit.verdict(g, bakery, drive);
+        boolean movedDown = priceCoalAt(g, even * 0.99);
+        EquipmentFit.Verdict cityBelow = EquipmentFit.verdict(g, bakery, drive);
+        check("fixture: the city's price of coal moves to a hundredth above and then below the break-even",
+                movedUp && movedDown && Math.abs(cityPrice(g, Good.THERMAL_COAL) - even * 0.99) <= 1e-9 * even);
+        check("in the city, coal a hundredth above the break-even pays, and the gain is that price's",
+                cityAbove.kind() == EquipmentFit.Kind.PAYS && Math.abs(cityAbove.gain() - EquipmentFit.steamGain(t, even * 1.01, power)) <= 1e-9 * cityAbove.gain(),
+                cityAbove.toString());
+        check("...and a hundredth below it does not, and its cost, rate and hurdle are the same as before (they do not read the coal)",
+                cityBelow.kind() == EquipmentFit.Kind.NOT_YET && cityBelow.cost() == v.cost() && cityBelow.realRate() == v.realRate() && cityBelow.hurdle() == v.hurdle(),
+                cityBelow.toString());
+    }
+
+    /* ============================ 10. the truck's, the tractor's and the rank ============================ */
+
+    /** The harness's own list of the pieces that pay on a sector's stacks, from verdict() alone, in the order it comes. */
+    static List<EquipmentFit.Verdict> payingPieces(Game g, Sector sector) {
+        List<EquipmentFit.Verdict> pays = new ArrayList<>();
+        for (BuildingsStacks s : g.getBuildingManager().getStacksView()) {
+            if (!sector.key().equals(s.getBuilding().getSector())) continue;
+            for (Equipment p : s.getBuilding().getEquipment()) {
+                if (s.getUnfitted(p.getId()) <= 0) continue;
+                EquipmentFit.Verdict v = EquipmentFit.verdict(g, s, p);
+                if (v.kind() == EquipmentFit.Kind.PAYS) pays.add(v);
+            }
+        }
+        return pays;
+    }
+
+    static void sectionTen(Game g, Game c) {
+        out.println("\n--- 10. the truck's, the tractor's and the rank: the carts' gain from the teams less the trucks, NOT_KNOWN for a tractor, FITTED for none unfitted, and the ranking ---");
+        Haulage haulage = c.getSectors().freight().haulage();
+        BuildingsStacks depot = stack(c, "Truck Depot");
+        BuildingsTemplate dt = depot.getBuilding();
+        Equipment truck = dt.getEquipment(TRUCK);
+        depot.setUnfitted(TRUCK, 1);
+        step(c, 1);
+        check("fixture: two depots stand, one lacks its trucks, a month is played", depot.getQuantity() == 2 && depot.getUnfitted(TRUCK) == 1 && haulage.getHorseShare() > 0);
+        EquipmentFit.Verdict v = EquipmentFit.verdict(c, depot, truck);
+        check("the depot's verdict is priced (PAYS or NOT_YET) with finite figures", (v.kind() == EquipmentFit.Kind.PAYS || v.kind() == EquipmentFit.Kind.NOT_YET)
+                && Double.isFinite(v.gain()) && Double.isFinite(v.cost()) && Double.isFinite(v.realRate()) && Double.isFinite(v.hurdle()), v.toString());
+
+        // The carts' two prices a tonne, written out here from the model's own constants and prices.
+        double crops = c.getMarkets().get(Good.CROPS).landedPrice(), diesel = c.getMarkets().get(Good.DIESEL).landedPrice();
+        double carter = c.getEconomyManager().getWageRates()[JobType.NO_DIPLOMA.ordinal()], driver = c.getEconomyManager().getWageRates()[JobType.DIPLOMA.ordinal()];
+        double teams = (Haulage.HORSES_A_TEAM * Haulage.HORSE_FEED_TONNES_A_MONTH * crops + Haulage.CARTERS_A_TEAM * carter) / Haulage.TONNES_A_TEAM_MONTH;
+        double trucks = Haulage.DIESEL_LITRES_A_TONNE * diesel + driver / Haulage.TONNES_A_TRUCK_MONTH;
+        near("a tonne's city leg by team costs the feed of the team's horses and its carter over the tonnes a team carries", haulage.horseEstimate(), teams, 1e-9);
+        near("...by truck, to run: the diesel a tonne and a driver's month over the tonnes a truck carries", haulage.truckRunningEstimate(), trucks, 1e-9);
+        // The running price leaves the trucks' capital out: with the horse form off, estimate() is that and the wear and return on a truck's price.
+        double kept = haulage.getHorseShare();
+        haulage.setHorseShare(0);
+        double trucksPrice = c.getMarkets().get(Good.TRUCKS).landedPrice();
+        near("...and with the horse form off, Haulage's whole estimate() is that plus the trucks' wear and return on their price over the tonnes a truck carries",
+                haulage.estimate() - haulage.truckRunningEstimate(),
+                trucksPrice * (1 / Sector.VAN_LIFE_MONTHS + ham.citybuildersim.sectors.Freight.TARGET_RETURN) / Haulage.TONNES_A_TRUCK_MONTH, 1e-9);
+        haulage.setHorseShare(kept);
+        check("fixture: the teams cost more a tonne than the trucks to run, so the gain is above nothing",
+                haulage.horseEstimate() > haulage.truckRunningEstimate(), haulage.horseEstimate() + " vs " + haulage.truckRunningEstimate());
+        check("the depot's gain is the truck room's tonnes a month at the teams' price less the trucks', to the bit",
+                v.gain() == EquipmentFit.cartGain(dt.getTruckRoom(), haulage.horseEstimate(), haulage.truckRunningEstimate()) && v.gain() > 0, v.gain() + "");
+        near("...which is the room x the tonnes a truck carries x (teams - trucks) written out", v.gain(), dt.getTruckRoom() * Haulage.TONNES_A_TRUCK_MONTH * (teams - trucks), 1e-9);
+        double room = truck.getBuys().getOrDefault(Good.TRUCKS, -1.0);
+        check("the motor truck buys the depot's truck room in TRUCKS and has no work", room == dt.getTruckRoom() && truck.getWork() == 0 && truck.getBuys().size() == 1);
+        double truckPrice = cityPrice(c, Good.TRUCKS);
+        check("the depot's cost is its trucks at the city's price of TRUCKS, to the bit, and nothing for work", v.cost() == room * truckPrice && truckPrice > 0,
+                v.cost() + " vs " + room * truckPrice);
+        check("its life is the truck's and its rate is struck for Freight on the whole cost",
+                v.lifeMonths() == truck.getLifeMonths() && v.realRate() == c.getBusinessInvestment().realTestRate(
+                        c.getEconomyManager().getBusinessDebtManager().projectRate(c.getSectors().freight().key(), v.cost())),
+                v.toString());
+        check("...and the kind follows the four steps", (v.kind() == EquipmentFit.Kind.PAYS) == (v.gain() > 0 && v.gain() * v.factor() >= v.cost() && v.gain() >= v.hurdle()));
+
+        // The tractor and the fitted.
+        BuildingsStacks grain = stack(g, "Grain Farm");
+        grain.setUnfitted(TRACTOR, grain.getQuantity());
+        EquipmentFit.Verdict tractor = EquipmentFit.verdict(g, grain, grain.getBuilding().getEquipment(TRACTOR));
+        check("an unfitted Grain Farm's tractor is NOT_KNOWN: its since is a code, and nothing is priced",
+                tractor.kind() == EquipmentFit.Kind.NOT_KNOWN && Double.isNaN(tractor.gain()) && Double.isNaN(tractor.cost()) && tractor.pieceId().equals(TRACTOR),
+                tractor.toString());
+        BuildingsStacks mixed = stack(g, "Mixed Farm"), bread = stack(g, "Industrial Bakery");
+        check("a stack with none unfitted is FITTED, for a tractor and for a drive",
+                !mixed.hasUnfitted() && EquipmentFit.verdict(g, mixed, mixed.getBuilding().getEquipment(TRACTOR)).kind() == EquipmentFit.Kind.FITTED
+                        && !bread.hasUnfitted() && EquipmentFit.verdict(g, bread, bread.getBuilding().getEquipment(DRIVE)).kind() == EquipmentFit.Kind.FITTED);
+
+        // The rank, in the steam town: two Bakeries' drives with different earnings on cost.
+        BuildingsStacks bakery = stack(g, "Bakery");
+        bakery.setUnfitted(DRIVE, 1);
+        bread.setUnfitted(DRIVE, 1);
+        Sector industry = g.getSectors().industry();
+        play(g, 1);
+        EquipmentFit.Verdict small = EquipmentFit.verdict(g, bakery, bakery.getBuilding().getEquipment(DRIVE));
+        EquipmentFit.Verdict large = EquipmentFit.verdict(g, bread, bread.getBuilding().getEquipment(DRIVE));
+        double evenSmall = breakEvenCoal(g, bakery.getBuilding(), small), evenLarge = breakEvenCoal(g, bread.getBuilding(), large);
+        check("fixture: two drives are unfitted in Industry, and the two stacks need different coal prices to pay",
+                small.kind() != EquipmentFit.Kind.FITTED && large.kind() != EquipmentFit.Kind.FITTED && evenSmall > 0 && evenLarge > 0 && evenSmall != evenLarge
+                        && Double.isFinite(evenSmall) && Double.isFinite(evenLarge), evenSmall + " / " + evenLarge);
+        double lowEven = Math.min(evenSmall, evenLarge), highEven = Math.max(evenSmall, evenLarge);
+        BuildingsStacks cheaper = evenSmall < evenLarge ? bakery : bread;
+
+        check("fixture: the city's price of coal moves", priceCoalAt(g, lowEven * 0.9));
+        check("coal under both break-evens: both drives are NOT_YET and the rank is empty", EquipmentFit.rank(g, industry).isEmpty() && payingPieces(g, industry).isEmpty(),
+                rankIds(g, industry).toString());
+        priceCoalAt(g, (lowEven + highEven) / 2);
+        List<EquipmentFit.Verdict> mid = EquipmentFit.rank(g, industry);
+        check("coal between them: only the drive that pays is ranked, the other (NOT_YET) is left out",
+                mid.size() == 1 && mid.get(0).templateId() == cheaper.getBuilding().getId() && mid.get(0).kind() == EquipmentFit.Kind.PAYS, mid.toString());
+        priceCoalAt(g, highEven * 1.1);
+        List<EquipmentFit.Verdict> both = EquipmentFit.rank(g, industry);
+        List<EquipmentFit.Verdict> own = payingPieces(g, industry);
+        own.sort((x, y) -> Double.compare(y.earningsOnCost(), x.earningsOnCost()));
+        check("coal over both: both are ranked, the same pieces as the verdicts that pay", both.size() == 2 && own.size() == 2 && both.containsAll(own), both.toString());
+        check("...best earnings on cost first, as sorted here from the verdicts alone", both.equals(own) && both.get(0).earningsOnCost() > both.get(1).earningsOnCost(),
+                both.toString());
+        check("...each entry is a PAYS verdict whose gain x factor covers its cost and whose gain clears its hurdle", both.stream().allMatch(x -> x.kind() == EquipmentFit.Kind.PAYS
+                && x.earnsBack() >= x.cost() && x.gain() >= x.hurdle()));
+        check("a sector with nothing unfitted ranks none, and so does one whose only unfitted piece is NOT_KNOWN (Agriculture's tractor)",
+                EquipmentFit.rank(g, g.getSectors().freight()).isEmpty() && EquipmentFit.rank(g, g.getSectors().retail()).isEmpty()
+                        && EquipmentFit.rank(g, g.getSectors().agriculture()).isEmpty() && grain.hasUnfitted());
+        List<EquipmentFit.Verdict> hauled = EquipmentFit.rank(c, c.getSectors().freight());
+        check("the depot's truck is ranked when it pays and not when it does not, alone in the cart town's Freight",
+                v.kind() == EquipmentFit.Kind.PAYS ? hauled.size() == 1 && hauled.get(0).equals(v) : hauled.isEmpty(), hauled.toString());
+        check("...and nothing else in the cart town is ranked", EquipmentFit.rank(c, c.getSectors().industry()).isEmpty() && EquipmentFit.rank(c, c.getSectors().agriculture()).isEmpty());
+        depot.setUnfitted(TRUCK, 0);
+        check("with the depots' count at 0 the piece is FITTED and Freight ranks none",
+                EquipmentFit.verdict(c, depot, truck).kind() == EquipmentFit.Kind.FITTED && EquipmentFit.rank(c, c.getSectors().freight()).isEmpty());
+
+        // The ordering, with ties: fixed verdicts, in every order they might come.
+        EquipmentFit.Verdict best = fixed(5, "a", 3.0), tieLow = fixed(7, "a", 1.5), tieMid = fixed(7, "b", 1.5), tieHigh = fixed(9, "a", 1.5), worst = fixed(1, "z", 0.25);
+        List<EquipmentFit.Verdict> want = List.of(best, tieLow, tieMid, tieHigh, worst);
+        boolean everyOrder = true;
+        int orders = 0;
+        for (List<EquipmentFit.Verdict> order : permutations(new ArrayList<>(want))) {
+            List<EquipmentFit.Verdict> sorted = new ArrayList<>(order);
+            sorted.sort(EquipmentFit.BEST_FIRST);
+            everyOrder &= sorted.equals(want);
+            orders++;
+        }
+        check("the ranking is best earnings on cost first, equal earnings by template id and then piece id, whatever order they come in (all 120 orders)",
+                everyOrder && orders == 120);
+        EquipmentFit.Verdict free = fixed(2, "a", Double.POSITIVE_INFINITY);
+        check("...and an unbounded earning (a free piece) is first", free.equals(sortedFirst(List.of(best, free, worst))));
+    }
+
+    /** The ids of a sector's ranked verdicts, template and piece: for a failure's detail. */
+    static List<String> rankIds(Game g, Sector s) {
+        List<String> ids = new ArrayList<>();
+        for (EquipmentFit.Verdict v : EquipmentFit.rank(g, s)) ids.add(v.templateId() + "/" + v.pieceId());
+        return ids;
+    }
+
+    /** A verdict that pays, with the figures a ranking reads: its template, piece and earnings on cost. */
+    static EquipmentFit.Verdict fixed(int templateId, String pieceId, double earningsOnCost) {
+        return new EquipmentFit.Verdict(EquipmentFit.Kind.PAYS, templateId, pieceId, 1, 1, 100, 0.05, 80, 80, 0, earningsOnCost);
+    }
+
+    static EquipmentFit.Verdict sortedFirst(List<EquipmentFit.Verdict> list) {
+        List<EquipmentFit.Verdict> copy = new ArrayList<>(list);
+        copy.sort(EquipmentFit.BEST_FIRST);
+        return copy.get(0);
+    }
+
+    /** Every order a list of distinct items can come in. */
+    static <T> List<List<T>> permutations(List<T> items) {
+        List<List<T>> all = new ArrayList<>();
+        permute(items, 0, all);
+        return all;
+    }
+
+    private static <T> void permute(List<T> items, int k, List<List<T>> all) {
+        if (k == items.size()) {
+            all.add(new ArrayList<>(items));
+            return;
+        }
+        for (int i = k; i < items.size(); i++) {
+            Collections.swap(items, k, i);
+            permute(items, k + 1, all);
+            Collections.swap(items, k, i);
+        }
+    }
+
+    /* ============================ 11. the verdict changes nothing ============================ */
+
+    /** Asks the city every verdict and every rank there is: each piece of each stack, fitted or not, and each sector's ranking. */
+    static void askEverything(Game g) {
+        for (BuildingsStacks s : g.getBuildingManager().getStacksView()) {
+            for (Equipment p : s.getBuilding().getEquipment()) EquipmentFit.verdict(g, s, p);
+        }
+        for (Sector s : g.getSectors().all()) EquipmentFit.rank(g, s);
+    }
+
+    /** The shares and counts the forms and the stacks hold, as text: for the twins' comparison beside Forms1900Check's snapshot. */
+    static String formsAndCounts(Game g) {
+        StringBuilder b = new StringBuilder();
+        for (Sector s : g.getSectors().all()) b.append(s.key()).append(':').append(Double.doubleToLongBits(s.getSteamShare())).append(' ');
+        b.append("farm ").append(Double.doubleToLongBits(g.getSectors().agriculture().getHorseShare()));
+        b.append(" cart ").append(Double.doubleToLongBits(g.getSectors().freight().haulage().getHorseShare()));
+        b.append(" driven ").append(g.getEquipmentForms().driven());
+        for (BuildingsStacks s : g.getBuildingManager().getStacksView()) {
+            b.append(' ').append(s.getBuilding().getId()).append('x').append(s.getQuantity()).append(s.getUnfittedView());
+        }
+        return b.toString();
+    }
+
+    /** Plays two twin cities for `months` (the cart towns by toggleNextMonth, the others by simulateMonths, as their sections do), asking the first everything before and after each month; the first month they differ in, or null. */
+    static String twinsAfter(Game asked, Game left, int months, boolean carts) {
+        for (int m = 0; m < months; m++) {
+            askEverything(asked);
+            if (carts) step(asked, 1); else play(asked, 1);
+            askEverything(asked);
+            if (carts) step(left, 1); else play(left, 1);
+            String diff = Forms1900Check.firstDifference(asked, left);
+            if (diff != null) return "month " + (m + 1) + ", " + diff;
+            if (!formsAndCounts(asked).equals(formsAndCounts(left))) return "month " + (m + 1) + ", shares or counts";
+        }
+        return null;
+    }
+
+    static void sectionEleven() {
+        out.println("\n--- 11. the verdict changes nothing: twin cities with the same counts, one asked everything every month for six months, are equal to the bit ---");
+        Game a = Forms1900Check.town("equipment-twin-a"), b = Forms1900Check.town("equipment-twin-b");
+        for (Game g : new Game[]{a, b}) {
+            stack(g, "Bakery").setUnfitted(DRIVE, 1);
+            stack(g, "Industrial Bakery").setUnfitted(DRIVE, stack(g, "Industrial Bakery").getQuantity());
+            stack(g, "Grain Farm").setUnfitted(TRACTOR, stack(g, "Grain Farm").getQuantity());
+        }
+        check("fixture: the twins start equal, with the same counts and nothing asked", Forms1900Check.firstDifference(a, b) == null && formsAndCounts(a).equals(formsAndCounts(b))
+                && anyUnfitted(a));
+        String diff = twinsAfter(a, b, 6, false);
+        check("six months, asked every verdict and every rank before and after each: the treasury, every sector's books and rates, the shares and the counts are equal",
+                diff == null, diff);
+        check("...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both",
+                a.getSectors().industry().getSteamShare() > 0 && a.getSectors().industry().getSteamShare() == b.getSectors().industry().getSteamShare());
+
+        Game ca = cartTown("equipment-twin-carts-a"), cb = cartTown("equipment-twin-carts-b");
+        for (Game g : new Game[]{ca, cb}) stack(g, "Truck Depot").setUnfitted(TRUCK, 1);
+        check("fixture: the cart twins start equal with a depot unfitted", Forms1900Check.firstDifference(ca, cb) == null && anyUnfitted(ca) && anyUnfitted(cb));
+        String cartDiff = twinsAfter(ca, cb, 6, true);
+        check("...and six months of the same, on the depot's truck: equal to the bit, the trucks, the quote and the carts' share included", cartDiff == null, cartDiff);
+        check("...with the carts' horse share up in both", ca.getSectors().freight().haulage().getHorseShare() > 0
+                && ca.getSectors().freight().haulage().getHorseShare() == cb.getSectors().freight().haulage().getHorseShare());
     }
 }
