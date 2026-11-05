@@ -3949,6 +3949,9 @@ public class UserInterface extends Application {
         // ...and Infrastructure and Services (KP2): theirs too.
         infrastructureScreen.forget();
         servicesScreen.forget();
+        // ...and Build and Construction (KP3): theirs too.
+        buildScreen.forget();
+        constructionScreen.forget();
         // ...and the header and the rail hand the next city none of this one's nodes (UP2).
         forgetChrome();
     }
