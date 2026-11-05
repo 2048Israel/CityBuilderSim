@@ -370,6 +370,8 @@ public class Game {
         ham.citybuildersim.sectors.Freight carrier = economyManager.getSectors().freight();
         buildingManager.setOfferedShareByType((key, type) -> key.equals(builders.key()) ? builders.getPostsOfferedShare()
                 : key.equals(carrier.key()) ? carrier.haulage().offeredShare(type) : 1);
+        // ...and a farm run on horses pays for the hands past its buildings' posts, which the labour market is offered too (R0c; BuildingManager.setPostsPast()).
+        buildingManager.setPostsPast(() -> economyManager.getSectors().postsPastBuildings());
         // ...and what their crews cost a point, today and at founding, which
         // the labour in every price follows (0.7.19; BuildingManager, THE
         // LABOUR IN A PRICE KEEPS UP WITH WAGES).
@@ -458,6 +460,11 @@ public class Game {
         // city has no rights; a load sets its own (readTheSave()).
         freshRights = 0;
         servicesManager.setFreshCapSource(this::getFreshCap);
+        // ...and the grid is not sized for the power a factory turns with steam on site (R0c; ServicesManager.setSteamShareSource()).
+        servicesManager.setSteamShareSource(key -> {
+            Sector sector = economyManager.getSectors().byKey(key);
+            return sector == null ? 0 : sector.getSteamShare();
+        });
         // ...and the city map waits to be asked for (0.7.60): THE CITY MAP.
         cityMap = null;
         mapFailures = 0;
