@@ -1,6 +1,32 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
-**WHERE IT STANDS (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
+**WHERE IT STANDS (2026-11-05, 01:30): main's R0 (0.9.12) merged in; the full suite on the merged tree has 10 reds.**
+- **The full suite on the merged tree** (67fe6cc7 + the maps, `./batch-check.sh`, all 171 harnesses, 00:02-00:36, run
+  alone): 161 passed, 10 failed. (A first run at 23:20 was void. The suite of a run stopped at 23:18 had not died, ran
+  beside it, and lost classes to the merge's recompile.) SlopeCheck, LongPlaytest and DeathRecordCheck pass on the
+  merged tree: R0's dates moved their cities again.
+- **Two pass by name, causes outside BA1's diff:**
+  - **MapCheck, four lines**, the three checks DM2's brief lists: 2d "every box stands four months on" (4 moved), 2d "a
+    yard that goes moves none of the buildings" (155 moved), and 2h scenario 1, "the highways reaching a street"
+    (9 moved). DM1's class: the district plan moves standing boxes, waiting on DM2. `MapCheck.main` keeps the builders'
+    price off through 2h for them, and on the merged tree's path they show with it off too.
+  - **PriceLevelCheck 8, two lines:** "FAIL sector.Manufacturing.cash (nominal) month 97 ..." and "every live nominal
+    series equal over the factor within 1.0E-9 (worst 1.1e-08 in sector.Manufacturing.cash)". Not a price the factor
+    missed: the factor nudged by 1e-12 parts from the factor by as much (1.04e-8 against 1.08e-8).
+    - The source is `BondMarket`'s corporate issue search (`s = filled` until `filled >= s * (1 - 1e-9)`). It stops
+      within 1e-9 of a fixed point, so two runs can settle on bonds up to that apart: at month 94 the bonds issued
+      differ by 4.6e-9 of the issue.
+    - Manufacturing rolls 150,000k of bonds on this path, and the gap grows tenfold every fourteen months (months 68,
+      82, 96) to 1.1e-8 of its cash.
+    - BS1 is queued: search to a fixed point well inside the twins' tolerance.
+- **Eight are fixtures on the merged path**, in two Sonnet slices working in their own worktrees until 03:00:
+  - MortgageCheck, FoundingYardCheck, BankCheck, HoldersCheck;
+  - CurrencyRegimeCheck, PassThroughCheck, MonetaryCheck, CentralBankCheck. MonetaryCheck's delay line and
+    PassThroughCheck's groceries sign are to be judged as possible findings once their fixtures hold.
+- **OR1 stays queued.** DeathRecordCheck passes on the merged tree, but its cause (below) is real.
+- Next: the slices' mends reviewed and brought here, the full suite again (alone), then the ship file.
+
+**WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
 - **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
   three rounding edges and the brake:
   - **HouseholdMemoryCheck 7, mended (fixture):** "the month after, both cities hold the same households", 4.03
