@@ -336,6 +336,13 @@ public class ScaleCheck {
      * SHUT (history's dates, as the playtest plays) the loaded copies are not the live city (531 read no miss there and has 8 here; 562 read
      * none and has 2), so each candidate they offered was run in ScaleCheck itself: of 51 months run, every line holds at 480, 484, 487,
      * 488 and 489 alone. 488 is the middle of 487 to 489. A month, not a window; ST3 is still the fix.
+     *
+     * ...AND RT1 (2026-11-05) FOUND NO MONTH. With a farm and a food plant counted in money (Agriculture.unitsOf(),
+     * FoodProcessing.unitsOf()) the spare-capacity rule sells one of the village's two Mixed Farms at month 19, and the town is
+     * another one: 2,400 people at its best, 1,925 at 492 against 7,159 with main's unitsOf(). Scanned in ScaleCheck itself, 307
+     * months (every month 138 to 163 and 320 to 372, the calm windows to 2,346, every tenth to 1,340, every thirtieth to 2,480):
+     * none holds every line; the fewest misses are one, at 336 (section 9's cash, 2.84e-2 against .0125). Left at 488 and red,
+     * passed by name at RT1's gate; ST3 is the fix.
      */
     static final int FREE_FIXTURE_MONTHS = 488;
 

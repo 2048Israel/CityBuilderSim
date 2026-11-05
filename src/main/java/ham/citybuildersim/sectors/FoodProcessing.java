@@ -567,4 +567,25 @@ public final class FoodProcessing extends Sector {
         }
         return new double[] { demand, capacity };
     }
+
+    /**
+     * What one plant contributes to the measure above: its output, each good valued at that good's export floor - one plant's share of the
+     * capacity figure retirementDemandAndCapacity() adds up, in the same money (Agriculture.unitsOf(), the same yardstick).
+     *
+     * WHY. The measure was put into money and this stayed Sector's kilograms of the planning good, so BusinessInvestment.planRetirement() divided
+     * dollars by kilograms. Dollars scale with PriceLevel.FACTOR (0.0259 at the founding, 1 at today's prices) and kilograms do not, so at the
+     * founding's level no food plant ever retired and at today's one did (R0, 2026-11-04, measured, on Agriculture). Counted in the measure's own
+     * unit the quotient is the same at every level (RT1).
+     */
+    @Override
+    public double unitsOf(BuildingsTemplate t) {
+        if (t == null || markets == null) return 0;
+        double worth = 0;
+        for (Good g : goodsMade()) {
+            double floor = Math.max(0, markets.get(g).netExportPrice());
+            if (floor <= 0) continue;
+            worth += t.makes(g) * floor;
+        }
+        return worth;
+    }
 }

@@ -366,10 +366,28 @@ public abstract class Debt {
     }
 
     /** Moves face between the holders: positive to the households, the central bank, the businesses or the world from the bank, negative back to it. */
-    void moveToHouseholds(double face)  { householdPrincipal = Math.max(0, householdPrincipal + face); }
-    void moveToCentralBank(double face) { centralBankPrincipal = Math.max(0, centralBankPrincipal + face); }
-    void moveToFirms(double face)       { firmPrincipal = Math.max(0, firmPrincipal + face); }
-    void moveToWorld(double face)       { worldPrincipal = Math.max(0, worldPrincipal + face); }
+    void moveToHouseholds(double face)  { householdPrincipal = moved(householdPrincipal, face); }
+    void moveToCentralBank(double face) { centralBankPrincipal = moved(centralBankPrincipal, face); }
+    void moveToFirms(double face)       { firmPrincipal = moved(firmPrincipal, face); }
+    void moveToWorld(double face)       { worldPrincipal = moved(worldPrincipal, face); }
+
+    /** The share of the face moved under which what a holder is left with is the subtraction's rounding, and none (RT1). */
+    static final double HOLDING_ROUNDING = 1e-12;
+
+    /**
+     * What a holder holds after a move of face: nothing below nothing, as it always was, and nothing for a remainder within
+     * HOLDING_ROUNDING of the face moved.
+     *
+     * WHY (RT1, 2026-11-05). A sale meant to take all a holder held was struck pro rata (Game.desksBuysFirmPaper(), take x mine / held)
+     * and came out an ulp short: the desk took 1.951382221467067 of the businesses' 1.9513822214670675, and 4.4e-16 of a piece stayed
+     * theirs at today's prices and none at the founding's. DebtManager.firmBookRatio() reads any face above nothing, so the businesses'
+     * paper was worth 0.93 of face at one level and 1 at the other, and PriceLevelCheck's played city parted from its twin at month 70
+     * when the builders bought paper at those two prices. Relative to the face moved, the floor is the same at every price level.
+     */
+    static double moved(double held, double face) {
+        double left = held + face;
+        return left <= HOLDING_ROUNDING * Math.abs(face) ? 0 : left;
+    }
 
     /**
      * THE CENTRAL BANK'S ADD-ON (0.7.15, round 2): this much more face of the
@@ -1236,9 +1254,9 @@ public abstract class Debt {
         if (!(taken > 0) || !(out > 0)) return;
         double k = Math.max(0, 1 - taken / out);
         if (!foreign) {
-            householdPrincipal = Math.max(0, householdPrincipal - hh);
-            firmPrincipal = Math.max(0, firmPrincipal - firms);
-            worldPrincipal = Math.max(0, worldPrincipal - world);
+            householdPrincipal = moved(householdPrincipal, -hh);
+            firmPrincipal = moved(firmPrincipal, -firms);
+            worldPrincipal = moved(worldPrincipal, -world);
             // the central bank does not sell (D18): its principal stays; the bank's is what is left
         }
         faceValue *= k;
