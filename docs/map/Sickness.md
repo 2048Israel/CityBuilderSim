@@ -35,7 +35,7 @@
 
 **Uses:** [AgeBand](AgeBand.md) (29), [PopulationCohorts](PopulationCohorts.md) (4), [Health](Health.md) (1)
 
-**Used by (11):** [BuildScreen](BuildScreen.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md)
+**Used by (13):** [BuildScreen](BuildScreen.md), [CausesOfDeath](CausesOfDeath.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md)
 
 ## Sections
 

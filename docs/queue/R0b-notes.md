@@ -121,5 +121,31 @@ a band's are est., and say so where they are set.
   76% (Canada, 1950), but mothers' deaths did not fall until sulfa (1937).
   **Recommended and taken:** mothers' deaths follow the date; a city with no
   general care raises them (no doctor at the birth).
+
+## 5. What it does to a city
+
+The same probe as section 1, on the built model (db4c7fa8), before and after:
+
+| decade | people, before | after | deaths per 1,000, before | after | Canada | babies' per 1,000 babies, before | after | adults' per 1,000 adults, before | after |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1900s | 3,936 | 4,186 | 13.2 | 17.2 | about 16 | 5.0 | 4.4 | 2.4 | 6.4 |
+| 1920s | 33,080 | 30,363 | 15.7 | 16.6 | about 11 | 30.1 | 21.4 | 2.4 | 5.1 |
+| 1950s | 159,335 | 134,912 | 17.0 | 15.3 | about 9 | 39.0 | 22.0 | 2.5 | 2.8 |
+| 2000s | 373,593 | 320,896 | 17.5 | 15.7 | about 7 | 40.9 | 22.9 | 2.6 | 2.7 |
+
+A 1900 city now dies about as Canada did (17 per 1,000), most of it adults'
+TB, pneumonia and typhoid. The adults' extra dead cost the probe city 15% of its
+people by the 1950s, which it does not win back (the arrivals follow the jobs).
+From the 1920s fewer babies die where there is no childcare (history took the
+diarrhoea, the outbreaks and pneumonia), so the city's deaths per 1,000 end
+below what they were. The game still dies at about twice Canada's rate after
+1950. That is the swing's babies (23 per 1,000 a year where Canada's were under
+1) and the old, not the causes, which are nought by 1980.
+
+What the eye should look at (Jerus, only if it looks wrong): Services, Health,
+"What people die of", in a 1900 city and again past 1920 (each cause's year,
+its rate beside 1900's); the sick rate's bar in October 1918 (the influenza's
+part); the inbox's "Influenza is in the city" from October 1918; People, the
+month's dead with its new part, "of typhoid, TB, childbirth and the like".
 </content>
 </invoke>

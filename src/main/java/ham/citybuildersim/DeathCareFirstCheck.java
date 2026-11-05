@@ -111,6 +111,9 @@ public class DeathCareFirstCheck {
      */
     static final int TRAP_MONTHS = 12;
 
+    /** The most months the trap's city plays past its three years for the backlog to reach its cap (R0b). */
+    static final int CAP_MONTHS_MORE = 36;
+
     /** The worst month of the audit any month here saw, and the worst drift after it. */
     static double worstResidual = 0, worstDrift = 0;
     static int monthsAudited = 0;
@@ -236,6 +239,24 @@ public class DeathCareFirstCheck {
         return g;
     }
 
+    /**
+     * ...and on until the backlog is at its cap (R0b), both twins month for month:
+     * on 1900's causes of death the month's dead rise through the three years (2.7 a
+     * month at the end, a cap of 64, against a backlog of 56), so the cap - 24 of this
+     * month's deaths - is still ahead. Here and not in city(), whose three years
+     * BuildersFirstCheck and ConstructionTrapCheck were sized on.
+     */
+    static void toTheCap(Game without, Game with) {
+        Healthcare hc = with.getHealthcare();
+        quietly(() -> {
+            for (int m = 0; m < CAP_MONTHS_MORE
+                    && hc.getUnburied() < hc.getDeaths() * Healthcare.MAX_BACKLOG_MONTHS * (1 - 1e-9); m++) {
+                without.simulateMonths(1);
+                with.simulateMonths(1);
+            }
+        });
+    }
+
     /** ...and the roads and the sites: the half of the fixture that follows the trap. */
     static void sites(Game g) {
         BuildingsTemplate cemetery = template(g, CEMETERY);
@@ -257,6 +278,7 @@ public class DeathCareFirstCheck {
     static Game[] trap(Path root) {
         out.println("\n--- 2. the trap, caused: no plot, the dead at the cap, repairs taking the builders' month ---");
         Game without = city(root, "without"), with = city(root, "with");
+        toTheCap(without, with);
         // The twin without the rule: the hook Game sets, told nobody lies unburied.
         without.getBuildingManager().setUnburied(() -> 0);
         sites(without);
