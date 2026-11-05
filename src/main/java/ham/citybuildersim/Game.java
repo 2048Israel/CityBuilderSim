@@ -689,6 +689,8 @@ public class Game {
         autoSubsidy.clear();
         subsidyPaid.clear();
         economyManager.getTaxPolicy().reset();
+        // ...and the levers history has not opened yet are held at zero (R0): the city is in its first month.
+        policyHearsTheMonth();
         economyManager.getSalesTaxLedger().reset();
         this.constructionShedMonth = -1;
         this.constructionShedPoints = 0;
@@ -1104,6 +1106,47 @@ public class Game {
     
     public int getMonth(){
         return month;
+    }
+
+    /** Whether a Policy lever is open in this city (R0): from the month Canada first had it, or the month a find brought it to. For the screen and the inbox. */
+    public boolean isLeverOpen(PolicyDates.Lever lever) {
+        return economyManager.getTaxPolicy().isOpen(lever);
+    }
+
+    /** The game month a Policy lever opens in this city (R0): history's (PolicyDates), earlier where a find brought it forward, 1 where it is open from the start. */
+    public int leverOpeningMonth(PolicyDates.Lever lever) {
+        return economyManager.getTaxPolicy().openingMonth(lever);
+    }
+
+    /**
+     * Tells the policy the city's month (it holds every closed lever at zero), the labour market whether the minimum wage is law yet and
+     * the households what a pensioner is paid (R0): the one place the three callers (founding, the top of every month, a load) say it, so
+     * the three cannot part.
+     */
+    private void policyHearsTheMonth() {
+        economyManager.getTaxPolicy().setMonth(month);
+        labourMarket.setFloorBinding(economyManager.getTaxPolicy().isOpen(PolicyDates.Lever.MINIMUM_WAGE));
+        // ...and the households what a pensioner is paid, from the first month: HouseholdAccounts opens on the 45% default, and the month's own
+        // push (where the households are told their bills) comes after anything that reads it. The pension is shut until 1927 and the dial is zero.
+        households.setPensionPerSenior(economyManager.getTaxPolicy().pensionPerSenior());
+    }
+
+    /**
+     * The player's hand on the minimum-wage dial (R0): refused until the lever opens (1918 on history's dates), because the dial is also the
+     * wage ladder's anchor and a floor of zero would zero every wage. Returns whether it was taken. LabourMarket's own setter is for
+     * founding and the harnesses and is not gated; the Policy screen comes through here.
+     */
+    public boolean setMinimumWage(double value) {
+        if (!isLeverOpen(PolicyDates.Lever.MINIMUM_WAGE)) return false;
+        labourMarket.setMinimumWage(value);
+        return true;
+    }
+
+    /** The player's nudge on the floor (R0): refused with the dial, for the same reason. Returns whether it was taken. */
+    public boolean setMinimumWageAdjustment(double share) {
+        if (!isLeverOpen(PolicyDates.Lever.MINIMUM_WAGE)) return false;
+        labourMarket.setMinimumWageAdjustment(share);
+        return true;
     }
     public double getCash(){
         return cash;
@@ -3482,6 +3525,8 @@ public class Game {
          * is told here only, which is every month and the load path both.
          */
         householdBalance.setStudentLoanRate(tax.getStudentLoanRate());
+        // ...and whether the treasury lends to students yet (R0: student aid opens in 1939; before it no loan is made).
+        householdBalance.setStudentLoansOpen(tax.isOpen(PolicyDates.Lever.STUDENT_AID));
         tellTheSchoolsTheirPrices(tax);
         households.setCarePaid(householdBalance.carePaidShares());
         households.setCareBills(healthcare.getTreatmentFees(), healthcare.fullTreatmentFees());
@@ -5410,9 +5455,12 @@ public class Game {
      * kilometres (KM2); `priceShare` 0 to 1 of the going business price,
      * what the next sale in it pays (Z3: ground already sold is not
      * re-priced). Any sector of the registry (Sectors.KEYS), Real Estate's for
-     * homes.
+     * homes. Refused, with no log line, until zoning opens (R0, call 13: PL6, 1924 on history's dates: before it everything is free and
+     * nothing is zoned or charged). The forest law and a zone's tax row stay open: the law is not the study's zoning (it gives it no date),
+     * and a tax row is the sector's own offset, held by its own tax's lever; a save from before R0 loads with every lever open, its zones standing.
      */
     public void setZone(String sector, Zoning.Size kind, double size, double priceShare) {
+        if (!isLeverOpen(PolicyDates.Lever.ZONING)) return;
         if (getSectors().byKey(sector) == null) return;
         Zoning.Zone was = landManager.getZoning().zone(sector);
         Zoning.Zone now = landManager.getZoning().set(sector, kind, size, priceShare);
@@ -12295,6 +12343,13 @@ public class Game {
          */
         month++;
         monthsSinceAutosave++;
+        /*
+         * THE POLICY HEARS THE MONTH FIRST (R0): each lever opens on Canada's date, and a lever still shut is held at zero
+         * before anything in this month is taxed or paid. The month number moves only here, and simulateMonth() (the one
+         * other half of the month) runs from this method, so this line is where both halves pass. See TaxPolicy, THE LEVERS
+         * ON HISTORY'S DATES.
+         */
+        policyHearsTheMonth();
         // The buildings the player ordered demolished between the presses
         // close now, as the month after the order starts - the first it is
         // in force for - before anything in it reads the city (0.7.22; THE
@@ -16064,6 +16119,8 @@ public class Game {
         dataSave.setLandRuns(landManager.getRunsSqFt());
         dataSave.setIncomeTaxRate(economyManager.getTaxPolicy().getIncomeTaxRate());
         dataSave.setPropertyTaxRate(economyManager.getTaxPolicy().getPropertyTaxRate());
+        // ...and the month each Policy lever opens in this city (R0): a save from before it has none, and loads with every lever open.
+        dataSave.setLeverOpenings(economyManager.getTaxPolicy().openingsForSave());
         dataSave.setNotices(inbox.all());
         dataSave.setSectorBooks(sectorBooks.thisMonth());
         dataSave.setSectorBooksBefore(sectorBooks.lastMonth());
@@ -19401,9 +19458,15 @@ public class Game {
             // Whether the array was read decides whether the one income rate
             // further down is: it carries the three bases apart since 0.7.4,
             // and the old single key would put them back together.
+            // The levers' opening months first (R0): a save from before R0 names none and loads with every lever open; the policy state
+            // and the offsets then come back as saved, and the loaded month is told last, so that it holds what is still shut and the
+            // policy knows which levers are shut when the next month opens one (call 16: an income tax opens at the founding rate;
+            // told before the restore, the restore emptied that memory and a city saved the month before a date lost its opening).
+            economyManager.getTaxPolicy().restoreOpenings(loaded.getLeverOpenings());
             boolean taxArrayRead =
                     economyManager.getTaxPolicy().restorePolicyState(loaded.getTaxPolicyState());
             economyManager.getTaxPolicy().restoreSectorOffsets(loaded.getSectorOffsets());
+            policyHearsTheMonth();
 
             // Format 18 and earlier carry nothing here, and a null restores as a
             // no-op - which leaves a founding city's opening buffer, the same

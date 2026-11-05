@@ -441,6 +441,10 @@ public class OutsideCheck {
             Game g = new Game(GameFiles.scratch("outsidecheck"));
             quietly(() -> {
                 g.run();
+                // THE LEVERS OPENED IN THE FIXTURE (R0): EI, the premium and the books are this section's subject, and on history's dates
+                // they are shut until 1940. Every lever opened and the defaults put back, before a month has run.
+                g.getEconomyManager().getTaxPolicy().reset();
+                g.getEconomyManager().getTaxPolicy().openAll();
                 // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
                 // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
                 // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -583,6 +587,10 @@ public class OutsideCheck {
             double[] grantStudents = new double[1], grantWage = new double[1], grantIndex = new double[1];
             quietly(() -> {
                 g.newGame();
+                // THE LEVERS OPENED IN THE FIXTURE (R0): the students' grant and loans are this section's subject, shut until 1939 on
+                // history's dates. Every lever opened and the defaults put back, before a month has run.
+                g.getEconomyManager().getTaxPolicy().reset();
+                g.getEconomyManager().getTaxPolicy().openAll();
                 g.getGovernmentInvestor().spend(-900_000_000 * PriceLevel.FACTOR);
                 g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
                 String[][] plan = {

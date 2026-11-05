@@ -1,4 +1,4 @@
-# RailDepotCheck.java - 519 lines · 14 methods · 1 constants · harnesses
+# RailDepotCheck.java - 526 lines · 14 methods · 1 constants · harnesses
 
 `ham/citybuildersim/RailDepotCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -46,7 +46,7 @@
 > only for what the stations let through. Every threshold is caused from both
 > sides, and every figure comes from the templates and the model's constants.
 
-**Uses:** [Freight](Freight.md) (36), [BusinessInvestment](BusinessInvestment.md) (24), [Traffic](Traffic.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [HaulageCheck](HaulageCheck.md) (4), [BuildingManager](BuildingManager.md) (2), [Mining](Mining.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [PriceLevel](PriceLevel.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Markets](Markets.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Freight](Freight.md) (36), [BusinessInvestment](BusinessInvestment.md) (24), [Traffic](Traffic.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [HaulageCheck](HaulageCheck.md) (4), [BuildingManager](BuildingManager.md) (2), [Mining](Mining.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [PriceLevel](PriceLevel.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Markets](Markets.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [GameFiles](GameFiles.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 **Used by (1):** [HomeRailCheck](HomeRailCheck.md)
 
@@ -59,10 +59,10 @@
 | 219 | · 2. A YOUNG CITY'S FIRST RAIL ORDER IS A RAIL DEPOT |
 | 242 | · 3. NO SPUR OR LINE BEFORE A STATION |
 | 267 | · 4. THE STATIONS CAP WHAT IS RAILED |
-| 346 | · 5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING |
-| 425 | · 6. THE OVERBUILD |
-| 473 | · 7. A TERMINAL FOLLOWS WHEN THE TONNES OUTGROW THE DEPOTS |
-| 492 | · 8. THE LAST STATION IS NOT RETIRED WHILE TRACK STANDS |
+| 353 | · 5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING |
+| 432 | · 6. THE OVERBUILD |
+| 480 | · 7. A TERMINAL FOLLOWS WHEN THE TONNES OUTGROW THE DEPOTS |
+| 499 | · 8. THE LAST STATION IS NOT RETIRED WHILE TRACK STANDS |
 
 ## Constants
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 464 | **type** `public class RailDepotCheck` | The railway's stations: the Rail Depot, and the rules that put a station first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md 1.1; sectors.Freight, THE STATIONS). |
+| 56 | 471 | **type** `public class RailDepotCheck` | The railway's stations: the Rail Depot, and the rules that put a station first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md 1.1; sectors.Freight, THE STATIONS). |
 | 63 | 7 | `static void quietly(Runnable r)` |  |
 | 71 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 76 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -91,7 +91,7 @@
 | 86 | 5 | `static double dealtNow(Freight fr)` | The tonnes the last haul dealt the railway: this month's bulk and goods offered at the shares it set for the month to come. |
 | 93 | 3 | `static String say(BusinessInvestment.Decision d)` | What a decision says, in a few words. |
 
-### THE FIXTURE: a bare city (lines 97-519)
+### THE FIXTURE: a bare city (lines 97-526)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -103,5 +103,5 @@
 | 129 | 3 | `Fx offer(double bulk, double goods)` _(in RailDepotCheck.Fx)_ | A month's offer to the railway, the wagon sets enough for the track standing. |
 | 134 | 5 | `Fx offer(double bulk, double goods, double sets)` _(in RailDepotCheck.Fx)_ | ...with this many wagon sets, however many the track needs. |
 | 140 | 1 | `BusinessInvestment.Decision plan()` _(in RailDepotCheck.Fx)_ |  |
-| 143 | 376 | `public static void main(String[] args)` |  |
+| 143 | 383 | `public static void main(String[] args)` |  |
 

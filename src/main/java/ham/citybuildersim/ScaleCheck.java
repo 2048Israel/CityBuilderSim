@@ -598,6 +598,13 @@ public class ScaleCheck {
                 + " and its player's look ---");
         GameFiles grown = new GameFiles(root.resolve("grown"), root.resolve("grown-no-legacy"));
         Game city = new Game(grown, LongPlaytest.founding());
+        // THE LEVERS OPENED IN THE FIXTURE (R0): this section needs a GROWING city to copy, and the playtest's town founded in 1900 holds its
+        // income taxes, wage floor and the rest shut for 16 to 20 years and does not grow: at month 722 it had 4,500 people in 6,042
+        // household places, not more than a year before, and built no home in the six months read, so no copy of it builds either.
+        // Every lever opened and the defaults put back, straight after the founding (the constructor), before
+        // OrderSearchCheck.playtestCity() runs its months.
+        city.getEconomyManager().getTaxPolicy().reset();
+        city.getEconomyManager().getTaxPolicy().openAll();
         // WN3: the city, and every copy read against it below (free(), tracks()), play on the goods' literals, as the game did before the
         // world market: a copy K times over is read against its city to a percent, and on the world's band it cannot track it - the
         // band is struck from a city's own exports and imports against the world's (a big seller depresses its own floor), so a copy

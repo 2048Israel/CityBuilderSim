@@ -106,6 +106,10 @@ public class FoodProcessingCheck {
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game game = new Game(files);
         quietly(game::run);
+        // THE LEVERS OPENED IN THE FIXTURE (R0): "twenty points on the sales tax" is a dial that does not exist before 1920 on history's
+        // dates. Every lever opened and the defaults put back, before a month has run.
+        game.getEconomyManager().getTaxPolicy().reset();
+        game.getEconomyManager().getTaxPolicy().openAll();
 
         FoodProcessing fp = game.getSectors().foodProcessing();
         BuildingManager bm = game.getBuildingManager();

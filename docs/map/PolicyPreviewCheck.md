@@ -1,4 +1,4 @@
-# PolicyPreviewCheck.java - 766 lines · 19 methods · 3 constants · harnesses
+# PolicyPreviewCheck.java - 770 lines · 19 methods · 3 constants · harnesses
 
 `ham/citybuildersim/PolicyPreviewCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -70,24 +70,24 @@
 
 | line | section |
 |---:|---|
-| 254 | 1. THE COPY |
-| 307 | 2. AT THE CITY'S OWN POLICY |
-| 385 | 7. A DIAL AT ZERO |
-| 427 | 6. APPLIED, THE PREVIEW IS THE MODEL |
-| 485 | 3. THE BUDGET |
-| 544 | 4. THE OTHER READS |
-| 588 | 8. THE FUND'S WITHDRAWAL (0.7.48) |
-| 619 | 5. AFTER A LOAD |
-| 639 | 9. ZONING'S BEFORE AND AFTER (0.7.107) |
-| 695 | 10. THE PORT DUES (FR4) |
+| 258 | 1. THE COPY |
+| 311 | 2. AT THE CITY'S OWN POLICY |
+| 389 | 7. A DIAL AT ZERO |
+| 431 | 6. APPLIED, THE PREVIEW IS THE MODEL |
+| 489 | 3. THE BUDGET |
+| 548 | 4. THE OTHER READS |
+| 592 | 8. THE FUND'S WITHDRAWAL (0.7.48) |
+| 623 | 5. AFTER A LOAD |
+| 643 | 9. ZONING'S BEFORE AND AFTER (0.7.107) |
+| 699 | 10. THE PORT DUES (FR4) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 87 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 176 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Con...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
-| 241 | `PolicyPreviewCheck.EI_POOL_ROUNDS` | `6` | The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. |
+| 180 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Con...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
+| 245 | `PolicyPreviewCheck.EI_POOL_ROUNDS` | `6` | The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. |
 
 ## Fields (state)
 
@@ -101,74 +101,74 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 692 | **type** `public class PolicyPreviewCheck` | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. |
+| 75 | 696 | **type** `public class PolicyPreviewCheck` | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 89 | 1 | `static boolean near(double a, double b)` |  |
 | 91 | 5 | `static void quietly(Runnable r)` |  |
-| 139 | 35 | `static Game city(Path root)` | A played city with every line of the Policy tab in it: homes, shops, a diner and builders; a mine, a foundry and a fabrication shop; power, water and roads; a commercial bank (its profit tax), clinics (their fees) and... |
-| 182 | 23 | `public static void main(String[] args) throws Exception` |  |
-| 212 | 27 | `static void anEiPool(Game g)` | An EI pool that stays, caused. |
-| 244 | 9 | `static void printCity(Game g)` | The city as the previews read it, for the record. |
+| 139 | 39 | `static Game city(Path root)` | A played city with every line of the Policy tab in it: homes, shops, a diner and builders; a mine, a foundry and a fabrication shop; power, water and roads; a commercial bank (its profit tax), clinics (their fees) and... |
+| 186 | 23 | `public static void main(String[] args) throws Exception` |  |
+| 216 | 27 | `static void anEiPool(Game g)` | An EI pool that stays, caused. |
+| 248 | 9 | `static void printCity(Game g)` | The city as the previews read it, for the record. |
 
-### 1. THE COPY (lines 254-306)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 256 | 50 | `static void theCopy(Game g)` |  |
-
-### 2. AT THE CITY'S OWN POLICY (lines 307-384)
+### 1. THE COPY (lines 258-310)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 309 | 69 | `static void atTheCitysOwn(Game g, String section)` |  |
-| 379 | 5 | `static double sum(java.util.Map<String, Double> m)` |  |
+| 260 | 50 | `static void theCopy(Game g)` |  |
 
-### 7. A DIAL AT ZERO (lines 385-426)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 387 | 39 | `static void aDialAtZero(Game g)` |  |
-
-### 6. APPLIED, THE PREVIEW IS THE MODEL (lines 427-484)
+### 2. AT THE CITY'S OWN POLICY (lines 311-388)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 429 | 55 | `static void appliedIsTheModel(Game g)` |  |
+| 313 | 69 | `static void atTheCitysOwn(Game g, String section)` |  |
+| 383 | 5 | `static double sum(java.util.Map<String, Double> m)` |  |
 
-### 3. THE BUDGET (lines 485-543)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 487 | 56 | `static void theBudget(Game g)` |  |
-
-### 4. THE OTHER READS (lines 544-587)
+### 7. A DIAL AT ZERO (lines 389-430)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 546 | 41 | `static void theOtherReads(Game g)` |  |
+| 391 | 39 | `static void aDialAtZero(Game g)` |  |
 
-### 8. THE FUND'S WITHDRAWAL (0.7.48) (lines 588-618)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 590 | 28 | `static void theWithdrawal(Game g)` |  |
-
-### 5. AFTER A LOAD (lines 619-638)
+### 6. APPLIED, THE PREVIEW IS THE MODEL (lines 431-488)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 621 | 18 | `static void afterALoad(Path root, Game g)` |  |
+| 433 | 55 | `static void appliedIsTheModel(Game g)` |  |
 
-### 9. ZONING'S BEFORE AND AFTER (0.7.107) (lines 639-694)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 641 | 53 | `static void zoning(Game g)` |  |
-
-### 10. THE PORT DUES (FR4) (lines 695-766)
+### 3. THE BUDGET (lines 489-547)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 698 | 8 | `static Game portCity(String label)` | A city with a Bulk Terminal handed to it and three months played on, so a berth has worked and Freight has billed its tonnes (LandlordPortCheck.seaBase()'s recipe). |
-| 707 | 59 | `static void portDues()` |  |
+| 491 | 56 | `static void theBudget(Game g)` |  |
+
+### 4. THE OTHER READS (lines 548-591)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 550 | 41 | `static void theOtherReads(Game g)` |  |
+
+### 8. THE FUND'S WITHDRAWAL (0.7.48) (lines 592-622)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 594 | 28 | `static void theWithdrawal(Game g)` |  |
+
+### 5. AFTER A LOAD (lines 623-642)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 625 | 18 | `static void afterALoad(Path root, Game g)` |  |
+
+### 9. ZONING'S BEFORE AND AFTER (0.7.107) (lines 643-698)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 645 | 53 | `static void zoning(Game g)` |  |
+
+### 10. THE PORT DUES (FR4) (lines 699-770)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 702 | 8 | `static Game portCity(String label)` | A city with a Bulk Terminal handed to it and three months played on, so a berth has worked and Freight has billed its tonnes (LandlordPortCheck.seaBase()'s recipe). |
+| 711 | 59 | `static void portDues()` |  |
 

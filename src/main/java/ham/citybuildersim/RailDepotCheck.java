@@ -303,7 +303,14 @@ public class RailDepotCheck {
 
         // ---- and in a played city's months ----
         System.out.println("\n--- ...and in a played city: lines alone rail nothing, spurs rail bulk, a depot lets the rest through ---");
-        Game city = HaulageCheck.played("raildepotcheck-city", 14);
+        // THE LEVERS OPENED IN THE FIXTURE (R0, call 17's class): HaulageCheck.played() is base() and fourteen months, and the
+        // fixture needs the pre-R0 city, one that taxes and pays its wage floor from its first month; a 1900 city on history's dates has neither
+        // until 1916-1918, and in the suite's first read of it the spurs' month offered 56,438 t of bulk to sidings of 100,000, fewer than they hold.
+        // So base() is taken, every lever opened and the defaults put back before a month, and the fourteen months played here (played()'s own body).
+        Game city = HaulageCheck.base(GameFiles.scratch("raildepotcheck-city"));
+        city.getEconomyManager().getTaxPolicy().reset();
+        city.getEconomyManager().getTaxPolicy().openAll();
+        quietly(() -> { for (int i = 0; i < 14; i++) city.toggleNextMonth(); });
         Freight fr = city.getSectors().freight();
         GoodsMarket ore = city.getMarkets().get(Good.IRON);
         quietly(() -> { HaulageCheck.lay(city, "Freight Line", 4); for (int i = 0; i < 3; i++) city.toggleNextMonth(); });

@@ -277,6 +277,17 @@ adds its line here, not in `CLAUDE.md`.
                                    the fund's withdrawal, and since 0.7.52 the rule at each step of its
                                    strictness (CentralBankCheck 21); advice, not a model change -
                                    PolicyPreviewCheck holds it
+        PolicyDates.java           when Canada first had each Policy lever, as pure data (R0, 2026-11-04;
+                                   research-1900.md 7.1): the Lever enum's opening month (a year-only date
+                                   opens in January; the levers the study does not date are open from
+                                   founding, each with its reason), the study's entry key, the act and its
+                                   first terms, openingMonth/isOpen/earliestOpening (MAX_EARLY_MONTHS, the
+                                   law field's four years) and the inbox notice; nothing reads it until R0's
+                                   second slice puts the gate in the model - PolicyDatesCheck holds it
+        PolicyDatesCheck.java      the table of 7.1 typed out as the specification: each lever's year and
+                                   month, shut the month before and open from its date, founding with the
+                                   open levers open, the early-opening bound and its floor, the notices
+                                   and keys, and history's order (R0)
         Expectations.java          the anchor (0.7.42): expected inflation, the central bank's credibility and
                                    the expected price level every money constant that prices something is
                                    struck at, at the top of every month (Game.restrikeMoneyConstants());

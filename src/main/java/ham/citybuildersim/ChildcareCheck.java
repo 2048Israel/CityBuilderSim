@@ -154,6 +154,11 @@ public class ChildcareCheck {
         Game g = new Game(files);
         quietly(() -> {
             g.run();
+            // Its callers (AutoBuildCheck, AuctionCheck, HydroCheck) need a town whose automatic builder orders in its months; on history's
+            // dates (R0) a 1900 town has no income taxes or wage floor to 1916-1920 and its builder ordered nothing in 24 months, so
+            // every lever is opened and the defaults put back, before a month (call 17's class).
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L * k);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());

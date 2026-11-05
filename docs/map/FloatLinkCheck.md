@@ -1,4 +1,4 @@
-# FloatLinkCheck.java - 1,850 lines · 60 methods · 17 constants · harnesses
+# FloatLinkCheck.java - 1,859 lines · 60 methods · 17 constants · harnesses
 
 `ham/citybuildersim/FloatLinkCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -76,16 +76,16 @@
 | 441 | THE PURE FIXTURES: the study's calm city, a hiking one, and a flat one |
 | 504 | MAIN |
 | 541 | THE PLAYED CITY |
-| 644 | 1. FAIR PRICES IT AT 100 |
-| 742 | 2. A SALE |
-| 967 | 3. THE FLOATER'S COUPON FOLLOWS THE DIAL |
-| 1079 | 4. THE LINKER'S UPLIFT |
-| 1183 | 5. TO MATURITY |
-| 1214 | · the bank-held fixtures: one city, run once, read by 3 (the margin under nothing) and 5 (the floor) |
-| 1424 | 6. THE MONEY CLOSES |
-| 1456 | 7. THE BUYBACK |
-| 1624 | 8. THE ROLLOVER |
-| 1748 | 9. THE SAVE |
+| 653 | 1. FAIR PRICES IT AT 100 |
+| 751 | 2. A SALE |
+| 976 | 3. THE FLOATER'S COUPON FOLLOWS THE DIAL |
+| 1088 | 4. THE LINKER'S UPLIFT |
+| 1192 | 5. TO MATURITY |
+| 1223 | · the bank-held fixtures: one city, run once, read by 3 (the margin under nothing) and 5 (the floor) |
+| 1433 | 6. THE MONEY CLOSES |
+| 1465 | 7. THE BUYBACK |
+| 1633 | 8. THE ROLLOVER |
+| 1757 | 9. THE SAVE |
 
 ## Constants
 
@@ -100,14 +100,14 @@
 | 215 | `FloatLinkCheck.X_FOOTS` | `new Worst()` | The bridge foots through its journal and its residual. |
 | 217 | `FloatLinkCheck.X_BRIDGE` | `new Worst()` | The bridge's residual is the bank's coupon timing and nothing else: the uplift is not in it. |
 | 219 | `FloatLinkCheck.X_EARNED` | `new Worst()` | The walk from EARNED to the budget leaves what EARNED never counted - the coupons paid beyond the bank - and nothing of the uplift. |
-| 619 | `FloatLinkCheck.SALE_OF_REVENUE` | `1./ 3` | The most one sale of section 2 and 3's fixture is, of a year's tax revenue (EM1, 2026-10-29). |
-| 748 | `FloatLinkCheck.floaters` | `new ArrayList<>()` |  |
-| 749 | `FloatLinkCheck.linkers` | `new ArrayList<>()` |  |
-| 756 | `FloatLinkCheck.CAP_TAIL` | `.0025` | A tail the harness caps the sale at, to cause one: a sale far past the bids stops at the cap. |
-| 758 | `FloatLinkCheck.SALE_MARGIN` | `new Worst(), SALE_INDEX = new Worst(), SALE_CASH = new Worst(), SALE_BOOKS = ...` |  |
-| 972 | `FloatLinkCheck.HELD_OVER_THE_WORLD` | `.0075, DIAL_MOVE =.015` | How far over the world's rate the dial is held in 3 (the old calendar's 3% over its 2.25%), and the move of it the section reads the bond's fall on. |
-| 1211 | `FloatLinkCheck.M_SHARES` | `new Worst()` |  |
-| 1212 | `FloatLinkCheck.FX_ZERO` | `new Worst()` |  |
+| 628 | `FloatLinkCheck.SALE_OF_REVENUE` | `1./ 3` | The most one sale of section 2 and 3's fixture is, of a year's tax revenue (EM1, 2026-10-29). |
+| 757 | `FloatLinkCheck.floaters` | `new ArrayList<>()` |  |
+| 758 | `FloatLinkCheck.linkers` | `new ArrayList<>()` |  |
+| 765 | `FloatLinkCheck.CAP_TAIL` | `.0025` | A tail the harness caps the sale at, to cause one: a sale far past the bids stops at the cap. |
+| 767 | `FloatLinkCheck.SALE_MARGIN` | `new Worst(), SALE_INDEX = new Worst(), SALE_CASH = new Worst(), SALE_BOOKS = ...` |  |
+| 981 | `FloatLinkCheck.HELD_OVER_THE_WORLD` | `.0075, DIAL_MOVE =.015` | How far over the world's rate the dial is held in 3 (the old calendar's 3% over its 2.25%), and the move of it the section reads the bond's fall on. |
+| 1220 | `FloatLinkCheck.M_SHARES` | `new Worst()` |  |
+| 1221 | `FloatLinkCheck.FX_ZERO` | `new Worst()` |  |
 
 ## Fields (state)
 
@@ -136,21 +136,21 @@
 | 293 | `final Map<Debt, Life> lives` |  |
 | 294 | `double prevBank` |  |
 | 295 | `int moves` |  |
-| 747 | `static Game city` | The city sections 2-4 share, and the pieces sold in it. |
-| 750 | `static LongTermBond fixedTwoYear` |  |
-| 753 | `static double sPrevBank` | The bank's share of the last month's coupons in the shared city, carried from section 3 to section 4 for the bridge's timing. |
-| 1216 | `static Game fxCity` |  |
-| 1217 | `static FloatingRateNote fxNeg, fxPos` |  |
-| 1218 | `static InflationLinkedBond fxUp, fxDown` |  |
-| 1219 | `static Books fxBooks` |  |
-| 1220 | `static double fxNegAtNothing, fxNegAtHalf, fxNegAtTwo, fxRepaid, fxUpPaid, fxDownPaid, fxUpRatio, fxDownRat...` |  |
-| 1221 | `static double fxOwed, fxOwedWant, fxPricedGap, fxDownMid` |  |
+| 756 | `static Game city` | The city sections 2-4 share, and the pieces sold in it. |
+| 759 | `static LongTermBond fixedTwoYear` |  |
+| 762 | `static double sPrevBank` | The bank's share of the last month's coupons in the shared city, carried from section 3 to section 4 for the bridge's timing. |
+| 1225 | `static Game fxCity` |  |
+| 1226 | `static FloatingRateNote fxNeg, fxPos` |  |
+| 1227 | `static InflationLinkedBond fxUp, fxDown` |  |
+| 1228 | `static Books fxBooks` |  |
+| 1229 | `static double fxNegAtNothing, fxNegAtHalf, fxNegAtTwo, fxRepaid, fxUpPaid, fxDownPaid, fxUpRatio, fxDownRat...` |  |
+| 1230 | `static double fxOwed, fxOwedWant, fxPricedGap, fxDownMid` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 91 | 1760 | **type** `public class FloatLinkCheck` | The floating-rate note and the inflation-linked bond (CD5, spec-city-debt.md sections 2.4, 2.5, 5.3 and 5.4; D25): a floater pays the month's policy rate plus a margin fixed at the sale, never under nothing; a linker ... |
+| 91 | 1769 | **type** `public class FloatLinkCheck` | The floating-rate note and the inflation-linked bond (CD5, spec-city-debt.md sections 2.4, 2.5, 5.3 and 5.4; D25): a floater pays the month's policy rate plus a margin fixed at the sale, never under nothing; a linker ... |
 | 97 | 4 | `static void check(String label, boolean ok)` |  |
 | 102 | 9 | `static void near(String label, double actual, double expected, double tol)` |  |
 | 112 | 4 | `static void quietly(Runnable r)` |  |
@@ -201,90 +201,90 @@
 |---:|---:|---|---|
 | 508 | 32 | `public static void main(String[] args) throws Exception` |  |
 
-### THE PLAYED CITY (lines 541-643)
+### THE PLAYED CITY (lines 541-652)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 546 | 25 | `static Game playedCity(String label)` | The city BuybackCheck was written against, with the rollover off, the dial held by hand at 3% and the world given an appetite. |
-| 573 | 7 | `static void worldWantsPaper(Game city)` | The world with an appetite for the city's paper: a tenth of the hot money it had, as early in a boom. |
-| 582 | 12 | `static Game readyCity(String label, boolean manualRollover, double centralBankShare)` | A played city ready to sell: the world wants paper, cash to spare, nothing rolled over by itself, the dial where the harness holds it. |
-| 596 | 5 | `static Debt newest(DebtManager dm, Set<Debt> before)` | The piece the last call put on the books, or null. |
-| 602 | 3 | `static Set<Debt> piecesOf(DebtManager dm)` |  |
-| 607 | 3 | `static double askOf(Game city, double share)` | What the households could take, to size a sale that clears at fair. |
-| 622 | 3 | `static double saleOf(Game city, double share)` | A sale of this share of what the households could take, and no more than SALE_OF_REVENUE of a year of the city's tax revenue. |
-| 627 | 7 | `static FloatingRateNote fixtureFloater(Game city, double face, int months, double margin)` | A bank-held fixture floater, books opened at a sale-like price. |
-| 636 | 7 | `static InflationLinkedBond fixtureLinker(Game city, double face, int months, double real, double base)` | A bank-held fixture linker, books opened at a sale-like price. |
+| 546 | 34 | `static Game playedCity(String label)` | The city BuybackCheck was written against, with the rollover off, the dial held by hand at 3% and the world given an appetite. |
+| 582 | 7 | `static void worldWantsPaper(Game city)` | The world with an appetite for the city's paper: a tenth of the hot money it had, as early in a boom. |
+| 591 | 12 | `static Game readyCity(String label, boolean manualRollover, double centralBankShare)` | A played city ready to sell: the world wants paper, cash to spare, nothing rolled over by itself, the dial where the harness holds it. |
+| 605 | 5 | `static Debt newest(DebtManager dm, Set<Debt> before)` | The piece the last call put on the books, or null. |
+| 611 | 3 | `static Set<Debt> piecesOf(DebtManager dm)` |  |
+| 616 | 3 | `static double askOf(Game city, double share)` | What the households could take, to size a sale that clears at fair. |
+| 631 | 3 | `static double saleOf(Game city, double share)` | A sale of this share of what the households could take, and no more than SALE_OF_REVENUE of a year of the city's tax revenue. |
+| 636 | 7 | `static FloatingRateNote fixtureFloater(Game city, double face, int months, double margin)` | A bank-held fixture floater, books opened at a sale-like price. |
+| 645 | 7 | `static InflationLinkedBond fixtureLinker(Game city, double face, int months, double real, double base)` | A bank-held fixture linker, books opened at a sale-like price. |
 
-### 1. FAIR PRICES IT AT 100 (lines 644-741)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 648 | 86 | `static void fairAtPar()` |  |
-| 735 | 6 | `static double maxDiff(double[] a, double[] b)` |  |
-
-### 2. A SALE (lines 742-966)
+### 1. FAIR PRICES IT AT 100 (lines 653-750)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 762 | 23 | `static FloatingRateNote sellFloater(int years, double ask)` | Sells a floater by its handler and holds the piece to its quote. |
-| 787 | 26 | `static InflationLinkedBond sellLinker(int years, double ask)` | Sells a linker by its handler and holds the piece to its quote. |
-| 814 | 117 | `static void theSale()` |  |
-| 932 | 5 | `static int countOf(DebtManager dm, Class<? extends Debt> type)` |  |
-| 939 | 27 | `static void neverUnasked()` | A default city, a bill and a bond sold and played for years: not one floater or linker, though the rollover has run. |
+| 657 | 86 | `static void fairAtPar()` |  |
+| 744 | 6 | `static double maxDiff(double[] a, double[] b)` |  |
 
-### 3. THE FLOATER'S COUPON FOLLOWS THE DIAL (lines 967-1078)
+### 2. A SALE (lines 751-975)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 974 | 81 | `static void followsTheDial()` |  |
-| 1057 | 21 | `static void aMarginUnderNothing()` | The coupon is never under nothing: a floater with a margin below it, on a dial at nothing. |
+| 771 | 23 | `static FloatingRateNote sellFloater(int years, double ask)` | Sells a floater by its handler and holds the piece to its quote. |
+| 796 | 26 | `static InflationLinkedBond sellLinker(int years, double ask)` | Sells a linker by its handler and holds the piece to its quote. |
+| 823 | 117 | `static void theSale()` |  |
+| 941 | 5 | `static int countOf(DebtManager dm, Class<? extends Debt> type)` |  |
+| 948 | 27 | `static void neverUnasked()` | A default city, a bill and a bond sold and played for years: not one floater or linker, though the rollover has run. |
 
-### 4. THE LINKER'S UPLIFT (lines 1079-1182)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1083 | 80 | `static void theUplift()` |  |
-| 1165 | 17 | `static void anIndexThatIsNoNumber()` | A linker on its own, no city: an index that is no number books nothing, the floor is the face, the ratio is the level over the base. |
-
-### 5. TO MATURITY (lines 1183-1213)
+### 3. THE FLOATER'S COUPON FOLLOWS THE DIAL (lines 976-1087)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1192 | 6 | `static double shorten(Game g, InflationLinkedBond l, int months)` | A linker sold for real and shortened to a year after it has settled, so the households, the bank and (once its dial has bought in) the central bank hold it: its books are reopened at the price it sold at on the shorte... |
-| 1199 | 11 | `static void report(String name, Books b)` |  |
+| 983 | 81 | `static void followsTheDial()` |  |
+| 1066 | 21 | `static void aMarginUnderNothing()` | The coupon is never under nothing: a floater with a margin below it, on a dial at nothing. |
 
-### the bank-held fixtures: one city, run once, read by 3 (the margin under nothing) and 5 (the floor) (lines 1214-1423)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1230 | 45 | `static void runFixtures()` | Four fixtures built through DebtManager.addFloatingRateNote() and addLinkedBond() and opened at a price a sale would have made, the bank holding all of them, in a played city with a price index the harness drives: a f... |
-| 1276 | 147 | `static void toMaturity()` |  |
-
-### 6. THE MONEY CLOSES (lines 1424-1455)
+### 4. THE LINKER'S UPLIFT (lines 1088-1191)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1428 | 27 | `static void theMoneyCloses()` |  |
+| 1092 | 80 | `static void theUplift()` |  |
+| 1174 | 17 | `static void anIndexThatIsNoNumber()` | A linker on its own, no city: an index that is no number books nothing, the floor is the face, the ratio is the level over the base. |
 
-### 7. THE BUYBACK (lines 1456-1623)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1461 | 19 | `static double[] handPricing(DebtManager dm, Debt piece)` | The piece's payments as the market prices it, worked out here from the dial and index the manager expects. |
-| 1481 | 5 | `static double tills(Game g)` |  |
-| 1488 | 56 | `static Buyback.Result part(Game g, Debt piece, double face, String what)` | A part of a settled piece bought back, held to everything a part has to hold. |
-| 1545 | 78 | `static void theBuyback()` |  |
-
-### 8. THE ROLLOVER (lines 1624-1747)
+### 5. TO MATURITY (lines 1192-1222)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1628 | 113 | `static void theRollover()` |  |
-| 1743 | 4 | `static Debt dueNextMonth(Debt piece)` | A fixture that falls due at the next press: its term stays what it was, its remaining months are one. |
+| 1201 | 6 | `static double shorten(Game g, InflationLinkedBond l, int months)` | A linker sold for real and shortened to a year after it has settled, so the households, the bank and (once its dial has bought in) the central bank hold it: its books are reopened at the price it sold at on the shorte... |
+| 1208 | 11 | `static void report(String name, Books b)` |  |
 
-### 9. THE SAVE (lines 1748-1850)
+### the bank-held fixtures: one city, run once, read by 3 (the margin under nothing) and 5 (the floor) (lines 1223-1432)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1752 | 98 | `static void theSave() throws Exception` |  |
+| 1239 | 45 | `static void runFixtures()` | Four fixtures built through DebtManager.addFloatingRateNote() and addLinkedBond() and opened at a price a sale would have made, the bank holding all of them, in a played city with a price index the harness drives: a f... |
+| 1285 | 147 | `static void toMaturity()` |  |
+
+### 6. THE MONEY CLOSES (lines 1433-1464)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1437 | 27 | `static void theMoneyCloses()` |  |
+
+### 7. THE BUYBACK (lines 1465-1632)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1470 | 19 | `static double[] handPricing(DebtManager dm, Debt piece)` | The piece's payments as the market prices it, worked out here from the dial and index the manager expects. |
+| 1490 | 5 | `static double tills(Game g)` |  |
+| 1497 | 56 | `static Buyback.Result part(Game g, Debt piece, double face, String what)` | A part of a settled piece bought back, held to everything a part has to hold. |
+| 1554 | 78 | `static void theBuyback()` |  |
+
+### 8. THE ROLLOVER (lines 1633-1756)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1637 | 113 | `static void theRollover()` |  |
+| 1752 | 4 | `static Debt dueNextMonth(Debt piece)` | A fixture that falls due at the next press: its term stays what it was, its remaining months are one. |
+
+### 9. THE SAVE (lines 1757-1859)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1761 | 98 | `static void theSave() throws Exception` |  |
 
