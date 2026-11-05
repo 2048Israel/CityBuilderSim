@@ -171,7 +171,22 @@ A bust is people 15%+ under a running peak from m120, and a new one only after a
 gives 25 for BA1 without it). Once is taken. Squared shortened the queue but busted more, and with 16 seeds the two
 are within each other's noise.
 
-### The run: `docs/ensemble/BA1.md`
+### The run on the final model: `docs/ensemble/BA1.md` (2026-11-04 evening)
+
+Run `BA1d` on ab5f3f41: the brake, the three rounding edges, main at 0.9.11 merged in, the world files named. 80 of 80
+runs in 26.5 minutes, two at a time, against `docs/ensemble/0.9.6.md`. **24/26, against the baseline's 22/26.**
+
+- Fails only A2 (16 [13 to 39] months of yoy over 10%; 0.9.6 failed it at 14 [7 to 29]) and S1 (2.68%, longest spell
+  107 months; 0.9.6 2.11%, 102). A1 passes (2.61%, 15/16 in band), and so do A3 (5 [0 to 10]), R2 and R3.
+- AUTO2: busts 19 in 13 seeds; people at m240 / m600 / m1200 3,770 / 14,842 / 83,377; final population 605,524
+  (0.9.6 335,674). The queue from m240: p50 6.6, p90 45.4, p99 82.1 months. The premium is on in 46% of months, p90
+  +56%.
+- The morning's run on c0c7afaa (below) had busts at 14 in 11 seeds. The rounding edges move paths, and 14 to 19
+  is within the 16 seeds' noise (FC1-lc3 16 in 13, BA1 without the brake 25 in 13).
+- A start of BA1c, cut by the PC going offline and then resumed while its first start still ran, did 45 runs twice
+  over the same CSVs; it was thrown away and not scored.
+
+### The morning's run on c0c7afaa (replaced)
 
 Run `BA1` on c0c7afaa (the brake once, the world files named, the `queue` and `premium` columns), 80 of 80 runs in
 36.5 minutes at two at a time, against `docs/ensemble/0.9.6.md`. **22/26, as the baseline's 22/26.**
