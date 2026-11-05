@@ -1,4 +1,4 @@
-# BA1 - Every business may build ahead ({next}, 2026-11-03)
+# BA1 - Every business may build ahead (0.9.16, 2026-11-03)
 
 **WHERE IT STANDS (2026-11-05, 05:35): ready, the ship file pushed. Main's R0, R0b and R0c (0.9.14) merged in; the full suite red only in known classes passed by name.**
 - **The full suite on the merged tree** (67fe6cc7 + the maps, `./batch-check.sh`, all 171 harnesses, 00:02-00:36, run

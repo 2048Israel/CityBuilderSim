@@ -297,6 +297,21 @@ adds its line here, not in `CLAUDE.md`.
                                    onto coal, Haulage's horse and wagon (no diesel, crops, carters, fewer
                                    trucks, the quote), the homes' lamp oil and coal, and the money's audit
                                    with each on
+        Equipment.java             a piece of equipment a template carries (R1, 2026-11-05; research-design
+                                   2.1-2.2): its id, since (a year, or a catalogue code unknown until R2),
+                                   the 1900 form it ends (STEAM, FARM_HORSES, CART_HORSES), what fitting it
+                                   buys, its work and life; read from buildings.json's "equipment"
+        EquipmentForms.java        R0c's shares set from the buildings still without the piece that ends
+                                   each form (BuildingsStacks' unfitted counts, saved by template id),
+                                   weighted by draw, land or truck room, only where a count is or was;
+                                   called where the Policy hears the month and again on a load (R1)
+        EquipmentFit.java          the payback rule (research-design 2.2 steps 1-4) as each piece's verdict
+                                   (FITTED, NOT_KNOWN, PAYS, NOT_YET) at the city's prices, the rate and
+                                   hurdle of a building order of its whole cost, and the sector's rank by
+                                   earnings on cost; read on demand, never in the month (R1)
+        EquipmentCheck.java        R1's equipment: the data read, none unfitted in a played city, the counts
+                                   setting the forms and the save carrying them, the rule's arithmetic, the
+                                   verdicts at the city's prices, and the verdict changing nothing
         Expectations.java          the anchor (0.7.42): expected inflation, the central bank's credibility and
                                    the expected price level every money constant that prices something is
                                    struck at, at the top of every month (Game.restrikeMoneyConstants());

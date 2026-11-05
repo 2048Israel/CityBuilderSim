@@ -18,6 +18,27 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.16 — BA1, every business may build ahead — 2026-11-05, ready, see docs/queue/BA1-notes.md
+No business is held to one order on site, nor the landlords to twelve months of the builders' work (Jerus: "why
+bounded? why not let contracts flow?"). A sector orders whenever an order clears its test at the price of a point it
+would pay, each building priced on the queue the ones before it leave, the cost grown by the interest over the
+order's whole wait and, while contracts are dear, once more by its own multiple ("stop trying to place orders until
+contracts arent so expensive": a business can wait). The builders keep one depot on site, the refiners one crude unit.
+The ensemble scores 22/26 against 0.9.12's 24/26. A2's spell is 14 months against 27, 40,000 people come at m878
+against m1,038, and the final city is 572,286 against 323,765. A3 misses by a month in one seed, R3 in four. Known-class
+lines pass by name at the gate: LongPlaytest's map finding (Jerus: "Ship it, pass both"), MapCheck's moved boxes (DM2),
+PriceLevelCheck 8's drift (RT1, BS1) and DenominationCheck's twin, a price tie in the bond book (OB1).
+
+### 0.9.15 — R1, equipment as data and on each building — 2026-11-05, ready, see docs/queue/R1-notes.md
+The first part of research's recipes and equipment, built off. `buildings.json` gives a building the equipment it can be fitted with:
+the electric motor drive on the 18 factories (it ends R0c's steam), the motor truck on the Truck Depot (the carts' horses) and the
+tractor on three farms (the farms' horses; its date is the research catalogue's, so it is not known yet), each with what fitting it
+buys, its work and its life. Each stack of buildings counts the ones still without each piece, and the count is saved; R0c's shares
+are set from the counts each month, weighted by the buildings' power, land or truck room. The payback rule (a piece fitted only when
+what it saves over its life repays its cost and clears the interest hurdle, as a new building's) gives each piece a verdict at the
+city's prices, read on demand. Every building in a played city is fitted, so the default city's trace is unchanged. EquipmentCheck
+holds it. Next: the fit bought and ranked with new buildings (R1b), recipes (R1c), and the 1900 city switched on with R0d's wages (R1d).
+
 ### 0.9.14 — R0c, the 1900 mechanics as forms — 2026-11-05, ready, see docs/queue/R0c-notes.md
 The 1900 mechanics of research-1900 §4 are built as forms, each a share of a sector or of the homes that runs the 1900 way, and
 all are off: 0 in every played city, so the default city's trace is unchanged, until R1 sets them from each building's recipe

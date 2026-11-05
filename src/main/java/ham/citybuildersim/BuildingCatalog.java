@@ -104,8 +104,8 @@ public class BuildingCatalog {
         }
     }
 
-    /** @return the parsed buildings, or null if the file is unusable. */
-    private List<BuildingsTemplate> parse(Reader reader) {
+    /** @return the parsed buildings, or null if the file is unusable. Package-private so that a harness can read a file of its own making (EquipmentCheck, the bad pieces). */
+    List<BuildingsTemplate> parse(Reader reader) {
 
         JsonObject root;
         try {
@@ -236,6 +236,7 @@ public class BuildingCatalog {
         readOffshore(o, template, name);
         readSite(o, template, name);
         readOldMetal(o, template, name);
+        readEquipment(o, template, name);
 
         // The file's money is today's; the template is priced at the founding's, once, here (EP1).
         return template.pricedAtFoundingLevel();
@@ -258,6 +259,92 @@ public class BuildingCatalog {
                 continue;
             }
             template.setOldMetal(metal, e.getValue().getAsDouble());
+        }
+    }
+
+    /**
+     * The equipment a building can be fitted with (R1, 2026-11-05; Equipment): "equipment": [{"id": "electric-drive",
+     * "name": "Electric motor drive", "since": "1900", "ends": "STEAM", "buys": {"MACHINERY": 10.9}, "work": 114,
+     * "lifeMonths": 300}] - a key permanent on its template, what the screens call it, the year it is known from (a
+     * JSON number or a string, read as text) or a catalogue code, the 1900 form it ends (an Equipment.Form), the goods
+     * fitting it buys (units at nameplate), the BUILDING_WORK points and its life. Absent, none. A piece with no id, a
+     * second of one id on a template, no "since", an unknown form, an unknown good or a life of 0 or less is reported
+     * and skipped, as an unknown good in "makes" costs only its line: the other pieces and the building are read.
+     */
+    private void readEquipment(JsonObject o, BuildingsTemplate template, String name) {
+
+        if (!o.has("equipment") || !o.get("equipment").isJsonArray()) return;
+        List<Equipment> pieces = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (JsonElement element : o.getAsJsonArray("equipment")) {
+            if (!element.isJsonObject()) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" has a non-object piece of equipment; skipped.");
+                continue;
+            }
+            JsonObject p = element.getAsJsonObject();
+            String id = string(p, "id").trim();
+            if (id.isEmpty()) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" has a piece of equipment with no id; skipped.");
+                continue;
+            }
+            if (!seen.add(id)) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" has two pieces of equipment called \"" + id
+                        + "\"; the second skipped.");
+                continue;
+            }
+            String formName = string(p, "ends");
+            Equipment.Form form;
+            try {
+                form = Equipment.Form.valueOf(formName);
+            } catch (Exception e) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" piece \"" + id + "\" ends unknown form \""
+                        + formName + "\"; skipped.");
+                continue;
+            }
+            java.util.Map<Good, Double> buys = new java.util.EnumMap<>(Good.class);
+            boolean unknownGood = false;
+            if (p.has("buys") && p.get("buys").isJsonObject()) {
+                for (java.util.Map.Entry<String, JsonElement> e : p.getAsJsonObject("buys").entrySet()) {
+                    Good good = Good.byName(e.getKey());
+                    if (good == null) {
+                        System.out.println(FILE_NAME + ": \"" + name + "\" piece \"" + id + "\" buys unknown good \""
+                                + e.getKey() + "\"; skipped.");
+                        unknownGood = true;
+                        break;
+                    }
+                    double units;
+                    try {
+                        units = e.getValue().getAsDouble();
+                    } catch (Exception ex) {
+                        units = Double.NaN;
+                    }
+                    buys.put(good, units);
+                }
+            }
+            if (unknownGood) continue;
+            try {
+                pieces.add(new Equipment(id, string(p, "name"), sinceText(p), form, buys, number(p, "work"),
+                        (int) number(p, "lifeMonths")));
+            } catch (IllegalArgumentException e) {
+                System.out.println(FILE_NAME + ": \"" + name + "\" piece \"" + id + "\" is no good (" + e.getMessage()
+                        + "); skipped.");
+            }
+        }
+        template.setEquipment(pieces);
+    }
+
+    /** An equipment piece's "since" as text: a whole JSON number is its digits ("1900"), a string as written ("PE14"), absent or anything else empty. */
+    private String sinceText(JsonObject p) {
+        try {
+            if (!p.has("since") || p.get("since").isJsonNull()) return "";
+            JsonElement e = p.get("since");
+            if (e.isJsonPrimitive() && e.getAsJsonPrimitive().isNumber()) {
+                double d = e.getAsDouble();
+                return d == Math.rint(d) ? Long.toString((long) d) : e.getAsString();
+            }
+            return e.getAsString();
+        } catch (Exception e) {
+            return "";
         }
     }
 

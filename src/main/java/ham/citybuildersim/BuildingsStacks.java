@@ -247,9 +247,58 @@ public class BuildingsStacks {
         }
     }
 
+    /*
+     * ===== THE UNFITTED (R1, 2026-11-05; Equipment, EquipmentForms, docs/queue/R1-notes.md call 4) =====
+     *
+     * A stack is a number of buildings of one template with no building of its own, so the state of a piece of equipment on it is a count: how
+     * many of its buildings are still WITHOUT the piece, by the piece's id, never more than stand. Empty in every played city (a building that
+     * finishes comes fitted: today's way to run), and EquipmentForms sets each 1900 form's share from the counts. A building scrapped takes an
+     * unfitted one first, the older plant, so a count never outlives the buildings it counts. Saved, by template id, only where a stack has any
+     * (BuildingManager.getUnfittedById(); DataSave.unfittedById). A sorted map, so that anything that walks it walks it in one order.
+     */
+    private final java.util.TreeMap<String, Integer> unfitted = new java.util.TreeMap<>();
+
+    /** How many of this stack's buildings are still without the piece of equipment of this id: 0 for a piece none lacks. */
+    public int getUnfitted(String id) {
+        Integer n = id == null ? null : unfitted.get(id);
+        return n == null ? 0 : n;
+    }
+
+    /** Sets how many of this stack's buildings are without a piece: clamped to 0..quantity, and 0 takes the piece off the count. */
+    public void setUnfitted(String id, int n) {
+        if (id == null) return;
+        int c = Math.max(0, Math.min(n, quantity));
+        if (c == 0) unfitted.remove(id);
+        else unfitted.put(id, c);
+    }
+
+    /** Every piece some of this stack's buildings lack, with how many, in the pieces' id order; unmodifiable, and empty for a stack that is fully fitted. For the save. */
+    public java.util.Map<String, Integer> getUnfittedView() {
+        return java.util.Collections.unmodifiableMap(unfitted);
+    }
+
+    /** Whether any of this stack's buildings lacks any piece. */
+    public boolean hasUnfitted() {
+        return !unfitted.isEmpty();
+    }
+
+    /** After the quantity fell from `before`: the buildings scrapped were the unfitted ones first (the older plants), and no count stays above what stands. */
+    private void lowerUnfitted(int before) {
+        int removed = before - quantity;
+        java.util.Iterator<java.util.Map.Entry<String, Integer>> it = unfitted.entrySet().iterator();
+        while (it.hasNext()) {
+            java.util.Map.Entry<String, Integer> e = it.next();
+            int n = Math.min(Math.max(0, e.getValue() - Math.max(0, removed)), quantity);
+            if (n <= 0) it.remove();
+            else e.setValue(n);
+        }
+    }
+
     // for immediate add
     public void addQuantity(int n) {
+        int before = quantity;
         quantity += n;
+        if (quantity < before) lowerUnfitted(before);
     }
 
     public void advanceConstruction(double constructionOutput) {
@@ -395,9 +444,11 @@ public class BuildingsStacks {
         return quantity;
     }
 
-    /** Scraps finished buildings. Floors at zero rather than going negative. */
+    /** Scraps finished buildings. Floors at zero rather than going negative. The unfitted ones go first (see the unfitted counts). */
     public void removeQuantity(int amount) {
+        int before = quantity;
         quantity = Math.max(quantity - amount, 0);
+        if (quantity < before) lowerUnfitted(before);
     }
 
     public int getUnderConstruction() {
@@ -413,7 +464,9 @@ public class BuildingsStacks {
     }
 
     public void increaseQuantity(int amount) {
+        int before = quantity;
         this.quantity += amount;
+        if (quantity < before) lowerUnfitted(before);
     }
 
     public BuildingsTemplate getBuilding() {

@@ -998,6 +998,24 @@ public final class Haulage {
         return Double.isFinite(e) ? Math.max(0, e) : 0;
     }
 
+    /**
+     * What a tonne's city leg costs to RUN by truck at today's prices, the trucks' capital left out (R1, EquipmentFit): estimate()'s two running terms,
+     * a month's diesel on the tonnes a truck carries and a driver's month, over those tonnes; not its wear and its return on what the truck cost, which
+     * a fitted depot's trucks are bought for (the equipment's cost). Read-only and independent of the horse share, unlike estimate(), which blends the
+     * teams in. Finite and not below zero whatever the markets say.
+     */
+    public double truckRunningEstimate() {
+        double d = Good.DIESEL.worldImportPrice();
+        Markets m = freight.markets();
+        if (m != null) {
+            GoodsMarket dieselMarket = m.get(Good.DIESEL);
+            if (dieselMarket != null) d = dieselMarket.landedPrice();
+        }
+        d = Double.isFinite(d) ? Math.max(0, d) : 0;
+        double e = (TONNES_A_TRUCK_MONTH * DIESEL_LITRES_A_TONNE * d + freight.diplomaWage()) / TONNES_A_TRUCK_MONTH;
+        return Double.isFinite(e) ? Math.max(0, e) : 0;
+    }
+
     /* ------------------------------------------------------------ the price */
 
     /**
