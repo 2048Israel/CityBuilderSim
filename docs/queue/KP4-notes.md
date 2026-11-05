@@ -1,6 +1,6 @@
 # KP4 - Screens kept: Sectors, the list and a business's five pages ({next}, 2026-11-05)
 
-**WHERE IT STANDS** (2026-11-05, 14:15): ready, see the ship file. The four slices are in and reviewed (A 0bae2c36, B bb19f39e, C cd9e58b0, D a8e560a0) with ★B's fix (594181fa); KP3 on main at 0.9.18, merged in (905e8468); `--pick` with the world files exit 3 and the full suite 170 of 174, every red main's recorded one (§5). Its gate wants a threading review (§4).
+**WHERE IT STANDS** (2026-11-05, 15:57): ready again, see the ship file. The four slices are in and reviewed (A 0bae2c36, B bb19f39e, C cd9e58b0, D a8e560a0) with ★B's fix (594181fa); KP3 on main at 0.9.18, merged in (905e8468); `--pick` with the world files exit 3 and the full suite 170 of 174, every red main's recorded one (§5). The gate sent it back on 0.9.19 for one of 49's fixtures, mended (§6, "By the gate"); main at 0.9.19 merged in (3062d6b9) and `--pick` exit 3 on it. The gate's threading review (§4): SHIP + FOLLOW-UP, its three low items in KP2b's row.
 
 The batch's record. The study's KP4 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 rules) and §6 (what checks it), and KP1's ★C (KP1-notes §6): Sectors' count-up held to 1x-10x when Sectors is kept.
@@ -100,7 +100,7 @@ kept node carries from one draw to the next.
 
 ## 5. What checks it
 
-`KeptCheck` sections 47-54, after KP3's 36-46, on its city at `CITY_MONTHS` (197 assertions; 651 in all, all pass;
+`KeptCheck` sections 47-54, after KP3's 36-46, on its city at `CITY_MONTHS` (198 assertions; 649 in all on 0.9.19's city, all pass;
 452 before). They run last; their fixtures touch no earlier section: a sawmill put up through the model and Wood
 Products held (`ensureWorks`, `holdSector`: the city sheds idle works), RefineryViewCheck's refinery town for the
 refinery's picture, OilViewCheck's sea town (a platform, its wells, the Strategic Reserve) for the reserve's dials -
@@ -110,7 +110,7 @@ each a scratch city.
   most months make none.
 - **48 shows** (25): signatures equal to a page built new for `MONTHS` months, the same pixels at three, the spoil
   proof - the list, a plain business's Operations, its Income in both views, the Balance sheet as a statement.
-- **49 reshaped** (105): Show more and less; every sector of `Sectors.KEYS` on its Operations page; a plain business,
+- **49 reshaped** (106): Show more and less; every sector of `Sectors.KEYS` on its Operations page; a plain business,
   the shops, the landlords, a materials industry and Freight on all five pages in both views; Freight's four
   divisions; the fold of every line, the goods fold, the order book and a statement's notes opened and closed; the
   Statement view's change and common-size columns off and on - each redraw, and the one after a month lands, equal to
@@ -145,6 +145,9 @@ files: `--pick` exit 3 (27 harnesses; MapCheck and LongPlaytest main's recorded 
 lines SOFT: MapCheck 2, KeptCheck's shops' page above) and the full suite, `AllChecks -f`, 170 of 174 in 35 minutes, its four reds all `[known]` by `docs/notes/gate.txt` and
 none NEW: DenominationCheck's twins (OB1), PriceLevelCheck 8, MapCheck 2d and 2h, LongPlaytest's moved building
 (DM2's); two timing lines SOFT (SaveSlotCheck, MapCheck). None reads a screen; KP4 changed nothing they run.
+Sent back and mended (§6), on the merge with main at 0.9.19 (3062d6b9), with the world files: `--pick` exit 3 (27
+harnesses; CentralBankCheck and MapCheck main's recorded reds by `docs/notes/gate.txt`; one timing line SOFT, MapCheck
+1); KeptCheck ALL OK, 49's note now note 2 (the sales tax), 387 lines and then 407.
 
 ## 6. Found in review
 
@@ -167,6 +170,14 @@ none NEW: DenominationCheck's twins (OB1), PriceLevelCheck 8, MapCheck 2d and 2h
   layout after the last pass: about 50 false reds), the kept page and the page built new alike, so every earlier
   section compares the settled page as well (all green); `KeptBench.finishOne` runs an animation's on-finished
   handler too (the built tag's glow was left on); `firstDifference` names how many more lines part.
+- **By the gate (sent back, 2026-11-05):** on the merge with 0.9.19 (RT1: every founded town sells one of its two
+  founding Mixed Farms, so the harness city moved) 49's "note 1 opened on it adds to the page" was red, 387 lines and
+  then 387, every comparison with a page built new green around it. Note 1 is the builders' revenue, which the screen
+  does not draw when it comes down to one named part (no repairs billed that month): no caret, nothing to open. The
+  fixture chose "the first note on a shown line", not one the statement opens. Mended in the fixture, the assertion as
+  it was: `KeptBench.sectorsNoteOf` takes the first note whose line is drawn (shown, not nil in the columns) and whose
+  note is not empty - the statement's own test for a caret, through `SectorScreen.incomeNotes`, the page's notes moved
+  into a method of their own - and 49 asserts the premise first (a note that opens on lines exists).
 
 ## 7. Left
 

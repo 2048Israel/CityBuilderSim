@@ -1,4 +1,4 @@
-# KeptBench.java - 2,336 lines · 251 methods · 8 constants · interface
+# KeptBench.java - 2,348 lines · 251 methods · 8 constants · interface
 
 `ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -27,7 +27,7 @@
 > a snapshot all the same, so the bench lays the page out there, at the menu column's width.
 > The FX toolkit must be up and every call made on its thread; KeptCheck sees to both.
 
-**Uses:** [Kept](Kept.md) (59), [BuildAdvice](BuildAdvice.md) (21), [SectorScreen](SectorScreen.md) (21), [BuildScreen](BuildScreen.md) (17), [Game](Game.md) (13), [UserInterface](UserInterface.md) (10), [TimeChart](TimeChart.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (10), [Palette](Palette.md) (8), [Pieces](Pieces.md) (8), [ServicesScreen](ServicesScreen.md) (6), [HistoryScreen](HistoryScreen.md) (5), [Sector](Sector.md) (5), [FreightView](FreightView.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4), [BuildingType](BuildingType.md) (4), [SummaryScreen](SummaryScreen.md) (3), [ConstructionScreen](ConstructionScreen.md) (3), [YearBook](YearBook.md) (2), [StatementView](StatementView.md) (2), [SectorBooks](SectorBooks.md) (2), [ChartModel](ChartModel.md) (1), [InfrastructureScreen](InfrastructureScreen.md) (1), [Ladder](Ladder.md) (1), [Ports](Ports.md) (1), [BuildCard](BuildCard.md) (1), [Equity](Equity.md) (1), [SectorStatements](SectorStatements.md) (1)
+**Uses:** [Kept](Kept.md) (59), [BuildAdvice](BuildAdvice.md) (21), [SectorScreen](SectorScreen.md) (21), [BuildScreen](BuildScreen.md) (17), [Game](Game.md) (13), [UserInterface](UserInterface.md) (10), [TimeChart](TimeChart.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (10), [Palette](Palette.md) (8), [Pieces](Pieces.md) (8), [ServicesScreen](ServicesScreen.md) (6), [HistoryScreen](HistoryScreen.md) (5), [Sector](Sector.md) (5), [FreightView](FreightView.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4), [BuildingType](BuildingType.md) (4), [StatementView](StatementView.md) (4), [SummaryScreen](SummaryScreen.md) (3), [ConstructionScreen](ConstructionScreen.md) (3), [SectorStatements](SectorStatements.md) (3), [YearBook](YearBook.md) (2), [SectorBooks](SectorBooks.md) (2), [ChartModel](ChartModel.md) (1), [InfrastructureScreen](InfrastructureScreen.md) (1), [Ladder](Ladder.md) (1), [Ports](Ports.md) (1), [BuildCard](BuildCard.md) (1), [Equity](Equity.md) (1)
 
 **Used by (1):** [KeptCheck](KeptCheck.md)
 
@@ -49,9 +49,9 @@
 | 1823 | · the first text field on a page: the yield box on the Overview, the find box on Demolish |
 | 1852 | · the pointer over what a hover styles |
 | 1956 | SECTORS (KP4): the list and a business's five pages, kept and built new, the hands on what reshapes them, the |
-| 2071 | · the pictures |
-| 2104 | · the count-up and the sweep |
-| 2200 | · the controls (the two dials of the oil reserve) |
+| 2083 | · the pictures |
+| 2116 | · the count-up and the sweep |
+| 2212 | · the controls (the two dials of the oil reserve) |
 
 ## Constants
 
@@ -64,7 +64,7 @@
 | 724 | `KeptBench.SETTLE_PASSES` | `8` | The most layout passes settle() runs. |
 | 1645 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land")` | The stopped pages' kinds, by the way the model refuses an order. |
 | 1855 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
-| 2279 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
+| 2291 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
 
 ## Fields (state)
 
@@ -93,13 +93,13 @@
 | 1051 | `private final Runnable home` |  |
 | 1164 | `private List<Node> keptPage` | What the kept page held when a page was built new in its place: its top nodes, and what every box under it held. |
 | 1165 | `private java.util.Map<Pane, List<Node>> keptBoxes` |  |
-| 2221 | `private static Method doCSSPass, doLayoutPass` |  |
+| 2233 | `private static Method doCSSPass, doLayoutPass` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 2269 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
+| 68 | 2281 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
 | 95 | 29 | `public KeptBench(Game game)` | The bench on a city: the window's object with no stage, its menu column in a scene of its own. |
 | 126 | 5 | `public double drawKept()` | People's page drawn kept from its pool (the first draw makes every node): the draw's own milliseconds. |
 | 133 | 3 | `public int lastMade()` | The nodes the last kept draw made new. |
@@ -378,7 +378,7 @@
 | 1948 | 3 | `private Node crumb()` | The crumb on a business's page: the label that goes back to the list. |
 | 1952 | 3 | `private static String clip(String s)` |  |
 
-### SECTORS (KP4): the list and a business's five pages, kept and built new, the hands on what reshapes them, the (lines 1956-2070)
+### SECTORS (KP4): the list and a business's five pages, kept and built new, the hands on what reshapes them, the (lines 1956-2082)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -392,49 +392,49 @@
 | 2021 | 9 | `public void sectorsFold(String kind, String key, boolean open)` | One of the pages' folds opened or closed: "every" (the fold of every line, on a business's Operations page), "foods" (the goods a column folds into one row, on the shops' and the kitchens'), "book" (the order book, on... |
 | 2032 | 6 | `public void sectorsNotes(String key, boolean open)` | Every note of a business's four statements opened or closed, as the toolbar's "open every note" would. |
 | 2040 | 3 | `public void sectorsNote(String key, String table, int note, boolean open)` | One note of one statement of a business opened or closed, as a click on its line would. |
-| 2045 | 8 | `public int sectorsNoteOf(String key)` | The first note a shown line of a business's income statement has (the line a click on it opens), or 0 when none has. |
-| 2055 | 4 | `public void sectorsColumns(boolean change, boolean share)` | The statements' change and common-size columns on or off, as the toolbar's two chips would. |
-| 2061 | 4 | `public void showSectors()` | The Sectors tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). |
-| 2067 | 3 | `public void forgetSectors()` | The Sectors tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. |
+| 2050 | 15 | `public int sectorsNoteOf(String key)` | The first note of a business's income statement a click opens on lines this month, or 0 when none does: its line drawn (shown, and not nil in the statement's columns) and its note not empty, the statement's own test f... |
+| 2067 | 4 | `public void sectorsColumns(boolean change, boolean share)` | The statements' change and common-size columns on or off, as the toolbar's two chips would. |
+| 2073 | 4 | `public void showSectors()` | The Sectors tab shown through its real show method, as the rail's tab or a month landing shows it (the chrome, then the page kept). |
+| 2079 | 3 | `public void forgetSectors()` | The Sectors tab forgotten, as another city opened would leave it: nothing kept, nothing just landed. |
 
-### the pictures (lines 2071-2103)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2074 | 3 | `public Pane refineryPicture()` | The refinery's picture on the page, or null. |
-| 2079 | 3 | `public Pane industryPane()` | A materials industry's picture on the page, or null. |
-| 2084 | 7 | `public List<Pane> legBars()` | Every leg's bar on the page. |
-| 2093 | 5 | `public static Object painted(Node picture)` | What a picture last painted, by identity (null before a first paint): another object only where the month's view moved or the width did. |
-| 2100 | 3 | `public static List<Node> partsOf(Pane picture)` | What a picture (or a bar) holds now, in its order. |
-
-### the count-up and the sweep (lines 2104-2199)
+### the pictures (lines 2083-2115)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2107 | 5 | `public Label sectorsKept()` | The KEPT figure on the page now: the list's first cell, or the open business's. |
-| 2114 | 3 | `private static boolean isKept(Label l)` | Whether a label says KEPT, or "KEPT  ›" (the cell that is a door says its name and a chevron). |
-| 2119 | 4 | `private static boolean saysKept(Node first)` | Whether a cell's first node is its "KEPT" label, or the row that holds it beside an (i). |
-| 2125 | 11 | `public List<Label> sectorsCardFigures()` | The net income each card on the list shows, in the order the grid has them: its figure's label. |
-| 2142 | 17 | `public String[][] sectorsWords(String key)` | The words the figures read this month, from the model as the screen reads it, with last month's beside: {the list's KEPT, then the open business's KEPT}, each as {last month's, this month's}, and the cards' as {last, ... |
-| 2161 | 4 | `public static boolean counting(Node figure)` | Whether a count-up is running on a figure now (one was started and has not finished or been stopped). |
-| 2167 | 3 | `public static javafx.animation.Animation countOf(Node figure)` | The count-up last started on a figure: the animation object, or null. |
-| 2172 | 3 | `public boolean hasFall()` | Whether the page has an income waterfall. |
-| 2177 | 4 | `public javafx.animation.Animation fallGrowth()` | The growth last started on the page's income waterfall (a new month that animates starts one), or null. |
-| 2183 | 7 | `public javafx.animation.Animation ringSweep()` | The sweep last started on a ring of the page (the plant's), or null. |
-| 2192 | 7 | `public boolean hasRing()` | Whether the page has a ring with an arc to sweep (a plant that runs). |
+| 2086 | 3 | `public Pane refineryPicture()` | The refinery's picture on the page, or null. |
+| 2091 | 3 | `public Pane industryPane()` | A materials industry's picture on the page, or null. |
+| 2096 | 7 | `public List<Pane> legBars()` | Every leg's bar on the page. |
+| 2105 | 5 | `public static Object painted(Node picture)` | What a picture last painted, by identity (null before a first paint): another object only where the month's view moved or the width did. |
+| 2112 | 3 | `public static List<Node> partsOf(Pane picture)` | What a picture (or a bar) holds now, in its order. |
 
-### the controls (the two dials of the oil reserve) (lines 2200-2336)
+### the count-up and the sweep (lines 2116-2211)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2203 | 7 | `public List<javafx.scene.control.Slider> sliders()` | Every slider on the page, in the page's order: the oil reserve's FILL dial first, then its RELEASE dial. |
-| 2212 | 3 | `public double staged(String key)` | What a policy dial has staged under its key ("reserveFill", "reserveRelease"), or NaN when nothing is. |
-| 2217 | 3 | `public void unstage(String key)` | A policy dial's staged value dropped. |
-| 2228 | 3 | `public double[] passes() throws Exception` | The scene's CSS and layout, as a frame's pulse runs them (Scene.doCSSPass and doLayoutPass, which touch only what is dirty): {CSS ms, layout ms}. |
-| 2232 | 22 | `private static double[] passes(Scene sc, javafx.scene.Parent root) throws Exception` |  |
-| 2256 | 9 | `public int[] pixels()` | The page as pixels, ARGB, row by row: the menu column's snapshot, with its width and height first. |
-| 2272 | 5 | `public List<String> signature()` | The page as it is now, a line a node in the order its code made them: the node's class; its words; its inline style; the values code set on it (the styleable ones whose origin is code); whether it has a click, a hover... |
-| 2281 | 25 | `private static void sign(Node n, String path, List<String> out)` |  |
-| 2313 | 12 | `private static String codeSet(Styleable n)` | Every styleable value a node has now, by property, where it is not the property's initial value: what code set and what its style made of it, both pages styled and laid out alike. |
-| 2327 | 9 | `private static String shape(Node n)` | A shape's own geometry, which no style sets. |
+| 2119 | 5 | `public Label sectorsKept()` | The KEPT figure on the page now: the list's first cell, or the open business's. |
+| 2126 | 3 | `private static boolean isKept(Label l)` | Whether a label says KEPT, or "KEPT  ›" (the cell that is a door says its name and a chevron). |
+| 2131 | 4 | `private static boolean saysKept(Node first)` | Whether a cell's first node is its "KEPT" label, or the row that holds it beside an (i). |
+| 2137 | 11 | `public List<Label> sectorsCardFigures()` | The net income each card on the list shows, in the order the grid has them: its figure's label. |
+| 2154 | 17 | `public String[][] sectorsWords(String key)` | The words the figures read this month, from the model as the screen reads it, with last month's beside: {the list's KEPT, then the open business's KEPT}, each as {last month's, this month's}, and the cards' as {last, ... |
+| 2173 | 4 | `public static boolean counting(Node figure)` | Whether a count-up is running on a figure now (one was started and has not finished or been stopped). |
+| 2179 | 3 | `public static javafx.animation.Animation countOf(Node figure)` | The count-up last started on a figure: the animation object, or null. |
+| 2184 | 3 | `public boolean hasFall()` | Whether the page has an income waterfall. |
+| 2189 | 4 | `public javafx.animation.Animation fallGrowth()` | The growth last started on the page's income waterfall (a new month that animates starts one), or null. |
+| 2195 | 7 | `public javafx.animation.Animation ringSweep()` | The sweep last started on a ring of the page (the plant's), or null. |
+| 2204 | 7 | `public boolean hasRing()` | Whether the page has a ring with an arc to sweep (a plant that runs). |
+
+### the controls (the two dials of the oil reserve) (lines 2212-2348)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2215 | 7 | `public List<javafx.scene.control.Slider> sliders()` | Every slider on the page, in the page's order: the oil reserve's FILL dial first, then its RELEASE dial. |
+| 2224 | 3 | `public double staged(String key)` | What a policy dial has staged under its key ("reserveFill", "reserveRelease"), or NaN when nothing is. |
+| 2229 | 3 | `public void unstage(String key)` | A policy dial's staged value dropped. |
+| 2240 | 3 | `public double[] passes() throws Exception` | The scene's CSS and layout, as a frame's pulse runs them (Scene.doCSSPass and doLayoutPass, which touch only what is dirty): {CSS ms, layout ms}. |
+| 2244 | 22 | `private static double[] passes(Scene sc, javafx.scene.Parent root) throws Exception` |  |
+| 2268 | 9 | `public int[] pixels()` | The page as pixels, ARGB, row by row: the menu column's snapshot, with its width and height first. |
+| 2284 | 5 | `public List<String> signature()` | The page as it is now, a line a node in the order its code made them: the node's class; its words; its inline style; the values code set on it (the styleable ones whose origin is code); whether it has a click, a hover... |
+| 2293 | 25 | `private static void sign(Node n, String path, List<String> out)` |  |
+| 2325 | 12 | `private static String codeSet(Styleable n)` | Every styleable value a node has now, by property, where it is not the property's initial value: what code set and what its style made of it, both pages styled and laid out alike. |
+| 2339 | 9 | `private static String shape(Node n)` | A shape's own geometry, which no style sets. |
 

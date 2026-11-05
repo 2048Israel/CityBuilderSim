@@ -2657,8 +2657,11 @@ public class KeptCheck {
         divisions.add(choice("Freight on All again", b -> { b.sectorsOpen(Sectors.FREIGHT, ops, false); b.sectorsDivision("All"); return null; }));
         pageReshaped(g, bench, tab, 49, divisions);
         // A fold opened has to add to the page, and closed take it away; a note, every note, the toolbar's two columns.
+        // The premise first: the note chosen is one the statement opens on lines this month (on 0.9.19 the builders' revenue,
+        // note 1, came down to one named part, which draws no caret, and the fold chosen by "the first note" caused nothing).
         int note = fx(() -> bench.sectorsNoteOf(plain));
-        System.out.println("  the first note on " + possessive(plainName) + " income statement: " + note);
+        System.out.println("  the first note on " + possessive(plainName) + " income statement that opens on lines: " + note);
+        check(possessive(plainName) + " income statement has a note that opens on lines this month (the fold's premise)", note > 0);
         List<Choice> folds = new ArrayList<>();
         folds.add(choice(possessive(plainName) + " Operations page", on(plain, ops, false)));
         folds.add(new Choice("the fold of every line opened on it", b -> { b.sectorsOpen(plain, ops, false); b.sectorsFold("every", plain, true); return null; }, true));

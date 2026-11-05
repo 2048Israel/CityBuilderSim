@@ -2041,12 +2041,24 @@ public final class KeptBench {
         fold(ui.sectorScreen.linesOpen(ui.game.getSectors().byKey(key)), StatementView.noteKey(table, note), open);
     }
 
-    /** The first note a shown line of a business's income statement has (the line a click on it opens), or 0 when none has. */
+    /**
+     * The first note of a business's income statement a click opens on lines this month, or 0 when none does: its line drawn
+     * (shown, and not nil in the statement's columns) and its note not empty, the statement's own test for a caret. A note
+     * with nothing in it this month draws no caret and opens nothing (the revenue note of a business with one named part,
+     * Construction's on 0.9.19), so a fold check that chose it would cause nothing.
+     */
     public int sectorsNoteOf(String key) {
         ham.citybuildersim.Sector s = ui.game.getSectors().byKey(key);
         ham.citybuildersim.SectorBooks books = ui.game.getSectorBooks();
-        for (ham.citybuildersim.SectorStatements.Row r : ui.sectorScreen.incomeTable(s, books.get(s), books.previous(s)).rows()) {
-            if (r.note() > 0 && r.shown()) return r.note();
+        ham.citybuildersim.SectorStatements.Table t = ui.sectorScreen.incomeTable(s, books.get(s), books.previous(s));
+        boolean millions = ham.citybuildersim.SectorStatements.inMillions(t);
+        StatementView.Columns c = ui.sectorScreen.columns("of revenue");
+        java.util.function.IntFunction<Node> notes = ui.sectorScreen.incomeNotes(s, t, millions);
+        for (ham.citybuildersim.SectorStatements.Row r : t.rows()) {
+            if (r.note() <= 0 || !r.shown() || StatementView.nil(r, t, c, millions)) continue;
+            Node detail = notes.apply(r.note());
+            if (detail == null || detail instanceof Pane p && p.getChildren().isEmpty()) continue;
+            return r.note();
         }
         return 0;
     }
