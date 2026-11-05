@@ -11,10 +11,18 @@ its ship file up at 778fbe90, not yet on main at the start).
 
 (Kept at the top; a session resuming from GitHub starts here.)
 
-- **2026-11-04 21:55:** started on `origin/batch/R0` (R0 not yet on main).
-  Slice 1 committed (8ba5f54f: `CausesOfDeath` and `CausesOfDeathCheck` 1-8,
-  133 OK); `Health` carries the influenza's sick (3afff4c2). Slices 2 (the
-  month, the save, the People page, the inbox) and 3 (the screen) with Sonnet.
+- **2026-11-04 23:10: built; the suite's reds being read.** On `origin/batch/R0`
+  (R0 not yet on main). Slices 1-3 committed: the model and its harness
+  (8ba5f54f), the influenza's sick on `Health` (3afff4c2), the screen (cd4c7792),
+  the month, the save, the People page, the inbox and the playtest's count
+  (db4c7fa8); DeathCareFirstCheck's trap mended (call 8, 5a018bd2); the
+  fixtures' switch (call 7, 3949a710).
+- `--pick` (db4c7fa8): 25 harnesses, exit 4 on DeathCareFirstCheck (mended)
+  and MapCheck 2h (DM2's, named in its row: passed by name).
+- The full suite (5a018bd2, one JVM at a time): 15 red. PriceLevelCheck is R0's
+  (R0-P), MapCheck 2h DM2's; the other 13 are being read under call 7 (slice 4).
+- **Next:** slice 4's fixtures; the red harnesses again; the ensemble (the
+  trace moved); then, once R0 is on main, merge it, `--pick`, the ship file.
 
 ## 1. What the game has now, measured
 
@@ -122,6 +130,32 @@ a band's are est., and say so where they are set.
   **Recommended and taken:** mothers' deaths follow the date; a city with no
   general care raises them (no doctor at the birth).
 
+- **★7 Fixtures whose condition was sized on today's deaths** (the evening's
+  suite; R0's call 18's class). The full suite on the built model (5a018bd2)
+  had 13 harnesses red beyond R0's PriceLevelCheck and DM2's MapCheck 2h, most
+  of them on a `fixture:` line - a town whose builder orders, a sale that
+  happens, twins that stand alike - and several in the very fixtures R0 opened
+  its levers in. **Recommended and taken:** such a fixture holds the causes off
+  (`Game.holdCausesOfDeathOff()`: today's deaths exactly, the swing whole, the
+  influenza's sick nought; never set by the game, not saved), its comment
+  saying what it needs and what the 1900 city did instead; a section that
+  measures a real run stays on history's causes. The playtest, the ensemble and
+  the other harnesses keep the real path checked. The alternative is a fixture
+  per harness that causes its condition in a 1900 city directly. Section 6 lists
+  each.
+- **★8 DeathCareFirstCheck's trap** (a fixture of R0b's own reach, mended):
+  three years no longer bring the unburied to their cap (24 of the month's
+  deaths), because the month's dead rise through them; the trap plays on to its
+  cap, at most three more years (`toTheCap`, in its own section, not in
+  `city()`, whose three years BuildersFirstCheck and ConstructionTrapCheck were
+  sized on).
+
+- **★9 MapCheck 2h on R0b's city** - pass it by name at R0b's gate (Jerus's
+  standing word, 2026-11-04: a red its own code did not cause passes), DM2
+  mending it. Recommended and taken; section 6 says why it is not R0b's.
+- **★10 ShortSellingCheck 7 on R0b's city** - pass it by name, OH1 queued to
+  mend `HouseholdBalance.moveStock()`. Recommended and taken; section 6.
+
 ## 5. What it does to a city
 
 The same probe as section 1, on the built model (db4c7fa8), before and after:
@@ -149,3 +183,22 @@ part); the inbox's "Influenza is in the city" from October 1918; People, the
 month's dead with its new part, "of typhoid, TB, childbirth and the like".
 </content>
 </invoke>
+
+## 6. The suite's reds, read (call 7, 2026-11-04 night)
+
+The full suite on 5a018bd2, one JVM at a time: 15 red harnesses. Each read at
+its cause (slice 4, reviewed):
+
+| class | harnesses | what the 1900 city's deaths did / what was done |
+|---|---|---|
+| R0's, approved at its gate | PriceLevelCheck 8 (R0-P, RT1 queued) | nothing |
+| DM2's map fault, passed by name (call 9) | MapCheck 2h ("an interchange's reserve is dated"): its played city's reserve is never laid (month -1, 0 plots), so every line after the fixture's fails. DM2's row names 2h ("found by DM1: MapCheck 2h, 2d"); R0b's diff touches no map code, only the city the map is drawn from | nothing; DM2 mends it |
+| main's latent fault, passed by name (call 10) | ShortSellingCheck 7, a real run audited every month: Real Estate's register short by 0.004616 shares at m83 (1.15e-6 of its 4,000.78 in issue, against a bound of 1e-6), and "kept its register whole". `HouseholdBalance.moveStock()` (lines 1535-1544) puts a shrinking cell's stock in its row's pool but weighs its loss by `abs(delta) x grownUps()`, 0 for a cell of orphans, so the orphans' shares are handed to no one. R0b's city reaches it first: more adults die, and more orphans hold shares. R0b's diff does not touch `HouseholdBalance` | nothing; OH1 (queued) mends it |
+| a fixture sized on today's deaths (call 7) | ConstructionControlCheck (`city()`: 395.6 households for 400 homes, "every home is taken" fails), RoadCheck (`town()`: 379 vehicles a day on gravel, the advice chose a new gravel road), CreditCheck (the banned city: "Holding: already building"), PassThroughCheck (`town()`), DeskCheck through FloatLinkCheck's `playedCity()`, CurrencyRegimeCheck 10 (its candidates), MonetaryCheck's `heldRun` (the month-late noise at 40%: 0.618 points against 0.049 held off), CentralBankCheck's `probeCity` (the very strict twin's last year -4.28% against a 2% target), FundCheck (the rule's bid off the desk's ask), HoldersCheck's `theWorld` and `reopeningFixture`, ScaleCheck's playtest city and its copies, AutoBuildCheck's `decades()` (no order in 36 months) | the fixture holds the causes off before its first month, and every city loaded from it; the other fixtures in those files keep 1900's causes |
+
+A side finding, not R0b's: in one of these fixtures a reloaded twin's cash
+already drifts a little from the live one with the causes held off, and with
+them on its people drift by up to 2.7e-4 of a person by m76 (slice 4's probe):
+the causes read a figure the load re-strikes. The default city reloads to the
+bit with the causes on (a probe at m84: water, hunger, outbreaks, births and
+three months of people the same). Not traced further.
