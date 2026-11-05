@@ -1,5 +1,10 @@
 # KP2 - Screens kept: Land, Services and Infrastructure; the controls' rule; KP1's hover kept ({next}, 2026-11-04)
 
+**WHERE IT STANDS** (2026-11-04, late): the five slices are in and reviewed; KeptCheck passes whole (276), and the
+24 harnesses KP2 picks against BA1's tip are green but for BA1's own two (LongPlaytest's layout ring, passed by name
+at BA1's gate; CapitalFlowCheck's fixture, mended on BA1's branch after KP2 branched). Waiting for BA1 to land, then
+`origin/main` merged, the picked harnesses again, and the ship file last.
+
 The batch's record. The study's KP2 row (`docs/studies/spec-screens-in-place.md` §7) with §3 (the pattern and its
 five rules) and §6 (what checks it); `QUEUE.md`'s row adds KP1's gate review (a kept row under a still pointer loses
 its hover look) and `Pieces.ScaleRows` a picture (KP1-N, `docs/queue/KP1-notes.md` §6 B). Lane 2 of the night line,
@@ -91,7 +96,46 @@ reviewer weighs is re-entrancy - what runs inside a draw - and what a kept node 
 
 ## 5. What checks it
 
-To be written (slice E).
+`KeptCheck` sections 21-35, on its city at `CITY_MONTHS`, after People's 1-5, the chrome's and History's 14-20
+(276 assertions, all pass; 60 s through `batch-check.sh`). For each of Infrastructure (21-24), Services (25-28) and
+the land office (29-32): the page kept on its home page for `MONTHS` months (top nodes stay, nine in ten handed back
+- Infrastructure 187 of 187, Services 246 of 246 - most months make none); its signature equal to a page built new
+every month, the same pixels at three, the spoil proof; every page, division, sub-page and fold in turn (a fold
+opened must add lines), the redraw after it and the one after a month equal to a page built new; the kept month
+within its dial. 33: the funding page (the city bought down through `Game.buyLandParcels` until it falls short) and
+the fell-short page, with a bond and with the vault's dollars. 34: the fare's slider pressed is held, a month leaves
+it the same node with the thumb, `Ladder.shown()` and the reading at the thumb; released, the fare staged at the
+thumb and the page equal to one built new; a value set outside a draw reaches the latest draw's reading; History's
+filter keeps its node, text, caret and focus across a month (the focus forced through `Node.setFocused`: the bench's
+windowless scene says no window has it), and `Kept.text` leaves a focused field and sets one without. 35: History's
+`rowGoes` row and `chartCardHead`, a `limitCell` with a click, Land's place row and ore card, Services' `doorCard`,
+hovered, keep the style their own `onMouseEntered` sets across a kept draw, and the exit's once the hover is off
+(History had no door that month: said, not checked). The slice broke four things by hand to see them caught -
+a door's hover, the land row's hover, `Kept.held` ignored, Services' scope key made constant - and 35, 35, 34 and
+27 failed on them.
+
+| dial | value | kept, five runs (median) | built new |
+|---|---:|---|---|
+| `KEPT_INFRASTRUCTURE_MS` | 9 | 2.7-6.3 ms (4.4) | 10.2-19.1 ms |
+| `KEPT_SERVICES_MS` | 13 | 4.8-10.5 ms (6.5) | 9.9-19.5 ms |
+| `KEPT_LAND_MS` | 5 | 2.1-3.3 ms (2.4) | 9.1-16.0 ms |
+
+Each is twice the median, rounded up (KP1's way). The harness's mends in the pages' code: `ScaleRows` makes afresh a
+part whose words come or go (an emptied `Label` keeps its `Text`'s old bounds, which History's goods' fold showed:
+a hidden tag 22 px tall kept against 17 built new); `CauseBar`'s hidden names and keys rest at the origin;
+`ActionButton`'s line under its words exists only while it has some.
+
+## 7. Left, and for the eye
+
+- **Still made new each month on a kept page**, correct but not kept: the land office's landmass table's cells
+  (`SectorScreen`'s oil helpers, KP4's file; only on a city with ground on two landmasses), and whatever
+  `BuildScreen.verdict`, `arc` and `goAhead` make where the pages call them (KP3's file). Pending KP2-N.
+- `ScaleRows`' hidden "empty" label and hidden rule lines are not laid out while hidden (the class of `CauseBar`'s
+  mend); no fixture has shown them differ.
+- Infrastructure's pictures part in one 13 x 13 box (126 pixels) at two of three months, inside `alike()`: an
+  antialiased edge, as People's household tiles.
+- For the eye: the fare dragged on Infrastructure while the clock runs at 50x - the thumb stays under the hand, the
+  reading and "what it would do" follow it, the release stages it.
 
 ## 6. Found in review
 
