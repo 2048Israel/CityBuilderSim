@@ -1,4 +1,4 @@
-# R0c - the 1900 mechanics ({next}, 2026-11-05)
+# R0c - the 1900 mechanics (0.9.14, 2026-11-05)
 
 ## WHERE IT STANDS
 
