@@ -11,8 +11,10 @@ its ship file up at 778fbe90, not yet on main at the start).
 
 (Kept at the top; a session resuming from GitHub starts here.)
 
-- **2026-11-04 21:30:** started on `origin/batch/R0`. Notes and calls written;
-  slice 1 (the model and its harness) next.
+- **2026-11-04 21:55:** started on `origin/batch/R0` (R0 not yet on main).
+  Slice 1 committed (8ba5f54f: `CausesOfDeath` and `CausesOfDeathCheck` 1-8,
+  133 OK); `Health` carries the influenza's sick (3afff4c2). Slices 2 (the
+  month, the save, the People page, the inbox) and 3 (the screen) with Sonnet.
 
 ## 1. What the game has now, measured
 

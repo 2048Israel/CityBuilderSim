@@ -17,10 +17,13 @@ import java.util.Arrays;
  *   6. the city's conditions raise a cause, never lower it
  *   7. the 1918 influenza
  *   8. booking the dead, the TB sick and the save
+ *   9. a real city's month books the causes (slice 2: the cohorts' fourth competing risk)
+ *  10. the 1918 influenza in a real city: its dead, its sick on Health's rate, its notice
  *
  * The 1900 city of sections 2, 4, 5 and 6 is Canada's 1901 pyramid at 100,000
  * people with no childcare (the swing at its top), general care for everybody,
- * piped water, nobody hungry, and the mean outbreak running.
+ * piped water, nobody hungry, and the mean outbreak running. Sections 9 and 10
+ * play one real city, founded in 1900, a month at a time.
  */
 public class CausesOfDeathCheck {
 
@@ -135,6 +138,40 @@ public class CausesOfDeathCheck {
         double s = 0;
         for (int k = 1; k <= 12; k++) s += CausesOfDeath.history(c, month(year, k));
         return s / 12;
+    }
+
+    static void quietly(Runnable work) {
+        java.io.PrintStream out = System.out;
+        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+        try { work.run(); } finally { System.setOut(out); }
+    }
+
+    /**
+     * A city three times the size its founding doctor was meant for, SicknessCheck's
+     * fixture: without hospitals its general care is thin, and the dying has
+     * people to fall on.
+     */
+    static void stock(Game g) {
+        BuildingManager b = g.getBuildingManager();
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
+        b.addStack(b.getTemplateByName("House"), 2000, true);
+        b.addStack(b.getTemplateByName("Convenience Store"), 48, true);
+        b.addStack(b.getTemplateByName("Industrial Bakery"), 16, true);
+        b.addStack(b.getTemplateByName("Construction Depot"), 10, true);
+        b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+        b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+    }
+
+    /** The real city of sections 9 and 10: founded in 1900, stocked, and played a month at a time. */
+    static Game founded() {
+        Game g = new Game(GameFiles.scratch("causesofdeathcheck"));
+        quietly(() -> {
+            g.run();
+            // The treasury SicknessCheck's fixture is written against (0.7.10): its buildings are placed free but their running costs come out of it.
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            stock(g);
+        });
+        return g;
     }
 
     public static void main(String[] args) {
@@ -565,8 +602,154 @@ public class CausesOfDeathCheck {
         assertTrue("a reset city has booked nothing", back.getTotalDeaths(Cause.TB) == 0 && back.getYearDeaths(Cause.TB) == 0
                 && back.getTbSick() == 0 && sum(back.getState()) == 0);
 
+        Game city = founded();
+        realCityBooksTheCauses(city);
+        theInfluenzaInARealCity(city);
+
         System.out.println();
         System.out.println(fails == 0 ? "The dead have causes, and history takes them away." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ===================================================================
+       9. A REAL CITY'S MONTH BOOKS THE CAUSES
+       =================================================================== */
+
+    static void realCityBooksTheCauses(Game g) {
+        System.out.println("\n--- a real city's month books the causes ---");
+        // A city founded today holds nobody until its first month's migration: the first month's dying is struck on an empty pyramid.
+        CausesOfDeath book = g.getCausesOfDeath();
+        PopulationCohorts cohorts = g.getCohorts();
+        int months = 24, played = 0;
+        boolean cohortsAgree = true, sumsAdd = true, causeMonths = true;
+        double adultDeaths = 0, adultMonths = 0, adultCauses = 0, adultIllness = 0, adultKilled = 0;
+        double[] dead = new double[CAUSES.length];
+        for (int i = 0; i < months; i++) {
+            double adultsOpening = cohorts.get(AgeBand.ADULT);
+            int[] ran = new int[1];
+            quietly(() -> ran[0] = g.simulateMonths(1));
+            played += ran[0];
+            double causeDead = cohorts.getLastCauseDeaths();
+            double booked = book.getLastDeaths();
+            cohortsAgree &= Math.abs(causeDead - booked) <= 1e-9 * Math.max(1, Math.max(causeDead, booked));
+            double parts = cohorts.getLastDeathsOfAge() + g.getSickness().getLastDeaths() + cohorts.getLastKilled()
+                    + cohorts.getLastAgedOut() + causeDead;
+            sumsAdd &= Math.abs(parts - cohorts.getLastDeaths()) <= 1e-9 * Math.max(1, cohorts.getLastDeaths());
+            if (i == 0) assertTrue("fixture: the first month brought people to the city", cohorts.total() > 0);
+            else causeMonths &= causeDead > 0;
+            for (Cause c : CAUSES) dead[c.ordinal()] += book.getLastDeaths(c);
+            adultDeaths += cohorts.getDeaths(AgeBand.ADULT);
+            adultCauses += cohorts.getCauseDeaths(AgeBand.ADULT);
+            adultIllness += cohorts.getIllnessDeaths(AgeBand.ADULT);
+            adultKilled += cohorts.getKilled(AgeBand.ADULT);
+            adultMonths += adultsOpening;
+        }
+        check("the city played all " + months + " months", played, months, 0);
+        assertTrue("every month the cohorts' cause dead are the causes' booked dead", cohortsAgree);
+        assertTrue("...and the month's dead add up: of age, illness, killed, aged out and the causes", sumsAdd);
+        assertTrue("...and, once there were people, somebody died of the causes in every month", causeMonths);
+        for (Cause c : new Cause[]{Cause.TB, Cause.PNEUMONIA, Cause.TYPHOID}) {
+            assertTrue("over the " + months + " months " + c.label() + " booked its dead", dead[c.ordinal()] > 0);
+            assertTrue("...and the book's total for it is the months' sum", Math.abs(book.getTotalDeaths(c) - dead[c.ordinal()])
+                    <= 1e-9 * Math.max(1, dead[c.ordinal()]));
+        }
+        double adultsAYear = adultMonths > 0 ? adultDeaths / adultMonths * 12 : 0;
+        assertTrue("adults die at more than AgeBand's " + String.format("%.2f", AgeBand.ADULT.getAnnualMortality() * 1000)
+                + " per 1,000 a year", adultsAYear > AgeBand.ADULT.getAnnualMortality());
+        System.out.printf("   the adults of this 1900 city died at %.2f per 1,000 a year, against AgeBand's %.2f"
+                        + " (the causes' %.2f, illness's %.2f, the killed %.2f)%n",
+                adultsAYear * 1000, AgeBand.ADULT.getAnnualMortality() * 1000,
+                adultCauses / adultMonths * 12000, adultIllness / adultMonths * 12000, adultKilled / adultMonths * 12000);
+        StringBuilder line = new StringBuilder();
+        for (Cause c : CAUSES) {
+            line.append(line.length() == 0 ? "" : ", ").append(c.label()).append(String.format(" %.1f", dead[c.ordinal()]));
+        }
+        System.out.println("   the causes' dead over the " + months + " months: " + line);
+    }
+
+    /* ===================================================================
+       10. THE 1918 INFLUENZA IN A REAL CITY
+       =================================================================== */
+
+    static void theInfluenzaInARealCity(Game g) {
+        System.out.println("\n--- the 1918 influenza in a real city ---");
+        CausesOfDeath book = g.getCausesOfDeath();
+        Health health = g.getHealth();
+        int first = CausesOfDeath.INFLUENZA_FIRST;
+        int december = first + 2;
+        long started = System.nanoTime();
+        boolean calm = true, healthCalm = true, noticeCalm = true, played = true;
+        double[] inFlu = new double[3];
+        double sickRate = 0, fluRate = 0, parts = 0;
+        Notice october = null, november = null;
+        String novemberBody = "";
+        while (g.getMonth() < december) {
+            int[] ran = new int[1];
+            quietly(() -> ran[0] = g.simulateMonths(1));
+            played &= ran[0] == 1;
+            int m = g.getMonth();
+            double flu = book.getLastDeaths(Cause.INFLUENZA);
+            if (m < first) {
+                calm &= flu == 0;
+                healthCalm &= health.getInfluenzaRate() == 0;
+                noticeCalm &= g.getInbox().live("influenza") == null;
+            } else {
+                inFlu[m - first] = flu;
+                if (m == first) {
+                    fluRate = health.getInfluenzaRate();
+                    sickRate = health.getSickRate();
+                    parts = health.getBaselineRate() + health.getOutbreakSeverity() + health.getUnburiedRate()
+                            + health.getHungerRate() + health.getUnhousedRate() + health.getInjuryRate() + fluRate;
+                    october = g.getInbox().live("influenza");
+                }
+                if (m == first + 1) {
+                    november = g.getInbox().live("influenza");
+                    novemberBody = november == null ? "" : String.join(" ", november.getBody());
+                }
+            }
+        }
+        double seconds = (System.nanoTime() - started) / 1e9;
+        check("the city played on to December 1918, game month " + december, g.getMonth(), december, 0);
+        assertTrue("every month ran (nothing stopped the skip)", played);
+        assertTrue("the influenza booked nobody before October 1918", calm);
+        assertTrue("...Health had none of its sick before October 1918", healthCalm);
+        assertTrue("...and the inbox had no influenza notice before it", noticeCalm);
+        assertTrue("it booked somebody in October 1918", inFlu[0] > 0);
+        assertTrue("...in November", inFlu[1] > 0);
+        assertTrue("...and in December", inFlu[2] > 0);
+        check("Health's influenza sick in October 1918 are the model's for that month", fluRate,
+                CausesOfDeath.influenzaSick(first), 1e-15);
+        assertTrue("...which is a quarter of the people times its first wave's share, not nothing", fluRate > 0);
+        check("...and they are in the sick rate: its parts, capped, make it", sickRate,
+                Math.min(Health.MAX_SICK_RATE, parts), 1e-12);
+        check("Health's influenza sick in December 1918 are the model's", health.getInfluenzaRate(),
+                CausesOfDeath.influenzaSick(december), 1e-15);
+        assertTrue("the inbox holds a live influenza notice in October 1918", october != null);
+        assertTrue("...and in November 1918, titled for it", november != null && "Influenza is in the city".equals(november.getTitle()));
+        assertTrue("...which names the dead and the sick", novemberBody.contains("The 1918 influenza killed")
+                && novemberBody.contains("in the last twelve months") && novemberBody.contains("off sick with it"));
+
+        /* ...and a save at that month carries it: the 1900 fixtures of SaveFileCheck hold none of its dead or sick to round-trip */
+        Game back = new Game(g.getGameFiles());
+        quietly(() -> {
+            g.saveGame(1, "influenza");
+            back.loadGameSave(1);
+        });
+        assertTrue("fixture: the influenza has dead on the books in December 1918", book.getLastDeaths(Cause.INFLUENZA) > 0
+                && book.getYearDeaths(Cause.INFLUENZA) > book.getLastDeaths(Cause.INFLUENZA));
+        boolean kept = true;
+        for (Cause c : CAUSES) {
+            kept &= back.getCausesOfDeath().getLastDeaths(c) == book.getLastDeaths(c)
+                    && back.getCausesOfDeath().getYearDeaths(c) == book.getYearDeaths(c)
+                    && back.getCausesOfDeath().getTotalDeaths(c) == book.getTotalDeaths(c);
+        }
+        assertTrue("a reloaded city keeps every cause's last month, year and total", kept);
+        check("...the cohorts' dead of the causes", back.getCohorts().getLastCauseDeaths(), g.getCohorts().getLastCauseDeaths(), 0);
+        check("...and Health's influenza sick", back.getHealth().getInfluenzaRate(), health.getInfluenzaRate(), 0);
+
+        System.out.printf("   the influenza killed %.1f, %.1f and %.1f in its first three months; %.1f%% of the workforce off sick in October%n",
+                inFlu[0], inFlu[1], inFlu[2], fluRate * 100);
+        System.out.println("   the notice of November 1918: " + novemberBody);
+        System.out.printf("   playing from 1900 to December 1918 (%d months) took %.1f seconds%n", g.getMonth(), seconds);
     }
 }
