@@ -62,7 +62,7 @@ final class BuildScreen {
     private final CapChips autoChips;
 
     /** The funding page's cap chips (CD2, D30): the cap its previews are quoted at, which starts as the builder's. */
-    private final CapChips fundChips;
+    final CapChips fundChips;
 
     /** The cap the funding page's previews were last set to by its chips; null until the player moves them, and then the builder's cap is the one used. */
     Auction.Cap fundCap;
@@ -94,9 +94,37 @@ final class BuildScreen {
      * every page was rebuilt - scroll behaviour and all.
      */
     private void keepBuild(String page, Runnable again, Runnable draw) {
+        arrival(page);
+        ui.keepMenu("handleAllBuildingMenus", again, pool, draw);
+    }
+
+    /** Another page than the one the pool last drew forgets the pool (the arrival keepBuild() makes of it), and the page is noted as the one drawn. */
+    void arrival(String page) {
         if (!page.equals(drawnPage)) pool.forget();
         drawnPage = page;
-        ui.keepMenu("handleAllBuildingMenus", again, pool, draw);
+    }
+
+    /**
+     * The page the Build tab shows for a name - the Overview, or a category (a name that is none is the Overview) - set up as its
+     * show method sets it up before its draw, and the draw: the seam KeptBench draws the screen kept and built new through
+     * (KP3). The arrival (arrival()) is the caller's, since a page built new takes a pool of its own.
+     */
+    Runnable drawOf(String name) {
+        BuildAdvice.Category c = BuildAdvice.category(name);
+        if (c == null) {
+            autoChips.noteFocus();
+            onPage(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
+            return this::drawOverview;
+        }
+        onPage(c.name(), c.types());
+        return c.cityBuilds() ? () -> drawCityCategory(c) : () -> drawMarketCategory(c);
+    }
+
+    /** Which page the Build tab is on, for the rail and the keyboard: what every show method sets first. */
+    private void onPage(String name, EnumSet<BuildingType> types) {
+        buildCategory = name;
+        pageTitle = name;
+        pageCategories = types;
     }
 
     /** The cap the funding page quotes at: the player's if they moved the chips on this page, otherwise automatic building's. */
@@ -2085,15 +2113,23 @@ final class BuildScreen {
         Pieces.ActionButton build = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, orderPress(null, 0), null);
         /*
          * The reset button is built below but referenced above, because
-         * reprice is what decides whether it is on screen. One-element array:
+         * reprice is what decides whether it is in the row. One-element arrays:
          * a lambda can only close over something final.
          */
         final javafx.scene.Node[] resetHolder = new javafx.scene.Node[1];
+        final HBox[] stepsHolder = new HBox[1];
         Runnable reprice = () -> {
             int n = orderQty.getOrDefault(key, 0);
             count.setText(String.valueOf(n));
             count.setStyle(Palette.figure(Palette.SIZE_BODY, n > 0 ? Palette.BUILDING : Palette.TEXT_HEAD));
-            showIf(resetHolder[0], n > 0);
+            // Kept (KP3): the ↺ is in the row only while there is an order to clear. A button hidden with showIf() keeps the
+            // place it last stood, which a button never shown has not (KeptCheck 38 saw it at 250,0 on a kept card, 0,0 on a new one).
+            List<javafx.scene.Node> row = stepsHolder[0].getChildren();
+            if (n > 0) {
+                if (!row.contains(resetHolder[0])) row.add(resetHolder[0]);
+            } else {
+                row.remove(resetHolder[0]);
+            }
             showPendingHint();
             if (n <= 0) {
                 build.show(orderPress(null, 0));
@@ -2173,8 +2209,9 @@ final class BuildScreen {
         Kept.tip(build, "Enter builds every pending order on this page; Backspace clears them", 300);
         Region spread = Kept.region();
         HBox.setHgrow(spread, Priority.ALWAYS);
-        HBox steps = Kept.row(4, less, count, more, ten, hundred, spread, reset);
+        HBox steps = Kept.row(4, less, count, more, ten, hundred, spread);
         steps.setAlignment(Pos.CENTER_LEFT);
+        stepsHolder[0] = steps;
         return new Order(steps, build, quoted, reprice);
     }
 
@@ -2581,9 +2618,7 @@ final class BuildScreen {
     /** The Build tab's front page. */
     void showOverview() {
         autoChips.noteFocus();
-        buildCategory = BuildAdvice.OVERVIEW;
-        pageTitle = BuildAdvice.OVERVIEW;
-        pageCategories = EnumSet.noneOf(BuildingType.class);
+        onPage(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
         // Kept (KP3): a redraw of the Overview (a month landing, a dial moved, the switch) is drawn over last time's nodes;
         // another page is an arrival (keepBuild()).
         keepBuild(BuildAdvice.OVERVIEW, this::showOverview, this::drawOverview);
@@ -3717,9 +3752,7 @@ final class BuildScreen {
 
     /** A city category's page. */
     void showCityCategory(BuildAdvice.Category c) {
-        buildCategory = c.name();
-        pageTitle = c.name();
-        pageCategories = c.types();
+        onPage(c.name(), c.types());
         // Kept (KP3): a redraw of this category (a month landing, a ring picked, a stepper's page) is drawn over last time's
         // nodes; another page is an arrival (keepBuild()).
         keepBuild(c.name(), () -> showCityCategory(c), () -> drawCityCategory(c));
@@ -4131,6 +4164,9 @@ final class BuildScreen {
         return track ? Kept.column(2, row, Kept.scope("track", () -> bar(share, colour, wide, 4))) : Kept.column(0, row);
     }
 
+    /** How many times the order bar has been filled (KeptCheck 36 and 45 count them: a kept draw fills it once, after the last card; a stepper's press, between draws, once). */
+    int barFills;
+
     /**
      * The order bar: what the page's steppers add up to, its price against
      * the cash, the picked measure now, when what is on site opens and with
@@ -4141,6 +4177,7 @@ final class BuildScreen {
      */
     void refreshOrderBar() {
         if (orderBar == null || (orderMeasure == null && !orderMarket)) return;
+        barFills++;
         Game game = ui.game;
         java.util.Map<BuildingsTemplate, Integer> order = new java.util.LinkedHashMap<>();
         for (PageCard card : pageCards) {
@@ -4153,6 +4190,9 @@ final class BuildScreen {
         orderBar.getChildren().clear();
         if (order.isEmpty()) {
             showIf(orderBar, false);
+            // Kept (KP3): an unmanaged box is laid out by nobody, so it rests where a new one does, not where the bar last stood
+            // (KeptCheck 38: 18,663 and 1420 wide on the kept page, the origin and nothing on a page built new).
+            orderBar.resizeRelocate(0, 0, 0, 0);
             return;
         }
         showIf(orderBar, true);
@@ -4307,9 +4347,7 @@ final class BuildScreen {
          * rather than only in the strip's own handler, because the inbox's
          * "go and build" lands here directly too.
          */
-        buildCategory = c.name();
-        pageTitle = c.name();
-        pageCategories = c.types();
+        onPage(c.name(), c.types());
         // Kept (KP3): a redraw of this category is drawn over last time's nodes; another page is an arrival (keepBuild()).
         keepBuild(c.name(), () -> showMarketCategory(c), () -> drawMarketCategory(c));
     }
