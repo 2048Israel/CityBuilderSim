@@ -1,4 +1,4 @@
-# Levers.java - 145 lines · 3 methods · 1 constants · interface
+# Levers.java - 166 lines · 4 methods · 1 constants · interface
 
 `ham/citybuildersim/ui/Levers.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -13,7 +13,7 @@
 > caveat sentence, which the cards replaced, went in 0.7.38 with their
 > last caller.
 
-**Uses:** [Palette](Palette.md) (17), [Ladder](Ladder.md) (1)
+**Uses:** [Kept](Kept.md) (19), [Palette](Palette.md) (17), [Ladder](Ladder.md) (1)
 
 **Used by (3):** [FundScreen](FundScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [SectorScreen](SectorScreen.md)
 
@@ -21,26 +21,27 @@
 
 | line | section |
 |---:|---|
-| 36 | THE DIAL CARD (0.7.36) |
+| 37 | THE DIAL CARD (0.7.36) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 67 | `Levers.EFFECTS` | `420` | How wide the effects column is held beside the ladder. |
+| 68 | `Levers.EFFECTS` | `420` | How wide the effects column is held beside the ladder. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 120 | **type** `public final class Levers` | The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36) - the dial on a card with what it does beside it, which every dial on the Policy tab, since 0.7.38 the fare on Infrastructure and since 0.7.4... |
-| 28 | 3 | `public static double snapped(double value, double min, double step)` |  |
-| 32 | 3 | `public static boolean moved(double value, double from, double step)` |  |
+| 27 | 140 | **type** `public final class Levers` | The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36) - the dial on a card with what it does beside it, which every dial on the Policy tab, since 0.7.38 the fare on Infrastructure and since 0.7.4... |
+| 29 | 3 | `public static double snapped(double value, double min, double step)` |  |
+| 33 | 3 | `public static boolean moved(double value, double from, double step)` |  |
 
-### THE DIAL CARD (0.7.36) (lines 36-145)
+### THE DIAL CARD (0.7.36) (lines 37-166)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 61 | 4 | **type** `public record DialCard(String svg, String colour, String name, String info, String reading, String status, ...` | One dial card: its icon and the icon's colour; its name and the (i) behind it (null: none); the reading in large type and a line of status under it (either null: none); anything that sits over the ladder - its chips, ... |
-| 75 | 70 | `public static VBox dialCard(DialCard d, double ladderWidth, boolean stacked)` | The card: the dial at the left `ladderWidth` wide and its effects at the right, or - `stacked`, in a narrow column - the effects under the dial. |
+| 62 | 4 | **type** `public record DialCard(String svg, String colour, String name, String info, String reading, String status, ...` | One dial card: its icon and the icon's colour; its name and the (i) behind it (null: none); the reading in large type and a line of status under it (either null: none); anything that sits over the ladder - its chips, ... |
+| 76 | 5 | `public static VBox dialCard(DialCard d, double ladderWidth, boolean stacked)` | The card: the dial at the left `ladderWidth` wide and its effects at the right, or - `stacked`, in a narrow column - the effects under the dial. |
+| 82 | 84 | `private static VBox drawCard(DialCard d, double ladderWidth, boolean stacked)` |  |
 
