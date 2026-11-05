@@ -1,4 +1,4 @@
-# CapitalFlowCheck.java - 746 lines · 8 methods · 0 constants · harnesses
+# CapitalFlowCheck.java - 759 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -43,8 +43,8 @@
 | 188 | · 5. painful, never fatal |
 | 215 | · 6. it reaches the bank |
 | 276 | · 7. in a real city, and across a reload |
-| 384 | · 8. and the city's own money goes the other way |
-| 482 | · 9. the coupon abroad is profit, kept abroad (HD1, HD2) |
+| 390 | · 8. and the city's own money goes the other way |
+| 488 | · 9. the coupon abroad is profit, kept abroad (HD1, HD2) |
 
 ## Fields (state)
 
@@ -58,13 +58,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 711 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
+| 36 | 724 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
 | 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 58 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
-| 64 | 646 | `public static void main(String[] args) throws Exception` |  |
-| 712 | 12 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
-| 726 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
-| 732 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
-| 740 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 64 | 652 | `public static void main(String[] args) throws Exception` |  |
+| 718 | 19 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
+| 739 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
+| 745 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
+| 753 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

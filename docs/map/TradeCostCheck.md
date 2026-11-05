@@ -1,4 +1,4 @@
-# TradeCostCheck.java - 621 lines · 6 methods · 1 constants · harnesses
+# TradeCostCheck.java - 627 lines · 6 methods · 1 constants · harnesses
 
 `ham/citybuildersim/TradeCostCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -40,8 +40,8 @@
 | line | section |
 |---:|---|
 | 239 | · the traffic split (2026-09-16) |
-| 344 | · the modes (2026-09-16) |
-| 512 | · the fare (2026-09-16) |
+| 350 | · the modes (2026-09-16) |
+| 518 | · the fare (2026-09-16) |
 
 ## Constants
 
@@ -59,11 +59,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 584 | **type** `public class TradeCostCheck` | The wedge between what the world charges and what it pays, and what it is made of. |
+| 38 | 590 | **type** `public class TradeCostCheck` | The wedge between what the world charges and what it pays, and what it is made of. |
 | 42 | 7 | `static void quietly(Runnable r)` |  |
 | 50 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 55 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 172 | 3 | `static boolean same(double a, double b)` | Bit-for-bit, not to a tolerance. |
-| 176 | 439 | `public static void main(String[] args)` |  |
-| 616 | 5 | `static int countTraded()` |  |
+| 176 | 445 | `public static void main(String[] args)` |  |
+| 622 | 5 | `static int countTraded()` |  |
 

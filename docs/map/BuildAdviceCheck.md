@@ -1,4 +1,4 @@
-# BuildAdviceCheck.java - 1,473 lines · 47 methods · 0 constants · harnesses
+# BuildAdviceCheck.java - 1,480 lines · 47 methods · 0 constants · harnesses
 
 `ham/citybuildersim/BuildAdviceCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -72,19 +72,19 @@
 
 | line | section |
 |---:|---|
-| 256 | 1. THE CATEGORIES |
-| 393 | 2. NEEDS YOU'S NEEDS, IN ITS ORDER |
-| 446 | 3. THE COUNT AND THE PRICE |
-| 588 | 4. BEFORE AND AFTER, BY THE MODEL |
-| 749 | 5. THE STAFFING WEIGHTING |
-| 819 | 6. NOTHING NEEDED |
-| 841 | 7. LAND COUNTED |
-| 1021 | 8. SLACK BUILT |
-| 1056 | 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE |
-| 1185 | 10. SIZED TO THE PROJECTION |
-| 1230 | 11. THE RUN |
-| 1284 | 12. THE BEDS LESS THE PRICED OUT |
-| 1347 | 13. A BERTH PAYS BACK (FR3) |
+| 263 | 1. THE CATEGORIES |
+| 400 | 2. NEEDS YOU'S NEEDS, IN ITS ORDER |
+| 453 | 3. THE COUNT AND THE PRICE |
+| 595 | 4. BEFORE AND AFTER, BY THE MODEL |
+| 756 | 5. THE STAFFING WEIGHTING |
+| 826 | 6. NOTHING NEEDED |
+| 848 | 7. LAND COUNTED |
+| 1028 | 8. SLACK BUILT |
+| 1063 | 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE |
+| 1192 | 10. SIZED TO THE PROJECTION |
+| 1237 | 11. THE RUN |
+| 1291 | 12. THE BEDS LESS THE PRICED OUT |
+| 1354 | 13. A BERTH PAYS BACK (FR3) |
 
 ## Fields (state)
 
@@ -93,123 +93,123 @@
 | 95 | `static int fails` |  |
 | 96 | `static PrintStream out` |  |
 | 97 | `static PrintStream quiet` |  |
-| 624 | `static double wantBefore` | The students a school above the ladder would get and hire, read before the order stood (builtAndRead()). |
+| 631 | `static double wantBefore` | The students a school above the ladder would get and hire, read before the order stood (builtAndRead()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 1381 | **type** `public class BuildAdviceCheck` | The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS YOU's list, to the quote, and to the model's own figures, in a played city - and the categories it is filed under. |
+| 93 | 1388 | **type** `public class BuildAdviceCheck` | The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS YOU's list, to the quote, and to the model's own figures, in a played city - and the categories it is filed under. |
 | 99 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 104 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 110 | 5 | `static void bits(String label, double actual, double expected)` |  |
 | 116 | 5 | `static void quietly(Runnable r)` |  |
 | 122 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
 | 146 | 3 | `static Game shortCity(Path root, String name, boolean onSiteClinic)` | A played city short of the city's works: about four thousand people in nine hundred houses on one paved road, no clinic or daycare (the founding's own care only), a school of each basic stage, a college, a university ... |
-| 151 | 26 | `static Game shortCity(Path root, String name, boolean onSiteClinic, Set<String> without)` | ...without the buildings named in `without` (section 9: the short city with no university). |
-| 185 | 24 | `static Game servedCity(Path root, String name)` | A smaller city well served: every measure NEEDS YOU watches for a city-built building past its line - care of every kind, a school of every basic stage, a college, a university and a medical school with seats for who ... |
-| 210 | 30 | `public static void main(String[] args) throws Exception` |  |
-| 242 | 13 | `static void printCity(Game g, List<CityNeeds.Need> all, List<BuildAdvice.Suggestion> advice)` | The city as the advice read it, for the record. |
+| 151 | 33 | `static Game shortCity(Path root, String name, boolean onSiteClinic, Set<String> without)` | ...without the buildings named in `without` (section 9: the short city with no university). |
+| 192 | 24 | `static Game servedCity(Path root, String name)` | A smaller city well served: every measure NEEDS YOU watches for a city-built building past its line - care of every kind, a school of every basic stage, a college, a university and a medical school with seats for who ... |
+| 217 | 30 | `public static void main(String[] args) throws Exception` |  |
+| 249 | 13 | `static void printCity(Game g, List<CityNeeds.Need> all, List<BuildAdvice.Suggestion> advice)` | The city as the advice read it, for the record. |
 
-### 1. THE CATEGORIES (lines 256-392)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 258 | 45 | `static void theCategories(Path root)` |  |
-| 309 | 67 | `static void infrastructureAndFreight(BuildingManager bm, List<BuildAdvice.Category> cats)` | FR4 (2026-10-19; spec-freight-and-infrastructure 5, board 4): the city's things on one strip - Infrastructure holds the sea terminals and the Strategic Reserve - and the businesses' on theirs: Freight the rail rungs a... |
-| 377 | 15 | `static boolean checkInvestors(List<BuildAdvice.Category> cats)` |  |
-
-### 2. NEEDS YOU'S NEEDS, IN ITS ORDER (lines 393-445)
+### 1. THE CATEGORIES (lines 263-399)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 395 | 41 | `static void needsYousOrder(Game g, List<CityNeeds.Need> all, List<BuildAdvice.Suggestion> advice)` |  |
-| 438 | 7 | `static boolean onSiteAnswers(Game g, List<CityNeeds.Need> biting)` | Whether any biting city-built need has something on site that serves it. |
+| 265 | 45 | `static void theCategories(Path root)` |  |
+| 316 | 67 | `static void infrastructureAndFreight(BuildingManager bm, List<BuildAdvice.Category> cats)` | FR4 (2026-10-19; spec-freight-and-infrastructure 5, board 4): the city's things on one strip - Infrastructure holds the sea terminals and the Strategic Reserve - and the businesses' on theirs: Freight the rail rungs a... |
+| 384 | 15 | `static boolean checkInvestors(List<BuildAdvice.Category> cats)` |  |
 
-### 3. THE COUNT AND THE PRICE (lines 446-587)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 448 | 34 | `static void theCountAndThePrice(Game g, List<BuildAdvice.Suggestion> advice)` |  |
-| 489 | 14 | `static boolean fitsOrNone(Game g, BuildAdvice.Suggestion s, double landLeft)` | The land rule: the chosen building's whole count fits the ground the cards before it leave, unless none that keeps the need ahead would - each counted as the advice counts it, at today's demand with the slack for its ... |
-| 508 | 29 | `static double unitByTheModel(Game twin, BuildAdvice.Measure m, BuildingsTemplate t)` | One building's staffed capacity as the model counts it: the model's getter with one more of it standing in a twin, less the getter before. |
-| 546 | 32 | `static void theCash(Path root)` | THE CASH, NO CAP (0.7.51): with the cash for the first card and half the second, every card is the count that keeps its need ahead, as with the Wealthy cash; the second and after are on credit for exactly what the cas... |
-| 580 | 7 | `static boolean sameOrders(List<BuildAdvice.Suggestion> a, List<BuildAdvice.Suggestion> b)` | The same buildings, in the same counts, in the same order. |
-
-### 4. BEFORE AND AFTER, BY THE MODEL (lines 588-748)
+### 2. NEEDS YOU'S NEEDS, IN ITS ORDER (lines 400-452)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 591 | 5 | `static Game twin(Game g)` | A twin of the city: the same save, loaded. |
-| 609 | 13 | `static double builtAndRead(Game twin, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> add)` | The order and what is on site built standing in a twin, the month's own services pass run on it (SimulationEngine's last steps), and the figure read the way the model reads it. |
-| 627 | 63 | `static double readByTheModel(Game twin, BuildAdvice.Measure m)` | A measure's figure, read off the model: the handlers' own loads, the education month, the crime month. |
-| 692 | 6 | `static Crime crimeMonth(Game twin, double officers, double cells, int months)` | The city's crime, restored into a fresh Crime and played `months` months on these officers and cells. |
-| 700 | 8 | `static void advance(Game twin, Crime month, double officers, double cells)` | One month of crime on the city's own causes - the adults in each, from the pressure the city's month left. |
-| 709 | 12 | `static void beforeAndAfter(Path root, Game g, List<BuildAdvice.Suggestion> advice)` |  |
-| 723 | 25 | `static void everyMeasure(Path root, Game g)` | Every measure a city category opens on: an order of the first building that serves it, built in a twin. |
+| 402 | 41 | `static void needsYousOrder(Game g, List<CityNeeds.Need> all, List<BuildAdvice.Suggestion> advice)` |  |
+| 445 | 7 | `static boolean onSiteAnswers(Game g, List<CityNeeds.Need> biting)` | Whether any biting city-built need has something on site that serves it. |
 
-### 5. THE STAFFING WEIGHTING (lines 749-818)
+### 3. THE COUNT AND THE PRICE (lines 453-594)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 756 | 43 | `static void theStaffingWeighting(Path root)` | Two clinics alike in everything - price, capacity, land, posts in all - but how many of the scarcest of the clinic's own posts they need: the advice takes the one with fewer. |
-| 800 | 12 | `static BuildingsTemplate clone(BuildingsTemplate t, String name, JobType a, int na, JobType b, int nb)` |  |
-| 813 | 5 | `static int posts(BuildingsTemplate t)` |  |
+| 455 | 34 | `static void theCountAndThePrice(Game g, List<BuildAdvice.Suggestion> advice)` |  |
+| 496 | 14 | `static boolean fitsOrNone(Game g, BuildAdvice.Suggestion s, double landLeft)` | The land rule: the chosen building's whole count fits the ground the cards before it leave, unless none that keeps the need ahead would - each counted as the advice counts it, at today's demand with the slack for its ... |
+| 515 | 29 | `static double unitByTheModel(Game twin, BuildAdvice.Measure m, BuildingsTemplate t)` | One building's staffed capacity as the model counts it: the model's getter with one more of it standing in a twin, less the getter before. |
+| 553 | 32 | `static void theCash(Path root)` | THE CASH, NO CAP (0.7.51): with the cash for the first card and half the second, every card is the count that keeps its need ahead, as with the Wealthy cash; the second and after are on credit for exactly what the cas... |
+| 587 | 7 | `static boolean sameOrders(List<BuildAdvice.Suggestion> a, List<BuildAdvice.Suggestion> b)` | The same buildings, in the same counts, in the same order. |
 
-### 6. NOTHING NEEDED (lines 819-840)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 821 | 15 | `static void nothingNeeded(Path root)` |  |
-| 837 | 3 | `static boolean bitsEqual(double a, double b)` |  |
-
-### 7. LAND COUNTED (lines 841-1020)
+### 4. BEFORE AND AFTER, BY THE MODEL (lines 595-755)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 867 | 95 | `static void landCounted(Path root)` | LAND COUNTED (0.7.51): the short city's cards with the land office's listing at nothing, as it stands, and at ten times its prices (each parcel's dollar price in LandMarket's listing state, scaled): every card's figur... |
-| 976 | 34 | `static double lifeFigure(Game g, BuildAdvice.Suggestion s, double landLeft)` | A card's figure, recomputed here from the model's own pieces (0.7.101, BuildAdvice, A BUILDING OVER ITS LIFE): its order over its life - the quote for its count (Game.quoteBuild(), or Game.quotePave() and the ground a... |
-| 1012 | 8 | `static double[][] scaledOffers(double[][] base, double f)` | The offers' records with each one's dollar price times f (LandParcel.offerRow(): the price second from the end). |
+| 598 | 5 | `static Game twin(Game g)` | A twin of the city: the same save, loaded. |
+| 616 | 13 | `static double builtAndRead(Game twin, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> add)` | The order and what is on site built standing in a twin, the month's own services pass run on it (SimulationEngine's last steps), and the figure read the way the model reads it. |
+| 634 | 63 | `static double readByTheModel(Game twin, BuildAdvice.Measure m)` | A measure's figure, read off the model: the handlers' own loads, the education month, the crime month. |
+| 699 | 6 | `static Crime crimeMonth(Game twin, double officers, double cells, int months)` | The city's crime, restored into a fresh Crime and played `months` months on these officers and cells. |
+| 707 | 8 | `static void advance(Game twin, Crime month, double officers, double cells)` | One month of crime on the city's own causes - the adults in each, from the pressure the city's month left. |
+| 716 | 12 | `static void beforeAndAfter(Path root, Game g, List<BuildAdvice.Suggestion> advice)` |  |
+| 730 | 25 | `static void everyMeasure(Path root, Game g)` | Every measure a city category opens on: an order of the first building that serves it, built in a twin. |
 
-### 8. SLACK BUILT (lines 1021-1055)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1030 | 25 | `static void slackBuilt(Game g, List<BuildAdvice.Suggestion> advice)` | SLACK BUILT (0.7.51): a served card - power, water, the road, care, the schools - at 100% or more of its demand at its projection with SLACK on top, not just off NEEDS YOU's list; care's and a basic school's demand th... |
-
-### 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE (lines 1056-1184)
+### 5. THE STAFFING WEIGHTING (lines 756-825)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1068 | 60 | `static void thePipeline(Path root, Game g, List<CityNeeds.Need> all)` | NO HIGHER EDUCATION WITHOUT ITS PIPELINE (0.7.51). |
-| 1130 | 18 | `static void higherRows(Game g, List<CityNeeds.Need> all, String where, int[] rows)` | Every school row above the ladder: no more wanted than would come or be hired, to the bit; with no seats, a first school's. |
-| 1149 | 4 | `static CityNeeds.Need schoolRow(List<CityNeeds.Need> all, EducationType t)` |  |
-| 1154 | 6 | `static boolean suggests(Game g, List<CityNeeds.Need> all, EducationType t)` |  |
-| 1162 | 22 | `static Game founded(Path root, String name, int month)` | The default playtest's founding (LongPlaytest's own: Standard, its first houses, shops and fields), played to `month`. |
+| 763 | 43 | `static void theStaffingWeighting(Path root)` | Two clinics alike in everything - price, capacity, land, posts in all - but how many of the scarcest of the clinic's own posts they need: the advice takes the one with fewer. |
+| 807 | 12 | `static BuildingsTemplate clone(BuildingsTemplate t, String name, JobType a, int na, JobType b, int nb)` |  |
+| 820 | 5 | `static int posts(BuildingsTemplate t)` |  |
 
-### 10. SIZED TO THE PROJECTION (lines 1185-1229)
+### 6. NOTHING NEEDED (lines 826-847)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1195 | 34 | `static void sizedToTheProjection(Path root)` | SIZED TO THE PROJECTION (0.7.51): the short city's population history rising - two per cent a month over the businesses' window to the people it has - against the same history flat. |
+| 828 | 15 | `static void nothingNeeded(Path root)` |  |
+| 844 | 3 | `static boolean bitsEqual(double a, double b)` |  |
 
-### 11. THE RUN (lines 1230-1283)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1241 | 42 | `static void theRun(Path root, Game g, List<BuildAdvice.Suggestion> advice)` | THE RUN (0.7.51): "Build all three" places BuildAdvice.run(), the cards' orders in their order. |
-
-### 12. THE BEDS LESS THE PRICED OUT (lines 1284-1346)
+### 7. LAND COUNTED (lines 848-1027)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1297 | 49 | `static void thePricedOut(Game g)` | THE BEDS LESS THE PRICED OUT (0.7.106, batch P5; Jerus's A20 - 0.7.27's D16, "switch"). |
+| 874 | 95 | `static void landCounted(Path root)` | LAND COUNTED (0.7.51): the short city's cards with the land office's listing at nothing, as it stands, and at ten times its prices (each parcel's dollar price in LandMarket's listing state, scaled): every card's figur... |
+| 983 | 34 | `static double lifeFigure(Game g, BuildAdvice.Suggestion s, double landLeft)` | A card's figure, recomputed here from the model's own pieces (0.7.101, BuildAdvice, A BUILDING OVER ITS LIFE): its order over its life - the quote for its count (Game.quoteBuild(), or Game.quotePave() and the ground a... |
+| 1019 | 8 | `static double[][] scaledOffers(double[][] base, double f)` | The offers' records with each one's dollar price times f (LandParcel.offerRow(): the price second from the end). |
 
-### 13. A BERTH PAYS BACK (FR3) (lines 1347-1473)
+### 8. SLACK BUILT (lines 1028-1062)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1359 | 103 | `static void aBerthPaysBack(Path root)` | A BERTH PAYS BACK (FR3, docs/queue/FR3.md 6 item 9): the advice offers a berth on its payback, Ports.berthPaysBack() - the kind's uncovered tonnes a month reaching WORTH_A_BERTH / the port dues dial of that berth's mo... |
-| 1464 | 4 | `static void causeDryBulk(Game g, double tonnes)` | Begins the city's Ports month and tells it `tonnes` of iron ore (dry bulk) crossed the boundary inbound, none by sea. |
-| 1470 | 3 | `static BuildAdvice.Suggestion ask(Game g, BuildAdvice.Measure m)` | What the advice offers for a port measure, cash and land to spare. |
+| 1037 | 25 | `static void slackBuilt(Game g, List<BuildAdvice.Suggestion> advice)` | SLACK BUILT (0.7.51): a served card - power, water, the road, care, the schools - at 100% or more of its demand at its projection with SLACK on top, not just off NEEDS YOU's list; care's and a basic school's demand th... |
+
+### 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE (lines 1063-1191)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1075 | 60 | `static void thePipeline(Path root, Game g, List<CityNeeds.Need> all)` | NO HIGHER EDUCATION WITHOUT ITS PIPELINE (0.7.51). |
+| 1137 | 18 | `static void higherRows(Game g, List<CityNeeds.Need> all, String where, int[] rows)` | Every school row above the ladder: no more wanted than would come or be hired, to the bit; with no seats, a first school's. |
+| 1156 | 4 | `static CityNeeds.Need schoolRow(List<CityNeeds.Need> all, EducationType t)` |  |
+| 1161 | 6 | `static boolean suggests(Game g, List<CityNeeds.Need> all, EducationType t)` |  |
+| 1169 | 22 | `static Game founded(Path root, String name, int month)` | The default playtest's founding (LongPlaytest's own: Standard, its first houses, shops and fields), played to `month`. |
+
+### 10. SIZED TO THE PROJECTION (lines 1192-1236)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1202 | 34 | `static void sizedToTheProjection(Path root)` | SIZED TO THE PROJECTION (0.7.51): the short city's population history rising - two per cent a month over the businesses' window to the people it has - against the same history flat. |
+
+### 11. THE RUN (lines 1237-1290)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1248 | 42 | `static void theRun(Path root, Game g, List<BuildAdvice.Suggestion> advice)` | THE RUN (0.7.51): "Build all three" places BuildAdvice.run(), the cards' orders in their order. |
+
+### 12. THE BEDS LESS THE PRICED OUT (lines 1291-1353)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1304 | 49 | `static void thePricedOut(Game g)` | THE BEDS LESS THE PRICED OUT (0.7.106, batch P5; Jerus's A20 - 0.7.27's D16, "switch"). |
+
+### 13. A BERTH PAYS BACK (FR3) (lines 1354-1480)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1366 | 103 | `static void aBerthPaysBack(Path root)` | A BERTH PAYS BACK (FR3, docs/queue/FR3.md 6 item 9): the advice offers a berth on its payback, Ports.berthPaysBack() - the kind's uncovered tonnes a month reaching WORTH_A_BERTH / the port dues dial of that berth's mo... |
+| 1471 | 4 | `static void causeDryBulk(Game g, double tonnes)` | Begins the city's Ports month and tells it `tonnes` of iron ore (dry bulk) crossed the boundary inbound, none by sea. |
+| 1477 | 3 | `static BuildAdvice.Suggestion ask(Game g, BuildAdvice.Measure m)` | What the advice offers for a port measure, cash and land to spare. |
 

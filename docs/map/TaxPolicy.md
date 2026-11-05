@@ -1,4 +1,4 @@
-# TaxPolicy.java - 1,938 lines · 119 methods · 48 constants · model
+# TaxPolicy.java - 1,978 lines · 120 methods · 48 constants · model
 
 `ham/citybuildersim/TaxPolicy.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
 
@@ -56,9 +56,9 @@
 > effective rate the one income rate and reproduces the single-rate behaviour
 > this replaced, exactly.
 
-**Uses:** [DecisionLog](DecisionLog.md) (68), [PolicyDates](PolicyDates.md) (53), [EducationType](EducationType.md) (17), [WageBand](WageBand.md) (10), [Sector](Sector.md) (10), [Unemployment](Unemployment.md) (6), [PayTier](PayTier.md) (5), [SocialSecurity](SocialSecurity.md) (4), [PriceLevel](PriceLevel.md) (3), [JobType](JobType.md) (3), [Sectors](Sectors.md) (1)
+**Uses:** [DecisionLog](DecisionLog.md) (68), [PolicyDates](PolicyDates.md) (58), [EducationType](EducationType.md) (17), [WageBand](WageBand.md) (10), [Sector](Sector.md) (10), [Unemployment](Unemployment.md) (6), [PayTier](PayTier.md) (5), [SocialSecurity](SocialSecurity.md) (4), [PriceLevel](PriceLevel.md) (3), [JobType](JobType.md) (3), [Sectors](Sectors.md) (1)
 
-**Used by (60):** [AgricultureCheck](AgricultureCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [CarCheck](CarCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [DataSave](DataSave.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Founding](Founding.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HomeRailCheck](HomeRailCheck.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [Inbox](Inbox.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [Motoring](Motoring.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyCheck](PolicyCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PortCheck](PortCheck.md), [PortDivision](PortDivision.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReplayCheck](ReplayCheck.md), [Retail](Retail.md), [SalesTaxLedger](SalesTaxLedger.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md), [TreasuryCheck](TreasuryCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (61):** [AgricultureCheck](AgricultureCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [CarCheck](CarCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [DataSave](DataSave.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Founding](Founding.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HomeRailCheck](HomeRailCheck.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [Inbox](Inbox.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [Motoring](Motoring.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyCheck](PolicyCheck.md), [PolicyDates](PolicyDates.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PortCheck](PortCheck.md), [PortDivision](PortDivision.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReplayCheck](ReplayCheck.md), [Retail](Retail.md), [SalesTaxLedger](SalesTaxLedger.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md), [TreasuryCheck](TreasuryCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
@@ -66,130 +66,131 @@
 |---:|---|
 | 60 | THE DECISION LOG (0.7.23) |
 | 81 | THE LEVERS ON HISTORY'S DATES (R0, 2026-11-04; research-1900.md 7) |
-| 259 | FARMLAND, AND WHAT IT IS ASSESSED AT (2026-09-13) |
-| 323 | THE PENSION PROMISE, AS TWO DIALS |
-| 368 | EMPLOYMENT INSURANCE AND THE STUDENT GRANT, AS THREE MORE DIALS |
-| 418 | · FOOD ASSISTANCE (0.7.43) |
-| 488 | THE PRICE OF A PLACE - THE GRANT'S BASIS, THE LOAN'S RATE AND THE |
-| 852 | HEALTHCARE HAS A PRICE, AND A PREMIUM (2026-09-19) |
-| 993 | WHAT A RIDE COSTS (2026-09-16) |
-| 1022 | A RIDE IS NOT A MONTH (2026-09-17) |
-| 1077 | · THE FARE IS REAL (0.7.42, the anchor; star 9) |
-| 1157 | THE FUEL DUTY (0.7.103, batch P4; Jerus's A7, 2026-10-10) |
-| 1207 | PORT DUES (FR3, 2026-10-19; docs/queue/FR3.md 2, D9) |
-| 1262 | THE CITY RATES |
-| 1371 | OFFSETS |
-| 1422 | EFFECTIVE RATES - the only numbers anything is ever charged at |
-| 1477 | WAGES |
-| 1552 | A COPY TO PREVIEW ON (0.7.36) |
-| 1602 | SAVE AND RESTORE |
+| 294 | FARMLAND, AND WHAT IT IS ASSESSED AT (2026-09-13) |
+| 358 | THE PENSION PROMISE, AS TWO DIALS |
+| 403 | EMPLOYMENT INSURANCE AND THE STUDENT GRANT, AS THREE MORE DIALS |
+| 453 | · FOOD ASSISTANCE (0.7.43) |
+| 523 | THE PRICE OF A PLACE - THE GRANT'S BASIS, THE LOAN'S RATE AND THE |
+| 887 | HEALTHCARE HAS A PRICE, AND A PREMIUM (2026-09-19) |
+| 1028 | WHAT A RIDE COSTS (2026-09-16) |
+| 1057 | A RIDE IS NOT A MONTH (2026-09-17) |
+| 1112 | · THE FARE IS REAL (0.7.42, the anchor; star 9) |
+| 1192 | THE FUEL DUTY (0.7.103, batch P4; Jerus's A7, 2026-10-10) |
+| 1242 | PORT DUES (FR3, 2026-10-19; docs/queue/FR3.md 2, D9) |
+| 1297 | THE CITY RATES |
+| 1406 | OFFSETS |
+| 1457 | EFFECTIVE RATES - the only numbers anything is ever charged at |
+| 1512 | WAGES |
+| 1587 | A COPY TO PREVIEW ON (0.7.36) |
+| 1638 | SAVE AND RESTORE |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 572 | `TaxPolicy.GrantBasis.WAGE_SHARE` | A share of the unskilled wage, per student per month - the founding rule until 0.7.19, and what an older save that chose nothing keeps. |
-| 574 | `TaxPolicy.GrantBasis.FIXED` | A fixed REAL amount per student per month, in founding thousands, kept up with prices - by the expected price level since 0.7.42, the price index from 0.7.19 (a nominal amount until then) - the default since 0.7.19. |
-| 576 | `TaxPolicy.GrantBasis.SURPLUS_SHARE` | A share of the cash part of last month's budget surplus (SG1: not the paper gains in it) as ONE POOL, split evenly over this month's students; a deficit month pays nothing. |
-| 578 | `TaxPolicy.GrantBasis.TUITION_SHARE` | A share of each student's own course tuition at today's price - after the tuition scale, before the subsidy. |
+| 607 | `TaxPolicy.GrantBasis.WAGE_SHARE` | A share of the unskilled wage, per student per month - the founding rule until 0.7.19, and what an older save that chose nothing keeps. |
+| 609 | `TaxPolicy.GrantBasis.FIXED` | A fixed REAL amount per student per month, in founding thousands, kept up with prices - by the expected price level since 0.7.42, the price index from 0.7.19 (a nominal amount until then) - the default since 0.7.19. |
+| 611 | `TaxPolicy.GrantBasis.SURPLUS_SHARE` | A share of the cash part of last month's budget surplus (SG1: not the paper gains in it) as ONE POOL, split evenly over this month's students; a deficit month pays nothing. |
+| 613 | `TaxPolicy.GrantBasis.TUITION_SHARE` | A share of each student's own course tuition at today's price - after the tuition scale, before the subsidy. |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 112 | `TaxPolicy.GATED` | `{ PolicyDates.Lever.PROFIT_TAX, PolicyDates.Lever.WAGE_TAX, PolicyDates.Lever...` | The levers this class holds, in the order they open. |
-| 221 | `TaxPolicy.DEFAULT_INCOME_TAX` | `.15` | Where income tax started before it was a dial. |
-| 231 | `TaxPolicy.DEFAULT_PROPERTY_TAX` | `.015` | 1.5% a year, near the real-world average. |
-| 234 | `TaxPolicy.MAX_PROPERTY_TAX` | `.10` | Nobody has ever paid 100% property tax and the game should not model it. |
-| 237 | `TaxPolicy.MAX_INCOME_TAX` | `.60` | Above this, income tax stops being a policy and starts being confiscation. |
-| 247 | `TaxPolicy.MAX_OFFSET` | `.30` | How far a band or sector may be moved from its tax's base rate, either way. |
-| 296 | `TaxPolicy.DEFAULT_FARMLAND_RELIEF` | `1.0` |  |
-| 299 | `TaxPolicy.FARM_SECTOR` | `Sectors.AGRICULTURE` | The sector whose ground the relief applies to. |
-| 342 | `TaxPolicy.MAX_CONTRIBUTION` | `.20` | Nobody hands over more than a fifth of a wage, whatever the deficit. |
-| 345 | `TaxPolicy.MAX_REPLACEMENT` | `1.00` | A pension of more than one unskilled wage is a wage, not a pension. |
-| 389 | `TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE` | `525.0 / 3_460` | The Canada Student Grant, $525 a month of study (2026-27), as a share of the $3,460 unskilled median the ladder is anchored on - so it moves with the wage it was measured against and with a currency reform. |
-| 404 | `TaxPolicy.DEFAULT_FIXED_GRANT` | `DEFAULT_STUDENT_GRANT_SHARE * PayTier.UNSKILLED.getMonthlyWage()` | THE GRANT FOLLOWS PRICES (0.7.19): the default grant as a FIXED amount, in founding thousands - $525 a month, the Canada Student Grant (2026-27) this basis's share was read off, so at founding, when the price index is... |
-| 407 | `TaxPolicy.MAX_EI_PREMIUM` | `.10` | A premium past a tenth of a wage is a second income tax. |
-| 410 | `TaxPolicy.MAX_EI_BENEFIT` | `1.00` | EI that replaces more than the wage pays people to stay out of work. |
-| 413 | `TaxPolicy.MAX_STUDENT_GRANT` | `1.00` | A grant of more than an unskilled wage is a wage: the ceiling on the WAGE_SHARE basis's share. |
-| 433 | `TaxPolicy.DEFAULT_FOOD_ASSISTANCE` | `0` | No voucher: the city it was. |
-| 436 | `TaxPolicy.MAX_FOOD_ASSISTANCE` | `1.00` | A voucher for every basket an eligible household eats is the most there is. |
-| 616 | `TaxPolicy.DEFAULT_GRANT_BASIS` | `GrantBasis.FIXED` | Where the grant starts: a fixed real amount, kept up with prices - the expected price level since 0.7.42, the price index from 0.7.19 (the founding rule, a share of the unskilled wage, until then). |
-| 619 | `TaxPolicy.MAX_FIXED_GRANT_WAGES` | `1.00` | A fixed grant of more than one unskilled wage a month is a wage: the FIXED ceiling, in founding unskilled wages, struck against that wage in today's money. |
-| 622 | `TaxPolicy.MAX_SURPLUS_GRANT_SHARE` | `1.00` | The whole of last month's surplus, and no more: the SURPLUS_SHARE ceiling. |
-| 625 | `TaxPolicy.MAX_TUITION_GRANT_SHARE` | `2.00` | Twice the course's tuition: the TUITION_SHARE ceiling, so a grant can cover the fee and living costs on top. |
-| 628 | `TaxPolicy.DEFAULT_STUDENT_LOAN_RATE` | `0` | Where the loan rate starts: no interest, as Canada's loans have been since April 2023. |
-| 631 | `TaxPolicy.MAX_STUDENT_LOAN_RATE` | `.15` | Fifteen per cent a year: past any rate a government has charged a student, and the dial's ceiling. |
-| 634 | `TaxPolicy.DEFAULT_TUITION_SCALE` | `1.0` | Where the tuition scale starts: the founding table, unscaled. |
-| 637 | `TaxPolicy.MAX_TUITION_SCALE` | `5.0` | Five times the founding table: the trap the Education header describes returns around x3 against today's wages (university 3.60 against a diploma wage of 4.500 is past MAX_BURDEN unsubsidised), so x5 leaves room past ... |
-| 669 | `TaxPolicy.SCHOOL_KINDS` | `schoolKinds()` | The nine kinds a school can be, in EducationType order: everything bar NONE (0.7.6). |
-| 887 | `TaxPolicy.DEFAULT_HEALTH_FEE_SCALE` | `1.0` | Where the fee scale starts: the founding fees, unscaled. |
-| 890 | `TaxPolicy.MAX_HEALTH_FEE_SCALE` | `15.0` | Fifteen times the founding fees: past every played city's break-even (x7 to x13 at today's wages), so the business corner is reachable; a ceiling, not a default. |
-| 893 | `TaxPolicy.DEFAULT_HEALTH_PREMIUM` | `0` | Where the health premium starts: nobody pays one until the player says so. |
-| 896 | `TaxPolicy.MAX_HEALTH_PREMIUM` | `.10` | A health premium past a tenth of a wage is a second income tax, as the EI premium's ceiling says. |
-| 1017 | `TaxPolicy.DEFAULT_TRANSIT_FARE` | `.0025 * PriceLevel.FACTOR` | What a single journey costs a rider, in thousands. |
-| 1020 | `TaxPolicy.MAX_TRANSIT_FARE` | `.05 * PriceLevel.FACTOR` | The dial's cap, $50 a ride, twenty times the default, in founding money: past it no car owner rides while a journey's fuel costs under half of it, and the commuters with no car of their own still do (0.7.49, Infrastru... |
-| 1061 | `TaxPolicy.JOURNEYS_A_MONTH` | `40` | Journeys one commuter makes in a month: out and back, twenty days. |
-| 1182 | `TaxPolicy.DEFAULT_FUEL_DUTY` | `0` | No duty: the city it was (Jerus's A7: default 0). |
-| 1185 | `TaxPolicy.MAX_FUEL_DUTY` | `.001 * PriceLevel.FACTOR` | The dial's top, a dollar a litre at founding prices, in thousands: past the dearest duty the research found, the Netherlands' EUR 0.789 a litre of petrol (2024; runs/research-pump.md 6 [30]) - a ceiling, not a default. |
-| 1224 | `TaxPolicy.DEFAULT_PORT_DUES` | `1.0` | The default due: the berths' cost recovered over their life at the city's rate (D9). |
-| 1227 | `TaxPolicy.MAX_PORT_DUES` | `2.0` | The dial's top: twice the default. |
-| 1607 | `TaxPolicy.STATE_BEFORE_EI` | `4 + WageBand.values().length` | The slots a save from before the EI and grant dials carried: the four rates and the wage-band offsets. |
-| 1610 | `TaxPolicy.STATE_BEFORE_HEALTH` | `STATE_BEFORE_EI + 3 + 1 + 1` | ...and one from before the health dials of 2026-09-19: EI's three, the farmland relief and the fare on top. |
-| 1613 | `TaxPolicy.STATE_BEFORE_EDUCATION` | `STATE_BEFORE_HEALTH + 2` | ...and one from before the education dials of 2026-09-21: the two health dials on top. |
-| 1616 | `TaxPolicy.STATE_BEFORE_SPLIT` | `STATE_BEFORE_EDUCATION + 4` | ...and one from before the income rate split in three (0.7.4): the grant's basis and amount, the loan rate and the tuition scale on top. |
-| 1619 | `TaxPolicy.STATE_BEFORE_SCHOOLS` | `STATE_BEFORE_SPLIT + 3` | ...and one from before the tuition scale split by school (0.7.6): the profit, sales and wage bases on top, each its own slot since 0.7.4. |
-| 1622 | `TaxPolicy.STATE_BEFORE_REAL_GRANT` | `STATE_BEFORE_SCHOOLS + EducationType.values().length - 1` | ...and one from before the real FIXED grant (0.7.19): a tuition scale per school kind on top, the nine in EducationType order bar NONE, since 0.7.6. |
-| 1625 | `TaxPolicy.STATE_BEFORE_REAL_FARE` | `STATE_BEFORE_REAL_GRANT + 1` | ...and one from before the real fare (0.7.42): one slot on top saying the FIXED amount is real, in founding money (0.7.19) - see realiseFixedGrant(). |
-| 1628 | `TaxPolicy.STATE_BEFORE_FOOD_ASSISTANCE` | `STATE_BEFORE_REAL_FARE + 1` | ...and one from before food assistance (0.7.43): one slot on top saying the fare is real, in founding money (0.7.42) - see realiseFare(). |
-| 1631 | `TaxPolicy.STATE_BEFORE_FUEL_DUTY` | `STATE_BEFORE_FOOD_ASSISTANCE + 1` | ...and one from before the fuel duty (0.7.103): the food assistance dial on top (0.7.43). |
-| 1634 | `TaxPolicy.STATE_BEFORE_PORT_DUES` | `STATE_BEFORE_FUEL_DUTY + 1` | ...and one from before the port dues dial (FR3): the fuel duty on top (0.7.103). |
-| 1637 | `TaxPolicy.STATE_SLOTS` | `STATE_BEFORE_PORT_DUES + 1` | This build's array: the port dues dial on top (FR3). |
+| 119 | `TaxPolicy.GATED` | `{ PolicyDates.Lever.PROFIT_TAX, PolicyDates.Lever.WAGE_TAX, PolicyDates.Lever...` | The levers this class holds, in the order they open. |
+| 256 | `TaxPolicy.DEFAULT_INCOME_TAX` | `.15` | Where income tax started before it was a dial. |
+| 266 | `TaxPolicy.DEFAULT_PROPERTY_TAX` | `.015` | 1.5% a year, near the real-world average. |
+| 269 | `TaxPolicy.MAX_PROPERTY_TAX` | `.10` | Nobody has ever paid 100% property tax and the game should not model it. |
+| 272 | `TaxPolicy.MAX_INCOME_TAX` | `.60` | Above this, income tax stops being a policy and starts being confiscation. |
+| 282 | `TaxPolicy.MAX_OFFSET` | `.30` | How far a band or sector may be moved from its tax's base rate, either way. |
+| 331 | `TaxPolicy.DEFAULT_FARMLAND_RELIEF` | `1.0` |  |
+| 334 | `TaxPolicy.FARM_SECTOR` | `Sectors.AGRICULTURE` | The sector whose ground the relief applies to. |
+| 377 | `TaxPolicy.MAX_CONTRIBUTION` | `.20` | Nobody hands over more than a fifth of a wage, whatever the deficit. |
+| 380 | `TaxPolicy.MAX_REPLACEMENT` | `1.00` | A pension of more than one unskilled wage is a wage, not a pension. |
+| 424 | `TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE` | `525.0 / 3_460` | The Canada Student Grant, $525 a month of study (2026-27), as a share of the $3,460 unskilled median the ladder is anchored on - so it moves with the wage it was measured against and with a currency reform. |
+| 439 | `TaxPolicy.DEFAULT_FIXED_GRANT` | `DEFAULT_STUDENT_GRANT_SHARE * PayTier.UNSKILLED.getMonthlyWage()` | THE GRANT FOLLOWS PRICES (0.7.19): the default grant as a FIXED amount, in founding thousands - $525 a month, the Canada Student Grant (2026-27) this basis's share was read off, so at founding, when the price index is... |
+| 442 | `TaxPolicy.MAX_EI_PREMIUM` | `.10` | A premium past a tenth of a wage is a second income tax. |
+| 445 | `TaxPolicy.MAX_EI_BENEFIT` | `1.00` | EI that replaces more than the wage pays people to stay out of work. |
+| 448 | `TaxPolicy.MAX_STUDENT_GRANT` | `1.00` | A grant of more than an unskilled wage is a wage: the ceiling on the WAGE_SHARE basis's share. |
+| 468 | `TaxPolicy.DEFAULT_FOOD_ASSISTANCE` | `0` | No voucher: the city it was. |
+| 471 | `TaxPolicy.MAX_FOOD_ASSISTANCE` | `1.00` | A voucher for every basket an eligible household eats is the most there is. |
+| 651 | `TaxPolicy.DEFAULT_GRANT_BASIS` | `GrantBasis.FIXED` | Where the grant starts: a fixed real amount, kept up with prices - the expected price level since 0.7.42, the price index from 0.7.19 (the founding rule, a share of the unskilled wage, until then). |
+| 654 | `TaxPolicy.MAX_FIXED_GRANT_WAGES` | `1.00` | A fixed grant of more than one unskilled wage a month is a wage: the FIXED ceiling, in founding unskilled wages, struck against that wage in today's money. |
+| 657 | `TaxPolicy.MAX_SURPLUS_GRANT_SHARE` | `1.00` | The whole of last month's surplus, and no more: the SURPLUS_SHARE ceiling. |
+| 660 | `TaxPolicy.MAX_TUITION_GRANT_SHARE` | `2.00` | Twice the course's tuition: the TUITION_SHARE ceiling, so a grant can cover the fee and living costs on top. |
+| 663 | `TaxPolicy.DEFAULT_STUDENT_LOAN_RATE` | `0` | Where the loan rate starts: no interest, as Canada's loans have been since April 2023. |
+| 666 | `TaxPolicy.MAX_STUDENT_LOAN_RATE` | `.15` | Fifteen per cent a year: past any rate a government has charged a student, and the dial's ceiling. |
+| 669 | `TaxPolicy.DEFAULT_TUITION_SCALE` | `1.0` | Where the tuition scale starts: the founding table, unscaled. |
+| 672 | `TaxPolicy.MAX_TUITION_SCALE` | `5.0` | Five times the founding table: the trap the Education header describes returns around x3 against today's wages (university 3.60 against a diploma wage of 4.500 is past MAX_BURDEN unsubsidised), so x5 leaves room past ... |
+| 704 | `TaxPolicy.SCHOOL_KINDS` | `schoolKinds()` | The nine kinds a school can be, in EducationType order: everything bar NONE (0.7.6). |
+| 922 | `TaxPolicy.DEFAULT_HEALTH_FEE_SCALE` | `1.0` | Where the fee scale starts: the founding fees, unscaled. |
+| 925 | `TaxPolicy.MAX_HEALTH_FEE_SCALE` | `15.0` | Fifteen times the founding fees: past every played city's break-even (x7 to x13 at today's wages), so the business corner is reachable; a ceiling, not a default. |
+| 928 | `TaxPolicy.DEFAULT_HEALTH_PREMIUM` | `0` | Where the health premium starts: nobody pays one until the player says so. |
+| 931 | `TaxPolicy.MAX_HEALTH_PREMIUM` | `.10` | A health premium past a tenth of a wage is a second income tax, as the EI premium's ceiling says. |
+| 1052 | `TaxPolicy.DEFAULT_TRANSIT_FARE` | `.0025 * PriceLevel.FACTOR` | What a single journey costs a rider, in thousands. |
+| 1055 | `TaxPolicy.MAX_TRANSIT_FARE` | `.05 * PriceLevel.FACTOR` | The dial's cap, $50 a ride, twenty times the default, in founding money: past it no car owner rides while a journey's fuel costs under half of it, and the commuters with no car of their own still do (0.7.49, Infrastru... |
+| 1096 | `TaxPolicy.JOURNEYS_A_MONTH` | `40` | Journeys one commuter makes in a month: out and back, twenty days. |
+| 1217 | `TaxPolicy.DEFAULT_FUEL_DUTY` | `0` | No duty: the city it was (Jerus's A7: default 0). |
+| 1220 | `TaxPolicy.MAX_FUEL_DUTY` | `.001 * PriceLevel.FACTOR` | The dial's top, a dollar a litre at founding prices, in thousands: past the dearest duty the research found, the Netherlands' EUR 0.789 a litre of petrol (2024; runs/research-pump.md 6 [30]) - a ceiling, not a default. |
+| 1259 | `TaxPolicy.DEFAULT_PORT_DUES` | `1.0` | The default due: the berths' cost recovered over their life at the city's rate (D9). |
+| 1262 | `TaxPolicy.MAX_PORT_DUES` | `2.0` | The dial's top: twice the default. |
+| 1643 | `TaxPolicy.STATE_BEFORE_EI` | `4 + WageBand.values().length` | The slots a save from before the EI and grant dials carried: the four rates and the wage-band offsets. |
+| 1646 | `TaxPolicy.STATE_BEFORE_HEALTH` | `STATE_BEFORE_EI + 3 + 1 + 1` | ...and one from before the health dials of 2026-09-19: EI's three, the farmland relief and the fare on top. |
+| 1649 | `TaxPolicy.STATE_BEFORE_EDUCATION` | `STATE_BEFORE_HEALTH + 2` | ...and one from before the education dials of 2026-09-21: the two health dials on top. |
+| 1652 | `TaxPolicy.STATE_BEFORE_SPLIT` | `STATE_BEFORE_EDUCATION + 4` | ...and one from before the income rate split in three (0.7.4): the grant's basis and amount, the loan rate and the tuition scale on top. |
+| 1655 | `TaxPolicy.STATE_BEFORE_SCHOOLS` | `STATE_BEFORE_SPLIT + 3` | ...and one from before the tuition scale split by school (0.7.6): the profit, sales and wage bases on top, each its own slot since 0.7.4. |
+| 1658 | `TaxPolicy.STATE_BEFORE_REAL_GRANT` | `STATE_BEFORE_SCHOOLS + EducationType.values().length - 1` | ...and one from before the real FIXED grant (0.7.19): a tuition scale per school kind on top, the nine in EducationType order bar NONE, since 0.7.6. |
+| 1661 | `TaxPolicy.STATE_BEFORE_REAL_FARE` | `STATE_BEFORE_REAL_GRANT + 1` | ...and one from before the real fare (0.7.42): one slot on top saying the FIXED amount is real, in founding money (0.7.19) - see realiseFixedGrant(). |
+| 1664 | `TaxPolicy.STATE_BEFORE_FOOD_ASSISTANCE` | `STATE_BEFORE_REAL_FARE + 1` | ...and one from before food assistance (0.7.43): one slot on top saying the fare is real, in founding money (0.7.42) - see realiseFare(). |
+| 1667 | `TaxPolicy.STATE_BEFORE_FUEL_DUTY` | `STATE_BEFORE_FOOD_ASSISTANCE + 1` | ...and one from before the fuel duty (0.7.103): the food assistance dial on top (0.7.43). |
+| 1670 | `TaxPolicy.STATE_BEFORE_PORT_DUES` | `STATE_BEFORE_FUEL_DUTY + 1` | ...and one from before the port dues dial (FR3): the fuel duty on top (0.7.103). |
+| 1673 | `TaxPolicy.STATE_SLOTS` | `STATE_BEFORE_PORT_DUES + 1` | This build's array: the port dues dial on top (FR3). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 72 | `private transient DecisionLog decisions` | Where a change to a dial here is written; null for a policy no city holds. |
-| 118 | `private int month` | The city's game month as Game pushes it (setMonth()); 0 is a policy no city holds, whose every lever is open. |
-| 121 | `private final java.util.EnumMap<PolicyDates.Lever, Integer> opening` | Each lever's opening month: history's (PolicyDates.openingMonth()) until a find moves it or openAll() opens it. |
-| 124 | `private boolean restoring` | True while a save is being read back: what a city saved is put back as it was, whatever month the policy last heard. |
-| 254 | `private double profitTaxRate` | THE THREE INCOME BASES (0.7.4), one per tax, where there was one income rate - see CITY RATES, AND OFFSETS FROM THEM above. |
-| 255 | `private double salesTaxRate` |  |
-| 256 | `private double wageTaxRate` |  |
-| 257 | `private double propertyTaxRate` |  |
-| 301 | `private double farmlandRelief` |  |
-| 338 | `private double contributionRate` |  |
-| 339 | `private double pensionReplacement` |  |
-| 380 | `private double eiPremiumRate` |  |
-| 381 | `private double eiBenefitRate` |  |
-| 438 | `private double foodAssistance` |  |
-| 643 | `private GrantBasis grantBasis` | What the grant is a share of, or is. |
-| 651 | `private double grantAmount` | The grant's one number, in the basis's own unit: a share of the wage, a fixed real amount in founding thousands, a share of the surplus, or a share of the tuition. |
-| 654 | `private boolean fixedGrantNominal` | True while a FIXED amount read from a save before 0.7.19 is still nominal, until realiseFixedGrant() reads it at the load month's level (the expected price level since 0.7.42; the price index before). |
-| 657 | `private double studentLoanRate` | Annual interest on the treasury's student loans. |
-| 665 | `private final double[] tuitionScales` | The multiplier on the founding tuition table, one per school kind by EducationType ordinal (0.7.6). |
-| 898 | `private double healthFeeScale` |  |
-| 899 | `private double healthPremiumRate` |  |
-| 962 | `private double pensionWageBase` | The wage a pension is a share of, carried in today's money - struck at the expected price level since 0.7.42 (seedConstants()). |
-| 1075 | `private double transitFare` |  |
-| 1100 | `private double expectedLevel` | The expected price level the fare is charged at; 1.0 until Game tells it. |
-| 1103 | `private boolean fareNominal` | True while a fare read from a save before 0.7.42 is still nominal, until realiseFare() reads it at the load month's level. |
-| 1127 | `private double moneyUnit` | The currency's unit (Denomination.getUnit(), B6, 0.7.47): the dial is founding money in today's unit and MAX_TRANSIT_FARE is founding money, so the dial stops at the cap over the unit (maxTransitFare()). |
-| 1187 | `private double fuelDuty` |  |
-| 1229 | `private double portDues` |  |
-| 1247 | `private final double[] wageOffset` |  |
-| 1258 | `private final java.util.Map<String, Double> profitOffset` | THE SECTOR OFFSETS, KEYED BY THE SECTOR'S NAME (2026-09-11, the sector template). |
-| 1259 | `private final java.util.Map<String, Double> salesOffset` |  |
-| 1260 | `private final java.util.Map<String, Double> propertyOffset` |  |
-| 1839 | `public String sector` |  |
-| 1840 | `public double profit, sales, property` |  |
+| 125 | `private int month` | The city's game month as Game pushes it (setMonth()); 0 is a policy no city holds, whose every lever is open. |
+| 128 | `private final java.util.EnumMap<PolicyDates.Lever, Integer> opening` | Each lever's opening month: history's (PolicyDates.openingMonth()) until a find moves it or openAll() opens it. |
+| 131 | `private boolean restoring` | True while a save is being read back: what a city saved is put back as it was, whatever month the policy last heard. |
+| 138 | `private final java.util.EnumSet<PolicyDates.Lever> held` | The gated levers this policy held shut at the last month it heard (setMonth()), so that the month one opens is known: the income taxes then open at the founding rate (call 16). |
+| 289 | `private double profitTaxRate` | THE THREE INCOME BASES (0.7.4), one per tax, where there was one income rate - see CITY RATES, AND OFFSETS FROM THEM above. |
+| 290 | `private double salesTaxRate` |  |
+| 291 | `private double wageTaxRate` |  |
+| 292 | `private double propertyTaxRate` |  |
+| 336 | `private double farmlandRelief` |  |
+| 373 | `private double contributionRate` |  |
+| 374 | `private double pensionReplacement` |  |
+| 415 | `private double eiPremiumRate` |  |
+| 416 | `private double eiBenefitRate` |  |
+| 473 | `private double foodAssistance` |  |
+| 678 | `private GrantBasis grantBasis` | What the grant is a share of, or is. |
+| 686 | `private double grantAmount` | The grant's one number, in the basis's own unit: a share of the wage, a fixed real amount in founding thousands, a share of the surplus, or a share of the tuition. |
+| 689 | `private boolean fixedGrantNominal` | True while a FIXED amount read from a save before 0.7.19 is still nominal, until realiseFixedGrant() reads it at the load month's level (the expected price level since 0.7.42; the price index before). |
+| 692 | `private double studentLoanRate` | Annual interest on the treasury's student loans. |
+| 700 | `private final double[] tuitionScales` | The multiplier on the founding tuition table, one per school kind by EducationType ordinal (0.7.6). |
+| 933 | `private double healthFeeScale` |  |
+| 934 | `private double healthPremiumRate` |  |
+| 997 | `private double pensionWageBase` | The wage a pension is a share of, carried in today's money - struck at the expected price level since 0.7.42 (seedConstants()). |
+| 1110 | `private double transitFare` |  |
+| 1135 | `private double expectedLevel` | The expected price level the fare is charged at; 1.0 until Game tells it. |
+| 1138 | `private boolean fareNominal` | True while a fare read from a save before 0.7.42 is still nominal, until realiseFare() reads it at the load month's level. |
+| 1162 | `private double moneyUnit` | The currency's unit (Denomination.getUnit(), B6, 0.7.47): the dial is founding money in today's unit and MAX_TRANSIT_FARE is founding money, so the dial stops at the cap over the unit (maxTransitFare()). |
+| 1222 | `private double fuelDuty` |  |
+| 1264 | `private double portDues` |  |
+| 1282 | `private final double[] wageOffset` |  |
+| 1293 | `private final java.util.Map<String, Double> profitOffset` | THE SECTOR OFFSETS, KEYED BY THE SECTOR'S NAME (2026-09-11, the sector template). |
+| 1294 | `private final java.util.Map<String, Double> salesOffset` |  |
+| 1295 | `private final java.util.Map<String, Double> propertyOffset` |  |
+| 1878 | `public String sector` |  |
+| 1879 | `public double profit, sales, property` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1881 | **type** `public class TaxPolicy` | The city's tax rates - the revenue half of what the player actually decides. |
+| 58 | 1921 | **type** `public class TaxPolicy` | The city's tax rates - the revenue half of what the player actually decides. |
 
 ### THE DECISION LOG (0.7.23) (lines 60-80)
 
@@ -198,210 +199,211 @@
 | 75 | 1 | `public void recordTo(DecisionLog log)` | Wires this policy to its city's decision log (Game.buildWorld()). |
 | 77 | 3 | `private void decided(String kind, String label)` |  |
 
-### THE LEVERS ON HISTORY'S DATES (R0, 2026-11-04; research-1900.md 7) (lines 81-258)
+### THE LEVERS ON HISTORY'S DATES (R0, 2026-11-04; research-1900.md 7) (lines 81-293)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 126 | 5 | `private static java.util.EnumMap<PolicyDates.Lever, Integer> historyOpenings()` |  |
-| 133 | 3 | `public boolean isOpen(PolicyDates.Lever lever)` | Whether a lever is open: always for a policy no city holds (month 0), else from its opening month on. |
-| 138 | 3 | `public int openingMonth(PolicyDates.Lever lever)` | The game month a lever opens in on this city: history's, or earlier where a find brought it forward, or 1 where openAll() opened it. |
-| 143 | 3 | `private boolean closed(PolicyDates.Lever lever)` | A setter's question: is this lever shut to the player? |
-| 152 | 26 | `public void setMonth(int gameMonth)` | The city's month, told by Game at founding, after a load and at the top of every month before anything is taxed or paid. |
-| 180 | 3 | `public void openAll()` | Every lever's opening month to 1: a save from before R0, whose taxes were set before there was a gate, and a fixture whose premise is a lever's mechanics. |
-| 185 | 3 | `private void resetOpenings()` | Every lever back to history's date: a new city. |
-| 190 | 7 | `public java.util.Map<String, Integer> openingsForSave()` | The dated levers' opening months for the save, keyed by the lever's name and never its ordinal. |
-| 202 | 17 | `public void restoreOpenings(java.util.Map<String, Integer> saved)` | Puts a saved city's openings back. |
+| 140 | 5 | `private static java.util.EnumMap<PolicyDates.Lever, Integer> historyOpenings()` |  |
+| 147 | 3 | `public boolean isOpen(PolicyDates.Lever lever)` | Whether a lever is open: always for a policy no city holds (month 0), else from its opening month on. |
+| 152 | 3 | `public int openingMonth(PolicyDates.Lever lever)` | The game month a lever opens in on this city: history's, or earlier where a find brought it forward, or 1 where openAll() opened it. |
+| 157 | 3 | `private boolean closed(PolicyDates.Lever lever)` | A setter's question: is this lever shut to the player? |
+| 168 | 38 | `public void setMonth(int gameMonth)` | The city's month, told by Game at founding, after a load and at the top of every month before anything is taxed or paid. |
+| 208 | 5 | `public void openAll()` | Every lever's opening month to 1: a save from before R0, whose taxes were set before there was a gate, and a fixture whose premise is a lever's mechanics. |
+| 215 | 3 | `public void openNow(PolicyDates.Lever lever)` | One lever's opening month to 1, the rest and what was held untouched: a fixture whose premise is one lever's mechanics (a tax so opened still opens at the founding rate the next month it is told). |
+| 220 | 3 | `private void resetOpenings()` | Every lever back to history's date: a new city. |
+| 225 | 7 | `public java.util.Map<String, Integer> openingsForSave()` | The dated levers' opening months for the save, keyed by the lever's name and never its ordinal. |
+| 237 | 17 | `public void restoreOpenings(java.util.Map<String, Integer> saved)` | Puts a saved city's openings back. |
 
-### FARMLAND, AND WHAT IT IS ASSESSED AT (2026-09-13) (lines 259-322)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 304 | 1 | `public double getFarmlandRelief()` | 0 assesses a field like a building lot; 1 assesses only what stands on it. |
-| 306 | 7 | `public void setFarmlandRelief(double share)` |  |
-| 319 | 3 | `public double assessedLandShare(String sector)` | The share of a sector's LAND that is on the assessment roll. |
-
-### THE PENSION PROMISE, AS TWO DIALS (lines 323-367)
+### FARMLAND, AND WHAT IT IS ASSESSED AT (2026-09-13) (lines 294-357)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 347 | 1 | `public double getContributionRate()` |  |
-| 348 | 1 | `public double getPensionReplacement()` |  |
-| 350 | 8 | `public void setContributionRate(double rate)` |  |
-| 359 | 8 | `public void setPensionReplacement(double share)` |  |
+| 339 | 1 | `public double getFarmlandRelief()` | 0 assesses a field like a building lot; 1 assesses only what stands on it. |
+| 341 | 7 | `public void setFarmlandRelief(double share)` |  |
+| 354 | 3 | `public double assessedLandShare(String sector)` | The share of a sector's LAND that is on the assessment roll. |
 
-### EMPLOYMENT INSURANCE AND THE STUDENT GRANT, AS THREE MORE DIALS (lines 368-417)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 415 | 1 | `public double getEiPremiumRate()` |  |
-| 416 | 1 | `public double getEiBenefitRate()` |  |
-
-### FOOD ASSISTANCE (0.7.43) (lines 418-487)
+### THE PENSION PROMISE, AS TWO DIALS (lines 358-402)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 441 | 1 | `public double getFoodAssistance()` | The share of an eligible household's baskets, at the shelf price, the treasury's voucher covers. |
-| 443 | 7 | `public void setFoodAssistance(double share)` |  |
-| 456 | 3 | `public double getStudentGrantShare()` | The share of the unskilled wage a student is granted a month: the amount under the WAGE_SHARE basis, and nothing under any other, because under any other there is no such share. |
-| 460 | 8 | `public void setEiPremiumRate(double rate)` |  |
-| 469 | 8 | `public void setEiBenefitRate(double share)` |  |
-| 479 | 8 | `public void setStudentGrantShare(double share)` | The grant as a share of the unskilled wage - the founding basis until 0.7.19, at this share. |
+| 382 | 1 | `public double getContributionRate()` |  |
+| 383 | 1 | `public double getPensionReplacement()` |  |
+| 385 | 8 | `public void setContributionRate(double rate)` |  |
+| 394 | 8 | `public void setPensionReplacement(double share)` |  |
 
-### THE PRICE OF A PLACE - THE GRANT'S BASIS, THE LOAN'S RATE AND THE (lines 488-851)
+### EMPLOYMENT INSURANCE AND THE STUDENT GRANT, AS THREE MORE DIALS (lines 403-452)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 570 | 10 | **type** `public enum GrantBasis` | How the student grant is struck: what the one amount is a share of, or is. |
-| 666 | 1 | `{ ... }` |  |
-| 671 | 7 | `private static EducationType[] schoolKinds()` |  |
-| 679 | 1 | `public GrantBasis getGrantBasis()` |  |
-| 682 | 1 | `public double getGrantAmount()` | The amount that goes with getGrantBasis(), in that basis's unit. |
-| 685 | 1 | `public double getStudentLoanRate()` | The annual rate a graduate is charged on the student loan while repaying it. |
-| 697 | 1 | `public double getTuitionScale()` | The multiplier on the founding tuition table; 1 is the founding price, 0 is free at the point of use. |
-| 700 | 4 | `public double tuitionScaleOf(EducationType type)` | One school kind's own multiplier (0.7.6); NONE, or null, reads the every-school one. |
-| 706 | 7 | `public boolean tuitionScalesSplit()` | Whether the nine kinds' scales have parted - no longer one number (0.7.6). |
-| 722 | 9 | `public double maxGrantAmount(GrantBasis basis)` | The ceiling on the amount under a basis: a share of a wage up to one wage, a fixed amount up to an unskilled wage (the founding wage in today's unit - a real amount against a real one since 0.7.19), the whole surplus,... |
-| 733 | 8 | `public void setGrantBasis(GrantBasis basis)` | Picks the basis; the amount is clamped to the new basis's ceiling and otherwise left where it was. |
-| 743 | 6 | `public void setGrantAmount(double amount)` | Sets the amount, in the current basis's unit, clamped to its ceiling. |
-| 751 | 8 | `public void setGrant(GrantBasis basis, double amount)` | Both at once, so a screen can stage them together - and one line in the log for the two. |
-| 761 | 10 | `private void grantDecided(GrantBasis wasBasis, double wasAmount)` | The grant's line in the decision log, when its basis or its amount moved (0.7.23). |
-| 772 | 9 | `public void setStudentLoanRate(double annual)` |  |
-| 788 | 9 | `public void setTuitionScale(double scale)` | Every school at once: all nine kinds set to this scale (0.7.6), which is what the one scale did. |
-| 799 | 9 | `public void setTuitionScaleOf(EducationType type, double scale)` | One school kind's own scale, held to MAX_TUITION_SCALE (0.7.6); NONE, or null, is ignored. |
-| 840 | 11 | `public static double grantBill(GrantBasis basis, double amount, double students, double unskilledWage, double priceIndex, doubl...` | The month's grant bill under any basis and amount - the one place the four rules are written, so the treasury's bill, the save's re-strike, the students' income and the Schools page's preview cannot disagree. |
+| 450 | 1 | `public double getEiPremiumRate()` |  |
+| 451 | 1 | `public double getEiBenefitRate()` |  |
 
-### HEALTHCARE HAS A PRICE, AND A PREMIUM (2026-09-19) (lines 852-992)
+### FOOD ASSISTANCE (0.7.43) (lines 453-522)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 902 | 1 | `public double getHealthFeeScale()` | The multiplier on the three care fees; 1 is the founding fee, 0 is free at the point of use. |
-| 905 | 1 | `public double getHealthPremiumRate()` | The share of every wage the health premium takes, employee side. |
-| 907 | 7 | `public void setHealthFeeScale(double scale)` |  |
-| 915 | 8 | `public void setHealthPremiumRate(double rate)` |  |
-| 942 | 3 | `public double pensionPerSenior()` | A pension, in TODAY's money. |
-| 954 | 3 | `public double pensionPerSeniorAt(double replacement)` | ...at another replacement rate, in today's money (0.7.36): what each senior would be paid if the dial read `replacement`, on the same wage base - the Policy tab's pension preview, which scaled today's bill by the rati... |
-| 959 | 1 | `public double foundingPensionWage()` | The founding unskilled wage the pension is a share of, in today's unit at founding prices: the wage base over the level it is struck at (0.7.45, for the Policy tab's (i)). |
-| 964 | 28 | `public void redenominate(double scale)` |  |
+| 476 | 1 | `public double getFoodAssistance()` | The share of an eligible household's baskets, at the shelf price, the treasury's voucher covers. |
+| 478 | 7 | `public void setFoodAssistance(double share)` |  |
+| 491 | 3 | `public double getStudentGrantShare()` | The share of the unskilled wage a student is granted a month: the amount under the WAGE_SHARE basis, and nothing under any other, because under any other there is no such share. |
+| 495 | 8 | `public void setEiPremiumRate(double rate)` |  |
+| 504 | 8 | `public void setEiBenefitRate(double share)` |  |
+| 514 | 8 | `public void setStudentGrantShare(double share)` | The grant as a share of the unskilled wage - the founding basis until 0.7.19, at this share. |
 
-### WHAT A RIDE COSTS (2026-09-16) (lines 993-1021)
-
-### A RIDE IS NOT A MONTH (2026-09-17) (lines 1022-1076)
+### THE PRICE OF A PLACE - THE GRANT'S BASIS, THE LOAN'S RATE AND THE (lines 523-886)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1070 | 1 | `public double monthlyFare()` | What a month of riding costs one commuter, in thousands. |
-| 1073 | 1 | `public static double monthlyFareAt(double fare)` | ...at a fare the city has not set (0.7.38): the fare dial's preview, the same one multiplication. |
+| 605 | 10 | **type** `public enum GrantBasis` | How the student grant is struck: what the one amount is a share of, or is. |
+| 701 | 1 | `{ ... }` |  |
+| 706 | 7 | `private static EducationType[] schoolKinds()` |  |
+| 714 | 1 | `public GrantBasis getGrantBasis()` |  |
+| 717 | 1 | `public double getGrantAmount()` | The amount that goes with getGrantBasis(), in that basis's unit. |
+| 720 | 1 | `public double getStudentLoanRate()` | The annual rate a graduate is charged on the student loan while repaying it. |
+| 732 | 1 | `public double getTuitionScale()` | The multiplier on the founding tuition table; 1 is the founding price, 0 is free at the point of use. |
+| 735 | 4 | `public double tuitionScaleOf(EducationType type)` | One school kind's own multiplier (0.7.6); NONE, or null, reads the every-school one. |
+| 741 | 7 | `public boolean tuitionScalesSplit()` | Whether the nine kinds' scales have parted - no longer one number (0.7.6). |
+| 757 | 9 | `public double maxGrantAmount(GrantBasis basis)` | The ceiling on the amount under a basis: a share of a wage up to one wage, a fixed amount up to an unskilled wage (the founding wage in today's unit - a real amount against a real one since 0.7.19), the whole surplus,... |
+| 768 | 8 | `public void setGrantBasis(GrantBasis basis)` | Picks the basis; the amount is clamped to the new basis's ceiling and otherwise left where it was. |
+| 778 | 6 | `public void setGrantAmount(double amount)` | Sets the amount, in the current basis's unit, clamped to its ceiling. |
+| 786 | 8 | `public void setGrant(GrantBasis basis, double amount)` | Both at once, so a screen can stage them together - and one line in the log for the two. |
+| 796 | 10 | `private void grantDecided(GrantBasis wasBasis, double wasAmount)` | The grant's line in the decision log, when its basis or its amount moved (0.7.23). |
+| 807 | 9 | `public void setStudentLoanRate(double annual)` |  |
+| 823 | 9 | `public void setTuitionScale(double scale)` | Every school at once: all nine kinds set to this scale (0.7.6), which is what the one scale did. |
+| 834 | 9 | `public void setTuitionScaleOf(EducationType type, double scale)` | One school kind's own scale, held to MAX_TUITION_SCALE (0.7.6); NONE, or null, is ignored. |
+| 875 | 11 | `public static double grantBill(GrantBasis basis, double amount, double students, double unskilledWage, double priceIndex, doubl...` | The month's grant bill under any basis and amount - the one place the four rules are written, so the treasury's bill, the save's re-strike, the students' income and the Schools page's preview cannot disagree. |
 
-### THE FARE IS REAL (0.7.42, the anchor; star 9) (lines 1077-1156)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1106 | 1 | `public double getTransitFare()` | The fare dial: a ride's price in founding money, in today's unit. |
-| 1109 | 1 | `public double chargedFare()` | What a ride is charged today: the dial at the expected price level (THE FARE IS REAL). |
-| 1112 | 3 | `public void setExpectedLevel(double level)` | Told by Game with every re-strike of the money constants; anything not positive is ignored. |
-| 1117 | 1 | `public double getExpectedLevel()` | The level the fare is charged at. |
-| 1130 | 3 | `public void setMoneyUnit(double unit)` | Told by Game.restrikeMoneyConstants() and Game.reformCurrency(); anything not positive is ignored. |
-| 1135 | 1 | `public double maxTransitFare()` | The most the fare dial takes in today's unit: MAX_TRANSIT_FARE over the unit, where no car owner rides. |
-| 1137 | 7 | `public void setTransitFare(double fare)` |  |
-| 1151 | 5 | `public void realiseFare(double level)` | An older save's fare, read as the real fare that charges the same at the load month's expected level (0.7.42): the nominal fare over the level. |
-
-### THE FUEL DUTY (0.7.103, batch P4; Jerus's A7, 2026-10-10) (lines 1157-1206)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1190 | 1 | `public double getFuelDuty()` | The fuel duty dial: founding money a litre of petrol at the pump, in today's unit. |
-| 1193 | 1 | `public double chargedFuelDuty()` | What a litre is charged today: the dial at the expected price level (THE FUEL DUTY). |
-| 1196 | 1 | `public double maxFuelDuty()` | The most the duty dial takes in today's unit: MAX_FUEL_DUTY over the unit. |
-| 1198 | 8 | `public void setFuelDuty(double dutyALitre)` |  |
-
-### PORT DUES (FR3, 2026-10-19; docs/queue/FR3.md 2, D9) (lines 1207-1261)
+### HEALTHCARE HAS A PRICE, AND A PREMIUM (2026-09-19) (lines 887-1027)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1232 | 1 | `public double getPortDues()` | The port dues dial: the multiple of the default due Freight pays the city a tonne across a berth, 0 to MAX_PORT_DUES (FR3). |
-| 1234 | 7 | `public void setPortDues(double multiple)` |  |
-| 1243 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 937 | 1 | `public double getHealthFeeScale()` | The multiplier on the three care fees; 1 is the founding fee, 0 is free at the point of use. |
+| 940 | 1 | `public double getHealthPremiumRate()` | The share of every wage the health premium takes, employee side. |
+| 942 | 7 | `public void setHealthFeeScale(double scale)` |  |
+| 950 | 8 | `public void setHealthPremiumRate(double rate)` |  |
+| 977 | 3 | `public double pensionPerSenior()` | A pension, in TODAY's money. |
+| 989 | 3 | `public double pensionPerSeniorAt(double replacement)` | ...at another replacement rate, in today's money (0.7.36): what each senior would be paid if the dial read `replacement`, on the same wage base - the Policy tab's pension preview, which scaled today's bill by the rati... |
+| 994 | 1 | `public double foundingPensionWage()` | The founding unskilled wage the pension is a share of, in today's unit at founding prices: the wage base over the level it is struck at (0.7.45, for the Policy tab's (i)). |
+| 999 | 28 | `public void redenominate(double scale)` |  |
 
-### THE CITY RATES (lines 1262-1370)
+### WHAT A RIDE COSTS (2026-09-16) (lines 1028-1056)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 1280 | 3 | `public double getIncomeTaxRate()` | The three income taxes TOGETHER - what "the city rate" was until 0.7.4. |
-| 1285 | 4 | `public boolean incomeRatesSplit()` | Whether the three income bases have parted - profit, sales and wage no longer one number. |
-| 1291 | 1 | `public double getProfitTaxRate()` | What every sector's profit tax moves off (0.7.4). |
-| 1294 | 1 | `public double getSalesTaxRate()` | What every sector's sales tax moves off (0.7.4). |
-| 1297 | 1 | `public double getWageTaxRate()` | What every band's wage tax moves off (0.7.4). |
-| 1299 | 8 | `public void setProfitTaxRate(double rate)` |  |
-| 1308 | 8 | `public void setSalesTaxRate(double rate)` |  |
-| 1317 | 8 | `public void setWageTaxRate(double rate)` |  |
-| 1327 | 3 | `public double getPropertyTaxRate()` | The annual rate - what the player sets and what the screens show. |
-| 1332 | 3 | `public double getMonthlyPropertyTaxRate()` | The annual rate divided by twelve. |
-| 1343 | 18 | `public void setIncomeTaxRate(double rate)` | Every income tax at once: the profit, sales and wage bases all set to this rate (0.7.4), which is what the one city rate did. |
-| 1363 | 7 | `public void setPropertyTaxRate(double annualRate)` | Takes the ANNUAL rate. |
-
-### OFFSETS (lines 1371-1421)
+### A RIDE IS NOT A MONTH (2026-09-17) (lines 1057-1111)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1375 | 1 | `public double getWageOffset(WageBand band)` |  |
-| 1376 | 1 | `public double getProfitOffset(String sector)` |  |
-| 1377 | 1 | `public double getSalesOffset(String sector)` |  |
-| 1378 | 1 | `public double getPropertyOffset(String sector)` |  |
-| 1380 | 1 | `public double getProfitOffset(Sector s)` |  |
-| 1381 | 1 | `public double getSalesOffset(Sector s)` |  |
-| 1382 | 1 | `public double getPropertyOffset(Sector s)` |  |
-| 1384 | 6 | `public void setWageOffset(WageBand band, double points)` |  |
-| 1391 | 6 | `public void setProfitOffset(String sector, double points)` |  |
-| 1398 | 6 | `public void setSalesOffset(String sector, double points)` |  |
-| 1406 | 6 | `public void setPropertyOffset(String sector, double points)` | In ANNUAL points, matching the rate it offsets; held at MAX_PROPERTY_TAX either way (clampPropertyOffset()), on a load too. |
-| 1414 | 3 | `private void offsetDecided(String tax, String who, double was, double now)` | An offset's line in the decision log, when it moved (0.7.23): "Profit tax, Retail, to -2 pts". |
-| 1418 | 1 | `public void setProfitOffset(Sector s, double points)` |  |
-| 1419 | 1 | `public void setSalesOffset(Sector s, double points)` |  |
-| 1420 | 1 | `public void setPropertyOffset(Sector s, double points)` |  |
+| 1105 | 1 | `public double monthlyFare()` | What a month of riding costs one commuter, in thousands. |
+| 1108 | 1 | `public static double monthlyFareAt(double fare)` | ...at a fare the city has not set (0.7.38): the fare dial's preview, the same one multiplication. |
 
-### EFFECTIVE RATES - the only numbers anything is ever charged at (lines 1422-1476)
+### THE FARE IS REAL (0.7.42, the anchor; star 9) (lines 1112-1191)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1427 | 3 | `public double effectiveWageRate(WageBand band)` | What wages in this band are taxed at: the wage base and the band's offset. |
-| 1432 | 3 | `public double effectiveProfitRate(String sector)` | What this sector's profit is taxed at: the profit base and the sector's offset. |
-| 1437 | 3 | `public double effectiveSalesRate(String sector)` | What this sector charges on the value it adds: the sales base and its offset. |
-| 1442 | 3 | `public double effectivePropertyRate(String sector)` | ANNUAL property tax rate for this sector. |
-| 1447 | 3 | `public double effectiveMonthlyPropertyRate(String sector)` | ...and the monthly one, which is what is actually billed. |
-| 1451 | 1 | `public double effectiveProfitRate(Sector s)` |  |
-| 1452 | 1 | `public double effectiveSalesRate(Sector s)` |  |
-| 1453 | 1 | `public double effectivePropertyRate(Sector s)` |  |
-| 1454 | 1 | `public double effectiveMonthlyPropertyRate(Sector s)` |  |
-| 1462 | 6 | `public double propertyTaxOn(double assessedValue)` | What one month's property tax comes to on a given assessed value. |
-| 1470 | 6 | `public double propertyTaxOn(double assessedValue, String sector)` | One month's property tax at this sector's own rate. |
+| 1141 | 1 | `public double getTransitFare()` | The fare dial: a ride's price in founding money, in today's unit. |
+| 1144 | 1 | `public double chargedFare()` | What a ride is charged today: the dial at the expected price level (THE FARE IS REAL). |
+| 1147 | 3 | `public void setExpectedLevel(double level)` | Told by Game with every re-strike of the money constants; anything not positive is ignored. |
+| 1152 | 1 | `public double getExpectedLevel()` | The level the fare is charged at. |
+| 1165 | 3 | `public void setMoneyUnit(double unit)` | Told by Game.restrikeMoneyConstants() and Game.reformCurrency(); anything not positive is ignored. |
+| 1170 | 1 | `public double maxTransitFare()` | The most the fare dial takes in today's unit: MAX_TRANSIT_FARE over the unit, where no car owner rides. |
+| 1172 | 7 | `public void setTransitFare(double fare)` |  |
+| 1186 | 5 | `public void realiseFare(double level)` | An older save's fare, read as the real fare that charges the same at the load month's expected level (0.7.42): the nominal fare over the level. |
 
-### WAGES (lines 1477-1551)
+### THE FUEL DUTY (0.7.103, batch P4; Jerus's A7, 2026-10-10) (lines 1192-1241)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1489 | 4 | `public double payslipShare(WageBand band)` | What a payslip loses in this band (0.7.36): its wage tax at its own rate, the pension contribution and the EI and health premiums - the three promises are charged on the same payroll, flat across every band. |
-| 1505 | 5 | `public double wageTaxOn(double[] wagePerType, double[] fillRate)` | The month's wage tax, summed job type by job type at its band's rate. |
-| 1532 | 19 | `public double[] wageTaxPerTier(double[] wagePerType, double[] fillRate)` | The same wage tax, split across the six pay tiers. |
+| 1225 | 1 | `public double getFuelDuty()` | The fuel duty dial: founding money a litre of petrol at the pump, in today's unit. |
+| 1228 | 1 | `public double chargedFuelDuty()` | What a litre is charged today: the dial at the expected price level (THE FUEL DUTY). |
+| 1231 | 1 | `public double maxFuelDuty()` | The most the duty dial takes in today's unit: MAX_FUEL_DUTY over the unit. |
+| 1233 | 8 | `public void setFuelDuty(double dutyALitre)` |  |
 
-### A COPY TO PREVIEW ON (0.7.36) (lines 1552-1601)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1567 | 34 | `public TaxPolicy copy()` | A detached copy of every dial (0.7.36): setters on it clamp as here and record nothing. |
-
-### SAVE AND RESTORE (lines 1602-1938)
+### PORT DUES (FR3, 2026-10-19; docs/queue/FR3.md 2, D9) (lines 1242-1296)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1646 | 85 | `public double[] getPolicyState()` | The city rates and the wage-band offsets as one array, city rates first - bar the three income bases of 0.7.4, which ride the end like every field added since. |
-| 1740 | 12 | `public boolean restorePolicyState(double[] state)` | (STATE_BEFORE_EI) or longer than this build's (STATE_SLOTS); nothing is changed. |
-| 1753 | 67 | `private void readPolicyState(double[] state)` |  |
-| 1831 | 5 | `public void realiseFixedGrant(double priceIndex)` | An older save's FIXED grant, read as the real amount that pays the same at the load month's level (0.7.19): its nominal amount over the level, so the bill the month after the load is the bill the save was paying, and ... |
-| 1838 | 4 | **type** `public static final class SectorOffsets` | One sector's three offsets, as the save carries them. |
-| 1843 | 16 | `public java.util.List<SectorOffsets> getSectorOffsets()` |  |
-| 1861 | 18 | `public void restoreSectorOffsets(java.util.List<SectorOffsets> saved)` | A sector the build does not have keeps its row - harmless, and it comes back if the sector does. |
-| 1885 | 29 | `public void reset()` | Back to a new city's policy: the defaults, history's dates for every lever, and a month no city holds (0), so that every default is set whatever the last city's month was. |
-| 1915 | 6 | `private double clamp(double rate, double max)` |  |
-| 1922 | 4 | `private double clampOffset(double points)` |  |
-| 1934 | 4 | `private double clampPropertyOffset(double points)` | A property offset is held at MAX_PROPERTY_TAX either way (B5, 0.7.47), not MAX_OFFSET: the rate is the base plus the offset held within 0 and MAX_PROPERTY_TAX, and the base itself is within them, so no offset past the... |
+| 1267 | 1 | `public double getPortDues()` | The port dues dial: the multiple of the default due Freight pays the city a tonne across a berth, 0 to MAX_PORT_DUES (FR3). |
+| 1269 | 7 | `public void setPortDues(double multiple)` |  |
+| 1278 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+
+### THE CITY RATES (lines 1297-1405)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1315 | 3 | `public double getIncomeTaxRate()` | The three income taxes TOGETHER - what "the city rate" was until 0.7.4. |
+| 1320 | 4 | `public boolean incomeRatesSplit()` | Whether the three income bases have parted - profit, sales and wage no longer one number. |
+| 1326 | 1 | `public double getProfitTaxRate()` | What every sector's profit tax moves off (0.7.4). |
+| 1329 | 1 | `public double getSalesTaxRate()` | What every sector's sales tax moves off (0.7.4). |
+| 1332 | 1 | `public double getWageTaxRate()` | What every band's wage tax moves off (0.7.4). |
+| 1334 | 8 | `public void setProfitTaxRate(double rate)` |  |
+| 1343 | 8 | `public void setSalesTaxRate(double rate)` |  |
+| 1352 | 8 | `public void setWageTaxRate(double rate)` |  |
+| 1362 | 3 | `public double getPropertyTaxRate()` | The annual rate - what the player sets and what the screens show. |
+| 1367 | 3 | `public double getMonthlyPropertyTaxRate()` | The annual rate divided by twelve. |
+| 1378 | 18 | `public void setIncomeTaxRate(double rate)` | Every income tax at once: the profit, sales and wage bases all set to this rate (0.7.4), which is what the one city rate did. |
+| 1398 | 7 | `public void setPropertyTaxRate(double annualRate)` | Takes the ANNUAL rate. |
+
+### OFFSETS (lines 1406-1456)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1410 | 1 | `public double getWageOffset(WageBand band)` |  |
+| 1411 | 1 | `public double getProfitOffset(String sector)` |  |
+| 1412 | 1 | `public double getSalesOffset(String sector)` |  |
+| 1413 | 1 | `public double getPropertyOffset(String sector)` |  |
+| 1415 | 1 | `public double getProfitOffset(Sector s)` |  |
+| 1416 | 1 | `public double getSalesOffset(Sector s)` |  |
+| 1417 | 1 | `public double getPropertyOffset(Sector s)` |  |
+| 1419 | 6 | `public void setWageOffset(WageBand band, double points)` |  |
+| 1426 | 6 | `public void setProfitOffset(String sector, double points)` |  |
+| 1433 | 6 | `public void setSalesOffset(String sector, double points)` |  |
+| 1441 | 6 | `public void setPropertyOffset(String sector, double points)` | In ANNUAL points, matching the rate it offsets; held at MAX_PROPERTY_TAX either way (clampPropertyOffset()), on a load too. |
+| 1449 | 3 | `private void offsetDecided(String tax, String who, double was, double now)` | An offset's line in the decision log, when it moved (0.7.23): "Profit tax, Retail, to -2 pts". |
+| 1453 | 1 | `public void setProfitOffset(Sector s, double points)` |  |
+| 1454 | 1 | `public void setSalesOffset(Sector s, double points)` |  |
+| 1455 | 1 | `public void setPropertyOffset(Sector s, double points)` |  |
+
+### EFFECTIVE RATES - the only numbers anything is ever charged at (lines 1457-1511)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1462 | 3 | `public double effectiveWageRate(WageBand band)` | What wages in this band are taxed at: the wage base and the band's offset. |
+| 1467 | 3 | `public double effectiveProfitRate(String sector)` | What this sector's profit is taxed at: the profit base and the sector's offset. |
+| 1472 | 3 | `public double effectiveSalesRate(String sector)` | What this sector charges on the value it adds: the sales base and its offset. |
+| 1477 | 3 | `public double effectivePropertyRate(String sector)` | ANNUAL property tax rate for this sector. |
+| 1482 | 3 | `public double effectiveMonthlyPropertyRate(String sector)` | ...and the monthly one, which is what is actually billed. |
+| 1486 | 1 | `public double effectiveProfitRate(Sector s)` |  |
+| 1487 | 1 | `public double effectiveSalesRate(Sector s)` |  |
+| 1488 | 1 | `public double effectivePropertyRate(Sector s)` |  |
+| 1489 | 1 | `public double effectiveMonthlyPropertyRate(Sector s)` |  |
+| 1497 | 6 | `public double propertyTaxOn(double assessedValue)` | What one month's property tax comes to on a given assessed value. |
+| 1505 | 6 | `public double propertyTaxOn(double assessedValue, String sector)` | One month's property tax at this sector's own rate. |
+
+### WAGES (lines 1512-1586)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1524 | 4 | `public double payslipShare(WageBand band)` | What a payslip loses in this band (0.7.36): its wage tax at its own rate, the pension contribution and the EI and health premiums - the three promises are charged on the same payroll, flat across every band. |
+| 1540 | 5 | `public double wageTaxOn(double[] wagePerType, double[] fillRate)` | The month's wage tax, summed job type by job type at its band's rate. |
+| 1567 | 19 | `public double[] wageTaxPerTier(double[] wagePerType, double[] fillRate)` | The same wage tax, split across the six pay tiers. |
+
+### A COPY TO PREVIEW ON (0.7.36) (lines 1587-1637)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1602 | 35 | `public TaxPolicy copy()` | A detached copy of every dial (0.7.36): setters on it clamp as here and record nothing. |
+
+### SAVE AND RESTORE (lines 1638-1978)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1682 | 85 | `public double[] getPolicyState()` | The city rates and the wage-band offsets as one array, city rates first - bar the three income bases of 0.7.4, which ride the end like every field added since. |
+| 1776 | 15 | `public boolean restorePolicyState(double[] state)` | (STATE_BEFORE_EI) or longer than this build's (STATE_SLOTS); nothing is changed. |
+| 1792 | 67 | `private void readPolicyState(double[] state)` |  |
+| 1870 | 5 | `public void realiseFixedGrant(double priceIndex)` | An older save's FIXED grant, read as the real amount that pays the same at the load month's level (0.7.19): its nominal amount over the level, so the bill the month after the load is the bill the save was paying, and ... |
+| 1877 | 4 | **type** `public static final class SectorOffsets` | One sector's three offsets, as the save carries them. |
+| 1882 | 16 | `public java.util.List<SectorOffsets> getSectorOffsets()` |  |
+| 1900 | 18 | `public void restoreSectorOffsets(java.util.List<SectorOffsets> saved)` | A sector the build does not have keeps its row - harmless, and it comes back if the sector does. |
+| 1924 | 30 | `public void reset()` | Back to a new city's policy: the defaults, history's dates for every lever, and a month no city holds (0), so that every default is set whatever the last city's month was. |
+| 1955 | 6 | `private double clamp(double rate, double max)` |  |
+| 1962 | 4 | `private double clampOffset(double points)` |  |
+| 1974 | 4 | `private double clampPropertyOffset(double points)` | A property offset is held at MAX_PROPERTY_TAX either way (B5, 0.7.47), not MAX_OFFSET: the rate is the base plus the offset held within 0 and MAX_PROPERTY_TAX, and the base itself is within them, so no offset past the... |
 
