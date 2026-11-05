@@ -19,12 +19,27 @@
     - Manufacturing rolls 150,000k of bonds on this path, and the gap grows tenfold every fourteen months (months 68,
       82, 96) to 1.1e-8 of its cash.
     - BS1 is queued: search to a fixed point well inside the twins' tolerance.
-- **Eight are fixtures on the merged path**, in two Sonnet slices working in their own worktrees until 03:00:
-  - MortgageCheck, FoundingYardCheck, BankCheck, HoldersCheck;
-  - CurrencyRegimeCheck, PassThroughCheck, MonetaryCheck, CentralBankCheck. MonetaryCheck's delay line and
-    PassThroughCheck's groceries sign are to be judged as possible findings once their fixtures hold.
+- **Seven are fixtures on the merged path, mended** (two Sonnet slices in worktrees of their own, reviewed):
+  - MortgageCheck 12, HoldersCheck 13a, CurrencyRegimeCheck's peg town, PassThroughCheck's ring town, MonetaryCheck's
+    founding and CentralBankCheck 20's city: all open R0's levers before a month runs (`reset()`, `openAll()`), as
+    main's R0 fixtures do. The towns were written against a city that taxes from month 1. Untaxed until 1916-20, BA1's
+    town ran a deficit main's does not: the treasury held D$190k for PassThroughCheck's swing, and the peg town's
+    inflow was US$124k against a US$212k current-account deficit. MonetaryCheck's delay line and PassThroughCheck's
+    groceries sign hold once their fixtures do, so neither is a finding.
+  - BankCheck 15: retail is held from ordering before its second sale, as the first sale's loop holds it. With no cap
+    it ordered a shop, and the distress rule does not shrink a sector that is building.
+- **One was BA1's own bug, fixed: FoundingYardCheck 4** ("every building of the village stood at once by month 44"):
+  the village's depot opened in month 49 against main's 22.
+  - `BuildingManager.goesFirst()` asks whether the builders could staff the depots on site and one more, and BA1's
+    rule (THE POSTS OF ITS OWN SITES ARE SPOKEN FOR) counted those same depots' posts as taken, so each was counted
+    twice. Its share read 0.00 in months 8 to 10 (0.46 to 0.76 before BA1), and the builders-first rule stayed off.
+  - `Sector.staffingWithOwnSites()` asks the test for a count that includes the template's own units on site;
+    `goesFirst()` is its one caller. The village now stands in month 36 (main 34).
+- **Seen on the way, for a look as model behaviour:** MonetaryCheck's largest delay move is 0.087 against an allowance of
+  0.100 (main's 0.049): BA1's lumpier building may make a town noisier. Not isolated.
 - **OR1 stays queued.** DeathRecordCheck passes on the merged tree, but its cause (below) is real.
-- Next: the slices' mends reviewed and brought here, the full suite again (alone), then the ship file.
+- Next: the full suite again, alone (started 01:23), the ensemble on the model with the staffing fix, then the ship
+  file.
 
 **WHERE IT STOOD (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
 - **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
