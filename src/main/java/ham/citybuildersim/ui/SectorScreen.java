@@ -50,6 +50,14 @@ final class SectorScreen {
 
     SectorScreen(UserInterface ui) { this.ui = ui; }
 
+    /** The nodes this screen made at its last draw, handed back to it at the next (KP4; study UP4, docs/studies/spec-screens-in-place.md). */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** Every node is made new at the next draw: another city opened (UserInterface.anotherCity()). */
+    void forget() {
+        pool.forget();
+    }
+
     /* =====================================================================
        THE SECTOR ECONOMY.
 
@@ -149,15 +157,25 @@ final class SectorScreen {
 
     /** The tab lands here: what every business in the city earned. */
     void showSectorMenu() {
-        ui.clearMenu("showSectorMenu", () -> showSectorMenu());
+        // Kept (KP4): the list, or the open business's page, is drawn over last time's nodes on a redraw.
+        ui.keepMenu("showSectorMenu", () -> showSectorMenu(), pool, this::drawPage);
+    }
+
+    /**
+     * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the
+     * pool, and what KeptBench runs kept and built new for KeptCheck - the list, or the business and
+     * page `openSector` and `sectorPage` name (in the view `statementView` names).
+     */
+    void drawPage() {
         if (openSector != null) {
             drawSectorScreen();
             return;
         }
-        listScreen();
+        // Kept (KP4): the list is a scope of its own, so nothing of it is handed to a business's page.
+        Kept.scope("list", () -> listScreen());
     }
 
-    /** Whether this draw of a view is the first since its month changed - the count-ups and the sweep run then and on no other redraw. */
+    /** Whether this draw of a view is the first since its month changed - the count-ups and the sweep run then and on no other redraw (and, with UserInterface.countsUp(), only at a clock speed a figure can count at). */
     private boolean freshMonth(String view) {
         Integer was = drawnAt.put(view, ui.game.getMonth());
         return was == null || was != ui.game.getMonth();
@@ -169,21 +187,33 @@ final class SectorScreen {
         frame.setFillWidth(true);
         frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
         body = ui.scrolled(page, chrome);
-        // ...AND AS TALL AS WHAT IS LEFT UNDER THE FRAME, whatever the frame's
-        // height: the investors' line takes a second line for Retail's bank
-        // branches, or for a long word, and a constant would leave the whole
-        // menu a scrollbar of its own. `chrome` holds until the frame is laid out.
-        body.prefHeightProperty().unbind();
-        body.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.max(260, ui.menuScroller.getHeight()
-                        - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : chrome)),
-                ui.menuScroller.heightProperty(), frame.heightProperty()));
         final javafx.scene.control.ScrollPane scroller = body;
-        page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
-                scroller.viewportBoundsProperty()));
-        ui.rootMenu.getChildren().addAll(frame, body);
+        // Kept (KP4): both bindings are made once per scroller, since a kept page is handed back each draw with the
+        // scroller and frame it is already bound to; a draw never unbinds and binds again.
+        if (scroller.getProperties().get(BOUND_TO_FRAME) != frame) {
+            // ...AND AS TALL AS WHAT IS LEFT UNDER THE FRAME, whatever the frame's
+            // height: the investors' line takes a second line for Retail's bank
+            // branches, or for a long word, and a constant would leave the whole
+            // menu a scrollbar of its own. `chrome` holds until the frame is laid out.
+            scroller.prefHeightProperty().unbind();
+            scroller.prefHeightProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.max(260, ui.menuScroller.getHeight()
+                            - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : chrome)),
+                    ui.menuScroller.heightProperty(), frame.heightProperty()));
+            scroller.getProperties().put(BOUND_TO_FRAME, frame);
+        }
+        if (page.getProperties().get(BOUND_TO_SCROLLER) != scroller) {
+            page.prefWidthProperty().unbind();
+            page.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
+                    () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
+                    scroller.viewportBoundsProperty()));
+            page.getProperties().put(BOUND_TO_SCROLLER, scroller);
+        }
+        ui.setPage(frame, scroller);
     }
+
+    /** The key in a kept scroller's properties for the frame its height is bound to, and in a kept page's for the scroller its width is bound to (frameOver()). */
+    private static final String BOUND_TO_FRAME = "sector.frame", BOUND_TO_SCROLLER = "sector.scroller";
 
     /** The page's scroller. */
     private javafx.scene.control.ScrollPane body;
@@ -214,35 +244,41 @@ final class SectorScreen {
     void listScreen() {
         SectorBooks books = ui.game.getSectorBooks();
         List<Sector> order = marketOrder();
-        boolean animate = freshMonth("list");
+        // ...and a month that lands while the clock runs too fast to follow (UserInterface.COUNT_UP_TOP)
+        // sets its figures at once: the count-up would never finish before the next month's (KP4).
+        boolean animate = freshMonth("list") && ui.countsUp();
 
         VBox page = widePage();
+        // Kept (KP4): what is drawn only sometimes is a scope of its own, so it shifts no node after it.
         if (books.isEmpty()) {
-            page.getChildren().add(alertLine(Icons.ALERT, Palette.WARN, "Nothing recorded yet", NOTHING_YET_LIST, null));
+            page.getChildren().add(Kept.scope("empty", () ->
+                    alertLine(Icons.ALERT, Palette.WARN, "Nothing recorded yet", NOTHING_YET_LIST, null)));
         }
         // SAID ONCE (0.7.34): after a load, fourteen cards in fifteen said "no word yet" each.
         boolean quiet = noWordYet(ui.game, order);
-        if (quiet) page.getChildren().add(alertLine(Icons.SECTOR, Palette.TEXT_LABEL, NO_WORD_YET_LIST, null, null));
+        if (quiet) page.getChildren().add(Kept.scope("quiet", () ->
+                alertLine(Icons.SECTOR, Palette.TEXT_LABEL, NO_WORD_YET_LIST, null, null)));
         // Every series once, for the sparklines: HistorySave's
         // netIncome:<sector> since 0.7.4.
         java.util.Map<String, List<? extends Number>> series = ui.game.getHistorySave().seriesByName();
         GridPane grid = equalColumns(3, Palette.GAP_LOOSE);
         int i = 0;
         for (Sector s : order) {
-            VBox card = sectorCard(s, books.get(s), books.previous(s),
-                    series.get(HistorySave.netIncomeKey(s.key())), animate, quiet);
+            // Kept (KP4): a card is a scope keyed by its sector.
+            VBox card = Kept.scope(s.key(), () -> sectorCard(s, books.get(s), books.previous(s),
+                    series.get(HistorySave.netIncomeKey(s.key())), animate, quiet));
             GridPane.setFillHeight(card, true);
             grid.add(card, i % 3, i / 3);
             i++;
         }
         page.getChildren().add(grid);
 
-        HBox head = pageHead("Sector economy", Palette.BUSINESS, null, null, LIST_INFO,
+        HBox head = Kept.scope("head", () -> pageHead("Sector economy", Palette.BUSINESS, null, null, LIST_INFO,
                 stepChip(sectorsExpanded ? "Show less" : "Show more", () -> {
                     sectorsExpanded = !sectorsExpanded;
                     showSectorMenu();
-                }, false));
-        VBox frame = new VBox(Palette.GAP, head, listVitals(books, order, animate));
+                }, false)));
+        VBox frame = Kept.column(Palette.GAP, head, Kept.scope("vitals", () -> listVitals(books, order, animate)));
         frameOver(frame, page, LIST_CHROME);
     }
 
@@ -283,6 +319,7 @@ final class SectorScreen {
                 l.keptInfo(), null, null);
         noteTone(keptCell, l.moveTone());
         if (animate && l.compared()) countUp(figureOf(keptCell), l.before(), l.kept(), v -> m(v) + "/mo");
+        else stopCounting(figureOf(keptCell));
 
         // LOSING: the two that lose most, and the rest behind the (i).
         VBox losingCell = kpi("LOSING", l.losing().size() + " of " + order.size(), l.losers(),
@@ -399,64 +436,64 @@ final class SectorScreen {
     VBox sectorCard(Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then,
                     List<? extends Number> netIncomeSeries, boolean animate, boolean quiet) {
 
-        Label name = new Label(sector.label());
+        Label name = Kept.label(sector.label());
         name.setWrapText(true);
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        Tooltip whole = new Tooltip(sector.blurb() == null || sector.blurb().isBlank() ? sector.label() : sector.blurb());
+        Tooltip whole = Kept.tip(name, sector.blurb() == null || sector.blurb().isBlank() ? sector.label() : sector.blurb(), 300);
         whole.setWrapText(true);
         whole.setMaxWidth(420);
-        whole.setShowDelay(Duration.millis(300));
-        Tooltip.install(name, whole);
-        Label group = new Label(groupWords(sector));
+        Label group = Kept.label(groupWords(sector));
         group.setWrapText(true);
         group.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        VBox names = new VBox(1, name, group);
+        VBox names = Kept.column(1, name, group);
         names.setMinWidth(0);
         HBox.setHgrow(names, Priority.ALWAYS);
 
-        Label figure = new Label(m(now.netIncome()) + "/mo");
+        Label figure = Kept.label(m(now.netIncome()) + "/mo");
         figure.setMinWidth(Region.USE_PREF_SIZE);
         figure.setStyle(Palette.figure(Palette.SIZE_LEAD, now.netIncome() < 0 ? Palette.BAD : Palette.TEXT_HEAD));
         if (animate && !then.isEmpty()) countUp(figure, then.netIncome(), now.netIncome(), v -> m(v) + "/mo");
+        else stopCounting(figure);
         double move = now.netIncome() - then.netIncome();
-        Label change = new Label(then.isEmpty() ? "no month to compare"
+        Label change = Kept.label(then.isEmpty() ? "no month to compare"
                 : Math.abs(toDollars(move)) < .5 ? "no change"
                 : (move >= 0 ? "+" : "-") + m(Math.abs(move)));
         // No move is no news (0.7.21): "+$0" read green.
         change.setStyle(Palette.words(Palette.SIZE_CAPTION,
                 then.isEmpty() || Math.abs(toDollars(move)) < .5 ? Palette.TEXT_SPENT
                         : move < 0 ? Palette.BAD : Palette.GOOD));
-        VBox right = new VBox(0, figure, change);
+        VBox right = Kept.column(0, figure, change);
         right.setAlignment(Pos.TOP_RIGHT);
         right.setMinWidth(110);
 
-        HBox top = new HBox(10, iconSquare(Icons.ofSector(sector), Palette.BUSINESS, 34, 18), names, right);
+        HBox top = Kept.row(10, iconSquare(Icons.ofSector(sector), Palette.BUSINESS, 34, 18), names, right);
         top.setAlignment(Pos.TOP_LEFT);
 
         // Row 2: two years of net income, the workers, and the plant.
         SectorFlow.Plant plant = SectorFlow.plant(sector);
-        Label workers = new Label(String.format("%,.0f workers", sector.getWorkers()));
+        Label workers = Kept.label(String.format("%,.0f workers", sector.getWorkers()));
         workers.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
         workers.setMinWidth(Region.USE_PREF_SIZE);
-        VBox running = new VBox(3);
+        VBox running = Kept.column(3);
         running.setMinWidth(0);
         HBox.setHgrow(running, Priority.ALWAYS);
         running.getChildren().add(caption(runningWords(sector, plant), plant.none() ? Palette.TEXT_SPENT : Palette.TEXT_LABEL));
-        if (!plant.none()) running.getChildren().add(bar(sector instanceof Retail shops ? shops.getHouseholdShare()
-                : Double.isFinite(plant.let()) ? plant.let() : plant.rate(), Palette.BUSINESS, 120, 4));
-        HBox middle = new HBox(12, sparkline(netIncomeSeries), workers, running);
+        if (!plant.none()) running.getChildren().add(Kept.scope("running bar", () -> bar(sector instanceof Retail shops ? shops.getHouseholdShare()
+                : Double.isFinite(plant.let()) ? plant.let() : plant.rate(), Palette.BUSINESS, 120, 4)));
+        HBox middle = Kept.row(12, sparkline(netIncomeSeries), workers, running);
         middle.setAlignment(Pos.CENTER_LEFT);
 
         BuildCard.SectorInvestors si = BuildCard.sectorInvestors(ui.game, sector);
-        Node word = investorsMini(si, quiet && si.kind() == BuildCard.WordKind.NONE);
+        Node word = Kept.scope("word", () -> investorsMini(si, quiet && si.kind() == BuildCard.WordKind.NONE));
 
-        VBox card = new VBox(8, top, middle, word);
-        if (sectorsExpanded) card.getChildren().add(sectorCardMore(sector, now));
+        VBox card = Kept.column(8, top, middle, word);
+        if (sectorsExpanded) card.getChildren().add(Kept.scope("more", () -> sectorCardMore(sector, now)));
         card.setMaxWidth(Double.MAX_VALUE);
         card.setMaxHeight(Double.MAX_VALUE);
         String rest = "-fx-padding: 12; -fx-cursor: hand; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: ";
-        card.setStyle(rest + Palette.EDGE + ";");
+        // Kept (KP4): the look the pointer calls for is chosen from isHover() where it is set (a still pointer sends no mouse-entered).
+        card.setStyle(rest + (card.isHover() ? Palette.ACCENT : Palette.EDGE) + ";");
         card.setOnMouseEntered(e -> card.setStyle(rest + Palette.ACCENT + ";"));
         card.setOnMouseExited(e -> card.setStyle(rest + Palette.EDGE + ";"));
         card.setOnMouseClicked(e -> {
@@ -497,10 +534,13 @@ final class SectorScreen {
 
     /** A line of caption that wraps, in a colour. */
     static Label caption(String text, String tone) {
-        Label l = new Label(text);
-        l.setWrapText(true);
-        l.setStyle(Palette.words(Palette.SIZE_CAPTION, tone));
-        return l;
+        // Kept (KP4): a scope of its own, so a label that wraps is handed only to another caption (the page's other labels do not set it back).
+        return Kept.scope("caption", () -> {
+            Label l = Kept.label(text);
+            l.setWrapText(true);
+            l.setStyle(Palette.words(Palette.SIZE_CAPTION, tone));
+            return l;
+        });
     }
 
     /** The width the sparkline takes on a card (0.7.30; 90 on the old list). */
@@ -529,6 +569,11 @@ final class SectorScreen {
      * turn, and the tooltip names the months.
      */
     javafx.scene.Node sparkline(List<? extends Number> series) {
+        // Kept (KP4): a scope of its own, since it makes a label for the new card and a canvas for the old one.
+        return Kept.scope("sparkline", () -> sparklineOf(series));
+    }
+
+    private javafx.scene.Node sparklineOf(List<? extends Number> series) {
 
         // Each point with its month: the series' last element is the history's
         // last month, so its i-th from the end is the axis's i-th from the end.
@@ -546,7 +591,7 @@ final class SectorScreen {
             }
         }
         if (months.size() < 2) {
-            Label none = new Label("no history yet");
+            Label none = Kept.label("no history yet");
             none.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
             none.setMinWidth(SPARK_WIDTH);
             none.setPrefWidth(SPARK_WIDTH);
@@ -561,8 +606,12 @@ final class SectorScreen {
         java.util.function.DoubleUnaryOperator y =
                 v -> span <= 0 ? pad + h / 2 : pad + h - (v - low) / span * h;
 
-        javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas(SPARK_WIDTH, SPARK_HEIGHT);
+        // Kept (KP4): the canvas the last draw made, its size set and its whole face cleared before it is drawn again.
+        javafx.scene.canvas.Canvas canvas = Kept.of(javafx.scene.canvas.Canvas.class, javafx.scene.canvas.Canvas::new);
+        canvas.setWidth(SPARK_WIDTH);
+        canvas.setHeight(SPARK_HEIGHT);
         javafx.scene.canvas.GraphicsContext g = canvas.getGraphicsContext2D();
+        g.clearRect(0, 0, SPARK_WIDTH, SPARK_HEIGHT);
 
         double zero = Math.floor(y.applyAsDouble(0)) + .5;
         g.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_SPENT, .5));
@@ -590,11 +639,11 @@ final class SectorScreen {
         g.stroke();
 
         int from = when.get(0), to = when.get(when.size() - 1);
-        javafx.scene.control.Tooltip.install(canvas, new javafx.scene.control.Tooltip(String.format(
+        Kept.tip(canvas, String.format(
                 "Net income after tax, %s: between %s and %s a month. A faint mark is a January.",
                 from == Integer.MIN_VALUE ? "the last " + months.size() + " months"
                         : CityCalendar.formatShort(from) + " to " + CityCalendar.formatShort(to),
-                tightMoney(toDollars(lo)), tightMoney(toDollars(hi)))));
+                tightMoney(toDollars(lo)), tightMoney(toDollars(hi))), 1000);
         return canvas;
     }
 
@@ -605,7 +654,7 @@ final class SectorScreen {
      */
     GridPane sectorCardMore(Sector sector, SectorBooks.SectorMonth now) {
         boolean known = !now.isEmpty();
-        GridPane more = new GridPane();
+        GridPane more = Kept.grid();
         more.setHgap(Palette.GAP_LOOSE);
         more.setVgap(4);
         more.add(moreCell("revenue", known ? m(now.revenue()) + "/mo" : "—",
@@ -624,12 +673,12 @@ final class SectorScreen {
 
     /** One labelled figure on a card's second row: the word over the figure, 120 wide. */
     static VBox moreCell(String word, String figure, String tone) {
-        Label head = new Label(word);
+        Label head = Kept.label(word);
         head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        Label value = new Label(figure);
+        Label value = Kept.label(figure);
         value.setMinWidth(Region.USE_PREF_SIZE);
         value.setStyle(Palette.words(Palette.SIZE_CAPTION, tone));
-        VBox cell = new VBox(0, head, value);
+        VBox cell = Kept.column(0, head, value);
         cell.setPrefWidth(120);
         cell.setMinWidth(100);
         return cell;
@@ -733,27 +782,29 @@ final class SectorScreen {
     Node investorsMini(BuildCard.SectorInvestors si, boolean blank) {
         BuildCard.WordKind k = si.kind();
         String colour = kindColour(k);
-        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
+        // Kept (KP4): a TextFlow is not one of Kept's boxes, so its runs are set where they differ (Kept.set).
+        javafx.scene.text.TextFlow line = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        Kept.set(line.getChildren(), List.of(
                 BuildScreen.textRun(kindWord(k), Palette.Fonts.sansSemiBold(), 9.5, textColour(k)),
-                BuildScreen.textRun("  " + (blank ? "" : shortWord(sectorWords(si))), null, 9.5, Palette.TEXT_MUTED));
+                BuildScreen.textRun("  " + (blank ? "" : shortWord(sectorWords(si))), null, 9.5, Palette.TEXT_MUTED)));
         line.setMinWidth(0);
         HBox.setHgrow(line, Priority.ALWAYS);
         Region mark = icon(kindIcon(k), colour, 12);
-        HBox row = new HBox(6, mark, line);
+        HBox row = Kept.row(6, mark, line);
         row.setAlignment(Pos.TOP_LEFT);
+        // ...set on both sides (KP4): a card that has a word again is handed back its icon and line as they were.
+        mark.setVisible(!blank);
+        line.setVisible(!blank);
         if (blank) {
-            mark.setVisible(false);
-            line.setVisible(false);
             row.setStyle("-fx-padding: 6 0 0 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;");
             return row;
         }
         row.setStyle("-fx-cursor: hand; -fx-padding: 6 0 0 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;");
-        Tooltip tip = new Tooltip((si.word().isEmpty() ? sectorWords(si) : si.word()) + "\nClick for its Investors page.");
+        Tooltip tip = Kept.tip(row, (si.word().isEmpty() ? sectorWords(si) : si.word()) + "\nClick for its Investors page.", 300);
         tip.setWrapText(true);
         tip.setMaxWidth(420);
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(row, tip);
-        row.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, e -> {
+        // Set, not added: a kept row is handed back with no handler (Kept), and given this draw's.
+        row.setOnMouseClicked(e -> {
             e.consume();
             openSectorBooks(si.owner(), "Investors");
         });
@@ -776,19 +827,22 @@ final class SectorScreen {
      */
     VBox investorsLine(BuildCard.SectorInvestors si, boolean animate, double iconBox) {
         BuildCard.WordKind k = si.kind();
-        HBox first = kindRow(k, sectorWords(si), iconBox);
+        // Kept (KP4): the first row, the built tag and the bank's line are each a scope, so a word that comes and goes shifts no node.
+        HBox first = Kept.scope("first", () -> kindRow(k, sectorWords(si), iconBox));
         String tag = builtTag(si.word());
-        if (tag != null) first.getChildren().add(2, tag(tag, Palette.BUILDING));
-        VBox lines = new VBox(4, first);
+        if (tag != null) first.getChildren().add(2, Kept.scope("built", () -> tag(tag, Palette.BUILDING)));
+        VBox lines = Kept.column(4, first);
         if (si.owner() == ui.game.getSectors().retail()) {
             String bank = ui.game.getLastInvestment("Bank");
             if (bank != null && !bank.isEmpty()) {
-                BuildCard.WordKind bk = BuildCard.wordKind(bank);
-                HBox second = kindRow(bk, "its bank branches: "
-                        + (bank.startsWith("Holding: ") ? bank.substring("Holding: ".length()) : bank), iconBox * .8);
-                second.getChildren().add(infoButton("The bank's counters are retail's money and not retail's shop "
-                        + "decision, so the two are asked separately and filed separately.", false));
-                lines.getChildren().add(second);
+                lines.getChildren().add(Kept.scope("bank", () -> {
+                    BuildCard.WordKind bk = BuildCard.wordKind(bank);
+                    HBox second = kindRow(bk, "its bank branches: "
+                            + (bank.startsWith("Holding: ") ? bank.substring("Holding: ".length()) : bank), iconBox * .8);
+                    second.getChildren().add(infoButton("The bank's counters are retail's money and not retail's shop "
+                            + "decision, so the two are asked separately and filed separately.", false));
+                    return second;
+                }));
             }
         }
         lines.setMinHeight(iconBox + 14);
@@ -797,26 +851,26 @@ final class SectorScreen {
         lines.setStyle("-fx-padding: 6 12 6 10; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 6;"
                 + " -fx-border-color: transparent transparent transparent " + kindColour(k) + ";"
                 + " -fx-border-width: 0 0 0 3; -fx-border-radius: 6;");
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         first.getChildren().addAll(gap, door("Investors", Palette.ACCENT, () -> open("Investors")));
-        Tooltip tip = new Tooltip(si.word().isEmpty() ? sectorWords(si) : si.word());
+        Tooltip tip = Kept.tip(lines, si.word().isEmpty() ? sectorWords(si) : si.word(), 300);
         tip.setWrapText(true);
         tip.setMaxWidth(460);
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(lines, tip);
         if (animate && tag != null) flash(lines);
+        else noFlash(lines);
         return lines;
     }
 
     /** One kind's row: its icon square, its word and the words after it, wrapping. */
     static HBox kindRow(BuildCard.WordKind k, String words, double box) {
-        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
+        javafx.scene.text.TextFlow line = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
+        Kept.set(line.getChildren(), List.of(
                 BuildScreen.textRun(kindWord(k), Palette.Fonts.sansSemiBold(), Palette.SIZE_BODY, textColour(k)),
-                BuildScreen.textRun("   " + words, null, Palette.SIZE_BODY, Palette.TEXT_BODY));
+                BuildScreen.textRun("   " + words, null, Palette.SIZE_BODY, Palette.TEXT_BODY)));
         line.setMinWidth(0);
         HBox.setHgrow(line, Priority.SOMETIMES);
-        HBox row = new HBox(10, iconSquare(kindIcon(k), kindColour(k), box, Math.round(box * .58)), line);
+        HBox row = Kept.row(10, iconSquare(kindIcon(k), kindColour(k), box, Math.round(box * .58)), line);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -831,7 +885,16 @@ final class SectorScreen {
                 new javafx.animation.KeyFrame(Duration.millis(1100),
                         new javafx.animation.KeyValue(glow.radiusProperty(), 0, javafx.animation.Interpolator.EASE_OUT)));
         fade.setOnFinished(e -> r.setEffect(null));
-        fade.play();
+        // Kept (KP4): through Kept.play on a kept region, which stops the fade the region was last given.
+        if (Kept.drawing()) Kept.play(r, fade);
+        else fade.play();
+    }
+
+    /** ...and where none is due: the region's effect is set to nothing and a fade still running on it from the last draw stopped (set on both sides, KP4). */
+    static void noFlash(Region r) {
+        javafx.animation.Animation running = Kept.animationOf(r);
+        if (running != null) running.stop();
+        r.setEffect(null);
     }
 
     /* =====================================================================
@@ -855,63 +918,76 @@ final class SectorScreen {
         SectorBooks books = ui.game.getSectorBooks();
         SectorBooks.SectorMonth now = books.get(sector);
         SectorBooks.SectorMonth then = books.previous(sector);
-        boolean animate = freshMonth(sector.key() + "|" + sectorPage);
+        // freshMonth() first, since it records the month; and a month that lands while the clock runs too fast to follow
+        // (UserInterface.COUNT_UP_TOP) sets its figures at once (KP4).
+        boolean animate = freshMonth(sector.key() + "|" + sectorPage) && ui.countsUp();
         BuildCard.SectorInvestors si = BuildCard.sectorInvestors(ui.game, sector);
         SectorFlow.Plant plant = SectorFlow.plant(sector);
 
-        VBox page = widePage();
-        if (now.isEmpty()) {
-            page.getChildren().add(alertLine(Icons.ALERT, Palette.WARN, "Nothing recorded yet", NOTHING_YET_SECTOR, null));
-        } else {
-            // Summary or Statement (0.7.74, D1): Operations has no statement.
-            switch (sectorPage) {
-                case "Income" -> {
-                    if (statementView) incomeStatementView(page, sector, now, then);
-                    else incomePage(page, sector, now, then, animate);
+        // Kept (KP4): the whole page - its frame, its scroller and its page - is a scope keyed by the business, the page and the
+        // view, so another business, another page or the Summary/Statement switch shares no node with the last, and opens at
+        // its top; a month's redraw of the same page keeps every node and the scroll.
+        Kept.scope(sector.key() + "/" + sectorPage + "/" + (statementView ? "statement" : "summary"), () -> {
+            // ...the page itself in a scope of its own, so what its sections make (as many boxes as they like, however
+            // many are kept yet) shifts none of the frame's nodes below it.
+            VBox page = Kept.scope("page", () -> {
+                VBox p = widePage();
+                if (now.isEmpty()) {
+                    p.getChildren().add(Kept.scope("empty", () ->
+                            alertLine(Icons.ALERT, Palette.WARN, "Nothing recorded yet", NOTHING_YET_SECTOR, null)));
+                } else {
+                    // Summary or Statement (0.7.74, D1): Operations has no statement.
+                    switch (sectorPage) {
+                        case "Income" -> {
+                            if (statementView) incomeStatementView(p, sector, now, then);
+                            else incomePage(p, sector, now, then, animate);
+                        }
+                        case "Balance sheet" -> {
+                            if (statementView) balanceStatementView(p, sector, now, then);
+                            else balancePage(p, sector, now, then);
+                        }
+                        case "Cash & debt" -> {
+                            if (statementView) cashStatementView(p, sector, now, then);
+                            else cashAndDebtPage(p, sector, now, then);
+                        }
+                        case "Investors" -> {
+                            if (statementView) investorStatementView(p, sector, now, then, si);
+                            else investorPage(p, sector, now, si, animate);
+                        }
+                        default -> operationsPage(p, sector, animate);
+                    }
                 }
-                case "Balance sheet" -> {
-                    if (statementView) balanceStatementView(page, sector, now, then);
-                    else balancePage(page, sector, now, then);
-                }
-                case "Cash & debt" -> {
-                    if (statementView) cashStatementView(page, sector, now, then);
-                    else cashAndDebtPage(page, sector, now, then);
-                }
-                case "Investors" -> {
-                    if (statementView) investorStatementView(page, sector, now, then, si);
-                    else investorPage(page, sector, now, si, animate);
-                }
-                default -> operationsPage(page, sector, animate);
-            }
-        }
+                return p;
+            });
 
-        // The pages, and at the strip's right end the switch (0.7.74, board SectorFrame).
-        HBox strip = StatementView.stripWithSwitch(
-                chipStrip(SECTOR_PAGES, PAGE_ICONS, sectorPage, Palette.SIZE_LABEL, this::open),
-                SECTOR_HOME.equals(sectorPage) ? null : statementView, this::pickView);
+            // The pages, and at the strip's right end the switch (0.7.74, board SectorFrame).
+            HBox strip = Kept.scope("strip", () -> StatementView.stripWithSwitch(
+                    chipStrip(SECTOR_PAGES, PAGE_ICONS, sectorPage, Palette.SIZE_LABEL, this::open),
+                    SECTOR_HOME.equals(sectorPage) ? null : statementView, this::pickView));
 
-        VBox frame = new VBox(Palette.GAP, sectorHead(sector), sectorVitals(sector, now, then, plant, animate),
-                investorsLine(si, animate, 22), strip);
-        frameOver(frame, page, FRAME_CHROME);
+            VBox frame = Kept.column(Palette.GAP, Kept.scope("head", () -> sectorHead(sector)),
+                    Kept.scope("vitals", () -> sectorVitals(sector, now, then, plant, animate)),
+                    Kept.scope("investors", () -> investorsLine(si, animate, 22)), strip);
+            frameOver(frame, page, FRAME_CHROME);
+        });
     }
 
     /** The head: "Sectors ›" - the way back - the business's icon and name, its blurb behind an (i), and a door to its buildings on Build. */
     HBox sectorHead(Sector sector) {
-        Label crumb = new Label("Sectors");
-        crumb.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0; -fx-cursor: hand;");
-        crumb.setMinWidth(Region.USE_PREF_SIZE);
-        Region swatch = new Region();
+        Region swatch = Kept.region();
         swatch.setMinSize(10, 10);
         swatch.setPrefSize(10, 10);
         swatch.setMaxSize(10, 10);
         swatch.setStyle("-fx-background-color: " + Palette.BUSINESS + "; -fx-background-radius: 3;");
-        crumb.setGraphic(swatch);
+        Label crumb = Kept.label("Sectors", swatch);
+        crumb.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0; -fx-cursor: hand;");
+        crumb.setMinWidth(Region.USE_PREF_SIZE);
         crumb.setGraphicTextGap(10);
         crumb.setOnMouseClicked(e -> backToList());
-        Tooltip.install(crumb, new Tooltip("All the sectors"));
-        Label sep = new Label("›");
+        Kept.tip(crumb, "All the sectors", 1000);
+        Label sep = Kept.label("›");
         sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
-        Label name = new Label(sector.label());
+        Label name = Kept.label(sector.label());
         name.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
         name.setMinWidth(Region.USE_PREF_SIZE);
         javafx.scene.Node square = iconSquare(Icons.ofSector(sector), Palette.BUSINESS, 30, 16);
@@ -919,13 +995,14 @@ final class SectorScreen {
         javafx.scene.Node dot = infoButton((sector.blurb() == null || sector.blurb().isBlank() ? sector.label() : sector.blurb())
                 + "\n\nIts buildings are on Build, under " + groupWords(sector) + ".", false);
         HBox.setMargin(dot, new javafx.geometry.Insets(6, 0, 0, 0));
-        HBox titled = new HBox(10, crumb, sep, square, name, dot);
+        HBox titled = Kept.row(10, crumb, sep, square, name, dot);
         titled.setAlignment(Pos.CENTER_LEFT);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox head = new HBox(Palette.GAP_LOOSE, titled, gap);
+        HBox head = Kept.row(Palette.GAP_LOOSE, titled, gap);
         String cat = BuildCard.categoryOf(ui.game, sector);
-        if (cat != null) head.getChildren().add(doorPill("Build · " + cat, Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(cat)));
+        if (cat != null) head.getChildren().add(Kept.scope("build door", () ->
+                doorPill("Build · " + cat, Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(cat))));
         head.setAlignment(Pos.CENTER_LEFT);
         head.setMaxWidth(Double.MAX_VALUE);
         head.setStyle("-fx-padding: 0 0 4 0;");
@@ -954,6 +1031,7 @@ final class SectorScreen {
                 "Income: what it kept, and where the rest went", () -> open("Income"));
         noteTone(kept, then.isEmpty() || Math.abs(toDollars(move)) < .5 ? Palette.TEXT_MUTED : move > 0 ? Palette.GOOD : Palette.BAD);
         if (animate && !then.isEmpty()) countUp(figureOf(kept), then.netIncome(), now.netIncome(), SectorScreen::m);
+        else stopCounting(figureOf(kept));
 
         VBox margin = kpi("MARGIN", marginWords(now.margin()), "of every dollar taken",
                 now.margin() < 0 ? Palette.BAD : now.margin() < .05 ? Palette.WARN : Palette.GOOD, null,
@@ -1026,8 +1104,12 @@ final class SectorScreen {
         VBox cell = limitCell(label, value, note, tone, where, go);
         if (info != null && !cell.getChildren().isEmpty() && cell.getChildren().get(0) instanceof Label what) {
             cell.getChildren().remove(0);
-            HBox titled = new HBox(Palette.GAP_TIGHT, what, infoButton(info, false));
-            titled.setAlignment(Pos.CENTER_LEFT);
+            // Kept (KP4): the label's row is a scope of its own, since a cell has one only while it has an (i) to show.
+            HBox titled = Kept.scope("titled", () -> {
+                HBox t = Kept.row(Palette.GAP_TIGHT, what, infoButton(info, false));
+                t.setAlignment(Pos.CENTER_LEFT);
+                return t;
+            });
             cell.getChildren().add(0, titled);
         }
         return cell;
@@ -1045,7 +1127,11 @@ final class SectorScreen {
 
     /** A figure counted from last month's to this month's over COUNT_MILLIS, ending on this month's exactly (0.7.30). */
     static void countUp(Label label, double from, double to, java.util.function.DoubleFunction<String> words) {
-        if (!Double.isFinite(from) || !Double.isFinite(to) || words.apply(from).equals(words.apply(to))) return;
+        if (!Double.isFinite(from) || !Double.isFinite(to) || words.apply(from).equals(words.apply(to))) {
+            // Kept (KP4): a count still running on this label from the last month is stopped, or it would write that month's figure over this one's.
+            stopCounting(label);
+            return;
+        }
         javafx.beans.property.DoubleProperty value = new javafx.beans.property.SimpleDoubleProperty(from);
         value.addListener((o, was, is) -> label.setText(words.apply(is.doubleValue())));
         label.setText(words.apply(from));
@@ -1058,7 +1144,20 @@ final class SectorScreen {
         else count.play();
     }
 
-    /** A ring (Pieces.ring()) whose arc sweeps up from nothing over SWEEP_MILLIS - there is no last month's rate to sweep from (0.7.30). */
+    /**
+     * A figure on a kept label that does not count at this draw has no count-up left running from the last (City
+     * History's stopCounting, KP1): the clock too fast to follow (UserInterface.countsUp()), or a redraw in the same
+     * month. A label no draw ever played an animation on has none, so a figure outside a kept page is as it was.
+     */
+    static void stopCounting(javafx.scene.Node figure) {
+        javafx.animation.Animation running = Kept.animationOf(figure);
+        if (running != null) running.stop();
+    }
+
+    /**
+     * A ring (Pieces.ring()) whose arc sweeps up from nothing over SWEEP_MILLIS - there is no last month's rate to sweep from (0.7.30).
+     * A ring that does not sweep at a draw has its arc's last sweep stopped by Pieces.ring() itself, which sets its length each draw (KP4).
+     */
     static Region sweep(Region ring) {
         if (!(ring instanceof javafx.scene.layout.StackPane stack) || stack.getChildren().isEmpty()
                 || !(stack.getChildren().get(0) instanceof javafx.scene.layout.Pane drawn)) return ring;
@@ -1066,33 +1165,45 @@ final class SectorScreen {
             if (!(n instanceof javafx.scene.shape.Arc arc)) continue;
             double to = arc.getLength();
             arc.setLength(0);
-            new javafx.animation.Timeline(new javafx.animation.KeyFrame(Duration.millis(SWEEP_MILLIS),
-                    new javafx.animation.KeyValue(arc.lengthProperty(), to, javafx.animation.Interpolator.EASE_OUT))).play();
+            javafx.animation.Timeline sweeping = new javafx.animation.Timeline(
+                    new javafx.animation.KeyFrame(Duration.millis(SWEEP_MILLIS),
+                            new javafx.animation.KeyValue(arc.lengthProperty(), to, javafx.animation.Interpolator.EASE_OUT)));
+            // Kept (KP4): through Kept.play on a kept arc, which stops the sweep the arc was last given.
+            if (Kept.drawing()) Kept.play(arc, sweeping);
+            else sweeping.play();
         }
         return ring;
     }
 
+    /** A spacer that takes the room left in a row - a scope of its own (KP4), so one drawn only sometimes shifts no other region's node (a swatch would inherit its grow). */
+    static Region spring() {
+        return Kept.scope("spring", () -> {
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            return gap;
+        });
+    }
+
     /** One line that something is wrong or waiting: its icon in a colour, a few words, and the whole of it behind an (i). */
     static HBox alertLine(String svg, String colour, String text, String info, Node right) {
-        Label words = new Label(text);
-        words.setWrapText(true);
-        words.setStyle(Palette.strong(Palette.SIZE_BODY, colour));
-        HBox row = new HBox(8, icon(svg, colour, 14), words);
-        if (info != null) row.getChildren().add(infoButton(info, true));
-        if (right != null) {
-            Region gap = new Region();
-            HBox.setHgrow(gap, Priority.ALWAYS);
-            row.getChildren().addAll(gap, right);
-        }
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(Double.MAX_VALUE);
-        row.setStyle("-fx-padding: 8 12 8 12; -fx-background-color: " + tint(colour, .10) + "; -fx-background-radius: 6;");
-        return row;
+        return Kept.scope("alertLine", () -> {
+            Label words = Kept.label(text);
+            words.setWrapText(true);
+            words.setStyle(Palette.strong(Palette.SIZE_BODY, colour));
+            HBox row = Kept.row(8, icon(svg, colour, 14), words);
+            if (info != null) row.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
+            if (right != null) row.getChildren().addAll(spring(), right);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(Double.MAX_VALUE);
+            row.setStyle("-fx-padding: 8 12 8 12; -fx-background-color: " + tint(colour, .10) + "; -fx-background-radius: 6;");
+            return row;
+        });
     }
 
     /** A card on the raised ground: a picture's frame. */
     static VBox card(Node... children) {
-        VBox c = new VBox(Palette.GAP_LOOSE);
+        // Kept (KP4): the column in a scope of its own, so a card's style is handed to no other column (the children are made before it).
+        VBox c = Kept.scope("card", () -> Kept.column(Palette.GAP_LOOSE));
         for (Node n : children) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(Double.MAX_VALUE);
         c.setStyle("-fx-padding: 14 16 14 16; -fx-background-color: " + Palette.RAISED + ";"
@@ -1102,26 +1213,27 @@ final class SectorScreen {
 
     /** A picture's caption in capitals, with an (i) after it when `info` is not null, and something at its right. */
     static HBox head(String text, String info, Node right) {
-        Label l = new Label(text);
-        l.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        l.setMinWidth(Region.USE_PREF_SIZE);
-        HBox row = new HBox(Palette.GAP, l);
-        if (info != null) row.getChildren().add(infoButton(info, true));
-        if (right != null) {
-            Region gap = new Region();
-            HBox.setHgrow(gap, Priority.ALWAYS);
-            row.getChildren().addAll(gap, right);
-        }
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        return Kept.scope("head", () -> {
+            Label l = Kept.label(text);
+            l.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+            l.setMinWidth(Region.USE_PREF_SIZE);
+            HBox row = Kept.row(Palette.GAP, l);
+            if (info != null) row.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
+            if (right != null) row.getChildren().addAll(spring(), right);
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /** A figure, never cut, at a size, in a colour. */
     static Label figure(String text, double size, String tone) {
-        Label l = new Label(text);
-        l.setMinWidth(Region.USE_PREF_SIZE);
-        l.setStyle(BuildScreen.figureAt(size, tone));
-        return l;
+        // Kept (KP4): a scope of its own, so a figure's never-cut width is handed to no other label.
+        return Kept.scope("figure", () -> {
+            Label l = Kept.label(text);
+            l.setMinWidth(Region.USE_PREF_SIZE);
+            l.setStyle(BuildScreen.figureAt(size, tone));
+            return l;
+        });
     }
 
     /** An (i) after a statement line's label: the paragraph that sat under it (0.7.30). */
@@ -1131,7 +1243,7 @@ final class SectorScreen {
         else if (line instanceof VBox v) {
             for (Node n : v.getChildren()) if (n instanceof HBox h) { row = h; break; }
         }
-        if (row != null && info != null) row.getChildren().add(1, infoButton(info, true));
+        if (row != null && info != null) row.getChildren().add(1, Kept.scope("info", () -> infoButton(info, true)));
         return line;
     }
 
@@ -1142,50 +1254,56 @@ final class SectorScreen {
 
     /** A ratio as a chip in a row: its name, the chip, and its (i). */
     static HBox ratioRow(String name, String value, String colour, String info) {
-        Label what = new Label(name);
-        what.setWrapText(true);
-        what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        Label chip = chip(value, colour);
-        chip.setStyle(chip.getStyle() + " -fx-font-size: " + Palette.SIZE_BODY + "px;");
-        HBox row = new HBox(Palette.GAP, what, gap, chip);
-        if (info != null) row.getChildren().add(infoButton(info, true));
-        row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+        return Kept.scope("ratioRow", () -> {
+            Label what = Kept.label(name);
+            what.setWrapText(true);
+            what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            Label chip = chip(value, colour);
+            chip.setStyle(chip.getStyle() + " -fx-font-size: " + Palette.SIZE_BODY + "px;");
+            HBox row = Kept.row(Palette.GAP, what, gap, chip);
+            if (info != null) row.getChildren().add(Kept.scope("info", () -> infoButton(info, true)));
+            row.setAlignment(Pos.CENTER_LEFT);
+            return row;
+        });
     }
 
     /** A ratio column, 300 wide, beside a statement. */
     static VBox ratioColumn(String title, Node... rows) {
-        VBox c = new VBox(8, head(title, null, null));
-        for (Node n : rows) if (n != null) c.getChildren().add(n);
-        c.setMinWidth(260);
-        c.setPrefWidth(300);
-        c.setMaxWidth(340);
-        c.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 8;");
-        return c;
+        return Kept.scope("ratioColumn", () -> {
+            VBox c = Kept.column(8, head(title, null, null));
+            for (Node n : rows) if (n != null) c.getChildren().add(n);
+            c.setMinWidth(260);
+            c.setPrefWidth(300);
+            c.setMaxWidth(340);
+            c.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 8;");
+            return c;
+        });
     }
 
     /** One part of a bar's key: its swatch, its name and its figure. */
     static HBox keyPart(String colour, String name, String figure) {
-        Region sw = new Region();
-        sw.setMinSize(10, 10);
-        sw.setPrefSize(10, 10);
-        sw.setMaxSize(10, 10);
-        sw.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
-        Label n = new Label(name);
-        n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        Label f = new Label(figure);
-        f.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD));
-        f.setMinWidth(Region.USE_PREF_SIZE);
-        HBox k = new HBox(5, sw, n, f);
-        k.setAlignment(Pos.CENTER_LEFT);
-        return k;
+        return Kept.scope("keyPart", () -> {
+            Region sw = Kept.region();
+            sw.setMinSize(10, 10);
+            sw.setPrefSize(10, 10);
+            sw.setMaxSize(10, 10);
+            sw.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
+            Label n = Kept.label(name);
+            n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            Label f = Kept.label(figure);
+            f.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD));
+            f.setMinWidth(Region.USE_PREF_SIZE);
+            HBox k = Kept.row(5, sw, n, f);
+            k.setAlignment(Pos.CENTER_LEFT);
+            return k;
+        });
     }
 
     /** A bar's key, wrapping. */
     static javafx.scene.layout.FlowPane key(List<HBox> parts) {
-        javafx.scene.layout.FlowPane f = new javafx.scene.layout.FlowPane(14, 4);
+        javafx.scene.layout.FlowPane f = Kept.scope("key", () -> Kept.flow(14, 4));
         f.getChildren().addAll(parts);
         return f;
     }
@@ -1224,29 +1342,34 @@ final class SectorScreen {
      * figure the screen could not find rather than one it does not keep.
      */
     HBox bookDetailRow(String label, String value, boolean indented, String tone) {
-        Label what = new Label(label);
+        // Kept (KP4): a row is a scope of one shape, so the rows that come and go hand each other their nodes safely.
+        return Kept.scope("bookDetailRow", () -> bookDetailRowOf(label, value, indented, tone));
+    }
+
+    private HBox bookDetailRowOf(String label, String value, boolean indented, String tone) {
+        Label what = Kept.label(label);
         what.setStyle(Palette.words(Palette.SIZE_CAPTION,
                 indented ? Palette.TEXT_MUTED : Palette.TEXT_BODY));
 
-        Region pad = new Region();
+        Region pad = Kept.region();
         pad.setMinWidth(indented ? 14 : 0);
         pad.setPrefWidth(indented ? 14 : 0);
 
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label a = new Label(value);
+        Label a = Kept.label(value);
         a.setPrefWidth(BOOK_NOW);
         a.setMinWidth(BOOK_NOW);
         a.setAlignment(Pos.CENTER_RIGHT);
         a.setStyle(Palette.figure(Palette.SIZE_CAPTION,
                 tone == null ? (indented ? Palette.TEXT_MUTED : Palette.TEXT_BODY) : tone));
 
-        Region tail = new Region();
+        Region tail = Kept.region();
         tail.setMinWidth(BOOK_THEN);
         tail.setPrefWidth(BOOK_THEN);
 
-        HBox row = new HBox(Palette.GAP, pad, what, gap, a, tail);
+        HBox row = Kept.row(Palette.GAP, pad, what, gap, a, tail);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMaxWidth(STATEMENT);
         row.setPrefWidth(STATEMENT);
@@ -1260,12 +1383,15 @@ final class SectorScreen {
 
     /** A sentence at the bottom of an opened line, when the split has something to say. */
     Label bookDetailNote(String text) {
-        Label l = new Label(text);
-        l.setWrapText(true);
-        l.setMaxWidth(STATEMENT - 40);
-        l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
-                + " -fx-padding: 3 0 2 0;");
-        return l;
+        // Kept (KP4): a scope of its own, so a note that wraps is handed only to another note.
+        return Kept.scope("bookDetailNote", () -> {
+            Label l = Kept.label(text);
+            l.setWrapText(true);
+            l.setMaxWidth(STATEMENT - 40);
+            l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
+                    + " -fx-padding: 3 0 2 0;");
+            return l;
+        });
     }
 
     /* bookTotal(), the line a section adds up to, moved to Statement on
@@ -1292,7 +1418,13 @@ final class SectorScreen {
      * different, so the two lines have to be.
      */
     VBox revenueDetail(Sector sector) {
-        VBox box = new VBox(0);
+        // Kept (KP4): a scope of its own, and each good's lines a scope keyed by the good, so a good that comes and goes
+        // takes its own nodes with it.
+        return Kept.scope("revenueDetail", () -> revenueDetailOf(sector));
+    }
+
+    private VBox revenueDetailOf(Sector sector) {
+        VBox box = Kept.column(0);
         if (sector == null) return box;
         Sector.Statement st = sector.statement();
 
@@ -1305,13 +1437,15 @@ final class SectorScreen {
         for (java.util.Map.Entry<Good, Sector.Split> e : lines) {
             Sector.Split s = e.getValue();
             abroad += s.abroad;
-            box.getChildren().add(bookDetailRow(e.getKey().label(), s.total(), false));
-            if (s.atHome != 0 && s.abroad != 0) {
-                box.getChildren().add(bookDetailRow("in the city", s.atHome, true));
-                box.getChildren().add(bookDetailRow("shipped abroad", s.abroad, true));
-            } else if (s.abroad != 0) {
-                box.getChildren().add(bookDetailRow("all of it shipped abroad", s.abroad, true));
-            }
+            Kept.scope(e.getKey().label(), () -> {
+                box.getChildren().add(bookDetailRow(e.getKey().label(), s.total(), false));
+                if (s.atHome != 0 && s.abroad != 0) {
+                    box.getChildren().add(bookDetailRow("in the city", s.atHome, true));
+                    box.getChildren().add(bookDetailRow("shipped abroad", s.abroad, true));
+                } else if (s.abroad != 0) {
+                    box.getChildren().add(bookDetailRow("all of it shipped abroad", s.abroad, true));
+                }
+            });
         }
         /*
          * WORK IS NOT A GOOD, and the one sector that sells any is the one this
@@ -1323,7 +1457,9 @@ final class SectorScreen {
         int named = box.getChildren().size();
         for (java.util.Map.Entry<String, Double> part : sector.otherRevenueParts().entrySet()) {
             if (Math.abs(part.getValue()) < .0000005) continue;
-            box.getChildren().add(bookDetailRow(part.getKey(), part.getValue(), false));
+            Kept.scope("part:" + part.getKey(), () -> {
+                box.getChildren().add(bookDetailRow(part.getKey(), part.getValue(), false));
+            });
             named++;
         }
         // ...and Freight's revenue is its shippers' bills, by division (FR4): INCOME · THE SHIPPERS BY DIVISION.
@@ -1386,59 +1522,69 @@ final class SectorScreen {
     Node shippersByDivision() {
         FreightView.View v = FreightView.of(ui.game);
         if (v.shippers().isEmpty()) return null;
-        VBox box = new VBox(0);
-        Label title = new Label("Shippers billed, by division");
-        title.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
-        title.setPadding(new javafx.geometry.Insets(4, 0, 2, 0));
-        box.getChildren().add(title);
+        // Kept (KP4): a scope of its own, each shipper's row a scope keyed by the sector it bills, so a shipper that comes and goes takes its own nodes.
+        return Kept.scope("shippers", () -> {
+            VBox box = Kept.column(0);
+            Label title = Kept.label("Shippers billed, by division");
+            title.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+            title.setPadding(new javafx.geometry.Insets(4, 0, 2, 0));
+            box.getChildren().add(title);
 
-        Label shipper = new Label("Shipper");
-        shipper.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        Node[] heads = new Node[SHIPPER_HEADS.length];
-        for (int i = 0; i < heads.length; i++) {
-            Label h = new Label(SHIPPER_HEADS[i]);
-            h.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-            heads[i] = h;
-        }
-        box.getChildren().add(shipperRow(shipper, heads, "-fx-padding: 1 0 2 0; -fx-border-color: " + Palette.HAIRLINE
-                + "; -fx-border-width: 0 0 1 0;"));
+            box.getChildren().add(Kept.scope("heads", () -> {
+                Label shipper = Kept.label("Shipper");
+                shipper.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                Node[] heads = new Node[SHIPPER_HEADS.length];
+                for (int i = 0; i < heads.length; i++) {
+                    Label h = Kept.label(SHIPPER_HEADS[i]);
+                    h.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                    heads[i] = h;
+                }
+                return shipperRow(shipper, heads, "-fx-padding: 1 0 2 0; -fx-border-color: " + Palette.HAIRLINE
+                        + "; -fx-border-width: 0 0 1 0;");
+            }));
 
-        for (FreightView.Shipper s : v.shippers()) {
-            Sector sector = ui.game.getSectors().byKey(s.sector());
-            Label name = new Label((sector != null ? sector.label() : s.sector()) + (sector != null ? " ›" : ""));
-            name.setMinWidth(0);
-            Node[] cells = {
-                    shipperFigure(s.haulage(), sector, Palette.TEXT_BODY, SHIPPER_HEADS[0]),
-                    shipperFigure(s.rail(), sector, Palette.TEXT_BODY, SHIPPER_HEADS[1]),
-                    shipperFigure(s.handling(), sector, Palette.TEXT_BODY, SHIPPER_HEADS[2]),
-                    shipperFigure(s.total(), sector, Palette.TEXT_HEAD, "all that Freight billed it")};
-            name.setStyle(Palette.words(Palette.SIZE_CAPTION, sector != null ? Palette.ACCENT : Palette.TEXT_BODY)
-                    + (sector != null ? " -fx-cursor: hand;" : ""));
-            if (sector != null) {
-                name.setOnMouseClicked(e -> openInputLine(sector));
-                Tooltip.install(name, new Tooltip("Open " + sector.label() + "'s cost of sales: the lines Freight billed it."));
+            for (FreightView.Shipper s : v.shippers()) {
+                box.getChildren().add(Kept.scope("shipper:" + s.sector(), () -> {
+                    Sector sector = ui.game.getSectors().byKey(s.sector());
+                    Label name = Kept.label((sector != null ? sector.label() : s.sector()) + (sector != null ? " ›" : ""));
+                    name.setMinWidth(0);
+                    Node[] cells = {
+                            shipperFigure(s.haulage(), sector, Palette.TEXT_BODY, SHIPPER_HEADS[0]),
+                            shipperFigure(s.rail(), sector, Palette.TEXT_BODY, SHIPPER_HEADS[1]),
+                            shipperFigure(s.handling(), sector, Palette.TEXT_BODY, SHIPPER_HEADS[2]),
+                            shipperFigure(s.total(), sector, Palette.TEXT_HEAD, "all that Freight billed it")};
+                    name.setStyle(Palette.words(Palette.SIZE_CAPTION, sector != null ? Palette.ACCENT : Palette.TEXT_BODY)
+                            + (sector != null ? " -fx-cursor: hand;" : ""));
+                    // Set, not added: a kept name is handed back with no handler or tooltip (Kept), and given this draw's.
+                    if (sector != null) {
+                        name.setOnMouseClicked(e -> openInputLine(sector));
+                        Kept.tip(name, "Open " + sector.label() + "'s cost of sales: the lines Freight billed it.", 1000);
+                    }
+                    return shipperRow(name, cells, "-fx-padding: 1 0 1 0;");
+                }));
             }
-            box.getChildren().add(shipperRow(name, cells, "-fx-padding: 1 0 1 0;"));
-        }
 
-        // The footer is the pages' own totals (FreightView's), which the rows above add up to.
-        Label all = new Label("Billed in all");
-        all.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_HEAD));
-        box.getChildren().add(shipperRow(all, new Node[]{
-                shipperTotal(v.haulage().bill()), shipperTotal(v.rail().billed()),
-                shipperTotal(v.ports().handlingBilled()), shipperTotal(v.billed())},
-                "-fx-padding: 2 0 1 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;"));
-        box.getChildren().add(bookDetailNote("Largest bill first. Each name and figure opens that business's own Income "
-                + "page with its cost of sales open, where the same bill is a line. A dash is a division that "
-                + "billed it nothing."));
-        return box;
+            // The footer is the pages' own totals (FreightView's), which the rows above add up to.
+            box.getChildren().add(Kept.scope("footer", () -> {
+                Label all = Kept.label("Billed in all");
+                all.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_HEAD));
+                return shipperRow(all, new Node[]{
+                        shipperTotal(v.haulage().bill()), shipperTotal(v.rail().billed()),
+                        shipperTotal(v.ports().handlingBilled()), shipperTotal(v.billed())},
+                        "-fx-padding: 2 0 1 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;");
+            }));
+            box.getChildren().add(bookDetailNote("Largest bill first. Each name and figure opens that business's own Income "
+                    + "page with its cost of sales open, where the same bill is a line. A dash is a division that "
+                    + "billed it nothing."));
+            return box;
+        });
     }
 
     /** One row of the shippers table: its first column, then the figure columns at their width. */
     HBox shipperRow(Node first, Node[] cells, String style) {
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP, first, gap);
+        HBox row = Kept.row(Palette.GAP, first, gap);
         for (Node cell : cells) {
             if (cell instanceof Label l) {
                 l.setPrefWidth(SHIPPER_COLUMN);
@@ -1457,7 +1603,7 @@ final class SectorScreen {
 
     /** A footer figure of the shippers table. */
     Label shipperTotal(double amount) {
-        Label l = new Label(tightMoney(toDollars(amount), false));
+        Label l = Kept.label(tightMoney(toDollars(amount), false));
         l.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD));
         return l;
     }
@@ -1465,14 +1611,16 @@ final class SectorScreen {
     /** A shipper's figure for a division: a door to its input line, or a dash that opens nothing where the division billed it nothing. */
     Label shipperFigure(double amount, Sector sector, String tone, String word) {
         boolean billed = amount > 0;
-        Label l = new Label(billed ? tightMoney(toDollars(amount), false) : "—");
+        Label l = Kept.label(billed ? tightMoney(toDollars(amount), false) : "—");
         l.setStyle(Palette.figure(Palette.SIZE_CAPTION, billed ? tone : Palette.TEXT_MUTED)
                 + (billed && sector != null ? " -fx-cursor: hand;" : ""));
+        // Kept (KP4): the underline a hover gives is chosen from isHover() where it is set, and set on both sides.
+        l.setUnderline(billed && sector != null && l.isHover());
         if (billed && sector != null) {
             l.setOnMouseClicked(e -> openInputLine(sector));
             l.setOnMouseEntered(e -> l.setUnderline(true));
             l.setOnMouseExited(e -> l.setUnderline(false));
-            Tooltip.install(l, new Tooltip(sector.label() + ": " + word + ". Click for the line on its Income page."));
+            Kept.tip(l, sector.label() + ": " + word + ". Click for the line on its Income page.", 1000);
         }
         return l;
     }
@@ -1496,7 +1644,12 @@ final class SectorScreen {
      * the only screen that says which kilograms those were.
      */
     VBox inputsDetail(Sector sector) {
-        VBox box = new VBox(0);
+        // Kept (KP4): a scope of its own, each good's lines a scope keyed by the good.
+        return Kept.scope("inputsDetail", () -> inputsDetailOf(sector));
+    }
+
+    private VBox inputsDetailOf(Sector sector) {
+        VBox box = Kept.column(0);
         if (sector == null) return box;
         Sector.Statement st = sector.statement();
 
@@ -1521,15 +1674,17 @@ final class SectorScreen {
         for (java.util.Map.Entry<Good, Sector.Split> e : lines) {
             Sector.Split s = e.getValue();
             landed += s.abroad;
-            box.getChildren().add(bookDetailRow(e.getKey().label(), -s.total(), false));
-            if (s.atHome != 0 && s.abroad != 0) {
-                box.getChildren().add(bookDetailRow("from the city", -s.atHome, true));
-                box.getChildren().add(bookDetailRow("imported", -s.abroad, true));
-            } else if (s.abroad != 0) {
-                box.getChildren().add(bookDetailRow("all of it imported", -s.abroad, true));
-            } else {
-                box.getChildren().add(bookDetailRow("all of it from the city", -s.atHome, true));
-            }
+            Kept.scope(e.getKey().label(), () -> {
+                box.getChildren().add(bookDetailRow(e.getKey().label(), -s.total(), false));
+                if (s.atHome != 0 && s.abroad != 0) {
+                    box.getChildren().add(bookDetailRow("from the city", -s.atHome, true));
+                    box.getChildren().add(bookDetailRow("imported", -s.abroad, true));
+                } else if (s.abroad != 0) {
+                    box.getChildren().add(bookDetailRow("all of it imported", -s.abroad, true));
+                } else {
+                    box.getChildren().add(bookDetailRow("all of it from the city", -s.atHome, true));
+                }
+            });
         }
         /*
          * AND WHAT IS IN THIS LINE THAT IS NOT A GOOD, by name.
@@ -1545,7 +1700,9 @@ final class SectorScreen {
         double services = 0;
         for (java.util.Map.Entry<String, Double> e : sector.otherInputParts().entrySet()) {
             if (Math.abs(e.getValue()) < .0000005) continue;
-            box.getChildren().add(bookDetailRow(e.getKey(), -e.getValue(), false));
+            Kept.scope("part:" + e.getKey(), () -> {
+                box.getChildren().add(bookDetailRow(e.getKey(), -e.getValue(), false));
+            });
             services += e.getValue();
         }
         if (services != 0 && sector != ui.game.getSectors().freight()) {
@@ -1571,7 +1728,12 @@ final class SectorScreen {
 
     /** Wages by pay tier - which kind of worker this business is actually paying. */
     VBox wagesDetail(Sector sector) {
-        VBox box = new VBox(0);
+        // Kept (KP4): a scope of its own.
+        return Kept.scope("wagesDetail", () -> wagesDetailOf(sector));
+    }
+
+    private VBox wagesDetailOf(Sector sector) {
+        VBox box = Kept.column(0);
         if (sector == null) return box;
         double[] pay = sector.getStaffedPayrollPerType();
         // The posts the payroll is struck on: the builders' laid-off posts
@@ -1587,9 +1749,13 @@ final class SectorScreen {
         for (int i : order) {
             JobType job = JobType.values()[i];
             long n = posts != null && i < posts.length ? posts[i] : 0;
-            box.getChildren().add(bookDetailRow(
-                    n > 0 ? String.format("%s  (%d %s)", ui.buildScreen.jobLabel(job), n, n == 1 ? "post" : "posts")
-                          : ui.buildScreen.jobLabel(job), -pay[i], false));
+            // Kept (KP4): a tier's line is a scope keyed by the tier, so a tier that comes and goes takes its own nodes.
+            final double wage = pay[i];
+            Kept.scope("tier:" + job, () -> {
+                box.getChildren().add(bookDetailRow(
+                        n > 0 ? String.format("%s  (%d %s)", ui.buildScreen.jobLabel(job), n, n == 1 ? "post" : "posts")
+                              : ui.buildScreen.jobLabel(job), -wage, false));
+            });
         }
         /*
          * AND WHAT THE UNFILLED POSTS WOULD COST, when there are any. The
@@ -1632,7 +1798,12 @@ final class SectorScreen {
      * does not floor it, and neither does this.
      */
     VBox salesTaxDetail(Sector sector) {
-        VBox box = new VBox(0);
+        // Kept (KP4): a scope of its own.
+        return Kept.scope("salesTaxDetail", () -> salesTaxDetailOf(sector));
+    }
+
+    private VBox salesTaxDetailOf(Sector sector) {
+        VBox box = Kept.column(0);
         if (sector == null || ui.game == null) return box;
         SalesTaxLedger ledger = ui.game.getEconomyManager().getSalesTaxLedger();
         String key = sector.key();
@@ -1651,21 +1822,21 @@ final class SectorScreen {
          * rows reads as a screen that could not find the figures.
          */
         if (Math.abs(payable - importTax) >= .0000005) {
-            box.getChildren().add(bookDetailRow(
+            box.getChildren().add(Kept.scope("charged", () -> bookDetailRow(
                     String.format("Charged on %s sold here, at %.1f%%",
                             tightMoney(toDollars(taxable), false), rate * 100),
-                    -(payable - importTax), false));
+                    -(payable - importTax), false)));
         }
         if (Math.abs(importTax) >= .0000005) {
-            box.getChildren().add(bookDetailRow("Charged at the border on imports", -importTax, false));
+            box.getChildren().add(Kept.scope("border", () -> bookDetailRow("Charged at the border on imports", -importTax, false)));
         }
         if (Math.abs(credit) >= .0000005) {
-            box.getChildren().add(bookDetailRow("Credit for tax its suppliers remitted", credit, false));
+            box.getChildren().add(Kept.scope("credit", () -> bookDetailRow("Credit for tax its suppliers remitted", credit, false)));
         }
         if (zeroRated > 0) {
-            box.getChildren().add(bookDetailRow(
+            box.getChildren().add(Kept.scope("zero-rated", () -> bookDetailRow(
                     String.format("Zero-rated: %s shipped abroad",
-                            tightMoney(toDollars(zeroRated), false)), "—", false, null));
+                            tightMoney(toDollars(zeroRated), false)), "—", false, null)));
         }
         box.getChildren().add(bookDetailNote(payable - credit < 0
                 ? "The city owes this business tax this month rather than the other way round. "

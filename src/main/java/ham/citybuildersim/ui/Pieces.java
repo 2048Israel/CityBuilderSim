@@ -1078,6 +1078,10 @@ public final class Pieces {
         track.setStrokeWidth(stroke);
         double s = Double.isFinite(share) ? Math.max(0, Math.min(1, share)) : 0;
         javafx.scene.shape.Arc arc = Kept.of(javafx.scene.shape.Arc.class, javafx.scene.shape.Arc::new);
+        // Kept (KP4): a sweep SectorScreen.sweep() gave this arc at the last draw is stopped here, so a ring that does not sweep
+        // at this draw is left at the length set below (a ring that does is swept again after, from this length).
+        javafx.animation.Animation sweeping = Kept.animationOf(arc);
+        if (sweeping != null) sweeping.stop();
         arc.setCenterX(size / 2);
         arc.setCenterY(size / 2);
         arc.setRadiusX(r);
