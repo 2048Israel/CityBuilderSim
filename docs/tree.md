@@ -304,11 +304,19 @@ adds its line here, not in `CLAUDE.md`.
         EquipmentForms.java        R0c's shares set from the buildings still without the piece that ends
                                    each form (BuildingsStacks' unfitted counts, saved by template id),
                                    weighted by draw, land or truck room, only where a count is or was;
-                                   called where the Policy hears the month and again on a load (R1)
+                                   called where the Policy hears the month and again on a load (R1), and
+                                   since R1b once more right after the month's sites advance (at rest)
         EquipmentFit.java          the payback rule (research-design 2.2 steps 1-4) as each piece's verdict
                                    (FITTED, NOT_KNOWN, PAYS, NOT_YET) at the city's prices, the rate and
                                    hurdle of a building order of its whole cost, and the sector's rank by
-                                   earnings on cost; read on demand, never in the month (R1)
+                                   earnings on cost (R1); since R1b a new building's verdict and choose(),
+                                   a sector's next building against its best fitting in SpreadPlanner.best()
+        Fittings.java              the fittings on site (R1b): one job a building and a piece, worked by the
+                                   builders' crews after the repairs and before the sites, first ordered
+                                   first (Game.fit(), workTheFittings(), fitForCity()); saved
+        FittingCheck.java          R1b's fit acted on: the forms at rest and cleared, the 1900 founding, what
+                                   a new building comes with, the order ranked with the buildings, its money,
+                                   goods and work, one at a time, the depot's trucks, the player's Fit, the save
         EquipmentCheck.java        R1's equipment: the data read, none unfitted in a played city, the counts
                                    setting the forms and the save carrying them, the rule's arithmetic, the
                                    verdicts at the city's prices, and the verdict changing nothing

@@ -1,4 +1,4 @@
-# EquipmentCheck.java - 1,090 lines · 44 methods · 3 constants · harnesses
+# EquipmentCheck.java - 1,100 lines · 44 methods · 3 constants · harnesses
 
 `ham/citybuildersim/EquipmentCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -26,7 +26,8 @@
 >   6. THE COUNT FOLLOWS THE STACK: a count set above what stands is what stands; a scrapped building is an unfitted one first; a building
 >      finished (bought, increased, or built on site) leaves the count as it was
 >   7. THE SAVE: a city with none unfitted writes no key; a city with counts writes them by template id, and the one loaded from it has the
->      same counts and, before any month is played, the shares the counts set, equal to the saved city's
+>      same counts and, before any month is played, the shares the counts set, equal to the saved city's (no hand says the forms after the
+>      saved city's month: the month does, after its sites advance, R1b), and one more month on each leaves the shares equal
 > 
 > R1 slice B (EquipmentFit, research-design 2.2 steps 1 to 4: what a piece adds a month, what it costs, whether it pays over its life and
 > passes the money gate; each piece's verdict, read on demand, never in the month):
@@ -52,152 +53,154 @@
 
 **Uses:** [EquipmentFit](EquipmentFit.md) (158), [Game](Game.md) (50), [BuildingsStacks](BuildingsStacks.md) (27), [Good](Good.md) (27), [Equipment](Equipment.md) (22), [BuildingsTemplate](BuildingsTemplate.md) (17), [Sector](Sector.md) (13), [Haulage](Haulage.md) (12), [Forms1900Check](Forms1900Check.md) (11), [GameFiles](GameFiles.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [BuildAdvice](BuildAdvice.md) (5), [BuildingManager](BuildingManager.md) (4), [BuildingCatalog](BuildingCatalog.md) (2), [Agriculture](Agriculture.md) (2), [HydroSites](HydroSites.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [JobType](JobType.md) (2), [HaulageCheck](HaulageCheck.md) (1), [CityCalendar](CityCalendar.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Freight](Freight.md) (1)
 
+**Used by (1):** [FittingCheck](FittingCheck.md)
+
 ## Sections
 
 | line | section |
 |---:|---|
-| 108 | · the shares the counts should set, worked out here from the stacks and the templates |
-| 201 | 1. the data is read |
-| 368 | 2. a played city has none unfitted |
-| 385 | 3. the counts set the forms |
-| 426 | 4. back to 0 |
-| 449 | 5. a share set by hand stands |
-| 470 | 6. the count follows the stack |
-| 541 | 7. the save |
-| 608 | R1 slice B: the payback rule and each piece's verdict (EquipmentFit) |
-| 621 | 8. the rule's arithmetic |
-| 746 | 9. the steam verdict at the city's prices |
-| 861 | 10. the truck's, the tractor's and the rank |
-| 1029 | 11. the verdict changes nothing |
+| 109 | · the shares the counts should set, worked out here from the stacks and the templates |
+| 202 | 1. the data is read |
+| 369 | 2. a played city has none unfitted |
+| 386 | 3. the counts set the forms |
+| 427 | 4. back to 0 |
+| 450 | 5. a share set by hand stands |
+| 471 | 6. the count follows the stack |
+| 542 | 7. the save |
+| 618 | R1 slice B: the payback rule and each piece's verdict (EquipmentFit) |
+| 631 | 8. the rule's arithmetic |
+| 756 | 9. the steam verdict at the city's prices |
+| 871 | 10. the truck's, the tractor's and the rank |
+| 1039 | 11. the verdict changes nothing |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 79 | `EquipmentCheck.DRIVE` | `"electric-drive", TRUCK = "motor-truck", TRACTOR = "tractor"` |  |
-| 204 | `EquipmentCheck.DRIVES` | `{ "Meat Works", "Snack & Oils Plant", "Bottling Plant", "Industrial Bakery", ...` | The templates that carry each piece, by name, as the notes say (R1-notes calls 2 and 3). |
-| 210 | `EquipmentCheck.FARMS` | `{ "Mixed Farm", "Grain Farm", "Livestock Farm" }` |  |
+| 80 | `EquipmentCheck.DRIVE` | `"electric-drive", TRUCK = "motor-truck", TRACTOR = "tractor"` |  |
+| 205 | `EquipmentCheck.DRIVES` | `{ "Meat Works", "Snack & Oils Plant", "Bottling Plant", "Industrial Bakery", ...` | The templates that carry each piece, by name, as the notes say (R1-notes calls 2 and 3). |
+| 211 | `EquipmentCheck.FARMS` | `{ "Mixed Farm", "Grain Farm", "Livestock Farm" }` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 75 | `static int fails` |  |
-| 76 | `static PrintStream out` |  |
-| 77 | `static PrintStream quiet` |  |
+| 76 | `static int fails` |  |
+| 77 | `static PrintStream out` |  |
+| 78 | `static PrintStream quiet` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 1018 | **type** `public class EquipmentCheck` | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would earn and cost and whether it pays, read on demand. |
-| 81 | 4 | `static void check(String label, boolean ok, String detail)` |  |
-| 86 | 1 | `static void check(String label, boolean ok)` |  |
-| 89 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
-| 94 | 5 | `static void quietly(Runnable r)` |  |
-| 100 | 1 | `static void play(Game g, int months)` |  |
-| 102 | 1 | `static void step(Game g, int months)` |  |
-| 104 | 3 | `static BuildingsStacks stack(Game g, String template)` |  |
+| 74 | 1027 | **type** `public class EquipmentCheck` | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would earn and cost and whether it pays, read on demand. |
+| 82 | 4 | `static void check(String label, boolean ok, String detail)` |  |
+| 87 | 1 | `static void check(String label, boolean ok)` |  |
+| 90 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
+| 95 | 5 | `static void quietly(Runnable r)` |  |
+| 101 | 1 | `static void play(Game g, int months)` |  |
+| 103 | 1 | `static void step(Game g, int months)` |  |
+| 105 | 3 | `static BuildingsStacks stack(Game g, String template)` |  |
 
-### the shares the counts should set, worked out here from the stacks and the templates (lines 108-200)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 111 | 10 | `static double steamShare(Game g, String sectorKey)` | The unfitted part of a sector's grid draw: each stack's unfitted buildings (of the piece that ends the steam) at their electricity over all its buildings' at theirs. |
-| 123 | 10 | `static double farmShare(Game g)` | The unfitted part of the farms' land. |
-| 135 | 10 | `static double cartShare(Game g)` | The unfitted part of the depots' truck room. |
-| 147 | 4 | `static boolean anyUnfitted(Game g)` | Whether any stack of the city is without any piece. |
-| 153 | 5 | `static double maxSteam(Game g)` | The largest steam share any sector has. |
-| 160 | 5 | `static double maxSteamExcept(Game g, String key)` | The largest steam share any sector has but the one named. |
-| 166 | 27 | `public static void main(String[] args) throws Exception` |  |
-| 195 | 5 | `static Game cartTown(String label)` | HaulageCheck's city on the goods' literals, with two Truck Depots standing (Haulage's carts are the depots' trucks). |
-
-### 1. the data is read (lines 201-367)
+### the shares the counts should set, worked out here from the stacks and the templates (lines 109-201)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 213 | 7 | `static JsonObject jsonPiece(JsonObject building, String pieceId)` | The piece of this id as the file says it, on the building of this id, or null. |
-| 221 | 146 | `static void sectionOne() throws Exception` |  |
+| 112 | 10 | `static double steamShare(Game g, String sectorKey)` | The unfitted part of a sector's grid draw: each stack's unfitted buildings (of the piece that ends the steam) at their electricity over all its buildings' at theirs. |
+| 124 | 10 | `static double farmShare(Game g)` | The unfitted part of the farms' land. |
+| 136 | 10 | `static double cartShare(Game g)` | The unfitted part of the depots' truck room. |
+| 148 | 4 | `static boolean anyUnfitted(Game g)` | Whether any stack of the city is without any piece. |
+| 154 | 5 | `static double maxSteam(Game g)` | The largest steam share any sector has. |
+| 161 | 5 | `static double maxSteamExcept(Game g, String key)` | The largest steam share any sector has but the one named. |
+| 167 | 27 | `public static void main(String[] args) throws Exception` |  |
+| 196 | 5 | `static Game cartTown(String label)` | HaulageCheck's city on the goods' literals, with two Truck Depots standing (Haulage's carts are the depots' trucks). |
 
-### 2. a played city has none unfitted (lines 368-384)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 370 | 14 | `static void sectionTwo(Game g)` |  |
-
-### 3. the counts set the forms (lines 385-425)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 387 | 38 | `static void sectionThree(Game g, Game c)` |  |
-
-### 4. back to 0 (lines 426-448)
+### 1. the data is read (lines 202-368)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 428 | 20 | `static void sectionFour(Game g, Game c)` |  |
+| 214 | 7 | `static JsonObject jsonPiece(JsonObject building, String pieceId)` | The piece of this id as the file says it, on the building of this id, or null. |
+| 222 | 146 | `static void sectionOne() throws Exception` |  |
 
-### 5. a share set by hand stands (lines 449-469)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 451 | 18 | `static void sectionFive(Game g)` |  |
-
-### 6. the count follows the stack (lines 470-540)
+### 2. a played city has none unfitted (lines 369-385)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 472 | 52 | `static void sectionSix(Game g)` |  |
-| 526 | 5 | `static GameFiles.Result save(Game g, String name)` | A city saved to slot 1 of its own scratch folder, quietly (never a real slot: the game was made with GameFiles.scratch()). |
-| 532 | 8 | `static boolean throwsOnPut(BuildingsStacks s)` |  |
+| 371 | 14 | `static void sectionTwo(Game g)` |  |
 
-### 7. the save (lines 541-607)
+### 3. the counts set the forms (lines 386-426)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 543 | 64 | `static void sectionSeven(Game g, Game none)` |  |
+| 388 | 38 | `static void sectionThree(Game g, Game c)` |  |
 
-### R1 slice B: the payback rule and each piece's verdict (EquipmentFit) (lines 608-620)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 611 | 1 | `static double cityPrice(Game g, Good good)` | The city's price of a good, as the planners read it. |
-| 614 | 3 | `static Equipment piece(String since, Equipment.Form ends, Map<Good, Double> buys, double work, int life)` | A piece for a pure-core fixture: it buys what it is given, its work and its life are the figures asked about. |
-| 619 | 1 | `static int yearOf(Game g)` | The year a game's month is in, as the verdict reads it. |
-
-### 8. the rule's arithmetic (lines 621-745)
+### 4. back to 0 (lines 427-449)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 623 | 122 | `static void sectionEight(Game g)` |  |
+| 429 | 20 | `static void sectionFour(Game g, Game c)` |  |
 
-### 9. the steam verdict at the city's prices (lines 746-860)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 749 | 16 | `static boolean priceCoalAt(Game g, double target)` | Moves the city's price of coal to `target`, by the world's prices on its market: the price planners read (cityValue()) is affine in them, found from two probes and refined; false if it will not move. |
-| 767 | 1 | `static double gainNeeded(EquipmentFit.Verdict v)` | The gain a verdict's piece needs to pay: the greater of the line (cost over factor) and the hurdle. |
-| 770 | 3 | `static double breakEvenCoal(Game g, BuildingsTemplate t, EquipmentFit.Verdict v)` | The coal price at which a drive on this building just pays, from a verdict's own figures. |
-| 774 | 86 | `static void sectionNine(Game g)` |  |
-
-### 10. the truck's, the tractor's and the rank (lines 861-1028)
+### 5. a share set by hand stands (lines 450-470)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 864 | 12 | `static List<EquipmentFit.Verdict> payingPieces(Game g, Sector sector)` | The harness's own list of the pieces that pay on a sector's stacks, from verdict() alone, in the order it comes. |
-| 877 | 114 | `static void sectionTen(Game g, Game c)` |  |
-| 993 | 5 | `static List<String> rankIds(Game g, Sector s)` | The ids of a sector's ranked verdicts, template and piece: for a failure's detail. |
-| 1000 | 3 | `static EquipmentFit.Verdict fixed(int templateId, String pieceId, double earningsOnCost)` | A verdict that pays, with the figures a ranking reads: its template, piece and earnings on cost. |
-| 1004 | 5 | `static EquipmentFit.Verdict sortedFirst(List<EquipmentFit.Verdict> list)` |  |
-| 1011 | 5 | `static<T> List<List<T>> permutations(List<T> items)` | Every order a list of distinct items can come in. |
-| 1017 | 11 | `private static<T> void permute(List<T> items, int k, List<List<T>> all)` |  |
+| 452 | 18 | `static void sectionFive(Game g)` |  |
 
-### 11. the verdict changes nothing (lines 1029-1090)
+### 6. the count follows the stack (lines 471-541)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1032 | 6 | `static void askEverything(Game g)` | Asks the city every verdict and every rank there is: each piece of each stack, fitted or not, and each sector's ranking. |
-| 1040 | 11 | `static String formsAndCounts(Game g)` | The shares and counts the forms and the stacks hold, as text: for the twins' comparison beside Forms1900Check's snapshot. |
-| 1053 | 12 | `static String twinsAfter(Game asked, Game left, int months, boolean carts)` | Plays two twin cities for `months` (the cart towns by toggleNextMonth, the others by simulateMonths, as their sections do), asking the first everything before and after each month; the first month they differ in, or n... |
-| 1066 | 24 | `static void sectionEleven()` |  |
+| 473 | 52 | `static void sectionSix(Game g)` |  |
+| 527 | 5 | `static GameFiles.Result save(Game g, String name)` | A city saved to slot 1 of its own scratch folder, quietly (never a real slot: the game was made with GameFiles.scratch()). |
+| 533 | 8 | `static boolean throwsOnPut(BuildingsStacks s)` |  |
+
+### 7. the save (lines 542-617)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 544 | 73 | `static void sectionSeven(Game g, Game none)` |  |
+
+### R1 slice B: the payback rule and each piece's verdict (EquipmentFit) (lines 618-630)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 621 | 1 | `static double cityPrice(Game g, Good good)` | The city's price of a good, as the planners read it. |
+| 624 | 3 | `static Equipment piece(String since, Equipment.Form ends, Map<Good, Double> buys, double work, int life)` | A piece for a pure-core fixture: it buys what it is given, its work and its life are the figures asked about. |
+| 629 | 1 | `static int yearOf(Game g)` | The year a game's month is in, as the verdict reads it. |
+
+### 8. the rule's arithmetic (lines 631-755)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 633 | 122 | `static void sectionEight(Game g)` |  |
+
+### 9. the steam verdict at the city's prices (lines 756-870)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 759 | 16 | `static boolean priceCoalAt(Game g, double target)` | Moves the city's price of coal to `target`, by the world's prices on its market: the price planners read (cityValue()) is affine in them, found from two probes and refined; false if it will not move. |
+| 777 | 1 | `static double gainNeeded(EquipmentFit.Verdict v)` | The gain a verdict's piece needs to pay: the greater of the line (cost over factor) and the hurdle. |
+| 780 | 3 | `static double breakEvenCoal(Game g, BuildingsTemplate t, EquipmentFit.Verdict v)` | The coal price at which a drive on this building just pays, from a verdict's own figures. |
+| 784 | 86 | `static void sectionNine(Game g)` |  |
+
+### 10. the truck's, the tractor's and the rank (lines 871-1038)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 874 | 12 | `static List<EquipmentFit.Verdict> payingPieces(Game g, Sector sector)` | The harness's own list of the pieces that pay on a sector's stacks, from verdict() alone, in the order it comes. |
+| 887 | 114 | `static void sectionTen(Game g, Game c)` |  |
+| 1003 | 5 | `static List<String> rankIds(Game g, Sector s)` | The ids of a sector's ranked verdicts, template and piece: for a failure's detail. |
+| 1010 | 3 | `static EquipmentFit.Verdict fixed(int templateId, String pieceId, double earningsOnCost)` | A verdict that pays, with the figures a ranking reads: its template, piece and earnings on cost. |
+| 1014 | 5 | `static EquipmentFit.Verdict sortedFirst(List<EquipmentFit.Verdict> list)` |  |
+| 1021 | 5 | `static<T> List<List<T>> permutations(List<T> items)` | Every order a list of distinct items can come in. |
+| 1027 | 11 | `private static<T> void permute(List<T> items, int k, List<List<T>> all)` |  |
+
+### 11. the verdict changes nothing (lines 1039-1100)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1042 | 6 | `static void askEverything(Game g)` | Asks the city every verdict and every rank there is: each piece of each stack, fitted or not, and each sector's ranking. |
+| 1050 | 11 | `static String formsAndCounts(Game g)` | The shares and counts the forms and the stacks hold, as text: for the twins' comparison beside Forms1900Check's snapshot. |
+| 1063 | 12 | `static String twinsAfter(Game asked, Game left, int months, boolean carts)` | Plays two twin cities for `months` (the cart towns by toggleNextMonth, the others by simulateMonths, as their sections do), asking the first everything before and after each month; the first month they differ in, or n... |
+| 1076 | 24 | `static void sectionEleven()` |  |
 
