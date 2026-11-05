@@ -1,6 +1,7 @@
 package ham.citybuildersim.sectors;
 
 import ham.citybuildersim.BuildingType;
+import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.EconomyManager;
 import ham.citybuildersim.Formats;
@@ -508,5 +509,27 @@ public final class Agriculture extends Sector {
             capacity += getCapacity(g) * floor;
         }
         return new double[] { demand, capacity };
+    }
+
+    /**
+     * What one building contributes to the measure above: its harvest, each good valued at that good's export floor - one building's share of
+     * the capacity figure retirementDemandAndCapacity() adds up, in the same money.
+     *
+     * WHY. The measure was put into money (the five goods are in two units) and this stayed Sector's tonnes of crops, so
+     * BusinessInvestment.planRetirement() divided dollars by tonnes. Dollars scale with PriceLevel.FACTOR (0.0259 at the founding, 1 at today's prices)
+     * and tonnes do not, so at the founding's level no farm ever retired and at today's one did: PriceLevelCheck's played city (section 8) parted
+     * from its twin on a farm sold at one level and kept at the other (R0, 2026-11-04, measured). Counted in the measure's own unit the quotient is the
+     * same at every level (RT1).
+     */
+    @Override
+    public double unitsOf(BuildingsTemplate t) {
+        if (t == null || markets == null) return 0;
+        double worth = 0;
+        for (Good g : goodsMade()) {
+            double floor = Math.max(0, markets.get(g).netExportPrice());
+            if (floor <= 0) continue;
+            worth += t.makes(g) * floor;
+        }
+        return worth;
     }
 }

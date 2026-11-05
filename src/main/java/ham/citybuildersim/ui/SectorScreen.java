@@ -3108,7 +3108,22 @@ final class SectorScreen {
         SectorStatements.Table t = incomeTable(sector, now, then);
         java.util.Set<String> open = linesOpen(sector);
         boolean millions = SectorStatements.inMillions(t);
-        java.util.function.IntFunction<Node> notes = n -> switch (n) {
+        java.util.function.IntFunction<Node> notes = incomeNotes(sector, t, millions);
+        StatementView.Columns c = columns("of revenue");
+        // Kept (KP4): the statement and its ratios are a scope of their own, so nothing else on the page shifts their nodes.
+        page.getChildren().add(Kept.scope("statement", () -> {
+            VBox table = StatementView.table(t, INCOME, "this month", "last month", c, now.revenue(), then.revenue(), open,
+                    notes, id -> incomeInfo(id, now), ui::redraw);
+            VBox card = StatementView.card(StatementView.titleBlock(sector.label(), t.title() + " · "
+                            + sector.statementFormat().word.toLowerCase(), period(now), millions),
+                    toolbar(t, INCOME, c, open, notes), table);
+            return StatementView.beside(card, incomeRatios(sector, t, now));
+        }));
+    }
+
+    /** What each note of a business's income statement opens on, by its number (null for a number it has none). */
+    java.util.function.IntFunction<Node> incomeNotes(Sector sector, SectorStatements.Table t, boolean millions) {
+        return n -> switch (n) {
             case 1 -> revenueDetail(sector);
             case 2 -> salesTaxDetail(sector);
             case 3 -> inputsDetail(sector);
@@ -3122,16 +3137,6 @@ final class SectorScreen {
             case SectorStatements.OUTSIDE_NOTE -> StatementView.noteSentence(OUTSIDE_INFO);
             default -> null;
         };
-        StatementView.Columns c = columns("of revenue");
-        // Kept (KP4): the statement and its ratios are a scope of their own, so nothing else on the page shifts their nodes.
-        page.getChildren().add(Kept.scope("statement", () -> {
-            VBox table = StatementView.table(t, INCOME, "this month", "last month", c, now.revenue(), then.revenue(), open,
-                    notes, id -> incomeInfo(id, now), ui::redraw);
-            VBox card = StatementView.card(StatementView.titleBlock(sector.label(), t.title() + " · "
-                            + sector.statementFormat().word.toLowerCase(), period(now), millions),
-                    toolbar(t, INCOME, c, open, notes), table);
-            return StatementView.beside(card, incomeRatios(sector, t, now));
-        }));
     }
 
     /** An income statement row's (i), by id. */

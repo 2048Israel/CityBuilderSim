@@ -95,15 +95,19 @@ public class PriceLevelCheck {
 
     /**
      * ...and the played city's: past its demolition (PLAYED_DEMOLITION), its iron mine (PLAYED_IRON) and the land the advisor keeps buying ahead
-     * of the city (month 96 was the first to part), to month 105 - ten years until EP1 merged IC1, when the played city became another and
+     * of the city (month 96 was the first to part), to month 103 (105 until RT1, below) - ten years until EP1 merged IC1, when the played city became another and
      * parted from its twin at month 106 by a rounding tie, not a missed price (EP1's notes, "PriceLevelCheck 8, traced"): a household cell's
      * count is 1e-16 at one level and 0 at the other from month 104, 70 cells move by a fraction of a household at 106 with people, homes and
      * stores equal to the person; the factor nudged by 1e-12 either way runs equal to today's for 120 months, and today's own nudged to
      * 1.0000001 parts from 1 at the same month with the same two values. A twin cannot hold two draws equal, so the horizon stops before it,
      * as TOWN_MONTHS does. When a later batch parts this city earlier, nudge the factor by 1e-12 first: a parting the nudge moves is a tie
-     * (the horizon goes to the month before it), one it does not move is a price the factor missed (mend it).
+     * (the horizon goes to the month before it), one it does not move is a price the factor missed (mend it). RT1 (2026-11-05) did both: with a
+     * farm counted in money (Agriculture.unitsOf()) one retires at the factor as at today's prices, and the city first parted at month 70, on a
+     * businesses' holding of a city bond left 4.4e-16 at today's prices and none at the factor (a sale struck pro rata an ulp short), which the
+     * nudge did not move: mended in Debt.moved(). Then at month 104 in Manufacturing's cash by 4.9e-9, where the factor nudged by 1e-12 parts
+     * from the factor by 3.5e-9 and today's nudged from today's by 2.1e-9: a tie (the bond search's stop, BS1). So to month 103.
      */
-    static final int PLAYED_MONTHS = 105;
+    static final int PLAYED_MONTHS = 103;
 
     /** The month the played city pulls down ten houses: month 60, as when the horizon was 120 months and the demolition its half. */
     static final int PLAYED_DEMOLITION = 60;
