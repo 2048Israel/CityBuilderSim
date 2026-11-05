@@ -91,6 +91,15 @@ R1-notes §1's third part (research-design §2.1, research-1900 §3):
     and tractor); the Hulett, built into the dock, a tenth of the points and
     four 800 t machines (est.). Every figure est.; R1d judges them on a 1900
     city.
+11. **★ Ship at 23/26, A3 short in two seeds' tails.** The farms' fuel is the
+    one thing that moves a played city, and the ensemble on it (§5) keeps the
+    baseline's median deflation spell (4 months) and improves A2, S1 and the
+    final city, while two seeds of sixteen hold yoy under -10% for 12 and 15
+    months in a young city's slump (m700-900), against 0.9.19's longest of 8.
+    Recommended: ship, as 0.9.13 shipped "A3 misses by a month in one seed";
+    the other way, the fuel left out until R1d (two keys a farm and
+    Agriculture's two lines), keeps today's farm buying nothing to run its
+    machines.
 
 ## 3. The recipes, row by row
 
@@ -135,3 +144,69 @@ The weakest: steel's labour, the by-product ovens' and the open hearth's
 capital (no source priced them by the tonne), the coal cutter's price and
 power, sulphite's chemicals and steam. R1d, which runs a 1900 city, is the
 first to weigh any of them.
+
+## 4. Slices
+
+| slice | what | state |
+|---|---|---|
+| A | `Recipe`, `Recipes`, the catalogue's `recipes`, the template's live figures (`runRecipes()`), the choice in a 1900 city only, the save, EquipmentFit's gain for a recipe piece; `RecipeCheck` 1-8 | 564bc2c6 |
+| data | the rows of §3 and the farms' fuel, by this session (`buildings.json`, the built-in farms, `Agriculture` declaring DIESEL and PETROL) | 6c34f632 |
+| B | `RecipeCheck` 9 (the shipped rows), EquipmentCheck and FittingCheck on them | c10c6134 |
+
+A and B drafted by Sonnet 5.5 at xhigh, reviewed here. What the reviews
+changed and what the slices found:
+
+- **Every recipe's goods are declared at once in a 1900 city.** The slice
+  declared a recipe's new goods (sulphite's coal for Wood Products) when it
+  first ran, as R0c declares the horses' crops; a declaration is never
+  undone, so a city played straight would carry every good any month had run
+  and its reloaded twin only those of the choices it restored. Declared from
+  the template's list, both hold the same set. A default city declares none.
+- **A WHY paragraph quoted Jerus with words he never wrote**; replaced with
+  his line research-design §2.1 records ("Recipes are free to upgrade
+  immediately.").
+- **The live maps are swapped, not refilled**, and `volatile`: a screen on
+  the FX thread iterating `goodsMade()` keeps the map it was given while the
+  month's thread sets the next (`pick.sh` asks the gate's threading review).
+- **FittingCheck 4 met the 1900 village ordering a Pulp Mill.** Its two
+  Bakeries cost 968 against the default village's 609: not a cost leak (the
+  cash cost and the materials are the same figure) but the 1900 village's
+  Wood Products, unheld, putting up a Pulp Mill on groundwood, which pays
+  there, so 101,384 points sit in the builders' queue against 774 and the
+  order is priced at 1.75 times. The fixture now holds each city's charge to
+  the model's quote and the template's cost to the same figure in both.
+
+### Found: groundwood always beats kraft (for R1d)
+
+At the fixture town's prices the Pulp Mill's groundwood earns 106.8 a month
+against kraft's 90.6 even in 1907, when kraft is known: it needs half the
+wood a tonne and `PULP` is one good, so nothing prices groundwood's weaker
+fibre (newsprint, not kraft paper or board). A 1900 city's mills stay on
+groundwood and its sulphite never runs, and its Wood Products orders Pulp
+Mills where the default city does not. R1d, which plays a 1900 city, decides:
+a second pulp good, or groundwood's market share capped (Canada's 1916 mix:
+64% groundwood, 28% sulphite, 8% sulphate [J]).
+
+Also seen there: at month 1 the wage rates are 0, so the cutter's and the
+drills' gain is 0 and the shovel's below it (the labour market has not
+struck a wage yet); by month 7 every piece pays but the rotary kiln (5.14
+against a 5.16 hurdle). Every steel-shop recipe loses money at the village's
+prices (the open hearth -355 a month): no village builds one.
+
+## 5. Checks
+
+- **The trace.** The default playtest (2,405 months) traced on R1b's tip
+  (998097e5) and on slice A merged with it (644345aa), each built apart and
+  run back to back: all eight CSVs byte-identical, the log but for "in
+  88s"/"in 85s" and the layout windows' "5.2 s"/"4.4 s". Slice A changes
+  nothing in a city founded the default way. On the data commit (6c34f632)
+  every CSV moves: the farms buy their fuel.
+- **The ensemble** (`tools/ensemble/ensemble.sh R1c`, 80 runs on 6c34f632,
+  14.7 min, against 0.9.19's): **23/26 against 24/26**, as
+  `docs/ensemble/R1c.md`. A2 and S1 fail as 0.9.19's do and both improve
+  (A2's spell 16 months [10 to 36] against 18 [10 to 37]; S1 2.14% against
+  2.54%); the final city is 602,188 against 578,707. **A3 is new**: its
+  median deflation spell is 4 months as before, but two seeds of sixteen run
+  under -10% a year for 12 and 15 months (seed 5 to m738; seed 8 to m876,
+  where unemployment goes from 27% to 60% in a young city's slump), against
+  0.9.19's longest of 8. ★11 below.

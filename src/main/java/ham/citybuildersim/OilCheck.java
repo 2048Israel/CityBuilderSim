@@ -1369,7 +1369,7 @@ public class OilCheck {
         Refining refiners = g.getSectors().refining();
         double worstAudit = 0, worstImports = 0, worstDomestic = 0, worstGoods = 0, writtenOff = 0, shipped = 0, idled = 0;
         double ran = 0, made = 0, idledAll = 0;
-        int months = 24, withImports = 0, withDomestic = 0, refusedByWhole = 0;
+        int months = 24, withImports = 0, withDomestic = 0, withOthers = 0, refusedByWhole = 0;
         int exportBoundMonths = 0;
         boolean exportedHoldsExportBound = true;
         boolean toTheLine = true;
@@ -1423,7 +1423,15 @@ public class OilCheck {
             if (domestic > 0) withDomestic++;
             Sector.Split sold = pump.statement().sold.getOrDefault(Good.PETROL, new Sector.Split());
             Sector.Split refined = refiners.statement().sold.getOrDefault(Good.PETROL, new Sector.Split());
-            worstDomestic = Math.max(worstDomestic, (Math.abs(refined.atHome - domestic)
+            // ...and the petrol the other sectors buy at home (R1c: the farms' tractors, from the refiners as a works buys its feed, not at
+            // the forecourts): the refiners' home sales are the forecourts' purchase and theirs, and the drivers' bill the forecourts' sale.
+            double others = 0;
+            for (Sector s : g.getSectors().all()) {
+                if (s == pump || s == refiners) continue;
+                others += s.statement().bought.getOrDefault(Good.PETROL, new Sector.Split()).atHome;
+            }
+            if (others > 0) withOthers++;
+            worstDomestic = Math.max(worstDomestic, (Math.abs(refined.atHome - domestic - others)
                     + Math.abs(refiners.statement().salesToHouseholds) + Math.abs(sold.atHome - g.getHouseholdFuel()))
                     / Math.max(1, g.getHouseholdFuel()));
             Sectors.TradeByGood goods = g.getTradeByGood();
@@ -1476,8 +1484,11 @@ public class OilCheck {
                 idledAll == 0 && ran > 0 && Math.abs(made - ran) <= 1e-12 * ran,
                 String.format("%,.0f L of the run's %,.0f made or shipped, %,.0f idled", made, ran, idledAll));
         report("...and the domestic part is on Refining's statement, its sales to the forecourts (to the households until"
-                        + " 0.7.83), and the drivers' bill Retail's sale of petrol to them", worstDomestic < 1e-9,
+                        + " 0.7.83) and to the sectors that buy petrol at home (the farms, since R1c), and the drivers' bill Retail's"
+                        + " sale of petrol to them", worstDomestic < 1e-9,
                 String.format("worst %.2e of the bill", worstDomestic));
+        report("fixture: ...and another sector than the forecourts bought petrol at home in some of the months (the farms' tractors, R1c),"
+                + " so the refiners' home sales are more than the forecourts'", withOthers > 0, withOthers + " of " + months);
         report("...and the goods, fuel among them, foot to the balance of payments' imports", worstGoods < 1e-9,
                 String.format("worst %.2e", worstGoods));
         report("the litres shipped are the rows' exported, the export-bound among them (Sector.produceStock() books them"
