@@ -132,6 +132,7 @@ stuff".
 | R0e | Research: the household's basket by year - 1900's raw staples, lamp oil and coal, no car (after R0c's goods, and on the live demand path, not the shadow basket) | [research-1900 §4, §5.4](docs/studies/research-1900.md#54-what-batch-r0-needs-the-first-studys-q1-now-for-1900) |
 | R0f | Research: Money on Canada's dates - the D$ on gold to Aug 1914 and Jul 1926-1931, the Advance Rate opening the policy rate in Aug 1914, the Bank of Canada the rest of Money in Mar 1935 (`PolicyDates.POLICY_RATE`, `CENTRAL_BANK`); after GD2 and FM1 | [research-1900 §7.2](docs/studies/research-1900.md#72-the-recommendation), [GD0](docs/studies/spec-gold-money.md) |
 | OH1 | The orphans' shares in a move: `HouseholdBalance.moveStock()` (lines 1535-1544) puts a shrinking cell's stock in its row's pool but weighs its loss by `abs(delta) x grownUps()`, 0 for a cell of orphans, so their shares go to no cell and are not counted as leaving - the register short (ShortSellingCheck 7 on R0b's city: Real Estate 0.004616 shares at m83); weigh an orphan cell by its people, or hand its stock on as the cell that holds them, mending R0b-S | [R0b notes §6](docs/queue/R0b-notes.md) |
+| R0g | The causes of death, R0b's review follow-ups: a reload mid-influenza played on against an unbroken run; the fixtures' influenza hold lost on load (`loadGameSave` makes a new `Health`); CentralBankCheck's very strict twin at -4.28% on 1900's deaths measured over CB1's shapes | [R0g](docs/queue/R0g.md) |
 
 ## Pending
 
