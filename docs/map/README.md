@@ -4,7 +4,7 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 504 files, 548,879 lines, 23,708 methods, 5,344 constants. `GameVersion.VERSION` is "0.9.18", `SAVE_FORMAT` 50.
+**The tree:** 504 files, 549,222 lines, 23,728 methods, 5,344 constants. `GameVersion.VERSION` is "0.9.18", `SAVE_FORMAT` 50.
 
 ## model (238 files)
 
@@ -321,7 +321,7 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ReplayGraphLayer.java](ReplayGraphLayer.md) | 194 | 8 | The faint GDP and population lines behind the city in a replay (TR1, 2026-10-31): one mouse-transparent canvas laid over the window's content and u... | 1 |
 | [ReplayMode.java](ReplayMode.md) | 988 | 46 | Replay mode (TR1, 2026-10-31): a recorded city (Recording) shown on a throwaway copy of it (ReplayCity) in the game's own window, with a time bar a... | 4 |
 | [ReplayMoveProbe.java](ReplayMoveProbe.md) | 876 | 32 | What a replay's camera moves show unpainted, measured: it opens the real window full screen on a recorded city in replay mode, runs the seven moves... | 1 |
-| [SectorScreen.java](SectorScreen.md) | 6,662 | 260 | The sector economy: every business in the city as a card, and each one's five pages - what goes in and what comes out, the income statement with la... | 7 |
+| [SectorScreen.java](SectorScreen.md) | 7,005 | 280 | The sector economy: every business in the city as a card, and each one's five pages - what goes in and what comes out, the income statement with la... | 7 |
 | [ServicesScreen.java](ServicesScreen.md) | 3,446 | 134 | The services tab: the four systems the city runs for its people - health, education, utilities and safety - each opening on an Overview whose one p... | 5 |
 | [Statement.java](Statement.md) | 510 | 24 | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages and the bank... | 29 |
 | [StatementView.java](StatementView.md) | 638 | 39 | A formal statement on the page (0.7.74): SectorStatements' rows set as an accountant sets them - a title block, the columns (note, this month, last... | 2 |
