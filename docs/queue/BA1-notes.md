@@ -1,6 +1,32 @@
 # BA1 - Every business may build ahead ({next}, 2026-11-03)
 
-**WHERE IT STANDS (2026-11-04, 21:20): ready, the ship file pushed.**
+**WHERE IT STANDS (2026-11-04, 22:45): the gate stopped at 22:00; the ship file is off.**
+- **The gate's five NEW reds** (lines `--pick` did not run; Jerus's two named lines passed). Each was switched for the
+  three rounding edges and the brake:
+  - **HouseholdMemoryCheck 7, mended (fixture):** "the month after, both cities hold the same households", 4.03
+    against 0. Its city is founded by `addStack()`, which allocates no land, and a load derives the allocation from
+    the buildings. So the loaded twin had 6,290,000 sq ft (the fixture's buildings, exactly) less free ground: 525,192
+    free live, none loaded. On BA1's path the city is short of ground by month 36, and the twins' planners parted on it
+    ("no land - 0 m2 free" in the loaded one only). The fixture now hands the city that ground and allocates it.
+  - **DeathRecordCheck, the cause traced; outside BA1's diff, to pass by name** under Jerus's standing word, with OR1
+    queued. The line is "the orphan section does not fill behind it, in any month of the two years": 52.35 against
+    the mill-open twin's 41.41, with an allowance of 1.
+    - The cause is not the closing itself. On BA1's path build-ahead's plants open within the two years: jobs rise
+      by 372 at month 1 and 464 at month 4, in both twins. Each time, the adults at home are hired and their
+      households re-form, and the family builder's throttle leaves about one child in seven out (FamilyModel, "AND
+      THE CHILDREN THE BUILDER LEAVES OUT"; Jerus: "they're the orphans").
+    - The outside dependants fall from 434 to 256 and from 246 to 24, and the orphans jump by 27 and 26 (the twin's
+      by 27 and 19), then decay about 1.5 a month.
+    - The closing's twin had more adults at home to re-form, so more orphans. The 2026-09-15 fix keeps children with
+      an adult who leaves work; an adult hired back is the case it does not cover.
+  - **CurrencyRegimeCheck (3, 5, 9, 10, 12, 13), PassThroughCheck 4, CapitalFlowCheck:** fixtures on BA1's path (red
+    from their fixture lines on). The first and the last are red with the brake off as well. A Sonnet slice is on
+    them. CurrencyRegimeCheck 9's identity (the vault's record, -117.69 against 0) is to be judged once its fixture
+    holds.
+- Next: the slice's mends reviewed, the full suite on the world files (`AllChecks -f`, not `--pick`), then the ship
+  file, its changelog naming the three lines passed by name.
+
+**WHERE IT STOOD (2026-11-04, 21:20): ready, the ship file pushed.**
 1. On main at 52b19f18 (CM1 0.9.11 merged in). The brake is dear contracts (section 1, ★), with three rounding edges
    closed since the morning (item 3). The model is final.
 2. **The ensemble on the final model** (`docs/ensemble/BA1.md`, run BA1d on ab5f3f41): **24/26 against 0.9.6's 22/26**.
