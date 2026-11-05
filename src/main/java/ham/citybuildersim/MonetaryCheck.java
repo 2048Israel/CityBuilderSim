@@ -865,8 +865,10 @@ public class MonetaryCheck {
             // WN3: on the literals, see founding(). R0b call 7: and the causes of 1900 held off, before a month: the rows' premise is a steady
             // town (the founding's builders and its hospital keep every crew on, MEASUREMENT_NOISE is how far two readings of it can differ),
             // sized on today's deaths; on 1900's causes the town was not steady: the same rows held a month late differed by 0.498 and 0.618
-            // points at 20% and 40% (0.100 allowed), with the crews all on.
-            Game g = founding(root, label, true, true);
+            // points at 20% and 40% (0.100 allowed), with the crews all on. RT1 (2026-11-05): and the farms held: with a farm counted in money the
+            // spare-capacity rule sells one of the town's two at month 41, the town outgrows the other, and the 20% rows held a month apart differed
+            // by 0.172 points; held, the farms are the fixture's two.
+            Game g = founding(root, label, true, true, Sectors.AGRICULTURE);
             if (print != null) System.arraycopy(fingerprint(g), 0, print, 0, print.length);
             double indexFrom = g.getPriceIndex().getIndex();
             while (g.getMonth() <= MEASURED_MONTHS) {
