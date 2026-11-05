@@ -408,6 +408,8 @@ public class LongPlaytest {
         houseReasons.merge(houseReason(g.getLastInvestment(g.getSectors().realEstate().key())), 1, Integer::sum);
     }
     static int salvageBuildingsDistress, salvageBuildingsSpare;
+    /** ...the spare-capacity rule's by the seller (RT1: how often a farm or a food plant retires in a real run, which until RT1 no city at the founding's level did). */
+    static final Map<String, Integer> salvageSpareBySector = new java.util.TreeMap<>();
     static double salvageUnits, salvageUnitsBought, salvagePaid, salvagePaidDistress, salvageUsed;
 
     /*
@@ -555,7 +557,7 @@ public class LongPlaytest {
         for (String s : g.getRefusedOnPrice()) refusedOnPrice.merge(s, 1, Integer::sum);
         for (Game.Salvage s : g.getSalvageThisMonth()) {
             if (s.distress()) { salvageBuildingsDistress += s.buildings(); salvagePaidDistress += s.paid(); }
-            else salvageBuildingsSpare += s.buildings();
+            else { salvageBuildingsSpare += s.buildings(); salvageSpareBySector.merge(s.seller(), s.buildings(), Integer::sum); }
             salvageUnits += s.units();
             salvageUnitsBought += s.unitsBought();
             salvagePaid += s.paid();
@@ -7126,13 +7128,13 @@ public class LongPlaytest {
                     + " ($%,.0fk, %d of them projects; rates averaging %.2f%%, at most %.2f%%) and %d past the default"
                     + " point ($%,.0fk, averaging %.2f%%, at most %.2f%%); plans declined on their price %s;"
                     + " plant retired and sold as material: %d building(s) by the distress rule and %d by the spare-capacity"
-                    + " rule, %,.0f units of which the builders bought %,.0f for $%,.0fk ($%,.0fk of it the distress rule's)"
+                    + " rule %s, %,.0f units of which the builders bought %,.0f for $%,.0fk ($%,.0fk of it the distress rule's)"
                     + " and built with %,.0f, holding %,.0f at the end%n",
                     loansPastWatch, loansPastOne, lentPastOne, projectsPastOne,
                     loansPastOne > 0 ? rateSumPastOne / loansPastOne * 100 : 0, rateMaxPastOne * 100,
                     loansPastT, lentPastT, loansPastT > 0 ? rateSumPastT / loansPastT * 100 : 0, rateMaxPastT * 100,
                     refusedOnPrice.isEmpty() ? "never" : refusedOnPrice.toString(),
-                    salvageBuildingsDistress, salvageBuildingsSpare, salvageUnits, salvageUnitsBought, salvagePaid,
+                    salvageBuildingsDistress, salvageBuildingsSpare, salvageSpareBySector, salvageUnits, salvageUnitsBought, salvagePaid,
                     salvagePaidDistress, salvageUsed, g.getSectors().construction().getSalvage());
             // The landlords' mortgages and the city's insurance (0.7.11) - see countMortgages().
             BusinessDebtManager lenderAtEnd = g.getEconomyManager().getBusinessDebtManager();

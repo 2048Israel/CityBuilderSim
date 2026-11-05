@@ -41,7 +41,8 @@ import java.util.Locale;
  *      ratios; and a founded city saved before its first month loads with one
  *      yard, its capacity and its ground.
  *   4. A FOUNDING TOWN BUILDS, AND EARNS ONLY FOR WORK ITS CREWS DO: the
- *      founding village stands within TOWN_MONTHS; once crews come the sites
+ *      founding village is built within TOWN_MONTHS (what the retirement
+ *      rules sold after it stood counts as built, RT1); once crews come the sites
  *      get work every month while anything is owed (T1-C's trap); a month
  *      whose crews are 0 has no output and recognises nothing; the builders'
  *      payroll is positive.
@@ -362,7 +363,8 @@ public class FoundingYardCheck {
         int limit = townMonths(g);
         out.printf("   the village is %,.0f points; TOWN_MONTHS is %d%n", villagePoints(g), limit);
 
-        int monthsWithCrews = 0, monthsWithout = 0, standsAt = -1, firstCrews = -1;
+        int monthsWithCrews = 0, monthsWithout = 0, standsAt = -1, builtAt = -1, firstCrews = -1;
+        java.util.Map<String, Integer> sold = new java.util.LinkedHashMap<>();
         int zeroLeaks = 0, trapMonths = 0, trapStarved = 0, formulaOff = 0;
         double payroll = 0;
         StringBuilder trace = new StringBuilder();
@@ -373,6 +375,9 @@ public class FoundingYardCheck {
             int buildingOutput = g.getBuildingOutput();
             if (m >= 2 && output != outputFormula(g)) formulaOff++;
             month(g);
+            for (Game.Salvage s : g.getSalvageThisMonth()) {
+                if (!"City".equals(s.seller())) sold.merge(s.building(), s.buildings(), Integer::sum);
+            }
             payroll += builders.statement().payroll;
             double recognised = builders.getRecognisedThisMonth();
             if (m <= 24) {
@@ -394,16 +399,26 @@ public class FoundingYardCheck {
                 }
             }
             if (standsAt < 0 && villageStands(bm)) standsAt = m;
+            if (builtAt < 0 && villageBuilt(bm, sold)) builtAt = m;
         }
-        out.printf("   the village stood at month %s (of %d); %d months from month 2 had crews, %d had none; the builders paid %,.0f%n",
-                standsAt < 0 ? "never" : String.valueOf(standsAt), limit, monthsWithCrews, monthsWithout, payroll);
+        out.printf("   the village was built at month %s (of %d), stood at once at month %s; %d months from month 2 had crews, %d had none; the builders paid %,.0f%n",
+                builtAt < 0 ? "never" : String.valueOf(builtAt), limit, standsAt < 0 ? "never" : String.valueOf(standsAt),
+                monthsWithCrews, monthsWithout, payroll);
         StringBuilder end = new StringBuilder();
-        for (String[] line : Founding.VILLAGE) end.append(String.format(" %s %d/%d", line[0], bm.countByName(line[0]),
-                Integer.parseInt(line[1])));
+        int soldInVillage = 0;
+        for (String[] line : Founding.VILLAGE) {
+            int soldOfLine = sold.getOrDefault(line[0], 0);
+            soldInVillage += soldOfLine;
+            end.append(String.format(" %s %d/%d%s", line[0], bm.countByName(line[0]), Integer.parseInt(line[1]),
+                    soldOfLine > 0 ? " (" + soldOfLine + " sold)" : ""));
+        }
         out.println("   standing at the end of the run, month " + g.getMonth() + ":" + end);
-        if (standsAt < 0 || monthsWithCrews == 0) out.print(trace);
-        assertTrue("every building of the village stood at once by month " + limit + " (the depot beside the founding yard)", standsAt > 0);
-        assertTrue("...the last finished in month " + standsAt + ", within TOWN_MONTHS", standsAt > 0 && standsAt <= limit);
+        if (builtAt < 0 || monthsWithCrews == 0) out.print(trace);
+        assertTrue("every building of the village was built by month " + limit + " (the depot beside the founding yard); a building the retirement rules sold after it stood counts",
+                builtAt > 0);
+        assertTrue("...the last finished in month " + builtAt + ", within TOWN_MONTHS", builtAt > 0 && builtAt <= limit);
+        assertTrue("fixture: the retirement rules sold " + soldInVillage + " of the village's buildings in the run (since RT1 a founding farm may be among them, by the spare-capacity rule); the village was built in the first month the built count reached every line, no later than it stood at once (month "
+                + (standsAt < 0 ? "never" : String.valueOf(standsAt)) + ")", builtAt > 0 && (standsAt < 0 || builtAt <= standsAt));
         assertTrue("the people came: " + g.getPopulationManager().getPopulation() + " live in the town and the builders' crews filled",
                 g.getPopulationManager().getPopulation() > 0 && monthsWithCrews > 0);
         assertTrue("fixture: at least one month from month 2 was worked by no crews (" + monthsWithout + ") and one by crews ("
@@ -419,6 +434,20 @@ public class FoundingYardCheck {
     static boolean villageStands(BuildingManager bm) {
         for (String[] line : Founding.VILLAGE) {
             if (bm.countByName(line[0]) < Integer.parseInt(line[1])) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Whether every building of the founding village has been built: those standing and those the retirement rules (either, any seller;
+     * the city's own demolitions are not theirs) have sold since reach each line's count. WHY (RT1, 2026-11-05): the question of section 4 is
+     * what the yard built within TOWN_MONTHS, not what the retirement rules left standing. Once a farm counted in the money the spare-capacity
+     * rule counts in (Agriculture.unitsOf()), the rule sold the founding village's second Mixed Farm (at month 31 in section 4's town) before
+     * the rest of the village finished, so villageStands() never held at once; a building sold after it stood was built.
+     */
+    static boolean villageBuilt(BuildingManager bm, java.util.Map<String, Integer> sold) {
+        for (String[] line : Founding.VILLAGE) {
+            if (bm.countByName(line[0]) + sold.getOrDefault(line[0], 0) < Integer.parseInt(line[1])) return false;
         }
         return true;
     }

@@ -36,6 +36,11 @@ import java.nio.file.Path;
  *      these three at $6.0k-$10.7k a head against the bakeries' $13.5k-$17.8k,
  *      and every one of them died.
  *
+ *   5. A PLANT IS COUNTED IN THE MONEY THE RETIREMENT MEASURE IS IN. The
+ *      sector's spare capacity is a sum of dollars, and a plant was counted in
+ *      kilograms, so the rule sold nothing at the founding's price level and
+ *      something at today's (RT1).
+ *
  * Every fixture CAUSES its condition: the meat price is set, not waited for.
  */
 public class FoodProcessingCheck {
@@ -445,6 +450,53 @@ public class FoodProcessingCheck {
         assertTrue("...and it is still the eleventh name in the equity register",
                 Equity.indexOf("Food Processing") >= 0
                         && Equity.COMPANIES[Equity.COMPANIES.length - 1].equals("Bank"));
+
+        /* ============ 7. a plant is counted in the money the measure counts in (RT1) ============ */
+        out.println("\n--- a plant is counted in the money its sector's retirement measure counts spare capacity in ---");
+
+        /*
+         * THE QUOTIENT WAS DOLLARS OVER KILOGRAMS. The measure is in money (five goods, kilograms of each, weighed by their export floors) but a
+         * plant was counted by Sector.unitsOf(): kilograms of processed meat. planRetirement() divides the one by the other, and dollars scale
+         * with PriceLevel.FACTOR where kilograms do not, so at the founding's level (this harness runs at it) the rule could never sell a
+         * plant. The fixture CAUSES the condition: two kinds of plant, more of one than the other, in a city whose goods the sector makes all
+         * stand above their export floors, and the rule's own constants give the share it may sell. The city is the one the save above
+         * used, which holds the sector and has run no month since.
+         */
+        int heldMeat = (int) Math.ceil(2 / BusinessInvestment.MAX_RETIREMENT_FRACTION);
+        int heldSnack = heldMeat / 2;
+        bm.addStack(meat, heldMeat, true);
+        bm.addStack(snack, heldSnack, true);
+        boolean floorsPositive = true;
+        for (Good g : fp.goodsMade()) floorsPositive &= markets.get(g).netExportPrice() > 0;
+        double[] measure = fp.retirementDemandAndCapacity(game);
+        assertTrue("fixture: every good the plants make has an export floor above nothing, so each is in the measure",
+                floorsPositive && measure != null && measure[1] > 0);
+        assertTrue("...and the sector holds two kinds of plant, the Meat Works the more, so it is the one the rule would thin",
+                bm.getQuantity(meat.getId()) == heldMeat && bm.getQuantity(snack.getId()) == heldSnack && heldMeat > heldSnack
+                        && heldSnack > 1);
+
+        double counted = 0, inKilos = 0;
+        for (BuildingsTemplate t : bm.getTemplatesBySector(fp.key())) {
+            counted += bm.getQuantity(t.getId()) * fp.unitsOf(t);
+            inKilos += bm.getQuantity(t.getId()) * t.makes(fp.planningGood());
+        }
+        out.printf("   the plants add up to %,.6f counted one by one, %,.6f in kilograms of processed meat; the measure is %,.6f%n",
+                counted, inKilos, measure[1]);
+        report("a plant is counted in the measure's own unit: what the plants add up to is the capacity the measure reports",
+                Math.abs(counted - measure[1]) <= 1e-12 * measure[1], String.format("%,.6f against %,.6f", counted, measure[1]));
+
+        BusinessInvestment plans = game.getBusinessInvestment();
+        plans.recordSectorResult(fp.key(), 1);   // a profitable month clears whatever count the lived-in city left
+        for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) plans.recordSectorResult(fp.key(), -1);
+        BusinessInvestment.Decision shed = plans.planRetirement(fp, 0, measure[1], 0);
+        int fits = (int) Math.floor(measure[1] / fp.unitsOf(meat));
+        int allowed = Math.min(fits, Math.min((int) Math.ceil(heldMeat * BusinessInvestment.MAX_RETIREMENT_FRACTION), heldMeat));
+        report("...so, losing money RETIREMENT_LOSS_MONTHS months with nothing used, the rule sells the most-held kind of plant"
+                + " and the share its constants allow",
+                shed.build && shed.template == meat && allowed > 0 && shed.quantity == allowed,
+                String.format("%d of %d Meat Works (%s)", shed.quantity, heldMeat, shed.reason));
+        assertTrue("...at the founding's price level, where a money-per-kilogram quotient sold nothing (PriceLevel.FACTOR below 1)",
+                PriceLevel.FACTOR < 1);
 
         out.println();
         if (fails == 0) {

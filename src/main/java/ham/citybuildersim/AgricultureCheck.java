@@ -21,6 +21,9 @@ import java.nio.file.Path;
  *   3. a farm is ground and almost nothing else - and the clock that runs on
  *      that ground is what decides fields against glass
  *   4. the farmland dial actually moves the bill, and the planner reads it
+ *   5. a farm is counted in the money its sector's retirement measure counts
+ *      spare capacity in, so the rule sells the same share of a holding at
+ *      every price level (RT1)
  *
  * Every fixture CAUSES its condition. The clock test moves the land price
  * rather than waiting three centuries for it; the relief test sets the dial
@@ -388,6 +391,53 @@ public class AgricultureCheck {
                 city.getEconomyManager().getSectorCash(Sectors.AGRICULTURE), 1e-9);
         check("...and the same farmland dial, which is a policy and has to survive",
                 back.getEconomyManager().getTaxPolicy().getFarmlandRelief(), .35, 1e-12);
+
+        /* ============ 5. a farm is counted in the money the measure counts in (RT1) ============ */
+        out.println("\n--- a farm is counted in the money its sector's retirement measure counts spare capacity in ---");
+
+        /*
+         * THE QUOTIENT WAS DOLLARS OVER TONNES. Agriculture's measure of spare capacity is in money (crops by the tonne and the rest by the
+         * kilogram cannot be added), but a farm was counted by Sector.unitsOf(): tonnes of crops. planRetirement() divides the one by the other,
+         * and dollars scale with PriceLevel.FACTOR where tonnes do not, so at the founding's level (this harness runs at it) the rule could
+         * never sell a farm and at today's it could (R0, measured: PriceLevelCheck's played city parted from its twin on one). The fixture
+         * CAUSES the condition: two kinds of farm, more of one than the other, held by a sector whose goods all stand above their export
+         * floors, and the rule's own constants give the share it may sell.
+         */
+        Agriculture farms = plain.getSectors().agriculture();
+        BusinessInvestment plans = plain.getBusinessInvestment();
+        int heldGrain = (int) Math.ceil(2 / BusinessInvestment.MAX_RETIREMENT_FRACTION);
+        int heldMixed = heldGrain / 2;
+        bm.addStack(grain, heldGrain, true);
+        bm.addStack(mixed, heldMixed, true);
+        boolean floorsPositive = true;
+        for (Good g : farms.goodsMade()) floorsPositive &= plain.getMarkets().get(g).netExportPrice() > 0;
+        double[] measure = farms.retirementDemandAndCapacity(plain);
+        assertTrue("fixture: every good the fields make has an export floor above nothing, so each is in the measure",
+                floorsPositive && measure != null && measure[1] > 0);
+        assertTrue("...and the fields hold two kinds of farm, the Grain Farm the more, so it is the one the rule would thin",
+                bm.getQuantity(grain.getId()) == heldGrain && bm.getQuantity(mixed.getId()) == heldMixed && heldGrain > heldMixed
+                        && heldMixed > 1);
+
+        double counted = 0, inTonnes = 0;
+        for (BuildingsTemplate t : bm.getTemplatesBySector(farms.key())) {
+            counted += bm.getQuantity(t.getId()) * farms.unitsOf(t);
+            inTonnes += bm.getQuantity(t.getId()) * t.makes(Good.CROPS);
+        }
+        out.printf("   the farms add up to %,.6f counted one by one, %,.6f in tonnes of crops; the measure is %,.6f%n",
+                counted, inTonnes, measure[1]);
+        check("a farm is counted in the measure's own unit: what the farms add up to is the capacity the measure reports",
+                counted, measure[1], 1e-12 * measure[1]);
+
+        for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) plans.recordSectorResult(farms.key(), -1);
+        BusinessInvestment.Decision shed = plans.planRetirement(farms, 0, measure[1], 0);
+        int wanted = (int) Math.floor(measure[1] / farms.unitsOf(grain));
+        int allowed = Math.min(wanted, Math.min((int) Math.ceil(heldGrain * BusinessInvestment.MAX_RETIREMENT_FRACTION), heldGrain));
+        assertTrue("...so, losing money RETIREMENT_LOSS_MONTHS months with nothing used, the rule sells the most-held kind of farm"
+                + " and the share its constants allow",
+                shed.build && shed.template == grain && allowed > 0 && shed.quantity == allowed);
+        out.printf("   the rule sells %d of %d Grain Farms (%s)%n", shed.quantity, heldGrain, shed.reason);
+        assertTrue("...at the founding's price level, where a money-per-tonne quotient sold nothing (PriceLevel.FACTOR below 1)",
+                PriceLevel.FACTOR < 1);
 
         out.println();
         if (fails == 0) {
