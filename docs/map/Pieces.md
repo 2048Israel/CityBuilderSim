@@ -1,4 +1,4 @@
-# Pieces.java - 5,966 lines · 259 methods · 28 constants · interface
+# Pieces.java - 5,982 lines · 259 methods · 29 constants · interface
 
 `ham/citybuildersim/ui/Pieces.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -42,7 +42,7 @@
 > everywhere, called unqualified through an import static. The scroller is
 > not here: scrolled() reads the shell's current screen, so it stayed there.
 
-**Uses:** [Palette](Palette.md) (570), [Kept](Kept.md) (182), [DebtQuote](DebtQuote.md) (5), [UserInterface](UserInterface.md) (4), [Money](Money.md) (4), [PolicyScreen](PolicyScreen.md) (4), [ChartModel](ChartModel.md) (3), [NationalAccounts](NationalAccounts.md) (3), [Icons](Icons.md) (3), [Sector](Sector.md) (3), [Game](Game.md) (2), [PayTier](PayTier.md) (1), [TimeChart](TimeChart.md) (1), [DebtManager](DebtManager.md) (1), [BuildScreen](BuildScreen.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
+**Uses:** [Palette](Palette.md) (570), [Kept](Kept.md) (186), [DebtQuote](DebtQuote.md) (5), [UserInterface](UserInterface.md) (4), [Money](Money.md) (4), [PolicyScreen](PolicyScreen.md) (4), [ChartModel](ChartModel.md) (3), [NationalAccounts](NationalAccounts.md) (3), [Icons](Icons.md) (3), [Sector](Sector.md) (3), [Game](Game.md) (2), [PayTier](PayTier.md) (1), [TimeChart](TimeChart.md) (1), [DebtManager](DebtManager.md) (1), [BuildScreen](BuildScreen.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
 **Used by (21):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [IslandNetCheck](IslandNetCheck.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md), [ZoningScreen](ZoningScreen.md)
 
@@ -95,7 +95,7 @@
 | 5468 | THE PIECES THE POLICY SCREEN ADDED (0.7.36) |
 | 5654 | THE PIECES CITY HISTORY ADDED (0.7.37) |
 | 5826 | THE PIECES THE FUND ADDED (0.7.39) |
-| 5907 | WHO GOES WITHOUT (0.7.45) |
+| 5923 | WHO GOES WITHOUT (0.7.45) |
 
 ## Enum constants
 
@@ -137,7 +137,8 @@
 | 5127 | `Pieces.MirrorRows.ROW` | `28, BAR = 12, ICON = 18, GAP = 8` | A row's least height, its bar's thickness, an icon's size and the gaps between the columns. |
 | 5352 | `Pieces.DivergingBars.ROW` | `30, BAR = 12` | A row's least height and its bar's thickness. |
 | 5763 | `Pieces.RangeBar.TRACK` | `6, DOT = 10, TICK_W = 5, TICK_H = 14, PAD = 6` | The track's height, the dot's size, the tick's width and height, and the room either end so the dot is never cut. |
-| 5925 | `Pieces.HUNGER_INFO` | `"The measure is struck at the top of the month on the last sale: what each " ...` | The (i): when the measure is struck, and what each half means. |
+| 5881 | `Pieces.TYPED` | `"pieces.typed"` | The key under which a search box carries the consumer of what is typed in it, for the listener added once to call. |
+| 5941 | `Pieces.HUNGER_INFO` | `"The measure is struck at the top of the month on the last sale: what each " ...` | The (i): when the measure is struck, and what each half means. |
 
 ## Fields (state)
 
@@ -248,7 +249,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 61 | 5906 | **type** `public final class Pieces` | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals bar, a stacked bar, a limit cell - and, under the divider half way down,... |
+| 61 | 5922 | **type** `public final class Pieces` | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals bar, a stacked bar, a limit cell - and, under the divider half way down,... |
 | 64 | 3 | `public static VBox limitCell(String label, String value, String note, String tone)` | One figure in the constraints bar: what it is, what it reads, what it means. |
 
 ### A FIGURE THAT GOES WHERE IT IS DECIDED. (lines 68-367)
@@ -718,22 +719,22 @@
 | 5808 | 9 | `public void slideFrom(double was, double millis)` _(in Pieces.RangeBar)_ | The dot slides to where it ends from `was` (a share of the track) over `millis` - a month landing on the page. |
 | 5818 | 6 | `protected void layoutChildren()` _(in Pieces.RangeBar)_ |  |
 
-### THE PIECES THE FUND ADDED (0.7.39) (lines 5826-5906)
+### THE PIECES THE FUND ADDED (0.7.39) (lines 5826-5922)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5848 | 18 | `public static javafx.scene.control.TextField searchBox(String text, String prompt, double width, Consumer<String> typed, Runnab...` | A search box (0.7.39): `text` in it, `prompt` when empty, `width` wide; `typed` on every key, `entered` on Enter. |
-| 5868 | 1 | **type** `public record Pnl(String text, String tone)` | A gain or a loss in words and its colour: "▲ +D$149.6M (+420.2%)" green, "▼ −D$5,141 (−87.0%)" red, "▲ +D$368 (+0.2%)" and "D$0" in the body's ink. |
-| 5876 | 15 | `public static Pnl pnl(String sym, double amount, double share)` | P&L (0.7.39, the spec's D7): `amount` in the city's money with its mark `sym`, signed, with an arrow, and `share` of the cost after it as a percentage (NaN: none). |
-| 5893 | 4 | `public static String tidyMoney(String shown)` | Money.money()'s words at a unit's edge in the next unit's: "$1000k" is "$1.0M", "$1000.0M" "$1.0B", "$1000.0B" "$1.0T" (0.7.39) - none of which Money writes since 0.7.40 (tightMoney()), so it changes nothing now. |
-| 5899 | 7 | `public static Label pnlLabel(String sym, double amount, double share, double size)` | ...as a figure that is never cut, at a size. |
+| 5848 | 31 | `public static javafx.scene.control.TextField searchBox(String text, String prompt, double width, Consumer<String> typed, Runnab...` | A search box (0.7.39): `text` in it, `prompt` when empty, `width` wide; `typed` on every key, `entered` on Enter. |
+| 5884 | 1 | **type** `public record Pnl(String text, String tone)` | A gain or a loss in words and its colour: "▲ +D$149.6M (+420.2%)" green, "▼ −D$5,141 (−87.0%)" red, "▲ +D$368 (+0.2%)" and "D$0" in the body's ink. |
+| 5892 | 15 | `public static Pnl pnl(String sym, double amount, double share)` | P&L (0.7.39, the spec's D7): `amount` in the city's money with its mark `sym`, signed, with an arrow, and `share` of the cost after it as a percentage (NaN: none). |
+| 5909 | 4 | `public static String tidyMoney(String shown)` | Money.money()'s words at a unit's edge in the next unit's: "$1000k" is "$1.0M", "$1000.0M" "$1.0B", "$1000.0B" "$1.0T" (0.7.39) - none of which Money writes since 0.7.40 (tightMoney()), so it changes nothing now. |
+| 5915 | 7 | `public static Label pnlLabel(String sym, double amount, double share, double size)` | ...as a figure that is never cut, at a size. |
 
-### WHO GOES WITHOUT (0.7.45) (lines 5907-5966)
+### WHO GOES WITHOUT (0.7.45) (lines 5923-5982)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5921 | 2 | **type** `public record Hunger(double rate, double pricedOut, double shortOfStock, String figure, String pricedOutWor...` | WHO GOES WITHOUT's words (pure: the probe reads them): the figure, each half's key, whether the shelves are the larger half, the sentence and the (i). |
-| 5931 | 9 | `public static Hunger hunger(Game g)` |  |
-| 5942 | 6 | `public static String smallShare(double share)` | A share of the people, to one place, two under a tenth of a point: "26.8%", "0.04%", "none". |
-| 5950 | 16 | `public static VBox whoGoesWithout(Game g, Runnable shops)` | WHO GOES WITHOUT as a card: the figure, the two halves on a bar of the whole city, the sentence, and a door to the shops when they are the larger half. |
+| 5937 | 2 | **type** `public record Hunger(double rate, double pricedOut, double shortOfStock, String figure, String pricedOutWor...` | WHO GOES WITHOUT's words (pure: the probe reads them): the figure, each half's key, whether the shelves are the larger half, the sentence and the (i). |
+| 5947 | 9 | `public static Hunger hunger(Game g)` |  |
+| 5958 | 6 | `public static String smallShare(double share)` | A share of the people, to one place, two under a tenth of a point: "26.8%", "0.04%", "none". |
+| 5966 | 16 | `public static VBox whoGoesWithout(Game g, Runnable shops)` | WHO GOES WITHOUT as a card: the figure, the two halves on a bar of the whole city, the sentence, and a door to the shops when they are the larger half. |
 

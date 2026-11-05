@@ -5847,7 +5847,12 @@ public final class Pieces {
     /** A search box (0.7.39): `text` in it, `prompt` when empty, `width` wide; `typed` on every key, `entered` on Enter. */
     public static javafx.scene.control.TextField searchBox(String text, String prompt, double width,
                                                            Consumer<String> typed, Runnable entered) {
-        javafx.scene.control.TextField box = new javafx.scene.control.TextField(text == null ? "" : text);
+        // Kept (KP3): the box a kept page's last draw made, its text set only where it differs and never while it has
+        // the focus (the player typing owns it), its key listener added once and handed this draw's `typed` through
+        // the box's properties; outside a draw, a new box with its text, as it was.
+        javafx.scene.control.TextField box = Kept.of(javafx.scene.control.TextField.class, javafx.scene.control.TextField::new);
+        Kept.text(box, text);
+        box.getProperties().put(TYPED, typed);
         box.setPromptText(prompt);
         box.setMinWidth(Math.min(width, 200));
         box.setPrefWidth(width);
@@ -5859,10 +5864,21 @@ public final class Pieces {
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 8;");
         // Never handed the focus by the window - only by a click into it (HistoryScreen.historyPickerRows()).
         box.setFocusTraversable(false);
-        box.textProperty().addListener((o, was, now) -> typed.accept(now == null ? "" : now));
+        if (Kept.isNew(box)) {
+            box.textProperty().addListener((o, was, now) -> {
+                // A draw setting the box to what the page says is not a key typed.
+                if (Kept.drawing()) return;
+                @SuppressWarnings("unchecked")
+                Consumer<String> latest = (Consumer<String>) box.getProperties().get(TYPED);
+                if (latest != null) latest.accept(now == null ? "" : now);
+            });
+        }
         box.setOnAction(e -> { if (entered != null) entered.run(); });
         return box;
     }
+
+    /** The key under which a search box carries the consumer of what is typed in it, for the listener added once to call. */
+    private static final String TYPED = "pieces.typed";
 
     /** A gain or a loss in words and its colour: "▲ +D$149.6M (+420.2%)" green, "▼ −D$5,141 (−87.0%)" red, "▲ +D$368 (+0.2%)" and "D$0" in the body's ink. */
     public record Pnl(String text, String tone) { }

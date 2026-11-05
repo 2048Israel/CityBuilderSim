@@ -142,6 +142,29 @@ import java.util.concurrent.TimeUnit;
  *      is a door, Services' door card and the land office's offer row and ore card, a pointer put over the node (a page may
  *      have none this month: the line says so) and the page drawn kept again leave the same node in the look its own
  *      mouse-entered gives it, and with the pointer off, the look its mouse-exited gives it.
+ *
+ * ...and Build and the construction page (KP3), each page drawn kept from the screen's own pool and built new from an
+ * empty one, the same four sections as KP2's and the stopped pages, the controls and the hover:
+ *  36 to 39. the Build screen: kept on the Overview and on a city category with two orders dialled up (so that its order bar
+ *      shows); shown as a page built new shows it for MONTHS months, the pixels at three and the spoil proof; reshaped by
+ *      every category in turn, every ring of the two city categories with the most of them, an order dialled and cleared
+ *      with a card's own steppers on a city and on a market category, a card's stats pinned and unpinned, automatic
+ *      building on and off (the Overview's cards; a category's head chip) - the redraw after each and the one after a
+ *      month equal a page built new; the kept month within KEPT_BUILD_MS on both pages;
+ *  40 to 43. the same four for the construction page, with the city's sites held on through the months (SITE_ROWS: a
+ *      row each, a bar each on the timeline): its three tabs in turn, a building picked to demolish and a business's to buy
+ *      out, two of it, a word typed in the find box and emptied; the kept month on Sites within KEPT_CONSTRUCTION_MS;
+ *  44. the pages a build is stopped on (no deposit, coast, river, bridge, licence, land) and the run's funding and
+ *      fell-short pages: each caused where the model can cause it (Game.buildRunStop() refuses the count; a run larger than
+ *      the cash) and else drawn for a building that merely names the page - the line says which - drawn as an arrival and a
+ *      month later again, equal to a page built new;
+ *  45. the controls keep the player's hand: automatic building's dial pressed and held across a month (the same node,
+ *      thumb, reading and Ladder.shown()), released and the page equal to one built new; the cap chips' yield box and the
+ *      construction page's find box, with the focus, keep node, text, caret and focus across a month through the real
+ *      show methods; a stepper pressed between draws refills the order bar in place and the next kept draw equals a page
+ *      built new;
+ *  46. the hover: a card's (i) hovered keeps its stat cover shown across a kept draw and hides it when the hover goes, and
+ *      the Overview's tiles, a category's door and a small ring card keep the look their own mouse-entered gives them.
  */
 public class KeptCheck {
 
@@ -185,12 +208,16 @@ public class KeptCheck {
         }
     }
 
+    /** What is done after every month played, with the log off, while a fixture has to be held through the months (KP3: the city's sites); null for nothing. */
+    static Runnable afterMonth;
+
     /** A month, as the clock runs it, its log kept off this harness's output. */
     static void month(Game g) {
         PrintStream real = System.out;
         System.setOut(QUIET);
         try {
             g.toggleNextMonth();
+            if (afterMonth != null) afterMonth.run();
         } finally {
             System.setOut(real);
         }
@@ -793,11 +820,25 @@ public class KeptCheck {
         String on(KeptBench bench) throws Exception;
     }
 
-    /** One choice that reshapes the page: its name and the hand that makes it; `opens` for a fold opened, which has to add to the page (KP2). */
-    record Choice(String name, Hand hand, boolean opens) {
-        Choice(String name, Hand hand) {
-            this(name, hand, false);
+    /**
+     * One choice that reshapes the page: its name and the hand that makes it; `opens` for a fold opened, which has to add to the page (KP2);
+     * `acts` for a choice that makes the model act (KP3: automatic building turned on orders what the Overview advises, so the next month
+     * puts other buildings in its advice tiles and its status lines): the page it leaves is another page and not the same one redrawn, so
+     * the share of its nodes handed back is printed and not asserted - the redraw after it is equal to a page built new all the same.
+     */
+    record Choice(String name, Hand hand, boolean opens, boolean acts) {
+        Choice(String name, Hand hand, boolean opens) {
+            this(name, hand, opens, false);
         }
+
+        Choice(String name, Hand hand) {
+            this(name, hand, false, false);
+        }
+    }
+
+    /** A choice that makes the model act (see Choice.acts). */
+    static Choice acting(String name, Hand hand) {
+        return new Choice(name, hand, false, true);
     }
 
     /** The first of these lines picked and not in the preset the page opens on: a line to tick and untick. */
@@ -1424,7 +1465,9 @@ public class KeptCheck {
                 check(c.name() + " adds to the page (" + size + " lines, then " + r[1] + ")", (int) r[1] > size);
             }
             size = (int) r[1] == 0 ? size : (int) r[1];
-            if ((double) r[2] < worst) {
+            if (c.acts()) {
+                System.out.printf("  %s: the month after handed back %.1f%% of the page's nodes (the model acted: not counted below)%n", c.name(), (double) r[2] * 100);
+            } else if ((double) r[2] < worst) {
                 worst = (double) r[2];
                 worstAt = c.name();
             }
@@ -1820,6 +1863,595 @@ public class KeptCheck {
         check(where + ": the " + kind + " under the pointer keeps its look across a kept redraw, and loses it when the pointer goes", result == null);
     }
 
+    /* =====================================================================
+       BUILD AND THE CONSTRUCTION PAGE (KP3), sections 36 to 46: each page kept, shown as a page built new shows it,
+       kept right through what reshapes it, and cheap; then the stopped pages, the controls and the hover.
+       ===================================================================== */
+
+    /**
+     * The budget for the kept Build month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC, on the Overview and on a
+     * city category with two orders dialled up and a card's stats pinned (the heavier of the two is the figure): twice the kept month's median,
+     * rounded up (3.8 to 6.3 ms in five runs on the Overview, 4.3 between them; 3.7 to 9.0 ms on the category, 6.0 between them; the same
+     * months built new 11.6 to 23.7 and 15.0 to 30.0 ms).
+     */
+    static final double KEPT_BUILD_MS = 12;
+
+    /**
+     * The budget for the kept construction page's month - its draw, then the pulse's CSS and layout, on the Sites tab with the city's
+     * sites on - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (1.4 to 1.9 ms in five runs, 1.7 between them; the
+     * same month built new 8.5 to 16.5 ms).
+     */
+    static final double KEPT_CONSTRUCTION_MS = 4;
+
+    /** The rows the Sites tab and the timeline are kept at while Build and the construction page are watched: a site each. */
+    static final int SITE_ROWS = 6;
+
+    /** What is ordered, in turn, to put a site on: the cheap, quick works first. */
+    static final String[] SITE_ORDER = {"Gravel Road", "Walk-in Clinic", "Paved Road", "Bus Network", "Elementary School",
+            "Police Station", "Small Childcare Centre", "Water Treatment Plant", "General Hospital", "Crematorium"};
+
+    private static int siteTurn;
+
+    /** Ground bought through the model for an order that found none: the cheapest offer that covers the shortfall, the cash it lacks borrowed on Build's bond; whether it was bought. */
+    static boolean buyGround(Game g, BuildingsTemplate t, int n) throws Exception {
+        double lacking = Math.max(1, g.landNeededFor(t, n) - g.getLandManager().getAvailableSqFt());
+        LandParcel p = g.bestOffer(Game.LandNeed.shortfall(lacking));
+        if (p == null) return false;
+        List<Integer> ids = List.of(p.getId());
+        if (g.landNeedsFunding(ids)) {
+            final double gap = g.landCashGap(ids);
+            quietly(() -> g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+            if (g.landNeedsFunding(ids)) return false;
+        }
+        return quietly(() -> g.buyLandParcels(ids)) == 1;
+    }
+
+    /** Orders through the model until the city has `rows` sites on (a row each on the Sites tab, a bar each on the timeline): what it did, in a line. */
+    static String ensureSites(Game g, int rows) throws Exception {
+        BuildingManager bm = g.getBuildingManager();
+        StringBuilder said = new StringBuilder();
+        double borrowed = 0;
+        for (int tries = 0; tries < SITE_ORDER.length * 2 && bm.siteKeysOnSite().size() < rows; tries++) {
+            String name = SITE_ORDER[siteTurn++ % SITE_ORDER.length];
+            BuildingsTemplate t = bm.getTemplateByName(name);
+            if (t == null) continue;
+            for (int q = 24; q >= 1; q /= 2) {
+                final int n = q;
+                Game.BuildResult r = quietly(() -> g.buildStack(t, n, false));
+                // Short of cash, the city borrows the gap on Build's 20-year bond, as the funding page's offer does.
+                if (r == Game.BuildResult.NEEDS_FUNDING) {
+                    final double gap = g.buildFundingGap(t, n);
+                    quietly(() -> g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+                    borrowed += gap;
+                    r = quietly(() -> g.buildStack(t, n, false));
+                }
+                // ...and with no ground for even one, buys the cheapest parcel that covers the shortfall, as the refusal page's Buy does.
+                if (r == Game.BuildResult.NO_LAND && n == 1 && buyGround(g, t, 1)) {
+                    r = quietly(() -> g.buildStack(t, n, false));
+                }
+                if (r == Game.BuildResult.SUCCESS) {
+                    said.append(said.length() > 0 ? ", " : "").append(n).append(" x ").append(name);
+                    break;
+                }
+            }
+        }
+        return bm.siteKeysOnSite().size() + " sites on" + (said.length() > 0 ? " (ordered through the model: " + said + (borrowed > 0 ? "; the city borrowed " + String.format("%,.0f", borrowed) + " on Build's bond for them" : "") + ")" : "");
+    }
+
+    /** From now every month played tops the sites up to SITE_ROWS (the fixture holds while the pages are watched), until stopSites(). */
+    static void keepSites(Game g) {
+        afterMonth = () -> {
+            try {
+                ensureSites(g, SITE_ROWS);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    static void stopSites() {
+        afterMonth = null;
+    }
+
+    /** Build's pages: the Overview and a city category with two orders dialled up (so that its order bar shows), kept, as built new, reshaped and costed. Sections 36 to 39. */
+    static void build(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n=== Build (KP3) ===");
+        System.out.println("  " + fx(() -> ensureSites(g, SITE_ROWS)) + "; cash " + String.format("%,.0f", g.getCash()));
+        int onSite = fx(bench::sitesOn);
+        check("the city has " + SITE_ROWS + " sites on to draw (" + onSite + ")", onSite >= SITE_ROWS);
+        keepSites(g);
+        final String cat = BuildAdvice.HEALTHCARE;
+        KeptBench.Page probe = fx(() -> bench.build("probe", cat, java.util.Map.of()));
+        List<String> names = fx(() -> {
+            bench.home(probe);
+            bench.drawKept(probe);
+            bench.passes();
+            return bench.buildCardNames();
+        });
+        System.out.println("  " + cat + " lays out " + names.size() + " cards, the first two " + names.subList(0, Math.min(2, names.size())));
+        check("a city category has cards to dial an order on (" + names.size() + ")", names.size() >= 2);
+        if (names.size() < 2) return;
+        final String first = names.get(0), second = names.get(1);
+        KeptBench.Page overview = fx(() -> bench.build("the Build Overview", BuildAdvice.OVERVIEW, java.util.Map.of()));
+        KeptBench.Page ordered = fx(() -> bench.build("Build, " + cat + ", orders dialled up, a card pinned", cat, java.util.Map.of(first, 3, second, 2), java.util.Set.of(first)));
+        String words = "3 × " + first + " + 2 × " + second;
+        boolean bar = fx(() -> {
+            bench.home(ordered);
+            bench.drawKept(ordered);
+            bench.passes();
+            return bench.buildBarShows(words);
+        });
+        check("the order bar shows the order dialled up (\"" + words + "\")", bar);
+        int fills = fx(() -> {
+            bench.drawKept(ordered);
+            int before = bench.buildBarFills();
+            bench.drawKept(ordered);
+            return bench.buildBarFills() - before;
+        });
+        check("a kept draw fills the order bar once, after the last card (" + fills + " fills)", fills == 1);
+
+        pageKept(g, bench, overview, 36);
+        pageKept(g, bench, ordered, 36);
+        pageShows(g, bench, overview, 37);
+        pageShows(g, bench, ordered, 37);
+        // ...and a market category in its groups, two orders dialled up, the first card's stats pinned open.
+        String market = null;
+        for (String name : KeptBench.buildPages()) if (!name.equals(BuildAdvice.OVERVIEW) && !KeptBench.buildIsCity(name)) { market = name; break; }
+        final String marketCat = market;
+        KeptBench.Page marketProbe = fx(() -> bench.build("probe", marketCat, java.util.Map.of()));
+        List<String> marketNames = fx(() -> {
+            bench.home(marketProbe);
+            bench.drawKept(marketProbe);
+            bench.passes();
+            return bench.buildCardNames();
+        });
+        check("a market category has cards to dial an order on (" + marketCat + ": " + marketNames.size() + ")", marketNames.size() >= 2);
+        if (marketNames.size() >= 2) {
+            KeptBench.Page marketPage = fx(() -> bench.build("Build, " + marketCat + ", orders dialled up, a card pinned", marketCat,
+                    java.util.Map.of(marketNames.get(0), 4, marketNames.get(1), 1), java.util.Set.of(marketNames.get(0))));
+            fx(() -> {
+                bench.home(marketPage);
+                bench.drawKept(marketPage);
+                bench.passes();
+                return null;
+            });
+            pageShows(g, bench, marketPage, 37);
+        }
+
+        // The Build screen, wherever it is: every choice that reshapes it.
+        KeptBench.Page page = fx(() -> bench.build("the Build screen", BuildAdvice.OVERVIEW, java.util.Map.of()));
+        List<Choice> choices = new ArrayList<>();
+        for (String name : KeptBench.buildPages()) {
+            choices.add(choice("the page " + name + " opened", b -> { b.buildOpen(name); return null; }));
+        }
+        // ...every ring of the two city categories with the most of them.
+        List<String> cities = new ArrayList<>();
+        for (String name : KeptBench.buildPages()) if (KeptBench.buildIsCity(name)) cities.add(name);
+        cities.sort((a, b) -> Integer.compare(KeptBench.buildRings(b).size(), KeptBench.buildRings(a).size()));
+        for (String city : cities.subList(0, 2)) {
+            List<String> rings = KeptBench.buildRings(city);
+            for (int i = 0; i < rings.size(); i++) {
+                final int ring = i;
+                choices.add(choice("the ring " + rings.get(i) + " picked on " + city, b -> {
+                    b.buildOpen(city);
+                    b.buildRing(city, ring);
+                    return null;
+                }));
+            }
+        }
+        // ...an order dialled with a card's own stepper and cleared with its own, on a city category and on a market one.
+        for (String at : market == null ? List.of(cat) : List.of(cat, market)) {
+            choices.add(choice("an order dialled up on " + at + " (+10 and +, two cards)", b -> {
+                b.buildOpen(at);
+                b.drawKept(page);
+                b.passes();
+                return b.buildStep(0, "+10") && b.buildStep(1, "+") ? null : "the page has no two cards to dial";
+            }));
+            choices.add(choice("...a card's order cleared with its own ↺", b -> {
+                b.buildOpen(at);
+                b.drawKept(page);
+                b.passes();
+                return b.buildStep(0, "↺") ? null : "the page has no card to clear";
+            }));
+            choices.add(choice("...and the other cleared", b -> {
+                b.buildOpen(at);
+                b.drawKept(page);
+                b.passes();
+                return b.buildStep(1, "↺") ? null : "the page has no second card to clear";
+            }));
+            // ...a card's stats pinned open and let go.
+            choices.add(choice("a card's stats pinned on " + at, b -> {
+                b.buildOpen(at);
+                b.drawKept(page);
+                b.passes();
+                return b.buildPin(0) ? null : "the page has no card to pin";
+            }));
+            choices.add(choice("...and unpinned", b -> {
+                b.buildOpen(at);
+                b.drawKept(page);
+                b.passes();
+                return b.buildPin(0) ? null : "the page has no card to unpin";
+            }));
+        }
+        // ...automatic building on and off, on the Overview (its cards) and on a category (the head's chip to them).
+        boolean autoWas = fx(() -> bench.buildAuto());
+        choices.add(acting("automatic building turned on (the Overview)", b -> { b.buildOpen(BuildAdvice.OVERVIEW); b.buildAuto(true); return null; }));
+        choices.add(choice("...and off", b -> { b.buildOpen(BuildAdvice.OVERVIEW); b.buildAuto(false); return null; }));
+        choices.add(acting("automatic building turned on (" + cat + ": the head's chip)", b -> { b.buildOpen(cat); b.buildAuto(true); return null; }));
+        choices.add(choice("...and off again", b -> { b.buildOpen(cat); b.buildAuto(false); return null; }));
+        pageReshaped(g, bench, page, 38, choices);
+        fx(() -> {
+            bench.buildAuto(autoWas);
+            bench.home(page);
+            return null;
+        });
+
+        pageCost(g, bench, overview, 39, KEPT_BUILD_MS, "KEPT_BUILD_MS");
+        pageCost(g, bench, ordered, 39, KEPT_BUILD_MS, "KEPT_BUILD_MS");
+        int heldBuild = fx(bench::sitesOn);
+        check("the sites were held through the months: " + heldBuild + " on at the end (SITE_ROWS " + SITE_ROWS + ")", heldBuild >= SITE_ROWS);
+    }
+
+    /** The construction page, with the city's sites on: the Sites tab kept, shown, reshaped by its tabs, a pick and the find box, and costed. Sections 40 to 43. */
+    static void construction(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n=== The construction page (KP3) ===");
+        System.out.println("  " + fx(() -> ensureSites(g, SITE_ROWS)));
+        int rows = fx(bench::sitesOn);
+        check("the city has " + SITE_ROWS + " sites on to draw (" + rows + ")", rows >= SITE_ROWS);
+        keepSites(g);
+        KeptBench.Page page = fx(bench::construction);
+        pageKept(g, bench, page, 40);
+        pageShows(g, bench, page, 41);
+        String city = fx(() -> bench.constructionPickable(false));
+        String theirs = fx(() -> bench.constructionPickable(true));
+        System.out.println("  to pick on Demolish: " + city + " (the city's), " + theirs + " (a buy-out)");
+        // The other two tabs as pictures too: the Timeline (its bars) and Demolish with two of a building picked (its staging card).
+        KeptBench.Page timeline = fx(() -> bench.construction("Timeline"));
+        fx(() -> {
+            bench.home(timeline);
+            bench.drawKept(timeline);
+            bench.passes();
+            return null;
+        });
+        pageShows(g, bench, timeline, 41);
+        KeptBench.Page demolish = fx(() -> bench.construction("Demolish"));
+        fx(() -> {
+            bench.home(demolish);
+            if (city != null) bench.constructionPick(city, false, 2);
+            bench.drawKept(demolish);
+            bench.passes();
+            return null;
+        });
+        pageShows(g, bench, demolish, 41);
+        fx(() -> {
+            bench.home(page);
+            return null;
+        });
+        List<Choice> choices = new ArrayList<>();
+        choices.add(choice("the Timeline tab", b -> { b.constructionTab("Timeline"); return null; }));
+        choices.add(choice("the Demolish tab", b -> { b.constructionTab("Demolish"); return null; }));
+        if (city != null) {
+            choices.add(choice("a building of the city's picked to demolish (" + city + ")", b -> { b.constructionPick(city, false, 1); return null; }));
+            choices.add(choice("...two of it", b -> { b.constructionPick(city, false, 2); return null; }));
+        }
+        if (theirs != null) {
+            choices.add(choice("a business's building picked to buy out (" + theirs + ")", b -> { b.constructionPick(theirs, false, 1); return null; }));
+        }
+        choices.add(choice("nothing picked again", b -> { b.constructionPick(null, false, 1); return null; }));
+        choices.add(choice("a word typed in the find box (road)", b -> {
+            b.drawKept(page);
+            b.passes();
+            return b.fieldState() != null ? (b.fieldType("road").equals("road") ? null : "the box did not take the word") : "the Demolish tab has no find box";
+        }));
+        choices.add(choice("a word that matches nothing typed (zzz)", b -> {
+            b.drawKept(page);
+            b.passes();
+            return b.fieldState() != null ? (b.fieldType("zzz").equals("zzz") ? null : "the box did not take the word") : "the Demolish tab has no find box";
+        }));
+        choices.add(choice("the find box emptied", b -> {
+            b.drawKept(page);
+            b.passes();
+            return b.fieldState() != null ? (b.fieldType("").isEmpty() ? null : "the box did not empty") : "the Demolish tab has no find box";
+        }));
+        choices.add(choice("the Sites tab again", b -> { b.constructionTab("Sites"); return null; }));
+        pageReshaped(g, bench, page, 42, choices);
+        pageCost(g, bench, page, 43, KEPT_CONSTRUCTION_MS, "KEPT_CONSTRUCTION_MS");
+        int heldRows = fx(bench::sitesOn);
+        check("the sites were held through the months: " + heldRows + " on at the end (SITE_ROWS " + SITE_ROWS + ")", heldRows >= SITE_ROWS);
+        stopSites();
+    }
+
+    /**
+     * Section 44: the pages a build is stopped on and the run's funding and fell-short pages, each caused where the model can
+     * cause it (a count Game.buildRunStop() refuses for the reason; a run larger than the cash) and each drawn as an arrival,
+     * then a month later again, equal to a page built new. The line says which were caused and which were drawn for a building
+     * that merely names the page.
+     */
+    static void stopped(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 44: the pages a build is stopped on, and the funding and fell-short pages ---");
+        List<KeptBench.Page> pages = new ArrayList<>();
+        StringBuilder caused = new StringBuilder(), named = new StringBuilder();
+        for (String kind : KeptBench.STOPPED) {
+            Object[] found = fx(() -> bench.stoppedFor(kind));
+            check("a building names the no-" + kind + " page", found != null);
+            if (found == null) continue;
+            BuildingsTemplate t = (BuildingsTemplate) found[0];
+            int q = (int) found[1];
+            StringBuilder into = ((boolean) found[2]) ? caused : named;
+            into.append(into.length() > 0 ? "; " : "").append(kind).append(": ").append(q).append(" x ").append(t.getName());
+            pages.add(fx(() -> bench.buildStopped(kind, t, q)));
+        }
+        System.out.println("  caused (the model refuses the order for it): " + (caused.length() == 0 ? "none" : caused));
+        System.out.println("  drawn for a building that merely names the page (the city meets no such refusal): " + (named.length() == 0 ? "none" : named));
+        Object[] run = fx(bench::fundingRun);
+        if (run == null) {
+            System.out.println("  the city can pay for every order it could place: no funding page to draw");
+        } else {
+            BuildingsTemplate t = (BuildingsTemplate) run[0];
+            int q = (int) run[1];
+            System.out.println("  funding page caused: " + q + " x " + t.getName() + " costs more than the cash (" + String.format("%,.0f", g.getCash()) + ")");
+            pages.add(fx(() -> bench.buildFunding(t, q)));
+            // The fell-short page is never reached by the model (the loan's invoice is the run's): drawn for these orders, as the model words them.
+            BuildingsTemplate road = g.getBuildingManager().getTemplateByName("Gravel Road");
+            System.out.println("  fell-short pages: drawn for the same run, which the model would not leave unbuilt (no way to cause it)");
+            pages.add(fx(() -> bench.buildFellShort(road, 2, t, q, "20-year bond")));
+            pages.add(fx(() -> bench.buildFellShort(null, 0, t, q, "20-year bond")));
+        }
+        for (KeptBench.Page p : pages) {
+            pageReshaped(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
+        }
+    }
+
+    /**
+     * Section 45: a control keeps the player's hand. Automatic building's dial (the first slider on the Overview, through the
+     * screen's real show method): pressed it is held, a month leaves its node, thumb and reading; released, the margin is set at
+     * the thumb and the page equals one built new. The auto cap chips' yield box, with the focus, keeps its node, text, caret and
+     * focus across a month; so does the construction page's find box. A stepper pressed between draws refills the order bar in
+     * place and the next kept draw equals a page built new.
+     */
+    static void buildControls(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 45: a control keeps the player's hand ---");
+        AutoBuilder auto = g.getAutoBuilder();
+        double slack = auto.getSlack();
+        Auction.Cap cap = auto.getCap();
+        KeptBench.Page overview = fx(() -> bench.build("the Build Overview", BuildAdvice.OVERVIEW, java.util.Map.of()));
+        Object[] dial = fx(() -> {
+            bench.home(overview);
+            bench.showBuild();
+            bench.passes();
+            javafx.scene.control.Slider bar = bench.slider();
+            if (bar == null) return null;
+            double step = bar.getBlockIncrement();
+            double snapped = bar.getMin() + Math.round((bar.getValue() - bar.getMin()) / step) * step;
+            double thumb = snapped + 2 * step <= bar.getMax() + 1e-9 ? snapped + 2 * step : snapped - 2 * step;
+            String before = KeptBench.readingOf(bar).getText();
+            // (a) pressed, dragged two steps, a month lands.
+            KeptBench.press(bar);
+            boolean heldPressed = KeptBench.held(bar);
+            bar.setValueChanging(true);
+            bar.setValue(thumb);
+            String dragged = KeptBench.readingOf(bar).getText();
+            month(g);
+            bench.showBuild();
+            bench.passes();
+            boolean sameBar = bench.slider() == bar;
+            String kept = KeptBench.readingOf(bar).getText();
+            double shown = KeptBench.shownBy(bar);
+            boolean heldStill = KeptBench.held(bar);
+            double valueNow = bar.getValue();
+            double slackMid = auto.getSlack();
+            Object[] a = {heldPressed, sameBar, valueNow, thumb, kept, dragged, before, shown, heldStill, slackMid, String.format("%.0f%%", thumb)};
+            // (b) released: the margin is set at the thumb, the screen drawn again, the page the page built new.
+            bar.setValueChanging(false);
+            KeptBench.release(bar);
+            bench.passes();
+            double slackSet = auto.getSlack();
+            boolean heldAfter = KeptBench.held(bar);
+            boolean same = bench.slider() == bar;
+            String differs = againstNew(bench, overview);
+            Object[] b = {heldAfter, slackSet, same, differs};
+            // (c) several kept months, then a value set outside any draw: the reading of the latest draw follows.
+            for (int i = 0; i < 4; i++) {
+                month(g);
+                bench.showBuild();
+                bench.passes();
+            }
+            javafx.scene.control.Slider later = bench.slider();
+            double other = thumb - 2 * step >= bar.getMin() - 1e-9 ? thumb - 2 * step : thumb + 2 * step;
+            later.setValue(other);
+            Object[] c = {later == bar, KeptBench.readingOf(later).getText(), String.format("%.0f%%", other)};
+            auto.setSlack(slack, g.getDecisions());
+            bench.showBuild();
+            bench.passes();
+            return new Object[]{a, b, c, auto.getSlack()};
+        });
+        if (dial == null) {
+            check("the Overview has a dial (a slider) to hold", false);
+        } else {
+            Object[] a = (Object[]) dial[0], b = (Object[]) dial[1], c = (Object[]) dial[2];
+            System.out.printf("  the margin dragged two steps: reading \"%s\" -> \"%s\"; a month later \"%s\", the ladder shows %.1f for a thumb at %.1f%n",
+                    a[6], a[5], a[4], (double) a[7], (double) a[3]);
+            check("a slider pressed is held", (boolean) a[0]);
+            check("a month landing on a held slider leaves the same slider node, still held", (boolean) a[1] && (boolean) a[8]);
+            check("...its value still the thumb's (" + a[2] + ")", Math.abs((double) a[2] - (double) a[3]) < 1e-9);
+            check("...the reading the thumb's words (\"" + a[4] + "\", not the margin's \"" + a[6] + "\")", a[4].equals(a[10]) && !a[4].equals(a[6]));
+            check("...Ladder.shown() the thumb's value", Math.abs((double) a[7] - (double) a[3]) < 1e-9);
+            check("...and the margin is not set before the release (" + String.format("%.2f", (double) a[9]) + ")", Math.abs((double) a[9] - slack) < 1e-9);
+            check("a slider released is not held", !(boolean) b[0]);
+            check("...the margin is set at the thumb (" + String.format("%.2f", (double) b[1]) + ")", Math.abs((double) b[1] * 100 - (double) a[3]) < 1e-6);
+            check("...and the page is the same slider, kept, equal to a page built new", (boolean) b[2] && b[3] == null);
+            if (b[3] != null) System.out.println("  " + b[3]);
+            check("after several kept months the one slider node still carries the dial", (boolean) c[0]);
+            check("a value set outside any draw updates the reading of the latest draw (\"" + c[1] + "\", a thumb at it reads \"" + c[2] + "\")", c[1].equals(c[2]));
+            check("the margin is put back at the end of the section", Math.abs((double) dial[3] - slack) < 1e-9);
+        }
+
+        // The auto cap chips' yield box, with the focus, through the real show method.
+        String how = fx(() -> {
+            bench.home(overview);
+            bench.showBuild();
+            bench.passes();
+            return bench.fieldState() == null ? "the Overview has no text field" : bench.fieldFocus("4.5");
+        });
+        System.out.println("  the yield box took the focus by: " + how);
+        check("the Overview's yield box takes the focus (" + how + ")", how.equals("requestFocus") || how.equals("setFocused by reflection"));
+        Object[] box = fx(() -> {
+            Object[] was = bench.fieldState();
+            boolean yieldBox = was != null && ((javafx.scene.control.TextField) was[0]).getPromptText().startsWith("type a yield");
+            month(g);
+            bench.showBuild();
+            bench.passes();
+            Object[] now = bench.fieldState();
+            String focused = bench.fieldSet("zzz");
+            // Cleared and let go with nothing in it, so that leaving it sets no cap.
+            bench.fieldType("");
+            bench.fieldBlur();
+            String blurred = bench.fieldSet("zzz");
+            bench.fieldSet("");
+            bench.showBuild();
+            bench.passes();
+            return new Object[]{was, now, yieldBox, focused, blurred};
+        });
+        Object[] was = (Object[]) box[0], now = (Object[]) box[1];
+        check("the box found is the cap chips' yield box", (boolean) box[2]);
+        check("a month landing keeps the yield box (the same node)", was != null && now != null && was[0] == now[0]);
+        check("...its text (\"" + (now == null ? null : now[1]) + "\")", now != null && "4.5".equals(now[1]));
+        check("...its caret (" + (was == null ? null : was[2]) + " before, " + (now == null ? null : now[2]) + " after)", now != null && was != null && was[2].equals(now[2]));
+        check("...and its focus", now != null && (boolean) now[3]);
+        check("Kept.text leaves a yield box with the focus as the player typed it (\"" + box[3] + "\")", "4.5".equals(box[3]));
+        check("...and sets one that has none (\"" + box[4] + "\")", "zzz".equals(box[4]));
+        check("the builder's cap is as it was (nothing typed was set)", auto.getCap().equals(cap));
+
+        // The construction page's find box.
+        KeptBench.Page sites = fx(bench::construction);
+        String findHow = fx(() -> {
+            bench.home(sites);
+            bench.constructionTab("Demolish");
+            bench.showConstruction();
+            bench.passes();
+            return bench.fieldState() == null ? "the Demolish tab has no text field" : bench.fieldFocus("road");
+        });
+        System.out.println("  the find box took the focus by: " + findHow);
+        check("the construction page's find box takes the focus (" + findHow + ")", findHow.equals("requestFocus") || findHow.equals("setFocused by reflection"));
+        Object[] find = fx(() -> {
+            Object[] wasBox = bench.fieldState();
+            boolean findBox = wasBox != null && ((javafx.scene.control.TextField) wasBox[0]).getPromptText().startsWith("Find a building");
+            month(g);
+            bench.showConstruction();
+            bench.passes();
+            Object[] nowBox = bench.fieldState();
+            String focused = bench.fieldSet("zzz");
+            // The screen's own filter changed under the player's hand (not typed): the draw leaves the focused box as it is typed, and sets it once the focus is gone.
+            bench.constructionFilter("changed under the hand");
+            bench.showConstruction();
+            bench.passes();
+            Object[] underHand = bench.fieldState();
+            bench.fieldBlur();
+            bench.showConstruction();
+            bench.passes();
+            Object[] letGo = bench.fieldState();
+            String blurred = bench.fieldSet("zzz");
+            bench.fieldSet("");
+            bench.showConstruction();
+            bench.passes();
+            return new Object[]{wasBox, nowBox, findBox, focused, blurred, underHand, letGo};
+        });
+        Object[] wasF = (Object[]) find[0], nowF = (Object[]) find[1];
+        check("the box found is the find box", (boolean) find[2]);
+        check("a month landing keeps the find box (the same node)", wasF != null && nowF != null && wasF[0] == nowF[0]);
+        check("...its text (\"" + (nowF == null ? null : nowF[1]) + "\")", nowF != null && "road".equals(nowF[1]));
+        check("...its caret (" + (wasF == null ? null : wasF[2]) + " before, " + (nowF == null ? null : nowF[2]) + " after)", nowF != null && wasF != null && wasF[2].equals(nowF[2]));
+        check("...and its focus", nowF != null && (boolean) nowF[3]);
+        check("Kept.text leaves a find box with the focus as the player typed it (\"" + find[3] + "\")", "road".equals(find[3]));
+        check("...and sets one that has none (\"" + find[4] + "\")", "zzz".equals(find[4]));
+        Object[] underHand = (Object[]) find[5], letGo = (Object[]) find[6];
+        check("the screen's own filter changed under the hand leaves the focused find box as typed (\"" + (underHand == null ? null : underHand[1]) + "\")",
+                underHand != null && wasF != null && "road".equals(underHand[1]) && underHand[0] == wasF[0]);
+        check("...and the next draw, once the focus is gone, sets the box to it (\"" + (letGo == null ? null : letGo[1]) + "\")",
+                letGo != null && wasF != null && "changed under the hand".equals(letGo[1]) && letGo[0] == wasF[0]);
+        fx(() -> {
+            bench.home(sites);
+            return null;
+        });
+
+        // A stepper pressed between draws: the order bar refilled in place, the next kept draw a page built new.
+        final String cat = BuildAdvice.HEALTHCARE;
+        KeptBench.Page cards = fx(() -> bench.build("Build, " + cat, cat, java.util.Map.of()));
+        Object[] press = fx(() -> {
+            bench.home(cards);
+            bench.drawKept(cards);
+            bench.passes();
+            List<String> names = bench.buildCardNames();
+            String word = "1 × " + names.get(0);
+            int fillsBefore = bench.buildBarFills();
+            boolean pressed = bench.buildStep(0, "+");
+            int fillsByPress = bench.buildBarFills() - fillsBefore;
+            String count = bench.buildCount(0);
+            boolean barBetween = bench.buildBarShows(word);
+            bench.drawKept(cards);
+            bench.passes();
+            boolean barAfter = bench.buildBarShows(word);
+            String after = againstNew(bench, cards);
+            // ...and a hundred more, a month, and the draw.
+            bench.drawKept(cards);
+            boolean pressed100 = bench.buildStep(0, "+100");
+            month(g);
+            bench.drawKept(cards);
+            String monthLater = againstNew(bench, cards);
+            // ...cleared by the card's own ↺, outside a draw: the bar goes and the next draw is a page built new.
+            bench.drawKept(cards);
+            boolean cleared = bench.buildStep(0, "↺");
+            boolean barGone = !bench.buildBarShows(word) && !bench.buildBarShows("101 × " + names.get(0));
+            bench.drawKept(cards);
+            String afterClear = againstNew(bench, cards);
+            bench.home(cards);
+            return new Object[]{pressed, count, barBetween, barAfter, after, pressed100, monthLater, cleared, barGone, afterClear, fillsByPress};
+        });
+        check("a card's + pressed between draws is a press on the card (the count reads \"" + press[1] + "\")", (boolean) press[0] && "1".equals(press[1]));
+        check("...the order bar is refilled in place at once, outside any draw, once (" + press[10] + " fill)", (boolean) press[2] && (int) press[10] == 1);
+        check("...and the next kept draw keeps the bar and equals a page built new", (boolean) press[3] && press[4] == null);
+        if (press[4] != null) System.out.println("  " + press[4]);
+        check("+100, a month and a kept draw equal a page built new", (boolean) press[5] && press[6] == null);
+        if (press[6] != null) System.out.println("  " + press[6]);
+        check("the card's own ↺ clears the order, the bar goes, and the next kept draw equals a page built new", (boolean) press[7] && (boolean) press[8] && press[9] == null);
+        if (press[9] != null) System.out.println("  " + press[9]);
+    }
+
+    /** Section 46: the hover. A card's (i) keeps its stat cover shown across a kept draw while the pointer is over it, and hides it once the pointer goes; and the Overview's tiles, a category's door and a small ring card keep the look their own mouse-entered gives them. */
+    static void buildHover(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 46: the hover is kept (Build) ---");
+        java.util.Map<String, Boolean> found = new java.util.LinkedHashMap<>();
+        KeptBench.Page overview = fx(() -> bench.build("the Build Overview", BuildAdvice.OVERVIEW, java.util.Map.of()));
+        fx(() -> {
+            bench.home(overview);
+            bench.drawKept(overview);
+            bench.passes();
+            return null;
+        });
+        for (String kind : List.of("jobTile", "marketTile", "door")) {
+            String d = fx(() -> bench.hoverKept(kind, () -> bench.drawKept(overview)));
+            hoverLine(found, "the Build Overview", kind, d);
+        }
+        for (String city : List.of(BuildAdvice.HEALTHCARE, BuildAdvice.EDUCATION)) {
+            KeptBench.Page page = fx(() -> bench.build("Build, " + city, city, java.util.Map.of()));
+            fx(() -> {
+                bench.home(page);
+                bench.drawKept(page);
+                bench.passes();
+                return null;
+            });
+            for (String kind : city.equals(BuildAdvice.EDUCATION) ? List.of("door", "ringCard") : List.of("door")) {
+                String d = fx(() -> bench.hoverKept(kind, () -> bench.drawKept(page)));
+                hoverLine(found, "Build, " + city, kind, d);
+            }
+            String d = fx(() -> bench.hoverCover(() -> bench.drawKept(page)));
+            hoverLine(found, "Build, " + city, "(i) cover", d);
+        }
+        for (String kind : List.of("jobTile", "marketTile", "door", "ringCard", "(i) cover")) {
+            check("a " + kind + " was found on a Build page of this city, to put the pointer on", found.getOrDefault(kind, false));
+        }
+    }
+
     /** A notice raised now, unread, in the inbox. */
     private static Notice add(Game g, String key, String title) {
         Notice n = new Notice(key, title, List.of("first line of " + key, "", "third line"), g.getMonth());
@@ -1828,7 +2460,7 @@ public class KeptCheck {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services and the land office kept between redraws (study UP4, UP2, KP1, KP2) ===");
+        System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build and the construction page kept between redraws (study UP4, UP2, KP1, KP2, KP3) ===");
         String down = startJavaFx();
         if (down != null) {
             System.out.println("skipped: the JavaFX toolkit cannot start here (" + down + "); the page needs it to be laid out");
@@ -1999,6 +2631,11 @@ public class KeptCheck {
         land(g, bench);
         controls(g, bench);
         hover(g, bench);
+        build(g, bench);
+        construction(g, bench);
+        stopped(g, bench);
+        buildControls(g, bench);
+        buildHover(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();

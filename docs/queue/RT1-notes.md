@@ -1,4 +1,4 @@
-# RT1 - a building counted in its sector's retirement measure ({next}, 2026-11-05)
+# RT1 - a building counted in its sector's retirement measure (0.9.19, 2026-11-05)
 
 ## WHERE IT STANDS
 

@@ -1,4 +1,4 @@
-# Statement.java - 491 lines · 23 methods · 5 constants · interface
+# Statement.java - 496 lines · 24 methods · 5 constants · interface
 
 `ham/citybuildersim/ui/Statement.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
@@ -11,7 +11,7 @@
 > uses them, so they belong to no screen. Called unqualified through an
 > import static, exactly as they were when they were methods of the window.
 
-**Uses:** [Palette](Palette.md) (79), [Kept](Kept.md) (20)
+**Uses:** [Palette](Palette.md) (79), [Kept](Kept.md) (23)
 
 **Used by (29):** [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [EconomyManager](EconomyManager.md), [Forms1900Check](Forms1900Check.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MonthOrder](MonthOrder.md), [NewGameCheck](NewGameCheck.md), [PeopleScreen](PeopleScreen.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [StatementView](StatementView.md), [TradeScreen](TradeScreen.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
 
@@ -35,9 +35,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 468 | **type** `public final class Statement` | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages and the bank's income statement use - its lines able to stay open through the cloc... |
+| 24 | 473 | **type** `public final class Statement` | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages and the bank's income statement use - its lines able to stay open through the cloc... |
 
-### A STATEMENT WITH TWO COLUMNS. (lines 26-491)
+### A STATEMENT WITH TWO COLUMNS. (lines 26-496)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -63,5 +63,6 @@
 | 409 | 6 | `public static Label bookNote(String text)` | A short grey line under a figure, for the one sentence it needs. |
 | 428 | 5 | `public static VBox disclosure(String line, String hint, VBox detail)` | A line you can click to open the working behind it. |
 | 435 | 16 | `public static VBox disclosure(String line, String hint, VBox detail, String style)` | As above, keeping a row's own styling - used by the tier table. |
-| 456 | 35 | `public static VBox reportSection(String heading, String...rows)` |  |
+| 456 | 4 | `public static VBox reportSection(String heading, String...rows)` |  |
+| 461 | 35 | `private static VBox reportSectionOf(String heading, String[] rows)` |  |
 

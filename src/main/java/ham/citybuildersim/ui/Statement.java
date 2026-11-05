@@ -454,7 +454,12 @@ public final class Statement {
     public static final String OPENED = "\u25be";
 
     public static VBox reportSection(String heading, String... rows) {
-        VBox box = new VBox(3);
+        // Kept (KP3): through Kept (a new box and labels outside a draw), a scope keyed by its heading, so a section of a kept page hands its own rows back.
+        return Kept.scope("reportSection:" + heading, () -> reportSectionOf(heading, rows));
+    }
+
+    private static VBox reportSectionOf(String heading, String[] rows) {
+        VBox box = Kept.column(3);
         // CENTER_LEFT, not CENTER: each row used to be centred individually, which
         // threw away the %-24s padding and left the value column ragged. Left-
         // aligning inside a centred fixed-width column makes the padding line up.
@@ -478,7 +483,7 @@ public final class Statement {
          */
         box.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
 
-        Label headingLabel = new Label(heading);
+        Label headingLabel = Kept.label(heading);
         headingLabel.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-weight: bold;");
         box.getChildren().add(headingLabel);
 
