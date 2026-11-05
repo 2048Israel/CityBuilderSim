@@ -43,6 +43,9 @@ import java.util.Locale;
  * refreshTabRail() - kept, or with every node new (the pools swapped for empty ones, as a rebuild
  * made them). Since KP1 City History too, on the same scene: its page drawn kept and built new, the
  * hands on what reshapes it, the pointer on its big chart, and the real show methods for what the clock decides.
+ * Since KP2 Infrastructure, Services and the land office too, as {@link Page}s: one small shape for the three, each drawn
+ * kept from its screen's pool and built new from an empty one, with the hands on what reshapes them, on the fare dial and
+ * City History's filter box (the controls) and on the nodes a pointer styles (the hover).
  *
  * <p>WHY. A kept page is right only if every month's redraw over last month's nodes ends where
  * a page built new from the same city would; the one way to know is to build both and compare
@@ -596,6 +599,11 @@ public final class KeptBench {
             ui.historyScreen.historySeeded = true;
             ui.historyScreen.historyPicked.addAll(java.util.Arrays.asList(HistoryScreen.PRESETS[0].keys()));
         }
+        ensureWindow();
+    }
+
+    /** The window a page reads: the stand-in scroller its height follows, and the stack a full screen goes in. */
+    private void ensureWindow() {
         if (ui.menuScroller == null) {
             ScrollPane window = new ScrollPane();
             window.resize(WIDTH, 900);
@@ -926,9 +934,14 @@ public final class KeptBench {
 
     private static void fireMouse(Node target, javafx.event.EventType<javafx.scene.input.MouseEvent> type, double x, double y,
                                   javafx.scene.input.MouseButton button, int clicks) {
-        javafx.event.Event.fireEvent(target, new javafx.scene.input.MouseEvent(type, x, y, x, y, button, clicks,
+        javafx.event.Event.fireEvent(target, mouse(type, x, y, button, clicks));
+    }
+
+    private static javafx.scene.input.MouseEvent mouse(javafx.event.EventType<javafx.scene.input.MouseEvent> type, double x, double y,
+                                                       javafx.scene.input.MouseButton button, int clicks) {
+        return new javafx.scene.input.MouseEvent(type, x, y, x, y, button, clicks,
                 false, false, false, false, button == javafx.scene.input.MouseButton.PRIMARY, false, false,
-                false, false, true, null));
+                false, false, true, null);
     }
 
     /* ----- the real show methods, for what the clock decides (the count-up) ----- */
@@ -1002,6 +1015,469 @@ public final class KeptBench {
         Pieces.CardHead head = first(Pieces.CardHead.class);
         return new String[]{head == null ? null : head.figure.getText(),
                 ui.historyScreen.pinHead(ui.game.getHistorySave(), true).figure()};
+    }
+
+    /* =====================================================================
+       INFRASTRUCTURE, SERVICES AND THE LAND OFFICE (KP2): the three pages kept and built new,
+       and the hands on what reshapes them, the controls on them and the pointer over them
+       ===================================================================== */
+
+    /**
+     * One of the three pages on the bench: the name the window shows it under, the screen's own pool, how it is
+     * drawn from a pool (what the screen's show method works out first, then the page's code as a kept draw) and how
+     * it goes back to the page it opens on. Drawn from the screen's pool it is the kept page; from an empty one, the
+     * page built new, as every redraw was before KP2.
+     */
+    public final class Page {
+        private final String name, screen;
+        private final java.util.function.Supplier<Kept.Pool> pool;
+        private final java.util.function.ToDoubleFunction<Kept.Pool> draw;
+        private final Runnable home;
+
+        private Page(String name, String screen, java.util.function.Supplier<Kept.Pool> pool,
+                     java.util.function.ToDoubleFunction<Kept.Pool> draw, Runnable home) {
+            this.name = name;
+            this.screen = screen;
+            this.pool = pool;
+            this.draw = draw;
+            this.home = home;
+        }
+
+        /** What the harness's lines call the page. */
+        public String name() {
+            return name;
+        }
+    }
+
+    /** The draw's own milliseconds, for a page's code run as a kept draw from this pool. */
+    private double timed(Kept.Pool pool, Runnable page) {
+        long t = System.nanoTime();
+        Kept.draw(pool, page);
+        return (System.nanoTime() - t) / 1e6;
+    }
+
+    /** Infrastructure's tab: the page `infraPage` (and on Freight `freightDivision`) names, over its fold state. */
+    public Page infrastructure() {
+        InfrastructureScreen s = ui.infrastructureScreen;
+        return new Page("Infrastructure", "showInfrastructureMenu", () -> s.pool, pool -> {
+            List<ham.citybuildersim.CityNeeds.Need> all = ham.citybuildersim.CityNeeds.measure(ui.game, SummaryScreen.WORDS);
+            return timed(pool, () -> s.drawPage(all));
+        }, () -> {
+            s.infraPage = "Roads";
+            s.freightDivision = "All";
+            s.detailsOpen.clear();
+            s.forget();
+        });
+    }
+
+    /** Services' tab: the sub-page `serviceArea` and `servicePage` name, over its fold state. */
+    public Page services() {
+        ServicesScreen s = ui.servicesScreen;
+        return new Page("Services", "showServicesStatsMenu", () -> s.pool, pool -> {
+            List<ham.citybuildersim.CityNeeds.Need> all = ham.citybuildersim.CityNeeds.measure(ui.game, SummaryScreen.WORDS);
+            List<ServicesScreen.Event> events = s.events();
+            return timed(pool, () -> s.drawPage(all, events));
+        }, () -> {
+            s.serviceArea = ServicesScreen.SERVICE_AREA_HOME;
+            s.servicePage = ServicesScreen.SERVICE_HOME;
+            s.detailsOpen.clear();
+            s.forget();
+        });
+    }
+
+    /** The land office: its side and place, the best-N count and its fold as the screen has them; the map is the screen's own. */
+    public Page land() {
+        LandScreen s = ui.landScreen;
+        return new Page("the land office", "showLandMenu", () -> s.pool, pool -> {
+            // What showLandMenu() works out before its draw.
+            s.ensureMap();
+            s.noteShelf();
+            s.chooseSide();
+            LandScreen.Next next = s.next();
+            return timed(pool, () -> s.drawOffice(next));
+        }, () -> {
+            s.forget();
+            s.nextCount = 5;
+            s.detailsOpen = false;
+        });
+    }
+
+    /** The land office's funding page for these plots (Game.landNeedsFunding() holds for them). */
+    public Page landFunding(List<Integer> ids) {
+        LandScreen s = ui.landScreen;
+        return new Page("the funding page", "showLandFunding", () -> s.pool, pool -> {
+            s.ensureMap();
+            return timed(pool, () -> s.drawFunding(ids));
+        }, s::forget);
+    }
+
+    /** The page for when the city fell short: `bought` of `asked` plots, the loan `paper` taken (null: the vault's dollars). */
+    public Page landFellShort(String paper, int bought, int asked) {
+        LandScreen s = ui.landScreen;
+        return new Page(paper == null ? "the fell-short page (the vault's dollars)" : "the fell-short page (a " + paper + ")", "showLandFellShort", () -> s.pool, pool -> {
+            s.ensureMap();
+            return timed(pool, () -> s.drawFellShort(paper, bought, asked));
+        }, s::forget);
+    }
+
+    /** A page drawn kept from its screen's own pool (an arrival from another screen forgets it first, as keepMenu does): the draw's own milliseconds. */
+    public double drawKept(Page p) {
+        ensureWindow();
+        if (!p.screen.equals(ui.currentScreen)) p.pool.get().forget();
+        ui.currentScreen = p.screen;
+        return p.draw.applyAsDouble(p.pool.get());
+    }
+
+    /** A page back on the page it opens on, nothing kept: the next draw makes every node. */
+    public void home(Page p) {
+        p.home.run();
+    }
+
+    /** The nodes the last kept draw of the page made new and handed back: {made, kept}. */
+    public int[] counts(Page p) {
+        Kept.Pool pool = p.pool.get();
+        return new int[]{pool.lastMade(), pool.lastKept()};
+    }
+
+    /** The page's top nodes, kept or not: the same objects from one kept draw to the next. */
+    public List<Node> pageTop() {
+        return new ArrayList<>(column.getChildren());
+    }
+
+    /** What the kept page held when a page was built new in its place: its top nodes, and what every box under it held. */
+    private List<Node> keptPage = List.of();
+    private java.util.Map<Pane, List<Node>> keptBoxes = new java.util.IdentityHashMap<>();
+
+    /**
+     * The page built new in place of the kept one (an empty pool, every node new) and laid out, as every redraw was
+     * before KP2: {its draw ms, CSS ms, layout ms}. What the page shares with the kept one - the land office's map - is
+     * taken into the new page, so every box under the kept page is noted for restoreKeptPage() to put its children back.
+     */
+    public double[] showFresh(Page p) throws Exception {
+        ensureWindow();
+        ui.currentScreen = p.screen;
+        keptPage = new ArrayList<>(column.getChildren());
+        keptBoxes = new java.util.IdentityHashMap<>();
+        for (Node n : keptPage) boxesOf(n, keptBoxes);
+        double ms = p.draw.applyAsDouble(new Kept.Pool());
+        double[] pass = passes();
+        return new double[]{ms, pass[0], pass[1]};
+    }
+
+    /** The kept page back in the column, every box holding what it held, and laid out. */
+    public void restoreKeptPage() throws Exception {
+        ui.setPage(keptPage.toArray(new Node[0]));
+        for (java.util.Map.Entry<Pane, List<Node>> e : keptBoxes.entrySet()) Kept.set(e.getKey().getChildren(), e.getValue());
+        passes();
+    }
+
+    /** Every box (Pane) under a node and the children it holds now. */
+    private static void boxesOf(Node n, java.util.Map<Pane, List<Node>> out) {
+        if (n instanceof Pane p) out.put(p, new ArrayList<>(p.getChildren()));
+        if (n instanceof Labeled l && l.getGraphic() != null) boxesOf(l.getGraphic(), out);
+        if (n instanceof ScrollPane sp && sp.getContent() != null) boxesOf(sp.getContent(), out);
+        if (n instanceof Group g) for (Node k : new ArrayList<>(g.getChildren())) boxesOf(k, out);
+        if (n instanceof Region r && !(n instanceof Control)) for (Node k : new ArrayList<>(r.getChildrenUnmodifiable())) boxesOf(k, out);
+    }
+
+    /** One figure on the page made wrong (see spoil()). */
+    public String spoilPage() {
+        return spoil(new ArrayList<>(column.getChildren()));
+    }
+
+    /** A fold's key put in a set or taken out of it. */
+    private static void fold(java.util.Set<String> open, String key, boolean on) {
+        if (on) open.add(key);
+        else open.remove(key);
+    }
+
+    /* ----- the hands on what reshapes the pages ----- */
+
+    /** Infrastructure on one of its pages (and on Freight, a division), as its strip would (the show method normalises the two; the draw does not). */
+    public void infraOpen(String page, String division) {
+        ui.infrastructureScreen.infraPage = page;
+        ui.infrastructureScreen.freightDivision = division;
+    }
+
+    /** One of Infrastructure's folds ("roads", "transit", "railway", "freight") opened or closed. */
+    public void infraFold(String name, boolean open) {
+        fold(ui.infrastructureScreen.detailsOpen, name, open);
+    }
+
+    /** Every sub-page of Services as {system, page}, in the strips' order. */
+    public static List<String[]> servicesPages() {
+        List<String[]> out = new ArrayList<>();
+        for (ServicesScreen.ServiceArea area : ServicesScreen.serviceAreas()) {
+            for (String page : area.pages()) out.add(new String[]{area.name(), page});
+        }
+        return out;
+    }
+
+    /** Services on one sub-page, as the two strips would. */
+    public void servicesOpen(String area, String page) {
+        ui.servicesScreen.serviceArea = area;
+        ui.servicesScreen.servicePage = page;
+    }
+
+    /** One of Services' folds ("health:sick", "books:safety"...) opened or closed. */
+    public void servicesFold(String key, boolean open) {
+        fold(ui.servicesScreen.detailsOpen, key, open);
+    }
+
+    /** The land office's side (0 north to 3 west) picked, as its chip or the map would: no place on it yet. */
+    public void landSide(int side) {
+        ui.landScreen.side = side;
+        ui.landScreen.place = -1;
+    }
+
+    /** The offer at a place (0 to 5) on the side shown picked, as its row would. */
+    public void landPlace(int place) {
+        ui.landScreen.place = place;
+    }
+
+    /** The side the office shows. */
+    public int landSide() {
+        return ui.landScreen.side;
+    }
+
+    /** How many offers "Buy the best N" is set to buy (the draw holds it inside what is listed). */
+    public void landCount(int n) {
+        ui.landScreen.nextCount = n;
+    }
+
+    /** The office's "details" fold opened or closed. */
+    public void landDetails(boolean open) {
+        ui.landScreen.detailsOpen = open;
+    }
+
+    /** How the office pays: from the vault (true) or by converting cash (false), as its toggle sets it. */
+    public void landPay(boolean fromVault) {
+        ui.game.setLandPaidFromVault(fromVault);
+    }
+
+    /** Whether the office pays from the vault. */
+    public boolean landPaidFromVault() {
+        return ui.game.isLandPaidFromVault();
+    }
+
+    /** How many offers are listed. */
+    public int landListed() {
+        return ui.game.landShelf().size();
+    }
+
+    /** The first count of the best offers the city cannot pay for as it stands, or null when it can pay for the whole shelf. */
+    public List<Integer> landFundingIds() {
+        int listed = ui.game.landShelf().size();
+        for (int n = 1; n <= listed; n++) {
+            List<Integer> ids = ui.game.nextLandParcels(n);
+            if (ui.game.landNeedsFunding(ids)) return ids;
+        }
+        return null;
+    }
+
+    /** The best offer bought through the model, as its row's Buy would (the receipt shows until the month turns); why not, or null when it was. */
+    public String landBuy() {
+        List<Integer> ids = ui.game.nextLandParcels(1);
+        if (ids.isEmpty()) return "nothing is listed";
+        if (ui.game.landNeedsFunding(ids)) return "the city cannot pay for the best offer";
+        return ui.game.buyLandParcels(ids) == 1 ? null : "the best offer was not bought";
+    }
+
+    /**
+     * Offers bought, the best first through the model (Game.buyLandParcels(), as a row's Buy), until the city cannot pay for the
+     * best one as it stands, so that the funding page exists: how many it took, or -1 when the limit came first or nothing was left.
+     */
+    public int landBuyUntilShort(int limit) {
+        for (int i = 0; i < limit; i++) {
+            List<Integer> ids = ui.game.nextLandParcels(1);
+            if (ids.isEmpty()) return -1;
+            if (ui.game.landNeedsFunding(ids)) return i;
+            if (ui.game.buyLandParcels(ids) != 1) return -1;
+        }
+        return -1;
+    }
+
+    /** How many sectors wait on ground (the office's waiting card lists them). */
+    public int landWaiting() {
+        return ui.landScreen.waitingNames().size();
+    }
+
+    /** Whether the land office holds a receipt now. */
+    public boolean landReceipt() {
+        String r = ui.game.getLastLandReceipt();
+        return r != null && !r.isEmpty();
+    }
+
+    /** Whether the city owns ground on a second landmass, so that the office lists its ground by landmass (a table made with new: SectorScreen's cells). */
+    public boolean landLandmasses() {
+        return ui.landScreen.landmassesTable() != null;
+    }
+
+    /* ----- the controls (the rule: a control keeps the player's hand) ----- */
+
+    /** Infrastructure shown, as the rail's tab or a month landing shows it: the real show method (the chrome, then the page kept). */
+    public void showInfrastructure() {
+        ensureWindow();
+        ui.infrastructureScreen.showInfrastructureMenu();
+    }
+
+    /** The first slider on the page - Transit's fare - or null. */
+    public javafx.scene.control.Slider slider() {
+        return first(javafx.scene.control.Slider.class);
+    }
+
+    /** Whether the player holds a node (Kept.held). */
+    public static boolean held(Node n) {
+        return Kept.held(n);
+    }
+
+    /** The reading beside a slider, as the latest draw made it (the label the slider's listener writes). */
+    public static Label readingOf(javafx.scene.control.Slider s) {
+        for (Object v : s.getProperties().values()) if (v instanceof Label l) return l;
+        return null;
+    }
+
+    /** What the dial's ladder says its thumb shows, as the latest draw built it (Ladder.shown()). */
+    public static double shownBy(javafx.scene.control.Slider s) {
+        for (Object v : s.getProperties().values()) if (v instanceof Ladder l) return l.shown();
+        return Double.NaN;
+    }
+
+    /** A primary press on a node, as the pointer's. */
+    public static void press(Node n) {
+        fireMouse(n, javafx.scene.input.MouseEvent.MOUSE_PRESSED, 5, 5, javafx.scene.input.MouseButton.PRIMARY, 1);
+    }
+
+    /** ...and the release (the node's own release handler runs: for the fare dial, it stages the thumb and redraws the screen). */
+    public static void release(Node n) {
+        fireMouse(n, javafx.scene.input.MouseEvent.MOUSE_RELEASED, 5, 5, javafx.scene.input.MouseButton.PRIMARY, 1);
+    }
+
+    /** The staged fare, or NaN when none is. */
+    public double stagedFare() {
+        return ui.policyScreen.isStaged("fare") ? ui.policyScreen.staged("fare", Double.NaN) : Double.NaN;
+    }
+
+    /** The fare put back as it is, as the card's "Leave it as it is" does (it drops the proposal). */
+    public void unstageFare() {
+        ui.policyScreen.unstage("fare");
+    }
+
+    /** The fare staged at a value, as a release on the dial stages it. */
+    public void stageFare(double value) {
+        ui.policyScreen.stage("fare", value);
+    }
+
+    /** The filter box of City History as it is now, or null when the page has none. */
+    private javafx.scene.control.TextField filter() {
+        return first(javafx.scene.control.TextField.class);
+    }
+
+    /**
+     * Words typed into City History's filter box and the box given the focus: how it got it - "requestFocus" when the
+     * scene took it, "setFocused by reflection" when this scene has no window to give it (a scene with no stage leaves
+     * isFocused() false), or why it could not be given.
+     */
+    public String historyFilterFocus(String text) throws ReflectiveOperationException {
+        javafx.scene.control.TextField box = filter();
+        if (box == null) return "the page has no filter box";
+        box.setText(text);
+        box.requestFocus();
+        String how = "requestFocus";
+        if (!box.isFocused()) {
+            Method m = Node.class.getDeclaredMethod("setFocused", boolean.class);
+            m.setAccessible(true);
+            m.invoke(box, true);
+            how = box.isFocused() ? "setFocused by reflection" : "the box would not take the focus";
+        }
+        // The caret at the end of what was typed, as typing leaves it (taking the focus may have moved it).
+        box.positionCaret(text.length());
+        return how;
+    }
+
+    /** The focus taken off City History's filter box, as another click would. */
+    public void historyFilterBlur() throws ReflectiveOperationException {
+        javafx.scene.control.TextField box = filter();
+        if (box == null) return;
+        Method m = Node.class.getDeclaredMethod("setFocused", boolean.class);
+        m.setAccessible(true);
+        m.invoke(box, false);
+    }
+
+    /** City History's filter box: the node, its text, its caret and whether it has the focus. */
+    public Object[] historyFilterState() {
+        javafx.scene.control.TextField box = filter();
+        return box == null ? null : new Object[]{box, box.getText(), box.getCaretPosition(), box.isFocused()};
+    }
+
+    /** Kept.text on City History's filter box: the text it holds after. */
+    public String historyFilterSet(String text) {
+        javafx.scene.control.TextField box = filter();
+        Kept.text(box, text);
+        return box.getText();
+    }
+
+    /* ----- the pointer over what a hover styles ----- */
+
+    /** What hoverKept() says when the page has no node of the kind asked for. */
+    public static final String ABSENT = "absent";
+
+    /**
+     * The first node of a kind on the page, or null: "rowGoes" (City History's row that moves the chart), "door"
+     * (Pieces.door: words and a "›"), "limitCell" (a vitals cell that is a door), "chartCardHead" (a chart card's name,
+     * a click on it opens the chart), "landRow" (an offer's row), "oreCard" (the land office's ore card), "doorCard"
+     * (Services' card made a door).
+     */
+    public Node hoverTarget(String kind) {
+        List<Node> found = new ArrayList<>();
+        each(column, n -> {
+            if (!found.isEmpty() || n.getOnMouseEntered() == null || n.getOnMouseExited() == null) return;
+            String style = n.getStyle() == null ? "" : n.getStyle();
+            boolean it = switch (kind) {
+                case "rowGoes" -> n instanceof Pane && style.contains("-fx-padding: 4 6 4 6; -fx-background-radius: 6");
+                case "door" -> n instanceof Label l && l.getText() != null && l.getText().endsWith(" ›") && style.contains("-fx-cursor: hand");
+                case "limitCell" -> n instanceof VBox && n.getOnMouseClicked() != null && style.contains("-fx-padding: 0 14 0 14");
+                case "chartCardHead" -> n instanceof Label && n.getParent() instanceof Pieces.CardHead h && h.name == n;
+                case "landRow" -> n instanceof Pane && style.contains("-fx-padding: 0 6 0 6; -fx-background-radius: 4");
+                case "oreCard" -> n instanceof Pane && Kept.tipOf(n) != null && Kept.tipOf(n).getText().startsWith("Mines are built under Build");
+                case "doorCard" -> n instanceof VBox && n.getOnMouseClicked() != null && style.contains("-fx-background-radius: 8")
+                        && style.contains("-fx-cursor: hand");
+                default -> throw new IllegalArgumentException(kind);
+            };
+            if (it) found.add(n);
+        });
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    /**
+     * The pointer put over the first node of a kind, the page drawn kept again (`redraw`), and the node looked at; then the
+     * pointer taken off and the page drawn again. Null when each time the node was the same node, in the look its own
+     * handler gives (read its style, run the handler, read it again: unchanged) and the two looks differ; else what
+     * differed. ABSENT when the page has no such node.
+     */
+    public String hoverKept(String kind, Runnable redraw) throws Exception {
+        Node n = hoverTarget(kind);
+        if (n == null) return ABSENT;
+        hover(n, true);
+        redraw.run();
+        passes();
+        if (hoverTarget(kind) != n) return "the node under the pointer was handed away or made new by the redraw";
+        String over = n.getStyle();
+        n.getOnMouseEntered().handle(mouse(javafx.scene.input.MouseEvent.MOUSE_ENTERED, 5, 5, javafx.scene.input.MouseButton.NONE, 0));
+        if (!java.util.Objects.equals(over, n.getStyle())) return "under the pointer the draw left " + clip(over) + " where its own mouse-entered sets " + clip(n.getStyle());
+        hover(n, false);
+        redraw.run();
+        passes();
+        if (hoverTarget(kind) != n) return "the node the pointer left was handed away or made new by the redraw";
+        String rest = n.getStyle();
+        n.getOnMouseExited().handle(mouse(javafx.scene.input.MouseEvent.MOUSE_EXITED, 5, 5, javafx.scene.input.MouseButton.NONE, 0));
+        if (!java.util.Objects.equals(rest, n.getStyle())) return "off the pointer the draw left " + clip(rest) + " where its own mouse-exited sets " + clip(n.getStyle());
+        if (java.util.Objects.equals(over, rest)) return "the hover changes nothing in the node's style, so there is no look to keep";
+        return null;
+    }
+
+    private static String clip(String s) {
+        return s == null ? "null" : s.length() > 120 ? s.substring(0, 120) + "..." : s;
     }
 
     private static Method doCSSPass, doLayoutPass;

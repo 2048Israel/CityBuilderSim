@@ -2426,6 +2426,9 @@ public final class Pieces {
                     double uh = under.prefHeight(ws[i]);
                     under.resizeRelocate(x, band + UNDER, ws[i], uh);
                     underH = Math.max(underH, uh);
+                } else {
+                    // Kept (KP2): a name not shown rests at the origin, not where it stood the last month it was.
+                    under.resizeRelocate(0, 0, under.prefWidth(-1), under.prefHeight(-1));
                 }
                 if (ws[i] > 0) x += ws[i] + GAP;
             }
@@ -2436,8 +2439,12 @@ public final class Pieces {
                 HBox k = keys.get(i);
                 boolean keyed = !named(ws[i]);
                 k.setVisible(keyed);
-                if (!keyed) continue;
                 double kw = k.prefWidth(-1), kh = k.prefHeight(-1);
+                if (!keyed) {
+                    // Kept (KP2): a key not shown rests at the origin, as a name not shown does.
+                    k.resizeRelocate(0, 0, kw, kh);
+                    continue;
+                }
                 if (any && kx + kw > w) { top += rowH + KEY_ROW; kx = 0; rowH = 0; }
                 k.resizeRelocate(kx, top, kw, kh);
                 kx += kw + KEY_GAP;
@@ -3039,15 +3046,30 @@ public final class Pieces {
             if (moved) requestLayout();
         }
 
-        /** What the parts depend on: per row, whether it is a caption, has an (i), its icon, and how many runs and marks; and how many rules. */
+        /**
+         * What the parts depend on: per row, whether it is a caption, has an (i), its icon, how many runs and marks, and
+         * which of its four texts say anything; and how many rules, and which are named. WHY the texts (KP2, KeptCheck's
+         * goods' fold): a Label that has had words and is set to none keeps the Text node's bounds of the words it had
+         * (JavaFX measures an emptied Text from its last line, a new one from nothing), so a kept row whose tag went would
+         * differ from a row built new by a hidden label's bounds; a part that goes empty is made afresh, as the page built
+         * new has it.
+         */
         private String shapeOf() {
             StringBuilder s = new StringBuilder();
             for (ScaleRow row : rows) {
                 s.append(row.caption() ? 'c' : 'r').append(row.info() != null ? 'i' : '-').append('|').append(row.icon())
                         .append('|').append(row.runs() == null ? 0 : row.runs().size())
-                        .append('|').append(row.marks() == null ? 0 : row.marks().size()).append(';');
+                        .append('|').append(row.marks() == null ? 0 : row.marks().size())
+                        .append('|').append(says(row.name())).append(says(row.empty())).append(says(row.tag())).append(says(row.figure())).append(';');
             }
-            return s.append('#').append(rules.size()).toString();
+            s.append('#').append(rules.size());
+            for (Rule rule : rules) s.append(says(rule.name()));
+            return s.toString();
+        }
+
+        /** 't' for words, '-' for none: what a part's label needs to be told apart by. */
+        private static char says(String words) {
+            return words == null || words.isEmpty() ? '-' : 't';
         }
 
         /** Every figure and word the layout reads, in one string: laid out again only when it differs. */
@@ -4623,7 +4645,10 @@ public final class Pieces {
         private String svg, accent;
         private double tall;
         private final HBox row = new HBox(8);
-        private final Label main = new Label(), sub = new Label();
+        private final Label main = new Label();
+        /** The line under the words, or null while the button has none (see show()). */
+        private Label sub;
+        private final VBox words = new VBox(0);
         private Press press;
         private Runnable go;
 
@@ -4634,9 +4659,7 @@ public final class Pieces {
             this.go = go;
             main.setWrapText(true);
             main.setMinWidth(0);
-            sub.setWrapText(true);
-            sub.setMinWidth(0);
-            VBox words = new VBox(0, main, sub);
+            words.getChildren().add(main);
             words.setAlignment(Pos.CENTER_LEFT);
             words.setMinWidth(0);
             row.setAlignment(Pos.CENTER);
@@ -4678,9 +4701,23 @@ public final class Pieces {
         public ActionButton show(Press p) {
             press = p;
             main.setText(p.main());
-            sub.setText(p.sub() == null ? "" : p.sub());
-            sub.setVisible(p.sub() != null);
-            sub.setManaged(p.sub() != null);
+            // Kept (KP2): a line under the words is a label that exists while it says something, made afresh each time it
+            // comes - a label emptied and hidden keeps the Text node's bounds and the place layout last gave it, which a
+            // button built new does not have.
+            if (p.sub() == null) {
+                if (sub != null) {
+                    words.getChildren().remove(sub);
+                    sub = null;
+                }
+            } else {
+                if (sub == null) {
+                    sub = new Label();
+                    sub.setWrapText(true);
+                    sub.setMinWidth(0);
+                    words.getChildren().add(sub);
+                }
+                sub.setText(p.sub());
+            }
             setAccessibleText(p.words());
             dress();
             return this;
@@ -4725,7 +4762,7 @@ public final class Pieces {
                     + "; -fx-border-radius: 8; -fx-border-width: 1.5; -fx-padding: 4 12 4 12;");
             main.setStyle("-fx-font-family: " + Fonts.sans() + "; -fx-font-weight: bold; -fx-font-size: 13px;"
                     + " -fx-text-fill: " + ink + ";");
-            sub.setStyle(Palette.words(Palette.SIZE_CAPTION, faint));
+            if (sub != null) sub.setStyle(Palette.words(Palette.SIZE_CAPTION, faint));
             // A kept button is handed back its own icon: put in only when it is not the one there (a set of the same node takes it off the scene).
             javafx.scene.Node mark = icon(svg, ink, 16);
             if (row.getChildren().get(0) != mark) row.getChildren().set(0, mark);

@@ -57,7 +57,37 @@ after review. E finds what a page built new shows that the kept page does not, a
 
 ## 4. The threading, for the gate's review
 
-To be written from the code as reviewed (slice A).
+**One thread.** The clock is an `AnimationTimer`; the month, every redraw, every handler and listener below run on
+the FX thread, and `Kept.drawing` is a static only that thread touches. Nothing in KP2 runs elsewhere, so what a
+reviewer weighs is re-entrancy - what runs inside a draw - and what a kept node carries from one draw to the next.
+
+- **A draw and what it calls.** `keepMenu()` -> `Kept.draw(pool, page)`. A draw of another pool inside it (the
+  chrome's) saves and restores the outer (UP2); the page's `ui.scrolled()` hands back its scroller from the same
+  draw. Kept's boxes set their real children after the page's code returns, with `drawing` null.
+- **What fires during a draw.** `Ladder.build()` sets the kept slider's range and value only where they differ
+  (`settle()`: widened, the value, then narrowed, so no passing range clamps it). That fires the slider's value
+  listener, which returns at once while `Kept.drawing()`: a redraw never calls the dial card's `track`, never
+  restages, never redraws inside a draw.
+- **What fires between draws.** A drag: the listener, added once (`Kept.isNew`), reads the ladder of the LATEST
+  build from the slider's properties (`LADDER`, `READING_LABEL`), sets that reading and calls that ladder's `track` -
+  the dial card's `fill`, which empties the card's effects column and refills it with plain new rows (no draw is
+  on). The next draw hands back the column's own rows; the drag's are dropped when it commits.
+- **The press and the release.** `Kept.grip()` adds two event filters and a scene listener once in the node's life
+  (a marker in its properties). The press filter sets `held` before the slider's own handlers move the thumb; the
+  release filter clears it before the slider's `onMouseReleased` commits -> `PolicyScreen` stages -> `ui.redraw()` ->
+  a kept draw, which is then free to set the value (the staged, snapped one). A node that leaves the scene mid-press
+  hears no release, so the scene listener lets it go. A slider also counts as held while `isValueChanging()`.
+- **A month landing mid-drag** (★B): the timer's tick -> the month -> `redraw` -> a kept draw in which
+  `Kept.held(bar)` is true: the range and the thumb are left alone, the reading says the thumb's snapped value as
+  the listener would, and `Levers.dialCard` fills its effects at `Ladder.shown()`, the thumb. The slider never
+  leaves the scene, so the drag's next events reach the same node.
+- **The focus** (★A): `keepMenu()` moves the focus off a kept page at each redraw, as before, unless the focus
+  owner is a `TextInputControl`; `Kept.text()` never sets a field that has the focus.
+- **Added once:** the Ladder's listener; `grip`'s filters and listener; each page's width binding (a marker per
+  scroller, as KP1's `frameOver`); `FlowCurve`'s tooltips (its constructor). The `setOnXxx` handlers Kept clears on
+  a node handed back are set by the pages every draw.
+- **The model** is read through the same getters as before, and written only where the player's controls wrote it
+  before (`PolicyScreen`'s staged set and its Apply).
 
 ## 5. What checks it
 
@@ -65,4 +95,15 @@ To be written (slice E).
 
 ## 6. Found in review
 
-To be written.
+- **By the slices:** a page opened from its chip or a vitals cell went to its top only because the rebuilt page
+  had a new scroller; a kept one stays, so `open()` on Infrastructure (`toTop`) and `open()`/`openPage()` on Services
+  (`atTop`) send it to the top after the draw. Services' `details()` takes its insides as a supplier: a closed fold
+  builds nothing (it built every table every month). Services' `lane()` takes a list: a kept row and the flow
+  would have taken each other's children. Land's `MapView` is made before the draw (`ensureMap()`), so its own
+  icon is not in the hero's pool. `words()`/`figure()` on both screens set wrap and minimum width on both sides.
+- **By Opus:** a gripped node let go with its scene (a stuck `held` would leave a slider never set again);
+  Infrastructure's and Services' pools forgotten with the city in `anotherCity()`; Land's side chips stripped of
+  their graphic by `chipStrip` and given it back every draw (off the scene and on again) - `chipStrip` takes the
+  caller's graphics now, as KP1 made it take its icons.
+- **By the harness:** before the new sections, KeptCheck's 94 held but one, History's goods' fold: a hidden part
+  of the new `ScaleRows` picture kept last month's height (slice E's first mend, §5).

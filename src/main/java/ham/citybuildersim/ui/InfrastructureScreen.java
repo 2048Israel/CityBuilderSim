@@ -136,8 +136,8 @@ final class InfrastructureScreen {
     /** Which of the Freight page's divisions is open - All, Haulage or Rail; the Ports are a page of their own - kept while the game runs, not saved (FR4, as detailsOpen). */
     String freightDivision = "All";
 
-    /** Which "details" folds are open, by page - kept while the game runs, not saved (0.7.29). */
-    private final java.util.Set<String> detailsOpen = new java.util.HashSet<>();
+    /** Which "details" folds are open, by page - kept while the game runs, not saved (0.7.29). Not private: KeptBench flips them (KP2). */
+    final java.util.Set<String> detailsOpen = new java.util.HashSet<>();
 
     /** The page's scroller, for a part of a picture that scrolls the page to where it is decided (Transit's fare). */
     private javafx.scene.control.ScrollPane body;
