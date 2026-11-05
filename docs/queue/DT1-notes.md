@@ -1,6 +1,7 @@
 # DT1 - The same code, another city: what in a month reads the machine ({next}, 2026-11-05)
 
-**WHERE IT STANDS (2026-11-05): done; waiting for RT1 to land, then main merged in and `--pick` again.**
+**WHERE IT STANDS (2026-11-05, 15:30): ready, the ship file pushed. RT1 is on main and merged in; `--pick` exit 3
+(main's recorded reds only).**
 
 ## The finding: not the machine, the world file
 
@@ -91,8 +92,11 @@ three at once, compared with an unflagged JVM bit for bit (`Double.toHexString`)
   Two lines: 2d "every box stands four months on (500 of them, 7 moved)" and "a yard that goes moves none of the
   buildings ... (698 of them, 70 moved)". They are RT1's two lines word for word, passed by name at its gate (RT1's
   notes, MapCheck 2d, DM1's class). They are not this batch's. With the properties set, `WorldData.locate()`
-  returns before the new code, so no path in any harness moved. The run after RT1 lands and main is merged in is
-  below.
+  returns before the new code, so no path in any harness moved.
+- **`./batch-check.sh --pick` after RT1 landed and main was merged in** (9947f531, c3782fe6's main; the
+  generated docs' conflicts on main's side, then regenerated): 20 harnesses, **exit 3**. The only reds are
+  main's recorded ones, DenominationCheck and MapCheck (`docs/notes/gate.txt`). DeterminismCheck passed in
+  26.5 s. Stale: 0 firm findings.
 - **The full suite: not run.** No harness's path moved. The model's one new line runs only when no world file is
   found, and the gate always names it.
 

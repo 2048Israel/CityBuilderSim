@@ -2,9 +2,9 @@
 
 Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,345 constants in 504 files.**
+**5,351 constants in 505 files.**
 
-## model (2621 constants)
+## model (2622 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -3439,6 +3439,7 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 134 | `WorldData.KIND_NATION` | `"nation", KIND_AREA = "area"` | A nations row's kind for a nation, and for an area. |
 | 137 | `WorldData.LAND_PER_SEA` | `"LAND_PER_SEA"` | The meta dial that weighs a land km against a sea km in the freight cost (FORMAT.txt, freight). |
 | 140 | `WorldData.HEAD_BYTES` | `16 + 64 *(2 + 255 + 33)` | The first eight bytes' length, the format version, the layer count, and the room a layer's header row takes at most: the head read to find the layers. |
+| 409 | `WorldData.NOT_NAMED_SAID` | `new java.util.concurrent.atomic.AtomicBoolean()` | Whether locate() has said, in this JVM, that the file is not named: it says it once (DeterminismCheck reads it in its control's child). |
 
 ### WorldEconomy.java ([map](map/WorldEconomy.md))
 
@@ -5185,7 +5186,7 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 723 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 988 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1401 constants)
+## harnesses (1406 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5594,6 +5595,16 @@ Generated 2026-11-05 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 678 | `DenominationCheck.TRADE_STEP` | `1 / PartnerTrade.HISTORY_ROUND_MONEY` | The founding grid's step: what the history's money is rounded to before a reform. |
 | 824 | `DenominationCheck.TRADE_WORLD_SEED` | `2_026_102_8L` | The world seed of the second part's cities: ReadPathCheck's WN3 city's, so the fixture is one the repository already plays. |
 | 827 | `DenominationCheck.REFORM_MONTH_OF_YEAR` | `7` | The month of the year the reform is put in: July, the middle of the calendar year, six tallies behind it and five or six in front. |
+
+### DeterminismCheck.java ([map](map/DeterminismCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 61 | `DeterminismCheck.TOWN_MONTHS` | `130` | The months FloatLinkCheck's played town is played, one at a time, a fingerprint after each (and one before the first). |
+| 64 | `DeterminismCheck.EARTH_MONTHS` | `240` | The months the Earth city is played (LongPlaytest.earthCity); 8 s on the PC. |
+| 67 | `DeterminismCheck.CHILD_MINUTES` | `15` | How long a child JVM may run before the check kills it and fails: the slowest (B, on one processor with C1 alone) takes a few minutes. |
+| 70 | `DeterminismCheck.OPPOSITE_MACHINE` | `List.of("-XX:+UnlockExperimentalVMOptions", "-XX:hashCode=2", "-XX:ActiveProcessorCount...` | The flags that make a JVM the opposite machine: every identity hash 1, one processor, a common pool of one, C1 alone, soft references cleared at each collection, the serial collector. |
+| 74 | `DeterminismCheck.HEAD` | `"head", TOWN1 = "town1", TOWN2 = "town2", EARTH = "earth", REPORT = "report"` | The line a child begins its fingerprint file's field names with, and the prefixes of the rest. |
 
 ### EarthCheck.java ([map](map/EarthCheck.md))
 
