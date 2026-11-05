@@ -1,6 +1,6 @@
-# ZoningViewCheck.java - 742 lines · 26 methods · 3 constants · harnesses
+# ZoningViewCheck.java - 747 lines · 26 methods · 3 constants · harnesses
 
-`ham/citybuildersim/ZoningViewCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ZoningViewCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning's figures (0.7.109, batch Z2): ZoningView, and the words
 > zoning puts on the screens it does not own - NEEDS YOU's GROUND row, the
@@ -63,22 +63,22 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [ZoningView](ZoningView.md) (126), [Sectors](Sectors.md) (107), [Zoning](Zoning.md) (35), [LandManager](LandManager.md) (33), [BuildCard](BuildCard.md) (22), [Game](Game.md) (19), [LandMap](LandMap.md) (14), [CityNeeds](CityNeeds.md) (9), [DecisionLog](DecisionLog.md) (7), [UserInterface](UserInterface.md) (6), [LongPlaytest](LongPlaytest.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [PolicyPreview](PolicyPreview.md) (4), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1), [EconomyManager](EconomyManager.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Resource](Resource.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
+**Uses:** [ZoningView](ZoningView.md) (126), [Sectors](Sectors.md) (107), [Zoning](Zoning.md) (35), [LandManager](LandManager.md) (33), [BuildCard](BuildCard.md) (22), [Game](Game.md) (19), [LandMap](LandMap.md) (14), [CityNeeds](CityNeeds.md) (9), [DecisionLog](DecisionLog.md) (7), [UserInterface](UserInterface.md) (6), [LongPlaytest](LongPlaytest.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [PolicyPreview](PolicyPreview.md) (4), [PolicyDates](PolicyDates.md) (3), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1), [EconomyManager](EconomyManager.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Resource](Resource.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 152 | 1. NOTHING SET |
-| 189 | 2. THE HUB'S FIGURES |
-| 217 | 3. THE GROUND BAR |
-| 271 | 4. THE ROWS |
-| 316 | 5. A SECTOR'S PAGE |
-| 381 | 6. THE FOREST LAW |
-| 413 | 7. THE DECISION KIND |
-| 440 | 8. THE WORDS ELSEWHERE |
-| 494 | 9. WHAT IS BITING |
-| 626 | 10. ONE PALETTE FOR ZONES |
+| 157 | 1. NOTHING SET |
+| 194 | 2. THE HUB'S FIGURES |
+| 222 | 3. THE GROUND BAR |
+| 276 | 4. THE ROWS |
+| 321 | 5. A SECTOR'S PAGE |
+| 386 | 6. THE FOREST LAW |
+| 418 | 7. THE DECISION KIND |
+| 445 | 8. THE WORDS ELSEWHERE |
+| 499 | 9. WHAT IS BITING |
+| 631 | 10. ONE PALETTE FOR ZONES |
 
 ## Constants
 
@@ -100,81 +100,81 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 71 | 672 | **type** `public class ZoningViewCheck` | Policy › Zoning's figures (0.7.109, batch Z2): ZoningView, and the words zoning puts on the screens it does not own - NEEDS YOU's GROUND row, the build card's land gate, an order's quote - held to the model's own reads. |
+| 71 | 677 | **type** `public class ZoningViewCheck` | Policy › Zoning's figures (0.7.109, batch Z2): ZoningView, and the words zoning puts on the screens it does not own - NEEDS YOU's GROUND row, the build card's land gate, an order's quote - held to the model's own reads. |
 | 77 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 85 | 1 | `static boolean near(double a, double b)` |  |
 | 88 | 1 | `static boolean same(double a, double b)` | ...and two ground figures the same to a part in a billion of the larger, or of the dry ground they are cut from: one rounding, not a square foot. |
 | 90 | 1 | `static boolean same(double a, double b, double whole)` |  |
 | 92 | 5 | `static void quietly(Runnable r)` |  |
-| 108 | 16 | `static Game city(Path root, String name, int months)` | A played city, ZoningCheck's: the orders put up finished out of a Wealthy treasury, its ground drawn to CITY_KM2, then `months` played. |
-| 125 | 26 | `public static void main(String[] args) throws Exception` |  |
+| 108 | 21 | `static Game city(Path root, String name, int months)` | A played city, ZoningCheck's: the orders put up finished out of a Wealthy treasury, its ground drawn to CITY_KM2, then `months` played. |
+| 130 | 26 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. NOTHING SET (lines 152-188)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 154 | 20 | `static void nothingSet(Game g)` |  |
-| 176 | 12 | `static void zoned(Game g)` | Two zones - Mining's a share at 40% of the going price, Restaurants' in km² for nothing, a Diner built in it - and a law. |
-
-### 2. THE HUB'S FIGURES (lines 189-216)
+### 1. NOTHING SET (lines 157-193)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 191 | 25 | `static void theHubsFigures(Game g)` |  |
+| 159 | 20 | `static void nothingSet(Game g)` |  |
+| 181 | 12 | `static void zoned(Game g)` | Two zones - Mining's a share at 40% of the going price, Restaurants' in km² for nothing, a Diner built in it - and a law. |
 
-### 3. THE GROUND BAR (lines 217-270)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 219 | 51 | `static void theGroundBar(Game g)` |  |
-
-### 4. THE ROWS (lines 271-315)
+### 2. THE HUB'S FIGURES (lines 194-221)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 273 | 42 | `static void theRows(Game g)` |  |
+| 196 | 25 | `static void theHubsFigures(Game g)` |  |
 
-### 5. A SECTOR'S PAGE (lines 316-380)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 318 | 6 | `static boolean samePage(ZoningView.Page a, ZoningView.Page b)` |  |
-| 325 | 55 | `static void aSectorsPage(Game g)` |  |
-
-### 6. THE FOREST LAW (lines 381-412)
+### 3. THE GROUND BAR (lines 222-275)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 383 | 29 | `static void theForestLaw(Game g)` |  |
+| 224 | 51 | `static void theGroundBar(Game g)` |  |
 
-### 7. THE DECISION KIND (lines 413-439)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 416 | 6 | `static boolean records(Game g, String kind, Runnable hand)` | The hand, then exactly one new entry of this kind. |
-| 423 | 16 | `static void theDecisionKind(Game g)` |  |
-
-### 8. THE WORDS ELSEWHERE (lines 440-493)
+### 4. THE ROWS (lines 276-320)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 442 | 51 | `static void theWordsElsewhere(Game g)` |  |
+| 278 | 42 | `static void theRows(Game g)` |  |
 
-### 9. WHAT IS BITING (lines 494-625)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 501 | 24 | `static List<String[]> hubFlags(Game g)` | The Policy hub's WHAT IS BITING flags as the hub lists them - area, heading, body, page, door - from its own policyFlags() on an interface bound to the city (no window: BuildMenuCheck's binding), by reflection, becaus... |
-| 527 | 5 | `static List<String[]> zoningFlags(Game g)` | ...the ones in Zoning's area. |
-| 533 | 92 | `static void whatIsBiting(Game g)` |  |
-
-### 10. ONE PALETTE FOR ZONES (lines 626-742)
+### 5. A SECTOR'S PAGE (lines 321-385)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 629 | 13 | `static Object zoningScreen(Game g)` | Policy > Zoning's screen on the interface bound to the city (no window), by reflection, as hubFlags reads the hub's. |
-| 644 | 9 | `static String screenColour(Object zoningScreen, String sector)` | The colour the screen paints a sector's zone in ("#rrggbb"): the screen's own zoneColour. |
-| 655 | 9 | `static String screenConstant(Object zoningScreen, String name)` | One of the screen's static colour constants ("#rrggbb"): the ground it draws its zones against. |
-| 666 | 1 | `static int argb(String hex)` | "#rrggbb" as the opaque ARGB int the map keeps its colours in. |
-| 668 | 74 | `static void onePalette(Game g)` |  |
+| 323 | 6 | `static boolean samePage(ZoningView.Page a, ZoningView.Page b)` |  |
+| 330 | 55 | `static void aSectorsPage(Game g)` |  |
+
+### 6. THE FOREST LAW (lines 386-417)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 388 | 29 | `static void theForestLaw(Game g)` |  |
+
+### 7. THE DECISION KIND (lines 418-444)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 421 | 6 | `static boolean records(Game g, String kind, Runnable hand)` | The hand, then exactly one new entry of this kind. |
+| 428 | 16 | `static void theDecisionKind(Game g)` |  |
+
+### 8. THE WORDS ELSEWHERE (lines 445-498)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 447 | 51 | `static void theWordsElsewhere(Game g)` |  |
+
+### 9. WHAT IS BITING (lines 499-630)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 506 | 24 | `static List<String[]> hubFlags(Game g)` | The Policy hub's WHAT IS BITING flags as the hub lists them - area, heading, body, page, door - from its own policyFlags() on an interface bound to the city (no window: BuildMenuCheck's binding), by reflection, becaus... |
+| 532 | 5 | `static List<String[]> zoningFlags(Game g)` | ...the ones in Zoning's area. |
+| 538 | 92 | `static void whatIsBiting(Game g)` |  |
+
+### 10. ONE PALETTE FOR ZONES (lines 631-747)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 634 | 13 | `static Object zoningScreen(Game g)` | Policy > Zoning's screen on the interface bound to the city (no window), by reflection, as hubFlags reads the hub's. |
+| 649 | 9 | `static String screenColour(Object zoningScreen, String sector)` | The colour the screen paints a sector's zone in ("#rrggbb"): the screen's own zoneColour. |
+| 660 | 9 | `static String screenConstant(Object zoningScreen, String name)` | One of the screen's static colour constants ("#rrggbb"): the ground it draws its zones against. |
+| 671 | 1 | `static int argb(String hex)` | "#rrggbb" as the opaque ARGB int the map keeps its colours in. |
+| 673 | 74 | `static void onePalette(Game g)` |  |
 

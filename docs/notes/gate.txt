@@ -1,12 +1,51 @@
-# gate of Merge batch/CM1: the replay's camera loads its whole move first (Jerus, 2026-11-02, for the trailer: no half-black screen on a zoom out; "Top, after tonight"): in replay mode only, every scale, tile and month a zoom, glide or fly will show is loaded with no time cap behind a "Loading the move... N s" line, then it runs on a click; the normal game untouched, 0.9.11
-# date: 2026-11-04
+# gate of Merge batch/BA1: every business may build ahead (Jerus, 2026-11-01: "letting the market build more than that, even years ahead"): no cap on orders (one on site at a time and the landlords' months both go): a sector orders whenever an order clears its test at FC1's price of a point, which rises with all the work queued, and the interest on the wait counts; a horizon that grows with how long its buildings take (Jerus: "why bounded? why not let contracts flow?"); after FC1, 0.9.16
+# date: 2026-11-05
 # earth-2.bin: named
-# nightly: 2026-11-03 01:35 0.9.5 31f675b6 4,000 months: RED, exit 1 in 88 s: a building on the map moved 4 time(s), months 3010-3013
-# suite: 170 harnesses run in 7415s: 170 passed, 0 failed
-# timing: 16 harnesses run in 574s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the cells pass in no more than CELLS_PASS_MS of the wall clock, its tiles read from the file the first time FAIL  1006 ms of the wall clock (this JVM cannot read a thread's CPU finely enough) the first time (1006 on the wall clock), 985 again (985 on the wall clock); the study 370-450 on the wall clock   [main 675 ms, batch 891 ms (+32.0%), budget 1000 ms: the batch within the budget]
-# timing red not the batch's (paired): EarthTerrainCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# nightly: 2026-11-05 01:27 0.9.12 b52be80a 4,000 months: OK in 96 s
+# suite: 174 harnesses run in 1912s: 170 passed, 4 failed
+# timing: 16 harnesses run in 482s: 14 passed, 2 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 31.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 57.2 ms, batch 39.9 ms (-30.2%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 26.4 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 25.8 ms, batch 28.7 ms (+11.4%), budget 25 ms: within 15% of main's]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same output                                                FAIL  16.3871627943 != 16.3871628238  (1.80e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | ...and the same year of it                                     FAIL  178.0274716763 != 178.0274723045  (3.53e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same rent                                                  FAIL  0.0003825520 != 0.0003825520  (1.75e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same price level                                           FAIL  6.3136552187 != 6.3136552018  (2.67e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same currency                                              FAIL  0.0385926452 != 0.0385926442  (2.63e-08 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same treasury                                              FAIL  818.0252712281 != 818.0252687731  (3.00e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same shops' till                                           FAIL  1.3189259763 != 1.3189258944  (6.21e-08 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | the same bank                                                  FAIL  289.4969501824 != 289.4969532124  (1.05e-08 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DenominationCheck | 8 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | FAIL sector.Manufacturing.cash (nominal) month 86: 1409.319315 at the factor over the factor, 1409.319335 at today's prices (5.77e-09 apart)
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 5.8e-09 in sector.Manufacturing.cash) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PriceLevelCheck | 1 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 74 of the plan before's 500 boxes lie under the yard and the railway, and 81 are not in the plan after (each of the rest stands where it stood) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 74 boxes left a district in the yard's month because a run laid in it lies across them, 7 are counted as moved FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (0), and none of those boxes has moved (11) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (0), and none of those boxes has moved (21) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | 4 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | (no FAIL line)
+DenominationCheck | exit 1
+DenominationCheck | the same output                                                FAIL  16.3871627943 != 16.3871628238  (1.80e-09 apart)
+DenominationCheck | ...and the same year of it                                     FAIL  178.0274716763 != 178.0274723045  (3.53e-09 apart)
+DenominationCheck | the same rent                                                  FAIL  0.0003825520 != 0.0003825520  (1.75e-09 apart)
+DenominationCheck | the same price level                                           FAIL  6.3136552187 != 6.3136552018  (2.67e-09 apart)
+DenominationCheck | the same currency                                              FAIL  0.0385926452 != 0.0385926442  (2.63e-08 apart)
+DenominationCheck | the same treasury                                              FAIL  818.0252712281 != 818.0252687731  (3.00e-09 apart)
+DenominationCheck | the same shops' till                                           FAIL  1.3189259763 != 1.3189258944  (6.21e-08 apart)
+DenominationCheck | the same bank                                                  FAIL  289.4969501824 != 289.4969532124  (1.05e-08 apart)
+DenominationCheck | 8 FAILED
+PriceLevelCheck | exit 1
+PriceLevelCheck | FAIL sector.Manufacturing.cash (nominal) month 86: 1409.319315 at the factor over the factor, 1409.319335 at today's prices (5.77e-09 apart)
+PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 5.8e-09 in sector.Manufacturing.cash) FAIL
+PriceLevelCheck | 1 FAILED
+MapCheck | exit 1
+MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 74 of the plan before's 500 boxes lie under the yard and the railway, and 81 are not in the plan after (each of the rest stands where it stood) FAIL
+MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 74 boxes left a district in the yard's month because a run laid in it lies across them, 7 are counted as moved FAIL
+MapCheck | ...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (0), and none of those boxes has moved (11) FAIL
+MapCheck | ...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (0), and none of those boxes has moved (21) FAIL
+MapCheck | 4 FAILED
+LongPlaytest | exit 1
+LongPlaytest | (no FAIL line)

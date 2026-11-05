@@ -1537,7 +1537,15 @@ public class ReadPathCheck {
         mig.getLastSeniorPull(); mig.getLastTarget(); mig.getLastCrowding(); mig.toSaveArray();
         PopulationCohorts pyramid = g.getCohorts();
         pyramid.getLastDeathsOfAge(); pyramid.getLastAgedOut(); pyramid.getLastKilled(); pyramid.toSaveArray();
-        for (AgeBand b : AgeBand.values()) { pyramid.share(b); PopulationCohorts.equilibriumShare(b); }
+        // ...and the causes of death of 1900 (R0b): the cohorts' count of them, and the causes' own book
+        pyramid.getLastCauseDeaths(); pyramid.getCauseDeaths();
+        for (AgeBand b : AgeBand.values()) { pyramid.share(b); PopulationCohorts.equilibriumShare(b); pyramid.getCauseDeaths(b); }
+        CausesOfDeath causeBook = g.getCausesOfDeath();
+        causeBook.getLastDeaths(); causeBook.getTbSick(); causeBook.getState();
+        for (CausesOfDeath.Cause cause : CausesOfDeath.Cause.values()) {
+            causeBook.getLastDeaths(cause); causeBook.getYearDeaths(cause); causeBook.getTotalDeaths(cause);
+        }
+        g.getHealth().getInfluenzaRate();
         HouseholdBalance people = g.getHouseholdBalance();
         people.getHungryAtFullShelves(); people.getHungryPeople(); people.getDeliveredShare(); people.toSaveArray();
         for (int r = 0; r < Household.ROWS; r++) { people.getDisposable(r); people.getFixedCosts(r); }
@@ -1566,6 +1574,12 @@ public class ReadPathCheck {
         System.setOut(quiet);
         try {
             g.run();
+            // THE TAXES OPENED IN THE FIXTURE (R0): this section was written for a city that taxes from its first month, and "doubling the
+            // rate" below is a question about the profit tax's mechanics. A 1900 city has no profit tax until 1916 (the lever is held at zero,
+            // its setter refuses), so doubling the rate would double nothing. Every lever is opened here and the defaults put back, before
+            // a month has run, so the city is the one the section meant.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
 
             BuildingManager b = g.getBuildingManager();
             LandManager land = g.getLandManager();
@@ -1651,7 +1665,7 @@ public class ReadPathCheck {
                 g.fundMarketSharesValue() > 0 && g.fundBondsValue() > 0);
         out.printf("   the fund: shares %,.2fk, bonds %,.2fk at month %d%n", g.fundMarketSharesValue(), g.fundBondsValue(), g.getMonth());
 
-        out.printf("   month %d, %d people, $%,.0fk cash, %d stacks%n",
+        out.printf("   month %d, %d people, $%,.0fk cash, %d stacks (the levers opened in the fixture: R0)%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(),
                 g.getCash(), g.getBuildingManager().getStackCount());
 

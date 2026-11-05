@@ -126,6 +126,14 @@ public class BondCheck {
         g.quietTheWorldForTheD();
         quietly(() -> {
             g.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): every section reads the sectors' credit in the town this was written
+            // against, which taxes from month 1 (5c: the sector it lends a working-capital line to owes under the shortfall desk's ceiling; 5d: the
+            // shops are short of what their order costs; 1c: a bond is outstanding that the fund holds none of). A 1900 town has no income tax
+            // to 1916-17 and no sales tax to 1920, and its sectors keep another profit and owe another share: Restaurants was the one picked
+            // and owed $151.6k against the ceiling, the shops could pay for $13.2k of a $12.0k order. Every lever opened and the defaults
+            // put back, before a month has run.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
             // The treasury this fixture is written against: the Wealthy preset's.
             g.setCashForTest(Founding.WEALTHY_CASH);
             BuildingManager b = g.getBuildingManager();

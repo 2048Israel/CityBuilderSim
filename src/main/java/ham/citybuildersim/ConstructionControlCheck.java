@@ -146,6 +146,9 @@ public class ConstructionControlCheck {
     static Game city(Path root, String name) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
+        // R0b call 7: the causes of 1900 held off, before a month. Section 7 needs the households to outnumber the 400 homes the town stands on
+        // (36 months of growth), sized on today's deaths; on 1900's causes it stood at 395.6 households.
+        g.holdCausesOfDeathOff();
         quietly(() -> {
             g.run();
             g.setCashForTest(Founding.WEALTHY_CASH);
@@ -658,6 +661,7 @@ public class ConstructionControlCheck {
         assertTrue("saved", saved[0]);
         GameFiles files = new GameFiles(root.resolve("saved"), root.resolve("saved-no-legacy"));
         Game back = new Game(files);
+        back.holdCausesOfDeathOff();   // R0b call 7: as the city (city()); the hold is not saved
         quietly(() -> back.loadGameSave(1));
         // ...held as the fixture held it: a harness's hold is not saved.
         for (Sector s : back.getSectors().all()) back.getBusinessInvestment().holdSector(s.key());

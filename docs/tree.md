@@ -277,6 +277,41 @@ adds its line here, not in `CLAUDE.md`.
                                    the fund's withdrawal, and since 0.7.52 the rule at each step of its
                                    strictness (CentralBankCheck 21); advice, not a model change -
                                    PolicyPreviewCheck holds it
+        PolicyDates.java           when Canada first had each Policy lever, as pure data (R0, 2026-11-04;
+                                   research-1900.md 7.1): the Lever enum's opening month (a year-only date
+                                   opens in January; the levers the study does not date are open from
+                                   founding, each with its reason), the study's entry key, the act and its
+                                   first terms, openingMonth/isOpen/earliestOpening (MAX_EARLY_MONTHS, the
+                                   law field's four years) and the inbox notice; nothing reads it until R0's
+                                   second slice puts the gate in the model - PolicyDatesCheck holds it
+        PolicyDatesCheck.java      the table of 7.1 typed out as the specification: each lever's year and
+                                   month, shut the month before and open from its date, founding with the
+                                   open levers open, the early-opening bound and its floor, the notices
+                                   and keys, and history's order (R0)
+        HomeFuel.java              the homes' lamp oil and coal (R0c, 2026-11-05; research-1900.md 4): the
+                                   shares of the homes lit by a lamp and heated by a stove, the litres and
+                                   tonnes a home burns, and the month's sale Retail.sellHomeFuel() strikes;
+                                   both shares 0 in a played city until R0e - Forms1900Check holds it
+        Forms1900Check.java        the 1900 forms, built off (R0c): the twins at 0 to the bit, the farm's
+                                   horses eating its own crop captive and their hands, steam off the grid
+                                   onto coal, Haulage's horse and wagon (no diesel, crops, carters, fewer
+                                   trucks, the quote), the homes' lamp oil and coal, and the money's audit
+                                   with each on
+        Equipment.java             a piece of equipment a template carries (R1, 2026-11-05; research-design
+                                   2.1-2.2): its id, since (a year, or a catalogue code unknown until R2),
+                                   the 1900 form it ends (STEAM, FARM_HORSES, CART_HORSES), what fitting it
+                                   buys, its work and life; read from buildings.json's "equipment"
+        EquipmentForms.java        R0c's shares set from the buildings still without the piece that ends
+                                   each form (BuildingsStacks' unfitted counts, saved by template id),
+                                   weighted by draw, land or truck room, only where a count is or was;
+                                   called where the Policy hears the month and again on a load (R1)
+        EquipmentFit.java          the payback rule (research-design 2.2 steps 1-4) as each piece's verdict
+                                   (FITTED, NOT_KNOWN, PAYS, NOT_YET) at the city's prices, the rate and
+                                   hurdle of a building order of its whole cost, and the sector's rank by
+                                   earnings on cost; read on demand, never in the month (R1)
+        EquipmentCheck.java        R1's equipment: the data read, none unfitted in a played city, the counts
+                                   setting the forms and the save carrying them, the rule's arithmetic, the
+                                   verdicts at the city's prices, and the verdict changing nothing
         Expectations.java          the anchor (0.7.42): expected inflation, the central bank's credibility and
                                    the expected price level every money constant that prices something is
                                    struck at, at the top of every month (Game.restrikeMoneyConstants());

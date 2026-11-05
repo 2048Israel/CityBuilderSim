@@ -615,6 +615,9 @@ public class LandmassCheck {
         // Zoned, so that a zone's size is a figure to compare.
         String retail = f.a.g.getSectors().retail().key();
         quietly(() -> {
+            // The premise is a zone's mechanics, and a 1900 city has no zoning until 1924 (R0): zoning opened in the fixture.
+            f.a.g.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.ZONING);
+            f.b.g.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.ZONING);
             f.a.g.setZone(retail, Zoning.Size.SHARE, 0.1, 0.8);
             f.b.g.setZone(retail, Zoning.Size.SHARE, 0.1, 0.8);
         });
@@ -1034,6 +1037,8 @@ public class LandmassCheck {
         String retail = a.g.getSectors().retail().key();
         quietly(() -> {
             for (City c : List.of(a, b)) {
+                // The premise is a zone's mechanics, and a 1900 city has no zoning until 1924 (R0): zoning opened in the fixture.
+                c.g.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.ZONING);
                 c.g.setZone(retail, Zoning.Size.SHARE, 0.1, 0.8);
                 c.g.setForestLaw(0.2, 0.4);
             }

@@ -18,6 +18,62 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.16 — BA1, every business may build ahead — 2026-11-05, ready, see docs/queue/BA1-notes.md
+No business is held to one order on site, nor the landlords to twelve months of the builders' work (Jerus: "why
+bounded? why not let contracts flow?"). A sector orders whenever an order clears its test at the price of a point it
+would pay, each building priced on the queue the ones before it leave, the cost grown by the interest over the
+order's whole wait and, while contracts are dear, once more by its own multiple ("stop trying to place orders until
+contracts arent so expensive": a business can wait). The builders keep one depot on site, the refiners one crude unit.
+The ensemble scores 22/26 against 0.9.12's 24/26. A2's spell is 14 months against 27, 40,000 people come at m878
+against m1,038, and the final city is 572,286 against 323,765. A3 misses by a month in one seed, R3 in four. Known-class
+lines pass by name at the gate: LongPlaytest's map finding (Jerus: "Ship it, pass both"), MapCheck's moved boxes (DM2),
+PriceLevelCheck 8's drift (RT1, BS1) and DenominationCheck's twin, a price tie in the bond book (OB1).
+
+### 0.9.15 — R1, equipment as data and on each building — 2026-11-05, ready, see docs/queue/R1-notes.md
+The first part of research's recipes and equipment, built off. `buildings.json` gives a building the equipment it can be fitted with:
+the electric motor drive on the 18 factories (it ends R0c's steam), the motor truck on the Truck Depot (the carts' horses) and the
+tractor on three farms (the farms' horses; its date is the research catalogue's, so it is not known yet), each with what fitting it
+buys, its work and its life. Each stack of buildings counts the ones still without each piece, and the count is saved; R0c's shares
+are set from the counts each month, weighted by the buildings' power, land or truck room. The payback rule (a piece fitted only when
+what it saves over its life repays its cost and clears the interest hurdle, as a new building's) gives each piece a verdict at the
+city's prices, read on demand. Every building in a played city is fitted, so the default city's trace is unchanged. EquipmentCheck
+holds it. Next: the fit bought and ranked with new buildings (R1b), recipes (R1c), and the 1900 city switched on with R0d's wages (R1d).
+
+### 0.9.14 — R0c, the 1900 mechanics as forms — 2026-11-05, ready, see docs/queue/R0c-notes.md
+The 1900 mechanics of research-1900 §4 are built as forms, each a share of a sector or of the homes that runs the 1900 way, and
+all are off: 0 in every played city, so the default city's trace is unchanged, until R1 sets them from each building's recipe
+(and R0e the homes'). A farm on horses feeds them 22% of its own crop and needs 1/(1-0.273) of the hands; Freight's Haulage on
+horse and wagon carries its city leg by hired teams (10 t a team-month, two horses eating 0.29 t of crops each, one carter),
+with no diesel and no trucks; a factory on steam draws nothing from the grid and burns 1.8 kg of coal a kWh instead; a lamp-lit
+home buys 25 L of lamp oil a month and a stove-heated one 0.7 t of coal, from the grocers, a bill of its own. Forms1900Check
+holds each form, with the money's audit closed every month. Found on the way: the drivers' petrol may be counted twice in the
+households' spending (PD1, queued).
+
+### 0.9.13 — R0b, causes of death in Health — 2026-11-05, ready, see docs/queue/R0b-notes.md
+A city's dead now have causes (`CausesOfDeath`): typhoid, babies' summer diarrhoea, the childhood outbreaks, TB, mothers at
+home births, pneumonia and the 1918 influenza, each at its 1900 rate and falling on Canada's own dates - typhoid with
+chlorination by 1915, TB to 1948 and with streptomycin, mothers' deaths with sulfa and penicillin - to nothing by 1980; a city
+short of water, food or general care dies of them sooner than history did. For teens, adults and the old they add to today's
+rates; for babies and children, whose unserved rate childcare's swing already holds at 1900's, they name their share of that
+excess and history takes it away (an unserved baby dies at 21 times today's rate by 1980, where it died at 40). A 1900 city
+loses about 17 per 1,000 a year, as Canada did. The influenza kills 0.6% of the people from October 1918 and puts a quarter
+off work in its waves, with an inbox notice. Services, Health lists what people die of beside 1900's rates; People's dead gain
+the part. Twelve fixtures sized on today's deaths hold the causes off; the ensemble scores 24/26, the same two as 0.9.12's,
+both nearer. MapCheck 2h (DM2's) and ShortSellingCheck 7 (main's orphan-share fault, OH1 queued) pass by name at the gate.
+
+### 0.9.12 — R0, the Policy levers on history's dates — 2026-11-04, ready, see docs/queue/R0-notes.md
+A city founded in January 1900 now has each Policy lever on the date Canada first had it (`PolicyDates`): the profit tax
+1916, the income tax 1917, the minimum wage's floor 1918, the sales tax 1920, zoning 1924, old-age pensions 1927, student aid
+1939, EI in August 1940, the health premium 1947, the pension's contribution 1966; the property tax, fees, fares, food
+assistance and the rest are open from founding. Until its date a lever is shut and refuses a setting, and the Policy screen
+draws it shut with when it opens; on its month the inbox gives Canada's first terms and the lever opens - the three income
+taxes at the founding rate (15%), the promises at zero, the wage floor at the going unskilled wage. Each city's openings are
+saved (R3's law finds will move them); a save from before R0 loads with every lever open. Harness fixtures whose premise is a
+lever, or whose condition the untaxed 1900 city does not give, open them; the playtest runs on history's dates.
+The ensemble scores 24/26 against 0.9.6's 22/26. Two lines its 1900 city is the first to reach in main's code pass by
+name at the gate (Jerus: "if checks were not caused by its own code, then it should always pass"): SlopeCheck's "a
+building on the map moved" (DM2's) and PriceLevelCheck 8's farm never retiring at 1900 prices (RT1, queued).
+
 ### 0.9.11 — CM1, the replay's camera loads its whole move first, then runs on a click — 2026-11-03, ready, see docs/queue/CM1-notes.md
 In replay mode a glide (3), a fly out (O) and a fly in (I) now load first: the map says "Loading the move... N s" while
 every view the move will show is painted, with no time cap and the map's pictures held, then "Ready - click to run", and a

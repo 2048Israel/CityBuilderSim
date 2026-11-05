@@ -1,6 +1,6 @@
-# EquityCheck.java - 379 lines · 5 methods · 0 constants · harnesses
+# EquityCheck.java - 386 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/EquityCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EquityCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Verifies the share register: who buys, at what price, what they are paid,
 > and that a month with owners in it still adds up.
@@ -39,10 +39,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 17 | 363 | **type** `public class EquityCheck` | Verifies the share register: who buys, at what price, what they are paid, and that a month with owners in it still adds up. |
+| 17 | 370 | **type** `public class EquityCheck` | Verifies the share register: who buys, at what price, what they are paid, and that a month with owners in it still adds up. |
 | 23 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 28 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 39 | 5 | `static Equity withRecord(int company, double...monthlyIncome)` | A register with twelve months of this income on one company's record. |
 | 46 | 15 | `static HouseholdBalance savers(double savedEach, double takeHome)` | Households: a hundred unskilled couples with this much saved each, struck once so they have a take-home. |
-| 62 | 317 | `public static void main(String[] args) throws Exception` |  |
+| 62 | 324 | `public static void main(String[] args) throws Exception` |  |
 

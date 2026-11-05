@@ -980,6 +980,9 @@ public class RefineryCheck {
     static void theInvestorsOrderAUnit() throws Exception {
         out.println("\n--- 14. the investors order a unit, and Game.consider() tests the planner's estimate ---");
         Game g = plannerTown("refinerycheck-plan", false);
+        // 1900's CAUSES OF DEATH HELD OFF (BA1, 2026-11-05; R0b): the fixture is today's town, whose wells' crude covers the refinery's run to the barrel. With 1900's deaths the
+        // people differ, and the month's crude bought leaves 9.1e-13 barrels filled from the world, so the fixture's "imported == 0" is not met by a float's residue.
+        g.holdCausesOfDeathOff();
         /*
          * ...ON THE GOODS' LITERALS (WN3, the world market): the section's premise is a unit that earns something at the city's prices, and in this
          * town it does so by a hair - $0.4k to $1k a month on $30M at the literals' prices, the run at nameplate - which is a figure of the literals'

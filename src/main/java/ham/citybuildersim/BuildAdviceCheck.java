@@ -153,6 +153,13 @@ public class BuildAdviceCheck {
         Game g = new Game(files);
         quietly(() -> {
             g.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0): this city is calibrated as the pre-R0 city played it (every lever open from month 1),
+            // and a city founded in 1900 holds its income taxes, wage floor and the rest shut for 16 to 20 years: it fills job types
+            // differently (the first one it fills whole is UNIV_HIGHTECH_ENG, of which a clinic has too few posts for section 5's two
+            // clones to stand alike) and its loaded twin read 0.3059 for general care against the city's 0.2598. Every lever opened and
+            // the defaults put back, before a month.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());

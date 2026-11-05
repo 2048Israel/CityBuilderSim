@@ -1154,6 +1154,13 @@ public class MortgageCheck {
         // 112 people, 0 homes, no month the other way); with one the landlords lose money until month 35; with two they
         // beat it in all sixty; with three, the first months beat it and the months of the town's growth do not.
         Game g = landlordCity(root, "payout", true, 3);
+        // THE LEVERS OPENED IN THE FIXTURE (BA1 on R0, 2026-11-05): this section needs a month the mortgages' principal beat the landlords'
+        // income as well as one it did not. The 1900 town (R0) has no income tax or wage floor to 1916-18, and with BA1's uncapped orders
+        // and its builders' queue its landlords out-earned their principal in all sixty months (net 1.77 against 0.36 in month 2, and on
+        // up; 0.57 against 0.82 never came). The town this was written against taxes from month 1, as main's R0 fixtures open it
+        // (RailDepotCheck, HaulageCheck): the levers reset and opened before a month has run, then the lean month the premise needs comes.
+        g.getEconomyManager().getTaxPolicy().reset();
+        g.getEconomyManager().getTaxPolicy().openAll();
         long[] homesAfterFirstMonth = { -1 };
         Equity register = g.getEquity();
         int landlords = Equity.indexOf(RE);

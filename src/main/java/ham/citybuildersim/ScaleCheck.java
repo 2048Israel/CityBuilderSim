@@ -324,8 +324,20 @@ public class ScaleCheck {
      * the town stalls, and ST2's scanner, every month from 600 to 1,300 and every tenth to 2,500, found none that holds every line:
      * the fewest misses three (681; 730, 735, 760, 762, 1,073: both copies' "it builds", and the copy's cash). So this check plays
      * FC1's town, LD2's wage off (main()), at 717 as above, until ST3.
+     *
+     * ...AT 488 SINCE BA1 + R0 (2026-11-05), WITH THE LEVERS SHUT. On BA1's path (no cap on a business's building orders, the builders'
+     * queue priced) merged with R0 (a 1900 city on Canada's policy dates) and with the builders-first test no longer counting a depot on
+     * site twice (4f66f5fd), 717 prices migrants out and its copies build no home. The town's own rents bind (at 700: the affordability
+     * pull .80, the rent burden .376 against .30), and the pull is 1 in 58 of its first 700 months, in a run of seven only before month 64
+     * and at 197 to 198. Scanned with the levers opened (R0's line, below), every month from 20 to 1,100 and the calm windows after (1,034
+     * to 1,482), by ST2Scan's loaded copies: the fewest misses are one (166 and 167, held by ScaleCheck itself: section 9's CASH, 9.7e-2
+     * against .0125 - the ten-billion-times copy's bank closes 970 of its 1,000 branches in month 1 where the city's one cannot, "never the
+     * first", and their sale is 8% of a treasury of 1,121 a K against 1,027) and two (192: cash and savings the same way). With the levers
+     * SHUT (history's dates, as the playtest plays) the loaded copies are not the live city (531 read no miss there and has 8 here; 562 read
+     * none and has 2), so each candidate they offered was run in ScaleCheck itself: of 51 months run, every line holds at 480, 484, 487,
+     * 488 and 489 alone. 488 is the middle of 487 to 489. A month, not a window; ST3 is still the fix.
      */
-    static final int FREE_FIXTURE_MONTHS = 717;
+    static final int FREE_FIXTURE_MONTHS = 488;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
@@ -604,6 +616,18 @@ public class ScaleCheck {
                 + " and its player's look ---");
         GameFiles grown = new GameFiles(root.resolve("grown"), root.resolve("grown-no-legacy"));
         Game city = new Game(grown, LongPlaytest.founding());
+        // R0b call 7: the causes of 1900 held off, before a month, in this city and in every copy loaded from its save (free(), tracks()).
+        // The section reads a city that builds and tracks its K-times copy, sized on today's deaths; on 1900's causes the 5-billion copy's
+        // fixture "the free copy ordered - an order sized from more than a million needed, and one judged on its interest" failed, and the
+        // K = 1 and K = 1,000 copies parted by 3.17e-2 in their people (0.015 allowed), 5.35e-3 in their prices (0.004) and 6.5e-2 in
+        // their unemployment (0.033) by month 6.
+        city.holdCausesOfDeathOff();
+        // THE LEVERS ARE SHUT AGAIN HERE (BA1, 2026-11-05; R0 opened them): R0 found the playtest's town founded in 1900, with its income taxes,
+        // wage floor and the rest shut for 16 to 20 years, not growing at month 722 on main's path (4,500 people in 6,042 household places, no home built
+        // in the six months read). On BA1's path with the levers opened no month from 20 to 2,400 holds every line (the fewest misses one, at 166 and
+        // 167: the copy's cash, which the bank's closed branches take 8% of in a treasury so small - see FREE_FIXTURE_MONTHS), and with them shut the
+        // town grows, is calm and builds at 487 to 489, where this section is read. The fixture's premise, a GROWING city to copy, is the same
+        // and is still asserted below ("the city is growing", "ground free for a home", "its own rents price no migrant out").
         // WN3: the city, and every copy read against it below (free(), tracks()), play on the goods' literals, as the game did before the
         // world market: a copy K times over is read against its city to a percent, and on the world's band it cannot track it - the
         // band is struck from a city's own exports and imports against the world's (a big seller depresses its own floor), so a copy
@@ -778,6 +802,7 @@ public class ScaleCheck {
         Files.copy(small.historyFile(10), files.historyFile(10));
         Game g = new Game(files);
         g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
+        g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
         quietly(() -> g.loadGameSave(10));
         assertTrue("the copy loads", g.getLoadFailure() == null);
         Orders orders = new Orders();
@@ -938,6 +963,7 @@ public class ScaleCheck {
             Files.copy(sites.historyFile(10), files.historyFile(10));
             Game g = new Game(files);
             g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
+            g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
             quietly(() -> g.loadGameSave(10));
             assertTrue("the copy at K = " + times[c] + " loads", g.getLoadFailure() == null);
             // Every sector held in both copies (SK1, above): a planner's order is a whole building, which no K scales.
@@ -983,6 +1009,7 @@ public class ScaleCheck {
         Files.copy(grown.historyFile(10), files.historyFile(10));
         Game g = new Game(files);
         g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
+        g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
         quietly(() -> g.loadGameSave(10));
         assertTrue("fixture: the grown city loads, to have its building sites emptied", g.getLoadFailure() == null);
         for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());

@@ -266,10 +266,28 @@ public class Health {
 
         injuryRate = Math.max(0, Math.min(1, injured));
 
+        /*
+         * THE 1918 INFLUENZA (R0b): an epidemic on its dates, not a roll - a
+         * quarter of the people ill over its three waves, October 1918 to
+         * March 1920, off work in the months CausesOfDeath gives its share.
+         * The one cause of death that also costs the month's work (R0b call
+         * 5): the others are deaths only, because this rate kills through
+         * Sickness's ring and a cause on it would count its dead twice.
+         */
+        influenzaRate = influenzaHeldOff ? 0 : CausesOfDeath.influenzaSick(month);
+
         sickRate = Math.min(MAX_SICK_RATE,
                 baselineRate + outbreakSeverity + unburiedRate + hungerRate + unhousedRate
-                        + injuryRate);
+                        + injuryRate + influenzaRate);
     }
+
+    /** What the 1918 influenza is adding on top: its sick, in its months only (R0b). */
+    private double influenzaRate;
+    public double getInfluenzaRate() { return influenzaRate; }
+
+    /** The influenza held off, for a harness fixture sized on today's deaths: see CausesOfDeath.holdOff(). Not saved. */
+    private boolean influenzaHeldOff;
+    public void holdInfluenzaOff() { influenzaHeldOff = true; }
 
     private double unhousedRate;
 
@@ -354,7 +372,9 @@ public class Health {
             // ...and the unhoused, appended 2026-09-11, for the same reason.
             unhousedRate,
             // ...and the injured, the same night.
-            injuryRate
+            injuryRate,
+            // ...and the 1918 influenza's sick (R0b).
+            influenzaRate
         };
     }
 
@@ -379,7 +399,7 @@ public class Health {
          * month puts it right. Anything that is neither length is still refused
          * whole, because that is a save this build cannot read.
          */
-        if (state == null || state.length < 6 || state.length > 9) return false;
+        if (state == null || state.length < 6 || state.length > 10) return false;
 
         outbreakSeverity = state[0];
         outbreakStarted  = (int) state[1];
@@ -390,6 +410,7 @@ public class Health {
         hungerRate       = state.length > 6 ? state[6] : 0;
         unhousedRate     = state.length > 7 ? state[7] : 0;
         injuryRate       = state.length > 8 ? state[8] : 0;
+        influenzaRate    = state.length > 9 ? state[9] : 0;
         return true;
     }
 

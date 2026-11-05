@@ -507,6 +507,11 @@ public class ManufacturingCheck {
         Game booked = new Game(files);
         quietly(() -> {
             booked.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0): the capacity read below is what the makers' planner builds in this city, and it builds
+            // against the profit a city's taxes and wage floor leave. This section was written for a city that taxes from its first month and
+            // pays the floor; on history's dates it has neither until 1916-1918. Every lever opened and the defaults put back, before a month.
+            booked.getEconomyManager().getTaxPolicy().reset();
+            booked.getEconomyManager().getTaxPolicy().openAll();
             BuildingManager b = booked.getBuildingManager();
             booked.getLandManager().setOwnedSqFt(booked.getLandManager().getOwnedSqFt() + 400_000_000L);
             b.addStack(b.getTemplateByName("House"), 2000, true);

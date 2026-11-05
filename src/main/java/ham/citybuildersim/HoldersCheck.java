@@ -189,6 +189,13 @@ public class HoldersCheck {
         city.quietTheWorldForTheD();
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): every section reads the paper's holders in the town this was written
+            // against, which taxes from month 1; a 1900 town has no income tax to 1916-17 and no sales tax to 1920, so its households are paid
+            // and spend differently, and one short of money sells a sliver of its paper to the bank's desk in the very month the coupon is
+            // read on shares measured before it (section 2: 0.112732 against 0.112952). Every lever opened and the defaults put back,
+            // before a month has run; the 1900 town is the model's, and the paper's accounting is the same in it.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // ...and Heavy Industry held (EP1), as ForeignCheck holds it (LD1): in the draws of 1900 it raises a plant on bonds and a bank loan in the
             // month after the town is played to (BuybackCheck's town, which is this one, measured it: 215k of ten-year bonds and a 414k loan, the
             // households' savings down from 526k to 212k that month), so the paper a sale made then allots the households is not what they can pay at
@@ -578,6 +585,10 @@ public class HoldersCheck {
         city.quietTheWorldForTheD();
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): see main(). A 1900 town's households sell the desk a sliver of paper
+            // in the months watched and the bank's holding does not clear in the steps this section counts; every lever opened, before a month.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // The treasury and the ground it was written against (0.7.17): see main().
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
@@ -801,6 +812,10 @@ public class HoldersCheck {
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): see main(). In a 1900 town the businesses took none of a two-year
+            // bond at the settle; every lever opened and the defaults put back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
@@ -1315,8 +1330,17 @@ public class HoldersCheck {
         GameFiles files = GameFiles.scratch("holderscheck-world");
         Game city = new Game(files);
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
+        // R0b call 7: the causes of 1900 held off, before a month, here and in the twins loaded from this city below. The reloaded twin
+        // is read against the city a month on, sized on today's deaths; on 1900's causes the paper the world holds stood at 0.049481 in
+        // the twin where the city's was 0.049483 ("...and hold the same", 1e-9 allowed).
+        city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): see main(). In a 1900 town the world holds $0.02k of the city's paper
+            // where this section was written against thousands, so a departure sells the desk none of it and the twin's month parts by $0.3;
+            // every lever opened and the defaults put back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
@@ -1476,6 +1500,7 @@ public class HoldersCheck {
             city.saveGame(3, "the world");
             twinBox[0] = new Game(files);
             twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
+            twinBox[0].holdCausesOfDeathOff();   // R0b call 7: as the live city; the hold is not saved
             twinBox[0].loadGameSave(3);
         });
         Game twin = twinBox[0];
@@ -1510,6 +1535,7 @@ public class HoldersCheck {
         quietly(() -> {
             twinBox[0] = new Game(files);
             twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
+            twinBox[0].holdCausesOfDeathOff();   // R0b call 7: as the live city; the hold is not saved
             twinBox[0].loadGameSave(4);
         });
         Game old = twinBox[0];
@@ -1645,8 +1671,21 @@ public class HoldersCheck {
         Game city = new Game(files);
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         city.restrikeOffForTest = restrikeOff;
+        // R0b call 7: the causes of 1900 held off, before a month, in the city and its twin alike. Sections 13a to 13c reopen a line that
+        // still has discount left, or sell and buy back a piece the bank's book covers, sized on today's deaths; on 1900's causes 13a's
+        // second sale raised $79.7079k on $80.2387k of face (under par, where its fixture needs proceeds over the face) and 13c's fixture
+        // "the bank's book covers the face it sells back, and its unearned discount the piece's" failed.
+        city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (BA1 on R0, 2026-11-05), as main() opens them for the other sections: 13a needs the
+            // second sale of the line to come at a premium to its coupon, and in the untaxed 1900 town on BA1's path it did not
+            // (the 20-year yield 4.151% at the first sale and 4.168% at the reopening, a sale of 165.65 face for 164.36, the
+            // line's discount left up from 1.00 to 2.29: the coupon rounds down to 4.125% and the yield stood over it). The town
+            // taxing from month 1, which these sections were written against, has the yield 3.97% at the first sale and 3.84%
+            // at the reopening, the reopening over its face and the discount down from 1.98 to 1.67.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);

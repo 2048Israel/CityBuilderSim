@@ -1,6 +1,6 @@
-# HealthCheck.java - 1,754 lines · 6 methods · 0 constants · harnesses
+# HealthCheck.java - 1,760 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HealthCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HealthCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Sickness: what it moves, and - much more importantly - what it does not.
 > 
@@ -52,12 +52,12 @@
 | 707 | · 8. death care |
 | 778 | · 9. senior care draws people in |
 | 799 | · 10. and somebody pays for all of it |
-| 939 | · 11. a skip cannot hide an epidemic |
-| 976 | · 12. the fee has a dial, and the funerals do not |
-| 1086 | · 13. who can afford the clinic |
-| 1515 | · 14. the unchanged case, at zero tolerance |
-| 1554 | · 15. the premium |
-| 1643 | · 16. both dials survive a save, and a reform |
+| 943 | · 11. a skip cannot hide an epidemic |
+| 980 | · 12. the fee has a dial, and the funerals do not |
+| 1090 | · 13. who can afford the clinic |
+| 1521 | · 14. the unchanged case, at zero tolerance |
+| 1560 | · 15. the premium |
+| 1649 | · 16. both dials survive a save, and a reform |
 
 ## Fields (state)
 
@@ -69,11 +69,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 1714 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
+| 41 | 1720 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
 | 45 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 57 | 1649 | `public static void main(String[] args) throws Exception` |  |
-| 1708 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
-| 1735 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
-| 1747 | 7 | `static void cleanUp(Path root)` |  |
+| 57 | 1655 | `public static void main(String[] args) throws Exception` |  |
+| 1714 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
+| 1741 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
+| 1753 | 7 | `static void cleanUp(Path root)` |  |
 

@@ -894,6 +894,12 @@ public class SlopeCheck {
         // across every class of ground, and only its steep part is excused). All of it must fit on the flat and foothill, as the buildings with
         // the runs among them had to before (runRoom() keeps it so).
         double buildings = lm.getAllocatedSqFt() - lm.getWorksSqFt() - lm.getRunsOnSlopeSqFt(), eps = TOL * Math.max(1, lm.getOwnedSqFt());
+        // R0 diagnostic, prints only: the check below names the findings' kinds and nothing of their month or place (LongPlaytest.out is the quiet
+        // stream here), so a red run says when and where the watcher raised each one. No assertion reads it; a green run prints nothing.
+        for (java.util.Map.Entry<String, LongPlaytest.Finding> f : LongPlaytest.findings.entrySet()) {
+            out.printf("      finding \"%s\": %d time(s), first m%d, last m%d, worst at m%d: %s%n", f.getKey(), f.getValue().count, f.getValue().firstMonth,
+                    f.getValue().lastMonth, f.getValue().worstMonth, f.getValue().worst);
+        }
         check("the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, "
                         + LongPlaytest.findings.keySet(), g.getMonth() >= RUN_MONTHS && LongPlaytest.findings.isEmpty());
         check("the preparation fires: orders charged one, foothill prepared, its points billed", g.preparationOrders() > 0 && prepared > 0 && billed > 0);

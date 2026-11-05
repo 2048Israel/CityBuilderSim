@@ -114,7 +114,10 @@ public final class Agriculture extends Sector {
     public double getSelfSufficiency(Game game) {
         if (game == null) return 0;
         double eaters = game.getPopulationManager().getPopulation();
-        return eaters > 0 ? getHarvest() * BAKED_KG_PER_TONNE / (eaters * BAKED_KG_A_HEAD) : 0;
+        if (!(eaters > 0)) return 0;
+        // ...of the harvest past what the horses eat (R0c, THE HORSE FORM): the people bake only what the market sees.
+        double harvest = horseShare > 0 ? getHarvest() * (1 - horseShare * HORSE_FEED_SHARE) : getHarvest();
+        return harvest * BAKED_KG_PER_TONNE / (eaters * BAKED_KG_A_HEAD);
     }
 
     /**
@@ -129,6 +132,100 @@ public final class Agriculture extends Sector {
 
     /** What one person eats of the city's own baking a month: 3.5kg of bread, 1.5kg of the rest. */
     public static final double BAKED_KG_A_HEAD = 5.0;
+
+    /* ===== THE HORSE FORM (R0c, 2026-11-05; research-1900 section 4, [P2.47])
+     *
+     * A 1900 farm fed part of its own crop to its horses and needed more hands to work
+     * them: the tractor (PE14, from 1917) took that feed and 27.3% of the farm jobs. A share
+     * of the sector, 0..1, runs the 1900 way (setHorseShare()). At 0, the default and every
+     * played city in R0c, nothing in this block runs and the month is today's, to the bit.
+     *
+     * At share h: the farms' CROPS need a month at nameplate is h x HORSE_FEED_SHARE of
+     * what they make, eaten CAPTIVE (Sector, CAPTIVE USE): the horses are fed first,
+     * no sale or purchase is booked, and the market sees the harvest less the feed. The
+     * posts per tier are the buildings' times 1 + h x (HORSE_POSTS_FACTOR - 1), rounded: the
+     * payroll, the fill and the labour market all read them (postsPerTier(), and the city's
+     * count through BuildingManager.setPostsPast()). No PETROL is bought: today's farm
+     * buys none, and the tractor's fuel is R1's.
+     *
+     * WHY A SHARE: the tractor spread when it paid (research-1900 section 3), and nothing in
+     * the game needs to schedule that; R1 sets the share from each building's recipe, so the
+     * form is built here and off. Only a harness sets it in R0c, and it is not saved
+     * (nothing sets it in a played city yet).
+     * =================================================================== */
+
+    /** The share of a horse farm's crop its horses eat: 22% of US cropland fed farm horses and mules (research-1900 section 4, [P2.47]); Canada's 1.58 million horses (1901) at about 3 acres each agree (est.). */
+    public static final double HORSE_FEED_SHARE = 0.22;
+
+    /** A horse farm's posts against a tractor farm's: the tractor took 27.3% of US farm jobs, 1910-60 (PE14, [P2.47], est.). */
+    public static final double HORSE_POSTS_FACTOR = 1 / (1 - 0.273);
+
+    /** The share of the farms that run on horses, 0 to 1: 0 until a harness or R1 sets it; not saved. */
+    private double horseShare;
+
+    /** Sets the horse share, clamped to [0, 1] (not a number reads 0); above 0 it registers CROPS as an input, once, so a city that never sets it has the farms as no buyer of crops at all. */
+    public void setHorseShare(double h) {
+        horseShare = Double.isFinite(h) ? Math.min(1, Math.max(0, h)) : 0;
+        if (horseShare > 0) uses(Good.CROPS);
+    }
+
+    public double getHorseShare() { return horseShare; }
+
+    /** The tonnes of crop the horses eat a month at nameplate: the horse share of HORSE_FEED_SHARE of what the farms can make. 0 with no share set. */
+    public double getHorseFeedAtCapacity() {
+        return horseShare > 0 ? horseShare * HORSE_FEED_SHARE * getCapacity(Good.CROPS) : 0;
+    }
+
+    /** The horses' feed is a use of CROPS past the buildings' (Sector.formInput()), at the same figure whether or not the month's inputs are ordered for what it will make: the horses eat whatever the market does. */
+    @Override
+    protected double formInput(Good g, boolean ordered) {
+        double form = super.formInput(g, ordered);
+        return g == Good.CROPS && horseShare > 0 ? form + getHorseFeedAtCapacity() : form;
+    }
+
+    /**
+     * A tonne of crop's cost, over the tonnes the farms SELL: the horses' feed is part of what the fields make and none of what
+     * is sold, so the joint bill is spread over the harvest less the feed, h x HORSE_FEED_SHARE of it (Sector.getCostPerUnit()
+     * divides by what is made; a captive coke oven's coke is an input and its gross cost is right, a farm's crop is the sale).
+     * Today's figure, untouched, at a horse share of 0.
+     */
+    @Override
+    public double getCostPerUnit(Good g) {
+        double gross = super.getCostPerUnit(g);
+        if (g != Good.CROPS || !(horseShare > 0) || gross == Double.MAX_VALUE) return gross;
+        double sold = 1 - horseShare * HORSE_FEED_SHARE;
+        return sold > 0 ? gross / sold : Double.MAX_VALUE;
+    }
+
+    /** The farm feeds its horses from its own harvest first (Sector, CAPTIVE USE), while any run on horses. */
+    @Override
+    public boolean captive(Good g) {
+        return g == Good.CROPS && horseShare > 0;
+    }
+
+    /** A tier's posts on a horse farm: the buildings' times 1 + h x (HORSE_POSTS_FACTOR - 1), rounded. */
+    private long horsePosts(long base) {
+        return Math.round(base * (1 + horseShare * (HORSE_POSTS_FACTOR - 1)));
+    }
+
+    /** The posts per tier: the buildings' own at a horse share of 0, untouched; more hands past it. */
+    @Override
+    public long[] postsPerTier() {
+        long[] posts = super.postsPerTier();
+        if (!(horseShare > 0)) return posts;
+        for (int i = 0; i < posts.length; i++) posts[i] = horsePosts(posts[i]);
+        return posts;
+    }
+
+    /** ...and the posts past the buildings' the city's own count must add (BuildingManager.setPostsPast()), so the labour market is offered the posts the payroll is struck on. */
+    @Override
+    public long[] postsPastBuildings() {
+        if (!(horseShare > 0) || buildings == null) return null;
+        long[] base = buildings.getJobArrayBySector(key());
+        long[] past = new long[base.length];
+        for (int i = 0; i < base.length; i++) past[i] = horsePosts(base[i]) - base[i];
+        return past;
+    }
 
     /** Ground the sector stands on, in square feet. */
     public double getLandSqFt() {

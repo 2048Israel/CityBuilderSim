@@ -378,6 +378,12 @@ public class CopperRefiningCheck {
     static void acid() {
         out.println("\n--- 4. the smelter's acid sold, the leach plant's bought at home, the rest shipped ---");
         Game g = CopperMiningCheck.copperTown("copperrefiningcheck-acid", 0);
+        // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): the books line below needs the leach plant to buy its acid at home
+        // alone, in the third month of a city that taxes and pays its wage floor from its first; a 1900 city on history's dates has neither until
+        // 1916-1918, and in the suite's first read of it every clause the line prints held (D$0.7k bought at home, D$0.7k sold at home, D$5.0k abroad)
+        // and the one it does not print, nothing bought abroad, did not. Every lever opened and the defaults put back, before a month.
+        g.getEconomyManager().getTaxPolicy().reset();
+        g.getEconomyManager().getTaxPolicy().openAll();
         // ...on the goods' literals, as 3: on the world file's band under Random the smelter alone on landed concentrate nets less for its anode than
         // the concentrate costs it less the acid (EP1, the draws of 1900: 0.0610 against 0.0670, the study's case A), and a works orders nothing it
         // loses on (THE ORDER, FL1), so it made no acid for the leach plant to buy.

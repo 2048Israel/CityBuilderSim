@@ -145,6 +145,10 @@ public class PolicyPreviewCheck {
         g.quietTheWorldForTheD();
         quietly(() -> {
             g.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0): the previews are of dials that exist, and on history's dates the taxes, the pension, EI
+            // and the rest are shut until 1916-1966. Every lever opened and the defaults put back, before a month has run.
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.getEconomyManager().getTaxPolicy().openAll();
             // AN1 (2026-10-22): the D$ is held (see above); the reload twin of section 5 runs no month, so no side of it floats.
             g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             // WN3: the cement sector builds nothing here. On the world's band it borrows $53M by month 13 for a Lime Kiln the town's

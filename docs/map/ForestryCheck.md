@@ -1,6 +1,6 @@
-# ForestryCheck.java - 704 lines · 21 methods · 22 constants · harnesses
+# ForestryCheck.java - 706 lines · 21 methods · 22 constants · harnesses
 
-`ham/citybuildersim/ForestryCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForestryCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Forestry, checked (0.7.138, batch I9; docs/studies/spec-materials.md 2.1,
 > 2.3, 2.4, 2.11, 4 and 5's I9 row; the study's - materials-chains-research.md
@@ -64,7 +64,7 @@
 >      protected - by the regrowth rule's own constant.
 > ... (8 more lines in the source)
 
-**Uses:** [Forestry](Forestry.md) (80), [Good](Good.md) (53), [LandManager](LandManager.md) (25), [Sectors](Sectors.md) (21), [Game](Game.md) (16), [BuildingManager](BuildingManager.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [GameFiles](GameFiles.md) (6), [PriceLevelCheck](PriceLevelCheck.md) (5), [Zoning](Zoning.md) (5), [Resource](Resource.md) (4), [LandMarket](LandMarket.md) (4), [LandParcel](LandParcel.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [Equity](Equity.md) (3), [MoneyAudit](MoneyAudit.md) (3), [CityLand](CityLand.md) (3), [JobType](JobType.md) (3), [Sector](Sector.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Traffic](Traffic.md) (2), [Ports](Ports.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [PayTier](PayTier.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [World](World.md) (1), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1)... and 6 more
+**Uses:** [Forestry](Forestry.md) (80), [Good](Good.md) (53), [LandManager](LandManager.md) (25), [Sectors](Sectors.md) (21), [Game](Game.md) (16), [BuildingManager](BuildingManager.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (9), [SpreadPlanner](SpreadPlanner.md) (6), [GameFiles](GameFiles.md) (6), [PriceLevelCheck](PriceLevelCheck.md) (5), [Zoning](Zoning.md) (5), [Resource](Resource.md) (4), [LandMarket](LandMarket.md) (4), [LandParcel](LandParcel.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [Equity](Equity.md) (3), [MoneyAudit](MoneyAudit.md) (3), [CityLand](CityLand.md) (3), [JobType](JobType.md) (3), [Sector](Sector.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Traffic](Traffic.md) (2), [Ports](Ports.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [PayTier](PayTier.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [World](World.md) (1), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1)... and 7 more
 
 **Used by (4):** [BuildCardCheck](BuildCardCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md)
 
@@ -75,12 +75,12 @@
 | 133 | 1. the sector on the registry |
 | 209 | 2. the four rows against the study |
 | 305 | 3. E, the crews' rule |
-| 406 | 4. the cut |
-| 448 | 5. regrowth |
-| 485 | 6. planting |
-| 568 | 7. the salvage cut |
-| 621 | 8. where the forest settles |
-| 644 | 9. a played city |
+| 408 | 4. the cut |
+| 450 | 5. regrowth |
+| 487 | 6. planting |
+| 570 | 7. the salvage cut |
+| 623 | 8. where the forest settles |
+| 646 | 9. a played city |
 
 ## Constants
 
@@ -105,9 +105,9 @@
 | 225 | `ForestryCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 227 | `ForestryCheck.PLANTATION_HA` | `1_000, WOODLOT_HA = 100` | A plantation's hectares (the study's 5.4) and a woodlot's (A12). |
 | 229 | `ForestryCheck.SINCE` | `{ 1900, 1973, 1900, 1900 }` | The year each first existed: 1900 - standing before the start - but the Harvesting Operation, 1973 (research-design.md E14, PIKA 75). |
-| 404 | `ForestryCheck.TOWN_KM2` | `1_000` | The ground a forest town is restated to hold past its founding, km2: enough for a Harvesting Operation's 109 km2 of forest at the default world's share. |
-| 624 | `ForestryCheck.MOCKUP_FULL` | `25_400_000, MOCKUP_CUT = 75_000` | The study's mockup 4 (its 5.2): the natural woods' full stock, m3, and the month's cut. |
-| 626 | `ForestryCheck.MOCKUP_SETTLES` | `.291, MOCKUP_PROTECTED =.40` | ...where they settle: 29.1% standing, and at 40% with 40% protected (spec-zoning 3.3; spec 2.11). |
+| 406 | `ForestryCheck.TOWN_KM2` | `1_000` | The ground a forest town is restated to hold past its founding, km2: enough for a Harvesting Operation's 109 km2 of forest at the default world's share. |
+| 626 | `ForestryCheck.MOCKUP_FULL` | `25_400_000, MOCKUP_CUT = 75_000` | The study's mockup 4 (its 5.2): the natural woods' full stock, m3, and the month's cut. |
+| 628 | `ForestryCheck.MOCKUP_SETTLES` | `.291, MOCKUP_PROTECTED =.40` | ...where they settle: 29.1% standing, and at 40% with 40% protected (spec-zoning 3.3; spec 2.11). |
 
 ## Fields (state)
 
@@ -119,7 +119,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 81 | 624 | **type** `public class ForestryCheck` | Forestry, checked (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.11, 4 and 5's I9 row; the study's - materials-chains-research.md - 1.3, 5 and 10's Q13 to Q15; the zoning study's - spec-zoning.md ... |
+| 81 | 626 | **type** `public class ForestryCheck` | Forestry, checked (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.11, 4 and 5's I9 row; the study's - materials-chains-research.md - 1.3, 5 and 10's Q13 to Q15; the zoning study's - spec-zoning.md ... |
 | 89 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 94 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 99 | 5 | `static void quietly(Runnable r)` |  |
@@ -139,51 +139,51 @@
 |---:|---:|---|---|
 | 231 | 73 | `static void rows()` |  |
 
-### 3. E, the crews' rule (lines 305-405)
+### 3. E, the crews' rule (lines 305-407)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 307 | 55 | `static void crewsRule()` |  |
 | 368 | 6 | `static void protect(Game g, double cuttable)` | Sets the forest law's protected share - kept as large as the protected share, so the law keeps no working forest past it - to leave `cuttable` cubic metres that may be cut, or the whole forest. |
 | 381 | 3 | `static Game forestTown(String label)` | A town to cut forest in: the Wealthy preset's cash and the founding default's works, its ground restated round the default world's founding site to 4,000 km2 more (LandManager.setOwnedSqFt()), forest and bare ground b... |
-| 386 | 16 | `static Game forestTown(GameFiles files)` | ...in these files, so a harness can load what it saves. |
+| 386 | 18 | `static Game forestTown(GameFiles files)` | ...in these files, so a harness can load what it saves. |
 
-### 4. the cut (lines 406-447)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 408 | 39 | `static void theCut()` |  |
-
-### 5. regrowth (lines 448-484)
+### 4. the cut (lines 408-449)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 450 | 27 | `static void regrowth()` |  |
-| 479 | 5 | `static LandManager office(double km2)` | A land office on its own whose ground is drawn round the default world's founding site to this many square kilometres. |
+| 410 | 39 | `static void theCut()` |  |
 
-### 6. planting (lines 485-567)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 487 | 66 | `static void planting()` |  |
-| 555 | 6 | `static void cutAMonth(Game g)` | The month's cut, as the market's first step makes it: both goods' produceFlow(). |
-| 563 | 4 | `static int onOrder(BuildingManager b)` | Planted stands on site. |
-
-### 7. the salvage cut (lines 568-620)
+### 5. regrowth (lines 450-486)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 570 | 50 | `static void salvage()` |  |
+| 452 | 27 | `static void regrowth()` |  |
+| 481 | 5 | `static LandManager office(double km2)` | A land office on its own whose ground is drawn round the default world's founding site to this many square kilometres. |
 
-### 8. where the forest settles (lines 621-643)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 628 | 15 | `static void settles()` |  |
-
-### 9. a played city (lines 644-704)
+### 6. planting (lines 487-569)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 646 | 58 | `static void played()` |  |
+| 489 | 66 | `static void planting()` |  |
+| 557 | 6 | `static void cutAMonth(Game g)` | The month's cut, as the market's first step makes it: both goods' produceFlow(). |
+| 565 | 4 | `static int onOrder(BuildingManager b)` | Planted stands on site. |
+
+### 7. the salvage cut (lines 570-622)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 572 | 50 | `static void salvage()` |  |
+
+### 8. where the forest settles (lines 623-645)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 630 | 15 | `static void settles()` |  |
+
+### 9. a played city (lines 646-706)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 648 | 58 | `static void played()` |  |
 

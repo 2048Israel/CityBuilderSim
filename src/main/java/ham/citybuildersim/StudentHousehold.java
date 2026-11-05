@@ -44,14 +44,17 @@ public class StudentHousehold extends Household {
     @Override public String label() { return "Full-time students"; }
     @Override public String key()   { return "STUDENT"; }
 
-    /** The student loan: whatever is still short, from the treasury, at no interest while they study. */
+    /**
+     * The student loan: whatever is still short, from the treasury, at no interest while they study. NONE before the treasury makes them
+     * (R0: student aid opens in 1939): what is refused is not funded, and the student went without.
+     */
     @Override
     protected double fundShortfall(double still, double disposablePer) {
-        if (!(still > 0)) return 0;
+        if (!(still > 0) || !studentLoansOpen) return 0;
         studentBorrowed += still;
         studentDebt += still;
         return still;
     }
 
-    @Override protected double planningRoom() { return UNLIMITED; }
+    @Override protected double planningRoom() { return studentLoansOpen ? UNLIMITED : 0; }
 }

@@ -445,6 +445,8 @@ public final class Freight extends Sector {
      */
     private final double[] ownWages = new double[11];
     private final double[] crewWages = new double[11];
+    /** The wage bill at full staffing of the carters' posts (Haulage's horse form, R0c), a part of the NO_DIPLOMA tier's ownWages: struck with them in updateWages(), 0 without the form. Not saved. */
+    private double carterWages;
     /** The wage of a post of each tier as last struck, and the crews' posts of each kind of cargo's berths: the Ports division's per-kind figures (portsCrewByKind()). */
     private final double[] wageRates = new double[11];
     private final long[][] crewPostsByKind = new long[ham.citybuildersim.Ports.Cargo.values().length][11];
@@ -1180,6 +1182,9 @@ public final class Freight extends Sector {
             crewWages[i] = wagePerType[i] * (offered[i] - own[i]);
             wageRates[i] = wagePerType[i];
         }
+        // ...the carters (the horse form) are among the owned NO_DIPLOMA posts just struck: their wages are Haulage's alone (carterPayroll()).
+        int k = JobType.NO_DIPLOMA.ordinal();
+        carterWages = k < n ? wagePerType[k] * Math.min(haulage.getCarters(), own[k]) : 0;
         for (ham.citybuildersim.Ports.Cargo kind : ham.citybuildersim.Ports.Cargo.values()) {
             long[] byKind = buildings == null ? new long[crewPostsByKind[kind.ordinal()].length] : buildings.getCrewArrayByCargo(kind);
             System.arraycopy(byKind, 0, crewPostsByKind[kind.ordinal()], 0, Math.min(byKind.length, crewPostsByKind[kind.ordinal()].length));
@@ -1199,11 +1204,41 @@ public final class Freight extends Sector {
         return total;
     }
 
-    /** The Rail division's payroll line (FR3): its share of ownPayroll(), what is left of the sector's payroll after the Ports division's crews and Haulage's depots; what the railway's rule reads (monthlyCost()). */
-    public double railPayroll() { return (1 - haulagePayrollShare()) * ownPayroll(); }
+    /**
+     * The Rail division's payroll line (FR3): its share of ownPayroll(), what is left of the sector's payroll after the Ports division's crews and Haulage's depots; what the railway's rule reads (monthlyCost()).
+     * With Haulage's horse form on, the carters' wages (carterPayroll()) are Haulage's alone and the share is of the rest: the railway's line is what it was without them.
+     */
+    public double railPayroll() { return (1 - haulagePayrollShare()) * (carterWages > 0 ? ownPayroll() - carterPayroll() : ownPayroll()); }
 
-    /** ...and Haulage's (FR3): its share of ownPayroll(), the depots' posts less the drivers laid off; what its rule reads (Haulage.closeMonth()). */
-    public double haulagePayroll() { return haulagePayrollShare() * ownPayroll(); }
+    /** ...and Haulage's (FR3): its share of ownPayroll(), the depots' posts less the drivers laid off, and the carters' wages whole; what its rule reads (Haulage.closeMonth()). */
+    public double haulagePayroll() {
+        return carterWages > 0 ? haulagePayrollShare() * (ownPayroll() - carterPayroll()) + carterPayroll() : haulagePayrollShare() * ownPayroll();
+    }
+
+    /** The carters' payroll (Haulage's horse form, R0c): their posts at the NO_DIPLOMA wage at the tier's fill rate, a part of ownPayroll(); 0 without the form. */
+    public double carterPayroll() { return carterWages > 0 ? carterWages * fill[JobType.NO_DIPLOMA.ordinal()] : 0; }
+
+    /** The posts it offers per tier: its buildings' (the track's, the depots', the berths' crews') and the carters Haulage's horse form hires, NO_DIPLOMA posts past the buildings' (R0c). */
+    @Override
+    public long[] postsPerTier() {
+        long[] posts = super.postsPerTier();
+        long carters = haulage == null ? 0 : haulage.getCarters();
+        int k = JobType.NO_DIPLOMA.ordinal();
+        if (carters <= 0 || k >= posts.length) return posts;
+        posts = posts.clone();
+        posts[k] += carters;
+        return posts;
+    }
+
+    /** ...and the carters again, as the posts past its buildings' the city's own count must add (BuildingManager.setPostsPast()), so the labour market is offered the posts the payroll is struck on. */
+    @Override
+    public long[] postsPastBuildings() {
+        long carters = haulage == null ? 0 : haulage.getCarters();
+        if (carters <= 0) return null;
+        long[] past = new long[JobType.values().length];
+        past[JobType.NO_DIPLOMA.ordinal()] = carters;
+        return past;
+    }
 
     /** ...and the payroll of the crews it works for the city, the sea terminals' dockers, at the fill rates (FR3): what the city's transit bill paid for them before; 0 with no terminal. */
     public double portsPayroll() {
@@ -1264,6 +1299,11 @@ public final class Freight extends Sector {
         return markets.draw(Good.DIESEL, this, key(), litres, sectors);
     }
 
+    /** The horses' feed, drawn as a buyer as the diesel is (Haulage's horse form, R0c): the farms' shelf first, the world for the rest - crops. */
+    Markets.Draw drawFeed(double tonnes, Sectors sectors) {
+        return markets.draw(Good.CROPS, this, key(), tonnes, sectors);
+    }
+
     /** Haulage's bill, as this sector's other revenue; named "Haulage billed" (nameOtherRevenue()). */
     void bookHaulage(double amount) { bookOtherRevenue(amount); }
 
@@ -1285,10 +1325,15 @@ public final class Freight extends Sector {
     void payPortDues(double amount) { payTheCity(PortDivision.DUES_NAME, amount); }
 
     /** What a post on the DIPLOMA tier costs a month, the drivers' tier; nothing with no game to ask. */
-    double diplomaWage() {
+    double diplomaWage() { return wageOf(JobType.DIPLOMA); }
+
+    /** ...and on the NO_DIPLOMA tier, a carter's (Haulage's horse form, R0c). */
+    double noDiplomaWage() { return wageOf(JobType.NO_DIPLOMA); }
+
+    private double wageOf(JobType tier) {
         if (game == null || game.getEconomyManager() == null) return 0;
         double[] wages = game.getEconomyManager().getWageRates();
-        int k = JobType.DIPLOMA.ordinal();
+        int k = tier.ordinal();
         return wages == null || k >= wages.length || !Double.isFinite(wages[k]) ? 0 : Math.max(0, wages[k]);
     }
 
@@ -2033,6 +2078,7 @@ public final class Freight extends Sector {
         java.util.Arrays.fill(ownWages, 0);
         java.util.Arrays.fill(crewWages, 0);
         java.util.Arrays.fill(wageRates, 0);
+        carterWages = 0;
         for (long[] posts : crewPostsByKind) java.util.Arrays.fill(posts, 0);
         haulage.reset();
         portDivision.reset();
@@ -2059,6 +2105,7 @@ public final class Freight extends Sector {
         rPaidAbroad *= scale;
         // ...and the payroll's three, wage bills like the sector's own (wages[]) and the wages they are struck at (FR3).
         for (int i = 0; i < ownWages.length; i++) { ownWages[i] *= scale; crewWages[i] *= scale; wageRates[i] *= scale; }
+        carterWages *= scale;
         // ...and Haulage's: its quote is a price in the city's money, unlike the railway's share of the lorry rate (FR2).
         haulage.redenominate(scale);
         portDivision.redenominate(scale);

@@ -1146,6 +1146,22 @@ public class DataSave implements Cloneable {
         this.contractValueById = contractValue;
     }
 
+    /**
+     * The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written
+     * only for the stacks that have any: null, or empty, is every building fitted. A save from before R1 has no key, which Gson leaves alone, and
+     * so reads as every building fitted, as it ran: no format bump.
+     */
+    private java.util.Map<Integer, java.util.Map<String, Integer>> unfittedById;
+
+    public void setUnfittedById(java.util.Map<Integer, java.util.Map<String, Integer>> byId) {
+        this.unfittedById = byId == null || byId.isEmpty() ? null : byId;
+    }
+
+    /** The unfitted counts the save carries by template id, or an empty map for a save with none (every building fitted). */
+    public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById() {
+        return unfittedById == null ? java.util.Map.of() : unfittedById;
+    }
+
     /** False on a save that kept one order book for the whole city. */
     public boolean hasContractsById() { return contractValueById != null; }
 
@@ -1463,6 +1479,15 @@ public class DataSave implements Cloneable {
 
     public void setTaxPolicyState(double[] state)  { this.taxPolicyState = state; }
     public double[] getTaxPolicyState()            { return taxPolicyState; }
+
+    /**
+     * The month each Policy lever opens in this city, by the lever's NAME (R0; TaxPolicy.openingsForSave()). Null on a save from before R0,
+     * which loads with every lever open: its taxes were set before there was a gate.
+     */
+    private java.util.Map<String, Integer> leverOpenings;
+
+    public void setLeverOpenings(java.util.Map<String, Integer> openings) { this.leverOpenings = openings; }
+    public java.util.Map<String, Integer> getLeverOpenings()              { return leverOpenings; }
 
     public void setHouseholdBalance(double[] state) { this.householdBalance = state; }
     public double[] getHouseholdBalance()           { return householdBalance; }
@@ -2373,6 +2398,17 @@ public class DataSave implements Cloneable {
     private double[] health;
 
     /**
+     * The causes of death of 1900 (R0b; CausesOfDeath.getState()): last
+     * month's dead of each of the seven, the dead of each since the city
+     * began, the last twelve months' dead of each, one slot to a month, and
+     * the people sick of TB. FLOWS AND RUNNING TOTALS a screen reads next
+     * month - what a city died of last month and over the year cannot be
+     * reconstructed from the people who are alive now. Null in a save from
+     * before, which CausesOfDeath takes as a city with nobody dead of them.
+     */
+    private double[] causesOfDeath;
+
+    /**
      * The health service: plots used, the unburied backlog, and the month's
      * bill.
      *
@@ -2493,6 +2529,8 @@ public class DataSave implements Cloneable {
     public double[] getCrime()              { return crime; }
     public void setHealth(double[] a)   { this.health = a; }
     public double[] getHealth()         { return health; }
+    public void setCausesOfDeath(double[] a) { this.causesOfDeath = a; }
+    public double[] getCausesOfDeath()       { return causesOfDeath; }
     public void setHealthcare(double[] a){ this.healthcare = a; }
     public double[] getHealthcare()      { return healthcare; }
 

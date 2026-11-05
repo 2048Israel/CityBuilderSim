@@ -6868,8 +6868,27 @@ public class BuildingManager {
 
     public long getTotalJobs(JobType type) {
         // ...less the posts a sector does not offer this month (0.7.17): see
-        // THE POSTS A SECTOR OFFERS.
-        return getTotalJobsAtEveryPost(type) - getPostsWithheld(type);
+        // THE POSTS A SECTOR OFFERS; and the posts it runs past its buildings' (R0c).
+        return getTotalJobsAtEveryPost(type) - getPostsWithheld(type) + getPostsPast(type);
+    }
+
+    /**
+     * The posts per job type the sectors run past their buildings' (R0c, the horse form; sectors.Agriculture): Game hands in Sectors.postsPastBuildings(),
+     * null for none. WHY HERE: the labour market reads the city's posts through getTotalJobs(), and a farm run on horses pays for more hands than its
+     * buildings have, so the count the households are offered has to add them or they would be paid for fewer posts than the sector's payroll is
+     * struck on (THE POSTS A SECTOR OFFERS, the same agreement the other way). No hook, or none past, is 0.
+     */
+    private java.util.function.Supplier<long[]> postsPast;
+
+    public void setPostsPast(java.util.function.Supplier<long[]> hook) {
+        this.postsPast = hook;
+    }
+
+    /** The posts of a job type the sectors run past their buildings' (setPostsPast()): 0 with none. */
+    public long getPostsPast(JobType type) {
+        if (postsPast == null) return 0;
+        long[] past = postsPast.get();
+        return past == null || type.ordinal() >= past.length ? 0 : past[type.ordinal()];
     }
 
     /** Every post of a job type the city's buildings have, offered this month or not (0.7.17). */
@@ -7964,6 +7983,46 @@ public class BuildingManager {
     /** How many stacks exist, for callers checking a save's arrays line up. */
     public int getStackCount() {
         return stacks.size();
+    }
+
+    /**
+     * Every stack, in the order the month shares the crews out over them (R1; EquipmentForms): a read-only view of the live list, so a caller that
+     * adds a stack while walking it is walking a changed list. The stacks themselves are live; read them through their getters.
+     */
+    public List<BuildingsStacks> getStacksView() {
+        return java.util.Collections.unmodifiableList(stacks);
+    }
+
+    /**
+     * The buildings each stack lacks a piece of equipment on, by template id and then by the piece's id, for the save (R1; BuildingsStacks'
+     * unfitted counts): only the templates with any, so a city with none unfitted writes none and an old save, which has none, reads as every
+     * building fitted. A fresh map, not the stacks' own.
+     */
+    public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById() {
+        java.util.Map<Integer, java.util.Map<String, Integer>> out = new java.util.TreeMap<>();
+        for (BuildingsStacks stack : stacks) {
+            if (stack.hasUnfitted()) out.put(stack.getBuilding().getId(), new java.util.TreeMap<>(stack.getUnfittedView()));
+        }
+        return out;
+    }
+
+    /**
+     * ...and back onto the stacks the load path has put up (R1): each template's counts, clamped to what stands. A template this catalogue no
+     * longer has, a stack the save did not put up and a piece the template no longer carries are skipped: a count for a piece nobody can fit
+     * would hold a form's share up for ever. Null restores nothing.
+     */
+    public void restoreUnfitted(java.util.Map<Integer, java.util.Map<String, Integer>> byId) {
+        if (byId == null) return;
+        for (java.util.Map.Entry<Integer, java.util.Map<String, Integer>> e : byId.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null) continue;
+            BuildingsTemplate t = getTemplate(e.getKey());
+            BuildingsStacks stack = t == null ? null : getStack(t);
+            if (stack == null) continue;
+            for (java.util.Map.Entry<String, Integer> piece : e.getValue().entrySet()) {
+                if (piece.getKey() == null || piece.getValue() == null || t.getEquipment(piece.getKey()) == null) continue;
+                stack.setUnfitted(piece.getKey(), piece.getValue());
+            }
+        }
     }
 
     public int[] getUnderConstructionArray() {

@@ -1,6 +1,6 @@
-# StudentHousehold.java - 57 lines · 10 methods · 1 constants · model
+# StudentHousehold.java - 60 lines · 10 methods · 1 constants · model
 
-`ham/citybuildersim/StudentHousehold.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StudentHousehold.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Full-time students, as one ledger.
 > 
@@ -29,7 +29,7 @@
 
 **Uses:** [Household](Household.md) (1), [PayTier](PayTier.md) (1)
 
-**Used by (6):** [EducationCheck](EducationCheck.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md)
+**Used by (7):** [EducationCheck](EducationCheck.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md)
 
 ## Constants
 
@@ -41,7 +41,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 29 | **type** `public class StudentHousehold extends Household` | Full-time students, as one ledger. |
+| 29 | 32 | **type** `public class StudentHousehold extends Household` | Full-time students, as one ledger. |
 | 34 | 3 | `public StudentHousehold()` |  |
 | 38 | 1 | `public PayTier tier()` |  |
 | 39 | 1 | `public int row()` |  |
@@ -50,6 +50,6 @@
 | 42 | 1 | `public int size()` |  |
 | 44 | 1 | `public String label()` |  |
 | 45 | 1 | `public String key()` |  |
-| 49 | 6 | `protected double fundShortfall(double still, double disposablePer)` | The student loan: whatever is still short, from the treasury, at no interest while they study. |
-| 56 | 1 | `protected double planningRoom()` |  |
+| 52 | 6 | `protected double fundShortfall(double still, double disposablePer)` | The student loan: whatever is still short, from the treasury, at no interest while they study. |
+| 59 | 1 | `protected double planningRoom()` |  |
 

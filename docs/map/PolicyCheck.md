@@ -1,6 +1,6 @@
-# PolicyCheck.java - 475 lines · 5 methods · 0 constants · harnesses
+# PolicyCheck.java - 479 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/PolicyCheck.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyCheck.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies.
 > 
@@ -27,9 +27,9 @@
 | 177 | · 5. exports are zero-rated, and can refund |
 | 195 | · 6. imports carry the tax in, and out again |
 | 226 | · 7. the subsidy floors a sector and stops the count |
-| 288 | · 8. the money goes somewhere |
-| 306 | · 9. it all survives a save |
-| 398 | · 10. three bases, one per tax (0.7.4) |
+| 292 | · 8. the money goes somewhere |
+| 310 | · 9. it all survives a save |
+| 402 | · 10. three bases, one per tax (0.7.4) |
 
 ## Fields (state)
 
@@ -41,10 +41,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 21 | 455 | **type** `public class PolicyCheck` | The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies. |
+| 21 | 459 | **type** `public class PolicyCheck` | The Policy tab: banded wage tax, per-sector offsets, the VAT, and subsidies. |
 | 25 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 32 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 37 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 44 | 419 | `public static void main(String[] args) throws Exception` |  |
-| 470 | 5 | `static double payOneSubsidy(Game city, Sector handler, double loss)` | Runs one subsidy payment against a stated loss. |
+| 44 | 423 | `public static void main(String[] args) throws Exception` |  |
+| 474 | 5 | `static double payOneSubsidy(Game city, Sector handler, double loss)` | Runs one subsidy payment against a stated loss. |
 

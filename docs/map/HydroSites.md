@@ -1,6 +1,6 @@
 # HydroSites.java - 440 lines · 31 methods · 13 constants · model
 
-`ham/citybuildersim/HydroSites.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HydroSites.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > The city's hydro sites: where a river and a drop lie on the ground it owns - the places a Hydro Station can be ordered
 > (HY1, 2026-10-26; docs/queue/HY1-notes.md 1.1).
@@ -31,7 +31,7 @@
 
 **Uses:** [World](World.md) (8), [EarthData](EarthData.md) (4), [EarthProj](EarthProj.md) (3), [EarthTerrain](EarthTerrain.md) (2), [CityLand](CityLand.md) (1), [LandGrid](LandGrid.md) (1), [Landmasses](Landmasses.md) (1)
 
-**Used by (3):** [BuildCard](BuildCard.md), [HydroCheck](HydroCheck.md), [LandManager](LandManager.md)
+**Used by (7):** [BuildCard](BuildCard.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [Forms1900Check](Forms1900Check.md), [HydroCheck](HydroCheck.md), [LandManager](LandManager.md), [Sector](Sector.md)
 
 ## Sections
 

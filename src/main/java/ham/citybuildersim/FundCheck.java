@@ -132,6 +132,7 @@ public class FundCheck {
     /** A copy of the fixture city, loaded from its save: every scenario starts from the same city. */
     static Game copy() {
         Game g = new Game(files);
+        g.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
         quietly(() -> g.loadGameSave(1));
         return g;
     }
@@ -175,8 +176,19 @@ public class FundCheck {
         out.println("--- a city with a bank its households own ---");
         files = GameFiles.scratch("fundcheck");
         Game city = new Game(files);
+        // R0b call 7: the causes of 1900 held off, before a month, here and in every city loaded from it (copy(), and the loads below). The
+        // rule's bids of section 8 stand at the desk's ask on this town's 72 months, sized on today's deaths; on 1900's causes a bid of the
+        // fund's rested at another price ("the rule's bid stands at the desk's ask").
+        city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): section 3 below holds the city's shares in the bank to
+            // "what it took" through two months, and in the town this was written against (every tax open from month 1) its rule
+            // bought none of the bank's shares from the market in them; a 1900 town with no income taxes to 1916-20 plays its 72
+            // months differently and the fund bought 7.4 of them (0.02% of an issue of 32,000). Every lever opened and the
+            // defaults put back, before a month has run.
+            city.getEconomyManager().getTaxPolicy().reset();
+            city.getEconomyManager().getTaxPolicy().openAll();
             city.getForeignAccounts().pinRate(1.0);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
@@ -624,6 +636,7 @@ public class FundCheck {
         takeEquityToOwn(pb, own -> own.targetEquity());
         quietly(() -> p.saveGame(4));
         Game q = new Game(files);
+        q.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
         quietly(() -> q.loadGameSave(4));
         close("a save before the anniversary carries the block", q.getBank().preferredOutstanding(), big, 1e-9);
         check("played: the month it comes due, its audit closes", play(p));
@@ -735,6 +748,7 @@ public class FundCheck {
         check("...and asks again a quarter after", g.isPreferredOfferPending() && g.getMonth() - declined == TreasuryFund.OFFER_AGAIN_MONTHS);
         quietly(() -> g.saveGame(2));
         Game back = new Game(files);
+        back.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
         quietly(() -> back.loadGameSave(2));
         check("a pending offer survives a save, its month and the refusal before it",
                 back.isPreferredOfferPending() && back.getFund().getOfferMonth() == g.getFund().getOfferMonth()
@@ -1205,6 +1219,7 @@ public class FundCheck {
         g.fundBuyShares(0, 500 * PriceLevel.FACTOR);
         quietly(() -> g.saveGame(3));
         Game back = new Game(files);
+        back.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
         quietly(() -> back.loadGameSave(3));
         TreasuryFund f = g.getFund(), r = back.getFund();
         check("the dial and the rescue setting", r.getDial() == 2.5 && r.getRescueMode() == TreasuryFund.RescueMode.AUTOMATIC);

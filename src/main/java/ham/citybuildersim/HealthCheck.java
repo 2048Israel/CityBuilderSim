@@ -803,6 +803,10 @@ public class HealthCheck {
         System.setOut(quiet);
         try {
             paid.run();
+            // THE LEVERS OPENED IN THE FIXTURE (R0): the premium is this city's subject (section 15, and the insured twin saved from it),
+            // shut until 1947 on history's dates. Every lever opened and the defaults put back, before a month has run.
+            paid.getEconomyManager().getTaxPolicy().reset();
+            paid.getEconomyManager().getTaxPolicy().openAll();
             // XR1 (2026-10-21): the books and the premium measure the health bill, not the currency. Under THE FLOAT the
             // D$ moves in these 60 months and fees at 1x price people out of care (the fee-funded twin served 65.48 of
             // childcare to the insured twin's 84.32), so the rate is held where the founding leaves it while this
@@ -1220,6 +1224,8 @@ public class HealthCheck {
             // and bury 14.67 against 14.19, the old 82.22 against 80.31. A fact of the world's price of money, not of health care; quieted as
             // BondCheck's and MapCheck's played cities are, its premise and its thresholds unmoved.
             town.quietTheWorldForTheD();
+            // THE CAUSES OF 1900 HELD OFF (BA1, 2026-11-05; R0b call 7): the twins' claim is the fee's, on today's deaths. Before a month has run.
+            town.holdCausesOfDeathOff();
             System.setOut(quiet);
             try {
                 town.run();

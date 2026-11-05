@@ -1,6 +1,6 @@
 # LandFactors.java - 232 lines · 18 methods · 5 constants · model
 
-`ham/citybuildersim/LandFactors.java` - generated 2026-11-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandFactors.java` - generated 2026-11-05 by CodeMap; line numbers are as of that run.
 
 > Each nation's land factor: what a hectare of its land costs against a hectare of Canada's (1, D21), at the founding and as its output a head moves
 > against Canada's. A pure model; the land office multiplies today's dollar formula by the seller's factor (WN5; LandSellers says who sells which plot).

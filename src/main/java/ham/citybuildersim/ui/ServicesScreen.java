@@ -885,6 +885,8 @@ final class ServicesScreen {
         cards.add(Kept.scope("death", () -> careCard(deathWords(all))), i, 0);
         page.getChildren().add(cards);
 
+        causesOfDeathSection(page);
+
         page.getChildren().add(details("health:sick", "the sick rate, line by line", () -> new Node[] {sickStatement()}));
     }
 
@@ -901,7 +903,8 @@ final class ServicesScreen {
     /**
      * The sick rate's parts, in points, in the order the bar draws them -
      * the floor, what the missing doctors add, hunger, no home, the
-     * unburied, an outbreak, violence - and anything left over, hatched:
+     * unburied, an outbreak, violence, the 1918 influenza in its months
+     * (R0b) - and anything left over, hatched:
      * Health's own figures, the floor its constant (the doctors' part is
      * the rate from coverage less it). A part with a door opens where it is
      * fixed. AND WHATEVER IS LEFT OVER, said out loud: Health adds its parts
@@ -927,6 +930,12 @@ final class ServicesScreen {
                         + "\nIt fades on its own over a few months." : "none")));
         parts.add(Part.of("violence", h.getInjuryRate(), Palette.PEOPLE_DARK)
                 .go(() -> open("Safety", OVERVIEW)));
+        // ...and the 1918 influenza's sick (R0b), in its months only: a part at nothing would be keyed "none" in every other year.
+        if (h.getInfluenzaRate() > 0) {
+            parts.add(Part.of("the 1918 influenza", h.getInfluenzaRate(), Palette.BUSINESS_DARK)
+                    .tip("the 1918 influenza\n" + points(h.getInfluenzaRate())
+                            + "\nA quarter of the people were ill over its three waves, October 1918 to March 1920."));
+        }
         double gap = h.getSickRate() - named(h);
         if (gap > .0005) parts.add(Part.of("not accounted for", gap, Palette.RAMP_REST).leftOver());
         return parts;
@@ -935,7 +944,7 @@ final class ServicesScreen {
     /** Health's named parts, added: what the old breakdown summed. */
     static double named(Health h) {
         return h.getBaselineRate() + h.getOutbreakSeverity() + h.getUnburiedRate() + h.getHungerRate()
-                + h.getUnhousedRate() + h.getInjuryRate();
+                + h.getUnhousedRate() + h.getInjuryRate() + h.getInfluenzaRate();
     }
 
     /** What the cap took off the parts, as a positive rate; 0 when it took nothing. */
@@ -998,6 +1007,11 @@ final class ServicesScreen {
         col.getChildren().add(statementLine("Hurt by violent crime",
                 health.getInjuryRate() > 0 ? String.format("%.2f pts", health.getInjuryRate() * 100) : "none",
                 health.getInjuryRate() > .0005 ? Palette.WARN : Palette.TEXT_SPENT));
+        // ...and the 1918 influenza's, in its months only (R0b).
+        if (health.getInfluenzaRate() > 0) {
+            col.getChildren().add(statementLine("The 1918 influenza",
+                    String.format("%.1f pts", health.getInfluenzaRate() * 100), Palette.BAD));
+        }
         double gap = health.getSickRate() - named(health);
         if (Math.abs(gap) > .0005) {
             col.getChildren().add(Kept.scope("gap", () -> statementLine(gap > 0 ? "Not accounted for" : "Trimmed by the cap",
@@ -1007,6 +1021,113 @@ final class ServicesScreen {
         col.getChildren().add(statementTotal("Off sick", String.format("%.1f%%", sick * 100),
                 BuildScreen.verdict(CityNeeds.level(sick, CityNeeds.SICK_YELLOW, CityNeeds.SICK_RED, true))));
         return col;
+    }
+
+    /* ----- what people die of (R0b) ----- */
+
+    /**
+     * What people die of's (i): the seven causes of 1900, that each follows
+     * Canada's own history, that a city short of water, food or care dies of
+     * them sooner, and that the children's share sits inside childcare's deaths.
+     */
+    static final String CAUSES_OF_DEATH_INFO = "What people died of in 1900, and how many still do. Each cause "
+            + "follows Canada's own history: typhoid fell when the water was chlorinated, TB when there was food "
+            + "and care and then streptomycin, mothers' deaths with sulfa and penicillin. A city short of water, "
+            + "food or general care dies of them sooner than history did. Babies' and children's deaths are "
+            + "counted inside childcare's: the causes name the part of them that history took away.";
+
+    /** What takes a cause away, in a few words: the catalogue's finds and the care that blunts it. */
+    static String lowers(CausesOfDeath.Cause cause) {
+        return switch (cause) {
+            case TYPHOID    -> "clean water: chlorination from 1910";
+            case DIARRHOEA  -> "clean water and milk";
+            case OUTBREAK   -> "general care blunts them; the toxoid from 1925";
+            case TB         -> "food, care; streptomycin from 1948";
+            case PNEUMONIA  -> "general care; sulfa from 1937";
+            case CHILDBIRTH -> "a doctor at the birth; sulfa, penicillin";
+            case INFLUENZA  -> "nothing then: it passed";
+        };
+    }
+
+    /** The section: its heading, and the table of the seven causes in a card. */
+    void causesOfDeathSection(VBox page) {
+        // Kept (KP2): the heading and the card each a scope; the table's seven rows always seven, so in one.
+        page.getChildren().add(Kept.scope("causes head",
+                () -> sectionHead("WHAT PEOPLE DIE OF", CAUSES_OF_DEATH_INFO, hint("the last twelve months"))));
+        page.getChildren().add(Kept.scope("causes", () -> card(causesOfDeathTable(), causesOfDeathNotes())));
+    }
+
+    /**
+     * One row a cause: its name over what lowers it, the dead of it in the
+     * last twelve months, that as a rate a year (per 100,000 people; mothers
+     * per 1,000 births), and what it was in 1900. Every figure is a getter
+     * of CausesOfDeath or of the cohorts; the rate is the division for display.
+     */
+    javafx.scene.layout.GridPane causesOfDeathTable() {
+        CausesOfDeath causes = ui.game.getCausesOfDeath();
+        double people = ui.game.getCohorts().total();
+        double births = yearBirths();
+        javafx.scene.layout.GridPane table = grid(new double[] {300, 64, 150, 215}, rightAfterFirst(4));
+        gridHead(table, "cause, and what lowers it", "died", "a year", "then");
+        int row = 1;
+        for (CausesOfDeath.Cause cause : CausesOfDeath.Cause.values()) {
+            double dead = causes.getYearDeaths(cause);
+            String tone = dead >= .5 ? Palette.TEXT_BODY : Palette.TEXT_SPENT;
+            String per100k = String.format("%,.1f per 100,000", people > 0 ? dead / people * 100_000 : 0);
+            String rate = per100k;
+            String then;
+            if (cause == CausesOfDeath.Cause.CHILDBIRTH) {
+                if (births >= 1) rate = String.format("%,.1f per 1,000 births", dead / births * 1000);
+                then = String.format("%.1f per 1,000 births", CausesOfDeath.MOTHERS_1900);
+            } else if (cause == CausesOfDeath.Cause.INFLUENZA) {
+                then = String.format("%.1f%% of the people, 1918-20", CausesOfDeath.INFLUENZA_DEATHS * 100);
+            } else {
+                then = String.format("1900: %,.1f", CausesOfDeath.RATE_1900[cause.ordinal()]);
+            }
+            VBox name = Kept.column(0, gridCell(cause.label(), tone, Palette.SIZE_CAPTION, false),
+                    words(lowers(cause), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            table.add(name, 0, row);
+            table.add(gridCell(flowText(dead), tone, Palette.SIZE_CAPTION, true), 1, row);
+            table.add(gridCell(rate, tone, Palette.SIZE_CAPTION, true), 2, row);
+            table.add(gridCell(then, Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 3, row);
+            row++;
+        }
+        return table;
+    }
+
+    /** Under the table: the TB sick, and, when nobody died of any of them, that the diseases of 1900 are gone. */
+    VBox causesOfDeathNotes() {
+        double tb = ui.game.getCausesOfDeath().getTbSick();
+        VBox notes = Kept.column(4, words("Sick of TB a year or more: " + people(tb)
+                + (Math.round(tb) == 1 ? " person." : " people."), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        if (diseasesGone()) {
+            notes.getChildren().add(words("The diseases of 1900 are gone; people die of age, illness and violence.",
+                    Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+        }
+        return notes;
+    }
+
+    /**
+     * Whether the diseases of 1900 are gone: nobody died of any in the last
+     * twelve months, and history has taken each of them to nought (it does by
+     * 1980; the influenza is a set of months, not a path). So a quiet year
+     * before 1980 (or a city in its first month) never says the diseases are gone.
+     */
+    boolean diseasesGone() {
+        CausesOfDeath causes = ui.game.getCausesOfDeath();
+        int month = ui.game.getMonth();
+        for (CausesOfDeath.Cause cause : CausesOfDeath.Cause.values()) {
+            if (causes.getYearDeaths(cause) >= .5) return false;
+            if (cause != CausesOfDeath.Cause.INFLUENZA && CausesOfDeath.history(cause, month) > 0) return false;
+        }
+        return true;
+    }
+
+    /** The births of the last twelve months, from the history's series; 0 when none are kept. */
+    double yearBirths() {
+        double sum = 0;
+        for (double b : ui.game.getHistorySave().alignedTail("births", 12)) if (Double.isFinite(b)) sum += b;
+        return sum;
     }
 
     /** At the right of the care's heading: which of the city's healthcare buildings' staff it fills worst (Build's note, on what stands). */
